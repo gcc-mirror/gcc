@@ -1,3 +1,12 @@
+2016-08-10  Alan Lawrence  <alan.lawrence@arm.com>
+	    Renlin Li  <renlin.li@arm.com>
+	    Bin Cheng  <bin.cheng@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_cmp<mode><mode>): New pattern.
+	(vec_cmp<mode><v_cmp_result>): New pattern.
+	(vec_cmpu<mode><mode>): New pattern.
+	(vcond_mask_<mode><v_cmp_result>): New pattern.
+
 2016-08-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/71734

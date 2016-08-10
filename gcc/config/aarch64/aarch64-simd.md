@@ -2291,6 +2291,275 @@
   DONE;
 })
 
+(define_expand "vcond_mask_<mode><v_cmp_result>"
+  [(match_operand:VALLDI 0 "register_operand")
+   (match_operand:VALLDI 1 "nonmemory_operand")
+   (match_operand:VALLDI 2 "nonmemory_operand")
+   (match_operand:<V_cmp_result> 3 "register_operand")]
+  "TARGET_SIMD"
+{
+  /* If we have (a = (P) ? -1 : 0);
+     Then we can simply move the generated mask (result must be int).  */
+  if (operands[1] == CONSTM1_RTX (<MODE>mode)
+      && operands[2] == CONST0_RTX (<MODE>mode))
+    emit_move_insn (operands[0], operands[3]);
+  /* Similarly, (a = (P) ? 0 : -1) is just inverting the generated mask.  */
+  else if (operands[1] == CONST0_RTX (<MODE>mode)
+	   && operands[2] == CONSTM1_RTX (<MODE>mode))
+    emit_insn (gen_one_cmpl<v_cmp_result>2 (operands[0], operands[3]));
+  else
+    {
+      if (!REG_P (operands[1]))
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+      if (!REG_P (operands[2]))
+	operands[2] = force_reg (<MODE>mode, operands[2]);
+      emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], operands[3],
+					     operands[1], operands[2]));
+    }
+
+  DONE;
+})
+
+;; Patterns comparing two vectors to produce a mask.
+
+(define_expand "vec_cmp<mode><mode>"
+  [(set (match_operand:VSDQ_I_DI 0 "register_operand")
+	  (match_operator 1 "comparison_operator"
+	    [(match_operand:VSDQ_I_DI 2 "register_operand")
+	     (match_operand:VSDQ_I_DI 3 "nonmemory_operand")]))]
+  "TARGET_SIMD"
+{
+  rtx mask = operands[0];
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  switch (code)
+    {
+    case NE:
+    case LE:
+    case LT:
+    case GE:
+    case GT:
+    case EQ:
+      if (operands[3] == CONST0_RTX (<MODE>mode))
+	break;
+
+      /* Fall through.  */
+    default:
+      if (!REG_P (operands[3]))
+	operands[3] = force_reg (<MODE>mode, operands[3]);
+
+      break;
+    }
+
+  switch (code)
+    {
+    case LT:
+      emit_insn (gen_aarch64_cmlt<mode> (mask, operands[2], operands[3]));
+      break;
+
+    case GE:
+      emit_insn (gen_aarch64_cmge<mode> (mask, operands[2], operands[3]));
+      break;
+
+    case LE:
+      emit_insn (gen_aarch64_cmle<mode> (mask, operands[2], operands[3]));
+      break;
+
+    case GT:
+      emit_insn (gen_aarch64_cmgt<mode> (mask, operands[2], operands[3]));
+      break;
+
+    case LTU:
+      emit_insn (gen_aarch64_cmgtu<mode> (mask, operands[3], operands[2]));
+      break;
+
+    case GEU:
+      emit_insn (gen_aarch64_cmgeu<mode> (mask, operands[2], operands[3]));
+      break;
+
+    case LEU:
+      emit_insn (gen_aarch64_cmgeu<mode> (mask, operands[3], operands[2]));
+      break;
+
+    case GTU:
+      emit_insn (gen_aarch64_cmgtu<mode> (mask, operands[2], operands[3]));
+      break;
+
+    case NE:
+      /* Handle NE as !EQ.  */
+      emit_insn (gen_aarch64_cmeq<mode> (mask, operands[2], operands[3]));
+      emit_insn (gen_one_cmpl<v_cmp_result>2 (mask, mask));
+      break;
+
+    case EQ:
+      emit_insn (gen_aarch64_cmeq<mode> (mask, operands[2], operands[3]));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  DONE;
+})
+
+(define_expand "vec_cmp<mode><v_cmp_result>"
+  [(set (match_operand:<V_cmp_result> 0 "register_operand")
+	(match_operator 1 "comparison_operator"
+	    [(match_operand:VDQF 2 "register_operand")
+	     (match_operand:VDQF 3 "nonmemory_operand")]))]
+  "TARGET_SIMD"
+{
+  int use_zero_form = 0;
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx tmp = gen_reg_rtx (<V_cmp_result>mode);
+
+  rtx (*comparison) (rtx, rtx, rtx);
+
+  switch (code)
+    {
+    case LE:
+    case LT:
+    case GE:
+    case GT:
+    case EQ:
+      if (operands[3] == CONST0_RTX (<MODE>mode))
+	{
+	  use_zero_form = 1;
+	  break;
+	}
+      /* Fall through.  */
+    default:
+      if (!REG_P (operands[3]))
+	operands[3] = force_reg (<MODE>mode, operands[3]);
+
+      break;
+    }
+
+  switch (code)
+    {
+    case LT:
+      if (use_zero_form)
+	{
+	  comparison = gen_aarch64_cmlt<mode>;
+	  break;
+	}
+      /* Else, fall through.  */
+    case UNGE:
+      std::swap (operands[2], operands[3]);
+      /* Fall through.  */
+    case UNLE:
+    case GT:
+      comparison = gen_aarch64_cmgt<mode>;
+      break;
+    case LE:
+      if (use_zero_form)
+	{
+	  comparison = gen_aarch64_cmle<mode>;
+	  break;
+	}
+      /* Else, fall through.  */
+    case UNGT:
+      std::swap (operands[2], operands[3]);
+      /* Fall through.  */
+    case UNLT:
+    case GE:
+      comparison = gen_aarch64_cmge<mode>;
+      break;
+    case NE:
+    case EQ:
+      comparison = gen_aarch64_cmeq<mode>;
+      break;
+    case UNEQ:
+    case ORDERED:
+    case UNORDERED:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (code)
+    {
+    case UNGE:
+    case UNGT:
+    case UNLE:
+    case UNLT:
+    case NE:
+      /* FCM returns false for lanes which are unordered, so if we use
+	 the inverse of the comparison we actually want to emit, then
+	 invert the result, we will end up with the correct result.
+	 Note that a NE NaN and NaN NE b are true for all a, b.
+
+	 Our transformations are:
+	 a UNGE b -> !(b GT a)
+	 a UNGT b -> !(b GE a)
+	 a UNLE b -> !(a GT b)
+	 a UNLT b -> !(a GE b)
+	 a   NE b -> !(a EQ b)  */
+      emit_insn (comparison (operands[0], operands[2], operands[3]));
+      emit_insn (gen_one_cmpl<v_cmp_result>2 (operands[0], operands[0]));
+      break;
+
+    case LT:
+    case LE:
+    case GT:
+    case GE:
+    case EQ:
+      /* The easy case.  Here we emit one of FCMGE, FCMGT or FCMEQ.
+	 As a LT b <=> b GE a && a LE b <=> b GT a.  Our transformations are:
+	 a GE b -> a GE b
+	 a GT b -> a GT b
+	 a LE b -> b GE a
+	 a LT b -> b GT a
+	 a EQ b -> a EQ b  */
+      emit_insn (comparison (operands[0], operands[2], operands[3]));
+      break;
+
+    case UNEQ:
+      /* We first check (a > b ||  b > a) which is !UNEQ, inverting
+	 this result will then give us (a == b || a UNORDERED b).  */
+      emit_insn (gen_aarch64_cmgt<mode> (operands[0],
+					 operands[2], operands[3]));
+      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[3], operands[2]));
+      emit_insn (gen_ior<v_cmp_result>3 (operands[0], operands[0], tmp));
+      emit_insn (gen_one_cmpl<v_cmp_result>2 (operands[0], operands[0]));
+      break;
+
+    case UNORDERED:
+      /* Operands are ORDERED iff (a > b || b >= a), so we can compute
+	 UNORDERED as !ORDERED.  */
+      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[2], operands[3]));
+      emit_insn (gen_aarch64_cmge<mode> (operands[0],
+					 operands[3], operands[2]));
+      emit_insn (gen_ior<v_cmp_result>3 (operands[0], operands[0], tmp));
+      emit_insn (gen_one_cmpl<v_cmp_result>2 (operands[0], operands[0]));
+      break;
+
+    case ORDERED:
+      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[2], operands[3]));
+      emit_insn (gen_aarch64_cmge<mode> (operands[0],
+					 operands[3], operands[2]));
+      emit_insn (gen_ior<v_cmp_result>3 (operands[0], operands[0], tmp));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><mode>"
+  [(set (match_operand:VSDQ_I_DI 0 "register_operand")
+	  (match_operator 1 "comparison_operator"
+	    [(match_operand:VSDQ_I_DI 2 "register_operand")
+	     (match_operand:VSDQ_I_DI 3 "nonmemory_operand")]))]
+  "TARGET_SIMD"
+{
+  emit_insn (gen_vec_cmp<mode><mode> (operands[0], operands[1],
+				      operands[2], operands[3]));
+  DONE;
+})
+
 (define_expand "aarch64_vcond_internal<mode><mode>"
   [(set (match_operand:VSDQ_I_DI 0 "register_operand")
 	(if_then_else:VSDQ_I_DI
