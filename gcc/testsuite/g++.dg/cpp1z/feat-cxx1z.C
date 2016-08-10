@@ -344,6 +344,12 @@
 #  error "__cpp_hex_float != 201603"
 #endif
 
+#ifndef __cpp_if_constexpr
+#  error "__cpp_if_constexpr"
+#elif __cpp_if_constexpr != 201606
+#  error "__cpp_if_constexpr != 201606"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)

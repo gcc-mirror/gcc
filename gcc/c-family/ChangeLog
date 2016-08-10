@@ -1,3 +1,7 @@
+2016-08-10  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_if_constexpr.
+
 2016-08-09  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (c_common_attribute_table): vector_size affects type
