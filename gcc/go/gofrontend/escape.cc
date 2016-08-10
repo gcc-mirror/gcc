@@ -281,6 +281,7 @@ Node::op_format() const
 		{
 		case Runtime::PANIC:
 		  op << "panic";
+		  break;
 
 		case Runtime::APPEND:
 		  op << "append";
@@ -1923,6 +1924,7 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 	    if (!e->type()->has_pointer())
 	      break;
 	  }
+	  // Fall through.
 
 	case Expression::EXPRESSION_CONVERSION:
 	case Expression::EXPRESSION_TYPE_GUARD:
