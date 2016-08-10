@@ -14916,6 +14916,23 @@ int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal64 value);
 int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal128 value);
 int __builtin_dfp_dtstsfi_ov_dd (unsigned int comparison, _Decimal64 value);
 int __builtin_dfp_dtstsfi_ov_td (unsigned int comparison, _Decimal128 value);
+
+unsigned int scalar_extract_exp (double source);
+unsigned long long int scalar_extract_sig (double source);
+
+double
+scalar_insert_exp (unsigned long long int significand, unsigned long long int exponent);
+
+int scalar_cmp_exp_gt (double arg1, double arg2);
+int scalar_cmp_exp_lt (double arg1, double arg2);
+int scalar_cmp_exp_eq (double arg1, double arg2);
+int scalar_cmp_exp_unordered (double arg1, double arg2);
+
+int scalar_test_data_class (float source, unsigned int condition);
+int scalar_test_data_class (double source, unsigned int condition);
+
+int scalar_test_neg (float source);
+int scalar_test_neg (double source);
 @end smallexample
 
 The @code{__builtin_darn} and @code{__builtin_darn_raw}
@@ -14925,6 +14942,50 @@ The @code{__builtin_darn} function provides a 64-bit conditioned
 random number.  The @code{__builtin_darn_raw} function provides a
 64-bit raw random number.  The @code{__builtin_darn_32} function
 provides a 32-bit random number.
+
+The @code{scalar_extract_sig} and @code{scalar_insert_exp}
+functions require a 64-bit environment supporting ISA 3.0 or later.
+The @code{scalar_extract_exp} and @code{vec_extract_sig} built-in
+functions return the significand and exponent respectively of their
+@code{source} arguments.  The
+@code{scalar_insert_exp} built-in function returns a double-precision
+floating point value that is constructed by assembling the values of its
+@code{significand} and @code{exponent} arguments.  The sign of the
+result is copied from the most significant bit of the
+@code{significand} argument.  The significand and exponent components
+of the result are composed of the least significant 11 bits of the
+@code{significand} argument and the least significant 52 bits of the
+@code{exponent} argument.
+
+The @code{scalar_cmp_exp_gt}, @code{scalar_cmp_exp_lt},
+@code{scalar_cmp_exp_eq}, and @code{scalar_cmp_exp_unordered} built-in
+functions return a non-zero value if @code{arg1} is greater than, less
+than, equal to, or not comparable to @code{arg2} respectively.  The
+arguments are not comparable if one or the other equals NaN (not a
+number). 
+
+The @code{scalar_test_data_class} built-in functions return a non-zero
+value if any of the condition tests enabled by the value of the
+@code{condition} variable are true.  The
+@code{condition} argument must be an unsigned integer with value not
+exceeding 127.  The
+@code{condition} argument is encoded as a bitmask with each bit
+enabling the testing of a different condition, as characterized by the
+following:
+@smallexample
+0x40    Test for NaN
+0x20    Test for +Infinity
+0x10    Test for -Infinity
+0x08    Test for +Zero
+0x04    Test for -Zero
+0x02    Test for +Denormal
+0x01    Test for -Denormal
+@end smallexample
+
+If all of the enabled test conditions are false, the return value is 0.
+
+The @code{scalar_test_neg} built-in functions return a non-zero value
+if their @code{source} argument holds a negative value.
 
 The @code{__builtin_dfp_dtstsfi_lt} function returns a non-zero value
 if and only if the number of signficant digits of its @code{value} argument
@@ -17652,6 +17713,66 @@ The @code{vec_absd}, @code{vec_absdb}, @code{vec_absdh}, and
 differences of the pairs of vector elements supplied in its two vector
 arguments, placing the absolute differences into the corresponding
 elements of the vector result.
+
+The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
+@smallexample
+__vector int
+vec_extract_exp (__vector float source);
+__vector long long int
+vec_extract_exp (__vector double source);
+
+__vector int
+vec_extract_sig (__vector float source);
+__vector long long int
+vec_extract_sig (__vector double source);
+
+__vector float
+vec_insert_exp (__vector unsigned int significands,  __vector unsigned int exponents);
+__vector double
+vec_insert_exp (__vector unsigned long long int significands,
+                __vector unsigned long long int exponents);
+
+__vector int vec_test_data_class (__vector float source, unsigned int condition);
+__vector long long int vec_test_data_class (__vector double source, unsigned int condition);
+@end smallexample
+
+The @code{vec_extract_sig} and @code{vec_extract_exp} built-in
+functions return vectors representing the significands and exponents
+of their @code{source} arguments respectively.  The
+@code{vec_insert_exp} built-in functions return a vector of single- or
+double-precision floating
+point values constructed by assembling the values of their
+@code{significands} and @code{exponents} arguments into the
+corresponding elements of the returned vector.  The sign of each
+element of the result is copied from the most significant bit of the
+corresponding entry within the @code{significands} argument.  The
+significand and exponent components of each element of the result are
+composed of the least significant bits of the corresponding
+@code{significands} element and the least significant bits of the
+corresponding @code{exponents} element.
+
+The @code{vec_test_data_class} built-in function returns a vector
+representing the results of testing the @code{source} vector for the
+condition selected by the @code{condition} argument.  The
+@code{condition} argument must be an unsigned integer with value not
+exceeding 127.  The
+@code{condition} argument is encoded as a bitmask with each bit
+enabling the testing of a different condition, as characterized by the
+following:
+@smallexample
+0x40    Test for NaN
+0x20    Test for +Infinity
+0x10    Test for -Infinity
+0x08    Test for +Zero
+0x04    Test for -Zero
+0x02    Test for +Denormal
+0x01    Test for -Denormal
+@end smallexample
+
+If any of the enabled test conditions is true, the corresponding entry
+in the result vector is -1.  Otherwise (all of the enabled test
+conditions are false), the corresponding entry of the result vector is 0.
 
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.

@@ -147,6 +147,11 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 63")))
 
+;; Return 1 if op is an unsigned 7-bit constant integer.
+(define_predicate "u7bit_cint_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 127)")))
+
 ;; Return 1 if op is a signed 8-bit constant integer.
 ;; Integer multiplication complete more quickly
 (define_predicate "s8bit_cint_operand"

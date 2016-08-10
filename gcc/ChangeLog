@@ -1,3 +1,130 @@
+2016-08-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_extract_exp): New macro.
+	(vec_extract_sig): New macro.
+	(vec_insert_exp): New macro.
+	(vec_test_data_class): New macro.
+	(scalar_extract_exp): New macro.
+	(scalar_extract_sig): New macro.
+	(scalar_insert_exp): New macro.
+	(scalar_test_data_class): New macro.
+	(scalar_test_neg): New macro.
+	(scalar_cmp_exp_gt): New macro.
+	(scalar_cmp_exp_lt): New macro.
+	(scalar_cmp_exp_eq): New macro.
+	(scalar_cmp_exp_unordered): New macro.
+	* config/rs6000/predicates.md (u7bit_cint_operand): New predicate
+	to enforce constraint that operand is a 7-bit unsigned literal.
+	* config/rs6000/rs6000-builtin.def (BU_P9V_64BIT_VSX_1): New macro
+	for power9 built-ins.
+	(BU_P9V_VSX_2): Likewise.
+	(BU_P9V_64BIT_VSX_2): Likewise.
+	(VSEEDP): Add scalar extract exponent support.
+	(VSEESP): Add scalar extract signature support.
+	(VSTDCNDP): Add scalar test negative support.
+	(VSTDCNSP): Likewise.
+	(VSIEDP): Add scalar insert exponent support.
+	(VSCEDPGT): Add scalar compare exponent greater than support.
+	(VSCEDPLT): Add scalar compare exponent less than support.
+	(VSCEDPEQ): Add scalar compare exponent test-for-equality support.
+	(VSCEDPUO): Add scalar compare exponent test-for-unordered support.
+	(VSTDCDP): Add scalar test data class support.
+	(VSTDCSP): Likewise.
+	(VSEEDP): Add overload support for scalar extract exponent
+	operation.
+	(VSESDP): Add overload support for scalar extract signature
+	operation.
+	(VSTDCN): Add overload support for scalar test negative
+	operation.
+	(VSTDCNDP): Add overload support for scalar test negative
+	operation.
+	(VSTDCNSP): Add overload support for scalar test negative
+	operation.
+	(VSIEDP): Add overload support for scalar insert exponent
+	operation.
+	(VSTDC): Add overload support for scalar test data class
+	operation.
+	(VSTDCDP): Add overload support for scalar test data class
+	operation.
+	(VSTDCSP): Add overload support for scalar test data class
+	opreation.
+	(VSCEDPGT): Add overload support for scalar compare exponent
+	greater than operation.
+	(VSCEDPLT): Add overload support for scalar compare exponent
+	less than operation.
+	(VSCEDPEQ): Add overload support for scalar compare exponent
+	test-for-equality operation.
+	(VSCEDPUO): Add overload support for scalar compare exponent
+	test-for-unordered operation.
+	(VEEDP): Add vector extract exponent support.
+	(VEESP): Likewise.
+	(VESDP): Add vector extract significand support.
+	(VESSP): Likewise.
+	(VIEDP): Add vector insert exponent support.
+	(VIESP): Likewise.
+	(VTDCDP): Add vector test data class support.
+	(VTDCSP): Likewise.
+	(VES): Add overload support for vector extract significand operation.
+	(VESDP): Likewise.
+	(VESSP): Likewise
+	(VEE): Add overload support for vector extract exponent operation.
+	(VEEDP): Likewise.
+	(VEESP): Likewise.
+	(VTDC): Add overload support for vector test data class operation.
+	(VTDCDP): Likewise.
+	(VTDCSP): Likewise.
+	(VIE): Add overload support for vector insert exponent operation.
+	(VIEDP): Likewise.
+	(VIESP): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	overloaded binary floating point functions.
+	(altivec_resolve_overloaded_builtin): Improve error messages to
+	distinguish between functions not supported in the current
+	compiler configuration and functions that were invoked with an
+	invalid parameter combination, and include the built-in function
+	name in both error messages.
+	* config/rs6000/rs6000-protos.h (rs6000_overloaded_builtin_name):
+	New prototype.
+	* config/rs6000/rs6000.c (rs6000_overloaded_builtin_name): New
+	function.
+	(rs6000_expand_binop_builtin): Add check to enforce that argument
+	2 of the test data class operations is a 7-bit unsigned literal.
+	(rs6000_invalid_builtin): Add code to issue an error message if a
+	built-in function that requires the power9_vector and -m32
+	command-line options is compiled without these options.
+	* config/rs6000/vsx.md (UNSPEC_VSX_SXEXPDP): New value.
+	(UNSPEC_VSX_SXSIGDP): New value.
+	(UNSPEC_VSX_SXSIGPDP): New value.
+	(UNSPEC_VSX_SIEXPDP): New value.
+	(UNSPEC_VSX_SCMPEXPDP): New value.
+	(UNSPEC_VSX_STSTDC): New value.
+	(UNSPEC_VSX_VXEXP): New value.
+	(UNSPEC_VSX_VXSIG): New value.
+	(UNSPEC_VSX_VIEXP): New value.
+	(UNSPEC_VSX_VTSTDC): New value.
+	(xsxexpdp): New insn for scalar extract exponent.
+	(xsxsigdp): New insn for scalar extract significand.
+	(xsiexpdp): New insn for scalar insert exponent.
+	(xscmpexpdp_<code>): New expansion for scalar compare exponents.
+	(*xscmpexpdp): New insn for scalar compare exponents.
+	(xststdc<Fvsx): New expansion for both single- and
+	double-precision scalar test data class operations.
+	(xststdcneg<Fvsx>): New expansion for both single- and
+	double-precision scalar test for negative value operations.
+	(*xststdc<Fvsx>): New insn for scalar test data class
+	operation.
+	(xvxexp<VSs>): New insn for single- and double-precision
+	vector extract exponent operation.
+	(xvxsig<VSs>): New insn for single- and double-precision
+	vector extract significand operation.
+	(xviexp<VSs>): New insn for single- and double-precision
+	vector insert exponent operation.
+	(xvtstdc<VSs>): New insn for single- and double-precision
+	vector test data class operation.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Document
+	built-in functions to represent the Power9 binary floating-point
+	support instructions.
+
 2016-08-10  bin cheng  <bin.cheng@arm.com>
 
 	* doc/sourcebuild.texi (@item vect_cond_mixed): New item.
