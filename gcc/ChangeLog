@@ -1,3 +1,11 @@
+2016-08-11  Alan Modra  <amodra@gmail.com>
+
+	PR target/71680
+	* lra-constraints.c (simplify_operand_subreg): Allow subreg
+	mode for mem when SLOW_UNALIGNED_ACCESS if inner mode is also
+	slow.  Emit two reloads for slow mem case, first loading in
+	fast innermode, then converting to required mode.
+
 2016-08-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.h (vec_extract_exp): New macro.
