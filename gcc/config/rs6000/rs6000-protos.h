@@ -218,6 +218,7 @@ extern void rs6000_sibcall_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
 extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
+extern const char *rs6000_overloaded_builtin_name (enum rs6000_builtins);
 extern HOST_WIDE_INT rs6000_builtin_mask_calculate (void);
 extern void rs6000_asm_output_dwarf_pcrel (FILE *file, int size,
 					   const char *label);

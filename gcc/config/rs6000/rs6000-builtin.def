@@ -799,6 +799,32 @@
 		     | RS6000_BTC_UNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_P9V_64BIT_VSX_1(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_1 (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    (RS6000_BTM_64BIT					\
+		     | RS6000_BTM_P9_VECTOR),		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9V_VSX_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_P9_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P9V_64BIT_VSX_2(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_2 (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    (RS6000_BTM_64BIT					\
+		     | RS6000_BTM_P9_VECTOR),		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #define BU_P9V_OVERLOAD_1(ENUM, NAME)					\
   RS6000_BUILTIN_1 (P9V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
 		    "__builtin_vec_" NAME,		/* NAME */	\
@@ -1798,6 +1824,74 @@ BU_P9V_OVERLOAD_2 (VADU,	"vadu")
 BU_P9V_OVERLOAD_2 (VADUB,	"vadub")
 BU_P9V_OVERLOAD_2 (VADUH,	"vaduh")
 BU_P9V_OVERLOAD_2 (VADUW,	"vaduw")
+
+/* 1 argument vsx scalar functions added in ISA 3.0 (power9).  */
+BU_P9V_64BIT_VSX_1 (VSEEDP,	"scalar_extract_exp",	CONST,	xsxexpdp)
+BU_P9V_64BIT_VSX_1 (VSESDP,	"scalar_extract_sig",	CONST,	xsxsigdp)
+
+BU_P9V_VSX_1 (VSTDCNDP,	"scalar_test_neg_dp",	CONST,	xststdcnegdp)
+BU_P9V_VSX_1 (VSTDCNSP,	"scalar_test_neg_sp",	CONST,	xststdcnegsp)
+
+/* 2 argument vsx scalar functions added in ISA 3.0 (power9).  */
+BU_P9V_64BIT_VSX_2 (VSIEDP,	"scalar_insert_exp",	CONST,	xsiexpdp)
+
+BU_P9V_VSX_2 (VSCEDPGT,	"scalar_cmp_exp_dp_gt",	CONST,	xscmpexpdp_gt)
+BU_P9V_VSX_2 (VSCEDPLT,	"scalar_cmp_exp_dp_lt",	CONST,	xscmpexpdp_lt)
+BU_P9V_VSX_2 (VSCEDPEQ,	"scalar_cmp_exp_dp_eq",	CONST,	xscmpexpdp_eq)
+BU_P9V_VSX_2 (VSCEDPUO,	"scalar_cmp_exp_dp_unordered",	CONST,	xscmpexpdp_unordered)
+
+BU_P9V_VSX_2 (VSTDCDP,	"scalar_test_data_class_dp",	CONST,	xststdcdp)
+BU_P9V_VSX_2 (VSTDCSP,	"scalar_test_data_class_sp",	CONST,	xststdcsp)
+
+/* ISA 3.0 vector scalar overloaded 1 argument functions.  */
+BU_P9V_OVERLOAD_1 (VSEEDP,	"scalar_extract_exp")
+BU_P9V_OVERLOAD_1 (VSESDP,	"scalar_extract_sig")
+
+BU_P9V_OVERLOAD_1 (VSTDCN,	"scalar_test_neg")
+BU_P9V_OVERLOAD_1 (VSTDCNDP,	"scalar_test_neg_dp")
+BU_P9V_OVERLOAD_1 (VSTDCNSP,	"scalar_test_neg_sp")
+
+/* ISA 3.0 vector scalar overloaded 2 argument functions.  */
+BU_P9V_OVERLOAD_2 (VSIEDP,	"scalar_insert_exp")
+
+BU_P9V_OVERLOAD_2 (VSTDC,	"scalar_test_data_class")
+BU_P9V_OVERLOAD_2 (VSTDCDP,	"scalar_test_data_class_dp")
+BU_P9V_OVERLOAD_2 (VSTDCSP,	"scalar_test_data_class_sp")
+
+BU_P9V_OVERLOAD_2 (VSCEDPGT,	"scalar_cmp_exp_gt")
+BU_P9V_OVERLOAD_2 (VSCEDPLT,	"scalar_cmp_exp_lt")
+BU_P9V_OVERLOAD_2 (VSCEDPEQ,	"scalar_cmp_exp_eq")
+BU_P9V_OVERLOAD_2 (VSCEDPUO,	"scalar_cmp_exp_unordered")
+
+/* 1 argument vsx vector functions added in ISA 3.0 (power9).  */
+BU_P9V_VSX_1 (VEEDP, "extract_exp_dp", CONST, xvxexpdp)
+BU_P9V_VSX_1 (VEESP, "extract_exp_sp", CONST, xvxexpsp)
+BU_P9V_VSX_1 (VESDP, "extract_sig_dp", CONST, xvxsigdp)
+BU_P9V_VSX_1 (VESSP, "extract_sig_sp", CONST, xvxsigsp)
+
+/* 2 argument vsx vector functions added in ISA 3.0 (power9).  */
+BU_P9V_VSX_2 (VIEDP, "insert_exp_dp", CONST, xviexpdp)
+BU_P9V_VSX_2 (VIESP, "insert_exp_sp", CONST, xviexpsp)
+BU_P9V_VSX_2 (VTDCDP, "test_data_class_dp", CONST, xvtstdcdp)
+BU_P9V_VSX_2 (VTDCSP, "test_data_class_sp", CONST, xvtstdcsp)
+
+/* ISA 3.0 vector overloaded 1 argument functions.  */
+BU_P9V_OVERLOAD_1 (VES,		"extract_sig")
+BU_P9V_OVERLOAD_1 (VESDP,	"extract_sig_dp")
+BU_P9V_OVERLOAD_1 (VESSP,	"extract_sig_sp")
+
+BU_P9V_OVERLOAD_1 (VEE,		"extract_exp")
+BU_P9V_OVERLOAD_1 (VEEDP,	"extract_exp_dp")
+BU_P9V_OVERLOAD_1 (VEESP,	"extract_exp_sp")
+
+/* ISA 3.0 vector overloaded 2 argument functions.  */
+BU_P9V_OVERLOAD_2 (VTDC,	"test_data_class")
+BU_P9V_OVERLOAD_2 (VTDCDP,	"test_data_class_dp")
+BU_P9V_OVERLOAD_2 (VTDCSP,	"test_data_class_sp")
+
+BU_P9V_OVERLOAD_2 (VIE,		"insert_exp")
+BU_P9V_OVERLOAD_2 (VIEDP,	"insert_exp_dp")
+BU_P9V_OVERLOAD_2 (VIESP,	"insert_exp_sp")
 
 
 /* 2 argument extended divide functions added in ISA 2.06.  */

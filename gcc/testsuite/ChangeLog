@@ -1,3 +1,60 @@
+2016-08-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/bfp/bfp.exp: New file.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-eq-0.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-eq-1.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-eq-2.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-gt-0.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-gt-1.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-gt-2.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-lt-0.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-lt-1.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-lt-2.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-unordered-0.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-unordered-1.c: New test.
+	* gcc.target/powerpc/bfp/scalar-cmp-exp-unordered-2.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-0.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-1.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-2.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-0.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-1.c: New test.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-2.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-0.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-1.c: New test.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-2.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-0.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-1.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-2.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-3.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-4.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-5.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-6.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-7.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-neg-0.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-neg-1.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-neg-2.c: New test.
+	* gcc.target/powerpc/bfp/scalar-test-neg-3.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-exp-0.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-exp-1.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-exp-2.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-exp-3.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-sig-0.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-sig-1.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-sig-2.c: New test.
+	* gcc.target/powerpc/bfp/vec-extract-sig-3.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-0.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-1.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-2.c: New test.
+	* gcc.target/powerpc/bfp/vec-insert-exp-3.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-0.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-1.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-2.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-3.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-4.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-5.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-6.c: New test.
+	* gcc.target/powerpc/bfp/vec-test-data-class-7.c: New test.
+
 2016-08-10  Bin Cheng  <bin.cheng@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_cond_mixed):

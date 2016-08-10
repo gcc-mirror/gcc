@@ -18,6 +18,9 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+;; Iterator for comparison types
+(define_code_iterator CMP_TEST [eq lt gt unordered])
+
 ;; Iterator for both scalar and vector floating point types supported by VSX
 (define_mode_iterator VSX_B [DF V4SF V2DF])
 
@@ -311,6 +314,15 @@
    UNSPEC_P9_MEMORY
    UNSPEC_VSX_VSLO
    UNSPEC_VSX_EXTRACT
+   UNSPEC_VSX_SXEXPDP
+   UNSPEC_VSX_SXSIGDP
+   UNSPEC_VSX_SIEXPDP
+   UNSPEC_VSX_SCMPEXPDP
+   UNSPEC_VSX_STSTDC
+   UNSPEC_VSX_VXEXP
+   UNSPEC_VSX_VXSIG
+   UNSPEC_VSX_VIEXP
+   UNSPEC_VSX_VTSTDC
   ])
 
 ;; VSX moves
@@ -2995,3 +3007,156 @@
    mfvsrd %0,%x1
    stxsi<wd>x %x1,%y0"
   [(set_attr "type" "mffgpr,fpstore")])
+
+;; ISA 3.0 Binary Floating-Point Support
+
+;; VSX Scalar Extract Exponent Double-Precision
+(define_insn "xsxexpdp"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI [(match_operand:DF 1 "vsx_register_operand" "wa")]
+	 UNSPEC_VSX_SXEXPDP))]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "xsxexpdp %0,%x1"
+  [(set_attr "type" "integer")])
+
+;; VSX Scalar Extract Significand Double-Precision
+(define_insn "xsxsigdp"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI [(match_operand:DF 1 "vsx_register_operand" "wa")]
+	 UNSPEC_VSX_SXSIGDP))]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "xsxsigdp %0,%x1"
+  [(set_attr "type" "integer")])
+
+;; VSX Scalar Insert Exponent Double-Precision
+(define_insn "xsiexpdp"
+  [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
+	(unspec:DF [(match_operand:DI 1 "register_operand" "r")
+		    (match_operand:DI 2 "register_operand" "r")]
+	 UNSPEC_VSX_SIEXPDP))]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "xsiexpdp %x0,%1,%2"
+  [(set_attr "type" "fpsimple")])
+
+;; VSX Scalar Compare Exponents Double-Precision
+(define_expand "xscmpexpdp_<code>"
+  [(set (match_dup 3)
+	(compare:CCFP
+	 (unspec:DF
+	  [(match_operand:DF 1 "vsx_register_operand" "wa")
+	   (match_operand:DF 2 "vsx_register_operand" "wa")]
+	  UNSPEC_VSX_SCMPEXPDP)
+	 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(CMP_TEST:SI (match_dup 3)
+		     (const_int 0)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[3] = gen_reg_rtx (CCFPmode);
+})
+
+(define_insn "*xscmpexpdp"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(compare:CCFP
+	 (unspec:DF [(match_operand:DF 1 "vsx_register_operand" "wa")
+		     (match_operand:DF 2 "vsx_register_operand" "wa")]
+	  UNSPEC_VSX_SCMPEXPDP)
+	 (match_operand:SI 3 "zero_constant" "j")))]
+  "TARGET_P9_VECTOR"
+  "xscmpexpdp %0,%x1,%x2"
+  [(set_attr "type" "fpcompare")])
+
+;; VSX Scalar Test Data Class Double- and Single-Precision
+;;  (The lt bit is set if operand 1 is negative.  The eq bit is set
+;;   if any of the conditions tested by operand 2 are satisfied.
+;;   The gt and unordered bits are cleared to zero.)
+(define_expand "xststdc<Fvsx>"
+  [(set (match_dup 3)
+	(compare:CCFP
+	 (unspec:SFDF
+	  [(match_operand:SFDF 1 "vsx_register_operand" "wa")
+	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
+	  UNSPEC_VSX_STSTDC)
+	 (match_dup 4)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(eq:SI (match_dup 3)
+	       (const_int 0)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[3] = gen_reg_rtx (CCFPmode);
+  operands[4] = CONST0_RTX (SImode);
+})
+
+;; The VSX Scalar Test Data Class Double- and Single-Precision
+;; instruction may also be used to test for negative value.
+(define_expand "xststdcneg<Fvsx>"
+  [(set (match_dup 2)
+	(compare:CCFP
+	 (unspec:SFDF
+	  [(match_operand:SFDF 1 "vsx_register_operand" "wa")
+	   (const_int 0)]
+	  UNSPEC_VSX_STSTDC)
+	 (match_dup 3)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(lt:SI (match_dup 2)
+	       (const_int 0)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[2] = gen_reg_rtx (CCFPmode);
+  operands[3] = CONST0_RTX (SImode);
+})
+
+(define_insn "*xststdc<Fvsx>"
+  [(set (match_operand:CCFP 0 "" "=y")
+	(compare:CCFP
+	 (unspec:SFDF [(match_operand:SFDF 1 "vsx_register_operand" "wa")
+		       (match_operand:SI 2 "u7bit_cint_operand" "n")]
+	  UNSPEC_VSX_STSTDC)
+	 (match_operand:SI 3 "zero_constant" "j")))]
+  "TARGET_P9_VECTOR"
+  "xststdc<Fvsx> %0,%x1,%2"
+  [(set_attr "type" "fpcompare")])
+
+;; VSX Vector Extract Exponent Double and Single Precision
+(define_insn "xvxexp<VSs>"
+  [(set (match_operand:VSX_F 0 "vsx_register_operand" "=wa")
+	(unspec:VSX_F
+	 [(match_operand:VSX_F 1 "vsx_register_operand" "wa")]
+	 UNSPEC_VSX_VXEXP))]
+  "TARGET_P9_VECTOR"
+  "xvxexp<VSs> %x0,%x1"
+  [(set_attr "type" "vecsimple")])
+
+;; VSX Vector Extract Significand Double and Single Precision
+(define_insn "xvxsig<VSs>"
+  [(set (match_operand:VSX_F 0 "vsx_register_operand" "=wa")
+	(unspec:VSX_F
+	 [(match_operand:VSX_F 1 "vsx_register_operand" "wa")]
+	 UNSPEC_VSX_VXSIG))]
+  "TARGET_P9_VECTOR"
+  "xvxsig<VSs> %x0,%x1"
+  [(set_attr "type" "vecsimple")])
+
+;; VSX Vector Insert Exponent Double and Single Precision
+(define_insn "xviexp<VSs>"
+  [(set (match_operand:VSX_F 0 "vsx_register_operand" "=wa")
+	(unspec:VSX_F
+	 [(match_operand:VSX_F 1 "vsx_register_operand" "wa")
+	  (match_operand:VSX_F 2 "vsx_register_operand" "wa")]
+	 UNSPEC_VSX_VIEXP))]
+  "TARGET_P9_VECTOR"
+  "xviexp<VSs> %x0,%x1,%x2"
+  [(set_attr "type" "vecsimple")])
+
+;; VSX Vector Test Data Class Double and Single Precision
+;; The corresponding elements of the result vector are all ones
+;; if any of the conditions tested by operand 3 are satisfied.
+(define_insn "xvtstdc<VSs>"
+  [(set (match_operand:<VSI> 0 "vsx_register_operand" "=wa")
+	(unspec:<VSI>
+	 [(match_operand:VSX_F 1 "vsx_register_operand" "wa")
+	  (match_operand:SI 2 "u7bit_cint_operand" "n")]
+	 UNSPEC_VSX_VTSTDC))]
+  "TARGET_P9_VECTOR"
+  "xvtstdc<VSs> %x0,%x1,%2"
+  [(set_attr "type" "vecsimple")])
