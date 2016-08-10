@@ -5402,6 +5402,7 @@ proc check_effective_target_vect_cond_mixed { } {
     } else {
 	set et_vect_cond_mixed_saved($et_index) 0
 	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*] } {
 	   set et_vect_cond_mixed_saved($et_index) 1
 	}
