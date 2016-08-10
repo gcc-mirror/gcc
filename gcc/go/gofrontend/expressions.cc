@@ -5767,6 +5767,7 @@ Binary_expression::do_get_backend(Translate_context* context)
     case OPERATOR_DIV:
       if (left_type->float_type() != NULL || left_type->complex_type() != NULL)
         break;
+      // Fall through.
     case OPERATOR_MOD:
       is_idiv_op = true;
       break;
