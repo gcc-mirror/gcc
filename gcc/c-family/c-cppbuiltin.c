@@ -882,6 +882,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_nontype_template_args=201411");
 	  cpp_define (pfile, "__cpp_range_based_for=201603");
 	  cpp_define (pfile, "__cpp_constexpr=201603");
+	  cpp_define (pfile, "__cpp_if_constexpr=201606");
 	}
       if (flag_concepts)
 	/* Use a value smaller than the 201507 specified in
