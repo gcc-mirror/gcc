@@ -1842,13 +1842,11 @@ Lex::skip_cpp_comment()
     {
       // Applies to the next function.  Do not split the stack when
       // entering the function.
-      // FIXME: Not implemented.
       this->pragmas_ |= GOPRAGMA_NOSPLIT;
     }
   else if (verb == "go:noinline")
     {
       // Applies to the next function.  Do not inline the function.
-      // FIXME: Not implemented.
       this->pragmas_ |= GOPRAGMA_NOINLINE;
     }
   else if (verb == "go:systemstack")

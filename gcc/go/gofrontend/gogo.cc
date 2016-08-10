@@ -5083,10 +5083,18 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       if (this->calls_defer_retaddr_)
 	is_inlinable = false;
 
+      // Check the //go:noinline compiler directive.
+      if ((this->pragmas_ & GOPRAGMA_NOINLINE) != 0)
+	is_inlinable = false;
+
       // If this is a thunk created to call a function which calls
       // the predeclared recover function, we need to disable
       // stack splitting for the thunk.
       bool disable_split_stack = this->is_recover_thunk_;
+
+      // Check the //go:nosplit compiler directive.
+      if ((this->pragmas_ & GOPRAGMA_NOSPLIT) != 0)
+	disable_split_stack = true;
 
       // This should go into a unique section if that has been
       // requested elsewhere, or if this is a nointerface function.
