@@ -1342,6 +1342,10 @@ Target supports Fortran @code{real} kinds larger than @code{real(8)}.
 @item vect_condition
 Target supports vector conditional operations.
 
+@item vect_cond_mixed
+Target supports vector conditional operations where comparison operands
+have different type from the value operands.
+
 @item vect_double
 Target supports hardware vectors of @code{double}.
 
