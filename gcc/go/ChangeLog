@@ -1,3 +1,11 @@
+2016-08-09  Ian Lance Taylor  <iant@google.com>
+
+	* gccgo.texi (Invoking gccgo): Document -fgo-optimize-allocs and
+	-fgo-debug-escae.
+	(Compiler Directives): New chapter.
+	(Function Names): Describe using //go:linkname.  Suggest using
+	-fgo-pkgpath rather than -fgo-prefix.
+
 2016-08-08  Ian Lance Taylor  <iant@google.com>
 
 	PR go/72814
