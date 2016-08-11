@@ -1,3 +1,10 @@
+2016-08-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadbackward.c (pass_data_thread_jumps): Remove
+	unconditional TODO_cleanup_cfg.
+	(pass_thread_jumps::execute): Initialize loops, perform a CFG
+	cleanup only if we threaded a jump.
+
 2016-08-11  Alan Modra  <amodra@gmail.com>
 
 	PR target/71680
