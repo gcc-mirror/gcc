@@ -1,3 +1,10 @@
+2016-08-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/71123
+	PR libgfortran/73142
+	* io/list_read (eat_spaces): Eat '\r' as part of spaces.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
