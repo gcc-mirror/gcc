@@ -1,3 +1,12 @@
+2015-08-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pieces-memcpy-1.c: New test.
+	* gcc.target/i386/pieces-memcpy-2.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-3.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-4.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-5.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-6.c: Likewise.
+
 2016-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/72816

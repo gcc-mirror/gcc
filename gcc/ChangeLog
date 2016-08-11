@@ -1,3 +1,8 @@
+2015-08-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.h (MOVE_MAX_PIECES): Use TImode in 64-bit
+	mode if unaligned SSE load and store are optimal.
+
 2016-08-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR tree-optimization/71083
