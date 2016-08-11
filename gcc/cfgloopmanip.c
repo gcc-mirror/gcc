@@ -1497,7 +1497,7 @@ has_preds_from_loop (basic_block block, struct loop *loop)
 basic_block
 create_preheader (struct loop *loop, int flags)
 {
-  edge e, fallthru;
+  edge e;
   basic_block dummy;
   int nentry = 0;
   bool irred = false;
@@ -1544,9 +1544,14 @@ create_preheader (struct loop *loop, int flags)
 
   mfb_kj_edge = loop_latch_edge (loop);
   latch_edge_was_fallthru = (mfb_kj_edge->flags & EDGE_FALLTHRU) != 0;
-  fallthru = make_forwarder_block (loop->header, mfb_keep_just, NULL);
-  dummy = fallthru->src;
-  loop->header = fallthru->dest;
+  if (nentry == 1)
+    dummy = split_edge (single_entry);
+  else
+    {
+      edge fallthru = make_forwarder_block (loop->header, mfb_keep_just, NULL);
+      dummy = fallthru->src;
+      loop->header = fallthru->dest;
+    }
 
   /* Try to be clever in placing the newly created preheader.  The idea is to
      avoid breaking any "fallthruness" relationship between blocks.
