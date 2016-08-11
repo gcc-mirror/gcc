@@ -1,5 +1,11 @@
 2016-08-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Implement C++17 make_from_tuple.
+	* include/std/tuple (__make_from_tuple_impl, make_from_tuple): New.
+	* testsuite/20_util/tuple/make_from_tuple/1.cc: Likewise.
+
+2016-08-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement LWG 2758.
 	* include/bits/basic_string.h
 	(append(__sv_type, size_type, size_type)): Turn into a template,
