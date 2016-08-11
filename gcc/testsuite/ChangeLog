@@ -1,3 +1,9 @@
+2016-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/72772
+	* gcc.dg/graphite/pr35356-1.c: Adjust.
+	* gcc.dg/tree-ssa/pr59597.c: Likewise.
+
 2016-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* gfortran.dg/random_7.f90: Take into account that the last seed

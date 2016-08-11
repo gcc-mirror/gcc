@@ -1,5 +1,11 @@
 2016-08-11  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/72772
+	* cfgloopmanip.c (create_preheader): Use split_edge if there
+	is a single loop entry, avoiding degenerate PHIs.
+
+2016-08-11  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-threadbackward.c (pass_data_thread_jumps): Remove
 	unconditional TODO_cleanup_cfg.
 	(pass_thread_jumps::execute): Initialize loops, perform a CFG

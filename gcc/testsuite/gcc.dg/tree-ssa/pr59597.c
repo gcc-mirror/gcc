@@ -54,5 +54,6 @@ main (int argc, char argv[])
   return crc;
 }
 
-/* { dg-final { scan-tree-dump "Cancelling" "vrp1" } } */
-
+/* { dg-final { scan-tree-dump-times "Registering jump thread" 3 "vrp1" } } */
+/* { dg-final { scan-tree-dump-not "joiner" "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Threaded jump" 3 "vrp1" } } */
