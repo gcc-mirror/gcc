@@ -1,3 +1,7 @@
+2016-08-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390-builtins.def: Mark last operand of s390_vlvg*
+
 2016-08-11  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/aarch64/aarch64-simd.md (vcond<mode><mode>): Delete
