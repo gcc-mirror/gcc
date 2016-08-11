@@ -1,3 +1,8 @@
+2016-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/72868
+	* g++.dg/cpp1y/constexpr-switch4.C: New test.
+
 2015-08-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pieces-memcpy-1.c: New test.
