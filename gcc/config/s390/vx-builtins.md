@@ -550,56 +550,25 @@
 
 ; Vector add
 
-; vaq
-
-; zvector builtins uses V16QI operands.  So replace the modes in order
-; to map this to a TImode add.  We have to keep the V16QI mode
-; operands in the expander in order to allow some operand type
-; checking when expanding the builtin.
-(define_expand "vec_add_u128"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")
-   (match_operand:V16QI 2 "register_operand" "")]
-  "TARGET_VX"
-{
-  rtx op0 = gen_rtx_SUBREG (TImode, operands[0], 0);
-  rtx op1 = gen_rtx_SUBREG (TImode, operands[1], 0);
-  rtx op2 = gen_rtx_SUBREG (TImode, operands[2], 0);
-
-  emit_insn (gen_rtx_SET (op0,
-			  gen_rtx_PLUS (TImode, op1, op2)));
-  DONE;
-})
-
 ; Vector add compute carry
 
-(define_insn "vec_addc<mode>"
-  [(set (match_operand:VI_HW                0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "%v")
-		       (match_operand:VI_HW 2 "register_operand"  "v")]
-		      UNSPEC_VEC_ADDC))]
+(define_insn "vacc<bhfgq>_<mode>"
+  [(set (match_operand:VIT_HW                 0 "register_operand" "=v")
+	(unspec:VIT_HW [(match_operand:VIT_HW 1 "register_operand" "%v")
+			(match_operand:VIT_HW 2 "register_operand"  "v")]
+		       UNSPEC_VEC_ADDC))]
   "TARGET_VX"
   "vacc<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-(define_insn "vec_addc_u128"
-  [(set (match_operand:V16QI                0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%v")
-		       (match_operand:V16QI 2 "register_operand"  "v")]
-		      UNSPEC_VEC_ADDC_U128))]
-  "TARGET_VX"
-  "vaccq\t%v0,%v1,%v2"
-  [(set_attr "op_type" "VRR")])
-
-
 ; Vector add with carry
 
-(define_insn "vec_adde_u128"
-  [(set (match_operand:V16QI                0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%v")
-		       (match_operand:V16QI 2 "register_operand"  "v")
-		       (match_operand:V16QI 3 "register_operand"  "v")]
-		      UNSPEC_VEC_ADDE_U128))]
+(define_insn "vacq"
+  [(set (match_operand:TI             0 "register_operand" "=v")
+	(unspec:TI [(match_operand:TI 1 "register_operand" "%v")
+		    (match_operand:TI 2 "register_operand"  "v")
+		    (match_operand:TI 3 "register_operand"  "v")]
+		   UNSPEC_VEC_ADDE_U128))]
   "TARGET_VX"
   "vacq\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
@@ -607,12 +576,12 @@
 
 ; Vector add with carry compute carry
 
-(define_insn "vec_addec_u128"
-  [(set (match_operand:V16QI                0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%v")
-		       (match_operand:V16QI 2 "register_operand"  "v")
-		       (match_operand:V16QI 3 "register_operand"  "v")]
-		      UNSPEC_VEC_ADDEC_U128))]
+(define_insn "vacccq"
+  [(set (match_operand:TI             0 "register_operand" "=v")
+	(unspec:TI [(match_operand:TI 1 "register_operand" "%v")
+		    (match_operand:TI 2 "register_operand"  "v")
+		    (match_operand:TI 3 "register_operand"  "v")]
+		   UNSPEC_VEC_ADDEC_U128))]
   "TARGET_VX"
   "vacccq\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
@@ -1145,44 +1114,24 @@
 
 ; Vector subtract
 
-(define_insn "vec_sub_u128"
-  [(set (match_operand:V16QI 0 "register_operand"               "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-		       (match_operand:V16QI 2 "register_operand" "v")]
-		     UNSPEC_VEC_SUB_U128))]
-  "TARGET_VX"
-  "vsq\t%v0,%v1,%v2"
-  [(set_attr "op_type" "VRR")])
-
-
 ; Vector subtract compute borrow indication
 
-(define_insn "vec_subc<mode>"
-  [(set (match_operand:VI_HW 0 "register_operand"               "=v")
-	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "v")
-		       (match_operand:VI_HW 2 "register_operand" "v")]
+(define_insn "vscbi<bhfgq>_<mode>"
+  [(set (match_operand:VIT_HW 0 "register_operand"                "=v")
+	(unspec:VIT_HW [(match_operand:VIT_HW 1 "register_operand" "v")
+			(match_operand:VIT_HW 2 "register_operand" "v")]
 		      UNSPEC_VEC_SUBC))]
   "TARGET_VX"
   "vscbi<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-(define_insn "vec_subc_u128"
-  [(set (match_operand:V16QI 0 "register_operand"               "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-		       (match_operand:V16QI 2 "register_operand" "v")]
-		     UNSPEC_VEC_SUBC_U128))]
-  "TARGET_VX"
-  "vscbiq\t%v0,%v1,%v2"
-  [(set_attr "op_type" "VRR")])
-
-
 ; Vector subtract with borrow indication
 
-(define_insn "vec_sube_u128"
-  [(set (match_operand:V16QI 0 "register_operand"               "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-		       (match_operand:V16QI 2 "register_operand" "v")
-		       (match_operand:V16QI 3 "register_operand" "v")]
+(define_insn "vsbiq"
+  [(set (match_operand:TI 0 "register_operand"               "=v")
+	(unspec:TI [(match_operand:TI 1 "register_operand"    "v")
+		       (match_operand:TI 2 "register_operand" "v")
+		       (match_operand:TI 3 "register_operand" "v")]
 		      UNSPEC_VEC_SUBE_U128))]
   "TARGET_VX"
   "vsbiq\t%v0,%v1,%v2,%v3"
@@ -1191,11 +1140,11 @@
 
 ; Vector subtract with borrow compute and borrow indication
 
-(define_insn "vec_subec_u128"
-  [(set (match_operand:V16QI 0 "register_operand"               "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-		       (match_operand:V16QI 2 "register_operand" "v")
-		       (match_operand:V16QI 3 "register_operand" "v")]
+(define_insn "vsbcbiq"
+  [(set (match_operand:TI 0 "register_operand"               "=v")
+	(unspec:TI [(match_operand:TI 1 "register_operand"    "v")
+		       (match_operand:TI 2 "register_operand" "v")
+		       (match_operand:TI 3 "register_operand" "v")]
 		      UNSPEC_VEC_SUBEC_U128))]
   "TARGET_VX"
   "vsbcbiq\t%v0,%v1,%v2,%v3"
