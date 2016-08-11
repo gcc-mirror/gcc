@@ -150,8 +150,8 @@
 
 2016-08-09  Martin Jambor  <mjambor@suse.cz>
 
-        PR ipa/71981
-        * gcc.dg/ipa/pr71981.c: New test.
+	PR ipa/71981
+	* gcc.dg/ipa/pr71981.c: New test.
 
 2016-08-09  Bin Cheng  <bin.cheng@arm.com>
 
@@ -1106,7 +1106,6 @@
 
 	* g++.dg/cpp0x/nullptr35.C (caught): Fix typo.
 
->>>>>>> .r238890
 2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Marco Restelli <mrestelli@gmail.com>
 
