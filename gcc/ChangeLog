@@ -1,3 +1,9 @@
+2016-08-11  Richard Biener  <rguenther@suse.de>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR rtl-optimization/72855
+	* df-core.c (df_verify): Turn off DF_VERIFY_SCHEDULED at end.
+
 2016-08-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/72863

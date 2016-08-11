@@ -1833,6 +1833,7 @@ df_verify (void)
   if (df_live)
     df_live_verify_transfer_functions ();
 #endif
+  df->changeable_flags &= ~DF_VERIFY_SCHEDULED;
 }
 
 #ifdef DF_DEBUG_CFG
