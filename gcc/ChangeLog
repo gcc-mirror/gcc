@@ -6,6 +6,13 @@
 	* config/s390/s390-builtin-types.def: Change builtin type naming
 	scheme to match builtin-types.def.
 
+2016-08-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-06-13  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/vecintrin.h: Fix file description in comment.
+
 2016-08-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
