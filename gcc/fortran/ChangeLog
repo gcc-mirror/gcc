@@ -1,5 +1,12 @@
 2016-08-11  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	Backport from trunk:
+	PR fortran/71936
+	* trans-array.c (gfc_array_allocate): When SOURCE= is a function
+	stick with the ref of the object to allocate.
+
+2016-08-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	Backport from trunk
 	PR fortran/72698
 	* trans-stmt.c (gfc_trans_allocate): Prevent generating code for
