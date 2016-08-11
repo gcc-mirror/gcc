@@ -1,3 +1,9 @@
+2016-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c: Replace KISS with xorshift1024* using
+	per-thread state.
+	* runtime/main.c (init): Don't call random_seed_i4.
+
 2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* caf/libcaf.h: Add parameter stat to caf_get() and

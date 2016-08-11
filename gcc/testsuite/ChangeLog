@@ -1,3 +1,9 @@
+2016-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.dg/random_7.f90: Take into account that the last seed
+	value is the special p value.
+	* gfortran.dg/random_seed_1.f90: Seed size is now constant.
+
 2016-08-11  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust.

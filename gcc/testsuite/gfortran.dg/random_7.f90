@@ -10,8 +10,8 @@ program trs
   seed(:) = huge(seed) / 17
   call test_random_seed(put=seed)
   call test_random_seed(get=check)
-  print *, seed
-  print *, check
+  ! In the current implementation seed(17) is special
+  seed(17) = check(17)
   if (any (seed /= check)) call abort
 contains
   subroutine test_random_seed(size, put, get)

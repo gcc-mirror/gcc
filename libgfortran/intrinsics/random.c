@@ -1,7 +1,7 @@
 /* Implementation of the RANDOM intrinsics
    Copyright (C) 2002-2016 Free Software Foundation, Inc.
-   Contributed by Lars Segerlund <seger@linuxmail.org>
-   and Steve Kargl.
+   Contributed by Lars Segerlund <seger@linuxmail.org>,
+   Steve Kargl and Janne Blomqvist.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -27,6 +27,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <gthr.h>
 #include <string.h>
+
+/* For getosrandom.  */
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#include <sys/stat.h>
+#include <fcntl.h>
+#include "time_1.h"
+
+#ifdef __MINGW32__
+#define HAVE_GETPID 1
+#include <process.h>
+#endif
 
 extern void random_r4 (GFC_REAL_4 *);
 iexport_proto(random_r4);
@@ -141,141 +157,206 @@ rnumber_16 (GFC_REAL_16 *f, GFC_UINTEGER_8 v1, GFC_UINTEGER_8 v2)
     + (GFC_REAL_16) v2 * GFC_REAL_16_LITERAL(0x1.p-128);
 }
 #endif
-/* libgfortran previously had a Mersenne Twister, taken from the paper:
-  
-	Mersenne Twister:	623-dimensionally equidistributed
-				uniform pseudorandom generator.
-
-	by Makoto Matsumoto & Takuji Nishimura
-	which appeared in the: ACM Transactions on Modelling and Computer
-	Simulations: Special Issue on Uniform Random Number
-	Generation. ( Early in 1998 ).
-
-   The Mersenne Twister code was replaced due to
-
-    (1) Simple user specified seeds lead to really bad sequences for
-        nearly 100000 random numbers.
-    (2) open(), read(), and close() were not properly declared via header
-        files.
-    (3) The global index i was abused and caused unexpected behavior with
-        GET and PUT.
-    (4) See PR 15619.
 
 
-   libgfortran currently uses George Marsaglia's KISS (Keep It Simple Stupid)
-   random number generator.  This PRNG combines:
+/*
 
-   (1) The congruential generator x(n)=69069*x(n-1)+1327217885 with a period
-       of 2^32,
-   (2) A 3-shift shift-register generator with a period of 2^32-1,
-   (3) Two 16-bit multiply-with-carry generators with a period of
-       597273182964842497 > 2^59.
+   We use the xorshift1024* generator, a fast high-quality generator
+   that:
 
-   The overall period exceeds 2^123.
+   - passes TestU1 without any failures
 
-   http://www.ciphersbyritter.com/NEWS4/RANDC.HTM#369F6FCA.74C7C041@stat.fsu.edu
+   - provides a "jump" function making it easy to provide many
+     independent parallel streams.
 
-   The above web site has an archive of a newsgroup posting from George
-   Marsaglia with the statement:
+   - Long period of 2**1024 - 1
 
-   Subject: Random numbers for C: Improvements.
-   Date: Fri, 15 Jan 1999 11:41:47 -0500
-   From: George Marsaglia <geo@stat.fsu.edu>
-   Message-ID: <369F6FCA.74C7C041@stat.fsu.edu>
-   References: <369B5E30.65A55FD1@stat.fsu.edu>
-   Newsgroups: sci.stat.math,sci.math,sci.math.numer-analysis
-   Lines: 93
+   A description can be found at
 
-   As I hoped, several suggestions have led to
-   improvements in the code for RNG's I proposed for
-   use in C. (See the thread "Random numbers for C: Some
-   suggestions" in previous postings.) The improved code
-   is listed below.
+   http://vigna.di.unimi.it/ftp/papers/xorshift.pdf
 
-   A question of copyright has also been raised.  Unlike
-   DIEHARD, there is no copyright on the code below. You
-   are free to use it in any way you want, but you may
-   wish to acknowledge the source, as a courtesy.
+   or
 
-"There is no copyright on the code below." included the original
-KISS algorithm.  */
+   http://arxiv.org/abs/1402.6246
 
-/* We use three KISS random number generators, with different
-   seeds.
-   As a matter of Quality of Implementation, the random numbers
-   we generate for different REAL kinds, starting from the same
-   seed, are always the same up to the precision of these types.
-   We do this by using three generators with different seeds, the
-   first one always for the most significant bits, the second one
-   for bits 33..64 (if present in the REAL kind), and the third one
-   (called twice) for REAL(16).  */
+   The paper includes public domain source code which is the basis for
+   the implementation below.
 
-#define GFC_SL(k, n)	((k)^((k)<<(n)))
-#define GFC_SR(k, n)	((k)^((k)>>(n)))
-
-/*   Reference for the seed:
-   From: "George Marsaglia" <g...@stat.fsu.edu>
-   Newsgroups: sci.math
-   Message-ID: <e7CcnWxczriWssCjXTWc3A@comcast.com>
-  
-   The KISS RNG uses four seeds, x, y, z, c,
-   with 0<=x<2^32, 0<y<2^32, 0<=z<2^32, 0<=c<698769069
-   except that the two pairs
-   z=0,c=0 and z=2^32-1,c=698769068
-   should be avoided.  */
-
-/* Any modifications to the seeds that change KISS_SIZE below need to be
-   reflected in check.c (gfc_check_random_seed) to enable correct
-   compile-time checking of PUT size for the RANDOM_SEED intrinsic.  */
-
-#define KISS_DEFAULT_SEED_1 123456789, 362436069, 521288629, 316191069
-#define KISS_DEFAULT_SEED_2 987654321, 458629013, 582859209, 438195021
-#ifdef HAVE_GFC_REAL_16
-#define KISS_DEFAULT_SEED_3 573658661, 185639104, 582619469, 296736107
-#endif
-
-static GFC_UINTEGER_4 kiss_seed[] = {
-  KISS_DEFAULT_SEED_1,
-  KISS_DEFAULT_SEED_2,
-#ifdef HAVE_GFC_REAL_16
-  KISS_DEFAULT_SEED_3
-#endif
-};
-
-static GFC_UINTEGER_4 kiss_default_seed[] = {
-  KISS_DEFAULT_SEED_1,
-  KISS_DEFAULT_SEED_2,
-#ifdef HAVE_GFC_REAL_16
-  KISS_DEFAULT_SEED_3
-#endif
-};
-
-#define KISS_SIZE (sizeof(kiss_seed)/sizeof(kiss_seed[0]))
-
-static GFC_UINTEGER_4 * const kiss_seed_1 = kiss_seed;
-static GFC_UINTEGER_4 * const kiss_seed_2 = kiss_seed + 4;
-
-#ifdef HAVE_GFC_REAL_16
-static GFC_UINTEGER_4 * const kiss_seed_3 = kiss_seed + 8;
-#endif
-
-/* kiss_random_kernel() returns an integer value in the range of
-   (0, GFC_UINTEGER_4_HUGE].  The distribution of pseudorandom numbers
-   should be uniform.  */
-
-static GFC_UINTEGER_4
-kiss_random_kernel(GFC_UINTEGER_4 * seed)
+*/
+typedef struct
 {
-  GFC_UINTEGER_4 kiss;
-
-  seed[0] = 69069 * seed[0] + 1327217885;
-  seed[1] = GFC_SL(GFC_SR(GFC_SL(seed[1],13),17),5);
-  seed[2] = 18000 * (seed[2] & 65535) + (seed[2] >> 16);
-  seed[3] = 30903 * (seed[3] & 65535) + (seed[3] >> 16);
-  kiss = seed[0] + seed[1] + (seed[2] << 16) + seed[3];
-
-  return kiss;
+  bool init;
+  int p;
+  uint64_t s[16];
 }
+xorshift1024star_state;
+
+
+/* How many times we have jumped. This and master_state are the only
+   variables protected by random_lock.  */
+static unsigned njumps;
+static uint64_t master_state[] = {
+  0xad63fa1ed3b55f36ULL, 0xd94473e78978b497ULL, 0xbc60592a98172477ULL,
+  0xa3de7c6e81265301ULL, 0x586640c5e785af27ULL, 0x7a2a3f63b67ce5eaULL,
+  0x9fde969f922d9b82ULL, 0xe6fe34379b3f3822ULL, 0x6c277eac3e99b6c2ULL,
+  0x9197290ab0d3f069ULL, 0xdb227302f6c25576ULL, 0xee0209aee527fae9ULL,
+  0x675666a793cd05b9ULL, 0xd048c99fbc70c20fULL, 0x775f8c3dba385ef5ULL,
+  0x625288bc262faf33ULL
+};
+
+
+static __gthread_key_t rand_state_key;
+
+static xorshift1024star_state*
+get_rand_state (void)
+{
+  /* For single threaded apps.  */
+  static xorshift1024star_state rand_state;
+
+  if (__gthread_active_p ())
+    {
+      void* p = __gthread_getspecific (rand_state_key);
+      if (!p)
+	{
+	  p = xcalloc (1, sizeof (xorshift1024star_state));
+	  __gthread_setspecific (rand_state_key, p);
+	}
+      return p;
+    }
+  else
+    return &rand_state;
+}
+
+
+static uint64_t
+xorshift1024star (xorshift1024star_state* rs)
+{
+  int p = rs->p;
+  const uint64_t s0 = rs->s[p];
+  uint64_t s1 = rs->s[p = (p + 1) & 15];
+  s1 ^= s1 << 31;
+  rs->s[p] = s1 ^ s0 ^ (s1 >> 11) ^ (s0 >> 30);
+  rs->p = p;
+  return rs->s[p] * UINT64_C(1181783497276652981);
+}
+
+
+/* This is the jump function for the generator. It is equivalent to
+   2^512 calls to xorshift1024star(); it can be used to generate 2^512
+   non-overlapping subsequences for parallel computations. */
+
+static void
+jump (xorshift1024star_state* rs)
+{
+  static const uint64_t JUMP[] = {
+    0x84242f96eca9c41dULL, 0xa3c65b8776f96855ULL, 0x5b34a39f070b5837ULL,
+    0x4489affce4f31a1eULL, 0x2ffeeb0a48316f40ULL, 0xdc2d9891fe68c022ULL,
+    0x3659132bb12fea70ULL, 0xaac17d8efa43cab8ULL, 0xc4cb815590989b13ULL,
+    0x5ee975283d71c93bULL, 0x691548c86c1bd540ULL, 0x7910c41d10a1e6a5ULL,
+    0x0b5fc64563b3e2a8ULL, 0x047f7684e9fc949dULL, 0xb99181f2d8f685caULL,
+    0x284600e3f30e38c3ULL
+  };
+
+  uint64_t t[16] = { 0 };
+  for(unsigned int i = 0; i < sizeof JUMP / sizeof *JUMP; i++)
+    for(int b = 0; b < 64; b++)
+      {
+	if (JUMP[i] & 1ULL << b)
+	  for(int j = 0; j < 16; j++)
+	    t[j] ^= rs->s[(j + rs->p) & 15];
+	xorshift1024star (rs);
+      }
+  for(int j = 0; j < 16; j++)
+    rs->s[(j + rs->p) & 15] = t[j];
+}
+
+
+/* Initialize the random number generator for the current thread,
+   using the master state and the number of times we must jump.  */
+
+static void
+init_rand_state (xorshift1024star_state* rs, const bool locked)
+{
+  if (!locked)
+    __gthread_mutex_lock (&random_lock);
+  memcpy (&rs->s, master_state, sizeof (master_state));
+  unsigned n = njumps++;
+  if (!locked)
+    __gthread_mutex_unlock (&random_lock);
+  for (unsigned i = 0; i < n; i++)
+    jump (rs);
+  rs->init = true;
+}
+
+
+/* Super-simple LCG generator used in getosrandom () if /dev/urandom
+   doesn't exist.  */
+
+#define M 2147483647 /* 2^31 - 1 (A large prime number) */
+#define A 16807      /* Prime root of M, passes statistical tests and produces a full cycle */
+#define Q 127773 /* M / A (To avoid overflow on A * seed) */
+#define R 2836   /* M % A (To avoid overflow on A * seed) */
+
+static uint32_t
+lcg_parkmiller(uint32_t seed)
+{
+    uint32_t hi = seed / Q;
+    uint32_t lo = seed % Q;
+    int32_t test = A * lo - R * hi;
+    if (test <= 0)
+        test += M;
+    return test;
+}
+
+#undef M
+#undef A
+#undef Q
+#undef R
+
+/* Get some random bytes from the operating system in order to seed
+   the PRNG.  */
+
+static int
+getosrandom (void *buf, size_t buflen)
+{
+  /* TODO: On Windows one could use CryptGenRandom
+
+     TODO: When glibc adds a wrapper for the getrandom() system call
+     on Linux, one could use that.
+
+     TODO: One could use getentropy() on OpenBSD.  */
+  int flags = O_RDONLY;
+#ifdef O_CLOEXEC
+  flags |= O_CLOEXEC;
+#endif
+  int fd = open("/dev/urandom", flags);
+  if (fd != -1)
+    {
+      int res = read(fd, buf, buflen);
+      close (fd);
+      return res;
+    }
+  uint32_t seed = 1234567890;
+  time_t secs;
+  long usecs;
+  if (gf_gettime (&secs, &usecs) == 0)
+    {
+      seed ^= secs;
+      seed ^= usecs;
+    }
+#ifdef HAVE_GETPID
+  pid_t pid = getpid();
+  seed ^= pid;
+#endif
+  uint32_t* ub = buf;
+  for (size_t i = 0; i < buflen; i++)
+    {
+      ub[i] = seed;
+      seed = lcg_parkmiller (seed);
+    }
+  return buflen;
+}
+
 
 /*  This function produces a REAL(4) value from the uniform distribution
     with range [0,1).  */
@@ -283,12 +364,15 @@ kiss_random_kernel(GFC_UINTEGER_4 * seed)
 void
 random_r4 (GFC_REAL_4 *x)
 {
-  GFC_UINTEGER_4 kiss;
+  xorshift1024star_state* rs = get_rand_state();
 
-  __gthread_mutex_lock (&random_lock);
-  kiss = kiss_random_kernel (kiss_seed_1);
-  rnumber_4 (x, kiss);
-  __gthread_mutex_unlock (&random_lock);
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
+  uint64_t r = xorshift1024star (rs);
+  /* Take the higher bits, ensuring that a stream of real(4), real(8),
+     and real(10) will be identical (except for precision).  */
+  uint32_t high = (uint32_t) (r >> 32);
+  rnumber_4 (x, high);
 }
 iexport(random_r4);
 
@@ -298,13 +382,13 @@ iexport(random_r4);
 void
 random_r8 (GFC_REAL_8 *x)
 {
-  GFC_UINTEGER_8 kiss;
+  GFC_UINTEGER_8 r;
+  xorshift1024star_state* rs = get_rand_state();
 
-  __gthread_mutex_lock (&random_lock);
-  kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
-  kiss += kiss_random_kernel (kiss_seed_2);
-  rnumber_8 (x, kiss);
-  __gthread_mutex_unlock (&random_lock);
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
+  r = xorshift1024star (rs);
+  rnumber_8 (x, r);
 }
 iexport(random_r8);
 
@@ -316,13 +400,13 @@ iexport(random_r8);
 void
 random_r10 (GFC_REAL_10 *x)
 {
-  GFC_UINTEGER_8 kiss;
+  GFC_UINTEGER_8 r;
+  xorshift1024star_state* rs = get_rand_state();
 
-  __gthread_mutex_lock (&random_lock);
-  kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
-  kiss += kiss_random_kernel (kiss_seed_2);
-  rnumber_10 (x, kiss);
-  __gthread_mutex_unlock (&random_lock);
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
+  r = xorshift1024star (rs);
+  rnumber_10 (x, r);
 }
 iexport(random_r10);
 
@@ -336,22 +420,20 @@ iexport(random_r10);
 void
 random_r16 (GFC_REAL_16 *x)
 {
-  GFC_UINTEGER_8 kiss1, kiss2;
+  GFC_UINTEGER_8 r1, r2;
+  xorshift1024star_state* rs = get_rand_state();
 
-  __gthread_mutex_lock (&random_lock);
-  kiss1 = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
-  kiss1 += kiss_random_kernel (kiss_seed_2);
-
-  kiss2 = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_3)) << 32;
-  kiss2 += kiss_random_kernel (kiss_seed_3);
-
-  rnumber_16 (x, kiss1, kiss2);
-  __gthread_mutex_unlock (&random_lock);
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
+  r1 = xorshift1024star (rs);
+  r2 = xorshift1024star (rs);
+  rnumber_16 (x, r1, r2);
 }
 iexport(random_r16);
 
 
 #endif
+
 /*  This function fills a REAL(4) array with values from the uniform
     distribution with range [0,1).  */
 
@@ -364,8 +446,9 @@ arandom_r4 (gfc_array_r4 *x)
   index_type stride0;
   index_type dim;
   GFC_REAL_4 *dest;
-  GFC_UINTEGER_4 kiss;
+  xorshift1024star_state* rs = get_rand_state();
   int n;
+
 
   dest = x->base_addr;
 
@@ -382,13 +465,15 @@ arandom_r4 (gfc_array_r4 *x)
 
   stride0 = stride[0];
 
-  __gthread_mutex_lock (&random_lock);
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
 
   while (dest)
     {
       /* random_r4 (dest);  */
-      kiss = kiss_random_kernel (kiss_seed_1);
-      rnumber_4 (dest, kiss);
+      uint64_t r = xorshift1024star (rs);
+      uint32_t high = (uint32_t) (r >> 32);
+      rnumber_4 (dest, high);
 
       /* Advance to the next element.  */
       dest += stride0;
@@ -416,7 +501,6 @@ arandom_r4 (gfc_array_r4 *x)
             }
         }
     }
-  __gthread_mutex_unlock (&random_lock);
 }
 
 /*  This function fills a REAL(8) array with values from the uniform
@@ -431,7 +515,7 @@ arandom_r8 (gfc_array_r8 *x)
   index_type stride0;
   index_type dim;
   GFC_REAL_8 *dest;
-  GFC_UINTEGER_8 kiss;
+  xorshift1024star_state* rs = get_rand_state();
   int n;
 
   dest = x->base_addr;
@@ -449,14 +533,14 @@ arandom_r8 (gfc_array_r8 *x)
 
   stride0 = stride[0];
 
-  __gthread_mutex_lock (&random_lock);
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
 
   while (dest)
     {
       /* random_r8 (dest);  */
-      kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
-      kiss += kiss_random_kernel (kiss_seed_2);
-      rnumber_8 (dest, kiss);
+      uint64_t r = xorshift1024star (rs);
+      rnumber_8 (dest, r);
 
       /* Advance to the next element.  */
       dest += stride0;
@@ -484,7 +568,6 @@ arandom_r8 (gfc_array_r8 *x)
             }
         }
     }
-  __gthread_mutex_unlock (&random_lock);
 }
 
 #ifdef HAVE_GFC_REAL_10
@@ -501,7 +584,7 @@ arandom_r10 (gfc_array_r10 *x)
   index_type stride0;
   index_type dim;
   GFC_REAL_10 *dest;
-  GFC_UINTEGER_8 kiss;
+  xorshift1024star_state* rs = get_rand_state();
   int n;
 
   dest = x->base_addr;
@@ -519,14 +602,14 @@ arandom_r10 (gfc_array_r10 *x)
 
   stride0 = stride[0];
 
-  __gthread_mutex_lock (&random_lock);
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
 
   while (dest)
     {
       /* random_r10 (dest);  */
-      kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
-      kiss += kiss_random_kernel (kiss_seed_2);
-      rnumber_10 (dest, kiss);
+      uint64_t r = xorshift1024star (rs);
+      rnumber_10 (dest, r);
 
       /* Advance to the next element.  */
       dest += stride0;
@@ -554,7 +637,6 @@ arandom_r10 (gfc_array_r10 *x)
             }
         }
     }
-  __gthread_mutex_unlock (&random_lock);
 }
 
 #endif
@@ -573,7 +655,7 @@ arandom_r16 (gfc_array_r16 *x)
   index_type stride0;
   index_type dim;
   GFC_REAL_16 *dest;
-  GFC_UINTEGER_8 kiss1, kiss2;
+  xorshift1024star_state* rs = get_rand_state();
   int n;
 
   dest = x->base_addr;
@@ -591,18 +673,15 @@ arandom_r16 (gfc_array_r16 *x)
 
   stride0 = stride[0];
 
-  __gthread_mutex_lock (&random_lock);
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
 
   while (dest)
     {
       /* random_r16 (dest);  */
-      kiss1 = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
-      kiss1 += kiss_random_kernel (kiss_seed_2);
-
-      kiss2 = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_3)) << 32;
-      kiss2 += kiss_random_kernel (kiss_seed_3);
-
-      rnumber_16 (dest, kiss1, kiss2);
+      uint64_t r1 = xorshift1024star (rs);
+      uint64_t r2 = xorshift1024star (rs);
+      rnumber_16 (dest, r1, r2);
 
       /* Advance to the next element.  */
       dest += stride0;
@@ -630,7 +709,6 @@ arandom_r16 (gfc_array_r16 *x)
             }
         }
     }
-  __gthread_mutex_unlock (&random_lock);
 }
 
 #endif
@@ -665,43 +743,17 @@ unscramble_seed (unsigned char *dest, unsigned char *src, int size)
 void
 random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
-  unsigned char seed[4 * KISS_SIZE];
-
-  __gthread_mutex_lock (&random_lock);
+  unsigned char seed[sizeof (master_state)];
+#define SZ (sizeof (master_state) / sizeof (GFC_INTEGER_4))
 
   /* Check that we only have one argument present.  */
   if ((size ? 1 : 0) + (put ? 1 : 0) + (get ? 1 : 0) > 1)
     runtime_error ("RANDOM_SEED should have at most one argument present.");
 
-  /* From the standard: "If no argument is present, the processor assigns
-     a processor-dependent value to the seed."  */
-  if (size == NULL && put == NULL && get == NULL)
-      for (size_t i = 0; i < KISS_SIZE; i++)
-	kiss_seed[i] = kiss_default_seed[i];
-
   if (size != NULL)
-    *size = KISS_SIZE;
+    *size = SZ + 1;
 
-  if (put != NULL)
-    {
-      /* If the rank of the array is not 1, abort.  */
-      if (GFC_DESCRIPTOR_RANK (put) != 1)
-        runtime_error ("Array rank of PUT is not 1.");
-
-      /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) KISS_SIZE)
-        runtime_error ("Array size of PUT is too small.");
-
-      /*  We copy the seed given by the user.  */
-      for (size_t i = 0; i < KISS_SIZE; i++)
-	memcpy (seed + i * sizeof(GFC_UINTEGER_4),
-		&(put->base_addr[(KISS_SIZE - 1 - i) * GFC_DESCRIPTOR_STRIDE(put,0)]),
-		sizeof(GFC_UINTEGER_4));
-
-      /* We put it after scrambling the bytes, to paper around users who
-	 provide seeds with quality only in the lower or upper part.  */
-      scramble_seed ((unsigned char *) kiss_seed, seed, 4 * KISS_SIZE);
-    }
+  xorshift1024star_state* rs = get_rand_state();
 
   /* Return the seed to GET data.  */
   if (get != NULL)
@@ -711,20 +763,68 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 	runtime_error ("Array rank of GET is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) KISS_SIZE)
+      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) SZ + 1)
 	runtime_error ("Array size of GET is too small.");
 
+      if (!rs->init)
+	init_rand_state (rs, false);
+
       /* Unscramble the seed.  */
-      unscramble_seed (seed, (unsigned char *) kiss_seed, 4 * KISS_SIZE);
+      unscramble_seed (seed, (unsigned char *) rs->s, sizeof seed);
 
       /*  Then copy it back to the user variable.  */
-      for (size_t i = 0; i < KISS_SIZE; i++)
-	memcpy (&(get->base_addr[(KISS_SIZE - 1 - i) * GFC_DESCRIPTOR_STRIDE(get,0)]),
+      for (size_t i = 0; i < SZ ; i++)
+	memcpy (&(get->base_addr[(SZ - 1 - i) * GFC_DESCRIPTOR_STRIDE(get,0)]),
                seed + i * sizeof(GFC_UINTEGER_4),
                sizeof(GFC_UINTEGER_4));
+
+      /* Finally copy the value of p after the seed.  */
+      get->base_addr[SZ * GFC_DESCRIPTOR_STRIDE(get, 0)] = rs->p;
     }
 
+  else
+    {
+  __gthread_mutex_lock (&random_lock);
+
+  /* From the standard: "If no argument is present, the processor assigns
+     a processor-dependent value to the seed."  */
+  if (size == NULL && put == NULL && get == NULL)
+    {
+      getosrandom (master_state, sizeof (master_state));
+      njumps = 0;
+      init_rand_state (rs, true);
+    }
+
+  if (put != NULL)
+    {
+      /* If the rank of the array is not 1, abort.  */
+      if (GFC_DESCRIPTOR_RANK (put) != 1)
+        runtime_error ("Array rank of PUT is not 1.");
+
+      /* If the array is too small, abort.  */
+      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) SZ + 1)
+        runtime_error ("Array size of PUT is too small.");
+
+      /*  We copy the seed given by the user.  */
+      for (size_t i = 0; i < SZ; i++)
+	memcpy (seed + i * sizeof(GFC_UINTEGER_4),
+		&(put->base_addr[(SZ - 1 - i) * GFC_DESCRIPTOR_STRIDE(put,0)]),
+		sizeof(GFC_UINTEGER_4));
+
+      /* We put it after scrambling the bytes, to paper around users who
+	 provide seeds with quality only in the lower or upper part.  */
+      scramble_seed ((unsigned char *) master_state, seed, sizeof seed);
+      njumps = 0;
+      init_rand_state (rs, true);
+
+      rs->p = put->base_addr[SZ * GFC_DESCRIPTOR_STRIDE(put, 0)] & 15;
+    }
+
+
+
   __gthread_mutex_unlock (&random_lock);
+    }
+#undef SZ
 }
 iexport(random_seed_i4);
 
@@ -732,36 +832,15 @@ iexport(random_seed_i4);
 void
 random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 {
-  __gthread_mutex_lock (&random_lock);
-
   /* Check that we only have one argument present.  */
   if ((size ? 1 : 0) + (put ? 1 : 0) + (get ? 1 : 0) > 1)
     runtime_error ("RANDOM_SEED should have at most one argument present.");
 
-  /* From the standard: "If no argument is present, the processor assigns
-     a processor-dependent value to the seed."  */
-  if (size == NULL && put == NULL && get == NULL)
-      for (size_t i = 0; i < KISS_SIZE; i++)
-	kiss_seed[i] = kiss_default_seed[i];
-
+#define SZ (sizeof (master_state) / sizeof (GFC_INTEGER_8))
   if (size != NULL)
-    *size = KISS_SIZE / 2;
+    *size = SZ + 1;
 
-  if (put != NULL)
-    {
-      /* If the rank of the array is not 1, abort.  */
-      if (GFC_DESCRIPTOR_RANK (put) != 1)
-        runtime_error ("Array rank of PUT is not 1.");
-
-      /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) KISS_SIZE / 2)
-        runtime_error ("Array size of PUT is too small.");
-
-      /*  This code now should do correct strides.  */
-      for (size_t i = 0; i < KISS_SIZE / 2; i++)
-	memcpy (&kiss_seed[2*i], &(put->base_addr[i * GFC_DESCRIPTOR_STRIDE(put,0)]),
-		sizeof (GFC_UINTEGER_8));
-    }
+  xorshift1024star_state* rs = get_rand_state();
 
   /* Return the seed to GET data.  */
   if (get != NULL)
@@ -771,24 +850,77 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 	runtime_error ("Array rank of GET is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) KISS_SIZE / 2)
+      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) SZ + 1)
 	runtime_error ("Array size of GET is too small.");
 
+      if (!rs->init)
+	init_rand_state (rs, false);
+
       /*  This code now should do correct strides.  */
-      for (size_t i = 0; i < KISS_SIZE / 2; i++)
-	memcpy (&(get->base_addr[i * GFC_DESCRIPTOR_STRIDE(get,0)]), &kiss_seed[2*i],
+      for (size_t i = 0; i < SZ; i++)
+	memcpy (&(get->base_addr[i * GFC_DESCRIPTOR_STRIDE(get,0)]), &rs->s[i],
 		sizeof (GFC_UINTEGER_8));
+
+      get->base_addr[SZ * GFC_DESCRIPTOR_STRIDE(get, 0)] = rs->p;
     }
 
+  else
+    {
+  __gthread_mutex_lock (&random_lock);
+
+  /* From the standard: "If no argument is present, the processor assigns
+     a processor-dependent value to the seed."  */
+  if (size == NULL && put == NULL && get == NULL)
+    {
+      getosrandom (master_state, sizeof (master_state));
+      njumps = 0;
+      init_rand_state (rs, true);
+    }
+
+  if (put != NULL)
+    {
+      /* If the rank of the array is not 1, abort.  */
+      if (GFC_DESCRIPTOR_RANK (put) != 1)
+        runtime_error ("Array rank of PUT is not 1.");
+
+      /* If the array is too small, abort.  */
+      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) SZ + 1)
+        runtime_error ("Array size of PUT is too small.");
+
+      /*  This code now should do correct strides.  */
+      for (size_t i = 0; i < SZ; i++)
+	memcpy (&master_state[i], &(put->base_addr[i * GFC_DESCRIPTOR_STRIDE(put,0)]),
+		sizeof (GFC_UINTEGER_8));
+
+      njumps = 0;
+      init_rand_state (rs, true);
+      rs->p = put->base_addr[SZ * GFC_DESCRIPTOR_STRIDE(put, 0)] & 15;
+     }
+
+
   __gthread_mutex_unlock (&random_lock);
+    }
 }
 iexport(random_seed_i8);
 
 
-#ifndef __GTHREAD_MUTEX_INIT
+#if !defined __GTHREAD_MUTEX_INIT || defined __GTHREADS
 static void __attribute__((constructor))
-init (void)
+constructor_random (void)
 {
+#ifndef __GTHREAD_MUTEX_INIT
   __GTHREAD_MUTEX_INIT_FUNCTION (&random_lock);
+#endif
+  if (__gthread_active_p ())
+    __gthread_key_create (&rand_state_key, &free);
+}
+#endif
+
+#ifdef __GTHREADS
+static void __attribute__((destructor))
+destructor_random (void)
+{
+  if (__gthread_active_p ())
+    __gthread_key_delete (rand_state_key);
 }
 #endif
