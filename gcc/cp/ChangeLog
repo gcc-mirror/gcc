@@ -1,3 +1,8 @@
+2016-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/73456
+	* logic.cc (non_atomic_constraint_p): Handle EXPR_PACK_EXPANSION.
+
 2016-08-10  Jason Merrill  <jason@redhat.com>
 
 	Implement C++17 constexpr if.
