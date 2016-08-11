@@ -1,3 +1,9 @@
+2016-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* check.c (gfc_check_random_seed): Use new seed size in check.
+	* intrinsic.texi (RANDOM_NUMBER): Updated documentation.
+	(RANDOM_SEED): Likewise.
+
 2016-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/72716

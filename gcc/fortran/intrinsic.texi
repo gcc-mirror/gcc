@@ -11126,23 +11126,16 @@ end program test_rand
 Returns a single pseudorandom number or an array of pseudorandom numbers
 from the uniform distribution over the range @math{ 0 \leq x < 1}.
 
-The runtime-library implements George Marsaglia's KISS (Keep It Simple 
-Stupid) random number generator (RNG). This RNG combines:
-@enumerate
-@item The congruential generator @math{x(n) = 69069 \cdot x(n-1) + 1327217885}
-with a period of @math{2^{32}},
-@item A 3-shift shift-register generator with a period of @math{2^{32} - 1},
-@item  Two 16-bit multiply-with-carry generators with a period of
-@math{597273182964842497 > 2^{59}}.
-@end enumerate
-The overall period exceeds @math{2^{123}}.
+The runtime-library implements the xorshift1024* random number
+generator (RNG). This generator has a period of @math{2^{1024} - 1},
+and when using multiple threads up to @math{2^{512}} threads can each
+generate @math{2^{512}} random numbers before any aliasing occurs.
 
-Please note, this RNG is thread safe if used within OpenMP directives,
-i.e., its state will be consistent while called from multiple threads.
-However, the KISS generator does not create random numbers in parallel 
-from multiple sources, but in sequence from a single source. If an
-OpenMP-enabled application heavily relies on random numbers, one should 
-consider employing a dedicated parallel random number generator instead.
+Note that in a multi-threaded program (e.g. using OpenMP directives),
+each thread will have its own random number state. For details of the
+seeding procedure, see the documentation for the @code{RANDOM_SEED}
+intrinsic.
+
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -11184,12 +11177,23 @@ end program
 Restarts or queries the state of the pseudorandom number generator used by 
 @code{RANDOM_NUMBER}.
 
-If @code{RANDOM_SEED} is called without arguments, it is initialized
-to a default state. The example below shows how to initialize the
-random seed with a varying seed in order to ensure a different random
-number sequence for each invocation of the program. Note that setting
-any of the seed values to zero should be avoided as it can result in
-poor quality random numbers being generated.
+If @code{RANDOM_SEED} is called without arguments, it is seeded with
+random data retrieved from the operating system.
+
+As an extension to the Fortran standard, the GFortran
+@code{RANDOM_NUMBER} supports multiple threads. Each thread in a
+multi-threaded program has its own seed.  When @code{RANDOM_SEED} is
+called either without arguments or with the @var{PUT} argument, the
+given seed is copied into a master seed as well as the seed of the
+current thread. When a new thread uses @code{RANDOM_NUMBER} for the
+first time, the seed is copied from the master seed, and forwarded
+@math{N * 2^{512}} steps to guarantee that the random stream does not
+alias any other stream in the system, where @var{N} is the number of
+threads that have used @code{RANDOM_NUMBER} so far during the program
+execution.
+
+Note that setting any of the seed values to zero should be avoided as
+it can result in poor quality random numbers being generated.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -11217,57 +11221,16 @@ the @var{SIZE} argument.
 
 @item @emph{Example}:
 @smallexample
-subroutine init_random_seed()
-  use iso_fortran_env, only: int64
+program test_random_seed
   implicit none
   integer, allocatable :: seed(:)
-  integer :: i, n, un, istat, dt(8), pid
-  integer(int64) :: t
+  integer :: n
 
   call random_seed(size = n)
   allocate(seed(n))
-  ! First try if the OS provides a random number generator
-  open(newunit=un, file="/dev/urandom", access="stream", &
-       form="unformatted", action="read", status="old", iostat=istat)
-  if (istat == 0) then
-     read(un) seed
-     close(un)
-  else
-     ! Fallback to XOR:ing the current time and pid. The PID is
-     ! useful in case one launches multiple instances of the same
-     ! program in parallel.
-     call system_clock(t)
-     if (t == 0) then
-        call date_and_time(values=dt)
-        t = (dt(1) - 1970) * 365_int64 * 24 * 60 * 60 * 1000 &
-             + dt(2) * 31_int64 * 24 * 60 * 60 * 1000 &
-             + dt(3) * 24_int64 * 60 * 60 * 1000 &
-             + dt(5) * 60 * 60 * 1000 &
-             + dt(6) * 60 * 1000 + dt(7) * 1000 &
-             + dt(8)
-     end if
-     pid = getpid()
-     t = ieor(t, int(pid, kind(t)))
-     do i = 1, n
-        seed(i) = lcg(t)
-     end do
-  end if
-  call random_seed(put=seed)
-contains
-  ! This simple PRNG might not be good enough for real work, but is
-  ! sufficient for seeding a better PRNG.
-  function lcg(s)
-    integer :: lcg
-    integer(int64) :: s
-    if (s == 0) then
-       s = 104729
-    else
-       s = mod(s, 4294967296_int64)
-    end if
-    s = mod(s * 279470273_int64, 4294967291_int64)
-    lcg = int(mod(s, int(huge(0), int64)), kind(0))
-  end function lcg
-end subroutine init_random_seed
+  call random_seed(get=seed)
+  write (*, *) seed
+end program test_random_seed
 @end smallexample
 
 @item @emph{See also}:
