@@ -386,11 +386,11 @@ OB_DEF_VAR (s390_vec_insert_u64,        s390_vlvgg,         O3_ELEM,            
 OB_DEF_VAR (s390_vec_insert_b64,        s390_vlvgg,         O3_ELEM,            BT_OV_UV2DI_ULONGLONG_BV2DI_INT)
 OB_DEF_VAR (s390_vec_insert_dbl,        s390_vlvgg_dbl,     O3_ELEM,            BT_OV_V2DF_DBL_V2DF_INT)
 
-B_DEF      (s390_vlvgb,                 vec_insertv16qi,    0,                  B_VX,               0,                  BT_FN_UV16QI_UV16QI_UCHAR_INT)
-B_DEF      (s390_vlvgh,                 vec_insertv8hi,     0,                  B_VX,               0,                  BT_FN_UV8HI_UV8HI_USHORT_INT)
-B_DEF      (s390_vlvgf,                 vec_insertv4si,     0,                  B_VX,               0,                  BT_FN_UV4SI_UV4SI_UINT_INT)
-B_DEF      (s390_vlvgg,                 vec_insertv2di,     0,                  B_VX,               0,                  BT_FN_UV2DI_UV2DI_ULONGLONG_INT)
-B_DEF      (s390_vlvgg_dbl,             vec_insertv2df,     0,                  B_VX | B_INT,       0,                  BT_FN_V2DF_V2DF_DBL_INT)
+B_DEF      (s390_vlvgb,                 vec_insertv16qi,    0,                  B_VX,               O3_ELEM,            BT_FN_UV16QI_UV16QI_UCHAR_INT)
+B_DEF      (s390_vlvgh,                 vec_insertv8hi,     0,                  B_VX,               O3_ELEM,            BT_FN_UV8HI_UV8HI_USHORT_INT)
+B_DEF      (s390_vlvgf,                 vec_insertv4si,     0,                  B_VX,               O3_ELEM,            BT_FN_UV4SI_UV4SI_UINT_INT)
+B_DEF      (s390_vlvgg,                 vec_insertv2di,     0,                  B_VX,               O3_ELEM,            BT_FN_UV2DI_UV2DI_ULONGLONG_INT)
+B_DEF      (s390_vlvgg_dbl,             vec_insertv2df,     0,                  B_VX | B_INT,       O3_ELEM,            BT_FN_V2DF_V2DF_DBL_INT)
 
 OB_DEF     (s390_vec_promote,           s390_vec_promote_s8,s390_vec_promote_dbl,B_VX,              BT_FN_OV4SI_INT_INT)
 OB_DEF_VAR (s390_vec_promote_s8,        s390_vlvgb_noin,    O2_ELEM,            BT_OV_V16QI_SCHAR_INT)                   /* vlvgb */
@@ -424,11 +424,11 @@ OB_DEF_VAR (s390_vec_extract_u64,       s390_vlgvg,         O2_ELEM,            
 OB_DEF_VAR (s390_vec_extract_b64,       s390_vlgvg,         O2_ELEM,            BT_OV_ULONGLONG_BV2DI_INT)
 OB_DEF_VAR (s390_vec_extract_dbl,       s390_vlgvg_dbl,     O2_ELEM,            BT_OV_DBL_V2DF_INT)                      /* vlgvg */
 
-B_DEF      (s390_vlgvb,                 vec_extractv16qi,   0,                  B_VX,               0,                  BT_FN_UCHAR_UV16QI_INT)
-B_DEF      (s390_vlgvh,                 vec_extractv8hi,    0,                  B_VX,               0,                  BT_FN_USHORT_UV8HI_INT)
-B_DEF      (s390_vlgvf,                 vec_extractv4si,    0,                  B_VX,               0,                  BT_FN_UINT_UV4SI_INT)
-B_DEF      (s390_vlgvg,                 vec_extractv2di,    0,                  B_VX,               0,                  BT_FN_ULONGLONG_UV2DI_INT)
-B_DEF      (s390_vlgvg_dbl,             vec_extractv2df,    0,                  B_VX | B_INT,       0,                  BT_FN_DBL_V2DF_INT)
+B_DEF      (s390_vlgvb,                 vec_extractv16qi,   0,                  B_VX,               O2_ELEM,            BT_FN_UCHAR_UV16QI_INT)
+B_DEF      (s390_vlgvh,                 vec_extractv8hi,    0,                  B_VX,               O2_ELEM,            BT_FN_USHORT_UV8HI_INT)
+B_DEF      (s390_vlgvf,                 vec_extractv4si,    0,                  B_VX,               O2_ELEM,            BT_FN_UINT_UV4SI_INT)
+B_DEF      (s390_vlgvg,                 vec_extractv2di,    0,                  B_VX,               O2_ELEM,            BT_FN_ULONGLONG_UV2DI_INT)
+B_DEF      (s390_vlgvg_dbl,             vec_extractv2df,    0,                  B_VX | B_INT,       O2_ELEM,            BT_FN_DBL_V2DF_INT)
 
 OB_DEF     (s390_vec_insert_and_zero,   s390_vec_insert_and_zero_s8,s390_vec_insert_and_zero_dbl,B_VX,BT_FN_OV4SI_INTCONSTPTR)
 OB_DEF_VAR (s390_vec_insert_and_zero_s8,s390_vllezb,        0,                  BT_OV_V16QI_SCHARCONSTPTR)
