@@ -1,3 +1,10 @@
+2016-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/72816
+	* c-decl.c (grokdeclarator): When adding TYPE_DOMAIN for flexible
+	array member through typedef, for orig_qual_indirect == 0 clear
+	orig_qual_type.
+
 2016-08-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/64955

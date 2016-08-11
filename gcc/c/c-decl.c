@@ -6710,6 +6710,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	    type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
 	    TYPE_DOMAIN (type) = build_range_type (sizetype, size_zero_node,
 						   NULL_TREE);
+	    if (orig_qual_indirect == 0)
+	      orig_qual_type = NULL_TREE;
 	  }
 	type = c_build_qualified_type (type, type_quals, orig_qual_type,
 				       orig_qual_indirect);

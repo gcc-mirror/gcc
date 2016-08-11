@@ -5,5 +5,5 @@
 typedef const int A[];
 struct S {
   int a;
-  A b;	/* { dg-error "array size missing" } */
+  A b;
 };
