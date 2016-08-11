@@ -1,3 +1,9 @@
+2016-08-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/72863
+	* vsx.md (vsx_load_<mode>): For P8LE, emit swaps at expand time.
+	(vsx_store_<mode>): Likewise.
+
 2015-08-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (timode_scalar_to_vector_candidate_p): Allow

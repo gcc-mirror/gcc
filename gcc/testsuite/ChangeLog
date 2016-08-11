@@ -1,3 +1,8 @@
+2016-08-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/72863
+	* gcc.target/powerpc/pr72863.c: New test.
+
 2016-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/cpp1z/constexpr-lambda6.C: Remove dg-do run.
