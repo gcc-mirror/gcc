@@ -1,7 +1,7 @@
 2016-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/72816
-	* gcc.dg/pr72816.c: New test.
+	* gcc.dg/pr72816.c: Remove dg-error.
 
 2016-08-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
