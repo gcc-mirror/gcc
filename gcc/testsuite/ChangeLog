@@ -1,3 +1,8 @@
+2016-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/72816
+	* gcc.dg/pr72816.c: New test.
+
 2016-08-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR tree-optimization/71083
