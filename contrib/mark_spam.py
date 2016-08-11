@@ -67,6 +67,18 @@ def mark_as_spam(id, api_key, verbose):
         print(r)
         print(r.text)
 
+    # 4) mark all attachments as spam
+    r = requests.get(u + '/attachment')
+    response = json.loads(r.text)
+    attachments = response['bugs'][str(id)]
+    for a in attachments:
+        attachment_id = a['id']
+        url = '%sbug/attachment/%d' % (base_url, attachment_id)
+        r = requests.put(url, json = {'ids': [attachment_id], 'summary': 'spam', 'comment': 'spam', 'is_obsolete': True, 'api_key': api_key})
+        if verbose:
+            print(r)
+            print(r.text)
+
 parser = argparse.ArgumentParser(description='Mark Bugzilla issues as spam.')
 parser.add_argument('api_key', help = 'API key')
 parser.add_argument('range', help = 'Range of IDs, e.g. 10-23,24,25,27')
