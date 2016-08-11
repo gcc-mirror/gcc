@@ -2862,9 +2862,12 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
   if (MEM_P (dst))
     {
-      /* Check for store.  Only support store from register or standard
-	 SSE constants.  Memory must be aligned or unaligned store is
-	 optimal.  */
+      /* Check for store.  Memory must be aligned or unaligned store
+	 is optimal.  Only support store from register, standard SSE
+	 constant or CONST_WIDE_INT generated from piecewise store.
+
+	 ??? Verify performance impact before enabling CONST_INT for
+	 __int128 store.  */
       if (misaligned_operand (dst, TImode)
 	  && !TARGET_SSE_UNALIGNED_STORE_OPTIMAL)
 	return false;
@@ -2875,6 +2878,7 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
 	  return false;
 
 	case REG:
+	case CONST_WIDE_INT:
 	  return true;
 
 	case CONST_INT:
@@ -3866,6 +3870,19 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
 
     case MEM:
       PUT_MODE (src, V1TImode);
+      break;
+
+    case CONST_WIDE_INT:
+      if (NONDEBUG_INSN_P (insn))
+	{
+	  /* Since there are no instructions to store 128-bit constant,
+	     temporary register usage is required.  */
+	  rtx tmp = gen_reg_rtx (V1TImode);
+	  src = gen_rtx_CONST_VECTOR (V1TImode, gen_rtvec (1, src));
+	  src = validize_mem (force_const_mem (V1TImode, src));
+	  emit_conversion_insns (gen_rtx_SET (dst, tmp), insn);
+	  dst = tmp;
+	}
       break;
 
     case CONST_INT:

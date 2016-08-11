@@ -1,5 +1,11 @@
 2015-08-11  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (timode_scalar_to_vector_candidate_p): Allow
+	TImode CONST_WIDE_INT store.
+	(timode_scalar_chain::convert_insn): Handle CONST_WIDE_INT store.
+
+2015-08-11  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.h (MOVE_MAX_PIECES): Use TImode in 64-bit
 	mode if unaligned SSE load and store are optimal.
 
