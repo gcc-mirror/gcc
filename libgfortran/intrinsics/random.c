@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <gthr.h>
 #include <string.h>
+#include <stdlib.h>
 
 /* For getosrandom.  */
 #ifdef HAVE_SYS_TYPES_H
