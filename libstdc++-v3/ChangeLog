@@ -1,3 +1,18 @@
+2016-08-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2758.
+	* include/bits/basic_string.h
+	(append(__sv_type, size_type, size_type)): Turn into a template,
+	change parameter type, constrain, add a conversion to __sv_type
+	from the dependent parameter type.
+	(assign(__sv_type, size_type, size_type)): Likewise.
+	(insert(size_type, __sv_type, size_type, size_type)): Likewise.
+	(replace(size_type, size_type, __sv_type, size_type, size_type)):
+	Likewise.
+	(compare(size_type, size_type,__sv_type, size_type, size_type)):
+	Likewise.
+	* testsuite/21_strings/basic_string/lwg2758.cc: New.
+
 2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Update status table.

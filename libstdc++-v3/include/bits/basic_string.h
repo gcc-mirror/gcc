@@ -1227,9 +1227,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param __n   The number of characters to append from the string_view.
        *  @return  Reference to this string.
        */
-      basic_string& append(__sv_type __sv,
+      template <typename _Tp,
+		enable_if_t<is_convertible_v<const _Tp&, __sv_type>,
+			    bool> = true>
+      basic_string& append(const _Tp& __svt,
 			   size_type __pos, size_type __n = npos)
       {
+	__sv_type __sv = __svt;
 	return _M_append(__sv.data()
 			 + __sv._M_check(__pos, "basic_string::append"),
 			 __sv._M_limit(__pos, __n));
@@ -1392,10 +1396,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param __n  The number of characters to assign.
        *  @return  Reference to this string.
        */
+      template <typename _Tp,
+		enable_if_t<is_convertible_v<const _Tp&, __sv_type>,
+			    bool> = true>
       basic_string&
-      assign(__sv_type __sv,
+      assign(const _Tp& __svt,
 	     size_type __pos, size_type __n = npos)
       {
+	__sv_type __sv = __svt;
 	return _M_replace(size_type(0), this->size(), __sv.data()
 			  + __sv._M_check(__pos, "basic_string::assign"),
 			  __sv._M_limit(__pos, __n));
@@ -1652,9 +1660,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
       */
-      basic_string& insert(size_type __pos1, __sv_type __sv,
+      template <typename _Tp,
+		enable_if_t<is_convertible_v<const _Tp&, __sv_type>,
+			    bool> = true>
+      basic_string& insert(size_type __pos1, const _Tp& __svt,
 			   size_type __pos2, size_type __n = npos)
       {
+	__sv_type __sv = __svt;
 	return this->replace(__pos1, size_type(0), __sv.data()
 			     + __sv._M_check(__pos2, "basic_string::insert"),
 			     __sv._M_limit(__pos2, __n));
@@ -2071,10 +2083,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param __n2    The number of characters to insert.
        *  @return  Reference to this string.
       */
+      template <typename _Tp,
+		enable_if_t<is_convertible_v<const _Tp&, __sv_type>,
+			    bool> = true>
       basic_string& replace(size_type __pos1, size_type __n1,
-			    __sv_type __sv,
+			    const _Tp& __svt,
 			    size_type __pos2, size_type __n2 = npos)
       {
+	__sv_type __sv = __svt;
 	return this->replace(__pos1, __n1, __sv.data()
 			     + __sv._M_check(__pos2, "basic_string::replace"),
 			     __sv._M_limit(__pos2, __n2));
@@ -2720,10 +2736,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param __n2  The number of characters to compare.
        *  @return  Integer < 0, 0, or > 0.
        */
+      template <typename _Tp,
+		enable_if_t<is_convertible_v<const _Tp&, __sv_type>,
+			    bool> = true>
       int compare(size_type __pos1, size_type __n1,
-		  __sv_type __sv,
+		  const _Tp& __svt,
 		  size_type __pos2, size_type __n2 = npos) const
       {
+	__sv_type __sv = __svt;
 	return __sv_type(*this)
 	  .substr(__pos1, __n1).compare(__sv.substr(__pos2, __n2));
       }
