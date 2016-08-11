@@ -1,5 +1,8 @@
 2016-08-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/72868
+	* constexpr.c (label_matches): Handle case range expressions.
+
 	Backported from mainline
 	2016-08-11  Jakub Jelinek  <jakub@redhat.com>
 
