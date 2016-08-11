@@ -3448,6 +3448,12 @@ label_matches (tree *jump_target, tree_stmt_iterator i,
 	{
 	  if (!CASE_LOW (stmt))
 	    default_label = i;
+	  else if (CASE_HIGH (stmt))
+	    {
+	      if (tree_int_cst_le (CASE_LOW (stmt), *jump_target)
+		  && tree_int_cst_le (*jump_target, CASE_HIGH (stmt)))
+		return true;
+	    }
 	  else if (tree_int_cst_equal (*jump_target, CASE_LOW (stmt)))
 	    return true;
 	}
