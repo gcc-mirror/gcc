@@ -42,6 +42,9 @@ selftest::run_tests ()
   /* Run all the tests, in hand-coded order of (approximate) dependencies:
      run the tests for lowest-level code first.  */
 
+  /* Sanity-check for selftests themselves.  */
+  selftest_c_tests ();
+
   /* Low-level data structures.  */
   bitmap_c_tests ();
   et_forest_c_tests ();

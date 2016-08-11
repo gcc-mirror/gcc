@@ -88,4 +88,32 @@ selftest::assert_streq (const location &loc,
 }
 
 
+/* Selftests for the selftest system itself.  */
+
+namespace selftest {
+
+/* Sanity-check the ASSERT_ macros with various passing cases.  */
+
+static void
+test_assertions ()
+{
+  ASSERT_TRUE (true);
+  ASSERT_FALSE (false);
+  ASSERT_EQ (1, 1);
+  ASSERT_EQ_AT (SELFTEST_LOCATION, 1, 1);
+  ASSERT_NE (1, 2);
+  ASSERT_STREQ ("test", "test");
+  ASSERT_STREQ_AT (SELFTEST_LOCATION, "test", "test");
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+selftest_c_tests ()
+{
+  test_assertions ();
+}
+
+} // namespace selftest
+
 #endif /* #if CHECKING_P */
