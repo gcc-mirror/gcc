@@ -1,6 +1,14 @@
 2016-08-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
+	2016-08-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390-builtins.def: Mark last operand of s390_vlvg*
+	and s390_vlgv* builtins as element selector.
+
+2016-08-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
 	2016-07-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_expand_vec_init): Force initializer
