@@ -1,3 +1,7 @@
+2016-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/cpp1z/constexpr-lambda6.C: Remove dg-do run.
+
 2015-08-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pieces-strcpy-1.c: New test.

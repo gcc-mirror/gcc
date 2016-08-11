@@ -1,5 +1,4 @@
 // Testcase from P0170R1
-// { dg-do run }
 // { dg-options -std=c++1z }
 
 auto monoid = [](auto v) { return [=] { return v; }; };
