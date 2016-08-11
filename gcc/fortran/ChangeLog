@@ -1,3 +1,10 @@
+2016-08-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backport from trunk:
+	PR fortran/72698
+	* trans-stmt.c (gfc_trans_allocate): Prevent generating code for
+	copy of zero sized string and with it an ICE.
+
 2016-08-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
