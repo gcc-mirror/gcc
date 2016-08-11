@@ -1,3 +1,16 @@
+2016-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/72816
+	* gcc.dg/pr72816.c: Remove dg-error.
+
+	2016-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/72816
+	* gcc.dg/pr72816.c: New test.
+
 2016-08-11  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk:
