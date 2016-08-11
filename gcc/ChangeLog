@@ -1,5 +1,26 @@
 2016-08-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390-builtin-types.def: Add INT128 types.
+	* config/s390/s390-builtins.def: Add INT128 variants for the add
+	sub low-level builtins dealing with TImode.
+	* config/s390/s390.c (s390_expand_builtin): Allow mode conversions
+	via subreg when expanding a builtin.
+	* config/s390/s390.md: Remove UNSPEC_VEC_ADDC_U128,
+	UNSPEC_VEC_SUB_U128, and UNSPEC_VEC_SUBC_U128 constants.
+	Fix comment.
+	* config/s390/vecintrin.h: Adjust builtin names accordingly.
+	* config/s390/vx-builtins.md ("vec_add_u128"): Remove expander.
+	("vec_addc<mode>", "vec_addc_u128"): Merge to
+	"vacc<bhfgq>_<mode>".
+	("vec_adde_u128"): Rename to "vacq". Change mode to TImode.
+	("vec_addec_u128"): Rename to "vacccq". Change mode to TImode.
+	("vec_subc<mode>", "vec_subc_u128"): Merge to
+	"vscbi<bhfgq>_<mode>".
+	("vec_sube_u128"): Rename to "vsbiq". Change mode to TImode.
+	("vec_subec_u128"): Rename to "vsbcbiq". Change mode to TImode.
+
+2016-08-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390-builtins.def: Mark last operand of s390_vlvg*
 
 2016-08-11  Bin Cheng  <bin.cheng@arm.com>
