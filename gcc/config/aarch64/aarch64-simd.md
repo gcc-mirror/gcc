@@ -2573,7 +2573,6 @@
   "TARGET_SIMD"
 {
   rtx mask = gen_reg_rtx (<V_cmp_result>mode);
-  enum rtx_code code = GET_CODE (operands[3]);
 
   emit_insn (gen_vec_cmp<mode><v_cmp_result> (mask, operands[3],
 					      operands[4], operands[5]));
@@ -2594,7 +2593,6 @@
   "TARGET_SIMD"
 {
   rtx mask = gen_reg_rtx (<V_cmp_result>mode);
-  enum rtx_code code = GET_CODE (operands[3]);
 
   emit_insn (gen_vec_cmp<mode><v_cmp_result> (mask, operands[3],
 					      operands[4], operands[5]));
@@ -2616,7 +2614,6 @@
   "TARGET_SIMD"
 {
   rtx mask = gen_reg_rtx (<MODE>mode);
-  enum rtx_code code = GET_CODE (operands[3]);
 
   emit_insn (gen_vec_cmp<mode><mode> (mask, operands[3],
 				      operands[4], operands[5]));
@@ -2636,7 +2633,6 @@
   "TARGET_SIMD"
 {
   rtx mask = gen_reg_rtx (<V_cmp_result>mode);
-  enum rtx_code code = GET_CODE (operands[3]);
 
   emit_insn (gen_vec_cmp<v_cmp_mixed><v_cmp_mixed> (
 						  mask, operands[3],

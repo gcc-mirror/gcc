@@ -1,6 +1,13 @@
 2016-08-11  Bin Cheng  <bin.cheng@arm.com>
 
-	* config/aarch64/aarch64-simd.md (vec_cmp<mode><v_cmp_result>: Init
+	* config/aarch64/aarch64-simd.md (vcond<mode><mode>): Delete
+	unused declaration.
+	(vcond<v_cmp_mixed><mode>): Ditto.
+	(vcondu<mode><mode>, vcondu<mode><v_cmp_mixed>): Ditto.
+
+2016-08-11  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_cmp<mode><v_cmp_result>): Init
 	variable explicitly, also assert on it before use.
 
 2016-08-11  Richard Biener  <rguenther@suse.de>
