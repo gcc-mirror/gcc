@@ -1,3 +1,7 @@
+2016-08-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust.
+
 2016-08-11  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/pr71680.c: New.
