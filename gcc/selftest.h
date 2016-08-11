@@ -85,6 +85,7 @@ extern void hash_set_tests_c_tests ();
 extern void input_c_tests ();
 extern void pretty_print_c_tests ();
 extern void rtl_tests_c_tests ();
+extern void selftest_c_tests ();
 extern void spellcheck_c_tests ();
 extern void spellcheck_tree_c_tests ();
 extern void sreal_c_tests ();

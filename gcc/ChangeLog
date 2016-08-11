@@ -1,3 +1,10 @@
+2016-08-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest-run-tests.c (selftest::run_tests): Call selftest_c_tests.
+	* selftest.c (selftest::test_assertions): New function.
+	(selftest::selftest_c_tests): New function.
+	* selftest.h (selftest::selftest_c_tests): New declaration.
+
 2016-08-11  Richard Biener  <rguenther@suse.de>
 	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
