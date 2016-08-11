@@ -1950,8 +1950,18 @@ typedef struct ix86_args {
 
 /* MOVE_MAX_PIECES is the number of bytes at a time which we can
    move efficiently, as opposed to  MOVE_MAX which is the maximum
-   number of bytes we can move with a single instruction.  */
-#define MOVE_MAX_PIECES UNITS_PER_WORD
+   number of bytes we can move with a single instruction.
+
+   ??? We should use TImode in 32-bit mode and use OImode or XImode
+   if they are available.  But since by_pieces_ninsns determines the
+   widest mode with MAX_FIXED_MODE_SIZE, we can only use TImode in
+   64-bit mode.  */
+#define MOVE_MAX_PIECES \
+  ((TARGET_64BIT \
+    && TARGET_SSE2 \
+    && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
+    && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+   ? GET_MODE_SIZE (TImode) : UNITS_PER_WORD)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a movmem or libcall instead.
