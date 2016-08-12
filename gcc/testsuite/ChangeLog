@@ -1,3 +1,15 @@
+2016-08-12  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/49366
+	* g++.dg/debug/dwarf2/template-params-12.H: New.
+	* g++.dg/debug/dwarf2/template-params-12f.C: New.
+	* g++.dg/debug/dwarf2/template-params-12g.C: New.
+	* g++.dg/debug/dwarf2/template-params-12n.C: New.
+	* g++.dg/debug/dwarf2/template-params-12s.C: New.
+	* g++.dg/debug/dwarf2/template-params-12u.C: New.
+	* g++.dg/debug/dwarf2/template-params-12v.C: New.
+	* g++.dg/debug/dwarf2/template-params-12w.C: New.
+
 2016-08-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/72863

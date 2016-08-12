@@ -16142,6 +16142,89 @@ loc_list_from_tree_1 (tree loc, int want_address,
     case COMPLEX_CST:
       if ((ret = cst_pool_loc_descr (loc)))
 	have_address = 1;
+      else if (TREE_CODE (loc) == CONSTRUCTOR)
+	{
+	  tree type = TREE_TYPE (loc);
+	  unsigned HOST_WIDE_INT size = int_size_in_bytes (type);
+	  unsigned HOST_WIDE_INT offset = 0;
+	  unsigned HOST_WIDE_INT cnt;
+	  constructor_elt *ce;
+
+	  if (TREE_CODE (type) == RECORD_TYPE)
+	    {
+	      /* This is very limited, but it's enough to output
+		 pointers to member functions, as long as the
+		 referenced function is defined in the current
+		 translation unit.  */
+	      FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (loc), cnt, ce)
+		{
+		  tree val = ce->value;
+
+		  tree field = ce->index;
+
+		  if (val)
+		    STRIP_NOPS (val);
+
+		  if (!field || DECL_BIT_FIELD (field))
+		    {
+		      expansion_failed (loc, NULL_RTX,
+					"bitfield in record type constructor");
+		      size = offset = (unsigned HOST_WIDE_INT)-1;
+		      ret = NULL;
+		      break;
+		    }
+
+		  HOST_WIDE_INT fieldsize = tree_to_shwi (DECL_SIZE_UNIT (field));
+		  unsigned HOST_WIDE_INT pos = int_byte_position (field);
+		  gcc_assert (pos + fieldsize <= size);
+		  if (pos < offset)
+		    {
+		      expansion_failed (loc, NULL_RTX,
+					"out-of-order fields in record constructor");
+		      size = offset = (unsigned HOST_WIDE_INT)-1;
+		      ret = NULL;
+		      break;
+		    }
+		  if (pos > offset)
+		    {
+		      ret1 = new_loc_descr (DW_OP_piece, pos - offset, 0);
+		      add_loc_descr (&ret, ret1);
+		      offset = pos;
+		    }
+		  if (val && fieldsize != 0)
+		    {
+		      ret1 = loc_descriptor_from_tree (val, want_address, context);
+		      if (!ret1)
+			{
+			  expansion_failed (loc, NULL_RTX,
+					    "unsupported expression in field");
+			  size = offset = (unsigned HOST_WIDE_INT)-1;
+			  ret = NULL;
+			  break;
+			}
+		      add_loc_descr (&ret, ret1);
+		    }
+		  if (fieldsize)
+		    {
+		      ret1 = new_loc_descr (DW_OP_piece, fieldsize, 0);
+		      add_loc_descr (&ret, ret1);
+		      offset = pos + fieldsize;
+		    }
+		}
+
+	      if (offset != size)
+		{
+		  ret1 = new_loc_descr (DW_OP_piece, size - offset, 0);
+		  add_loc_descr (&ret, ret1);
+		  offset = size;
+		}
+
+	      have_address = !!want_address;
+	    }
+	  else
+	    expansion_failed (loc, NULL_RTX,
+			      "constructor of non-record type");
+	}
       else
       /* We can construct small constants here using int_loc_descriptor.  */
 	expansion_failed (loc, NULL_RTX,
@@ -24177,7 +24260,15 @@ gen_remaining_tmpl_value_param_die_attribute (void)
       FOR_EACH_VEC_ELT (*tmpl_value_parm_die_table, i, e)
 	{
 	  if (!tree_add_const_value_attribute (e->die, e->arg))
-	    (*tmpl_value_parm_die_table)[j++] = *e;
+	    {
+	      dw_loc_descr_ref loc = NULL;
+	      if (dwarf_version >= 5 || !dwarf_strict)
+		loc = loc_descriptor_from_tree (e->arg, 2, NULL);
+	      if (loc)
+		add_AT_loc (e->die, DW_AT_location, loc);
+	      else
+		(*tmpl_value_parm_die_table)[j++] = *e;
+	    }
 	}
       tmpl_value_parm_die_table->truncate (j);
     }
