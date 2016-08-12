@@ -1,3 +1,10 @@
+2016-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71512
+	* g++.dg/ubsan/pr71512.C: New test.
+	* c-c++-common/ubsan/pr71512-1.c: New test.
+	* c-c++-common/ubsan/pr71512-2.c: New test.
+
 2016-08-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vec-init-1.c: New tests to test various
