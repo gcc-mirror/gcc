@@ -1,3 +1,11 @@
+2016-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/71008
+	* gcc.target/i386/avx512f-vprord-1.c: Scan also for vprold.
+	* gcc.target/i386/avx512f-vprorq-1.c: Scan also for vprolq.
+	* gcc.target/i386/avx512vl-vprord-1.c: Scan also for vprold.
+	* gcc.target/i386/avx512vl-vprorq-1.c: Scan also for vprolq.
+
 2016-08-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57326
