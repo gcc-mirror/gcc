@@ -1,5 +1,8 @@
 2016-08-12  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/55641
+	* g++.dg/debug/dwarf2/ref-1.C: New.
+
 	PR debug/49366
 	* g++.dg/debug/dwarf2/template-params-12.H: New.
 	* g++.dg/debug/dwarf2/template-params-12f.C: New.
