@@ -1,3 +1,12 @@
+2016-08-12  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/49366
+	* dwarf2out.c (loc_list_from_tree_1): Expand some CONSTRUCTORs
+	in DW_OP_pieces, just enough to handle pointers to member
+	functions.
+	(gen_remaining_tmpl_value_param_die_attribute): Use a location
+	expression on DWARFv5 if a constant value doesn't work.
+
 2016-08-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftest-run-tests.c (selftest::run_tests): Call selftest_c_tests.
