@@ -1,5 +1,27 @@
 2016-08-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/72851
+	* tree-ssa-propagate.c: Include cfganal.h.  Rewrite block and stmt
+	worklists to use bitmaps indexed in execution order.
+	(executable_blocks, cfg_blocks_num, cfg_blocks_tail, cfg_blocks_head,
+	bb_in_list, interesting_ssa_edges, varying_ssa_edges): Remove.
+	(cfg_blocks): Make a bitmap.
+	(bb_to_cfg_order, cfg_order_to_bb, ssa_edge_worklist, uid_to_stmt):
+	New globals.
+	(cfg_blocks_empty_p): Adjust.
+	(cfg_blocks_add): Likewise.
+	(cfg_blocks_get): Likewise.
+	(add_ssa_edge): Likewise.
+	(add_control_edge): Likewise.
+	(simulate_stmt): Likewise.
+	(process_ssa_edge_worklist): Likewise.
+	(simulate_block): Likewise.
+	(ssa_prop_init): Compute PRE order and stmt UIDs.
+	(ssa_prop_fini): Adjust.
+	(ssa_propagate): Adjust.
+
+2016-08-12  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (vrp_visit_phi_node): Allow a last iteration if
 	the currently executable edges have fixed ranges.  Always
 	go through update_value_range.
