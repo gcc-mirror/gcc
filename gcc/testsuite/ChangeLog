@@ -1,3 +1,11 @@
+2016-08-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-init-1.c: New tests to test various
+	vector initialization options.
+	* gcc.target/powerpc/vec-init-2.c: Likewise.
+	* gcc.target/powerpc/vec-init-3.c: New test to make sure MTVSRDD
+	is generated on ISA 3.0.
+
 2016-08-12  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR middle-end/71654
