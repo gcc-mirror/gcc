@@ -5416,7 +5416,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   optab optab, reduc_optab;
   tree new_temp = NULL_TREE;
   gimple *def_stmt;
-  enum vect_def_type dt;
+  enum vect_def_type dt, cond_reduc_dt = vect_unknown_def_type;
   gphi *new_phi = NULL;
   tree scalar_type;
   bool is_simple_use;
@@ -5447,7 +5447,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   tree def0, def1, tem, op0, op1 = NULL_TREE;
   bool first_p = true;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
-  gimple *cond_expr_induction_def_stmt = NULL;
+  tree cond_reduc_val = NULL_TREE, const_cond_cmp = NULL_TREE;
 
   /* In case of reduction chain we switch to the first stmt in the chain, but
      we don't update STMT_INFO, since only the last stmt is marked as reduction
@@ -5597,8 +5597,18 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
           reduc_index = i;
         }
 
-      if (i == 1 && code == COND_EXPR && dt == vect_induction_def)
-	cond_expr_induction_def_stmt = def_stmt;
+      if (i == 1 && code == COND_EXPR)
+	{
+	  /* Record how value of COND_EXPR is defined.  */
+	  if (dt == vect_constant_def)
+	    {
+	      cond_reduc_dt = dt;
+	      cond_reduc_val = ops[i];
+	    }
+	  if (dt == vect_induction_def && def_stmt != NULL
+	      && is_nonwrapping_integer_induction (def_stmt, loop))
+	    cond_reduc_dt = dt;
+	}
     }
 
   is_simple_use = vect_is_simple_use (ops[reduc_index], loop_vinfo,
@@ -5630,18 +5640,49 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 					  !nested_cycle, &dummy, false,
 					  &v_reduc_type);
 
+  STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = v_reduc_type;
   /* If we have a condition reduction, see if we can simplify it further.  */
-  if (v_reduc_type == COND_REDUCTION
-      && cond_expr_induction_def_stmt != NULL
-      && is_nonwrapping_integer_induction (cond_expr_induction_def_stmt, loop))
+  if (v_reduc_type == COND_REDUCTION)
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "condition expression based on integer induction.\n");
-      STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = INTEGER_INDUC_COND_REDUCTION;
+      if (cond_reduc_dt == vect_induction_def)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "condition expression based on "
+			     "integer induction.\n");
+	  STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+	    = INTEGER_INDUC_COND_REDUCTION;
+	}
+
+      if (cond_reduc_dt == vect_constant_def)
+	{
+	  enum vect_def_type cond_initial_dt;
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (ops[reduc_index]);
+	  tree cond_initial_val
+	    = PHI_ARG_DEF_FROM_EDGE (def_stmt, loop_preheader_edge (loop));
+
+	  gcc_assert (cond_reduc_val != NULL_TREE);
+	  vect_is_simple_use (cond_initial_val, loop_vinfo,
+			      &def_stmt, &cond_initial_dt);
+	  if (cond_initial_dt == vect_constant_def
+	      && types_compatible_p (TREE_TYPE (cond_initial_val),
+				     TREE_TYPE (cond_reduc_val)))
+	    {
+	      tree e = fold_build2 (LE_EXPR, boolean_type_node,
+				    cond_initial_val, cond_reduc_val);
+	      if (e && (integer_onep (e) || integer_zerop (e)))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_NOTE, vect_location,
+				     "condition expression based on "
+				     "compile time constant.\n");
+		  const_cond_cmp = e;
+		  STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		    = CONST_COND_REDUCTION;
+		}
+	    }
+	}
     }
-  else
-   STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = v_reduc_type;
 
   if (orig_stmt)
     gcc_assert (tmp == orig_stmt
@@ -5787,8 +5828,15 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
       /* For simple condition reductions, replace with the actual expression
 	 we want to base our reduction around.  */
-      if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-	  == INTEGER_INDUC_COND_REDUCTION)
+      if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == CONST_COND_REDUCTION)
+	{
+	  gcc_assert (const_cond_cmp != NULL_TREE);
+	  gcc_assert (integer_onep (const_cond_cmp)
+		      || integer_zerop (const_cond_cmp));
+	  orig_code = integer_onep (const_cond_cmp) ? MAX_EXPR : MIN_EXPR;
+	}
+      else if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		 == INTEGER_INDUC_COND_REDUCTION)
 	orig_code = MAX_EXPR;
     }
 
@@ -5810,9 +5858,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
   epilog_reduc_code = ERROR_MARK;
 
-  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == TREE_CODE_REDUCTION
-      || STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-		== INTEGER_INDUC_COND_REDUCTION)
+  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) != COND_REDUCTION)
     {
       if (reduction_code_for_scalar_code (orig_code, &epilog_reduc_code))
 	{
@@ -5839,8 +5885,10 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	     generated in the epilog using multiple expressions.  This does not
 	     work for condition reductions.  */
 	  if (epilog_reduc_code == ERROR_MARK
-	      && STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-			== INTEGER_INDUC_COND_REDUCTION)
+	      && (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+			== INTEGER_INDUC_COND_REDUCTION
+		  || STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+			== CONST_COND_REDUCTION))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5881,9 +5929,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     }
 
   if ((double_reduc
-       || STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION
-       || STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-		== INTEGER_INDUC_COND_REDUCTION)
+       || STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) != TREE_CODE_REDUCTION)
       && ncopies > 1)
     {
       if (dump_enabled_p ())

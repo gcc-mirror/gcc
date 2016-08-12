@@ -1,3 +1,11 @@
+2016-08-12  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/69848
+	* tree-vectorizer.h (enum vect_def_type): New condition reduction
+	type CONST_COND_REDUCTION.
+	* tree-vect-loop.c (vectorizable_reduction): Support new condition
+	reudction type CONST_COND_REDUCTION.
+
 2016-08-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57326
