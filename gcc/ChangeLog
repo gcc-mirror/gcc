@@ -1,3 +1,9 @@
+2016-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (avx512dq_vextract<shuffletype>64x2_1_maskm,
+	vec_extract_hi_<mode>_mask, vec_extract_lo_<mode>_mask,
+	vec_extract_hi_<mode>_mask): Use Yk constraint instead of k.
+
 2016-08-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost):
