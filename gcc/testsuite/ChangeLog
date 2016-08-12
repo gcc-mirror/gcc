@@ -1,3 +1,11 @@
+2016-08-12  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR middle-end/71654
+	* gcc.dg/c-c++-common/pr71654.c: New test.
+	* gcc.dg/tree-ssa/vrp23: Add -fno-tree-forwprop to
+	dg-options.
+	* gcc.dg/tree-ssa/vrp24: Likewise.
+
 2016-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/67410
