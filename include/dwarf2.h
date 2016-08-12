@@ -342,6 +342,14 @@ enum dwarf_macinfo_record_type
     DW_MACINFO_vendor_ext = 255
   };
 
+/* DW_TAG_GNU_defaulted/DW_TAG_defaulted attributes.  */
+enum dwarf_defaulted_attribute
+  {
+    DW_DEFAULTED_no = 0x00,
+    DW_DEFAULTED_in_class = 0x01,
+    DW_DEFAULTED_out_of_class = 0x02
+  };
+
 /* Names and codes for new style macro information.  */
 enum dwarf_macro_record_type
   {

@@ -1,5 +1,18 @@
 2016-08-12  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/63240
+	* langhooks-def.h
+	(LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P): Const_tree-ify.
+	(LANG_HOOKS_FUNCTION_DECL_DELETED_P): Likewise.
+	(LANG_HOOKS_FUNCTION_DECL_DEFAULTED): Set default.
+	(LANG_HOOKS_DECLS): Add it.
+	* langhooks.h (struct lang_hooks_for_decls): Add
+	function_decl_defaulted.  Const_tree-ify
+	function_decl_explicit_p and function_decl_deleted_p.
+	* dwarf2out.c (gen_subprogram_die): Add DW_AT_defaulted
+	attribute.  Add DW_AT_deleted instead of DW_AT_GNU_deleted,
+	also at strict DWARF v5.
+
 	PR debug/55641
 	* dwarf2out.c (decl_quals): Don't map TREE_READONLY to
 	TYPE_QUAL_CONST in reference-typed decls.

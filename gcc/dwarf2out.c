@@ -20477,6 +20477,24 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
 				    TYPE_UNQUALIFIED, false, context_die);
 	    }
+
+	  /* When we process the method declaration, we haven't seen
+	     the out-of-class defaulted definition yet, so we have to
+	     recheck now.  */
+	  int defaulted = lang_hooks.decls.function_decl_defaulted (decl);
+	  if (defaulted && (dwarf_version >= 5 || ! dwarf_strict)
+	      && !get_AT (subr_die, DW_AT_defaulted))
+	    switch (defaulted)
+	      {
+	      case 2:
+		add_AT_unsigned (subr_die, DW_AT_defaulted,
+				 DW_DEFAULTED_out_of_class);
+		break;
+
+	      case 1: /* This must have been handled before.  */
+	      default:
+		gcc_unreachable ();
+	      }
 	}
     }
   /* Create a fresh DIE for anything else.  */
@@ -20524,10 +20542,35 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    add_AT_flag (subr_die, DW_AT_explicit, 1);
 
 	  /* If this is a C++11 deleted special function member then generate
-	     a DW_AT_GNU_deleted attribute.  */
+	     a DW_AT_deleted attribute.  */
 	  if (lang_hooks.decls.function_decl_deleted_p (decl)
-	      && (! dwarf_strict))
-	    add_AT_flag (subr_die, DW_AT_GNU_deleted, 1);
+	      && (dwarf_version >= 5 || ! dwarf_strict))
+	    add_AT_flag (subr_die, DW_AT_deleted, 1);
+
+	  /* If this is a C++11 defaulted special function member then
+	     generate a DW_AT_GNU_defaulted attribute.  */
+	  int defaulted = lang_hooks.decls.function_decl_defaulted (decl);
+	  if (defaulted && (dwarf_version >= 5 || ! dwarf_strict))
+	    switch (defaulted)
+	      {
+	      case 1:
+		add_AT_unsigned (subr_die, DW_AT_defaulted,
+				 DW_DEFAULTED_in_class);
+		break;
+
+		/* It is likely that this will never hit, since we
+		   don't have the out-of-class definition yet when we
+		   process the class definition and the method
+		   declaration.  We recheck elsewhere, but leave it
+		   here just in case.  */
+	      case 2:
+		add_AT_unsigned (subr_die, DW_AT_defaulted,
+				 DW_DEFAULTED_out_of_class);
+		break;
+
+	      default:
+		gcc_unreachable ();
+	      }
 	}
     }
   /* Tag abstract instances with DW_AT_inline.  */
