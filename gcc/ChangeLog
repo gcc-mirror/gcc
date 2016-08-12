@@ -1,3 +1,8 @@
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* tree-complex.c (expand_complex_division): Add missing break.
+
 2016-08-12  Richard Biener  <rguenther@suse.de>
 
 	* passes.c (execute_todo): Do not push/pop TV_TODO.
