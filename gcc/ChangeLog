@@ -1,5 +1,9 @@
 2016-08-12  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/55641
+	* dwarf2out.c (decl_quals): Don't map TREE_READONLY to
+	TYPE_QUAL_CONST in reference-typed decls.
+
 	PR debug/49366
 	* dwarf2out.c (loc_list_from_tree_1): Expand some CONSTRUCTORs
 	in DW_OP_pieces, just enough to handle pointers to member
