@@ -6957,7 +6957,7 @@
 	    (parallel [(match_operand 2  "const_0_to_7_operand")
 	      (match_operand 3  "const_0_to_7_operand")]))
 	  (match_operand:<ssequartermode> 4 "memory_operand" "0")
-	  (match_operand:QI 5 "register_operand" "k")))]
+	  (match_operand:QI 5 "register_operand" "Yk")))]
   "TARGET_AVX512DQ
    && (INTVAL (operands[2]) % 2 == 0)
    && (INTVAL (operands[2]) == INTVAL (operands[3]) - 1)
@@ -7171,7 +7171,7 @@
 	      (const_int 12) (const_int 13)
 	      (const_int 14) (const_int 15)]))
 	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
-	  (match_operand:QI 3 "register_operand" "k")))]
+	  (match_operand:QI 3 "register_operand" "Yk")))]
   "TARGET_AVX512DQ
    && rtx_equal_p (operands[2], operands[0])"
   "vextract<shuffletype>32x8\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}"
@@ -7377,7 +7377,7 @@
 	    (parallel [(const_int 0) (const_int 1)
 		      (const_int 2) (const_int 3)]))
 	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
-	  (match_operand:QI 3 "register_operand" "k")))]
+	  (match_operand:QI 3 "register_operand" "Yk")))]
   "TARGET_AVX512VL && TARGET_AVX512F
    && rtx_equal_p (operands[2], operands[0])"
   "vextract<shuffletype>32x4\t{$0x0, %1, %0%{%3%}|%0%{%3%}, %1, 0x0}"
@@ -7395,7 +7395,7 @@
 	    (parallel [(const_int 4) (const_int 5)
 		      (const_int 6) (const_int 7)]))
 	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
-	  (match_operand:<ssehalfvecmode> 3 "register_operand" "k")))]
+	  (match_operand:<ssehalfvecmode> 3 "register_operand" "Yk")))]
   "TARGET_AVX512F && TARGET_AVX512VL
    && rtx_equal_p (operands[2], operands[0])"
   "vextract<shuffletype>32x4\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}"
