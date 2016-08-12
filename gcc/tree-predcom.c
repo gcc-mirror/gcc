@@ -1365,11 +1365,16 @@ replace_ref_with (gimple *stmt, tree new_tree, bool set, bool in_lhs)
 /* Returns a memory reference to DR in the ITER-th iteration of
    the loop it was analyzed in.  Append init stmts to STMTS.  */
 
-static tree 
+static tree
 ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
 {
   tree off = DR_OFFSET (dr);
   tree coff = DR_INIT (dr);
+  tree ref = DR_REF (dr);
+  enum tree_code ref_code = ERROR_MARK;
+  tree ref_type = NULL_TREE;
+  tree ref_op1 = NULL_TREE;
+  tree ref_op2 = NULL_TREE;
   if (iter == 0)
     ;
   else if (TREE_CODE (DR_STEP (dr)) == INTEGER_CST)
@@ -1378,28 +1383,50 @@ ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
   else
     off = size_binop (PLUS_EXPR, off,
 		      size_binop (MULT_EXPR, DR_STEP (dr), ssize_int (iter)));
+  /* While data-ref analysis punts on bit offsets it still handles
+     bitfield accesses at byte boundaries.  Cope with that.  Note that
+     if the bitfield object also starts at a byte-boundary we can simply
+     replicate the COMPONENT_REF, but we have to subtract the component's
+     byte-offset from the MEM_REF address first.
+     Otherwise we simply build a BIT_FIELD_REF knowing that the bits
+     start at offset zero.  */
+  if (TREE_CODE (ref) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1)))
+    {
+      unsigned HOST_WIDE_INT boff;
+      tree field = TREE_OPERAND (ref, 1);
+      tree offset = component_ref_field_offset (ref);
+      ref_type = TREE_TYPE (ref);
+      boff = tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field));
+      /* This can occur in Ada.  See the comment in get_bit_range.  */
+      if (boff % BITS_PER_UNIT != 0
+	  || !tree_fits_uhwi_p (offset))
+	{
+	  ref_code = BIT_FIELD_REF;
+	  ref_op1 = DECL_SIZE (field);
+	  ref_op2 = bitsize_zero_node;
+	}
+      else
+	{
+	  boff >>= LOG2_BITS_PER_UNIT;
+	  boff += tree_to_uhwi (offset);
+	  coff = size_binop (MINUS_EXPR, coff, ssize_int (boff));
+	  ref_code = COMPONENT_REF;
+	  ref_op1 = field;
+	  ref_op2 = TREE_OPERAND (ref, 2);
+	  ref = TREE_OPERAND (ref, 0);
+	}
+    }
   tree addr = fold_build_pointer_plus (DR_BASE_ADDRESS (dr), off);
   addr = force_gimple_operand_1 (unshare_expr (addr), stmts,
 				 is_gimple_mem_ref_addr, NULL_TREE);
-  tree alias_ptr = fold_convert (reference_alias_ptr_type (DR_REF (dr)), coff);
-  tree type = build_aligned_type (TREE_TYPE (DR_REF (dr)),
-				  get_object_alignment (DR_REF (dr)));
-  /* While data-ref analysis punts on bit offsets it still handles
-     bitfield accesses at byte boundaries.  Cope with that.  Note that
-     we cannot simply re-apply the outer COMPONENT_REF because the
-     byte-granular portion of it is already applied via DR_INIT and
-     DR_OFFSET, so simply build a BIT_FIELD_REF knowing that the bits
-     start at offset zero.  */
-  if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
-      && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
-    {
-      tree field = TREE_OPERAND (DR_REF (dr), 1);
-      return build3 (BIT_FIELD_REF, TREE_TYPE (DR_REF (dr)),
-		     build2 (MEM_REF, type, addr, alias_ptr),
-		     DECL_SIZE (field), bitsize_zero_node);
-    }
-  else
-    return fold_build2 (MEM_REF, type, addr, alias_ptr);
+  tree alias_ptr = fold_convert (reference_alias_ptr_type (ref), coff);
+  tree type = build_aligned_type (TREE_TYPE (ref),
+				  get_object_alignment (ref));
+  ref = build2 (MEM_REF, type, addr, alias_ptr);
+  if (ref_type)
+    ref = build3 (ref_code, ref_type, ref, ref_op1, ref_op2);
+  return ref;
 }
 
 /* Get the initialization expression for the INDEX-th temporary variable
