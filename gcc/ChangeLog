@@ -1,3 +1,11 @@
+2016-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/71512
+	* ubsan.c (instrument_si_overflow): Pass true instead of false
+	to gsi_replace.
+	(pass_ubsan::execute): Call gimple_purge_dead_eh_edges at the end
+	of bbs.  Return TODO_cleanup_cfg if any returned true.
+
 2016-08-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Backport from mainline
@@ -70,6 +78,7 @@
 	2016-06-13  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/vecintrin.h: Fix file description in comment.
+
 2016-08-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
