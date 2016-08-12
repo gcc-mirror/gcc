@@ -1,3 +1,14 @@
+2016-08-12  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/63240
+	* cp-objcp-common.c (cp_function_decl_defaulted): New.
+	(cp_function_decl_explicit_p): Const_tree-ify.
+	(cp_function_decl_deleted_p): Likewise.
+	* cp-objcp-common.h (cp_function_decl_defaulted): Declare.
+	(cp_function_decl_explicit_p): Const_tree-ify.
+	(cp_function_decl_deleted_p): Likewise.
+	(LANG_HOOKS_FUNCTION_DECL_DEFAULTED): Redefine.
+
 2016-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/72868

@@ -1,5 +1,12 @@
 2016-08-12  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/63240
+	* g++.dg/debug/dwarf2/defaulted-member-function-1.C: New.
+	* g++.dg/debug/dwarf2/defaulted-member-function-2.C: New.
+	* g++.dg/debug/dwarf2/defaulted-member-function-3.C: New.
+	* g++.dg/debug/dwarf2/deleted-member-function.C: Expect
+	DW_AT_deleted.
+
 	PR debug/55641
 	* g++.dg/debug/dwarf2/ref-1.C: New.
 

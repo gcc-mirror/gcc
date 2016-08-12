@@ -1,3 +1,9 @@
+2016-08-12  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/63240
+	* dwarf2.def (DW_AT_deleted, DW_AT_defaulted): New.
+	* dwarf2.h (enu dwarf_defaulted_attribute): New.
+
 2016-07-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	* libiberty.h (MAX_ALLOCA_SIZE): New macro.

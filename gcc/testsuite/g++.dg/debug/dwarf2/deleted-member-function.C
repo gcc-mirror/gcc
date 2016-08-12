@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O -std=c++11 -g -dA -gno-strict-dwarf" }
-// { dg-final { scan-assembler-times " DW_AT_GNU_deleted" 2 { xfail { powerpc-ibm-aix* } } } }
+// { dg-final { scan-assembler-times " DW_AT_deleted" 2 { xfail { powerpc-ibm-aix* } } } }
 
 struct Foo
 {

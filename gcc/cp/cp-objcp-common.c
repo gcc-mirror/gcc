@@ -133,7 +133,7 @@ cxx_types_compatible_p (tree x, tree y)
 /* Return true if DECL is explicit member function.  */
 
 bool
-cp_function_decl_explicit_p (tree decl)
+cp_function_decl_explicit_p (const_tree decl)
 {
   return (decl
 	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
@@ -143,11 +143,32 @@ cp_function_decl_explicit_p (tree decl)
 /* Return true if DECL is deleted special member function.  */
 
 bool
-cp_function_decl_deleted_p (tree decl)
+cp_function_decl_deleted_p (const_tree decl)
 {
   return (decl
 	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
 	  && DECL_DELETED_FN (decl));
+}
+
+/* Returns 0 if DECL is NOT a C++11 defaulted special member function,
+   1 if it is explicitly defaulted within the class body, or 2 if it
+   is explicitly defaulted outside the class body.  */
+
+int
+cp_function_decl_defaulted (const_tree decl)
+{
+  if (decl
+      && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
+      && DECL_DEFAULTED_FN (decl))
+    {
+      if (DECL_DEFAULTED_IN_CLASS_P (decl))
+	return 1;
+
+      if (DECL_DEFAULTED_OUTSIDE_CLASS_P (decl))
+	return 2;
+    }
+
+  return 0;
 }
 
 /* Stubs to keep c-opts.c happy.  */
