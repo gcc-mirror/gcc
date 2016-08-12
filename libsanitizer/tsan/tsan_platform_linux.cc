@@ -60,6 +60,10 @@ extern "C" void *__libc_stack_end;
 void *__libc_stack_end = 0;
 #endif
 
+#if SANITIZER_LINUX && defined(__aarch64__)
+void InitializeGuardPtr() __attribute__((visibility("hidden")));
+#endif
+
 namespace __tsan {
 
 static uptr g_data_start;
@@ -261,6 +265,10 @@ void InitializePlatform() {
       SetAddressSpaceUnlimited();
       reexec = true;
     }
+#if SANITIZER_LINUX && defined(__aarch64__)
+    // Initialize the guard pointer used in {sig}{set,long}jump.
+    InitializeGuardPtr();
+#endif
     if (reexec)
       ReExec();
   }
