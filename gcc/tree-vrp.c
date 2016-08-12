@@ -8725,6 +8725,7 @@ vrp_visit_phi_node (gphi *phi)
       print_gimple_stmt (dump_file, phi, 0, dump_flags);
     }
 
+  bool may_simulate_again = false;
   edges = 0;
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
@@ -8747,6 +8748,12 @@ vrp_visit_phi_node (gphi *phi)
 
 	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
+	      /* See if we are eventually going to change one of the args.  */
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (arg);
+	      if (! gimple_nop_p (def_stmt)
+		  && prop_simulate_again_p (def_stmt))
+		may_simulate_again = true;
+
 	      vr_arg = *(get_value_range (arg));
 	      /* Do not allow equivalences or symbolic ranges to leak in from
 		 backedges.  That creates invalid equivalencies.
@@ -8822,11 +8829,14 @@ vrp_visit_phi_node (gphi *phi)
      previous one.  We don't do this if we have seen a new executable
      edge; this helps us avoid an overflow infinity for conditionals
      which are not in a loop.  If the old value-range was VR_UNDEFINED
-     use the updated range and iterate one more time.  */
+     use the updated range and iterate one more time.  If we will not
+     simulate this PHI again with the same number of edges then iterate
+     one more time.  */
   if (edges > 0
       && gimple_phi_num_args (phi) > 1
       && edges == old_edges
-      && lhs_vr->type != VR_UNDEFINED)
+      && lhs_vr->type != VR_UNDEFINED
+      && may_simulate_again)
     {
       /* Compare old and new ranges, fall back to varying if the
          values are not comparable.  */
@@ -8880,6 +8890,31 @@ vrp_visit_phi_node (gphi *phi)
       goto infinite_check;
     }
 
+  goto update_range;
+
+varying:
+  set_value_range_to_varying (&vr_result);
+
+scev_check:
+  /* If this is a loop PHI node SCEV may known more about its value-range.
+     scev_check can be reached from two paths, one is a fall through from above
+     "varying" label, the other is direct goto from code block which tries to
+     avoid infinite simulation.  */
+  if ((l = loop_containing_stmt (phi))
+      && l->header == gimple_bb (phi))
+    adjust_range_with_scev (&vr_result, l, phi, lhs);
+
+infinite_check:
+  /* If we will end up with a (-INF, +INF) range, set it to
+     VARYING.  Same if the previous max value was invalid for
+     the type and we end up with vr_result.min > vr_result.max.  */
+  if ((vr_result.type == VR_RANGE || vr_result.type == VR_ANTI_RANGE)
+      && !((vrp_val_is_max (vr_result.max) && vrp_val_is_min (vr_result.min))
+	   || compare_values (vr_result.min, vr_result.max) > 0))
+    ;
+  else
+    set_value_range_to_varying (&vr_result);
+
   /* If the new range is different than the previous value, keep
      iterating.  */
 update_range:
@@ -8902,31 +8937,6 @@ update_range:
 
   /* Nothing changed, don't add outgoing edges.  */
   return SSA_PROP_NOT_INTERESTING;
-
-varying:
-  set_value_range_to_varying (&vr_result);
-
-scev_check:
-  /* If this is a loop PHI node SCEV may known more about its value-range.
-     scev_check can be reached from two paths, one is a fall through from above
-     "varying" label, the other is direct goto from code block which tries to
-     avoid infinite simulation.  */
-  if ((l = loop_containing_stmt (phi))
-      && l->header == gimple_bb (phi))
-    adjust_range_with_scev (&vr_result, l, phi, lhs);
-
-infinite_check:
-  /* If we will end up with a (-INF, +INF) range, set it to
-     VARYING.  Same if the previous max value was invalid for
-     the type and we end up with vr_result.min > vr_result.max.  */
-  if ((vr_result.type == VR_RANGE || vr_result.type == VR_ANTI_RANGE)
-      && !((vrp_val_is_max (vr_result.max) && vrp_val_is_min (vr_result.min))
-	   || compare_values (vr_result.min, vr_result.max) > 0))
-    goto update_range;
-
-  /* No match found.  Set the LHS to VARYING.  */
-  set_value_range_to_varying (lhs_vr);
-  return SSA_PROP_VARYING;
 }
 
 /* Simplify boolean operations if the source is known

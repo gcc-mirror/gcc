@@ -1,3 +1,9 @@
+2016-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_visit_phi_node): Allow a last iteration if
+	the currently executable edges have fixed ranges.  Always
+	go through update_value_range.
+
 2016-08-12  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/63240
