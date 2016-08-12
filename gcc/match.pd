@@ -2350,7 +2350,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (TREE_TYPE (@00)))
      /* If possible, express the comparison in the shorter mode.  */
      (if ((cmp == EQ_EXPR || cmp == NE_EXPR
-	   || TYPE_UNSIGNED (TREE_TYPE (@0)) == TYPE_UNSIGNED (TREE_TYPE (@00)))
+	   || TYPE_UNSIGNED (TREE_TYPE (@0)) == TYPE_UNSIGNED (TREE_TYPE (@00))
+	   || (!TYPE_UNSIGNED (TREE_TYPE (@0))
+	       && TYPE_UNSIGNED (TREE_TYPE (@00))))
 	  && (types_match (TREE_TYPE (@10), TREE_TYPE (@00))
 	      || ((TYPE_PRECISION (TREE_TYPE (@00))
 		   >= TYPE_PRECISION (TREE_TYPE (@10)))

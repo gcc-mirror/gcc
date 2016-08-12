@@ -1,3 +1,10 @@
+2016-08-12  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR middle-end/71654
+	* match.pd ((T)A CMP (T)B -> A CMP B): Allow (T)A to be a
+	sign-changing cast from a shorter unsigned type to a wider
+	signed type.
+
 2016-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (avx512dq_vextract<shuffletype>64x2_1_maskm,
