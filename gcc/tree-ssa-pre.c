@@ -1201,7 +1201,7 @@ get_or_alloc_expr_for (tree t)
 }
 
 /* Return the folded version of T if T, when folded, is a gimple
-   min_invariant.  Otherwise, return T.  */
+   min_invariant or an SSA name.  Otherwise, return T.  */
 
 static pre_expr
 fully_constant_expression (pre_expr e)
@@ -1218,10 +1218,8 @@ fully_constant_expression (pre_expr e)
 	  return e;
 	if (is_gimple_min_invariant (res))
 	  return get_or_alloc_expr_for_constant (res);
-	/* We might have simplified the expression to a
-	   SSA_NAME for example from x_1 * 1.  But we cannot
-	   insert a PHI for x_1 unconditionally as x_1 might
-	   not be available readily.  */
+	if (TREE_CODE (res) == SSA_NAME)
+	  return get_or_alloc_expr_for_name (res);
 	return e;
       }
     case REFERENCE:
@@ -1464,7 +1462,20 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    constant = fully_constant_expression (expr);
 	    PRE_EXPR_NARY (expr) = nary;
 	    if (constant != expr)
-	      return constant;
+	      {
+		/* For non-CONSTANTs we have to make sure we can eventually
+		   insert the expression.  Which means we need to have a
+		   leader for it.  */
+		if (constant->kind != CONSTANT)
+		  {
+		    unsigned value_id = get_expr_value_id (constant);
+		    constant = find_leader_in_sets (value_id, set1, set2);
+		    if (constant)
+		      return constant;
+		  }
+		else
+		  return constant;
+	      }
 
 	    tree result = vn_nary_op_lookup_pieces (newnary->length,
 						    newnary->opcode,

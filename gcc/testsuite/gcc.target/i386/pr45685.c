@@ -36,4 +36,4 @@ int summation_helper_2(int64_t* products, uint64_t count)
 	return s;
 }
 
-/* { dg-final { scan-assembler-times "cmov" 4 } } */
+/* { dg-final { scan-assembler-times "cmov" 6 } } */

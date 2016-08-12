@@ -1,3 +1,16 @@
+2016-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57326
+	* gcc.dg/tree-ssa/ssa-pre-32.c: New testcase.
+	* gcc.dg/tree-ssa/loadpre14.c: Adjust.
+	* gcc.dg/tree-ssa/pr35287.c: Likewise.
+	* gcc.target/i386/pr45685.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-1.c: Disable PRE.
+	* gcc.dg/tree-ssa/predcom-2.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sink-10.c: Likewise.
+	* gfortran.dg/pr34163.f90: Likewise.
+
 2016-08-12  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/gcov/gcov-16.C: New test.
