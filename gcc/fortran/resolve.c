@@ -3542,7 +3542,7 @@ resolve_operator (gfc_expr *e)
       if (!gfc_resolve_expr (e->value.op.op2))
 	return false;
 
-    /* Fall through...  */
+    /* Fall through.  */
 
     case INTRINSIC_NOT:
     case INTRINSIC_UPLUS:
@@ -3660,7 +3660,7 @@ resolve_operator (gfc_expr *e)
 	  goto bad_op;
 	}
 
-      /* Fall through...  */
+      /* Fall through.  */
 
     case INTRINSIC_EQ:
     case INTRINSIC_EQ_OS:
@@ -5419,14 +5419,17 @@ fixup_charlen (gfc_expr *e)
     {
     case EXPR_OP:
       gfc_resolve_character_operator (e);
+      /* FALLTHRU */
 
     case EXPR_ARRAY:
       if (e->expr_type == EXPR_ARRAY)
 	gfc_resolve_character_array_constructor (e);
+      /* FALLTHRU */
 
     case EXPR_SUBSTRING:
       if (!e->ts.u.cl && e->ref)
 	gfc_resolve_substring_charlen (e);
+      /* FALLTHRU */
 
     default:
       if (!e->ts.u.cl)
@@ -7301,7 +7304,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	      && ar->stride[i] == NULL)
 	    break;
 
-	  /* Fall Through...  */
+	  /* Fall through.  */
 
 	case DIMEN_UNKNOWN:
 	case DIMEN_VECTOR:

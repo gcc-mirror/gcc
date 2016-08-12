@@ -1300,7 +1300,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	    return do_mpc_arg2 (arg1, arg2, type,
                                 /* do_nonfinite= */ folding_initializer,
 				mpc_div);
-	  /* Fallthru ... */
+	  /* Fallthru. */
 	case TRUNC_DIV_EXPR:
 	case CEIL_DIV_EXPR:
 	case FLOOR_DIV_EXPR:
@@ -3696,7 +3696,7 @@ fold_truth_not_expr (location_t loc, tree arg)
       if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
 	return build1_loc (loc, TRUTH_NOT_EXPR, type, arg);
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case FLOAT_EXPR:
       loc1 = expr_location_or (TREE_OPERAND (arg, 0), loc);
@@ -5101,6 +5101,7 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
       case UNLT_EXPR:
 	if (flag_trapping_math)
 	  break;
+	/* FALLTHRU */
       case LE_EXPR:
       case LT_EXPR:
 	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
@@ -10323,6 +10324,7 @@ fold_binary_loc (location_t loc,
       /* If first arg is constant zero, return it.  */
       if (integer_zerop (arg0))
 	return fold_convert_loc (loc, type, arg0);
+      /* FALLTHRU */
     case TRUTH_AND_EXPR:
       /* If either arg is constant true, drop it.  */
       if (TREE_CODE (arg0) == INTEGER_CST && ! integer_zerop (arg0))
@@ -10378,6 +10380,7 @@ fold_binary_loc (location_t loc,
       /* If first arg is constant true, return it.  */
       if (TREE_CODE (arg0) == INTEGER_CST && ! integer_zerop (arg0))
 	return fold_convert_loc (loc, type, arg0);
+      /* FALLTHRU */
     case TRUTH_OR_EXPR:
       /* If either arg is constant zero, drop it.  */
       if (TREE_CODE (arg0) == INTEGER_CST && integer_zerop (arg0))
@@ -11222,7 +11225,7 @@ contains_label_1 (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case GOTO_EXPR:
       *walk_subtrees = 0;
 
-      /* ... fall through ...  */
+      /* fall through */
 
     default:
       return NULL_TREE;
@@ -12602,7 +12605,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	      < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (top, 0)))))
 	return 0;
 
-      /* .. fall through ...  */
+      /* fall through */
 
     case SAVE_EXPR:
       return multiple_of_p (type, TREE_OPERAND (top, 0), bottom);
@@ -12657,7 +12660,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	    return 1;
 	}
 
-      /* .. fall through ...  */
+      /* fall through */
 
     default:
       return 0;

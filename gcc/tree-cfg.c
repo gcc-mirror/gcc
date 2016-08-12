@@ -5412,7 +5412,7 @@ gimple_verify_flow_info (void)
 	case GIMPLE_CALL:
 	  if (!gimple_call_builtin_p (stmt, BUILT_IN_RETURN))
 	    break;
-	  /* ... fallthru ... */
+	  /* fallthru */
 	case GIMPLE_RETURN:
 	  if (!single_succ_p (bb)
 	      || (single_succ_edge (bb)->flags

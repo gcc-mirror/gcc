@@ -1149,7 +1149,7 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
       if (REG_P (dest) && !REG_ATTRS (dest))
 	set_reg_attrs_from_value (dest, SET_SRC (x));
 
-      /* ... fall through ...  */
+      /* fall through */
 
     default:
       {

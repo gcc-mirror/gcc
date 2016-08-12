@@ -3421,6 +3421,7 @@ commutative_operand_precedence (rtx op)
       /* Then prefer NEG and NOT.  */
       if (code == NEG || code == NOT)
         return 1;
+      /* FALLTHRU */
 
     default:
       return 0;
@@ -4095,7 +4096,7 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
       factor = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
       if (factor == 0)
 	factor = 1;
-      /* Pass through.  */
+      /* FALLTHRU */
     default:
       total = factor * COSTS_N_INSNS (1);
     }

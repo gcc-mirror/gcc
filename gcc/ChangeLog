@@ -1,6 +1,101 @@
 2016-08-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
+	* alias.c (find_base_value): Adjust fall through comment.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* combine.c (find_split_point): Likewise.
+	(expand_compound_operation): Likewise.  Add FALLTHRU.
+	(make_compound_operation): Adjust fall through comment.
+	(canon_reg_for_combine): Add FALLTHRU.
+	(force_to_mode): Adjust fall through comment.
+	(simplify_shift_const_1): Likewise.
+	(simplify_comparison): Likewise.
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args): Add
+	FALLTHRU.
+	* config/aarch64/predicates.md: Likewise.
+	* config/i386/i386.c (function_arg_advance_32): Likewise.
+	(ix86_gimplify_va_arg): Likewise.
+	(print_reg): Likewise.
+	(ix86_print_operand): Likewise.
+	(ix86_build_const_vector): Likewise.
+	(ix86_expand_branch): Likewise.
+	(ix86_sched_init_global): Adjust fall through comment.
+	(ix86_expand_args_builtin): Add FALLTHRU.
+	(ix86_expand_builtin): Likewise.
+	(ix86_expand_vector_init_one_var): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_vector_compare_inner): Likewise.
+	(rs6000_adjust_cost): Likewise.
+	(insn_must_be_first_in_group): Likewise.
+	* config/rs6000/rs6000.md: Likewise.  Adjust fall through comment.
+	* dbxout.c (dbxout_symbol): Adjust fall through comment.
+	* df-scan.c (df_uses_record): Likewise.
+	* dojump.c (do_jump): Add FALLTHRU.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.  Adjust fall through
+	comment.
+	(resolve_args_picking_1): Adjust fall through comment.
+	(loc_list_from_tree_1): Likewise.
+	* expmed.c (make_tree): Likewise.
+	* expr.c (expand_expr_real_2): Add FALLTHRU.
+	(expand_expr_real_1): Likewise.  Adjust fall through comment.
+	* fold-const.c (const_binop): Adjust fall through comment.
+	(fold_truth_not_expr): Likewise.
+	(fold_cond_expr_with_comparison): Add FALLTHRU.
+	(fold_binary_loc): Likewise.
+	(contains_label_1): Adjust fall through comment.
+	(multiple_of_p): Likewise.
+	* gcov-tool.c (process_args): Add FALLTHRU.
+	* genattrtab.c (check_attr_test): Likewise.
+	(write_test_expr): Likewise.
+	* genconfig.c (walk_insn_part): Likewise.
+	* genpreds.c (validate_exp): Adjust fall through comment.
+	(needs_variable): Likewise.
+	* gensupport.c (get_alternatives_number): Add FALLTHRU.
+	(subst_dup): Likewise.
+	* gimple-pretty-print.c (dump_gimple_assign): Likewise.
+	* gimplify.c (gimplify_addr_expr): Adjust fall through comment.
+	(gimplify_scan_omp_clauses): Add FALLTHRU.
+	(goa_stabilize_expr): Likewise.
+	* graphite-isl-ast-to-gimple.c (substitute_ssa_name): Adjust fall
+	through comment.
+	* hsa-gen.c (get_address_from_value): Likewise.
+	* ipa-icf.c (sem_function::hash_stmt): Likewise.
+	* ira.c (ira_setup_alts): Add FALLTHRU.
+	* lra-eliminations.c (lra_eliminate_regs_1): Adjust fall through
+	comment.
+	* lto-streamer-out.c (lto_output_tree_ref): Add FALLTHRU.
+	* opts.c (common_handle_option): Likewise.
+	* read-rtl.c (read_rtx_code): Likewise.
+	* real.c (round_for_format): Likewise.
+	* recog.c (asm_operand_ok): Likewise.
+	* reginfo.c (reg_scan_mark_refs): Adjust fall through comment.
+	* reload1.c (set_label_offsets): Likewise.
+	(eliminate_regs_1): Likewise.
+	(reload_reg_reaches_end_p): Likewise.
+	* rtlanal.c (commutative_operand_precedence): Add FALLTHRU.
+	(rtx_cost): Likewise.
+	* sched-rgn.c (is_exception_free): Likewise.
+	* simplify-rtx.c (simplify_rtx): Adjust fall through comment.
+	* stor-layout.c (int_mode_for_mode): Likewise.
+	* toplev.c (print_to_asm_out_file): Likewise.
+	(print_to_stderr): Likewise.
+	* tree-cfg.c (gimple_verify_flow_info): Likewise.
+	* tree-chrec.c (chrec_fold_plus_1): Add FALLTHRU.
+	(chrec_fold_multiply): Likewise.
+	(evolution_function_is_invariant_rec_p): Likewise.
+	(for_each_scev_op): Likewise.
+	* tree-data-ref.c (siv_subscript_p): Likewise.
+	(get_references_in_stmt): Likewise.
+	* tree.c (find_placeholder_in_expr): Adjust fall through comment.
+	(substitute_in_expr): Likewise.
+	(type_cache_hasher::equal): Likewise.
+	(walk_type_fields): Likewise.
+	* var-tracking.c (adjust_mems): Add FALLTHRU.
+	(set_dv_changed): Adjust fall through comment.
+	* varasm.c (default_function_section): Add FALLTHRU.
+
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
 	* tree-complex.c (expand_complex_division): Add missing break.
 
 2016-08-12  Richard Biener  <rguenther@suse.de>

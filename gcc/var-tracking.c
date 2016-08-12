@@ -1056,6 +1056,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 					 ? GET_MODE_SIZE (amd->mem_mode)
 					 : -GET_MODE_SIZE (amd->mem_mode),
 					 GET_MODE (loc)));
+      /* FALLTHRU */
     case POST_INC:
     case POST_DEC:
       if (addr == loc)
@@ -1076,6 +1077,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
       return addr;
     case PRE_MODIFY:
       addr = XEXP (loc, 1);
+      /* FALLTHRU */
     case POST_MODIFY:
       if (addr == loc)
 	addr = XEXP (loc, 0);
@@ -3148,7 +3150,7 @@ set_dv_changed (decl_or_value dv, bool newv)
     case ONEPART_DEXPR:
       if (newv)
 	NO_LOC_P (DECL_RTL_KNOWN_SET (dv_as_decl (dv))) = false;
-      /* Fall through...  */
+      /* Fall through.  */
 
     default:
       DECL_CHANGED (dv_as_decl (dv)) = newv;

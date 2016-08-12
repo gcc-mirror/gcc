@@ -517,8 +517,10 @@ dump_gimple_assign (pretty_printer *buffer, gassign *gs, int spc, int flags)
 	{
 	case 4:
 	  arg3 = gimple_assign_rhs3 (gs);
+	  /* FALLTHRU */
 	case 3:
 	  arg2 = gimple_assign_rhs2 (gs);
+	  /* FALLTHRU */
 	case 2:
 	  arg1 = gimple_assign_rhs1 (gs);
 	  break;

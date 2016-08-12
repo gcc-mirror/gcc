@@ -6225,11 +6225,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      OMP_CLAUSE_OPERAND (c, 1) = t;
 	    }
 	  /* Check operand 0, the num argument.  */
+	  /* FALLTHRU */
 
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
 	  if (OMP_CLAUSE_OPERAND (c, 0) == NULL_TREE)
 	    break;
+	  /* FALLTHRU */
 
 	case OMP_CLAUSE_NUM_TASKS:
 	case OMP_CLAUSE_NUM_TEAMS:

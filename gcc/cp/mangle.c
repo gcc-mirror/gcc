@@ -2169,7 +2169,7 @@ write_type (tree type)
 		  ++is_builtin_type;
 		  break;
 		}
-	      /* else fall through.  */
+	      /* fall through.  */
 	    case TEMPLATE_PARM_INDEX:
 	      write_template_param (type);
 	      break;

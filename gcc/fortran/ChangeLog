@@ -1,3 +1,15 @@
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* decl.c (match_attr_spec): Add FALLTHRU.
+	* primary.c (match_arg_list_function): Likewise.
+	* resolve.c (resolve_operator): Adjust fall through comment.
+	(fixup_charlen): Add FALLTHRU.
+	(resolve_allocate_expr): Adjust fall through comment.
+	* trans-array.c (gfc_conv_ss_startstride): Add FALLTHRU.
+	* trans-intrinsic.c (gfc_conv_intrinsic_len): Adjust fall through
+	comment.
+
 2016-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* check.c (gfc_check_random_seed): Use new seed size in check.

@@ -3699,7 +3699,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (is_capture_proxy (t))
 	return cxx_eval_constant_expression (ctx, DECL_VALUE_EXPR (t),
 					     lval, non_constant_p, overflow_p);
-      /* else fall through.  */
+      /* fall through */
     case CONST_DECL:
       /* We used to not check lval for CONST_DECL, but darwin.c uses
 	 CONST_DECL for aggregate constants.  */
@@ -3988,7 +3988,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					    overflow_p);
       if (r)
 	break;
-      /* else fall through */
+      /* fall through */
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -5167,7 +5167,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
       /* A destructor.  */
       if (TYPE_P (TREE_OPERAND (t, 0)))
 	return true;
-      /* else fall through.  */
+      /* fall through.  */
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -5269,6 +5269,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	    }
 	  return false;
 	}
+      /* FALLTHRU */
     case INIT_EXPR:
       return RECUR (TREE_OPERAND (t, 1), rval);
 

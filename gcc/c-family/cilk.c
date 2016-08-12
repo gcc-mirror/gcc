@@ -1097,6 +1097,7 @@ extract_free_variables (tree t, struct wrapper_data *wd,
     case RESULT_DECL:
       if (wd->type != CILK_BLOCK_SPAWN)
 	TREE_ADDRESSABLE (t) = 1;
+      /* FALLTHRU */
     case VAR_DECL:
     case PARM_DECL:
       if (!is_global_var (t))

@@ -5135,7 +5135,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
       split = find_split_point (&XEXP (x, 2), insn, false);
       if (split)
 	return split;
-      /* ... fall through ...  */
+      /* fall through */
     case RTX_BIN_ARITH:
     case RTX_COMM_ARITH:
     case RTX_COMPARE:
@@ -5143,7 +5143,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
       split = find_split_point (&XEXP (x, 1), insn, false);
       if (split)
 	return split;
-      /* ... fall through ...  */
+      /* fall through */
     case RTX_UNARY:
       /* Some machines have (and (shift ...) ...) insns.  If X is not
 	 an AND, but XEXP (X, 0) is, use it as our split point.  */
@@ -6955,6 +6955,7 @@ expand_compound_operation (rtx x)
     {
     case ZERO_EXTEND:
       unsignedp = 1;
+      /* FALLTHRU */
     case SIGN_EXTEND:
       /* We can't necessarily use a const_int for a multiword mode;
 	 it depends on implicitly extending the value.
@@ -6997,7 +6998,7 @@ expand_compound_operation (rtx x)
     case ZERO_EXTRACT:
       unsignedp = 1;
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case SIGN_EXTRACT:
       /* If the operand is a CLOBBER, just return it.  */
@@ -8037,7 +8038,7 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	  break;
 	}
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case ASHIFTRT:
       lhs = XEXP (x, 0);
@@ -8265,6 +8266,7 @@ canon_reg_for_combine (rtx x, rtx reg)
       if (op0 != XEXP (x, 0) || op1 != XEXP (x, 1) || op2 != XEXP (x, 2))
 	return simplify_gen_ternary (GET_CODE (x), GET_MODE (x),
 				     GET_MODE (op0), op0, op1, op2);
+      /* FALLTHRU */
 
     case RTX_OBJ:
       if (REG_P (x))
@@ -8531,7 +8533,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
 				mode, smask, next_select);
       }
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case MULT:
       /* Substituting into the operands of a widening MULT is not likely to
@@ -10404,7 +10406,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	      continue;
 	    }
 
-	  /* ... fall through ...  */
+	  /* fall through */
 
 	case LSHIFTRT:
 	case ASHIFT:
@@ -11730,7 +11732,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      continue;
 	    }
 
-	  /* ... fall through ...  */
+	  /* fall through */
 
 	case SIGN_EXTRACT:
 	  tem = expand_compound_operation (op0);

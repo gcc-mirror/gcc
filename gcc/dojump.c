@@ -461,12 +461,14 @@ do_jump (tree exp, rtx_code_label *if_false_label,
           || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_REF
           || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_RANGE_REF)
         goto normal;
+      /* FALLTHRU */
     case CONVERT_EXPR:
       /* If we are narrowing the operand, we have to do the compare in the
          narrower mode.  */
       if ((TYPE_PRECISION (TREE_TYPE (exp))
            < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp, 0)))))
         goto normal;
+      /* FALLTHRU */
     case NON_LVALUE_EXPR:
     case ABS_EXPR:
     case NEGATE_EXPR:
@@ -610,6 +612,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
 	goto normal;
 
       /* Boolean comparisons can be compiled as TRUTH_AND_EXPR.  */
+      /* FALLTHRU */
 
     case TRUTH_AND_EXPR:
       /* High branch cost, expand as the bitwise AND of the conditions.

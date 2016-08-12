@@ -1643,7 +1643,7 @@ sem_function::hash_stmt (gimple *stmt, inchash::hash &hstate)
 	  add_type (TREE_TYPE (gimple_assign_lhs (stmt)), two);
 	  break;
 	}
-      /* ... fall through ... */
+      /* fall through */
     case GIMPLE_CALL:
     case GIMPLE_ASM:
     case GIMPLE_COND:

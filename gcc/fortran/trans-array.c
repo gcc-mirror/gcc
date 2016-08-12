@@ -4041,6 +4041,7 @@ done:
 	      continue;
 	    }
 
+	  /* FALLTHRU */
 	case GFC_SS_CONSTRUCTOR:
 	case GFC_SS_FUNCTION:
 	  for (n = 0; n < ss->dimen; n++)

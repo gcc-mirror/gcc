@@ -1792,6 +1792,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 
 	     Match any memory and hope things are resolved after reload.  */
 	  incdec_ok = true;
+	  /* FALLTHRU */
 	default:
 	  cn = lookup_constraint (constraint);
 	  switch (get_constraint_type (cn))

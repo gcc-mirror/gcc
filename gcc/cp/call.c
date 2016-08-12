@@ -2421,6 +2421,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
     case PREDECREMENT_EXPR:
       if (TREE_CODE (type1) == BOOLEAN_TYPE)
 	return;
+      /* FALLTHRU */
     case POSTINCREMENT_EXPR:
     case PREINCREMENT_EXPR:
       if (ARITHMETIC_TYPE_P (type1) || TYPE_PTROB_P (type1))
@@ -2457,6 +2458,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
     case UNARY_PLUS_EXPR: /* unary + */
       if (TYPE_PTR_P (type1))
 	break;
+      /* FALLTHRU */
     case NEGATE_EXPR:
       if (ARITHMETIC_TYPE_P (type1))
 	break;
@@ -2594,6 +2596,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
     case PLUS_EXPR:
       if (ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2))
 	break;
+      /* FALLTHRU */
     case ARRAY_REF:
       if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type1) && TYPE_PTROB_P (type2))
 	{
@@ -2674,6 +2677,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	      type2 = ptrdiff_type_node;
 	      break;
 	    }
+	  /* FALLTHRU */
 	case MULT_EXPR:
 	case TRUNC_DIV_EXPR:
 	  if (ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2))
@@ -3966,7 +3970,7 @@ build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
 	if (complain & tf_error)
 	  error_at (loc, "conversion from %qT to %qT not considered for "
 		    "non-type template argument", t, type);
-	/* and fall through.  */
+	/* fall through.  */
 
       default:
 	conv = NULL;
@@ -5493,6 +5497,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
     case MODIFY_EXPR:
       if (code2 != NOP_EXPR)
 	break;
+      /* FALLTHRU */
     case COMPONENT_REF:
     case ARRAY_REF:
       memonly = true;
@@ -6661,7 +6666,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
       if (! MAYBE_CLASS_TYPE_P (totype))
 	return expr;
-      /* Else fall through.  */
+      /* Fall through.  */
     case ck_base:
       if (convs->kind == ck_base && !convs->need_temporary_p)
 	{

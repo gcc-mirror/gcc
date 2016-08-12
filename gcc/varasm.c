@@ -589,6 +589,7 @@ default_function_section (tree decl, enum node_frequency freq,
            these ELF section.  */
         if (!in_lto_p || !flag_profile_values)
           return get_named_text_section (decl, ".text.hot", NULL);
+	/* FALLTHRU */
       default:
 	return NULL;
     }

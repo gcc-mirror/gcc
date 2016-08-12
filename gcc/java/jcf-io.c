@@ -471,7 +471,7 @@ verify_constant_pool (JCF *jcf)
 	  if (n <= 0 || n >= JPOOL_SIZE(jcf)
 	      || JPOOL_TAG (jcf, n) != CONSTANT_Utf8)
 	    return i;
-	  /* ... fall through ... */
+	  /* fall through */
 	case CONSTANT_Class:
 	case CONSTANT_String:
 	  n = JPOOL_USHORT1 (jcf, i);

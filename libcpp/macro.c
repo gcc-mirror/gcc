@@ -2886,6 +2886,7 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	    return true;
 
 	  /* Fall through to pick up the error.  */
+	  /* FALLTHRU */
 	case CPP_COMMA:
 	  if (!prev_ident)
 	    {

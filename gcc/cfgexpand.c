@@ -4239,7 +4239,7 @@ expand_debug_expr (tree exp)
 	  set_mem_attributes (op0, exp, 0);
 	  return op0;
 	}
-      /* Fall through...  */
+      /* Fall through.  */
 
     case INTEGER_CST:
     case REAL_CST:

@@ -341,7 +341,7 @@ promote_type (tree type)
 	    return promoted_byte_type_node;
 	  return int_type_node;
 	}
-      /* ... else fall through ... */
+      /* fall through */
     default:
       return type;
     }
