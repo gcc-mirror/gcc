@@ -1,3 +1,10 @@
+2016-08-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_concat_<mode>): Add support for the
+	ISA 3.0 MTVSRDD instruction.
+	(vsx_splat_<mode>): Change cpu type of MTVSRDD instruction to
+	vecperm.
+
 2016-08-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR tree-optimization/71083
