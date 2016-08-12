@@ -65,7 +65,8 @@ enum vect_def_type {
 enum vect_reduction_type {
   TREE_CODE_REDUCTION,
   COND_REDUCTION,
-  INTEGER_INDUC_COND_REDUCTION
+  INTEGER_INDUC_COND_REDUCTION,
+  CONST_COND_REDUCTION
 };
 
 #define VECTORIZABLE_CYCLE_DEF(D) (((D) == vect_reduction_def)           \
