@@ -1,3 +1,9 @@
+2016-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/71042
+	* tsan/tsan_platform_linux.cc: Cherry-pick upstream r278292.
+	* tsan/tsan_rtl_aarch64.S: Likewise.
+
 2016-07-23  Alan Modra  <amodra@gmail.com>
 
 	Revert 2015-11-09  Alan Modra  <amodra@gmail.com>
