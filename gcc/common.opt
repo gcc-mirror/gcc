@@ -2296,6 +2296,10 @@ ftime-report
 Common Report Var(time_report)
 Report the time taken by each compiler pass.
 
+ftime-report-details
+Common Report Var(time_report_details)
+Record times taken by sub-phases separately.
+
 ftls-model=
 Common Joined RejectNegative Enum(tls_model) Var(flag_tls_default) Init(TLS_MODEL_GLOBAL_DYNAMIC)
 -ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]	Set the default thread-local storage code generation model.
