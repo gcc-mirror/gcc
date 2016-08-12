@@ -1,3 +1,9 @@
+2016-08-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR tree-optimization/71083
+	* tree-predcom.c (ref_at_iteration): Use a COMPONENT_REF for the
+	bitfield access when possible.
+
 2016-08-12  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR middle-end/71654
