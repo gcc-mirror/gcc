@@ -12,5 +12,6 @@
   ARG(double, 4.0, D1)
   ARG(float, 2.0f, S2)
   ARG(double, 5.0, D3)
+  ARG(__fp16, 8.0f, H4)
   LAST_ARG(int, 3, W0)
 #endif

@@ -44,4 +44,5 @@ FUNC_VAL_CHECK (12,         vf2_t,        vf2, D0, f32in64)
 FUNC_VAL_CHECK (13,         vi4_t,        vi4, Q0, i32in128)
 FUNC_VAL_CHECK (14,         int *,    int_ptr, X0, flat)
 FUNC_VAL_CHECK (15,         vlf1_t,    vlf1, Q0, flat)
+FUNC_VAL_CHECK (16,         __fp16,    0xabcd, H0, flat)
 #endif
