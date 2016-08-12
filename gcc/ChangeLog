@@ -1,3 +1,11 @@
+2016-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57326
+	* tree-ssa-pre.c (fully_constant_expression): Handle simplification
+	returning an SSA name.
+	(phi_translate_1): When fully_constant_expression returns a NAME
+	make sure we have a leader for it.
+
 2016-08-12  Martin Liska  <mliska@suse.cz>
 
 	    Adam Fineman  <afineman@afineman.com>

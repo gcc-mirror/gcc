@@ -10,5 +10,6 @@ int foo(int p)
   return (*gp + t);
 }
 
-/* We will eliminate one load of gp and one indirect load of *gp. */
-/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre"} } */
+/* We will eliminate one load of gp and one indirect load of *gp and
+   the add of zero. */
+/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre"} } */

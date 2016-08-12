@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -fpredictive-commoning -fdump-tree-pcom-details" }
+! { dg-options "-O2 -fno-tree-pre -fpredictive-commoning -fdump-tree-pcom-details" }
 subroutine trisolve2(x,i1,i2,nxyz)
 integer :: nxyz
 real,dimension(nxyz):: au1
