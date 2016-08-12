@@ -1,3 +1,8 @@
+2016-08-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost):
+	Correct costs for vec_construct.
+
 2016-08-12  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/69848
