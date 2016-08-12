@@ -213,6 +213,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "params.h"
 #include "tree-affine.h"
+#include "builtins.h"
 
 /* The maximum number of iterations between the considered memory
    references.  */
@@ -1381,6 +1382,8 @@ ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
   addr = force_gimple_operand_1 (unshare_expr (addr), stmts,
 				 is_gimple_mem_ref_addr, NULL_TREE);
   tree alias_ptr = fold_convert (reference_alias_ptr_type (DR_REF (dr)), coff);
+  tree type = build_aligned_type (TREE_TYPE (DR_REF (dr)),
+				  get_object_alignment (DR_REF (dr)));
   /* While data-ref analysis punts on bit offsets it still handles
      bitfield accesses at byte boundaries.  Cope with that.  Note that
      we cannot simply re-apply the outer COMPONENT_REF because the
@@ -1392,12 +1395,11 @@ ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
     {
       tree field = TREE_OPERAND (DR_REF (dr), 1);
       return build3 (BIT_FIELD_REF, TREE_TYPE (DR_REF (dr)),
-		     build2 (MEM_REF, DECL_BIT_FIELD_TYPE (field),
-			     addr, alias_ptr),
+		     build2 (MEM_REF, type, addr, alias_ptr),
 		     DECL_SIZE (field), bitsize_zero_node);
     }
   else
-    return fold_build2 (MEM_REF, TREE_TYPE (DR_REF (dr)), addr, alias_ptr);
+    return fold_build2 (MEM_REF, type, addr, alias_ptr);
 }
 
 /* Get the initialization expression for the INDEX-th temporary variable
