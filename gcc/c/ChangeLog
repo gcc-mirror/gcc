@@ -1,3 +1,11 @@
+2016-08-12  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR c/67410
+	* c-typeck.c (set_nonincremental_init_from_string): Use / instead of
+	% to determine val element to change.  Assert that
+	wchar_bytes * charwidth fits into val array.
+
 2016-08-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652

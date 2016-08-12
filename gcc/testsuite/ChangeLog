@@ -1,3 +1,8 @@
+2016-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/67410
+	* gcc.dg/pr67410.c: New test.
+
 2016-08-12  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/69848
