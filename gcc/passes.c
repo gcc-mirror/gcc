@@ -2008,8 +2008,6 @@ execute_todo (unsigned int flags)
       && need_ssa_update_p (cfun))
     gcc_assert (flags & TODO_update_ssa_any);
 
-  timevar_push (TV_TODO);
-
   statistics_fini_pass ();
 
   if (flags)
@@ -2043,8 +2041,6 @@ execute_todo (unsigned int flags)
      df problems.  */
   if (flags & TODO_df_finish)
     df_finish_pass ((flags & TODO_df_verify) != 0);
-
-  timevar_pop (TV_TODO);
 }
 
 /* Verify invariants that should hold between passes.  This is a place
@@ -2198,19 +2194,15 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
 
   pass_init_dump_file (pass);
 
-  /* Run pre-pass verification.  */
-  execute_todo (ipa_pass->function_transform_todo_flags_start);
-
   /* If a timevar is present, start it.  */
   if (pass->tv_id != TV_NONE)
     timevar_push (pass->tv_id);
 
+  /* Run pre-pass verification.  */
+  execute_todo (ipa_pass->function_transform_todo_flags_start);
+
   /* Do it!  */
   todo_after = ipa_pass->function_transform (node);
-
-  /* Stop timevar.  */
-  if (pass->tv_id != TV_NONE)
-    timevar_pop (pass->tv_id);
 
   if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
     check_profile_consistency (pass->static_pass_number, 0, true);
@@ -2220,6 +2212,10 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   verify_interpass_invariants ();
   if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
     check_profile_consistency (pass->static_pass_number, 1, true);
+
+  /* Stop timevar.  */
+  if (pass->tv_id != TV_NONE)
+    timevar_pop (pass->tv_id);
 
   if (dump_file)
     do_per_function (execute_function_dump, pass);
@@ -2329,6 +2325,10 @@ execute_one_pass (opt_pass *pass)
 
   pass_init_dump_file (pass);
 
+  /* If a timevar is present, start it.  */
+  if (pass->tv_id != TV_NONE)
+    timevar_push (pass->tv_id);
+
   /* Run pre-pass verification.  */
   execute_todo (pass->todo_flags_start);
 
@@ -2336,15 +2336,15 @@ execute_one_pass (opt_pass *pass)
     do_per_function (verify_curr_properties,
 		     (void *)(size_t)pass->properties_required);
 
-  /* If a timevar is present, start it.  */
-  if (pass->tv_id != TV_NONE)
-    timevar_push (pass->tv_id);
-
   /* Do it!  */
   todo_after = pass->execute (cfun);
 
   if (todo_after & TODO_discard_function)
     {
+      /* Stop timevar.  */
+      if (pass->tv_id != TV_NONE)
+	timevar_pop (pass->tv_id);
+
       pass_fini_dump_file (pass);
 
       gcc_assert (cfun);
@@ -2371,10 +2371,6 @@ execute_one_pass (opt_pass *pass)
 
   do_per_function (clear_last_verified, NULL);
 
-  /* Stop timevar.  */
-  if (pass->tv_id != TV_NONE)
-    timevar_pop (pass->tv_id);
-
   do_per_function (update_properties_after_pass, pass);
 
   if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
@@ -2386,6 +2382,11 @@ execute_one_pass (opt_pass *pass)
     check_profile_consistency (pass->static_pass_number, 1, true);
 
   verify_interpass_invariants ();
+
+  /* Stop timevar.  */
+  if (pass->tv_id != TV_NONE)
+    timevar_pop (pass->tv_id);
+
   if (pass->type == IPA_PASS
       && ((ipa_opt_pass_d *)pass)->function_transform)
     {

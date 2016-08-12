@@ -554,7 +554,7 @@ Objective-C and Objective-C++ Dialects}.
 -fprofile-report @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
 -fsel-sched-verbose -fsel-sched-dump-cfg -fsel-sched-pipelining-verbose @gol
--fstats  -fstack-usage  -ftime-report @gol
+-fstats  -fstack-usage  -ftime-report -ftime-report-details @gol
 -fvar-tracking-assignments-toggle -gtoggle @gol
 -print-file-name=@var{library}  -print-libgcc-file-name @gol
 -print-multi-directory  -print-multi-lib  -print-multi-os-directory @gol
@@ -12741,6 +12741,10 @@ print some statistics about each pass when it finishes.
 @opindex ftime-report
 Makes the compiler print some statistics about the time consumed by each
 pass when it finishes.
+
+@item -ftime-report-details
+@opindex ftime-report-details
+Record the time consumed by infrastructure parts separately for each pass.
 
 @item -fira-verbose=@var{n}
 @opindex fira-verbose

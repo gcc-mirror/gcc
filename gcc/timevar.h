@@ -131,9 +131,11 @@ class timer
   void pop_internal ();
   static void print_row (FILE *fp,
 			 const timevar_time_def *total,
-			 const timevar_def *tv);
+			 const char *name, const timevar_time_def &elapsed);
+  static bool all_zero (const timevar_time_def &elapsed);
 
  private:
+  typedef hash_map<timevar_def *, timevar_time_def> child_map_t;
 
   /* Private type: a timing variable.  */
   struct timevar_def
@@ -155,6 +157,8 @@ class timer
     /* Nonzero if this timing variable was ever started or pushed onto
        the timing stack.  */
     unsigned used : 1;
+
+    child_map_t *children;
   };
 
   /* Private type: an element on the timing stack

@@ -1,5 +1,24 @@
 2016-08-12  Richard Biener  <rguenther@suse.de>
 
+	* passes.c (execute_todo): Do not push/pop TV_TODO.
+	(execute_one_ipa_transform_pass): Move timevar push/pop TODO execution.
+	(execute_one_pass): Likewise.
+	* common.opt (ftime-report-details): New switch.
+	* doc/invoke.texi (ftime-report-details): Document.
+	* timevar.h (timer::print_row): Adjust signature.
+	(timer::all_zero): New static helper.
+	(timer::child_map_t): New typedef.
+	(timer::time_var_def): Add children field.
+	* timevar.c (timer::named_items::print): Adjust.
+	(timer::~timer): Free timevar recorded children.
+	(timer::pop_internal): When -ftime-report-details record
+	time spent in sub-timevars.
+	(timer::print_row): Adjust.
+	(timer::print): Print sub-timevar stats, use all_zero.
+	* timevar.def (TV_TODO): Remove.
+
+2016-08-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/72851
 	* tree-ssa-propagate.c: Include cfganal.h.  Rewrite block and stmt
 	worklists to use bitmaps indexed in execution order.

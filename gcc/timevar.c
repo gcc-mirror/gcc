@@ -205,7 +205,7 @@ timer::named_items::print (FILE *fp, const timevar_time_def *total)
     {
       timer::timevar_def *def = m_hash_map.get (item_name);
       gcc_assert (def);
-      m_timer->print_row (fp, total, def);
+      m_timer->print_row (fp, total, def->name, def->elapsed);
     }
 }
 
@@ -296,6 +296,8 @@ timer::~timer ()
       next = iter->next;
       free (iter);
     }
+  for (unsigned i = 0; i < TIMEVAR_LAST; ++i)
+    delete m_timevars[i].children;
 
   delete m_jit_client_items;
 }
@@ -399,12 +401,25 @@ timer::pop_internal ()
   /* Attribute the elapsed time to the element we're popping.  */
   timevar_accumulate (&popped->timevar->elapsed, &m_start_time, &now);
 
+  /* Take the item off the stack.  */
+  m_stack = m_stack->next;
+
+  /* Record the elapsed sub-time to the parent as well.  */
+  if (m_stack && time_report_details)
+    {
+      if (! m_stack->timevar->children)
+	m_stack->timevar->children = new child_map_t (5);
+      bool existed_p;
+      timevar_time_def &time
+	= m_stack->timevar->children->get_or_insert (popped->timevar, &existed_p);
+      if (! existed_p)
+	memset (&time, 0, sizeof (timevar_time_def));
+      timevar_accumulate (&time, &m_start_time, &now);
+    }
+
   /* Reset the start time; from now on, time is attributed to the
      element just exposed on the stack.  */
   m_start_time = now;
-
-  /* Take the item off the stack.  */
-  m_stack = m_stack->next;
 
   /* Don't delete the stack element; instead, add it to the list of
      unused elements for later use.  */
@@ -619,40 +634,52 @@ timer::validate_phases (FILE *fp) const
 void
 timer::print_row (FILE *fp,
 		  const timevar_time_def *total,
-		  const timevar_def *tv)
+		  const char *name, const timevar_time_def &elapsed)
 {
   /* The timing variable name.  */
-  fprintf (fp, " %-24s:", tv->name);
+  fprintf (fp, " %-24s:", name);
 
 #ifdef HAVE_USER_TIME
   /* Print user-mode time for this process.  */
   fprintf (fp, "%7.2f (%2.0f%%) usr",
-	   tv->elapsed.user,
-	   (total->user == 0 ? 0 : tv->elapsed.user / total->user) * 100);
+	   elapsed.user,
+	   (total->user == 0 ? 0 : elapsed.user / total->user) * 100);
 #endif /* HAVE_USER_TIME */
 
 #ifdef HAVE_SYS_TIME
   /* Print system-mode time for this process.  */
   fprintf (fp, "%7.2f (%2.0f%%) sys",
-	   tv->elapsed.sys,
-	   (total->sys == 0 ? 0 : tv->elapsed.sys / total->sys) * 100);
+	   elapsed.sys,
+	   (total->sys == 0 ? 0 : elapsed.sys / total->sys) * 100);
 #endif /* HAVE_SYS_TIME */
 
 #ifdef HAVE_WALL_TIME
   /* Print wall clock time elapsed.  */
   fprintf (fp, "%7.2f (%2.0f%%) wall",
-	   tv->elapsed.wall,
-	   (total->wall == 0 ? 0 : tv->elapsed.wall / total->wall) * 100);
+	   elapsed.wall,
+	   (total->wall == 0 ? 0 : elapsed.wall / total->wall) * 100);
 #endif /* HAVE_WALL_TIME */
 
   /* Print the amount of ggc memory allocated.  */
   fprintf (fp, "%8u kB (%2.0f%%) ggc",
-	   (unsigned) (tv->elapsed.ggc_mem >> 10),
+	   (unsigned) (elapsed.ggc_mem >> 10),
 	   (total->ggc_mem == 0
 	    ? 0
-	    : (float) tv->elapsed.ggc_mem / total->ggc_mem) * 100);
+	    : (float) elapsed.ggc_mem / total->ggc_mem) * 100);
 
   putc ('\n', fp);
+}
+
+/* Return whether ELAPSED is all zero.  */
+
+bool
+timer::all_zero (const timevar_time_def &elapsed)
+{
+  const double tiny = 5e-3;
+  return (elapsed.user < tiny
+	  && elapsed.sys < tiny
+	  && elapsed.wall < tiny
+	  && elapsed.ggc_mem < GGC_MEM_BOUND);
 }
 
 /* Summarize timing variables to FP.  The timing variable TV_TOTAL has
@@ -691,7 +718,6 @@ timer::print (FILE *fp)
   for (id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
     {
       const timevar_def *tv = &m_timevars[(timevar_id_t) id];
-      const double tiny = 5e-3;
 
       /* Don't print the total execution time here; that goes at the
 	 end.  */
@@ -702,15 +728,38 @@ timer::print (FILE *fp)
       if (!tv->used)
 	continue;
 
+      bool any_children_with_time = false;
+      if (tv->children)
+	for (child_map_t::iterator i = tv->children->begin ();
+	     i != tv->children->end (); ++i)
+	  if (! all_zero ((*i).second))
+	    {
+	      any_children_with_time = true;
+	      break;
+	    }
+
       /* Don't print timing variables if we're going to get a row of
-         zeroes.  */
-      if (tv->elapsed.user < tiny
-	  && tv->elapsed.sys < tiny
-	  && tv->elapsed.wall < tiny
-	  && tv->elapsed.ggc_mem < GGC_MEM_BOUND)
+         zeroes.  Unless there are children with non-zero time.  */
+      if (! any_children_with_time
+	  && all_zero (tv->elapsed))
 	continue;
 
-      print_row (fp, total, tv);
+      print_row (fp, total, tv->name, tv->elapsed);
+
+      if (tv->children)
+	for (child_map_t::iterator i = tv->children->begin ();
+	     i != tv->children->end (); ++i)
+	  {
+	    timevar_def *tv2 = (*i).first;
+	    /* Don't print timing variables if we're going to get a row of
+	       zeroes.  */
+	    if (! all_zero ((*i).second))
+	      {
+		char lname[256];
+		snprintf (lname, 256, "`- %s", tv2->name);
+		print_row (fp, total, lname, (*i).second);
+	      }
+	  }
     }
   if (m_jit_client_items)
     m_jit_client_items->print (fp, total);
