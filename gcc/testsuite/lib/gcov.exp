@@ -20,15 +20,27 @@
 global GCOV
 
 #
+# clean-gcov-file -- delete a working file the compiler creates for gcov
+#
+# TESTCASE is the name of the test.
+# SUFFIX is file suffix
+
+proc clean-gcov-file { testcase suffix } {
+    set basename [file tail $testcase]
+    set base [file rootname $basename]
+    remote_file host delete $base.$suffix
+}
+
+#
 # clean-gcov -- delete the working files the compiler creates for gcov
 #
 # TESTCASE is the name of the test.
 #
 proc clean-gcov { testcase } {
-    set basename [file tail $testcase]
-    set base [file rootname $basename]
-    remote_file host delete $base.gcno $base.gcda \
-	$basename.gcov $base.h.gcov
+    clean-gcov-file $testcase "gcno"
+    clean-gcov-file $testcase "gcda"
+    clean-gcov-file $testcase "gcov"
+    clean-gcov-file $testcase "h.gcov"
 }
 
 #
@@ -305,6 +317,7 @@ proc run-gcov { args } {
     set gcov_verify_branches 0
     set gcov_verify_lines 1
     set gcov_verify_intermediate 0
+    set gcov_remove_gcda 0
     set xfailed 0
 
     foreach a $args {
@@ -317,6 +330,8 @@ proc run-gcov { args } {
 	  set gcov_verify_calls 0
 	  set gcov_verify_branches 0
 	  set gcov_verify_lines 0
+	} elseif { $a == "remove-gcda" } {
+	  set gcov_remove_gcda 1
 	} elseif { $gcov_args == "" } {
 	    set gcov_args $a
 	} else {
@@ -331,6 +346,11 @@ proc run-gcov { args } {
 
     # Extract the test file name from the arguments.
     set testcase [lindex $gcov_args end]
+
+    if { $gcov_remove_gcda } {
+	verbose "Removing $testcase.gcda"
+	clean-gcov-file $testcase "gcda"
+    }
 
     verbose "Running $GCOV $testcase" 2
     set testcase [remote_download host $testcase]

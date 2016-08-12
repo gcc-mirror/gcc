@@ -902,7 +902,7 @@ process_file (const char *file_name)
 
       fns = fn->next;
       fn->next = NULL;
-      if (fn->counts)
+      if (fn->counts || no_data_file)
 	{
 	  unsigned src = fn->src;
 	  unsigned line = fn->line;

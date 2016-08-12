@@ -1,3 +1,10 @@
+2016-08-12  Martin Liska  <mliska@suse.cz>
+
+	    Adam Fineman  <afineman@afineman.com>
+
+	* gcov.c (process_file): Create .gcov file when .gcda
+	file is missing.
+
 2016-08-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
