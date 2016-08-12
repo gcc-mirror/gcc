@@ -622,6 +622,7 @@ encode_type (tree type, int curtype, int format)
 	}
       /* Else, they are encoded exactly like the integer type that is
 	 used by the compiler to store them.  */
+      /* FALLTHRU */
     case INTEGER_TYPE:
       {
 	char c;

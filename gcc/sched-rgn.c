@@ -2036,6 +2036,7 @@ is_exception_free (rtx_insn *insn, int bb_src, int bb_trg)
       if (is_pfree (insn, bb_src, bb_trg))
 	return 1;
       /* Don't 'break' here: PFREE-candidate is also PRISKY-candidate.  */
+      /* FALLTHRU */
     case PRISKY_CANDIDATE:
       if (!flag_schedule_speculative_load_dangerous
 	  || is_prisky (insn, bb_src, bb_trg))

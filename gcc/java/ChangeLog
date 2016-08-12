@@ -1,3 +1,10 @@
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* expr.c (java_truthvalue_conversion): Adjust fall through comment.
+	* jcf-io.c (verify_constant_pool): Likewise.
+	* typeck.c (promote_type): Likewise.
+
 2016-08-02  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* expr.c (push_value): Only call flush_quick_stack for non-constant

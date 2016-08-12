@@ -2875,7 +2875,7 @@ df_uses_record (struct df_collection_rec *collection_rec,
 	  df_uses_record (collection_rec, loc, ref_type, bb, insn_info, flags);
 	  return;
 	}
-      /* ... Fall through ...  */
+      /* Fall through */
 
     case REG:
       df_ref_record (DF_REF_REGULAR, collection_rec,

@@ -1038,6 +1038,7 @@ get_alternatives_number (rtx pattern, int *n_alt, file_location loc)
 	case 'V':
 	  if (XVEC (pattern, i) == NULL)
 	    break;
+	  /* FALLTHRU */
 
 	case 'E':
 	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
@@ -2156,6 +2157,7 @@ subst_dup (rtx pattern, int n_alt, int n_subst_alt)
 	case 'V':
 	  if (XVEC (pattern, i) == NULL)
 	    break;
+	  /* FALLTHRU */
 	case 'E':
 	  if (code != MATCH_DUP && code != MATCH_OP_DUP)
 	    for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)

@@ -9338,6 +9338,7 @@ pass_in_reg:
 	error_p = 1;
       if (cum->float_in_sse < 2)
 	break;
+      /* FALLTHRU */
     case SFmode:
       if (cum->float_in_sse == -1)
 	error_p = 1;
@@ -9605,6 +9606,7 @@ pass_in_reg:
 	error_p = 1;
       if (cum->float_in_sse < 2)
 	break;
+      /* FALLTHRU */
     case SFmode:
       if (cum->float_in_sse == -1)
 	error_p = 1;
@@ -11010,6 +11012,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	  container = NULL;
 	  break;
 	}
+      /* FALLTHRU */
 
     default:
       container = construct_container (nat_mode, TYPE_MODE (type),
@@ -17318,6 +17321,7 @@ print_reg (rtx x, int code, FILE *file)
     case 4:
       if (LEGACY_INT_REGNO_P (regno))
 	putc (msize == 8 && TARGET_64BIT ? 'r' : 'e', file);
+      /* FALLTHRU */
     case 16:
     case 12:
     case 2:
@@ -17727,6 +17731,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		  fputs ("eq_us", file);
 		  break;
 		}
+	     /* FALLTHRU */
 	    case EQ:
 	      fputs ("eq", file);
 	      break;
@@ -17736,6 +17741,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		  fputs ("nge", file);
 		  break;
 		}
+	     /* FALLTHRU */
 	    case LT:
 	      fputs ("lt", file);
 	      break;
@@ -17745,6 +17751,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		  fputs ("ngt", file);
 		  break;
 		}
+	     /* FALLTHRU */
 	    case LE:
 	      fputs ("le", file);
 	      break;
@@ -17757,6 +17764,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		  fputs ("neq_oq", file);
 		  break;
 		}
+	     /* FALLTHRU */
 	    case NE:
 	      fputs ("neq", file);
 	      break;
@@ -17766,6 +17774,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		  fputs ("ge", file);
 		  break;
 		}
+	     /* FALLTHRU */
 	    case UNGE:
 	      fputs ("nlt", file);
 	      break;
@@ -17775,6 +17784,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		  fputs ("gt", file);
 		  break;
 		}
+	     /* FALLTHRU */
 	    case UNGT:
 	      fputs ("nle", file);
 	      break;
@@ -21522,6 +21532,7 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case V4DImode:
     case V2DImode:
       gcc_assert (vect);
+      /* FALLTHRU */
     case V16SFmode:
     case V8SFmode:
     case V4SFmode:
@@ -22507,6 +22518,7 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 	  op0 = force_reg (mode, gen_rtx_XOR (mode, op0, op1));
 	  op1 = const0_rtx;
 	}
+      /* FALLTHRU */
     case TImode:
       /* Expand DImode branch into multiple compare+branch.  */
       {
@@ -29868,7 +29880,7 @@ ix86_sched_init_global (FILE *, int, int)
 	  core2i7_ifetch_block_max_insns = 6;
 	  break;
 	}
-      /* ... Fall through ...  */
+      /* Fall through.  */
     default:
       targetm.sched.dfa_post_advance_cycle = NULL;
       targetm.sched.first_cycle_multipass_init = NULL;
@@ -40139,6 +40151,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 			error ("the next to last argument must be an 8-bit immediate");
 			break;
 		      }
+		    /* FALLTHRU */
 		  case 1:
 		    error ("the last argument must be an 8-bit immediate");
 		    break;
@@ -42870,6 +42883,7 @@ rdseed_step:
 	  if (!TARGET_SSE)
 	    /* Emit a normal call if SSE isn't available.  */
 	    return expand_call (exp, target, ignore);
+	  /* FALLTHRU */
 	default:
 	  return ix86_expand_args_builtin (d, exp, target);
 	}
@@ -47023,6 +47037,7 @@ ix86_expand_vector_init_one_var (bool mmx_ok, machine_mode mode,
       /* Use ix86_expand_vector_set in 64bit mode only.  */
       if (!TARGET_64BIT)
 	return false;
+      /* FALLTHRU */
     case V4DFmode:
     case V8SFmode:
     case V8SImode:

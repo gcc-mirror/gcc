@@ -1832,6 +1832,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 		  case '#':
 		  case ',':
 		    c = '\0';
+		    /* FALLTHRU */
 		  case '\0':
 		    len = 0;
 		    break;

@@ -83,6 +83,7 @@ walk_insn_part (rtx part, int recog_p, int non_pc_set_src)
     case MATCH_OP_DUP:
     case MATCH_PAR_DUP:
       ++dup_operands_seen_this_insn;
+      /* FALLTHRU */
     case MATCH_SCRATCH:
     case MATCH_PARALLEL:
     case MATCH_OPERATOR:

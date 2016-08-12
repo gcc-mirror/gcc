@@ -2667,6 +2667,7 @@ round_for_format (const struct real_format *fmt, REAL_VALUE_TYPE *r)
     {
     underflow:
       get_zero (r, r->sign);
+      /* FALLTHRU */
     case rvc_zero:
       if (!fmt->has_signed_zero)
 	r->sign = 0;

@@ -1,3 +1,38 @@
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* call.c (add_builtin_candidate): Add FALLTHRU.
+	(build_integral_nontype_arg_conv): Adjust fall through comment.
+	(build_new_op_1): Add FALLTHRU.
+	(convert_like_real): Adjust fall through comment.
+	* class.c (fixed_type_or_null): Likewise.
+	* constexpr.c (cxx_eval_constant_expression): Likewise.
+	(potential_constant_expression_1): Likewise.  Add FALLTHRU.
+	* cp-gimplify.c (cp_gimplify_expr): Adjust fall through comment.
+	(cp_fold): Add FALLTHRU.
+	* cvt.c (build_expr_type_conversion): Adjust fall through comment.
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Add FALLTHRU.
+	(pp_cxx_qualified_id): Likewise.
+	(cxx_pretty_printer::constant): Adjust fall through comment.
+	(cxx_pretty_printer::primary_expression): Add FALLTHRU.
+	(pp_cxx_pm_expression): Adjust fall through comment.
+	(cxx_pretty_printer::expression): Add FALLTHRU.
+	(cxx_pretty_printer::declaration_specifiers): Reformat code.
+	(pp_cxx_type_specifier_seq): Adjust fall through comment.
+	(pp_cxx_ptr_operator): Likewise.  Add FALLTHRU.
+	* error.c (dump_type): Adjust fall through comment.
+	(dump_decl): Likewise.
+	* mangle.c (write_type): Likewise.
+	* method.c (synthesized_method_walk): Add FALLTHRU.
+	* name-lookup.c (arg_assoc_type): Likewise.
+	* parser.c (cp_lexer_print_token): Adjust fall through comment.
+	(cp_parser_primary_expression): Add FALLTHRU.
+	(cp_parser_operator): Likewise.
+	* pt.c (find_parameter_packs_r): Likewise.
+	(tsubst_aggr_type): Adjust fall through comment.
+	* semantics.c (finish_omp_clauses): Add FALLTHRU.
+	* tree.c (lvalue_kind): Likewise.
+
 2016-08-12  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/63240

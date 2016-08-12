@@ -1,3 +1,8 @@
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* objc-encoding.c (encode_type): Add FALLTHRU.
+
 2016-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* objc-act.c (objc_build_component_ref): Update call

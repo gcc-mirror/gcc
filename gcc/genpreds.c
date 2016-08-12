@@ -51,12 +51,12 @@ validate_exp (rtx exp, const char *name, file_location loc)
     case IF_THEN_ELSE:
       if (validate_exp (XEXP (exp, 2), name, loc))
 	return true;
-      /* else fall through */
+      /* fall through */
     case AND:
     case IOR:
       if (validate_exp (XEXP (exp, 1), name, loc))
 	return true;
-      /* else fall through */
+      /* fall through */
     case NOT:
       return validate_exp (XEXP (exp, 0), name, loc);
 
@@ -174,12 +174,12 @@ needs_variable (rtx exp, const char *var)
     case IF_THEN_ELSE:
       if (needs_variable (XEXP (exp, 2), var))
 	return true;
-      /* else fall through */
+      /* fall through */
     case AND:
     case IOR:
       if (needs_variable (XEXP (exp, 1), var))
 	return true;
-      /* else fall through */
+      /* fall through */
     case NOT:
       return needs_variable (XEXP (exp, 0), var);
 

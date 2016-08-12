@@ -180,6 +180,7 @@
 	  || GET_CODE (XEXP (op, 1)) != CONST_INT)
 	return false;
       op = XEXP (op, 0);
+      /* FALLTHRU */
 
     case SYMBOL_REF:
       return SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_INITIAL_EXEC;
@@ -201,6 +202,7 @@
 	  || GET_CODE (XEXP (op, 1)) != CONST_INT)
 	return false;
       op = XEXP (op, 0);
+      /* FALLTHRU */
 
     case SYMBOL_REF:
       return SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_EXEC;

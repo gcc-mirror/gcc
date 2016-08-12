@@ -398,7 +398,7 @@ int_mode_for_mode (machine_mode mode)
       if (mode == BLKmode)
 	break;
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case MODE_CC:
     default:

@@ -1,3 +1,13 @@
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* lex.c (search_line_fast): Add FALLTHRU.
+	(_cpp_lex_direct): Likewise.
+	(cpp_token_val_index): Adjust fall through comment.
+	* macro.c (parse_params): Add FALLTHRU.
+	* pch.c (count_defs): Adjust fall through comment.
+	(write_defs): Likewise.
+
 2016-08-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/72823

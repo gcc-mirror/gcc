@@ -1420,6 +1420,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     case sfk_move_constructor:
     case sfk_move_assignment:
       move_p = true;
+      /* FALLTHRU */
     case sfk_copy_constructor:
     case sfk_copy_assignment:
       copy_arg_p = true;

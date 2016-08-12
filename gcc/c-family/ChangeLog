@@ -1,3 +1,13 @@
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* c-common.c (scalar_to_vector): Adjust fall through comment.
+	* c-opts.c (c_common_handle_option): Likewise.
+	* c-pragma.c (handle_pragma_pack): Add FALLTHRU.
+	* c-pretty-print.c (c_pretty_printer::postfix_expression): Adjust
+	fall through comment.
+	* cilk.c (extract_free_variables): Add FALLTHRU.
+
 2016-08-10  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_if_constexpr.

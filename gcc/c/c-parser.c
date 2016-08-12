@@ -1557,6 +1557,7 @@ c_parser_external_declaration (c_parser *parser)
 	}
       /* Else fall through, and yield a syntax error trying to parse
 	 as a declaration or function definition.  */
+      /* FALLTHRU */
     default:
     decl_or_fndef:
       /* A declaration or a function definition (or, in Objective-C,
@@ -8174,6 +8175,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  break;
 	}
       /* Else fall through to report error.  */
+      /* FALLTHRU */
     default:
       c_parser_error (parser, "expected expression");
       expr.set_error ();

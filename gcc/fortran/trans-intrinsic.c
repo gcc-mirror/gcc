@@ -5329,7 +5329,7 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
 	  break;
 	}
 
-      /* Otherwise fall through.  */
+      /* Fall through.  */
 
     default:
       /* Anybody stupid enough to do this deserves inefficient code.  */

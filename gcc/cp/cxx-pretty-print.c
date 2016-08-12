@@ -153,6 +153,7 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     case USING_DECL:
     case TEMPLATE_DECL:
       t = DECL_NAME (t);
+      /* FALLTHRU */
 
     case IDENTIFIER_NODE:
       if (t == NULL)
@@ -280,6 +281,7 @@ pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
 	 functions and some function templates.  */
     case OVERLOAD:
       t = OVL_CURRENT (t);
+      /* FALLTHRU */
     case FUNCTION_DECL:
       if (DECL_FUNCTION_MEMBER_P (t))
 	pp_cxx_nested_name_specifier (pp, DECL_CONTEXT (t));
@@ -331,7 +333,7 @@ cxx_pretty_printer::constant (tree t)
 	  pp_string (this, "nullptr");
 	  break;
 	}
-      /* else fall through.  */
+      /* fall through.  */
 
     default:
       c_pretty_printer::constant (t);
@@ -417,6 +419,7 @@ cxx_pretty_printer::primary_expression (tree t)
 
     case BASELINK:
       t = BASELINK_FUNCTIONS (t);
+      /* FALLTHRU */
     case VAR_DECL:
     case PARM_DECL:
     case FIELD_DECL:
@@ -872,7 +875,7 @@ pp_cxx_pm_expression (cxx_pretty_printer *pp, tree t)
 	  pp_cxx_qualified_id (pp, t);
 	  break;
 	}
-      /* Else fall through.  */
+      /* Fall through.  */
     case MEMBER_REF:
     case DOTSTAR_EXPR:
       pp_cxx_pm_expression (pp, TREE_OPERAND (t, 0));
@@ -1057,6 +1060,7 @@ cxx_pretty_printer::expression (tree t)
 
     case OVERLOAD:
       t = OVL_CURRENT (t);
+      /* FALLTHRU */
     case VAR_DECL:
     case PARM_DECL:
     case FIELD_DECL:
@@ -1267,7 +1271,9 @@ cxx_pretty_printer::declaration_specifiers (tree t)
       else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (t))
 	declaration_specifiers (TREE_TYPE (TREE_TYPE (t)));
       else
-	default:
+        c_pretty_printer::declaration_specifiers (t);
+      break;
+    default:
         c_pretty_printer::declaration_specifiers (t);
       break;
     }
@@ -1364,7 +1370,7 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
 	  pp_cxx_ptr_operator (pp, t);
 	  break;
 	}
-      /* else fall through */
+      /* fall through */
 
     default:
       if (!(TREE_CODE (t) == FUNCTION_DECL && DECL_CONSTRUCTOR_P (t)))
@@ -1406,6 +1412,7 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
 	  pp_star (pp);
 	  break;
 	}
+      /* FALLTHRU */
     case OFFSET_TYPE:
       if (TYPE_PTRMEM_P (t))
 	{
@@ -1416,7 +1423,7 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
 	  pp_cxx_cv_qualifier_seq (pp, t);
 	  break;
 	}
-      /* else fall through.  */
+      /* fall through.  */
 
     default:
       pp_unsupported_tree (pp, t);

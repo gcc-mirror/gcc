@@ -1,3 +1,8 @@
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* cp-demangle.c (d_print_mod): Add FALLTHRU.
+
 2016-08-04  Marcel Böhme  <boehme.marcel@gmail.com>
 
 	PR c++/71696

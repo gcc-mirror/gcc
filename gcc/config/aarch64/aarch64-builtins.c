@@ -1017,6 +1017,7 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 		}
 	      /* Fall through - if the lane index isn't a constant then
 		 the next case will error.  */
+	      /* FALLTHRU */
 	    case SIMD_ARG_CONSTANT:
 constant_arg:
 	      if (!(*insn_data[icode].operand[opc].predicate)

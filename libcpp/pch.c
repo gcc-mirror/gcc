@@ -230,7 +230,7 @@ count_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
       if (hn->flags & NODE_BUILTIN)
 	return 1;
 
-      /* else fall through.  */
+      /* fall through.  */
 
     case NT_VOID:
       {
@@ -269,7 +269,7 @@ write_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
       if (hn->flags & NODE_BUILTIN)
 	return 1;
 
-      /* else fall through.  */
+      /* fall through.  */
 
     case NT_VOID:
       {

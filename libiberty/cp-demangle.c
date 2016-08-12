@@ -5777,11 +5777,13 @@ d_print_mod (struct d_print_info *dpi, int options,
     case DEMANGLE_COMPONENT_REFERENCE_THIS:
       /* For the ref-qualifier, put a space before the &.  */
       d_append_char (dpi, ' ');
+      /* FALLTHRU */
     case DEMANGLE_COMPONENT_REFERENCE:
       d_append_char (dpi, '&');
       return;
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
       d_append_char (dpi, ' ');
+      /* FALLTHRU */
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE:
       d_append_string (dpi, "&&");
       return;

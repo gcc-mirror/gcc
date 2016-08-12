@@ -1163,6 +1163,7 @@ read_rtx_code (const char *code_name)
 	    break;
 	  }
 	/* Now process the vector.  */
+	/* FALLTHRU */
 
       case 'E':
 	{

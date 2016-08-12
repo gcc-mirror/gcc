@@ -1685,6 +1685,7 @@ siv_subscript_p (const_tree chrec_a, const_tree chrec_b)
 	    case POLYNOMIAL_CHREC:
 	      if (CHREC_VARIABLE (chrec_a) != CHREC_VARIABLE (chrec_b))
 		return false;
+	      /* FALLTHRU */
 
 	    default:
 	      return true;
@@ -3890,6 +3891,7 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
 	    if (gimple_call_lhs (stmt) == NULL_TREE)
 	      break;
 	    ref.is_read = true;
+	    /* FALLTHRU */
 	  case IFN_MASK_STORE:
 	    ptr = build_int_cst (TREE_TYPE (gimple_call_arg (stmt, 1)), 0);
 	    align = tree_to_shwi (gimple_call_arg (stmt, 1));

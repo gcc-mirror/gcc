@@ -1496,7 +1496,7 @@ substitute_ssa_name (tree exp, tree f, tree r)
 	if (exp == f)
 	  return r;
 
-	/* Fall through...  */
+	/* Fall through.  */
 
       case tcc_exceptional:
       case tcc_unary:

@@ -8406,6 +8406,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	 offset to have matching modes.  */
       else if (TYPE_PRECISION (sizetype) > TYPE_PRECISION (type))
 	treeop1 = fold_convert_loc (loc, type, treeop1);
+      /* FALLTHRU */
 
     case PLUS_EXPR:
       /* If we are adding a constant, a VAR_DECL that is sp, fp, or ap, and
@@ -9574,9 +9575,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
     switch (TREE_CODE_LENGTH (code))
       {
 	default:
-	case 3: treeop2 = TREE_OPERAND (exp, 2);
-	case 2: treeop1 = TREE_OPERAND (exp, 1);
-	case 1: treeop0 = TREE_OPERAND (exp, 0);
+	case 3: treeop2 = TREE_OPERAND (exp, 2); /* FALLTHRU */
+	case 2: treeop1 = TREE_OPERAND (exp, 1); /* FALLTHRU */
+	case 1: treeop0 = TREE_OPERAND (exp, 0); /* FALLTHRU */
 	case 0: break;
       }
   ops.code = code;
@@ -9748,7 +9749,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
 	layout_decl (exp, 0);
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case FUNCTION_DECL:
     case RESULT_DECL:
@@ -9956,7 +9957,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  return original_target;
 	}
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case STRING_CST:
       temp = expand_expr_constant (exp, 1, modifier);

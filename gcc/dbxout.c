@@ -2867,7 +2867,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	 disguised VAR_DECLs like Out parameters in Ada.  */
       gcc_assert (TREE_CODE (decl) == VAR_DECL);
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case RESULT_DECL:
     case VAR_DECL:

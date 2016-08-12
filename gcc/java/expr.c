@@ -192,7 +192,7 @@ java_truthvalue_conversion (tree expr)
       if (TYPE_PRECISION (TREE_TYPE (expr))
           >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (expr, 0))))
         return java_truthvalue_conversion (TREE_OPERAND (expr, 0));
-      /* fall through to default */
+      /* fall through */
 
     default:
       return fold_build2 (NE_EXPR, boolean_type_node,

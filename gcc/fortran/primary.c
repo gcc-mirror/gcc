@@ -1686,18 +1686,21 @@ match_arg_list_function (gfc_actual_arglist *result)
 	      result->name = "%LOC";
 	      break;
 	    }
+	  /* FALLTHRU */
 	case 'r':
 	  if (strncmp (name, "ref", 3) == 0)
 	    {
 	      result->name = "%REF";
 	      break;
 	    }
+	  /* FALLTHRU */
 	case 'v':
 	  if (strncmp (name, "val", 3) == 0)
 	    {
 	      result->name = "%VAL";
 	      break;
 	    }
+	  /* FALLTHRU */
 	default:
 	  m = MATCH_ERROR;
 	  goto cleanup;
