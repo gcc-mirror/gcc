@@ -1,3 +1,8 @@
+2016-08-12  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/35590
+	* gcc.dg/tree-prof/val-prof-7.c: Improve test coverage.
+
 2016-08-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/72851
