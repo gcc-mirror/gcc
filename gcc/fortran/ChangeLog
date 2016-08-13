@@ -1,3 +1,10 @@
+2016-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/68147
+	* frontend-passes.c (realloc_string_callback): Don't set
+	walk_subtrees.
+
 2016-08-11  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backport from trunk:

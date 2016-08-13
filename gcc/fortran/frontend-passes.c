@@ -145,7 +145,6 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees,
   gfc_code *co = *c;
   gfc_expr *n;
 
-  *walk_subtrees = 0;
   if (co->op != EXEC_ASSIGN)
     return 0;
 
