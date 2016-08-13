@@ -1,3 +1,8 @@
+2016-08-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Propagate
+	into PHIs and update the lattice for its def.
+
 2016-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/71512
