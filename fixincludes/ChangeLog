@@ -1,3 +1,9 @@
+2016-08-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* inclhack.def (hpux_longjmp): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/setjmp.h: New test file.
+
 2016-08-09  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR bootstrap/72833
