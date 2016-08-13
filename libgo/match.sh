@@ -10,10 +10,10 @@
 
 set -e
 
-unset LANG
+LANG=C
 LC_ALL=C
 LC_CTYPE=C
-export LC_ALL LC_CTYPE
+export LANG LC_ALL LC_CTYPE
 
 srcdir=""
 goarch=""
