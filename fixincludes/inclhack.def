@@ -2642,6 +2642,21 @@ fix = {
 };
 
 /*
+ *  Add noreturn attribute to longjmp declarations in hpux <setjmp.h>
+ */
+fix = {
+    hackname = hpux_longjmp;
+    mach     = "*-hp-hpux*";
+    files    = setjmp.h;
+    select   = "^[ \t]*extern[ \t]+void.*longjmp[ \t]+__\\(\\(.*int\\)\\)";
+
+    c_fix     = format;
+    c_fix_arg = "%0 __attribute__ ((__noreturn__))";
+
+    test_text = 'extern void	longjmp __((jmp_buf, int));';
+};
+
+/*
  *  Fix hpux10.20 <sys/time.h> to avoid invalid forward decl
  */
 fix = {
