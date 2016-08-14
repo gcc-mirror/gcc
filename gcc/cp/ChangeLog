@@ -1,4 +1,4 @@
-2016-07-25  Jason Merrill  <jason@redhat.com>
+2016-08-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71972
 	* constexpr.c (cxx_eval_array_reference): Handle looking for the
