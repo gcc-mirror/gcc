@@ -72,9 +72,8 @@ _mm512_broadcast_i64x2 (__m128i __A)
 {
   return (__m512i) __builtin_ia32_broadcasti64x2_512_mask ((__v2di)
 							   __A,
-							   _mm512_undefined_si512(),
-							   (__mmask8) -
-							   1);
+							   _mm512_undefined_epi32(),
+							   (__mmask8) -1);
 }
 
 extern __inline __m512i
@@ -133,9 +132,8 @@ _mm512_broadcast_i32x2 (__m128i __A)
 {
   return (__m512i) __builtin_ia32_broadcasti32x2_512_mask ((__v4si)
 							   __A,
-							   (__v16si)_mm512_undefined_si512(),
-							   (__mmask16)
-							   -1);
+							   (__v16si)_mm512_undefined_epi32(),
+							   (__mmask16) -1);
 }
 
 extern __inline __m512i
@@ -194,9 +192,8 @@ _mm512_broadcast_i32x8 (__m256i __A)
 {
   return (__m512i) __builtin_ia32_broadcasti32x8_512_mask ((__v8si)
 							   __A,
-							   (__v16si)_mm512_undefined_si512(),
-							   (__mmask16)
-							   -1);
+							   (__v16si)_mm512_undefined_epi32(),
+							   (__mmask16) -1);
 }
 
 extern __inline __m512i

@@ -270,9 +270,8 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_broadcastb_epi8 (__m128i __A)
 {
   return (__m512i) __builtin_ia32_pbroadcastb512_mask ((__v16qi) __A,
-						       (__v64qi)_mm512_undefined_si512(),
-						       (__mmask64) -
-						       1);
+						       (__v64qi)_mm512_undefined_epi32(),
+						       (__mmask64) -1);
 }
 
 extern __inline __m512i
@@ -318,8 +317,8 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_broadcastw_epi16 (__m128i __A)
 {
   return (__m512i) __builtin_ia32_pbroadcastw512_mask ((__v8hi) __A,
-						       (__v32hi)_mm512_undefined_si512(),
-						       (__mmask32)-1);
+						       (__v32hi)_mm512_undefined_epi32(),
+						       (__mmask32) -1);
 }
 
 extern __inline __m512i
