@@ -1,3 +1,8 @@
+2016-08-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR fortran/70598
+	* testsuite/libgomp.oacc-fortran/host_data-1.f90: New test.
+
 2016-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/58706

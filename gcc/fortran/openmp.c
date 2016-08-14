@@ -3758,17 +3758,24 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			      && CLASS_DATA (n->sym)->attr.allocatable))
 			gfc_error ("ALLOCATABLE object %qs in %s clause at %L",
 				   n->sym->name, name, &n->where);
-		      if (n->sym->attr.pointer
-			  || (n->sym->ts.type == BT_CLASS && CLASS_DATA (n->sym)
-			      && CLASS_DATA (n->sym)->attr.class_pointer))
-			gfc_error ("POINTER object %qs in %s clause at %L",
-				   n->sym->name, name, &n->where);
+		      if (n->sym->ts.type == BT_CLASS
+			  && CLASS_DATA (n->sym)
+			  && CLASS_DATA (n->sym)->attr.class_pointer)
+			gfc_error ("POINTER object %qs of polymorphic type in "
+				   "%s clause at %L", n->sym->name, name,
+				   &n->where);
 		      if (n->sym->attr.cray_pointer)
 			gfc_error ("Cray pointer object %qs in %s clause at %L",
 				   n->sym->name, name, &n->where);
-		      if (n->sym->attr.cray_pointee)
+		      else if (n->sym->attr.cray_pointee)
 			gfc_error ("Cray pointee object %qs in %s clause at %L",
 				   n->sym->name, name, &n->where);
+		      else if (n->sym->attr.flavor == FL_VARIABLE
+			       && !n->sym->as
+			       && !n->sym->attr.pointer)
+			gfc_error ("%s clause variable %qs at %L is neither "
+				   "a POINTER nor an array", name,
+				   n->sym->name, &n->where);
 		      /* FALLTHRU */
 		  case OMP_LIST_DEVICE_RESIDENT:
 		    check_symbol_not_pointer (n->sym, n->where, name);
