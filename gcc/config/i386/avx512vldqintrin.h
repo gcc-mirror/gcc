@@ -389,8 +389,7 @@ _mm256_broadcast_f64x2 (__m128d __A)
   return (__m256d) __builtin_ia32_broadcastf64x2_256_mask ((__v2df)
 							   __A,
 						           (__v4df)_mm256_undefined_pd(),
-							   (__mmask8) -
-							   1);
+							   (__mmask8) -1);
 }
 
 extern __inline __m256d
@@ -421,8 +420,7 @@ _mm256_broadcast_i64x2 (__m128i __A)
   return (__m256i) __builtin_ia32_broadcasti64x2_256_mask ((__v2di)
 							   __A,
 						           (__v4di)_mm256_undefined_si256(),
-							   (__mmask8) -
-							   1);
+							   (__mmask8) -1);
 }
 
 extern __inline __m256i
@@ -452,8 +450,7 @@ _mm256_broadcast_f32x2 (__m128 __A)
 {
   return (__m256) __builtin_ia32_broadcastf32x2_256_mask ((__v4sf) __A,
 						          (__v8sf)_mm256_undefined_ps(),
-							  (__mmask8) -
-							  1);
+							  (__mmask8) -1);
 }
 
 extern __inline __m256
@@ -482,8 +479,7 @@ _mm256_broadcast_i32x2 (__m128i __A)
   return (__m256i) __builtin_ia32_broadcasti32x2_256_mask ((__v4si)
 							   __A,
 						          (__v8si)_mm256_undefined_si256(),
-							   (__mmask8) -
-							   1);
+							   (__mmask8) -1);
 }
 
 extern __inline __m256i
@@ -514,8 +510,7 @@ _mm_broadcast_i32x2 (__m128i __A)
   return (__m128i) __builtin_ia32_broadcasti32x2_128_mask ((__v4si)
 							   __A,
 						          (__v4si)_mm_undefined_si128(),
-							   (__mmask8) -
-							   1);
+							   (__mmask8) -1);
 }
 
 extern __inline __m128i
@@ -1351,8 +1346,7 @@ _mm256_extractf64x2_pd (__m256d __A, const int __imm)
 							 __imm,
 							 (__v2df)
 							 _mm_setzero_pd (),
-							 (__mmask8) -
-							 1);
+							 (__mmask8) -1);
 }
 
 extern __inline __m128d
@@ -1388,8 +1382,7 @@ _mm256_extracti64x2_epi64 (__m256i __A, const int __imm)
 							 __imm,
 							 (__v2di)
 							 _mm_setzero_di (),
-							 (__mmask8) -
-							 1);
+							 (__mmask8) -1);
 }
 
 extern __inline __m128i
@@ -1743,8 +1736,7 @@ _mm256_inserti64x2 (__m256i __A, __m128i __B, const int __imm)
 							__imm,
 							(__v4di)
 							_mm256_setzero_si256 (),
-							(__mmask8) -
-							1);
+							(__mmask8) -1);
 }
 
 extern __inline __m256i
@@ -1783,8 +1775,7 @@ _mm256_insertf64x2 (__m256d __A, __m128d __B, const int __imm)
 							__imm,
 							(__v4df)
 							_mm256_setzero_pd (),
-							(__mmask8) -
-							1);
+							(__mmask8) -1);
 }
 
 extern __inline __m256d

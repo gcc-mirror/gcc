@@ -173,8 +173,7 @@ _mm256_permutex2var_epi8 (__m256i __A, __m256i __I, __m256i __B)
 							/* idx */ ,
 							(__v32qi) __A,
 							(__v32qi) __B,
-							(__mmask32) -
-							1);
+							(__mmask32) -1);
 }
 
 extern __inline __m256i
@@ -224,8 +223,7 @@ _mm_permutex2var_epi8 (__m128i __A, __m128i __I, __m128i __B)
 							/* idx */ ,
 							(__v16qi) __A,
 							(__v16qi) __B,
-							(__mmask16) -
-							1);
+							(__mmask16) -1);
 }
 
 extern __inline __m128i
