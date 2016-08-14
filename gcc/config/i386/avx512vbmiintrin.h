@@ -108,8 +108,7 @@ _mm512_permutex2var_epi8 (__m512i __A, __m512i __I, __m512i __B)
 							/* idx */ ,
 							(__v64qi) __A,
 							(__v64qi) __B,
-							(__mmask64) -
-							1);
+							(__mmask64) -1);
 }
 
 extern __inline __m512i
