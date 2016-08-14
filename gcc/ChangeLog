@@ -1,3 +1,10 @@
+2016-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/76342
+	* config/i386/avx512fintrin.h (_mm512_undefined_epi32):
+	Renamed from _mm512_undefined_si512.
+	(_mm_undefined_si512): New definition.
+
 2016-08-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (pass_forwprop::execute): Propagate
