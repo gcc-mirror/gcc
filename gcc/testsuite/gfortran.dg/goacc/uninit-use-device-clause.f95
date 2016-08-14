@@ -2,9 +2,9 @@
 ! { dg-additional-options "-Wuninitialized" }
 
 subroutine test
-  integer :: i
+  integer, pointer :: p
 
-  !$acc host_data use_device(i) ! { dg-warning "is used uninitialized in this function" }
+  !$acc host_data use_device(p) ! { dg-warning "is used uninitialized in this function" }
   !$acc end host_data
 end subroutine test
 

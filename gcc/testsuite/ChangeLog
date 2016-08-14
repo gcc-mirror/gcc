@@ -1,3 +1,12 @@
+2016-08-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR fortran/70598
+	* gfortran.dg/goacc/host_data-tree.f95: Adjust to use pointers
+	in use_device clause.
+	* gfortran.dg/goacc/uninit-use-device-clause.f95: Likewise.
+	* gfortran.dg/goacc/list.f95: Adjust to catch
+	"neither a POINTER nor an array" error messages.
+
 2016-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/76342

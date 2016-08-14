@@ -76,19 +76,19 @@ program test
   !$acc parallel private (i) firstprivate (i) ! { dg-error "present on multiple clauses" }
   !$acc end parallel
 
-  !$acc host_data use_device(i)
+  !$acc host_data use_device(i) ! { dg-error "neither a POINTER nor an array" }
   !$acc end host_data
 
-  !$acc host_data use_device(c, d)
+  !$acc host_data use_device(c, d) ! { dg-error "neither a POINTER nor an array" }
   !$acc end host_data
 
   !$acc host_data use_device(a)
   !$acc end host_data
 
-  !$acc host_data use_device(i, j, k, l, a)
+  !$acc host_data use_device(i, j, k, l, a) ! { dg-error "neither a POINTER nor an array" }
   !$acc end host_data  
 
-  !$acc host_data use_device (i) use_device (j)
+  !$acc host_data use_device (i) use_device (j) ! { dg-error "neither a POINTER nor an array" }
   !$acc end host_data
 
   !$acc host_data use_device ! { dg-error "Unclassifiable OpenACC directive" }
@@ -99,13 +99,17 @@ program test
 
   !$acc host_data use_device(10) ! { dg-error "Syntax error" }
 
-  !$acc host_data use_device(/b/, /b/) ! { dg-error "present on multiple clauses" }
+  !$acc host_data use_device(/b/, /b/)
   !$acc end host_data
+  ! { dg-error "neither a POINTER nor an array" "" { target *-*-* } 102 }
+  ! { dg-error "present on multiple clauses" "" { target *-*-* } 102 }
 
-  !$acc host_data use_device(i, j, i) ! { dg-error "present on multiple clauses" }
+  !$acc host_data use_device(i, j, i)
   !$acc end host_data
+  ! { dg-error "neither a POINTER nor an array" "" { target *-*-* } 107 }
+  ! { dg-error "present on multiple clauses" "" { target *-*-* } 107 }
 
-  !$acc host_data use_device(p1) ! { dg-error "POINTER" }
+  !$acc host_data use_device(p1)
   !$acc end host_data
 
 end program test
