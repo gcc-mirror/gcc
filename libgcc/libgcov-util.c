@@ -673,6 +673,7 @@ gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile
     {
       gi_ptr = in_src_not_tgt[i];
       gcov_merge (gi_ptr, gi_ptr, w2 - 1);
+      gi_ptr->next = NULL;
       tgt_tail->next = gi_ptr;
       tgt_tail = gi_ptr;
     }
