@@ -1,5 +1,24 @@
 2016-08-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Implement LWG 2744 and LWG 2754.
+	* include/std/any (any(ValueType&&)): Constrain with __is_in_place_type.
+	(any(in_place_type_t<_ValueType>, _Args&&...)): Use _Decay.
+	(any(in_place_type_t<_ValueType>, initializer_list<_Up>, _Args&&...)):
+	Likewise.
+	(emplace(_Args&&...)): Likewise.
+	(emplace(initializer_list<_Up>, _Args&&...)): Likewise.
+	* include/std/utility: (__is_in_place_type_impl): New.
+	(__is_in_place_type): Likewise.
+	* testsuite/20_util/any/assign/emplace.cc: Add tests for decaying
+	emplace.
+	* testsuite/20_util/any/cons/in_place.cc: Add tests for decaying
+	in_place constructor.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust.
+	* testsuite/20_util/any/requirements.cc: Add a test for
+	in_place-constructing a non-default-constructible type.
+
+2016-08-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Add a feature macro for C++17 make_from_tuple.
 	* include/std/tuple (__cpp_lib_make_from_tuple): New.
 	(__make_from_tuple_impl(_Tuple&&, index_sequence<_Idx...>)):

@@ -54,4 +54,12 @@ int main()
   combined& c2 = std::any_cast<combined&>(o5);
   VERIFY(c2.v[0] == 1 && c2.v[1] == 2
 	 && std::get<0>(c2.t) == 3 && std::get<1>(c2.t) == 4 );
+  std::any o6(std::in_place<int&>, i);
+  VERIFY(o6.type() == o.type());
+  std::any o7(std::in_place<void()>, nullptr);
+  std::any o8(std::in_place<void(*)()>, nullptr);
+  VERIFY(o7.type() == o8.type());
+  std::any o9(std::in_place<char(&)[42]>, nullptr);
+  std::any o10(std::in_place<char*>, nullptr);
+  VERIFY(o9.type() == o10.type());
 }
