@@ -1,3 +1,11 @@
+2016-08-15  Martin Liska  <mliska@suse.cz>
+
+	Backported from mainline
+	2016-08-15  Martin Liska  <mliska@suse.cz>
+
+	PR driver/72765
+	* gcc.c (do_spec_1): Call save_string with the right size.
+
 2016-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/71906
