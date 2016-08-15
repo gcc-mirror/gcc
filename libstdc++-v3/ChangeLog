@@ -1,3 +1,11 @@
+2016-08-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* src/filesystem/ops.cc: Always include ostream and
+	ext/stdio_filebuf.h.
+	(do_copy_file): Check if _GLIBCXX_USE_FCHMODAT is defined.
+	[_GLIBCXX_USE_SENDFILE]: Fallback to read/write operations in case
+	sendfile fails with ENOSYS or EINVAL.
+
 2016-08-15  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR libstdc++/72840
