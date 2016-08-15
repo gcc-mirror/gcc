@@ -6363,6 +6363,8 @@ struct checksum_attributes
   dw_attr_node *at_small;
   dw_attr_node *at_segment;
   dw_attr_node *at_string_length;
+  dw_attr_node *at_string_length_bit_size;
+  dw_attr_node *at_string_length_byte_size;
   dw_attr_node *at_threads_scaled;
   dw_attr_node *at_upper_bound;
   dw_attr_node *at_use_location;
@@ -6502,6 +6504,12 @@ collect_checksum_attributes (struct checksum_attributes *attrs, dw_die_ref die)
         case DW_AT_string_length:
           attrs->at_string_length = a;
           break;
+	case DW_AT_string_length_bit_size:
+	  attrs->at_string_length_bit_size = a;
+	  break;
+	case DW_AT_string_length_byte_size:
+	  attrs->at_string_length_byte_size = a;
+	  break;
         case DW_AT_threads_scaled:
           attrs->at_threads_scaled = a;
           break;
@@ -6588,6 +6596,8 @@ die_checksum_ordered (dw_die_ref die, struct md5_ctx *ctx, int *mark)
   CHECKSUM_ATTR (attrs.at_small);
   CHECKSUM_ATTR (attrs.at_segment);
   CHECKSUM_ATTR (attrs.at_string_length);
+  CHECKSUM_ATTR (attrs.at_string_length_bit_size);
+  CHECKSUM_ATTR (attrs.at_string_length_byte_size);
   CHECKSUM_ATTR (attrs.at_threads_scaled);
   CHECKSUM_ATTR (attrs.at_upper_bound);
   CHECKSUM_ATTR (attrs.at_use_location);
@@ -19355,7 +19365,9 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 		  add_AT_location_description (array_die, DW_AT_string_length,
 					       loc);
 		  if (size != DWARF2_ADDR_SIZE)
-		    add_AT_unsigned (array_die, DW_AT_byte_size, size);
+		    add_AT_unsigned (array_die, dwarf_version >= 5
+						? DW_AT_string_length_byte_size
+						: DW_AT_byte_size, size);
 		}
 	    }
 	}
@@ -19448,7 +19460,9 @@ adjust_string_types (void)
       else
 	{
 	  remove_AT (array_die, DW_AT_string_length);
-	  remove_AT (array_die, DW_AT_byte_size);
+	  remove_AT (array_die, dwarf_version >= 5
+				? DW_AT_string_length_byte_size
+				: DW_AT_byte_size);
 	}
     }
 }
@@ -26909,8 +26923,8 @@ copy_deref_exprloc (dw_loc_descr_ref expr, dw_loc_descr_ref deref)
 
 /* For DW_AT_string_length attribute with DW_OP_call4 reference to a variable
    or argument, adjust it if needed and return:
-   -1 if the DW_AT_string_length attribute and DW_AT_byte_size attribute
-      if present should be removed
+   -1 if the DW_AT_string_length attribute and DW_AT_{string_length_,}byte_size
+      attribute if present should be removed
    0 keep the attribute as is if the referenced var or argument has
      only DWARF expression that covers all ranges
    1 if the attribute has been successfully adjusted.  */
@@ -27083,8 +27097,8 @@ resolve_addr (dw_die_ref die)
 		case -1:
 		  remove_AT (die, a->dw_attr);
 		  ix--;
-		  /* For DWARF4 and earlier, if we drop DW_AT_string_length,
-		     we need to drop also DW_AT_byte_size.  */
+		  /* If we drop DW_AT_string_length, we need to drop also
+		     DW_AT_{string_length_,}byte_size.  */
 		  remove_AT_byte_size = true;
 		  continue;
 		default:
@@ -27181,7 +27195,9 @@ resolve_addr (dw_die_ref die)
       }
 
   if (remove_AT_byte_size)
-    remove_AT (die, DW_AT_byte_size);
+    remove_AT (die, dwarf_version >= 5
+		    ? DW_AT_string_length_byte_size
+		    : DW_AT_byte_size);
 
   FOR_EACH_CHILD (die, c, resolve_addr (c));
 }

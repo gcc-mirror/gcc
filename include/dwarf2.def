@@ -309,6 +309,8 @@ DW_AT (DW_AT_const_expr, 0x6c)
 DW_AT (DW_AT_enum_class, 0x6d)
 DW_AT (DW_AT_linkage_name, 0x6e)
 /* DWARF 5.  */
+DW_AT (DW_AT_string_length_bit_size, 0x6f)
+DW_AT (DW_AT_string_length_byte_size, 0x70)
 DW_AT (DW_AT_noreturn, 0x87)
 DW_AT (DW_AT_deleted, 0x8a)
 DW_AT (DW_AT_defaulted, 0x8b)

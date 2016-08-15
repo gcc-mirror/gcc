@@ -1,5 +1,17 @@
 2016-08-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (struct checksum_attributes): Add
+	at_string_length_bit_size and at_string_length_byte_size fields.
+	(collect_checksum_attributes): Handle DW_AT_string_length_bit_size
+	and DW_AT_string_length_byte_size.
+	(die_checksum_ordered): Handle at_string_length_bit_size and
+	at_string_length_byte_size.
+	(gen_array_type_die): For dwarf_version >= 5 emit
+	DW_AT_string_length_byte_size instead of DW_AT_byte_size.
+	(adjust_string_types): For dwarf_version >= 5 remove
+	DW_AT_string_length_byte_size instead of DW_AT_byte_size.
+	(resolve_addr): Likewise.
+
 	PR debug/71906
 	* dwarf2out.c (string_types): New variable.
 	(gen_array_type_die): Change early_dwarf handling of
