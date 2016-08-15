@@ -1,3 +1,8 @@
+2016-08-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/install.texi (*-*-solaris2*): Fix version number and document
+	requirement on GNU make for building libjava with the Solaris linker.
+
 2016-08-15  Martin Liska  <mliska@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
