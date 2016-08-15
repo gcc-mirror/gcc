@@ -1247,9 +1247,7 @@ find_and_remove_re (void)
 static unsigned int
 rest_of_handle_ree (void)
 {
-  timevar_push (TV_REE);
   find_and_remove_re ();
-  timevar_pop (TV_REE);
   return 0;
 }
 

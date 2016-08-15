@@ -1,5 +1,12 @@
 2016-08-15  Richard Biener  <rguenther@suse.de>
 
+	* ree.c (rest_of_handle_ree): Remove redundant timevar push/pop.
+	* config/i386/i386.c (pass_data_insert_vzeroupper): Account to
+	TV_MACH_DEP.
+	(pass_data_stv): Likewise.
+
+2016-08-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/73434
 	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address): Preserve
 	TBAA info on the base when forwarding a non-invariant address.
