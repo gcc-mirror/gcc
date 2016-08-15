@@ -6256,7 +6256,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 	      /* Arrays are not initialized using the default initializer of
 		 their elements.  Therefore only check if a default
 		 initializer is available when the result is scalar.  */
-	      init_exp = rsym->as ? NULL : gfc_default_initializer (&rsym->ts);
+              init_exp = rsym->as ? NULL
+                                  : gfc_generate_initializer (&rsym->ts, true);
 	      if (init_exp)
 		{
 		  tmp = gfc_trans_structure_assign (result, init_exp, 0);

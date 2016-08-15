@@ -11138,6 +11138,39 @@ build_init_assign (gfc_symbol *sym, gfc_expr *init)
   init_st->expr2 = init;
 }
 
+
+/* Whether or not we can generate a default initializer for a symbol.  */
+
+static bool
+can_generate_init (gfc_symbol *sym)
+{
+  symbol_attribute *a;
+  if (!sym)
+    return false;
+  a = &sym->attr;
+
+  /* These symbols should never have a default initialization.  */
+  return !(
+       a->allocatable
+    || a->external
+    || a->pointer
+    || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+        && (CLASS_DATA (sym)->attr.class_pointer
+            || CLASS_DATA (sym)->attr.proc_pointer))
+    || a->in_equivalence
+    || a->in_common
+    || a->data
+    || sym->module
+    || a->cray_pointee
+    || a->cray_pointer
+    || sym->assoc
+    || (!a->referenced && !a->result)
+    || (a->dummy && a->intent != INTENT_OUT)
+    || (a->function && sym != sym->result)
+  );
+}
+
+
 /* Assign the default initializer to a derived type variable or result.  */
 
 static void
@@ -11149,7 +11182,7 @@ apply_default_init (gfc_symbol *sym)
     return;
 
   if (sym->ts.type == BT_DERIVED && sym->ts.u.derived)
-    init = gfc_default_initializer (&sym->ts);
+    init = gfc_generate_initializer (&sym->ts, can_generate_init (sym));
 
   if (init == NULL && sym->ts.type != BT_CLASS)
     return;
@@ -11158,17 +11191,13 @@ apply_default_init (gfc_symbol *sym)
   sym->attr.referenced = 1;
 }
 
-/* Build an initializer for a local integer, real, complex, logical, or
-   character variable, based on the command line flags finit-local-zero,
-   finit-integer=, finit-real=, finit-logical=, and finit-runtime.  Returns
-   null if the symbol should not have a default initialization.  */
+
+/* Build an initializer for a local. Returns null if the symbol should not have
+   a default initialization.  */
+
 static gfc_expr *
 build_default_init_expr (gfc_symbol *sym)
 {
-  int char_len;
-  gfc_expr *init_expr;
-  int i;
-
   /* These symbols should never have a default initialization.  */
   if (sym->attr.allocatable
       || sym->attr.external
@@ -11183,145 +11212,8 @@ build_default_init_expr (gfc_symbol *sym)
       || sym->assoc)
     return NULL;
 
-  /* Now we'll try to build an initializer expression.  */
-  init_expr = gfc_get_constant_expr (sym->ts.type, sym->ts.kind,
-				     &sym->declared_at);
-
-  /* We will only initialize integers, reals, complex, logicals, and
-     characters, and only if the corresponding command-line flags
-     were set.  Otherwise, we free init_expr and return null.  */
-  switch (sym->ts.type)
-    {
-    case BT_INTEGER:
-      if (gfc_option.flag_init_integer != GFC_INIT_INTEGER_OFF)
-	mpz_set_si (init_expr->value.integer,
-			 gfc_option.flag_init_integer_value);
-      else
-	{
-	  gfc_free_expr (init_expr);
-	  init_expr = NULL;
-	}
-      break;
-
-    case BT_REAL:
-      switch (flag_init_real)
-	{
-	case GFC_INIT_REAL_SNAN:
-	  init_expr->is_snan = 1;
-	  /* Fall through.  */
-	case GFC_INIT_REAL_NAN:
-	  mpfr_set_nan (init_expr->value.real);
-	  break;
-
-	case GFC_INIT_REAL_INF:
-	  mpfr_set_inf (init_expr->value.real, 1);
-	  break;
-
-	case GFC_INIT_REAL_NEG_INF:
-	  mpfr_set_inf (init_expr->value.real, -1);
-	  break;
-
-	case GFC_INIT_REAL_ZERO:
-	  mpfr_set_ui (init_expr->value.real, 0.0, GFC_RND_MODE);
-	  break;
-
-	default:
-	  gfc_free_expr (init_expr);
-	  init_expr = NULL;
-	  break;
-	}
-      break;
-
-    case BT_COMPLEX:
-      switch (flag_init_real)
-	{
-	case GFC_INIT_REAL_SNAN:
-	  init_expr->is_snan = 1;
-	  /* Fall through.  */
-	case GFC_INIT_REAL_NAN:
-	  mpfr_set_nan (mpc_realref (init_expr->value.complex));
-	  mpfr_set_nan (mpc_imagref (init_expr->value.complex));
-	  break;
-
-	case GFC_INIT_REAL_INF:
-	  mpfr_set_inf (mpc_realref (init_expr->value.complex), 1);
-	  mpfr_set_inf (mpc_imagref (init_expr->value.complex), 1);
-	  break;
-
-	case GFC_INIT_REAL_NEG_INF:
-	  mpfr_set_inf (mpc_realref (init_expr->value.complex), -1);
-	  mpfr_set_inf (mpc_imagref (init_expr->value.complex), -1);
-	  break;
-
-	case GFC_INIT_REAL_ZERO:
-	  mpc_set_ui (init_expr->value.complex, 0, GFC_MPC_RND_MODE);
-	  break;
-
-	default:
-	  gfc_free_expr (init_expr);
-	  init_expr = NULL;
-	  break;
-	}
-      break;
-
-    case BT_LOGICAL:
-      if (gfc_option.flag_init_logical == GFC_INIT_LOGICAL_FALSE)
-	init_expr->value.logical = 0;
-      else if (gfc_option.flag_init_logical == GFC_INIT_LOGICAL_TRUE)
-	init_expr->value.logical = 1;
-      else
-	{
-	  gfc_free_expr (init_expr);
-	  init_expr = NULL;
-	}
-      break;
-
-    case BT_CHARACTER:
-      /* For characters, the length must be constant in order to
-	 create a default initializer.  */
-      if (gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
-	  && sym->ts.u.cl->length
-	  && sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	{
-	  char_len = mpz_get_si (sym->ts.u.cl->length->value.integer);
-	  init_expr->value.character.length = char_len;
-	  init_expr->value.character.string = gfc_get_wide_string (char_len+1);
-	  for (i = 0; i < char_len; i++)
-	    init_expr->value.character.string[i]
-	      = (unsigned char) gfc_option.flag_init_character_value;
-	}
-      else
-	{
-	  gfc_free_expr (init_expr);
-	  init_expr = NULL;
-	}
-      if (!init_expr && gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
-	  && sym->ts.u.cl->length && flag_max_stack_var_size != 0)
-	{
-	  gfc_actual_arglist *arg;
-	  init_expr = gfc_get_expr ();
-	  init_expr->where = sym->declared_at;
-	  init_expr->ts = sym->ts;
-	  init_expr->expr_type = EXPR_FUNCTION;
-	  init_expr->value.function.isym =
-		gfc_intrinsic_function_by_id (GFC_ISYM_REPEAT);
-	  init_expr->value.function.name = "repeat";
-	  arg = gfc_get_actual_arglist ();
-	  arg->expr = gfc_get_character_expr (sym->ts.kind, &sym->declared_at,
-					      NULL, 1);
-	  arg->expr->value.character.string[0]
-		= gfc_option.flag_init_character_value;
-	  arg->next = gfc_get_actual_arglist ();
-	  arg->next->expr = gfc_copy_expr (sym->ts.u.cl->length);
-	  init_expr->value.function.actual = arg;
-	}
-      break;
-
-    default:
-     gfc_free_expr (init_expr);
-     init_expr = NULL;
-    }
-  return init_expr;
+  /* Get the appropriate init expression.  */
+  return gfc_build_default_init_expr (&sym->ts, &sym->declared_at);
 }
 
 /* Add an initialization expression to a local variable.  */
@@ -11504,9 +11396,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
   /* Assign default initializer.  */
   if (!(sym->value || sym->attr.pointer || sym->attr.allocatable)
       && (!no_init_flag || sym->attr.intent == INTENT_OUT))
-    {
-      sym->value = gfc_default_initializer (&sym->ts);
-    }
+    sym->value = gfc_generate_initializer (&sym->ts, can_generate_init (sym));
 
   return true;
 }

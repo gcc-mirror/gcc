@@ -1,3 +1,20 @@
+2016-08-15  Fritz Reese  <fritzoreese@gmail.com>
+
+	gcc/fortran/
+	* lang.opt, invoke.texi: New flag -finit-derived.
+	* gfortran.h (gfc_build_default_init_expr, gfc_apply_init,
+	gfc_generate_initializer): New prototypes.
+	* expr.c (gfc_build_default_init_expr, gfc_apply_init,
+	component_initializer, gfc_generate_initializer): New functions.
+	* expr.c (gfc_default_initializer): Wrap gfc_generate_initializer.
+	* decl.c (build_struct): Move common code to gfc_apply_init.
+	* resolve.c (can_generate_init): New function.
+	* resolve.c (build_default_init_expr): Wrap gfc_build_default_init_expr.
+	* resolve.c (apply_default_init, resolve_fl_variable_derived): Use
+	gfc_generate_initializer.
+	* trans-decl.c (gfc_generate_function_code): Use
+	gfc_generate_initializer.
+
 2016-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (create_var):  Set ts.deferred for

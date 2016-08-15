@@ -3918,6 +3918,212 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
 }
 
 
+/* Build an initializer for a local integer, real, complex, logical, or
+   character variable, based on the command line flags finit-local-zero,
+   finit-integer=, finit-real=, finit-logical=, and finit-character=.  */
+
+gfc_expr *
+gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
+{
+  int char_len;
+  gfc_expr *init_expr;
+  int i;
+
+  /* Try to build an initializer expression.  */
+  init_expr = gfc_get_constant_expr (ts->type, ts->kind, where);
+
+  /* We will only initialize integers, reals, complex, logicals, and
+     characters, and only if the corresponding command-line flags
+     were set.  Otherwise, we free init_expr and return null.  */
+  switch (ts->type)
+    {
+    case BT_INTEGER:
+      if (gfc_option.flag_init_integer != GFC_INIT_INTEGER_OFF)
+        mpz_set_si (init_expr->value.integer,
+                         gfc_option.flag_init_integer_value);
+      else
+        {
+          gfc_free_expr (init_expr);
+          init_expr = NULL;
+        }
+      break;
+
+    case BT_REAL:
+      switch (flag_init_real)
+        {
+        case GFC_INIT_REAL_SNAN:
+          init_expr->is_snan = 1;
+          /* Fall through.  */
+        case GFC_INIT_REAL_NAN:
+          mpfr_set_nan (init_expr->value.real);
+          break;
+
+        case GFC_INIT_REAL_INF:
+          mpfr_set_inf (init_expr->value.real, 1);
+          break;
+
+        case GFC_INIT_REAL_NEG_INF:
+          mpfr_set_inf (init_expr->value.real, -1);
+          break;
+
+        case GFC_INIT_REAL_ZERO:
+          mpfr_set_ui (init_expr->value.real, 0.0, GFC_RND_MODE);
+          break;
+
+        default:
+          gfc_free_expr (init_expr);
+          init_expr = NULL;
+          break;
+        }
+      break;
+
+    case BT_COMPLEX:
+      switch (flag_init_real)
+        {
+        case GFC_INIT_REAL_SNAN:
+          init_expr->is_snan = 1;
+          /* Fall through.  */
+        case GFC_INIT_REAL_NAN:
+          mpfr_set_nan (mpc_realref (init_expr->value.complex));
+          mpfr_set_nan (mpc_imagref (init_expr->value.complex));
+          break;
+
+        case GFC_INIT_REAL_INF:
+          mpfr_set_inf (mpc_realref (init_expr->value.complex), 1);
+          mpfr_set_inf (mpc_imagref (init_expr->value.complex), 1);
+          break;
+
+        case GFC_INIT_REAL_NEG_INF:
+          mpfr_set_inf (mpc_realref (init_expr->value.complex), -1);
+          mpfr_set_inf (mpc_imagref (init_expr->value.complex), -1);
+          break;
+
+        case GFC_INIT_REAL_ZERO:
+          mpc_set_ui (init_expr->value.complex, 0, GFC_MPC_RND_MODE);
+          break;
+
+        default:
+          gfc_free_expr (init_expr);
+          init_expr = NULL;
+          break;
+        }
+      break;
+
+    case BT_LOGICAL:
+      if (gfc_option.flag_init_logical == GFC_INIT_LOGICAL_FALSE)
+        init_expr->value.logical = 0;
+      else if (gfc_option.flag_init_logical == GFC_INIT_LOGICAL_TRUE)
+        init_expr->value.logical = 1;
+      else
+        {
+          gfc_free_expr (init_expr);
+          init_expr = NULL;
+        }
+      break;
+
+    case BT_CHARACTER:
+      /* For characters, the length must be constant in order to
+         create a default initializer.  */
+      if (gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
+          && ts->u.cl->length
+          && ts->u.cl->length->expr_type == EXPR_CONSTANT)
+        {
+          char_len = mpz_get_si (ts->u.cl->length->value.integer);
+          init_expr->value.character.length = char_len;
+          init_expr->value.character.string = gfc_get_wide_string (char_len+1);
+          for (i = 0; i < char_len; i++)
+            init_expr->value.character.string[i]
+              = (unsigned char) gfc_option.flag_init_character_value;
+        }
+      else
+        {
+          gfc_free_expr (init_expr);
+          init_expr = NULL;
+        }
+      if (!init_expr && gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
+          && ts->u.cl->length && flag_max_stack_var_size != 0)
+        {
+          gfc_actual_arglist *arg;
+          init_expr = gfc_get_expr ();
+          init_expr->where = *where;
+          init_expr->ts = *ts;
+          init_expr->expr_type = EXPR_FUNCTION;
+          init_expr->value.function.isym =
+                gfc_intrinsic_function_by_id (GFC_ISYM_REPEAT);
+          init_expr->value.function.name = "repeat";
+          arg = gfc_get_actual_arglist ();
+          arg->expr = gfc_get_character_expr (ts->kind, where, NULL, 1);
+          arg->expr->value.character.string[0] =
+            gfc_option.flag_init_character_value;
+          arg->next = gfc_get_actual_arglist ();
+          arg->next->expr = gfc_copy_expr (ts->u.cl->length);
+          init_expr->value.function.actual = arg;
+        }
+      break;
+
+    default:
+     gfc_free_expr (init_expr);
+     init_expr = NULL;
+    }
+
+  return init_expr;
+}
+
+/* Apply an initialization expression to a typespec. Can be used for symbols or
+   components. Similar to add_init_expr_to_sym in decl.c; could probably be
+   combined with some effort.  */
+
+void
+gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
+{
+  if (ts->type == BT_CHARACTER && !attr->pointer && init
+      && ts->u.cl
+      && ts->u.cl->length && ts->u.cl->length->expr_type == EXPR_CONSTANT)
+    {
+      int len;
+
+      gcc_assert (ts->u.cl && ts->u.cl->length);
+      gcc_assert (ts->u.cl->length->expr_type == EXPR_CONSTANT);
+      gcc_assert (ts->u.cl->length->ts.type == BT_INTEGER);
+
+      len = mpz_get_si (ts->u.cl->length->value.integer);
+
+      if (init->expr_type == EXPR_CONSTANT)
+        gfc_set_constant_character_len (len, init, -1);
+      else if (init
+               && init->ts.u.cl
+               && mpz_cmp (ts->u.cl->length->value.integer,
+                           init->ts.u.cl->length->value.integer))
+        {
+          gfc_constructor *ctor;
+          ctor = gfc_constructor_first (init->value.constructor);
+
+          if (ctor)
+            {
+              int first_len;
+              bool has_ts = (init->ts.u.cl
+                             && init->ts.u.cl->length_from_typespec);
+
+              /* Remember the length of the first element for checking
+                 that all elements *in the constructor* have the same
+                 length.  This need not be the length of the LHS!  */
+              gcc_assert (ctor->expr->expr_type == EXPR_CONSTANT);
+              gcc_assert (ctor->expr->ts.type == BT_CHARACTER);
+              first_len = ctor->expr->value.character.length;
+
+              for ( ; ctor; ctor = gfc_constructor_next (ctor))
+                if (ctor->expr->expr_type == EXPR_CONSTANT)
+                {
+                  gfc_set_constant_character_len (len, ctor->expr,
+                                                  has_ts ? -1 : first_len);
+                  ctor->expr->ts.u.cl->length = gfc_copy_expr (ts->u.cl->length);
+                }
+            }
+        }
+    }
+}
+
+
 /* Check for default initializer; sym->value is not enough
    as it is also set for EXPR_NULL of allocatables.  */
 
@@ -3946,21 +4152,66 @@ gfc_has_default_initializer (gfc_symbol *der)
 }
 
 
-/* Get an expression for a default initializer.  */
+/* Fetch or generate an initializer for the given component.
+   Only generate an initializer if generate is true.  */
+
+static gfc_expr *
+component_initializer (gfc_typespec *ts, gfc_component *c, bool generate)
+{
+  gfc_expr *init = NULL;
+
+  /* See if we can find the initializer immediately.  */
+  if (c->initializer || !generate
+      || (ts->type == BT_CLASS && !c->attr.allocatable))
+    return c->initializer;
+
+  /* Recursively handle derived type components.  */
+  if (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+    init = gfc_generate_initializer (&c->ts, true);
+
+  /* Treat simple components like locals.  */
+  else
+    {
+      init = gfc_build_default_init_expr (&c->ts, &c->loc);
+      gfc_apply_init (&c->ts, &c->attr, init);
+    }
+
+  return init;
+}
+
+
+/* Get an expression for a default initializer of a derived type.  */
 
 gfc_expr *
 gfc_default_initializer (gfc_typespec *ts)
 {
-  gfc_expr *init;
+  return gfc_generate_initializer (ts, false);
+}
+
+
+/* Get or generate an expression for a default initializer of a derived type. 
+   If -finit-derived is specified, generate default initialization expressions
+   for components that lack them when generate is set.  */
+
+gfc_expr *
+gfc_generate_initializer (gfc_typespec *ts, bool generate)
+{
+  gfc_expr *init, *tmp;
   gfc_component *comp;
+  generate = flag_init_derived && generate;
 
   /* See if we have a default initializer in this, but not in nested
-     types (otherwise we could use gfc_has_default_initializer()).  */
-  for (comp = ts->u.derived->components; comp; comp = comp->next)
-    if (comp->initializer || comp->attr.allocatable
-	|| (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
-	    && CLASS_DATA (comp)->attr.allocatable))
-      break;
+     types (otherwise we could use gfc_has_default_initializer()).
+     We don't need to check if we are going to generate them.  */
+  comp = ts->u.derived->components;
+  if (!generate)
+    {
+      for (; comp; comp = comp->next)
+        if (comp->initializer || comp->attr.allocatable
+            || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
+                && CLASS_DATA (comp)->attr.allocatable))
+          break;
+    }
 
   if (!comp)
     return NULL;
@@ -3973,15 +4224,19 @@ gfc_default_initializer (gfc_typespec *ts)
     {
       gfc_constructor *ctor = gfc_constructor_get();
 
-      if (comp->initializer)
+      /* Fetch or generate an initializer for the component.  */
+      tmp = component_initializer (ts, comp, generate);
+      if (tmp)
 	{
 	  /* Save the component ref for STRUCTUREs and UNIONs.  */
 	  if (ts->u.derived->attr.flavor == FL_STRUCT
 	      || ts->u.derived->attr.flavor == FL_UNION)
 	    ctor->n.component = comp;
-	  ctor->expr = gfc_copy_expr (comp->initializer);
-	  if ((comp->ts.type != comp->initializer->ts.type
-	       || comp->ts.kind != comp->initializer->ts.kind)
+
+          /* If the initializer was not generated, we need a copy.  */
+          ctor->expr = comp->initializer ? gfc_copy_expr (tmp) : tmp;
+	  if ((comp->ts.type != tmp->ts.type
+	       || comp->ts.kind != tmp->ts.kind)
 	      && !comp->attr.pointer && !comp->attr.proc_pointer)
 	    gfc_convert_type_warn (ctor->expr, &comp->ts, 2, false);
 	}
