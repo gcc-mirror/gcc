@@ -34,3 +34,11 @@ static_assert(!std::is_assignable<any&, const unique_ptr<int>&>::value);
 static_assert(!std::is_constructible<any&, const unique_ptr<int>&>::value);
 static_assert(!std::is_assignable<any&, unique_ptr<int>&>::value);
 static_assert(!std::is_constructible<any&, unique_ptr<int>&>::value);
+
+struct NoDefaultCtor
+{
+  NoDefaultCtor() = delete;
+};
+
+static_assert(!std::is_constructible<any,
+	      std::in_place_type_t<NoDefaultCtor>>::value);

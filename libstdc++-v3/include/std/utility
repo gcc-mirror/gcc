@@ -356,6 +356,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <size_t _Idx>
     in_place_tag in_place(__in_place_index<_Idx>*) {terminate();}
 
+  template<typename>
+    struct __is_in_place_type_impl : false_type
+    { };
+
+  template<typename _Tp>
+    struct __is_in_place_type_impl<in_place_type_t<_Tp>> : true_type
+    { };
+
+  template<typename _Tp>
+    struct __is_in_place_type
+      : public __is_in_place_type_impl<_Tp>
+    { };
+
 #define  __cpp_lib_as_const 201510
   template<typename _Tp>
     constexpr add_const_t<_Tp>& as_const(_Tp& __t) noexcept { return __t; }
@@ -363,7 +376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     void as_const(const _Tp&&) = delete;
 
-#endif
+#endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
