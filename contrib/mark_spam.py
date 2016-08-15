@@ -34,6 +34,10 @@ def mark_as_spam(id, api_key, verbose):
     r = requests.get(u)
     response = json.loads(r.text)
 
+    if 'error' in response and response['error']:
+        print(response['message'])
+        return
+
     # 2) mark the bug as spam
     cc_list = response['bugs'][0]['cc']
     data = {
@@ -49,6 +53,7 @@ def mark_as_spam(id, api_key, verbose):
         'cc': {'remove': cc_list},
         'priority': 'P5',
         'severity': 'trivial',
+        'url': '',
         'assigned_to': 'unassigned@gcc.gnu.org' }
 
     r = requests.put(u, json = data)
@@ -74,7 +79,12 @@ def mark_as_spam(id, api_key, verbose):
     for a in attachments:
         attachment_id = a['id']
         url = '%sbug/attachment/%d' % (base_url, attachment_id)
-        r = requests.put(url, json = {'ids': [attachment_id], 'summary': 'spam', 'comment': 'spam', 'is_obsolete': True, 'api_key': api_key})
+        r = requests.put(url, json = {'ids': [attachment_id],
+            'summary': 'spam',
+            'file_name': 'spam',
+            'content_type': 'application/x-spam',
+            'is_obsolete': True,
+            'api_key': api_key})
         if verbose:
             print(r)
             print(r.text)

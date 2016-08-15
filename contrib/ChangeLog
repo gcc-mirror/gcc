@@ -1,3 +1,8 @@
+2016-08-15  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: Add error handling and reset
+	another properties of attachments and bugs.
+
 2016-08-11  Martin Liska  <mliska@suse.cz>
 
 	* mark_spam.py: Mark attachments as obsolete and rename them.
