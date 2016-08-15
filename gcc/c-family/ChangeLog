@@ -1,3 +1,10 @@
+2016-08-16  Eric Botcazou  <ebotcazou@adacore.com>
+            Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (dump_number): New function.
+	(handle_escape_character): Likewise.
+	(print_ada_macros): Add handling of constant integers and strings.
+
 2016-08-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652

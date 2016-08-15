@@ -116,6 +116,58 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
   (*buffer_len)++;
 }
 
+/* Dump all digits/hex chars from NUMBER to BUFFER and return a pointer
+   to the character after the last character written.  */
+
+static unsigned char *
+dump_number (unsigned char *number, unsigned char *buffer)
+{
+  while (*number != '\0'
+	 && *number != 'U'
+	 && *number != 'u'
+	 && *number != 'l'
+	 && *number != 'L')
+    *buffer++ = *number++;
+
+  return buffer;
+}
+
+/* Handle escape character C and convert to an Ada character into BUFFER.
+   Return a pointer to the character after the last character written, or
+   NULL if the escape character is not supported.  */
+
+static unsigned char *
+handle_escape_character (unsigned char *buffer, char c)
+{
+  switch (c)
+    {
+      case '"':
+	*buffer++ = '"';
+	*buffer++ = '"';
+	break;
+
+      case 'n':
+	strcpy ((char *) buffer, "\" & ASCII.LF & \"");
+	buffer += 16;
+	break;
+
+      case 'r':
+	strcpy ((char *) buffer, "\" & ASCII.CR & \"");
+	buffer += 16;
+	break;
+
+      case 't':
+	strcpy ((char *) buffer, "\" & ASCII.HT & \"");
+	buffer += 16;
+	break;
+
+      default:
+	return NULL;
+    }
+
+  return buffer;
+}
+
 /* Dump into PP a set of MAX_ADA_MACROS MACROS (C/C++) as Ada constants when
    possible.  */
 
@@ -132,7 +184,7 @@ print_ada_macros (pretty_printer *pp, cpp_hashnode **macros, int max_ada_macros)
       int supported = 1, prev_is_one = 0, buffer_len, param_len;
       int is_string = 0, is_char = 0;
       char *ada_name;
-      unsigned char *s, *params, *buffer, *buf_param, *char_one = NULL;
+      unsigned char *s, *params, *buffer, *buf_param, *char_one = NULL, *tmp;
 
       macro_length (macro, &supported, &buffer_len, &param_len);
       s = buffer = XALLOCAVEC (unsigned char, buffer_len);
@@ -246,12 +298,31 @@ print_ada_macros (pretty_printer *pp, cpp_hashnode **macros, int max_ada_macros)
 		  case CPP_CHAR32:
 		  case CPP_UTF8CHAR:
 		  case CPP_NAME:
-		  case CPP_STRING:
-		  case CPP_NUMBER:
 		    if (!macro->fun_like)
 		      supported = 0;
 		    else
 		      buffer = cpp_spell_token (parse_in, token, buffer, false);
+		    break;
+
+		  case CPP_STRING:
+		    is_string = 1;
+		    {
+		      const unsigned char *s = token->val.str.text;
+
+		      for (; *s; s++)
+			if (*s == '\\')
+			  {
+			    s++;
+			    buffer = handle_escape_character (buffer, *s);
+			    if (buffer == NULL)
+			      {
+				supported = 0;
+				break;
+			      }
+			  }
+			else
+			  *buffer++ = *s;
+		    }
 		    break;
 
 		  case CPP_CHAR:
@@ -276,6 +347,72 @@ print_ada_macros (pretty_printer *pp, cpp_hashnode **macros, int max_ada_macros)
 			  buffer += chars_seen;
 			}
 		    }
+		    break;
+
+		  case CPP_NUMBER:
+		    tmp = cpp_token_as_text (parse_in, token);
+
+		    switch (*tmp)
+		      {
+			case '0':
+			  switch (tmp[1])
+			    {
+			      case '\0':
+			      case 'l':
+			      case 'L':
+			      case 'u':
+			      case 'U':
+				*buffer++ = '0';
+				break;
+
+			      case 'x':
+			      case 'X':
+				*buffer++ = '1';
+				*buffer++ = '6';
+				*buffer++ = '#';
+				buffer = dump_number (tmp + 2, buffer);
+				*buffer++ = '#';
+				break;
+
+			      case 'b':
+			      case 'B':
+				*buffer++ = '2';
+				*buffer++ = '#';
+				buffer = dump_number (tmp + 2, buffer);
+				*buffer++ = '#';
+				break;
+
+			      default:
+				/* Dump floating constants unmodified.  */
+				if (strchr ((const char *)tmp, '.'))
+				  buffer = dump_number (tmp, buffer);
+				else
+				  {
+				    *buffer++ = '8';
+				    *buffer++ = '#';
+				    buffer = dump_number (tmp + 1, buffer);
+				    *buffer++ = '#';
+				  }
+				break;
+			    }
+			  break;
+
+			case '1':
+			  if (tmp[1] == '\0' || tmp[1] == 'l' || tmp[1] == 'u'
+			      || tmp[1] == 'L' || tmp[1] == 'U')
+			    {
+			      is_one = 1;
+			      char_one = buffer;
+			      *buffer++ = '1';
+			    }
+			  else
+			    buffer = dump_number (tmp, buffer);
+			  break;
+
+			default:
+			  buffer = dump_number (tmp, buffer);
+			  break;
+		      }
 		    break;
 
 		  case CPP_LSHIFT:

@@ -1,3 +1,7 @@
+2016-08-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/dump-ada-spec-5.c: New test.
+
 2016-08-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/73434
