@@ -120,6 +120,14 @@ show_typespec (gfc_typespec *ts)
       fprintf (dumpfile, "%d", ts->kind);
       break;
     }
+  if (ts->is_c_interop)
+    fputs (" C_INTEROP", dumpfile);
+
+  if (ts->is_iso_c)
+    fputs (" ISO_C", dumpfile);
+
+  if (ts->deferred)
+    fputs (" DEFERRED", dumpfile);
 
   fputc (')', dumpfile);
 }
