@@ -1,3 +1,28 @@
+2016-08-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/72867
+	* config/i386/sse.md (<code><mode>3<mask_name><round_saeonly_name>):
+	Emit ieee_<ieee_maxmin><mode>3<mask_name><round_saeonly_name>
+	for !flag_finite_math_only or flag_signed_zeros.
+	(*<code><mode>3<mask_name><round_saeonly_name>): Rename from
+	*<code><mode>3_finite<mask_name><round_saeonly_name>.  Do not
+	depend on flag_finite_math_only.
+	(ieee_<ieee_maxmin><mode>3<mask_name><round_saeonly_name>):
+	New insn pattern.
+	(*<code><mode>3<mask_name><round_saeonly_name>): Remove.
+	(*ieee_smin<mode>3): Ditto.
+	(*ieee_smax<mode>3): Ditto.
+	* config/i386/mmx.md (mmx_<code>v2sf3): Emit
+	mmx_ieee_<ieee_maxmin>v2sf3 for !flag_finite_math_only or
+	flag_signed_zeros.
+	(*mmx_<code>v2sf3): Rename from *mmx_<code>v2sf3_finite.  Do not
+	depend on flag_finite_math_only.
+	(mmx_ieee_<ieee_maxmin>v2sf3): New insn pattern.
+	(*mmx_<code>v2sf3): Remove.
+	* config/i386/subst.md (round_saeonly_mask_arg3): New subst attribute.
+	* config/i386/i386.c (ix86_expand_sse_fp_mimnax): Check
+	flag_signed_zeros instead of !flag_unsafe_math_optimizations.
+
 2016-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/73650

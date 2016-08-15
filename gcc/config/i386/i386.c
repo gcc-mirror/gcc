@@ -23404,7 +23404,7 @@ ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
 
   /* We want to check HONOR_NANS and HONOR_SIGNED_ZEROS here,
      but MODE may be a vector mode and thus not appropriate.  */
-  if (!flag_finite_math_only || !flag_unsafe_math_optimizations)
+  if (!flag_finite_math_only || flag_signed_zeros)
     {
       int u = is_min ? UNSPEC_IEEE_MIN : UNSPEC_IEEE_MAX;
       rtvec v;
