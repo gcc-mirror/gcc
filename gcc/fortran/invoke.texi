@@ -178,6 +178,7 @@ and warnings}.
 -fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c
 -ffrontend-optimize @gol
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
+-finit-derived @gol
 -finit-logical=@var{<true|false>}
 -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
 -finline-matmul-limit=@var{n} @gol
@@ -1610,11 +1611,13 @@ on the stack. This flag cannot be used together with
 @option{-fmax-stack-var-size=} or @option{-fno-automatic}.
 
 @item -finit-local-zero
+@itemx -finit-derived
 @itemx -finit-integer=@var{n}
 @itemx -finit-real=@var{<zero|inf|-inf|nan|snan>}
 @itemx -finit-logical=@var{<true|false>}
 @itemx -finit-character=@var{n}
 @opindex @code{finit-local-zero}
+@opindex @code{finit-derived}
 @opindex @code{finit-integer}
 @opindex @code{finit-real}
 @opindex @code{finit-logical}
@@ -1629,12 +1632,12 @@ initialization options are provided by the
 the real and imaginary parts of local @code{COMPLEX} variables),
 @option{-finit-logical=@var{<true|false>}}, and
 @option{-finit-character=@var{n}} (where @var{n} is an ASCII character
-value) options.  These options do not initialize
+value) options.  Components of derived type variables will be initialized
+according to these flags only with @option{-finit-derived}.  These options do
+not initialize
 @itemize @bullet
 @item
 allocatable arrays
-@item
-components of derived type variables
 @item
 variables that appear in an @code{EQUIVALENCE} statement.
 @end itemize

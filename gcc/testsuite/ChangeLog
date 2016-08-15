@@ -1,3 +1,11 @@
+2016-08-15  Fritz Reese  <fritzoreese@gmail.com>
+
+	* gfortran.dg/init_flag_13.f90: New testcase.
+	* gfortran.dg/init_flag_14.f90: Ditto.
+	* gfortran.dg/init_flag_15.f03: Ditto.
+	* gfortran.dg/dec_init_1.f90: Ditto.
+	* gfortran.dg/dec_init_2.f90: Ditto.
+
 2016-08-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/72867

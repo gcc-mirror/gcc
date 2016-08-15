@@ -528,6 +528,10 @@ finit-character=
 Fortran RejectNegative Joined UInteger
 -finit-character=<n>	Initialize local character variables to ASCII value n.
 
+finit-derived
+Fortran Var(flag_init_derived)
+Initialize components of derived type variables according to other init flags.
+
 finit-integer=
 Fortran RejectNegative Joined
 -finit-integer=<n>	Initialize local integer variables to n.
