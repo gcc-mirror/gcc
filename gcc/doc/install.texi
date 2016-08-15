@@ -4511,7 +4511,7 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
-Support for Solaris 9 has been removed in GCC 4.10.  Support for Solaris
+Support for Solaris 9 has been removed in GCC 5.  Support for Solaris
 8 has been removed in GCC 4.8.  Support for Solaris 7 has been removed
 in GCC 4.6.
 
@@ -4583,11 +4583,14 @@ features, so better stay with Solaris @command{ld}.  To use the LTO linker
 plugin (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU
 binutils @emph{must} be configured with @option{--enable-largefile}.
 
-To enable symbol versioning in @samp{libstdc++} with Solaris @command{ld},
+To enable symbol versioning in @samp{libstdc++} with the Solaris linker,
 you need to have any version of GNU @command{c++filt}, which is part of
 GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
-appropriate version is found.  Solaris @command{c++filt} from the Solaris Studio
-compilers does @emph{not} work.
+appropriate version is found.  Solaris @command{c++filt} from the Solaris
+Studio compilers does @emph{not} work.
+
+GNU @command{make} version 3.82 or later is required to build libjava
+with the Solaris linker.
 
 Sun bug 4927647 sometimes causes random spurious testsuite failures
 related to missing diagnostic output.  This bug doesn't affect GCC
