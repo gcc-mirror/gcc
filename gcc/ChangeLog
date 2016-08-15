@@ -1,3 +1,9 @@
+2016-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/73434
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address): Preserve
+	TBAA info on the base when forwarding a non-invariant address.
+
 2016-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (struct checksum_attributes): Add
