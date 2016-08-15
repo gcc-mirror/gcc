@@ -1,3 +1,9 @@
+2016-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/73650
+	* lra-constraints.c (simple_move_p): If the insn is multiple_sets
+	it is not a simple move.
+
 2016-08-15  Martin Liska  <mliska@suse.cz>
 
 	PR driver/72765
