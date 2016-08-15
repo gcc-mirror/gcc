@@ -1,8 +1,13 @@
+2016-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.def (DW_AT_string_length_bit_size,
+	DW_AT_string_length_byte_size): New attributes.
+
 2016-08-12  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/63240
 	* dwarf2.def (DW_AT_deleted, DW_AT_defaulted): New.
-	* dwarf2.h (enu dwarf_defaulted_attribute): New.
+	* dwarf2.h (enum dwarf_defaulted_attribute): New.
 
 2016-07-29  Aldy Hernandez  <aldyh@redhat.com>
 
