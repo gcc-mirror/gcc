@@ -1,3 +1,10 @@
+2016-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (create_var):  Set ts.deferred for
+	deferred-length character variables.
+	* dump-parse-tree.c (show_typespec):  Also dump
+	is_c_interop, is_iso_c and deferred flags.
+
 2016-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/71906
