@@ -3493,6 +3493,13 @@ simple_move_p (void)
   lra_assert (curr_insn_set != NULL_RTX);
   dest = SET_DEST (curr_insn_set);
   src = SET_SRC (curr_insn_set);
+
+  /* If the instruction has multiple sets we need to process it even if it
+     is single_set.  This can happen if one or more of the SETs are dead.
+     See PR73650.  */
+  if (multiple_sets (curr_insn))
+    return false;
+
   return ((dclass = get_op_class (dest)) != NO_REGS
 	  && (sclass = get_op_class (src)) != NO_REGS
 	  /* The backend guarantees that register moves of cost 2
