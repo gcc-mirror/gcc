@@ -1,3 +1,9 @@
+2016-08-15  Martin Liska  <mliska@suse.cz>
+
+	PR driver/72765
+	* gcc.c (do_spec_1): Call save_string with the right size.
+	(save_string): Do an assert about string we copy.
+
 2016-08-15  Richard Biener  <rguenther@suse.de>
 
 	* ree.c (rest_of_handle_ree): Remove redundant timevar push/pop.
