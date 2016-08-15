@@ -1,3 +1,10 @@
+2016-08-15  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/72824
+	* tree-loop-distribution.c (const_with_all_bytes_same)
+	<case VECTOR_CST>: Fix a typo.
+
 2016-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/76342
@@ -66,7 +73,6 @@
 	make sure we have a leader for it.
 
 2016-08-12  Martin Liska  <mliska@suse.cz>
-
 	    Adam Fineman  <afineman@afineman.com>
 
 	* gcov.c (process_file): Create .gcov file when .gcda
@@ -877,7 +883,6 @@
 	(aapcs_vfp_sub_candidate): Likewise.
 
 2016-08-05  Martin Liska  <mliska@suse.cz>
-
 	    Joshua Cranmer  <Pidgeot18@gmail.com>
 
 	* gcov.c (line_t::has_block): New function.

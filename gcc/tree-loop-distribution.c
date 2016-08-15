@@ -774,7 +774,7 @@ const_with_all_bytes_same (tree val)
 	case VECTOR_CST:
 	  unsigned int j;
 	  for (j = 0; j < VECTOR_CST_NELTS (val); ++j)
-	    if (const_with_all_bytes_same (VECTOR_CST_ELT (val, i)))
+	    if (const_with_all_bytes_same (VECTOR_CST_ELT (val, j)))
 	      break;
 	  if (j == VECTOR_CST_NELTS (val))
 	    return 0;
