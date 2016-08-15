@@ -28,7 +28,9 @@
 
 #include <experimental/filesystem>
 #include <functional>
+#include <ostream>
 #include <stack>
+#include <ext/stdio_filebuf.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -48,9 +50,6 @@
 #endif
 #ifdef _GLIBCXX_USE_SENDFILE
 # include <sys/sendfile.h>
-#else
-# include <ext/stdio_filebuf.h>
-# include <ostream>
 #endif
 #if _GLIBCXX_HAVE_UTIME_H
 # include <utime.h>
@@ -416,7 +415,7 @@ namespace
 
 #ifdef _GLIBCXX_USE_FCHMOD
     if (::fchmod(out.fd, from_st->st_mode))
-#elif _GLIBCXX_USE_FCHMODAT
+#elif defined _GLIBCXX_USE_FCHMODAT
     if (::fchmodat(AT_FDCWD, to.c_str(), from_st->st_mode, 0))
 #else
     if (::chmod(to.c_str(), from_st->st_mode))
@@ -428,6 +427,31 @@ namespace
 
 #ifdef _GLIBCXX_USE_SENDFILE
     const auto n = ::sendfile(out.fd, in.fd, nullptr, from_st->st_size);
+    if (n < 0 && (errno == ENOSYS || errno == EINVAL))
+      {
+#endif
+	__gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
+	__gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
+	if (sbin.is_open())
+	  in.fd = -1;
+	if (sbout.is_open())
+	  out.fd = -1;
+	if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
+	  {
+	    ec = std::make_error_code(std::errc::io_error);
+	    return false;
+	  }
+	if (!sbout.close() || !sbin.close())
+	  {
+	    ec.assign(errno, std::generic_category());
+	    return false;
+	  }
+
+	ec.clear();
+	return true;
+
+#ifdef _GLIBCXX_USE_SENDFILE
+      }
     if (n != from_st->st_size)
       {
 	ec.assign(errno, std::generic_category());
@@ -438,27 +462,10 @@ namespace
 	ec.assign(errno, std::generic_category());
 	return false;
       }
-#else
-    __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
-    __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
-    if (sbin.is_open())
-      in.fd = -1;
-    if (sbout.is_open())
-      out.fd = -1;
-    if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
-      {
-	ec = std::make_error_code(std::errc::io_error);
-	return false;
-      }
-    if (!sbout.close() || !sbin.close())
-      {
-	ec.assign(errno, std::generic_category());
-	return false;
-      }
-#endif
 
     ec.clear();
     return true;
+#endif
   }
 }
 #endif
