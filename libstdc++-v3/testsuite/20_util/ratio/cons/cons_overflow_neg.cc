@@ -37,13 +37,13 @@ test02()
 void
 test03()
 {
-  std::ratio<1, INTMAX_MIN> r1 __attribute__((unused)); // { dg-error "required from here"
+  std::ratio<1, INTMAX_MIN> r1 __attribute__((unused)); // { dg-error "required from here" }
 }
 
 void
 test04()
 {
-  std::ratio<1,0> r1 __attribute__((unused)); // { dg-error "required from here"
+  std::ratio<1,0> r1 __attribute__((unused)); // { dg-error "required from here" }
 }
 
 // { dg-error "denominator cannot be zero" "" { target *-*-* } 265 }
