@@ -763,6 +763,13 @@ var cgoSyscallExclude = map[string]bool{
 func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package {
 	p.copyBuild(bp)
 
+	// When using gccgo the go/build package will not be able to
+	// find a standard package.  It would be nicer to not get that
+	// error, but go/build doesn't know stdpkg.
+	if runtime.Compiler == "gccgo" && err != nil && p.Standard {
+		err = nil
+	}
+
 	// The localPrefix is the path we interpret ./ imports relative to.
 	// Synthesized main packages sometimes override this.
 	p.localPrefix = dirToImportPath(p.Dir)
