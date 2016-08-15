@@ -1,3 +1,18 @@
+2016-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/71906
+	* dwarf2out.c (string_types): New variable.
+	(gen_array_type_die): Change early_dwarf handling of
+	DW_AT_string_length, create DW_OP_call4 referencing the
+	length var temporarily.  Handle parameters that are pointers
+	to string length.
+	(adjust_string_types): New function.
+	(gen_subprogram_die): Temporarily set string_types to local var,
+	call adjust_string_types if needed.
+	(non_dwarf_expression, copy_deref_exprloc, optimize_string_length):
+	New functions.
+	(resolve_addr): Adjust DW_AT_string_length if it is DW_OP_call4.
+
 2016-08-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/install.texi (*-*-solaris2*): Fix version number and document

@@ -1,3 +1,10 @@
+2016-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/71906
+	* trans-decl.c (gfc_get_symbol_decl): Call gfc_finish_var_decl
+	for decl's character length before gfc_finish_var_decl on the
+	decl itself.
+
 2016-08-14  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR fortran/70598
