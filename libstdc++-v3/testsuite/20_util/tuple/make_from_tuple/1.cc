@@ -20,6 +20,12 @@
 #include <tuple>
 #include <testsuite_hooks.h>
 
+#ifndef __cpp_lib_make_from_tuple
+# error "Feature-test macro for make_from_tuple missing."
+#elif __cpp_lib_make_from_tuple < 201606
+# error "Feature-test macro for make_from_tuple has the wrong value."
+#endif
+
 template <class T, class U, class V>
 struct ThreeParam
 {

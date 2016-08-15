@@ -1656,10 +1656,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  _Indices{});
     }
 
+#define __cpp_lib_make_from_tuple  201606
+
   template <typename _Tp, typename _Tuple, size_t... _Idx>
     constexpr _Tp
     __make_from_tuple_impl(_Tuple&& __t, index_sequence<_Idx...>)
-    { return _Tp(get<_Idx>(std::forward<_Tuple>(__t))...); }
+    { return _Tp(std::get<_Idx>(std::forward<_Tuple>(__t))...); }
 
   template <typename _Tp, typename _Tuple>
     constexpr _Tp

@@ -1,3 +1,11 @@
+2016-08-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Add a feature macro for C++17 make_from_tuple.
+	* include/std/tuple (__cpp_lib_make_from_tuple): New.
+	(__make_from_tuple_impl(_Tuple&&, index_sequence<_Idx...>)):
+	Qualify the call to get<>().
+	* testsuite/20_util/tuple/make_from_tuple/1.cc: Adjust.
+
 2016-08-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* src/filesystem/ops.cc: Always include ostream and
