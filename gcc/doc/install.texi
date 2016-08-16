@@ -4589,7 +4589,7 @@ GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
 appropriate version is found.  Solaris @command{c++filt} from the Solaris
 Studio compilers does @emph{not} work.
 
-GNU @command{make} version 3.82 or later is required to build libjava
+GNU @command{make} version 3.81 or later is required to build libjava
 with the Solaris linker.
 
 Sun bug 4927647 sometimes causes random spurious testsuite failures
