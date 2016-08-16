@@ -1,3 +1,9 @@
+2016-08-16  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-prof/val-prof-7.c (int main): Change size
+	of memory operations so that it can be handled by core2
+	in 32-bit mode.
+
 2016-08-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/76783

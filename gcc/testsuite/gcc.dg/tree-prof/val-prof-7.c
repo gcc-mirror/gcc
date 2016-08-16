@@ -57,25 +57,25 @@ int main() {
   buffer1 = __builtin_malloc (1000);
   buffer2 = __builtin_malloc (1000);
 
-  test_stringops_with_values_0 (8, 111);
-  test_stringops_with_values_1 (111, 111);
-  test_stringops_with_values_2 (257, 111);
+  test_stringops_with_values_0 (8, 55);
+  test_stringops_with_values_1 (55, 55);
+  test_stringops_with_values_2 (257, 55);
 
   return 0;
 }
 
 /* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 8 stringop transformation on __builtin_bzero" "profile" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 111 stringop transformation on __builtin_bzero" "profile" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 257 stringop transformation on __builtin_bzero" 0 "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 55 stringop transformation on __builtin_bzero" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 32 stringop transformation on __builtin_bzero" 0 "profile" } } */
 
 /* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 8 stringop transformation on __builtin_memcpy" "profile" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 111 stringop transformation on __builtin_memcpy" "profile" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 257 stringop transformation on __builtin_memcpy" 0 "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 55 stringop transformation on __builtin_memcpy" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 32 stringop transformation on __builtin_memcpy" 0 "profile" } } */
 
 /* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 8 stringop transformation on __builtin_mempcpy" "profile" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 111 stringop transformation on __builtin_mempcpy" "profile" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 257 stringop transformation on __builtin_mempcpy" 0 "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 55 stringop transformation on __builtin_mempcpy" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 32 stringop transformation on __builtin_mempcpy" 0 "profile" } } */
 
 /* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 8 stringop transformation on __builtin_memset" "profile" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 111 stringop transformation on __builtin_memset" "profile" } } */
-/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 257 stringop transformation on __builtin_memset" 0 "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 55 stringop transformation on __builtin_memset" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 32 stringop transformation on __builtin_memset" 0 "profile" } } */
