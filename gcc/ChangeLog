@@ -1,5 +1,9 @@
 2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/71910
+	* tree-cfg.c (execute_fixup_cfg): Add node variable, use it.  Before inlining,
+	add cgraph edge for the added __builtin_unreachable call.
+
 	PR middle-end/67485
 	* expmed.c (expand_mult_const): Change val_so_far's type to UHWI,
 	only cast it to SHWI for the final comparison.
