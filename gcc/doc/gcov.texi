@@ -133,6 +133,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-r}|@option{--relative-only}]
      [@option{-s}|@option{--source-prefix} @var{directory}]
      [@option{-u}|@option{--unconditional-branches}]
+     [@option{-x}|@option{--hash-filenames}]
      @var{files}
 @c man end
 @c man begin SEEALSO
@@ -277,6 +278,16 @@ branch:28,nottaken
 @itemx --demangled-names
 Display demangled function names in output. The default is to show
 mangled function names.
+
+@item -x
+@itemx --hash-filenames
+By default, gcov uses the full pathname of the source files to to create
+an output filename.  This can lead to long filenames that can overflow
+filesystem limits.  This option creates names of the form
+@file{@var{source-file}##@var{md5}.gcov},
+where the @var{source-file} component is the final filename part and
+the @var{md5} component is calculated from the full mangled name that
+would have been used otherwise.
 
 @end table
 

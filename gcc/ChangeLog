@@ -1,3 +1,13 @@
+2016-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/36412
+	* doc/gcov.texi: Document --hash-filenames(-x).
+	* gcov.c (print_usage): Add the option.
+	(process_args): Process the option, sort options alphabetically.
+	(md5sum_to_hex): New function.
+	(make_gcov_file_name): Do the md5sum and append it to a
+	filename.
+
 2016-08-16  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/69848

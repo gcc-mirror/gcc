@@ -43,6 +43,7 @@ along with Gcov; see the file COPYING3.  If not see
 
 #include <vector>
 #include <algorithm>
+#include "md5.h"
 
 using namespace std;
 
@@ -359,6 +360,11 @@ static int flag_demangled_names = 0;
 
 static int flag_long_names = 0;
 
+/* For situations when a long name can potentially hit filesystem path limit,
+   let's calculate md5sum of the path and append it to a file name.  */
+
+static int flag_hash_filenames = 0;
+
 /* Output count information for every basic block, not merely those
    that contain line number information.  */
 
@@ -667,6 +673,7 @@ print_usage (int error_p)
   fnotice (file, "  -s, --source-prefix DIR         Source prefix to elide\n");
   fnotice (file, "  -u, --unconditional-branches    Show unconditional branch counts too\n");
   fnotice (file, "  -v, --version                   Print version number, then exit\n");
+  fnotice (file, "  -x, --hash-filenames            Hash long pathnames\n");
   fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
 	   bug_report_url);
   exit (status);
@@ -706,6 +713,7 @@ static const struct option options[] =
   { "source-prefix",        required_argument, NULL, 's' },
   { "unconditional-branches", no_argument,     NULL, 'u' },
   { "display-progress",     no_argument,       NULL, 'd' },
+  { "hash-filenames",	    no_argument,       NULL, 'x' },
   { 0, 0, 0, 0 }
 };
 
@@ -716,8 +724,8 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  while ((opt = getopt_long (argc, argv, "abcdfhilmno:s:pruv", options, NULL)) !=
-         -1)
+  const char *opts = "abcdfhilmno:prs:uvx";
+  while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
 	{
@@ -770,6 +778,9 @@ process_args (int argc, char **argv)
           break;
 	case 'v':
 	  print_version ();
+	case 'x':
+	  flag_hash_filenames = 1;
+	  break;
 	  /* print_version will exit.  */
 	default:
 	  print_usage (true);
@@ -2147,6 +2158,15 @@ canonicalize_name (const char *name)
   return result;
 }
 
+/* Print hex representation of 16 bytes from SUM and write it to BUFFER.  */
+
+static void
+md5sum_to_hex (const char *sum, char *buffer)
+{
+  for (unsigned i = 0; i < 16; i++)
+    sprintf (buffer + (2 * i), "%02x", sum[i]);
+}
+
 /* Generate an output file name. INPUT_NAME is the canonicalized main
    input file and SRC_NAME is the canonicalized file name.
    LONG_OUTPUT_NAMES and PRESERVE_PATHS affect name generation.  With
@@ -2183,6 +2203,30 @@ make_gcov_file_name (const char *input_name, const char *src_name)
 
   ptr = mangle_name (src_name, ptr);
   strcpy (ptr, ".gcov");
+
+  /* When hashing filenames, we shorten them by only using the filename
+     component and appending a hash of the full (mangled) pathname.  */
+  if (flag_hash_filenames)
+    {
+      md5_ctx ctx;
+      char md5sum[16];
+      char md5sum_hex[33];
+
+      md5_init_ctx (&ctx);
+      md5_process_bytes (result, strlen (result), &ctx);
+      md5_finish_ctx (&ctx, md5sum);
+      md5sum_to_hex (md5sum, md5sum_hex);
+      free (result);
+
+      result = XNEWVEC (char, strlen (src_name) + 50);
+      ptr = result;
+      ptr = mangle_name (src_name, ptr);
+      ptr[0] = ptr[1] = '#';
+      ptr += 2;
+      memcpy (ptr, md5sum_hex, 32);
+      ptr += 32;
+      strcpy (ptr, ".gcov");
+    }
 
   return result;
 }
