@@ -1,3 +1,10 @@
+2016-08-16  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/72817
+	PR tree-optimization/73450
+	* tree-ssa-loop-niter.c (number_of_iterations_ne): Check
+	multiple_of_p for adjusted IV.base.
+
 2016-08-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/72867
