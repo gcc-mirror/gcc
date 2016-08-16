@@ -1,3 +1,20 @@
+2016-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (enum ix86_builtins): Reorder enumerators, so
+	that builtins not mentioned in bdesc_* arrays come first, then
+	the ones mentioned in bdesc_* arrays in the order they appear in
+	the arrays in between IX86_BUILTIN__BDESC_*_FIRST and
+	IX86_BUILTIN__BDESC_*_LAST enumerator.
+	(bdesc_mpx): Fix up a comment typo.
+	(bdesc_multi_arg): Remove __builtin_ia32_vpcomne[bwdq] and
+	__builtin_ia32_vpcomneu[bwdq] builtins.
+	(BDESC_VERIFY, BDESC_VERIFYS): Define.
+	(ix86_init_mmx_sse_builtins, ix86_init_mpx_builtins): Verify
+	enum ix86_builtins ordering.
+	(ix86_expand_builtin): Use enum ix86_builtins ordering assumption
+	for direct bdesc_* array member access instead of searching all the
+	arrays until an fcode match is found.
+
 2016-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*ashl<mode>3_mask): Rewrite define_insn
