@@ -1,3 +1,12 @@
+2016-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/77034
+	Backported from mainline
+	2016-07-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/elide5.C (operator new): Use decltype(sizeof(1)) instead
+	of unsigned long.
+
 2016-08-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/73434

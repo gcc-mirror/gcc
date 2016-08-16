@@ -1,7 +1,7 @@
 // PR c++/71913
 // { dg-do link { target c++11 } }
 
-void* operator new(unsigned long, void* p) { return p; }
+void* operator new(decltype(sizeof(1)), void* p) { return p; }
 
 struct IndirectReturn {
   IndirectReturn() {}
@@ -24,4 +24,3 @@ int main()
 {
   bar(c);
 }
-
