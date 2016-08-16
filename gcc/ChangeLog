@@ -1,3 +1,7 @@
+2016-08-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/install.texi (*-*-solaris2*): Adjust latest change.
+
 2016-08-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/76783
