@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Extended Precision.
-   Copyright (C) 1999-2015 Free Software Foundation, Inc.
+   Copyright (C) 1999-2016 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek (jj@ultra.linux.cz).
 
@@ -104,6 +104,7 @@ union _FP_UNION_E
       X##_f[3] = 0;					\
       X##_f[0] = FP_UNPACK_RAW_E_flo.bits.frac0;	\
       X##_f[1] = FP_UNPACK_RAW_E_flo.bits.frac1;	\
+      X##_f[1] &= ~_FP_IMPLBIT_E;			\
       X##_e  = FP_UNPACK_RAW_E_flo.bits.exp;		\
       X##_s  = FP_UNPACK_RAW_E_flo.bits.sign;		\
     }							\
@@ -119,6 +120,7 @@ union _FP_UNION_E
       X##_f[3] = 0;					\
       X##_f[0] = FP_UNPACK_RAW_EP_flo->bits.frac0;	\
       X##_f[1] = FP_UNPACK_RAW_EP_flo->bits.frac1;	\
+      X##_f[1] &= ~_FP_IMPLBIT_E;			\
       X##_e  = FP_UNPACK_RAW_EP_flo->bits.exp;		\
       X##_s  = FP_UNPACK_RAW_EP_flo->bits.sign;		\
     }							\
@@ -332,6 +334,7 @@ union _FP_UNION_E
       FP_UNPACK_RAW_E_flo.flt = (val);		\
 						\
       X##_f0 = FP_UNPACK_RAW_E_flo.bits.frac;	\
+      X##_f0 &= ~_FP_IMPLBIT_E;			\
       X##_f1 = 0;				\
       X##_e = FP_UNPACK_RAW_E_flo.bits.exp;	\
       X##_s = FP_UNPACK_RAW_E_flo.bits.sign;	\
@@ -345,6 +348,7 @@ union _FP_UNION_E
 	= (union _FP_UNION_E *) (val);		\
 						\
       X##_f0 = FP_UNPACK_RAW_EP_flo->bits.frac;	\
+      X##_f0 &= ~_FP_IMPLBIT_E;			\
       X##_f1 = 0;				\
       X##_e = FP_UNPACK_RAW_EP_flo->bits.exp;	\
       X##_s = FP_UNPACK_RAW_EP_flo->bits.sign;	\
