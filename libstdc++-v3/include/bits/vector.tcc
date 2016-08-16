@@ -708,9 +708,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       _Bit_pointer __q = this->_M_allocate(__n);
       iterator __start(std::__addressof(*__q), 0);
-      this->_M_impl._M_finish = _M_copy_aligned(begin(), end(), __start);
+      iterator __finish(_M_copy_aligned(begin(), end(), __start));
       this->_M_deallocate();
       this->_M_impl._M_start = __start;
+      this->_M_impl._M_finish = __finish;
       this->_M_impl._M_end_of_storage = __q + _S_nword(__n);
     }
 
@@ -736,11 +737,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  iterator __start(std::__addressof(*__q), 0);
 	  iterator __i = _M_copy_aligned(begin(), __position, __start);
 	  std::fill(__i, __i + difference_type(__n), __x);
-	  this->_M_impl._M_finish = std::copy(__position, end(),
-					      __i + difference_type(__n));
+	  iterator __finish = std::copy(__position, end(),
+					__i + difference_type(__n));
 	  this->_M_deallocate();
 	  this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
 	  this->_M_impl._M_start = __start;
+	  this->_M_impl._M_finish = __finish;
 	}
     }
 
@@ -770,10 +772,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		iterator __start(std::__addressof(*__q), 0);
 		iterator __i = _M_copy_aligned(begin(), __position, __start);
 		__i = std::copy(__first, __last, __i);
-		this->_M_impl._M_finish = std::copy(__position, end(), __i);
+		iterator __finish = std::copy(__position, end(), __i);
 		this->_M_deallocate();
 		this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
 		this->_M_impl._M_start = __start;
+		this->_M_impl._M_finish = __finish;
 	      }
 	  }
       }
@@ -798,10 +801,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  iterator __start(std::__addressof(*__q), 0);
 	  iterator __i = _M_copy_aligned(begin(), __position, __start);
 	  *__i++ = __x;
-	  this->_M_impl._M_finish = std::copy(__position, end(), __i);
+	  iterator __finish = std::copy(__position, end(), __i);
 	  this->_M_deallocate();
 	  this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
 	  this->_M_impl._M_start = __start;
+	  this->_M_impl._M_finish = __finish;
 	}
     }
 

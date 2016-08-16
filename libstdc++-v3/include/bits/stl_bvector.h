@@ -500,6 +500,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    _Bit_alloc_traits::deallocate(_M_impl,
 					  _M_impl._M_end_of_storage - __n,
 					  __n);
+	    _M_impl._M_start = _M_impl._M_finish = _Bit_iterator();
+	    _M_impl._M_end_of_storage = _Bit_pointer();
 	  }
       }
 
