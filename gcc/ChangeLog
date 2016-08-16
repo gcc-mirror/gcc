@@ -1,3 +1,9 @@
+2016-08-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/76783
+	* tree-ssa-propagate.c (ssa_prop_init): Use RPO order.  Clear
+	BB visited flags at start.
+
 2016-08-16  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/72817

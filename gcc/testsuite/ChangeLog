@@ -1,3 +1,9 @@
+2016-08-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/76783
+	* gcc.dg/pr76783.c: New testcase.
+	* gcc.dg/tree-ssa/pr69270-2.c: Adjust.
+
 2016-08-16  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/72817

@@ -422,8 +422,8 @@ ssa_prop_init (void)
   /* Worklist of basic-blocks.  */
   bb_to_cfg_order = XNEWVEC (int, last_basic_block_for_fn (cfun) + 1);
   cfg_order_to_bb = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-  int n = pre_and_rev_post_order_compute_fn (cfun, cfg_order_to_bb,
-					     NULL, false);
+  int n = pre_and_rev_post_order_compute_fn (cfun, NULL,
+					     cfg_order_to_bb, false);
   for (int i = 0; i < n; ++i)
     bb_to_cfg_order[cfg_order_to_bb[i]] = i;
   cfg_blocks = BITMAP_ALLOC (NULL);
@@ -453,7 +453,7 @@ ssa_prop_init (void)
 	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	}
 
-      gcc_assert (! (bb->flags & BB_VISITED));
+      bb->flags &= ~BB_VISITED;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	e->flags &= ~EDGE_EXECUTABLE;
     }
