@@ -1,3 +1,13 @@
+2016-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*ashl<mode>3_mask): Rewrite define_insn
+	pattern as define_insn_and_split.  Split insn before reload to
+	ashl<mode>3_1.
+	(*<shift_insn><mode>3_mask): Ditto.  Split insn before reload to
+	<shift_insn><mode>3_1.
+	(*<rotate_insn><mode>3_mask): Ditto.  Split insn before reload to
+	<rotate_insn><mode>3_1.
+
 2016-08-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/72857
@@ -33,8 +43,8 @@
 2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/71910
-	* tree-cfg.c (execute_fixup_cfg): Add node variable, use it.  Before inlining,
-	add cgraph edge for the added __builtin_unreachable call.
+	* tree-cfg.c (execute_fixup_cfg): Add node variable, use it.  Before
+	inlining, add cgraph edge for the added __builtin_unreachable call.
 
 	PR middle-end/67485
 	* expmed.c (expand_mult_const): Change val_so_far's type to UHWI,
