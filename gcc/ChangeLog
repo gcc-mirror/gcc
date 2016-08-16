@@ -1,3 +1,16 @@
+2016-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c (class selftest::temp_source_file): Move to
+	selftest.h.
+	(selftest::temp_source_file::temp_source_file): Move to
+	selftest.c.
+	(selftest::temp_source_file::~temp_source_file): Likewise.
+	* selftest.c (selftest::temp_source_file::temp_source_file): Move
+	here from input.c.
+	(selftest::temp_source_file::~temp_source_file): Likewise.
+	* selftest.h (class selftest::temp_source_file): Move here from
+	input.c
+
 2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/71910

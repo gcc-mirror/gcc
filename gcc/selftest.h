@@ -69,6 +69,22 @@ extern void assert_streq (const location &loc,
 			  const char *desc_expected, const char *desc_actual,
 			  const char *val_expected, const char *val_actual);
 
+/* A class for writing out a temporary sourcefile for use in selftests
+   of input handling.  */
+
+class temp_source_file
+{
+ public:
+  temp_source_file (const location &loc, const char *suffix,
+		    const char *content);
+  ~temp_source_file ();
+
+  const char *get_filename () const { return m_filename; }
+
+ private:
+  char *m_filename;
+};
+
 /* Declarations for specific families of tests (by source file), in
    alphabetical order.  */
 extern void bitmap_c_tests ();

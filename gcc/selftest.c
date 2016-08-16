@@ -87,6 +87,32 @@ selftest::assert_streq (const location &loc,
 	 desc_expected, desc_actual, val_expected, val_actual);
 }
 
+/* Constructor.  Create a tempfile using SUFFIX, and write CONTENT to
+   it.  Abort if anything goes wrong, using LOC as the effective
+   location in the problem report.  */
+
+selftest::temp_source_file::temp_source_file (const location &loc,
+					      const char *suffix,
+					      const char *content)
+{
+  m_filename = make_temp_file (suffix);
+  ASSERT_NE (m_filename, NULL);
+
+  FILE *out = fopen (m_filename, "w");
+  if (!out)
+    ::selftest::fail_formatted (loc, "unable to open tempfile: %s",
+				m_filename);
+  fprintf (out, "%s", content);
+  fclose (out);
+}
+
+/* Destructor.  Delete the tempfile.  */
+
+selftest::temp_source_file::~temp_source_file ()
+{
+  unlink (m_filename);
+  free (m_filename);
+}
 
 /* Selftests for the selftest system itself.  */
 
