@@ -1,5 +1,24 @@
 2016-08-16  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/72857
+	* input.c (get_source_range_for_substring): Rename to...
+	(get_source_location_for_substring): ...this, adding param
+	"caret_idx", and converting output param from source_range * to
+	location_t *.
+	(get_source_range_for_char): New function.
+	(get_num_source_ranges_for_substring): Update comment to reflect
+	above renaming.
+	(assert_char_at_range): Update to use get_source_range_for_char
+	rather than get_source_range_for_substring.
+	(test_lexer_string_locations_concatenation_2): Likewise.
+	* substring-locations.h (get_source_range_for_substring): Rename
+	to...
+	(get_source_location_for_substring): ...this, and adding param
+	"caret_idx", and converting output param from source_range * to
+	location_t *.
+
+2016-08-16  David Malcolm  <dmalcolm@redhat.com>
+
 	* input.c (class selftest::temp_source_file): Move to
 	selftest.h.
 	(selftest::temp_source_file::temp_source_file): Move to

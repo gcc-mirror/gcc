@@ -1140,24 +1140,24 @@ get_cpp_ttype_from_string_type (tree string_type)
 
 GTY(()) string_concat_db *g_string_concat_db;
 
-/* Attempt to determine the source range of the substring.
-   If successful, return NULL and write the source range to *OUT_RANGE.
+/* Attempt to determine the source location of the substring.
+   If successful, return NULL and write the source location to *OUT_LOC.
    Otherwise return an error message.  Error messages are intended
    for GCC developers (to help debugging) rather than for end-users.  */
 
 const char *
-substring_loc::get_range (source_range *out_range) const
+substring_loc::get_location (location_t *out_loc) const
 {
-  gcc_assert (out_range);
+  gcc_assert (out_loc);
 
   enum cpp_ttype tok_type = get_cpp_ttype_from_string_type (m_string_type);
   if (tok_type == CPP_OTHER)
     return "unrecognized string type";
 
-  return get_source_range_for_substring (parse_in, g_string_concat_db,
-					 m_fmt_string_loc, tok_type,
-					 m_start_idx, m_end_idx,
-					 out_range);
+  return get_source_location_for_substring (parse_in, g_string_concat_db,
+					    m_fmt_string_loc, tok_type,
+					    m_caret_idx, m_start_idx, m_end_idx,
+					    out_loc);
 }
 
 

@@ -66,9 +66,9 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   asm_fprintf ("%d", i, i); /* { dg-warning "16:arguments" "wrong number of args" } */
   /* Miscellaneous bogus constructions.  */
   asm_fprintf (""); /* { dg-warning "16:zero-length" "warning for empty format" } */
-  asm_fprintf ("\0"); /* { dg-warning "18:embedded" "warning for embedded NUL" } */
-  asm_fprintf ("%d\0", i); /* { dg-warning "20:embedded" "warning for embedded NUL" } */
-  asm_fprintf ("%d\0%d", i, i); /* { dg-warning "20:embedded|too many" "warning for embedded NUL" } */
+  asm_fprintf ("\0"); /* { dg-warning "17:embedded" "warning for embedded NUL" } */
+  asm_fprintf ("%d\0", i); /* { dg-warning "19:embedded" "warning for embedded NUL" } */
+  asm_fprintf ("%d\0%d", i, i); /* { dg-warning "19:embedded|too many" "warning for embedded NUL" } */
   asm_fprintf (NULL); /* { dg-warning "null" "null format string warning" } */
   asm_fprintf ("%"); /* { dg-warning "17:trailing" "trailing % warning" } */
   asm_fprintf ("%++d", i); /* { dg-warning "19:repeated" "repeated flag warning" } */

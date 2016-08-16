@@ -1402,10 +1402,17 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
   return NULL;
 }
 
-/* Attempt to populate *OUT_RANGE with source location information on the
-   range of given characters within the string literal found at STRLOC.
-   START_IDX and END_IDX refer to offsets within the execution character
-   set.
+/* Attempt to populate *OUT_LOC with source location information on the
+   given characters within the string literal found at STRLOC.
+   CARET_IDX, START_IDX, and END_IDX refer to offsets within the execution
+   character set.
+
+   For example, given CARET_IDX = 4, START_IDX = 3, END_IDX  = 7
+   and string literal "012345\n789"
+   *OUT_LOC is written to with:
+     "012345\n789"
+         ~^~~~~
+
    If CONCATS is non-NULL, then any string literals that the token at
    STRLOC was concatenated with are also considered.
 
@@ -1416,15 +1423,58 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
    than for end-users.  */
 
 const char *
-get_source_range_for_substring (cpp_reader *pfile,
-				string_concat_db *concats,
-				location_t strloc,
-				enum cpp_ttype type,
-				int start_idx, int end_idx,
-				source_range *out_range)
+get_source_location_for_substring (cpp_reader *pfile,
+				   string_concat_db *concats,
+				   location_t strloc,
+				   enum cpp_ttype type,
+				   int caret_idx, int start_idx, int end_idx,
+				   source_location *out_loc)
 {
+  gcc_checking_assert (caret_idx >= 0);
   gcc_checking_assert (start_idx >= 0);
   gcc_checking_assert (end_idx >= 0);
+  gcc_assert (out_loc);
+
+  cpp_substring_ranges ranges;
+  const char *err
+    = get_substring_ranges_for_loc (pfile, concats, strloc, type, ranges);
+  if (err)
+    return err;
+
+  if (caret_idx >= ranges.get_num_ranges ())
+    return "caret_idx out of range";
+  if (start_idx >= ranges.get_num_ranges ())
+    return "start_idx out of range";
+  if (end_idx >= ranges.get_num_ranges ())
+    return "end_idx out of range";
+
+  *out_loc = make_location (ranges.get_range (caret_idx).m_start,
+			    ranges.get_range (start_idx).m_start,
+			    ranges.get_range (end_idx).m_finish);
+  return NULL;
+}
+
+/* Attempt to populate *OUT_RANGE with source location information on the
+   given character within the string literal found at STRLOC.
+   CHAR_IDX refers to an offset within the execution character set.
+   If CONCATS is non-NULL, then any string literals that the token at
+   STRLOC was concatenated with are also considered.
+
+   This is implemented by re-parsing the relevant source line(s).
+
+   Return NULL if successful, or an error message if any errors occurred.
+   Error messages are intended for GCC developers (to help debugging) rather
+   than for end-users.  */
+
+static const char *
+get_source_range_for_char (cpp_reader *pfile,
+			   string_concat_db *concats,
+			   location_t strloc,
+			   enum cpp_ttype type,
+			   int char_idx,
+			   source_range *out_range)
+{
+  gcc_checking_assert (char_idx >= 0);
   gcc_assert (out_range);
 
   cpp_substring_ranges ranges;
@@ -1433,17 +1483,14 @@ get_source_range_for_substring (cpp_reader *pfile,
   if (err)
     return err;
 
-  if (start_idx >= ranges.get_num_ranges ())
-    return "start_idx out of range";
-  if (end_idx >= ranges.get_num_ranges ())
-    return "end_idx out of range";
+  if (char_idx >= ranges.get_num_ranges ())
+    return "char_idx out of range";
 
-  out_range->m_start = ranges.get_range (start_idx).m_start;
-  out_range->m_finish = ranges.get_range (end_idx).m_finish;
+  *out_range = ranges.get_range (char_idx);
   return NULL;
 }
 
-/* As get_source_range_for_substring, but write to *OUT the number
+/* As get_source_range_for_char, but write to *OUT the number
    of ranges that are available.  */
 
 const char *
@@ -1939,8 +1986,8 @@ assert_char_at_range (const location &loc,
 
   source_range actual_range;
   const char *err
-    = get_source_range_for_substring (pfile, concats, strloc, type,
-				      idx, idx, &actual_range);
+    = get_source_range_for_char (pfile, concats, strloc, type, idx,
+				 &actual_range);
   if (should_have_column_data_p (strloc))
     ASSERT_EQ_AT (loc, NULL, err);
   else
@@ -2789,9 +2836,8 @@ test_lexer_string_locations_concatenation_2 (const line_table_case &case_)
 	 this case.  */
       source_range actual_range;
       const char *err
-	= get_source_range_for_substring (test.m_parser, &test.m_concats,
-					  initial_loc, type, 0, 0,
-					  &actual_range);
+	= get_source_range_for_char (test.m_parser, &test.m_concats,
+				     initial_loc, type, 0, &actual_range);
       ASSERT_STREQ ("range starts after LINE_MAP_MAX_LOCATION_WITH_COLS", err);
       return;
     }

@@ -1124,17 +1124,20 @@ class substring_loc
 {
  public:
   substring_loc (location_t fmt_string_loc, tree string_type,
-		 int start_idx, int end_idx)
+		 int caret_idx, int start_idx, int end_idx)
   : m_fmt_string_loc (fmt_string_loc), m_string_type (string_type),
-    m_start_idx (start_idx), m_end_idx (end_idx) {}
+    m_caret_idx (caret_idx), m_start_idx (start_idx), m_end_idx (end_idx) {}
 
-  const char *get_range (source_range *out_range) const;
+  void set_caret_index (int caret_idx) { m_caret_idx = caret_idx; }
+
+  const char *get_location (location_t *out_loc) const;
 
   location_t get_fmt_string_loc () const { return m_fmt_string_loc; }
 
  private:
   location_t m_fmt_string_loc;
   tree m_string_type;
+  int m_caret_idx;
   int m_start_idx;
   int m_end_idx;
 };

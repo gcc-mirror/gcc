@@ -87,7 +87,7 @@ void test_hex (const char *msg)
 /* TODO: ideally would also underline "msg".  */
 /* { dg-begin-multiline-output "" }
    printf("hello \x25\x69", msg);
-                 ~~~~~~~^
+                 ~~~~^~~~
                  %s
    { dg-end-multiline-output "" } */
 }
@@ -101,7 +101,7 @@ void test_oct (const char *msg)
 /* TODO: ideally would also underline "msg".  */
 /* { dg-begin-multiline-output "" }
    printf("hello \045\151", msg);
-                 ~~~~~~~^
+                 ~~~~^~~~
                  %s
    { dg-end-multiline-output "" } */
 }
@@ -120,7 +120,7 @@ void test_multiple (const char *msg)
 /* TODO: ideally would also underline "msg".  */
 /* { dg-begin-multiline-output "" }
    printf("prefix"  "\x25"  "\151"  "suffix",
-                     ~~~~~~~~~~~^
+                     ~~~~~~~~^~~~
                      %s
   { dg-end-multiline-output "" } */
 }
@@ -148,10 +148,44 @@ void test_param (long long_i, long long_j)
 
 void test_field_width_specifier (long l, int i1, int i2)
 {
-  printf (" %*.*d ", l, i1, i2); /* { dg-warning "17: field width specifier '\\*' expects argument of type 'int', but argument 2 has type 'long int'" } */
+  printf (" %*.*d ", l, i1, i2); /* { dg-warning "14: field width specifier '\\*' expects argument of type 'int', but argument 2 has type 'long int'" } */
 /* { dg-begin-multiline-output "" }
    printf (" %*.*d ", l, i1, i2);
-             ~~~~^
+             ~^~~~
+   { dg-end-multiline-output "" } */
+}
+
+/* PR c/72857.  */
+
+void test_field_width_specifier_2 (char *d, long foo, long bar)
+{
+  __builtin_sprintf (d, " %*ld ", foo, foo); /* { dg-warning "28: field width specifier '\\*' expects argument of type 'int', but argument 3 has type 'long int'" } */
+  /* TODO: ideally we'd underline the first "foo" here".  */
+  /* { dg-begin-multiline-output "" }
+   __builtin_sprintf (d, " %*ld ", foo, foo);
+                           ~^~~
+   { dg-end-multiline-output "" } */
+
+  __builtin_sprintf (d, " %*ld ", foo + bar, foo); /* { dg-warning "28: field width specifier '\\*' expects argument of type 'int', but argument 3 has type 'long int'" } */
+  /* { dg-begin-multiline-output "" }
+   __builtin_sprintf (d, " %*ld ", foo + bar, foo);
+                           ~^~~    ~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
+void test_field_precision_specifier (char *d, long foo, long bar)
+{
+  __builtin_sprintf (d, " %.*ld ", foo, foo); /* { dg-warning "29: field precision specifier '\\.\\*' expects argument of type 'int', but argument 3 has type 'long int'" } */
+  /* TODO: ideally we'd underline the first "foo" here".  */
+  /* { dg-begin-multiline-output "" }
+   __builtin_sprintf (d, " %.*ld ", foo, foo);
+                           ~~^~~
+   { dg-end-multiline-output "" } */
+
+  __builtin_sprintf (d, " %.*ld ", foo + bar, foo); /* { dg-warning "29: field precision specifier '\\.\\*' expects argument of type 'int', but argument 3 has type 'long int'" } */
+  /* { dg-begin-multiline-output "" }
+   __builtin_sprintf (d, " %.*ld ", foo + bar, foo);
+                           ~~^~~    ~~~~~~~~~
    { dg-end-multiline-output "" } */
 }
 
@@ -200,10 +234,10 @@ void test_conversion_lacks_type (void)
 
 void test_embedded_nul (void)
 {
-  printf (" \0 "); /* { dg-warning "14:embedded" "warning for embedded NUL" } */
+  printf (" \0 "); /* { dg-warning "13:embedded" "warning for embedded NUL" } */
 /* { dg-begin-multiline-output "" }
    printf (" \0 ");
-             ~^
+             ^~
    { dg-end-multiline-output "" } */
 }
 
@@ -225,7 +259,7 @@ void test_macro (const char *msg)
 void test_non_contiguous_strings (void)
 {
   __builtin_printf(" %" "d ", 0.5); /* { dg-warning "20: format .%d. expects argument of type .int., but argument 2 has type .double." } */
-                                    /* { dg-message "26: format string is defined here" "" { target *-*-* } 227 } */
+                                    /* { dg-message "26: format string is defined here" "" { target *-*-* } 261 } */
   /* { dg-begin-multiline-output "" }
    __builtin_printf(" %" "d ", 0.5);
                     ^~~~
