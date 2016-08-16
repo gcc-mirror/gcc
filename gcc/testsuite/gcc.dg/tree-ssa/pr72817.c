@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O3" } */
 
-char a;
+signed char a;
 short b;
 
 int main ()

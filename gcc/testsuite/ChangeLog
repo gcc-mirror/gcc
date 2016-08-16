@@ -1,3 +1,8 @@
+2016-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/72817
+	* gcc.dg/tree-ssa/pr72817.c (a): Change type from char to signed char.
+
 2016-08-16  Joseph Myers  <joseph@codesourcery.com>
 
 	PR libgcc/77265
