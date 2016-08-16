@@ -2573,7 +2573,17 @@
   "TARGET_SIMD"
 {
   rtx mask = gen_reg_rtx (<V_cmp_result>mode);
+  enum rtx_code code = GET_CODE (operands[3]);
 
+  /* NE is handled as !EQ in vec_cmp patterns, we can explicitly invert
+     it as well as switch operands 1/2 in order to avoid the additional
+     NOT instruction.  */
+  if (code == NE)
+    {
+      operands[3] = gen_rtx_fmt_ee (EQ, GET_MODE (operands[3]),
+				    operands[4], operands[5]);
+      std::swap (operands[1], operands[2]);
+    }
   emit_insn (gen_vec_cmp<mode><v_cmp_result> (mask, operands[3],
 					      operands[4], operands[5]));
   emit_insn (gen_vcond_mask_<mode><v_cmp_result> (operands[0], operands[1],
@@ -2593,7 +2603,17 @@
   "TARGET_SIMD"
 {
   rtx mask = gen_reg_rtx (<V_cmp_result>mode);
+  enum rtx_code code = GET_CODE (operands[3]);
 
+  /* NE is handled as !EQ in vec_cmp patterns, we can explicitly invert
+     it as well as switch operands 1/2 in order to avoid the additional
+     NOT instruction.  */
+  if (code == NE)
+    {
+      operands[3] = gen_rtx_fmt_ee (EQ, GET_MODE (operands[3]),
+				    operands[4], operands[5]);
+      std::swap (operands[1], operands[2]);
+    }
   emit_insn (gen_vec_cmp<mode><v_cmp_result> (mask, operands[3],
 					      operands[4], operands[5]));
   emit_insn (gen_vcond_mask_<v_cmp_mixed><v_cmp_result> (
@@ -2614,7 +2634,17 @@
   "TARGET_SIMD"
 {
   rtx mask = gen_reg_rtx (<MODE>mode);
+  enum rtx_code code = GET_CODE (operands[3]);
 
+  /* NE is handled as !EQ in vec_cmp patterns, we can explicitly invert
+     it as well as switch operands 1/2 in order to avoid the additional
+     NOT instruction.  */
+  if (code == NE)
+    {
+      operands[3] = gen_rtx_fmt_ee (EQ, GET_MODE (operands[3]),
+				    operands[4], operands[5]);
+      std::swap (operands[1], operands[2]);
+    }
   emit_insn (gen_vec_cmp<mode><mode> (mask, operands[3],
 				      operands[4], operands[5]));
   emit_insn (gen_vcond_mask_<mode><v_cmp_result> (operands[0], operands[1],
@@ -2633,7 +2663,17 @@
   "TARGET_SIMD"
 {
   rtx mask = gen_reg_rtx (<V_cmp_result>mode);
+  enum rtx_code code = GET_CODE (operands[3]);
 
+  /* NE is handled as !EQ in vec_cmp patterns, we can explicitly invert
+     it as well as switch operands 1/2 in order to avoid the additional
+     NOT instruction.  */
+  if (code == NE)
+    {
+      operands[3] = gen_rtx_fmt_ee (EQ, GET_MODE (operands[3]),
+				    operands[4], operands[5]);
+      std::swap (operands[1], operands[2]);
+    }
   emit_insn (gen_vec_cmp<v_cmp_mixed><v_cmp_mixed> (
 						  mask, operands[3],
 						  operands[4], operands[5]));

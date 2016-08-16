@@ -1,3 +1,8 @@
+2016-08-16  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/69848
+	* gcc.target/aarch64/simd/vcond-ne-bit.c: New test.
+
 2016-08-16  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-prof/val-prof-7.c (int main): Change size
