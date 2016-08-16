@@ -1,3 +1,15 @@
+2016-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/72847
+	* include/bits/stl_bvector.h (_Bvector_base::_M_deallocate): Zero
+	pointers to start and end of storage.
+	* testsuite/23_containers/vector/bool/72847.cc: New test.
+	* include/bits/vector.tcc (vector<bool>::_M_reallocate): Only update
+	_M_finish after deallocating.
+	(vector<bool>::_M_fill_insert): Likewise.
+	(vector<bool>::_M_insert_range): Likewise.
+	(vector<bool>::_M_insert_aux): Likewise.
+
 2016-08-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2744 and LWG 2754.
