@@ -13,14 +13,14 @@
    LITERAL is a const void * to allow testing the various kinds of wide
    string literal, rather than just const char *.  */
 
-extern void __emit_string_literal_range (const void *literal,
+extern void __emit_string_literal_range (const void *literal, int caret_idx,
 					 int start_idx, int end_idx);
 
 void
 test_simple_string_literal (void)
 {
   __emit_string_literal_range ("0123456789", /* { dg-warning "range" } */
-			       6, 7);
+			       6, 6, 7);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range ("0123456789",
                                        ^~
@@ -31,10 +31,10 @@ void
 test_concatenated_string_literal (void)
 {
   __emit_string_literal_range ("01234" "56789", /* { dg-warning "range" } */
-			       3, 6);
+			       4, 3, 6);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range ("01234" "56789",
-                                    ^~~~~~~
+                                    ~^~~~~~
    { dg-end-multiline-output "" } */
 }
 
@@ -43,14 +43,14 @@ test_multiline_string_literal (void)
 {
   __emit_string_literal_range ("01234" /* { dg-warning "range" } */
                                "56789",
-                               3, 6);
+                               4, 3, 6);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range ("01234"
-                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                    ~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 "56789",
-                                ~~~  
+                                ~~~   
    { dg-end-multiline-output "" } */
-  /* FIXME: why does the above need two trailing spaces?  */
+  /* FIXME: why does the above need three trailing spaces?  */
 }
 
 /* Tests of various unicode encodings.
@@ -79,10 +79,10 @@ test_hex (void)
      and with a space in place of digit 6, to terminate the escaped
      hex code.  */
   __emit_string_literal_range ("01234\x35 789", /* { dg-warning "range" } */
-			       3, 7);
+			       4, 3, 7);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range ("01234\x35 789"
-                                    ^~~~~~~~
+                                    ~^~~~~~~
    { dg-end-multiline-output "" } */
 }
 
@@ -93,10 +93,10 @@ test_oct (void)
      and with a space in place of digit 6, to terminate the escaped
      octal code.  */
   __emit_string_literal_range ("01234\065 789", /* { dg-warning "range" } */
-			       3, 7);
+			       4, 3, 7);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range ("01234\065 789"
-                                    ^~~~~~~~
+                                    ~^~~~~~~
    { dg-end-multiline-output "" } */
 }
 
@@ -106,10 +106,10 @@ test_multiple (void)
   /* Digits 0-9, expressing digit 5 in ASCII as hex "\x35"
      digit 6 in ASCII as octal "\066", concatenating multiple strings.  */
   __emit_string_literal_range ("01234"  "\x35"  "\066"  "789", /* { dg-warning "range" } */
-			       3, 8);
+			       5, 3, 8);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range ("01234"  "\x35"  "\066"  "789",
-                                    ^~~~~~~~~~~~~~~~~~~~~~~~
+                                    ~~~~~~^~~~~~~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 }
 
@@ -123,10 +123,10 @@ test_ucn4 (void)
      Hence to underline digits 4-7 we need to underling using bytes 4-11 in
      the UTF-8 encoding.  */
   __emit_string_literal_range ("01234\u2174\u2175789", /* { dg-warning "range" } */
-			       4, 11);
+			       5, 4, 11);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range ("01234\u2174\u2175789",
-                                     ^~~~~~~~~~~~~~
+                                     ~^~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 }
 
@@ -138,10 +138,10 @@ test_ucn8 (void)
      has the same UTF-8 encoding, and so we again need to underline bytes
      4-11 in the UTF-8 encoding in order to underline digits 4-7.  */
   __emit_string_literal_range ("01234\U00002174\U00002175789", /* { dg-warning "range" } */
-			       4, 11);
+			       5, 4, 11);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range ("01234\U00002174\U00002175789",
-                                     ^~~~~~~~~~~~~~~~~~~~~~
+                                     ~^~~~~~~~~~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 }
 
@@ -150,10 +150,10 @@ test_u8 (void)
 {
   /* Digits 0-9.  */
   __emit_string_literal_range (u8"0123456789", /* { dg-warning "range" } */
-			       4, 7);
+			       6, 4, 7);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range (u8"0123456789",
-                                       ^~~~
+                                       ~~^~
    { dg-end-multiline-output "" } */
 }
 
@@ -161,8 +161,8 @@ void
 test_u (void)
 {
   /* Digits 0-9.  */
-  __emit_string_literal_range (u"0123456789", /* { dg-error "unable to read substring range: execution character set != source character set" } */
-			       4, 7);
+  __emit_string_literal_range (u"0123456789", /* { dg-error "unable to read substring location: execution character set != source character set" } */
+			       6, 4, 7);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range (u"0123456789",
                                 ^~~~~~~~~~~~~
@@ -173,8 +173,8 @@ void
 test_U (void)
 {
   /* Digits 0-9.  */
-  __emit_string_literal_range (U"0123456789", /* { dg-error "unable to read substring range: execution character set != source character set" } */
-			       4, 7);
+  __emit_string_literal_range (U"0123456789", /* { dg-error "unable to read substring location: execution character set != source character set" } */
+			       6, 4, 7);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range (U"0123456789",
                                 ^~~~~~~~~~~~~
@@ -185,8 +185,8 @@ void
 test_L (void)
 {
   /* Digits 0-9.  */
-  __emit_string_literal_range (L"0123456789", /* { dg-error "unable to read substring range: execution character set != source character set" } */
-			       4, 7);
+  __emit_string_literal_range (L"0123456789", /* { dg-error "unable to read substring location: execution character set != source character set" } */
+			       6, 4, 7);
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range (L"0123456789",
                                 ^~~~~~~~~~~~~
@@ -199,10 +199,10 @@ test_macro (void)
 #define START "01234"  /* { dg-warning "range" } */
   __emit_string_literal_range (START
                                "56789",
-                               3, 6);
+                               4, 3, 6);
 /* { dg-begin-multiline-output "" }
  #define START "01234"
-                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   ~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    __emit_string_literal_range (START
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 "56789",

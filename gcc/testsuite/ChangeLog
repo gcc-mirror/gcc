@@ -1,3 +1,47 @@
+2016-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/72857
+	* gcc.dg/format/asm_fprintf-1.c: Restore column numbers
+	for embedded NUL.
+	* gcc.dg/format/c90-printf-1.c: Restore column numbers.
+	* gcc.dg/format/diagnostic-ranges.c (test_hex): Update expected
+	caret placement.
+	(test_oct): Likewise.
+	(test_multiple): Likewise.
+	(test_field_width_specifier): Likewise.
+	(test_field_width_specifier_2): New function.
+	(test_field_precision_specifier): New function.
+	(test_embedded_nul): Update expected caret placement.
+	(test_non_contiguous_strings): Update line number.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
+	(__emit_string_literal_range): Add "caret_idx" param.
+	(test_simple_string_literal): Add value for new param, updating
+	expected output..
+	(test_concatenated_string_literal): Likewise.
+	(test_multiline_string_literal): Likewise.
+	(test_hex): Likewise.
+	(test_oct): Likewise.
+	(test_multiple): Likewise.
+	(test_ucn4): Likewise.
+	(test_ucn8): Likewise.
+	(test_u8): Likewise.
+	(test_u): Likewise; update expected message, from "range" to
+	"location".
+	(test_U): Likewise.
+	(test_L): Likewise.
+	(test_macro): Add value for new param.
+	* gcc.dg/plugin/diagnostic-test-string-literals-2.c
+	(__emit_string_literal_range): Add "caret_idx" param.
+	(test_stringified_token_1): Add value for new param.  Update
+	expected message, from "range" to "location".
+	(test_stringized_token_2): Likewise, adding param to macro.
+	(test_stringified_token_3): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c
+	(emit_warning): Convert param from source_range to location_t.
+	(test_string_literals): Add caret_idx param, and use it when
+	constructing a substring_loc.  Update error message, from
+	"range" to "location".
+
 2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/71910

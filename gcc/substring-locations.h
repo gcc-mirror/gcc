@@ -20,11 +20,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SUBSTRING_LOCATIONS_H
 #define GCC_SUBSTRING_LOCATIONS_H
 
-extern const char *get_source_range_for_substring (cpp_reader *pfile,
-						   string_concat_db *concats,
-						   location_t strloc,
-						   enum cpp_ttype type,
-						   int start_idx, int end_idx,
-						   source_range *out_range);
+extern const char *get_source_location_for_substring (cpp_reader *pfile,
+						      string_concat_db *concats,
+						      location_t strloc,
+						      enum cpp_ttype type,
+						      int caret_idx,
+						      int start_idx, int end_idx,
+						      location_t *out_loc);
 
 #endif /* ! GCC_SUBSTRING_LOCATIONS_H */

@@ -95,14 +95,12 @@ check_for_named_call (gimple *stmt,
   return call;
 }
 
-/* Emit a warning covering SRC_RANGE, with the caret at the start of
-   SRC_RANGE.  */
+/* Emit a warning at LOC.  */
 
 static void
-emit_warning (source_range src_range)
+emit_warning (location_t loc)
 {
-  location_t loc
-    = make_location (src_range.m_start, src_range.m_start, src_range.m_finish);
+  source_range src_range = get_range_from_loc (line_table, loc);
   warning_at (loc, 0, "range %i:%i-%i:%i",
 	      LOCATION_LINE (src_range.m_start),
 	      LOCATION_COLUMN (src_range.m_start),
@@ -114,14 +112,14 @@ emit_warning (source_range src_range)
    within string literals, for use by diagnostic-test-string-literals-*.c.
    Emit a warning showing the range of a string literal, for each call to
    a function named "__emit_string_literal_range".
-   The initial argument should be a string literal; arguments 2 and 3
-   should be integer constants, giving the range within the string
+   The initial argument should be a string literal; arguments 2, 3, and 4
+   should be integer constants, giving the caret and range within the string
    to be printed.  */
 
 static void
 test_string_literals (gimple *stmt)
 {
-  gcall *call = check_for_named_call (stmt, "__emit_string_literal_range", 3);
+  gcall *call = check_for_named_call (stmt, "__emit_string_literal_range", 4);
   if (!call)
     return;
 
@@ -141,32 +139,40 @@ test_string_literals (gimple *stmt)
       return;
     }
 
-  tree t_start_idx = gimple_call_arg (call, 1);
-  if (TREE_CODE (t_start_idx) != INTEGER_CST)
+  tree t_caret_idx = gimple_call_arg (call, 1);
+  if (TREE_CODE (t_caret_idx) != INTEGER_CST)
     {
       error_at (call->location, "integer constant required for arg 2");
       return;
     }
-  int start_idx = TREE_INT_CST_LOW (t_start_idx);
+  int caret_idx = TREE_INT_CST_LOW (t_caret_idx);
 
-  tree t_end_idx = gimple_call_arg (call, 2);
-  if (TREE_CODE (t_end_idx) != INTEGER_CST)
+  tree t_start_idx = gimple_call_arg (call, 2);
+  if (TREE_CODE (t_start_idx) != INTEGER_CST)
     {
       error_at (call->location, "integer constant required for arg 3");
+      return;
+    }
+  int start_idx = TREE_INT_CST_LOW (t_start_idx);
+
+  tree t_end_idx = gimple_call_arg (call, 3);
+  if (TREE_CODE (t_end_idx) != INTEGER_CST)
+    {
+      error_at (call->location, "integer constant required for arg 4");
       return;
     }
   int end_idx = TREE_INT_CST_LOW (t_end_idx);
 
   /* A STRING_CST doesn't have a location, but the ADDR_EXPR does.  */
   location_t strloc = EXPR_LOCATION (t_addr_string);
-  source_range src_range;
+  location_t loc;
   substring_loc substr_loc (strloc, TREE_TYPE (t_string),
-			    start_idx, end_idx);
-  const char *err = substr_loc.get_range (&src_range);
+			    caret_idx, start_idx, end_idx);
+  const char *err = substr_loc.get_location (&loc);
   if (err)
-    error_at (strloc, "unable to read substring range: %s", err);
+    error_at (strloc, "unable to read substring location: %s", err);
   else
-    emit_warning (src_range);
+    emit_warning (loc);
 }
 
 /* Call test_string_literals on every statement within FUN.  */

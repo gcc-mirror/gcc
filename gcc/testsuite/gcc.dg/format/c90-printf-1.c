@@ -58,11 +58,11 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   printf ("%-%"); /* { dg-warning "13:type" "missing type" } */
   /* { dg-warning "14:trailing" "bogus %%" { target *-*-* } 58 } */
   printf ("%-%\n"); /* { dg-warning "13:format" "bogus %%" } */
-  /* { dg-warning "16:format" "bogus %%" { target *-*-* } 60 } */
+  /* { dg-warning "15:format" "bogus %%" { target *-*-* } 60 } */
   printf ("%5%\n"); /* { dg-warning "13:format" "bogus %%" } */
-  /* { dg-warning "16:format" "bogus %%" { target *-*-* } 62 } */
+  /* { dg-warning "15:format" "bogus %%" { target *-*-* } 62 } */
   printf ("%h%\n"); /* { dg-warning "13:format" "bogus %%" } */
-  /* { dg-warning "16:format" "bogus %%" { target *-*-* } 64 } */
+  /* { dg-warning "15:format" "bogus %%" { target *-*-* } 64 } */
   /* Valid and invalid %h, %l, %L constructions.  */
   printf ("%hd", i);
   printf ("%hi", i);
@@ -184,8 +184,8 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   printf ("%-08G", d); /* { dg-warning "11:flags|ignored" "0 flag ignored with - flag" } */
   /* Various tests of bad argument types.  */
   printf ("%d", l); /* { dg-warning "13:format" "bad argument types" } */
-  printf ("%*.*d", l, i2, i); /* { dg-warning "16:field" "bad * argument types" } */
-  printf ("%*.*d", i1, l, i); /* { dg-warning "16:field" "bad * argument types" } */
+  printf ("%*.*d", l, i2, i); /* { dg-warning "13:field" "bad * argument types" } */
+  printf ("%*.*d", i1, l, i); /* { dg-warning "15:field" "bad * argument types" } */
   printf ("%ld", i); /* { dg-warning "14:format" "bad argument types" } */
   printf ("%s", n); /* { dg-warning "13:format" "bad argument types" } */
   printf ("%p", i); /* { dg-warning "13:format" "bad argument types" } */
@@ -231,8 +231,8 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   printf ("%d", i, i); /* { dg-warning "11:arguments" "wrong number of args" } */
   /* Miscellaneous bogus constructions.  */
   printf (""); /* { dg-warning "11:zero-length" "warning for empty format" } */
-  printf ("\0"); /* { dg-warning "13:embedded" "warning for embedded NUL" } */
-  printf ("%d\0", i); /* { dg-warning "15:embedded" "warning for embedded NUL" } */
+  printf ("\0"); /* { dg-warning "12:embedded" "warning for embedded NUL" } */
+  printf ("%d\0", i); /* { dg-warning "14:embedded" "warning for embedded NUL" } */
   printf ("%d\0%d", i, i); /* { dg-warning "embedded|too many" "warning for embedded NUL" } */
   printf (NULL); /* { dg-warning "3:null" "null format string warning" } */
   printf ("%"); /* { dg-warning "12:trailing" "trailing % warning" } */

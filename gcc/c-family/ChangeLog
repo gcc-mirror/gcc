@@ -1,3 +1,24 @@
+2016-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/72857
+	* c-common.c (substring_loc::get_range): Rename to...
+	(substring_loc::get_location): ...this, converting param from a
+	source_range * to a location_t *.  Call
+	get_source_location_for_substring rather than
+	get_source_range_for_substring, and pass in m_caret_idx.
+	* c-common.h (substring_loc::substring_loc): Add param "caret_idx".
+	(substring_loc::get_range): Replace with...
+	(substring_loc::get_location): ...this.
+	(substring_loc::set_caret_index): New method.
+	(substring_loc): Add field m_caret_idx.
+	* c-format.c (format_warning_va): Update for above changes.
+	Rename local "substring_loc" to "fmt_substring_loc" to avoid
+	clashing with type name.
+	(format_warning_at_char): Add caret_idx param to substring_loc ctor.
+	(check_argument_type): Likewise.
+	(format_type_warning): Rename param "fmt_loc" to "whole_fmt_loc"
+	Use a copy when emitting warnings, setting the caret index from TYPE.
+
 2016-08-16  Eric Botcazou  <ebotcazou@adacore.com>
             Arnaud Charlet  <charlet@adacore.com>
 

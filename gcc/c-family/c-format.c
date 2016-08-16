@@ -146,26 +146,23 @@ format_warning_va (const substring_loc &fmt_loc, source_range *param_range,
 {
   bool substring_within_range = false;
   location_t primary_loc;
-  location_t substring_loc = UNKNOWN_LOCATION;
+  location_t fmt_substring_loc = UNKNOWN_LOCATION;
   source_range fmt_loc_range
     = get_range_from_loc (line_table, fmt_loc.get_fmt_string_loc ());
-  source_range fmt_substring_range;
-  const char *err = fmt_loc.get_range (&fmt_substring_range);
+  const char *err = fmt_loc.get_location (&fmt_substring_loc);
+  source_range fmt_substring_range
+    = get_range_from_loc (line_table, fmt_substring_loc);
   if (err)
     /* Case 3: unable to get substring location.  */
     primary_loc = fmt_loc.get_fmt_string_loc ();
   else
     {
-      substring_loc = make_location (fmt_substring_range.m_finish,
-				     fmt_substring_range.m_start,
-				     fmt_substring_range.m_finish);
-
       if (fmt_substring_range.m_start >= fmt_loc_range.m_start
 	  && fmt_substring_range.m_finish <= fmt_loc_range.m_finish)
 	/* Case 1.  */
 	{
 	  substring_within_range = true;
-	  primary_loc = substring_loc;
+	  primary_loc = fmt_substring_loc;
 	}
       else
 	/* Case 2.  */
@@ -193,11 +190,11 @@ format_warning_va (const substring_loc &fmt_loc, source_range *param_range,
   diagnostic.option_index = opt;
   bool warned = report_diagnostic (&diagnostic);
 
-  if (!err && substring_loc && !substring_within_range)
+  if (!err && fmt_substring_loc && !substring_within_range)
     /* Case 2.  */
     if (warned)
       {
-	rich_location substring_richloc (line_table, substring_loc);
+	rich_location substring_richloc (line_table, fmt_substring_loc);
 	if (corrected_substring)
 	  substring_richloc.add_fixit_replace (fmt_substring_range,
 					       corrected_substring);
@@ -247,7 +244,8 @@ format_warning_at_char (location_t fmt_string_loc, tree format_string_cst,
       be emitted.  Fix it.  */
   char_idx -= 1;
 
-  substring_loc fmt_loc (fmt_string_loc, string_type, char_idx, char_idx);
+  substring_loc fmt_loc (fmt_string_loc, string_type, char_idx, char_idx,
+			 char_idx);
   bool warned = format_warning_va (fmt_loc, NULL, NULL, opt, gmsgid, &ap);
   va_end (ap);
 
@@ -2809,7 +2807,9 @@ check_argument_type (const format_char_info *fci,
     {
       ptrdiff_t offset_to_format_start = (start_of_this_format - 1) - orig_format_chars;
       ptrdiff_t offset_to_format_end = (format_chars - 1) - orig_format_chars;
+      /* By default, use the end of the range for the caret location.  */
       substring_loc fmt_loc (fmt_param_loc, TREE_TYPE (format_string_cst),
+			     offset_to_format_end,
 			     offset_to_format_start, offset_to_format_end);
       check_format_types (fmt_loc, first_wanted_type, fki);
     }
@@ -3262,8 +3262,10 @@ get_format_for_type (const format_kind_info *fki, tree arg_type)
   return NULL;
 }
 
-/* Give a warning at FMT_LOC about a format argument of different type
-   from that expected.  If non-NULL, PARAM_RANGE is the source range of the
+/* Give a warning about a format argument of different type from that expected.
+   The range of the diagnostic is taken from WHOLE_FMT_LOC; the caret location
+   is based on the location of the char at TYPE->offset_loc.
+   If non-NULL, PARAM_RANGE is the source range of the
    relevant argument.  WANTED_TYPE is the type the argument should have,
    possibly stripped of pointer dereferences.  The description (such as "field
    precision"), the placement in the format string, a possibly more
@@ -3271,7 +3273,7 @@ get_format_for_type (const format_kind_info *fki, tree arg_type)
    are taken from TYPE.  ARG_TYPE is the type of the actual argument,
    or NULL if it is missing.  */
 static void
-format_type_warning (const substring_loc &fmt_loc,
+format_type_warning (const substring_loc &whole_fmt_loc,
 		     source_range *param_range,
 		     format_wanted_type *type,
 		     tree wanted_type, tree arg_type,
@@ -3315,6 +3317,12 @@ format_type_warning (const substring_loc &fmt_loc,
       memset (p + 1, '*', pointer_count);
       p[pointer_count + 1] = 0;
     }
+
+  /* WHOLE_FMT_LOC has the caret at the end of the range.
+     Set the caret to be at the offset from TYPE.  Subtract one
+     from the offset for the same reason as in format_warning_at_char.  */
+  substring_loc fmt_loc (whole_fmt_loc);
+  fmt_loc.set_caret_index (type->offset_loc - 1);
 
   /* Attempt to provide hints for argument types, but not for field widths
      and precisions.  */
