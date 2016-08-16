@@ -1,5 +1,8 @@
 2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/71910
+	* g++.dg/gomp/pr71910.C: New test.
+
 	PR middle-end/67485
 	* gcc.c-torture/compile/pr67485.c: New test.
 

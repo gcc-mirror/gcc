@@ -8987,16 +8987,14 @@ execute_fixup_cfg (void)
   gcov_type count_scale;
   edge e;
   edge_iterator ei;
+  cgraph_node *node = cgraph_node::get (current_function_decl);
 
   count_scale
-      = GCOV_COMPUTE_SCALE (cgraph_node::get (current_function_decl)->count,
-			    ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
+    = GCOV_COMPUTE_SCALE (node->count, ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
 
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
-			    cgraph_node::get (current_function_decl)->count;
-  EXIT_BLOCK_PTR_FOR_FN (cfun)->count =
-			    apply_scale (EXIT_BLOCK_PTR_FOR_FN (cfun)->count,
-                                       count_scale);
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->count
+    = apply_scale (EXIT_BLOCK_PTR_FOR_FN (cfun)->count, count_scale);
 
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     e->count = apply_scale (e->count, count_scale);
@@ -9089,10 +9087,19 @@ execute_fixup_cfg (void)
 	    {
 	      if (stmt && is_gimple_call (stmt))
 		gimple_call_set_ctrl_altering (stmt, false);
-	      stmt = gimple_build_call
-		  (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
+	      tree fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	      stmt = gimple_build_call (fndecl, 0);
 	      gimple_stmt_iterator gsi = gsi_last_bb (bb);
 	      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
+	      if (!cfun->after_inlining)
+		{
+		  gcall *call_stmt = dyn_cast <gcall *> (stmt);
+		  int freq
+		    = compute_call_stmt_bb_frequency (current_function_decl,
+						      bb);
+		  node->create_edge (cgraph_node::get_create (fndecl),
+				     call_stmt, bb->count, freq);
+		}
 	    }
 	}
     }
