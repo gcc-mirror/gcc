@@ -999,33 +999,36 @@ number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
   mpz_clear (max);
 
   /* Compute no-overflow information for the control iv.  This can be
-     proven when below two conditions hold.
+     proven when below two conditions are satisfied:
 
-       1) |FINAL - base| is an exact multiple of step.
-       2) IV evaluates toward FINAL at beginning, i.e:
-
+       1) IV evaluates toward FINAL at beginning, i.e:
 	    base <= FINAL ; step > 0
 	    base >= FINAL ; step < 0
 
-	  Note the first condition holds, the second can be then relaxed
-	  to below condition.
+       2) |FINAL - base| is an exact multiple of step.
 
-	    base - step < FINAL ; step > 0
-				  && base - step doesn't underflow
-	    base - step > FINAL ; step < 0
-				  && base - step doesn't overflow
+     Unfortunately, it's hard to prove above conditions after pass loop-ch
+     because loop with exit condition (IV != FINAL) usually will be guarded
+     by initial-condition (IV.base - IV.step != FINAL).  In this case, we
+     can alternatively try to prove below conditions:
 
-	  The relaxation is important because after pass loop-ch, loop
-	  with exit condition (IV != FINAL) will usually be guarded by
-	  pre-condition (IV.base - IV.step != FINAL).  Please refer to
-	  PR34114 as an example.
+       1') IV evaluates toward FINAL at beginning, i.e:
+	    new_base = base - step < FINAL ; step > 0
+					     && base - step doesn't underflow
+	    new_base = base - step > FINAL ; step < 0
+					     && base - step doesn't overflow
 
-     Also note, for NE_EXPR, base equals to FINAL is a special case, in
+       2') |FINAL - new_base| is an exact multiple of step.
+
+     Please refer to PR34114 as an example of loop-ch's impact, also refer
+     to PR72817 as an example why condition 2') is necessary.
+
+     Note, for NE_EXPR, base equals to FINAL is a special case, in
      which the loop exits immediately, and the iv does not overflow.  */
   if (!niter->control.no_overflow
       && (integer_onep (s) || multiple_of_p (type, c, s)))
     {
-      tree t, cond, relaxed_cond = boolean_false_node;
+      tree t, cond, new_c, relaxed_cond = boolean_false_node;
 
       if (tree_int_cst_sign_bit (iv->step))
 	{
@@ -1039,8 +1042,12 @@ number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
 	      if (integer_nonzerop (t))
 		{
 		  t = fold_build2 (MINUS_EXPR, type, iv->base, iv->step);
-		  relaxed_cond = fold_build2 (GT_EXPR, boolean_type_node,
-					      t, final);
+		  new_c = fold_build2 (MINUS_EXPR, niter_type,
+				       fold_convert (niter_type, t),
+				       fold_convert (niter_type, final));
+		  if (multiple_of_p (type, new_c, s))
+		    relaxed_cond = fold_build2 (GT_EXPR, boolean_type_node,
+						t, final);
 		}
 	    }
 	}
@@ -1056,8 +1063,12 @@ number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
 	      if (integer_nonzerop (t))
 		{
 		  t = fold_build2 (MINUS_EXPR, type, iv->base, iv->step);
-		  relaxed_cond = fold_build2 (LT_EXPR, boolean_type_node,
-					      t, final);
+		  new_c = fold_build2 (MINUS_EXPR, niter_type,
+				       fold_convert (niter_type, final),
+				       fold_convert (niter_type, t));
+		  if (multiple_of_p (type, new_c, s))
+		    relaxed_cond = fold_build2 (LT_EXPR, boolean_type_node,
+						t, final);
 		}
 	    }
 	}
