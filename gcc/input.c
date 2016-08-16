@@ -1472,48 +1472,6 @@ namespace selftest {
 
 /* Selftests of location handling.  */
 
-/* A class for writing out a temporary sourcefile for use in selftests
-   of input handling.  */
-
-class temp_source_file
-{
- public:
-  temp_source_file (const location &loc, const char *suffix,
-		    const char *content);
-  ~temp_source_file ();
-
-  const char *get_filename () const { return m_filename; }
-
- private:
-  char *m_filename;
-};
-
-/* Constructor.  Create a tempfile using SUFFIX, and write CONTENT to
-   it.  Abort if anything goes wrong, using LOC as the effective
-   location in the problem report.  */
-
-temp_source_file::temp_source_file (const location &loc, const char *suffix,
-				    const char *content)
-{
-  m_filename = make_temp_file (suffix);
-  ASSERT_NE (m_filename, NULL);
-
-  FILE *out = fopen (m_filename, "w");
-  if (!out)
-    ::selftest::fail_formatted (loc, "unable to open tempfile: %s",
-				m_filename);
-  fprintf (out, "%s", content);
-  fclose (out);
-}
-
-/* Destructor.  Delete the tempfile.  */
-
-temp_source_file::~temp_source_file ()
-{
-  unlink (m_filename);
-  free (m_filename);
-}
-
 /* Helper function for verifying location data: when location_t
    values are > LINE_MAP_MAX_LOCATION_WITH_COLS, they are treated
    as having column 0.  */
