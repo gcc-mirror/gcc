@@ -1,5 +1,8 @@
 2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/67485
+	* gcc.c-torture/compile/pr67485.c: New test.
+
 	PR target/72867
 	* gcc.target/i386/pr72867.c: Add -msse to dg-options.
 
