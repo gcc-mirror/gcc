@@ -1,3 +1,9 @@
+2016-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/67485
+	* expmed.c (expand_mult_const): Change val_so_far's type to UHWI,
+	only cast it to SHWI for the final comparison.
+
 2016-08-16  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/36412
