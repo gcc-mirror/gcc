@@ -1,3 +1,8 @@
+2016-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/72867
+	* gcc.target/i386/pr72867.c: Add -msse to dg-options.
+
 2016-08-16  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/69848
