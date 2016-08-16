@@ -1,6 +1,6 @@
 /* PR target/72867 */
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -msse" } */
 /* { dg-require-effective-target sse } */
 
 #include "sse-check.h"
