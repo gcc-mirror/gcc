@@ -1,5 +1,9 @@
 2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/tuple/67844.cc: Require c++11 effective target.
+	* testsuite/20_util/tuple/cons/nested_tuple_construct.cc: Likewise.
+	* testsuite/27_io/rvalue_streams.cc: Likewise.
+
 	* testsuite/26_numerics/complex/literals/types.cc: Add comment.
 
 	* testsuite/21_strings/basic_string_view/operations/rfind/char/2.cc:
