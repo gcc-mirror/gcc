@@ -49,8 +49,39 @@ test03()
   VERIFY (x == 0);
 }
 
+// PR libstdc++/77264
+void
+test04()
+{
+  bool test __attribute__((unused)) = true;
+
+  const std::wstring str(L"a");
+
+  wchar_t c = L'a';
+  int res = str.compare(0, 1, &c, 1);
+  VERIFY ( !res );
+
+  wchar_t arr[] = L"a";
+  res = str.compare(0, 1, arr, 1);
+  VERIFY ( !res );
+
+  const wchar_t carr[] = L"a";
+  res = str.compare(0, 1, carr, 1);
+  VERIFY ( !res );
+
+  struct S {
+    operator wchar_t*() { return &c; }
+    operator std::wstring_view() { return L"!"; }
+    wchar_t c = L'a';
+  };
+
+  res = str.compare(0, 1, S{}, 1);
+  VERIFY ( !res );
+}
+
 int main()
 { 
   test03();
+  test04();
   return 0;
 }

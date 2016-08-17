@@ -49,8 +49,38 @@ test03()
   VERIFY (x == 0);
 }
 
+// PR libstdc++/77264
+void
+test04()
+{
+  bool test __attribute__((unused)) = true;
+
+  const std::string str("a");
+  char c = 'a';
+  int res = str.compare(0, 1, &c, 1);
+  VERIFY ( !res );
+
+  char arr[] = "a";
+  res = str.compare(0, 1, arr, 1);
+  VERIFY ( !res );
+
+  const char carr[] = "a";
+  res = str.compare(0, 1, carr, 1);
+  VERIFY ( !res );
+
+  struct S {
+    operator char*() { return &c; }
+    operator std::string_view() { return "!"; }
+    char c = 'a';
+  };
+
+  res = str.compare(0, 1, S{}, 1);
+  VERIFY ( !res );
+}
+
 int main()
 { 
   test03();
+  test04();
   return 0;
 }
