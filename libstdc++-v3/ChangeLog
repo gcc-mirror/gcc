@@ -1,5 +1,18 @@
 2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/hash/chi2_q_bit_flip_set.cc: Use effective target
+	instead of -std in dg-options.
+	* testsuite/20_util/hash/chi2_q_bit_string_set.cc: Likewise.
+	* testsuite/20_util/hash/chi2_q_numeric_pattern_set.cc: Likewise.
+	* testsuite/20_util/hash/chi2_q_uniform_random.cc: Likewise.
+	* testsuite/20_util/hash/quality.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/nth_element/random_test.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort/random_test.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/random_test.cc: Likewise.
+	* testsuite/25_algorithms/sort/random_test.cc: Likewise.
+
 	* testsuite/20_util/tuple/67844.cc: Require c++11 effective target.
 	* testsuite/20_util/tuple/cons/nested_tuple_construct.cc: Likewise.
 	* testsuite/27_io/rvalue_streams.cc: Likewise.
