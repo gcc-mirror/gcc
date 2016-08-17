@@ -1,3 +1,7 @@
+2016-08-18  Alan Modra  <amodra@gmail.com>
+
+	* gcc.c-torture/compile/pr72771.c: New.
+
 2016-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/67496
