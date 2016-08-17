@@ -1,3 +1,8 @@
+2016-08-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* omp-low.c (lower_oacc_reductions): Adjust variable lookup to use
+	maybe_lookup_decl, to handle nested acc loop directives.
+
 2016-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/76490

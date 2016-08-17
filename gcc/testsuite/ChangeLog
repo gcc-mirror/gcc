@@ -1,3 +1,7 @@
+2016-08-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/goacc/reduction-6.c: New testcase.
+
 2016-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/76490
