@@ -1,3 +1,41 @@
+2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77264
+	* include/bits/basic_string.h (operator=(__sv_type)
+	(append(__sv_type), assign(__sv_type), insert(size_type, __sv_type))
+	(replace(size_type, size_type, __sv_type))
+	(replace(const_iterator, const_iterator, __sv_type))
+	(find(__sv_type, size_type), rfind(__sv_type, size_type))
+	(compare(size_type, size_type, __sv_type)): Reformat.
+	(_If_sv): Define helper for SFINAE constaints.
+	(append(const _Tp&, size_type, size_type))
+	(assign(const _Tp&, size_type, size_type))
+	(insert(size_type, const _Tp&, size_type, size_type))
+	(replace(size_type, size_type, const _Tp&, size_type, size_type)):
+	Use _If_sv.
+	* testsuite/21_strings/basic_string/modifiers/append/char/4.cc: Test
+	SFINAE constraints.
+	* testsuite/21_strings/basic_string/modifiers/append/wchar_t/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/replace/char/7.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/replace/wchar_t/7.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/insert/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/insert/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/replace/char/7.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/compare/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/2.cc:
+	Likewise.
+
 2016-08-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/72847

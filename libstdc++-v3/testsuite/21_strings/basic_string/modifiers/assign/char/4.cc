@@ -35,8 +35,38 @@ test03()
   VERIFY (str4 == "oo");
 }
 
+// PR libstdc++/77264
+void
+test04()
+{
+  bool test __attribute__((unused)) = true;
+
+  std::string str("a");
+  char c = 'b';
+  str.assign(&c, 1);
+  VERIFY (str[0] == c);
+
+  char arr[] = "c";
+  str.assign(arr, 1);
+  VERIFY (str[0] == arr[0]);
+
+  const char carr[] = "d";
+  str.assign(carr, 1);
+  VERIFY (str[0] == carr[0]);
+
+  struct S {
+    operator char*() { return &c; }
+    operator std::string_view() { return "!"; }
+    char c = 'e';
+  };
+
+  str.assign(S{}, 1);
+  VERIFY (str[0] == S{}.c);
+}
+
 int main()
 { 
   test03();
+  test04();
   return 0;
 }

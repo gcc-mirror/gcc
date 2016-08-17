@@ -39,8 +39,39 @@ test03()
   VERIFY (str4 == L"foooooo");
 }
 
+// PR libstdc++/77264
+void
+test04()
+{
+  bool test __attribute__((unused)) = true;
+
+  std::wstring str(L"a");
+
+  wchar_t c = L'b';
+  str.insert(0, &c, 1);
+  VERIFY (str[0] == c);
+
+  wchar_t arr[] = L"c";
+  str.insert(0, arr, 1);
+  VERIFY (str[0] == arr[0]);
+
+  const wchar_t carr[] = L"d";
+  str.insert(0, carr, 1);
+  VERIFY (str[0] == carr[0]);
+
+  struct S {
+    operator wchar_t*() { return &c; }
+    operator std::wstring_view() { return L"!"; }
+    wchar_t c = L'e';
+  };
+
+  str.insert(0, S{}, 1);
+  VERIFY (str[0] == S{}.c);
+}
+
 int main()
 { 
   test03();
+  test04();
   return 0;
 }
