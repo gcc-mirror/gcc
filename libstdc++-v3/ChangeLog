@@ -1,5 +1,8 @@
 2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/24_iterators/headers/iterator/range_access.cc: Adjust
+	expected signatures for C++14 compatibility.
+
 	PR libstdc++/77264
 	* include/bits/basic_string.h (operator=(__sv_type)
 	(append(__sv_type), assign(__sv_type), insert(size_type, __sv_type))
