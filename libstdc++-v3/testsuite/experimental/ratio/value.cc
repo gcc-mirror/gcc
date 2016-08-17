@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++14" }
-// { dg-do compile }
+// { dg-do compile { target c++14 } }
 
 // Copyright (C) 2014-2016 Free Software Foundation, Inc.
 //
@@ -20,8 +19,19 @@
 
 #include <experimental/ratio>
 
-using namespace std;
-using namespace std::experimental;
+using std::ratio;
+using std::ratio_equal;
+using std::ratio_not_equal;
+using std::ratio_less;
+using std::ratio_less_equal;
+using std::ratio_greater;
+using std::ratio_greater_equal;
+using std::experimental::ratio_equal_v;
+using std::experimental::ratio_not_equal_v;
+using std::experimental::ratio_less_v;
+using std::experimental::ratio_less_equal_v;
+using std::experimental::ratio_greater_v;
+using std::experimental::ratio_greater_equal_v;
 
 // These tests are rather simple, the front-end tests already test
 // variable templates, and the library tests for the underlying

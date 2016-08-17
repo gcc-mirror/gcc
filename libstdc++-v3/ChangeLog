@@ -1,5 +1,23 @@
 2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc: Disable
+	test for C++17.
+	* testsuite/experimental/chrono/value.cc: Avoid ambiguities in C++17.
+	* testsuite/experimental/ratio/value.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/hash_map_rand.cc: Disable test for
+	C++17.
+	* testsuite/ext/pb_ds/regression/hash_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/tree_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/tree_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/trie_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/trie_set_rand.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/airy.cc: Adjust namespace of __detail::__airy for
+	C++17 compatibility.
+
 	* testsuite/24_iterators/headers/iterator/range_access.cc: Adjust
 	expected signatures for C++14 compatibility.
 

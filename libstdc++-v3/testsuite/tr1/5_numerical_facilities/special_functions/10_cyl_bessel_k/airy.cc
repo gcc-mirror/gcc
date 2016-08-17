@@ -27,8 +27,11 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   double x, Ai, Bi, Aip, Bip;
   x = 1.0;
+#if __cplusplus <= 201402L
   std::tr1::__detail::__airy(x, Ai, Bi, Aip, Bip);
+#else
+  std::__detail::__airy(x, Ai, Bi, Aip, Bip);
+#endif
 }
