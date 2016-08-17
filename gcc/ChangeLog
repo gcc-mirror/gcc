@@ -1,3 +1,13 @@
+2016-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/23855
+	* tree-ssa-loop-unswitch.c: Include tree-ssa-loop-manip.h.
+	(tree_unswitch_outer_loop): Iterate find_loop_guard as long as we
+	find guards to hoist.  Do not update SSA form but rewrite virtuals
+	into loop closed SSA.
+	(find_loop_guard): Adjust to skip already hoisted guards.  Do
+	not mark virtuals for renaming or update SSA form.
+
 2016-08-17  Martin Liska  <mliska@suse.cz>
 
 	* coverage.c (get_gcov_type): Replace GCOV_TYPE_SIZE with

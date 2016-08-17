@@ -11,5 +11,5 @@ void foo (float **a, float **b, float *c, int n, int m, int l)
 	c[i] += a[i][k] * b[k][j];
 }
 
-/* { dg-final { scan-tree-dump-times "guard hoisted" 2 "unswitch" } } */
+/* { dg-final { scan-tree-dump-times "guard hoisted" 3 "unswitch" } } */
 
