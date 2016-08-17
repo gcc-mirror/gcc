@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
 // Use smaller statistics when running on simulators, so it takes less time.
 // For x86_64-linux-gnu SAMPLES=30000 fails, so increase slightly.
-// { dg-options "-std=gnu++11 -DSAMPLES=35000" { target simulator } }
+// { dg-options "-DSAMPLES=35000" { target simulator } }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //

@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11" }
-// { dg-options "-DNTESTS=1 -DNSTRINGS=100 -DSTRSIZE=21 -std=gnu++11" { target simulator } }
+// { dg-options "-DNTESTS=1 -DNSTRINGS=100 -DSTRSIZE=21" { target simulator } }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //
