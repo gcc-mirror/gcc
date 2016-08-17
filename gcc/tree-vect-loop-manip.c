@@ -607,6 +607,9 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
 
       /** 2. Handle loop-closed-ssa-form phis  **/
 
+      if (virtual_operand_p (PHI_RESULT (orig_phi)))
+	continue;
+
       /* 2.1. Generate new phi node in NEW_EXIT_BB:  */
       new_res = copy_ssa_name (PHI_RESULT (orig_phi));
       new_phi = create_phi_node (new_res, *new_exit_bb);

@@ -2596,6 +2596,11 @@ prepare_use_sites_for (tree name, bool insert_phi_p)
   use_operand_p use_p;
   imm_use_iterator iter;
 
+  /* If we rename virtual operands do not update them.  */
+  if (virtual_operand_p (name)
+      && cfun->gimple_df->rename_vops)
+    return;
+
   FOR_EACH_IMM_USE_FAST (use_p, iter, name)
     {
       gimple *stmt = USE_STMT (use_p);
@@ -2630,6 +2635,11 @@ prepare_def_site_for (tree name, bool insert_phi_p)
   gcc_checking_assert (names_to_release == NULL
 		       || !bitmap_bit_p (names_to_release,
 					 SSA_NAME_VERSION (name)));
+
+  /* If we rename virtual operands do not update them.  */
+  if (virtual_operand_p (name)
+      && cfun->gimple_df->rename_vops)
+    return;
 
   stmt = SSA_NAME_DEF_STMT (name);
   bb = gimple_bb (stmt);
