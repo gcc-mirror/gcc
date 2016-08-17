@@ -1,3 +1,10 @@
+2016-08-18  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/72771
+	* reload.c (find_reloads): Don't assume that a subreg mem is OK
+	when find_reloads_toplev returns address_reloaded==-1.
+	(alternative_allows_const_pool_ref): Update comment.
+
 2015-08-17  Alan Hayward <alan.hayward@arm.com>
 
 	PR tree-optimization/71752

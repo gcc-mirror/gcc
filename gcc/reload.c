@@ -3961,7 +3961,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	       there will be no reload needed at all.  */
 	    if (plus == NULL_RTX
 		&& subreg == NULL_RTX
-		&& alternative_allows_const_pool_ref (this_address_reloaded == 0
+		&& alternative_allows_const_pool_ref (this_address_reloaded != 1
 						      ? substed_operand[i]
 						      : NULL,
 						      recog_data.constraints[i],
@@ -4606,8 +4606,8 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 
 /* Return true if alternative number ALTNUM in constraint-string
    CONSTRAINT is guaranteed to accept a reloaded constant-pool reference.
-   MEM gives the reference if it didn't need any reloads, otherwise it
-   is null.  */
+   MEM gives the reference if its address hasn't been fully reloaded,
+   otherwise it is NULL.  */
 
 static bool
 alternative_allows_const_pool_ref (rtx mem ATTRIBUTE_UNUSED,
