@@ -1,5 +1,8 @@
 2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/2.cc:
+	Remove duplicate dg-options directive.
+
 	* testsuite/ext/profile/all.cc: Use effective target instead of
 	-std=gnu++11. Use dg-additional-options instead of repeating options.
 
