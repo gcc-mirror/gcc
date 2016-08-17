@@ -1,3 +1,8 @@
+2015-08-17  Alan Hayward <alan.hayward@arm.com>
+
+	PR tree-optimization/71752
+	* gcc.dg/vect/pr71752.c: New
+
 2016-08-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/dec_init_2.f90: Use dg-add-options ieee.
