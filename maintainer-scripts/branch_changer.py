@@ -1,9 +1,39 @@
 #!/usr/bin/env python3
 
-# The script requires simplejson, requests, semantic_version packages, in case
-# of openSUSE:
-# zypper in python3-simplejson python3-requests
-# pip3 install semantic_version
+# This script is used by maintainers to modify Bugzilla entries in batch
+# mode.
+# Currently it can remove and add a release from/to PRs that are prefixed
+# with '[x Regression]'. Apart from that, it can also change target
+# milestones and optionally enhance the list of known-to-fail versions.
+#
+# The script utilizes the Bugzilla API, as documented here:
+# http://bugzilla.readthedocs.io/en/latest/api/index.html
+#
+# It requires the simplejson, requests, semantic_version packages.
+# In case of openSUSE:
+#   zypper in python3-simplejson python3-requests
+#   pip3 install semantic_version
+#
+# Sample usages of the script:
+#
+# $ ./maintainer-scripts/branch_changer.py api_key --new-target-milestone=6.2:6.3 --comment '6.2 has been released....' --add-known-to-fail=6.2 --limit 3
+#
+# The invocation will set target milestone to 6.3 for all issues that
+# have mistone equal to 6.2. Apart from that, a comment is added to these
+# issues and 6.2 version is added to known-to-fail versions.
+# At maximum 3 issues will be modified and the script will run
+# in dry mode (no issues are modified), unless you append --doit option.
+#
+# $ ./maintainer-scripts/branch_changer.py api_key --new-target-milestone=5.5:6.3 --comment 'GCC 5 branch is being closed' --remove 5 --limit 3
+#
+# Very similar to previous invocation, but instead of adding to known-to-fail,
+# '5' release is removed from all issues that have the regression prefix.
+#
+# $ ./maintainer-scripts/branch_changer.py api_key --add=7:8
+#
+# Aforementioned invocation adds '8' release to the regression prefix of all
+# issues that contain '7' in its regression prefix.
+#
 
 import requests
 import json
