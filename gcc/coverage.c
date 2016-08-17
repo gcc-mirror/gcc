@@ -142,7 +142,8 @@ static void coverage_obj_finish (vec<constructor_elt, va_gc> *);
 tree
 get_gcov_type (void)
 {
-  machine_mode mode = smallest_mode_for_size (GCOV_TYPE_SIZE, MODE_INT);
+  machine_mode mode
+    = smallest_mode_for_size (LONG_LONG_TYPE_SIZE > 32 ? 64 : 32, MODE_INT);
   return lang_hooks.types.type_for_mode (mode, false);
 }
 
