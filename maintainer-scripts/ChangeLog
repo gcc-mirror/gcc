@@ -1,3 +1,8 @@
+2016-08-17  Martin Liska  <mliska@suse.cz>
+
+	* branch_changer.py: Describe the script. Add sample usage
+	of the script.
+
 2016-08-03  Martin Liska  <mliska@suse.cz>
 
 	* branch_changer.py: New file.
