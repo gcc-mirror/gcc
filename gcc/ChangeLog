@@ -1,3 +1,12 @@
+2016-08-17  Martin Liska  <mliska@suse.cz>
+
+	* coverage.c (get_gcov_type): Replace GCOV_TYPE_SIZE with
+	a LONG_LONG_TYPE_SIZE comparison.
+	* gcov-io.h: Remove macro definitions.
+	* tree-profile.c (gimple_gen_edge_profiler): Replace usage
+	of GCOV_TYPE_ATOMIC_FETCH_ADD with a LONG_LONG_TYPE_SIZE
+	comparison.
+
 2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (enum ix86_builtins): Reorder enumerators, so

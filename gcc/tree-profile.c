@@ -259,11 +259,12 @@ gimple_gen_edge_profiler (int edgeno, edge e)
     {
       /* __atomic_fetch_add (&counter, 1, MEMMODEL_RELAXED); */
       tree addr = tree_coverage_counter_addr (GCOV_COUNTER_ARCS, edgeno);
-      gcall *stmt
-	= gimple_build_call (builtin_decl_explicit (GCOV_TYPE_ATOMIC_FETCH_ADD),
-			     3, addr, one,
-			     build_int_cst (integer_type_node,
-					    MEMMODEL_RELAXED));
+      tree f = builtin_decl_explicit (LONG_LONG_TYPE_SIZE > 32
+				      ? BUILT_IN_ATOMIC_FETCH_ADD_8:
+				      BUILT_IN_ATOMIC_FETCH_ADD_4);
+      gcall *stmt = gimple_build_call (f, 3, addr, one,
+				       build_int_cst (integer_type_node,
+						      MEMMODEL_RELAXED));
       gsi_insert_on_edge (e, stmt);
     }
   else
