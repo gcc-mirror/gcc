@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fdec-structure -finit-derived -finit-integer=42 -finit-real=nan -finit-logical=true -finit-character=32 -fdump-tree-original" }
+! { dg-add-options ieee }
 !
 ! Test -finit-derived with DEC structure and union.
 !
