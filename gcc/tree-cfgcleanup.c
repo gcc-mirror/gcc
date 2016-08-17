@@ -602,9 +602,14 @@ fixup_noreturn_call (gimple *stmt)
   /* If there is an LHS, remove it, but only if its type has fixed size.
      The LHS will need to be recreated during RTL expansion and creating
      temporaries of variable-sized types is not supported.  Also don't
-     do this with TREE_ADDRESSABLE types, as assign_temp will abort.  */
+     do this with TREE_ADDRESSABLE types, as assign_temp will abort.
+     Drop LHS regardless of TREE_ADDRESSABLE, if the function call
+     has been changed into a call that does not return a value, like
+     __builtin_unreachable or __cxa_pure_virtual.  */
   tree lhs = gimple_call_lhs (stmt);
-  if (should_remove_lhs_p (lhs))
+  if (lhs
+      && (should_remove_lhs_p (lhs)
+	  || VOID_TYPE_P (TREE_TYPE (gimple_call_fntype (stmt)))))
     {
       gimple_call_set_lhs (stmt, NULL_TREE);
 

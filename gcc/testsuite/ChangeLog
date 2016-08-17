@@ -1,3 +1,8 @@
+2016-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77259
+	* g++.dg/ipa/devirt-52.C: New test.
+
 2016-08-17  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-c++-common/goacc/reduction-6.c: New testcase.
