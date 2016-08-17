@@ -1,3 +1,18 @@
+2016-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/76490
+	* tree-vrp.c (update_value_range): Preserve overflow infinities
+	when intersecting with ranges from get_range_info.
+	(operand_less_p): Handle overflow infinities correctly.
+	(value_range_constant_singleton): Use vrp_operand_equal_p
+	to handle overflow max/min correctly.
+	(vrp_valueize): Likewise.
+	(union_ranges): Likewise.
+	(intersect_ranges): Likewise.
+	(vrp_visit_phi_node): Improve iteration limitation to only
+	apply when we'll possibly re-visit the PHI via a changed argument
+	on the backedge.
+
 2016-08-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/t-aprofile (MULTILIB_EXCEPTIONS): Rewrite into ...
