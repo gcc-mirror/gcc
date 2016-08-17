@@ -1,3 +1,8 @@
+2016-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/23855
+	* gcc.dg/loop-unswitch-2.c: Adjust.
+
 2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/72817

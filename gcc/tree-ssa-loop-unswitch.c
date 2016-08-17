@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "gimple-iterator.h"
 #include "cfghooks.h"
+#include "tree-ssa-loop-manip.h"
 
 /* This file implements the loop unswitching, i.e. transformation of loops like
 
@@ -451,14 +452,15 @@ tree_unswitch_outer_loop (struct loop *loop)
       return false;
     }
 
-  guard = find_loop_guard (loop);
-  if (guard)
+  bool changed = false;
+  while ((guard = find_loop_guard (loop)))
     {
+      if (! changed)
+	rewrite_virtuals_into_loop_closed_ssa (loop);
       hoist_guard (loop, guard);
-      update_ssa (TODO_update_ssa);
-      return true;
+      changed = true;
     }
-  return false;
+  return changed;
 }
 
 /* Checks if the body of the LOOP is within an invariant guard.  If this
@@ -501,13 +503,28 @@ find_loop_guard (struct loop *loop)
 	b) anything defined in something1, something2 and something3
 	   is not used outside of the loop.  */
 
-  while (single_succ_p (header))
-    header = single_succ (header);
-  if (!last_stmt (header)
-      || gimple_code (last_stmt (header)) != GIMPLE_COND)
-    return NULL;
-
-  extract_true_false_edges_from_block (header, &te, &fe);
+  gcond *cond;
+  do
+    {
+      if (single_succ_p (header))
+	header = single_succ (header);
+      else
+	{
+	  cond = dyn_cast <gcond *> (last_stmt (header));
+	  if (! cond)
+	    return NULL;
+	  extract_true_false_edges_from_block (header, &te, &fe);
+	  /* Make sure to skip earlier hoisted guards that are left
+	     in place as if (true).  */
+	  if (gimple_cond_true_p (cond))
+	    header = te->dest;
+	  else if (gimple_cond_false_p (cond))
+	    header = fe->dest;
+	  else
+	    break;
+	}
+    }
+  while (1);
   if (!flow_bb_inside_loop_p (loop, te->dest)
       || !flow_bb_inside_loop_p (loop, fe->dest))
     return NULL;
@@ -549,7 +566,7 @@ find_loop_guard (struct loop *loop)
 	     guard_edge->src->index, guard_edge->dest->index, loop->num);
   /* Check if condition operands do not have definitions inside loop since
      any bb copying is not performed.  */
-  FOR_EACH_SSA_TREE_OPERAND (use, last_stmt (header), iter, SSA_OP_USE)
+  FOR_EACH_SSA_TREE_OPERAND (use, cond, iter, SSA_OP_USE)
     {
       gimple *def = SSA_NAME_DEF_STMT (use);
       basic_block def_bb = gimple_bb (def);
@@ -762,8 +779,6 @@ hoist_guard (struct loop *loop, edge guard)
 	}
     }
 
-  mark_virtual_operands_for_renaming (cfun);
-  update_ssa (TODO_update_ssa);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  guard hoisted.\n");
 }
