@@ -39,7 +39,9 @@ def mark_as_spam(id, api_key, verbose):
         return
 
     # 2) mark the bug as spam
-    cc_list = response['bugs'][0]['cc']
+    bug = response['bugs'][0]
+    creator = bug['creator']
+    cc_list = bug['cc']
     data = {
         'status': 'RESOLVED',
         'resolution': 'INVALID',
@@ -64,13 +66,15 @@ def mark_as_spam(id, api_key, verbose):
     # 3) mark the first comment as spam
     r = requests.get(u + '/comment')
     response = json.loads(r.text)
-    comment_id = response['bugs'][str(id)]['comments'][0]['id']
-
-    u2 = '%sbug/comment/%d/tags' % (base_url, comment_id)
-    r = requests.put(u2, json = {'comment_id': comment_id, 'add': ['spam'], 'api_key': api_key})
-    if verbose:
-        print(r)
-        print(r.text)
+    for c in response['bugs'][str(id)]['comments']:
+        if c['creator'] == creator:
+            comment_id = c['id']
+            u2 = '%sbug/comment/%d/tags' % (base_url, comment_id)
+            print(u2)
+            r = requests.put(u2, json = {'comment_id': comment_id, 'add': ['spam'], 'api_key': api_key})
+            if verbose:
+                print(r)
+                print(r.text)
 
     # 4) mark all attachments as spam
     r = requests.get(u + '/attachment')

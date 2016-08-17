@@ -1,3 +1,7 @@
+2016-08-17  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: Mark as spam all comments done by a creator.
+
 2016-08-15  Martin Liska  <mliska@suse.cz>
 
 	* mark_spam.py: Add error handling and reset
