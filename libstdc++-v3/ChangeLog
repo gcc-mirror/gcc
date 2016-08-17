@@ -1,5 +1,9 @@
 2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/bind/ref_neg.cc: Use effective target instead of
+	-std=gnu++11. Add -fno-show-columns to dg-options. Use dg-prune-output
+	instead of dg-excess-errors.
+
 	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc: Disable
 	test for C++17.
 	* testsuite/experimental/chrono/value.cc: Avoid ambiguities in C++17.
