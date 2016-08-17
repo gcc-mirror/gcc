@@ -49,33 +49,27 @@ MULTILIB_DIRNAMES      += fpv3 simdv1 fpv4 simdvfpv4 simdv8
 MULTILIB_OPTIONS       += mfloat-abi=softfp/mfloat-abi=hard
 MULTILIB_DIRNAMES      += softfp hard
 
-# We don't build no-float libraries with an FPU.
-MULTILIB_EXCEPTIONS    += *mfpu=vfpv3-d16
-MULTILIB_EXCEPTIONS    += *mfpu=neon
-MULTILIB_EXCEPTIONS    += *mfpu=vfpv4-d16
-MULTILIB_EXCEPTIONS    += *mfpu=neon-vfpv4
-MULTILIB_EXCEPTIONS    += *mfpu=neon-fp-armv8
 
-# We don't build libraries requiring an FPU at the CPU/Arch/ISA level.
-MULTILIB_EXCEPTIONS    += mfloat-abi=*
-MULTILIB_EXCEPTIONS    += mfpu=*
-MULTILIB_EXCEPTIONS    += mthumb/mfloat-abi=*
-MULTILIB_EXCEPTIONS    += mthumb/mfpu=*
-MULTILIB_EXCEPTIONS    += *march=armv7-a/mfloat-abi=*
-MULTILIB_EXCEPTIONS    += *march=armv7ve/mfloat-abi=*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/mfloat-abi=*
+# Option combinations to build library with
 
-# Ensure the correct FPU variants apply to the correct base architectures.
-MULTILIB_EXCEPTIONS    += *march=armv7ve/*mfpu=vfpv3-d16*
-MULTILIB_EXCEPTIONS    += *march=armv7ve/*mfpu=neon/*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=vfpv3-d16*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=neon/*
-MULTILIB_EXCEPTIONS    += *march=armv7-a/*mfpu=vfpv4-d16*
-MULTILIB_EXCEPTIONS    += *march=armv7-a/*mfpu=neon-vfpv4*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=vfpv4-d16*
-MULTILIB_EXCEPTIONS    += *march=armv8-a/*mfpu=neon-vfpv4*
-MULTILIB_EXCEPTIONS    += *march=armv7-a/*mfpu=neon-fp-armv8*
-MULTILIB_EXCEPTIONS    += *march=armv7ve/*mfpu=neon-fp-armv8*
+# Default CPU/Arch (ARM is implicitly included because it uses the default
+# multilib)
+MULTILIB_REQUIRED      += mthumb
+
+# ARMv7-A
+MULTILIB_REQUIRED      += *march=armv7-a
+MULTILIB_REQUIRED      += *march=armv7-a/mfpu=vfpv3-d16/mfloat-abi=*
+MULTILIB_REQUIRED      += *march=armv7-a/mfpu=neon/mfloat-abi=*
+
+# ARMv7VE
+MULTILIB_REQUIRED      += *march=armv7ve
+MULTILIB_REQUIRED      += *march=armv7ve/mfpu=vfpv4-d16/mfloat-abi=*
+MULTILIB_REQUIRED      += *march=armv7ve/mfpu=neon-vfpv4/mfloat-abi=*
+
+# ARMv8-A
+MULTILIB_REQUIRED      += *march=armv8-a
+MULTILIB_REQUIRED      += *march=armv8-a/mfpu=neon-fp-armv8/mfloat-abi=*
+
 
 # CPU Matches
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a8

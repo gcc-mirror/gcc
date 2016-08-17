@@ -1,3 +1,9 @@
+2016-08-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/t-aprofile (MULTILIB_EXCEPTIONS): Rewrite into ...
+	(MULTILIB_REQUIRED): This by specifying multilib needing to be built
+	rather than those that should not be built.
+
 2016-08-17  Stanislaw Halik  <sthalik@misaki.pl>
 
 	PR target/66488
