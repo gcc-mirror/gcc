@@ -1,5 +1,8 @@
 2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/reference_wrapper/invoke-2.cc: Fix invalid dg-do
+	directive and use effective target instead of dg-options.
+
 	* testsuite/20_util/hash/chi2_q_bit_flip_set.cc: Use effective target
 	instead of -std in dg-options.
 	* testsuite/20_util/hash/chi2_q_bit_string_set.cc: Likewise.
