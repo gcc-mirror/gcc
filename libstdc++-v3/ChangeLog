@@ -1,5 +1,8 @@
 2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/ext/profile/all.cc: Use effective target instead of
+	-std=gnu++11. Use dg-additional-options instead of repeating options.
+
 	* testsuite/20_util/bind/ref_neg.cc: Use effective target instead of
 	-std=gnu++11. Add -fno-show-columns to dg-options. Use dg-prune-output
 	instead of dg-excess-errors.
