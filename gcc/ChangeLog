@@ -1,3 +1,8 @@
+2016-08-17  Stanislaw Halik  <sthalik@misaki.pl>
+
+	PR target/66488
+	* config/i386/xm-mingw32.h (HOST_BITS_PER_PTR): Define if __x86_64__.
+
 2016-08-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa.c: Include tree-cfg.h and tree-dfa.h.
