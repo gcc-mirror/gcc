@@ -5444,7 +5444,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   auto_vec<tree> vect_defs;
   auto_vec<gimple *> phis;
   int vec_num;
-  tree def0, def1, tem, op0, op1 = NULL_TREE;
+  tree def0, def1, tem, op1 = NULL_TREE;
   bool first_p = true;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
   tree cond_reduc_val = NULL_TREE, const_cond_cmp = NULL_TREE;
@@ -6090,29 +6090,36 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       /* Handle uses.  */
       if (j == 0)
         {
-          op0 = ops[!reduc_index];
-          if (op_type == ternary_op)
-            {
-              if (reduc_index == 0)
-                op1 = ops[2];
-              else
-                op1 = ops[1];
-            }
+	  if (slp_node)
+	    {
+	      /* Get vec defs for all the operands except the reduction index,
+		ensuring the ordering of the ops in the vector is kept.  */
+	      auto_vec<tree, 3> slp_ops;
+	      auto_vec<vec<tree>, 3> vec_defs;
 
-          if (slp_node)
-            vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0, &vec_oprnds1,
-                               slp_node, -1);
+	      slp_ops.quick_push ((reduc_index == 0) ? NULL : ops[0]);
+	      slp_ops.quick_push ((reduc_index == 1) ? NULL : ops[1]);
+	      if (op_type == ternary_op)
+		slp_ops.quick_push ((reduc_index == 2) ? NULL : ops[2]);
+
+	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs, -1);
+
+	      vec_oprnds0.safe_splice (vec_defs[(reduc_index == 0) ? 1 : 0]);
+	      if (op_type == ternary_op)
+		vec_oprnds1.safe_splice (vec_defs[(reduc_index == 2) ? 1 : 2]);
+	    }
           else
-            {
+	    {
               loop_vec_def0 = vect_get_vec_def_for_operand (ops[!reduc_index],
                                                             stmt);
               vec_oprnds0.quick_push (loop_vec_def0);
               if (op_type == ternary_op)
                {
+		 op1 = (reduc_index == 0) ? ops[2] : ops[1];
                  loop_vec_def1 = vect_get_vec_def_for_operand (op1, stmt);
                  vec_oprnds1.quick_push (loop_vec_def1);
                }
-            }
+	    }
         }
       else
         {
