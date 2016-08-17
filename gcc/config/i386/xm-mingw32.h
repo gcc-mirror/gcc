@@ -38,3 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #define HOST_LONG_LONG_FORMAT "I64"
 #endif
 
+/* this is to prevent gcc-heap.c from assuming sizeof(long) == sizeof(intptr_t) */
+#ifdef __x86_64__
+#	define HOST_BITS_PER_PTR 64
+#endif
