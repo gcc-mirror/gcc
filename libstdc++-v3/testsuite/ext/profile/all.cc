@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11 -O0" }
-// { dg-options "-std=gnu++11 -O0 -D_GLIBCXX_PROFILE_NO_THREADS" { target { ! tls_native } } }
-// { dg-do compile }
+// { dg-options "-O0" }
+// { dg-additional-options "-D_GLIBCXX_PROFILE_NO_THREADS" { target { ! tls_native } } }
+// { dg-do compile { target c++11 } }
 // { dg-require-profile-mode "" }
 
 // -*- C++ -*-
