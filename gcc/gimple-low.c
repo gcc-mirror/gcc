@@ -610,7 +610,7 @@ gimple_stmt_may_fallthru (gimple *stmt)
 
     case GIMPLE_CALL:
       /* Functions that do not return do not fall through.  */
-      return (gimple_call_flags (stmt) & ECF_NORETURN) == 0;
+      return !gimple_call_noreturn_p (stmt);
 
     default:
       return true;

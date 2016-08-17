@@ -807,7 +807,7 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
 	}
       /* Some calls are known not to return.  */
       else
-	fallthru = !(gimple_call_flags (last) & ECF_NORETURN);
+	fallthru = !gimple_call_noreturn_p (last);
       break;
 
     case GIMPLE_ASSIGN:
@@ -9083,7 +9083,7 @@ execute_fixup_cfg (void)
 	  if (!stmt
 	      || (!is_ctrl_stmt (stmt)
 		  && (!is_gimple_call (stmt)
-		      || (gimple_call_flags (stmt) & ECF_NORETURN) == 0)))
+		      || !gimple_call_noreturn_p (stmt))))
 	    {
 	      if (stmt && is_gimple_call (stmt))
 		gimple_call_set_ctrl_altering (stmt, false);

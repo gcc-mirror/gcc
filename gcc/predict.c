@@ -2639,8 +2639,7 @@ tree_bb_level_predictions (void)
 
 	  if (is_gimple_call (stmt))
 	    {
-	      if ((gimple_call_flags (stmt) & ECF_NORETURN)
-	          && has_return_edges)
+	      if (gimple_call_noreturn_p (stmt) && has_return_edges)
 		predict_paths_leading_to (bb, PRED_NORETURN,
 					  NOT_TAKEN);
 	      decl = gimple_call_fndecl (stmt);
