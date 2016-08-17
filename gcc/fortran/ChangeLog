@@ -1,6 +1,12 @@
+2016-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/67496
+	* trans-array.c (trans_array_constructor): Load
+	expr->ts.u.cl->length_from_typespec only if expr->ts.type is
+	BT_CHARACTER.
+
 2016-08-15  Fritz Reese  <fritzoreese@gmail.com>
 
-	gcc/fortran/
 	* lang.opt, invoke.texi: New flag -finit-derived.
 	* gfortran.h (gfc_build_default_init_expr, gfc_apply_init,
 	gfc_generate_initializer): New prototypes.

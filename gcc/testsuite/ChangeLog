@@ -1,7 +1,12 @@
+2016-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/67496
+	* gfortran.dg/pr67496.f90: New test.
+
 2015-08-17  Alan Hayward <alan.hayward@arm.com>
 
 	PR tree-optimization/71752
-	* gcc.dg/vect/pr71752.c: New
+	* gcc.dg/vect/pr71752.c: New.
 
 2016-08-17  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -489,9 +494,9 @@
 2016-08-08  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/72838
-	* gcc/testsuite/g++.dg/cpp0x/constexpr-cast.C: Correct target selector.
-	* gcc/testsuite/g++.dg/warn/overflow-warn-3.C: Same.
-	* gcc/testsuite/g++.dg/warn/overflow-warn-4.C: Same.
+	* g++.dg/cpp0x/constexpr-cast.C: Correct target selector.
+	* g++.dg/warn/overflow-warn-3.C: Same.
+	* g++.dg/warn/overflow-warn-4.C: Same.
 
 2016-08-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
@@ -1835,7 +1840,7 @@
 2016-07-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/62314
-	* gcc/testsuite/g++.dg/parse/error5.C: Update column
+	* g++.dg/parse/error5.C: Update column
 	number of missing semicolon error.
 	* g++.dg/pr62314-2.C: New test case.
 
@@ -1895,8 +1900,8 @@
 
 2016-07-04  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
-	* gcc/testsuite/gcc.target/i386/avx512f-vect-perm-1.c: New test.
-	* gcc/testsuite/gcc.target/i386/avx512f-vect-perm-2.c: New test.
+	* gcc.target/i386/avx512f-vect-perm-1.c: New test.
+	* gcc.target/i386/avx512f-vect-perm-2.c: New test.
 
 2016-07-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
@@ -2847,7 +2852,7 @@
 2016-06-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/71242
-	* testsuite/gcc.dg/torture/float128-nan.c: Also run on ia64-*-*.
+	* gcc.dg/torture/float128-nan.c: Also run on ia64-*-*.
 
 2016-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -3042,7 +3047,7 @@
 2016-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/71241
-	* testsuite/gcc.dg/torture/float128-nan.c: New test.
+	* gcc.dg/torture/float128-nan.c: New test.
 
 2016-06-12  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
