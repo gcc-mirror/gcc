@@ -1,5 +1,11 @@
 2016-08-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimple-fold.c (gimple_fold_call): Use gimple_call_noreturn_p
+	instead of testing ECF_NORETURN bit in gimple_call_flags.
+	* tree-cfg.c (make_edges_bb, execute_fixup_cfg): Likewise.
+	* predict.c (tree_bb_level_predictions): Likewise.
+	* gimple-low.c (gimple_stmt_may_fallthru): Likewise.
+
 	PR middle-end/77259
 	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children): If
 	turning a call into __builtin_unreachable-like noreturn call, adjust

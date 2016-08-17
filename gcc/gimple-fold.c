@@ -3184,7 +3184,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		  /* If changing the call to __cxa_pure_virtual
 		     or similar noreturn function, adjust gimple_call_fntype
 		     too.  */
-		  if ((gimple_call_flags (stmt) & ECF_NORETURN)
+		  if (gimple_call_noreturn_p (stmt)
 		      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
 		      && TYPE_ARG_TYPES (TREE_TYPE (fndecl))
 		      && (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
