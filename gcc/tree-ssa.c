@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "cfgexpand.h"
+#include "tree-cfg.h"
+#include "tree-dfa.h"
 
 /* Pointer map of variable mappings, keyed by edge.  */
 static hash_map<edge, auto_vec<edge_var_map> > *edge_var_maps;
@@ -603,6 +605,104 @@ release_defs_bitset (bitmap toremove)
       }
 }
 
+/* Verify virtual SSA form.  */
+
+bool
+verify_vssa (basic_block bb, tree current_vdef, sbitmap visited)
+{
+  bool err = false;
+
+  if (bitmap_bit_p (visited, bb->index))
+    return false;
+
+  bitmap_set_bit (visited, bb->index);
+
+  /* Pick up the single virtual PHI def.  */
+  gphi *phi = NULL;
+  for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+       gsi_next (&si))
+    {
+      tree res = gimple_phi_result (si.phi ());
+      if (virtual_operand_p (res))
+	{
+	  if (phi)
+	    {
+	      error ("multiple virtual PHI nodes in BB %d", bb->index);
+	      print_gimple_stmt (stderr, phi, 0, 0);
+	      print_gimple_stmt (stderr, si.phi (), 0, 0);
+	      err = true;
+	    }
+	  else
+	    phi = si.phi ();
+	}
+    }
+  if (phi)
+    {
+      current_vdef = gimple_phi_result (phi);
+      if (TREE_CODE (current_vdef) != SSA_NAME)
+	{
+	  error ("virtual definition is not an SSA name");
+	  print_gimple_stmt (stderr, phi, 0, 0);
+	  err = true;
+	}
+    }
+
+  /* Verify stmts.  */
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      tree vuse = gimple_vuse (stmt);
+      if (vuse)
+	{
+	  if (vuse != current_vdef)
+	    {
+	      error ("stmt with wrong VUSE");
+	      print_gimple_stmt (stderr, stmt, 0, TDF_VOPS);
+	      fprintf (stderr, "expected ");
+	      print_generic_expr (stderr, current_vdef, 0);
+	      fprintf (stderr, "\n");
+	      err = true;
+	    }
+	  tree vdef = gimple_vdef (stmt);
+	  if (vdef)
+	    {
+	      current_vdef = vdef;
+	      if (TREE_CODE (current_vdef) != SSA_NAME)
+		{
+		  error ("virtual definition is not an SSA name");
+		  print_gimple_stmt (stderr, phi, 0, 0);
+		  err = true;
+		}
+	    }
+	}
+    }
+
+  /* Verify destination PHI uses and recurse.  */
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      gphi *phi = get_virtual_phi (e->dest);
+      if (phi
+	  && PHI_ARG_DEF_FROM_EDGE (phi, e) != current_vdef)
+	{
+	  error ("PHI node with wrong VUSE on edge from BB %d",
+		 e->src->index);
+	  print_gimple_stmt (stderr, phi, 0, TDF_VOPS);
+	  fprintf (stderr, "expected ");
+	  print_generic_expr (stderr, current_vdef, 0);
+	  fprintf (stderr, "\n");
+	  err = true;
+	}
+
+      /* Recurse.  */
+      err |= verify_vssa (e->dest, current_vdef, visited);
+    }
+
+  return err;
+}
+
 /* Return true if SSA_NAME is malformed and mark it visited.
 
    IS_VIRTUAL is true if this SSA_NAME was found inside a virtual
@@ -1023,6 +1123,16 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
     }
 
   free (definition_block);
+
+  if (gimple_vop (cfun)
+      && ssa_default_def (cfun, gimple_vop (cfun)))
+    {
+      auto_sbitmap visited (last_basic_block_for_fn (cfun) + 1);
+      bitmap_clear (visited);
+      if (verify_vssa (ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		       ssa_default_def (cfun, gimple_vop (cfun)), visited))
+	goto err;
+    }
 
   /* Restore the dominance information to its prior known state, so
      that we do not perturb the compiler's subsequent behavior.  */

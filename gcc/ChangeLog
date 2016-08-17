@@ -1,5 +1,19 @@
 2016-08-17  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa.c: Include tree-cfg.h and tree-dfa.h.
+	(verify_vssa): New function verifying virtual SSA form.
+	(verify_ssa): Call it.
+	* tree-ssa-loop-manip.c (slpeel_update_phi_nodes_for_guard2):
+	Do not apply loop-closed SSA handling to virtuals.
+	* ssa-iterators.h (op_iter_init): Handle GIMPLE_TRANSACTION.
+	* tree-into-ssa.c (prepare_use_sites_for): Skip virtual SSA names
+	when rewriting their symbol.
+	(prepare_def_site_for): Likewise.
+	* tree-chkp-opt.c (chkp_reduce_bounds_lifetime): Clear virtual
+	operands of moved stmts.
+
+2016-08-17  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/23855
 	* tree-ssa-loop-unswitch.c: Include tree-ssa-loop-manip.h.
 	(tree_unswitch_outer_loop): Iterate find_loop_guard as long as we

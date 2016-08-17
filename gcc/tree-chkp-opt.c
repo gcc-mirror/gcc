@@ -1236,6 +1236,8 @@ chkp_reduce_bounds_lifetime (void)
 		  gsi_move_before (&i, &gsi);
 		}
 
+	      gimple_set_vdef (stmt, NULL_TREE);
+	      gimple_set_vuse (stmt, NULL_TREE);
 	      update_stmt (stmt);
 	    }
 	}
