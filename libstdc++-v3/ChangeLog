@@ -1,5 +1,8 @@
 2016-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/test.xml: Improve documentation of test targets.
+	Document new-abi-baseline, check-debug, and check-parallel targets.
+
 	* doc/xml/manual/build_hacking.xml: New section on shared library
 	versioning.
 
