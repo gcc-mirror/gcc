@@ -55,6 +55,8 @@ write_macdef (cpp_reader *pfile, cpp_hashnode *hn, void *file_p)
     case NT_VOID:
       if (! (hn->flags & NODE_POISONED))
 	return 1;
+      /* XXX Really fallthru?  */
+      /* FALLTHRU */
 
     case NT_MACRO:
       if ((hn->flags & NODE_BUILTIN)

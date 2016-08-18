@@ -3490,6 +3490,8 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	      cp_lexer_consume_token (parser->lexer);
 	      return;
 	    }
+	  /* XXX Really fallthru?  */
+	  /* FALLTHRU */
 
 	case CPP_OPEN_BRACE:
 	  ++nesting_depth;
@@ -27669,6 +27671,8 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 	      parser->in_template_argument_list_p = saved_italp;
 	      break;
 	    }
+	  /* XXX Really fallthru?  */
+	  /* FALLTHRU */
 	case CPP_CLOSE_PAREN:
 	case CPP_ELLIPSIS:
 	  /* If we run into a non-nested `;', `}', or `]',

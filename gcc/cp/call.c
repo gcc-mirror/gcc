@@ -2544,6 +2544,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	  type2 = ptrdiff_type_node;
 	  break;
 	}
+      /* XXX Really fallthru?  */
+      /* FALLTHRU */
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
       if (ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2))
