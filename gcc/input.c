@@ -1454,6 +1454,12 @@ get_source_location_for_substring (cpp_reader *pfile,
   return NULL;
 }
 
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests of location handling.  */
+
 /* Attempt to populate *OUT_RANGE with source location information on the
    given character within the string literal found at STRLOC.
    CHAR_IDX refers to an offset within the execution character set.
@@ -1493,7 +1499,7 @@ get_source_range_for_char (cpp_reader *pfile,
 /* As get_source_range_for_char, but write to *OUT the number
    of ranges that are available.  */
 
-const char *
+static const char *
 get_num_source_ranges_for_substring (cpp_reader *pfile,
 				     string_concat_db *concats,
 				     location_t strloc,
@@ -1512,10 +1518,6 @@ get_num_source_ranges_for_substring (cpp_reader *pfile,
   *out = ranges.get_num_ranges ();
   return NULL;
 }
-
-#if CHECKING_P
-
-namespace selftest {
 
 /* Selftests of location handling.  */
 
@@ -2039,7 +2041,7 @@ assert_num_substring_ranges (const location &loc,
   cpp_reader *pfile = test.m_parser;
   string_concat_db *concats = &test.m_concats;
 
-  int actual_num_ranges;
+  int actual_num_ranges = -1;
   const char *err
     = get_num_source_ranges_for_substring (pfile, concats, strloc, type,
 					   &actual_num_ranges);
