@@ -11081,6 +11081,20 @@ get_atomic_generic_size (location_t loc, tree function,
 		    function);
 	  return 0;
 	}
+      else if (TYPE_SIZE_UNIT (TREE_TYPE (type))
+	       && TREE_CODE ((TYPE_SIZE_UNIT (TREE_TYPE (type))))
+		  != INTEGER_CST)
+	{
+	  error_at (loc, "argument %d of %qE must be a pointer to a constant "
+		    "size type", x + 1, function);
+	  return 0;
+	}
+      else if (FUNCTION_POINTER_TYPE_P (type))
+	{
+	  error_at (loc, "argument %d of %qE must not be a pointer to a "
+		    "function", x + 1, function);
+	  return 0;
+	}
       tree type_size = TYPE_SIZE_UNIT (TREE_TYPE (type));
       size = type_size ? tree_to_uhwi (type_size) : 0;
       if (size != size_0)
