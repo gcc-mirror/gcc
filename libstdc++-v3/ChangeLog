@@ -1,5 +1,10 @@
 2016-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/test.xml (test.run.permutations): Expand section.
+	(test.new_tests): Rewrite section.
+	(tests.dg.directives): New section.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/test.xml: Improve documentation of test targets.
 	Document new-abi-baseline, check-debug, and check-parallel targets.
 

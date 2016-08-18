@@ -7,7 +7,7 @@
 </th><td width="20%" align="right"> <a accesskey="n" href="documentation_hacking.html">Next</a></td></tr></table><hr /></div><div class="appendix"><div class="titlepage"><div><div><h1 class="title"><a id="appendix.porting"></a>
   Porting and Maintenance
   <a id="id-1.3.6.3.1.1.1" class="indexterm"></a>
-</h1></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="section"><a href="appendix_porting.html#appendix.porting.build_hacking">Configure and Build Hacking</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview">Overview</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview.basic">General Process</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview.map">What Comes from Where</a></span></dt></dl></dd><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure">Configure</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.scripts">Storing Information in non-AC files (like configure.host)</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.conventions">Coding and Commenting Conventions</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.acinclude">The acinclude.m4 layout</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.enable"><code class="constant">GLIBCXX_ENABLE</code>, the <code class="literal">--enable</code> maker</a></span></dt></dl></dd><dt><span class="section"><a href="appendix_porting.html#build_hacking.make">Make</a></span></dt></dl></dd><dt><span class="section"><a href="documentation_hacking.html">Writing and Generating Documentation</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#doc.intro">Introduction</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doc.generation">Generating Documentation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doc.doxygen">Doxygen</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#doxygen.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.rules">Generating the Doxygen Files</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.debug">Debugging Generation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.markup">Markup</a></span></dt></dl></dd><dt><span class="section"><a href="documentation_hacking.html#doc.docbook">Docbook</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#docbook.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.rules">Generating the DocBook Files</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.debug">Debugging Generation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.validation">Editing and Validation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.examples">File Organization and Basics</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.markup">Markup By Example</a></span></dt></dl></dd></dl></dd><dt><span class="section"><a href="internals.html">Porting to New Hardware or Operating Systems</a></span></dt><dd><dl><dt><span class="section"><a href="internals.html#internals.os">Operating System</a></span></dt><dt><span class="section"><a href="internals.html#internals.cpu">CPU</a></span></dt><dt><span class="section"><a href="internals.html#internals.char_types">Character Types</a></span></dt><dt><span class="section"><a href="internals.html#internals.thread_safety">Thread Safety</a></span></dt><dt><span class="section"><a href="internals.html#internals.numeric_limits">Numeric Limits</a></span></dt><dt><span class="section"><a href="internals.html#internals.libtool">Libtool</a></span></dt></dl></dd><dt><span class="section"><a href="test.html">Test</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.organization">Organization</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.organization.layout">Directory Layout</a></span></dt><dt><span class="section"><a href="test.html#test.organization.naming">Naming Conventions</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.run">Running the Testsuite</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.run.basic">Basic</a></span></dt><dt><span class="section"><a href="test.html#test.run.variations">Variations</a></span></dt><dt><span class="section"><a href="test.html#test.run.permutations">Permutations</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.new_tests">Writing a new test case</a></span></dt><dt><span class="section"><a href="test.html#test.harness">Test Harness and Utilities</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.harness.dejagnu">Dejagnu Harness Details</a></span></dt><dt><span class="section"><a href="test.html#test.harness.utils">Utilities</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.special">Special Topics</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.exception.safety">
+</h1></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="section"><a href="appendix_porting.html#appendix.porting.build_hacking">Configure and Build Hacking</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview">Overview</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview.basic">General Process</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.overview.map">What Comes from Where</a></span></dt></dl></dd><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure">Configure</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.scripts">Storing Information in non-AC files (like configure.host)</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.conventions">Coding and Commenting Conventions</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.acinclude">The acinclude.m4 layout</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.enable"><code class="constant">GLIBCXX_ENABLE</code>, the <code class="literal">--enable</code> maker</a></span></dt><dt><span class="section"><a href="appendix_porting.html#build_hacking.configure.version">Shared Library Versioning</a></span></dt></dl></dd><dt><span class="section"><a href="appendix_porting.html#build_hacking.make">Make</a></span></dt></dl></dd><dt><span class="section"><a href="documentation_hacking.html">Writing and Generating Documentation</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#doc.intro">Introduction</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doc.generation">Generating Documentation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doc.doxygen">Doxygen</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#doxygen.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.rules">Generating the Doxygen Files</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.debug">Debugging Generation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#doxygen.markup">Markup</a></span></dt></dl></dd><dt><span class="section"><a href="documentation_hacking.html#doc.docbook">Docbook</a></span></dt><dd><dl><dt><span class="section"><a href="documentation_hacking.html#docbook.prereq">Prerequisites</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.rules">Generating the DocBook Files</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.debug">Debugging Generation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.validation">Editing and Validation</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.examples">File Organization and Basics</a></span></dt><dt><span class="section"><a href="documentation_hacking.html#docbook.markup">Markup By Example</a></span></dt></dl></dd></dl></dd><dt><span class="section"><a href="internals.html">Porting to New Hardware or Operating Systems</a></span></dt><dd><dl><dt><span class="section"><a href="internals.html#internals.os">Operating System</a></span></dt><dt><span class="section"><a href="internals.html#internals.cpu">CPU</a></span></dt><dt><span class="section"><a href="internals.html#internals.char_types">Character Types</a></span></dt><dt><span class="section"><a href="internals.html#internals.thread_safety">Thread Safety</a></span></dt><dt><span class="section"><a href="internals.html#internals.numeric_limits">Numeric Limits</a></span></dt><dt><span class="section"><a href="internals.html#internals.libtool">Libtool</a></span></dt></dl></dd><dt><span class="section"><a href="test.html">Testing</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.organization">Test Organization</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.organization.layout">Directory Layout</a></span></dt><dt><span class="section"><a href="test.html#test.organization.naming">Naming Conventions</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.run">Running the Testsuite</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.run.basic">Basic</a></span></dt><dt><span class="section"><a href="test.html#test.run.variations">Variations</a></span></dt><dt><span class="section"><a href="test.html#test.run.permutations">Permutations</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.new_tests">Writing a new test case</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#tests.dg.examples">Examples of Test Directives</a></span></dt><dt><span class="section"><a href="test.html#tests.dg.directives">Directives Specific to Libstdc++ Tests</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.harness">Test Harness and Utilities</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.harness.dejagnu">DejaGnu Harness Details</a></span></dt><dt><span class="section"><a href="test.html#test.harness.utils">Utilities</a></span></dt></dl></dd><dt><span class="section"><a href="test.html#test.special">Special Topics</a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.exception.safety">
   Qualifying Exception Safety Guarantees
   
 </a></span></dt><dd><dl><dt><span class="section"><a href="test.html#test.exception.safety.overview">Overview</a></span></dt><dt><span class="section"><a href="test.html#test.exception.safety.status">
@@ -63,20 +63,20 @@ in the build directory starts the build process. The <code class="literal">all</
 <code class="filename">Makefile.am</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="build_hacking.overview.map"></a>What Comes from Where</h4></div></div></div><div class="figure"><a id="fig.build_hacking.deps"></a><p class="title"><strong>Figure B.1. Configure and Build File Dependencies</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/confdeps.png" align="middle" alt="Dependency Graph for Configure and Build Files" /></div></div></div><br class="figure-break" /><p>
     Regenerate all generated files by using the command 
-    <code class="code">autoreconf</code> at the top level of the libstdc++ source
+    <span class="command"><strong>autoreconf</strong></span> at the top level of the libstdc++ source
     directory.
   </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.configure"></a>Configure</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="build_hacking.configure.scripts"></a>Storing Information in non-AC files (like configure.host)</h4></div></div></div><p>
-    Until that glorious day when we can use AC_TRY_LINK with a
-    cross-compiler, we have to hardcode the results of what the tests
+    Until that glorious day when we can use <code class="literal">AC_TRY_LINK</code>
+    with a cross-compiler, we have to hardcode the results of what the tests
     would have shown if they could be run.  So we have an inflexible
-    mess like crossconfig.m4.
+    mess like <code class="filename">crossconfig.m4</code>.
   </p><p>
     Wouldn't it be nice if we could store that information in files
     like configure.host, which can be modified without needing to
     regenerate anything, and can even be tweaked without really
     knowing how the configury all works?  Perhaps break the pieces of
-    crossconfig.m4 out and place them in their appropriate
-    config/{cpu,os} directory.
+    <code class="filename">crossconfig.m4</code> out and place them in their appropriate
+    <code class="filename">config/{cpu,os}</code> directory.
   </p><p>
     Alas, writing macros like
     "<code class="code">AC_DEFINE(HAVE_A_NICE_DAY)</code>" can only be done inside
@@ -89,32 +89,37 @@ in the build directory starts the build process. The <code class="literal">all</
     discourage that.
 </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="build_hacking.configure.conventions"></a>Coding and Commenting Conventions</h4></div></div></div><p>
     Most comments should use {octothorpes, shibboleths, hash marks,
-    pound signs, whatever} rather than "dnl".  Nearly all comments in
-    configure.ac should.  Comments inside macros written in ancillary
-    .m4 files should.  About the only comments which should
-    <span class="emphasis"><em>not</em></span> use #, but use dnl instead, are comments
-    <span class="emphasis"><em>outside</em></span> our own macros in the ancillary
-    files.  The difference is that # comments show up in
-    <code class="code">configure</code> (which is most helpful for debugging),
-    while dnl'd lines just vanish.  Since the macros in ancillary
-    files generate code which appears in odd places, their "outside"
-    comments tend to not be useful while reading
-    <code class="code">configure</code>.
+    pound signs, whatever} rather than "<code class="literal">dnl</code>".
+    Nearly all comments in <code class="filename">configure.ac</code> should.
+    Comments inside macros written in ancillary
+    <code class="filename">.m4</code> files should.
+    About the only comments which should <span class="emphasis"><em>not</em></span>
+    use <code class="literal">#</code>, but use <code class="literal">dnl</code> instead,
+    are comments <span class="emphasis"><em>outside</em></span> our own macros in the ancillary
+    files.  The difference is that <code class="literal">#</code> comments show up in
+    <code class="filename">configure</code> (which is most helpful for debugging),
+    while <code class="literal">dnl</code>'d lines just vanish.  Since the macros
+    in ancillary files generate code which appears in odd places,
+    their "outside" comments tend to not be useful while reading
+    <code class="filename">configure</code>.
   </p><p>
     Do not use any <code class="code">$target*</code> variables, such as
-    <code class="code">$target_alias</code>.  The single exception is in
-    configure.ac, for automake+dejagnu's sake.
+    <code class="varname">$target_alias</code>.  The single exception is in
+    <code class="filename">configure.ac</code>, for automake+dejagnu's sake.
   </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="build_hacking.configure.acinclude"></a>The acinclude.m4 layout</h4></div></div></div><p>
-    The nice thing about acinclude.m4/aclocal.m4 is that macros aren't
+    The nice thing about
+    <code class="filename">acinclude.m4</code>/<code class="filename">aclocal.m4</code>
+    is that macros aren't
     actually performed/called/expanded/whatever here, just loaded.  So
     we can arrange the contents however we like.  As of this writing,
-    acinclude.m4 is arranged as follows:
+    <code class="filename">acinclude.m4</code> is arranged as follows:
   </p><pre class="programlisting">
     GLIBCXX_CHECK_HOST
     GLIBCXX_TOPREL_CONFIGURE
     GLIBCXX_CONFIGURE
   </pre><p>
-    All the major variable "discovery" is done here.  CXX, multilibs,
+    All the major variable "discovery" is done here.
+    <code class="varname">CXX</code>, multilibs,
     etc.
   </p><pre class="programlisting">
     fragments included from elsewhere
@@ -179,7 +184,8 @@ in the build directory starts the build process. The <code class="literal">all</
     helper, <code class="literal">GLIBCXX_ENABLE</code>.  (You don't have to use
     it, but it's easy.)  The helper does two things for us:
   </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
-     Builds the call to the <code class="literal">AC_ARG_ENABLE</code> macro, with --help text
+     Builds the call to the <code class="literal">AC_ARG_ENABLE</code> macro, with
+     <code class="option">--help</code> text
      properly quoted and aligned.  (Death to changequote!)
    </p></li><li class="listitem"><p>
      Checks the result against a list of allowed possibilities, and
@@ -204,28 +210,32 @@ in the build directory starts the build process. The <code class="literal">all</
     GLIBCXX_ENABLE (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, permit a|b|c)
     GLIBCXX_ENABLE (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, SHELL-CODE-HANDLER)
 </pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
-     FEATURE is the string that follows --enable.  The results of the
-     test (such as it is) will be in the variable $enable_FEATURE,
-     where FEATURE has been squashed.  Example:
-     <code class="code">[extra-foo]</code>, controlled by the --enable-extra-foo
-     option and stored in $enable_extra_foo.
+     <code class="literal">FEATURE</code> is the string that follows
+     <code class="option">--enable</code>.  The results of the
+     test (such as it is) will be in the variable
+     <code class="varname">$enable_FEATURE</code>,
+     where <code class="literal">FEATURE</code> has been squashed.  Example:
+     <code class="code">[extra-foo]</code>, controlled by the
+     <code class="option">--enable-extra-foo</code>
+     option and stored in <code class="varname">$enable_extra_foo</code>.
    </p></li><li class="listitem"><p>
-     DEFAULT is the value to store in $enable_FEATURE if the user does
-     not pass --enable/--disable.  It should be one of the permitted
-     values passed later.  Examples: <code class="code">[yes]</code>, or
-     <code class="code">[bar]</code>, or <code class="code">[$1]</code> (which passes the
-     argument given to the <code class="literal">GLIBCXX_ENABLE_FOO</code> macro
-     as the default).
+     <code class="literal">DEFAULT</code> is the value to store in
+     <code class="varname">$enable_FEATURE</code> if the user does
+     not pass <code class="option">--enable</code>/<code class="option">--disable</code>.
+     It should be one of the permitted values passed later.
+     Examples: <code class="code">[yes]</code>, or <code class="code">[bar]</code>, or
+     <code class="code">[$1]</code> (which passes the argument given to the
+     <code class="literal">GLIBCXX_ENABLE_FOO</code> macro as the default).
    </p><p>
      For cases where we need to probe for particular models of things,
      it is useful to have an undocumented "auto" value here (see
      <code class="literal">GLIBCXX_ENABLE_CLOCALE</code> for an example).
    </p></li><li class="listitem"><p>
-     HELP-ARG is any text to append to the option string itself in the
-     --help output.  Examples: <code class="code">[]</code> (i.e., an empty string,
-     which appends nothing), <code class="code">[=BAR]</code>, which produces
-     <code class="code">--enable-extra-foo=BAR</code>, and
-     <code class="code">[@&lt;:@=BAR@:&gt;@]</code>, which produces
+     <code class="literal">HELP-ARG</code> is any text to append to the option string
+     itself in the <code class="option">--help</code> output.  Examples:
+     <code class="code">[]</code> (i.e., an empty string, which appends nothing),
+     <code class="code">[=BAR]</code>, which produces <code class="code">--enable-extra-foo=BAR</code>,
+     and <code class="code">[@&lt;:@=BAR@:&gt;@]</code>, which produces
      <code class="code">--enable-extra-foo[=BAR]</code>.  See the difference?  See
      what it implies to the user?
    </p><p>
@@ -233,25 +243,29 @@ in the build directory starts the build process. The <code class="literal">all</
      that's how you embed autoconf special characters in output text.
      They're called <a class="link" href="http://www.gnu.org/software/autoconf/manual/autoconf.html#Quadrigraphs" target="_top"><span class="emphasis"><em>quadrigraphs</em></span></a>
      and you should use them whenever necessary.
- </p></li><li class="listitem"><p>HELP-STRING is what you think it is.  Do not include the
+ </p></li><li class="listitem"><p><code class="literal">HELP-STRING</code> is what you think it is.  Do not include the
    "default" text like we used to do; it will be done for you by
-   GLIBCXX_ENABLE.  By convention, these are not full English
-   sentences.  Example: [turn on extra foo]
+   <code class="literal">GLIBCXX_ENABLE</code>.  By convention, these are not full English
+   sentences.  Example: <code class="literal">[turn on extra foo]</code>
    </p></li></ul></div><p>
   With no other arguments, only the standard autoconf patterns are
-  allowed: "<code class="code">--{enable,disable}-foo[={yes,no}]</code>" The
-  $enable_FEATURE variable is guaranteed to equal either "yes" or "no"
+  allowed: "<code class="option">--{enable,disable}-foo[={yes,no}]</code>" The
+  <code class="varname">$enable_FEATURE</code> variable is guaranteed to equal
+  either "<code class="literal">yes</code>" or "<code class="literal">no</code>"
   after the macro.  If the user tries to pass something else, an
   explanatory error message will be given, and configure will halt.
 </p><p>
   The second signature takes a fifth argument, "<code class="code">[permit
   a | b | c | ...]</code>"
   This allows <span class="emphasis"><em>a</em></span> or <span class="emphasis"><em>b</em></span> or
-  ... after the equals sign in the option, and $enable_FEATURE is
+  ... after the equals sign in the option, and
+  <code class="varname">$enable_FEATURE</code> is
   guaranteed to equal one of them after the macro.  Note that if you
-  want to allow plain --enable/--disable with no "=whatever", you must
-  include "yes" and "no" in the list of permitted values.  Also note
-  that whatever you passed as DEFAULT must be in the list.  If the
+  want to allow plain <code class="option">--enable</code>/<code class="option">--disable</code>
+  with no "<code class="literal">=whatever</code>", you must
+  include "<code class="literal">yes</code>" and "<code class="literal">no</code>" in the
+  list of permitted values.  Also note that whatever you passed as
+  <code class="literal">DEFAULT</code> must be in the list.  If the
   user tries to pass something not on the list, a semi-explanatory
   error message will be given, and configure will halt.  Example:
   <code class="code">[permit generic|gnu|ieee_1003.1-2001|yes|no|auto]</code>
@@ -260,8 +274,91 @@ in the build directory starts the build process. The <code class="literal">all</
   code to execute if the user actually passes the enable/disable
   option.  (If the user does not, the default is used.  Duh.)  No
   argument checking at all is done in this signature.  See
-  GLIBCXX_ENABLE_CXX_FLAGS for an example of handling, and an error
-  message.
+  <code class="literal">GLIBCXX_ENABLE_CXX_FLAGS</code> for an example of handling,
+  and an error message.
+</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="build_hacking.configure.version"></a>Shared Library Versioning</h4></div></div></div><p>
+The <code class="filename">libstdc++.so</code> shared library must
+be carefully managed to maintain binary compatible with older versions
+of the library. This ensures a new version of the library is still usable by
+programs that were linked against an older version.
+</p><p>
+Dependent on the target supporting it, the library uses <a class="link" href="https://www.akkadia.org/drepper/symbol-versioning" target="_top">ELF
+symbol versioning</a> for all exported symbols. The symbol versions
+are defined by a <a class="link" href="https://sourceware.org/binutils/docs/ld/VERSION.html" target="_top">linker
+script</a> that assigns a version to every symbol.
+The set of symbols in each version is fixed when a GCC
+release is made, and must not change after that.
+</p><p> When new symbols are added to the library they must be added
+to a new symbol version, which must be created the first time new symbols
+are added after a release. Adding a new symbol version involves the
+following steps:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+Edit <code class="filename">acinclude.m4</code> to update the "revision" value of
+<code class="varname">libtool_VERSION</code>, e.g. from <code class="literal">6:22:0</code>
+to <code class="literal">6:23:0</code>, which will cause the shared library to be
+built as <code class="filename">libstdc++.so.6.0.23</code>.
+</p></li><li class="listitem"><p>
+Regenerate the <code class="filename">configure</code> script by running the
+<span class="command"><strong>autoreconf</strong></span> tool from the correct version of the Autoconf
+package (as dictated by the <a class="link" href="https://gcc.gnu.org/install/prerequisites.html" target="_top">GCC
+prerequisites</a>).
+</p></li><li class="listitem"><p>
+Edit the file <code class="filename">config/abi/pre/gnu.ver</code> to
+add a new version node after the last new node. The node name should be
+<code class="literal">GLIBCXX_3.4.X</code> where <code class="literal">X</code> is the new
+revision set in <code class="filename">acinclude.m4</code>, and the node should
+depend on the previous version e.g.
+</p><pre class="programlisting">
+    GLIBCXX_3.4.23 {
+
+    } GLIBCXX_3.4.22;
+</pre><p>
+For symbols in the ABI runtime, libsupc++, the symbol version naming uses
+<code class="literal">CXXABI_1.3.Y</code> where <code class="literal">Y</code> increases
+monotonically with each new version. Again, the new node must depend on the
+previous version node e.g.
+</p><pre class="programlisting">
+    CXXABI_1.3.11 {
+
+    } CXXABI_1.3.10;
+</pre><p>
+</p></li><li class="listitem"><p>
+In order for the <a class="link" href="test.html#test.run.variations" title="Variations">check-abi</a> test
+target to pass the testsuite must be updated to know about the new symbol
+version(s). Edit the file <code class="filename">testsuite/util/testsuite_abi.cc</code>
+file to add the new versions to the <code class="varname">known_versions</code> list,
+and update the checks for the latest versions that set the
+<code class="varname">latestp</code> variable).
+</p></li></ul></div><p>
+Once the new symbol version has been added you can add the names of your new
+symbols in the new version node:
+</p><pre class="programlisting">
+    GLIBCXX_3.4.23 {
+
+      # basic_string&lt;C, T, A&gt;::_Alloc_hider::_Alloc_hider(C*, A&amp;&amp;)
+      _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_Alloc_hiderC[12]EP[cw]OS3_;
+
+    } GLIBCXX_3.4.22;
+</pre><p>
+You can either use mangled names, or demangled names inside an
+<code class="literal">extern "C++"</code> block. You might find that the new symbol
+matches an existing pattern in an old symbol version (causing the
+<code class="literal">check-abi</code> test target to fail). If that happens then the
+existing pattern must be adjusted to be more specific so that it doesn't
+match the new symbol.
+</p><p>
+For an example of these steps, including adjusting old patterns to be less
+greedy, see <a class="link" href="https://gcc.gnu.org/ml/gcc-patches/2016-07/msg01926.html" target="_top">https://gcc.gnu.org/ml/gcc-patches/2016-07/msg01926.html</a>
+and the attached patch.
+</p><p>
+If it wasn't done for the last release, you might also need to regenerate
+the <code class="filename">baseline_symbols.txt</code> file that defines the set
+of expected symbols for old symbol versions. A new baseline file can be
+generated by running <strong class="userinput"><code>make new-abi-baseline</code></strong> in the
+<code class="filename"><em class="replaceable"><code>libbuildir</code></em>/testsuite</code>
+directory. Be sure to generate the baseline from a clean build using
+unmodified sources, or you will incorporate your local changes into the
+baseline file.
 </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.make"></a>Make</h3></div></div></div><p>
     The build process has to make all of object files needed for
     static or shared libraries, but first it has to generate some
@@ -287,13 +384,13 @@ in the build directory starts the build process. The <code class="literal">all</
    </p><p>
      Generates a libtool convenience library,
      <code class="filename">libc++98convenience</code> with language-support
-     routines. Uses the <code class="literal">-std=gnu++98</code> dialect.
+     routines. Uses the <code class="option">-std=gnu++98</code> dialect.
    </p></li><li class="listitem"><p>
      make src/c++11
    </p><p>
      Generates a libtool convenience library,
      <code class="filename">libc++11convenience</code> with language-support
-     routines. Uses the <code class="literal">-std=gnu++11</code> dialect.
+     routines. Uses the <code class="option">-std=gnu++11</code> dialect.
    </p></li><li class="listitem"><p>
      make src
    </p><p>
