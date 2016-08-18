@@ -1,3 +1,14 @@
+2016-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c (get_source_range_for_char): Rename to...
+	(selftest::get_source_range_for_char): ...this, and move within
+	the #if CHECKING_P guard.
+	(get_num_source_ranges_for_substring): Rename to...
+	(selftest::get_num_source_ranges_for_substring): ...this, move
+	within the #if CHECKING_P guard, and make static.
+	(selftest::assert_num_substring_ranges): Initialize
+	actual_num_ranges.
+
 2016-08-18  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/72771
