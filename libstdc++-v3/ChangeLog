@@ -1,3 +1,8 @@
+2016-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/tr1/3_function_objects/function/10.cc: Remove unintended
+	dg-options directive.
+
 2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/reference_wrapper/invoke-2.cc: Fix invalid dg-do
