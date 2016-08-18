@@ -1,3 +1,10 @@
+2016-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77282
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	When doing auto-parallelizing also prevent use of PHIs that
+	carry dependences across loop backedges.
+
 2016-08-18  Tamar Christina  <tamar.christina@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
