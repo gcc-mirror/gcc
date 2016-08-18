@@ -255,4 +255,26 @@ int main()
     std::optional<X> ox4;
     ox4 = oi;
   }
+  {
+    std::optional<std::optional<int>> ooi = std::optional<int>();
+    VERIFY(!bool(ooi));
+    ooi = std::optional<int>();
+    VERIFY(!bool(ooi));
+    ooi = std::optional<int>(42);
+    VERIFY(bool(ooi));
+    VERIFY(bool(*ooi));
+    std::optional<std::optional<int>> ooi2 = std::optional<short>();
+    VERIFY(!bool(ooi2));
+    ooi2 = std::optional<short>();
+    VERIFY(!bool(ooi2));
+    ooi2 = std::optional<short>(6);
+    VERIFY(bool(ooi2));
+    VERIFY(bool(*ooi2));
+    std::optional<std::optional<int>> ooi3 = std::optional<int>(42);
+    VERIFY(bool(ooi3));
+    VERIFY(bool(*ooi3));
+    std::optional<std::optional<int>> ooi4 = std::optional<short>(6);
+    VERIFY(bool(ooi4));
+    VERIFY(bool(*ooi4));
+  }
 }

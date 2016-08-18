@@ -1,3 +1,28 @@
+2016-08-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement the latest proposed resolution of LWG 2756.
+	* include/std/optional (Optional_base(const _Tp&))
+	(Optional_base(_Tp&&), using _Base::_Base): Remove.
+	(optional(nullopt_t)): New.
+	(optional(_Up&&)): Invoke base directly with in_place
+	rather than creating a temporary, add default template
+	argument, change constraints.
+	(optional(const optional<_Up>&)): Invoke base directly
+	with in_place, remove unnecessary constraints.
+	(optional(optional<_Up>&& __t)): Likewise.
+	(optional(in_place_t, _Args&&...)): New.
+	(optional(in_place_t, initializer_list<_Up>, _Args&&...)): Likewise.
+	(operator=(_Up&&)): Add default template argument, change constraints.
+	(operator=(const optional<_Up>&)): Put is_same first in the
+	constraints.
+	(operator=(optional<_Up>&&)): Likewise.
+	* testsuite/20_util/optional/assignment/5.cc: Add a test to
+	verify assignment from something that can't be perfect-forwarded.
+	* testsuite/20_util/optional/cons/value.cc: Add tests to verify
+	that a nested optional is disengaged when constructed
+	from a disengaged element type,	and to verify that assignments
+	from an engaged element type engage the optional.
+
 2016-08-18  Tim Shen  <timshen@google.com>
 
 	Implement <variant>

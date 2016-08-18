@@ -19,6 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <optional>
+#include <vector>
 #include <testsuite_hooks.h>
 
 int counter = 0;
@@ -61,6 +62,14 @@ int main()
     o = {};
     VERIFY( !o );
   }
-
+  {
+    std::optional<std::vector<int>> ovi{{1, 2, 3}};
+    VERIFY(ovi->size() == 3);
+    VERIFY((*ovi)[0] == 1 && (*ovi)[1] == 2 && (*ovi)[2] == 3);
+    ovi = {4, 5, 6, 7};
+    VERIFY(ovi->size() == 4);
+    VERIFY((*ovi)[0] == 4 && (*ovi)[1] == 5 &&
+	   (*ovi)[2] == 6 && (*ovi)[3] == 7);
+  }
   VERIFY( counter == 0 );
 }

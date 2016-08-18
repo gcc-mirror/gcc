@@ -175,12 +175,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _Optional_base{} { }
 
       // Constructors for engaged optionals.
-      constexpr _Optional_base(const _Tp& __t)
-      : _M_payload(__t), _M_engaged(true) { }
-
-      constexpr _Optional_base(_Tp&& __t)
-      : _M_payload(std::move(__t)), _M_engaged(true) { }
-
       template<typename... _Args>
         constexpr explicit _Optional_base(in_place_t, _Args&&... __args)
         : _M_payload(std::forward<_Args>(__args)...), _M_engaged(true) { }
@@ -316,12 +310,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr _Optional_base(nullopt_t) noexcept
       : _Optional_base{} { }
-
-      constexpr _Optional_base(const _Tp& __t)
-      : _M_payload(__t), _M_engaged(true) { }
-
-      constexpr _Optional_base(_Tp&& __t)
-      : _M_payload(std::move(__t)), _M_engaged(true) { }
 
       template<typename... _Args>
         constexpr explicit _Optional_base(in_place_t, _Args&&... __args)
@@ -478,80 +466,79 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using value_type = _Tp;
 
-      // _Optional_base has the responsibility for construction.
-      using _Base::_Base;
-
       constexpr optional() = default;
+
+      constexpr optional(nullopt_t) noexcept
+	: _Base(nullopt) { }
+
       // Converting constructors for engaged optionals.
-      template <typename _Up,
+      template <typename _Up = _Tp,
                 enable_if_t<__and_<
-			      __not_<is_same<_Tp, _Up>>,
+			      __not_<__is_optional<decay_t<_Up>>>,
 			      is_constructible<_Tp, _Up&&>,
 			      is_convertible<_Up&&, _Tp>
 			      >::value, bool> = true>
       constexpr optional(_Up&& __t)
-        : _Base(_Tp(std::forward<_Up>(__t))) { }
+        : _Base(std::in_place, std::forward<_Up>(__t)) { }
 
-      template <typename _Up,
+      template <typename _Up = _Tp,
                 enable_if_t<__and_<
-			    __not_<is_same<_Tp, _Up>>,
-			    is_constructible<_Tp, _Up&&>,
-			    __not_<is_convertible<_Up&&, _Tp>>
-			    >::value, bool> = false>
+			      __not_<__is_optional<decay_t<_Up>>>,
+			      is_constructible<_Tp, _Up&&>,
+			      __not_<is_convertible<_Up&&, _Tp>>
+			      >::value, bool> = false>
       explicit constexpr optional(_Up&& __t)
-        : _Base(_Tp(std::forward<_Up>(__t))) { }
+        : _Base(std::in_place, std::forward<_Up>(__t)) { }
 
       template <typename _Up,
                 enable_if_t<__and_<
 			    __not_<is_same<_Tp, _Up>>,
-			    __not_<is_constructible<
-			      _Tp, const optional<_Up>&>>,
-			    __not_<is_convertible<
-			      const optional<_Up>&, _Tp>>,
 			    is_constructible<_Tp, const _Up&>,
 			    is_convertible<const _Up&, _Tp>
 			    >::value, bool> = true>
       constexpr optional(const optional<_Up>& __t)
-        : _Base(__t ? optional<_Tp>(*__t) : optional<_Tp>()) { }
+        : _Base(__t ? _Base(std::in_place, *__t) : _Base()) { }
 
       template <typename _Up,
                  enable_if_t<__and_<
 			       __not_<is_same<_Tp, _Up>>,
-			       __not_<is_constructible<
-					_Tp, const optional<_Up>&>>,
-			       __not_<is_convertible<
-				 const optional<_Up>&, _Tp>>,
 			       is_constructible<_Tp, const _Up&>,
 			       __not_<is_convertible<const _Up&, _Tp>>
 			       >::value, bool> = false>
       explicit constexpr optional(const optional<_Up>& __t)
-        : _Base(__t ? optional<_Tp>(*__t) : optional<_Tp>()) { }
+        : _Base(__t ? _Base(std::in_place, *__t) : _Base()) { }
 
       template <typename _Up,
                 enable_if_t<__and_<
 			      __not_<is_same<_Tp, _Up>>,
-			      __not_<is_constructible<
-				       _Tp, optional<_Up>&&>>,
-			      __not_<is_convertible<
-				       optional<_Up>&&, _Tp>>,
 			      is_constructible<_Tp, _Up&&>,
 			      is_convertible<_Up&&, _Tp>
 			      >::value, bool> = true>
       constexpr optional(optional<_Up>&& __t)
-        : _Base(__t ? optional<_Tp>(std::move(*__t)) : optional<_Tp>()) { }
+        : _Base(__t ? _Base(std::in_place, std::move(*__t)) : _Base()) { }
 
       template <typename _Up,
                 enable_if_t<__and_<
 			    __not_<is_same<_Tp, _Up>>,
-			    __not_<is_constructible<
-				     _Tp, optional<_Up>&&>>,
-			    __not_<is_convertible<
-				     optional<_Up>&&, _Tp>>,
 			    is_constructible<_Tp, _Up&&>,
 			    __not_<is_convertible<_Up&&, _Tp>>
 			    >::value, bool> = false>
       explicit constexpr optional(optional<_Up>&& __t)
-        : _Base(__t ? optional<_Tp>(std::move(*__t)) : optional<_Tp>()) { }
+        : _Base(__t ? _Base(std::in_place, std::move(*__t)) : _Base()) { }
+
+      template<typename... _Args>
+      explicit constexpr optional(in_place_t, _Args&&... __args)
+        : _Base(std::in_place, std::forward<_Args>(__args)...) { }
+
+      template<typename _Up, typename... _Args,
+               enable_if_t<is_constructible<_Tp,
+                                            initializer_list<_Up>&,
+                                            _Args&&...>::value,
+                           int>...>
+      explicit constexpr optional(in_place_t,
+				  initializer_list<_Up> __il,
+				  _Args&&... __args)
+        : _Base(std::in_place, __il, std::forward<_Args>(__args)...) { }
 
       // Assignment operators.
       optional&
@@ -561,13 +548,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return *this;
       }
 
-      template<typename _Up,
+      template<typename _Up = _Tp,
                enable_if_t<__and_<
-			   is_constructible<_Tp, _Up>,
-			   is_assignable<_Tp&, _Up>,
-			   __not_<is_same<_Up, nullopt_t>>,
-			   __not_<__is_optional<_Up>>>::value,
-			 bool> = true>
+			     __not_<__is_optional<decay_t<_Up>>>,
+			     is_constructible<_Tp, _Up>,
+			     is_assignable<_Tp&, _Up>>::value,
+			   bool> = true>
         optional&
         operator=(_Up&& __u)
         {
@@ -581,10 +567,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up,
                enable_if_t<__and_<
-		           is_constructible<_Tp, _Up>,
-		           is_assignable<_Tp&, _Up>,
-		           __not_<is_same<_Tp, _Up>>>::value,
-			 bool> = true>
+			     __not_<is_same<_Tp, _Up>>,
+			     is_constructible<_Tp, _Up>,
+			     is_assignable<_Tp&, _Up>>::value,
+			   bool> = true>
         optional&
         operator=(const optional<_Up>& __u)
         {
@@ -604,10 +590,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up,
 	       enable_if_t<__and_<
-			   is_constructible<_Tp, _Up>,
-			   is_assignable<_Tp&, _Up>,
-			   __not_<is_same<_Tp, _Up>>>::value,
-			 bool> = true>
+			     __not_<is_same<_Tp, _Up>>,
+			     is_constructible<_Tp, _Up>,
+			     is_assignable<_Tp&, _Up>>::value,
+			   bool> = true>
         optional&
         operator=(optional<_Up>&& __u)
         {
