@@ -114,6 +114,13 @@ location_t input_location = UNKNOWN_LOCATION;
 
 struct line_maps *line_table;
 
+/* A stashed copy of "line_table" for use by selftest::line_table_test.
+   This needs to be a global so that it can be a GC root, and thus
+   prevent the stashed copy from being garbage-collected if the GC runs
+   during a line_table_test.  */
+
+struct line_maps *saved_line_table;
+
 static fcache *fcache_tab;
 static const size_t fcache_tab_size = 16;
 static const size_t fcache_buffer_size = 4 * 1024;
@@ -1591,8 +1598,8 @@ assert_loceq (const char *exp_filename, int exp_linenum, int exp_colnum,
     ASSERT_EQ (exp_colnum, LOCATION_COLUMN (loc));
 }
 
-/* Various selftests in this file involve constructing a line table
-   and one or more line maps within it.
+/* Various selftests involve constructing a line table and one or more
+   line maps within it.
 
    For maximum test coverage we want to run these tests with a variety
    of situations:
@@ -1618,29 +1625,35 @@ struct line_table_case
   int m_base_location;
 };
 
-/* A class for overriding the global "line_table" within a selftest,
-   restoring its value afterwards.  */
+/* Constructor.  Store the old value of line_table, and create a new
+   one, using sane defaults.  */
 
-class temp_line_table
+line_table_test::line_table_test ()
 {
- public:
-  temp_line_table (const line_table_case &);
-  ~temp_line_table ();
-
- private:
-  line_maps *m_old_line_table;
-};
+  gcc_assert (saved_line_table == NULL);
+  saved_line_table = line_table;
+  line_table = ggc_alloc<line_maps> ();
+  linemap_init (line_table, BUILTINS_LOCATION);
+  gcc_assert (saved_line_table->reallocator);
+  line_table->reallocator = saved_line_table->reallocator;
+  gcc_assert (saved_line_table->round_alloc_size);
+  line_table->round_alloc_size = saved_line_table->round_alloc_size;
+  line_table->default_range_bits = 0;
+}
 
 /* Constructor.  Store the old value of line_table, and create a new
    one, using the sitation described in CASE_.  */
 
-temp_line_table::temp_line_table (const line_table_case &case_)
-  : m_old_line_table (line_table)
+line_table_test::line_table_test (const line_table_case &case_)
 {
+  gcc_assert (saved_line_table == NULL);
+  saved_line_table = line_table;
   line_table = ggc_alloc<line_maps> ();
   linemap_init (line_table, BUILTINS_LOCATION);
-  line_table->reallocator = m_old_line_table->reallocator;
-  line_table->round_alloc_size = m_old_line_table->round_alloc_size;
+  gcc_assert (saved_line_table->reallocator);
+  line_table->reallocator = saved_line_table->reallocator;
+  gcc_assert (saved_line_table->round_alloc_size);
+  line_table->round_alloc_size = saved_line_table->round_alloc_size;
   line_table->default_range_bits = case_.m_default_range_bits;
   if (case_.m_base_location)
     {
@@ -1651,9 +1664,11 @@ temp_line_table::temp_line_table (const line_table_case &case_)
 
 /* Destructor.  Restore the old value of line_table.  */
 
-temp_line_table::~temp_line_table ()
+line_table_test::~line_table_test ()
 {
-  line_table = m_old_line_table;
+  gcc_assert (saved_line_table != NULL);
+  line_table = saved_line_table;
+  saved_line_table = NULL;
 }
 
 /* Verify basic operation of ordinary linemaps.  */
@@ -1661,7 +1676,7 @@ temp_line_table::~temp_line_table ()
 static void
 test_accessing_ordinary_linemaps (const line_table_case &case_)
 {
-  temp_line_table tmp_lt (case_);
+  line_table_test ltt (case_);
 
   /* Build a simple linemap describing some locations. */
   linemap_add (line_table, LC_ENTER, false, "foo.c", 0);
@@ -1813,7 +1828,7 @@ test_lexer (const line_table_case &case_)
      "   42\n");
   temp_source_file tmp (SELFTEST_LOCATION, ".txt", content);
 
-  temp_line_table tmp_lt (case_);
+  line_table_test ltt (case_);
 
   cpp_reader *parser = cpp_create_reader (CLK_GNUC89, NULL, line_table);
 
@@ -1876,7 +1891,7 @@ struct lexer_test
   const cpp_token *get_token ();
 
   temp_source_file m_tempfile;
-  temp_line_table m_tmp_lt;
+  line_table_test m_ltt;
   cpp_reader *m_parser;
   string_concat_db m_concats;
 };
@@ -1948,7 +1963,7 @@ lexer_test::lexer_test (const line_table_case &case_, const char *content,
 			lexer_test_options *options) :
   /* Create a tempfile and write the text to it.  */
   m_tempfile (SELFTEST_LOCATION, ".c", content),
-  m_tmp_lt (case_),
+  m_ltt (case_),
   m_parser (cpp_create_reader (CLK_GNUC99, NULL, line_table)),
   m_concats ()
 {
@@ -3129,15 +3144,11 @@ static const location_t boundary_locations[] = {
   LINE_MAP_MAX_LOCATION_WITH_COLS + 0x100,
 };
 
-/* Run all of the selftests within this file.  */
+/* Run TESTCASE multiple times, once for each case in our test matrix.  */
 
 void
-input_c_tests ()
+for_each_line_table_case (void (*testcase) (const line_table_case &))
 {
-  test_should_have_column_data_p ();
-  test_unknown_location ();
-  test_builtins ();
-
   /* As noted above in the description of struct line_table_case,
      we want to explore a test matrix of interesting line_table
      situations, running various selftests for each case within the
@@ -3158,30 +3169,7 @@ input_c_tests ()
 	{
 	  line_table_case c (default_range_bits, boundary_locations[loc_idx]);
 
-	  /* Run all tests for the given case within the test matrix.  */
-	  test_accessing_ordinary_linemaps (c);
-	  test_lexer (c);
-	  test_lexer_string_locations_simple (c);
-	  test_lexer_string_locations_ebcdic (c);
-	  test_lexer_string_locations_hex (c);
-	  test_lexer_string_locations_oct (c);
-	  test_lexer_string_locations_letter_escape_1 (c);
-	  test_lexer_string_locations_letter_escape_2 (c);
-	  test_lexer_string_locations_ucn4 (c);
-	  test_lexer_string_locations_ucn8 (c);
-	  test_lexer_string_locations_wide_string (c);
-	  test_lexer_string_locations_string16 (c);
-	  test_lexer_string_locations_string32 (c);
-	  test_lexer_string_locations_u8 (c);
-	  test_lexer_string_locations_utf8_source (c);
-	  test_lexer_string_locations_concatenation_1 (c);
-	  test_lexer_string_locations_concatenation_2 (c);
-	  test_lexer_string_locations_concatenation_3 (c);
-	  test_lexer_string_locations_macro (c);
-	  test_lexer_string_locations_stringified_macro_argument (c);
-	  test_lexer_string_locations_non_string (c);
-	  test_lexer_string_locations_long_line (c);
-	  test_lexer_char_constants (c);
+	  testcase (c);
 
 	  num_cases_tested++;
 	}
@@ -3189,6 +3177,40 @@ input_c_tests ()
 
   /* Verify that we fully covered the test matrix.  */
   ASSERT_EQ (num_cases_tested, 2 * 12);
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+input_c_tests ()
+{
+  test_should_have_column_data_p ();
+  test_unknown_location ();
+  test_builtins ();
+
+  for_each_line_table_case (test_accessing_ordinary_linemaps);
+  for_each_line_table_case (test_lexer);
+  for_each_line_table_case (test_lexer_string_locations_simple);
+  for_each_line_table_case (test_lexer_string_locations_ebcdic);
+  for_each_line_table_case (test_lexer_string_locations_hex);
+  for_each_line_table_case (test_lexer_string_locations_oct);
+  for_each_line_table_case (test_lexer_string_locations_letter_escape_1);
+  for_each_line_table_case (test_lexer_string_locations_letter_escape_2);
+  for_each_line_table_case (test_lexer_string_locations_ucn4);
+  for_each_line_table_case (test_lexer_string_locations_ucn8);
+  for_each_line_table_case (test_lexer_string_locations_wide_string);
+  for_each_line_table_case (test_lexer_string_locations_string16);
+  for_each_line_table_case (test_lexer_string_locations_string32);
+  for_each_line_table_case (test_lexer_string_locations_u8);
+  for_each_line_table_case (test_lexer_string_locations_utf8_source);
+  for_each_line_table_case (test_lexer_string_locations_concatenation_1);
+  for_each_line_table_case (test_lexer_string_locations_concatenation_2);
+  for_each_line_table_case (test_lexer_string_locations_concatenation_3);
+  for_each_line_table_case (test_lexer_string_locations_macro);
+  for_each_line_table_case (test_lexer_string_locations_stringified_macro_argument);
+  for_each_line_table_case (test_lexer_string_locations_non_string);
+  for_each_line_table_case (test_lexer_string_locations_long_line);
+  for_each_line_table_case (test_lexer_char_constants);
 
   test_reading_source_line ();
 }

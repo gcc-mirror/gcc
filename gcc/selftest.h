@@ -85,6 +85,48 @@ class temp_source_file
   char *m_filename;
 };
 
+/* Various selftests involving location-handling require constructing a
+   line table and one or more line maps within it.
+
+   For maximum test coverage we want to run these tests with a variety
+   of situations:
+   - line_table->default_range_bits: some frontends use a non-zero value
+   and others use zero
+   - the fallback modes within line-map.c: there are various threshold
+   values for source_location/location_t beyond line-map.c changes
+   behavior (disabling of the range-packing optimization, disabling
+   of column-tracking).  We can exercise these by starting the line_table
+   at interesting values at or near these thresholds.
+
+   The following struct describes a particular case within our test
+   matrix.  */
+
+struct line_table_case;
+
+/* A class for overriding the global "line_table" within a selftest,
+   restoring its value afterwards.  At most one instance of this
+   class can exist at once, due to the need to keep the old value
+   of line_table as a GC root.  */
+
+class line_table_test
+{
+ public:
+  /* Default constructor.  Override "line_table", using sane defaults
+     for the temporary line_table.  */
+  line_table_test ();
+
+  /* Constructor.  Override "line_table", using the case described by C.  */
+  line_table_test (const line_table_case &c);
+
+  /* Destructor.  Restore the saved line_table.  */
+  ~line_table_test ();
+};
+
+/* Run TESTCASE multiple times, once for each case in our test matrix.  */
+
+extern void
+for_each_line_table_case (void (*testcase) (const line_table_case &));
+
 /* Declarations for specific families of tests (by source file), in
    alphabetical order.  */
 extern void bitmap_c_tests ();

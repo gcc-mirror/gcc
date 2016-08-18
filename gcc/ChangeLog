@@ -1,3 +1,30 @@
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c (saved_line_table): New global.
+	(class selftest::temp_line_table): Rename to line_table_test and
+	move declaration to selftest.h, and drop field m_old_line_table.
+	(selftest::temp_line_table::temp_line_table): Rename ctor to...
+	(selftest::line_table_test::line_table_test): ...this.  Add a
+	default ctor.  Store current value of line_table within
+	saved_line_table.
+	(selftest::temp_line_table::~temp_line_table): Rename dtor to...
+	(selftest::line_table_test::~line_table_test): ...this, and
+	restore line_table from the saved_line_table, rather than
+	m_old_line_table.
+	(selftest::test_accessing_ordinary_linemaps): Update for above
+	renaming.
+	(selftest::test_lexer): Likewise.
+	(struct selftest::lexer_test): Likewise.
+	(selftest::lexer_test::lexer_test): Likewise.
+	(selftest::input_c_tests): Move the looping over test cases from
+	here into...
+	(selftest::for_each_line_table_case): New function.
+	* input.h (saved_line_table): New decl.
+	* selftest.h (struct selftest::line_table_case): New forward decl.
+	(class selftest::line_table_test): New class, moved here from
+	selftest::temp_line_table in input.c, and renamed.
+	(selftest::for_each_line_table_case): New decl.
+
 2015-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72839
