@@ -1,3 +1,8 @@
+2015-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72839
+	* config/i386/i386.c (lakemont_cost): Set MOVE_RATIO to 17.
+
 2016-08-18  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR middle-end/70895
