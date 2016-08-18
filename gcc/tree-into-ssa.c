@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "domwalk.h"
+#include "statistics.h"
 
 #define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
 
@@ -3248,6 +3249,8 @@ update_ssa (unsigned update_flags)
      OLD_SSA_NAMES.  */
   if (bitmap_first_set_bit (new_ssa_names) >= 0)
     {
+      statistics_counter_event (cfun, "Incremental SSA update", 1);
+
       prepare_names_to_update (insert_phi_p);
 
       /* If all the names in NEW_SSA_NAMES had been marked for
@@ -3261,6 +3264,8 @@ update_ssa (unsigned update_flags)
   /* Next, determine the block at which to start the renaming process.  */
   if (cfun->gimple_df->ssa_renaming_needed)
     {
+      statistics_counter_event (cfun, "Symbol to SSA rewrite", 1);
+
       /* If we rename bare symbols initialize the mapping to
          auxiliar info we need to keep track of.  */
       var_infos = new hash_table<var_info_hasher> (47);

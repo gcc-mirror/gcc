@@ -1,5 +1,19 @@
 2016-08-18  Richard Biener  <rguenther@suse.de>
 
+	* tree-pass.h (make_pass_materialize_all_clones): Declare.
+	* ipa.c (pass_data_materialize_all_clones, pass_materialize_all_clones,
+	make_pass_materialize_all_clones): New simple IPA pass encapsulating
+	clone materialization.
+	* passes.def (all_late_ipa_passes): Start with
+	pass_materialize_all_clones.
+	* cgraphunit.c (symbol_table::compile): Remove call to
+	materialize_all_clones.
+	* tree-into-ssa.c: Include statistics.h.
+	(update_ssa): Count number of times we do incremental/rewrite
+	SSA update.
+
+2016-08-18  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/77282
 	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
 	When doing auto-parallelizing also prevent use of PHIs that

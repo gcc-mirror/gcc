@@ -1443,3 +1443,44 @@ make_pass_ipa_single_use (gcc::context *ctxt)
 {
   return new pass_ipa_single_use (ctxt);
 }
+
+/* Materialize all clones.  */
+
+namespace {
+
+const pass_data pass_data_materialize_all_clones =
+{
+  SIMPLE_IPA_PASS, /* type */
+  "materialize-all-clones", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_IPA_OPT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_materialize_all_clones : public simple_ipa_opt_pass
+{
+public:
+  pass_materialize_all_clones (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_materialize_all_clones, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *)
+    {
+      symtab->materialize_all_clones ();
+      return 0;
+    }
+
+}; // class pass_materialize_all_clones
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_materialize_all_clones (gcc::context *ctxt)
+{
+  return new pass_materialize_all_clones (ctxt);
+}

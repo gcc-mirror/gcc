@@ -167,6 +167,7 @@ along with GCC; see the file COPYING3.  If not see
      passes are executed after partitioning and thus see just parts of the
      compiled unit.  */
   INSERT_PASSES_AFTER (all_late_ipa_passes)
+  NEXT_PASS (pass_materialize_all_clones);
   NEXT_PASS (pass_ipa_pta);
   NEXT_PASS (pass_dispatcher_calls);
   NEXT_PASS (pass_omp_simd_clone);
