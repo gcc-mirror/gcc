@@ -1,3 +1,8 @@
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (gfc_diagnostic_starter): Update for change to
+	diagnostic_show_locus.
+
 2016-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/67496

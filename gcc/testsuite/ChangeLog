@@ -1,5 +1,11 @@
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(custom_diagnostic_finalizer): Update for change to
+	diagnostic_show_locus.
+
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/cpp/misspelled-directive-1.c: New testcase.
 	* gcc.dg/cpp/misspelled-directive-2.c: New testcase.
 
