@@ -1,3 +1,9 @@
+2016-08-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/71514
+	* c-common.c (get_atomic_generic_size): Disallow pointer-to-function
+	and pointer-to-VLA.
+
 2016-08-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/72857
