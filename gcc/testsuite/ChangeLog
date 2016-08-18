@@ -1,3 +1,15 @@
+2016-08-18  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline
+	2016-08-18  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/70895
+	* gfortran.dg/goacc/loop-tree-1.f90: Add gimple scan-tree-dump test.
+	* c-c++-common/goacc/reduction-1.c: Likewise.
+	* c-c++-common/goacc/reduction-2.c: Likewise.
+	* c-c++-common/goacc/reduction-3.c: Likewise.
+	* c-c++-common/goacc/reduction-4.c: Likewise.
+
 2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/77034
