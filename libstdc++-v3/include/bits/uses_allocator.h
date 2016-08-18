@@ -113,6 +113,57 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr bool uses_allocator_v = uses_allocator<_Tp, _Alloc>::value;
 #endif // C++17
 
+  template<template<typename...> class _Predicate,
+	   typename _Tp, typename _Alloc, typename... _Args>
+    struct __is_uses_allocator_predicate
+    : conditional<uses_allocator<_Tp, _Alloc>::value,
+      __or_<_Predicate<_Tp, allocator_arg_t, _Alloc, _Args...>,
+	    _Predicate<_Tp, _Args..., _Alloc>>,
+      _Predicate<_Tp, _Args...>>::type { };
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    struct __is_uses_allocator_constructible
+    : __is_uses_allocator_predicate<is_constructible, _Tp, _Alloc, _Args...>
+    { };
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    constexpr bool __is_uses_allocator_constructible_v =
+      __is_uses_allocator_constructible<_Tp, _Alloc, _Args...>::value;
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    struct __is_nothrow_uses_allocator_constructible
+    : __is_uses_allocator_predicate<is_nothrow_constructible,
+				    _Tp, _Alloc, _Args...>
+    { };
+
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    constexpr bool __is_nothrow_uses_allocator_constructible_v =
+      __is_nothrow_uses_allocator_constructible<_Tp, _Alloc, _Args...>::value;
+
+  template<typename _Tp, typename... _Args>
+    void __uses_allocator_construct_impl(__uses_alloc0 __a, _Tp* __ptr,
+					 _Args&&... __args)
+    { new (__ptr) _Tp(forward<_Args>(__args)...); }
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    void __uses_allocator_construct_impl(__uses_alloc1<_Alloc> __a, _Tp* __ptr,
+					 _Args&&... __args)
+    { new (__ptr) _Tp(allocator_arg, *__a._M_a, forward<_Args>(__args)...); }
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    void __uses_allocator_construct_impl(__uses_alloc2<_Alloc> __a, _Tp* __ptr,
+					 _Args&&... __args)
+    { new (__ptr) _Tp(forward<_Args>(__args)..., *__a._M_a); }
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    void __uses_allocator_construct(const _Alloc& __a, _Tp* __ptr,
+				    _Args&&... __args)
+    {
+      __uses_allocator_construct_impl(__use_alloc<_Tp, _Alloc, _Args...>(__a),
+				      __ptr, forward<_Args>(__args)...);
+    }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
