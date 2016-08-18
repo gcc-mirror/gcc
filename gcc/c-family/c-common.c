@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "gimplify.h"
 #include "substring-locations.h"
+#include "spellcheck.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -12946,6 +12947,22 @@ cb_get_source_date_epoch (cpp_reader *pfile ATTRIBUTE_UNUSED)
     }
 
   return (time_t) epoch;
+}
+
+/* Callback for libcpp for offering spelling suggestions for misspelled
+   directives.  GOAL is an unrecognized string; CANDIDATES is a
+   NULL-terminated array of candidate strings.  Return the closest
+   match to GOAL within CANDIDATES, or NULL if none are good
+   suggestions.  */
+
+const char *
+cb_get_suggestion (cpp_reader *, const char *goal,
+		   const char *const *candidates)
+{
+  best_match<const char *, const char *> bm (goal);
+  while (*candidates)
+    bm.consider (*candidates++);
+  return bm.get_best_meaningful_candidate ();
 }
 
 /* Check and possibly warn if two declarations have contradictory

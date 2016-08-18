@@ -1,3 +1,11 @@
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c: Include "spellcheck.h".
+	(cb_get_suggestion): New function.
+	* c-common.h (cb_get_suggestion): New decl.
+	* c-lex.c (init_c_lex): Initialize cb->get_suggestion to
+	cb_get_suggestion.
+
 2016-08-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c/71514

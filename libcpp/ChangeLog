@@ -1,3 +1,14 @@
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (directive_names): New array.
+	(_cpp_handle_directive): Offer spelling suggestions for misspelled
+	directives.
+	* errors.c (cpp_diagnostic_at_richloc): New function.
+	(cpp_error_at_richloc): New function.
+	* include/cpplib.h (struct cpp_callbacks): Add field
+	"get_suggestion".
+	(cpp_error_at_richloc): New decl.
+
 2016-08-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
