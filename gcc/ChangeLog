@@ -1,3 +1,8 @@
+2016-08-18  Tamar Christina  <tamar.christina@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* varasm.c (default_use_anchors_for_symbol_p): Reject too large decls.
+
 2016-08-18  Richard Biener  <rguenther@suse.de>
 
 	* ssa-iterators.h (ssa_vuse_operand): New inline.
