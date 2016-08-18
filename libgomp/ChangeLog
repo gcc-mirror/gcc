@@ -1,3 +1,23 @@
+2016-08-18  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/70895
+	* testsuite/libgomp.oacc-fortran/reduction-7.f90: Add explicit
+	firstprivate clauses.
+	* testsuite/libgomp.oacc-fortran/reduction-6.f90: Remove explicit
+	copy clauses.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-flt.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-flt.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-dbl.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-dbl.c: Likewise.
+
 2016-08-14  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR fortran/70598

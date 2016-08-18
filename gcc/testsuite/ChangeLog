@@ -1,3 +1,12 @@
+2016-08-18  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/70895
+	* gfortran.dg/goacc/loop-tree-1.f90: Add gimple scan-tree-dump test.
+	* c-c++-common/goacc/reduction-1.c: Likewise.
+	* c-c++-common/goacc/reduction-2.c: Likewise.
+	* c-c++-common/goacc/reduction-3.c: Likewise.
+	* c-c++-common/goacc/reduction-4.c: Likewise.
+
 2016-08-18  Alan Modra  <amodra@gmail.com>
 
 	* gcc.c-torture/compile/pr72771.c: New.

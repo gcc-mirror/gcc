@@ -6010,6 +6010,45 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
     n->value |= flags;
   else
     splay_tree_insert (ctx->variables, (splay_tree_key)decl, flags);
+
+  /* For reductions clauses in OpenACC loop directives, by default create a
+     copy clause on the enclosing parallel construct for carrying back the
+     results.  */
+  if (ctx->region_type == ORT_ACC && (flags & GOVD_REDUCTION))
+    {
+      struct gimplify_omp_ctx *outer_ctx = ctx->outer_context;
+      while (outer_ctx)
+	{
+	  n = splay_tree_lookup (outer_ctx->variables, (splay_tree_key)decl);
+	  if (n != NULL)
+	    {
+	      /* Ignore local variables and explicitly declared clauses.  */
+	      if (n->value & (GOVD_LOCAL | GOVD_EXPLICIT))
+		break;
+	      else if (outer_ctx->region_type == ORT_ACC_KERNELS)
+		{
+		  /* According to the OpenACC spec, such a reduction variable
+		     should already have a copy map on a kernels construct,
+		     verify that here.  */
+		  gcc_assert (!(n->value & GOVD_FIRSTPRIVATE)
+			      && (n->value & GOVD_MAP));
+		}
+	      else if (outer_ctx->region_type == ORT_ACC_PARALLEL)
+		{
+		  /* Remove firstprivate and make it a copy map.  */
+		  n->value &= ~GOVD_FIRSTPRIVATE;
+		  n->value |= GOVD_MAP;
+		}
+	    }
+	  else if (outer_ctx->region_type == ORT_ACC_PARALLEL)
+	    {
+	      splay_tree_insert (outer_ctx->variables, (splay_tree_key)decl,
+				 GOVD_MAP | GOVD_SEEN);
+	      break;
+	    }
+	  outer_ctx = outer_ctx->outer_context;
+	}
+    }
 }
 
 /* Notice a threadprivate variable DECL used in OMP context CTX.

@@ -1,3 +1,10 @@
+2016-08-18  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/70895
+	* gimplify.c (omp_add_variable): Adjust/add variable mapping on
+	enclosing parallel construct for reduction variables on OpenACC loop
+	directives.
+
 2016-08-18  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (copy_dwarf_procedure): Remove obsolete comment.
