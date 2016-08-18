@@ -2,7 +2,7 @@
 	 xml:id="manual.intro.setup.test" xreflabel="Testing">
 <?dbhtml filename="test.html"?>
 
-<info><title>Test</title>
+<info><title>Testing</title>
   <keywordset>
     <keyword>ISO C++</keyword>
     <keyword>test</keyword>
@@ -19,66 +19,104 @@ The libstdc++ testsuite includes testing for standard conformance,
 regressions, ABI, and performance.
 </para>
 
-<section xml:id="test.organization" xreflabel="Test Organization"><info><title>Organization</title></info>
+<section xml:id="test.organization" xreflabel="Test Organization"><info><title>Test Organization</title></info>
 
 
 <section xml:id="test.organization.layout" xreflabel="Directory Layout"><info><title>Directory Layout</title></info>
 
 
 <para>
-  The directory <emphasis>libsrcdir/testsuite</emphasis> contains the
-  individual test cases organized in sub-directories corresponding to
-  clauses of the C++ standard (detailed below), the dejagnu test
-  harness support files, and sources to various testsuite utilities
-  that are packaged in a separate testing library.
+  The directory
+  <filename class="directory"><replaceable>gccsrcdir</replaceable>/libstdc++-v3/testsuite</filename>
+  contains the individual test cases organized in sub-directories
+  corresponding to clauses of the C++ standard (detailed below),
+  the DejaGnu test harness support files, and sources to various
+  testsuite utilities that are packaged in a separate testing library.
 </para>
 
 <para>
   All test cases for functionality required by the runtime components
   of the C++ standard (ISO 14882) are files within the following
-  directories.
-</para>
+  directories:
 
    <programlisting>
-17_intro
-18_support
-19_diagnostics
-20_util
-21_strings
-22_locale
-23_containers
-25_algorithms
-26_numerics
-27_io
-28_regex
-29_atomics
-30_threads
+    17_intro
+    18_support
+    19_diagnostics
+    20_util
+    21_strings
+    22_locale
+    23_containers
+    24_iterators
+    25_algorithms
+    26_numerics
+    27_io
+    28_regex
+    29_atomics
+    30_threads
    </programlisting>
+</para>
 
    <para>
       In addition, the following directories include test files:
-   </para>
 
-   <programlisting>
-tr1		  Tests for components as described by the Technical Report on Standard Library Extensions (TR1).
-backward	  Tests for backwards compatibility and deprecated features.
-demangle	  Tests for __cxa_demangle, the IA 64 C++ ABI demangler
-ext		  Tests for extensions.
-performance	  Tests for performance analysis, and performance regressions.
-   </programlisting>
+<variablelist spacing="compact">
+<varlistentry>
+  <term><filename class="directory">tr1</filename></term>
+  <listitem>Tests for components as described by the Technical Report
+    on Standard Library Extensions (<link linked="status.iso.tr1">TR1</link>).
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">backward</filename></term>
+  <listitem>Tests for backwards compatibility and deprecated features.
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">demangle</filename></term>
+  <listitem>Tests for <function>__cxa_demangle</function>, the IA-64 C++ ABI
+    demangler.
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">ext</filename></term>
+  <listitem>Tests for extensions.</listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">performance</filename></term>
+  <listitem>Tests for performance analysis, and performance regressions.
+  </listitem>
+</varlistentry>
+</variablelist>
+   </para>
 
    <para>
       Some directories don't have test files, but instead contain
       auxiliary information:
-   </para>
 
-   <programlisting>
-config		  Files for the dejagnu test harness.
-lib		  Files for the dejagnu test harness.
-libstdc++*     	  Files for the dejagnu test harness.
-data		  Sample text files for testing input and output.
-util		  Files for libtestc++, utilities and testing routines.
-   </programlisting>
+<variablelist spacing="compact">
+<varlistentry>
+  <term><filename class="directory">config</filename></term>
+  <listitem>Files for the DejaGnu test harness.</listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">lib</filename></term>
+  <listitem>Files for the DejaGnu test harness.</listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">libstdc++*</filename></term>
+  <listitem>Files for the DejaGnu test harness.</listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">data</filename></term>
+  <listitem>Sample text files for testing input and output.</listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">util</filename></term>
+  <listitem>Files for libtestc++, utilities and testing routines.</listitem>
+</varlistentry>
+</variablelist>
+   </para>
 
    <para>
       Within a directory that includes test files, there may be
@@ -86,13 +124,9 @@ util		  Files for libtestc++, utilities and testing routines.
       were appended to one file that represented a particular section
       of the chapter under test, and was named accordingly. For
       instance, to test items related to <code> 21.3.6.1 -
-      basic_string::find [lib.string::find]</code> in the standard,
-      the following was used:
-   </para>
-   <programlisting>
-21_strings/find.cc
-   </programlisting>
-   <para>
+      <function>basic_string::find</function> [lib.string::find]</code>
+      in the standard, the following was used:
+<programlisting>    21_strings/find.cc </programlisting>
       However, that practice soon became a liability as the test cases
       became huge and unwieldy, and testing new or extended
       functionality (like wide characters or named locales) became
@@ -102,19 +136,17 @@ util		  Files for libtestc++, utilities and testing routines.
       above issues and gives finer grained results and more manageable
       error debugging. As an example, the test case quoted above
       becomes:
+<programlisting>    21_strings/basic_string/find/char/1.cc
+    21_strings/basic_string/find/char/2.cc
+    21_strings/basic_string/find/char/3.cc
+    21_strings/basic_string/find/wchar_t/1.cc
+    21_strings/basic_string/find/wchar_t/2.cc
+    21_strings/basic_string/find/wchar_t/3.cc</programlisting>
    </para>
-   <programlisting>
-21_strings/basic_string/find/char/1.cc
-21_strings/basic_string/find/char/2.cc
-21_strings/basic_string/find/char/3.cc
-21_strings/basic_string/find/wchar_t/1.cc
-21_strings/basic_string/find/wchar_t/2.cc
-21_strings/basic_string/find/wchar_t/3.cc
-   </programlisting>
 
    <para>
-      All new tests should be written with the policy of one test
-      case, one file in mind.
+      All new tests should be written with the policy of "one test
+      case, one file" in mind.
    </para>
 </section>
 
@@ -128,87 +160,72 @@ util		  Files for libtestc++, utilities and testing routines.
       tests.
    </para>
 
-<itemizedlist>
-<listitem>
-  <para>
-   <emphasis>_xin.cc</emphasis>
-  </para>
-   <para>
+<variablelist>
+<varlistentry>
+  <term><filename class="extension">_xin.cc</filename></term>
+  <listitem>
       This test case expects some kind of interactive input in order
       to finish or pass. At the moment, the interactive tests are not
       run by default. Instead, they are run by hand, like:
-   </para>
       <programlisting>
 g++ 27_io/objects/char/3_xin.cc
-cat 27_io/objects/char/3_xin.in | a.out
-     </programlisting>
-</listitem>
-<listitem>
-   <para>
-     <emphasis>.in</emphasis>
-   </para>
-   <para>
+cat 27_io/objects/char/3_xin.in | a.out</programlisting>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="extension">.in</filename></term>
+  <listitem>
       This file contains the expected input for the corresponding <emphasis>
       _xin.cc</emphasis> test case.
-   </para>
-</listitem>
-<listitem>
-  <para>
-   <emphasis>_neg.cc</emphasis>
-  </para>
-   <para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="extension">_neg.cc</filename></term>
+  <listitem>
       This test case is expected to fail: it's a negative test. At the
       moment, these are almost always compile time errors.
-   </para>
-</listitem>
-<listitem>
-  <para>
-   <emphasis>char</emphasis>
-  </para>
-   <para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">char</filename></term>
+  <listitem>
       This can either be a directory name or part of a longer file
       name, and indicates that this file, or the files within this
       directory are testing the <code>char</code> instantiation of a
       template.
-   </para>
-</listitem>
-<listitem>
-  <para>
-   <emphasis>wchar_t</emphasis>
-  </para>
-   <para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">wchar_t</filename></term>
+  <listitem>
       This can either be a directory name or part of a longer file
       name, and indicates that this file, or the files within this
       directory are testing the <code>wchar_t</code> instantiation of
       a template. Some hosts do not support <code>wchar_t</code>
       functionality, so for these targets, all of these tests will not
       be run.
-   </para>
-</listitem>
-<listitem>
-  <para>
-   <emphasis>thread</emphasis>
-  </para>
-   <para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">thread</filename></term>
+  <listitem>
       This can either be a directory name or part of a longer file
       name, and indicates that this file, or the files within this
       directory are testing situations where multiple threads are
       being used.
-   </para>
-</listitem>
-<listitem>
-  <para>
-   <emphasis>performance</emphasis>
-  </para>
-   <para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><filename class="directory">performance</filename></term>
+  <listitem>
       This can either be an enclosing directory name or part of a
       specific file name. This indicates a test that is used to
       analyze runtime performance, for performance regression testing,
       or for other optimization related analysis. At the moment, these
       test cases are not run by default.
-   </para>
-</listitem>
-</itemizedlist>
+  </listitem>
+</varlistentry>
+</variablelist>
 
 </section>
 </section>
@@ -222,24 +239,29 @@ cat 27_io/objects/char/3_xin.in | a.out
 
     <para>
       You can check the status of the build without installing it
-      using the dejagnu harness, much like the rest of the gcc
-      tools.</para>
-   <programlisting> make check</programlisting>
-   <para>in the <emphasis>libbuilddir</emphasis> directory.</para>
-   <para>or</para>
-   <programlisting> make check-target-libstdc++-v3</programlisting>
-   <para>in the <emphasis>gccbuilddir</emphasis> directory.
-     </para>
+      using the DejaGnu harness, much like the rest of the gcc
+      tools, i.e.
+   <userinput>make check</userinput>
+      in the
+      <filename class="directory"><replaceable>libbuilddir</replaceable></filename>
+      directory, or
+   <userinput>make check-target-libstdc++-v3</userinput>
+       in the
+      <filename class="directory"><replaceable>gccbuilddir</replaceable></filename>
+       directory.
+    </para>
 
      <para>
        These commands are functionally equivalent and will create a
-       'testsuite' directory underneath
-       <emphasis>libbuilddir</emphasis> containing the results of the
-       tests. Two results files will be generated: <emphasis>
-       libstdc++.sum</emphasis>, which is a PASS/FAIL summary for each
-       test, and <emphasis>libstdc++.log</emphasis> which is a log of
-       the exact command line passed to the compiler, the compiler
-       output, and the executable output (if any).
+       '<filename class="directory">testsuite</filename>' directory underneath
+       <filename class="directory"><replaceable>libbuilddir</replaceable></filename>
+       containing the results of the
+       tests. Two results files will be generated:
+       <filename>libstdc++.sum</filename>, which is a PASS/FAIL summary
+       for each test, and
+       <filename>libstdc++.log</filename> which is a log of
+       the exact command-line passed to the compiler, the compiler
+       output, and the executable output (if any) for each test.
      </para>
 
      <para>
@@ -262,88 +284,88 @@ cat 27_io/objects/char/3_xin.in | a.out
       checking the exported symbols of the shared library.
     </para>
     <para>
-      To debug the dejagnu test harness during runs, try invoking with a
-      specific argument to the variable RUNTESTFLAGS, as below.
-    </para>
-
+      To debug the DejaGnu test harness during runs, try invoking with a
+      specific argument to the variable <varname>RUNTESTFLAGS</varname>,
+      like so:
 <programlisting>
-make check-target-libstdc++-v3 RUNTESTFLAGS="-v"
+    make check-target-libstdc++-v3 RUNTESTFLAGS="-v"
 </programlisting>
-
-    <para>
       or
-    </para>
-
 <programlisting>
-make check-target-libstdc++-v3 RUNTESTFLAGS="-v -v"
+    make check-target-libstdc++-v3 RUNTESTFLAGS="-v -v"
 </programlisting>
+    </para>
 
     <para>
       To run a subset of the library tests, you can either generate the
-      <emphasis>testsuite_files</emphasis> file (described below) by running
-      <command>make testsuite_files</command> in the
-      <emphasis>libbuilddir/testsuite</emphasis> directory, then edit the
+      <filename>testsuite_files</filename> file (described below) by running
+      <userinput>make testsuite_files</userinput> in the
+      <filename class="directory"><replaceable>libbuilddir</replaceable>/testsuite</filename>
+      directory, then edit the
       file to remove the tests you don't want and then run the testsuite as
       normal, or you can specify a testsuite and a subset of tests in the
-      RUNTESTFLAGS variable.
+      <varname>RUNTESTFLAGS</varname> variable.
     </para>
 
     <para>
       For example, to run only the tests for containers you could use:
-    </para>
 
 <programlisting>
-make check-target-libstdc++-v3 RUNTESTFLAGS="conformance.exp=23_containers/*"
+    make check-target-libstdc++-v3 RUNTESTFLAGS="conformance.exp=23_containers/*"
 </programlisting>
-
-    <para>
-      When combining this with other options in RUNTESTFLAGS the
-      <emphasis>testsuite.exp=testfiles</emphasis> options must come first.
     </para>
 
     <para>
-      There are two ways to run on a simulator: set up DEJAGNU to point to a
-      specially crafted site.exp, or pass down --target_board flags.
+      When combining this with other options in <varname>RUNTESTFLAGS</varname>
+      the <option>testsuite.exp=testfiles</option> options must come first.
+    </para>
+
+    <para>
+      There are two ways to run on a simulator: set up <envar>DEJAGNU</envar>
+      to point to a specially crafted <filename>site.exp</filename>,
+      or pass down <option>--target_board</option> flags.
     </para>
 
     <para>
     Example flags to pass down for various embedded builds are as follows:
-    </para>
 
 <programlisting>
-      --target=powerpc-eabism (libgloss/sim)
-make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=powerpc-sim"
+  --target=powerpc-eabisim <emphasis>(libgloss/sim)</emphasis>
+  make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=powerpc-sim"
 
---target=calmrisc32 (libgloss/sid)
-make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
+  --target=calmrisc32 <emphasis>(libgloss/sid)</emphasis>
+  make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
 
---target=xscale-elf (newlib/sim)
-make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
+  --target=xscale-elf <emphasis>(newlib/sim)</emphasis>
+  make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
 </programlisting>
+    </para>
 
     <para>
       Also, here is an example of how to run the libstdc++ testsuite
       for a multilibed build directory with different ABI settings:
-    </para>
 
  <programlisting>
-make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
+    make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
 </programlisting>
+    </para>
 
     <para>
       You can run the tests with a compiler and library that have
       already been installed.  Make sure that the compiler (e.g.,
-      <code>g++</code>) is in your <code>PATH</code>.  If you are
+      <command>g++</command>) is in your <envar>PATH</envar>.  If you are
       using shared libraries, then you must also ensure that the
       directory containing the shared version of libstdc++ is in your
-      <code>LD_LIBRARY_PATH</code>, or equivalent.  If your GCC source
-      tree is at <code>/path/to/gcc</code>, then you can run the tests
-      as follows:
-    </para>
+      <envar>LD_LIBRARY_PATH</envar>, or
+      <link linkend="manual.intro.using.linkage.dynamic">equivalent</link>.
+      If your GCC source tree is at
+      <filename class="directory">/path/to/gcc</filename>,
+      then you can run the tests as follows:
 
 <programlisting>
-runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
+    runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
 </programlisting>
+    </para>
 
     <para>
       The testsuite will create a number of files in the directory in
@@ -356,12 +378,13 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
     <para>
       In addition, there are some testing options that are mostly of
       interest to library maintainers and system integrators. As such,
-      these tests may not work on all cpu and host combinations, and
+      these tests may not work on all CPU and host combinations, and
       may need to be executed in the
-      <emphasis>libbuilddir/testsuite</emphasis> directory.  These
+      <filename class="directory"><replaceable>libbuilddir</replaceable>/testsuite</filename>
+      directory.  These
       options include, but are not necessarily limited to, the
       following:
-   </para>
+    </para>
 
    <programlisting>
    make testsuite_files
@@ -626,7 +649,8 @@ up in the normal.exp file.
 </programlisting>
 
    <para>
-    More examples can be found in the libstdc++-v3/testsuite/*/*.cc files.
+    More examples can be found in the
+    <filename>libstdc++-v3/testsuite/*/*.cc</filename> files.
    </para>
 </section>
 
@@ -634,22 +658,23 @@ up in the normal.exp file.
 <section xml:id="test.harness" xreflabel="Test Harness and Utilities"><info><title>Test Harness and Utilities</title></info>
 
 
-<section xml:id="test.harness.dejagnu"><info><title>Dejagnu Harness Details</title></info>
+<section xml:id="test.harness.dejagnu"><info><title>DejaGnu Harness Details</title></info>
 
   <para>
     Underlying details of testing for conformance and regressions are
-    abstracted via the GNU Dejagnu package. This is similar to the
+    abstracted via the GNU DejaGnu package. This is similar to the
     rest of GCC.
   </para>
 
 
 <para>This is information for those looking at making changes to the testsuite
-structure, and/or needing to trace dejagnu's actions with --verbose.  This
-will not be useful to people who are "merely" adding new tests to the existing
-structure.
+structure, and/or needing to trace DejaGnu's actions with
+<option>--verbose</option>.
+This will not be useful to people who are "merely" adding new tests
+to the existing structure.
 </para>
 
-<para>The first key point when working with dejagnu is the idea of a "tool".
+<para>The first key point when working with DejaGnu is the idea of a "tool".
 Files, directories, and functions are all implicitly used when they are
 named after the tool in use.  Here, the tool will always be "libstdc++".
 </para>
@@ -665,7 +690,7 @@ our own.  Callbacks must be prefixed with the name of the tool.  To easily
 distinguish the others, by convention our own routines are named "v3-*".
 </para>
 
-<para>The next key point when working with dejagnu is "test files".  Any
+<para>The next key point when working with DejaGnu is "test files".  Any
 directory whose name starts with the tool name will be searched for test files.
 (We have only one.)  In those directories, any <code>.exp</code> file is
 considered a test file, and will be run in turn.  Our main test file is called

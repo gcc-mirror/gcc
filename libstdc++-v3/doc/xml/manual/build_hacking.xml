@@ -93,7 +93,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
 
   <para>
     Regenerate all generated files by using the command 
-    <code>autoreconf</code> at the top level of the libstdc++ source
+    <command>autoreconf</command> at the top level of the libstdc++ source
     directory.
   </para>
 </section>
@@ -108,10 +108,10 @@ in the build directory starts the build process. The <literal>all</literal> targ
 
 
   <para>
-    Until that glorious day when we can use AC_TRY_LINK with a
-    cross-compiler, we have to hardcode the results of what the tests
+    Until that glorious day when we can use <literal>AC_TRY_LINK</literal>
+    with a cross-compiler, we have to hardcode the results of what the tests
     would have shown if they could be run.  So we have an inflexible
-    mess like crossconfig.m4.
+    mess like <filename>crossconfig.m4</filename>.
   </para>
 
   <para>
@@ -119,8 +119,8 @@ in the build directory starts the build process. The <literal>all</literal> targ
     like configure.host, which can be modified without needing to
     regenerate anything, and can even be tweaked without really
     knowing how the configury all works?  Perhaps break the pieces of
-    crossconfig.m4 out and place them in their appropriate
-    config/{cpu,os} directory.
+    <filename>crossconfig.m4</filename> out and place them in their appropriate
+    <filename class="directory">config/{cpu,os}</filename> directory.
   </para>
 
   <para>
@@ -141,33 +141,37 @@ in the build directory starts the build process. The <literal>all</literal> targ
 
   <para>
     Most comments should use {octothorpes, shibboleths, hash marks,
-    pound signs, whatever} rather than "dnl".  Nearly all comments in
-    configure.ac should.  Comments inside macros written in ancillary
-    .m4 files should.  About the only comments which should
-    <emphasis>not</emphasis> use #, but use dnl instead, are comments
-    <emphasis>outside</emphasis> our own macros in the ancillary
-    files.  The difference is that # comments show up in
-    <code>configure</code> (which is most helpful for debugging),
-    while dnl'd lines just vanish.  Since the macros in ancillary
-    files generate code which appears in odd places, their "outside"
-    comments tend to not be useful while reading
-    <code>configure</code>.
+    pound signs, whatever} rather than "<literal>dnl</literal>".
+    Nearly all comments in <filename>configure.ac</filename> should.
+    Comments inside macros written in ancillary
+    <filename class="extension">.m4</filename> files should.
+    About the only comments which should <emphasis>not</emphasis>
+    use <literal>#</literal>, but use <literal>dnl</literal> instead,
+    are comments <emphasis>outside</emphasis> our own macros in the ancillary
+    files.  The difference is that <literal>#</literal> comments show up in
+    <filename>configure</filename> (which is most helpful for debugging),
+    while <literal>dnl</literal>'d lines just vanish.  Since the macros
+    in ancillary files generate code which appears in odd places,
+    their "outside" comments tend to not be useful while reading
+    <filename>configure</filename>.
   </para>
 
   <para>
     Do not use any <code>$target*</code> variables, such as
-    <code>$target_alias</code>.  The single exception is in
-    configure.ac, for automake+dejagnu's sake.
+    <varname>$target_alias</varname>.  The single exception is in
+    <filename>configure.ac</filename>, for automake+dejagnu's sake.
   </para>
 </section>
 
 <section xml:id="build_hacking.configure.acinclude"><info><title>The acinclude.m4 layout</title></info>
 
   <para>
-    The nice thing about acinclude.m4/aclocal.m4 is that macros aren't
+    The nice thing about
+    <filename>acinclude.m4</filename>/<filename>aclocal.m4</filename>
+    is that macros aren't
     actually performed/called/expanded/whatever here, just loaded.  So
     we can arrange the contents however we like.  As of this writing,
-    acinclude.m4 is arranged as follows:
+    <filename>acinclude.m4</filename> is arranged as follows:
   </para>
   <programlisting>
     GLIBCXX_CHECK_HOST
@@ -175,7 +179,8 @@ in the build directory starts the build process. The <literal>all</literal> targ
     GLIBCXX_CONFIGURE
   </programlisting>
   <para>
-    All the major variable "discovery" is done here.  CXX, multilibs,
+    All the major variable "discovery" is done here.
+    <varname>CXX</varname>, multilibs,
     etc.
   </para>
   <programlisting>
@@ -263,7 +268,8 @@ in the build directory starts the build process. The <literal>all</literal> targ
 <orderedlist>
  <listitem>
    <para>
-     Builds the call to the <literal>AC_ARG_ENABLE</literal> macro, with --help text
+     Builds the call to the <literal>AC_ARG_ENABLE</literal> macro, with
+     <option>--help</option> text
      properly quoted and aligned.  (Death to changequote!)
    </para>
  </listitem>
@@ -305,21 +311,25 @@ in the build directory starts the build process. The <literal>all</literal> targ
 <itemizedlist>
  <listitem>
    <para>
-     FEATURE is the string that follows --enable.  The results of the
-     test (such as it is) will be in the variable $enable_FEATURE,
-     where FEATURE has been squashed.  Example:
-     <code>[extra-foo]</code>, controlled by the --enable-extra-foo
-     option and stored in $enable_extra_foo.
+     <literal>FEATURE</literal> is the string that follows
+     <option>--enable</option>.  The results of the
+     test (such as it is) will be in the variable
+     <varname>$enable_FEATURE</varname>,
+     where <literal>FEATURE</literal> has been squashed.  Example:
+     <code>[extra-foo]</code>, controlled by the
+     <option>--enable-extra-foo</option>
+     option and stored in <varname>$enable_extra_foo</varname>.
    </para>
  </listitem>
  <listitem>
    <para>
-     DEFAULT is the value to store in $enable_FEATURE if the user does
-     not pass --enable/--disable.  It should be one of the permitted
-     values passed later.  Examples: <code>[yes]</code>, or
-     <code>[bar]</code>, or <code>[$1]</code> (which passes the
-     argument given to the <literal>GLIBCXX_ENABLE_FOO</literal> macro
-     as the default).
+     <literal>DEFAULT</literal> is the value to store in
+     <varname>$enable_FEATURE</varname> if the user does
+     not pass <option>--enable</option>/<option>--disable</option>.
+     It should be one of the permitted values passed later.
+     Examples: <code>[yes]</code>, or <code>[bar]</code>, or
+     <code>[$1]</code> (which passes the argument given to the
+     <literal>GLIBCXX_ENABLE_FOO</literal> macro as the default).
    </para>
    <para>
      For cases where we need to probe for particular models of things,
@@ -329,11 +339,11 @@ in the build directory starts the build process. The <literal>all</literal> targ
  </listitem>
  <listitem>
    <para>
-     HELP-ARG is any text to append to the option string itself in the
-     --help output.  Examples: <code>[]</code> (i.e., an empty string,
-     which appends nothing), <code>[=BAR]</code>, which produces
-     <code>--enable-extra-foo=BAR</code>, and
-     <code>[@&lt;:@=BAR@:&gt;@]</code>, which produces
+     <literal>HELP-ARG</literal> is any text to append to the option string
+     itself in the <option>--help</option> output.  Examples:
+     <code>[]</code> (i.e., an empty string, which appends nothing),
+     <code>[=BAR]</code>, which produces <code>--enable-extra-foo=BAR</code>,
+     and <code>[@&lt;:@=BAR@:&gt;@]</code>, which produces
      <code>--enable-extra-foo[=BAR]</code>.  See the difference?  See
      what it implies to the user?
    </para>
@@ -345,18 +355,19 @@ in the build directory starts the build process. The <literal>all</literal> targ
  </para>
  </listitem>
  <listitem>
-   <para>HELP-STRING is what you think it is.  Do not include the
+   <para><literal>HELP-STRING</literal> is what you think it is.  Do not include the
    "default" text like we used to do; it will be done for you by
-   GLIBCXX_ENABLE.  By convention, these are not full English
-   sentences.  Example: [turn on extra foo]
+   <literal>GLIBCXX_ENABLE</literal>.  By convention, these are not full English
+   sentences.  Example: <literal>[turn on extra foo]</literal>
    </para>
  </listitem>
 </itemizedlist>
 
 <para>
   With no other arguments, only the standard autoconf patterns are
-  allowed: "<code>--{enable,disable}-foo[={yes,no}]</code>" The
-  $enable_FEATURE variable is guaranteed to equal either "yes" or "no"
+  allowed: "<option>--{enable,disable}-foo[={yes,no}]</option>" The
+  <varname>$enable_FEATURE</varname> variable is guaranteed to equal
+  either "<literal>yes</literal>" or "<literal>no</literal>"
   after the macro.  If the user tries to pass something else, an
   explanatory error message will be given, and configure will halt.
 </para>
@@ -365,11 +376,14 @@ in the build directory starts the build process. The <literal>all</literal> targ
   The second signature takes a fifth argument, "<code>[permit
   a | b | c | ...]</code>"
   This allows <emphasis>a</emphasis> or <emphasis>b</emphasis> or
-  ... after the equals sign in the option, and $enable_FEATURE is
+  ... after the equals sign in the option, and
+  <varname>$enable_FEATURE</varname> is
   guaranteed to equal one of them after the macro.  Note that if you
-  want to allow plain --enable/--disable with no "=whatever", you must
-  include "yes" and "no" in the list of permitted values.  Also note
-  that whatever you passed as DEFAULT must be in the list.  If the
+  want to allow plain <option>--enable</option>/<option>--disable</option>
+  with no "<literal>=whatever</literal>", you must
+  include "<literal>yes</literal>" and "<literal>no</literal>" in the
+  list of permitted values.  Also note that whatever you passed as
+  <literal>DEFAULT</literal> must be in the list.  If the
   user tries to pass something not on the list, a semi-explanatory
   error message will be given, and configure will halt.  Example:
   <code>[permit generic|gnu|ieee_1003.1-2001|yes|no|auto]</code>
@@ -380,8 +394,8 @@ in the build directory starts the build process. The <literal>all</literal> targ
   code to execute if the user actually passes the enable/disable
   option.  (If the user does not, the default is used.  Duh.)  No
   argument checking at all is done in this signature.  See
-  GLIBCXX_ENABLE_CXX_FLAGS for an example of handling, and an error
-  message.
+  <literal>GLIBCXX_ENABLE_CXX_FLAGS</literal> for an example of handling,
+  and an error message.
 </para>
 
 </section>
@@ -430,7 +444,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
    <para>
      Generates a libtool convenience library,
      <filename>libc++98convenience</filename> with language-support
-     routines. Uses the <literal>-std=gnu++98</literal> dialect.
+     routines. Uses the <option>-std=gnu++98</option> dialect.
    </para>
  </listitem>
  <listitem>
@@ -440,7 +454,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
    <para>
      Generates a libtool convenience library,
      <filename>libc++11convenience</filename> with language-support
-     routines. Uses the <literal>-std=gnu++11</literal> dialect.
+     routines. Uses the <option>-std=gnu++11</option> dialect.
    </para>
  </listitem>
  <listitem>
