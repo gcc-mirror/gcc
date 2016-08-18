@@ -207,7 +207,7 @@ make_phi_node (tree var, int len)
 
 /* We no longer need PHI, release it so that it may be reused.  */
 
-void
+static void
 release_phi_node (gimple *phi)
 {
   size_t bucket;

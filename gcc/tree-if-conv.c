@@ -326,6 +326,7 @@ ifc_temp_var (tree type, tree expr, gimple_stmt_iterator *gsi)
 {
   tree new_name = make_temp_ssa_name (type, NULL, "_ifc_");
   gimple *stmt = gimple_build_assign (new_name, expr);
+  gimple_set_vuse (stmt, gimple_vuse (gsi_stmt (*gsi)));
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return new_name;
 }
@@ -1946,12 +1947,14 @@ predicate_all_scalar_phis (struct loop *loop)
       while (!gsi_end_p (phi_gsi))
 	{
 	  phi = phi_gsi.phi ();
-	  predicate_scalar_phi (phi, &gsi);
-	  release_phi_node (phi);
-	  gsi_next (&phi_gsi);
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    gsi_next (&phi_gsi);
+	  else
+	    {
+	      predicate_scalar_phi (phi, &gsi);
+	      remove_phi_node (&phi_gsi, false);
+	    }
 	}
-
-      set_phi_nodes (bb, NULL);
     }
 }
 
@@ -2218,11 +2221,18 @@ predicate_mem_writes (loop_p loop)
 		  = gimple_build_call_internal (IFN_MASK_LOAD, 3, addr,
 						ptr, mask);
 		gimple_call_set_lhs (new_stmt, lhs);
+		gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 	      }
 	    else
-	      new_stmt
-		= gimple_build_call_internal (IFN_MASK_STORE, 4, addr, ptr,
-					      mask, rhs);
+	      {
+		new_stmt
+		  = gimple_build_call_internal (IFN_MASK_STORE, 4, addr, ptr,
+						  mask, rhs);
+		gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+		gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+	      }
+
 	    gsi_replace (&gsi, new_stmt, true);
 	  }
 	else if (gimple_vdef (stmt))
@@ -2361,6 +2371,20 @@ combine_blocks (struct loop *loop)
     }
 
   merge_target_bb = loop->header;
+
+  /* Get at the virtual def valid for uses starting at the first block
+     we merge into the header.  Without a virtual PHI the loop has the
+     same virtual use on all stmts.  */
+  gphi *vphi = get_virtual_phi (loop->header);
+  tree last_vdef = NULL_TREE;
+  if (vphi)
+    {
+      last_vdef = gimple_phi_result (vphi);
+      for (gimple_stmt_iterator gsi = gsi_start_bb (loop->header);
+	   ! gsi_end_p (gsi); gsi_next (&gsi))
+	if (gimple_vdef (gsi_stmt (gsi)))
+	  last_vdef = gimple_vdef (gsi_stmt (gsi));
+    }
   for (i = 1; i < orig_loop_num_nodes; i++)
     {
       gimple_stmt_iterator gsi;
@@ -2371,6 +2395,24 @@ combine_blocks (struct loop *loop)
       if (bb == exit_bb || bb == loop->latch)
 	continue;
 
+      /* We release virtual PHIs late because we have to propagate them
+         out using the current VUSE.  The def might be the one used
+	 after the loop.  */
+      vphi = get_virtual_phi (bb);
+      if (vphi)
+	{
+	  imm_use_iterator iter;
+	  use_operand_p use_p;
+	  gimple *use_stmt;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, gimple_phi_result (vphi))
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, last_vdef);
+	    }
+	  gsi = gsi_for_stmt (vphi); 
+	  remove_phi_node (&gsi, true);
+	}
+
       /* Make stmts member of loop->header and clear range info from all stmts
 	 in BB which is now no longer executed conditional on a predicate we
 	 could have derived it from.  */
@@ -2378,6 +2420,16 @@ combine_blocks (struct loop *loop)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  gimple_set_bb (stmt, merge_target_bb);
+	  /* Update virtual operands.  */
+	  if (last_vdef)
+	    {
+	      use_operand_p use_p = ssa_vuse_operand (stmt);
+	      if (use_p
+		  && USE_FROM_PTR (use_p) != last_vdef)
+		SET_USE (use_p, last_vdef);
+	      if (gimple_vdef (stmt))
+		last_vdef = gimple_vdef (stmt);
+	    }
 	  if (predicated[i])
 	    {
 	      ssa_op_iter i;
@@ -2389,7 +2441,7 @@ combine_blocks (struct loop *loop)
 
       /* Update stmt list.  */
       last = gsi_last_bb (merge_target_bb);
-      gsi_insert_seq_after (&last, bb_seq (bb), GSI_NEW_STMT);
+      gsi_insert_seq_after_without_update (&last, bb_seq (bb), GSI_NEW_STMT);
       set_bb_seq (bb, NULL);
 
       delete_basic_block (bb);
@@ -2399,9 +2451,29 @@ combine_blocks (struct loop *loop)
      This reduces the number of basic blocks to two, to please the
      vectorizer that handles only loops with two nodes.  */
   if (exit_bb
-      && exit_bb != loop->header
-      && can_merge_blocks_p (loop->header, exit_bb))
-    merge_blocks (loop->header, exit_bb);
+      && exit_bb != loop->header)
+    {
+      /* We release virtual PHIs late because we have to propagate them
+         out using the current VUSE.  The def might be the one used
+	 after the loop.  */
+      vphi = get_virtual_phi (exit_bb);
+      if (vphi)
+	{
+	  imm_use_iterator iter;
+	  use_operand_p use_p;
+	  gimple *use_stmt;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, gimple_phi_result (vphi))
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, last_vdef);
+	    }
+	  gimple_stmt_iterator gsi = gsi_for_stmt (vphi); 
+	  remove_phi_node (&gsi, true);
+	}
+
+      if (can_merge_blocks_p (loop->header, exit_bb))
+	merge_blocks (loop->header, exit_bb);
+    }
 
   free (ifc_bbs);
   ifc_bbs = NULL;
@@ -2669,8 +2741,6 @@ tree_if_conversion (struct loop *loop)
   ifcvt_local_dce (loop->header);
 
   todo |= TODO_cleanup_cfg;
-  mark_virtual_operands_for_renaming (cfun);
-  todo |= TODO_update_ssa_only_virtuals;
 
  cleanup:
   if (ifc_bbs)
