@@ -1110,6 +1110,11 @@ extern time_t cb_get_source_date_epoch (cpp_reader *pfile);
    __TIME__ can store.  */
 #define MAX_SOURCE_DATE_EPOCH HOST_WIDE_INT_C (253402300799)
 
+/* Callback for libcpp for offering spelling suggestions for misspelled
+   directives.  */
+extern const char *cb_get_suggestion (cpp_reader *, const char *,
+				      const char *const *);
+
 extern GTY(()) string_concat_db *g_string_concat_db;
 
 /* libcpp can calculate location information about a range of characters

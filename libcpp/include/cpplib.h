@@ -597,6 +597,9 @@ struct cpp_callbacks
 
   /* Callback to parse SOURCE_DATE_EPOCH from environment.  */
   time_t (*get_source_date_epoch) (cpp_reader *);
+
+  /* Callback for providing suggestions for misspelled directives.  */
+  const char *(*get_suggestion) (cpp_reader *, const char *, const char *const *);
 };
 
 #ifdef VMS
@@ -1064,6 +1067,11 @@ extern bool cpp_warning_with_line_syshdr (cpp_reader *, int, source_location,
 
 extern bool cpp_error_at (cpp_reader * pfile, int level,
 			  source_location src_loc, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_4;
+
+extern bool cpp_error_at_richloc (cpp_reader * pfile, int level,
+				  rich_location *richloc, const char *msgid,
+				  ...)
   ATTRIBUTE_PRINTF_4;
 
 /* In lex.c */
