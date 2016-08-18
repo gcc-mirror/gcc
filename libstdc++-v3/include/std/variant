@@ -1,0 +1,1360 @@
+// <variant> -*- C++ -*-
+
+// Copyright (C) 2016 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file variant
+ *  This is the <variant> C++ Library header.
+ */
+
+#ifndef _GLIBCXX_VARIANT
+#define _GLIBCXX_VARIANT 1
+
+#pragma GCC system_header
+
+#if __cplusplus <= 201402L
+# include <bits/c++17_warning.h>
+#else
+
+#include <type_traits>
+#include <utility>
+#include <bits/enable_special_members.h>
+#include <bits/uses_allocator.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename... _Types> class tuple;
+  template<typename... _Types> class variant;
+  template <typename> struct hash;
+
+  template<typename _Variant>
+    struct variant_size;
+
+  template<typename _Variant>
+    struct variant_size<const _Variant> : variant_size<_Variant> {};
+
+  template<typename _Variant>
+    struct variant_size<volatile _Variant> : variant_size<_Variant> {};
+
+  template<typename _Variant>
+    struct variant_size<const volatile _Variant> : variant_size<_Variant> {};
+
+  template<typename... _Types>
+    struct variant_size<variant<_Types...>>
+    : std::integral_constant<size_t, sizeof...(_Types)> {};
+
+  template<typename _Variant>
+    constexpr size_t variant_size_v = variant_size<_Variant>::value;
+
+  template<size_t _Np, typename _Variant>
+    struct variant_alternative;
+
+  template<size_t _Np, typename _First, typename... _Rest>
+    struct variant_alternative<_Np, variant<_First, _Rest...>>
+    : variant_alternative<_Np-1, variant<_Rest...>> {};
+
+  template<typename _First, typename... _Rest>
+    struct variant_alternative<0, variant<_First, _Rest...>>
+    { using type = _First; };
+
+  template<size_t _Np, typename _Variant>
+    using variant_alternative_t =
+      typename variant_alternative<_Np, _Variant>::type;
+
+  constexpr size_t variant_npos = -1;
+
+namespace __detail
+{
+namespace __variant
+{
+  // Returns the first apparence of _Tp in _Types.
+  // Returns sizeof...(_Types) if _Tp is not in _Types.
+  template<typename _Tp, typename... _Types>
+    struct __index_of : std::integral_constant<size_t, 0> {};
+
+  template<typename _Tp, typename... _Types>
+    constexpr size_t __index_of_v = __index_of<_Tp, _Types...>::value;
+
+  template<typename _Tp, typename _First, typename... _Rest>
+    struct __index_of<_Tp, _First, _Rest...> :
+      std::integral_constant<size_t, is_same_v<_Tp, _First>
+	? 0 : __index_of_v<_Tp, _Rest...> + 1> {};
+
+  // Extract _From's qualifiers and references and apply it to _To.
+  // __reserved_type_map<const int&, char> is const char&.
+  template<typename _From, typename _To>
+    struct __reserved_type_map_impl
+    { using type = _To; };
+
+  template<typename _From, typename _To>
+    using __reserved_type_map =
+      typename __reserved_type_map_impl<_From, _To>::type;
+
+  template<typename _From, typename _To>
+    struct __reserved_type_map_impl<_From&, _To>
+    { using type = add_lvalue_reference_t<__reserved_type_map<_From, _To>>; };
+
+  template<typename _From, typename _To>
+    struct __reserved_type_map_impl<_From&&, _To>
+    { using type = add_rvalue_reference_t<__reserved_type_map<_From, _To>>; };
+
+  template<typename _From, typename _To>
+    struct __reserved_type_map_impl<const _From, _To>
+    { using type = add_const_t<__reserved_type_map<_From, _To>>; };
+
+  template<typename _From, typename _To>
+    struct __reserved_type_map_impl<volatile _From, _To>
+    { using type = add_volatile_t<__reserved_type_map<_From, _To>>; };
+
+  template<typename _From, typename _To>
+    struct __reserved_type_map_impl<const volatile _From, _To>
+    { using type = add_cv_t<__reserved_type_map<_From, _To>>; };
+
+  // Stores a reference alternative as a... well, reference.
+  template<typename _Reference>
+    struct _Reference_storage
+    {
+      static_assert(is_reference_v<_Reference>,
+		    "BUG: _Reference should be a reference");
+
+      _Reference_storage(_Reference __ref) noexcept : _M_storage(__ref) { }
+
+      operator _Reference() noexcept
+      { return static_cast<_Reference>(_M_storage); }
+
+      _Reference _M_storage;
+    };
+
+  // Stores a void alternative, because it is not a regular type.
+  template<typename _Void>
+    struct _Void_storage { };
+
+  // Map from the alternative type to a non-qualified storage type.
+  template<typename _Alternative, typename = void>
+    struct __storage_type
+    { using type = _Alternative; };
+
+  template<typename _Alternative>
+    struct __storage_type<_Alternative,
+			  enable_if_t<is_reference_v<_Alternative>>>
+    { using type = _Reference_storage<_Alternative>; };
+
+  template<typename _Alternative>
+    struct __storage_type<_Alternative, enable_if_t<is_void_v<_Alternative>>>
+    { using type = _Void_storage<_Alternative>; };
+
+  template<typename _Type>
+    using __storage = typename __storage_type<_Type>::type;
+
+  template<typename _Type, bool __is_literal = std::is_literal_type_v<_Type>>
+    struct _Uninitialized;
+
+  template<typename _Type>
+    struct _Uninitialized<_Type, true>
+    {
+      constexpr _Uninitialized() = default;
+
+      template<typename... _Args>
+      constexpr _Uninitialized(in_place_index_t<0>, _Args&&... __args)
+      : _M_storage(std::forward<_Args>(__args)...)
+      { }
+
+      _Type _M_storage;
+    };
+
+  template<typename _Type>
+    struct _Uninitialized<_Type, false>
+    {
+      constexpr _Uninitialized() = default;
+
+      template<typename... _Args>
+      constexpr _Uninitialized(in_place_index_t<0>, _Args&&... __args)
+      { ::new (&_M_storage) _Type(std::forward<_Args>(__args)...); }
+
+      typename std::aligned_storage<sizeof(_Type), alignof(_Type)>::type
+	  _M_storage;
+    };
+
+  // Reverse mapping of __storage_type.
+  template<typename _Storage_type>
+    struct __alternative_type
+    {
+      static_assert(!is_reference_v<_Storage_type>,
+		    "BUG: _Storage_type should not be reference");
+      using type = _Storage_type;
+    };
+
+  template<typename _Reference>
+    struct __alternative_type<_Reference_storage<_Reference>>
+    { using type = _Reference; };
+
+  template<typename _Void>
+    struct __alternative_type<_Void_storage<_Void>>
+    { using type = _Void; };
+
+  // Given a qualified storage type, return the desired reference.
+  // The qualified storage type is supposed to carry the variant object's
+  // qualifications and reference information, and the designated alternative's
+  // storage type.
+  // Returns the qualification-collapsed alternative references.
+  //
+  // For example, __get_alternative<_Reference_storage<int&&>&> returns int&.
+  template<typename _Qualified_storage>
+    decltype(auto)
+    __get_alternative(void* __ptr)
+    {
+      using _Storage = decay_t<_Qualified_storage>;
+      using _Alternative = typename __alternative_type<_Storage>::type;
+      return __reserved_type_map<_Qualified_storage, _Alternative>(
+	*static_cast<_Storage*>(__ptr));
+    }
+
+  // Various functions as "vtable" entries, where those vtables are used by
+  // polymorphic operations.
+  template<typename _Lhs, typename _Rhs>
+    constexpr void
+    __erased_ctor(void* __lhs, void* __rhs)
+    { ::new (__lhs) decay_t<_Lhs>(__get_alternative<_Rhs>(__rhs)); }
+
+  template<typename _Alloc, typename _Lhs, typename _Rhs>
+    constexpr void
+    __erased_use_alloc_ctor(const _Alloc& __a, void* __lhs, void* __rhs)
+    {
+      __uses_allocator_construct(__a, static_cast<decay_t<_Lhs>*>(__lhs),
+				 __get_alternative<_Rhs>(__rhs));
+    }
+
+  // TODO: Find a potential chance to reuse this accross the project.
+  template<typename _Tp>
+    constexpr void
+    __erased_dtor(void* __ptr)
+    {
+      using _Storage = decay_t<_Tp>;
+      static_cast<_Storage*>(__ptr)->~_Storage();
+    }
+
+  template<typename _Lhs, typename _Rhs>
+    constexpr void
+    __erased_assign(void* __lhs, void* __rhs)
+    { __get_alternative<_Lhs>(__lhs) = __get_alternative<_Rhs>(__rhs); }
+
+  template<typename _Lhs, typename _Rhs>
+    constexpr void
+    __erased_swap(void* __lhs, void* __rhs)
+    {
+      using std::swap;
+      swap(__get_alternative<_Lhs>(__lhs), __get_alternative<_Rhs>(__rhs));
+    }
+
+  template<typename _Lhs, typename _Rhs>
+    constexpr bool
+    __erased_equal_to(void* __lhs, void* __rhs)
+    { return __get_alternative<_Lhs>(__lhs) == __get_alternative<_Rhs>(__rhs); }
+
+  template<typename _Lhs, typename _Rhs>
+    constexpr bool
+    __erased_less_than(void* __lhs, void* __rhs)
+    { return __get_alternative<_Lhs>(__lhs) < __get_alternative<_Rhs>(__rhs); }
+
+  template<typename _Tp>
+    constexpr size_t
+    __erased_hash(void* __t)
+    { return std::hash<decay_t<_Tp>>{}(__get_alternative<_Tp>(__t)); }
+
+  template<typename... _Types>
+    struct _Variant_base;
+
+  template<typename... _Types>
+    struct _Variant_storage
+    { constexpr _Variant_storage() = default; };
+
+  // Use recursive unions to implement a trivially destructible variant.
+  template<typename _First, typename... _Rest>
+    struct _Variant_storage<_First, _Rest...>
+    {
+      constexpr _Variant_storage() = default;
+
+      template<typename... _Args>
+	constexpr _Variant_storage(in_place_index_t<0>, _Args&&... __args)
+	: _M_first(in_place<0>, forward<_Args>(__args)...)
+	{ }
+
+      template<size_t _Np, typename... _Args,
+	       typename = enable_if_t<0 < _Np && _Np < sizeof...(_Rest) + 1>>
+	constexpr _Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
+	: _M_rest(in_place<_Np - 1>, forward<_Args>(__args)...)
+	{ }
+
+      ~_Variant_storage() = default;
+
+      constexpr void*
+      _M_storage() const
+      {
+	return const_cast<void*>(
+	  static_cast<const void*>(&_M_first._M_storage));
+      }
+
+      union
+      {
+	_Uninitialized<__storage<_First>> _M_first;
+	_Variant_storage<_Rest...> _M_rest;
+      };
+    };
+
+  template<typename _Derived, bool __is_trivially_destructible>
+    struct _Dtor_mixin
+    {
+      ~_Dtor_mixin()
+      { static_cast<_Derived*>(this)->_M_destroy(); }
+    };
+
+  template<typename _Derived>
+    struct _Dtor_mixin<_Derived, true>
+    {
+      ~_Dtor_mixin() = default;
+    };
+
+  // Helps SFINAE on special member functions. Otherwise it can live in variant
+  // class.
+  template<typename... _Types>
+    struct _Variant_base :
+      _Variant_storage<_Types...>,
+      _Dtor_mixin<_Variant_base<_Types...>,
+		  __and_<std::is_trivially_destructible<_Types>...>::value>
+    {
+      using _Storage = _Variant_storage<_Types...>;
+
+      constexpr
+      _Variant_base()
+      noexcept(is_nothrow_default_constructible_v<
+		 variant_alternative_t<0, variant<_Types...>>>)
+      : _Variant_base(in_place<0>) { }
+
+      _Variant_base(const _Variant_base& __rhs)
+      : _Storage(), _M_index(__rhs._M_index)
+      {
+	if (__rhs._M_valid())
+	  {
+	    static constexpr void (*_S_vtable[])(void*, void*) =
+	      { &__erased_ctor<__storage<_Types>&,
+			       const __storage<_Types>&>... };
+	    _S_vtable[__rhs._M_index](_M_storage(), __rhs._M_storage());
+	  }
+      }
+
+      _Variant_base(_Variant_base&& __rhs)
+      noexcept(__and_<is_nothrow_move_constructible<_Types>...>::value)
+      : _Storage(), _M_index(__rhs._M_index)
+      {
+	if (__rhs._M_valid())
+	  {
+	    static constexpr void (*_S_vtable[])(void*, void*) =
+	      { &__erased_ctor<__storage<_Types>&, __storage<_Types>&&>... };
+	    _S_vtable[__rhs._M_index](_M_storage(), __rhs._M_storage());
+	  }
+      }
+
+      template<size_t _Np, typename... _Args>
+	constexpr explicit
+	_Variant_base(in_place_index_t<_Np> __i, _Args&&... __args)
+	: _Storage(__i, forward<_Args>(__args)...), _M_index(_Np)
+	{ }
+
+      template<typename _Alloc>
+	_Variant_base(const _Alloc& __a, const _Variant_base& __rhs)
+	: _Storage(), _M_index(__rhs._M_index)
+	{
+	  if (__rhs._M_valid())
+	    {
+	      static constexpr void
+	      (*_S_vtable[])(const _Alloc&, void*, void*) =
+		{ &__erased_use_alloc_ctor<_Alloc, __storage<_Types>&,
+					   const __storage<_Types>&>... };
+	      _S_vtable[__rhs._M_index](__a, _M_storage(), __rhs._M_storage());
+	    }
+	}
+
+      template<typename _Alloc>
+	_Variant_base(const _Alloc& __a, _Variant_base&& __rhs)
+	: _Storage(), _M_index(__rhs._M_index)
+	{
+	  if (__rhs._M_valid())
+	    {
+	      static constexpr void
+	      (*_S_vtable[])(const _Alloc&, void*, void*) =
+		{ &__erased_use_alloc_ctor<_Alloc, __storage<_Types>&,
+					   __storage<_Types>&&>... };
+	      _S_vtable[__rhs._M_index](__a, _M_storage(), __rhs._M_storage());
+	    }
+	}
+
+      template<typename _Alloc, size_t _Np, typename... _Args>
+	constexpr explicit
+	_Variant_base(const _Alloc& __a, in_place_index_t<_Np>,
+		      _Args&&... __args)
+	: _Storage(), _M_index(_Np)
+	{
+	  using _Storage =
+	    __storage<variant_alternative_t<_Np, variant<_Types...>>>;
+	  __uses_allocator_construct(__a, static_cast<_Storage*>(_M_storage()),
+				     forward<_Args>(__args)...);
+	  __glibcxx_assert(_M_index == _Np);
+	}
+
+      _Variant_base&
+      operator=(const _Variant_base& __rhs)
+      {
+	if (_M_index == __rhs._M_index)
+	  {
+	    if (__rhs._M_valid())
+	      {
+		static constexpr void (*_S_vtable[])(void*, void*) =
+		  { &__erased_assign<__storage<_Types>&,
+				     const __storage<_Types>&>... };
+		_S_vtable[__rhs._M_index](_M_storage(), __rhs._M_storage());
+	      }
+	  }
+	else
+	  {
+	    _Variant_base __tmp(__rhs);
+	    this->~_Variant_base();
+	    __try
+	      {
+		::new (this) _Variant_base(std::move(__tmp));
+	      }
+	    __catch (...)
+	      {
+		_M_index = variant_npos;
+		__throw_exception_again;
+	      }
+	  }
+	__glibcxx_assert(_M_index == __rhs._M_index);
+	return *this;
+      }
+
+      _Variant_base&
+      operator=(_Variant_base&& __rhs)
+      noexcept(__and_<is_nothrow_move_constructible<_Types>...,
+		      is_nothrow_move_assignable<_Types>...>::value)
+      {
+	if (_M_index == __rhs._M_index)
+	  {
+	    if (__rhs._M_valid())
+	      {
+		static constexpr void (*_S_vtable[])(void*, void*) =
+		  { &__erased_assign<__storage<_Types>&,
+				     __storage<_Types>&&>... };
+		_S_vtable[__rhs._M_index](_M_storage(), __rhs._M_storage());
+	      }
+	  }
+	else
+	  {
+	    this->~_Variant_base();
+	    __try
+	      {
+		::new (this) _Variant_base(std::move(__rhs));
+	      }
+	    __catch (...)
+	      {
+		_M_index = variant_npos;
+		__throw_exception_again;
+	      }
+	  }
+	return *this;
+      }
+
+      void _M_destroy()
+      {
+	if (_M_valid())
+	  {
+	    static constexpr void (*_S_vtable[])(void*) =
+	      { &__erased_dtor<__storage<_Types>&>... };
+	    _S_vtable[this->_M_index](_M_storage());
+	  }
+      }
+
+      constexpr void*
+      _M_storage() const
+      { return _Storage::_M_storage(); }
+
+      constexpr bool
+      _M_valid() const noexcept
+      { return _M_index != variant_npos; }
+
+      size_t _M_index;
+    };
+
+  // For how many times does _Tp appear in _Tuple?
+  template<typename _Tp, typename _Tuple>
+    struct __tuple_count;
+
+  template<typename _Tp, typename _Tuple>
+    constexpr size_t __tuple_count_v = __tuple_count<_Tp, _Tuple>::value;
+
+  template<typename _Tp, typename... _Types>
+    struct __tuple_count<_Tp, tuple<_Types...>>
+    : integral_constant<size_t, 0> { };
+
+  template<typename _Tp, typename _First, typename... _Rest>
+    struct __tuple_count<_Tp, tuple<_First, _Rest...>>
+    : integral_constant<
+	size_t,
+	__tuple_count_v<_Tp, tuple<_Rest...>> + is_same_v<_Tp, _First>> { };
+
+  // TODO: Reuse this in <tuple> ?
+  template<typename _Tp, typename... _Types>
+    constexpr bool __exactly_once = __tuple_count_v<_Tp, tuple<_Types...>> == 1;
+
+  // Takes _Types and create an overloaded _S_fun for each type.
+  // If a type appears more than once in _Types, create only one overload.
+  template<typename... _Types>
+    struct __overload_set
+    { static void _S_fun(); };
+
+  template<typename _First, typename... _Rest>
+    struct __overload_set<_First, _Rest...> : __overload_set<_Rest...>
+    {
+      using __overload_set<_Rest...>::_S_fun;
+      static integral_constant<size_t, sizeof...(_Rest)> _S_fun(_First);
+    };
+
+  template<typename... _Rest>
+    struct __overload_set<void, _Rest...> : __overload_set<_Rest...>
+    {
+      using __overload_set<_Rest...>::_S_fun;
+    };
+
+  // Helper for variant(_Tp&&) and variant::operator=(_Tp&&).
+  // __accepted_index maps the arbitrary _Tp to an alternative type in _Variant.
+  template<typename _Tp, typename _Variant, typename = void>
+    struct __accepted_index
+    { static constexpr size_t value = variant_npos; };
+
+  template<typename _Tp, typename... _Types>
+    struct __accepted_index<
+      _Tp, variant<_Types...>,
+      decltype(__overload_set<_Types...>::_S_fun(std::declval<_Tp>()),
+	       std::declval<void>())>
+    {
+      static constexpr size_t value = sizeof...(_Types) - 1
+	- decltype(__overload_set<_Types...>::
+		   _S_fun(std::declval<_Tp>()))::value;
+    };
+
+  // Returns the raw storage for __v.
+  template<typename _Variant>
+    void* __get_storage(_Variant&& __v)
+    { return __v._M_storage(); }
+
+  // Returns the reference to the desired alternative.
+  // It is as unsafe as a reinterpret_cast.
+  template<typename _Tp, typename _Variant>
+    decltype(auto) __access(_Variant&& __v)
+    {
+      return __get_alternative<__reserved_type_map<_Variant&&, __storage<_Tp>>>(
+	__get_storage(forward<_Variant>(__v)));
+    }
+
+  // A helper used to create variadic number of _To types.
+  template<typename _From, typename _To>
+    using _To_type = _To;
+
+  // Call the actual visitor.
+  // _Args are qualified storage types.
+  template<typename _Visitor, typename... _Args>
+    decltype(auto) __visit_invoke(_Visitor&& __visitor,
+				  _To_type<_Args, void*>... __ptrs)
+    {
+      return forward<_Visitor>(__visitor)(__get_alternative<_Args>(__ptrs)...);
+    }
+
+  // Used for storing multi-dimensional vtable.
+  template<typename _Tp, size_t... _Dimensions>
+    struct _Multi_array
+    {
+      constexpr const _Tp&
+      _M_access() const
+      { return _M_data; }
+
+      _Tp _M_data;
+    };
+
+  template<typename _Tp, size_t __first, size_t... __rest>
+    struct _Multi_array<_Tp, __first, __rest...>
+    {
+      template<typename... _Args>
+	constexpr const _Tp&
+	_M_access(size_t __first_index, _Args... __rest_indices) const
+	{ return _M_arr[__first_index]._M_access(__rest_indices...); }
+
+      _Multi_array<_Tp, __rest...> _M_arr[__first];
+    };
+
+  // Creates a multi-dimensional vtable recursively.
+  // _Variant_tuple is initially the input from visit(), and gets gradually
+  // consumed.
+  // _Arg_tuple is enumerated alternative sequence, represented by a
+  // qualified storage.
+  //
+  // For example,
+  // visit([](auto, auto){},
+  //       variant<int, char>(),
+  //       variant<float, double, long double>())
+  // will trigger instantiations of:
+  // __gen_vtable_impl<_Multi_array<void(*)(void*, void*), 2, 3>,
+  //                   tuple<variant<int, char>,
+  //                         variant<float, double, long double>>,
+  //                   tuple<>>
+  //   __gen_vtable_impl<_Multi_array<void(*)(void*, void*), 3>,
+  //                     tuple<variant<float, double, long double>>,
+  //                     tuple<int>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
+  //                       tuple<>,
+  //                       tuple<int, float>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
+  //                       tuple<>,
+  //                       tuple<int, double>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
+  //                       tuple<>,
+  //                       tuple<int, long double>>
+  //   __gen_vtable_impl<_Multi_array<void(*)(void*, void*), 3>,
+  //                     tuple<variant<float, double, long double>>,
+  //                     tuple<char>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
+  //                       tuple<>,
+  //                       tuple<char, float>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
+  //                       tuple<>,
+  //                       tuple<char, double>>
+  //     __gen_vtable_impl<_Multi_array<void(*)(void*, void*)>,
+  //                       tuple<>,
+  //                       tuple<char, long double>>
+  // The returned multi-dimensional vtable can be fast accessed by the visitor
+  // using index calculation.
+  template<typename _Array_type, typename _Variant_tuple, typename _Arg_tuple>
+    struct __gen_vtable_impl;
+
+  template<typename _Array_type, typename _First, typename... _Rest,
+	   typename... _Args>
+    struct __gen_vtable_impl<_Array_type, tuple<_First, _Rest...>,
+			     tuple<_Args...>>
+    {
+      static constexpr _Array_type
+      _S_apply()
+      {
+	_Array_type __vtable{};
+	_S_apply_all_alts(
+	  __vtable, make_index_sequence<variant_size_v<decay_t<_First>>>());
+	return __vtable;
+      }
+
+      template<size_t... __indices>
+	static constexpr void
+	_S_apply_all_alts(_Array_type& __vtable, index_sequence<__indices...>)
+	{ (_S_apply_single_alt<__indices>(__vtable._M_arr[__indices]), ...); }
+
+      template<size_t __index>
+	static constexpr void
+	_S_apply_single_alt(auto& __element)
+	{
+	  using _Alternative = variant_alternative_t<__index, decay_t<_First>>;
+	  using _Qualified_storage = __reserved_type_map<
+	    _First, __storage<_Alternative>>;
+	  __element = __gen_vtable_impl<
+	    decay_t<decltype(__element)>, tuple<_Rest...>,
+	    tuple<_Args..., _Qualified_storage>>::_S_apply();
+	}
+    };
+
+  template<typename _Result_type, typename _Visitor, typename... _Args>
+    struct __gen_vtable_impl<
+      _Multi_array<_Result_type (*)(_Visitor, _To_type<_Args, void*>...)>,
+		   tuple<>, tuple<_Args...>>
+    {
+      using _Array_type =
+	_Multi_array<_Result_type (*)(_Visitor&&, _To_type<_Args, void*>...)>;
+
+      static constexpr auto
+      _S_apply()
+      { return _Array_type{&__visit_invoke<_Visitor, _Args...>}; }
+    };
+
+  template<typename _Result_type, typename _Visitor, typename... _Variants>
+    struct __gen_vtable
+    {
+      using _Func_ptr =
+	_Result_type (*)(_Visitor&&, _To_type<_Variants, void*>...);
+      using _Array_type =
+	_Multi_array<_Func_ptr, variant_size_v<decay_t<_Variants>>...>;
+
+      static constexpr _Array_type
+      _S_apply()
+      {
+	return __gen_vtable_impl<
+	  _Array_type, tuple<_Variants...>, tuple<>>::_S_apply();
+      }
+    };
+
+} // namespace __variant
+} // namespace __detail
+
+  template<typename _Tp, typename... _Types>
+    inline constexpr bool holds_alternative(const variant<_Types...>& __v)
+    noexcept
+    {
+      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+		    "T should occur for exactly once in alternatives");
+      return __v.index() == __detail::__variant::__index_of_v<_Tp, _Types...>;
+    }
+
+  template<size_t _Np, typename... _Types>
+    variant_alternative_t<_Np, variant<_Types...>>&
+    get(variant<_Types...>&);
+
+  template<size_t _Np, typename... _Types>
+    variant_alternative_t<_Np, variant<_Types...>>&&
+    get(variant<_Types...>&&);
+
+  template<size_t _Np, typename... _Types>
+    variant_alternative_t<_Np, variant<_Types...>> const&
+    get(const variant<_Types...>&);
+
+  template<size_t _Np, typename... _Types>
+    variant_alternative_t<_Np, variant<_Types...>> const&&
+    get(const variant<_Types...>&&);
+
+  template<typename _Tp, typename... _Types>
+    inline _Tp& get(variant<_Types...>& __v)
+    {
+      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+		    "T should occur for exactly once in alternatives");
+      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+    }
+
+  template<typename _Tp, typename... _Types>
+    inline _Tp&& get(variant<_Types...>&& __v)
+    {
+      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+		    "T should occur for exactly once in alternatives");
+      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+	std::move(__v));
+    }
+
+  template<typename _Tp, typename... _Types>
+    inline const _Tp& get(const variant<_Types...>& __v)
+    {
+      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+		    "T should occur for exactly once in alternatives");
+      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+    }
+
+  template<typename _Tp, typename... _Types>
+    inline const _Tp&& get(const variant<_Types...>&& __v)
+    {
+      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+		    "T should occur for exactly once in alternatives");
+      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+	std::move(__v));
+    }
+
+  template<size_t _Np, typename... _Types>
+    inline add_pointer_t<variant_alternative_t<_Np, variant<_Types...>>>
+    get_if(variant<_Types...>* __ptr) noexcept
+    {
+      using _Alternative_type = variant_alternative_t<_Np, variant<_Types...>>;
+      static_assert(_Np < sizeof...(_Types),
+		    "The index should be in [0, number of alternatives)");
+      static_assert(!is_void_v<_Alternative_type>, "_Tp should not be void");
+      if (__ptr && __ptr->index() == _Np)
+	return &__detail::__variant::__access<_Alternative_type>(*__ptr);
+      return nullptr;
+    }
+
+  template<size_t _Np, typename... _Types>
+    inline add_pointer_t<const variant_alternative_t<_Np, variant<_Types...>>>
+    get_if(const variant<_Types...>* __ptr) noexcept
+    {
+      using _Alternative_type = variant_alternative_t<_Np, variant<_Types...>>;
+      static_assert(_Np < sizeof...(_Types),
+		    "The index should be in [0, number of alternatives)");
+      static_assert(!is_void_v<_Alternative_type>, "_Tp should not be void");
+      if (__ptr && __ptr->index() == _Np)
+	return &__detail::__variant::__access<_Alternative_type>(*__ptr);
+      return nullptr;
+    }
+
+  template<typename _Tp, typename... _Types>
+    inline add_pointer_t<_Tp> get_if(variant<_Types...>* __ptr) noexcept
+    {
+      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+		    "T should occur for exactly once in alternatives");
+      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      return get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(__ptr);
+    }
+
+  template<typename _Tp, typename... _Types>
+    inline add_pointer_t<const _Tp> get_if(const variant<_Types...>* __ptr)
+    noexcept
+    {
+      static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
+		    "T should occur for exactly once in alternatives");
+      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      return get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(__ptr);
+    }
+
+  template<typename... _Types>
+    bool operator==(const variant<_Types...>& __lhs,
+		    const variant<_Types...>& __rhs)
+    {
+      if (__lhs.index() != __rhs.index())
+	return false;
+
+      if (__lhs.valueless_by_exception())
+	return true;
+
+      using __detail::__variant::__storage;
+      static constexpr bool (*_S_vtable[])(void*, void*) =
+	{ &__detail::__variant::__erased_equal_to<
+	  const __storage<_Types>&, const __storage<_Types>&>... };
+      return _S_vtable[__lhs.index()](
+	  __detail::__variant::__get_storage(__lhs),
+	  __detail::__variant::__get_storage(__rhs));
+    }
+
+  template<typename... _Types>
+    inline bool
+    operator!=(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
+    { return !(__lhs == __rhs); }
+
+  template<typename... _Types>
+    inline bool
+    operator<(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
+    {
+      if (__lhs.index() < __rhs.index())
+	return true;
+
+      if (__lhs.index() > __rhs.index())
+	return false;
+
+      if (__lhs.valueless_by_exception())
+	return false;
+
+      using __detail::__variant::__storage;
+      static constexpr bool (*_S_vtable[])(void*, void*) =
+	{ &__detail::__variant::__erased_less_than<
+	    const __storage<_Types>&,
+	    const __storage<_Types>&>... };
+      return _S_vtable[__lhs.index()](
+	  __detail::__variant::__get_storage(__lhs),
+	  __detail::__variant::__get_storage(__rhs));
+    }
+
+  template<typename... _Types>
+    inline bool
+    operator>(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
+    { return __rhs < __lhs; }
+
+  template<typename... _Types>
+    inline bool
+    operator<=(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
+    { return !(__lhs > __rhs); }
+
+  template<typename... _Types>
+    inline bool
+    operator>=(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
+    { return !(__lhs < __rhs); }
+
+  template<typename _Visitor, typename... _Variants>
+    decltype(auto) visit(_Visitor&&, _Variants&&...);
+
+  struct monostate { };
+
+  constexpr bool operator<(monostate, monostate) noexcept
+  { return false; }
+
+  constexpr bool operator>(monostate, monostate) noexcept
+  { return false; }
+
+  constexpr bool operator<=(monostate, monostate) noexcept
+  { return true; }
+
+  constexpr bool operator>=(monostate, monostate) noexcept
+  { return true; }
+
+  constexpr bool operator==(monostate, monostate) noexcept
+  { return true; }
+
+  constexpr bool operator!=(monostate, monostate) noexcept
+  { return false; }
+
+  template<typename... _Types>
+    inline auto swap(variant<_Types...>& __lhs, variant<_Types...>& __rhs)
+    noexcept(noexcept(__lhs.swap(__rhs))) -> decltype(__lhs.swap(__rhs))
+    { __lhs.swap(__rhs); }
+
+  class bad_variant_access : public exception
+  {
+  public:
+    bad_variant_access() noexcept : _M_reason("Unknown reason") { }
+    const char* what() const noexcept override
+    { return _M_reason; }
+
+  private:
+    bad_variant_access(const char* __reason) : _M_reason(__reason) { }
+
+    const char* _M_reason;
+
+    friend void __throw_bad_variant_access(const char* __what);
+  };
+
+  inline void
+  __throw_bad_variant_access(const char* __what)
+  { _GLIBCXX_THROW_OR_ABORT(bad_variant_access(__what)); }
+
+  template<typename... _Types>
+    class variant
+    : private __detail::__variant::_Variant_base<_Types...>,
+      private _Enable_default_constructor<
+	is_default_constructible_v<
+	  variant_alternative_t<0, variant<_Types...>>>, variant<_Types...>>,
+      private _Enable_copy_move<
+	__and_<is_copy_constructible<_Types>...>::value,
+	__and_<is_copy_constructible<_Types>...,
+	       is_move_constructible<_Types>...,
+	       is_copy_assignable<_Types>...>::value,
+	__and_<is_move_constructible<_Types>...>::value,
+	__and_<is_move_constructible<_Types>...,
+	       is_move_assignable<_Types>...>::value,
+	variant<_Types...>>
+    {
+    private:
+      using _Base = __detail::__variant::_Variant_base<_Types...>;
+      using _Default_ctor_enabler =
+	_Enable_default_constructor<
+	  is_default_constructible_v<
+	    variant_alternative_t<0, variant<_Types...>>>, variant<_Types...>>;
+
+      template<typename _Tp>
+	static constexpr bool
+	__exactly_once = __detail::__variant::__exactly_once<_Tp, _Types...>;
+
+      template<typename _Tp>
+	static constexpr size_t __accepted_index =
+	  __detail::__variant::__accepted_index<_Tp&&, variant>::value;
+
+      template<size_t _Np, bool = _Np < sizeof...(_Types)>
+	struct __to_type_impl;
+
+      template<size_t _Np>
+	struct __to_type_impl<_Np, true>
+	{ using type = variant_alternative_t<_Np, variant>; };
+
+      template<size_t _Np>
+	using __to_type = typename __to_type_impl<_Np>::type;
+
+      template<typename _Tp>
+	using __accepted_type = __to_type<__accepted_index<_Tp>>;
+
+      template<typename _Tp>
+	using __storage = __detail::__variant::__storage<_Tp>;
+
+      template<typename _Tp>
+	static constexpr size_t __index_of =
+	  __detail::__variant::__index_of_v<_Tp, _Types...>;
+
+    public:
+      constexpr variant()
+      noexcept(is_nothrow_default_constructible_v<__to_type<0>>) = default;
+      variant(const variant&) = default;
+      variant(variant&&)
+      noexcept(__and_<
+	is_nothrow_move_constructible<_Types>...>::value) = default;
+
+      template<typename _Tp,
+	       typename = enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
+			  && is_constructible_v<__accepted_type<_Tp&&>, _Tp&&>
+			  && !is_same_v<decay_t<_Tp>, variant>>>
+	constexpr
+	variant(_Tp&& __t)
+	noexcept(is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp&&>)
+	: variant(in_place<__accepted_index<_Tp&&>>, forward<_Tp>(__t))
+	{ __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this)); }
+
+      template<typename _Tp, typename... _Args,
+	       typename = enable_if_t<__exactly_once<_Tp>
+			  && is_constructible_v<_Tp, _Args&&...>>>
+	constexpr explicit
+	variant(in_place_type_t<_Tp>, _Args&&... __args)
+	: variant(in_place<__index_of<_Tp>>, forward<_Args>(__args)...)
+	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
+
+      template<typename _Tp, typename _Up, typename... _Args,
+	       typename = enable_if_t<__exactly_once<_Tp>
+			  && is_constructible_v<
+			    _Tp, initializer_list<_Up>&, _Args&&...>>>
+	constexpr explicit
+	variant(in_place_type_t<_Tp>, initializer_list<_Up> __il,
+		_Args&&... __args)
+	: variant(in_place<__index_of<_Tp>>, __il,
+		  forward<_Args>(__args)...)
+	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
+
+      template<size_t _Np, typename... _Args,
+	       typename = enable_if_t<
+		 is_constructible_v<__to_type<_Np>, _Args&&...>>>
+	constexpr explicit
+	variant(in_place_index_t<_Np>, _Args&&... __args)
+	: _Base(in_place<_Np>, forward<_Args>(__args)...),
+	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+	{ __glibcxx_assert(index() == _Np); }
+
+      template<size_t _Np, typename _Up, typename... _Args,
+	       typename = enable_if_t<is_constructible_v<__to_type<_Np>,
+				      initializer_list<_Up>&, _Args&&...>>>
+	constexpr explicit
+	variant(in_place_index_t<_Np>, initializer_list<_Up> __il,
+		_Args&&... __args)
+	: _Base(in_place<_Np>, __il, forward<_Args>(__args)...),
+	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+	{ __glibcxx_assert(index() == _Np); }
+
+      template<typename _Alloc,
+	       typename = enable_if_t<
+		 __is_uses_allocator_constructible_v<__to_type<0>, _Alloc>>>
+	variant(allocator_arg_t, const _Alloc& __a)
+	: variant(allocator_arg, __a, in_place<0>)
+	{ }
+
+      template<typename _Alloc,
+	       typename = enable_if_t<__and_<__is_uses_allocator_constructible<
+		 _Types, _Alloc,
+		 add_lvalue_reference_t<add_const_t<_Types>>>...>::value>>
+	variant(allocator_arg_t, const _Alloc& __a, const variant& __rhs)
+	: _Base(__a, __rhs),
+	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+	{ }
+
+      template<typename _Alloc,
+	       typename = enable_if_t<__and_<
+		 __is_uses_allocator_constructible<
+		   _Types, _Alloc, add_rvalue_reference_t<_Types>>...>::value>>
+	variant(allocator_arg_t, const _Alloc& __a, variant&& __rhs)
+	: _Base(__a, std::move(__rhs)),
+	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+	{ }
+
+      template<typename _Alloc, typename _Tp,
+	       typename = enable_if_t<
+		 __exactly_once<__accepted_type<_Tp&&>>
+		 && __is_uses_allocator_constructible_v<
+		   __accepted_type<_Tp&&>, _Alloc, _Tp&&>
+		 && !is_same_v<decay_t<_Tp>, variant>, variant&>>
+	variant(allocator_arg_t, const _Alloc& __a, _Tp&& __t)
+	: variant(allocator_arg, __a, in_place<__accepted_index<_Tp&&>>,
+		  forward<_Tp>(__t))
+	{ __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this)); }
+
+      template<typename _Alloc, typename _Tp, typename... _Args,
+	       typename = enable_if_t<
+		 __exactly_once<_Tp>
+		 && __is_uses_allocator_constructible_v<
+		   _Tp, _Alloc, _Args&&...>>>
+	variant(allocator_arg_t, const _Alloc& __a, in_place_type_t<_Tp>,
+		_Args&&... __args)
+	: variant(allocator_arg, __a, in_place<__index_of<_Tp>>,
+		  forward<_Args>(__args)...)
+	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
+
+      template<typename _Alloc, typename _Tp, typename _Up, typename... _Args,
+	       typename = enable_if_t<
+		 __exactly_once<_Tp>
+		 && __is_uses_allocator_constructible_v<
+		   _Tp, _Alloc, initializer_list<_Up>&, _Args&&...>>>
+	variant(allocator_arg_t, const _Alloc& __a, in_place_type_t<_Tp>,
+		initializer_list<_Up> __il, _Args&&... __args)
+	: variant(allocator_arg, __a, in_place<__index_of<_Tp>>, __il,
+		  forward<_Args>(__args)...)
+	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
+
+      template<typename _Alloc, size_t _Np, typename... _Args,
+	       typename = enable_if_t<
+		 __is_uses_allocator_constructible_v<
+		   __to_type<_Np>, _Alloc, _Args&&...>>>
+	variant(allocator_arg_t, const _Alloc& __a, in_place_index_t<_Np>,
+		_Args&&... __args)
+	: _Base(__a, in_place<_Np>, forward<_Args>(__args)...),
+	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+	{ __glibcxx_assert(index() == _Np); }
+
+      template<typename _Alloc, size_t _Np, typename _Up, typename... _Args,
+	       typename = enable_if_t<
+		 __is_uses_allocator_constructible_v<
+		   __to_type<_Np>, _Alloc, initializer_list<_Up>&, _Args&&...>>>
+	variant(allocator_arg_t, const _Alloc& __a, in_place_index_t<_Np>,
+		initializer_list<_Up> __il, _Args&&... __args)
+	: _Base(__a, in_place<_Np>, __il, forward<_Args>(__args)...),
+	_Default_ctor_enabler(_Enable_default_constructor_tag{})
+	{ __glibcxx_assert(index() == _Np); }
+
+      ~variant() = default;
+
+      variant& operator=(const variant&) = default;
+      variant& operator=(variant&&)
+      noexcept(__and_<is_nothrow_move_constructible<_Types>...,
+		      is_nothrow_move_assignable<_Types>...>::value) = default;
+
+      template<typename _Tp>
+	enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
+		    && is_constructible_v<__accepted_type<_Tp&&>, _Tp&&>
+		    && is_assignable_v<__accepted_type<_Tp&&>&, _Tp&&>
+		    && !is_same_v<decay_t<_Tp>, variant>, variant&>
+	operator=(_Tp&& __rhs)
+	noexcept(is_nothrow_assignable_v<__accepted_type<_Tp&&>&, _Tp&&>
+		 && is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp&&>)
+	{
+	  constexpr auto __index = __accepted_index<_Tp&&>;
+	  if (index() == __index)
+	    *static_cast<__storage<__to_type<__index>>*>(this->_M_storage())
+	      = forward<_Tp>(__rhs);
+	  else
+	    this->emplace<__index>(forward<_Tp>(__rhs));
+	  __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this));
+	  return *this;
+	}
+
+      template<typename _Tp, typename... _Args>
+	void emplace(_Args&&... __args)
+	{
+	  static_assert(__exactly_once<_Tp>,
+			"T should occur for exactly once in alternatives");
+	  this->emplace<__index_of<_Tp>>(forward<_Args>(__args)...);
+	  __glibcxx_assert(holds_alternative<_Tp>(*this));
+	}
+
+      template<typename _Tp, typename _Up, typename... _Args>
+	void emplace(initializer_list<_Up> __il, _Args&&... __args)
+	{
+	  static_assert(__exactly_once<_Tp>,
+			"T should occur for exactly once in alternatives");
+	  this->emplace<__index_of<_Tp>>(__il, forward<_Args>(__args)...);
+	  __glibcxx_assert(holds_alternative<_Tp>(*this));
+	}
+
+      template<size_t _Np, typename... _Args>
+	void emplace(_Args&&... __args)
+	{
+	  static_assert(_Np < sizeof...(_Types),
+			"The index should be in [0, number of alternatives)");
+	  this->~variant();
+	  __try
+	    {
+	      ::new (this) variant(in_place<_Np>,
+				   forward<_Args>(__args)...);
+	    }
+	  __catch (...)
+	    {
+	      this->_M_index = variant_npos;
+	      __throw_exception_again;
+	    }
+	  __glibcxx_assert(index() == _Np);
+	}
+
+      template<size_t _Np, typename _Up, typename... _Args>
+	void emplace(initializer_list<_Up> __il, _Args&&... __args)
+	{
+	  static_assert(_Np < sizeof...(_Types),
+			"The index should be in [0, number of alternatives)");
+	  this->~variant();
+	  __try
+	    {
+	      ::new (this) variant(in_place<_Np>, __il,
+				   forward<_Args>(__args)...);
+	    }
+	  __catch (...)
+	    {
+	      this->_M_index = variant_npos;
+	      __throw_exception_again;
+	    }
+	  __glibcxx_assert(index() == _Np);
+	}
+
+      constexpr bool valueless_by_exception() const noexcept
+      { return !this->_M_valid(); }
+
+      constexpr size_t index() const noexcept
+      { return this->_M_index; }
+
+      void
+      swap(variant& __rhs)
+      noexcept(__and_<__is_nothrow_swappable<_Types>...>::value
+	       && is_nothrow_move_assignable_v<variant>)
+      {
+	if (this->index() == __rhs.index())
+	  {
+	    if (this->_M_valid())
+	      {
+		static constexpr void (*_S_vtable[])(void*, void*) =
+		  { &__detail::__variant::__erased_swap<
+		      __storage<_Types>&, __storage<_Types>&>... };
+		_S_vtable[__rhs._M_index](this->_M_storage(),
+					  __rhs._M_storage());
+	      }
+	  }
+	else if (!this->_M_valid())
+	  {
+	    *this = std::move(__rhs);
+	  }
+	else if (!__rhs._M_valid())
+	  {
+	    __rhs = std::move(*this);
+	  }
+	else
+	  {
+	    auto __tmp = std::move(__rhs);
+	    __rhs = std::move(*this);
+	    *this = std::move(__tmp);
+	  }
+      }
+
+      template<typename _Vp>
+	friend void* __detail::__variant::__get_storage(_Vp&& __v);
+    };
+
+  // To honor algebraic data type, variant<> should be a bottom type, which
+  // is 0 (as opposed to a void type, which is 1). Use incomplete type to model
+  // bottom type.
+  template<> class variant<>;
+
+  template<size_t _Np, typename... _Types>
+    variant_alternative_t<_Np, variant<_Types...>>&
+    get(variant<_Types...>& __v)
+    {
+      static_assert(_Np < sizeof...(_Types),
+		    "The index should be in [0, number of alternatives)");
+      if (__v.index() != _Np)
+	__throw_bad_variant_access("Unexpected index");
+      return __detail::__variant::__access<
+	variant_alternative_t<_Np, variant<_Types...>>>(__v);
+    }
+
+  template<size_t _Np, typename... _Types>
+    variant_alternative_t<_Np, variant<_Types...>>&&
+    get(variant<_Types...>&& __v)
+    {
+      static_assert(_Np < sizeof...(_Types),
+		    "The index should be in [0, number of alternatives)");
+      if (__v.index() != _Np)
+	__throw_bad_variant_access("Unexpected index");
+      return __detail::__variant::__access<
+	variant_alternative_t<_Np, variant<_Types...>>>(std::move(__v));
+    }
+
+  template<size_t _Np, typename... _Types>
+    const variant_alternative_t<_Np, variant<_Types...>>&
+    get(const variant<_Types...>& __v)
+    {
+      static_assert(_Np < sizeof...(_Types),
+		    "The index should be in [0, number of alternatives)");
+      if (__v.index() != _Np)
+	__throw_bad_variant_access("Unexpected index");
+      return __detail::__variant::__access<
+	variant_alternative_t<_Np, variant<_Types...>>>(__v);
+    }
+
+  template<size_t _Np, typename... _Types>
+    const variant_alternative_t<_Np, variant<_Types...>>&&
+    get(const variant<_Types...>&& __v)
+    {
+      static_assert(_Np < sizeof...(_Types),
+		    "The index should be in [0, number of alternatives)");
+      if (__v.index() != _Np)
+	__throw_bad_variant_access("Unexpected index");
+      return __detail::__variant::__access<
+	variant_alternative_t<_Np, variant<_Types...>>>(std::move(__v));
+    }
+
+  template<typename _Visitor, typename... _Variants>
+    decltype(auto)
+    visit(_Visitor&& __visitor, _Variants&&... __variants)
+    {
+      using _Result_type =
+	decltype(forward<_Visitor>(__visitor)(get<0>(__variants)...));
+      static constexpr auto _S_vtable =
+	__detail::__variant::__gen_vtable<
+	  _Result_type, _Visitor&&, _Variants&&...>::_S_apply();
+      auto __func_ptr = _S_vtable._M_access(__variants.index()...);
+      return (*__func_ptr)(forward<_Visitor>(__visitor),
+			   __detail::__variant::__get_storage(__variants)...);
+    }
+
+  template<typename... _Types, typename _Alloc>
+    struct uses_allocator<variant<_Types...>, _Alloc>
+    : true_type { };
+
+  template<typename... _Types>
+    struct hash<variant<_Types...>>
+    {
+      using result_type = size_t;
+      using argument_type = variant<_Types...>;
+
+      size_t
+      operator()(const variant<_Types...>& __t) const
+      noexcept((... && noexcept(hash<decay_t<_Types>>{}(std::declval<_Types>()))))
+      {
+	if (!__t.valueless_by_exception())
+	  {
+	    namespace __edv = __detail::__variant;
+	    static constexpr size_t (*_S_vtable[])(void*) =
+	      { &__edv::__erased_hash<const __edv::__storage<_Types>&>... };
+	    return hash<size_t>{}(__t.index())
+	      + _S_vtable[__t.index()](__edv::__get_storage(__t));
+	  }
+	return hash<size_t>{}(__t.index());
+      }
+    };
+
+  template<>
+    struct hash<monostate>
+    {
+      using result_type = size_t;
+      using argument_type = monostate;
+
+      size_t
+      operator()(const monostate& __t) const noexcept
+      {
+	constexpr size_t __magic_monostate_hash = -7777;
+	return __magic_monostate_hash;
+      }
+    };
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#endif // C++17
+
+#endif // _GLIBCXX_VARIANT

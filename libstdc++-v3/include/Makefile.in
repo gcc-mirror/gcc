@@ -367,6 +367,7 @@ std_headers = \
 	${std_srcdir}/unordered_set \
 	${std_srcdir}/utility \
 	${std_srcdir}/valarray \
+	${std_srcdir}/variant \
 	${std_srcdir}/vector
 
 bits_srcdir = ${glibcxx_srcdir}/include/bits

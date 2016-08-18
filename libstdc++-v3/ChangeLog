@@ -1,3 +1,17 @@
+2016-08-18  Tim Shen  <timshen@google.com>
+
+	Implement <variant>
+
+	* include/Makefile.am: Add new file std/variant.
+	* include/Makefile.in: Generated from Makefile.am.
+	* include/bits/enable_special_members.h: Add a tag type to allow
+	the construction in non-default constructor.
+	* include/bits/uses_allocator.h: Add convenience traits to
+	detect constructibility.
+	* include/std/variant: Implement <variant>.
+	* testsuite/20_util/variant/compile.cc: Compile-time tests.
+	* testsuite/20_util/variant/run.cc: Runtime tests.
+
 2016-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/test.xml (test.run.permutations): Expand section.
