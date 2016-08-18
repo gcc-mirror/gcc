@@ -554,29 +554,65 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
   <section xml:id="test.run.permutations"><info><title>Permutations</title></info>
     
     <para>
-      To run the libstdc++ test suite under the <link linkend="manual.ext.debug_mode">debug mode</link>, edit
-      <filename>libstdc++-v3/scripts/testsuite_flags</filename> to add the
-      compile-time flag <constant>-D_GLIBCXX_DEBUG</constant> to the
-      result printed by the <literal>--build-cxx</literal>
+      The tests will be compiled with a set of default compiler flags defined
+      by the
+      <filename><replaceable>libbuildir</replaceable>/scripts/testsuite_flags</filename>
+      file, as well as options specified in individual tests. You can run
+      the tests with different options by adding them to the output of
+      the <option>--cxxflags</option> option of that script, or by setting
+      the <varname>CXXFLAGS</varname> variable when running
+      <command>make</command>, or via options for the DejaGnu test framework
+      (described below). The latter approach uses the
+      <option>--target_board</option> option that was shown earlier.
+      For example, to run the tests with <option>-O1 -D_GLIBCXX_ASSERT</option>
+      you could use:
+<programlisting>    make RUNTESTFLAGS=--target_board=unix/-O1/-D_GLIBCXX_ASSERTIONS</programlisting>
+    </para>
+
+    <para>
+      The <option>--target_board</option> option can also be used to run the
+      tests multiple times in different variations. For example, to run the
+      entire testsuite three times using <option>-O3</option> but with
+      different <option>-std</option> options:
+<programlisting>    make 'RUNTESTFLAGS=--target_board=unix/-O3\"{-std=gnu++98,-std=gnu++11,-std=gnu++14}\"'</programlisting>
+      N.B. that set of variations could also be written as
+      <literal>unix/-O3\"{-std=gnu++98,-std=gnu++11,}\"</literal> so that
+      the third variation would use the default for <option>-std</option>
+      (which is <option>-std=gnu++14</option> as of GCC 6).
+    </para>
+
+    <para>
+      To run the libstdc++ test suite under the
+      <link linkend="manual.ext.debug_mode">debug mode</link>, use
+      <userinput>make check-debug</userinput>. Alternatively, edit
+      <filename><replaceable>libbuildir</replaceable>/scripts/testsuite_flags</filename>
+      to add the compile-time flag <option>-D_GLIBCXX_DEBUG</option> to the
+      result printed by the <option>--cxxflags</option>
       option. Additionally, add the
-      <constant>-D_GLIBCXX_DEBUG_PEDANTIC</constant> flag to turn on
+      <option>-D_GLIBCXX_DEBUG_PEDANTIC</option> flag to turn on
       pedantic checking. The libstdc++ test suite should produce
-      precisely the same results under debug mode that it does under
-      release mode: any deviation indicates an error in either the
-      library or the test suite.
+      the same results under debug mode that it does under release mode:
+      any deviation indicates an error in either the library or the test suite.
+      Note, however, that the number of tests that PASS may change, because
+      some test cases are skipped in normal mode, and some are skipped in
+      debug mode, as determined by the
+      <literal>dg-require-<replaceable>support</replaceable></literal>
+      directives described below.
     </para>
 
     <para>
       The <link linkend="manual.ext.parallel_mode">parallel
-      mode</link> can be tested in much the same manner, substituting
-      <constant>-D_GLIBCXX_PARALLEL</constant> for
-      <constant>-D_GLIBCXX_DEBUG</constant> in the previous paragraph.
+      mode</link> can be tested using
+      <userinput>make check-parallel</userinput>, or in much the same manner
+      as the debug mode, substituting
+      <option>-D_GLIBCXX_PARALLEL</option> for
+      <option>-D_GLIBCXX_DEBUG</option> in the previous paragraph.
     </para>
 
     <para>
-      Or, just run the testsuites with <constant>CXXFLAGS</constant>
-      set to <constant>-D_GLIBCXX_DEBUG</constant> or
-      <constant>-D_GLIBCXX_PARALLEL</constant>.
+      Or, just run the testsuite
+      <option>-D_GLIBCXX_DEBUG</option> or <option>-D_GLIBCXX_PARALLEL</option>
+      in <varname>CXXFLAGS</varname> or <varname>RUNTESTFLAGS</varname>.
     </para>
   </section>
 </section>
@@ -593,12 +629,17 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
    <para>
     All files are copyright the FSF, and GPL'd: this is very
     important.  The first copyright year should correspond to the date
-    the file was checked in to SVN.
+    the file was checked in to version control. If a test is copied from
+    an existing file it should retain the copyright years from the
+    original file.
    </para>
 
    <para>
-     As per the dejagnu instructions, always return 0 from main to
-     indicate success.
+     The DejaGnu instructions say to always return <literal>0</literal>
+     from <function>main</function> to indicate success. Strictly speaking
+     this is redundant in C++, since returning from <function>main</function>
+     is defined to return <literal>0</literal>. Most tests still have an
+     explicit return.
    </para>
 
    <para>
@@ -610,107 +651,236 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
    </para>
 
    <para>
-   For a test that needs to take advantage of the dejagnu test
-   harness, what follows below is a list of special keyword that
-   harness uses. Basically, a test case contains dg-keywords (see
-   dg.exp) indicating what to do and what kinds of behavior are to be
-   expected.  New test cases should be written with the new style
-   DejaGnu framework in mind.
+    Tests that need to perform runtime checks should use the
+    <literal>VERIFY</literal> macro, defined in the
+    <filename class="headerfile">&lt;testsuite_hooks.h&gt;</filename> header.
+    This usually expands to the standard <literal>assert</literal> macro, but
+    allows targets to define it to something different. In order to support
+    the alternative expansions of <literal>VERIFY</literal>, before any
+    use of the macro there must be a variable called <varname>test</varname>
+    in scope, which is usually defined like so (the attribute avoids
+    warnings about an unused variable):
+    <programlisting>
+    bool test __attribute__((unused)) = true;
+    </programlisting>
    </para>
 
    <para>
-    To ease transition, here is the list of dg-keyword documentation
-    lifted from dg.exp.
-   </para>
+    The testsuite uses the DejaGnu framework to compile and run the tests.
+    Test cases are normal C++ files which contain special directives in
+    comments.  These directives look like <literal>{ dg-* ... }</literal>
+    and tell DejaGnu what to do and what kinds of behavior are to be expected
+    for a test.  The core DejaGnu directives are documented in the
+    <filename>dg.exp</filename> file installed by DejaGnu.
+    The GCC testsuites support additional directives
+    as described in the GCC internals documentation, see <link
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xlink:href="https://gcc.gnu.org/onlinedocs/gccint/Directives.html">Syntax
+    and Descriptions of test directives</link>. GCC also defines many <link
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xlink:href="https://gcc.gnu.org/onlinedocs/gccint/Effective-Target-Keywords.html">
+    Keywords describing target attributes</link> (a.k.a effective targets)
+    which can be used where a target <replaceable>selector</replaceable> can
+    appear.
+  </para>
 
+  <para>
+  Some directives commonly used in the libstdc++ testsuite are:
+
+<variablelist>
+<varlistentry>
+  <term><literal>{ dg-do <replaceable>do-what-keyword</replaceable> [{ target/xfail <replaceable>selector</replaceable> }] }</literal></term>
+  <listitem>Where <replaceable>do-what-keyword</replaceable> is usually
+    one of <literal>run</literal> (which is the default),
+    <literal>compile</literal>, or <literal>link</literal>,
+    and typical selectors are targets such as <literal>*-*-gnu*</literal>
+    or an effective target such as <literal>c++11</literal>.
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>{ dg-require-<replaceable>support</replaceable> args }</literal></term>
+  <listitem>Skip the test if the target does not provide the required support.
+    See below for values of <replaceable>support</replaceable>.
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>{ dg-options <replaceable>options</replaceable> [{ target <replaceable>selector</replaceable> }] }</literal></term>
+</varlistentry>
+<varlistentry>
+  <term><literal>{ dg-error <replaceable>regexp</replaceable> [ <replaceable>comment</replaceable> [{ target/xfail <replaceable>selector</replaceable> } [<replaceable>line</replaceable>] ]] }</literal></term>
+</varlistentry>
+<varlistentry>
+  <term><literal>{ dg-excess-errors <replaceable>comment</replaceable> [{ target/xfail <replaceable>selector</replaceable> }] }</literal></term>
+</varlistentry>
+</variablelist>
+  For full details of these and other directives see the main GCC DejaGnu
+  documentation in the internals manual.
+  </para>
+
+  <para>
+    Test cases that use features of a particular C++ standard should specify
+    the minimum required standard as an effective target:
+<programlisting>    // { dg-do run { target c++11 } }</programlisting>
+    or
+<programlisting>    // { dg-require-effective-target c++11 }</programlisting>
+    Specifying the minimum required standard for a test allows it to be run
+    using later standards, so that we can verify that C++11 components still
+    work correctly when compiled as C++14 or later. Specifying a minimum also
+    means the test will be skipped if the test is compiled using
+    an older standard, e.g. using
+    <option>RUNTESTFLAGS=--target_board=unix/-std=gnu++98</option>.
+  </para>
+
+  <para>
+    It is possible to indicate that a test should <emphasis>only</emphasis>
+    be run for a specific standard (and not later standards) using an
+    effective target like <literal>c++11_only</literal>. However, this means
+    the test will be skipped by default (because the default mode is
+    <literal>gnu++14</literal>), and so will only run when
+    <option>-std=gnu++11</option> or <option>-std=c++11</option> is used
+    explicitly. For tests that require a specific standard it is better to
+    use a <literal>dg-options</literal> directive:
+<programlisting>    // { dg-options "-std=gnu++11" }</programlisting>
+    This means the test will not get skipped by default, and will always use
+    the specific standard dialect that the test requires. This isn't needed
+    often, and most tests should use an effective target to specify a
+    minimum standard instead, to allow them to be tested for all
+    possible variations.
+  </para>
+
+  <para>
+    Similarly, tests which depend on a newer standard than the default
+    should use <literal>dg-options</literal> instead of an effective target,
+    so that they are not skipped by default.
+    For example, tests for C++17 features should use
+<programlisting>    // { dg-options "-std=gnu++17" }</programlisting>
+    and not
+<programlisting>    // { dg-do run "c++1z" }</programlisting>
+  </para>
+
+<section xml:id="tests.dg.examples"><info><title>Examples of Test Directives</title></info>
+
+   <para>
+Example 1: Testing compilation only:
 <programlisting>
-# The currently supported options are:
-#
-# dg-prms-id N
-#	set prms_id to N
-#
-# dg-options "options ..." [{ target selector }]
-#	specify special options to pass to the tool (eg: compiler)
-#
-# dg-do do-what-keyword [{ target/xfail selector }]
-#	`do-what-keyword' is tool specific and is passed unchanged to
-#	${tool}-dg-test.  An example is gcc where `keyword' can be any of:
-#	preprocess|compile|assemble|link|run
-#	and will do one of: produce a .i, produce a .s, produce a .o,
-#	produce an a.out, or produce an a.out and run it (the default is
-#	compile).
-#
-# dg-error regexp comment [{ target/xfail selector } [{.|0|linenum}]]
-#	indicate an error message &lt;regexp&gt; is expected on this line
-#	(the test fails if it doesn't occur)
-#	Linenum=0 for general tool messages (eg: -V arg missing).
-#	"." means the current line.
-#
-# dg-warning regexp comment [{ target/xfail selector } [{.|0|linenum}]]
-#	indicate a warning message &lt;regexp&gt; is expected on this line
-#	(the test fails if it doesn't occur)
-#
-# dg-bogus regexp comment [{ target/xfail selector } [{.|0|linenum}]]
-#	indicate a bogus error message &lt;regexp&gt; use to occur here
-#	(the test fails if it does occur)
-#
-# dg-build regexp comment [{ target/xfail selector }]
-#	indicate the build use to fail for some reason
-#	(errors covered here include bad assembler generated, tool crashes,
-#	and link failures)
-#	(the test fails if it does occur)
-#
-# dg-excess-errors comment [{ target/xfail selector }]
-#	indicate excess errors are expected (any line)
-#	(this should only be used sparingly and temporarily)
-#
-# dg-output regexp [{ target selector }]
-#	indicate the expected output of the program is &lt;regexp&gt;
-#	(there may be multiple occurrences of this, they are concatenated)
-#
-# dg-final { tcl code }
-#	add some tcl code to be run at the end
-#	(there may be multiple occurrences of this, they are concatenated)
-#	(unbalanced braces must be \-escaped)
-#
-# "{ target selector }" is a list of expressions that determine whether the
-# test succeeds or fails for a particular target, or in some cases whether the
-# option applies for a particular target.  If the case of `dg-do' it specifies
-# whether the test case is even attempted on the specified target.
-#
-# The target selector is always optional.  The format is one of:
-#
-# { xfail *-*-* ... } - the test is expected to fail for the given targets
-# { target *-*-* ... } - the option only applies to the given targets
-#
-# At least one target must be specified, use *-*-* for "all targets".
-# At present it is not possible to specify both `xfail' and `target'.
-# "native" may be used in place of "*-*-*".
-
-Example 1: Testing compilation only
 // { dg-do compile }
+</programlisting>
 
-Example 2: Testing for expected warnings on line 36, which all targets fail
+Example 2: Testing for expected warnings on line 36, which all targets fail:
+<programlisting>
 // { dg-warning "string literals" "" { xfail *-*-* } 36 }
+</programlisting>
 
-Example 3: Testing for expected warnings on line 36
+Example 3: Testing for expected warnings on line 36:
+<programlisting>
 // { dg-warning "string literals" "" { target *-*-* } 36 }
+</programlisting>
 
-Example 4: Testing for compilation errors on line 41
+Example 4: Testing for compilation errors on line 41:
+<programlisting>
 // { dg-do compile }
 // { dg-error "no match for" "" { target *-*-* } 41 }
+</programlisting>
 
 Example 5: Testing with special command line settings, or without the
-use of pre-compiled headers, in particular the stdc++.h.gch file. Any
-options here will override the DEFAULT_CXXFLAGS and PCH_CXXFLAGS set
-up in the normal.exp file.
+use of pre-compiled headers, in particular the
+<filename class="headerfile">stdc++.h.gch</filename> file. Any
+options here will override the <varname>DEFAULT_CXXFLAGS</varname> and
+<varname>PCH_CXXFLAGS</varname> set up in the <filename>normal.exp</filename>
+file:
+<programlisting>
 // { dg-options "-O0" { target *-*-* } }
 </programlisting>
+
+Example 6: Compiling and linking a test only for C++14 and later, and only
+if Debug Mode is active:
+<programlisting>
+// { dg-do link { target c++14 } }
+// { dg-require-debug-mode "" }
+</programlisting>
+
+Example 7: Running a test only on x86 targets, and only for C++11 and later,
+with specific options, and additional options for 32-bit x86:
+<programlisting>
+// { dg-options "-fstrict-enums" }
+// { dg-additional-options "-march=i486" { target ia32 } }
+// { dg-do run { target { ia32 || x86_64-*-* } } }
+// { dg-require-effective-target "c++11" }
+</programlisting>
+   </para>
 
    <para>
     More examples can be found in the
     <filename>libstdc++-v3/testsuite/*/*.cc</filename> files.
    </para>
+</section>
+
+<section xml:id="tests.dg.directives"><info><title>Directives Specific to Libstdc++ Tests</title></info>
+
+  <para>
+    In addition to the usual <link
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xlink:href="https://gcc.gnu.org/onlinedocs/gccint/Require-support.html">Variants
+    of <literal>dg-require-<replaceable>support</replaceable></literal></link>
+    several more directives are available for use in libstdc++ tests,
+    including the following:
+   </para>
+
+  <variablelist>
+    <varlistentry><term><literal>dg-require-namedlocale</literal> <replaceable>name</replaceable></term>
+      <listitem><para>The named locale must be available.
+      </para></listitem>
+    </varlistentry>
+    <varlistentry><term><literal>dg-require-debug-mode ""</literal></term>
+      <listitem><para>Skip the test if the Debug Mode is not active
+	(as determined by the <literal>_GLIBCXX_DEBUG</literal> macro).
+      </para></listitem>
+    </varlistentry>
+    <varlistentry><term><literal>dg-require-parallel-mode ""</literal></term>
+      <listitem><para>Skip the test if the Parallel Mode is not active
+	(as determined by the <literal>_GLIBCXX_PARALLEL</literal> macro).
+      </para></listitem>
+    </varlistentry>
+    <varlistentry><term><literal>dg-require-profile-mode ""</literal></term>
+      <listitem><para>Skip the test if the Profile Mode is not active
+	(as determined by the <literal>_GLIBCXX_PROFILE</literal> macro).
+      </para></listitem>
+    </varlistentry>
+    <varlistentry><term><literal>dg-require-normal-mode ""</literal></term>
+      <listitem><para>Skip the test if any of Debug, Parallel or Profile
+	Mode is active.
+      </para></listitem>
+    </varlistentry>
+    <varlistentry><term><literal>dg-require-atomic-builtins ""</literal></term>
+      <listitem><para>Skip the test if atomic operations on <type>bool</type>
+      and <type>int</type> are not lock-free.
+      </para></listitem>
+    </varlistentry>
+    <varlistentry><term><literal>dg-require-gthreads ""</literal></term>
+      <listitem><para>Skip the test if the C++11 thread library is not
+      supported, as determined by the <literal>_GLIBCXX_HAS_GTHREADS</literal>
+      macro.
+      </para></listitem>
+    </varlistentry>
+    <varlistentry><term><literal>dg-require-gthreads-timed ""</literal></term>
+      <listitem><para>Skip the test if C++11 timed mutexes are not supported,
+      as determined by the <literal>_GLIBCXX_HAS_GTHREADS</literal> and
+      <literal>_GTHREAD_USE_MUTEX_TIMEDLOCK</literal> macros.
+      </para></listitem>
+    </varlistentry>
+    <varlistentry><term><literal>dg-require-string-conversions ""</literal></term>
+      <listitem><para>Skip the test if the C++11 <function>to_string</function>
+      and <function>stoi</function>, <function>stod</function> etc. functions
+      are not fully supported (including wide character versions).
+      </para></listitem>
+    </varlistentry>
+    <varlistentry><term><literal>dg-require-filesystem-ts ""</literal></term>
+      <listitem><para>Skip the test if the Filesystem TS is not supported.
+      </para></listitem>
+    </varlistentry>
+  </variablelist>
+</section>
+
 </section>
 
 
