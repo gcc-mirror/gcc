@@ -95,6 +95,8 @@ void dump_location_info (FILE *stream);
 
 void diagnostics_file_cache_fini (void);
 
+void diagnostics_file_cache_forcibly_evict_file (const char *file_path);
+
 struct GTY(()) string_concat
 {
   string_concat (int num, location_t *locs);

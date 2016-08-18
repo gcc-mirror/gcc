@@ -111,6 +111,7 @@ selftest::temp_source_file::temp_source_file (const location &loc,
 selftest::temp_source_file::~temp_source_file ()
 {
   unlink (m_filename);
+  diagnostics_file_cache_forcibly_evict_file (m_filename);
   free (m_filename);
 }
 

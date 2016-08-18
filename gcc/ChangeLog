@@ -1,3 +1,12 @@
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c (diagnostics_file_cache_forcibly_evict_file): New
+	function.
+	* input.h (diagnostics_file_cache_forcibly_evict_file): New
+	declaration.
+	* selftest.c (selftest::temp_source_file::~temp_source_file):
+	Evict m_filename from the diagnostic file cache.
+
 2016-08-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-pass.h (make_pass_materialize_all_clones): Declare.
