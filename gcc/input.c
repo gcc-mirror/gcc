@@ -249,6 +249,32 @@ lookup_file_in_cache_tab (const char *file_path)
   return r;
 }
 
+/* Purge any mention of FILENAME from the cache of files used for
+   printing source code.  For use in selftests when working
+   with tempfiles.  */
+
+void
+diagnostics_file_cache_forcibly_evict_file (const char *file_path)
+{
+  gcc_assert (file_path);
+
+  fcache *r = lookup_file_in_cache_tab (file_path);
+  if (!r)
+    /* Not found.  */
+    return;
+
+  r->file_path = NULL;
+  if (r->fp)
+    fclose (r->fp);
+  r->fp = NULL;
+  r->nb_read = 0;
+  r->line_start_idx = 0;
+  r->line_num = 0;
+  r->line_record.truncate (0);
+  r->use_count = 0;
+  r->total_lines = 0;
+}
+
 /* Return the file cache that has been less used, recently, or the
    first empty one.  If HIGHEST_USE_COUNT is non-null,
    *HIGHEST_USE_COUNT is set to the highest use count of the entries
