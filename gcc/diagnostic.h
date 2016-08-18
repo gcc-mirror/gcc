@@ -284,7 +284,9 @@ extern void diagnostic_initialize (diagnostic_context *, int);
 extern void diagnostic_color_init (diagnostic_context *, int value = -1);
 extern void diagnostic_finish (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *, location_t);
-extern void diagnostic_show_locus (diagnostic_context *, const diagnostic_info *);
+extern void diagnostic_show_locus (diagnostic_context *,
+				   rich_location *richloc,
+				   diagnostic_t diagnostic_kind);
 
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 extern diagnostic_t diagnostic_classify_diagnostic (diagnostic_context *,

@@ -1,5 +1,10 @@
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-opts.c (c_diagnostic_finalizer): Update for change to
+	diagnostic_show_locus.
+
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-common.c: Include "spellcheck.h".
 	(cb_get_suggestion): New function.
 	* c-common.h (cb_get_suggestion): New decl.

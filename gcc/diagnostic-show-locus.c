@@ -74,7 +74,7 @@ class colorizer
 {
  public:
   colorizer (diagnostic_context *context,
-	     const diagnostic_info *diagnostic);
+	     diagnostic_t diagnostic_kind);
   ~colorizer ();
 
   void set_range (int range_idx) { set_state (range_idx); }
@@ -90,7 +90,7 @@ class colorizer
   static const int STATE_NORMAL_TEXT = -1;
 
   diagnostic_context *m_context;
-  const diagnostic_info *m_diagnostic;
+  diagnostic_t m_diagnostic_kind;
   int m_current_state;
   const char *m_caret_cs;
   const char *m_caret_ce;
@@ -187,7 +187,8 @@ class layout
 {
  public:
   layout (diagnostic_context *context,
-	  const diagnostic_info *diagnostic);
+	  rich_location *richloc,
+	  diagnostic_t diagnostic_kind);
 
   int get_num_line_spans () const { return m_line_spans.length (); }
   const line_span *get_line_span (int idx) const { return &m_line_spans[idx]; }
@@ -239,9 +240,9 @@ class layout
    different kinds of things we might need to print.  */
 
 colorizer::colorizer (diagnostic_context *context,
-		      const diagnostic_info *diagnostic) :
+		      diagnostic_t diagnostic_kind) :
   m_context (context),
-  m_diagnostic (diagnostic),
+  m_diagnostic_kind (diagnostic_kind),
   m_current_state (STATE_NORMAL_TEXT)
 {
   m_caret_ce = colorize_stop (pp_show_color (context->printer));
@@ -288,7 +289,7 @@ colorizer::begin_state (int state)
       pp_string
 	(m_context->printer,
 	 colorize_start (pp_show_color (m_context->printer),
-			 diagnostic_get_color_for_kind (m_diagnostic->kind)));
+			 diagnostic_get_color_for_kind (m_diagnostic_kind)));
       break;
 
     case 1:
@@ -699,18 +700,18 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
    will fit within the max_width provided by the diagnostic_context.  */
 
 layout::layout (diagnostic_context * context,
-		const diagnostic_info *diagnostic)
+		rich_location *richloc,
+		diagnostic_t diagnostic_kind)
 : m_context (context),
   m_pp (context->printer),
-  m_diagnostic_kind (diagnostic->kind),
-  m_exploc (diagnostic->richloc->get_expanded_location (0)),
-  m_colorizer (context, diagnostic),
+  m_diagnostic_kind (diagnostic_kind),
+  m_exploc (richloc->get_expanded_location (0)),
+  m_colorizer (context, diagnostic_kind),
   m_colorize_source_p (context->colorize_source_p),
   m_layout_ranges (rich_location::MAX_RANGES),
   m_line_spans (1 + rich_location::MAX_RANGES),
   m_x_offset (0)
 {
-  rich_location *richloc = diagnostic->richloc;
   source_location primary_loc = richloc->get_range (0)->m_loc;
 
   for (unsigned int idx = 0; idx < richloc->get_num_locations (); idx++)
@@ -1276,30 +1277,32 @@ layout::show_ruler (int max_column) const
 
 void
 diagnostic_show_locus (diagnostic_context * context,
-		       const diagnostic_info *diagnostic)
+		       rich_location *richloc,
+		       diagnostic_t diagnostic_kind)
 {
   pp_newline (context->printer);
 
+  location_t loc = richloc->get_loc ();
   /* Do nothing if source-printing has been disabled.  */
   if (!context->show_caret)
     return;
 
   /* Don't attempt to print source for UNKNOWN_LOCATION and for builtins.  */
-  if (diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION)
+  if (loc <= BUILTINS_LOCATION)
     return;
 
   /* Don't print the same source location twice in a row, unless we have
      fix-it hints.  */
-  if (diagnostic_location (diagnostic, 0) == context->last_location
-      && diagnostic->richloc->get_num_fixit_hints () == 0)
+  if (loc == context->last_location
+      && richloc->get_num_fixit_hints () == 0)
     return;
 
-  context->last_location = diagnostic_location (diagnostic, 0);
+  context->last_location = loc;
 
   const char *saved_prefix = pp_get_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
 
-  layout layout (context, diagnostic);
+  layout layout (context, richloc, diagnostic_kind);
   for (int line_span_idx = 0; line_span_idx < layout.get_num_line_spans ();
        line_span_idx++)
     {
@@ -1319,7 +1322,7 @@ diagnostic_show_locus (diagnostic_context * context,
 	  if (layout.print_source_line (row, &lbounds))
 	    {
 	      layout.print_annotation_line (row, lbounds);
-	      layout.print_any_fixits (row, diagnostic->richloc);
+	      layout.print_any_fixits (row, richloc);
 	    }
 	}
     }
@@ -1331,6 +1334,206 @@ diagnostic_show_locus (diagnostic_context * context,
 
 namespace selftest {
 
+/* Selftests for diagnostic_show_locus.  */
+
+/* Convenience subclass of diagnostic_context for testing
+   diagnostic_show_locus.  */
+
+class test_diagnostic_context : public diagnostic_context
+{
+ public:
+  test_diagnostic_context ()
+  {
+    diagnostic_initialize (this, 0);
+    show_caret = true;
+  }
+  ~test_diagnostic_context ()
+  {
+    diagnostic_finish (this);
+  }
+};
+
+/* Verify that diagnostic_show_locus works sanely on UNKNOWN_LOCATION.  */
+
+static void
+test_diagnostic_show_locus_unknown_location ()
+{
+  test_diagnostic_context dc;
+  rich_location richloc (line_table, UNKNOWN_LOCATION);
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n", pp_formatted_text (dc.printer));
+}
+
+/* Verify that diagnostic_show_locus works sanely for various
+   single-line cases.
+
+   All of these work on the following 1-line source file:
+     .0000000001111111
+     .1234567890123456
+     "foo = bar.field;\n"
+   which is set up by test_diagnostic_show_locus_one_liner and calls
+   them.  */
+
+/* Just a caret.  */
+
+static void
+test_one_liner_simple_caret ()
+{
+  test_diagnostic_context dc;
+  location_t caret = linemap_position_for_column (line_table, 10);
+  rich_location richloc (line_table, caret);
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		"          ^\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Caret and range.  */
+
+static void
+test_one_liner_caret_and_range ()
+{
+  test_diagnostic_context dc;
+  location_t caret = linemap_position_for_column (line_table, 10);
+  location_t start = linemap_position_for_column (line_table, 7);
+  location_t finish = linemap_position_for_column (line_table, 15);
+  location_t loc = make_location (caret, start, finish);
+  rich_location richloc (line_table, loc);
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		"       ~~~^~~~~~\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Multiple ranges and carets.  */
+
+static void
+test_one_liner_multiple_carets_and_ranges ()
+{
+  test_diagnostic_context dc;
+  location_t foo
+    = make_location (linemap_position_for_column (line_table, 2),
+		     linemap_position_for_column (line_table, 1),
+		     linemap_position_for_column (line_table, 3));
+  dc.caret_chars[0] = 'A';
+
+  location_t bar
+    = make_location (linemap_position_for_column (line_table, 8),
+		     linemap_position_for_column (line_table, 7),
+		     linemap_position_for_column (line_table, 9));
+  dc.caret_chars[1] = 'B';
+
+  location_t field
+    = make_location (linemap_position_for_column (line_table, 13),
+		     linemap_position_for_column (line_table, 11),
+		     linemap_position_for_column (line_table, 15));
+  dc.caret_chars[2] = 'C';
+
+  rich_location richloc (line_table, foo);
+  richloc.add_range (bar, true);
+  richloc.add_range (field, true);
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		" ~A~   ~B~ ~~C~~\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Insertion fix-it hint: adding an "&" to the front of "bar.field". */
+
+static void
+test_one_liner_fixit_insert ()
+{
+  test_diagnostic_context dc;
+  location_t caret = linemap_position_for_column (line_table, 7);
+  rich_location richloc (line_table, caret);
+  richloc.add_fixit_insert (caret, "&");
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		"       ^\n"
+		"       &\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Removal fix-it hint: removal of the ".field". */
+
+static void
+test_one_liner_fixit_remove ()
+{
+  test_diagnostic_context dc;
+  location_t start = linemap_position_for_column (line_table, 10);
+  location_t finish = linemap_position_for_column (line_table, 15);
+  location_t dot = make_location (start, start, finish);
+  rich_location richloc (line_table, dot);
+  source_range range;
+  range.m_start = start;
+  range.m_finish = finish;
+  richloc.add_fixit_remove (range);
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		"          ^~~~~~\n"
+		"          ------\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Replace fix-it hint: replacing "field" with "m_field". */
+
+static void
+test_one_liner_fixit_replace ()
+{
+  test_diagnostic_context dc;
+  location_t start = linemap_position_for_column (line_table, 11);
+  location_t finish = linemap_position_for_column (line_table, 15);
+  location_t field = make_location (start, start, finish);
+  rich_location richloc (line_table, field);
+  source_range range;
+  range.m_start = start;
+  range.m_finish = finish;
+  richloc.add_fixit_replace (range, "m_field");
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		"           ^~~~~\n"
+		"           m_field\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Run the various one-liner tests.  */
+
+static void
+test_diagnostic_show_locus_one_liner (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     ....................0000000001111111.
+     ....................1234567890123456.  */
+  const char *content = "foo = bar.field;\n";
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  line_table_test ltt (case_);
+
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 1);
+
+  location_t line_end = linemap_position_for_column (line_table, 16);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  ASSERT_STREQ (tmp.get_filename (), LOCATION_FILE (line_end));
+  ASSERT_EQ (1, LOCATION_LINE (line_end));
+  ASSERT_EQ (16, LOCATION_COLUMN (line_end));
+
+  test_one_liner_simple_caret ();
+  test_one_liner_caret_and_range ();
+  test_one_liner_multiple_carets_and_ranges ();
+  test_one_liner_fixit_insert ();
+  test_one_liner_fixit_remove ();
+  test_one_liner_fixit_replace ();
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -1341,6 +1544,10 @@ diagnostic_show_locus_c_tests ()
   test_range_contains_point_for_multiple_lines ();
 
   test_get_line_width_without_trailing_whitespace ();
+
+  test_diagnostic_show_locus_unknown_location ();
+
+  for_each_line_table_case (test_diagnostic_show_locus_one_liner);
 }
 
 } // namespace selftest

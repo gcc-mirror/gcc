@@ -1,5 +1,38 @@
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic-show-locus.c (colorizer::colorizer): Replace diagnostic
+	param with diagnostic_kind.
+	(class colorizer): Similarly replace field m_diagnostic with
+	m_diagnostic_kind.
+	(colorizer::colorizer): Replace diagnostic
+	param with diagnostic_kind.
+	(colorizer::begin_state): Update for above field change.
+	(layout::layout): Replace diagnostic param with rich_location *
+	and diagnostic_kind.
+	(diagnostic_show_locus): Replace diagnostic param with richloc
+	and diagnostic_kind.
+	(class selftest::test_diagnostic_context): New class.
+	(selftest::test_diagnostic_show_locus_unknown_location): New
+	function.
+	(selftest::test_one_liner_simple_caret): New function.
+	(selftest::test_one_liner_caret_and_range): New function.
+	(selftest::test_one_liner_multiple_carets_and_ranges): New
+	function.
+	(selftest::test_one_liner_fixit_remove): New function.
+	(selftest::test_one_liner_fixit_replace): New function.
+	(selftest::test_diagnostic_show_locus_one_liner): New function.
+	(selftest::diagnostic_show_locus_c_tests): Call the new test
+	functions.
+	* diagnostic.c (diagnostic_initialize): Initialize
+	colorize_source_p, show_ruler_p and parseable_fixits_p.
+	(default_diagnostic_finalizer): Update for change to
+	diagnostic_show_locus.
+	(diagnostic_append_note): Likewise.
+	* diagnostic.h (diagnostic_show_locus): Replace
+	const diagnostic_info * param with location * and diagnostic_t.
+
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* input.c (saved_line_table): New global.
 	(class selftest::temp_line_table): Rename to line_table_test and
 	move declaration to selftest.h, and drop field m_old_line_table.

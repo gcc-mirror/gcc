@@ -171,6 +171,9 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->x_data = NULL;
   context->lock = 0;
   context->inhibit_notes_p = false;
+  context->colorize_source_p = false;
+  context->show_ruler_p = false;
+  context->parseable_fixits_p = false;
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -575,7 +578,7 @@ void
 default_diagnostic_finalizer (diagnostic_context *context,
 			      diagnostic_info *diagnostic)
 {
-  diagnostic_show_locus (context, diagnostic);
+  diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   pp_destroy_prefix (context->printer);
   pp_flush (context->printer);
 }
@@ -1025,7 +1028,7 @@ diagnostic_append_note (diagnostic_context *context,
   pp_output_formatted_text (context->printer);
   pp_destroy_prefix (context->printer);
   pp_set_prefix (context->printer, saved_prefix);
-  diagnostic_show_locus (context, &diagnostic);
+  diagnostic_show_locus (context, &richloc, DK_NOTE);
   va_end (ap);
 }
 
