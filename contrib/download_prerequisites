@@ -52,5 +52,7 @@ if [ "$GRAPHITE_LOOP_OPT" = "yes" ] ; then
 
   wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$ISL.tar.bz2 || exit 1
   tar xjf $ISL.tar.bz2  || exit 1
+  # Fix trailing comma which errors with -pedantic for host GCC <= 4.3
+  sed -e 's/isl_stat_ok = 0,/isl_stat_ok = 0/' isl-0.15/include/isl/ctx.h > isl-0.15/include/isl/ctx.h.tem && mv isl-0.15/include/isl/ctx.h.tem isl-0.15/include/isl/ctx.h
   ln -sf $ISL isl || exit 1
 fi

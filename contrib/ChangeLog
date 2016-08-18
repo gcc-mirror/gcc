@@ -1,3 +1,9 @@
+2016-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/77297
+	* download_prerequisites: Patch ISL 0.15 to remove trailing comma
+	which causes PR77297.
+
 2016-04-27  Release Manager
 
 	* GCC 6.1.0 released.
