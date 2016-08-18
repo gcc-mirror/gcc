@@ -1,5 +1,8 @@
 2016-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/build_hacking.xml: New section on shared library
+	versioning.
+
 	* doc/xml/manual/build_hacking.xml: Improve markup.
 	* doc/xml/manual/test.xml: Likewise. Change section title from "Test"
 	to "Testing".
