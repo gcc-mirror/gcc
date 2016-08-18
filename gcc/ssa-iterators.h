@@ -699,6 +699,15 @@ single_ssa_use_operand (gimple *stmt, int flags)
   return NULL_USE_OPERAND_P;
 }
 
+/* Return the single virtual use operand in STMT if present.  Otherwise
+   return NULL.  */
+static inline use_operand_p
+ssa_vuse_operand (gimple *stmt)
+{
+  if (! gimple_vuse (stmt))
+    return NULL_USE_OPERAND_P;
+  return USE_OP_PTR (gimple_use_ops (stmt));
+}
 
 
 /* If there is a single operand in STMT matching FLAGS, return it.  Otherwise

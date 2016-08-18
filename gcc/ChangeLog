@@ -1,3 +1,15 @@
+2016-08-18  Richard Biener  <rguenther@suse.de>
+
+	* ssa-iterators.h (ssa_vuse_operand): New inline.
+	* tree-if-conv.c (ifc_temp_var): Update virtual operand.
+	(predicate_all_scalar_phis): Use remove_phi_node to remove
+	phi nodes predicated.  Delay removing virtual PHIs.
+	(predicate_mem_writes): Update virtual operands.
+	(combine_blocks): Likewise.  Propagate out remaining virtual PHIs.
+	(tree_if_conversion): Do not rewrite virtual SSA form.
+	* tree-phinodes.c (release_phi_node): Make static.
+	* tree-phinodes.h (release_phi_node): Remove.
+
 2016-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (enum ix86_builtins): Remove IX86_BUILTIN_*
