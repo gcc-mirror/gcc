@@ -6793,6 +6793,15 @@ default_use_anchors_for_symbol_p (const_rtx symbol)
 	 sections that should be marked as small in the section directive.  */
       if (targetm.in_small_data_p (decl))
 	return false;
+
+      /* Don't use section anchors for decls that won't fit inside a single
+	 anchor range to reduce the amount of instructions require to refer
+	 to the entire declaration.  */
+      if (decl && DECL_SIZE (decl)
+	 && tree_to_shwi (DECL_SIZE (decl))
+	    >= (targetm.max_anchor_offset * BITS_PER_UNIT))
+	return false;
+
     }
   return true;
 }
