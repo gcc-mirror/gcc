@@ -1,3 +1,13 @@
+2016-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (enum ix86_builtins): Remove IX86_BUILTIN_*
+	codes that appear in bdesc_* arrays, instead include i386-builtin.def
+	twice to define those.
+	(bdesc_comi, bdesc_pcmpestr, bdesc_pcmpistr, bdesc_special_args,
+	bdesc_args, bdesc_round_args, bdesc_mpx, bdesc_mpx_const,
+	bdesc_multi_arg): Define by including i386-builtin.def the third time.
+	* config/i386/i386-builtin.def: New file.
+
 2016-08-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c (get_source_range_for_char): Rename to...
