@@ -142,6 +142,8 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
 
     case OVERLOAD:
       t = OVL_CURRENT (t);
+      /* XXX Really fallthru?  */
+      /* FALLTHRU */
     case VAR_DECL:
     case PARM_DECL:
     case CONST_DECL:

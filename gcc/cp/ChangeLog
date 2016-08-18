@@ -1,3 +1,11 @@
+2016-08-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* call.c (add_builtin_candidate): Add gcc_fallthrough.
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Likewise.
+	* parser.c (cp_parser_skip_to_end_of_statement): Likewise.
+	(cp_parser_cache_defarg): Likewise.
+
 2016-08-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652

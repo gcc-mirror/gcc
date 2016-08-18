@@ -1,3 +1,8 @@
+2016-08-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* pch.c (write_macdef): Add CPP_FALLTHRU.
+
 2016-08-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
