@@ -2435,7 +2435,6 @@ symbol_table::compile (void)
     fprintf (stderr, "Assembling functions:\n");
   symtab_node::checking_verify_symtab_nodes ();
 
-  materialize_all_clones ();
   bitmap_obstack_initialize (NULL);
   execute_ipa_pass_list (g->get_passes ()->all_late_ipa_passes);
   bitmap_obstack_release (NULL);
