@@ -1,3 +1,10 @@
+2016-08-18  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (copy_dwarf_procedure): Remove obsolete comment.
+	(new_dwarf_proc_die): Emit DW_TAG_dwarf_procedure DIEs even for
+	-gdwarf-3.
+	(function_to_dwarf_procedure): Update comment.
+
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c (diagnostics_file_cache_forcibly_evict_file): New

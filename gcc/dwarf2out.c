@@ -7747,9 +7747,6 @@ copy_dwarf_procedure (dw_die_ref die,
 		      comdat_type_node *type_node,
 		      hash_map<dw_die_ref, dw_die_ref> &copied_dwarf_procs)
 {
-  /* We do this for COMDAT section, which is DWARFv4 specific, so
-     DWARF procedure are always DW_TAG_dwarf_procedure DIEs (unlike
-     DW_TAG_variable in DWARFv3).  */
   gcc_assert (die->die_tag == DW_TAG_dwarf_procedure);
 
   /* DWARF procedures are not supposed to have children...  */
@@ -15332,22 +15329,15 @@ static dw_die_ref
 new_dwarf_proc_die (dw_loc_descr_ref location, tree fndecl,
 		    dw_die_ref parent_die)
 {
-  const bool dwarf_proc_supported = dwarf_version >= 4;
   dw_die_ref dwarf_proc_die;
 
   if ((dwarf_version < 3 && dwarf_strict)
       || location == NULL)
     return NULL;
 
-  dwarf_proc_die  = new_die (dwarf_proc_supported
-			     ? DW_TAG_dwarf_procedure
-			     : DW_TAG_variable,
-			     parent_die,
-			     fndecl);
+  dwarf_proc_die = new_die (DW_TAG_dwarf_procedure, parent_die, fndecl);
   if (fndecl)
     equate_decl_number_to_die (fndecl, dwarf_proc_die);
-  if (!dwarf_proc_supported)
-    add_AT_flag (dwarf_proc_die, DW_AT_artificial, 1);
   add_AT_loc (dwarf_proc_die, DW_AT_location, location);
   return dwarf_proc_die;
 }
@@ -15673,9 +15663,7 @@ function_to_dwarf_procedure (tree fndecl)
   if (dwarf_proc_die != NULL)
     return dwarf_proc_die;
 
-  /* DWARF procedures are available starting with the DWARFv3 standard, but
-     it's the DWARFv4 standard that introduces the DW_TAG_dwarf_procedure
-     DIE.  */
+  /* DWARF procedures are available starting with the DWARFv3 standard.  */
   if (dwarf_version < 3 && dwarf_strict)
     return NULL;
 
