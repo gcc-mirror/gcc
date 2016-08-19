@@ -36,16 +36,16 @@
 
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdpkru_u32(void)
+_rdpkru_u32 (void)
 {
   return __builtin_ia32_rdpkru ();
 }
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_wrpkru(unsigned int key)
+_wrpkru (unsigned int key)
 {
-  return __builtin_ia32_wrpkru (key);
+  __builtin_ia32_wrpkru (key);
 }
 
 #ifdef __DISABLE_PKU__
