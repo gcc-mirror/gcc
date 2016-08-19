@@ -1,3 +1,8 @@
+2016-08-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77286
+	* gcc.dg/torture/pr77286.c: New testcase.
+
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/verbose-asm-2.c: New test case.
