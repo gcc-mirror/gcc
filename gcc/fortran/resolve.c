@@ -15587,7 +15587,8 @@ gfc_resolve (gfc_namespace *ns)
   /* As gfc_resolve can be called during resolution of an OpenMP construct
      body, we should clear any state associated to it, so that say NS's
      DO loops are not interpreted as OpenMP loops.  */
-  gfc_omp_save_and_clear_state (&old_omp_state);
+  if (!ns->construct_entities)
+    gfc_omp_save_and_clear_state (&old_omp_state);
 
   resolve_types (ns);
   component_assignment_level = 0;
@@ -15599,5 +15600,6 @@ gfc_resolve (gfc_namespace *ns)
 
   gfc_run_passes (ns);
 
-  gfc_omp_restore_state (&old_omp_state);
+  if (!ns->construct_entities)
+    gfc_omp_restore_state (&old_omp_state);
 }
