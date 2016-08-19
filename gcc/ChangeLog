@@ -1,3 +1,21 @@
+2016-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c
+	(layout::annotation_line_showed_range_p): New method.
+	(layout::print_any_fixits): Remove case fixit_hint::REMOVE.
+	Reimplement case fixit_hint::REPLACE to cover removals, and
+	replacements where the range of the replacement isn't one
+	of the ranges in the rich_location.
+	(test_one_liner_fixit_replace): Likewise.
+	(selftest::test_one_liner_fixit_replace_non_equal_range): New
+	function.
+	(selftest::test_one_liner_fixit_replace_equal_secondary_range):
+	New function.
+	(selftest::test_diagnostic_show_locus_one_liner): Call the new
+	functions.
+	* diagnostic.c (print_parseable_fixits): Remove case
+	fixit_hint::REMOVE.
+
 2016-08-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77270

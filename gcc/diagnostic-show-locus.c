@@ -199,6 +199,8 @@ class layout
 
   bool print_source_line (int row, line_bounds *lbounds_out);
   void print_annotation_line (int row, const line_bounds lbounds);
+  bool annotation_line_showed_range_p (int line, int start_column,
+				       int finish_column) const;
   void print_any_fixits (int row, const rich_location *richloc);
 
   void show_ruler (int max_column) const;
@@ -1053,6 +1055,26 @@ layout::print_annotation_line (int row, const line_bounds lbounds)
   print_newline ();
 }
 
+/* Subroutine of layout::print_any_fixits.
+
+   Determine if the annotation line printed for LINE contained
+   the exact range from START_COLUMN to FINISH_COLUMN.  */
+
+bool
+layout::annotation_line_showed_range_p (int line, int start_column,
+					int finish_column) const
+{
+  layout_range *range;
+  int i;
+  FOR_EACH_VEC_ELT (m_layout_ranges, i, range)
+    if (range->m_start.m_line == line
+	&& range->m_start.m_column == start_column
+	&& range->m_finish.m_line == line
+	&& range->m_finish.m_column == finish_column)
+      return true;
+  return false;
+}
+
 /* If there are any fixit hints on source line ROW within RICHLOC, print them.
    They are printed in order, attempting to combine them onto lines, but
    starting new lines if necessary.  */
@@ -1083,33 +1105,39 @@ layout::print_any_fixits (int row, const rich_location *richloc)
 	      }
 	      break;
 
-	    case fixit_hint::REMOVE:
-	      {
-		fixit_remove *remove = static_cast <fixit_remove *> (hint);
-		/* This assumes the removal just affects one line.  */
-		source_range src_range = remove->get_range ();
-		int start_column = LOCATION_COLUMN (src_range.m_start);
-		int finish_column = LOCATION_COLUMN (src_range.m_finish);
-		move_to_column (&column, start_column);
-		for (int column = start_column; column <= finish_column; column++)
-		  {
-		    m_colorizer.set_fixit_hint ();
-		    pp_character (m_pp, '-');
-		    m_colorizer.set_normal_text ();
-		  }
-	      }
-	      break;
-
 	    case fixit_hint::REPLACE:
 	      {
 		fixit_replace *replace = static_cast <fixit_replace *> (hint);
-		int start_column
-		  = LOCATION_COLUMN (replace->get_range ().m_start);
-		move_to_column (&column, start_column);
-		m_colorizer.set_fixit_hint ();
-		pp_string (m_pp, replace->get_string ());
-		m_colorizer.set_normal_text ();
-		column += replace->get_length ();
+		source_range src_range = replace->get_range ();
+		int line = LOCATION_LINE (src_range.m_start);
+		int start_column = LOCATION_COLUMN (src_range.m_start);
+		int finish_column = LOCATION_COLUMN (src_range.m_finish);
+
+		/* If the range of the replacement wasn't printed in the
+		   annotation line, then print an extra underline to
+		   indicate exactly what is being replaced.
+		   Always show it for removals.  */
+		if (!annotation_line_showed_range_p (line, start_column,
+						     finish_column)
+		    || replace->get_length () == 0)
+		  {
+		    move_to_column (&column, start_column);
+		    m_colorizer.set_fixit_hint ();
+		    for (; column <= finish_column; column++)
+		      pp_character (m_pp, '-');
+		    m_colorizer.set_normal_text ();
+		  }
+		/* Print the replacement text.  REPLACE also covers
+		   removals, so only do this extra work (potentially starting
+		   a new line) if we have actual replacement text.  */
+		if (replace->get_length () > 0)
+		  {
+		    move_to_column (&column, start_column);
+		    m_colorizer.set_fixit_hint ();
+		    pp_string (m_pp, replace->get_string ());
+		    m_colorizer.set_normal_text ();
+		    column += replace->get_length ();
+		  }
 	      }
 	      break;
 
@@ -1502,6 +1530,60 @@ test_one_liner_fixit_replace ()
 		pp_formatted_text (dc.printer));
 }
 
+/* Replace fix-it hint: replacing "field" with "m_field",
+   but where the caret was elsewhere.  */
+
+static void
+test_one_liner_fixit_replace_non_equal_range ()
+{
+  test_diagnostic_context dc;
+  location_t equals = linemap_position_for_column (line_table, 5);
+  location_t start = linemap_position_for_column (line_table, 11);
+  location_t finish = linemap_position_for_column (line_table, 15);
+  rich_location richloc (line_table, equals);
+  source_range range;
+  range.m_start = start;
+  range.m_finish = finish;
+  richloc.add_fixit_replace (range, "m_field");
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  /* The replacement range is not indicated in the annotation line, so
+     it should be indicated via an additional underline.  */
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		"     ^\n"
+		"           -----\n"
+		"           m_field\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Replace fix-it hint: replacing "field" with "m_field",
+   where the caret was elsewhere, but where a secondary range
+   exactly covers "field".  */
+
+static void
+test_one_liner_fixit_replace_equal_secondary_range ()
+{
+  test_diagnostic_context dc;
+  location_t equals = linemap_position_for_column (line_table, 5);
+  location_t start = linemap_position_for_column (line_table, 11);
+  location_t finish = linemap_position_for_column (line_table, 15);
+  rich_location richloc (line_table, equals);
+  location_t field = make_location (start, start, finish);
+  richloc.add_range (field, false);
+  source_range range;
+  range.m_start = start;
+  range.m_finish = finish;
+  richloc.add_fixit_replace (range, "m_field");
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  /* The replacement range is indicated in the annotation line,
+     so it shouldn't be indicated via an additional underline.  */
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		"     ^     ~~~~~\n"
+		"           m_field\n",
+		pp_formatted_text (dc.printer));
+}
+
 /* Run the various one-liner tests.  */
 
 static void
@@ -1532,6 +1614,8 @@ test_diagnostic_show_locus_one_liner (const line_table_case &case_)
   test_one_liner_fixit_insert ();
   test_one_liner_fixit_remove ();
   test_one_liner_fixit_replace ();
+  test_one_liner_fixit_replace_non_equal_range ();
+  test_one_liner_fixit_replace_equal_secondary_range ();
 }
 
 /* Run all of the selftests within this file.  */

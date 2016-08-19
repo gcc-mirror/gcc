@@ -2086,8 +2086,7 @@ rich_location::add_fixit_insert (source_location where,
 void
 rich_location::add_fixit_remove (source_range src_range)
 {
-  linemap_assert (m_num_fixit_hints < MAX_FIXIT_HINTS);
-  m_fixit_hints[m_num_fixit_hints++] = new fixit_remove (src_range);
+  add_fixit_replace (src_range, "");
 }
 
 /* Add a fixit-hint, suggesting replacement of the content at
@@ -2128,21 +2127,6 @@ fixit_insert::affects_line_p (const char *file, int line)
     if (line == exploc.line)
       return true;
   return false;
-}
-
-/* class fixit_remove.  */
-
-fixit_remove::fixit_remove (source_range src_range)
-: m_src_range (src_range)
-{
-}
-
-/* Implementation of fixit_hint::affects_line_p for fixit_remove.  */
-
-bool
-fixit_remove::affects_line_p (const char *file, int line)
-{
-  return m_src_range.intersects_line_p (file, line);
 }
 
 /* class fixit_replace.  */
