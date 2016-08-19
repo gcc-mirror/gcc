@@ -1,5 +1,15 @@
 2016-08-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/fxsrintrin.h (_fxsave): Remove return keyword in inlines
+	returning void.
+	(_fxrstor, _fxsave64, _fxrstor64): Likewise.
+	* config/i386/xsaveintrin.h (_xsave, _xrstor, _xsave64, _xrstor64):
+	Likewise.
+	* config/i386/xsaveoptintrin.h (_xsaveopt, _xsaveopt64): Likewise.
+	* config/i386/pkuintrin.h (_wrpkru): Likewise.  Add space after
+	function name.
+	(_rdpkru_u32): Add space after function name.
+
 	* config/i386/t-i386 (i386-c.o): Don't depend on
 	i386-builtin-types.inc.
 	(i386.o): Depend on i386-builtin-types.inc.
