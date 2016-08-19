@@ -758,10 +758,6 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
 	    }
 	    break;
 
-	  case fixit_hint::REMOVE:
-	    print_escaped_string (pp, "");
-	    break;
-
 	  case fixit_hint::REPLACE:
 	    {
 	      const fixit_replace *replace

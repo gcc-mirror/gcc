@@ -1,3 +1,12 @@
+2016-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (fixit_hint::kind): Delete REPLACE.
+	(class fixit_remove): Delete.
+	* line-map.c (rich_location::add_fixit_remove): Reimplement
+	by calling add_fixit_replace with an empty string.
+	(fixit_remove::fixit_remove): Delete.
+	(fixit_remove::affects_line_p): Delete.
+
 2016-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/32187
