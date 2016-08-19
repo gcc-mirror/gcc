@@ -1,5 +1,12 @@
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
+	* doc/invoke.texi (fverbose-asm): Note that source code lines
+	are emitted, and provide an example.
+	* final.c (asm_show_source): New function.
+	(final_scan_insn): Call asm_show_source.
+
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-show-locus.c (colorizer::colorizer): Replace diagnostic
 	param with diagnostic_kind.
 	(class colorizer): Similarly replace field m_diagnostic with

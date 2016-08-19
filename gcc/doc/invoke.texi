@@ -11426,6 +11426,89 @@ debugging the compiler itself).
 extra information to be omitted and is useful when comparing two assembler
 files.
 
+The added comments include:
+
+@itemize @bullet
+
+@item
+information on the compiler version and command-line options,
+
+@item
+the source code lines associated with the assembly instructions,
+in the form FILENAME:LINENUMBER:CONTENT OF LINE,
+
+@item
+hints on which high-level expressions correspond to
+the various assembly instruction operands.
+
+@end itemize
+
+For example, given this C source file:
+
+@smallexample
+int test (int n)
+@{
+  int i;
+  int total = 0;
+
+  for (i = 0; i < n; i++)
+    total += i * i;
+
+  return total;
+@}
+@end smallexample
+
+compiling to (x86_64) assembly via @option{-S} and emitting the result
+direct to stdout via @option{-o} @option{-}
+
+@smallexample
+gcc -S test.c -fverbose-asm -Os -o -
+@end smallexample
+
+gives output similar to this:
+
+@smallexample
+	.file	"test.c"
+# GNU C11 (GCC) version 7.0.0 20160809 (experimental) (x86_64-pc-linux-gnu)
+  [...snip...]
+# options passed:
+  [...snip...]
+
+	.text
+	.globl	test
+	.type	test, @@function
+test:
+.LFB0:
+	.cfi_startproc
+# test.c:4:   int total = 0;
+	xorl	%eax, %eax	# <retval>
+# test.c:6:   for (i = 0; i < n; i++)
+	xorl	%edx, %edx	# i
+.L2:
+# test.c:6:   for (i = 0; i < n; i++)
+	cmpl	%edi, %edx	# n, i
+	jge	.L5	#,
+# test.c:7:     total += i * i;
+	movl	%edx, %ecx	# i, tmp92
+	imull	%edx, %ecx	# i, tmp92
+# test.c:6:   for (i = 0; i < n; i++)
+	incl	%edx	# i
+# test.c:7:     total += i * i;
+	addl	%ecx, %eax	# tmp92, <retval>
+	jmp	.L2	#
+.L5:
+# test.c:10: @}
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	test, .-test
+	.ident	"GCC: (GNU) 7.0.0 20160809 (experimental)"
+	.section	.note.GNU-stack,"",@@progbits
+@end smallexample
+
+The comments are intended for humans rather than machines and hence the
+precise format of the comments is subject to change.
+
 @item -frecord-gcc-switches
 @opindex frecord-gcc-switches
 This switch causes the command line used to invoke the
