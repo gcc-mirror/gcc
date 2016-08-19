@@ -1,5 +1,12 @@
 2016-08-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/atomic (atomic::is_always_lock_free): Define.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error lineno.
+	* testsuite/29_atomics/atomic/is_always_lock_free.cc: New.
+	* testsuite/29_atomics/atomic_integral/is_always_lock_free.cc: New.
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* doc/html/*: Regenerate.
+
 	* include/experimental/tuple (apply): Qualify call to __apply_impl.
 	* include/std/tuple (apply): Likewise.
 	* testsuite/experimental/system_error/value.cc: Fix ambiguities in
