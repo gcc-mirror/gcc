@@ -1652,8 +1652,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     apply(_Fn&& __f, _Tuple&& __t)
     {
       using _Indices = make_index_sequence<tuple_size_v<decay_t<_Tuple>>>;
-      return __apply_impl(std::forward<_Fn>(__f), std::forward<_Tuple>(__t),
-			  _Indices{});
+      return std::__apply_impl(std::forward<_Fn>(__f),
+			       std::forward<_Tuple>(__t),
+			       _Indices{});
     }
 
 #define __cpp_lib_make_from_tuple  201606

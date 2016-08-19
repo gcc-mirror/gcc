@@ -1,5 +1,12 @@
 2016-08-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/tuple (apply): Qualify call to __apply_impl.
+	* include/std/tuple (apply): Likewise.
+	* testsuite/experimental/system_error/value.cc: Fix ambiguities in
+	C++17 mode.
+	* testsuite/experimental/tuple/tuple_size.cc: Likewise.
+	* testsuite/experimental/type_traits/value.cc: Likewise.
+
 	* doc/xml/manual/status_cxx2017.xml: Update status of make_from_tuple
 	and variant.
 	* doc/html/*: Regenerate.

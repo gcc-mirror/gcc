@@ -20,8 +20,9 @@
 
 #include <experimental/tuple>
 
-using namespace std;
-using namespace std::experimental;
+using std::tuple;
+using std::tuple_size;
+using std::experimental::tuple_size_v;
 
 // These tests are rather simple, the front-end tests already test
 // variable templates, and the library tests for the underlying

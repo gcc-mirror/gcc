@@ -20,21 +20,23 @@
 
 #include <experimental/system_error>
 #include <future>
-using namespace std;
-using namespace std::experimental;
+using std::is_error_code_enum;
+using std::is_error_condition_enum;
+using std::experimental::is_error_code_enum_v;
+using std::experimental::is_error_condition_enum_v;
 
 // These tests are rather simple, the front-end tests already test
 // variable templates, and the library tests for the underlying
 // traits are more elaborate. These are just simple sanity tests.
 
-static_assert(is_error_code_enum_v<future_errc>
-	      && is_error_code_enum<future_errc>::value, "");
+static_assert(is_error_code_enum_v<std::future_errc>
+	      && is_error_code_enum<std::future_errc>::value, "");
 
 static_assert(!is_error_code_enum_v<int>
 	      && !is_error_code_enum<int>::value, "");
 
-static_assert(is_error_condition_enum_v<errc>
-	      && is_error_condition_enum<errc>::value, "");
+static_assert(is_error_condition_enum_v<std::errc>
+	      && is_error_condition_enum<std::errc>::value, "");
 
 static_assert(!is_error_condition_enum_v<int>
 	      && !is_error_condition_enum<int>::value, "");
