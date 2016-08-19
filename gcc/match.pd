@@ -541,13 +541,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* x | ~0 -> ~0  */
 (simplify
-  (bit_ior @0 integer_all_onesp@1)
-  @1)
+ (bit_ior @0 integer_all_onesp@1)
+ @1)
+
+/* x | 0 -> x  */
+(simplify
+ (bit_ior @0 integer_zerop)
+ @0)
 
 /* x & 0 -> 0  */
 (simplify
-  (bit_and @0 integer_zerop@1)
-  @1)
+ (bit_and @0 integer_zerop@1)
+ @1)
 
 /* ~x | x -> -1 */
 /* ~x ^ x -> -1 */
