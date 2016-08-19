@@ -1,5 +1,11 @@
 2016-08-19  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/77290
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Fix flag_tree_parallelize_loops check.
+
+2016-08-19  Richard Biener  <rguenther@suse.de>
+
 	* match.pd (x | 0 -> x): Add.
 
 2016-08-19  Richard Biener  <rguenther@suse.de>

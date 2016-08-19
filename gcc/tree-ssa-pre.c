@@ -4270,7 +4270,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	  if (sprime
 	      && TREE_CODE (sprime) == SSA_NAME
 	      && do_pre
-	      && (flag_tree_loop_vectorize || flag_tree_parallelize_loops)
+	      && (flag_tree_loop_vectorize || flag_tree_parallelize_loops > 1)
 	      && loop_outer (b->loop_father)
 	      && has_zero_uses (sprime)
 	      && bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (sprime))
