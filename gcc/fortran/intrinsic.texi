@@ -11155,7 +11155,6 @@ Subroutine
 @smallexample
 program test_random_number
   REAL :: r(5,5)
-  CALL init_random_seed()         ! see example of RANDOM_SEED
   CALL RANDOM_NUMBER(r)
 end program
 @end smallexample
@@ -11191,9 +11190,6 @@ first time, the seed is copied from the master seed, and forwarded
 alias any other stream in the system, where @var{N} is the number of
 threads that have used @code{RANDOM_NUMBER} so far during the program
 execution.
-
-Note that setting any of the seed values to zero should be avoided as
-it can result in poor quality random numbers being generated.
 
 @item @emph{Standard}:
 Fortran 95 and later
