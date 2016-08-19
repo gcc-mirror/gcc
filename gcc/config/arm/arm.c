@@ -12471,7 +12471,6 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
     {
       rtx el0 = CONST_VECTOR_ELT (op, 0);
-      const REAL_VALUE_TYPE *r0;
 
       if (!vfp3_const_double_rtx (el0) && el0 != CONST0_RTX (GET_MODE (el0)))
         return -1;
@@ -12480,14 +12479,10 @@ neon_valid_immediate (rtx op, machine_mode mode, int inverse,
       if (GET_MODE_INNER (mode) == HFmode)
 	return -1;
 
-      r0 = CONST_DOUBLE_REAL_VALUE (el0);
-
-      for (i = 1; i < n_elts; i++)
-        {
-          rtx elt = CONST_VECTOR_ELT (op, i);
-          if (!real_equal (r0, CONST_DOUBLE_REAL_VALUE (elt)))
-            return -1;
-        }
+      /* All elements in the vector must be the same.  Note that 0.0 and -0.0
+	 are distinct in this context.  */
+      if (!const_vec_duplicate_p (op))
+	return -1;
 
       if (modconst)
         *modconst = CONST_VECTOR_ELT (op, 0);
