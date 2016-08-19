@@ -1,3 +1,10 @@
+2016-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/69281
+	* trans-openmp.c (gfc_trans_omp_parallel, gfc_trans_omp_task,
+	gfc_trans_omp_target): Wrap gfc_trans_omp_code result in an extra
+	BIND_EXPR with its own forced BLOCK.
+
 2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
         * intrinsics.texi (RANDOM_NUMBER): Remove reference to
