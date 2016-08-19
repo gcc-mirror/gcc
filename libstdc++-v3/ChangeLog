@@ -1,5 +1,48 @@
 2016-08-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/21_strings/basic_string/pthread18185.cc: Use -pthread for
+	*-*-solaris* instead of -pthreads.
+	* testsuite/21_strings/basic_string/pthread4.cc : Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
+	* testsuite/23_containers/list/pthread1.cc: Likewise.
+	* testsuite/23_containers/list/pthread5.cc: Likewise.
+	* testsuite/23_containers/map/pthread6.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/pthread2.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/pthread3.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/*: Likewise.
+	* testsuite/ext/rope/pthread7-rope.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	default_weaktoshared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	mutex_weaktoshared.cc: Likewise.
+	* testsuite/20_util/shared_ptr/atomic/3.cc: Likewise. Use
+	dg-require-effective-target instead of using -std option.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+	* testsuite/23_containers/vector/debug/multithreaded_swap.cc:
+	Likewise.
+	* testsuite/30_threads/async/*: Likewise.
+	* testsuite/30_threads/call_once/*: Likewise.
+	* testsuite/30_threads/condition_variable/*: Likewise.
+	* testsuite/30_threads/condition_variable_any/*: Likewise.
+	* testsuite/30_threads/future/*: Likewise.
+	* testsuite/30_threads/lock/*: Likewise.
+	* testsuite/30_threads/mutex/*: Likewise.
+	* testsuite/30_threads/packaged_task/*: Likewise.
+	* testsuite/30_threads/promise/*: Likewise.
+	* testsuite/30_threads/recursive_mutex/*: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/*: Likewise.
+	* testsuite/30_threads/shared_future/*: Likewise.
+	* testsuite/30_threads/shared_lock/*: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/*: Likewise.
+	* testsuite/30_threads/this_thread/*: Likewise.
+	* testsuite/30_threads/thread/*: Likewise.
+	* testsuite/30_threads/timed_mutex/*: Likewise.
+	* testsuite/30_threads/try_lock/*: Likewise.
+	* testsuite/30_threads/unique_lock/*: Likewise.
+
 	* doc/xml/manual/status_cxx2017.xml: Update status of not_fn.
 	* doc/html/*: Regenerate.
 	* include/experimental/functional (_Not_fn, not_fn): Match C++17

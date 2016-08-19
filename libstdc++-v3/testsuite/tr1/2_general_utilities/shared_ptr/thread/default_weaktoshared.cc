@@ -18,8 +18,7 @@
 // TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* } }
-// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* } }
-// { dg-options "-pthreads" { target *-*-solaris* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* } }
 
 #include <tr1/memory>
 #include <tr1/random>
