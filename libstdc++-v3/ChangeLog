@@ -1,5 +1,14 @@
 2016-08-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Update status of not_fn.
+	* doc/html/*: Regenerate.
+	* include/experimental/functional (_Not_fn, not_fn): Match C++17
+	semantics.
+	* include/std/functional (_Not_fn, not_fn): Define for C++17.
+	* testsuite/20_util/not_fn/1.cc: New.
+	* testsuite/experimental/functional/not_fn.cc: Test abstract class.
+	Remove test for volatile-qualified wrapper.
+
 	* include/std/atomic (atomic::is_always_lock_free): Define.
 	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error lineno.
 	* testsuite/29_atomics/atomic/is_always_lock_free.cc: New.

@@ -2129,6 +2129,74 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     swap(function<_Res(_Args...)>& __x, function<_Res(_Args...)>& __y)
     { __x.swap(__y); }
 
+
+#if __cplusplus > 201402L
+
+#define __cpp_lib_not_fn 201603
+
+    /// Generalized negator.
+  template<typename _Fn>
+    class _Not_fn
+    {
+    public:
+      template<typename _Fn2>
+	explicit
+	_Not_fn(_Fn2&& __fn)
+	: _M_fn(std::forward<_Fn2>(__fn)) { }
+
+      _Not_fn(const _Not_fn& __fn) = default;
+      _Not_fn(_Not_fn&& __fn) = default;
+      ~_Not_fn() = default;
+
+      template<typename... _Args>
+	auto
+	operator()(_Args&&... __args) &
+	noexcept(is_nothrow_callable_v<_Fn&(_Args&&...)>)
+	-> decltype(!std::declval<result_of_t<_Fn&(_Args&&...)>>())
+	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
+
+      template<typename... _Args>
+	auto
+	operator()(_Args&&... __args) const &
+	noexcept(is_nothrow_callable_v<const _Fn&(_Args&&...)>)
+	-> decltype(!std::declval<result_of_t<const _Fn&(_Args&&...)>>())
+	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
+
+      template<typename... _Args>
+	auto
+	operator()(_Args&&... __args) &&
+	noexcept(is_nothrow_callable_v<_Fn&&(_Args&&...)>)
+	-> decltype(!std::declval<result_of_t<_Fn&&(_Args&&...)>>())
+	{
+	  return !std::__invoke(std::move(_M_fn),
+				std::forward<_Args>(__args)...);
+	}
+
+      template<typename... _Args>
+	auto
+	operator()(_Args&&... __args) const &&
+	noexcept(is_nothrow_callable_v<const _Fn&&(_Args&&...)>)
+	-> decltype(!std::declval<result_of_t<const _Fn&&(_Args&&...)>>())
+	{
+	  return !std::__invoke(std::move(_M_fn),
+				std::forward<_Args>(__args)...);
+	}
+
+    private:
+      _Fn _M_fn;
+    };
+
+  /// [func.not_fn] Function template not_fn
+  template<typename _Fn>
+    inline auto
+    not_fn(_Fn&& __fn)
+    noexcept(std::is_nothrow_constructible<std::decay_t<_Fn>, _Fn&&>::value)
+    {
+      return _Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn)};
+    }
+
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

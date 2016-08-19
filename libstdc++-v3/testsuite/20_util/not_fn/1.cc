@@ -15,12 +15,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++14" }
+// { dg-options "-std=gnu++17" }
 
-#include <experimental/functional>
+#include <functional>
 #include <testsuite_hooks.h>
 
-using std::experimental::not_fn;
+using std::not_fn;
 
 int func(int, char) { return 0; }
 
@@ -59,7 +59,7 @@ struct negator
     void operator()() const {}
 };
 
-void 
+void
 test02()
 {
   foo(negator{}, 1); // PR libstdc++/66998
