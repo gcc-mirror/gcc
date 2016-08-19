@@ -2140,6 +2140,26 @@ call_from_call_insn (rtx_call_insn *insn)
   return x;
 }
 
+/* Print a comment into the asm showing FILENAME, LINENUM, and the
+   corresponding source line, if available.  */
+
+static void
+asm_show_source (const char *filename, int linenum)
+{
+  if (!filename)
+    return;
+
+  int line_size;
+  const char *line = location_get_source_line (filename, linenum, &line_size);
+  if (!line)
+    return;
+
+  fprintf (asm_out_file, "%s %s:%i: ", ASM_COMMENT_START, filename, linenum);
+  /* "line" is not 0-terminated, so we must use line_size.  */
+  fwrite (line, 1, line_size, asm_out_file);
+  fputc ('\n', asm_out_file);
+}
+
 /* The final scan for one insn, INSN.
    Args are same as in `final', except that INSN
    is the insn being scanned.
@@ -2563,8 +2583,12 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	   note in a row.  */
 	if (!DECL_IGNORED_P (current_function_decl)
 	    && notice_source_line (insn, &is_stmt))
-	  (*debug_hooks->source_line) (last_linenum, last_filename,
-				       last_discriminator, is_stmt);
+	  {
+	    if (flag_verbose_asm)
+	      asm_show_source (last_filename, last_linenum);
+	    (*debug_hooks->source_line) (last_linenum, last_filename,
+					 last_discriminator, is_stmt);
+	  }
 
 	if (GET_CODE (body) == PARALLEL
 	    && GET_CODE (XVECEXP (body, 0, 0)) == ASM_INPUT)
