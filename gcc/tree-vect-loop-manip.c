@@ -735,22 +735,33 @@ slpeel_duplicate_current_defs_from_edges (edge from, edge to)
       gimple *from_phi = gsi_stmt (gsi_from);
       gimple *to_phi = gsi_stmt (gsi_to);
       tree from_arg = PHI_ARG_DEF_FROM_EDGE (from_phi, from);
-      if (TREE_CODE (from_arg) != SSA_NAME)
-	{	
+      tree to_arg = PHI_ARG_DEF_FROM_EDGE (to_phi, to);
+      if (virtual_operand_p (from_arg))
+	{
 	  gsi_next (&gsi_from);
 	  continue;
 	}
-      tree to_arg = PHI_ARG_DEF_FROM_EDGE (to_phi, to);
-      if (TREE_CODE (to_arg) != SSA_NAME)
-	{	
+      if (virtual_operand_p (to_arg))
+	{
 	  gsi_next (&gsi_to);
 	  continue;
 	}
-      if (get_current_def (to_arg) == NULL_TREE)
-	set_current_def (to_arg, get_current_def (from_arg));
+      if (TREE_CODE (from_arg) != SSA_NAME)
+	gcc_assert (operand_equal_p (from_arg, to_arg, 0));
+      else
+	{
+	  if (get_current_def (to_arg) == NULL_TREE)
+	    set_current_def (to_arg, get_current_def (from_arg));
+	}
       gsi_next (&gsi_from);
       gsi_next (&gsi_to);
     }
+
+  gphi *from_phi = get_virtual_phi (from->dest);
+  gphi *to_phi = get_virtual_phi (to->dest);
+  if (from_phi)
+    set_current_def (PHI_ARG_DEF_FROM_EDGE (to_phi, to),
+		     get_current_def (PHI_ARG_DEF_FROM_EDGE (from_phi, from)));
 }
 
 

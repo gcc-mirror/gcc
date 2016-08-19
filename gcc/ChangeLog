@@ -1,3 +1,9 @@
+2016-08-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77286
+	* tree-vect-loop-manip.c (slpeel_duplicate_current_defs_from_edges):
+	Deal with virtual PHIs being out-of-order.
+
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/invoke.texi (fverbose-asm): Note that source code lines
