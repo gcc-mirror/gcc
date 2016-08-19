@@ -1,3 +1,9 @@
+2016-08-19  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/77281
+	* config/arm/arm.c (neon_valid_immediate): Delete declaration.
+	Use const_vec_duplicate to check for duplicated elements.
+
 2016-08-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77290
