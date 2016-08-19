@@ -1,3 +1,14 @@
+2016-08-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77270
+	* config/i386/i386.c (ix86_option_override_internal): Remove
+	PTA_PRFCHW from entries that also have PTA_3DNOW flag.
+	Enable SSE prefetch also for TARGET_PREFETCHWT1.
+	Do not try to enable TARGET_PRFCHW ISA flag here.
+	* config/i386/i386.md (prefetch): Enable also for TARGET_3DNOW.
+	Rewrite expander function body.
+	(*prefetch_3dnow): Enable for TARGET_3DNOW and TARGET_PREFETCHWT1.
+
 2016-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/32187
