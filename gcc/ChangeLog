@@ -1,3 +1,9 @@
+2016-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/t-i386 (i386-c.o): Don't depend on
+	i386-builtin-types.inc.
+	(i386.o): Depend on i386-builtin-types.inc.
+
 2016-08-19  Matthew Wahab  <matthew.wahab@arm.com>
 
 	PR target/77281
