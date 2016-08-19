@@ -1073,7 +1073,7 @@ eval_token (cpp_reader *pfile, const cpp_token *token,
 	  result.low = 0;
 	  if (CPP_OPTION (pfile, warn_undef) && !pfile->state.skip_eval)
 	    cpp_warning_with_line (pfile, CPP_W_UNDEF, virtual_location, 0,
-				   "\"%s\" is not defined",
+				   "\"%s\" is not defined, evaluates to 0",
 				   NODE_NAME (token->val.node.node));
 	}
       break;

@@ -1,3 +1,7 @@
+2016-08-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* expr.c (eval_token): Append "evaluates to 0" to Wundef diagnostic.
+
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* directives.c (directive_names): New array.
