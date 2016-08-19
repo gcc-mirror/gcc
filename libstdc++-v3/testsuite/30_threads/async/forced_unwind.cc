@@ -1,5 +1,6 @@
 // { dg-do run { target *-*-linux* *-*-gnu* } }
-// { dg-options " -std=gnu++11 -pthread" { target *-*-linux* *-*-gnu* } }
+// { dg-options "-pthread" { target *-*-linux* *-*-gnu* } }
+// { dg-require-effective-target c++11 }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
