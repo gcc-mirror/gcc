@@ -1,8 +1,4 @@
-// { dg-require-atomic-builtins "" }
-// { dg-options "-std=gnu++11 -Wno-pedantic" }
-// { dg-do compile }
-
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +15,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++17" }
+// { dg-do compile }
+
 #include <atomic>
 
-// libstdc++/60695
+struct S { int s[64]; };
 
-struct X {
-  char stuff[0]; // GNU extension, type has zero size
-};
+constexpr bool b1 = std::atomic<S>::is_always_lock_free;
+constexpr const bool* cktype1 = &std::atomic<S>::is_always_lock_free;
 
-std::atomic<X> a;  // { dg-error "not supported" "" { target *-*-* } 190 }
+constexpr bool b2 = std::atomic<int*>::is_always_lock_free;
+constexpr const bool* cktype2 = &std::atomic<int*>::is_always_lock_free;
+
+static_assert( std::atomic<int*>::is_always_lock_free
+                == (ATOMIC_POINTER_LOCK_FREE == 2) );
