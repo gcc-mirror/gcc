@@ -37,24 +37,24 @@
 
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdseed16_step (unsigned short *p)
+_rdseed16_step (unsigned short *__p)
 {
-    return __builtin_ia32_rdseed_hi_step (p);
+    return __builtin_ia32_rdseed_hi_step (__p);
 }
 
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdseed32_step (unsigned int *p)
+_rdseed32_step (unsigned int *__p)
 {
-    return __builtin_ia32_rdseed_si_step (p);
+    return __builtin_ia32_rdseed_si_step (__p);
 }
 
 #ifdef __x86_64__
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdseed64_step (unsigned long long *p)
+_rdseed64_step (unsigned long long *__p)
 {
-    return __builtin_ia32_rdseed_di_step (p);
+    return __builtin_ia32_rdseed_di_step (__p);
 }
 #endif
 

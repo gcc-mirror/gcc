@@ -1438,66 +1438,68 @@ _mm_sub_round_ss (__m128 __A, __m128 __B, const int __R)
 #ifdef __OPTIMIZE__
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_ternarylogic_epi64 (__m512i __A, __m512i __B, __m512i __C, const int imm)
+_mm512_ternarylogic_epi64 (__m512i __A, __m512i __B, __m512i __C,
+			   const int __imm)
 {
   return (__m512i) __builtin_ia32_pternlogq512_mask ((__v8di) __A,
 						     (__v8di) __B,
-						     (__v8di) __C, imm,
+						     (__v8di) __C, __imm,
 						     (__mmask8) -1);
 }
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_ternarylogic_epi64 (__m512i __A, __mmask8 __U, __m512i __B,
-				__m512i __C, const int imm)
+				__m512i __C, const int __imm)
 {
   return (__m512i) __builtin_ia32_pternlogq512_mask ((__v8di) __A,
 						     (__v8di) __B,
-						     (__v8di) __C, imm,
+						     (__v8di) __C, __imm,
 						     (__mmask8) __U);
 }
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_maskz_ternarylogic_epi64 (__mmask8 __U, __m512i __A, __m512i __B,
-				 __m512i __C, const int imm)
+				 __m512i __C, const int __imm)
 {
   return (__m512i) __builtin_ia32_pternlogq512_maskz ((__v8di) __A,
 						      (__v8di) __B,
 						      (__v8di) __C,
-						      imm, (__mmask8) __U);
+						      __imm, (__mmask8) __U);
 }
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_ternarylogic_epi32 (__m512i __A, __m512i __B, __m512i __C, const int imm)
+_mm512_ternarylogic_epi32 (__m512i __A, __m512i __B, __m512i __C,
+			   const int __imm)
 {
   return (__m512i) __builtin_ia32_pternlogd512_mask ((__v16si) __A,
 						     (__v16si) __B,
 						     (__v16si) __C,
-						     imm, (__mmask16) -1);
+						     __imm, (__mmask16) -1);
 }
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_ternarylogic_epi32 (__m512i __A, __mmask16 __U, __m512i __B,
-				__m512i __C, const int imm)
+				__m512i __C, const int __imm)
 {
   return (__m512i) __builtin_ia32_pternlogd512_mask ((__v16si) __A,
 						     (__v16si) __B,
 						     (__v16si) __C,
-						     imm, (__mmask16) __U);
+						     __imm, (__mmask16) __U);
 }
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_maskz_ternarylogic_epi32 (__mmask16 __U, __m512i __A, __m512i __B,
-				 __m512i __C, const int imm)
+				 __m512i __C, const int __imm)
 {
   return (__m512i) __builtin_ia32_pternlogd512_maskz ((__v16si) __A,
 						      (__v16si) __B,
 						      (__v16si) __C,
-						      imm, (__mmask16) __U);
+						      __imm, (__mmask16) __U);
 }
 #else
 #define _mm512_ternarylogic_epi64(A, B, C, I)				\
@@ -9211,21 +9213,21 @@ extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_i32gather_ps (__m512i __index, float const *__addr, int __scale)
 {
-  __m512 v1_old = _mm512_undefined_ps ();
-  __mmask16 mask = 0xFFFF;
+  __m512 __v1_old = _mm512_undefined_ps ();
+  __mmask16 __mask = 0xFFFF;
 
-  return (__m512) __builtin_ia32_gathersiv16sf ((__v16sf) v1_old,
+  return (__m512) __builtin_ia32_gathersiv16sf ((__v16sf) __v1_old,
 						__addr,
 						(__v16si) __index,
-						mask, __scale);
+						__mask, __scale);
 }
 
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_i32gather_ps (__m512 v1_old, __mmask16 __mask,
+_mm512_mask_i32gather_ps (__m512 __v1_old, __mmask16 __mask,
 			  __m512i __index, float const *__addr, int __scale)
 {
-  return (__m512) __builtin_ia32_gathersiv16sf ((__v16sf) v1_old,
+  return (__m512) __builtin_ia32_gathersiv16sf ((__v16sf) __v1_old,
 						__addr,
 						(__v16si) __index,
 						__mask, __scale);
@@ -9235,12 +9237,12 @@ extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_i32gather_pd (__m256i __index, double const *__addr, int __scale)
 {
-  __m512d v1_old = _mm512_undefined_pd ();
-  __mmask8 mask = 0xFF;
+  __m512d __v1_old = _mm512_undefined_pd ();
+  __mmask8 __mask = 0xFF;
 
-  return (__m512d) __builtin_ia32_gathersiv8df ((__v8df) v1_old,
+  return (__m512d) __builtin_ia32_gathersiv8df ((__v8df) __v1_old,
 						__addr,
-						(__v8si) __index, mask,
+						(__v8si) __index, __mask,
 						__scale);
 }
 
@@ -9259,12 +9261,12 @@ extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_i64gather_ps (__m512i __index, float const *__addr, int __scale)
 {
-  __m256 v1_old = _mm256_undefined_ps ();
-  __mmask8 mask = 0xFF;
+  __m256 __v1_old = _mm256_undefined_ps ();
+  __mmask8 __mask = 0xFF;
 
-  return (__m256) __builtin_ia32_gatherdiv16sf ((__v8sf) v1_old,
+  return (__m256) __builtin_ia32_gatherdiv16sf ((__v8sf) __v1_old,
 						__addr,
-						(__v8di) __index, mask,
+						(__v8di) __index, __mask,
 						__scale);
 }
 
@@ -9283,12 +9285,12 @@ extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_i64gather_pd (__m512i __index, double const *__addr, int __scale)
 {
-  __m512d v1_old = _mm512_undefined_pd ();
-  __mmask8 mask = 0xFF;
+  __m512d __v1_old = _mm512_undefined_pd ();
+  __mmask8 __mask = 0xFF;
 
-  return (__m512d) __builtin_ia32_gatherdiv8df ((__v8df) v1_old,
+  return (__m512d) __builtin_ia32_gatherdiv8df ((__v8df) __v1_old,
 						__addr,
-						(__v8di) __index, mask,
+						(__v8di) __index, __mask,
 						__scale);
 }
 
@@ -9307,13 +9309,13 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_i32gather_epi32 (__m512i __index, int const *__addr, int __scale)
 {
-  __m512i v1_old = _mm512_undefined_epi32 ();
-  __mmask16 mask = 0xFFFF;
+  __m512i __v1_old = _mm512_undefined_epi32 ();
+  __mmask16 __mask = 0xFFFF;
 
-  return (__m512i) __builtin_ia32_gathersiv16si ((__v16si) v1_old,
+  return (__m512i) __builtin_ia32_gathersiv16si ((__v16si) __v1_old,
 						 __addr,
 						 (__v16si) __index,
-						 mask, __scale);
+						 __mask, __scale);
 }
 
 extern __inline __m512i
@@ -9331,12 +9333,12 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_i32gather_epi64 (__m256i __index, long long const *__addr, int __scale)
 {
-  __m512i v1_old = _mm512_undefined_epi32 ();
-  __mmask8 mask = 0xFF;
+  __m512i __v1_old = _mm512_undefined_epi32 ();
+  __mmask8 __mask = 0xFF;
 
-  return (__m512i) __builtin_ia32_gathersiv8di ((__v8di) v1_old,
+  return (__m512i) __builtin_ia32_gathersiv8di ((__v8di) __v1_old,
 						__addr,
-						(__v8si) __index, mask,
+						(__v8si) __index, __mask,
 						__scale);
 }
 
@@ -9356,13 +9358,13 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_i64gather_epi32 (__m512i __index, int const *__addr, int __scale)
 {
-  __m256i v1_old = _mm256_undefined_si256 ();
-  __mmask8 mask = 0xFF;
+  __m256i __v1_old = _mm256_undefined_si256 ();
+  __mmask8 __mask = 0xFF;
 
-  return (__m256i) __builtin_ia32_gatherdiv16si ((__v8si) v1_old,
+  return (__m256i) __builtin_ia32_gatherdiv16si ((__v8si) __v1_old,
 						 __addr,
 						 (__v8di) __index,
-						 mask, __scale);
+						 __mask, __scale);
 }
 
 extern __inline __m256i
@@ -9380,12 +9382,12 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_i64gather_epi64 (__m512i __index, long long const *__addr, int __scale)
 {
-  __m512i v1_old = _mm512_undefined_epi32 ();
-  __mmask8 mask = 0xFF;
+  __m512i __v1_old = _mm512_undefined_epi32 ();
+  __mmask8 __mask = 0xFF;
 
-  return (__m512i) __builtin_ia32_gatherdiv8di ((__v8di) v1_old,
+  return (__m512i) __builtin_ia32_gatherdiv8di ((__v8di) __v1_old,
 						__addr,
-						(__v8di) __index, mask,
+						(__v8di) __index, __mask,
 						__scale);
 }
 
