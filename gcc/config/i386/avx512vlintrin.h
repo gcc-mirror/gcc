@@ -9796,11 +9796,11 @@ _mm_maskz_srli_epi64 (__mmask8 __U, __m128i __A, const int __imm)
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_ternarylogic_epi64 (__m256i __A, __m256i __B, __m256i __C,
-			   const int imm)
+			   const int __imm)
 {
   return (__m256i) __builtin_ia32_pternlogq256_mask ((__v4di) __A,
 						     (__v4di) __B,
-						     (__v4di) __C, imm,
+						     (__v4di) __C, __imm,
 						     (__mmask8) -1);
 }
 
@@ -9808,11 +9808,11 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_ternarylogic_epi64 (__m256i __A, __mmask8 __U,
 				__m256i __B, __m256i __C,
-				const int imm)
+				const int __imm)
 {
   return (__m256i) __builtin_ia32_pternlogq256_mask ((__v4di) __A,
 						     (__v4di) __B,
-						     (__v4di) __C, imm,
+						     (__v4di) __C, __imm,
 						     (__mmask8) __U);
 }
 
@@ -9820,23 +9820,23 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_ternarylogic_epi64 (__mmask8 __U, __m256i __A,
 				 __m256i __B, __m256i __C,
-				 const int imm)
+				 const int __imm)
 {
   return (__m256i) __builtin_ia32_pternlogq256_maskz ((__v4di) __A,
 						      (__v4di) __B,
 						      (__v4di) __C,
-						      imm,
+						      __imm,
 						      (__mmask8) __U);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_ternarylogic_epi32 (__m256i __A, __m256i __B, __m256i __C,
-			   const int imm)
+			   const int __imm)
 {
   return (__m256i) __builtin_ia32_pternlogd256_mask ((__v8si) __A,
 						     (__v8si) __B,
-						     (__v8si) __C, imm,
+						     (__v8si) __C, __imm,
 						     (__mmask8) -1);
 }
 
@@ -9844,11 +9844,11 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_ternarylogic_epi32 (__m256i __A, __mmask8 __U,
 				__m256i __B, __m256i __C,
-				const int imm)
+				const int __imm)
 {
   return (__m256i) __builtin_ia32_pternlogd256_mask ((__v8si) __A,
 						     (__v8si) __B,
-						     (__v8si) __C, imm,
+						     (__v8si) __C, __imm,
 						     (__mmask8) __U);
 }
 
@@ -9856,80 +9856,80 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_ternarylogic_epi32 (__mmask8 __U, __m256i __A,
 				 __m256i __B, __m256i __C,
-				 const int imm)
+				 const int __imm)
 {
   return (__m256i) __builtin_ia32_pternlogd256_maskz ((__v8si) __A,
 						      (__v8si) __B,
 						      (__v8si) __C,
-						      imm,
+						      __imm,
 						      (__mmask8) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_ternarylogic_epi64 (__m128i __A, __m128i __B, __m128i __C,
-			const int imm)
+			const int __imm)
 {
   return (__m128i) __builtin_ia32_pternlogq128_mask ((__v2di) __A,
 						     (__v2di) __B,
-						     (__v2di) __C, imm,
+						     (__v2di) __C, __imm,
 						     (__mmask8) -1);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_ternarylogic_epi64 (__m128i __A, __mmask8 __U,
-			     __m128i __B, __m128i __C, const int imm)
+			     __m128i __B, __m128i __C, const int __imm)
 {
   return (__m128i) __builtin_ia32_pternlogq128_mask ((__v2di) __A,
 						     (__v2di) __B,
-						     (__v2di) __C, imm,
+						     (__v2di) __C, __imm,
 						     (__mmask8) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_ternarylogic_epi64 (__mmask8 __U, __m128i __A,
-			      __m128i __B, __m128i __C, const int imm)
+			      __m128i __B, __m128i __C, const int __imm)
 {
   return (__m128i) __builtin_ia32_pternlogq128_maskz ((__v2di) __A,
 						      (__v2di) __B,
 						      (__v2di) __C,
-						      imm,
+						      __imm,
 						      (__mmask8) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_ternarylogic_epi32 (__m128i __A, __m128i __B, __m128i __C,
-			const int imm)
+			const int __imm)
 {
   return (__m128i) __builtin_ia32_pternlogd128_mask ((__v4si) __A,
 						     (__v4si) __B,
-						     (__v4si) __C, imm,
+						     (__v4si) __C, __imm,
 						     (__mmask8) -1);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_ternarylogic_epi32 (__m128i __A, __mmask8 __U,
-			     __m128i __B, __m128i __C, const int imm)
+			     __m128i __B, __m128i __C, const int __imm)
 {
   return (__m128i) __builtin_ia32_pternlogd128_mask ((__v4si) __A,
 						     (__v4si) __B,
-						     (__v4si) __C, imm,
+						     (__v4si) __C, __imm,
 						     (__mmask8) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_ternarylogic_epi32 (__mmask8 __U, __m128i __A,
-			      __m128i __B, __m128i __C, const int imm)
+			      __m128i __B, __m128i __C, const int __imm)
 {
   return (__m128i) __builtin_ia32_pternlogd128_maskz ((__v4si) __A,
 						      (__v4si) __B,
 						      (__v4si) __C,
-						      imm,
+						      __imm,
 						      (__mmask8) __U);
 }
 

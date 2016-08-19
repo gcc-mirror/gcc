@@ -1,5 +1,51 @@
 2016-08-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/rdseedintrin.h (_rdseed16_step, _rdseed32_step,
+	_rdseed64_step): Uglify argument names and/or local variable names
+	in inline functions.
+	* config/i386/rtmintrin.h (_xabort): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_ternarylogic_epi64,
+	_mm256_mask_ternarylogic_epi64, _mm256_maskz_ternarylogic_epi64,
+	_mm256_ternarylogic_epi32, _mm256_mask_ternarylogic_epi32,
+	_mm256_maskz_ternarylogic_epi32, _mm_ternarylogic_epi64,
+	_mm_mask_ternarylogic_epi64, _mm_maskz_ternarylogic_epi64,
+	_mm_ternarylogic_epi32, _mm_mask_ternarylogic_epi32,
+	_mm_maskz_ternarylogic_epi32): Likewise.
+	* config/i386/lwpintrin.h (__llwpcb, __lwpval32, __lwpval64,
+	__lwpins32, __lwpins64): Likewise.
+	* config/i386/avx2intrin.h (_mm_i32gather_pd, _mm_mask_i32gather_pd,
+	_mm256_i32gather_pd, _mm256_mask_i32gather_pd, _mm_i64gather_pd,
+	_mm_mask_i64gather_pd, _mm256_i64gather_pd, _mm256_mask_i64gather_pd,
+	_mm_i32gather_ps, _mm_mask_i32gather_ps, _mm256_i32gather_ps,
+	_mm256_mask_i32gather_ps, _mm_i64gather_ps, _mm_mask_i64gather_ps,
+	_mm256_i64gather_ps, _mm256_mask_i64gather_ps, _mm_i32gather_epi64,
+	_mm_mask_i32gather_epi64, _mm256_i32gather_epi64,
+	_mm256_mask_i32gather_epi64, _mm_i64gather_epi64,
+	_mm_mask_i64gather_epi64, _mm256_i64gather_epi64,
+	_mm256_mask_i64gather_epi64, _mm_i32gather_epi32,
+	_mm_mask_i32gather_epi32, _mm256_i32gather_epi32,
+	_mm256_mask_i32gather_epi32, _mm_i64gather_epi32,
+	_mm_mask_i64gather_epi32, _mm256_i64gather_epi32,
+	_mm256_mask_i64gather_epi32): Likewise.
+	* config/i386/pmm_malloc.h (_mm_malloc, _mm_free): Likewise.
+	* config/i386/ia32intrin.h (__writeeflags): Likewise.
+	* config/i386/pkuintrin.h (_wrpkru): Likewise.
+	* config/i386/avx512pfintrin.h (_mm512_mask_prefetch_i32gather_pd,
+	_mm512_mask_prefetch_i32gather_ps, _mm512_mask_prefetch_i64gather_pd,
+	_mm512_mask_prefetch_i64gather_ps, _mm512_prefetch_i32scatter_pd,
+	_mm512_prefetch_i32scatter_ps, _mm512_mask_prefetch_i32scatter_pd,
+	_mm512_mask_prefetch_i32scatter_ps, _mm512_prefetch_i64scatter_pd,
+	_mm512_prefetch_i64scatter_ps, _mm512_mask_prefetch_i64scatter_pd,
+	_mm512_mask_prefetch_i64scatter_ps): Likewise.
+	* config/i386/gmm_malloc.h (_mm_malloc, _mm_free): Likewise.
+	* config/i386/avx512fintrin.h (_mm512_ternarylogic_epi64,
+	_mm512_mask_ternarylogic_epi64, _mm512_maskz_ternarylogic_epi64,
+	_mm512_ternarylogic_epi32, _mm512_mask_ternarylogic_epi32,
+	_mm512_maskz_ternarylogic_epi32, _mm512_i32gather_ps,
+	_mm512_mask_i32gather_ps, _mm512_i32gather_pd, _mm512_i64gather_ps,
+	_mm512_i64gather_pd, _mm512_i32gather_epi32, _mm512_i32gather_epi64,
+	_mm512_i64gather_epi32, _mm512_i64gather_epi64): Likewise.
+
 	* config/i386/fxsrintrin.h (_fxsave): Remove return keyword in inlines
 	returning void.
 	(_fxrstor, _fxsave64, _fxrstor64): Likewise.
