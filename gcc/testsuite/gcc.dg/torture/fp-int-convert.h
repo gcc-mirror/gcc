@@ -15,20 +15,21 @@ typedef long TItype;
 typedef unsigned long UTItype;
 #endif
 
-/* TEST_I_F(I, U, F, P) tests conversions between the pair of signed
-   and unsigned integer types I and U and the floating-point type F,
-   where P is the binary precision of the floating point type.  We
-   test conversions of the values 0, 1, 0x7...f, 0x8...0, 0xf...f.  We
-   also test conversions of values half way between two
-   representable values (rounding both ways), just above half way, and
-   just below half way.  */
-#define TEST_I_F(I, U, F, P)					\
+/* TEST_I_F(I, U, F, P, M) tests conversions between the pair of
+   signed and unsigned integer types I and U and the floating-point
+   type F, where P is the binary precision of the floating point type
+   and M is the MAX_EXP value for that type (so 2^M overflows, 2^(M-1)
+   does not).  We test conversions of the values 0, 1, 0x7...f,
+   0x8...0, 0xf...f.  We also test conversions of values half way
+   between two representable values (rounding both ways), just above
+   half way, and just below half way.  */
+#define TEST_I_F(I, U, F, P, M)					\
 do {								\
   TEST_I_F_VAL (I, F, (I)0, 1);					\
   TEST_I_F_VAL (I, F, (I)1, 1);					\
   TEST_I_F_VAL (I, F, (I)(((U)~(U)0) >> 1), P_OK1 (P, I));	\
-  TEST_I_F_VAL (I, F, (I)(U)~(((U)~(U)0) >> 1), 1);		\
-  TEST_I_F_VAL (I, F, (I)(U)~(U)0, P_OK (P, I));		\
+  TEST_I_F_VAL (I, F, (I)(U)~(((U)~(U)0) >> 1), M_OK1 (M, I));	\
+  TEST_I_F_VAL (I, F, (I)(U)~(U)0, 1);				\
   TEST_I_F_VAL (I, F, HVAL0S (P, I), P_OK (P, I));		\
   TEST_I_F_VAL (I, F, HVAL0S (P, I) + 1, P_OK (P, I));		\
   TEST_I_F_VAL (I, F, HVAL0S (P, I) - 1, P_OK (P, I));		\
@@ -44,7 +45,7 @@ do {								\
   TEST_I_F_VAL (U, F, (U)0, 1);					\
   TEST_I_F_VAL (U, F, (U)1, 1);					\
   TEST_I_F_VAL (U, F, (U)(((U)~(U)0) >> 1), P_OK1 (P, U));	\
-  TEST_I_F_VAL (U, F, (U)~(((U)~(U)0) >> 1), 1);		\
+  TEST_I_F_VAL (U, F, (U)~(((U)~(U)0) >> 1), M_OK1 (M, U));	\
   TEST_I_F_VAL (U, F, (U)~(U)0, P_OK (P, U));			\
   TEST_I_F_VAL (U, F, HVAL0U (P, U), P_OK (P, U));		\
   TEST_I_F_VAL (U, F, HVAL0U (P, U) + 1, P_OK (P, U));		\
@@ -56,6 +57,7 @@ do {								\
 
 #define P_OK(P, T) ((P) >= sizeof(T) * CHAR_BIT)
 #define P_OK1(P, T) ((P) >= sizeof(T) * CHAR_BIT - 1)
+#define M_OK1(M, T) ((M) > sizeof(T) * CHAR_BIT - 1)
 #define HVAL0U(P, U) (U)(P_OK (P, U)					 \
 			 ? (U)1						 \
 			 : (((U)1 << (sizeof(U) * CHAR_BIT - 1))	 \

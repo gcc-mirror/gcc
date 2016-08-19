@@ -2433,6 +2433,135 @@ proc check_effective_target_has_q_floating_suffix { } {
     } "$opts"]
 }
 
+# Return 1 if the target supports the _FloatN / _FloatNx type
+# indicated in the function name, 0 otherwise.
+
+proc check_effective_target_float16 {} {
+    return [check_no_compiler_messages_nocache float16 object {
+        _Float16 x;
+    }]
+}
+
+proc check_effective_target_float32 {} {
+    return [check_no_compiler_messages_nocache float32 object {
+        _Float32 x;
+    }]
+}
+
+proc check_effective_target_float64 {} {
+    return [check_no_compiler_messages_nocache float64 object {
+        _Float64 x;
+    }]
+}
+
+proc check_effective_target_float128 {} {
+    return [check_no_compiler_messages_nocache float128 object {
+        _Float128 x;
+    }]
+}
+
+proc check_effective_target_float32x {} {
+    return [check_no_compiler_messages_nocache float32x object {
+        _Float32x x;
+    }]
+}
+
+proc check_effective_target_float64x {} {
+    return [check_no_compiler_messages_nocache float64x object {
+        _Float64x x;
+    }]
+}
+
+proc check_effective_target_float128x {} {
+    return [check_no_compiler_messages_nocache float128x object {
+        _Float128x x;
+    }]
+}
+
+# Likewise, but runtime support for any special options used as well
+# as compile-time support is required.
+
+proc check_effective_target_float16_runtime {} {
+    return [check_effective_target_float16]
+}
+
+proc check_effective_target_float32_runtime {} {
+    return [check_effective_target_float32]
+}
+
+proc check_effective_target_float64_runtime {} {
+    return [check_effective_target_float64]
+}
+
+proc check_effective_target_float128_runtime {} {
+    if { ![check_effective_target_float128] } {
+	return 0
+    }
+    if { [istarget powerpc*-*-*] } {
+	return [check_effective_target_base_quadfloat_support]
+    }
+    return 1
+}
+
+proc check_effective_target_float32x_runtime {} {
+    return [check_effective_target_float32x]
+}
+
+proc check_effective_target_float64x_runtime {} {
+    if { ![check_effective_target_float64x] } {
+	return 0
+    }
+    if { [istarget powerpc*-*-*] } {
+	return [check_effective_target_base_quadfloat_support]
+    }
+    return 1
+}
+
+proc check_effective_target_float128x_runtime {} {
+    return [check_effective_target_float128x]
+}
+
+# Return 1 if the target hardware supports any options added for
+# _FloatN and _FloatNx types, 0 otherwise.
+
+proc check_effective_target_floatn_nx_runtime {} {
+    if { [istarget powerpc*-*-*] } {
+	return [check_effective_target_base_quadfloat_support]
+    }
+    return 1
+}
+
+# Add options needed to use the _FloatN / _FloatNx type indicated in
+# the function name.
+
+proc add_options_for_float16 { flags } {
+    return "$flags"
+}
+
+proc add_options_for_float32 { flags } {
+    return "$flags"
+}
+
+proc add_options_for_float64 { flags } {
+    return "$flags"
+}
+
+proc add_options_for_float128 { flags } {
+    return [add_options_for___float128 "$flags"]
+}
+
+proc add_options_for_float32x { flags } {
+    return "$flags"
+}
+
+proc add_options_for_float64x { flags } {
+    return [add_options_for___float128 "$flags"]
+}
+
+proc add_options_for_float128x { flags } {
+    return "$flags"
+}
+
 # Return 1 if the target supports __float128,
 # 0 otherwise.
 

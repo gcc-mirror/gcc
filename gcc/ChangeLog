@@ -1,3 +1,65 @@
+2016-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/32187
+	* tree-core.h (TI_COMPLEX_FLOAT16_TYPE)
+	(TI_COMPLEX_FLOATN_NX_TYPE_FIRST, TI_COMPLEX_FLOAT32_TYPE)
+	(TI_COMPLEX_FLOAT64_TYPE, TI_COMPLEX_FLOAT128_TYPE)
+	(TI_COMPLEX_FLOAT32X_TYPE, TI_COMPLEX_FLOAT64X_TYPE)
+	(TI_COMPLEX_FLOAT128X_TYPE, TI_FLOAT16_TYPE, TI_FLOATN_TYPE_FIRST)
+	(TI_FLOATN_NX_TYPE_FIRST, TI_FLOAT32_TYPE, TI_FLOAT64_TYPE)
+	(TI_FLOAT128_TYPE, TI_FLOATN_TYPE_LAST, TI_FLOAT32X_TYPE)
+	(TI_FLOATNX_TYPE_FIRST, TI_FLOAT64X_TYPE, TI_FLOAT128X_TYPE)
+	(TI_FLOATNX_TYPE_LAST, TI_FLOATN_NX_TYPE_LAST): New enum
+	tree_index values.
+	(NUM_FLOATN_TYPES, NUM_FLOATNX_TYPES, NUM_FLOATN_NX_TYPES): New
+	macros.
+	(struct floatn_type_info): New structure type.
+	(floatn_nx_types): New variable declaration.
+	* tree.h (FLOATN_TYPE_NODE, FLOATN_NX_TYPE_NODE)
+	(FLOATNX_TYPE_NODE, float128_type_node, float64x_type_node)
+	(COMPLEX_FLOATN_NX_TYPE_NODE): New macros.
+	* tree.c (floatn_nx_types): New variable.
+	(build_common_tree_nodes): Initialize _FloatN, _FloatNx and
+	corresponding complex types.
+	* target.def (floatn_mode): New hook.
+	* targhooks.c: Include "real.h".
+	(default_floatn_mode): New function.
+	* targhooks.h (default_floatn_mode): New prototype.
+	* doc/extend.texi (Floating Types): Document _FloatN and _FloatNx
+	types.
+	* doc/sourcebuild.texi (float@var{n}, float@var{n}x): Document new
+	effective-target and dg-add-options keywords.
+	(float@var{n}_runtime, float@var{n}x_runtime, floatn_nx_runtime):
+	Document new effective-target keywords.
+	* doc/tm.texi.in (TARGET_FLOATN_MODE): New @hook.
+	* doc/tm.texi: Regenerate.
+	* ginclude/float.h (LDBL_DECIMAL_DIG): Define to
+	__LDBL_DECIMAL_DIG__, not __DECIMAL_DIG__.
+	[__STDC_WANT_IEC_60559_TYPES_EXT__]: Define macros from TS
+	18661-3.
+	* real.h (struct real_format): Add field ieee_bits.
+	* real.c (ieee_single_format, mips_single_format)
+	(motorola_single_format, spu_single_format, ieee_double_format)
+	(mips_double_format, motorola_double_format)
+	(ieee_extended_motorola_format, ieee_extended_intel_96_format)
+	(ieee_extended_intel_128_format)
+	(ieee_extended_intel_96_round_53_format, ibm_extended_format)
+	(mips_extended_format, ieee_quad_format, mips_quad_format)
+	(vax_f_format, vax_d_format, vax_g_format, decimal_single_format)
+	(decimal_double_format, decimal_quad_format, ieee_half_format)
+	(arm_half_format, real_internal_format: Initialize ieee_bits
+	field.
+	* config/i386/i386.c (ix86_init_builtin_types): Do not initialize
+	float128_type_node.  Set float80_type_node to float64x_type_node
+	if appropriate and long_double_type_node not appropriate.
+	* config/ia64/ia64.c (ia64_init_builtins): Likewise.
+	* config/pdp11/pdp11.c (pdp11_f_format, pdp11_d_format):
+	Initialize ieee_bits field.
+	* config/rs6000/rs6000.c (TARGET_FLOATN_MODE): New macro.
+	(rs6000_init_builtins): Set ieee128_float_type_node to
+	float128_type_node.
+	(rs6000_floatn_mode): New function.
+
 2016-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/rdseedintrin.h (_rdseed16_step, _rdseed32_step,

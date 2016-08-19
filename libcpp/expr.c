@@ -86,15 +86,52 @@ static cpp_num parse_has_include (cpp_reader *, enum include_type);
 
 /* Subroutine of cpp_classify_number.  S points to a float suffix of
    length LEN, possibly zero.  Returns 0 for an invalid suffix, or a
-   flag vector describing the suffix.  */
+   flag vector (of CPP_N_* bits) describing the suffix.  */
 static unsigned int
 interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 {
   size_t flags;
-  size_t f, d, l, w, q, i;
+  size_t f, d, l, w, q, i, fn, fnx, fn_bits;
 
   flags = 0;
-  f = d = l = w = q = i = 0;
+  f = d = l = w = q = i = fn = fnx = fn_bits = 0;
+
+  /* The following decimal float suffixes, from TR 24732:2009 and TS
+     18661-2:2015, are supported:
+
+     df, DF - _Decimal32.
+     dd, DD - _Decimal64.
+     dl, DL - _Decimal128.
+
+     The dN and DN suffixes for _DecimalN, and dNx and DNx for
+     _DecimalNx, defined in TS 18661-3:2015, are not supported.
+
+     Fixed-point suffixes, from TR 18037:2008, are supported.  They
+     consist of three parts, in order:
+
+     (i) An optional u or U, for unsigned types.
+
+     (ii) An optional h or H, for short types, or l or L, for long
+     types, or ll or LL, for long long types.  Use of ll or LL is a
+     GNU extension.
+
+     (iii) r or R, for _Fract types, or k or K, for _Accum types.
+
+     Otherwise the suffix is for a binary or standard floating-point
+     type.  Such a suffix, or the absence of a suffix, may be preceded
+     or followed by i, I, j or J, to indicate an imaginary number with
+     the corresponding complex type.  The following suffixes for
+     binary or standard floating-point types are supported:
+
+     f, F - float (ISO C and C++).
+     l, L - long double (ISO C and C++).
+     d, D - double, even with the FLOAT_CONST_DECIMAL64 pragma in
+	    operation (from TR 24732:2009; the pragma and the suffix
+	    are not included in TS 18661-2:2015).
+     w, W - machine-specific type such as __float80 (GNU extension).
+     q, Q - machine-specific type such as __float128 (GNU extension).
+     fN, FN - _FloatN (TS 18661-3:2015).
+     fNx, FNx - _FloatNx (TS 18661-3:2015).  */
 
   /* Process decimal float suffixes, which are two letters starting
      with d or D.  Order and case are significant.  */
@@ -172,20 +209,64 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 
   /* In any remaining valid suffix, the case and order don't matter.  */
   while (len--)
-    switch (s[len])
-      {
-      case 'f': case 'F': f++; break;
-      case 'd': case 'D': d++; break;
-      case 'l': case 'L': l++; break;
-      case 'w': case 'W': w++; break;
-      case 'q': case 'Q': q++; break;
-      case 'i': case 'I':
-      case 'j': case 'J': i++; break;
-      default:
-	return 0;
-      }
+    {
+      switch (s[0])
+	{
+	case 'f': case 'F':
+	  f++;
+	  if (len > 0
+	      && !CPP_OPTION (pfile, cplusplus)
+	      && s[1] >= '1'
+	      && s[1] <= '9'
+	      && fn_bits == 0)
+	    {
+	      f--;
+	      while (len > 0
+		     && s[1] >= '0'
+		     && s[1] <= '9'
+		     && fn_bits < CPP_FLOATN_MAX)
+		{
+		  fn_bits = fn_bits * 10 + (s[1] - '0');
+		  len--;
+		  s++;
+		}
+	      if (len > 0 && s[1] == 'x')
+		{
+		  fnx++;
+		  len--;
+		  s++;
+		}
+	      else
+		fn++;
+	    }
+	  break;
+	case 'd': case 'D': d++; break;
+	case 'l': case 'L': l++; break;
+	case 'w': case 'W': w++; break;
+	case 'q': case 'Q': q++; break;
+	case 'i': case 'I':
+	case 'j': case 'J': i++; break;
+	default:
+	  return 0;
+	}
+      s++;
+    }
 
-  if (f + d + l + w + q > 1 || i > 1)
+  /* Reject any case of multiple suffixes specifying types, multiple
+     suffixes specifying an imaginary constant, _FloatN or _FloatNx
+     suffixes for invalid values of N, and _FloatN suffixes for values
+     of N larger than can be represented in the return value.  The
+     caller is responsible for rejecting _FloatN suffixes where
+     _FloatN is not supported on the chosen target.  */
+  if (f + d + l + w + q + fn + fnx > 1 || i > 1)
+    return 0;
+  if (fn_bits > CPP_FLOATN_MAX)
+    return 0;
+  if (fnx && fn_bits != 32 && fn_bits != 64 && fn_bits != 128)
+    return 0;
+  if (fn && fn_bits != 16 && fn_bits % 32 != 0)
+    return 0;
+  if (fn && fn_bits == 96)
     return 0;
 
   if (i && !CPP_OPTION (pfile, ext_numeric_literals))
@@ -199,7 +280,10 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	     d ? CPP_N_MEDIUM :
 	     l ? CPP_N_LARGE :
 	     w ? CPP_N_MD_W :
-	     q ? CPP_N_MD_Q : CPP_N_DEFAULT));
+	     q ? CPP_N_MD_Q :
+	     fn ? CPP_N_FLOATN | (fn_bits << CPP_FLOATN_SHIFT) :
+	     fnx ? CPP_N_FLOATNX | (fn_bits << CPP_FLOATN_SHIFT) :
+	     CPP_N_DEFAULT));
 }
 
 /* Return the classification flags for a float suffix.  */

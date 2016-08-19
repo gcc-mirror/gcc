@@ -30,8 +30,8 @@ extern GTY(()) tree ppvoid_type_node;
 extern GTY(()) tree pvoid_type_node;
 extern GTY(()) tree prvoid_type_node;
 extern GTY(()) tree pchar_type_node;
-extern GTY(()) tree float128_type_node;
-extern GTY(()) tree complex_float128_type_node;
+extern GTY(()) tree gfc_float128_type_node;
+extern GTY(()) tree gfc_complex_float128_type_node;
 
 /* This is the type used to hold the lengths of character variables.
    It must be the same as the corresponding definition in gfortran.h.  */

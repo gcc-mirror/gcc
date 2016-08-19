@@ -1,3 +1,77 @@
+2016-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/32187
+	* lib/target-supports.exp (check_effective_target_float16)
+	(check_effective_target_float32, check_effective_target_float64)
+	(check_effective_target_float128, check_effective_target_float32x)
+	(check_effective_target_float64x)
+	(check_effective_target_float128x)
+	(check_effective_target_float16_runtime)
+	(check_effective_target_float32_runtime)
+	(check_effective_target_float64_runtime)
+	(check_effective_target_float128_runtime)
+	(check_effective_target_float32x_runtime)
+	(check_effective_target_float64x_runtime)
+	(check_effective_target_float128x_runtime)
+	(check_effective_target_floatn_nx_runtime)
+	(add_options_for_float16, add_options_for_float32)
+	(add_options_for_float64, add_options_for_float128)
+	(add_options_for_float32x, add_options_for_float64x)
+	(add_options_for_float128x): New procedures.
+	* gcc.dg/dfp/floatn.c, gcc.dg/float128-typeof.c,
+	gcc.dg/float128x-typeof.c, gcc.dg/float16-typeof.c,
+	gcc.dg/float32-typeof.c, gcc.dg/float32x-typeof.c,
+	gcc.dg/float64-typeof.c, gcc.dg/float64x-typeof.c,
+	gcc.dg/floatn-arithconv.c, gcc.dg/floatn-errs.c,
+	gcc.dg/floatn-typeof.h, gcc.dg/torture/float128-basic.c,
+	gcc.dg/torture/float128-complex.c,
+	gcc.dg/torture/float128-floath.c, gcc.dg/torture/float128-tg.c,
+	gcc.dg/torture/float128x-basic.c,
+	gcc.dg/torture/float128x-complex.c,
+	gcc.dg/torture/float128x-floath.c, gcc.dg/torture/float128x-tg.c,
+	gcc.dg/torture/float16-basic.c, gcc.dg/torture/float16-complex.c,
+	gcc.dg/torture/float16-floath.c, gcc.dg/torture/float16-tg.c,
+	gcc.dg/torture/float32-basic.c, gcc.dg/torture/float32-complex.c,
+	gcc.dg/torture/float32-floath.c, gcc.dg/torture/float32-tg.c,
+	gcc.dg/torture/float32x-basic.c,
+	gcc.dg/torture/float32x-complex.c,
+	gcc.dg/torture/float32x-floath.c, gcc.dg/torture/float32x-tg.c,
+	gcc.dg/torture/float64-basic.c, gcc.dg/torture/float64-complex.c,
+	gcc.dg/torture/float64-floath.c, gcc.dg/torture/float64-tg.c,
+	gcc.dg/torture/float64x-basic.c,
+	gcc.dg/torture/float64x-complex.c,
+	gcc.dg/torture/float64x-floath.c, gcc.dg/torture/float64x-tg.c,
+	gcc.dg/torture/floatn-basic.h, gcc.dg/torture/floatn-complex.h,
+	gcc.dg/torture/floatn-convert.c, gcc.dg/torture/floatn-floath.h,
+	gcc.dg/torture/floatn-tg.h,
+	gcc.dg/torture/fp-int-convert-float128-ieee-timode.c,
+	gcc.dg/torture/fp-int-convert-float128-ieee.c,
+	gcc.dg/torture/fp-int-convert-float128x-timode.c,
+	gcc.dg/torture/fp-int-convert-float128x.c,
+	gcc.dg/torture/fp-int-convert-float16-timode.c,
+	gcc.dg/torture/fp-int-convert-float16.c,
+	gcc.dg/torture/fp-int-convert-float32-timode.c,
+	gcc.dg/torture/fp-int-convert-float32.c,
+	gcc.dg/torture/fp-int-convert-float32x-timode.c,
+	gcc.dg/torture/fp-int-convert-float32x.c,
+	gcc.dg/torture/fp-int-convert-float64-timode.c,
+	gcc.dg/torture/fp-int-convert-float64.c,
+	gcc.dg/torture/fp-int-convert-float64x-timode.c,
+	gcc.dg/torture/fp-int-convert-float64x.c: New tests.
+	* gcc.dg/torture/fp-int-convert.h (TEST_I_F): Add argument for
+	maximum exponent of floating-point type.  Use it in testing
+	whether 0x8...0 fits in the floating-point type.  Always treat -1
+	(signed 0xf...f) as fitting in the floating-point type.
+	(M_OK1): New macro.
+	* gcc.dg/torture/fp-int-convert-double.c,
+	gcc.dg/torture/fp-int-convert-float.c,
+	gcc.dg/torture/fp-int-convert-float128-timode.c,
+	gcc.dg/torture/fp-int-convert-float128.c,
+	gcc.dg/torture/fp-int-convert-float80-timode.c,
+	gcc.dg/torture/fp-int-convert-float80.c,
+	gcc.dg/torture/fp-int-convert-long-double.c,
+	gcc.dg/torture/fp-int-convert-timode.c: Update calls to TEST_I_F.
+
 2016-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/72744

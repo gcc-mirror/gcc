@@ -62,8 +62,8 @@ tree pfunc_type_node;
 
 tree gfc_charlen_type_node;
 
-tree float128_type_node = NULL_TREE;
-tree complex_float128_type_node = NULL_TREE;
+tree gfc_float128_type_node = NULL_TREE;
+tree gfc_complex_float128_type_node = NULL_TREE;
 
 bool gfc_real16_is_float128 = false;
 
@@ -901,7 +901,7 @@ gfc_init_types (void)
       PUSH_TYPE (name_buf, type);
 
       if (gfc_real_kinds[index].c_float128)
-	float128_type_node = type;
+	gfc_float128_type_node = type;
 
       type = gfc_build_complex_type (type);
       gfc_complex_types[index] = type;
@@ -910,7 +910,7 @@ gfc_init_types (void)
       PUSH_TYPE (name_buf, type);
 
       if (gfc_real_kinds[index].c_float128)
-	complex_float128_type_node = type;
+	gfc_complex_float128_type_node = type;
     }
 
   for (index = 0; gfc_character_kinds[index].kind != 0; ++index)

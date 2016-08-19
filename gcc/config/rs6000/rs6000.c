@@ -1703,6 +1703,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P rs6000_vector_mode_supported_p
 
+#undef TARGET_FLOATN_MODE
+#define TARGET_FLOATN_MODE rs6000_floatn_mode
+
 #undef TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN
 #define TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN invalid_arg_for_unprototyped_fn
 
@@ -16303,10 +16306,7 @@ rs6000_init_builtins (void)
       layout_type (ibm128_float_type_node);
       SET_TYPE_MODE (ibm128_float_type_node, IFmode);
 
-      ieee128_float_type_node = make_node (REAL_TYPE);
-      TYPE_PRECISION (ieee128_float_type_node) = 128;
-      layout_type (ieee128_float_type_node);
-      SET_TYPE_MODE (ieee128_float_type_node, KFmode);
+      ieee128_float_type_node = float128_type_node;
 
       lang_hooks.types.register_builtin_type (ieee128_float_type_node,
 					      "__float128");
@@ -36197,6 +36197,54 @@ rs6000_vector_mode_supported_p (machine_mode mode)
 
   else
     return false;
+}
+
+/* Target hook for floatn_mode.  */
+static machine_mode
+rs6000_floatn_mode (int n, bool extended)
+{
+  if (extended)
+    {
+      switch (n)
+	{
+	case 32:
+	  return DFmode;
+
+	case 64:
+	  if (TARGET_FLOAT128)
+	    return (FLOAT128_IEEE_P (TFmode)) ? TFmode : KFmode;
+	  else
+	    return VOIDmode;
+
+	case 128:
+	  return VOIDmode;
+
+	default:
+	  /* Those are the only valid _FloatNx types.  */
+	  gcc_unreachable ();
+	}
+    }
+  else
+    {
+      switch (n)
+	{
+	case 32:
+	  return SFmode;
+
+	case 64:
+	  return DFmode;
+
+	case 128:
+	  if (TARGET_FLOAT128)
+	    return (FLOAT128_IEEE_P (TFmode)) ? TFmode : KFmode;
+	  else
+	    return VOIDmode;
+
+	default:
+	  return VOIDmode;
+	}
+    }
+
 }
 
 /* Target hook for c_mode_for_suffix.  */

@@ -3605,6 +3605,17 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define double_type_node		global_trees[TI_DOUBLE_TYPE]
 #define long_double_type_node		global_trees[TI_LONG_DOUBLE_TYPE]
 
+/* Nodes for particular _FloatN and _FloatNx types in sequence.  */
+#define FLOATN_TYPE_NODE(IDX)		global_trees[TI_FLOATN_TYPE_FIRST + (IDX)]
+#define FLOATN_NX_TYPE_NODE(IDX)	global_trees[TI_FLOATN_NX_TYPE_FIRST + (IDX)]
+#define FLOATNX_TYPE_NODE(IDX)		global_trees[TI_FLOATNX_TYPE_FIRST + (IDX)]
+
+/* Names for individual types, where required by back ends
+   (architecture-independent code should always iterate over all such
+   types).  */
+#define float128_type_node		global_trees[TI_FLOAT128_TYPE]
+#define float64x_type_node		global_trees[TI_FLOAT64X_TYPE]
+
 #define float_ptr_type_node		global_trees[TI_FLOAT_PTR_TYPE]
 #define double_ptr_type_node		global_trees[TI_DOUBLE_PTR_TYPE]
 #define long_double_ptr_type_node	global_trees[TI_LONG_DOUBLE_PTR_TYPE]
@@ -3614,6 +3625,8 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define complex_float_type_node		global_trees[TI_COMPLEX_FLOAT_TYPE]
 #define complex_double_type_node	global_trees[TI_COMPLEX_DOUBLE_TYPE]
 #define complex_long_double_type_node	global_trees[TI_COMPLEX_LONG_DOUBLE_TYPE]
+
+#define COMPLEX_FLOATN_NX_TYPE_NODE(IDX)	global_trees[TI_COMPLEX_FLOATN_NX_TYPE_FIRST + (IDX)]
 
 #define pointer_bounds_type_node        global_trees[TI_POINTER_BOUNDS_TYPE]
 

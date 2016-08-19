@@ -434,6 +434,13 @@ const struct c_common_resword c_common_reswords[] =
   { "_Cilk_sync",       RID_CILK_SYNC,  0 },
   { "_Cilk_for",        RID_CILK_FOR,   0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
+  { "_Float16",         RID_FLOAT16,   D_CONLY },
+  { "_Float32",         RID_FLOAT32,   D_CONLY },
+  { "_Float64",         RID_FLOAT64,   D_CONLY },
+  { "_Float128",        RID_FLOAT128,  D_CONLY },
+  { "_Float32x",        RID_FLOAT32X,  D_CONLY },
+  { "_Float64x",        RID_FLOAT64X,  D_CONLY },
+  { "_Float128x",       RID_FLOAT128X, D_CONLY },
   { "_Decimal32",       RID_DFLOAT32,  D_CONLY | D_EXT },
   { "_Decimal64",       RID_DFLOAT64,  D_CONLY | D_EXT },
   { "_Decimal128",      RID_DFLOAT128, D_CONLY | D_EXT },
@@ -3478,6 +3485,11 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (long_double_type_node))
     return long_double_type_node;
 
+  for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+    if (FLOATN_NX_TYPE_NODE (i) != NULL_TREE
+	&& mode == TYPE_MODE (FLOATN_NX_TYPE_NODE (i)))
+      return FLOATN_NX_TYPE_NODE (i);
+
   if (mode == TYPE_MODE (void_type_node))
     return void_type_node;
 
@@ -3502,6 +3514,11 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
 	return complex_double_type_node;
       if (mode == TYPE_MODE (complex_long_double_type_node))
 	return complex_long_double_type_node;
+
+      for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+	if (COMPLEX_FLOATN_NX_TYPE_NODE (i) != NULL_TREE
+	    && mode == TYPE_MODE (COMPLEX_FLOATN_NX_TYPE_NODE (i)))
+	  return COMPLEX_FLOATN_NX_TYPE_NODE (i);
 
       if (mode == TYPE_MODE (complex_integer_type_node) && !unsignedp)
 	return complex_integer_type_node;
@@ -5406,6 +5423,12 @@ c_common_nodes_and_builtins (void)
   record_builtin_type (RID_DOUBLE, NULL, double_type_node);
   record_builtin_type (RID_MAX, "long double", long_double_type_node);
 
+  if (!c_dialect_cxx ())
+    for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+      if (FLOATN_NX_TYPE_NODE (i) != NULL_TREE)
+	record_builtin_type ((enum rid) (RID_FLOATN_NX_FIRST + i), NULL,
+			     FLOATN_NX_TYPE_NODE (i));
+
   /* Only supported decimal floating point extension if the target
      actually supports underlying modes. */
   if (targetm.scalar_mode_supported_p (SDmode)
@@ -5494,6 +5517,20 @@ c_common_nodes_and_builtins (void)
     (build_decl (UNKNOWN_LOCATION,
 		 TYPE_DECL, get_identifier ("complex long double"),
 		 complex_long_double_type_node));
+
+  if (!c_dialect_cxx ())
+    for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+      if (COMPLEX_FLOATN_NX_TYPE_NODE (i) != NULL_TREE)
+	{
+	  char buf[30];
+	  sprintf (buf, "complex _Float%d%s", floatn_nx_types[i].n,
+		   floatn_nx_types[i].extended ? "x" : "");
+	  lang_hooks.decls.pushdecl
+	    (build_decl (UNKNOWN_LOCATION,
+			 TYPE_DECL,
+			 get_identifier (buf),
+			 COMPLEX_FLOATN_NX_TYPE_NODE (i)));
+	}
 
   if (c_dialect_cxx ())
     /* For C++, make fileptr_type_node a distinct void * type until
@@ -12523,6 +12560,7 @@ keyword_begins_type_specifier (enum rid keyword)
     case RID_LONG:
     case RID_SHORT:
     case RID_SIGNED:
+    CASE_RID_FLOATN_NX:
     case RID_DFLOAT32:
     case RID_DFLOAT64:
     case RID_DFLOAT128:

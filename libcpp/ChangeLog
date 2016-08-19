@@ -1,3 +1,12 @@
+2016-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/32187
+	* include/cpplib.h (CPP_N_FLOATN, CPP_N_FLOATNX)
+	(CPP_N_WIDTH_FLOATN_NX, CPP_FLOATN_SHIFT, CPP_FLOATN_MAX): New
+	macros.
+	* expr.c (interpret_float_suffix): Handle fN, fNx, FN and FNx
+	suffixes.
+
 2016-08-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* expr.c (eval_token): Append "evaluates to 0" to Wundef diagnostic.

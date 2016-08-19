@@ -1,3 +1,13 @@
+2016-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/32187
+	* trans-types.h (float128_type_node): Rename to
+	gfc_float128_type_node.
+	(complex_float128_type_node): Rename to
+	gfc_complex_float128_type_node.
+	* iso-c-binding.def, trans-intrinsic.c, trans-types.c: All users
+	changed.
+
 2016-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/71014

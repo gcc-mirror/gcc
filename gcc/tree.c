@@ -10140,6 +10140,20 @@ build_atomic_base (tree type, unsigned int align)
   return t;
 }
 
+/* Information about the _FloatN and _FloatNx types.  This must be in
+   the same order as the corresponding TI_* enum values.  */
+const floatn_type_info floatn_nx_types[NUM_FLOATN_NX_TYPES] =
+  {
+    { 16, false },
+    { 32, false },
+    { 64, false },
+    { 128, false },
+    { 32, true },
+    { 64, true },
+    { 128, true },
+  };
+
+
 /* Create nodes for all integer types (and error_mark_node) using the sizes
    of C datatypes.  SIGNED_CHAR specifies whether char is signed.  */
 
@@ -10312,6 +10326,29 @@ build_common_tree_nodes (bool signed_char)
   TYPE_PRECISION (long_double_type_node) = LONG_DOUBLE_TYPE_SIZE;
   layout_type (long_double_type_node);
 
+  for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+    {
+      int n = floatn_nx_types[i].n;
+      bool extended = floatn_nx_types[i].extended;
+      machine_mode mode = targetm.floatn_mode (n, extended);
+      if (mode == VOIDmode)
+	continue;
+      int precision = GET_MODE_PRECISION (mode);
+      /* Work around the rs6000 KFmode having precision 113 not
+	 128.  */
+      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
+      gcc_assert (fmt->b == 2 && fmt->emin + fmt->emax == 3);
+      int min_precision = fmt->p + ceil_log2 (fmt->emax - fmt->emin);
+      if (!extended)
+	gcc_assert (min_precision == n);
+      if (precision < min_precision)
+	precision = min_precision;
+      FLOATN_NX_TYPE_NODE (i) = make_node (REAL_TYPE);
+      TYPE_PRECISION (FLOATN_NX_TYPE_NODE (i)) = precision;
+      layout_type (FLOATN_NX_TYPE_NODE (i));
+      SET_TYPE_MODE (FLOATN_NX_TYPE_NODE (i), mode);
+    }
+
   float_ptr_type_node = build_pointer_type (float_type_node);
   double_ptr_type_node = build_pointer_type (double_type_node);
   long_double_ptr_type_node = build_pointer_type (long_double_type_node);
@@ -10345,6 +10382,13 @@ build_common_tree_nodes (bool signed_char)
   complex_float_type_node = build_complex_type (float_type_node);
   complex_double_type_node = build_complex_type (double_type_node);
   complex_long_double_type_node = build_complex_type (long_double_type_node);
+
+  for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+    {
+      if (FLOATN_NX_TYPE_NODE (i) != NULL_TREE)
+	COMPLEX_FLOATN_NX_TYPE_NODE (i)
+	  = build_complex_type (FLOATN_NX_TYPE_NODE (i));
+    }
 
 /* Make fixed-point nodes based on sat/non-sat and signed/unsigned.  */
 #define MAKE_FIXED_TYPE_NODE(KIND,SIZE) \

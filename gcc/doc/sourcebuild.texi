@@ -1321,6 +1321,25 @@ Target supports array and structure sizes that are 32 bits or longer.
 
 @item 4byte_wchar_t
 Target has @code{wchar_t} that is at least 4 bytes.
+
+@item float@var{n}
+Target has the @code{_Float@var{n}} type.
+
+@item float@var{n}x
+Target has the @code{_Float@var{n}x} type.
+
+@item float@var{n}_runtime
+Target has the @code{_Float@var{n}} type, including runtime support
+for any options added with @code{dg-add-options}.
+
+@item float@var{n}x_runtime
+Target has the @code{_Float@var{n}x} type, including runtime support
+for any options added with @code{dg-add-options}.
+
+@item floatn_nx_runtime
+Target has runtime support for any options added with
+@code{dg-add-options} for any @code{_Float@var{n}} or
+@code{_Float@var{n}x} type.
 @end table
 
 @subsubsection Fortran-specific attributes
@@ -2134,6 +2153,12 @@ locally when using pic/PIC passes in the testsuite.
 
 @item c99_runtime
 Add the target-specific flags needed to access the C99 runtime.
+
+@item float@var{n}
+Add the target-specific flags needed to use the @code{_Float@var{n}} type.
+
+@item float@var{n}x
+Add the target-specific flags needed to use the @code{_Float@var{n}x} type.
 
 @item ieee
 Add the target-specific flags needed to enable full IEEE

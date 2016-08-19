@@ -1,3 +1,28 @@
+2016-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/32187
+	* c-common.h (RID_FLOAT16, RID_FLOATN_NX_FIRST, RID_FLOAT32)
+	(RID_FLOAT64, RID_FLOAT128, RID_FLOAT32X, RID_FLOAT64X)
+	(RID_FLOAT128X): New enum rid values.
+	(CASE_RID_FLOATN_NX): New macro.
+	* c-common.c (c_common_reswords): Add _FloatN and _FloatNx
+	keywords.
+	(c_common_type_for_mode): Check for _FloatN and _FloatNx and
+	corresponding complex types.
+	(c_common_nodes_and_builtins): For non-C++, register _FloatN and
+	_FloatNx and corresponding complex types.
+	(keyword_begins_type_specifier): Use CASE_RID_FLOATN_NX.
+	* c-cppbuiltin.c (builtin_define_float_constants): Check _FloatN
+	and _FloatNx types for the widest type for determining
+	DECIMAL_DIG.  Define __LDBL_DECIMAL_DIG__ as well as
+	__DECIMAL_DIG__ for long double.  Handle FMA_SUFFIX being NULL.
+	(c_cpp_builtins): Call builtin_define_float_constants for _FloatN
+	and _FloatNx types.
+	* c-lex.c (interpret_float): Handle _FloatN and _FloatNx
+	constants.
+	* c-pretty-print.c (pp_c_floating_constant): Handle _FloatN and
+	_FloatNx types.
+
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-opts.c (c_diagnostic_finalizer): Update for change to

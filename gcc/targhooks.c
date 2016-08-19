@@ -76,6 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "predict.h"
 #include "params.h"
+#include "real.h"
 
 
 bool
@@ -459,6 +460,92 @@ default_libgcc_floating_mode_supported_p (machine_mode mode)
     default:
       return false;
     }
+}
+
+/* Return the machine mode to use for the type _FloatN, if EXTENDED is
+   false, or _FloatNx, if EXTENDED is true, or VOIDmode if not
+   supported.  */
+machine_mode
+default_floatn_mode (int n, bool extended)
+{
+  if (extended)
+    {
+      machine_mode cand1 = VOIDmode, cand2 = VOIDmode;
+      switch (n)
+	{
+	case 32:
+#ifdef HAVE_DFmode
+	  cand1 = DFmode;
+#endif
+	  break;
+
+	case 64:
+#ifdef HAVE_XFmode
+	  cand1 = XFmode;
+#endif
+#ifdef HAVE_TFmode
+	  cand2 = TFmode;
+#endif
+	  break;
+
+	case 128:
+	  break;
+
+	default:
+	  /* Those are the only valid _FloatNx types.  */
+	  gcc_unreachable ();
+	}
+      if (cand1 != VOIDmode
+	  && REAL_MODE_FORMAT (cand1)->ieee_bits > n
+	  && targetm.scalar_mode_supported_p (cand1)
+	  && targetm.libgcc_floating_mode_supported_p (cand1))
+	return cand1;
+      if (cand2 != VOIDmode
+	  && REAL_MODE_FORMAT (cand2)->ieee_bits > n
+	  && targetm.scalar_mode_supported_p (cand2)
+	  && targetm.libgcc_floating_mode_supported_p (cand2))
+	return cand2;
+    }
+  else
+    {
+      machine_mode cand = VOIDmode;
+      switch (n)
+	{
+	case 16:
+	  /* We do not use HFmode for _Float16 by default because the
+	     required excess precision support is not present and the
+	     interactions with promotion of the older __fp16 need to
+	     be worked out.  */
+	  break;
+
+	case 32:
+#ifdef HAVE_SFmode
+	  cand = SFmode;
+#endif
+	  break;
+
+	case 64:
+#ifdef HAVE_DFmode
+	  cand = DFmode;
+#endif
+	  break;
+
+	case 128:
+#ifdef HAVE_TFmode
+	  cand = TFmode;
+#endif
+	  break;
+
+	default:
+	  break;
+	}
+      if (cand != VOIDmode
+	  && REAL_MODE_FORMAT (cand)->ieee_bits == n
+	  && targetm.scalar_mode_supported_p (cand)
+	  && targetm.libgcc_floating_mode_supported_p (cand))
+	return cand;
+    }
+  return VOIDmode;
 }
 
 /* Make some target macros useable by target-independent code.  */

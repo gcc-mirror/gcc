@@ -558,9 +558,43 @@ enum tree_index {
   TI_COMPLEX_DOUBLE_TYPE,
   TI_COMPLEX_LONG_DOUBLE_TYPE,
 
+  TI_COMPLEX_FLOAT16_TYPE,
+  TI_COMPLEX_FLOATN_NX_TYPE_FIRST = TI_COMPLEX_FLOAT16_TYPE,
+  TI_COMPLEX_FLOAT32_TYPE,
+  TI_COMPLEX_FLOAT64_TYPE,
+  TI_COMPLEX_FLOAT128_TYPE,
+  TI_COMPLEX_FLOAT32X_TYPE,
+  TI_COMPLEX_FLOAT64X_TYPE,
+  TI_COMPLEX_FLOAT128X_TYPE,
+
   TI_FLOAT_TYPE,
   TI_DOUBLE_TYPE,
   TI_LONG_DOUBLE_TYPE,
+
+  /* The _FloatN and _FloatNx types must be consecutive, and in the
+     same sequence as the corresponding complex types, which must also
+     be consecutive; _FloatN must come before _FloatNx; the order must
+     also be the same as in the floatn_nx_types array and the RID_*
+     values in c-common.h.  This is so that iterations over these
+     types work as intended.  */
+  TI_FLOAT16_TYPE,
+  TI_FLOATN_TYPE_FIRST = TI_FLOAT16_TYPE,
+  TI_FLOATN_NX_TYPE_FIRST = TI_FLOAT16_TYPE,
+  TI_FLOAT32_TYPE,
+  TI_FLOAT64_TYPE,
+  TI_FLOAT128_TYPE,
+  TI_FLOATN_TYPE_LAST = TI_FLOAT128_TYPE,
+#define NUM_FLOATN_TYPES (TI_FLOATN_TYPE_LAST - TI_FLOATN_TYPE_FIRST + 1)
+  TI_FLOAT32X_TYPE,
+  TI_FLOATNX_TYPE_FIRST = TI_FLOAT32X_TYPE,
+  TI_FLOAT64X_TYPE,
+  TI_FLOAT128X_TYPE,
+  TI_FLOATNX_TYPE_LAST = TI_FLOAT128X_TYPE,
+  TI_FLOATN_NX_TYPE_LAST = TI_FLOAT128X_TYPE,
+#define NUM_FLOATNX_TYPES (TI_FLOATNX_TYPE_LAST - TI_FLOATNX_TYPE_FIRST + 1)
+#define NUM_FLOATN_NX_TYPES (TI_FLOATN_NX_TYPE_LAST		\
+			     - TI_FLOATN_NX_TYPE_FIRST		\
+			     + 1)
 
   TI_FLOAT_PTR_TYPE,
   TI_DOUBLE_PTR_TYPE,
@@ -1959,6 +1993,16 @@ struct GTY(()) builtin_info_type {
   unsigned declared_p : 1;
 };
 
+/* Information about a _FloatN or _FloatNx type that may be
+   supported.  */
+struct floatn_type_info {
+  /* The number N in the type name.  */
+  int n;
+  /* Whether it is an extended type _FloatNx (true) or an interchange
+     type (false).  */
+  bool extended;
+};
+
 
 /*---------------------------------------------------------------------------
                                 Global variables
@@ -2022,5 +2066,8 @@ extern GTY(()) tree current_function_decl;
 
 /* Nonzero means a FUNC_BEGIN label was emitted.  */
 extern GTY(()) const char * current_function_func_begin_label;
+
+/* Information about the _FloatN and _FloatNx types.  */
+extern const floatn_type_info floatn_nx_types[NUM_FLOATN_NX_TYPES];
 
 #endif  // GCC_TREE_CORE_H
