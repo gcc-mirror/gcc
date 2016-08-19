@@ -386,41 +386,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       template<typename _Fn2>
 	explicit
-	_Not_fn(_Fn2&& __fn) : _M_fn(std::forward<_Fn2>(__fn)) { }
+	_Not_fn(_Fn2&& __fn)
+	: _M_fn(std::forward<_Fn2>(__fn)) { }
 
       _Not_fn(const _Not_fn& __fn) = default;
       _Not_fn(_Not_fn&& __fn) = default;
-      _Not_fn& operator=(const _Not_fn& __fn) = default;
-      _Not_fn& operator=(_Not_fn&& __fn) = default;
       ~_Not_fn() = default;
 
       template<typename... _Args>
 	auto
-	operator()(_Args&&... __args)
-	noexcept(noexcept(!_M_fn(std::forward<_Args>(__args)...)))
-	-> decltype(!_M_fn(std::forward<_Args>(__args)...))
-	{ return !_M_fn(std::forward<_Args>(__args)...); }
+	operator()(_Args&&... __args) &
+	noexcept(__is_nothrow_callable<_Fn&(_Args&&...)>::value)
+	-> decltype(!std::declval<result_of_t<_Fn&(_Args&&...)>>())
+	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
 	auto
-	operator()(_Args&&... __args) const
-	noexcept(noexcept(!_M_fn(std::forward<_Args>(__args)...)))
-	-> decltype(!_M_fn(std::forward<_Args>(__args)...))
-	{ return !_M_fn(std::forward<_Args>(__args)...); }
+	operator()(_Args&&... __args) const &
+	noexcept(__is_nothrow_callable<const _Fn&(_Args&&...)>::value)
+	-> decltype(!std::declval<result_of_t<const _Fn&(_Args&&...)>>())
+	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
 	auto
-	operator()(_Args&&... __args) volatile
-	noexcept(noexcept(!_M_fn(std::forward<_Args>(__args)...)))
-	-> decltype(!_M_fn(std::forward<_Args>(__args)...))
-	{ return !_M_fn(std::forward<_Args>(__args)...); }
+	operator()(_Args&&... __args) &&
+	noexcept(__is_nothrow_callable<_Fn&&(_Args&&...)>::value)
+	-> decltype(!std::declval<result_of_t<_Fn&&(_Args&&...)>>())
+	{
+	  return !std::__invoke(std::move(_M_fn),
+				std::forward<_Args>(__args)...);
+	}
 
       template<typename... _Args>
 	auto
-	operator()(_Args&&... __args) const volatile
-	noexcept(noexcept(!_M_fn(std::forward<_Args>(__args)...)))
-	-> decltype(!_M_fn(std::forward<_Args>(__args)...))
-	{ return !_M_fn(std::forward<_Args>(__args)...); }
+	operator()(_Args&&... __args) const &&
+	noexcept(__is_nothrow_callable<const _Fn&&(_Args&&...)>::value)
+	-> decltype(!std::declval<result_of_t<const _Fn&&(_Args&&...)>>())
+	{
+	  return !std::__invoke(std::move(_M_fn),
+				std::forward<_Args>(__args)...);
+	}
     };
 
   /// [func.not_fn] Function template not_fn
@@ -429,8 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     not_fn(_Fn&& __fn)
     noexcept(std::is_nothrow_constructible<std::decay_t<_Fn>, _Fn&&>::value)
     {
-      using __maybe_type = _Maybe_wrap_member_pointer<std::decay_t<_Fn>>;
-      return _Not_fn<typename __maybe_type::type>{std::forward<_Fn>(__fn)};
+      return _Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn)};
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
