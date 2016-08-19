@@ -92,14 +92,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Variant: a type-safe union for C++17 </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0088r3.html">
 	P0088R3
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> 7 </entry>
       <entry> <code>__has_include(&lt;variant&gt;)</code> </entry>
     </row>
 
@@ -206,14 +205,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry> make_from_tuple: apply for construction </entry>
+      <entry> <code>make_from_tuple</code>: apply for construction </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0209r2.pdf">
 	P0209R2
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> 7 </entry>
       <entry><code> __cpp_lib_make_from_tuple >= 201606 </code></entry>
     </row>
 

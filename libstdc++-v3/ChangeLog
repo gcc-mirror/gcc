@@ -1,3 +1,9 @@
+2016-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status of make_from_tuple
+	and variant.
+	* doc/html/*: Regenerate.
+
 2016-08-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement the latest proposed resolution of LWG 2756.
