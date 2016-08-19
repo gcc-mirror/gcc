@@ -927,17 +927,40 @@ c_common_type (tree t1, tree t2)
 	return long_integer_type_node;
     }
 
+  /* For floating types of the same TYPE_PRECISION (which we here
+     assume means either the same set of values, or sets of values
+     neither a subset of the other, with behavior being undefined in
+     the latter case), follow the rules from TS 18661-3: prefer
+     interchange types _FloatN, then standard types long double,
+     double, float, then extended types _FloatNx.  For extended types,
+     check them starting with _Float128x as that seems most consistent
+     in spirit with preferring long double to double; for interchange
+     types, also check in that order for consistency although it's not
+     possible for more than one of them to have the same
+     precision.  */
+  tree mv1 = TYPE_MAIN_VARIANT (t1);
+  tree mv2 = TYPE_MAIN_VARIANT (t2);
+
+  for (int i = NUM_FLOATN_TYPES - 1; i >= 0; i--)
+    if (mv1 == FLOATN_TYPE_NODE (i) || mv2 == FLOATN_TYPE_NODE (i))
+      return FLOATN_TYPE_NODE (i);
+
   /* Likewise, prefer long double to double even if same size.  */
-  if (TYPE_MAIN_VARIANT (t1) == long_double_type_node
-      || TYPE_MAIN_VARIANT (t2) == long_double_type_node)
+  if (mv1 == long_double_type_node || mv2 == long_double_type_node)
     return long_double_type_node;
 
   /* Likewise, prefer double to float even if same size.
      We got a couple of embedded targets with 32 bit doubles, and the
      pdp11 might have 64 bit floats.  */
-  if (TYPE_MAIN_VARIANT (t1) == double_type_node
-      || TYPE_MAIN_VARIANT (t2) == double_type_node)
+  if (mv1 == double_type_node || mv2 == double_type_node)
     return double_type_node;
+
+  if (mv1 == float_type_node || mv2 == float_type_node)
+    return float_type_node;
+
+  for (int i = NUM_FLOATNX_TYPES - 1; i >= 0; i--)
+    if (mv1 == FLOATNX_TYPE_NODE (i) || mv2 == FLOATNX_TYPE_NODE (i))
+      return FLOATNX_TYPE_NODE (i);
 
   /* Otherwise prefer the unsigned one.  */
 
@@ -3284,6 +3307,30 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 
       val = require_complete_type (ploc, val);
 
+      /* Some floating-point arguments must be promoted to double when
+	 no type is specified by a prototype.  This applies to
+	 arguments of type float, and to architecture-specific types
+	 (ARM __fp16), but not to _FloatN or _FloatNx types.  */
+      bool promote_float_arg = false;
+      if (type == NULL_TREE
+	  && TREE_CODE (valtype) == REAL_TYPE
+	  && (TYPE_PRECISION (valtype)
+	      <= TYPE_PRECISION (double_type_node))
+	  && TYPE_MAIN_VARIANT (valtype) != double_type_node
+	  && TYPE_MAIN_VARIANT (valtype) != long_double_type_node
+	  && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (valtype)))
+	{
+	  /* Promote this argument, unless it has a _FloatN or
+	     _FloatNx type.  */
+	  promote_float_arg = true;
+	  for (int i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+	    if (TYPE_MAIN_VARIANT (valtype) == FLOATN_NX_TYPE_NODE (i))
+	      {
+		promote_float_arg = false;
+		break;
+	      }
+	}
+
       if (type != 0)
 	{
 	  /* Formal parm type is specified by a function prototype.  */
@@ -3450,12 +3497,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 		parmval = default_conversion (parmval);
 	    }
 	}
-      else if (TREE_CODE (valtype) == REAL_TYPE
-	       && (TYPE_PRECISION (valtype)
-		   <= TYPE_PRECISION (double_type_node))
-	       && TYPE_MAIN_VARIANT (valtype) != double_type_node
-	       && TYPE_MAIN_VARIANT (valtype) != long_double_type_node
-	       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (valtype)))
+      else if (promote_float_arg)
         {
 	  if (type_generic)
 	    parmval = val;

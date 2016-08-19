@@ -139,6 +139,17 @@ struct real_format
      or -1 for a complex encoding.  */
   int signbit_rw;
 
+  /* If this is an IEEE interchange format, the number of bits in the
+     format; otherwise, if it is an IEEE extended format, one more
+     than the greatest number of bits in an interchange format it
+     extends; otherwise 0.  Formats need not follow the IEEE 754-2008
+     recommended practice regarding how signaling NaNs are identified,
+     and may vary in the choice of default NaN, but must follow other
+     IEEE practice regarding having NaNs, infinities and subnormal
+     values, and the relation of minimum and maximum exponents, and,
+     for interchange formats, the details of the encoding.  */
+  int ieee_bits;
+
   /* Default rounding mode for operations on this format.  */
   bool round_towards_zero;
   bool has_sign_dependent_rounding;

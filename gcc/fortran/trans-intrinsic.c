@@ -149,7 +149,7 @@ builtin_decl_for_precision (enum built_in_function base_built_in,
     i = m->double_built_in;
   else if (precision == TYPE_PRECISION (long_double_type_node))
     i = m->long_double_built_in;
-  else if (precision == TYPE_PRECISION (float128_type_node))
+  else if (precision == TYPE_PRECISION (gfc_float128_type_node))
     {
       /* Special treatment, because it is not exactly a built-in, but
 	 a library function.  */
@@ -621,8 +621,8 @@ gfc_build_intrinsic_lib_fndecls (void)
 
     memset (quad_decls, 0, sizeof(tree) * (END_BUILTINS + 1));
 
-    type = float128_type_node;
-    complex_type = complex_float128_type_node;
+    type = gfc_float128_type_node;
+    complex_type = gfc_complex_float128_type_node;
     /* type (*) (type) */
     func_1 = build_function_type_list (type, type, NULL_TREE);
     /* int (*) (type) */

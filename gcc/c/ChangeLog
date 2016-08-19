@@ -1,3 +1,17 @@
+2016-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/32187
+	* c-tree.h (cts_floatn_nx): New enum c_typespec_keyword value.
+	(struct c_declspecs): Add field floatn_nx_idx.
+	* c-decl.c (declspecs_add_type, finish_declspecs): Handle _FloatN
+	and _FloatNx type specifiers.
+	* c-parser.c (c_keyword_starts_typename, c_token_starts_declspecs)
+	(c_parser_declspecs, c_parser_attribute_any_word)
+	(c_parser_objc_selector): Use CASE_RID_FLOATN_NX.
+	* c-typeck.c (c_common_type): Handle _FloatN and _FloatNx types.
+	(convert_arguments): Avoid promoting _FloatN and _FloatNx types
+	narrower than double.
+
 2016-08-12  Jakub Jelinek  <jakub@redhat.com>
 	    Martin Liska  <mliska@suse.cz>
 

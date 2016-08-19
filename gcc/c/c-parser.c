@@ -540,6 +540,7 @@ c_keyword_starts_typename (enum rid keyword)
     case RID_DFLOAT32:
     case RID_DFLOAT64:
     case RID_DFLOAT128:
+    CASE_RID_FLOATN_NX:
     case RID_BOOL:
     case RID_ENUM:
     case RID_STRUCT:
@@ -727,6 +728,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_DFLOAT32:
 	case RID_DFLOAT64:
 	case RID_DFLOAT128:
+	CASE_RID_FLOATN_NX:
 	case RID_BOOL:
 	case RID_ENUM:
 	case RID_STRUCT:
@@ -2536,6 +2538,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_DFLOAT32:
 	case RID_DFLOAT64:
 	case RID_DFLOAT128:
+	CASE_RID_FLOATN_NX:
 	case RID_BOOL:
 	case RID_FRACT:
 	case RID_ACCUM:
@@ -4009,6 +4012,7 @@ c_parser_attribute_any_word (c_parser *parser)
 	case RID_DFLOAT32:
 	case RID_DFLOAT64:
 	case RID_DFLOAT128:
+	CASE_RID_FLOATN_NX:
 	case RID_BOOL:
 	case RID_FRACT:
 	case RID_ACCUM:
@@ -9638,6 +9642,7 @@ c_parser_objc_selector (c_parser *parser)
     case RID_CHAR:
     case RID_FLOAT:
     case RID_DOUBLE:
+    CASE_RID_FLOATN_NX:
     case RID_VOID:
     case RID_BOOL:
     case RID_ATOMIC:

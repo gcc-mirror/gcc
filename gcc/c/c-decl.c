@@ -9804,6 +9804,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<long%> and %<float%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<long%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
 	      else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
 			  ("both %<long%> and %<_Decimal32%> in "
@@ -9857,6 +9865,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<short%> and %<double%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<short%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
 	      else if (specs->typespec_word == cts_dfloat32)
                 error_at (loc,
 			  ("both %<short%> and %<_Decimal32%> in "
@@ -9901,6 +9917,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<signed%> and %<double%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<signed%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
 	      else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
 			  ("both %<signed%> and %<_Decimal32%> in "
@@ -9945,6 +9969,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<unsigned%> and %<double%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<unsigned%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
               else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
 			  ("both %<unsigned%> and %<_Decimal32%> in "
@@ -10049,6 +10081,14 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<_Sat%> and %<double%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_floatn_nx)
+		error_at (loc,
+			  ("both %<_Sat%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
               else if (specs->typespec_word == cts_dfloat32)
 		error_at (loc,
 			  ("both %<_Sat%> and %<_Decimal32%> in "
@@ -10082,8 +10122,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	}
       else
 	{
-	  /* "void", "_Bool", "char", "int", "float", "double", "_Decimal32",
-	     "__intN", "_Decimal64", "_Decimal128", "_Fract", "_Accum" or
+	  /* "void", "_Bool", "char", "int", "float", "double",
+	     "_FloatN", "_FloatNx", "_Decimal32", "__intN",
+	     "_Decimal64", "_Decimal128", "_Fract", "_Accum" or
 	     "__auto_type".  */
 	  if (specs->typespec_word != cts_none)
 	    {
@@ -10305,6 +10346,69 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else
 		{
 		  specs->typespec_word = cts_double;
+		  specs->locations[cdw_typespec] = loc;
+		}
+	      return specs;
+	    CASE_RID_FLOATN_NX:
+	      specs->floatn_nx_idx = i - RID_FLOATN_NX_FIRST;
+	      if (!in_system_header_at (input_location))
+		pedwarn (loc, OPT_Wpedantic,
+			 "ISO C does not support the %<_Float%d%s%> type",
+			 floatn_nx_types[specs->floatn_nx_idx].n,
+			 (floatn_nx_types[specs->floatn_nx_idx].extended
+			  ? "x"
+			  : ""));
+
+	      if (specs->long_p)
+		error_at (loc,
+			  ("both %<long%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (specs->short_p)
+		error_at (loc,
+			  ("both %<short%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (specs->signed_p)
+		error_at (loc,
+			  ("both %<signed%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (specs->unsigned_p)
+		error_at (loc,
+			  ("both %<unsigned%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (specs->saturating_p)
+		error_at (loc,
+			  ("both %<_Sat%> and %<_Float%d%s%> in "
+			   "declaration specifiers"),
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else if (FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx) == NULL_TREE)
+		error_at (loc,
+			  "%<_Float%d%s%> is not supported on this target",
+			  floatn_nx_types[specs->floatn_nx_idx].n,
+			  (floatn_nx_types[specs->floatn_nx_idx].extended
+			   ? "x"
+			   : ""));
+	      else
+		{
+		  specs->typespec_word = cts_floatn_nx;
 		  specs->locations[cdw_typespec] = loc;
 		}
 	      return specs;
@@ -10784,6 +10888,13 @@ finish_declspecs (struct c_declspecs *specs)
 			 ? complex_double_type_node
 			 : double_type_node);
 	}
+      break;
+    case cts_floatn_nx:
+      gcc_assert (!specs->long_p && !specs->short_p
+		  && !specs->signed_p && !specs->unsigned_p);
+      specs->type = (specs->complex_p
+		     ? COMPLEX_FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx)
+		     : FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx));
       break;
     case cts_dfloat32:
     case cts_dfloat64:

@@ -33325,24 +33325,29 @@ ix86_init_builtins_va_builtins_abi (void)
 static void
 ix86_init_builtin_types (void)
 {
-  tree float128_type_node, float80_type_node, const_string_type_node;
+  tree float80_type_node, const_string_type_node;
 
   /* The __float80 type.  */
   float80_type_node = long_double_type_node;
   if (TYPE_MODE (float80_type_node) != XFmode)
     {
-      /* The __float80 type.  */
-      float80_type_node = make_node (REAL_TYPE);
+      if (float64x_type_node != NULL_TREE
+	  && TYPE_MODE (float64x_type_node) == XFmode)
+	float80_type_node = float64x_type_node;
+      else
+	{
+	  /* The __float80 type.  */
+	  float80_type_node = make_node (REAL_TYPE);
 
-      TYPE_PRECISION (float80_type_node) = 80;
-      layout_type (float80_type_node);
+	  TYPE_PRECISION (float80_type_node) = 80;
+	  layout_type (float80_type_node);
+	}
     }
   lang_hooks.types.register_builtin_type (float80_type_node, "__float80");
 
-  /* The __float128 type.  */
-  float128_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (float128_type_node) = 128;
-  layout_type (float128_type_node);
+  /* The __float128 type.  The node has already been created as
+     _Float128, so we only need to register the __float128 name for
+     it.  */
   lang_hooks.types.register_builtin_type (float128_type_node, "__float128");
 
   const_string_type_node

@@ -1045,6 +1045,16 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
     pp_string (pp, "dd");
   else if (TREE_TYPE (r) == dfloat32_type_node)
     pp_string (pp, "df");
+  else if (TREE_TYPE (r) != double_type_node)
+    for (int i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+      if (TREE_TYPE (r) == FLOATN_NX_TYPE_NODE (i))
+	{
+	  pp_character (pp, 'f');
+	  pp_decimal_int (pp, floatn_nx_types[i].n);
+	  if (floatn_nx_types[i].extended)
+	    pp_character (pp, 'x');
+	  break;
+	}
 }
 
 /* Print out a FIXED value as a decimal-floating-constant.  */
