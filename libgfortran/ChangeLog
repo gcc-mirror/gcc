@@ -1,4 +1,13 @@
-2016-08-16  Janne Blomqvist  <jb@gcc.gnu.org>
+2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * intrinsics/random.c (xor_keys): New array with "secret" keys.
+        (scramble_seed): XOR given seed with xor_keys array rather than
+        shuffling bytes.
+        (unscramble_seed): Remove function.
+        (random_seed_i4): Use new scramble_seed.
+        (random_seed_i8): Likewise.
+
+2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
         * intrinsics/random.c (master_init): New variable.
         (init_rand_state): Move below getosrandom (), maybe initialize

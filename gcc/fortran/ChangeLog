@@ -1,3 +1,9 @@
+2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * intrinsics.texi (RANDOM_NUMBER): Remove reference to
+        init_random_seed in example.
+        (RANDOM_SEED): Remove warning to not set all seed values to 0.
+
 2016-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (gfc_diagnostic_starter): Update for change to
