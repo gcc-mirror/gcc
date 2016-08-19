@@ -1,3 +1,13 @@
+2016-08-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * intrinsics/random.c (master_init): New variable.
+        (init_rand_state): Move below getosrandom (), maybe initialize
+        master_state.
+        (random_seed_i4): If called with no arguments, set master_init to
+        false, and reinitialize. If called with PUT=, set master_init to
+        true.
+        (random_seed_i8): Likewise.
+
 2016-08-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* intrinsics/random.c: Include <stdlib.h>.

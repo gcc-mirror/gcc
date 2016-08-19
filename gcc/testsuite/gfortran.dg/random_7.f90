@@ -10,8 +10,9 @@ program trs
   seed(:) = huge(seed) / 17
   call test_random_seed(put=seed)
   call test_random_seed(get=check)
-  ! In the current implementation seed(17) is special
-  seed(17) = check(17)
+  ! In the current xorshift1024* implementation the last seed value is
+  ! special
+  seed(size) = check(size)
   if (any (seed /= check)) call abort
 contains
   subroutine test_random_seed(size, put, get)

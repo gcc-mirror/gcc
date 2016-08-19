@@ -193,9 +193,10 @@ typedef struct
 xorshift1024star_state;
 
 
-/* How many times we have jumped. This and master_state are the only
-   variables protected by random_lock.  */
-static unsigned njumps;
+/* master_init, njumps, and master_state are the only variables
+   protected by random_lock.  */
+static bool master_init;
+static unsigned njumps; /* How many times we have jumped.  */
 static uint64_t master_state[] = {
   0xad63fa1ed3b55f36ULL, 0xd94473e78978b497ULL, 0xbc60592a98172477ULL,
   0xa3de7c6e81265301ULL, 0x586640c5e785af27ULL, 0x7a2a3f63b67ce5eaULL,
@@ -272,24 +273,6 @@ jump (xorshift1024star_state* rs)
 }
 
 
-/* Initialize the random number generator for the current thread,
-   using the master state and the number of times we must jump.  */
-
-static void
-init_rand_state (xorshift1024star_state* rs, const bool locked)
-{
-  if (!locked)
-    __gthread_mutex_lock (&random_lock);
-  memcpy (&rs->s, master_state, sizeof (master_state));
-  unsigned n = njumps++;
-  if (!locked)
-    __gthread_mutex_unlock (&random_lock);
-  for (unsigned i = 0; i < n; i++)
-    jump (rs);
-  rs->init = true;
-}
-
-
 /* Super-simple LCG generator used in getosrandom () if /dev/urandom
    doesn't exist.  */
 
@@ -356,6 +339,30 @@ getosrandom (void *buf, size_t buflen)
       seed = lcg_parkmiller (seed);
     }
   return buflen;
+}
+
+
+/* Initialize the random number generator for the current thread,
+   using the master state and the number of times we must jump.  */
+
+static void
+init_rand_state (xorshift1024star_state* rs, const bool locked)
+{
+  if (!locked)
+    __gthread_mutex_lock (&random_lock);
+  if (!master_init)
+    {
+      getosrandom (master_state, sizeof (master_state));
+      njumps = 0;
+      master_init = true;
+    }
+  memcpy (&rs->s, master_state, sizeof (master_state));
+  unsigned n = njumps++;
+  if (!locked)
+    __gthread_mutex_unlock (&random_lock);
+  for (unsigned i = 0; i < n; i++)
+    jump (rs);
+  rs->init = true;
 }
 
 
@@ -791,8 +798,7 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
      a processor-dependent value to the seed."  */
   if (size == NULL && put == NULL && get == NULL)
     {
-      getosrandom (master_state, sizeof (master_state));
-      njumps = 0;
+      master_init = false;
       init_rand_state (rs, true);
     }
 
@@ -816,6 +822,7 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 	 provide seeds with quality only in the lower or upper part.  */
       scramble_seed ((unsigned char *) master_state, seed, sizeof seed);
       njumps = 0;
+      master_init = true;
       init_rand_state (rs, true);
 
       rs->p = put->base_addr[SZ * GFC_DESCRIPTOR_STRIDE(put, 0)] & 15;
@@ -873,8 +880,7 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
      a processor-dependent value to the seed."  */
   if (size == NULL && put == NULL && get == NULL)
     {
-      getosrandom (master_state, sizeof (master_state));
-      njumps = 0;
+      master_init = false;
       init_rand_state (rs, true);
     }
 
@@ -894,6 +900,7 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 		sizeof (GFC_UINTEGER_8));
 
       njumps = 0;
+      master_init = true;
       init_rand_state (rs, true);
       rs->p = put->base_addr[SZ * GFC_DESCRIPTOR_STRIDE(put, 0)] & 15;
      }

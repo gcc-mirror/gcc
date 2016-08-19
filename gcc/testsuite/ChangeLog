@@ -1,3 +1,10 @@
+2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * gfortran.dg/random_4.f90: Initialize seed before using, handle
+        the last special seed value.
+        * gfortran.dg/random_7.f90: Use size for last array member instead
+        of hardcoded value.
+
 2016-08-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/cpp/warn-undef.c: Append "evaluates to 0" to dg-error.
