@@ -1,5 +1,15 @@
 2016-08-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* tree-vrp.c (vrp_visit_assignment_or_call): Changed to Return VR.
+	(vrp_visit_cond_stmt): Just sets TAKEN_EDGE_P.
+	(vrp_visit_switch_stmt): Likewise.
+	(extract_range_from_stmt): Factored out from vrp_visit_stmt.
+	(extract_range_from_phi_node): Factored out from vrp_visit_phi_stmt.
+	(vrp_visit_stmt): Use extract_range_from_stmt.
+	(vrp_visit_phi_node): Use extract_range_from_phi_node.
+
+2016-08-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* Makefile.in: Add tree-vrp.h to GTFILES.
 	* gengtype.c (open_base_files): Add tree-vrp.h.
 	* asan.c: Add tree-vrp.h which now has the definition value_range_type.
