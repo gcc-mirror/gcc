@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "md5.h"
 #include "case-cfn-macros.h"
 #include "stringpool.h"
+#include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "selftest.h"
 

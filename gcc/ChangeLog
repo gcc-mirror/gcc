@@ -1,5 +1,23 @@
 2016-08-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* Makefile.in: Add tree-vrp.h to GTFILES.
+	* gengtype.c (open_base_files): Add tree-vrp.h.
+	* asan.c: Add tree-vrp.h which now has the definition value_range_type.
+	* builtins.c: Likewise.
+	* fold-const.c: Likewise.
+	* gimple-builder.c: Likewise.
+	* gimple-laddress.c: Likewise.
+	* hsa-gen.c: Likewise.
+	* internal-fn.c: Likewise.
+	* ssa.h: Likewise.
+	* targhooks.c: Liewise,
+	* tree-ssa-address.c: Likewise.
+	* tree-ssanames.h (value_range_type: Move to tree-vrp.h.
+	* tree-vrp.c (struct value_range): Move to tree-vrp.h
+	* tree-vrp.h: New file.
+
+2016-08-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	PR tree-optimization/61839
 	* tree-vrp.c (two_valued_val_range_p): New.
 	(simplify_stmt_using_ranges): Convert CST BINOP VAR where VAR is

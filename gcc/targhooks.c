@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "optabs.h"
 #include "regs.h"

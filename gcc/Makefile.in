@@ -2456,6 +2456,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-phinodes.c \
   $(srcdir)/tree-ssa-alias.h \
   $(srcdir)/tree-ssanames.h \
+  $(srcdir)/tree-vrp.h \
   $(srcdir)/ipa-prop.h \
   $(srcdir)/trans-mem.c \
   $(srcdir)/lto-streamer.h \
