@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab.h"
 #include "tree.h"
 #include "stringpool.h"
+#include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "fold-const.h"
 #include "gimple-expr.h"

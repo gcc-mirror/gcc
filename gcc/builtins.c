@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "expmed.h"
 #include "optabs.h"

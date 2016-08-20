@@ -61,32 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "alloc-pool.h"
 
-/* Range of values that can be associated with an SSA_NAME after VRP
-   has executed.  */
-struct value_range
-{
-  /* Lattice value represented by this range.  */
-  enum value_range_type type;
-
-  /* Minimum and maximum values represented by this range.  These
-     values should be interpreted as follows:
-
-	- If TYPE is VR_UNDEFINED or VR_VARYING then MIN and MAX must
-	  be NULL.
-
-	- If TYPE == VR_RANGE then MIN holds the minimum value and
-	  MAX holds the maximum value of the range [MIN, MAX].
-
-	- If TYPE == ANTI_RANGE the variable is known to NOT
-	  take any values in the range [MIN, MAX].  */
-  tree min;
-  tree max;
-
-  /* Set of SSA names whose value ranges are equivalent to this one.
-     This set is only valid when TYPE is VR_RANGE or VR_ANTI_RANGE.  */
-  bitmap equiv;
-};
-
 #define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
 
 /* Allocation pools for tree-vrp allocations.  */
@@ -109,8 +83,6 @@ live_on_edge (edge e, tree name)
 /* Local functions.  */
 static int compare_values (tree val1, tree val2);
 static int compare_values_warnv (tree val1, tree val2, bool *);
-static void vrp_meet (value_range *, value_range *);
-static void vrp_intersect_ranges (value_range *, value_range *);
 static tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
 						     tree, tree, bool, bool *,
 						     bool *);
@@ -4648,7 +4620,7 @@ compare_range_with_value (enum tree_code comp, value_range *vr, tree val,
 
 /* Debugging dumps.  */
 
-void dump_value_range (FILE *, value_range *);
+void dump_value_range (FILE *, const value_range *);
 void debug_value_range (value_range *);
 void dump_all_value_ranges (FILE *);
 void debug_all_value_ranges (void);
@@ -4659,7 +4631,7 @@ void debug_vr_equiv (bitmap);
 /* Dump value range VR to FILE.  */
 
 void
-dump_value_range (FILE *file, value_range *vr)
+dump_value_range (FILE *file, const value_range *vr)
 {
   if (vr == NULL)
     fprintf (file, "[]");
@@ -8600,7 +8572,7 @@ vrp_intersect_ranges_1 (value_range *vr0, value_range *vr1)
     bitmap_copy (vr0->equiv, vr1->equiv);
 }
 
-static void
+void
 vrp_intersect_ranges (value_range *vr0, value_range *vr1)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -8625,7 +8597,7 @@ vrp_intersect_ranges (value_range *vr0, value_range *vr1)
    may not be the smallest possible such range.  */
 
 static void
-vrp_meet_1 (value_range *vr0, value_range *vr1)
+vrp_meet_1 (value_range *vr0, const value_range *vr1)
 {
   value_range saved;
 
@@ -8697,8 +8669,8 @@ vrp_meet_1 (value_range *vr0, value_range *vr1)
     bitmap_clear (vr0->equiv);
 }
 
-static void
-vrp_meet (value_range *vr0, value_range *vr1)
+void
+vrp_meet (value_range *vr0, const value_range *vr1)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
