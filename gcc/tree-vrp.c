@@ -10036,6 +10036,40 @@ simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   return true;
 }
 
+/* Return true if VAR is a two-valued variable.  Set a and b with the
+   two-values when it is true.  Return false otherwise.  */
+
+static bool
+two_valued_val_range_p (tree var, tree *a, tree *b)
+{
+  value_range *vr = get_value_range (var);
+  if ((vr->type != VR_RANGE
+       && vr->type != VR_ANTI_RANGE)
+      || TREE_CODE (vr->min) != INTEGER_CST
+      || TREE_CODE (vr->max) != INTEGER_CST)
+    return false;
+
+  if (vr->type == VR_RANGE
+      && wi::sub (vr->max, vr->min) == 1)
+    {
+      *a = vr->min;
+      *b = vr->max;
+      return true;
+    }
+
+  /* ~[TYPE_MIN + 1, TYPE_MAX - 1] */
+  if (vr->type == VR_ANTI_RANGE
+      && wi::sub (vr->min, vrp_val_min (TREE_TYPE (var))) == 1
+      && wi::sub (vrp_val_max (TREE_TYPE (var)), vr->max) == 1)
+    {
+      *a = vrp_val_min (TREE_TYPE (var));
+      *b = vrp_val_max (TREE_TYPE (var));
+      return true;
+    }
+
+  return false;
+}
+
 /* Simplify STMT using ranges if possible.  */
 
 static bool
@@ -10046,6 +10080,68 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
     {
       enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
       tree rhs1 = gimple_assign_rhs1 (stmt);
+      tree rhs2 = gimple_assign_rhs2 (stmt);
+      tree lhs = gimple_assign_lhs (stmt);
+      tree val1 = NULL_TREE, val2 = NULL_TREE;
+      use_operand_p use_p;
+      gimple *use_stmt;
+
+      /* Convert:
+	 LHS = CST BINOP VAR
+	 Where VAR is two-valued and LHS is used in GIMPLE_COND only
+	 To:
+	 LHS = VAR == VAL1 ? (CST BINOP VAL1) : (CST BINOP VAL2)
+
+	 Also handles:
+	 LHS = VAR BINOP CST
+	 Where VAR is two-valued and LHS is used in GIMPLE_COND only
+	 To:
+	 LHS = VAR == VAL1 ? (VAL1 BINOP CST) : (VAL2 BINOP CST) */
+
+      if (TREE_CODE_CLASS (rhs_code) == tcc_binary
+	  && INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	  && ((TREE_CODE (rhs1) == INTEGER_CST
+	       && TREE_CODE (rhs2) == SSA_NAME)
+	      || (TREE_CODE (rhs2) == INTEGER_CST
+		  && TREE_CODE (rhs1) == SSA_NAME))
+	  && single_imm_use (lhs, &use_p, &use_stmt)
+	  && gimple_code (use_stmt) == GIMPLE_COND)
+
+	{
+	  tree new_rhs1 = NULL_TREE;
+	  tree new_rhs2 = NULL_TREE;
+	  tree cmp_var = NULL_TREE;
+
+	  if (TREE_CODE (rhs2) == SSA_NAME
+	      && two_valued_val_range_p (rhs2, &val1, &val2))
+	    {
+	      /* Optimize RHS1 OP [VAL1, VAL2].  */
+	      new_rhs1 = int_const_binop (rhs_code, rhs1, val1);
+	      new_rhs2 = int_const_binop (rhs_code, rhs1, val2);
+	      cmp_var = rhs2;
+	    }
+	  else if (TREE_CODE (rhs1) == SSA_NAME
+		   && two_valued_val_range_p (rhs1, &val1, &val2))
+	    {
+	      /* Optimize [VAL1, VAL2] OP RHS2.  */
+	      new_rhs1 = int_const_binop (rhs_code, val1, rhs2);
+	      new_rhs2 = int_const_binop (rhs_code, val2, rhs2);
+	      cmp_var = rhs1;
+	    }
+
+	  /* If we could not find two-vals or the optimzation is invalid as
+	     in divide by zero, new_rhs1 / new_rhs will be NULL_TREE.  */
+	  if (new_rhs1 && new_rhs2)
+	    {
+	      tree cond = build2 (EQ_EXPR, TREE_TYPE (cmp_var), cmp_var, val1);
+	      gimple_assign_set_rhs_with_ops (gsi,
+					      COND_EXPR, cond,
+					      new_rhs1,
+					      new_rhs2);
+	      update_stmt (gsi_stmt (*gsi));
+	      return true;
+	    }
+	}
 
       switch (rhs_code)
 	{
