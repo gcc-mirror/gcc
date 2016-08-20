@@ -1,3 +1,12 @@
+2016-08-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR tree-optimization/61839
+	* tree-vrp.c (two_valued_val_range_p): New.
+	(simplify_stmt_using_ranges): Convert CST BINOP VAR where VAR is
+	two-valued to VAR == VAL1 ? (CST BINOP VAL1) : (CST BINOP VAL2).
+	Also Convert VAR BINOP CST where VAR is two-valued to
+	VAR == VAL1 ? (VAL1 BINOP CST) : (VAL2 BINOP CST).
+
 2016-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c
