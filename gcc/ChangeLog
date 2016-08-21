@@ -1,3 +1,10 @@
+2016-08-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77270
+	* config/i386/i386.md (prefetch): When TARGET_PRFCHW or
+	TARGET_PREFETCHWT1 are disabled, emit 3dNOW! write prefetches for
+	non-SSE2 athlons only, otherwise prefer SSE prefetches.
+
 2016-08-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-vrp.c (vrp_visit_assignment_or_call): Changed to Return VR.
