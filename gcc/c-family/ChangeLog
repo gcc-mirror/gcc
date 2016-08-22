@@ -1,3 +1,8 @@
+2016-08-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-family/c-cppbuiltin.c (c_cpp_builtins): Check _FloatN and
+	_FloatNx types for suffixes for built-in functions.
+
 2016-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/32187

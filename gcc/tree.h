@@ -234,6 +234,9 @@ as_internal_fn (combined_fn code)
 /* Helper macros for math builtins.  */
 
 #define CASE_FLT_FN(FN) case FN: case FN##F: case FN##L
+#define CASE_FLT_FN_FLOATN_NX(FN)			   \
+  case FN##F16: case FN##F32: case FN##F64: case FN##F128: \
+  case FN##F32X: case FN##F64X: case FN##F128X
 #define CASE_FLT_FN_REENT(FN) case FN##_R: case FN##F_R: case FN##L_R
 #define CASE_INT_FN(FN) case FN: case FN##L: case FN##LL: case FN##IMAX
 
@@ -3610,11 +3613,16 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define FLOATN_NX_TYPE_NODE(IDX)	global_trees[TI_FLOATN_NX_TYPE_FIRST + (IDX)]
 #define FLOATNX_TYPE_NODE(IDX)		global_trees[TI_FLOATNX_TYPE_FIRST + (IDX)]
 
-/* Names for individual types, where required by back ends
-   (architecture-independent code should always iterate over all such
-   types).  */
+/* Names for individual types (code should normally iterate over all
+   such types; these are only for back-end use, or in contexts such as
+   *.def where iteration is not possible).  */
+#define float16_type_node		global_trees[TI_FLOAT16_TYPE]
+#define float32_type_node		global_trees[TI_FLOAT32_TYPE]
+#define float64_type_node		global_trees[TI_FLOAT64_TYPE]
 #define float128_type_node		global_trees[TI_FLOAT128_TYPE]
+#define float32x_type_node		global_trees[TI_FLOAT32X_TYPE]
 #define float64x_type_node		global_trees[TI_FLOAT64X_TYPE]
+#define float128x_type_node		global_trees[TI_FLOAT128X_TYPE]
 
 #define float_ptr_type_node		global_trees[TI_FLOAT_PTR_TYPE]
 #define double_ptr_type_node		global_trees[TI_DOUBLE_PTR_TYPE]

@@ -1095,24 +1095,27 @@ c_cpp_builtins (cpp_reader *pfile)
 	  macro_name = (char *) alloca (strlen (name)
 					+ sizeof ("__LIBGCC__FUNC_EXT__"));
 	  sprintf (macro_name, "__LIBGCC_%s_FUNC_EXT__", name);
-	  const char *suffix;
+	  char suffix[20] = "";
 	  if (mode == TYPE_MODE (double_type_node))
-	    suffix = "";
+	    ; /* Empty suffix correct.  */
 	  else if (mode == TYPE_MODE (float_type_node))
-	    suffix = "f";
+	    suffix[0] = 'f';
 	  else if (mode == TYPE_MODE (long_double_type_node))
-	    suffix = "l";
-	  /* ??? The following assumes the built-in functions (defined
-	     in target-specific code) match the suffixes used for
-	     constants.  Because in fact such functions are not
-	     defined for the 'w' suffix, 'l' is used there
-	     instead.  */
-	  else if (mode == targetm.c.mode_for_suffix ('q'))
-	    suffix = "q";
-	  else if (mode == targetm.c.mode_for_suffix ('w'))
-	    suffix = "l";
+	    suffix[0] = 'l';
 	  else
-	    gcc_unreachable ();
+	    {
+	      bool found_suffix = false;
+	      for (int i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+		if (FLOATN_NX_TYPE_NODE (i) != NULL_TREE
+		    && mode == TYPE_MODE (FLOATN_NX_TYPE_NODE (i)))
+		  {
+		    sprintf (suffix, "f%d%s", floatn_nx_types[i].n,
+			     floatn_nx_types[i].extended ? "x" : "");
+		    found_suffix = true;
+		    break;
+		  }
+	      gcc_assert (found_suffix);
+	    }
 	  builtin_define_with_value (macro_name, suffix, 0);
 	  bool excess_precision = false;
 	  if (TARGET_FLT_EVAL_METHOD != 0

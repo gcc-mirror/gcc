@@ -1,3 +1,35 @@
+2016-08-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* tree.h (CASE_FLT_FN_FLOATN_NX, float16_type_node)
+	(float32_type_node, float64_type_node, float32x_type_node)
+	(float128x_type_node): New macros.
+	* builtin-types.def (BT_FLOAT16, BT_FLOAT32, BT_FLOAT64)
+	(BT_FLOAT128, BT_FLOAT32X, BT_FLOAT64X, BT_FLOAT128X)
+	(BT_FN_FLOAT16, BT_FN_FLOAT32, BT_FN_FLOAT64, BT_FN_FLOAT128)
+	(BT_FN_FLOAT32X, BT_FN_FLOAT64X, BT_FN_FLOAT128X)
+	(BT_FN_FLOAT16_FLOAT16, BT_FN_FLOAT32_FLOAT32)
+	(BT_FN_FLOAT64_FLOAT64, BT_FN_FLOAT128_FLOAT128)
+	(BT_FN_FLOAT32X_FLOAT32X, BT_FN_FLOAT64X_FLOAT64X)
+	(BT_FN_FLOAT128X_FLOAT128X, BT_FN_FLOAT16_CONST_STRING)
+	(BT_FN_FLOAT32_CONST_STRING, BT_FN_FLOAT64_CONST_STRING)
+	(BT_FN_FLOAT128_CONST_STRING, BT_FN_FLOAT32X_CONST_STRING)
+	(BT_FN_FLOAT64X_CONST_STRING, BT_FN_FLOAT128X_CONST_STRING)
+	(BT_FN_FLOAT16_FLOAT16_FLOAT16, BT_FN_FLOAT32_FLOAT32_FLOAT32)
+	(BT_FN_FLOAT64_FLOAT64_FLOAT64, BT_FN_FLOAT128_FLOAT128_FLOAT128)
+	(BT_FN_FLOAT32X_FLOAT32X_FLOAT32X)
+	(BT_FN_FLOAT64X_FLOAT64X_FLOAT64X)
+	(BT_FN_FLOAT128X_FLOAT128X_FLOAT128X): New type definitions.
+	* builtins.def (DEF_GCC_FLOATN_NX_BUILTINS): New macro.
+	(copysign, fabs, huge_val, inf, nan, nans): Use it.
+	* builtins.c (expand_builtin): Use CASE_FLT_FN_FLOATN_NX for fabs
+	and copysign.
+	(fold_builtin_0): Use CASE_FLT_FN_FLOATN_NX for inf and huge_val.
+	(fold_builtin_1): Use CASE_FLT_FN_FLOATN_NX for fabs.
+	* doc/extend.texi (Other Builtins): Document these built-in
+	functions.
+	* fold-const-call.c (fold_const_call): Use CASE_FLT_FN_FLOATN_NX
+	for nan and nans.
+
 2016-08-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Binaries): www.opencsw.org now uses https.

@@ -5875,6 +5875,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
   switch (fcode)
     {
     CASE_FLT_FN (BUILT_IN_FABS):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FABS):
     case BUILT_IN_FABSD32:
     case BUILT_IN_FABSD64:
     case BUILT_IN_FABSD128:
@@ -5884,6 +5885,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       break;
 
     CASE_FLT_FN (BUILT_IN_COPYSIGN):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_COPYSIGN):
       target = expand_builtin_copysign (exp, target, subtarget);
       if (target)
 	return target;
@@ -8208,12 +8210,14 @@ fold_builtin_0 (location_t loc, tree fndecl)
       return fold_builtin_LINE (loc, type);
 
     CASE_FLT_FN (BUILT_IN_INF):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_INF):
     case BUILT_IN_INFD32:
     case BUILT_IN_INFD64:
     case BUILT_IN_INFD128:
       return fold_builtin_inf (loc, type, true);
 
     CASE_FLT_FN (BUILT_IN_HUGE_VAL):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_HUGE_VAL):
       return fold_builtin_inf (loc, type, false);
 
     case BUILT_IN_CLASSIFY_TYPE:
@@ -8262,6 +8266,7 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
       return fold_builtin_strlen (loc, type, arg0);
 
     CASE_FLT_FN (BUILT_IN_FABS):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FABS):
     case BUILT_IN_FABSD32:
     case BUILT_IN_FABSD64:
     case BUILT_IN_FABSD128:

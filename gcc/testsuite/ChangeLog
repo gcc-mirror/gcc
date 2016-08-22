@@ -1,5 +1,18 @@
 2016-08-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/torture/float128-builtin.c,
+	gcc.dg/torture/float128-ieee-nan.c,
+	gcc.dg/torture/float128x-builtin.c,
+	gcc.dg/torture/float128x-nan.c, gcc.dg/torture/float16-builtin.c,
+	gcc.dg/torture/float16-nan.c, gcc.dg/torture/float32-builtin.c,
+	gcc.dg/torture/float32-nan.c, gcc.dg/torture/float32x-builtin.c,
+	gcc.dg/torture/float32x-nan.c, gcc.dg/torture/float64-builtin.c,
+	gcc.dg/torture/float64-nan.c, gcc.dg/torture/float64x-builtin.c,
+	gcc.dg/torture/float64x-nan.c, gcc.dg/torture/floatn-builtin.h,
+	gcc.dg/torture/floatn-nan.h: New tests.
+
+2016-08-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/torture/arm-fp16-int-convert-alt.c (FP16_MAX_EXP): New
 	macro.
 	(main): Update calls to TEST_I_F.
