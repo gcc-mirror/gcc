@@ -1,3 +1,8 @@
+2016-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77321
+	* c-common.c (warn_for_memset): Check type for null.
+
 2016-08-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-family/c-cppbuiltin.c (c_cpp_builtins): Check _FloatN and

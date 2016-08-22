@@ -1,3 +1,8 @@
+2016-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77321
+	* g++.dg/cpp1y/pr77321.C: New test.
+
 2016-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/60774

@@ -11991,7 +11991,7 @@ warn_for_memset (location_t loc, tree arg0, tree arg2,
       if (TREE_CODE (arg0) == ADDR_EXPR)
 	arg0 = TREE_OPERAND (arg0, 0);
       tree type = TREE_TYPE (arg0);
-      if (TREE_CODE (type) == ARRAY_TYPE)
+      if (type != NULL_TREE && TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  tree elt_type = TREE_TYPE (type);
 	  tree domain = TYPE_DOMAIN (type);
