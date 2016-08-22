@@ -1,5 +1,9 @@
 2016-08-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/api.xml: Replace hardcoded links for specific versions with
+	link to docs for all releases.
+	* doc/html/*: Regenerate.
+
 	PR libstdc++/77322
 	* doc/xml/manual/intro.xml: Document DR 2062 change.
 	* include/std/functional (function::swap): Add noexcept.
