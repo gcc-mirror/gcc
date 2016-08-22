@@ -1,3 +1,7 @@
+2016-08-22  Richard Biener  <rguenther@suse.de>
+
+	* BASE-VER: Set to 6.2.1.
+
 2016-08-22  Release Manager
 
 	* GCC 6.2.0 released.
