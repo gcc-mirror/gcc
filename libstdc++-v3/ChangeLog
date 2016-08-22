@@ -1,3 +1,11 @@
+2016-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77322
+	* doc/xml/manual/intro.xml: Document DR 2062 change.
+	* include/std/functional (function::swap): Add noexcept.
+	(swap(function<Res(Args...)&, function<Res(Args...)&)): Likewise.
+	* testsuite/20_util/function/77322.cc: New test.
+
 2016-08-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/pthread18185.cc: Use -pthread for
