@@ -1,3 +1,10 @@
+2016-08-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/fp-int-convert-float128x-timode.c,
+	gcc.dg/torture/fp-int-convert-float32x-timode.c,
+	gcc.dg/torture/fp-int-convert-float64x-timode.c: Correct type
+	names in calls to TEST_I_F.
+
 2016-08-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c/52952
