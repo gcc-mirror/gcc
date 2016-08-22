@@ -3237,7 +3237,7 @@ HP-UX:
 Solaris 2 (SPARC, Intel):
 @itemize
 @item
-@uref{http://www.opencsw.org/,,OpenCSW}
+@uref{https://www.opencsw.org/,,OpenCSW}
 
 @item
 @uref{http://jupiterrise.com/tgcware/,,TGCware}
