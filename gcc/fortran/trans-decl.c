@@ -5316,9 +5316,19 @@ generate_local_decl (gfc_symbol * sym)
 	    }
 	  else if (!sym->attr.use_assoc)
 	    {
-	      gfc_warning (OPT_Wunused_variable,
-			   "Unused variable %qs declared at %L",
-			   sym->name, &sym->declared_at);
+	      /* Corner case: the symbol may be an entry point.  At this point,
+		 it may appear to be an unused variable.  Suppress warning.  */
+	      bool enter = false;
+	      gfc_entry_list *el;
+
+	      for (el = sym->ns->entries; el; el=el->next)
+		if (strcmp(sym->name, el->sym->name) == 0)
+		  enter = true;
+
+	      if (!enter)
+		gfc_warning (OPT_Wunused_variable,
+			     "Unused variable %qs declared at %L",
+			     sym->name, &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
 		TREE_NO_WARNING(sym->backend_decl) = 1;
 	    }
