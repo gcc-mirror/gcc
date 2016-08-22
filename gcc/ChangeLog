@@ -1,3 +1,10 @@
+2016-08-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*zero_extendsidi2): Add (*r,*k) alternative.
+	(zero_extend<mode>di2): Ditto.
+	(*zero_extend<mode>si2): Ditto.
+	(*zero_extendqihi2): Ditto.
+
 2016-08-22  Joseph Myers  <joseph@codesourcery.com>
 
 	PR middle-end/77269
