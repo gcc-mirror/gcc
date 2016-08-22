@@ -2099,7 +2099,8 @@ pass_forwprop::execute (function *fun)
   lattice.create (num_ssa_names);
   lattice.quick_grow_cleared (num_ssa_names);
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (fun));
-  int postorder_num = inverted_post_order_compute (postorder);
+  int postorder_num = pre_and_rev_post_order_compute_fn (cfun, NULL,
+							 postorder, false);
   auto_vec<gimple *, 4> to_fixup;
   to_purge = BITMAP_ALLOC (NULL);
   for (int i = 0; i < postorder_num; ++i)
