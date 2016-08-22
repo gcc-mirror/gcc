@@ -1,3 +1,10 @@
+2016-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77260
+	* gcc/fortran/trans-decl.c (generate_local_decl): Suppress warning
+	for unused variable if symbol is entry point.
+
+
 2016-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/32187
