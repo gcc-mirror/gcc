@@ -1922,7 +1922,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
        *  Swap the targets of @c this function object and @a __f. This
        *  function will not throw an %exception.
        */
-      void swap(function& __x)
+      void swap(function& __x) noexcept
       {
 	std::swap(_M_functor, __x._M_functor);
 	std::swap(_M_manager, __x._M_manager);
@@ -2124,9 +2124,11 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
    *
    *  This function will not throw an %exception.
    */
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2062. Effect contradictions w/o no-throw guarantee of std::function swaps
   template<typename _Res, typename... _Args>
     inline void
-    swap(function<_Res(_Args...)>& __x, function<_Res(_Args...)>& __y)
+    swap(function<_Res(_Args...)>& __x, function<_Res(_Args...)>& __y) noexcept
     { __x.swap(__y); }
 
 
