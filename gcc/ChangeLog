@@ -1,3 +1,7 @@
+2016-08-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Binaries): www.opencsw.org now uses https.
+
 2016-08-22  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (pass_forwprop::execute): Use RPO order.
