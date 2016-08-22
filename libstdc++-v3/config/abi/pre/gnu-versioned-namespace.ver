@@ -179,6 +179,7 @@ CXXABI_2.0 {
     __cxa_free_exception;
     __cxa_free_dependent_exception;
     __cxa_get_exception_ptr;
+    __cxa_init_primary_exception;
     __cxa_get_globals;
     __cxa_get_globals_fast;
     __cxa_guard_abort;
@@ -205,6 +206,7 @@ CXXABI_2.0 {
     # std::exception_ptr
     _ZNSt15__exception_ptr13exception_ptrC1Ev;
     _ZNSt15__exception_ptr13exception_ptrC2Ev;
+    _ZNSt15__exception_ptr13exception_ptrC1EPv;
     _ZNSt15__exception_ptr13exception_ptrC1ERKS0_;
     _ZNSt15__exception_ptr13exception_ptrC2ERKS0_;
     _ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE;

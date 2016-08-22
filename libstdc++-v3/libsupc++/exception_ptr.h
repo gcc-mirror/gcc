@@ -35,6 +35,9 @@
 
 #include <bits/c++config.h>
 #include <bits/exception_defines.h>
+#include <bits/cxxabi_init_exception.h>
+#include <typeinfo>
+#include <new>
 
 #if ATOMIC_INT_LOCK_FREE < 2
 #  error This platform does not support exception propagation.
@@ -63,6 +66,9 @@ namespace std
    */
   exception_ptr current_exception() _GLIBCXX_USE_NOEXCEPT;
 
+  template<typename _Ex>
+  exception_ptr make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT;
+
   /// Throw the object pointed to by the exception_ptr.
   void rethrow_exception(exception_ptr) __attribute__ ((__noreturn__));
 
@@ -87,6 +93,8 @@ namespace std
 
       friend exception_ptr std::current_exception() _GLIBCXX_USE_NOEXCEPT;
       friend void std::rethrow_exception(exception_ptr);
+      template<typename _Ex>
+      friend exception_ptr std::make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT;
 
     public:
       exception_ptr() _GLIBCXX_USE_NOEXCEPT;
@@ -162,8 +170,12 @@ namespace std
     swap(exception_ptr& __lhs, exception_ptr& __rhs)
     { __lhs.swap(__rhs); }
 
-  } // namespace __exception_ptr
+    template<typename _Ex>
+      inline void
+      __dest_thunk(void* x)
+      { static_cast<_Ex*>(x)->~_Ex(); }
 
+  } // namespace __exception_ptr
 
   /// Obtain an exception_ptr pointing to a copy of the supplied object.
   template<typename _Ex>
@@ -173,7 +185,16 @@ namespace std
 #if __cpp_exceptions
       try
 	{
-	  throw __ex;
+#if __cpp_rtti && !_GLIBCXX_HAVE_CDTOR_CALLABI
+          void *__e = __cxxabiv1::__cxa_allocate_exception(sizeof(_Ex));
+          (void)__cxxabiv1::__cxa_init_primary_exception(__e,
+                                           const_cast<std::type_info*>(&typeid(__ex)),
+                                           __exception_ptr::__dest_thunk<_Ex>);
+          new (__e) _Ex(__ex);
+          return exception_ptr(__e);
+#else
+          throw __ex;
+#endif
 	}
       catch(...)
 	{

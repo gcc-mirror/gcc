@@ -1,3 +1,30 @@
+2016-08-22  Gleb Natapov  <gleb@scylladb.com>
+
+	PR libstdc++/68297
+	* config/abi/pre/gnu-versioned-namespace.ver: Export
+	__cxa_init_primary_exception and std::exception_ptr(void*).
+	* config/abi/pre/gnu.ver (CXXABI_1.3.11) : Add new symbol version and
+	export __cxa_init_primary_exception and std::exception_ptr(void*).
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Add new headers.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/cxxabi.h (__cxa_allocate_exception): Move to ...
+	* libsupc++/cxxabi_init_exception.h: New header.
+	(__cxa_init_primary_exception): Declare.
+	* libsupc++/eh_throw.cc (__cxa_init_primary_exception): Define.
+	(__cxa_throw): Use __cxa_init_primary_exception.
+	* libsupc++/exception (std::exception): Move to ...
+	* libsupc++/exception.h: New header.
+	* libsupc++/exception_ptr.h (__exception_ptr::exception_ptr): Add
+	friend declaration.
+	(__exception_ptr::__dest_thunk): New function template.
+	(std::make_exception_ptr) [__cpp_rtti && !_GLIBCXX_HAVE_CDTOR_CALLABI]:
+	Use __cxa_allocate_exception and __cxa_init_primary_exception to
+	create exception_ptr.
+	* libsupc++/typeinfo: Include bits/exception.h instead of exception.
+	* testsuite/util/testsuite_abi.cc: Add CXXABI_1.3.11 version.
+
 2016-08-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/api.xml: Replace hardcoded links for specific versions with

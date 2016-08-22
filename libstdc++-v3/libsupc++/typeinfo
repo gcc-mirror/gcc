@@ -31,7 +31,7 @@
 
 #pragma GCC system_header
 
-#include <exception>
+#include <bits/exception.h>
 #if __cplusplus >= 201103L
 #include <bits/hash_bytes.h>
 #endif
