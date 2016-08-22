@@ -1131,12 +1131,14 @@ fold_const_call (combined_fn fn, tree type, tree arg)
       return NULL_TREE;
 
     CASE_CFN_NAN:
+    CASE_FLT_FN_FLOATN_NX (CFN_BUILT_IN_NAN):
     case CFN_BUILT_IN_NAND32:
     case CFN_BUILT_IN_NAND64:
     case CFN_BUILT_IN_NAND128:
       return fold_const_builtin_nan (type, arg, true);
 
     CASE_CFN_NANS:
+    CASE_FLT_FN_FLOATN_NX (CFN_BUILT_IN_NANS):
       return fold_const_builtin_nan (type, arg, false);
 
     default:

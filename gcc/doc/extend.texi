@@ -10856,6 +10856,13 @@ that are recognized in any mode since ISO C90 reserves these names for
 the purpose to which ISO C99 puts them.  All these functions have
 corresponding versions prefixed with @code{__builtin_}.
 
+There are also built-in functions @code{__builtin_fabsf@var{n}},
+@code{__builtin_fabsf@var{n}x}, @code{__builtin_copysignf@var{n}} and
+@code{__builtin_copysignf@var{n}x}, corresponding to the TS 18661-3
+functions @code{fabsf@var{n}}, @code{fabsf@var{n}x},
+@code{copysignf@var{n}} and @code{copysignf@var{n}x}, for supported
+types @code{_Float@var{n}} and @code{_Float@var{n}x}.
+
 There are also GNU extension functions @code{clog10}, @code{clog10f} and
 @code{clog10l} which names are reserved by ISO C99 for future use.
 All these functions have versions prefixed with @code{__builtin_}.
@@ -11394,6 +11401,16 @@ Similar to @code{__builtin_huge_val}, except the return
 type is @code{long double}.
 @end deftypefn
 
+@deftypefn {Built-in Function} _Float@var{n} __builtin_huge_valf@var{n} (void)
+Similar to @code{__builtin_huge_val}, except the return type is
+@code{_Float@var{n}}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n}x __builtin_huge_valf@var{n}x (void)
+Similar to @code{__builtin_huge_val}, except the return type is
+@code{_Float@var{n}x}.
+@end deftypefn
+
 @deftypefn {Built-in Function} int __builtin_fpclassify (int, int, int, int, int, ...)
 This built-in implements the C99 fpclassify functionality.  The first
 five int arguments should be the target library's notion of the
@@ -11430,6 +11447,16 @@ This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
 @deftypefn {Built-in Function} {long double} __builtin_infl (void)
 Similar to @code{__builtin_inf}, except the return
 type is @code{long double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n} __builtin_inff@var{n} (void)
+Similar to @code{__builtin_inf}, except the return
+type is @code{_Float@var{n}}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n} __builtin_inff@var{n}x (void)
+Similar to @code{__builtin_inf}, except the return
+type is @code{_Float@var{n}x}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_isinf_sign (...)
@@ -11478,6 +11505,16 @@ Similar to @code{__builtin_nan}, except the return type is @code{float}.
 Similar to @code{__builtin_nan}, except the return type is @code{long double}.
 @end deftypefn
 
+@deftypefn {Built-in Function} _Float@var{n} __builtin_nanf@var{n} (const char *str)
+Similar to @code{__builtin_nan}, except the return type is
+@code{_Float@var{n}}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n}x __builtin_nanf@var{n}x (const char *str)
+Similar to @code{__builtin_nan}, except the return type is
+@code{_Float@var{n}x}.
+@end deftypefn
+
 @deftypefn {Built-in Function} double __builtin_nans (const char *str)
 Similar to @code{__builtin_nan}, except the significand is forced
 to be a signaling NaN@.  The @code{nans} function is proposed by
@@ -11490,6 +11527,16 @@ Similar to @code{__builtin_nans}, except the return type is @code{float}.
 
 @deftypefn {Built-in Function} {long double} __builtin_nansl (const char *str)
 Similar to @code{__builtin_nans}, except the return type is @code{long double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n} __builtin_nansf@var{n} (const char *str)
+Similar to @code{__builtin_nans}, except the return type is
+@code{_Float@var{n}}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Float@var{n}x __builtin_nansf@var{n}x (const char *str)
+Similar to @code{__builtin_nans}, except the return type is
+@code{_Float@var{n}x}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_ffs (int x)
