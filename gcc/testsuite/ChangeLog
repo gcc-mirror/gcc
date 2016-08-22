@@ -1,5 +1,14 @@
 2016-08-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/torture/arm-fp16-int-convert-alt.c (FP16_MAX_EXP): New
+	macro.
+	(main): Update calls to TEST_I_F.
+	* gcc.dg/torture/arm-fp16-int-convert-ieee.c (FP16_MAX_EXP): New
+	macro.
+	(main): Update calls to TEST_I_F.
+
+2016-08-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/torture/fp-int-convert-float128x-timode.c,
 	gcc.dg/torture/fp-int-convert-float32x-timode.c,
 	gcc.dg/torture/fp-int-convert-float64x-timode.c: Correct type
