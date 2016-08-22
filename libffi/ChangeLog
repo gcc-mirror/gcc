@@ -1,3 +1,7 @@
+2016-08-22  Release Manager
+
+	* GCC 6.2.0 released.
+
 2016-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backport trunk r236594:
