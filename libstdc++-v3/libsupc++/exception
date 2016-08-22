@@ -36,39 +36,12 @@
 
 #include <bits/c++config.h>
 #include <bits/atomic_lockfree_defines.h>
+#include <bits/exception.h>
 
 extern "C++" {
 
 namespace std
 {
-  /**
-   * @defgroup exceptions Exceptions
-   * @ingroup diagnostics
-   *
-   * Classes and functions for reporting errors via exception classes.
-   * @{
-   */
-
-  /**
-   *  @brief Base class for all library exceptions.
-   *
-   *  This is the base class for all exceptions thrown by the standard
-   *  library, and by certain language expressions.  You are free to derive
-   *  your own %exception classes, or use a different hierarchy, or to
-   *  throw non-class data (e.g., fundamental types).
-   */
-  class exception
-  {
-  public:
-    exception() _GLIBCXX_USE_NOEXCEPT { }
-    virtual ~exception() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
-
-    /** Returns a C-style character string describing the general cause
-     *  of the current error.  */
-    virtual const char*
-    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
-  };
-
   /** If an %exception is thrown which is not listed in a function's
    *  %exception specification, one of these may be thrown.  */
   class bad_exception : public exception

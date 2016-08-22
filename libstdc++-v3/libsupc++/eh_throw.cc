@@ -55,6 +55,22 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
 #endif
 }
 
+extern "C" __cxa_refcounted_exception*
+__cxxabiv1::__cxa_init_primary_exception(void *obj, std::type_info *tinfo,
+                                         void (_GLIBCXX_CDTOR_CALLABI *dest) (void *))
+{
+  __cxa_refcounted_exception *header
+    = __get_refcounted_exception_header_from_obj (obj);
+  header->referenceCount = 0;
+  header->exc.exceptionType = tinfo;
+  header->exc.exceptionDestructor = dest;
+  header->exc.unexpectedHandler = std::get_unexpected ();
+  header->exc.terminateHandler = std::get_terminate ();
+  __GXX_INIT_PRIMARY_EXCEPTION_CLASS(header->exc.unwindHeader.exception_class);
+  header->exc.unwindHeader.exception_cleanup = __gxx_exception_cleanup;
+
+  return header;
+}
 
 extern "C" void
 __cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo,
@@ -64,17 +80,10 @@ __cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo,
 
   __cxa_eh_globals *globals = __cxa_get_globals ();
   globals->uncaughtExceptions += 1;
-
   // Definitely a primary.
-  __cxa_refcounted_exception *header
-    = __get_refcounted_exception_header_from_obj (obj);
+  __cxa_refcounted_exception *header =
+    __cxa_init_primary_exception(obj, tinfo, dest);
   header->referenceCount = 1;
-  header->exc.exceptionType = tinfo;
-  header->exc.exceptionDestructor = dest;
-  header->exc.unexpectedHandler = std::get_unexpected ();
-  header->exc.terminateHandler = std::get_terminate ();
-  __GXX_INIT_PRIMARY_EXCEPTION_CLASS(header->exc.unwindHeader.exception_class);
-  header->exc.unwindHeader.exception_cleanup = __gxx_exception_cleanup;
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
   _Unwind_SjLj_RaiseException (&header->exc.unwindHeader);

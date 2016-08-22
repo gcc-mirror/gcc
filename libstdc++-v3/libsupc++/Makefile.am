@@ -35,7 +35,7 @@ std_HEADERS = \
 
 bits_HEADERS = \
 	atomic_lockfree_defines.h cxxabi_forced.h \
-	exception_defines.h exception_ptr.h hash_bytes.h nested_exception.h
+	exception_defines.h exception_ptr.h hash_bytes.h nested_exception.h exception.h cxxabi_init_exception.h
 
 headers = $(std_HEADERS) $(bits_HEADERS)
 

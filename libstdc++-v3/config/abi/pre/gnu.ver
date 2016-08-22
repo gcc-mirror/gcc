@@ -2164,6 +2164,13 @@ CXXABI_1.3.10 {
 
 } CXXABI_1.3.9;
 
+CXXABI_1.3.11 {
+
+    __cxa_init_primary_exception;
+    _ZNSt15__exception_ptr13exception_ptrC1EPv;
+
+} CXXABI_1.3.10;
+
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {
 
