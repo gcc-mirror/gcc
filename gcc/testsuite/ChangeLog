@@ -1,3 +1,8 @@
+2016-08-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c/52952
+	* gcc.dg/cpp/pr66415-1.c: Fix sporadic failure.
+
 2016-08-22  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/ipa/propalign-1.c: Skip for targets with !natural_alignment_32
