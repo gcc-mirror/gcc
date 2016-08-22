@@ -11,6 +11,6 @@
 int
 main (void)
 {
-  TEST_I_F(TItype, UTItype, _Float128, FLT128X_MANT_DIG, FLT128X_MAX_EXP);
+  TEST_I_F(TItype, UTItype, _Float128x, FLT128X_MANT_DIG, FLT128X_MAX_EXP);
   exit (0);
 }
