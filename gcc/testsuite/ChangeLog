@@ -1,5 +1,17 @@
 2016-08-22  Joseph Myers  <joseph@codesourcery.com>
 
+	PR middle-end/77269
+	* gcc.dg/torture/builtin-isinf_sign-1.c: Use __builtin_signbit not
+	__builtin_signbitf and __builtin_signbitl in expected generic
+	expansion.
+	* gcc.dg/torture/float128-tg-2.c, gcc.dg/torture/float128x-tg-2.c,
+	gcc.dg/torture/float16-tg-2.c, gcc.dg/torture/float32-tg-2.c,
+	gcc.dg/torture/float32x-tg-2.c, gcc.dg/torture/float64-tg-2.c,
+	gcc.dg/torture/float64x-tg-2.c, gcc.dg/torture/floatn-tg-2.h: New
+	tests.
+
+2016-08-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/torture/float128-builtin.c,
 	gcc.dg/torture/float128-ieee-nan.c,
 	gcc.dg/torture/float128x-builtin.c,

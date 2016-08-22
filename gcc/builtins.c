@@ -7881,8 +7881,7 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
 	/* In a boolean context, GCC will fold the inner COND_EXPR to
 	   1.  So e.g. "if (isinf_sign(x))" would be folded to just
 	   "if (isinf(x) ? 1 : 0)" which becomes "if (isinf(x))". */
-	tree signbit_fn = mathfn_built_in_1
-	  (TREE_TYPE (arg), CFN_BUILT_IN_SIGNBIT, 0);
+	tree signbit_fn = builtin_decl_explicit (BUILT_IN_SIGNBIT);
 	tree isinf_fn = builtin_decl_explicit (BUILT_IN_ISINF);
 	tree tmp = NULL_TREE;
 

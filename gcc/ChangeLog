@@ -1,3 +1,9 @@
+2016-08-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/77269
+	* builtins.c (fold_builtin_classify): Use builtin_decl_explicit
+	(BUILT_IN_SIGNBIT) to expand __builtin_isinf_sign.
+
 2016-08-22  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* print-tree.c (print_node) [VECTOR_CST]: Coalesce the output of
