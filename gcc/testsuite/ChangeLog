@@ -1,5 +1,14 @@
 2016-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/60774
+	* gfortran.dg/empty_label.f: Adjust test for new error message.
+	* gfortran.dg/empty_label.f90: Ditto.
+	* gfortran.dg/empty_label_typedecl.f90: Ditto.
+	* gfortran.dg/label_3.f90: Deleted (redundant with empty_label.f90).
+	* gfortran.dg/warnings_are_errors_1.f90: Remove invalid statement label.
+
+2016-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/61318
 	* gfortran.dg/pr61318.f90: New test.
 

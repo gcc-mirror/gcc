@@ -1,4 +1,11 @@
 2016-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Bud Davis  <jmdavis@link.com>
+
+	PR fortran/60774
+	* parse.c (next_free,next_fixed): Issue error for statement label
+	without a statement.
+
+2016-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/61318
 	* interface.c (compare_parameter): Use better locus for error message.
