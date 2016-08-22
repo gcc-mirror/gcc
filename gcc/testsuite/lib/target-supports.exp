@@ -5350,7 +5350,8 @@ proc check_effective_target_natural_alignment_32 { } {
     } else {
         # FIXME: 32bit powerpc: guaranteed only if MASK_ALIGN_NATURAL/POWER.
         set et_natural_alignment_32_saved 1
-        if { ([istarget *-*-darwin*] && [is-effective-target lp64]) } {
+        if { ([istarget *-*-darwin*] && [is-effective-target lp64])
+             || [istarget avr-*-*] } {
             set et_natural_alignment_32_saved 0
         }
     }
