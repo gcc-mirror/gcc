@@ -1,3 +1,7 @@
+2016-08-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Use RPO order.
+
 2016-08-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77270
