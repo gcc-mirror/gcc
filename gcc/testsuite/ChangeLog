@@ -1,3 +1,8 @@
+2016-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62171
+	* gcc.dg/vect/pr62171.c: Remove default vector testsuite flags.
+
 2016-08-18  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline
