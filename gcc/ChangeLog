@@ -1,3 +1,13 @@
+2016-08-22  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* print-tree.c (print_node) [VECTOR_CST]: Coalesce the output of
+	identical consecutive elements.
+	[SSA_NAME]: Print the name's def stmt on its own line.  When printing
+	the node's def stmt, avoid printing an unwanted trailing newline by
+	replacing the call to print_gimple_stmt() with its inlined body and
+	adjusting it to not set pp_needs_newline and to call pp_flush()
+	instead of pp_newline_and_flush().
+
 2016-08-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* tree.h (CASE_FLT_FN_FLOATN_NX, float16_type_node)
