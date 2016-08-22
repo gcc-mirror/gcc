@@ -575,8 +575,7 @@ _mm256_permutex2var_epi16 (__m256i __A, __m256i __I, __m256i __B)
 							/* idx */ ,
 							(__v16hi) __A,
 							(__v16hi) __B,
-							(__mmask16) -
-							1);
+							(__mmask16) -1);
 }
 
 extern __inline __m256i
@@ -626,8 +625,7 @@ _mm_permutex2var_epi16 (__m128i __A, __m128i __I, __m128i __B)
 							/* idx */ ,
 							(__v8hi) __A,
 							(__v8hi) __B,
-							(__mmask8) -
-							1);
+							(__mmask8) -1);
 }
 
 extern __inline __m128i
@@ -2009,7 +2007,7 @@ _mm256_cmpneq_epi8_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask32) __builtin_ia32_cmpb256_mask ((__v32qi) __X,
 						  (__v32qi) __Y, 4,
-						  (__mmask32) - 1);
+						  (__mmask32) -1);
 }
 
 extern __inline __mmask32
@@ -2018,7 +2016,7 @@ _mm256_cmplt_epi8_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask32) __builtin_ia32_cmpb256_mask ((__v32qi) __X,
 						  (__v32qi) __Y, 1,
-						  (__mmask32) - 1);
+						  (__mmask32) -1);
 }
 
 extern __inline __mmask32
@@ -2027,7 +2025,7 @@ _mm256_cmpge_epi8_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask32) __builtin_ia32_cmpb256_mask ((__v32qi) __X,
 						  (__v32qi) __Y, 5,
-						  (__mmask32) - 1);
+						  (__mmask32) -1);
 }
 
 extern __inline __mmask32
@@ -2036,7 +2034,7 @@ _mm256_cmple_epi8_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask32) __builtin_ia32_cmpb256_mask ((__v32qi) __X,
 						  (__v32qi) __Y, 2,
-						  (__mmask32) - 1);
+						  (__mmask32) -1);
 }
 
 extern __inline __mmask16
@@ -2045,7 +2043,7 @@ _mm256_cmpneq_epi16_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask16) __builtin_ia32_cmpw256_mask ((__v16hi) __X,
 						  (__v16hi) __Y, 4,
-						  (__mmask16) - 1);
+						  (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2054,7 +2052,7 @@ _mm256_cmplt_epi16_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask16) __builtin_ia32_cmpw256_mask ((__v16hi) __X,
 						  (__v16hi) __Y, 1,
-						  (__mmask16) - 1);
+						  (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2063,7 +2061,7 @@ _mm256_cmpge_epi16_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask16) __builtin_ia32_cmpw256_mask ((__v16hi) __X,
 						  (__v16hi) __Y, 5,
-						  (__mmask16) - 1);
+						  (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2072,7 +2070,7 @@ _mm256_cmple_epi16_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask16) __builtin_ia32_cmpw256_mask ((__v16hi) __X,
 						  (__v16hi) __Y, 2,
-						  (__mmask16) - 1);
+						  (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2081,7 +2079,7 @@ _mm_cmpneq_epu8_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask16) __builtin_ia32_ucmpb128_mask ((__v16qi) __X,
 						   (__v16qi) __Y, 4,
-						   (__mmask16) - 1);
+						   (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2090,7 +2088,7 @@ _mm_cmplt_epu8_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask16) __builtin_ia32_ucmpb128_mask ((__v16qi) __X,
 						   (__v16qi) __Y, 1,
-						   (__mmask16) - 1);
+						   (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2099,7 +2097,7 @@ _mm_cmpge_epu8_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask16) __builtin_ia32_ucmpb128_mask ((__v16qi) __X,
 						   (__v16qi) __Y, 5,
-						   (__mmask16) - 1);
+						   (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2108,7 +2106,7 @@ _mm_cmple_epu8_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask16) __builtin_ia32_ucmpb128_mask ((__v16qi) __X,
 						   (__v16qi) __Y, 2,
-						   (__mmask16) - 1);
+						   (__mmask16) -1);
 }
 
 extern __inline __mmask8
@@ -2117,7 +2115,7 @@ _mm_cmpneq_epu16_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask8) __builtin_ia32_ucmpw128_mask ((__v8hi) __X,
 						  (__v8hi) __Y, 4,
-						  (__mmask8) - 1);
+						  (__mmask8) -1);
 }
 
 extern __inline __mmask8
@@ -2126,7 +2124,7 @@ _mm_cmplt_epu16_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask8) __builtin_ia32_ucmpw128_mask ((__v8hi) __X,
 						  (__v8hi) __Y, 1,
-						  (__mmask8) - 1);
+						  (__mmask8) -1);
 }
 
 extern __inline __mmask8
@@ -2135,7 +2133,7 @@ _mm_cmpge_epu16_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask8) __builtin_ia32_ucmpw128_mask ((__v8hi) __X,
 						  (__v8hi) __Y, 5,
-						  (__mmask8) - 1);
+						  (__mmask8) -1);
 }
 
 extern __inline __mmask8
@@ -2144,7 +2142,7 @@ _mm_cmple_epu16_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask8) __builtin_ia32_ucmpw128_mask ((__v8hi) __X,
 						  (__v8hi) __Y, 2,
-						  (__mmask8) - 1);
+						  (__mmask8) -1);
 }
 
 extern __inline __mmask16
@@ -2153,7 +2151,7 @@ _mm_cmpneq_epi8_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask16) __builtin_ia32_cmpb128_mask ((__v16qi) __X,
 						  (__v16qi) __Y, 4,
-						  (__mmask16) - 1);
+						  (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2162,7 +2160,7 @@ _mm_cmplt_epi8_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask16) __builtin_ia32_cmpb128_mask ((__v16qi) __X,
 						  (__v16qi) __Y, 1,
-						  (__mmask16) - 1);
+						  (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2171,7 +2169,7 @@ _mm_cmpge_epi8_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask16) __builtin_ia32_cmpb128_mask ((__v16qi) __X,
 						  (__v16qi) __Y, 5,
-						  (__mmask16) - 1);
+						  (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -2180,7 +2178,7 @@ _mm_cmple_epi8_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask16) __builtin_ia32_cmpb128_mask ((__v16qi) __X,
 						  (__v16qi) __Y, 2,
-						  (__mmask16) - 1);
+						  (__mmask16) -1);
 }
 
 extern __inline __mmask8
@@ -2189,7 +2187,7 @@ _mm_cmpneq_epi16_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask8) __builtin_ia32_cmpw128_mask ((__v8hi) __X,
 						 (__v8hi) __Y, 4,
-						 (__mmask8) - 1);
+						 (__mmask8) -1);
 }
 
 extern __inline __mmask8
@@ -2198,7 +2196,7 @@ _mm_cmplt_epi16_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask8) __builtin_ia32_cmpw128_mask ((__v8hi) __X,
 						 (__v8hi) __Y, 1,
-						 (__mmask8) - 1);
+						 (__mmask8) -1);
 }
 
 extern __inline __mmask8
@@ -2207,7 +2205,7 @@ _mm_cmpge_epi16_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask8) __builtin_ia32_cmpw128_mask ((__v8hi) __X,
 						 (__v8hi) __Y, 5,
-						 (__mmask8) - 1);
+						 (__mmask8) -1);
 }
 
 extern __inline __mmask8
@@ -2216,7 +2214,7 @@ _mm_cmple_epi16_mask (__m128i __X, __m128i __Y)
 {
   return (__mmask8) __builtin_ia32_cmpw128_mask ((__v8hi) __X,
 						 (__v8hi) __Y, 2,
-						 (__mmask8) - 1);
+						 (__mmask8) -1);
 }
 
 extern __inline __m256i
@@ -3609,7 +3607,7 @@ _mm256_cmpneq_epu8_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask32) __builtin_ia32_ucmpb256_mask ((__v32qi) __X,
 						   (__v32qi) __Y, 4,
-						   (__mmask32) - 1);
+						   (__mmask32) -1);
 }
 
 extern __inline __mmask32
@@ -3618,7 +3616,7 @@ _mm256_cmplt_epu8_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask32) __builtin_ia32_ucmpb256_mask ((__v32qi) __X,
 						   (__v32qi) __Y, 1,
-						   (__mmask32) - 1);
+						   (__mmask32) -1);
 }
 
 extern __inline __mmask32
@@ -3627,7 +3625,7 @@ _mm256_cmpge_epu8_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask32) __builtin_ia32_ucmpb256_mask ((__v32qi) __X,
 						   (__v32qi) __Y, 5,
-						   (__mmask32) - 1);
+						   (__mmask32) -1);
 }
 
 extern __inline __mmask32
@@ -3636,7 +3634,7 @@ _mm256_cmple_epu8_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask32) __builtin_ia32_ucmpb256_mask ((__v32qi) __X,
 						   (__v32qi) __Y, 2,
-						   (__mmask32) - 1);
+						   (__mmask32) -1);
 }
 
 extern __inline __mmask16
@@ -3645,7 +3643,7 @@ _mm256_cmpneq_epu16_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask16) __builtin_ia32_ucmpw256_mask ((__v16hi) __X,
 						   (__v16hi) __Y, 4,
-						   (__mmask16) - 1);
+						   (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -3654,7 +3652,7 @@ _mm256_cmplt_epu16_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask16) __builtin_ia32_ucmpw256_mask ((__v16hi) __X,
 						   (__v16hi) __Y, 1,
-						   (__mmask16) - 1);
+						   (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -3663,7 +3661,7 @@ _mm256_cmpge_epu16_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask16) __builtin_ia32_ucmpw256_mask ((__v16hi) __X,
 						   (__v16hi) __Y, 5,
-						   (__mmask16) - 1);
+						   (__mmask16) -1);
 }
 
 extern __inline __mmask16
@@ -3672,7 +3670,7 @@ _mm256_cmple_epu16_mask (__m256i __X, __m256i __Y)
 {
   return (__mmask16) __builtin_ia32_ucmpw256_mask ((__v16hi) __X,
 						   (__v16hi) __Y, 2,
-						   (__mmask16) - 1);
+						   (__mmask16) -1);
 }
 
 extern __inline void

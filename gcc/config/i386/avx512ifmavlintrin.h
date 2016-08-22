@@ -41,7 +41,7 @@ _mm_madd52lo_epu64 (__m128i __X, __m128i __Y, __m128i __Z)
   return (__m128i) __builtin_ia32_vpmadd52luq128_mask ((__v2di) __X,
 						       (__v2di) __Y,
 						       (__v2di) __Z,
-						       (__mmask8) - 1);
+						       (__mmask8) -1);
 }
 
 extern __inline __m128i
@@ -51,7 +51,7 @@ _mm_madd52hi_epu64 (__m128i __X, __m128i __Y, __m128i __Z)
   return (__m128i) __builtin_ia32_vpmadd52huq128_mask ((__v2di) __X,
 						       (__v2di) __Y,
 						       (__v2di) __Z,
-						       (__mmask8) - 1);
+						       (__mmask8) -1);
 }
 
 extern __inline __m256i
@@ -61,7 +61,7 @@ _mm256_madd52lo_epu64 (__m256i __X, __m256i __Y, __m256i __Z)
   return (__m256i) __builtin_ia32_vpmadd52luq256_mask ((__v4di) __X,
 						       (__v4di) __Y,
 						       (__v4di) __Z,
-						       (__mmask8) - 1);
+						       (__mmask8) -1);
 }
 
 extern __inline __m256i
@@ -71,7 +71,7 @@ _mm256_madd52hi_epu64 (__m256i __X, __m256i __Y, __m256i __Z)
   return (__m256i) __builtin_ia32_vpmadd52huq256_mask ((__v4di) __X,
 						       (__v4di) __Y,
 						       (__v4di) __Z,
-						       (__mmask8) - 1);
+						       (__mmask8) -1);
 }
 
 extern __inline __m128i
