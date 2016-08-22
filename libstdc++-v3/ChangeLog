@@ -1,3 +1,14 @@
+2016-08-22  Tim Shen  <timshen@google.com>
+
+	Split _M_dfs() into smaller functions.
+	* regex_executor.h(_M_handle_repeat, _M_handle_subexpr_begin)
+	(_M_handle_subexpr_end, _M_handle_line_begin_assertion)
+	(_M_handle_line_end_assertion, _M_handle_word_boundary)
+	(_M_handle_subexpr_lookahead, _M_handle_match)
+	(_M_handle_backref, _M_handle_accept, _M_handle_alternative):
+	Add separate function declarations.
+	* regex_executor.tcc: Split _M_dfs() into multiple handler functions.
+
 2016-08-22  Gleb Natapov  <gleb@scylladb.com>
 
 	PR libstdc++/68297

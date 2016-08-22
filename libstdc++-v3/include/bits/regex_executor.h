@@ -109,6 +109,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_rep_once_more(_Match_mode __match_mode, _StateIdT);
 
       void
+      _M_handle_repeat(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_subexpr_begin(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_subexpr_end(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_line_begin_assertion(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_line_end_assertion(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_word_boundary(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_subexpr_lookahead(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_match(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_backref(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_accept(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_alternative(_Match_mode, _StateIdT);
+
+      void
       _M_dfs(_Match_mode __match_mode, _StateIdT __start);
 
       bool
