@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-ipa-cp"  } */
+/* { dg-skip-if "No alignment restrictions" { { ! natural_alignment_32 } && { ! natural_alignment_64 } } } */
+
 int n;
 
 static void

@@ -1,3 +1,14 @@
+2016-08-22  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/ipa/propalign-1.c: Skip for targets with !natural_alignment_32
+	and !natural_alignment_64.
+	* gcc.dg/ipa/propalign-2.c: Likewise.
+	* gcc.dg/ipa/propalign-3.c: Likewise.
+	* gcc.dg/ipa/propalign-4.c: Likewise.
+	* gcc.dg/ipa/propalign-5.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_natural_alignment_32): Add avr-*-*.
+
 2016-08-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR tree-optimization/61839
