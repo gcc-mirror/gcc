@@ -24,6 +24,9 @@ extern void check_splat (vector int a)
 extern vector int pack_reg (int a, int b, int c, int d)
   __attribute__((__noinline__));
 
+extern vector int pack_from_ptr (int *p_a, int *p_b, int *p_c, int *p_d)
+  __attribute__((__noinline__));
+
 extern vector int pack_const (void)
   __attribute__((__noinline__));
 
@@ -37,6 +40,9 @@ extern void pack_global (int a, int b, int c, int d)
   __attribute__((__noinline__));
 
 extern vector int splat_reg (int a)
+  __attribute__((__noinline__));
+
+extern vector int splat_from_ptr (int *p)
   __attribute__((__noinline__));
 
 extern vector int splat_const (void)
@@ -78,6 +84,12 @@ pack_reg (int a, int b, int c, int d)
 }
 
 vector int
+pack_from_ptr (int *p_a, int *p_b, int *p_c, int *p_d)
+{
+  return (vector int) { *p_a, *p_b, *p_c, *p_d };
+}
+
+vector int
 pack_const (void)
 {
   return (vector int) { ELEMENTS };
@@ -108,6 +120,12 @@ splat_reg (int a)
 }
 
 vector int
+splat_from_ptr (int *p)
+{
+  return (vector int) { *p, *p, *p, *p };
+}
+
+vector int
 splat_const (void)
 {
   return (vector int) { SPLAT, SPLAT, SPLAT, SPLAT };
@@ -134,10 +152,14 @@ splat_global (int a)
 int main (void)
 {
   vector int sv2, sv3;
+  int mem = SPLAT;
+  int mem2[4] = { ELEMENTS };
 
   check (sv);
 
   check (pack_reg (ELEMENTS));
+
+  check (pack_from_ptr (&mem2[0], &mem2[1], &mem2[2], &mem2[3]));
 
   check (pack_const ());
 
@@ -153,6 +175,8 @@ int main (void)
   check_splat (splat);
 
   check_splat (splat_reg (SPLAT));
+
+  check_splat (splat_from_ptr (&mem));
 
   check_splat (splat_const ());
 

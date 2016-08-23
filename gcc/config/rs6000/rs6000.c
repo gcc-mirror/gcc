@@ -6695,7 +6695,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
       if ((int_vector_p || TARGET_VSX) && all_const_zero)
 	{
 	  /* Zero register.  */
-	  emit_insn (gen_rtx_SET (target, gen_rtx_XOR (mode, target, target)));
+	  emit_move_insn (target, CONST0_RTX (mode));
 	  return;
 	}
       else if (int_vector_p && easy_vector_constant (const_vec, mode))
@@ -6738,32 +6738,69 @@ rs6000_expand_vector_init (rtx target, rtx vals)
       return;
     }
 
-  /* Word values on ISA 3.0 can use mtvsrws, lxvwsx, or vspltisw.  V4SF is
-     complicated since scalars are stored as doubles in the registers.  */
-  if (TARGET_P9_VECTOR && mode == V4SImode && all_same
-      && VECTOR_MEM_VSX_P (mode))
+  /* Special case initializing vector int if we are on 64-bit systems with
+     direct move or we have the ISA 3.0 instructions.  */
+  if (mode == V4SImode  && VECTOR_MEM_VSX_P (V4SImode)
+      && TARGET_DIRECT_MOVE_64BIT)
     {
-      emit_insn (gen_vsx_splat_v4si (target, XVECEXP (vals, 0, 0)));
-      return;
+      if (all_same)
+	{
+	  rtx element0 = XVECEXP (vals, 0, 0);
+	  if (MEM_P (element0))
+	    element0 = rs6000_address_for_fpconvert (element0);
+	  else
+	    element0 = force_reg (SImode, element0);
+
+	  if (TARGET_P9_VECTOR)
+	    emit_insn (gen_vsx_splat_v4si (target, element0));
+	  else
+	    {
+	      rtx tmp = gen_reg_rtx (DImode);
+	      emit_insn (gen_zero_extendsidi2 (tmp, element0));
+	      emit_insn (gen_vsx_splat_v4si_di (target, tmp));
+	    }
+	  return;
+	}
+      else
+	{
+	  rtx elements[4];
+	  size_t i;
+
+	  for (i = 0; i < 4; i++)
+	    {
+	      elements[i] = XVECEXP (vals, 0, i);
+	      if (!CONST_INT_P (elements[i]) && !REG_P (elements[i]))
+		elements[i] = copy_to_mode_reg (SImode, elements[i]);
+	    }
+
+	  emit_insn (gen_vsx_init_v4si (target, elements[0], elements[1],
+					elements[2], elements[3]));
+	  return;
+	}
     }
 
   /* With single precision floating point on VSX, know that internally single
      precision is actually represented as a double, and either make 2 V2DF
      vectors, and convert these vectors to single precision, or do one
      conversion, and splat the result to the other elements.  */
-  if (mode == V4SFmode && VECTOR_MEM_VSX_P (mode))
+  if (mode == V4SFmode && VECTOR_MEM_VSX_P (V4SFmode))
     {
       if (all_same)
 	{
-	  rtx op0 = XVECEXP (vals, 0, 0);
+	  rtx element0 = XVECEXP (vals, 0, 0);
 
 	  if (TARGET_P9_VECTOR)
-	    emit_insn (gen_vsx_splat_v4sf (target, op0));
+	    {
+	      if (MEM_P (element0))
+		element0 = rs6000_address_for_fpconvert (element0);
+
+	      emit_insn (gen_vsx_splat_v4sf (target, element0));
+	    }
 
 	  else
 	    {
 	      rtx freg = gen_reg_rtx (V4SFmode);
-	      rtx sreg = force_reg (SFmode, op0);
+	      rtx sreg = force_reg (SFmode, element0);
 	      rtx cvt  = (TARGET_XSCVDPSPN
 			  ? gen_vsx_xscvdpspn_scalar (freg, sreg)
 			  : gen_vsx_xscvdpsp_scalar (freg, sreg));
@@ -6791,6 +6828,32 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	  rs6000_expand_extract_even (target, flt_even, flt_odd);
 	}
       return;
+    }
+
+  /* Special case initializing vector short/char that are splats if we are on
+     64-bit systems with direct move.  */
+  if (all_same && TARGET_DIRECT_MOVE_64BIT
+      && (mode == V16QImode || mode == V8HImode))
+    {
+      rtx op0 = XVECEXP (vals, 0, 0);
+      rtx di_tmp = gen_reg_rtx (DImode);
+
+      if (!REG_P (op0))
+	op0 = force_reg (GET_MODE_INNER (mode), op0);
+
+      if (mode == V16QImode)
+	{
+	  emit_insn (gen_zero_extendqidi2 (di_tmp, op0));
+	  emit_insn (gen_vsx_vspltb_di (target, di_tmp));
+	  return;
+	}
+
+      if (mode == V8HImode)
+	{
+	  emit_insn (gen_zero_extendhidi2 (di_tmp, op0));
+	  emit_insn (gen_vsx_vsplth_di (target, di_tmp));
+	  return;
+	}
     }
 
   /* Store value to stack temp.  Load vector element.  Splat.  However, splat
@@ -7032,6 +7095,18 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
   emit_move_insn (target, adjust_address_nv (mem, inner_mode, 0));
 }
 
+/* Helper function to return the register number of a RTX.  */
+static inline int
+regno_or_subregno (rtx op)
+{
+  if (REG_P (op))
+    return REGNO (op);
+  else if (SUBREG_P (op))
+    return subreg_regno (op);
+  else
+    gcc_unreachable ();
+}
+
 /* Adjust a memory address (MEM) of a vector type to point to a scalar field
    within the vector (ELEMENT) with a mode (SCALAR_MODE).  Use a base register
    temporary (BASE_TMP) to fixup the address.  Return the new memory address
@@ -7111,14 +7186,22 @@ rs6000_adjust_vec_address (rtx scalar_reg,
 	}
       else
 	{
-	  if (REG_P (op1) || SUBREG_P (op1))
+	  bool op1_reg_p = (REG_P (op1) || SUBREG_P (op1));
+	  bool ele_reg_p = (REG_P (element_offset) || SUBREG_P (element_offset));
+
+	  /* Note, ADDI requires the register being added to be a base
+	     register.  If the register was R0, load it up into the temporary
+	     and do the add.  */
+	  if (op1_reg_p
+	      && (ele_reg_p || reg_or_subregno (op1) != FIRST_GPR_REGNO))
 	    {
 	      insn = gen_add3_insn (base_tmp, op1, element_offset);
 	      gcc_assert (insn != NULL_RTX);
 	      emit_insn (insn);
 	    }
 
-	  else if (REG_P (element_offset) || SUBREG_P (element_offset))
+	  else if (ele_reg_p
+		   && reg_or_subregno (element_offset) != FIRST_GPR_REGNO)
 	    {
 	      insn = gen_add3_insn (base_tmp, element_offset, op1);
 	      gcc_assert (insn != NULL_RTX);
@@ -7147,14 +7230,7 @@ rs6000_adjust_vec_address (rtx scalar_reg,
     {
       rtx op1 = XEXP (new_addr, 1);
       addr_mask_type addr_mask;
-      int scalar_regno;
-
-      if (REG_P (scalar_reg))
-	scalar_regno = REGNO (scalar_reg);
-      else if (SUBREG_P (scalar_reg))
-	scalar_regno = subreg_regno (scalar_reg);
-      else
-	gcc_unreachable ();
+      int scalar_regno = regno_or_subregno (scalar_reg);
 
       gcc_assert (scalar_regno < FIRST_PSEUDO_REGISTER);
       if (INT_REGNO_P (scalar_regno))
@@ -7320,6 +7396,93 @@ rs6000_split_vec_extract_var (rtx dest, rtx src, rtx element, rtx tmp_gpr,
   else
     gcc_unreachable ();
  }
+
+/* Helper function for rs6000_split_v4si_init to build up a DImode value from
+   two SImode values.  */
+
+static void
+rs6000_split_v4si_init_di_reg (rtx dest, rtx si1, rtx si2, rtx tmp)
+{
+  const unsigned HOST_WIDE_INT mask_32bit = HOST_WIDE_INT_C (0xffffffff);
+
+  if (CONST_INT_P (si1) && CONST_INT_P (si2))
+    {
+      unsigned HOST_WIDE_INT const1 = (UINTVAL (si1) & mask_32bit) << 32;
+      unsigned HOST_WIDE_INT const2 = UINTVAL (si2) & mask_32bit;
+
+      emit_move_insn (dest, GEN_INT (const1 | const2));
+      return;
+    }
+
+  /* Put si1 into upper 32-bits of dest.  */
+  if (CONST_INT_P (si1))
+    emit_move_insn (dest, GEN_INT ((UINTVAL (si1) & mask_32bit) << 32));
+  else
+    {
+      /* Generate RLDIC.  */
+      rtx si1_di = gen_rtx_REG (DImode, regno_or_subregno (si1));
+      rtx shift_rtx = gen_rtx_ASHIFT (DImode, si1_di, GEN_INT (32));
+      rtx mask_rtx = GEN_INT (mask_32bit << 32);
+      rtx and_rtx = gen_rtx_AND (DImode, shift_rtx, mask_rtx);
+      gcc_assert (!reg_overlap_mentioned_p (dest, si1));
+      emit_insn (gen_rtx_SET (dest, and_rtx));
+    }
+
+  /* Put si2 into the temporary.  */
+  gcc_assert (!reg_overlap_mentioned_p (dest, tmp));
+  if (CONST_INT_P (si2))
+    emit_move_insn (tmp, GEN_INT (UINTVAL (si2) & mask_32bit));
+  else
+    emit_insn (gen_zero_extendsidi2 (tmp, si2));
+
+  /* Combine the two parts.  */
+  emit_insn (gen_iordi3 (dest, dest, tmp));
+  return;
+}
+
+/* Split a V4SI initialization.  */
+
+void
+rs6000_split_v4si_init (rtx operands[])
+{
+  rtx dest = operands[0];
+
+  /* Destination is a GPR, build up the two DImode parts in place.  */
+  if (REG_P (dest) || SUBREG_P (dest))
+    {
+      int d_regno = regno_or_subregno (dest);
+      rtx scalar1 = operands[1];
+      rtx scalar2 = operands[2];
+      rtx scalar3 = operands[3];
+      rtx scalar4 = operands[4];
+      rtx tmp1 = operands[5];
+      rtx tmp2 = operands[6];
+
+      /* Even though we only need one temporary (plus the destination, which
+	 has an early clobber constraint, try to use two temporaries, one for
+	 each double word created.  That way the 2nd insn scheduling pass can
+	 rearrange things so the two parts are done in parallel.  */
+      if (BYTES_BIG_ENDIAN)
+	{
+	  rtx di_lo = gen_rtx_REG (DImode, d_regno);
+	  rtx di_hi = gen_rtx_REG (DImode, d_regno + 1);
+	  rs6000_split_v4si_init_di_reg (di_lo, scalar1, scalar2, tmp1);
+	  rs6000_split_v4si_init_di_reg (di_hi, scalar3, scalar4, tmp2);
+	}
+      else
+	{
+	  rtx di_lo = gen_rtx_REG (DImode, d_regno + 1);
+	  rtx di_hi = gen_rtx_REG (DImode, d_regno);
+	  gcc_assert (!VECTOR_ELT_ORDER_BIG);
+	  rs6000_split_v4si_init_di_reg (di_lo, scalar4, scalar3, tmp1);
+	  rs6000_split_v4si_init_di_reg (di_hi, scalar2, scalar1, tmp2);
+	}
+      return;
+    }
+
+  else
+    gcc_unreachable ();
+}
 
 /* Return TRUE if OP is an invalid SUBREG operation on the e500.  */
 
@@ -39054,6 +39217,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VSX_CVSPDPN:
 	  case UNSPEC_VSX_EXTRACT:
 	  case UNSPEC_VSX_VSLO:
+	  case UNSPEC_VSX_VEC_INIT:
 	    return 0;
 	  case UNSPEC_VSPLT_DIRECT:
 	    *special = SH_SPLAT;

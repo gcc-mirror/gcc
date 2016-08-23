@@ -1,3 +1,53 @@
+2016-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Set
+	initialization of all 0's to the 0 constant, instead of directly
+	generating XOR.  Add support for V4SImode vector initialization on
+	64-bit systems with direct move, and rework the ISA 3.0 V4SImode
+	initialization.  Change variables used in V4SFmode vector
+	intialization.  For V4SFmode vector splat on ISA 3.0, make sure
+	any memory addresses are in index form.  Add support for using
+	VSPLTH/VSPLTB to initialize vector short and vector char vectors
+	with all of the same element.
+	(regno_or_subregno): New helper function to return a register
+	number for either REG or SUBREG.
+	(rs6000_adjust_vec_address): Do not generate ADDI <reg>,R0,<num>.
+	Use regno_or_subregno where possible.
+	(rs6000_split_v4si_init_di_reg): New helper function to build up a
+	DImode value from two SImode values in order to generate V4SImode
+	vector initialization on 64-bit systems with direct move.
+	(rs6000_split_v4si_init): Split up the insns for a V4SImode vector
+	initialization.
+	(rtx_is_swappable_p): V4SImode vector initialization insn is not
+	swappable.
+	* config/rs6000/rs6000-protos.h (rs6000_split_v4si_init): Add
+	declaration.
+	* config/rs6000/vsx.md (VSX_SPLAT_I): New mode iterators and
+	attributes to initialize V8HImode and V16QImode vectors with the
+	same element.
+	(VSX_SPLAT_COUNT): Likewise.
+	(VSX_SPLAT_SUFFIX): Likewise.
+	(UNSPEC_VSX_VEC_INIT): New unspec.
+	(vsx_concat_v2sf): Eliminate using 'preferred' register classes.
+	Allow SFmode values to come from Altivec registers.
+	(vsx_init_v4si): New insn/split for V4SImode vector initialization
+	on 64-bit systems with direct move.
+	(vsx_splat_<mode>, VSX_W iterator): Rework V4SImode and V4SFmode
+	vector initializations, to allow V4SImode vector initializations
+	on 64-bit systems with direct move.
+	(vsx_splat_v4si): Likewise.
+	(vsx_splat_v4si_di): Likewise.
+	(vsx_splat_v4sf): Likewise.
+	(vsx_splat_v4sf_internal): Likewise.
+	(vsx_xxspltw_<mode>, VSX_W iterator): Eliminate using 'preferred'
+	register classes.
+	(vsx_xxspltw_<mode>_direct, VSX_W iterator): Likewise.
+	(vsx_vsplt<VSX_SPLAT_SUFFIX>_di): New insns to support
+	initializing V8HImode and V16QImode vectors with the same
+	element.
+	* config/rs6000/rs6000.h (TARGET_DIRECT_MOVE_64BIT): Disallow
+	optimization if -maltivec=be.
+
 2016-08-23  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm.md (arm_movqi_insn): Swap predicable_short_it
