@@ -69,6 +69,14 @@ extern void assert_streq (const location &loc,
 			  const char *desc_expected, const char *desc_actual,
 			  const char *val_expected, const char *val_actual);
 
+/* Implementation detail of ASSERT_STR_CONTAINS.  */
+
+extern void assert_str_contains (const location &loc,
+				 const char *desc_haystack,
+				 const char *desc_needle,
+				 const char *val_haystack,
+				 const char *val_needle);
+
 /* A class for writing out a temporary sourcefile for use in selftests
    of input handling.  */
 
@@ -247,6 +255,17 @@ extern int num_passes;
   SELFTEST_BEGIN_STMT						    \
   ::selftest::assert_streq ((LOC), #EXPECTED, #ACTUAL,		    \
 			    (EXPECTED), (ACTUAL));		    \
+  SELFTEST_END_STMT
+
+/* Evaluate HAYSTACK and NEEDLE and use strstr to determine if NEEDLE
+   is within HAYSTACK.
+   ::selftest::pass if NEEDLE is found.
+   ::selftest::fail if it is not found.  */
+
+#define ASSERT_STR_CONTAINS(HAYSTACK, NEEDLE)				\
+  SELFTEST_BEGIN_STMT							\
+  ::selftest::assert_str_contains (SELFTEST_LOCATION, #HAYSTACK, #NEEDLE, \
+				   (HAYSTACK), (NEEDLE));		\
   SELFTEST_END_STMT
 
 /* Evaluate PRED1 (VAL1), calling ::selftest::pass if it is true,
