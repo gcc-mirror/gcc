@@ -324,9 +324,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(__x < __y); }
 
   template<typename _Iterator>
+#if __cplusplus < 201103L
     inline typename reverse_iterator<_Iterator>::difference_type
     operator-(const reverse_iterator<_Iterator>& __x,
 	      const reverse_iterator<_Iterator>& __y)
+#else
+    inline auto
+    operator-(const reverse_iterator<_Iterator>& __x,
+	      const reverse_iterator<_Iterator>& __y)
+    -> decltype(__x.base() - __y.base())
+#endif
     { return __y.base() - __x.base(); }
 
   template<typename _Iterator>
