@@ -513,40 +513,49 @@ Gogo::import_package(const std::string& filename,
   delete stream;
 }
 
+Import_init *
+Gogo::lookup_init(const std::string& init_name)
+{
+  Import_init tmp("", init_name, -1);
+  Import_init_set::iterator it = this->imported_init_fns_.find(&tmp);
+  return (it != this->imported_init_fns_.end()) ? *it : NULL;
+}
+
 // Add an import control function for an imported package to the list.
 
 void
 Gogo::add_import_init_fn(const std::string& package_name,
 			 const std::string& init_name, int prio)
 {
-  for (std::set<Import_init>::const_iterator p =
+  for (Import_init_set::iterator p =
 	 this->imported_init_fns_.begin();
        p != this->imported_init_fns_.end();
        ++p)
     {
-      if (p->init_name() == init_name)
+      Import_init *ii = (*p);
+      if (ii->init_name() == init_name)
 	{
 	  // If a test of package P1, built as part of package P1,
 	  // imports package P2, and P2 imports P1 (perhaps
 	  // indirectly), then we will see the same import name with
 	  // different import priorities.  That is OK, so don't give
 	  // an error about it.
-	  if (p->package_name() != package_name)
+	  if (ii->package_name() != package_name)
 	    {
 	      error("duplicate package initialization name %qs",
 		    Gogo::message_name(init_name).c_str());
-	      inform(UNKNOWN_LOCATION, "used by package %qs at priority %d",
-		     Gogo::message_name(p->package_name()).c_str(),
-		     p->priority());
-	      inform(UNKNOWN_LOCATION, " and by package %qs at priority %d",
-		     Gogo::message_name(package_name).c_str(), prio);
+	      inform(UNKNOWN_LOCATION, "used by package %qs",
+		     Gogo::message_name(ii->package_name()).c_str());
+	      inform(UNKNOWN_LOCATION, " and by package %qs",
+		     Gogo::message_name(package_name).c_str());
 	    }
-	  return;
+          ii->set_priority(prio);
+          return;
 	}
     }
 
-  this->imported_init_fns_.insert(Import_init(package_name, init_name,
-					      prio));
+  Import_init* nii = new Import_init(package_name, init_name, prio);
+  this->imported_init_fns_.insert(nii);
 }
 
 // Return whether we are at the global binding level.
@@ -581,6 +590,62 @@ Gogo::current_bindings() const
     return this->globals_;
 }
 
+void
+Gogo::update_init_priority(Import_init* ii,
+                           std::set<const Import_init *>* visited)
+{
+  visited->insert(ii);
+  int succ_prior = -1;
+
+  for (std::set<std::string>::const_iterator pci =
+           ii->precursors().begin();
+       pci != ii->precursors().end();
+       ++pci)
+    {
+      Import_init* succ = this->lookup_init(*pci);
+      if (visited->find(succ) == visited->end())
+        update_init_priority(succ, visited);
+      succ_prior = std::max(succ_prior, succ->priority());
+    }
+  if (ii->priority() <= succ_prior)
+    ii->set_priority(succ_prior + 1);
+}
+
+void
+Gogo::recompute_init_priorities()
+{
+  std::set<Import_init *> nonroots;
+
+  for (Import_init_set::const_iterator p =
+           this->imported_init_fns_.begin();
+       p != this->imported_init_fns_.end();
+       ++p)
+    {
+      const Import_init *ii = *p;
+      for (std::set<std::string>::const_iterator pci =
+               ii->precursors().begin();
+           pci != ii->precursors().end();
+           ++pci)
+        {
+          Import_init* ii = this->lookup_init(*pci);
+          nonroots.insert(ii);
+        }
+    }
+
+  // Recursively update priorities starting at roots.
+  std::set<const Import_init*> visited;
+  for (Import_init_set::iterator p =
+           this->imported_init_fns_.begin();
+       p != this->imported_init_fns_.end();
+       ++p)
+    {
+      Import_init* ii = *p;
+      if (nonroots.find(ii) != nonroots.end())
+        continue;
+      update_init_priority(ii, &visited);
+    }
+}
+
 // Add statements to INIT_STMTS which run the initialization
 // functions for imported packages.  This is only used for the "main"
 // package.
@@ -598,23 +663,27 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts)
       Type::make_function_type(NULL, NULL, NULL, unknown_loc);
   Btype* fntype = func_type->get_backend_fntype(this);
 
+  // Recompute init priorities based on a walk of the init graph.
+  recompute_init_priorities();
+
   // We must call them in increasing priority order.
-  std::vector<Import_init> v;
-  for (std::set<Import_init>::const_iterator p =
+  std::vector<const Import_init*> v;
+  for (Import_init_set::const_iterator p =
 	 this->imported_init_fns_.begin();
        p != this->imported_init_fns_.end();
        ++p)
     v.push_back(*p);
-  std::sort(v.begin(), v.end());
+  std::sort(v.begin(), v.end(), priority_compare);
 
   // We build calls to the init functions, which take no arguments.
   std::vector<Bexpression*> empty_args;
-  for (std::vector<Import_init>::const_iterator p = v.begin();
+  for (std::vector<const Import_init*>::const_iterator p = v.begin();
        p != v.end();
        ++p)
     {
-      std::string user_name = p->package_name() + ".init";
-      const std::string& init_name(p->init_name());
+      const Import_init* ii = *p;
+      std::string user_name = ii->package_name() + ".init";
+      const std::string& init_name(ii->init_name());
 
       Bfunction* pfunc = this->backend()->function(fntype, user_name, init_name,
                                                    true, true, true, false,
@@ -4326,21 +4395,6 @@ Gogo::check_return_statements()
   this->traverse(&traverse);
 }
 
-// Work out the package priority.  It is one more than the maximum
-// priority of an imported package.
-
-int
-Gogo::package_priority() const
-{
-  int priority = 0;
-  for (Packages::const_iterator p = this->packages_.begin();
-       p != this->packages_.end();
-       ++p)
-    if (p->second->priority() > priority)
-      priority = p->second->priority();
-  return priority + 1;
-}
-
 // Export identifiers as requested.
 
 void
@@ -4368,7 +4422,6 @@ Gogo::do_exports()
   exp.export_globals(this->package_name(),
 		     prefix,
 		     pkgpath,
-		     this->package_priority(),
 		     this->packages_,
 		     this->imports_,
 		     (this->need_init_fn_ && !this->is_main_package()
@@ -7595,11 +7648,10 @@ Unnamed_label::get_goto(Translate_context* context, Location location)
 Package::Package(const std::string& pkgpath,
 		 const std::string& pkgpath_symbol, Location location)
   : pkgpath_(pkgpath), pkgpath_symbol_(pkgpath_symbol),
-    package_name_(), bindings_(new Bindings(NULL)), priority_(0),
+    package_name_(), bindings_(new Bindings(NULL)),
     location_(location)
 {
   go_assert(!pkgpath.empty());
-  
 }
 
 // Set the package name.
@@ -7638,16 +7690,6 @@ Package::set_pkgpath_symbol(const std::string& pkgpath_symbol)
     this->pkgpath_symbol_ = pkgpath_symbol;
   else
     go_assert(this->pkgpath_symbol_ == pkgpath_symbol);
-}
-
-// Set the priority.  We may see multiple priorities for an imported
-// package; we want to use the largest one.
-
-void
-Package::set_priority(int priority)
-{
-  if (priority > this->priority_)
-    this->priority_ = priority;
 }
 
 // Note that symbol from this package was and qualified by ALIAS.
