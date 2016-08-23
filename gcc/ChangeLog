@@ -1,3 +1,10 @@
+2016-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c (selftest::assert_str_contains): New function.
+	(selftest::test_assertions): Verify ASSERT_STR_CONTAINS.
+	* selftest.h (selftest::assert_str_contains): New decl.
+	(ASSERT_STR_CONTAINS): New macro.
+
 2016-08-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77286
