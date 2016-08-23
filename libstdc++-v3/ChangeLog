@@ -1,5 +1,8 @@
 2016-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/using.xml: Remove reference to -pthreads option.
+	* doc/html/*: Regenerate.
+
 	* testsuite/experimental/feat-cxx14.cc: Only preprocess, not compile.
 	* testsuite/experimental/feat-lib-fund.cc: Likewise.
 
