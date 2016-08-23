@@ -1,3 +1,7 @@
+2016-08-23  Fritz Reese  <fritzoreese@gmail.com>
+
+	* gfortran.dg/dec_structure_12.f90: New testcase.
+
 2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/insv-1.c: Fix test when running with -m31.

@@ -1,5 +1,9 @@
 2016-08-23  Fritz Reese  <fritzoreese@gmail.com>
 
+	* decl.c (gfc_match_structure_decl): Make gfc_structure_id static.
+
+2016-08-23  Fritz Reese  <fritzoreese@gmail.com>
+
 	* interface.c (compare_components): Fix typo in name check conditional.
 
 2016-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
