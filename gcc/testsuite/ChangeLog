@@ -1,5 +1,10 @@
 2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* gcc.target/s390/zvector/vec-genmask-1.c: Improve result
+	verification.
+
+2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* gcc.target/s390/md/andc-splitter-1.c: New test case.
 	* gcc.target/s390/md/andc-splitter-2.c: Likewise.
 

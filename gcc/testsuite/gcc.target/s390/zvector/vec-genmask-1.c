@@ -14,11 +14,19 @@ foo ()
   c = vec_genmasks_32 (31, 31);
   d = vec_genmasks_32 (5, 5);
   e = vec_genmasks_32 (31, 0);
+}
+
+int
+bar ()
+{
+  /* Needs to be in a separate function so that the vone from "a" is not reused
+     for "f".  */
   f = vec_genmasks_32 (6, 5);
 }
-/* { dg-final { scan-assembler-times "vone" 1 } } */
-/* { dg-final { scan-assembler-times "vgmf\t%v.*,0,0" 1 } } */
-/* { dg-final { scan-assembler-times "vgmf\t%v.*,31,31" 1 } } */
-/* { dg-final { scan-assembler-times "vgmf\t%v.*,5,5" 1 } } */
-/* { dg-final { scan-assembler-times "vgmf\t%v.*,31,0" 1 } } */
-/* { dg-final { scan-assembler-times "vone" 1 } } */
+
+/* a + f: { dg-final { scan-assembler-times "vone" 2 } } */
+/* b: { dg-final { scan-assembler-times "vgmf\t%v.*,0,0" 1 } } */
+/* c: { dg-final { scan-assembler-times "vgmf\t%v.*,31,31" 1 } } */
+/* d: { dg-final { scan-assembler-times "vgmf\t%v.*,5,5" 1 } } */
+/* e: { dg-final { scan-assembler-times "vgmf\t%v.*,31,0" 1 } } */
+/* b - e: { dg-final { scan-assembler-times "vgmf" 4 } } */
