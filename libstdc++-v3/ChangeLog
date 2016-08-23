@@ -1,5 +1,21 @@
 2016-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71771
+	* include/bits/stl_iterator.h
+	(operator-(reverse_iterator<Iter>, reverse_iterator<Iter>): Only
+	define for C++98 mode.
+	(operator-(move_iterator<Iter>, move_iterator<Iter>): Don't define.
+	* testsuite/24_iterators/headers/iterator/synopsis.cc: Use
+	-std=gnu++98.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++11.cc: New test.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++14.cc: New test.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++17.cc: New test.
+	* testsuite/24_iterators/move_iterator/greedy_ops.cc: Don't test
+	difference operator.
+	* testsuite/24_iterators/reverse_iterator/greedy_ops.cc: Only test
+	difference operator for C++98.
+	* testsuite/24_iterators/reverse_iterator/71771.cc: New test.
+
 	* include/bits/c++config (_GLIBCXX17_CONSTEXPR): Define.
 	* include/bits/range_access.h (begin, end, rbegin, rend, crbegin)
 	(crend): Add _GLIBCXX17_CONSTEXPR as per P0031R0.

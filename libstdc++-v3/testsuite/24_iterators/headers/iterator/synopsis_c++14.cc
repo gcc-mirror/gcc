@@ -1,5 +1,7 @@
+// { dg-options "-std=gnu++14" }
 // { dg-do compile }
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,30 +18,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <iterator>
-#include <testsuite_greedy_ops.h>
+#include "./synopsis_c++11.cc"
 
-void test01()
-{
-  typedef std::reverse_iterator<greedy_ops::X*> iterator_type;
+namespace std {
 
-  iterator_type it;
-  
-  it == it;
-  it != it;
-  it < it;
-  it <= it;
-  it > it;
-  it >= it;
-#if __cplusplus < 201103L
-  it - it; // See PR libstdc++/71771
-#endif
-  1 + it;
-  it + 1;
-}
-
-int main() 
-{ 
-  test01();
-  return 0;
+  // C++14 24.5, iterator adaptors:
+  template <class Iterator>
+  reverse_iterator<Iterator> make_reverse_iterator(const Iterator&);
 }
