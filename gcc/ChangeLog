@@ -1,3 +1,8 @@
+2016-08-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.md (arm_movqi_insn): Swap predicable_short_it
+	attribute for alternatives 3 and 4.
+
 2016-08-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftest.c (selftest::assert_str_contains): New function.
