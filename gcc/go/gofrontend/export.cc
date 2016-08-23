@@ -19,16 +19,21 @@
 
 // Class Export.
 
-// Version 1 magic number.
+const int Export::magic_len;
 
-const int Export::v1_magic_len;
+// Current version magic string.
+const char Export::cur_magic[Export::magic_len] =
+  {
+    'v', '2', ';', '\n'
+  };
 
-const char Export::v1_magic[Export::v1_magic_len] =
+// Magic string for previous version (still supported)
+const char Export::v1_magic[Export::magic_len] =
   {
     'v', '1', ';', '\n'
   };
 
-const int Export::v1_checksum_len;
+const int Export::checksum_len;
 
 // Constructor.
 
@@ -93,11 +98,10 @@ void
 Export::export_globals(const std::string& package_name,
 		       const std::string& prefix,
 		       const std::string& pkgpath,
-		       int package_priority,
 		       const std::map<std::string, Package*>& packages,
 		       const std::map<std::string, Package*>& imports,
 		       const std::string& import_init_fn,
-		       const std::set<Import_init>& imported_init_fns,
+                       const Import_init_set& imported_init_fns,
 		       const Bindings* bindings)
 {
   // If there have been any errors so far, don't try to export
@@ -134,8 +138,8 @@ Export::export_globals(const std::string& package_name,
 
   // Although the export data is readable, at least this version is,
   // it is conceptually a binary format.  Start with a four byte
-  // verison number.
-  this->write_bytes(Export::v1_magic, Export::v1_magic_len);
+  // version number.
+  this->write_bytes(Export::cur_magic, Export::magic_len);
 
   // The package name.
   this->write_c_string("package ");
@@ -156,16 +160,11 @@ Export::export_globals(const std::string& package_name,
     }
   this->write_c_string(";\n");
 
-  // The package priority.
-  char buf[100];
-  snprintf(buf, sizeof buf, "priority %d;\n", package_priority);
-  this->write_c_string(buf);
-
   this->write_packages(packages);
 
   this->write_imports(imports);
 
-  this->write_imported_init_fns(package_name, package_priority, import_init_fn,
+  this->write_imported_init_fns(package_name, import_init_fn,
 				imported_init_fns);
 
   // FIXME: It might be clever to add something about the processor
@@ -250,17 +249,17 @@ void
 Export::write_imports(const std::map<std::string, Package*>& imports)
 {
   // Sort the imports for more consistent output.
-  std::vector<std::pair<std::string, Package*> > imp;
+  std::vector<std::pair<std::string, Package*> > sorted_imports;
   for (std::map<std::string, Package*>::const_iterator p = imports.begin();
        p != imports.end();
        ++p)
-    imp.push_back(std::make_pair(p->first, p->second));
+    sorted_imports.push_back(std::make_pair(p->first, p->second));
 
-  std::sort(imp.begin(), imp.end(), import_compare);
+  std::sort(sorted_imports.begin(), sorted_imports.end(), import_compare);
 
   for (std::vector<std::pair<std::string, Package*> >::const_iterator p =
-	 imp.begin();
-       p != imp.end();
+	 sorted_imports.begin();
+       p != sorted_imports.end();
        ++p)
     {
       this->write_c_string("import ");
@@ -275,18 +274,62 @@ Export::write_imports(const std::map<std::string, Package*>& imports)
     }
 }
 
+void
+Export::add_init_graph_edge(Init_graph* init_graph, unsigned src, unsigned sink)
+{
+  Init_graph::iterator it = init_graph->find(src);
+  if (it != init_graph->end())
+    it->second.insert(sink);
+  else
+    {
+      std::set<unsigned> succs;
+      succs.insert(sink);
+      (*init_graph)[src] = succs;
+    }
+}
+
+// Constructs the imported portion of the init graph, e.g. those
+// edges that we read from imported packages.
+
+void
+Export::populate_init_graph(Init_graph* init_graph,
+                            const Import_init_set& imported_init_fns,
+                            const std::map<std::string, unsigned>& init_idx)
+{
+  for (Import_init_set::const_iterator p = imported_init_fns.begin();
+       p != imported_init_fns.end();
+       ++p)
+    {
+      const Import_init* ii = *p;
+      std::map<std::string, unsigned>::const_iterator srcit =
+          init_idx.find(ii->init_name());
+      go_assert(srcit != init_idx.end());
+      unsigned src = srcit->second;
+      for (std::set<std::string>::const_iterator pci = ii->precursors().begin();
+           pci != ii->precursors().end();
+           ++pci)
+	{
+	  std::map<std::string, unsigned>::const_iterator it =
+	      init_idx.find(*pci);
+	  go_assert(it != init_idx.end());
+	  unsigned sink = it->second;
+	  add_init_graph_edge(init_graph, src, sink);
+	}
+    }
+}
+
 // Write out the initialization functions which need to run for this
 // package.
 
 void
-Export::write_imported_init_fns(
-    const std::string& package_name,
-    int priority,
-    const std::string& import_init_fn,
-    const std::set<Import_init>& imported_init_fns)
+Export::write_imported_init_fns(const std::string& package_name,
+                                const std::string& import_init_fn,
+                                const Import_init_set& imported_init_fns)
 {
-  if (import_init_fn.empty() && imported_init_fns.empty())
-    return;
+  if (import_init_fn.empty() && imported_init_fns.empty()) return;
+
+  // Maps a given init function to the its index in the exported "init" clause.
+  std::map<std::string, unsigned> init_idx;
 
   this->write_c_string("init");
 
@@ -296,35 +339,154 @@ Export::write_imported_init_fns(
       this->write_string(package_name);
       this->write_c_string(" ");
       this->write_string(import_init_fn);
-      char buf[100];
-      snprintf(buf, sizeof buf, " %d", priority);
-      this->write_c_string(buf);
+      init_idx[import_init_fn] = 0;
     }
 
-  if (!imported_init_fns.empty())
+  if (imported_init_fns.empty())
     {
-      // Sort the list of functions for more consistent output.
-      std::vector<Import_init> v;
-      for (std::set<Import_init>::const_iterator p = imported_init_fns.begin();
-	   p != imported_init_fns.end();
-	   ++p)
-	v.push_back(*p);
-      std::sort(v.begin(), v.end());
+      this->write_c_string(";\n");
+      return;
+    }
 
-      for (std::vector<Import_init>::const_iterator p = v.begin();
-	   p != v.end();
-	   ++p)
+  typedef std::map<int, std::vector<std::string> > level_map;
+  Init_graph init_graph;
+  level_map inits_at_level;
+
+  // Walk through the set of import inits (already sorted by
+  // init fcn name) and write them out to the exports.
+  for (Import_init_set::const_iterator p = imported_init_fns.begin();
+       p != imported_init_fns.end();
+       ++p)
+    {
+      const Import_init* ii = *p;
+      this->write_c_string(" ");
+      this->write_string(ii->package_name());
+      this->write_c_string(" ");
+      this->write_string(ii->init_name());
+
+      // Populate init_idx.
+      go_assert(init_idx.find(ii->init_name()) == init_idx.end());
+      unsigned idx = init_idx.size();
+      init_idx[ii->init_name()] = idx;
+
+      // If the init function has a non-negative priority value, this
+      // is an indication that it was referred to in an older version
+      // export data section (e.g. we read a legacy object
+      // file). Record such init fcns so that we can fix up the graph
+      // for them (handled later in this function).
+      if (ii->priority() > 0)
 	{
-	  this->write_c_string(" ");
-	  this->write_string(p->package_name());
-	  this->write_c_string(" ");
-	  this->write_string(p->init_name());
-	  char buf[100];
-	  snprintf(buf, sizeof buf, " %d", p->priority());
-	  this->write_c_string(buf);
+	  level_map::iterator it = inits_at_level.find(ii->priority());
+	  if (it == inits_at_level.end())
+	    {
+	      std::vector<std::string> l;
+	      l.push_back(ii->init_name());
+	      inits_at_level[ii->priority()] = l;
+	    }
+	  else
+	    it->second.push_back(ii->init_name());
+	}
+    }
+  this->write_c_string(";\n");
+
+  // Create the init graph. Start by populating the graph with
+  // all the edges we inherited from imported packages.
+  populate_init_graph(&init_graph, imported_init_fns, init_idx);
+
+  // Now add edges from the local init function to each of the
+  // imported fcns.
+  if (!import_init_fn.empty())
+    {
+      unsigned src = 0;
+      go_assert(init_idx[import_init_fn] == 0);
+      for (Import_init_set::const_iterator p = imported_init_fns.begin();
+           p != imported_init_fns.end();
+           ++p)
+	{
+          const Import_init* ii = *p;
+	  unsigned sink = init_idx[ii->init_name()];
+	  add_init_graph_edge(&init_graph, src, sink);
 	}
     }
 
+  // In the scenario where one or more of the packages we imported
+  // was written with the legacy export data format, add dummy edges
+  // to capture the priority relationships. Here is a package import
+  // graph as an example:
+  //
+  //       *A
+  //       /|
+  //      / |
+  //     B  *C
+  //       /|
+  //      / |
+  //    *D *E
+  //     | /|
+  //     |/ |
+  //    *F  *G
+  //
+  // Let's suppose that the object for package "C" is from an old
+  // gccgo, e.g. it has the old export data format. All other
+  // packages are compiled with the new compiler and have the new
+  // format. Packages with *'s have init functions. The scenario is
+  // that we're compiling a package "A"; during this process we'll
+  // read the export data for "C". It should look something like
+  //
+  //   init F F..import 1 G G..import 1 D D..import 2 E E..import 2;
+  //
+  // To capture this information and convey it to the consumers of
+  // "A", the code below adds edges to the graph from each priority K
+  // function to every priority K-1 function for appropriate values
+  // of K. This will potentially add more edges than we need (for
+  // example, an edge from D to G), but given that we don't expect
+  // to see large numbers of old objects, this will hopefully be OK.
+
+  if (inits_at_level.size() > 0)
+    {
+      for (level_map::reverse_iterator it = inits_at_level.rbegin();
+           it != inits_at_level.rend(); ++it)
+	{
+	  int level = it->first;
+	  if (level < 2) break;
+	  const std::vector<std::string>& fcns_at_level = it->second;
+	  for (std::vector<std::string>::const_iterator sit =
+	           fcns_at_level.begin();
+	       sit != fcns_at_level.end(); ++sit)
+	    {
+	      unsigned src = init_idx[*sit];
+	      level_map::iterator it2 = inits_at_level.find(level - 1);
+	      if (it2 != inits_at_level.end())
+		{
+		  const std::vector<std::string> fcns_at_lm1 = it2->second;
+		  for (std::vector<std::string>::const_iterator mit =
+		           fcns_at_lm1.begin();
+		       mit != fcns_at_lm1.end(); ++mit)
+		    {
+		      unsigned sink = init_idx[*mit];
+		      add_init_graph_edge(&init_graph, src, sink);
+		    }
+		}
+	    }
+	}
+    }
+
+  // Write out the resulting graph.
+  this->write_c_string("init_graph");
+  for (Init_graph::const_iterator ki = init_graph.begin();
+       ki != init_graph.end(); ++ki)
+    {
+      unsigned src = ki->first;
+      const std::set<unsigned>& successors = ki->second;
+      for (std::set<unsigned>::const_iterator vi = successors.begin();
+           vi != successors.end(); ++vi)
+	{
+	  this->write_c_string(" ");
+	  this->write_unsigned(src);
+	  unsigned sink = (*vi);
+	  this->write_c_string(" ");
+	  this->write_unsigned(sink);
+	}
+    }
   this->write_c_string(";\n");
 }
 
@@ -337,6 +499,26 @@ Export::write_name(const std::string& name)
     this->write_c_string("?");
   else
     this->write_string(Gogo::message_name(name));
+}
+
+// Write an integer value to the export stream.
+
+void
+Export::write_int(int value)
+{
+  char buf[100];
+  snprintf(buf, sizeof buf, "%d", value);
+  this->write_c_string(buf);
+}
+
+// Write an integer value to the export stream.
+
+void
+Export::write_unsigned(unsigned value)
+{
+  char buf[100];
+  snprintf(buf, sizeof buf, "%u", value);
+  this->write_c_string(buf);
 }
 
 // Export a type.  We have to ensure that on import we create a single
@@ -531,11 +713,11 @@ Export::Stream::checksum()
   // Use a union to provide the required alignment.
   union
   {
-    char checksum[Export::v1_checksum_len];
+    char checksum[Export::checksum_len];
     long align;
   } u;
   sha1_finish_ctx(this->checksum_, u.checksum);
-  return std::string(u.checksum, Export::v1_checksum_len);
+  return std::string(u.checksum, Export::checksum_len);
 }
 
 // Write the checksum string to the export data.

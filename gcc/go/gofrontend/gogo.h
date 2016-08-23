@@ -78,33 +78,64 @@ class Import_init
   init_name() const
   { return this->init_name_; }
 
-  // The priority of the initialization function.  Functions with a
-  // lower priority number must be run first.
+  // Older V1 export data uses a priority scheme to order
+  // initialization functions; functions with a lower priority number
+  // must be run first. This value will be set to -1 for current
+  // generation objects, and will take on a non-negative value only
+  // when importing a V1-vintage object.
   int
   priority() const
   { return this->priority_; }
+
+  // Reset priority.
+  void
+  set_priority(int new_priority)
+  { this->priority_ = new_priority; }
+
+  // Record the fact that some other init fcn must be run before this init fcn.
+  void
+  record_precursor_fcn(std::string init_fcn_name)
+  { this->precursor_functions_.insert(init_fcn_name); }
+
+  // Return the list of precursor fcns for this fcn (must be run before it).
+  const std::set<std::string>&
+  precursors() const
+  { return this->precursor_functions_; }
 
  private:
   // The name of the package being imported.
   std::string package_name_;
   // The name of the package's init function.
   std::string init_name_;
-  // The priority.
+  // Names of init functions that must be run before this fcn.
+  std::set<std::string> precursor_functions_;
+  // Priority for this function. See note above on obsolescence.
   int priority_;
 };
 
 // For sorting purposes.
 
+struct Import_init_lt {
+  bool operator()(const Import_init* i1, const Import_init* i2)
+  {
+    return i1->init_name() < i2->init_name();
+  }
+};
+
+// Set of import init objects.
+class Import_init_set : public std::set<Import_init*, Import_init_lt> {
+};
+
 inline bool
-operator<(const Import_init& i1, const Import_init& i2)
+priority_compare(const Import_init* i1, const Import_init* i2)
 {
-  if (i1.priority() < i2.priority())
+  if (i1->priority() < i2->priority())
     return true;
-  if (i1.priority() > i2.priority())
+  if (i1->priority() > i2->priority())
     return false;
-  if (i1.package_name() != i2.package_name())
-    return i1.package_name() < i2.package_name();
-  return i1.init_name() < i2.init_name();
+  if (i1->package_name() != i2->package_name())
+    return i1->package_name() < i2->package_name();
+  return i1->init_name() < i2->init_name();
 }
 
 // The holder for the internal representation of the entire
@@ -248,12 +279,6 @@ class Gogo
   void
   set_debug_escape_level(int level)
   { this->debug_escape_level_ = level; }
-
-  // Return the priority to use for the package we are compiling.
-  // This is two more than the largest priority of any package we
-  // import.
-  int
-  package_priority() const;
 
   // Import a package.  FILENAME is the file name argument, LOCAL_NAME
   // is the local name to give to the package.  If LOCAL_NAME is empty
@@ -609,6 +634,10 @@ class Gogo
   add_import_init_fn(const std::string& package_name,
 		     const std::string& init_name, int prio);
 
+  // Return the Import_init for a given init name.
+  Import_init*
+  lookup_init(const std::string& init_name);
+
   // Turn short-cut operators (&&, ||) into explicit if statements.
   void
   remove_shortcuts();
@@ -754,6 +783,15 @@ class Gogo
     { }
   };
 
+  // Recompute init priorities.
+  void
+  recompute_init_priorities();
+
+  // Recursive helper used by the routine above.
+  void
+  update_init_priority(Import_init* ii,
+                       std::set<const Import_init *>* visited);
+
   // The backend generator.
   Backend* backend_;
   // The object used to keep track of file names and line numbers.
@@ -787,7 +825,7 @@ class Gogo
   // The name of the magic initialization function.
   std::string init_fn_name_;
   // A list of import control variables for packages that we import.
-  std::set<Import_init> imported_init_fns_;
+  Import_init_set imported_init_fns_;
   // The package path used for reflection data.
   std::string pkgpath_;
   // The package path to use for a symbol name.
@@ -2875,17 +2913,6 @@ class Package
     return this->package_name_;
   }
 
-  // The priority of this package.  The init function of packages with
-  // lower priority must be run before the init function of packages
-  // with higher priority.
-  int
-  priority() const
-  { return this->priority_; }
-
-  // Set the priority.
-  void
-  set_priority(int priority);
-
   // Return the bindings.
   Bindings*
   bindings()
@@ -2977,10 +3004,6 @@ class Package
   std::string package_name_;
   // The names in this package.
   Bindings* bindings_;
-  // The priority of this package.  A package has a priority higher
-  // than the priority of all of the packages that it imports.  This
-  // is used to run init functions in the right order.
-  int priority_;
   // The location of the most recent import statement.
   Location location_;
   // The set of aliases associated with this package.
