@@ -1,3 +1,7 @@
+2016-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (source_range::from_locations): New method.
+
 2016-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (fixit_hint::kind): Delete REPLACE.
