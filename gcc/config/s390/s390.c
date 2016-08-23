@@ -14972,6 +14972,7 @@ s390_vector_alignment (const_tree type)
 static void
 s390_asm_file_start (void)
 {
+  default_file_start ();
   s390_asm_output_machine_for_arch (asm_out_file);
 }
 #endif

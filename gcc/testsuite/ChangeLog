@@ -1,3 +1,7 @@
+2016-08-23  Ian Lance Taylor  <iant@golang.org>
+
+	* gcc.target/s390/nolrl-1.c: Don't match the file name.
+
 2016-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vec-init-1.c: Add tests where the vector is
