@@ -1,5 +1,9 @@
 2016-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/array (array): Add _GLIBCXX17_CONSTEXPR.
+	* include/profile/array (array): Likewise.
+	(array::swap): Fix exception specification for zero-sized arrays.
+
 	PR libstdc++/77334
 	* include/bits/stl_tree.h (_Rb_tree::_M_move_assign): New functions.
 	(_Rb_tree::operator=(_Rb_tree&&)): Dispatch to _M_move_assign.
