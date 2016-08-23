@@ -75,7 +75,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _InputIterator>
-    inline typename iterator_traits<_InputIterator>::difference_type
+    inline _GLIBCXX14_CONSTEXPR
+    typename iterator_traits<_InputIterator>::difference_type
     __distance(_InputIterator __first, _InputIterator __last,
                input_iterator_tag)
     {
@@ -92,7 +93,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _RandomAccessIterator>
-    inline typename iterator_traits<_RandomAccessIterator>::difference_type
+    inline _GLIBCXX14_CONSTEXPR
+    typename iterator_traits<_RandomAccessIterator>::difference_type
     __distance(_RandomAccessIterator __first, _RandomAccessIterator __last,
                random_access_iterator_tag)
     {
@@ -131,7 +133,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  and are constant time.  For other %iterator classes they are linear time.
   */
   template<typename _InputIterator>
-    inline typename iterator_traits<_InputIterator>::difference_type
+    inline _GLIBCXX17_CONSTEXPR
+    typename iterator_traits<_InputIterator>::difference_type
     distance(_InputIterator __first, _InputIterator __last)
     {
       // concept requirements -- taken care of in __distance
@@ -140,7 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _InputIterator, typename _Distance>
-    inline void
+    inline _GLIBCXX14_CONSTEXPR void
     __advance(_InputIterator& __i, _Distance __n, input_iterator_tag)
     {
       // concept requirements
@@ -151,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _BidirectionalIterator, typename _Distance>
-    inline void
+    inline _GLIBCXX14_CONSTEXPR void
     __advance(_BidirectionalIterator& __i, _Distance __n,
 	      bidirectional_iterator_tag)
     {
@@ -167,7 +170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _RandomAccessIterator, typename _Distance>
-    inline void
+    inline _GLIBCXX14_CONSTEXPR void
     __advance(_RandomAccessIterator& __i, _Distance __n,
               random_access_iterator_tag)
     {
@@ -190,7 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  and are constant time.  For other %iterator classes they are linear time.
   */
   template<typename _InputIterator, typename _Distance>
-    inline void
+    inline _GLIBCXX17_CONSTEXPR void
     advance(_InputIterator& __i, _Distance __n)
     {
       // concept requirements -- taken care of in __advance
@@ -201,7 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
 
   template<typename _ForwardIterator>
-    inline _ForwardIterator
+    inline _GLIBCXX17_CONSTEXPR _ForwardIterator
     next(_ForwardIterator __x, typename
 	 iterator_traits<_ForwardIterator>::difference_type __n = 1)
     {
@@ -213,7 +216,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _BidirectionalIterator>
-    inline _BidirectionalIterator
+    inline _GLIBCXX17_CONSTEXPR _BidirectionalIterator
     prev(_BidirectionalIterator __x, typename
 	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1) 
     {

@@ -122,51 +122,51 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { std::swap_ranges(begin(), end(), __other.begin()); }
 
       // Iterators.
-      iterator
+      _GLIBCXX17_CONSTEXPR iterator
       begin() noexcept
       { return iterator(data()); }
 
-      const_iterator
+      _GLIBCXX17_CONSTEXPR const_iterator
       begin() const noexcept
       { return const_iterator(data()); }
 
-      iterator
+      _GLIBCXX17_CONSTEXPR iterator
       end() noexcept
       { return iterator(data() + _Nm); }
 
-      const_iterator
+      _GLIBCXX17_CONSTEXPR const_iterator
       end() const noexcept
       { return const_iterator(data() + _Nm); }
 
-      reverse_iterator
+      _GLIBCXX17_CONSTEXPR reverse_iterator
       rbegin() noexcept
       { return reverse_iterator(end()); }
 
-      const_reverse_iterator
+      _GLIBCXX17_CONSTEXPR const_reverse_iterator
       rbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
-      reverse_iterator
+      _GLIBCXX17_CONSTEXPR reverse_iterator
       rend() noexcept
       { return reverse_iterator(begin()); }
 
-      const_reverse_iterator
+      _GLIBCXX17_CONSTEXPR const_reverse_iterator
       rend() const noexcept
       { return const_reverse_iterator(begin()); }
 
-      const_iterator
+      _GLIBCXX17_CONSTEXPR const_iterator
       cbegin() const noexcept
       { return const_iterator(data()); }
 
-      const_iterator
+      _GLIBCXX17_CONSTEXPR const_iterator
       cend() const noexcept
       { return const_iterator(data() + _Nm); }
 
-      const_reverse_iterator
+      _GLIBCXX17_CONSTEXPR const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
-      const_reverse_iterator
+      _GLIBCXX17_CONSTEXPR const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
 
@@ -181,7 +181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       empty() const noexcept { return size() == 0; }
 
       // Element access.
-      reference
+      _GLIBCXX17_CONSTEXPR reference
       operator[](size_type __n) noexcept
       { return _AT_Type::_S_ref(_M_elems, __n); }
 
@@ -189,7 +189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator[](size_type __n) const noexcept
       { return _AT_Type::_S_ref(_M_elems, __n); }
 
-      reference
+      _GLIBCXX17_CONSTEXPR reference
       at(size_type __n)
       {
 	if (__n >= _Nm)
@@ -211,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	     _AT_Type::_S_ref(_M_elems, 0));
       }
 
-      reference
+      _GLIBCXX17_CONSTEXPR reference
       front() noexcept
       { return *begin(); }
 
@@ -219,7 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       front() const noexcept
       { return _AT_Type::_S_ref(_M_elems, 0); }
 
-      reference
+      _GLIBCXX17_CONSTEXPR reference
       back() noexcept
       { return _Nm ? *(end() - 1) : *end(); }
 
@@ -230,11 +230,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
  	           : _AT_Type::_S_ref(_M_elems, 0);
       }
 
-      pointer
+      _GLIBCXX17_CONSTEXPR pointer
       data() noexcept
       { return _AT_Type::_S_ptr(_M_elems); }
 
-      const_pointer
+      _GLIBCXX17_CONSTEXPR const_pointer
       data() const noexcept
       { return _AT_Type::_S_ptr(_M_elems); }
     };

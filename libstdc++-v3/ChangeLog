@@ -1,3 +1,24 @@
+2016-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX17_CONSTEXPR): Define.
+	* include/bits/range_access.h (begin, end, rbegin, rend, crbegin)
+	(crend): Add _GLIBCXX17_CONSTEXPR as per P0031R0.
+	* include/bits/stl_iterator.h (reverse_iterator, move_iterator)
+	(__make_reverse_iterator, make_reverse_iterator, make_move_iterator):
+	Likewise.
+	* include/bits/stl_iterator_base_funcs.h (__distance, __advance): Add
+	_GLIBCXX14_CONSTEXPR.
+	(distance, advance, next, prev): Add _GLIBCXX17_CONSTEXPR.
+	* include/std/array (array::begin, array::end, array::rbegin)
+	(array::rend, array::cbegin, array:cend, array::crbegin)
+	(array::crend, array::operator[], array::at, array::front)
+	(array::back, array::data): Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access.cc: Replace
+	with separate tests for C++11, C++14, and C++17.
+	* testsuite/24_iterators/headers/iterator/range_access_c++11.cc: New.
+	* testsuite/24_iterators/headers/iterator/range_access_c++14.cc: New.
+	* testsuite/24_iterators/headers/iterator/range_access_c++17.cc: New.
+
 2016-08-22  Tim Shen  <timshen@google.com>
 
 	Split _M_dfs() into smaller functions.

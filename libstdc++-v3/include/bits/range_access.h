@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     begin(_Container& __cont) -> decltype(__cont.begin())
     { return __cont.begin(); }
 
@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     begin(const _Container& __cont) -> decltype(__cont.begin())
     { return __cont.begin(); }
 
@@ -68,7 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     end(_Container& __cont) -> decltype(__cont.end())
     { return __cont.end(); }
 
@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     end(const _Container& __cont) -> decltype(__cont.end())
     { return __cont.end(); }
 
@@ -138,7 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     rbegin(_Container& __cont) -> decltype(__cont.rbegin())
     { return __cont.rbegin(); }
 
@@ -148,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     rbegin(const _Container& __cont) -> decltype(__cont.rbegin())
     { return __cont.rbegin(); }
 
@@ -158,7 +158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     rend(_Container& __cont) -> decltype(__cont.rend())
     { return __cont.rend(); }
 
@@ -168,7 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     rend(const _Container& __cont) -> decltype(__cont.rend())
     { return __cont.rend(); }
 
@@ -178,7 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __arr  Array.
    */
   template<typename _Tp, size_t _Nm>
-    inline reverse_iterator<_Tp*>
+    inline _GLIBCXX17_CONSTEXPR reverse_iterator<_Tp*>
     rbegin(_Tp (&__arr)[_Nm])
     { return reverse_iterator<_Tp*>(__arr + _Nm); }
 
@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __arr  Array.
    */
   template<typename _Tp, size_t _Nm>
-    inline reverse_iterator<_Tp*>
+    inline _GLIBCXX17_CONSTEXPR reverse_iterator<_Tp*>
     rend(_Tp (&__arr)[_Nm])
     { return reverse_iterator<_Tp*>(__arr); }
 
@@ -198,7 +198,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __il  initializer_list.
    */
   template<typename _Tp>
-    inline reverse_iterator<const _Tp*>
+    inline _GLIBCXX17_CONSTEXPR reverse_iterator<const _Tp*>
     rbegin(initializer_list<_Tp> __il)
     { return reverse_iterator<const _Tp*>(__il.end()); }
 
@@ -208,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __il  initializer_list.
    */
   template<typename _Tp>
-    inline reverse_iterator<const _Tp*>
+    inline _GLIBCXX17_CONSTEXPR reverse_iterator<const _Tp*>
     rend(initializer_list<_Tp> __il)
     { return reverse_iterator<const _Tp*>(__il.begin()); }
 
@@ -218,7 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     crbegin(const _Container& __cont) -> decltype(std::rbegin(__cont))
     { return std::rbegin(__cont); }
 
@@ -228,7 +228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    inline auto
+    inline _GLIBCXX17_CONSTEXPR auto
     crend(const _Container& __cont) -> decltype(std::rend(__cont))
     { return std::rend(__cont); }
 
