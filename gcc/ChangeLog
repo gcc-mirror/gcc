@@ -1,3 +1,8 @@
+2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.md ("*andc_split"): New splitter for and with
+	complement.
+
 2016-08-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/27336
