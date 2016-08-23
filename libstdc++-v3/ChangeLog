@@ -1,5 +1,8 @@
 2016-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/feat-cxx14.cc: Only preprocess, not compile.
+	* testsuite/experimental/feat-lib-fund.cc: Likewise.
+
 	PR libstdc++/71771
 	* include/bits/stl_iterator.h
 	(operator-(reverse_iterator<Iter>, reverse_iterator<Iter>): Only
