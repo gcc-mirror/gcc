@@ -296,6 +296,16 @@ struct GTY(()) source_range
     return result;
   }
 
+  /* Make a source_range from a pair of source_location.  */
+  static source_range from_locations (source_location start,
+				      source_location finish)
+  {
+    source_range result;
+    result.m_start = start;
+    result.m_finish = finish;
+    return result;
+  }
+
   /* Is there any part of this range on the given line?  */
   bool intersects_line_p (const char *file, int line) const;
 };
