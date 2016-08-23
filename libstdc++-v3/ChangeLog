@@ -1,5 +1,9 @@
 2016-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/api.xml: Replace hardcoded links for specific versions with
+	link to docs for all releases.
+	* doc/html/*: Regenerate.
+
 	* include/bits/stl_iterator.h
 	(operator-(reverse_iterator<Iter>, reverse_iterator<Iter>): Constrain
 	for C++11 and later.
