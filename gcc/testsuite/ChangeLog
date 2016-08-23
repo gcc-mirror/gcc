@@ -1,3 +1,8 @@
+2016-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/27336
+	* c-c++-common/pr27336.c: New testcase.
+
 2016-08-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/77321

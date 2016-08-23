@@ -4782,11 +4782,6 @@ infer_value_range (gimple *stmt, tree op, tree_code *comp_code_p, tree *val_p)
   if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
     return false;
 
-  /* Similarly, don't infer anything from statements that may throw
-     exceptions. ??? Relax this requirement?  */
-  if (stmt_could_throw_p (stmt))
-    return false;
-
   /* If STMT is the last statement of a basic block with no normal
      successors, there is no point inferring anything about any of its
      operands.  We would not be able to find a proper insertion point
@@ -4797,7 +4792,7 @@ infer_value_range (gimple *stmt, tree op, tree_code *comp_code_p, tree *val_p)
       edge e;
 
       FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
-	if (!(e->flags & EDGE_ABNORMAL))
+	if (!(e->flags & (EDGE_ABNORMAL|EDGE_EH)))
 	  break;
       if (e == NULL)
 	return false;
@@ -6370,10 +6365,10 @@ process_assert_insertions_for (tree name, assert_locus *loc)
 
   /* If STMT must be the last statement in BB, we can only insert new
      assertions on the non-abnormal edge out of BB.  Note that since
-     STMT is not control flow, there may only be one non-abnormal edge
+     STMT is not control flow, there may only be one non-abnormal/eh edge
      out of BB.  */
   FOR_EACH_EDGE (e, ei, loc->bb->succs)
-    if (!(e->flags & EDGE_ABNORMAL))
+    if (!(e->flags & (EDGE_ABNORMAL|EDGE_EH)))
       {
 	gsi_insert_on_edge (e, assert_stmt);
 	return true;
