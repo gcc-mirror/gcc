@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++98" }
 // { dg-do compile }
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.

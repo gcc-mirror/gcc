@@ -32,7 +32,7 @@ void test01()
   it <= it;
   it > it;
   it >= it;
-  it - it;
+  // it - it;  // See PR libstdc++/71771
   1 + it;
   it + 1;
 }

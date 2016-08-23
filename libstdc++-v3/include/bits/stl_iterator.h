@@ -330,19 +330,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const reverse_iterator<_Iterator>& __y)
     { return !(__x < __y); }
 
-  template<typename _Iterator>
-    inline _GLIBCXX17_CONSTEXPR
-    typename reverse_iterator<_Iterator>::difference_type
-    operator-(const reverse_iterator<_Iterator>& __x,
-	      const reverse_iterator<_Iterator>& __y)
-    { return __y.base() - __x.base(); }
-
-  template<typename _Iterator>
-    inline _GLIBCXX17_CONSTEXPR reverse_iterator<_Iterator>
-    operator+(typename reverse_iterator<_Iterator>::difference_type __n,
-	      const reverse_iterator<_Iterator>& __x)
-    { return reverse_iterator<_Iterator>(__x.base() - __n); }
-
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 280. Comparison of reverse_iterator to const reverse_iterator.
   template<typename _IteratorL, typename _IteratorR>
@@ -380,21 +367,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
     { return !(__x < __y); }
+  //@}
+
+#if __cplusplus < 201103L
+  template<typename _Iterator>
+    inline typename reverse_iterator<_Iterator>::difference_type
+    operator-(const reverse_iterator<_Iterator>& __x,
+	      const reverse_iterator<_Iterator>& __y)
+    { return __y.base() - __x.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
-#if __cplusplus >= 201103L
-    // DR 685.
+    inline typename reverse_iterator<_IteratorL>::difference_type
+    operator-(const reverse_iterator<_IteratorL>& __x,
+	      const reverse_iterator<_IteratorR>& __y)
+    { return __y.base() - __x.base(); }
+#else
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 685. reverse_iterator/move_iterator difference has invalid signatures
+  template<typename _IteratorL, typename _IteratorR>
     inline _GLIBCXX17_CONSTEXPR auto
     operator-(const reverse_iterator<_IteratorL>& __x,
 	      const reverse_iterator<_IteratorR>& __y)
     -> decltype(__y.base() - __x.base())
-#else
-    inline typename reverse_iterator<_IteratorL>::difference_type
-    operator-(const reverse_iterator<_IteratorL>& __x,
-	      const reverse_iterator<_IteratorR>& __y)
-#endif
     { return __y.base() - __x.base(); }
-  //@}
+#endif
+
+  template<typename _Iterator>
+    inline _GLIBCXX17_CONSTEXPR reverse_iterator<_Iterator>
+    operator+(typename reverse_iterator<_Iterator>::difference_type __n,
+	      const reverse_iterator<_Iterator>& __x)
+    { return reverse_iterator<_Iterator>(__x.base() - __n); }
 
 #if __cplusplus >= 201103L
   // Same as C++14 make_reverse_iterator but used in C++03 mode too.
@@ -1188,13 +1190,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR auto
     operator-(const move_iterator<_IteratorL>& __x,
 	      const move_iterator<_IteratorR>& __y)
-    -> decltype(__x.base() - __y.base())
-    { return __x.base() - __y.base(); }
-
-  template<typename _Iterator>
-    inline _GLIBCXX17_CONSTEXPR auto
-    operator-(const move_iterator<_Iterator>& __x,
-	      const move_iterator<_Iterator>& __y)
     -> decltype(__x.base() - __y.base())
     { return __x.base() - __y.base(); }
 
