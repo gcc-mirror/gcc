@@ -1,3 +1,8 @@
+2016-08-23  Venkataramanan Kumar
+
+	* config/i386/i386.c (processor_alias_table): Enable PTA_PRFCHW
+	for targets amdfam10 and barcelona.
+
 2016-08-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*zero_extendsidi2): Add (*r,*k) alternative.
