@@ -1,5 +1,12 @@
 2016-08-23  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/27336
+	* tree-vrp.c (infer_value_range): Handle stmts that can throw
+	by looking for a non-EH edge.
+	(process_assert_insertions_for): Likewise.
+
+2016-08-23  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/77305
 	* statistics.c (statistics_counter_event): Robustify against
 	NULL current_pass.
