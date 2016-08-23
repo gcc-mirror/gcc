@@ -1486,23 +1486,14 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
       return false;
     }
 
-  /* Make sure there exists a single-predecessor exit bb:  */
-  if (!single_pred_p (single_exit (loop)->dest))
+  /* Make sure the exit is not abnormal.  */
+  edge e = single_exit (loop);
+  if (e->flags & EDGE_ABNORMAL)
     {
-      edge e = single_exit (loop);
-      if (!(e->flags & EDGE_ABNORMAL))
-	{
-	  split_loop_exit_edge (e);
-	  if (dump_enabled_p ())
-	    dump_printf (MSG_NOTE, "split exit edge.\n");
-	}
-      else
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: abnormal loop exit edge.\n");
-	  return false;
-	}
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: abnormal loop exit edge.\n");
+      return false;
     }
 
   *loop_cond = vect_get_loop_niters (loop, assumptions, number_of_iterations,
@@ -6759,6 +6750,16 @@ vect_transform_loop (loop_vec_info loop_vinfo)
       check_profitability = true;
     }
 
+  /* Make sure there exists a single-predecessor exit bb.  Do this before 
+     versioning.   */
+  edge e = single_exit (loop);
+  if (! single_pred_p (e->dest))
+    {
+      split_loop_exit_edge (e);
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "split exit edge\n");
+    }
+
   /* Version the loop first, if required, so the profitability check
      comes first.  */
 
@@ -6766,6 +6767,22 @@ vect_transform_loop (loop_vec_info loop_vinfo)
     {
       vect_loop_versioning (loop_vinfo, th, check_profitability);
       check_profitability = false;
+    }
+
+  /* Make sure there exists a single-predecessor exit bb also on the
+     scalar loop copy.  Do this after versioning but before peeling
+     so CFG structure is fine for both scalar and if-converted loop
+     to make slpeel_duplicate_current_defs_from_edges face matched
+     loop closed PHI nodes on the exit.  */
+  if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo))
+    {
+      e = single_exit (LOOP_VINFO_SCALAR_LOOP (loop_vinfo));
+      if (! single_pred_p (e->dest))
+	{
+	  split_loop_exit_edge (e);
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE, "split exit edge of scalar loop\n");
+	}
     }
 
   tree ni_name = vect_build_loop_niters (loop_vinfo);

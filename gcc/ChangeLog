@@ -1,3 +1,11 @@
+2016-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77286
+	* tree-vect-loop.c (vect_analyze_loop_form_1): Do not modify
+	the CFG here.
+	(vect_transform_loop): Split exit edges of loop and scalar
+	loop if required and at the appropriate time.
+
 2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* explow.c (get_dynamic_stack_size): Take known alignment of stack
