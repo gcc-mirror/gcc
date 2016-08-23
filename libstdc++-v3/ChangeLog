@@ -1,5 +1,10 @@
 2016-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/77334
+	* include/bits/stl_tree.h (_Rb_tree::_M_move_assign): New functions.
+	(_Rb_tree::operator=(_Rb_tree&&)): Dispatch to _M_move_assign.
+	* testsuite/23_containers/map/77334.cc: New test.
+
 	* doc/xml/manual/using.xml: Remove reference to -pthreads option.
 	* doc/html/*: Regenerate.
 

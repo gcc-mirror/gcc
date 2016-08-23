@@ -1264,6 +1264,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // which might result in a copy not a move.
       void
       _M_move_data(_Rb_tree&, std::false_type);
+
+      // Move assignment from container with equal allocator.
+      void
+      _M_move_assign(_Rb_tree&, std::true_type);
+
+      // Move assignment from container with possibly non-equal allocator,
+      // which might result in a copy not a move.
+      void
+      _M_move_assign(_Rb_tree&, std::false_type);
 #endif
     };
 
@@ -1379,24 +1388,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&
+    inline void
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    operator=(_Rb_tree&& __x)
-    noexcept(_Alloc_traits::_S_nothrow_move()
-	     && is_nothrow_move_assignable<_Compare>::value)
+    _M_move_assign(_Rb_tree& __x, true_type)
     {
-      _M_impl._M_key_compare = __x._M_impl._M_key_compare;
-      if (_Alloc_traits::_S_propagate_on_move_assign()
-	  || _Alloc_traits::_S_always_equal()
-	  || _M_get_Node_allocator() == __x._M_get_Node_allocator())
-	{
-	  clear();
-	  if (__x._M_root() != nullptr)
-	    _M_move_data(__x, std::true_type());
-	  std::__alloc_on_move(_M_get_Node_allocator(),
-			       __x._M_get_Node_allocator());
-	  return *this;
-	}
+      clear();
+      if (__x._M_root() != nullptr)
+	_M_move_data(__x, std::true_type());
+      std::__alloc_on_move(_M_get_Node_allocator(),
+			   __x._M_get_Node_allocator());
+    }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+           typename _Compare, typename _Alloc>
+    void
+    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+    _M_move_assign(_Rb_tree& __x, false_type)
+    {
+      if (_M_get_Node_allocator() == __x._M_get_Node_allocator())
+	return _M_move_assign(__x, true_type{});
 
       // Try to move each node reusing existing nodes and copying __x nodes
       // structure.
@@ -1416,6 +1426,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_impl._M_node_count = __x._M_impl._M_node_count;
 	  __x.clear();
 	}
+    }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+           typename _Compare, typename _Alloc>
+    inline _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&
+    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+    operator=(_Rb_tree&& __x)
+    noexcept(_Alloc_traits::_S_nothrow_move()
+	     && is_nothrow_move_assignable<_Compare>::value)
+    {
+      _M_impl._M_key_compare = __x._M_impl._M_key_compare;
+      constexpr bool __move_storage =
+	  _Alloc_traits::_S_propagate_on_move_assign()
+	  || _Alloc_traits::_S_always_equal();
+      _M_move_assign(__x, __bool_constant<__move_storage>());
       return *this;
     }
 
