@@ -16,4 +16,4 @@ bar ()
     foo (z);
 }
 
-/* { dg-final { scan-assembler-not "lrl" } } */
+/* { dg-final { scan-assembler-not "\tlrl" } } */

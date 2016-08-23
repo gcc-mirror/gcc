@@ -1,3 +1,8 @@
+2016-08-23  Ian Lance Taylor  <iant@golang.org>
+
+	* config/s390/s390.c (s390_asm_file_start): Call
+	default_file_start.
+
 2016-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Set
