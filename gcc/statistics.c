@@ -312,7 +312,8 @@ statistics_counter_event (struct function *fn, const char *id, int incr)
       || incr == 0)
     return;
 
-  if (current_pass->static_pass_number != -1)
+  if (current_pass
+      && current_pass->static_pass_number != -1)
     {
       counter = lookup_or_add_counter (curr_statistics_hash (), id, 0, false);
       gcc_assert (!counter->histogram_p);
@@ -325,8 +326,8 @@ statistics_counter_event (struct function *fn, const char *id, int incr)
 
   fprintf (statistics_dump_file,
 	   "%d %s \"%s\" \"%s\" %d\n",
-	   current_pass->static_pass_number,
-	   current_pass->name,
+	   current_pass ? current_pass->static_pass_number : -1,
+	   current_pass ? current_pass->name : "none",
 	   id,
 	   function_name (fn),
 	   incr);
