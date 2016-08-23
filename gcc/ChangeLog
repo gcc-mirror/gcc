@@ -1,5 +1,12 @@
 2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* explow.c (get_dynamic_stack_size): Take known alignment of stack
+	pointer + STACK_DYNAMIC_OFFSET into account when calculating the size
+	needed.
+	Correct a typo in a comment.
+
+2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("*andc_split"): New splitter for and with
 	complement.
 
