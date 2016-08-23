@@ -1,5 +1,9 @@
 2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* gcc.target/s390/insv-1.c: Fix test when running with -m31.
+
+2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* gcc.target/s390/zvector/vec-genmask-1.c: Improve result
 	verification.
 
