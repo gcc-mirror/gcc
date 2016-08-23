@@ -1,3 +1,10 @@
+2016-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h
+	(operator-(reverse_iterator<Iter>, reverse_iterator<Iter>): Constrain
+	for C++11 and later.
+	* testsuite/24_iterators/reverse_iterator/71771.cc: New test.
+
 2016-08-22  Release Manager
 
 	* GCC 6.2.0 released.
