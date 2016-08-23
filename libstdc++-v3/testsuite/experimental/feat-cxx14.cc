@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++14" }
-// { dg-do compile }
+// { dg-do preprocess { target c++14 } }
 
 #include <utility>
 #include <tuple>
