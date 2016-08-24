@@ -1,3 +1,10 @@
+2016-08-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/77358
+	* resolve.c (resolve_fl_procedure): Use the correct gfc_charlen
+	for deferred character length module procedures.
+
 2016-08-22  Release Manager
 
 	* GCC 6.2.0 released.
