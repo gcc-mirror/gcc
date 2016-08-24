@@ -1,7 +1,5 @@
-/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
-/* { dg-require-effective-target sse2 } */
-/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=athlon" } } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -msse2 -mfpmath=sse --param simultaneous-prefetches=100 -fdump-tree-aprefetch-details -fdump-tree-optimized" } */
+/* { dg-do compile { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-O2 -fprefetch-loop-arrays -march=amdfam10 --param simultaneous-prefetches=100 -fdump-tree-aprefetch-details -fdump-tree-optimized" } */
 
 #define K 1000000
 int a[K];
@@ -39,8 +37,3 @@ void test(int *p)
 /* { dg-final { scan-tree-dump-times "a nontemporal store" 0 "aprefetch" } } */
 
 /* { dg-final { scan-tree-dump-times "builtin_prefetch" 7 "optimized" } } */
-
-/* { dg-final { scan-assembler-times "prefetchw" 5 } } */
-/* { dg-final { scan-assembler-times "prefetcht" 1 } } */
-/* { dg-final { scan-assembler-times "prefetchnta" 1 } } */
-
