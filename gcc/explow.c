@@ -1224,15 +1224,9 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
      example), so we must preventively align the value.  We leave space
      in SIZE for the hole that might result from the alignment operation.  */
 
-  unsigned known_align = REGNO_POINTER_ALIGN (VIRTUAL_STACK_DYNAMIC_REGNUM);
-  if (known_align == 0)
-    known_align = BITS_PER_UNIT;
-  if (required_align > known_align)
-    {
-      extra = (required_align - known_align) / BITS_PER_UNIT;
-      size = plus_constant (Pmode, size, extra);
-      size = force_operand (size, NULL_RTX);
-    }
+  extra = (required_align - BITS_PER_UNIT) / BITS_PER_UNIT;
+  size = plus_constant (Pmode, size, extra);
+  size = force_operand (size, NULL_RTX);
 
   if (flag_stack_usage_info && pstack_usage_size)
     *pstack_usage_size += extra;
