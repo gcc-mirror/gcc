@@ -1,3 +1,7 @@
+2016-08-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Add vfp multilib.
+
 2016-08-23  Ian Lance Taylor  <iant@golang.org>
 
 	* config/s390/s390.c (s390_asm_file_start): Call
