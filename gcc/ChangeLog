@@ -1,3 +1,12 @@
+2016-08-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Revert
+	2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* explow.c (get_dynamic_stack_size): Take known alignment of stack
+	pointer + STACK_DYNAMIC_OFFSET into account when calculating the size
+	needed.
+
 2016-08-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* doc/fragments.texi (MULTILIB_REUSE): Mention that only options in
