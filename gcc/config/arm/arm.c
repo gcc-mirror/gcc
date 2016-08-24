@@ -22992,6 +22992,8 @@ maybe_get_arm_condition_code (rtx comparison)
 	{
 	case LTU: return ARM_CS;
 	case GEU: return ARM_CC;
+	case NE: return ARM_CS;
+	case EQ: return ARM_CC;
 	default: return ARM_NV;
 	}
 
@@ -23014,6 +23016,14 @@ maybe_get_arm_condition_code (rtx comparison)
 	case LT: return ARM_LT;
 	case GEU: return ARM_CS;
 	case LTU: return ARM_CC;
+	default: return ARM_NV;
+	}
+
+    case CC_Vmode:
+      switch (comp_code)
+	{
+	case NE: return ARM_VS;
+	case EQ: return ARM_VC;
 	default: return ARM_NV;
 	}
 
@@ -30573,6 +30583,25 @@ arm_can_output_mi_thunk (const_tree, HOST_WIDE_INT, HOST_WIDE_INT vcall_offset,
 
   /* Otherwise ok.  */
   return true;
+}
+
+/* Generate RTL for a conditional branch with rtx comparison CODE in
+   mode CC_MODE. The destination of the unlikely conditional branch
+   is LABEL_REF.  */
+
+void
+arm_gen_unlikely_cbranch (enum rtx_code code, machine_mode cc_mode,
+			  rtx label_ref)
+{
+  rtx x;
+  x = gen_rtx_fmt_ee (code, VOIDmode,
+		      gen_rtx_REG (cc_mode, CC_REGNUM),
+		      const0_rtx);
+
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+			    gen_rtx_LABEL_REF (VOIDmode, label_ref),
+			    pc_rtx);
+  emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
 }
 
 #include "gt-arm.h"

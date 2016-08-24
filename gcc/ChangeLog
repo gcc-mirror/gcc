@@ -1,3 +1,26 @@
+2016-08-24  Michael Collison <michael.collison@linaro.org>
+	    Michael Collison <michael.collison@arm.com>
+
+	* config/arm/arm-modes.def: Add new condition code mode CC_V
+	to represent the overflow bit.
+	* config/arm/arm.c (maybe_get_arm_condition_code):
+	Add support for CC_Vmode.
+	(arm_gen_unlikely_cbranch): New function to generate common
+	rtl conditional branches for overflow patterns.
+	* config/arm/arm-protos.h: Add prototype for
+	arm_gen_unlikely_cbranch.
+	* config/arm/arm.md (addv<mode>4, add<mode>3_compareV,
+	addsi3_compareV_upper): New patterns to support signed
+	builtin overflow add operations.
+	(uaddv<mode>4, add<mode>3_compareC, addsi3_compareV_upper):
+	New patterns to support unsigned builtin add overflow operations.
+	(subv<mode>4, sub<mode>3_compare1): New patterns to support signed
+	builtin overflow subtract operations,
+	(usubv<mode>4): New patterns to support unsigned builtin subtract
+	overflow operations.
+	(negvsi3, negvdi3, negdi2_compare, negsi2_carryin_compare): New patterns
+	to support builtin overflow negate operations.
+
 2016-08-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Revert
