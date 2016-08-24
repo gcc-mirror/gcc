@@ -1,3 +1,9 @@
+2016-08-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/77358
+	* resolve.c (resolve_fl_procedure): Use the correct gfc_charlen
+	for deferred character length module procedures.
+
 2016-08-23  Fritz Reese  <fritzoreese@gmail.com>
 
 	* decl.c (gfc_match_structure_decl): Make gfc_structure_id static.
