@@ -1,3 +1,15 @@
+2016-08-24  Michael Collison <michael.collison@linaro.org>
+	    Michael Collison <michael.collison@arm.com>
+
+	* gcc.target/arm/builtin_saddl.c: New testcase.
+	* gcc.target/arm/builtin_saddll.c: New testcase.
+	* gcc.target/arm/builtin_uaddl.c: New testcase.
+	* gcc.target/arm/builtin_uaddll.c: New testcase.
+	* gcc.target/arm/builtin_ssubl.c: New testcase.
+	* gcc.target/arm/builtin_ssubll.c: New testcase.
+	* gcc.target/arm/builtin_usubl.c: New testcase.
+	* gcc.target/arm/builtin_usubll.c: New testcase.
+
 2016-08-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77270
