@@ -11884,6 +11884,13 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       iface = sym->ts.interface;
       sym->ts.interface = NULL;
 
+      /* Make sure that the result uses the correct charlen for deferred
+	 length results.  */
+      if (iface && sym->result
+	  && iface->ts.type == BT_CHARACTER
+	  && iface->ts.deferred)
+	sym->result->ts.u.cl = iface->ts.u.cl;
+
       if (iface == NULL)
 	goto check_formal;
 
