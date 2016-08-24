@@ -1,3 +1,9 @@
+2016-08-24  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.c-torture/execute/pr71083.c: Use UINT32_TYPE instead
+	of unsigned int.
+	* gcc.dg/zero_sign_ext_test.c: Require int32plus.
+
 2016-08-24  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	PR testsuite/77317

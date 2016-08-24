@@ -1,5 +1,7 @@
+__extension__ typedef __UINT32_TYPE__ uint32_t;
+
 struct lock_chain {
-  unsigned int irq_context: 2,
+  uint32_t irq_context: 2,
     depth: 6,
     base: 24;
 };
