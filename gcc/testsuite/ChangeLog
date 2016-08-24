@@ -1,3 +1,12 @@
+2016-08-24  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/76490
+	* gfortran.fortran-torture/compile/pr76490.f90: New testcase.
+	* gcc.dg/pr52904.c: XFAIL.
+
 2016-08-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

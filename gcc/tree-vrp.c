@@ -767,8 +767,20 @@ update_value_range (const_tree var, value_range *new_vr)
 	{
 	  value_range nr;
 	  nr.type = rtype;
-	  nr.min = wide_int_to_tree (TREE_TYPE (var), min);
-	  nr.max = wide_int_to_tree (TREE_TYPE (var), max);
+	  /* Range info on SSA names doesn't carry overflow information
+	     so make sure to preserve the overflow bit on the lattice.  */
+	  if (new_vr->type == VR_RANGE
+	      && is_negative_overflow_infinity (new_vr->min)
+	      && wi::eq_p (new_vr->min, min))
+	    nr.min = new_vr->min;
+	  else
+	    nr.min = wide_int_to_tree (TREE_TYPE (var), min);
+	  if (new_vr->type == VR_RANGE
+	      && is_positive_overflow_infinity (new_vr->max)
+	      && wi::eq_p (new_vr->max, max))
+	    nr.max = new_vr->max;
+	  else
+	    nr.max = wide_int_to_tree (TREE_TYPE (var), max);
 	  nr.equiv = NULL;
 	  vrp_intersect_ranges (new_vr, &nr);
 	}
@@ -1128,7 +1140,10 @@ operand_less_p (tree val, tree val2)
 {
   /* LT is folded faster than GE and others.  Inline the common case.  */
   if (TREE_CODE (val) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
-    return tree_int_cst_lt (val, val2);
+    {
+      if (! is_positive_overflow_infinity (val2))
+	return tree_int_cst_lt (val, val2);
+    }
   else
     {
       tree tcmp;
@@ -1464,7 +1479,7 @@ static tree
 value_range_constant_singleton (value_range *vr)
 {
   if (vr->type == VR_RANGE
-      && operand_equal_p (vr->min, vr->max, 0)
+      && vrp_operand_equal_p (vr->min, vr->max)
       && is_gimple_min_invariant (vr->min))
     return vr->min;
 
@@ -6994,8 +7009,7 @@ vrp_valueize (tree name)
     {
       value_range *vr = get_value_range (name);
       if (vr->type == VR_RANGE
-	  && (vr->min == vr->max
-	      || operand_equal_p (vr->min, vr->max, 0)))
+	  && vrp_operand_equal_p (vr->min, vr->max))
 	return vr->min;
     }
   return name;
@@ -7961,8 +7975,8 @@ union_ranges (enum value_range_type *vr0type,
 	      enum value_range_type vr1type,
 	      tree vr1min, tree vr1max)
 {
-  bool mineq = operand_equal_p (*vr0min, vr1min, 0);
-  bool maxeq = operand_equal_p (*vr0max, vr1max, 0);
+  bool mineq = vrp_operand_equal_p (*vr0min, vr1min);
+  bool maxeq = vrp_operand_equal_p (*vr0max, vr1max);
 
   /* [] is vr0, () is vr1 in the following classification comments.  */
   if (mineq && maxeq)
@@ -8232,8 +8246,8 @@ intersect_ranges (enum value_range_type *vr0type,
 		  enum value_range_type vr1type,
 		  tree vr1min, tree vr1max)
 {
-  bool mineq = operand_equal_p (*vr0min, vr1min, 0);
-  bool maxeq = operand_equal_p (*vr0max, vr1max, 0);
+  bool mineq = vrp_operand_equal_p (*vr0min, vr1min);
+  bool maxeq = vrp_operand_equal_p (*vr0max, vr1max);
 
   /* [] is vr0, () is vr1 in the following classification comments.  */
   if (mineq && maxeq)
