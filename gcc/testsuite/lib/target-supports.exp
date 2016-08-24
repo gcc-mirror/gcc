@@ -5309,32 +5309,22 @@ proc check_effective_target_vect_hw_misalign { } {
 
 # Return 1 if arrays are aligned to the vector alignment
 # boundary, 0 otherwise.
-#
-# This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_aligned_arrays { } {
-    global et_vect_aligned_arrays_saved
-    global et_index
-
-    if [info exists et_vect_aligned_arrays_saved($et_index)] {
-	verbose "check_effective_target_vect_aligned_arrays:\
-		 using cached result" 2
-    } else {
-	set et_vect_aligned_arrays_saved($et_index) 0
-        if { ([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
-	    if { ([is-effective-target lp64]
-	          && ( ![check_avx_available]
-		     || [check_prefer_avx128])) } {
-		 set et_vect_aligned_arrays_saved($et_index) 1
-	    }
-	}
-        if [istarget spu-*-*] {
-	    set et_vect_aligned_arrays_saved($et_index) 1
+    set et_vect_aligned_arrays 0
+    if { ([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	if { ([is-effective-target lp64]
+	      && ( ![check_avx_available]
+		 || [check_prefer_avx128])) } {
+	     set et_vect_aligned_arrays 1
 	}
     }
+    if [istarget spu-*-*] {
+	set et_vect_aligned_arrays 1
+    }
     verbose "check_effective_target_vect_aligned_arrays:\
-	     returning $et_vect_aligned_arrays_saved($et_index)" 2
-    return $et_vect_aligned_arrays_saved($et_index)
+	     returning $et_vect_aligned_arrays" 2
+    return $et_vect_aligned_arrays
 }
 
 # Return 1 if types of size 32 bit or less are naturally aligned
@@ -5382,74 +5372,43 @@ proc check_effective_target_natural_alignment_64 { } {
 
 # Return 1 if all vector types are naturally aligned (aligned to their
 # type-size), 0 otherwise.
-#
-# This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_natural_alignment { } {
-    global et_vect_natural_alignment_saved
-    global et_index
-
-    if [info exists et_vect_natural_alignment_saved($et_index)] {
-        verbose "check_effective_target_vect_natural_alignment: using cached result" 2
-    } else {
-	set et_vect_natural_alignment_saved($et_index) 1
-        if { [check_effective_target_arm_eabi]
-	     || [istarget nvptx-*-*]
-	     || [istarget s390*-*-*] } {
-	    set et_vect_natural_alignment_saved($et_index) 0
-        }
+    set et_vect_natural_alignment 1
+    if { [check_effective_target_arm_eabi]
+	 || [istarget nvptx-*-*]
+	 || [istarget s390*-*-*] } {
+	set et_vect_natural_alignment 0
     }
     verbose "check_effective_target_vect_natural_alignment:\
-	     returning $et_vect_natural_alignment_saved($et_index)" 2
-    return $et_vect_natural_alignment_saved($et_index)
+	     returning $et_vect_natural_alignment" 2
+    return $et_vect_natural_alignment
 }
 
 # Return 1 if vector alignment (for types of size 32 bit or less) is reachable, 0 otherwise.
-#
-# This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vector_alignment_reachable { } {
-    global et_vector_alignment_reachable_saved
-    global et_index
-
-    if [info exists et_vector_alignment_reachable_saved($et_index)] {
-	verbose "check_effective_target_vector_alignment_reachable:\
-		 using cached result" 2
-    } else {
-        if { [check_effective_target_vect_aligned_arrays]
-             || [check_effective_target_natural_alignment_32] } {
-	    set et_vector_alignment_reachable_saved($et_index) 1
-        } else {
-	    set et_vector_alignment_reachable_saved($et_index) 0
-        }
+    set et_vector_alignment_reachable 0
+    if { [check_effective_target_vect_aligned_arrays]
+	 || [check_effective_target_natural_alignment_32] } {
+	set et_vector_alignment_reachable 1
     }
     verbose "check_effective_target_vector_alignment_reachable:\
-	     returning $et_vector_alignment_reachable_saved($et_index)" 2
-    return $et_vector_alignment_reachable_saved($et_index)
+	     returning $et_vector_alignment_reachable" 2
+    return $et_vector_alignment_reachable
 }
 
 # Return 1 if vector alignment for 64 bit is reachable, 0 otherwise.
-#
-# This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vector_alignment_reachable_for_64bit { } {
-    global et_vector_alignment_reachable_for_64bit_saved
-    global et_index
-
-    if [info exists et_vector_alignment_reachable_for_64bit_saved($et_index)] {
-	verbose "check_effective_target_vector_alignment_reachable_for_64bit:\
-		 using cached result" 2
-    } else {
-        if { [check_effective_target_vect_aligned_arrays] 
-             || [check_effective_target_natural_alignment_64] } {
-	    set et_vector_alignment_reachable_for_64bit_saved($et_index) 1
-        } else {
-	    set et_vector_alignment_reachable_for_64bit_saved($et_index) 0
-        }
+    set et_vector_alignment_reachable_for_64bit 0
+    if { [check_effective_target_vect_aligned_arrays] 
+	 || [check_effective_target_natural_alignment_64] } {
+	set et_vector_alignment_reachable_for_64bit 1
     }
     verbose "check_effective_target_vector_alignment_reachable_for_64bit:\
-	 returning $et_vector_alignment_reachable_for_64bit_saved($et_index)" 2
-    return $et_vector_alignment_reachable_for_64bit_saved($et_index)
+	     returning $et_vector_alignment_reachable_for_64bit" 2
+    return $et_vector_alignment_reachable_for_64bit
 }
 
 # Return 1 if the target only requires element alignment for vector accesses

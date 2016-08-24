@@ -1,3 +1,12 @@
+2016-08-24  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	PR testsuite/77317
+	* lib/target-supports.exp
+	(check_effective_target_vect_aligned_arrays): Don't cache the result.
+	(check_effective_target_vect_natural_alignment): Ditto.
+	(check_effective_target_vector_alignment_reachable): Ditto.
+	(check_effective_target_vector_alignment_reachable_for_64bit): Ditto.
+
 2016-08-23  Ian Lance Taylor  <iant@golang.org>
 
 	* gcc.target/s390/nolrl-1.c: Don't match the file name.
