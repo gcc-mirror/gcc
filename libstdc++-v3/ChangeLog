@@ -1,3 +1,8 @@
+2016-08-24  Aditya Kumar  <hiraditya@msn.com>
+
+	* include/bits/algorithmfwd.h: Remove trailing whitespace.
+	* include/bits/shared_ptr_base.h: Likewise.
+
 2016-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/debug/array (array): Add _GLIBCXX17_CONSTEXPR.
