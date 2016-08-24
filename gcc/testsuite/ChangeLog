@@ -1,3 +1,18 @@
+2016-08-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77270
+	* gcc.dg/tree-ssa/loop-28.c: Also compile on 32bit x86 targets.
+	(dg-options): Use -march=amdfam10 instead of -march=athlon.
+	* gcc.dg/tree-ssa/update-unroll-1.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-3.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-4.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-5.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-6.c: Ditto.  Do not require sse2
+	effective target.  Remove scan-assembler-times directives.
+	* gcc.dg/tree-ssa/prefetch-7.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-8.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-9.c: Ditto.
+
 2016-08-24  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.c-torture/execute/pr71083.c: Use UINT32_TYPE instead
