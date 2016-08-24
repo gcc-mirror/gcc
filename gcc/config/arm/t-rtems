@@ -1,7 +1,7 @@
 # Custom RTEMS multilibs for ARM
 
-MULTILIB_OPTIONS  = mbig-endian mthumb march=armv6-m/march=armv7-a/march=armv7-r/march=armv7-m/mcpu=cortex-m7 mfpu=neon/mfpu=vfpv3-d16/mfpu=fpv4-sp-d16/mfpu=fpv5-d16 mfloat-abi=hard
-MULTILIB_DIRNAMES = eb thumb armv6-m armv7-a armv7-r armv7-m cortex-m7 neon vfpv3-d16 fpv4-sp-d16 fpv5-d16 hard
+MULTILIB_OPTIONS  = mbig-endian mthumb march=armv6-m/march=armv7-a/march=armv7-r/march=armv7-m/mcpu=cortex-m7 mfpu=neon/mfpu=vfp/mfpu=vfpv3-d16/mfpu=fpv4-sp-d16/mfpu=fpv5-d16 mfloat-abi=hard
+MULTILIB_DIRNAMES = eb thumb armv6-m armv7-a armv7-r armv7-m cortex-m7 neon vfp vfpv3-d16 fpv4-sp-d16 fpv5-d16 hard
 
 # Enumeration of multilibs
 
@@ -10,6 +10,7 @@ MULTILIB_EXCEPTIONS =
 MULTILIB_REQUIRED =
 MULTILIB_REQUIRED += mbig-endian/mthumb/march=armv7-r/mfpu=vfpv3-d16/mfloat-abi=hard
 MULTILIB_REQUIRED += mbig-endian/mthumb/march=armv7-r
+MULTILIB_REQUIRED += mfpu=vfp/mfloat-abi=hard
 MULTILIB_REQUIRED += mthumb/march=armv6-m
 MULTILIB_REQUIRED += mthumb/march=armv7-a/mfpu=neon/mfloat-abi=hard
 MULTILIB_REQUIRED += mthumb/march=armv7-a
