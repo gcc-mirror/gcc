@@ -1,3 +1,11 @@
+2016-08-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/t-aprofile (MULTILIB_MATCHES): Add mapping for
+	-mcpu=cortex-a7, -mfpu=neon-fp16, -mfpu=fpv5-d16 and -mfpu=fp-armv8.
+	Fix typo in -mfpu=vfpv3-d16-fp16 mapping.
+	(MULTILIB_REUSE): Remove reuse rules for option set including
+	-mfpu=fp-armv8 and -mfpu=vfpv4
+
 2016-08-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/t-rtems: Add vfp multilib.
