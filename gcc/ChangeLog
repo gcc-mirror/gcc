@@ -1,5 +1,14 @@
 2016-08-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* doc/fragments.texi (MULTILIB_REUSE): Mention that only options in
+	MULTILIB_OPTIONS should be used.  Small wording fixes.
+	* genmultilib: Memorize set of all option combinations in
+	combination_space.  Detect if RHS of MULTILIB_REUSE uses an option not
+	found in MULTILIB_OPTIONS by checking if option set is listed in
+	combination_space.  Output new and existing error message to stderr.
+
+2016-08-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/t-aprofile (MULTILIB_MATCHES): Add mapping for
 	-mcpu=cortex-a7, -mfpu=neon-fp16, -mfpu=fpv5-d16 and -mfpu=fp-armv8.
 	Fix typo in -mfpu=vfpv3-d16-fp16 mapping.
