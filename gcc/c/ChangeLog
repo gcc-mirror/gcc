@@ -1,3 +1,11 @@
+2016-08-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/77323
+	* c-decl.c (declspecs_add_type): Set typespec_word even when __intN
+	or _FloatN or _FloatNx is not supported.
+	(finish_declspecs): Set type to integer_type_node when _FloatN or
+	_FloatNx is not supported.
+
 2016-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/32187

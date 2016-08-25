@@ -10190,10 +10190,13 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			  ("both %<__int%d%> and %<short%> in "
 			   "declaration specifiers"),
 			  int_n_data[specs->int_n_idx].bitsize);
-	      else if (! int_n_enabled_p [specs->int_n_idx])
-		error_at (loc,
-			  "%<__int%d%> is not supported on this target",
-			  int_n_data[specs->int_n_idx].bitsize);
+	      else if (! int_n_enabled_p[specs->int_n_idx])
+		{
+		  specs->typespec_word = cts_int_n;
+		  error_at (loc,
+			    "%<__int%d%> is not supported on this target",
+			    int_n_data[specs->int_n_idx].bitsize);
+		}
 	      else
 		{
 		  specs->typespec_word = cts_int_n;
@@ -10400,12 +10403,15 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 			   ? "x"
 			   : ""));
 	      else if (FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx) == NULL_TREE)
-		error_at (loc,
-			  "%<_Float%d%s%> is not supported on this target",
-			  floatn_nx_types[specs->floatn_nx_idx].n,
-			  (floatn_nx_types[specs->floatn_nx_idx].extended
-			   ? "x"
-			   : ""));
+		{
+		  specs->typespec_word = cts_floatn_nx;
+		  error_at (loc,
+			    "%<_Float%d%s%> is not supported on this target",
+			    floatn_nx_types[specs->floatn_nx_idx].n,
+			    (floatn_nx_types[specs->floatn_nx_idx].extended
+			     ? "x"
+			     : ""));
+		}
 	      else
 		{
 		  specs->typespec_word = cts_floatn_nx;
@@ -10892,9 +10898,12 @@ finish_declspecs (struct c_declspecs *specs)
     case cts_floatn_nx:
       gcc_assert (!specs->long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p);
-      specs->type = (specs->complex_p
-		     ? COMPLEX_FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx)
-		     : FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx));
+      if (FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx) == NULL_TREE)
+	specs->type = integer_type_node;
+      else if (specs->complex_p)
+	specs->type = COMPLEX_FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx);
+      else
+	specs->type = FLOATN_NX_TYPE_NODE (specs->floatn_nx_idx);
       break;
     case cts_dfloat32:
     case cts_dfloat64:
