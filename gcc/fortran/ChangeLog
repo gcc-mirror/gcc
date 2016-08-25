@@ -1,3 +1,9 @@
+2016-08-25  Steven g. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77351
+	* frontend-passes.c (remove_trim,combine_array_constructor): Check for
+	NULL pointer.
+
 2016-08-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77358
