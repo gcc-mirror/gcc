@@ -24410,7 +24410,8 @@ gen_remaining_tmpl_value_param_die_attribute (void)
 	  if (!tree_add_const_value_attribute (e->die, e->arg))
 	    {
 	      dw_loc_descr_ref loc = NULL;
-	      if (dwarf_version >= 5 || !dwarf_strict)
+	      if (! early_dwarf
+		  && (dwarf_version >= 5 || !dwarf_strict))
 		loc = loc_descriptor_from_tree (e->arg, 2, NULL);
 	      if (loc)
 		add_AT_loc (e->die, DW_AT_location, loc);
@@ -24436,10 +24437,6 @@ gen_scheduled_generic_parms_dies (void)
   if (!generic_type_instances)
     return;
   
-  /* We end up "recursing" into schedule_generic_params_dies_gen, so
-     pretend this generation is part of "early dwarf" as well.  */
-  set_early_dwarf s;
-
   FOR_EACH_VEC_ELT (*generic_type_instances, i, t)
     if (COMPLETE_TYPE_P (t))
       gen_generic_params_dies (t);
@@ -28137,6 +28134,8 @@ dwarf2out_finish (const char *filename)
 static void
 dwarf2out_early_finish (void)
 {
+  set_early_dwarf s;
+
   /* Walk through the list of incomplete types again, trying once more to
      emit full debugging info for them.  */
   retry_incomplete_types ();

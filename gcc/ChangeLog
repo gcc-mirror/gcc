@@ -1,3 +1,10 @@
+2016-08-25  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (gen_remaining_tmpl_value_param_die_attributes):
+	Only add locations in late dwarf.
+	(gen_scheduled_generic_parms_dies): Do not set early dwarf here.
+	(dwarf2out_early_finish): But do it here.
+
 2016-08-24  Michael Collison <michael.collison@linaro.org>
 	    Michael Collison <michael.collison@arm.com>
 
