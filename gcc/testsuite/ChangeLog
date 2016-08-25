@@ -1,3 +1,11 @@
+2016-08-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-08-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/72863
+	* gcc.target/powerpc/pr72863.c: New test.
+
 2016-08-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
