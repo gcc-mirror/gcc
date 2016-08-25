@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
 #include <signal.h>
-#include <asm/unistd.h>
+#include <sys/syscall.h>
 
 /* The third parameter to the signal handler points to something with
  * this structure defined in asm/ucontext.h, but the name clashes with
