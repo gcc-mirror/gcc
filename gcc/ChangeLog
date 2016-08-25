@@ -1,3 +1,8 @@
+2016-08-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/mips/linux.h (MUSL_DYNAMIC_LINKER32): Update.
+	(MUSL_DYNAMIC_LINKER64, MUSL_DYNAMIC_LINKERN32): Update.
+
 2016-08-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* multiple_target.c (pass_data_dispatcher_calls): Fix typo.
