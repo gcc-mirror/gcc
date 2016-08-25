@@ -716,13 +716,27 @@
   [(set (match_operand:VSX_M 0 "vsx_register_operand" "")
 	(match_operand:VSX_M 1 "memory_operand" ""))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "")
+{
+  /* Expand to swaps if needed, prior to swap optimization.  */
+  if (!BYTES_BIG_ENDIAN)
+    {
+      rs6000_emit_le_vsx_move (operands[0], operands[1], <MODE>mode);
+      DONE;
+    }
+})
 
 (define_expand "vsx_store_<mode>"
   [(set (match_operand:VSX_M 0 "memory_operand" "")
 	(match_operand:VSX_M 1 "vsx_register_operand" ""))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "")
+{
+  /* Expand to swaps if needed, prior to swap optimization.  */
+  if (!BYTES_BIG_ENDIAN)
+    {
+      rs6000_emit_le_vsx_move (operands[0], operands[1], <MODE>mode);
+      DONE;
+    }
+})
 
 
 ;; VSX vector floating point arithmetic instructions.  The VSX scalar
