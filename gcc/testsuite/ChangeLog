@@ -1,5 +1,9 @@
 2016-08-25  Marek Polacek  <polacek@redhat.com>
 
+	* c-c++-common/Wlogical-not-parentheses-2.c: New test.
+
+2016-08-25  Marek Polacek  <polacek@redhat.com>
+
 	PR c/77323
 	* gcc.dg/pr77323.c: New test.
 

@@ -1,3 +1,9 @@
+2016-08-25  Marek Polacek  <polacek@redhat.com>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (warn_logical_not_parentheses): Print fixit hints.
+	* c-common.h (warn_logical_not_parentheses): Update declaration.
+
 2016-08-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/77321

@@ -8922,7 +8922,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	      || TREE_TYPE (current.lhs) == NULL_TREE
 	      || TREE_CODE (TREE_TYPE (current.lhs)) != BOOLEAN_TYPE))
 	warn_logical_not_parentheses (current.loc, current.tree_type,
-				      maybe_constant_value (rhs));
+				      current.lhs, maybe_constant_value (rhs));
 
       overload = NULL;
 

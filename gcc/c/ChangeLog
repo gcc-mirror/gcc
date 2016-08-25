@@ -1,5 +1,10 @@
 2016-08-25  Marek Polacek  <polacek@redhat.com>
 
+	* c-typeck.c (parser_build_binary_op): Pass LHS to
+	warn_logical_not_parentheses.
+
+2016-08-25  Marek Polacek  <polacek@redhat.com>
+
 	PR c/77323
 	* c-decl.c (declspecs_add_type): Set typespec_word even when __intN
 	or _FloatN or _FloatNx is not supported.
