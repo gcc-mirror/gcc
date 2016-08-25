@@ -1485,7 +1485,7 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
 
 void
 warn_logical_not_parentheses (location_t location, enum tree_code code,
-			      tree rhs)
+			      tree lhs, tree rhs)
 {
   if (TREE_CODE_CLASS (code) != tcc_comparison
       || TREE_TYPE (rhs) == NULL_TREE
@@ -1498,9 +1498,21 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
       && integer_zerop (rhs))
     return;
 
-  warning_at (location, OPT_Wlogical_not_parentheses,
-	      "logical not is only applied to the left hand side of "
-	      "comparison");
+  if (warning_at (location, OPT_Wlogical_not_parentheses,
+		  "logical not is only applied to the left hand side of "
+		  "comparison")
+      && EXPR_HAS_LOCATION (lhs))
+    {
+      location_t lhs_loc = EXPR_LOCATION (lhs);
+      rich_location richloc (line_table, lhs_loc);
+      richloc.add_fixit_insert (lhs_loc, "(");
+      location_t finish = get_finish (lhs_loc);
+      location_t next_loc
+	= linemap_position_for_loc_and_offset (line_table, finish, 1);
+      richloc.add_fixit_insert (next_loc, ")");
+      inform_at_rich_loc (&richloc, "add parentheses around left hand side "
+			  "expression to silence this warning");
+    }
 }
 
 /* Warn if EXP contains any computations whose results are not used.

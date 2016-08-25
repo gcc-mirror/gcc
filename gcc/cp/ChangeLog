@@ -1,3 +1,8 @@
+2016-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (cp_parser_binary_expression): Pass LHS to
+	warn_logical_not_parentheses.
+
 2016-08-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
