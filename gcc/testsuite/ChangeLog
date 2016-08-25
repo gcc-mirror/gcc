@@ -1,3 +1,11 @@
+2016-08-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2016-07-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/71700
+	* gcc.c-torture/execute/pr71700.c: New test.
+
 2016-08-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
