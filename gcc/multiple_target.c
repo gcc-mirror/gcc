@@ -412,7 +412,7 @@ namespace {
 const pass_data pass_data_dispatcher_calls =
 {
   SIMPLE_IPA_PASS,		/* type */
-  "dispachercalls",		/* name */
+  "dispatchercalls",		/* name */
   OPTGROUP_NONE,		/* optinfo_flags */
   TV_NONE,			/* tv_id */
   ( PROP_ssa | PROP_cfg ),	/* properties_required */
