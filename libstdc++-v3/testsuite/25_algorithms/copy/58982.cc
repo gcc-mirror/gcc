@@ -17,8 +17,7 @@
 
 // 25.3.1 copy
 
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 #include <algorithm>
 

@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11 -Wno-pedantic" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wno-pedantic" }
 
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //

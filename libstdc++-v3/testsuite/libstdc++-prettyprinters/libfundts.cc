@@ -1,5 +1,5 @@
-// { dg-do run }
-// { dg-options "-g -O0 -std=gnu++14" }
+// { dg-do run { target c++14 } }
+// { dg-options "-g -O0" }
 
 // Copyright (C) 2014-2016 Free Software Foundation, Inc.
 //

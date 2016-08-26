@@ -1,7 +1,6 @@
 // On some simulators, the workload is simply too large with values big
 // enough for the test to pass the quality test, so just skip it altogether.
-// { dg-do run { target { ! simulator } } }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target { c++11 && { ! simulator } } } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //

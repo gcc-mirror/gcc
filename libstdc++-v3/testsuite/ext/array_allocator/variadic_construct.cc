@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++11 -Wno-deprecated" }
+// { dg-do run { target c++11 } }
+// { dg-options "-Wno-deprecated" }
 
 // 2007-10-27  Paolo Carlini  <pcarlini@suse.de>
 

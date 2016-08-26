@@ -1,6 +1,7 @@
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
-// { dg-options "-std=gnu++11 -O2 -g0 -fno-exceptions -fno-asynchronous-unwind-tables" }
+// { dg-options "-O2 -g0 -fno-exceptions -fno-asynchronous-unwind-tables" }
 // { dg-additional-options "-march=i486" { target ia32 } }
+// { dg-require-effective-target c++11 }
 // { dg-skip-if "scans fail with LTO" { lto } { "-flto" } }
 // { dg-final { scan-assembler-times "xacquire\|\.byte\[^\n\r]*0xf2" 14 } }
 // { dg-final { scan-assembler-times "xrelease\|\.byte\[^\n\r]*0xf3" 14 } }

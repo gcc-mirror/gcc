@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11 -fno-rtti" }
-// { dg-do compile }
+// { dg-options "-fno-rtti" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2014-2016 Free Software Foundation, Inc.
 //

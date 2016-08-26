@@ -1,5 +1,5 @@
 // { dg-require-iconv "ISO-8859-1" }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //

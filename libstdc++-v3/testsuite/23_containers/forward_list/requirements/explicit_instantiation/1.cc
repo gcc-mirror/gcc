@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2008-2016 Free Software Foundation, Inc.
 //
@@ -22,6 +21,6 @@
 
 #include <forward_list>
 
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 template class std::forward_list<int>;

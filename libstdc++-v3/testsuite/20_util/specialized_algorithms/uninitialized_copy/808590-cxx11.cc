@@ -15,9 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// This is identical to ./808590.cc but using -std=gnu++11
+// This is identical to ./808590.cc but for C++11 and later.
 // See https://gcc.gnu.org/ml/libstdc++/2014-05/msg00027.html
 
 #include <vector>

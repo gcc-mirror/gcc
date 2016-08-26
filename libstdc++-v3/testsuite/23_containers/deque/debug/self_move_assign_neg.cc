@@ -16,8 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // { dg-require-debug-mode "" }
-// { dg-options "-std=gnu++11" }
-// { dg-do run { xfail *-*-* } }
+// { dg-do run { target c++11 xfail *-*-* } }
 
 #include <deque>
 

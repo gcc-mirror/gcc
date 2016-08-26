@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // This is a copy of vector/types/1.cc with altered allocator.
 // The operator+()s in this test initially failed the test -

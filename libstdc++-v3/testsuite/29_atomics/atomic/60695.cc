@@ -1,6 +1,6 @@
 // { dg-require-atomic-builtins "" }
-// { dg-options "-std=gnu++11 -Wno-pedantic" }
-// { dg-do compile }
+// { dg-options "-Wno-pedantic" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2014-2016 Free Software Foundation, Inc.
 //

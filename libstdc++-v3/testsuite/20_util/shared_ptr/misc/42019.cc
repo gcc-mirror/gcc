@@ -1,4 +1,6 @@
-// { dg-options "-std=gnu++11 -fno-rtti" }
+// { dg-options "-fno-rtti" }
+// { dg-do run { target c++11 } }
+
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free

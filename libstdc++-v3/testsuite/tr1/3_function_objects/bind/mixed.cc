@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2011-11-20 Jonathan Wakely <jwakely.gcc -at- gmail.com>
 //
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.

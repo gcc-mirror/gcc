@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++11" }
 
 // 2011-01-13  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -21,7 +20,7 @@
 
 // 25.2.12 [alg.is_permutation] Is permutation
 
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 #include <algorithm>
 #include <testsuite_iterators.h>

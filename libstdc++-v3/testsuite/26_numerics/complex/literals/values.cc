@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++14 -Wno-pedantic" }
-// { dg-do run }
+// { dg-options "-Wno-pedantic" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //

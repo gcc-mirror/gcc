@@ -17,8 +17,7 @@
 
 // 25.2.11 [alg.equal]
 
-// { dg-do compile }
-// { dg-options " -std=gnu++14 " }
+// { dg-do compile { target c++14 } }
 
 #include <algorithm>
 #include <testsuite_iterators.h>

@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do link }
-// { dg-options "-std=gnu++11 -static" { target *-*-*gnu* } }
+// { dg-do link { target c++11 } }
+// { dg-options "-static" { target *-*-*gnu* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-effective-target static }

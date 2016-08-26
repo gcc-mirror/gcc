@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++11 -fno-inline" }
+// { dg-options "-fno-inline" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.

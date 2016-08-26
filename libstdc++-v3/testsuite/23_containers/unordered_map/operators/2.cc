@@ -20,7 +20,7 @@
 // This test verifies that the value type of a unordered_map need not be
 // default copyable.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <unordered_map>
 #include <testsuite_hooks.h>

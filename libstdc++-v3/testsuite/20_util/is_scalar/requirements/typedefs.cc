@@ -22,8 +22,7 @@
 
 #include <type_traits>
 
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 void test01()
 {

@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++11 -lstdc++fs" }
+// { dg-options "-lstdc++fs" }
+// { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
 // Copyright (C) 2014-2016 Free Software Foundation, Inc.

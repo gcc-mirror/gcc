@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2008-09-16  Chris Fairles  <chris.fairles@gmail.com>
 

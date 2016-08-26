@@ -20,7 +20,6 @@
 
 #include <experimental/string_view>
 
-// { dg-do compile }
-// { dg-options "-std=gnu++14" }
+// { dg-do compile { target c++14 } }
 
 template class std::experimental::basic_string_view<int, std::char_traits<int>>;

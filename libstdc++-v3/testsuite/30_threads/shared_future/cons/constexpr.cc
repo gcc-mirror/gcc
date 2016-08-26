@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11 -fno-inline -g0" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fno-inline -g0" }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }

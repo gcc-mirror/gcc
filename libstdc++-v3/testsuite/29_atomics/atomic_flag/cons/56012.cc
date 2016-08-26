@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11 -Wsystem-headers -Wnarrowing" }
-// { dg-do compile }
+// { dg-options "-Wsystem-headers -Wnarrowing" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //

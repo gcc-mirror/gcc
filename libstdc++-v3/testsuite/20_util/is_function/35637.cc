@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11 -pedantic-errors" }
-// { dg-do compile }
+// { dg-options "-pedantic-errors" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //

@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11 -fno-trapping-math" }
-// { dg-do compile }
+// { dg-options "-fno-trapping-math" }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //

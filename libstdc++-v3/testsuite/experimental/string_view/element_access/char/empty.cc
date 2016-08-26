@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 3 Free Software Foundation, Inc.
 //
