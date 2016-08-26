@@ -1,3 +1,8 @@
+2016-08-26  Nathan Sidwell  <nathan@acm.org>
+
+	* ipa-inline-analysis.c (inline_write_summary): Remove unnecessary
+	assignment inside if condition.
+
 2016-08-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69047
