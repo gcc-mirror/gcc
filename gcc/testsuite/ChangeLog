@@ -1,3 +1,8 @@
+2016-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69047
+	* gcc.dg/pr69047.c: New testcase.
+
 2016-08-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Martin Jambhor  <mjambor@suse.cz>
 	

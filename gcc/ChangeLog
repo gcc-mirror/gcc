@@ -1,3 +1,10 @@
+2016-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69047
+	* tree-ssa.c (maybe_rewrite_mem_ref_base): Handle general bitfield
+	extracts similar to what FRE does.
+	(non_rewritable_mem_ref_base): Likewise.
+
 2016-08-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386.c (ix86_libgcc_floating_mode_supported_p)
