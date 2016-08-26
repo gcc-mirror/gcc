@@ -277,3 +277,15 @@ proc gdb_version_check_xmethods {} {
 	      "python import gdb.xmethod; print(gdb.xmethod.XMethod)" \
 	      "<class 'gdb\\.xmethod\\.XMethod'>"]
 }
+
+# Like dg-runtest but keep the .exe around.  dg-test has an option for
+# this but there is no way to pass it through dg-runtest.
+proc gdb-dg-runtest {args} {
+  global dg-interpreter-batch-mode
+  set saved-dg-interpreter-batch-mode ${dg-interpreter-batch-mode}
+  set dg-interpreter-batch-mode 1
+
+  eval dg-runtest $args
+
+  set dg-interpreter-batch-mode ${saved-dg-interpreter-batch-mode}
+}
