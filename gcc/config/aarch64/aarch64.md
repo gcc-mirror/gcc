@@ -687,6 +687,13 @@
        && (GET_CODE (XEXP (operands[0], 0)) != SYMBOL_REF))
      XEXP (operands[0], 0) = force_reg (Pmode, XEXP (operands[0], 0));
 
+    /* This is a band-aid.  An SImode symbol reference is sometimes generated
+       by expand_expr_addr_expr.  See PR 64971.  */
+    if (TARGET_ILP32
+	&& GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF
+	&& GET_MODE (XEXP (operands[0], 0)) == SImode)
+      XEXP (operands[0], 0) = convert_memory_address (Pmode,
+						      XEXP (operands[0], 0));
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
 
@@ -716,6 +723,14 @@
     if (!REG_P (XEXP (operands[1], 0))
        && (GET_CODE (XEXP (operands[1], 0)) != SYMBOL_REF))
      XEXP (operands[1], 0) = force_reg (Pmode, XEXP (operands[1], 0));
+
+    /* This is a band-aid.  An SImode symbol reference is sometimes generated
+       by expand_expr_addr_expr.  See PR 64971.  */
+    if (TARGET_ILP32
+	&& GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
+	&& GET_MODE (XEXP (operands[1], 0)) == SImode)
+      XEXP (operands[1], 0) = convert_memory_address (Pmode,
+						      XEXP (operands[1], 0));
 
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;
