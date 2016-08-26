@@ -41,14 +41,9 @@ if {! [gdb_version_check]} {
     return
 }
 
-# This can be used to keep the .exe around.  dg-test has an option for
-# this but there is no way to pass it through dg-runtest.
-global dg-interpreter-batch-mode
-set dg-interpreter-batch-mode 1
-
 global DEFAULT_CXXFLAGS
 global PCH_CXXFLAGS
-dg-runtest [lsort [glob $srcdir/$subdir/*.cc]] \
+gdb-dg-runtest [lsort [glob $srcdir/$subdir/*.cc]] \
   "" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
 
 if [info exists guality_gdb_name] {

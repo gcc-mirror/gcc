@@ -1,4 +1,13 @@
 2016-08-26  Jonathan Wakely  <jwakely@redhat.com>
+	    Pedro Alves  <palves@redhat.com>
+
+	* testsuite/lib/gdb-test.exp (gdb-dg-runtest): Define wrapper to save
+	and restore dg-interpreter-batch-mode.
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: Use
+	gdb-dg-runtest instead of dg-runtest.
+	* testsuite/libstdc++-xmethods/xmethods.exp: Likewise.
+
+2016-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4, GLIBCXX_3.4.21): Use more
 	precise patterns for basic_string constructors.
