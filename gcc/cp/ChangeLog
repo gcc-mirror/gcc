@@ -1,5 +1,12 @@
 2016-08-15  Jason Merrill  <jason@redhat.com>
 
+	Avoid calling a trivial default constructor.
+	* class.c (default_ctor_p): New.
+	(in_class_defaulted_default_constructor): Use it.
+	(type_has_non_user_provided_default_constructor): Use it.
+	* call.c (build_over_call): Handle trivial default constructor.
+	* cp-tree.h: Declare default_ctor_p.
+
 	PR c++/57728
 	* pt.c (do_type_instantiation): Don't mess with non-user-provided
 	member functions.
