@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 //
 // 2014-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
 //

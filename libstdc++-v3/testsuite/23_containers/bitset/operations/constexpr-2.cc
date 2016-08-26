@@ -1,6 +1,5 @@
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 // { dg-require-normal-mode "" }
-// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //

@@ -20,8 +20,7 @@
 #include <testsuite_hooks.h>
 #include <map>
 
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // libstdc++/56613
 

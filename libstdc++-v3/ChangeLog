@@ -1,4 +1,9 @@
 2016-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/*: Use { target c++11 } or { target c++14 } instead of
+	using -std in dg-options.
+
+2016-08-26  Jonathan Wakely  <jwakely@redhat.com>
 	    Pedro Alves  <palves@redhat.com>
 
 	* testsuite/lib/gdb-test.exp (gdb-dg-runtest): Define wrapper to save

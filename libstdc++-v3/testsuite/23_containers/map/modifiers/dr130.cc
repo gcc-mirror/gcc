@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2008-07-22  Edward Smith-Rowland  <3dw4rd@verizon.net>
 //
 // Copyright (C) 2009-2016 Free Software Foundation, Inc.

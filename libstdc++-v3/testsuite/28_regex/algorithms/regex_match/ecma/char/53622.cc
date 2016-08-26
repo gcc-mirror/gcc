@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-07-23  Tim Shen <timshen91@gmail.com>

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 //
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
@@ -19,8 +19,6 @@
 
 #include <memory>
 #include <testsuite_allocator.h>
-
-// { dg-do compile }
 
 template<typename T>
 struct ptr

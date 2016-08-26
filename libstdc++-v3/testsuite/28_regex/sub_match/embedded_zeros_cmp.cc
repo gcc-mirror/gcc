@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2014-11-13  Daniel Kruegler <daniel.kruegler@gmail.com>

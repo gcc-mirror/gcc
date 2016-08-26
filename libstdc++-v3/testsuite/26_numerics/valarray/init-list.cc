@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <valarray>
 #include <testsuite_hooks.h>

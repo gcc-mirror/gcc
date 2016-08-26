@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-add-options ieee }
 
 // 2010-02-25  Ed Smith-Rowland

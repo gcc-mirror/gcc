@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11 -fno-inline -g0" }
+// { dg-options "-fno-inline -g0" }
+// { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler-not "_ZNSt8weak_ptrIiEC2Ev" } }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.

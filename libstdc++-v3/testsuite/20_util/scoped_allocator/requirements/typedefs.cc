@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 //
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
@@ -21,8 +21,6 @@
 // NB: This file is for testing scoped_allocator with NO OTHER INCLUDES.
 
 #include <scoped_allocator>
-
-// { dg-do compile }
 
 template<typename T>
   struct minimal_allocator

@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //

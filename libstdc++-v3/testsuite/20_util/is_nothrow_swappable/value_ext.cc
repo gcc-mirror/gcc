@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
+// { dg-skip-if "skip if __STRICT_ANSI__ defined" { *-*-* } { "-std=c++??" } }
 
 // Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //

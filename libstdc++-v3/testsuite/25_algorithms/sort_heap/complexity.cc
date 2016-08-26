@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-cmath "" }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <cmath>
 #include <random>

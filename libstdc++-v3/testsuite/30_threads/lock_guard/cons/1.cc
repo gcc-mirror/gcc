@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options " -std=gnu++11 " }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.

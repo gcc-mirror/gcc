@@ -1,6 +1,5 @@
-// { dg-options "-std=gnu++11" }
 // { dg-require-debug-mode "" }
-// { dg-do run { xfail *-*-* } }
+// { dg-do run { target c++11 xfail *-*-* } }
 
 // Copyright (C) 2012-2016 Free Software Foundation, Inc.
 //

@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-cstdint "" }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <locale>
 #include <iterator>

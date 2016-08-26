@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++11 -Wno-deprecated" }
+// { dg-options "-Wno-deprecated" }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
 //

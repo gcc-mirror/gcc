@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // 2007-05-02  Benjamin Kosnik  <bkoz@redhat.com>
 //
@@ -32,4 +31,4 @@ void test01()
   typedef enable_if<false, int>::type     test2_type;
 }
 
-// { dg-error "does not name a type" "" { target *-*-* } 32 } 
+// { dg-error "does not name a type" "" { target *-*-* } 31 }

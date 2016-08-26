@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11 -funsigned-char -fshort-enums" }
-// { dg-do compile }
+// { dg-options "-funsigned-char -fshort-enums" }
+// { dg-do compile { target c++11 } }
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //

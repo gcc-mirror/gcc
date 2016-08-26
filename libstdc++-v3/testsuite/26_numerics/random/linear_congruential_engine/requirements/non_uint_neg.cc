@@ -18,8 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 26.4.3.1 class template linear_congruential_engine [rand.eng.lcong]

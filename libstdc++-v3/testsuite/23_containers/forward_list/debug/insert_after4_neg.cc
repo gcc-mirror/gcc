@@ -16,8 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 //
 // { dg-require-debug-mode "" }
-// { dg-options "-std=gnu++11 -D_GLIBCXX_DEBUG_PEDANTIC" }
-// { dg-do run { xfail *-*-* } }
+// { dg-options "-D_GLIBCXX_DEBUG_PEDANTIC" }
+// { dg-do run { target c++11 xfail *-*-* } }
 
 #include <forward_list>
 #include <iterator>

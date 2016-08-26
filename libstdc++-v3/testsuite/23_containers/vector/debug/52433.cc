@@ -16,8 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // { dg-require-debug-mode "" }
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // PR libstdc++/52433
 

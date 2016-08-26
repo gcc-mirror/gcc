@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 // { dg-require-effective-target tls_runtime }
 // { dg-add-options tls }
 

@@ -1,7 +1,7 @@
 // If you modify this, please update simple.cc and debug.cc as well.
 
-// { dg-do run }
-// { dg-options "-g -O0 -std=gnu++11" }
+// { dg-do run { target c++11 } }
+// { dg-options "-g -O0" }
 
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //

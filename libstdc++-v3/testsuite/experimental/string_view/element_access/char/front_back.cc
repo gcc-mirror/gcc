@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 // { dg-require-string-conversions "" }
 
 // Copyright (C) 2013-2016 Free Software Foundation, Inc.

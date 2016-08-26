@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++14 -fno-rtti" }
-// { dg-do run }
+// { dg-options "-fno-rtti" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2014-2016 Free Software Foundation, Inc.
 //

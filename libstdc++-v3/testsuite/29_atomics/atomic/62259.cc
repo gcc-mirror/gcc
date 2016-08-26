@@ -17,8 +17,7 @@
 
 // { dg-require-atomic-builtins "" }
 // { dg-require-cstdint "" }
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 #include <atomic>
 #include <cstdint>

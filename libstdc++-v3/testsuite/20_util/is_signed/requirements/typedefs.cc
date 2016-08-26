@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // 2005-01-24  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.
@@ -23,7 +23,6 @@
 
 #include <type_traits>
 
-// { dg-do compile }
 
 void test01()
 {

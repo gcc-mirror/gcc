@@ -1,7 +1,6 @@
 // NB: This issue affected only debug-mode.
 
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //

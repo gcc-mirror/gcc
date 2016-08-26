@@ -17,7 +17,7 @@
 
 // 28.6 [re.badexp]
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <regex>
 

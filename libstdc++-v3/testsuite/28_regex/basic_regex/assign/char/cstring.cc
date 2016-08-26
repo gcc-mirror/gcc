@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do run { target c++11 } }
 
 // 2009-06-05  Stephen M. Webb  <stephen.webb@bregmasoft.ca>
 //

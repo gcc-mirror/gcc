@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 //
 // 2009-06-17  Stephen M. Webb  <stephen.webb@xandros.com>
 //

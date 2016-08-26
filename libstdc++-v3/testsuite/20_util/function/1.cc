@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
 // Copyright (C) 2005-2016 Free Software Foundation, Inc.

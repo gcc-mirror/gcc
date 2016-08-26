@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // 21.4.6.5 basic_string::pop_back
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <string>
 #include <testsuite_hooks.h>
