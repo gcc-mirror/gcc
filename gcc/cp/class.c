@@ -5186,8 +5186,7 @@ in_class_defaulted_default_constructor (tree t)
 }
 
 /* Returns true iff FN is a user-provided function, i.e. user-declared
-   and not defaulted at its first declaration; or explicit, private,
-   protected, or non-const.  */
+   and not defaulted at its first declaration.  */
 
 bool
 user_provided_p (tree fn)
