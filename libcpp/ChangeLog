@@ -1,3 +1,27 @@
+2016-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location): Eliminate unimplemented
+	constructor based on source_range.
+	(rich_location::get_last_fixit_hint): New method.
+	(rich_location::reject_impossible_fixit): New method.
+	(rich_location): Add fields m_line_table and
+	m_seen_impossible_fixit.
+	(fixit_hint::maybe_append_replace): New pure virtual function.
+	(fixit_insert::maybe_append_replace): New function.
+	(fixit_replace::maybe_append_replace): New function.
+	* line-map.c (rich_location::rich_location): Initialize
+	m_line_table and m_seen_impossible_fixit.
+	(rich_location::add_fixit_insert): Call
+	reject_impossible_fixit and bail out if true.
+	(column_before_p): New function.
+	(rich_location::add_fixit_replace): Call reject_impossible_fixit
+	and bail out if true.  Attempt to consolidate with neighboring
+	fixits.
+	(rich_location::get_last_fixit_hint): New method.
+	(rich_location::reject_impossible_fixit): New method.
+	(fixit_insert::maybe_append_replace): New method.
+	(fixit_replace::maybe_append_replace): New method.
+
 2016-08-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (source_range::from_locations): New method.
