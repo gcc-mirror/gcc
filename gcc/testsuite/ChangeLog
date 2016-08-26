@@ -1,3 +1,10 @@
+2016-08-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Martin Jambhor  <mjambor@suse.cz>
+	
+	* gcc.dg/ipa/propbits-1.c: New test-case.
+	* gcc.dg/ipa/propbits-2.c: Likewise.
+	* gcc.dg/ipa/propbits-3.c: Likewise.
+
 2016-08-25  Steven g. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77351

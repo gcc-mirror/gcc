@@ -105,7 +105,7 @@ ipa_get_param_decl_index_1 (vec<ipa_param_descriptor> descriptors, tree ptree)
 
   count = descriptors.length ();
   for (i = 0; i < count; i++)
-    if (descriptors[i].decl == ptree)
+    if (descriptors[i].decl_or_type == ptree)
       return i;
 
   return -1;
@@ -138,7 +138,7 @@ ipa_populate_param_decls (struct cgraph_node *node,
   param_num = 0;
   for (parm = fnargs; parm; parm = DECL_CHAIN (parm))
     {
-      descriptors[param_num].decl = parm;
+      descriptors[param_num].decl_or_type = parm;
       descriptors[param_num].move_cost = estimate_move_cost (TREE_TYPE (parm),
 							     true);
       param_num++;
@@ -168,10 +168,10 @@ void
 ipa_dump_param (FILE *file, struct ipa_node_params *info, int i)
 {
   fprintf (file, "param #%i", i);
-  if (info->descriptors[i].decl)
+  if (info->descriptors[i].decl_or_type)
     {
       fprintf (file, " ");
-      print_generic_expr (file, info->descriptors[i].decl, 0);
+      print_generic_expr (file, info->descriptors[i].decl_or_type, 0);
     }
 }
 
@@ -302,6 +302,15 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	}
       else
 	fprintf (f, "         Unknown alignment\n");
+
+      if (jump_func->bits.known)
+	{
+	  fprintf (f, "         value: "); print_hex (jump_func->bits.value, f);
+	  fprintf (f, ", mask: "); print_hex (jump_func->bits.mask, f);
+	  fprintf (f, "\n");
+	}
+      else
+	fprintf (f, "         Unknown bits\n");
     }
 }
 
@@ -381,6 +390,7 @@ ipa_set_jf_unknown (struct ipa_jump_func *jfunc)
 {
   jfunc->type = IPA_JF_UNKNOWN;
   jfunc->alignment.known = false;
+  jfunc->bits.known = false;
 }
 
 /* Set JFUNC to be a copy of another jmp (to be used by jump function
@@ -1673,6 +1683,26 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	}
       else
 	gcc_assert (!jfunc->alignment.known);
+
+      if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
+	  && (TREE_CODE (arg) == SSA_NAME || TREE_CODE (arg) == INTEGER_CST))
+	{
+	  jfunc->bits.known = true;
+	  
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    {
+	      jfunc->bits.value = 0;
+	      jfunc->bits.mask = widest_int::from (get_nonzero_bits (arg),
+						   TYPE_SIGN (TREE_TYPE (arg)));
+	    }
+	  else
+	    {
+	      jfunc->bits.value = wi::to_widest (arg);
+	      jfunc->bits.mask = 0;
+	    }
+	}
+      else
+	gcc_assert (!jfunc->bits.known);
 
       if (is_gimple_ip_invariant (arg)
 	  || (TREE_CODE (arg) == VAR_DECL
@@ -3690,6 +3720,18 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
       for (unsigned i = 0; i < src_alignments->length (); ++i)
 	dst_alignments->quick_push ((*src_alignments)[i]);
     }
+
+  if (src_trans && vec_safe_length (src_trans->bits) > 0)
+    {
+      ipcp_grow_transformations_if_necessary ();
+      src_trans = ipcp_get_transformation_summary (src);
+      const vec<ipa_bits, va_gc> *src_bits = src_trans->bits;
+      vec<ipa_bits, va_gc> *&dst_bits
+	= ipcp_get_transformation_summary (dst)->bits;
+      vec_safe_reserve_exact (dst_bits, src_bits->length ());
+      for (unsigned i = 0; i < src_bits->length (); ++i)
+	dst_bits->quick_push ((*src_bits)[i]);
+    }
 }
 
 /* Register our cgraph hooks if they are not already there.  */
@@ -4609,6 +4651,15 @@ ipa_write_jump_function (struct output_block *ob,
       streamer_write_uhwi (ob, jump_func->alignment.align);
       streamer_write_uhwi (ob, jump_func->alignment.misalign);
     }
+
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, jump_func->bits.known, 1);
+  streamer_write_bitpack (&bp);
+  if (jump_func->bits.known)
+    {
+      streamer_write_widest_int (ob, jump_func->bits.value);
+      streamer_write_widest_int (ob, jump_func->bits.mask);
+    }   
 }
 
 /* Read in jump function JUMP_FUNC from IB.  */
@@ -4685,6 +4736,17 @@ ipa_read_jump_function (struct lto_input_block *ib,
     }
   else
     jump_func->alignment.known = false;
+
+  bp = streamer_read_bitpack (ib);
+  bool bits_known = bp_unpack_value (&bp, 1);
+  if (bits_known)
+    {
+      jump_func->bits.known = true;
+      jump_func->bits.value = streamer_read_widest_int (ib);
+      jump_func->bits.mask = streamer_read_widest_int (ib);
+    }
+  else
+    jump_func->bits.known = false;
 }
 
 /* Stream out parts of cgraph_indirect_call_info corresponding to CS that are
@@ -5050,6 +5112,28 @@ write_ipcp_transformation_info (output_block *ob, cgraph_node *node)
     }
   else
     streamer_write_uhwi (ob, 0);
+
+  ts = ipcp_get_transformation_summary (node);
+  if (ts && vec_safe_length (ts->bits) > 0)
+    {
+      count = ts->bits->length ();
+      streamer_write_uhwi (ob, count);
+
+      for (unsigned i = 0; i < count; ++i)
+	{
+	  const ipa_bits& bits_jfunc = (*ts->bits)[i];
+	  struct bitpack_d bp = bitpack_create (ob->main_stream);
+	  bp_pack_value (&bp, bits_jfunc.known, 1);
+	  streamer_write_bitpack (&bp);
+	  if (bits_jfunc.known)
+	    {
+	      streamer_write_widest_int (ob, bits_jfunc.value);
+	      streamer_write_widest_int (ob, bits_jfunc.mask);
+	    }
+	}
+    }
+  else
+    streamer_write_uhwi (ob, 0);
 }
 
 /* Stream in the aggregate value replacement chain for NODE from IB.  */
@@ -5099,6 +5183,26 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
 	      parm_al->misalign
 		= streamer_read_hwi_in_range (ib, "ipa-prop misalign",
 					      0, parm_al->align);
+	    }
+	}
+    }
+
+  count = streamer_read_uhwi (ib);
+  if (count > 0)
+    {
+      ipcp_grow_transformations_if_necessary ();
+      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      vec_safe_grow_cleared (ts->bits, count);
+
+      for (i = 0; i < count; i++)
+	{
+	  ipa_bits& bits_jfunc = (*ts->bits)[i];
+	  struct bitpack_d bp = streamer_read_bitpack (ib);
+	  bits_jfunc.known = bp_unpack_value (&bp, 1);
+	  if (bits_jfunc.known)
+	    {
+	      bits_jfunc.value = streamer_read_widest_int (ib);
+	      bits_jfunc.mask = streamer_read_widest_int (ib);
 	    }
 	}
     }
@@ -5404,6 +5508,56 @@ ipcp_update_alignments (struct cgraph_node *node)
     }
 }
 
+/* Update bits info of formal parameters as described in
+   ipcp_transformation_summary.  */
+
+static void
+ipcp_update_bits (struct cgraph_node *node)
+{
+  tree parm = DECL_ARGUMENTS (node->decl);
+  tree next_parm = parm;
+  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+
+  if (!ts || vec_safe_length (ts->bits) == 0)
+    return;
+
+  vec<ipa_bits, va_gc> &bits = *ts->bits;
+  unsigned count = bits.length ();
+
+  for (unsigned i = 0; i < count; ++i, parm = next_parm)
+    {
+      if (node->clone.combined_args_to_skip
+	  && bitmap_bit_p (node->clone.combined_args_to_skip, i))
+	continue;
+
+      gcc_checking_assert (parm);
+      next_parm = DECL_CHAIN (parm);
+
+      if (!bits[i].known
+	  || !INTEGRAL_TYPE_P (TREE_TYPE (parm))
+	  || !is_gimple_reg (parm))
+	continue;       
+
+      tree ddef = ssa_default_def (DECL_STRUCT_FUNCTION (node->decl), parm);
+      if (!ddef)
+	continue;
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Adjusting mask for param %u to ", i); 
+	  print_hex (bits[i].mask, dump_file);
+	  fprintf (dump_file, "\n");
+	}
+
+      unsigned prec = TYPE_PRECISION (TREE_TYPE (ddef));
+      signop sgn = TYPE_SIGN (TREE_TYPE (ddef));
+
+      wide_int nonzero_bits = wide_int::from (bits[i].mask, prec, UNSIGNED)
+			      | wide_int::from (bits[i].value, prec, sgn);
+      set_nonzero_bits (ddef, nonzero_bits);
+    }
+}
+
 /* IPCP transformation phase doing propagation of aggregate values.  */
 
 unsigned int
@@ -5423,6 +5577,7 @@ ipcp_transform_function (struct cgraph_node *node)
 	     node->name (), node->order);
 
   ipcp_update_alignments (node);
+  ipcp_update_bits (node);
   aggval = ipa_get_agg_replacements_for_node (node);
   if (!aggval)
       return 0;

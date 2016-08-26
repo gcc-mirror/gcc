@@ -142,7 +142,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "stor-layout.h"
 #include "optabs-query.h"
-
+#include "tree-ssa-ccp.h"
 
 /* Possible lattice values.  */
 typedef enum
@@ -536,9 +536,9 @@ set_lattice_value (tree var, ccp_prop_value_t *new_val)
 
 static ccp_prop_value_t get_value_for_expr (tree, bool);
 static ccp_prop_value_t bit_value_binop (enum tree_code, tree, tree, tree);
-static void bit_value_binop_1 (enum tree_code, tree, widest_int *, widest_int *,
-			       tree, const widest_int &, const widest_int &,
-			       tree, const widest_int &, const widest_int &);
+void bit_value_binop (enum tree_code, signop, int, widest_int *, widest_int *,
+		      signop, int, const widest_int &, const widest_int &,
+		      signop, int, const widest_int &, const widest_int &);
 
 /* Return a widest_int that can be used for bitwise simplifications
    from VAL.  */
@@ -894,7 +894,7 @@ do_dbg_cnt (void)
    Return TRUE when something was optimized.  */
 
 static bool
-ccp_finalize (bool nonzero_p)
+ccp_finalize (bool nonzero_p) 
 {
   bool something_changed;
   unsigned i;
@@ -920,7 +920,8 @@ ccp_finalize (bool nonzero_p)
 
       val = get_value (name);
       if (val->lattice_val != CONSTANT
-	  || TREE_CODE (val->value) != INTEGER_CST)
+	  || TREE_CODE (val->value) != INTEGER_CST
+	  || val->mask == 0)
 	continue;
 
       if (POINTER_TYPE_P (TREE_TYPE (name)))
@@ -1224,10 +1225,11 @@ ccp_fold (gimple *stmt)
    RVAL and RMASK representing a value of type RTYPE and set
    the value, mask pair *VAL and *MASK to the result.  */
 
-static void
-bit_value_unop_1 (enum tree_code code, tree type,
-		  widest_int *val, widest_int *mask,
-		  tree rtype, const widest_int &rval, const widest_int &rmask)
+void
+bit_value_unop (enum tree_code code, signop type_sgn, int type_precision, 
+		widest_int *val, widest_int *mask,
+		signop rtype_sgn, int rtype_precision,
+		const widest_int &rval, const widest_int &rmask)
 {
   switch (code)
     {
@@ -1240,25 +1242,23 @@ bit_value_unop_1 (enum tree_code code, tree type,
       {
 	widest_int temv, temm;
 	/* Return ~rval + 1.  */
-	bit_value_unop_1 (BIT_NOT_EXPR, type, &temv, &temm, type, rval, rmask);
-	bit_value_binop_1 (PLUS_EXPR, type, val, mask,
-			   type, temv, temm, type, 1, 0);
+	bit_value_unop (BIT_NOT_EXPR, type_sgn, type_precision, &temv, &temm,
+			type_sgn, type_precision, rval, rmask);
+	bit_value_binop (PLUS_EXPR, type_sgn, type_precision, val, mask,
+			 type_sgn, type_precision, temv, temm,
+			 type_sgn, type_precision, 1, 0);
 	break;
       }
 
     CASE_CONVERT:
       {
-	signop sgn;
-
 	/* First extend mask and value according to the original type.  */
-	sgn = TYPE_SIGN (rtype);
-	*mask = wi::ext (rmask, TYPE_PRECISION (rtype), sgn);
-	*val = wi::ext (rval, TYPE_PRECISION (rtype), sgn);
+	*mask = wi::ext (rmask, rtype_precision, rtype_sgn);
+	*val = wi::ext (rval, rtype_precision, rtype_sgn);
 
 	/* Then extend mask and value according to the target type.  */
-	sgn = TYPE_SIGN (type);
-	*mask = wi::ext (*mask, TYPE_PRECISION (type), sgn);
-	*val = wi::ext (*val, TYPE_PRECISION (type), sgn);
+	*mask = wi::ext (*mask, type_precision, type_sgn);
+	*val = wi::ext (*val, type_precision, type_sgn);
 	break;
       }
 
@@ -1272,15 +1272,14 @@ bit_value_unop_1 (enum tree_code code, tree type,
    R1VAL, R1MASK and R2VAL, R2MASK representing a values of type R1TYPE
    and R2TYPE and set the value, mask pair *VAL and *MASK to the result.  */
 
-static void
-bit_value_binop_1 (enum tree_code code, tree type,
-		   widest_int *val, widest_int *mask,
-		   tree r1type, const widest_int &r1val,
-		   const widest_int &r1mask, tree r2type,
-		   const widest_int &r2val, const widest_int &r2mask)
+void
+bit_value_binop (enum tree_code code, signop sgn, int width, 
+		 widest_int *val, widest_int *mask,
+		 signop r1type_sgn, int r1type_precision,
+		 const widest_int &r1val, const widest_int &r1mask,
+		 signop r2type_sgn, int r2type_precision,
+		 const widest_int &r2val, const widest_int &r2mask)
 {
-  signop sgn = TYPE_SIGN (type);
-  int width = TYPE_PRECISION (type);
   bool swap_p = false;
 
   /* Assume we'll get a constant result.  Use an initial non varying
@@ -1406,11 +1405,11 @@ bit_value_binop_1 (enum tree_code code, tree type,
     case MINUS_EXPR:
       {
 	widest_int temv, temm;
-	bit_value_unop_1 (NEGATE_EXPR, r2type, &temv, &temm,
-			  r2type, r2val, r2mask);
-	bit_value_binop_1 (PLUS_EXPR, type, val, mask,
-			   r1type, r1val, r1mask,
-			   r2type, temv, temm);
+	bit_value_unop (NEGATE_EXPR, r2type_sgn, r2type_precision, &temv, &temm,
+			  r2type_sgn, r2type_precision, r2val, r2mask);
+	bit_value_binop (PLUS_EXPR, sgn, width, val, mask,
+			 r1type_sgn, r1type_precision, r1val, r1mask,
+			 r2type_sgn, r2type_precision, temv, temm);
 	break;
       }
 
@@ -1472,7 +1471,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	  break;
 
 	/* For comparisons the signedness is in the comparison operands.  */
-	sgn = TYPE_SIGN (r1type);
+	sgn = r1type_sgn;
 
 	/* If we know the most significant bits we know the values
 	   value ranges by means of treating varying bits as zero
@@ -1525,8 +1524,9 @@ bit_value_unop (enum tree_code code, tree type, tree rhs)
   gcc_assert ((rval.lattice_val == CONSTANT
 	       && TREE_CODE (rval.value) == INTEGER_CST)
 	      || wi::sext (rval.mask, TYPE_PRECISION (TREE_TYPE (rhs))) == -1);
-  bit_value_unop_1 (code, type, &value, &mask,
-		    TREE_TYPE (rhs), value_to_wide_int (rval), rval.mask);
+  bit_value_unop (code, TYPE_SIGN (type), TYPE_PRECISION (type), &value, &mask,
+		  TYPE_SIGN (TREE_TYPE (rhs)), TYPE_PRECISION (TREE_TYPE (rhs)),
+		  value_to_wide_int (rval), rval.mask);
   if (wi::sext (mask, TYPE_PRECISION (type)) != -1)
     {
       val.lattice_val = CONSTANT;
@@ -1571,9 +1571,12 @@ bit_value_binop (enum tree_code code, tree type, tree rhs1, tree rhs2)
 	       && TREE_CODE (r2val.value) == INTEGER_CST)
 	      || wi::sext (r2val.mask,
 			   TYPE_PRECISION (TREE_TYPE (rhs2))) == -1);
-  bit_value_binop_1 (code, type, &value, &mask,
-		     TREE_TYPE (rhs1), value_to_wide_int (r1val), r1val.mask,
-		     TREE_TYPE (rhs2), value_to_wide_int (r2val), r2val.mask);
+  bit_value_binop (code, TYPE_SIGN (type), TYPE_PRECISION (type), &value, &mask,
+		   TYPE_SIGN (TREE_TYPE (rhs1)), TYPE_PRECISION (TREE_TYPE (rhs1)),
+		   value_to_wide_int (r1val), r1val.mask,
+		   TYPE_SIGN (TREE_TYPE (rhs2)), TYPE_PRECISION (TREE_TYPE (rhs2)),
+		   value_to_wide_int (r2val), r2val.mask);
+
   if (wi::sext (mask, TYPE_PRECISION (type)) != -1)
     {
       val.lattice_val = CONSTANT;
@@ -1672,9 +1675,10 @@ bit_value_assume_aligned (gimple *stmt, tree attr, ccp_prop_value_t ptrval,
 
   align = build_int_cst_type (type, -aligni);
   alignval = get_value_for_expr (align, true);
-  bit_value_binop_1 (BIT_AND_EXPR, type, &value, &mask,
-		     type, value_to_wide_int (ptrval), ptrval.mask,
-		     type, value_to_wide_int (alignval), alignval.mask);
+  bit_value_binop (BIT_AND_EXPR, TYPE_SIGN (type), TYPE_PRECISION (type), &value, &mask,
+		   TYPE_SIGN (type), TYPE_PRECISION (type), value_to_wide_int (ptrval), ptrval.mask,
+		   TYPE_SIGN (type), TYPE_PRECISION (type), value_to_wide_int (alignval), alignval.mask);
+
   if (wi::sext (mask, TYPE_PRECISION (type)) != -1)
     {
       val.lattice_val = CONSTANT;
@@ -2409,7 +2413,7 @@ do_ssa_ccp (bool nonzero_p)
 
   ccp_initialize ();
   ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
-  if (ccp_finalize (nonzero_p))
+  if (ccp_finalize (nonzero_p || flag_ipa_bit_cp))
     {
       todo = (TODO_cleanup_cfg | TODO_update_ssa);
 

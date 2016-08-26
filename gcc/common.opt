@@ -1561,6 +1561,10 @@ fipa-cp-alignment
 Common Report Var(flag_ipa_cp_alignment) Optimization
 Perform alignment discovery and propagation to make Interprocedural constant propagation stronger.
 
+fipa-bit-cp
+Common Report Var(flag_ipa_bit_cp) Optimization
+Perform interprocedural bitwise constant propagation.
+
 fipa-profile
 Common Report Var(flag_ipa_profile) Init(0) Optimization
 Perform interprocedural profile propagation.
