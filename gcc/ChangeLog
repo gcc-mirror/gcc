@@ -1,3 +1,10 @@
+2016-08-26  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_expand_prologue): Update
+	current_function_static_stack_size variable with the static
+	stack frame size of the current function when
+	flag_stack_usage_info is enabled.
+
 2016-08-26  Nathan Sidwell  <nathan@acm.org>
 
 	* ipa-inline-analysis.c (inline_write_summary): Remove unnecessary

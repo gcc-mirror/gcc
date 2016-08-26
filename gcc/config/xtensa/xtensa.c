@@ -2678,6 +2678,9 @@ xtensa_expand_prologue (void)
 
   total_size = compute_frame_size (get_frame_size ());
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = total_size;
+
   if (TARGET_WINDOWED_ABI)
     {
       if (total_size < (1 << (12+3)))
