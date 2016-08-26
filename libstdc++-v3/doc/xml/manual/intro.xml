@@ -1058,6 +1058,13 @@ requirements of the license of GCC.
     <listitem><para>Divide by the object type.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2583">2583</link>:
+       <emphasis>There is no way to supply an allocator for <code> basic_string(str, pos)</code>
+       </emphasis>
+    </term>
+    <listitem><para>Add new constructor
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2684">2684</link>:
        <emphasis><code>priority_queue</code> lacking comparator typedef
        </emphasis>

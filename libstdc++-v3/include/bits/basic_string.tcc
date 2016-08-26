@@ -621,6 +621,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
+    basic_string(const basic_string& __str, size_type __pos, const _Alloc& __a)
+    : _M_dataplus(_S_construct(__str._M_data()
+			       + __str._M_check(__pos,
+						"basic_string::basic_string"),
+			       __str._M_data() + __str._M_limit(__pos, npos)
+			       + __pos, __a), __a)
+    { }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const basic_string& __str, size_type __pos, size_type __n)
     : _M_dataplus(_S_construct(__str._M_data()
 			       + __str._M_check(__pos,

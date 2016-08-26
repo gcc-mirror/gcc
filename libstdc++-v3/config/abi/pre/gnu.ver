@@ -206,7 +206,14 @@ GLIBCXX_3.4 {
     # std::string
     # 'y' here and below represents 'unsigned long long'
     # where it is used for size_type on LLP64 platforms.
-    _ZNSsC[12][EI][PRjmvyN]*;
+    _ZNSsC[12]EPKc*;
+    _ZNSsC[12]ERKSaIcE;
+    _ZNSsC[12]ERKSs;
+#   _ZNSsC[12]ERKSs[jmy]RKSaIcE;
+    _ZNSsC[12]ERKSs[jmy][jmy]*;
+    _ZNSsC[12]E[jmy]cRKSaIcE;
+    _ZNSsC[12]Ev;
+    _ZNSsC[12]I[PN]*;
     _ZNSsD*;
     _ZNSs[0-58-9]a*;
     _ZNSs5beginEv;
@@ -267,7 +274,13 @@ GLIBCXX_3.4 {
     _ZNKSs4copyEPc[jmy][jmy];
 
     # std::wstring
-    _ZNSbIwSt11char_traitsIwESaIwEEC[12][EI][PRjmvyN]*;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]EPKw*;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS[12]_;
+#   _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_mRKS1_;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_[jmy][jmy]*;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]E[jmy]wRKS1_;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]Ev;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]I[PN]*;
     _ZNSbIwSt11char_traitsIwESaIwEED*;
     _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9]a*;
     _ZNSbIwSt11char_traitsIwESaIwEE5beginEv;
@@ -1683,7 +1696,17 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_M*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[3-9]*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[2-9]*;
-    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[CDaip]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EPK*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS[34]_;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS4_RKS3_;
+#   _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS4_[jmy]RKS3_;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS4_[jmy][jmy]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt16*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[jmy][cw]RKS3_;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]I[PN]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[Daip]*;
     _ZNKSt7__cxx1112basic_string*;
 
     # operator+ for ABI-tagged std::basic_string
@@ -1918,6 +1941,11 @@ GLIBCXX_3.4.23 {
 
     # basic_string<C, T, A>::_Alloc_hider::_Alloc_hider(C*, A&&)
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_Alloc_hiderC[12]EP[cw]OS3_;
+
+    # basic_string<C, T, A>::basic_string(const basic_string&, size_type, const A&)
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS4_[jmy]RKS3_;
+    _ZNSsC[12]ERKSs[jmy]RKSaIcE;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_mRKS1_;
 
 } GLIBCXX_3.4.22;
 
