@@ -4430,7 +4430,6 @@ write_inline_edge_summary (struct output_block *ob, struct cgraph_edge *e)
 void
 inline_write_summary (void)
 {
-  struct cgraph_node *node;
   struct output_block *ob = create_output_block (LTO_section_inline_summary);
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   unsigned int count = 0;
@@ -4449,19 +4448,16 @@ inline_write_summary (void)
     {
       symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
-      if (cnode && (node = cnode)->definition && !node->alias)
+      if (cnode && cnode->definition && !cnode->alias)
 	{
-	  struct inline_summary *info = inline_summaries->get (node);
+	  struct inline_summary *info = inline_summaries->get (cnode);
 	  struct bitpack_d bp;
 	  struct cgraph_edge *edge;
 	  int i;
 	  size_time_entry *e;
 	  struct condition *c;
 
-	  streamer_write_uhwi (ob,
-			       lto_symtab_encoder_encode (encoder,
-							  
-							  node));
+	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, cnode));
 	  streamer_write_hwi (ob, info->estimated_self_stack_size);
 	  streamer_write_hwi (ob, info->self_size);
 	  streamer_write_hwi (ob, info->self_time);
@@ -4494,9 +4490,9 @@ inline_write_summary (void)
 	  write_predicate (ob, info->loop_iterations);
 	  write_predicate (ob, info->loop_stride);
 	  write_predicate (ob, info->array_index);
-	  for (edge = node->callees; edge; edge = edge->next_callee)
+	  for (edge = cnode->callees; edge; edge = edge->next_callee)
 	    write_inline_edge_summary (ob, edge);
-	  for (edge = node->indirect_calls; edge; edge = edge->next_callee)
+	  for (edge = cnode->indirect_calls; edge; edge = edge->next_callee)
 	    write_inline_edge_summary (ob, edge);
 	}
     }
