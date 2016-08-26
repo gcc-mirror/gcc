@@ -1628,6 +1628,160 @@ test_diagnostic_show_locus_one_liner (const line_table_case &case_)
   test_one_liner_fixit_replace_equal_secondary_range ();
 }
 
+/* Verify that fix-it hints are appropriately consolidated.
+
+   If any fix-it hints in a rich_location involve locations beyond
+   LINE_MAP_MAX_LOCATION_WITH_COLS, then we can't reliably apply
+   the fix-it as a whole, so there should be none.
+
+   Otherwise, verify that consecutive "replace" and "remove" fix-its
+   are merged, and that other fix-its remain separate.   */
+
+static void
+test_fixit_consolidation (const line_table_case &case_)
+{
+  line_table_test ltt (case_);
+
+  linemap_add (line_table, LC_ENTER, false, "test.c", 1);
+
+  const location_t c10 = linemap_position_for_column (line_table, 10);
+  const location_t c15 = linemap_position_for_column (line_table, 15);
+  const location_t c16 = linemap_position_for_column (line_table, 16);
+  const location_t c17 = linemap_position_for_column (line_table, 17);
+  const location_t c20 = linemap_position_for_column (line_table, 20);
+  const location_t caret = c10;
+
+  /* Insert + insert. */
+  {
+    rich_location richloc (line_table, caret);
+    richloc.add_fixit_insert (c10, "foo");
+    richloc.add_fixit_insert (c15, "bar");
+
+    if (c15 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+      /* Bogus column info for 2nd fixit, so no fixits.  */
+      ASSERT_EQ (0, richloc.get_num_fixit_hints ());
+    else
+      /* They should not have been merged.  */
+      ASSERT_EQ (2, richloc.get_num_fixit_hints ());
+  }
+
+  /* Insert + replace. */
+  {
+    rich_location richloc (line_table, caret);
+    richloc.add_fixit_insert (c10, "foo");
+    richloc.add_fixit_replace (source_range::from_locations (c15, c17),
+			       "bar");
+
+    if (c17 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+      /* Bogus column info for 2nd fixit, so no fixits.  */
+      ASSERT_EQ (0, richloc.get_num_fixit_hints ());
+    else
+      /* They should not have been merged.  */
+      ASSERT_EQ (2, richloc.get_num_fixit_hints ());
+  }
+
+  /* Replace + non-consecutive insert. */
+  {
+    rich_location richloc (line_table, caret);
+    richloc.add_fixit_replace (source_range::from_locations (c10, c15),
+			       "bar");
+    richloc.add_fixit_insert (c17, "foo");
+
+    if (c17 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+      /* Bogus column info for 2nd fixit, so no fixits.  */
+      ASSERT_EQ (0, richloc.get_num_fixit_hints ());
+    else
+      /* They should not have been merged.  */
+      ASSERT_EQ (2, richloc.get_num_fixit_hints ());
+  }
+
+  /* Replace + non-consecutive replace. */
+  {
+    rich_location richloc (line_table, caret);
+    richloc.add_fixit_replace (source_range::from_locations (c10, c15),
+			       "foo");
+    richloc.add_fixit_replace (source_range::from_locations (c17, c20),
+			       "bar");
+
+    if (c20 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+      /* Bogus column info for 2nd fixit, so no fixits.  */
+      ASSERT_EQ (0, richloc.get_num_fixit_hints ());
+    else
+      /* They should not have been merged.  */
+      ASSERT_EQ (2, richloc.get_num_fixit_hints ());
+  }
+
+  /* Replace + consecutive replace. */
+  {
+    rich_location richloc (line_table, caret);
+    richloc.add_fixit_replace (source_range::from_locations (c10, c15),
+			       "foo");
+    richloc.add_fixit_replace (source_range::from_locations (c16, c20),
+			       "bar");
+
+    if (c20 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+      /* Bogus column info for 2nd fixit, so no fixits.  */
+      ASSERT_EQ (0, richloc.get_num_fixit_hints ());
+    else
+      {
+	/* They should have been merged into a single "replace".  */
+	ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+	const fixit_hint *hint = richloc.get_fixit_hint (0);
+	ASSERT_EQ (fixit_hint::REPLACE, hint->get_kind ());
+	const fixit_replace *replace = (const fixit_replace *)hint;
+	ASSERT_STREQ ("foobar", replace->get_string ());
+	ASSERT_EQ (c10, replace->get_range ().m_start);
+	ASSERT_EQ (c20, replace->get_range ().m_finish);
+      }
+  }
+
+  /* Replace + consecutive removal. */
+  {
+    rich_location richloc (line_table, caret);
+    richloc.add_fixit_replace (source_range::from_locations (c10, c15),
+			       "foo");
+    richloc.add_fixit_remove (source_range::from_locations (c16, c20));
+
+    if (c20 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+      /* Bogus column info for 2nd fixit, so no fixits.  */
+      ASSERT_EQ (0, richloc.get_num_fixit_hints ());
+    else
+      {
+	/* They should have been merged into a single replace, with the
+	   range extended to cover that of the removal.  */
+	ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+	const fixit_hint *hint = richloc.get_fixit_hint (0);
+	ASSERT_EQ (fixit_hint::REPLACE, hint->get_kind ());
+	const fixit_replace *replace = (const fixit_replace *)hint;
+	ASSERT_STREQ ("foo", replace->get_string ());
+	ASSERT_EQ (c10, replace->get_range ().m_start);
+	ASSERT_EQ (c20, replace->get_range ().m_finish);
+      }
+  }
+
+  /* Consecutive removals. */
+  {
+    rich_location richloc (line_table, caret);
+    richloc.add_fixit_remove (source_range::from_locations (c10, c15));
+    richloc.add_fixit_remove (source_range::from_locations (c16, c20));
+
+    if (c20 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+      /* Bogus column info for 2nd fixit, so no fixits.  */
+      ASSERT_EQ (0, richloc.get_num_fixit_hints ());
+    else
+      {
+	/* They should have been merged into a single "replace-with-empty".  */
+	ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+	const fixit_hint *hint = richloc.get_fixit_hint (0);
+	ASSERT_EQ (fixit_hint::REPLACE, hint->get_kind ());
+	const fixit_replace *replace = (const fixit_replace *)hint;
+	ASSERT_STREQ ("", replace->get_string ());
+	ASSERT_EQ (c10, replace->get_range ().m_start);
+	ASSERT_EQ (c20, replace->get_range ().m_finish);
+      }
+  }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -1642,6 +1796,7 @@ diagnostic_show_locus_c_tests ()
   test_diagnostic_show_locus_unknown_location ();
 
   for_each_line_table_case (test_diagnostic_show_locus_one_liner);
+  for_each_line_table_case (test_fixit_consolidation);
 }
 
 } // namespace selftest

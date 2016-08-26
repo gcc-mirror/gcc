@@ -1,5 +1,13 @@
 2016-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic-show-locus.c
+	(selftest::test_fixit_consolidation): New function.
+	(selftest::diagnostic_show_locus_c_tests): Call it.
+	* gcc-rich-location.h (gcc_rich_location): Eliminate unused
+	constructor based on source_range.
+
+2016-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-color.c (color_dict): Add "fixit-insert" and
 	"fixit-delete".
 	(parse_gcc_colors): Update description of default GCC_COLORS.

@@ -31,11 +31,6 @@ class gcc_rich_location : public rich_location
   gcc_rich_location (source_location loc) :
     rich_location (line_table, loc) {}
 
-  /* Constructing from a source_range.  */
-  gcc_rich_location (source_range src_range) :
-    rich_location (src_range) {}
-
-
   /* Methods for adding ranges via gcc entities.  */
   void
   add_expr (tree expr);

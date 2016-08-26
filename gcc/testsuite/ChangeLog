@@ -1,5 +1,11 @@
 2016-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/spellcheck-fields-2.c (test): Move
+	dg-begin/end-multiline-output within function body.
+	(test_macro): New function.
+
+2016-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/plugin/diagnostic-test-show-locus-color.c
 	(test_fixit_insert): Update expected output.
 	(test_fixit_remove): Likewise.
