@@ -898,6 +898,12 @@ requirements of the license of GCC.
     <listitem><para>Adjust constraints to allow safe conversions.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2127">2127</link>:
+	<emphasis>Move-construction with <code>raw_storage_iterator</code></emphasis>
+    </term>
+    <listitem><para>Add assignment operator taking an rvalue.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2132">2132</link>:
 	<emphasis><code>std::function</code> ambiguity</emphasis>
     </term>

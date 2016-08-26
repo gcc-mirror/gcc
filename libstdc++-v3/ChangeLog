@@ -1,5 +1,12 @@
 2016-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/51960
+	* doc/xml/manual/intro.xml: Document DR 2127 change.
+	* doc/html/*: Regenerate.
+	* include/bits/stl_raw_storage_iter.h (operator=(_Tp&&)): Add.
+	(operator++(), operator++(int)): Use injected class name.
+	* testsuite/20_util/raw_storage_iterator/dr2127.cc: New test.
+
 	* testsuite/*: Use { target c++11 } or { target c++14 } instead of
 	using -std in dg-options.
 
