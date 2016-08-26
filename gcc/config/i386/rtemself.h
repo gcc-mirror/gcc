@@ -31,5 +31,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_80387 ? 80 : 64)
-
-#define IX86_NO_LIBGCC_TFMODE

@@ -103,5 +103,3 @@ crti.o%s \
 #define TARGET_POSIX_IO
 
 #undef DBX_REGISTER_NUMBER
-
-#define IX86_MAYBE_NO_LIBGCC_TFMODE
