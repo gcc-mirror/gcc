@@ -1,3 +1,10 @@
+2016-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-show-locus-color.c
+	(test_fixit_insert): Update expected output.
+	(test_fixit_remove): Likewise.
+	(test_fixit_replace): Likewise.
+
 2016-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/ipa/propbits-2.c: Add -fdump-tree-optimized to dg-options.

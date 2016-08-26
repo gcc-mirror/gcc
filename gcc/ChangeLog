@@ -1,3 +1,30 @@
+2016-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-color.c (color_dict): Add "fixit-insert" and
+	"fixit-delete".
+	(parse_gcc_colors): Update description of default GCC_COLORS.
+	* diagnostic-show-locus.c (colorizer::set_fixit_hint): Delete.
+	(colorizer::set_fixit_insert): New method.
+	(colorizer::set_fixit_delete): New method.
+	(colorizer::get_color_by_name): New method.
+	(colorizer::STATE_FIXIT_INSERT): New constant.
+	(colorizer::STATE_FIXIT_DELETE): New constant.
+	(class colorizer): Drop "_cs" suffix from fields.  Delete "_ce"
+	fields in favor of new field "m_stop_color".  Add fields
+	"m_fixit_insert" and "m_fixit_delete".
+	(colorizer::colorizer): Update for above changes.  Replace
+	colorize_start calls with calls to get_color_by_name.
+	(colorizer::begin_state): Handle STATE_FIXIT_INSERT and
+	STATE_FIXIT_DELETE.  Update for field renamings.
+	(colorizer::finish_state): Simplify by using m_stop_color,
+	rather than multiple identical "*_ce" fields.
+	(colorizer::get_color_by_name): New method.
+	(layout::print_any_fixits): Print insertions and replacements
+	using the "fixit-insert" color, and deletions using the
+	"fixit-delete" color.
+	* doc/invoke.texi (-fdiagnostics-color): Update description of
+	default GCC_COLORS, and of the supported capabilities.
+
 2016-08-26  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (xtensa_expand_prologue): Update

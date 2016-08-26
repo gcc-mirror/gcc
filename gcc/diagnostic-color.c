@@ -168,6 +168,8 @@ static struct color_cap color_dict[] =
   { "range2", SGR_SEQ (COLOR_FG_BLUE), 6, false },
   { "locus", SGR_SEQ (COLOR_BOLD), 5, false },
   { "quote", SGR_SEQ (COLOR_BOLD), 5, false },
+  { "fixit-insert", SGR_SEQ (COLOR_FG_GREEN), 12, false },
+  { "fixit-delete", SGR_SEQ (COLOR_FG_RED), 12, false },
   { NULL, NULL, 0, false }
 };
 
@@ -196,7 +198,9 @@ colorize_stop (bool show_color)
 }
 
 /* Parse GCC_COLORS.  The default would look like:
-   GCC_COLORS='error=01;31:warning=01;35:note=01;36:range1=32:range2=34;locus=01:quote=01'
+   GCC_COLORS='error=01;31:warning=01;35:note=01;36:\
+   range1=32:range2=34:locus=01:quote=01:\
+   fixit-insert=32:fixit-delete=31'
    No character escaping is needed or supported.  */
 static bool
 parse_gcc_colors (void)
