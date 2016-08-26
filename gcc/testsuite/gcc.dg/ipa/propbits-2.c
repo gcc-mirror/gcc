@@ -1,7 +1,7 @@
 /* x's mask should be meet(0xc, 0x3) == 0xf  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-early-inlining -fdump-ipa-cp" } */
+/* { dg-options "-O2 -fno-early-inlining -fdump-ipa-cp -fdump-tree-optimized" } */
 
 extern int pass_test ();
 extern int fail_test ();
@@ -38,4 +38,4 @@ int main(void)
 }
 
 /* { dg-final { scan-ipa-dump "Adjusting mask for param 0 to 0xf" "cp" } } */
-/* { dg-final { scan-dump-tree-not "fail_test" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "fail_test" "optimized" } } */
