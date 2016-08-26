@@ -417,16 +417,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		    _Alloc_traits::_S_select_on_copy(__str._M_get_allocator()))
       { _M_construct(__str._M_data(), __str._M_data() + __str.length()); }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2583. no way to supply an allocator for basic_string(str, pos)
       /**
        *  @brief  Construct string as copy of a substring.
        *  @param  __str  Source string.
        *  @param  __pos  Index of first character to copy from.
-       *  @param  __n  Number of characters to copy (default remainder).
+       *  @param  __a  Allocator to use.
        */
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 2402. [this constructor] shouldn't use Allocator()
       basic_string(const basic_string& __str, size_type __pos,
-		   size_type __n = npos)
+		   const _Alloc& __a = _Alloc())
+      : _M_dataplus(_M_local_data(), __a)
+      {
+	const _CharT* __start = __str._M_data()
+	  + __str._M_check(__pos, "basic_string::basic_string");
+	_M_construct(__start, __start + __str._M_limit(__pos, npos));
+      }
+
+      /**
+       *  @brief  Construct string as copy of a substring.
+       *  @param  __str  Source string.
+       *  @param  __pos  Index of first character to copy from.
+       *  @param  __n  Number of characters to copy.
+       */
+      basic_string(const basic_string& __str, size_type __pos,
+		   size_type __n)
       : _M_dataplus(_M_local_data())
       {
 	const _CharT* __start = __str._M_data()
@@ -438,7 +453,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @brief  Construct string as copy of a substring.
        *  @param  __str  Source string.
        *  @param  __pos  Index of first character to copy from.
-       *  @param  __n  Number of characters to copy (default remainder).
+       *  @param  __n  Number of characters to copy.
        *  @param  __a  Allocator to use.
        */
       basic_string(const basic_string& __str, size_type __pos,
@@ -3305,14 +3320,26 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @param  __str  Source string.
        */
       basic_string(const basic_string& __str);
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2583. no way to supply an allocator for basic_string(str, pos)
       /**
        *  @brief  Construct string as copy of a substring.
        *  @param  __str  Source string.
        *  @param  __pos  Index of first character to copy from.
-       *  @param  __n  Number of characters to copy (default remainder).
+       *  @param  __a  Allocator to use.
        */
       basic_string(const basic_string& __str, size_type __pos,
-		   size_type __n = npos);
+		   const _Alloc& __a = _Alloc());
+
+      /**
+       *  @brief  Construct string as copy of a substring.
+       *  @param  __str  Source string.
+       *  @param  __pos  Index of first character to copy from.
+       *  @param  __n  Number of characters to copy.
+       */
+      basic_string(const basic_string& __str, size_type __pos,
+		   size_type __n);
       /**
        *  @brief  Construct string as copy of a substring.
        *  @param  __str  Source string.

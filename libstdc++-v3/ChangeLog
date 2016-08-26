@@ -1,3 +1,20 @@
+2016-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4, GLIBCXX_3.4.21): Use more
+	precise patterns for basic_string constructors.
+	(GLIBCXX_3.4.23): Export new constructors.
+	* doc/xml/manual/intro.xml: Document LWG 2583 status.
+	* doc/html/*: Regenerate.
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string(const basic_string&, size_type, const Alloc&)): Add
+	new constructor for LWG 2583.
+	(basic_string(const basic_string&, size_type, size_type)): Remove
+	default argument.
+	[!_GLIBCXX_USE_CXX11_ABI]: Likewise.
+	* include/bits/basic_string.tcc [!_GLIBCXX_USE_CXX11_ABI]: Define it.
+	* testsuite/21_strings/basic_string/cons/char/8.cc: New test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/8.cc: New test.
+
 2016-08-24  Aditya Kumar  <hiraditya@msn.com>
 
 	* include/bits/algorithmfwd.h: Remove trailing whitespace.
