@@ -74,15 +74,23 @@ static GTY(()) tree atms;
 void
 java_mangle_decl (tree decl)
 {
-  /* A copy of the check from the beginning of lhd_set_decl_assembler_name.
-     Only FUNCTION_DECLs and VAR_DECLs for variables with static storage
-     duration need a real DECL_ASSEMBLER_NAME.  */
+  /* A copy of the check from the beginning of lhd_set_decl_assembler_name.  */
+
+  /* set_decl_assembler_name may be called on TYPE_DECL to record ODR
+     name for C++ types.  By default types have no ODR names.  */
+  if (TREE_CODE (decl) == TYPE_DECL)
+    return;
+
+  /* The language-independent code should never use the
+     DECL_ASSEMBLER_NAME for lots of DECLs.  Only FUNCTION_DECLs and
+     VAR_DECLs for variables with static storage duration need a real
+     DECL_ASSEMBLER_NAME.  */
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
 	      || (TREE_CODE (decl) == VAR_DECL
 		  && (TREE_STATIC (decl)
 		      || DECL_EXTERNAL (decl)
 		      || TREE_PUBLIC (decl))));
-  
+
   /* Mangling only applies to class members.  */
   if (DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl)))
     {
