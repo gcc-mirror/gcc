@@ -1,5 +1,15 @@
 2016-08-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR target/70473
+	* config/arm/cortex-a8-neon.md (cortex_a8_vfp_muld): Reduce
+	reservation duration to 15 cycles.
+	(cortex_a8_vfp_macs): Likewise.
+	(cortex_a8_vfp_macd): Likewise.
+	(cortex_a8_vfp_divs): Likewise.
+	(cortex_a8_vfp_divd): Likewise.
+
+2016-08-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.c (arm_sets_movw_movt_fusible_p): New function.
 	(aarch_macro_fusion_pair_p): Use above to avoid early return.
 
