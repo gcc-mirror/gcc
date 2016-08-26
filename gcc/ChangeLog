@@ -1,3 +1,8 @@
+2016-08-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/77349
+	* config/rs6000/xcoff.h (DWARF_OFFSET_SIZE): Define as PTR_SIZE.
+
 2016-08-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c
