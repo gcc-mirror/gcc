@@ -357,30 +357,34 @@
        (eq_attr "type" "fmuls"))
   "cortex_a8_vfp,cortex_a8_vfplite*11")
 
+;; Don't model a reservation for more than 15 cycles as this explodes the
+;; state space of the automaton for little gain.  It is unlikely that the
+;; scheduler will find enough instructions to hide the full latency of the
+;; instructions.
 (define_insn_reservation "cortex_a8_vfp_muld" 17
   (and (eq_attr "tune" "cortexa8")
        (eq_attr "type" "fmuld"))
-  "cortex_a8_vfp,cortex_a8_vfplite*16")
+  "cortex_a8_vfp,cortex_a8_vfplite*15")
 
 (define_insn_reservation "cortex_a8_vfp_macs" 21
   (and (eq_attr "tune" "cortexa8")
        (eq_attr "type" "fmacs,ffmas"))
-  "cortex_a8_vfp,cortex_a8_vfplite*20")
+  "cortex_a8_vfp,cortex_a8_vfplite*15")
 
 (define_insn_reservation "cortex_a8_vfp_macd" 26
   (and (eq_attr "tune" "cortexa8")
        (eq_attr "type" "fmacd,ffmad"))
-  "cortex_a8_vfp,cortex_a8_vfplite*25")
+  "cortex_a8_vfp,cortex_a8_vfplite*15")
 
 (define_insn_reservation "cortex_a8_vfp_divs" 37
   (and (eq_attr "tune" "cortexa8")
        (eq_attr "type" "fdivs, fsqrts"))
-  "cortex_a8_vfp,cortex_a8_vfplite*36")
+  "cortex_a8_vfp,cortex_a8_vfplite*15")
 
 (define_insn_reservation "cortex_a8_vfp_divd" 65
   (and (eq_attr "tune" "cortexa8")
        (eq_attr "type" "fdivd, fsqrtd"))
-  "cortex_a8_vfp,cortex_a8_vfplite*64")
+  "cortex_a8_vfp,cortex_a8_vfplite*15")
 
 ;; Comparisons can actually take 7 cycles sometimes instead of four,
 ;; but given all the other instructions lumped into type=ffarith that
