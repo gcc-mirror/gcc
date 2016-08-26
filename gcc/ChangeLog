@@ -1,3 +1,17 @@
+2016-08-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386.c (ix86_libgcc_floating_mode_supported_p)
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Remove.
+	* config/i386/i386elf.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Likewise.
+	* config/i386/lynx.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Likewise.
+	* config/i386/netbsd-elf.h (IX86_MAYBE_NO_LIBGCC_TFMODE):
+	Likewise.
+	* config/i386/netbsd64.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Likewise.
+	* config/i386/nto.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Likewise.
+	* config/i386/openbsd.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Likewise.
+	* config/i386/rtemself.h (IX86_NO_LIBGCC_TFMODE): Likewise.
+	* config/i386/vxworks.h (IX86_MAYBE_NO_LIBGCC_TFMODE): Likewise.
+
 2016-08-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/70473

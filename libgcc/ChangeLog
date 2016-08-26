@@ -1,3 +1,8 @@
+2016-08-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.host (i[34567]86-*-* | x86_64-*-*): Enable TFmode soft-fp
+	where not already enabled.
+
 2016-08-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/mips/linux-unwind.h: Use sys/syscall.h.

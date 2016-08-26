@@ -119,5 +119,3 @@ along with GCC; see the file COPYING3.  If not see
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
 #define HAVE_ENABLE_EXECUTE_STACK
-
-#define IX86_MAYBE_NO_LIBGCC_TFMODE
