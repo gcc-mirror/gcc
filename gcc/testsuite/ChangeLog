@@ -1,3 +1,8 @@
+2016-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/ipa/propbits-2.c: Add -fdump-tree-optimized to dg-options.
+	Fix typo.
+
 2016-08-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69047
@@ -5,7 +10,7 @@
 
 2016-08-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Martin Jambhor  <mjambor@suse.cz>
-	
+
 	* gcc.dg/ipa/propbits-1.c: New test-case.
 	* gcc.dg/ipa/propbits-2.c: Likewise.
 	* gcc.dg/ipa/propbits-3.c: Likewise.
