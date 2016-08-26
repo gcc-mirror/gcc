@@ -15,3 +15,5 @@ int main()
 {
   A<int> a;
 }
+
+// { dg-final { scan-assembler-not "_ZN1AIiEC1Ev" } }

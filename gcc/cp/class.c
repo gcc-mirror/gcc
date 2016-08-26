@@ -5133,8 +5133,17 @@ set_method_tm_attributes (tree t)
     }
 }
 
-/* Returns true iff class T has a user-defined constructor other than
-   the default constructor.  */
+/* Returns true if FN is a default constructor.  */
+
+bool
+default_ctor_p (tree fn)
+{
+  return (DECL_CONSTRUCTOR_P (fn)
+	  && sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (fn)));
+}
+
+/* Returns true iff class T has a user-defined constructor that can be called
+   with more than zero arguments.  */
 
 bool
 type_has_user_nondefault_constructor (tree t)
@@ -5163,23 +5172,16 @@ type_has_user_nondefault_constructor (tree t)
 tree
 in_class_defaulted_default_constructor (tree t)
 {
-  tree fns, args;
-
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
     return NULL_TREE;
 
-  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  for (tree fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
     {
       tree fn = OVL_CURRENT (fns);
 
-      if (DECL_DEFAULTED_IN_CLASS_P (fn))
-	{
-	  args = FUNCTION_FIRST_USER_PARMTYPE (fn);
-	  while (args && TREE_PURPOSE (args))
-	    args = TREE_CHAIN (args);
-	  if (!args || args == void_list_node)
-	    return fn;
-	}
+      if (DECL_DEFAULTED_IN_CLASS_P (fn)
+	  && default_ctor_p (fn))
+	return fn;
     }
 
   return NULL_TREE;
@@ -5268,8 +5270,8 @@ type_has_non_user_provided_default_constructor (tree t)
     {
       tree fn = OVL_CURRENT (fns);
       if (TREE_CODE (fn) == FUNCTION_DECL
-	  && !user_provided_p (fn)
-	  && sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (fn)))
+	  && default_ctor_p (fn)
+	  && !user_provided_p (fn))
 	return true;
     }
 

@@ -7798,11 +7798,19 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       return val;
     }
-  else if (DECL_DESTRUCTOR_P (fn)
-	   && trivial_fn_p (fn)
-	   && !DECL_DELETED_FN (fn))
-    return fold_convert (void_type_node, argarray[0]);
-  /* FIXME handle trivial default constructor, too.  */
+  else if (!DECL_DELETED_FN (fn)
+	   && trivial_fn_p (fn))
+    {
+      if (DECL_DESTRUCTOR_P (fn))
+	return fold_convert (void_type_node, argarray[0]);
+      else if (default_ctor_p (fn))
+	{
+	  if (is_dummy_object (argarray[0]))
+	    return force_target_expr (DECL_CONTEXT (fn), void_node, complain);
+	  else
+	    return cp_build_indirect_ref (argarray[0], RO_NULL, complain);
+	}
+    }
 
   /* For calls to a multi-versioned function, overload resolution
      returns the function with the highest target priority, that is,
