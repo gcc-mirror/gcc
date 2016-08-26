@@ -1,3 +1,60 @@
+2016-08-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Martin Jambhor  <mjambor@suse.cz>
+
+	* common.opt: New option -fipa-bit-cp.
+	* doc/invoke.texi: Document -fipa-bit-cp.
+	* opts.c (default_options_table): Add entry for -fipa-bit-cp.
+	(enable_fdo_optimizations): Check for flag_ipa_bit_cp.
+	* tree-ssa-ccp.h: New header file.
+	* tree-ssa-ccp.c: Include tree-ssa-ccp.h
+	(bit_value_binop_1): Change to bit_value_binop_1 and export it.
+	Replace all occurences of tree parameter by two new params: signop, int.
+	(bit_value_unop_1): Change to bit_value_unop and export it.
+	Replace all occurences of tree parameter by two new params: signop,
+	int.
+	(bit_value_binop): Change call from bit_value_binop_1 to
+	bit_value_binop.
+	(bit_value_assume_aligned): Likewise.
+	(bit_value_unop): Change call from bit_value_unop_1 to bit_value_unop.
+	(do_ssa_ccp): Pass nonzero_p || flag_ipa_cp_bit instead of nonzero_p
+	to ccp_finalize.
+	(ccp_finalize): Skip processing if val->mask == 0.
+	* ipa-cp.c: Include tree-ssa-ccp.h
+	(ipcp_bits_lattice): New class.
+	(ipcp_param_lattice (bits_lattice): New member.
+	(print_all_lattices): Call ipcp_bits_lattice::print.
+	(set_all_contains_variable): Call ipcp_bits_lattice::set_to_bottom. 
+	(initialize_node_lattices): Likewise.
+	(propagate_bits_accross_jump_function): New function.
+	(propagate_constants_accross_call): Call
+	propagate_bits_accross_jump_function.
+	(ipcp_propagate_stage): Store parameter types when in_lto_p is true.
+	(ipcp_store_bits_results): New function.
+	(ipcp_driver): Call ipcp_store_bits_results.
+	* ipa-prop.h (ipa_bits): New struct.
+	(ipa_jump_func): Add new member bits of type ipa_bits.
+	(ipa_param_descriptor): Change decl to decl_or_type.
+	(ipa_get_param): Change decl to decl_or_type and assert on
+	PARM_DECL.
+	(ipa_get_type): New function.
+	(ipcp_transformation_summary): New member bits.
+	* ipa-prop.c (ipa_get_param_decl_index_1): s/decl/decl_or_type.
+	(ipa_populate_param_decls): Likewise.
+	(ipa_dump_param): Likewise.
+	(ipa_print_node_jump_functions_for_edge): Pretty-print ipa_bits jump
+	function.
+	(ipa_set_jf_unknown): Set ipa_bits::known to false.
+	(ipa_compute_jump_functions_for_edge): Compute jump function for bits
+	propagation.
+	(ipa_node_params_t::duplicate): Copy src->bits into dst->bits.
+	(ipa_write_jump_function): Add streaming for ipa_bits.
+	(ipa_read_jump_function): Add support for reading streamed ipa_bits.
+	(write_ipcp_transformation_info): Add streaming for ipa_bits
+	summary for ltrans.
+	(read_ipcp_transfomration_info): Add support for reading streamed ipa_bits.
+	(ipcp_update_bits): New function.
+	(ipcp_transform_function): Call ipcp_update_bits.
+
 2016-08-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/mips/linux.h (MUSL_DYNAMIC_LINKER32): Update.
