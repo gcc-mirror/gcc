@@ -1,3 +1,8 @@
+2016-08-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_sets_movw_movt_fusible_p): New function.
+	(aarch_macro_fusion_pair_p): Use above to avoid early return.
+
 2016-08-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Martin Jambhor  <mjambor@suse.cz>
 

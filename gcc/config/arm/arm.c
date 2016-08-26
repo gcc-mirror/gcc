@@ -29914,11 +29914,57 @@ arm_macro_fusion_p (void)
   return current_tune->fusible_ops != tune_params::FUSE_NOTHING;
 }
 
+/* Return true if the two back-to-back sets PREV_SET, CURR_SET are suitable
+   for MOVW / MOVT macro fusion.  */
+
+static bool
+arm_sets_movw_movt_fusible_p (rtx prev_set, rtx curr_set)
+{
+  /* We are trying to fuse
+     movw imm / movt imm
+    instructions as a group that gets scheduled together.  */
+
+  rtx set_dest = SET_DEST (curr_set);
+
+  if (GET_MODE (set_dest) != SImode)
+    return false;
+
+  /* We are trying to match:
+     prev (movw)  == (set (reg r0) (const_int imm16))
+     curr (movt) == (set (zero_extract (reg r0)
+					(const_int 16)
+					(const_int 16))
+			  (const_int imm16_1))
+     or
+     prev (movw) == (set (reg r1)
+			  (high (symbol_ref ("SYM"))))
+    curr (movt) == (set (reg r0)
+			(lo_sum (reg r1)
+				(symbol_ref ("SYM"))))  */
+
+    if (GET_CODE (set_dest) == ZERO_EXTRACT)
+      {
+	if (CONST_INT_P (SET_SRC (curr_set))
+	    && CONST_INT_P (SET_SRC (prev_set))
+	    && REG_P (XEXP (set_dest, 0))
+	    && REG_P (SET_DEST (prev_set))
+	    && REGNO (XEXP (set_dest, 0)) == REGNO (SET_DEST (prev_set)))
+	  return true;
+
+      }
+    else if (GET_CODE (SET_SRC (curr_set)) == LO_SUM
+	     && REG_P (SET_DEST (curr_set))
+	     && REG_P (SET_DEST (prev_set))
+	     && GET_CODE (SET_SRC (prev_set)) == HIGH
+	     && REGNO (SET_DEST (curr_set)) == REGNO (SET_DEST (prev_set)))
+      return true;
+
+  return false;
+}
 
 static bool
 aarch_macro_fusion_pair_p (rtx_insn* prev, rtx_insn* curr)
 {
-  rtx set_dest;
   rtx prev_set = single_set (prev);
   rtx curr_set = single_set (curr);
 
@@ -29936,45 +29982,10 @@ aarch_macro_fusion_pair_p (rtx_insn* prev, rtx_insn* curr)
       && aarch_crypto_can_dual_issue (prev, curr))
     return true;
 
-  if (current_tune->fusible_ops & tune_params::FUSE_MOVW_MOVT)
-    {
-      /* We are trying to fuse
-	 movw imm / movt imm
-	 instructions as a group that gets scheduled together.  */
+  if (current_tune->fusible_ops & tune_params::FUSE_MOVW_MOVT
+      && arm_sets_movw_movt_fusible_p (prev_set, curr_set))
+    return true;
 
-      set_dest = SET_DEST (curr_set);
-
-      if (GET_MODE (set_dest) != SImode)
-	return false;
-
-      /* We are trying to match:
-	 prev (movw)  == (set (reg r0) (const_int imm16))
-	 curr (movt) == (set (zero_extract (reg r0)
-					  (const_int 16)
-					   (const_int 16))
-			     (const_int imm16_1))
-	 or
-	 prev (movw) == (set (reg r1)
-			      (high (symbol_ref ("SYM"))))
-	 curr (movt) == (set (reg r0)
-			     (lo_sum (reg r1)
-				     (symbol_ref ("SYM"))))  */
-      if (GET_CODE (set_dest) == ZERO_EXTRACT)
-	{
-	  if (CONST_INT_P (SET_SRC (curr_set))
-	      && CONST_INT_P (SET_SRC (prev_set))
-	      && REG_P (XEXP (set_dest, 0))
-	      && REG_P (SET_DEST (prev_set))
-	      && REGNO (XEXP (set_dest, 0)) == REGNO (SET_DEST (prev_set)))
-	    return true;
-	}
-      else if (GET_CODE (SET_SRC (curr_set)) == LO_SUM
-	       && REG_P (SET_DEST (curr_set))
-	       && REG_P (SET_DEST (prev_set))
-	       && GET_CODE (SET_SRC (prev_set)) == HIGH
-	       && REGNO (SET_DEST (curr_set)) == REGNO (SET_DEST (prev_set)))
-	     return true;
-    }
   return false;
 }
 
