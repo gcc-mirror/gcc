@@ -1,3 +1,8 @@
+2016-08-26  Richard Biener  <rguenther@suse.de>
+
+	java/
+	* mangle.c (java_mangle_decl): Re-sync with lhd_set_decl_assembler_name.
+
 2016-08-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
