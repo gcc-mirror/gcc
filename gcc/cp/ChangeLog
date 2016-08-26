@@ -1,3 +1,9 @@
+2016-08-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57728
+	* pt.c (do_type_instantiation): Don't mess with non-user-provided
+	member functions.
+
 2016-08-25  Marek Polacek  <polacek@redhat.com>
 
 	* parser.c (cp_parser_binary_expression): Pass LHS to
