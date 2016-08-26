@@ -79,24 +79,29 @@ class colorizer
 
   void set_range (int range_idx) { set_state (range_idx); }
   void set_normal_text () { set_state (STATE_NORMAL_TEXT); }
-  void set_fixit_hint () { set_state (0); }
+  void set_fixit_insert () { set_state (STATE_FIXIT_INSERT); }
+  void set_fixit_delete () { set_state (STATE_FIXIT_DELETE); }
 
  private:
   void set_state (int state);
   void begin_state (int state);
   void finish_state (int state);
+  const char *get_color_by_name (const char *);
 
  private:
   static const int STATE_NORMAL_TEXT = -1;
+  static const int STATE_FIXIT_INSERT  = -2;
+  static const int STATE_FIXIT_DELETE  = -3;
 
   diagnostic_context *m_context;
   diagnostic_t m_diagnostic_kind;
   int m_current_state;
-  const char *m_caret_cs;
-  const char *m_caret_ce;
-  const char *m_range1_cs;
-  const char *m_range2_cs;
-  const char *m_range_ce;
+  const char *m_caret;
+  const char *m_range1;
+  const char *m_range2;
+  const char *m_fixit_insert;
+  const char *m_fixit_delete;
+  const char *m_stop_color;
 };
 
 /* A point within a layout_range; similar to an expanded_location,
@@ -247,10 +252,11 @@ colorizer::colorizer (diagnostic_context *context,
   m_diagnostic_kind (diagnostic_kind),
   m_current_state (STATE_NORMAL_TEXT)
 {
-  m_caret_ce = colorize_stop (pp_show_color (context->printer));
-  m_range1_cs = colorize_start (pp_show_color (context->printer), "range1");
-  m_range2_cs = colorize_start (pp_show_color (context->printer), "range2");
-  m_range_ce = colorize_stop (pp_show_color (context->printer));
+  m_range1 = get_color_by_name ("range1");
+  m_range2 = get_color_by_name ("range2");
+  m_fixit_insert = get_color_by_name ("fixit-insert");
+  m_fixit_delete = get_color_by_name ("fixit-delete");
+  m_stop_color = colorize_stop (pp_show_color (context->printer));
 }
 
 /* The destructor for "colorize".  If colorization is on, print a code to
@@ -285,6 +291,14 @@ colorizer::begin_state (int state)
     case STATE_NORMAL_TEXT:
       break;
 
+    case STATE_FIXIT_INSERT:
+      pp_string (m_context->printer, m_fixit_insert);
+      break;
+
+    case STATE_FIXIT_DELETE:
+      pp_string (m_context->printer, m_fixit_delete);
+      break;
+
     case 0:
       /* Make range 0 be the same color as the "kind" text
 	 (error vs warning vs note).  */
@@ -295,11 +309,11 @@ colorizer::begin_state (int state)
       break;
 
     case 1:
-      pp_string (m_context->printer, m_range1_cs);
+      pp_string (m_context->printer, m_range1);
       break;
 
     case 2:
-      pp_string (m_context->printer, m_range2_cs);
+      pp_string (m_context->printer, m_range2);
       break;
 
     default:
@@ -314,21 +328,17 @@ colorizer::begin_state (int state)
 void
 colorizer::finish_state (int state)
 {
-  switch (state)
-    {
-    case STATE_NORMAL_TEXT:
-      break;
+  if (state != STATE_NORMAL_TEXT)
+    pp_string (m_context->printer, m_stop_color);
+}
 
-    case 0:
-      pp_string (m_context->printer, m_caret_ce);
-      break;
+/* Get the color code for NAME (or the empty string if
+   colorization is disabled).  */
 
-    default:
-      /* Within a range.  */
-      gcc_assert (state > 0);
-      pp_string (m_context->printer, m_range_ce);
-      break;
-    }
+const char *
+colorizer::get_color_by_name (const char *name)
+{
+  return colorize_start (pp_show_color (m_context->printer), name);
 }
 
 /* Implementation of class layout_range.  */
@@ -1098,7 +1108,7 @@ layout::print_any_fixits (int row, const rich_location *richloc)
 		int start_column
 		  = LOCATION_COLUMN (insert->get_location ());
 		move_to_column (&column, start_column);
-		m_colorizer.set_fixit_hint ();
+		m_colorizer.set_fixit_insert ();
 		pp_string (m_pp, insert->get_string ());
 		m_colorizer.set_normal_text ();
 		column += insert->get_length ();
@@ -1122,7 +1132,7 @@ layout::print_any_fixits (int row, const rich_location *richloc)
 		    || replace->get_length () == 0)
 		  {
 		    move_to_column (&column, start_column);
-		    m_colorizer.set_fixit_hint ();
+		    m_colorizer.set_fixit_delete ();
 		    for (; column <= finish_column; column++)
 		      pp_character (m_pp, '-');
 		    m_colorizer.set_normal_text ();
@@ -1133,7 +1143,7 @@ layout::print_any_fixits (int row, const rich_location *richloc)
 		if (replace->get_length () > 0)
 		  {
 		    move_to_column (&column, start_column);
-		    m_colorizer.set_fixit_hint ();
+		    m_colorizer.set_fixit_insert ();
 		    pp_string (m_pp, replace->get_string ());
 		    m_colorizer.set_normal_text ();
 		    column += replace->get_length ();

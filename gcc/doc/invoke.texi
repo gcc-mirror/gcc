@@ -3343,13 +3343,13 @@ for 88-color and 256-color modes background colors.
 
 The default @env{GCC_COLORS} is
 @smallexample
-error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01
+error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:quote=01:fixit-insert=32:fixit-delete=31
 @end smallexample
 @noindent
 where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
-@samp{01;36} is bold cyan, @samp{01;32} is bold green and
-@samp{01} is bold. Setting @env{GCC_COLORS} to the empty
-string disables colors.
+@samp{01;36} is bold cyan, @samp{32} is green, @samp{34} is blue,
+@samp{01} is bold, and @samp{31} is red.
+Setting @env{GCC_COLORS} to the empty string disables colors.
 Supported capabilities are as follows.
 
 @table @code
@@ -3365,9 +3365,13 @@ SGR substring for warning: markers.
 @vindex note GCC_COLORS @r{capability}
 SGR substring for note: markers.
 
-@item caret=
-@vindex caret GCC_COLORS @r{capability}
-SGR substring for caret line.
+@item range1=
+@vindex range1 GCC_COLORS @r{capability}
+SGR substring for first additional range.
+
+@item range2=
+@vindex range2 GCC_COLORS @r{capability}
+SGR substring for second additional range.
 
 @item locus=
 @vindex locus GCC_COLORS @r{capability}
@@ -3377,6 +3381,16 @@ SGR substring for location information, @samp{file:line} or
 @item quote=
 @vindex quote GCC_COLORS @r{capability}
 SGR substring for information printed within quotes.
+
+@item fixit-insert=
+@vindex fixit-insert GCC_COLORS @r{capability}
+SGR substring for fix-it hints suggesting text to
+be inserted or replaced.
+
+@item fixit-delete=
+@vindex fixit-delete GCC_COLORS @r{capability}
+SGR substring for fix-it hints suggesting text to
+be deleted.
 @end table
 
 @item -fno-diagnostics-show-option
