@@ -1,3 +1,14 @@
+2016-08-27  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/77356
+	* include/bits/regex_compiler.tcc(_M_insert_bracket_matcher,
+	_M_expression_term): Modify to support dash literal.
+	* include/bits/regex_scanner.h: Add dash as a token type to make
+	a different from the mandated dash literal by escaping.
+	* include/bits/regex_scanner.tcc(_M_scan_in_bracket): Emit dash
+	token in bracket expression parsing.
+	* testsuite/28_regex/regression.cc: Add new testcases.
+
 2016-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/51960
