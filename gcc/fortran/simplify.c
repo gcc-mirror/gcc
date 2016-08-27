@@ -7044,9 +7044,17 @@ gfc_simplify_compiler_version (void)
 gfc_expr *
 simplify_ieee_selected_real_kind (gfc_expr *expr)
 {
-  gfc_actual_arglist *arg = expr->value.function.actual;
-  gfc_expr *p = arg->expr, *q = arg->next->expr,
-	   *rdx = arg->next->next->expr;
+  gfc_actual_arglist *arg;
+  gfc_expr *p = NULL, *q = NULL, *rdx = NULL;
+
+  arg = expr->value.function.actual;
+  p = arg->expr;
+  if (arg->next)
+    {
+      q = arg->next->expr;
+      if (arg->next->next)
+	rdx = arg->next->next->expr;
+    }
 
   /* Currently, if IEEE is supported and this module is built, it means
      all our floating-point types conform to IEEE. Hence, we simply handle

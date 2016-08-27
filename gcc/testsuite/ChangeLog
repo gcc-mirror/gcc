@@ -1,3 +1,8 @@
+2016-08-27  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/77372
+	gfortran.dg/pr77372.f90: New test.
+
 2016-08-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/spellcheck-fields-2.c (test): Move
