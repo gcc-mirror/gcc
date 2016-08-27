@@ -61,12 +61,35 @@ test03()
   VERIFY(!regex_search_debug("a", regex(R"(\b$)"), regex_constants::match_not_eow));
 }
 
+// PR libstdc++/77356
+void
+test04()
+{
+  bool test __attribute__((unused)) = true;
+
+  static const char* kNumericAnchor ="(\\$|usd)(usd|\\$|to|and|up to|[0-9,\\.\\-\\sk])+";
+  const std::regex re(kNumericAnchor);
+  (void)re;
+}
+
+void
+test05()
+{
+  bool test __attribute__((unused)) = true;
+
+  VERIFY(regex_match_debug("!", std::regex("[![:alnum:]]")));
+  VERIFY(regex_match_debug("-", std::regex("[a-]", regex_constants::basic)));
+  VERIFY(regex_match_debug("-", std::regex("[a-]")));
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
+  test05();
   return 0;
 }
 
