@@ -1,3 +1,12 @@
+2016-08-27  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/71077
+	PR tree-optimization/68542
+	* fold-const.c (fold_relational_const): Fix folding of
+	VECTOR_CST comparisons that have a scalar boolean result type.
+	(selftest::test_vector_folding): New static function.
+	(selftest::fold_const_c_tests): Call it.
+
 2016-08-27  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (SPU Built-in Functions): Remove stale
