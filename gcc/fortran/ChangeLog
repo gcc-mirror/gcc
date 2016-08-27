@@ -1,5 +1,11 @@
 2016-08-27  Steven G. Kargl <kargl@gcc.gnu.org>
 
+	PR fortran/77380
+	* dependency.c (gfc_check_dependency): Do not assert with
+	-fcoarray=lib.
+
+2016-08-27  Steven G. Kargl <kargl@gcc.gnu.org>
+
 	PR fortran/77372
 	simplify.c (simplify_ieee_selected_real_kind): Check for NULL pointers.
 
