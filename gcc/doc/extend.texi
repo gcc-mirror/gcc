@@ -18600,9 +18600,7 @@ v2si __builtin_vis_fpminu32 (v2si, v2si);
 @subsection SPU Built-in Functions
 
 GCC provides extensions for the SPU processor as described in the
-Sony/Toshiba/IBM SPU Language Extensions Specification, which can be
-found at @uref{http://cell.scei.co.jp/} or
-@uref{http://www.ibm.com/developerworks/power/cell/}.  GCC's
+Sony/Toshiba/IBM SPU Language Extensions Specification.  GCC's
 implementation differs in several ways.
 
 @itemize @bullet

@@ -1,3 +1,8 @@
+2016-08-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (SPU Built-in Functions): Remove stale
+	references to material formerly at IBM and Sony.
+
 2016-08-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/77349
