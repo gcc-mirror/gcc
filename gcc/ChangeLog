@@ -1,3 +1,7 @@
+2016-08-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* haifa-sched.c (fix_recovery_deps): Make ready_list a vector.
+
 2016-08-27  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR tree-optimization/71077
