@@ -2354,8 +2354,10 @@ create_trace_edges (rtx_insn *insn)
 	}
       else if (computed_jump_p (insn))
 	{
-	  for (rtx_insn_list *lab = forced_labels; lab; lab = lab->next ())
-	    maybe_record_trace_start (lab->insn (), insn);
+	  rtx_insn *temp;
+	  unsigned int i;
+	  FOR_EACH_VEC_SAFE_ELT (forced_labels, i, temp)
+	    maybe_record_trace_start (temp, insn);
 	}
       else if (returnjump_p (insn))
 	;

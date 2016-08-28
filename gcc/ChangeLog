@@ -1,5 +1,17 @@
 2016-08-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* cfgbuild.c (make_edges): Adjust.
+	* cfgrtl.c (can_delete_label_p): Likewise.
+	* dwarf2cfi.c (create_trace_edges): Likewise.
+	* except.c (sjlj_emit_dispatch_table): Likewise.
+	* function.h (struct expr_status): make x_forced_labels a vector.
+	* jump.c (rebuild_jump_labels_1): Adjust.
+	* reload1.c (set_initial_label_offsets): Likewise.
+	* stmt.c (force_label_rtx): Likewise.
+	(expand_label): Likewise.
+
+2016-08-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* haifa-sched.c (fix_recovery_deps): Make ready_list a vector.
 
 2016-08-27  Patrick Palka  <ppalka@gcc.gnu.org>
