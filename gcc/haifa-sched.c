@@ -8600,9 +8600,8 @@ static void
 fix_recovery_deps (basic_block rec)
 {
   rtx_insn *note, *insn, *jump;
-  rtx_insn_list *ready_list = 0;
+  auto_vec<rtx_insn *, 10> ready_list;
   bitmap_head in_ready;
-  rtx_insn_list *link;
 
   bitmap_initialize (&in_ready, 0);
 
@@ -8628,7 +8627,7 @@ fix_recovery_deps (basic_block rec)
 	      sd_delete_dep (sd_it);
 
 	      if (bitmap_set_bit (&in_ready, INSN_LUID (consumer)))
-		ready_list = alloc_INSN_LIST (consumer, ready_list);
+		ready_list.safe_push (consumer);
 	    }
 	  else
 	    {
@@ -8645,9 +8644,10 @@ fix_recovery_deps (basic_block rec)
   bitmap_clear (&in_ready);
 
   /* Try to add instructions to the ready or queue list.  */
-  for (link = ready_list; link; link = link->next ())
-    try_ready (link->insn ());
-  free_INSN_LIST_list (&ready_list);
+  unsigned int i;
+  rtx_insn *temp;
+  FOR_EACH_VEC_ELT_REVERSE (ready_list, i, temp)
+    try_ready (temp);
 
   /* Fixing jump's dependences.  */
   insn = BB_HEAD (rec);
