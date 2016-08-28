@@ -1,5 +1,13 @@
 2016-08-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* emit-rtl.h (struct rtl_data): Make stack_slot_list a vector.
+	* emit-rtl.c (unshare_all_rtl_1): Adjust.
+	(unshare_all_rtl_again): Likewise.
+	* function.c (assign_stack_local_1): Likewise.
+	(assign_stack_temp_for_type): Likewise.
+
+2016-08-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* cfgbuild.c (make_edges): Adjust.
 	* cfgrtl.c (can_delete_label_p): Likewise.
 	* dwarf2cfi.c (create_trace_edges): Likewise.
