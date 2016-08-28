@@ -1,3 +1,12 @@
+2016-08-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/77034
+	Backported from mainline
+	2016-07-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/elide5.C (operator new): Use decltype(sizeof(1)) instead
+	of unsigned long.
+
 2016-08-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
