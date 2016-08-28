@@ -1,3 +1,12 @@
+2016-08-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/70955
+	* config/i386/i386.c (ix86_build_builtin_va_list_64): Tag type with
+	'sysv_abi va_list' attribute.
+	(ix86_build_builtin_va_list): Tag type with 'ms_abi va_list' attribute.
+	(ix86_canonical_va_list_type): Handle 'sysv_abi/ms_abi va_list'
+	attributes.
+
 2016-08-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* emit-rtl.h (struct rtl_data): Make stack_slot_list a vector.

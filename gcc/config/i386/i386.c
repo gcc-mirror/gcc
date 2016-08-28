@@ -10548,6 +10548,9 @@ ix86_build_builtin_va_list_64 (void)
 
   layout_type (record);
 
+  TYPE_ATTRIBUTES (record) = tree_cons (get_identifier ("sysv_abi va_list"),
+					NULL_TREE, TYPE_ATTRIBUTES (record));
+
   /* The correct type is an array type of one element.  */
   return build_array_type (record, build_index_type (size_zero_node));
 }
@@ -10560,17 +10563,36 @@ ix86_build_builtin_va_list (void)
 {
   if (TARGET_64BIT)
     {
-      /* Initialize ABI specific va_list builtin types.  */
-      tree sysv_va_list, ms_va_list;
+      /* Initialize ABI specific va_list builtin types.
 
-      sysv_va_list = ix86_build_builtin_va_list_64 ();
-      sysv_va_list_type_node = build_variant_type_copy (sysv_va_list);
+	 In lto1, we can encounter two va_list types:
+	 - one as a result of the type-merge across TUs, and
+	 - the one constructed here.
+	 These two types will not have the same TYPE_MAIN_VARIANT, and therefore
+	 a type identity check in canonical_va_list_type based on
+	 TYPE_MAIN_VARIANT (which we used to have) will not work.
+	 Instead, we tag each va_list_type_node with its unique attribute, and
+	 look for the attribute in the type identity check in
+	 canonical_va_list_type.
+
+	 Tagging sysv_va_list_type_node directly with the attribute is
+	 problematic since it's a array of one record, which will degrade into a
+	 pointer to record when used as parameter (see build_va_arg comments for
+	 an example), dropping the attribute in the process.  So we tag the
+	 record instead.  */
+
+      /* For SYSV_ABI we use an array of one record.  */
+      sysv_va_list_type_node = ix86_build_builtin_va_list_64 ();
 	
       /* For MS_ABI we use plain pointer to argument area.  */
-      ms_va_list = build_pointer_type (char_type_node);
-      ms_va_list_type_node = build_variant_type_copy (ms_va_list);
+      tree char_ptr_type = build_pointer_type (char_type_node);
+      tree attr = tree_cons (get_identifier ("ms_abi va_list"), NULL_TREE,
+			     TYPE_ATTRIBUTES (char_ptr_type));
+      ms_va_list_type_node = build_type_attribute_variant (char_ptr_type, attr);
 
-      return (ix86_abi == MS_ABI) ? ms_va_list : sysv_va_list;
+      return ((ix86_abi == MS_ABI)
+	      ? ms_va_list_type_node
+	      : sysv_va_list_type_node);
     }
   else
     {
@@ -44644,6 +44666,8 @@ static const struct attribute_spec ix86_attribute_table[] =
   /* ms_abi and sysv_abi calling convention function attributes.  */
   { "ms_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true },
   { "sysv_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true },
+  { "ms_abi va_list", 0, 0, false, false, false, NULL, false },
+  { "sysv_abi va_list", 0, 0, false, false, false, NULL, false },
   { "ms_hook_prologue", 0, 0, true, false, false, ix86_handle_fndecl_attribute,
     false },
   { "callee_pop_aggregate_return", 1, 1, false, true, true,
@@ -48538,8 +48562,6 @@ ix86_fn_abi_va_list (tree fndecl)
 static tree
 ix86_canonical_va_list_type (tree type)
 {
-  tree wtype, htype;
-
   /* Resolve references and pointers to va_list type.  */
   if (TREE_CODE (type) == MEM_REF)
     type = TREE_TYPE (type);
@@ -48548,64 +48570,25 @@ ix86_canonical_va_list_type (tree type)
   else if (POINTER_TYPE_P (type) && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
     type = TREE_TYPE (type);
 
-  if (TARGET_64BIT && va_list_type_node != NULL_TREE)
+  if (TARGET_64BIT)
     {
-      wtype = va_list_type_node;
-	  gcc_assert (wtype != NULL_TREE);
-      htype = type;
-      if (TREE_CODE (wtype) == ARRAY_TYPE)
-	{
-	  /* If va_list is an array type, the argument may have decayed
-	     to a pointer type, e.g. by being passed to another function.
-	     In that case, unwrap both types so that we can compare the
-	     underlying records.  */
-	  if (TREE_CODE (htype) == ARRAY_TYPE
-	      || POINTER_TYPE_P (htype))
-	    {
-	      wtype = TREE_TYPE (wtype);
-	      htype = TREE_TYPE (htype);
-	    }
-	}
-      if (TYPE_MAIN_VARIANT (wtype) == TYPE_MAIN_VARIANT (htype))
-	return va_list_type_node;
-      wtype = sysv_va_list_type_node;
-	  gcc_assert (wtype != NULL_TREE);
-      htype = type;
-      if (TREE_CODE (wtype) == ARRAY_TYPE)
-	{
-	  /* If va_list is an array type, the argument may have decayed
-	     to a pointer type, e.g. by being passed to another function.
-	     In that case, unwrap both types so that we can compare the
-	     underlying records.  */
-	  if (TREE_CODE (htype) == ARRAY_TYPE
-	      || POINTER_TYPE_P (htype))
-	    {
-	      wtype = TREE_TYPE (wtype);
-	      htype = TREE_TYPE (htype);
-	    }
-	}
-      if (TYPE_MAIN_VARIANT (wtype) == TYPE_MAIN_VARIANT (htype))
-	return sysv_va_list_type_node;
-      wtype = ms_va_list_type_node;
-	  gcc_assert (wtype != NULL_TREE);
-      htype = type;
-      if (TREE_CODE (wtype) == ARRAY_TYPE)
-	{
-	  /* If va_list is an array type, the argument may have decayed
-	     to a pointer type, e.g. by being passed to another function.
-	     In that case, unwrap both types so that we can compare the
-	     underlying records.  */
-	  if (TREE_CODE (htype) == ARRAY_TYPE
-	      || POINTER_TYPE_P (htype))
-	    {
-	      wtype = TREE_TYPE (wtype);
-	      htype = TREE_TYPE (htype);
-	    }
-	}
-      if (TYPE_MAIN_VARIANT (wtype) == TYPE_MAIN_VARIANT (htype))
+      if (lookup_attribute ("ms_abi va_list", TYPE_ATTRIBUTES (type)))
 	return ms_va_list_type_node;
+
+      if ((TREE_CODE (type) == ARRAY_TYPE
+	   && integer_zerop (array_type_nelts (type)))
+	  || POINTER_TYPE_P (type))
+	{
+	  tree elem_type = TREE_TYPE (type);
+	  if (TREE_CODE (elem_type) == RECORD_TYPE
+	      && lookup_attribute ("sysv_abi va_list",
+				   TYPE_ATTRIBUTES (elem_type)))
+	    return sysv_va_list_type_node;
+	}
+
       return NULL_TREE;
     }
+
   return std_canonical_va_list_type (type);
 }
 
