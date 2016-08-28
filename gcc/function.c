@@ -499,8 +499,7 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
   set_mem_align (x, alignment_in_bits);
   MEM_NOTRAP_P (x) = 1;
 
-  stack_slot_list
-    = gen_rtx_EXPR_LIST (VOIDmode, x, stack_slot_list);
+  vec_safe_push (stack_slot_list, x);
 
   if (frame_offset_overflow (frame_offset, current_function_decl))
     frame_offset = 0;
@@ -829,8 +828,7 @@ assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
 	      p->type = best_p->type;
 	      insert_slot_to_list (p, &avail_temp_slots);
 
-	      stack_slot_list = gen_rtx_EXPR_LIST (VOIDmode, p->slot,
-						   stack_slot_list);
+	      vec_safe_push (stack_slot_list, p->slot);
 
 	      best_p->size = rounded_size;
 	      best_p->full_size = rounded_size;
@@ -902,7 +900,7 @@ assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
 
   /* Create a new MEM rtx to avoid clobbering MEM flags of old slots.  */
   slot = gen_rtx_MEM (mode, XEXP (p->slot, 0));
-  stack_slot_list = gen_rtx_EXPR_LIST (VOIDmode, slot, stack_slot_list);
+  vec_safe_push (stack_slot_list, slot);
 
   /* If we know the alias set for the memory that will be used, use
      it.  If there's no TYPE, then we don't know anything about the
