@@ -1,3 +1,13 @@
+2016-08-28  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2016-08-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/70955
+	* gcc.dg/pr70955.c: New test.
+	* gcc.dg/lto/pr70955_0.c: Same.
+	* gcc.dg/lto/pr70955_1.c: Same.
+
 2016-08-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
