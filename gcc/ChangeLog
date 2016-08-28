@@ -1,3 +1,31 @@
+2016-08-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2016-08-23  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* config/i386/i386.c (processor_alias_table): Enable PTA_PRFCHW
+	for targets amdfam10 and barcelona.
+
+	Backport from mainline
+	2016-08-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77270
+	* config/i386/i386.md (prefetch): When TARGET_PRFCHW or
+	TARGET_PREFETCHWT1 are disabled, emit 3dNOW! write prefetches for
+	non-SSE2 athlons only, otherwise prefer SSE prefetches.
+
+	Backport from mainline
+	2016-08-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77270
+	* config/i386/i386.c (ix86_option_override_internal): Remove
+	PTA_PRFCHW from entries that also have PTA_3DNOW flag.
+	Enable SSE prefetch also for TARGET_PREFETCHWT1.
+	Do not try to enable TARGET_PRFCHW ISA flag here.
+	* config/i386/i386.md (prefetch): Enable also for TARGET_3DNOW.
+	Rewrite expander function body.
+	(*prefetch_3dnow): Enable for TARGET_3DNOW and TARGET_PREFETCHWT1.
+
 2016-08-28  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
