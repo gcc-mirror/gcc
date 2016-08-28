@@ -1278,8 +1278,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
      label on the nonlocal_goto_label list.  Since we're modeling these
      CFG edges more exactly, we can use the forced_labels list instead.  */
   LABEL_PRESERVE_P (dispatch_label) = 1;
-  forced_labels
-    = gen_rtx_INSN_LIST (VOIDmode, dispatch_label, forced_labels);
+  vec_safe_push<rtx_insn *> (forced_labels, dispatch_label);
 #endif
 
   /* Load up exc_ptr and filter values from the function context.  */

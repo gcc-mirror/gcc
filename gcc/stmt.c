@@ -136,7 +136,7 @@ force_label_rtx (tree label)
 
   gcc_assert (function);
 
-  forced_labels = gen_rtx_INSN_LIST (VOIDmode, ref, forced_labels);
+  vec_safe_push (forced_labels, ref);
   return ref;
 }
 
@@ -190,7 +190,7 @@ expand_label (tree label)
     }
 
   if (FORCED_LABEL (label))
-    forced_labels = gen_rtx_INSN_LIST (VOIDmode, label_r, forced_labels);
+    vec_safe_push<rtx_insn *> (forced_labels, label_r);
 
   if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
     maybe_set_first_label_num (label_r);

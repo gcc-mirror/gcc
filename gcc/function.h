@@ -126,7 +126,7 @@ struct GTY(()) expr_status {
   rtx x_apply_args_value;
 
   /* List of labels that must never be deleted.  */
-  rtx_insn_list *x_forced_labels;
+  vec<rtx_insn *, va_gc> *x_forced_labels;
 };
 
 typedef struct call_site_record_d *call_site_record;

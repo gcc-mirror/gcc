@@ -3888,9 +3888,10 @@ set_initial_label_offsets (void)
 {
   memset (offsets_known_at, 0, num_labels);
 
-  for (rtx_insn_list *x = forced_labels; x; x = x->next ())
-    if (x->insn ())
-      set_label_offsets (x->insn (), NULL, 1);
+  unsigned int i;
+  rtx_insn *insn;
+  FOR_EACH_VEC_SAFE_ELT (forced_labels, i, insn)
+    set_label_offsets (insn, NULL, 1);
 
   for (rtx_insn_list *x = nonlocal_goto_handler_labels; x; x = x->next ())
     if (x->insn ())
