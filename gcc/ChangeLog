@@ -1,3 +1,9 @@
+2016-08-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/77324
+	* config/sparc/sparc.c (sparc_legitimate_address_p): Accept special
+	HIGH+LO construct during reload.
+
 2016-08-28  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/70955
