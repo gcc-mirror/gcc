@@ -1,3 +1,7 @@
+2016-08-29  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c: #include tree-vrp.h.
+
 2016-08-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/77324
