@@ -169,7 +169,7 @@ finish_thunk (tree thunk)
     virtual_offset = BINFO_VPTR_FIELD (virtual_offset);
   function = THUNK_TARGET (thunk);
   name = mangle_thunk (function, DECL_THIS_THUNK_P (thunk),
-		       fixed_offset, virtual_offset);
+		       fixed_offset, virtual_offset, thunk);
 
   /* We can end up with declarations of (logically) different
      covariant thunks, that do identical adjustments.  The two thunks

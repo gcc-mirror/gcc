@@ -1,3 +1,11 @@
+2016-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77379
+	* mangle.c (maybe_check_abi_tags): Add version parm, handle thunks.
+	(mangle_thunk): Add thunk parameter.
+	* method.c (finish_thunk): Pass it.
+	* cp-tree.h: Declare it.
+
 2016-08-15  Jason Merrill  <jason@redhat.com>
 
 	Avoid calling a trivial default constructor.
