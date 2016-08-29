@@ -1,3 +1,10 @@
+2016-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77403
+	* config/i386/sse.md (vec_set_lo_<mode><mask_name>): Fix assembler
+	template for intel asm dialect.
+	(vec_set_hi_<mode><mask_name>): Ditto.
+
 2016-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftest.h (selftest::fail): Add ATTRIBUTE_NORETURN.
@@ -192,7 +199,7 @@
 	(ipcp_bits_lattice): New class.
 	(ipcp_param_lattice (bits_lattice): New member.
 	(print_all_lattices): Call ipcp_bits_lattice::print.
-	(set_all_contains_variable): Call ipcp_bits_lattice::set_to_bottom. 
+	(set_all_contains_variable): Call ipcp_bits_lattice::set_to_bottom.
 	(initialize_node_lattices): Likewise.
 	(propagate_bits_accross_jump_function): New function.
 	(propagate_constants_accross_call): Call
@@ -220,7 +227,8 @@
 	(ipa_read_jump_function): Add support for reading streamed ipa_bits.
 	(write_ipcp_transformation_info): Add streaming for ipa_bits
 	summary for ltrans.
-	(read_ipcp_transfomration_info): Add support for reading streamed ipa_bits.
+	(read_ipcp_transfomration_info): Add support for reading streamed
+	ipa_bits.
 	(ipcp_update_bits): New function.
 	(ipcp_transform_function): Call ipcp_update_bits.
 
@@ -393,7 +401,7 @@
 	* statistics.c (statistics_counter_event): Robustify against
 	NULL current_pass.
 
-2016-08-23  Venkataramanan Kumar
+2016-08-23  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* config/i386/i386.c (processor_alias_table): Enable PTA_PRFCHW
 	for targets amdfam10 and barcelona.
@@ -1713,9 +1721,9 @@
 
 2016-08-09  Martin Jambor  <mjambor@suse.cz>
 
-        PR ipa/71981
-        * ipa-polymorphic-call.c (get_dynamic_type): Bail out gracefully
-        if instance is a MEM_REF.
+	PR ipa/71981
+	* ipa-polymorphic-call.c (get_dynamic_type): Bail out gracefully
+	if instance is a MEM_REF.
 
 2016-08-09  Uros Bizjak  <ubizjak@gmail.com>
 

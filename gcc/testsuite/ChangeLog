@@ -1,3 +1,8 @@
+2016-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77403
+	* gcc.target/i386/pr77403.c: New test.
+
 2016-08-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/77292
@@ -342,10 +347,10 @@
 
 2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * gfortran.dg/random_4.f90: Initialize seed before using, handle
-        the last special seed value.
-        * gfortran.dg/random_7.f90: Use size for last array member instead
-        of hardcoded value.
+	* gfortran.dg/random_4.f90: Initialize seed before using, handle
+	the last special seed value.
+	* gfortran.dg/random_7.f90: Use size for last array member instead
+	of hardcoded value.
 
 2016-08-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
