@@ -5906,7 +5906,10 @@ build_va_arg (location_t loc, tree expr, tree type)
     {
       /* Case 2b: va_list is pointer to array elem type.  */
       gcc_assert (POINTER_TYPE_P (va_type));
-      gcc_assert (TREE_TYPE (va_type) == TREE_TYPE (canon_va_type));
+
+      /* Comparison as in std_canonical_va_list_type.  */
+      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (va_type))
+		  == TYPE_MAIN_VARIANT (TREE_TYPE (canon_va_type)));
 
       /* Don't take the address.  We've already got '&ap'.  */
       ;
