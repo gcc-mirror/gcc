@@ -1,3 +1,9 @@
+2016-08-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/77261
+	* gfortran.dg/random_3.f90: Run testcase only when real(10) is
+	available.
+
 2016-08-28  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/70955
