@@ -1,21 +1,26 @@
-2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
+2016-08-29  Nathan Sidwell  <nathan@acm.org>
 
-        * intrinsics/random.c (xor_keys): New array with "secret" keys.
-        (scramble_seed): XOR given seed with xor_keys array rather than
-        shuffling bytes.
-        (unscramble_seed): Remove function.
-        (random_seed_i4): Use new scramble_seed.
-        (random_seed_i8): Likewise.
+	* configure.ac (nvptx-*): Hardwire newlib.
+	* configure: Rebuilt.
 
 2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * intrinsics/random.c (master_init): New variable.
-        (init_rand_state): Move below getosrandom (), maybe initialize
-        master_state.
-        (random_seed_i4): If called with no arguments, set master_init to
-        false, and reinitialize. If called with PUT=, set master_init to
-        true.
-        (random_seed_i8): Likewise.
+	* intrinsics/random.c (xor_keys): New array with "secret" keys.
+	(scramble_seed): XOR given seed with xor_keys array rather than
+	shuffling bytes.
+	(unscramble_seed): Remove function.
+	(random_seed_i4): Use new scramble_seed.
+	(random_seed_i8): Likewise.
+
+2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (master_init): New variable.
+	(init_rand_state): Move below getosrandom (), maybe initialize
+	master_state.
+	(random_seed_i4): If called with no arguments, set master_init to
+	false, and reinitialize. If called with PUT=, set master_init to
+	true.
+	(random_seed_i8): Likewise.
 
 2016-08-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -41,14 +46,15 @@
 
 	PR libgfortran/48852
 	* io/write.c: Cleaned up whitespace.
-	(write_d, write_e, write_f, write_es, write_en): Use new helper function
-	write_float_0. (write_float_0): New helper function.
+	(write_d, write_e, write_f, write_es, write_en): Use new helper
+	function write_float_0.
+	(write_float_0): New helper function.
 	(get_precision, select_buffer, select_string, write_float_string): New
-	helper functions used in remaining float writing functions. Helper function
-	write_float_string now contains code for writing to kind=4 character
-	internal units.
-	(write_real): Modified to establish working buffers at this level and to
-	use new helper functions.
+	helper functions used in remaining float writing functions.
+	Helper function write_float_string now contains code for writing
+	to kind=4 character internal units.
+	(write_real): Modified to establish working buffers at this level
+	and to 	use new helper functions.
 	(write_real_g0): Likewise modified.
 	(write_complex): Likewise modified. Gets both float strings before
 	output so that final lengths can be determined which allows right
