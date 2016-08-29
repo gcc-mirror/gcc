@@ -231,7 +231,7 @@ static void write_local_name (tree, const tree, const tree);
 static void dump_substitution_candidates (void);
 static tree mangle_decl_string (const tree);
 static int local_class_index (tree);
-static void maybe_check_abi_tags (tree, tree = NULL_TREE);
+static void maybe_check_abi_tags (tree, tree = NULL_TREE, int = 10);
 static bool equal_abi_tags (tree, tree);
 
 /* Control functions.  */
@@ -4024,9 +4024,12 @@ mangle_call_offset (const tree fixed_offset, const tree virtual_offset)
 
 tree
 mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
-	      tree virtual_offset)
+	      tree virtual_offset, tree thunk)
 {
   tree result;
+
+  if (abi_version_at_least (11))
+    maybe_check_abi_tags (fn_decl, thunk, 11);
 
   start_mangling (fn_decl);
 
@@ -4142,7 +4145,7 @@ mangle_conv_op_name_for_type (const tree type)
    guard variable for T.  */
 
 static void
-maybe_check_abi_tags (tree t, tree for_decl)
+maybe_check_abi_tags (tree t, tree for_decl, int ver)
 {
   if (DECL_ASSEMBLER_NAME_SET_P (t))
     return;
@@ -4153,9 +4156,14 @@ maybe_check_abi_tags (tree t, tree for_decl)
 
   tree newtags = get_abi_tags (t);
   if (newtags && newtags != oldtags
-      && abi_version_crosses (10))
+      && abi_version_crosses (ver))
     {
-      if (for_decl)
+      if (for_decl && DECL_THUNK_P (for_decl))
+	warning_at (DECL_SOURCE_LOCATION (t), OPT_Wabi,
+		    "the mangled name of a thunk for %qD changes between "
+		    "-fabi-version=%d and -fabi-version=%d",
+		    t, flag_abi_version, warn_abi_version);
+      else if (for_decl)
 	warning_at (DECL_SOURCE_LOCATION (for_decl), OPT_Wabi,
 		    "the mangled name of %qD changes between "
 		    "-fabi-version=%d and -fabi-version=%d",
