@@ -1002,6 +1002,12 @@ IS_ADHOC_LOC (source_location loc)
 bool
 pure_location_p (line_maps *set, source_location loc);
 
+/* Given location LOC within SET, strip away any packed range information
+   or ad-hoc information.  */
+
+extern source_location get_pure_location (line_maps *set,
+					  source_location loc);
+
 /* Combine LOC and BLOCK, giving a combined adhoc location.  */
 
 inline source_location

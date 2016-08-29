@@ -838,28 +838,6 @@ expansion_point_location (source_location location)
 				   LRK_MACRO_EXPANSION_POINT, NULL);
 }
 
-/* Given location LOC, strip away any packed range information
-   or ad-hoc information.  */
-
-location_t
-get_pure_location (location_t loc)
-{
-  if (IS_ADHOC_LOC (loc))
-    loc
-      = line_table->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
-
-  if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
-    return loc;
-
-  if (loc < RESERVED_LOCATION_COUNT)
-    return loc;
-
-  const line_map *map = linemap_lookup (line_table, loc);
-  const line_map_ordinary *ordmap = linemap_check_ordinary (map);
-
-  return loc & ~((1 << ordmap->m_range_bits) - 1);
-}
-
 /* Construct a location with caret at CARET, ranging from START to
    finish e.g.
 

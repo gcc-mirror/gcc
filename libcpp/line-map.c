@@ -311,6 +311,28 @@ pure_location_p (line_maps *set, source_location loc)
   return true;
 }
 
+/* Given location LOC within SET, strip away any packed range information
+   or ad-hoc information.  */
+
+source_location
+get_pure_location (line_maps *set, source_location loc)
+{
+  if (IS_ADHOC_LOC (loc))
+    loc
+      = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
+
+  if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (set))
+    return loc;
+
+  if (loc < RESERVED_LOCATION_COUNT)
+    return loc;
+
+  const line_map *map = linemap_lookup (set, loc);
+  const line_map_ordinary *ordmap = linemap_check_ordinary (map);
+
+  return loc & ~((1 << ordmap->m_range_bits) - 1);
+}
+
 /* Finalize the location_adhoc_data structure.  */
 void
 location_adhoc_data_fini (struct line_maps *set)
@@ -2077,6 +2099,8 @@ void
 rich_location::add_fixit_insert (source_location where,
 				 const char *new_content)
 {
+  where = get_pure_location (m_line_table, where);
+
   if (reject_impossible_fixit (where))
     return;
 
@@ -2140,6 +2164,9 @@ rich_location::add_fixit_replace (source_range src_range,
 				  const char *new_content)
 {
   linemap_assert (m_num_fixit_hints < MAX_FIXIT_HINTS);
+
+  src_range.m_start = get_pure_location (m_line_table, src_range.m_start);
+  src_range.m_finish = get_pure_location (m_line_table, src_range.m_finish);
 
   if (reject_impossible_fixit (src_range.m_start))
     return;
