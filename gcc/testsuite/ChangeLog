@@ -1,6 +1,16 @@
 2016-08-29  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
+	2015-09-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR sanitizer/64078
+	* c-c++-common/ubsan/object-size-9.c (s): Add alignment attribute.
+	(f2, f3): Make the function static.
+	* c-c++-common/ubsan/object-size-10.c (a, b): Add alignment attribute.
+
+2016-08-29  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
 	PR testsuite/65940
 	2016-02-01  Uros Bizjak  <ubizjak@gmail.com>
 
