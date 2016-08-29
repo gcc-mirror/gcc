@@ -11866,7 +11866,7 @@
 		       (const_int 12) (const_int 13)
 		       (const_int 14) (const_int 15)]))))]
   "TARGET_AVX512DQ"
-  "vinsert<shuffletype>32x8\t{$0x0, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, $0x0}"
+  "vinsert<shuffletype>32x8\t{$0x0, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
@@ -11883,7 +11883,7 @@
 		       (const_int 6) (const_int 7)]))
 	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512DQ"
-  "vinsert<shuffletype>32x8\t{$0x1, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, $0x1}"
+  "vinsert<shuffletype>32x8\t{$0x1, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
@@ -11898,7 +11898,7 @@
 	    (parallel [(const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
   "TARGET_AVX512F"
-  "vinsert<shuffletype>64x4\t{$0x0, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, $0x0}"
+  "vinsert<shuffletype>64x4\t{$0x0, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
@@ -11913,7 +11913,7 @@
 		       (const_int 2) (const_int 3)]))
 	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512F"
-  "vinsert<shuffletype>64x4\t{$0x1, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, $0x1}"
+  "vinsert<shuffletype>64x4\t{$0x1, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
