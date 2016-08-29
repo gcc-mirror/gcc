@@ -1,3 +1,9 @@
+2016-08-29  Fritz Reese  <fritzoreese@gmail.com>
+
+	Fix, reorganize, and clarify comparisons of anonymous types/components.
+
+	* gfortran.dg/dec_structure_13.f90: New testcase.
+
 2016-08-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/77261

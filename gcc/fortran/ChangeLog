@@ -1,3 +1,12 @@
+2016-08-29  Fritz Reese  <fritzoreese@gmail.com>
+
+	Fix, reorganize, and clarify comparisons of anonymous types/components.
+
+	PR fortran/77327
+	* interface.c (is_anonymous_component, is_anonymous_dt): New functions.
+	* interface.c (compare_components, gfc_compare_derived_types): Use new
+	functions.
+
 2016-08-27  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/77380
