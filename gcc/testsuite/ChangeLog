@@ -1,3 +1,11 @@
+2016-08-29  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	PR testsuite/65940
+	2016-02-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/other/anon5.C (dg-opetions): Use -gdwarf-2 instead of -g.
+
 2016-08-28  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/77034
