@@ -2775,7 +2775,7 @@ build/gcov-iov$(build_exeext): build/gcov-iov.o
 	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) \
 		build/gcov-iov.o -o $@
 
-gcov-iov.h: s-iov
+gcov-iov.h: s-iov; @true
 s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
 	build/gcov-iov$(build_exeext) '$(BASEVER_c)' '$(DEVPHASE_c)' \
 	    > tmp-gcov-iov.h
