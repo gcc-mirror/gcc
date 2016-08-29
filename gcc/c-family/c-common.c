@@ -1481,7 +1481,8 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
 
 /* Warn about logical not used on the left hand side operand of a comparison.
    This function assumes that the LHS is inside of TRUTH_NOT_EXPR.
-   Do not warn if RHS is of a boolean type.  */
+   Do not warn if RHS is of a boolean type, a logical operator, or
+   a comparison.  */
 
 void
 warn_logical_not_parentheses (location_t location, enum tree_code code,
@@ -1489,7 +1490,8 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
 {
   if (TREE_CODE_CLASS (code) != tcc_comparison
       || TREE_TYPE (rhs) == NULL_TREE
-      || TREE_CODE (TREE_TYPE (rhs)) == BOOLEAN_TYPE)
+      || TREE_CODE (TREE_TYPE (rhs)) == BOOLEAN_TYPE
+      || truth_value_p (TREE_CODE (rhs)))
     return;
 
   /* Don't warn for !x == 0 or !y != 0, those are equivalent to
