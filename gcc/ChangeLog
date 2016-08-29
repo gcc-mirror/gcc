@@ -1,3 +1,10 @@
+2016-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77403
+	* config/i386/sse.md (vec_set_lo_<mode><mask_name>): Fix assembler
+	template for intel asm dialect.
+	(vec_set_hi_<mode><mask_name>): Ditto.
+
 2016-08-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (gcov-iov.h): Add dummy recipe.
@@ -349,9 +356,9 @@
 
 2016-08-09  Martin Jambor  <mjambor@suse.cz>
 
-        PR ipa/71981
-        * ipa-polymorphic-call.c (get_dynamic_type): Bail out gracefully
-        if instance is a MEM_REF.
+	PR ipa/71981
+	* ipa-polymorphic-call.c (get_dynamic_type): Bail out gracefully
+	if instance is a MEM_REF.
 
 2016-08-09  Richard Biener  <rguenther@suse.de>
 

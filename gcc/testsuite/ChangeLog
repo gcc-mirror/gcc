@@ -1,3 +1,8 @@
+2016-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77403
+	* gcc.target/i386/pr77403.c: New test.
+
 2016-08-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/ipa/iinline-attr.c: XFAIL on Visium.
@@ -241,8 +246,8 @@
 
 2016-08-09  Martin Jambor  <mjambor@suse.cz>
 
-        PR ipa/71981
-        * gcc.dg/ipa/pr71981.c: New test.
+	PR ipa/71981
+	* gcc.dg/ipa/pr71981.c: New test.
 
 2016-08-09  Richard Biener  <rguenther@suse.de>
 
@@ -367,8 +372,8 @@
 
 2016-07-20  Martin Jambor  <mjambor@suse.cz>
 
-        PR fortran/71688
-        gfortran.dg/pr71688.f90: New test.
+	PR fortran/71688
+	* gfortran.dg/pr71688.f90: New test.
 
 2016-07-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -509,7 +514,7 @@
 	2016-07-06  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/71518
-        * gcc.dg/pr71518.c: New test.
+	* gcc.dg/pr71518.c: New test.
 
 2016-07-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
