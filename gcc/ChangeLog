@@ -1,5 +1,10 @@
 2016-08-29  David Malcolm  <dmalcolm@redhat.com>
 
+	* selftest.h (selftest::fail): Add ATTRIBUTE_NORETURN.
+	(selftest::fail_formatted): Likewise.
+
+2016-08-29  David Malcolm  <dmalcolm@redhat.com>
+
 	* input.c (make_location): Call get_start and get_finish
 	on the endpoints to avoid storing packed ranges or ad-hoc
 	ranges in them.
