@@ -1,3 +1,8 @@
+2016-08-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/pr77372.f90: Moved to ...
+	* gfortran.dg/ieee/pr77372.f90: here.
+
 2016-08-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vec-init-4.c: New runtime tests for various
