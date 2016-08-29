@@ -1,3 +1,12 @@
+2016-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.c (make_location): Call get_start and get_finish
+	on the endpoints to avoid storing packed ranges or ad-hoc
+	ranges in them.
+	(selftest::test_make_location_nonpure_range_endpoints): New function.
+	(selftest::input_c_tests): Call it.
+	* input.h (get_start): New inline function.
+
 2016-08-29  Tom de Vries  <tom@codesourcery.com>
 
 	PR c/77398
