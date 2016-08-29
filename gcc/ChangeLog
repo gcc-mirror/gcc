@@ -1,5 +1,11 @@
 2016-08-29  David Malcolm  <dmalcolm@redhat.com>
 
+	* input.c
+	(selftest::test_make_location_nonpure_range_endpoints): Fix
+	header comment.
+
+2016-08-29  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-show-locus.c
 	(selftest::test_one_liner_fixit_validation_adhoc_locations): New
 	function.
