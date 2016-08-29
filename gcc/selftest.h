@@ -56,12 +56,13 @@ extern void pass (const location &loc, const char *msg);
 
 /* Report the failed outcome of some aspect of the test and abort.  */
 
-extern void fail (const location &loc, const char *msg);
+extern void fail (const location &loc, const char *msg)
+  ATTRIBUTE_NORETURN;
 
 /* As "fail", but using printf-style formatted output.  */
 
 extern void fail_formatted (const location &loc, const char *fmt, ...)
- ATTRIBUTE_PRINTF_2;
+  ATTRIBUTE_PRINTF_2 ATTRIBUTE_NORETURN;
 
 /* Implementation detail of ASSERT_STREQ.  */
 
