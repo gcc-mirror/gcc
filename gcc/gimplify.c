@@ -11959,12 +11959,7 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
   if (have_va_type == error_mark_node)
     return GS_ERROR;
   have_va_type = targetm.canonical_va_list_type (have_va_type);
-
-  if (have_va_type == NULL_TREE)
-    {
-      error_at (loc, "first argument to %<va_arg%> not of type %<va_list%>");
-      return GS_ERROR;
-    }
+  gcc_assert (have_va_type != NULL_TREE);
 
   /* Generate a diagnostic for requesting data of a type that cannot
      be passed through `...' due to type promotion at the call site.  */

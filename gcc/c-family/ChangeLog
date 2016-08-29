@@ -1,3 +1,9 @@
+2016-08-29  Tom de Vries  <tom@codesourcery.com>
+
+	PR c/77398
+	* c-common.c (build_va_arg): Add first argument error.  Build va_arg
+	with error_mark_node as va_list instead of with illegal va_list.
+
 2016-08-25  Marek Polacek  <polacek@redhat.com>
 	    David Malcolm  <dmalcolm@redhat.com>
 
