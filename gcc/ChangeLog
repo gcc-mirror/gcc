@@ -1,3 +1,7 @@
+2016-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (gcov-iov.h): Add dummy recipe.
+
 2016-08-29  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c: #include tree-vrp.h.
