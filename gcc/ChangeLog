@@ -1,3 +1,9 @@
+2016-08-29  Tom de Vries  <tom@codesourcery.com>
+
+	PR c/77398
+	* gimplify.c (gimplify_va_arg_expr): Replace first argument type error
+	with assert.
+
 2016-08-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (gcov-iov.h): Add dummy recipe.

@@ -5806,16 +5806,19 @@ build_va_arg (location_t loc, tree expr, tree type)
 {
   tree va_type = TREE_TYPE (expr);
   tree canon_va_type = (va_type == error_mark_node
-			? NULL_TREE
+			? error_mark_node
 			: targetm.canonical_va_list_type (va_type));
 
   if (va_type == error_mark_node
       || canon_va_type == NULL_TREE)
     {
+      if (canon_va_type == NULL_TREE)
+	error_at (loc, "first argument to %<va_arg%> not of type %<va_list%>");
+
       /* Let's handle things neutrallly, if expr:
 	 - has undeclared type, or
 	 - is not an va_list type.  */
-      return build_va_arg_1 (loc, type, expr);
+      return build_va_arg_1 (loc, type, error_mark_node);
     }
 
   if (TREE_CODE (canon_va_type) != ARRAY_TYPE)
