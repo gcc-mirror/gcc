@@ -1,6 +1,8 @@
-2016-08-29  Fritz Reese  <fritzoreese@gmail.com>
+2016-08-29  Eric Botcazou  <ebotcazou@adacore.com>
 
-	Fix, reorganize, and clarify comparisons of anonymous types/components.
+	* gcc.dg/ipa/iinline-attr.c: XFAIL on Visium.
+
+2016-08-29  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_structure_13.f90: New testcase.
 
