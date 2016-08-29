@@ -1720,8 +1720,8 @@ test_builtins ()
 }
 
 /* Regression test for make_location.
-   Ensure that we use the caret locations of the start/finish, rather
-   than storing a packed or ad-hoc range as the start/finish.  */
+   Ensure that we use pure locations for the start/finish of the range,
+   rather than storing a packed or ad-hoc range as the start/finish.  */
 
 static void
 test_make_location_nonpure_range_endpoints (const line_table_case &case_)
