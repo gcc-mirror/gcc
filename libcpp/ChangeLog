@@ -1,5 +1,14 @@
 2016-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* include/line-map.h (get_pure_location): New decl.
+	* line-map.c (get_pure_location): Move here, from gcc/input.c, adding
+	a line_maps * param.
+	(rich_location::add_fixit_insert): Call get_pure_location on "where".
+	(rich_location::add_fixit_replace): Call get_pure_location on the
+	end-points.
+
+2016-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* include/line-map.h (rich_location): Eliminate unimplemented
 	constructor based on source_range.
 	(rich_location::get_last_fixit_hint): New method.

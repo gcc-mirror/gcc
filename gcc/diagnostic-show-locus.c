@@ -1594,6 +1594,75 @@ test_one_liner_fixit_replace_equal_secondary_range ()
 		pp_formatted_text (dc.printer));
 }
 
+/* Verify that we can use ad-hoc locations when adding fixits to a
+   rich_location.  */
+
+static void
+test_one_liner_fixit_validation_adhoc_locations ()
+{
+  /* Generate a range that's too long to be packed, so must
+     be stored as an ad-hoc location (given the defaults
+     of 5 bits or 0 bits of packed range); 41 columns > 2**5.  */
+  const location_t c7 = linemap_position_for_column (line_table, 7);
+  const location_t c47 = linemap_position_for_column (line_table, 47);
+  const location_t loc = make_location (c7, c7, c47);
+
+  if (c47 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  ASSERT_TRUE (IS_ADHOC_LOC (loc));
+
+  /* Insert.  */
+  {
+    rich_location richloc (line_table, loc);
+    richloc.add_fixit_insert (loc, "test");
+    /* It should not have been discarded by the validator.  */
+    ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  " foo = bar.field;\n"
+		  "       ^~~~~~~~~~                               \n"
+		  "       test\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Remove.  */
+  {
+    rich_location richloc (line_table, loc);
+    source_range range = source_range::from_locations (loc, c47);
+    richloc.add_fixit_remove (range);
+    /* It should not have been discarded by the validator.  */
+    ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  " foo = bar.field;\n"
+		  "       ^~~~~~~~~~                               \n"
+		  "       -----------------------------------------\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Replace.  */
+  {
+    rich_location richloc (line_table, loc);
+    source_range range = source_range::from_locations (loc, c47);
+    richloc.add_fixit_replace (range, "test");
+    /* It should not have been discarded by the validator.  */
+    ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  " foo = bar.field;\n"
+		  "       ^~~~~~~~~~                               \n"
+		  "       test\n",
+		  pp_formatted_text (dc.printer));
+  }
+}
+
 /* Run the various one-liner tests.  */
 
 static void
@@ -1626,6 +1695,7 @@ test_diagnostic_show_locus_one_liner (const line_table_case &case_)
   test_one_liner_fixit_replace ();
   test_one_liner_fixit_replace_non_equal_range ();
   test_one_liner_fixit_replace_equal_secondary_range ();
+  test_one_liner_fixit_validation_adhoc_locations ();
 }
 
 /* Verify that fix-it hints are appropriately consolidated.

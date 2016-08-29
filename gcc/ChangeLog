@@ -1,3 +1,13 @@
+2016-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c
+	(selftest::test_one_liner_fixit_validation_adhoc_locations): New
+	function.
+	(selftest::test_diagnostic_show_locus_one_liner): Call it.
+	* input.c (get_pure_location): Move to libcpp/line-map.c.
+	* input.h (get_pure_location): Convert decl to an inline function
+	calling implementation in libcpp.
+
 2016-08-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77403
