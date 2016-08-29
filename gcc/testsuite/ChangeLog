@@ -1,3 +1,8 @@
+2016-08-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/77292
+	* c-c++-common/Wlogical-not-parentheses-1.c: New test.
+
 2016-08-29  Tom de Vries  <tom@codesourcery.com>
 
 	PR c/77398

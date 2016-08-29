@@ -1,3 +1,9 @@
+2016-08-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/77292
+	* c-common.c (warn_logical_not_parentheses): Don't warn for
+	a comparison or a logical operator.
+
 2016-08-29  Tom de Vries  <tom@codesourcery.com>
 
 	* c-common.c (build_va_arg): Fix type comparison assert.
