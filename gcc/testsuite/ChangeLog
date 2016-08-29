@@ -1,3 +1,15 @@
+2016-08-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-init-4.c: New runtime tests for various
+	vector short/char initializations.
+	* gcc.target/powerpc/vec-init-5.c: Likewise.
+	* gcc.target/powerpc/vec-init-6.c: New compile time test for
+	vector initialization optimizations.
+	* gcc.target/powerpc/vec-init-7.c: Likewise.
+	* gcc.target/powerpc/vec-init-8.c: New runtime tests for various
+	vector float/double initializations.
+	* gcc.target/powerpc/vec-init-9.c: Likewise.
+
 2016-08-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77403
