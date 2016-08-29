@@ -1,5 +1,9 @@
 2016-08-29  Tom de Vries  <tom@codesourcery.com>
 
+	* c-common.c (build_va_arg): Fix type comparison assert.
+
+2016-08-29  Tom de Vries  <tom@codesourcery.com>
+
 	* c-common.c (build_va_arg): Replace first argument type error
 	with assert.
 
