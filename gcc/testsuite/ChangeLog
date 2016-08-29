@@ -1,3 +1,7 @@
+2016-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/ipa/iinline-attr.c: XFAIL on Visium.
+
 2016-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
