@@ -1,5 +1,8 @@
 2016-08-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/77377
+	* gcc.target/i386/pr77377.c: New test.
+
 	PR debug/77389
 	* g++.dg/debug/dwarf2/template-params-12f.C: Pass -gno-strict-dwarf
 	in dg-options.

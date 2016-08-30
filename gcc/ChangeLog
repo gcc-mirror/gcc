@@ -1,3 +1,9 @@
+2016-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77377
+	* simplify-rtx.c (avoid_constant_pool_reference): For out of bounds
+	constant pool reference return x instead of c.
+
 2016-08-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.h (CALL_REALLY_USED_REGISTERS): Do not
