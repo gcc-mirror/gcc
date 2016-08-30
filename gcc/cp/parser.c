@@ -3171,7 +3171,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       if (suggestion)
 	{
 	  gcc_rich_location richloc (location);
-	  richloc.add_fixit_misspelled_id (location, suggestion);
+	  richloc.add_fixit_replace (suggestion);
 	  error_at_rich_loc (&richloc,
 			     "%qE does not name a type; did you mean %qs?",
 			     id, suggestion);

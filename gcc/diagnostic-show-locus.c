@@ -1487,7 +1487,7 @@ test_one_liner_fixit_insert ()
   test_diagnostic_context dc;
   location_t caret = linemap_position_for_column (line_table, 7);
   rich_location richloc (line_table, caret);
-  richloc.add_fixit_insert (caret, "&");
+  richloc.add_fixit_insert ("&");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
 		" foo = bar.field;\n"
@@ -1506,10 +1506,7 @@ test_one_liner_fixit_remove ()
   location_t finish = linemap_position_for_column (line_table, 15);
   location_t dot = make_location (start, start, finish);
   rich_location richloc (line_table, dot);
-  source_range range;
-  range.m_start = start;
-  range.m_finish = finish;
-  richloc.add_fixit_remove (range);
+  richloc.add_fixit_remove ();
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
 		" foo = bar.field;\n"
@@ -1528,10 +1525,7 @@ test_one_liner_fixit_replace ()
   location_t finish = linemap_position_for_column (line_table, 15);
   location_t field = make_location (start, start, finish);
   rich_location richloc (line_table, field);
-  source_range range;
-  range.m_start = start;
-  range.m_finish = finish;
-  richloc.add_fixit_replace (range, "m_field");
+  richloc.add_fixit_replace ("m_field");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
 		" foo = bar.field;\n"
@@ -1580,10 +1574,7 @@ test_one_liner_fixit_replace_equal_secondary_range ()
   rich_location richloc (line_table, equals);
   location_t field = make_location (start, start, finish);
   richloc.add_range (field, false);
-  source_range range;
-  range.m_start = start;
-  range.m_finish = finish;
-  richloc.add_fixit_replace (range, "m_field");
+  richloc.add_fixit_replace (field, "m_field");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   /* The replacement range is indicated in the annotation line,
      so it shouldn't be indicated via an additional underline.  */

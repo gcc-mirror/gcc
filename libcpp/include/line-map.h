@@ -1401,13 +1401,47 @@ class rich_location
   override_column (int column);
 
   /* Fix-it hints.  */
+
+  /* Methods for adding insertion fix-it hints.  */
+
+  /* Suggest inserting NEW_CONTENT at the primary range's caret.  */
+  void
+  add_fixit_insert (const char *new_content);
+
+  /* Suggest inserting NEW_CONTENT at WHERE.  */
   void
   add_fixit_insert (source_location where,
 		    const char *new_content);
 
+  /* Methods for adding removal fix-it hints.  */
+
+  /* Suggest removing the content covered by range 0.  */
+  void
+  add_fixit_remove ();
+
+  /* Suggest removing the content covered between the start and finish
+     of WHERE.  */
+  void
+  add_fixit_remove (source_location where);
+
+  /* Suggest removing the content covered by SRC_RANGE.  */
   void
   add_fixit_remove (source_range src_range);
 
+  /* Methods for adding "replace" fix-it hints.  */
+
+  /* Suggest replacing the content covered by range 0 with NEW_CONTENT.  */
+  void
+  add_fixit_replace (const char *new_content);
+
+  /* Suggest replacing the content between the start and finish of
+     WHERE with NEW_CONTENT.  */
+  void
+  add_fixit_replace (source_location where,
+		     const char *new_content);
+
+  /* Suggest replacing the content covered by SRC_RANGE with
+     NEW_CONTENT.  */
   void
   add_fixit_replace (source_range src_range,
 		     const char *new_content);
