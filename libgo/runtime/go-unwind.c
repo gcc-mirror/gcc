@@ -15,7 +15,6 @@
 
 #include "runtime.h"
 #include "go-alloc.h"
-#include "go-defer.h"
 #include "go-panic.h"
 
 /* The code for a Go exception.  */
@@ -57,43 +56,42 @@ __go_check_defer (_Bool *frame)
       /* Some other language has thrown an exception.  We know there
 	 are no defer handlers, so there is nothing to do.  */
     }
-  else if (g->is_foreign)
+  else if (g->isforeign)
     {
-      struct __go_panic_stack *n;
-      _Bool was_recovered;
+      Panic *n;
+      _Bool recovered;
 
       /* Some other language has thrown an exception.  We need to run
 	 the local defer handlers.  If they call recover, we stop
 	 unwinding the stack here.  */
 
-      n = ((struct __go_panic_stack *)
-	   __go_alloc (sizeof (struct __go_panic_stack)));
+      n = (Panic *) __go_alloc (sizeof (Panic));
 
-      n->__arg.__type_descriptor = NULL;
-      n->__arg.__object = NULL;
-      n->__was_recovered = 0;
-      n->__is_foreign = 1;
-      n->__next = g->panic;
-      g->panic = n;
+      n->arg.__type_descriptor = NULL;
+      n->arg.__object = NULL;
+      n->recovered = 0;
+      n->isforeign = 1;
+      n->next = g->_panic;
+      g->_panic = n;
 
       while (1)
 	{
-	  struct __go_defer_stack *d;
+	  Defer *d;
 	  void (*pfn) (void *);
 
-	  d = g->defer;
-	  if (d == NULL || d->__frame != frame || d->__pfn == NULL)
+	  d = g->_defer;
+	  if (d == NULL || d->frame != frame || d->pfn == 0)
 	    break;
 
-	  pfn = d->__pfn;
-	  g->defer = d->__next;
+	  pfn = (void (*) (void *)) d->pfn;
+	  g->_defer = d->next;
 
-	  (*pfn) (d->__arg);
+	  (*pfn) (d->arg);
 
 	  if (runtime_m () != NULL)
 	    runtime_freedefer (d);
 
-	  if (n->__was_recovered)
+	  if (n->recovered)
 	    {
 	      /* The recover function caught the panic thrown by some
 		 other language.  */
@@ -101,11 +99,11 @@ __go_check_defer (_Bool *frame)
 	    }
 	}
 
-      was_recovered = n->__was_recovered;
-      g->panic = n->__next;
+      recovered = n->recovered;
+      g->_panic = n->next;
       __go_free (n);
 
-      if (was_recovered)
+      if (recovered)
 	{
 	  /* Just return and continue executing Go code.  */
 	  *frame = 1;
@@ -115,17 +113,17 @@ __go_check_defer (_Bool *frame)
       /* We are panicing through this function.  */
       *frame = 0;
     }
-  else if (g->defer != NULL
-	   && g->defer->__pfn == NULL
-	   && g->defer->__frame == frame)
+  else if (g->_defer != NULL
+	   && g->_defer->pfn == 0
+	   && g->_defer->frame == frame)
     {
-      struct __go_defer_stack *d;
+      Defer *d;
 
       /* This is the defer function which called recover.  Simply
 	 return to stop the stack unwind, and let the Go code continue
 	 to execute.  */
-      d = g->defer;
-      g->defer = d->__next;
+      d = g->_defer;
+      g->_defer = d->next;
 
       if (runtime_m () != NULL)
 	runtime_freedefer (d);
@@ -432,7 +430,7 @@ PERSONALITY_FUNCTION (int version,
   else
     {
       g->exception = ue_header;
-      g->is_foreign = is_foreign;
+      g->isforeign = is_foreign;
     }
 
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (0),

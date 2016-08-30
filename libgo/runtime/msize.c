@@ -29,8 +29,8 @@
 #include "arch.h"
 #include "malloc.h"
 
-int32 runtime_class_to_size[NumSizeClasses];
-int32 runtime_class_to_allocnpages[NumSizeClasses];
+int32 runtime_class_to_size[_NumSizeClasses];
+int32 runtime_class_to_allocnpages[_NumSizeClasses];
 
 // The SizeToClass lookup is implemented using two arrays,
 // one mapping sizes <= 1024 to their class and one mapping
@@ -101,14 +101,14 @@ runtime_InitSizes(void)
 		runtime_class_to_size[sizeclass] = size;
 		sizeclass++;
 	}
-	if(sizeclass != NumSizeClasses) {
-		runtime_printf("sizeclass=%d NumSizeClasses=%d\n", sizeclass, NumSizeClasses);
-		runtime_throw("InitSizes - bad NumSizeClasses");
+	if(sizeclass != _NumSizeClasses) {
+		runtime_printf("sizeclass=%d _NumSizeClasses=%d\n", sizeclass, _NumSizeClasses);
+		runtime_throw("InitSizes - bad _NumSizeClasses");
 	}
 
 	// Initialize the size_to_class tables.
 	nextsize = 0;
-	for (sizeclass = 1; sizeclass < NumSizeClasses; sizeclass++) {
+	for (sizeclass = 1; sizeclass < _NumSizeClasses; sizeclass++) {
 		for(; nextsize < 1024 && nextsize <= runtime_class_to_size[sizeclass]; nextsize+=8)
 			runtime_size_to_class8[nextsize/8] = sizeclass;
 		if(nextsize >= 1024)
@@ -120,7 +120,7 @@ runtime_InitSizes(void)
 	if(0) {
 		for(n=0; n < MaxSmallSize; n++) {
 			sizeclass = runtime_SizeToClass(n);
-			if(sizeclass < 1 || sizeclass >= NumSizeClasses || runtime_class_to_size[sizeclass] < n) {
+			if(sizeclass < 1 || sizeclass >= _NumSizeClasses || runtime_class_to_size[sizeclass] < n) {
 				runtime_printf("size=%d sizeclass=%d runtime_class_to_size=%d\n", n, sizeclass, runtime_class_to_size[sizeclass]);
 				runtime_printf("incorrect SizeToClass");
 				goto dump;
@@ -140,9 +140,9 @@ runtime_InitSizes(void)
 
 dump:
 	if(1){
-		runtime_printf("NumSizeClasses=%d\n", NumSizeClasses);
+		runtime_printf("NumSizeClasses=%d\n", _NumSizeClasses);
 		runtime_printf("runtime_class_to_size:");
-		for(sizeclass=0; sizeclass<NumSizeClasses; sizeclass++)
+		for(sizeclass=0; sizeclass<_NumSizeClasses; sizeclass++)
 			runtime_printf(" %d", runtime_class_to_size[sizeclass]);
 		runtime_printf("\n\n");
 		runtime_printf("size_to_class8:");

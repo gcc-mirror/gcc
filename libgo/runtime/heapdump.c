@@ -14,7 +14,6 @@
 #include "malloc.h"
 #include "mgc0.h"
 #include "go-type.h"
-#include "go-defer.h"
 #include "go-panic.h"
 
 #define hash __hash
@@ -265,15 +264,15 @@ dumpgoroutine(G *gp)
 	dumpint((uintptr)0);
 	dumpint(gp->goid);
 	dumpint(gp->gopc);
-	dumpint(gp->status);
+	dumpint(gp->atomicstatus);
 	dumpbool(gp->issystem);
 	dumpbool(gp->isbackground);
 	dumpint(gp->waitsince);
-	dumpcstr((const int8 *)gp->waitreason);
+	dumpstr(gp->waitreason);
 	dumpint((uintptr)0);
 	dumpint((uintptr)gp->m);
-	dumpint((uintptr)gp->defer);
-	dumpint((uintptr)gp->panic);
+	dumpint((uintptr)gp->_defer);
+	dumpint((uintptr)gp->_panic);
 
 	// dump stack
 	// child.args.n = -1;
@@ -285,24 +284,24 @@ dumpgoroutine(G *gp)
 	// runtime_gentraceback(pc, sp, lr, gp, 0, nil, 0x7fffffff, dumpframe, &child, false);
 
 	// dump defer & panic records
-	for(d = gp->defer; d != nil; d = d->__next) {
+	for(d = gp->_defer; d != nil; d = d->next) {
 		dumpint(TagDefer);
 		dumpint((uintptr)d);
 		dumpint((uintptr)gp);
-		dumpint((uintptr)d->__arg);
-		dumpint((uintptr)d->__frame);
-		dumpint((uintptr)d->__pfn);
+		dumpint((uintptr)d->arg);
+		dumpint((uintptr)d->frame);
+		dumpint((uintptr)d->pfn);
 		dumpint((uintptr)0);
-		dumpint((uintptr)d->__next);
+		dumpint((uintptr)d->next);
 	}
-	for (p = gp->panic; p != nil; p = p->__next) {
+	for (p = gp->_panic; p != nil; p = p->next) {
 		dumpint(TagPanic);
 		dumpint((uintptr)p);
 		dumpint((uintptr)gp);
-		dumpint((uintptr)p->__arg.__type_descriptor);
-		dumpint((uintptr)p->__arg.__object);
+		dumpint((uintptr)p->arg.__type_descriptor);
+		dumpint((uintptr)p->arg.__object);
 		dumpint((uintptr)0);
-		dumpint((uintptr)p->__next);
+		dumpint((uintptr)p->next);
 	}
 }
 
@@ -315,15 +314,15 @@ dumpgs(void)
 	// goroutines & stacks
 	for(i = 0; i < runtime_allglen; i++) {
 		gp = runtime_allg[i];
-		switch(gp->status){
+		switch(gp->atomicstatus){
 		default:
-			runtime_printf("unexpected G.status %d\n", gp->status);
+			runtime_printf("unexpected G.status %d\n", gp->atomicstatus);
 			runtime_throw("mark - bad status");
-		case Gdead:
+		case _Gdead:
 			break;
-		case Grunnable:
-		case Gsyscall:
-		case Gwaiting:
+		case _Grunnable:
+		case _Gsyscall:
+		case _Gwaiting:
 			dumpgoroutine(gp);
 			break;
 		}
@@ -602,7 +601,7 @@ mdump(G *gp)
 	flush();
 
 	gp->param = nil;
-	gp->status = Grunning;
+	gp->atomicstatus = _Grunning;
 	runtime_gogo(gp);
 }
 
@@ -632,8 +631,8 @@ runtime_debug_WriteHeapDump(uintptr fd)
 
 	// Call dump routine on M stack.
 	g = runtime_g();
-	g->status = Gwaiting;
-	g->waitreason = "dumping heap";
+	g->atomicstatus = _Gwaiting;
+	g->waitreason = runtime_gostringnocopy((const byte*)"dumping heap");
 	runtime_mcall(mdump);
 
 	// Reset dump file.

@@ -27,7 +27,7 @@ runtime_allocmcache(void)
 	c = runtime_FixAlloc_Alloc(&runtime_mheap.cachealloc);
 	runtime_unlock(&runtime_mheap);
 	runtime_memclr((byte*)c, sizeof(*c));
-	for(i = 0; i < NumSizeClasses; i++)
+	for(i = 0; i < _NumSizeClasses; i++)
 		c->alloc[i] = &emptymspan;
 
 	// Set first allocation sample size.
@@ -115,7 +115,7 @@ runtime_MCache_ReleaseAll(MCache *c)
 	MSpan *s;
 	MCacheList *l;
 
-	for(i=0; i<NumSizeClasses; i++) {
+	for(i=0; i<_NumSizeClasses; i++) {
 		s = c->alloc[i];
 		if(s != &emptymspan) {
 			runtime_MCentral_UncacheSpan(&runtime_mheap.central[i], s);

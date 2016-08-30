@@ -301,11 +301,11 @@ runtime_netpollready(G **gpp, PollDesc *pd, int32 mode)
 	if(mode == 'w' || mode == 'r'+'w')
 		wg = netpollunblock(pd, 'w', true);
 	if(rg) {
-		rg->schedlink = *gpp;
+		rg->schedlink = (uintptr)*gpp;
 		*gpp = rg;
 	}
 	if(wg) {
-		wg->schedlink = *gpp;
+		wg->schedlink = (uintptr)*gpp;
 		*gpp = wg;
 	}
 }

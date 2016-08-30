@@ -272,7 +272,7 @@ MCentral_Grow(MCentral *c)
 	// Carve span into sequence of blocks.
 	tailp = &s->freelist;
 	p = (byte*)(s->start << PageShift);
-	s->limit = p + size*n;
+	s->limit = (uintptr)(p + size*n);
 	for(i=0; i<n; i++) {
 		v = (MLink*)p;
 		*tailp = v;

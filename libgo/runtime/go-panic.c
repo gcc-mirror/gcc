@@ -11,23 +11,22 @@
 #include "arch.h"
 #include "malloc.h"
 #include "go-alloc.h"
-#include "go-defer.h"
 #include "go-panic.h"
 #include "interface.h"
 
 /* Print the panic stack.  This is used when there is no recover.  */
 
 static void
-__printpanics (struct __go_panic_stack *p)
+__printpanics (Panic *p)
 {
-  if (p->__next != NULL)
+  if (p->next != NULL)
     {
-      __printpanics (p->__next);
+      __printpanics (p->next);
       runtime_printf ("\t");
     }
   runtime_printf ("panic: ");
-  runtime_printany (p->__arg);
-  if (p->__was_recovered)
+  runtime_printany (p->arg);
+  if (p->recovered)
     runtime_printf (" [recovered]");
   runtime_printf ("\n");
 }
@@ -39,39 +38,39 @@ void
 __go_panic (struct __go_empty_interface arg)
 {
   G *g;
-  struct __go_panic_stack *n;
+  Panic *n;
 
   g = runtime_g ();
 
-  n = (struct __go_panic_stack *) __go_alloc (sizeof (struct __go_panic_stack));
-  n->__arg = arg;
-  n->__next = g->panic;
-  g->panic = n;
+  n = (Panic *) __go_alloc (sizeof (Panic));
+  n->arg = arg;
+  n->next = g->_panic;
+  g->_panic = n;
 
   /* Run all the defer functions.  */
 
   while (1)
     {
-      struct __go_defer_stack *d;
+      Defer *d;
       void (*pfn) (void *);
 
-      d = g->defer;
+      d = g->_defer;
       if (d == NULL)
 	break;
 
-      pfn = d->__pfn;
-      d->__pfn = NULL;
+      pfn = (void (*) (void *)) d->pfn;
+      d->pfn = 0;
 
       if (pfn != NULL)
 	{
-	  (*pfn) (d->__arg);
+	  (*pfn) (d->arg);
 
-	  if (n->__was_recovered)
+	  if (n->recovered)
 	    {
 	      /* Some defer function called recover.  That means that
 		 we should stop running this panic.  */
 
-	      g->panic = n->__next;
+	      g->_panic = n->next;
 	      __go_free (n);
 
 	      /* Now unwind the stack by throwing an exception.  The
@@ -91,10 +90,10 @@ __go_panic (struct __go_empty_interface arg)
 	     it did not call recover, we know that we are not
 	     returning from the calling function--we are panicing
 	     through it.  */
-	  *d->__frame = 0;
+	  *d->frame = 0;
 	}
 
-      g->defer = d->__next;
+      g->_defer = d->next;
 
       /* This may be called by a cgo callback routine to defer the
 	 call to syscall.CgocallBackDone, in which case we will not
@@ -107,6 +106,6 @@ __go_panic (struct __go_empty_interface arg)
   /* The panic was not recovered.  */
 
   runtime_startpanic ();
-  __printpanics (g->panic);
+  __printpanics (g->_panic);
   runtime_dopanic (0);
 }

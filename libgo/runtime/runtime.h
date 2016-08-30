@@ -56,24 +56,24 @@ typedef uintptr		uintreg;
 typedef	uint8			bool;
 typedef	uint8			byte;
 typedef	struct	Func		Func;
-typedef	struct	G		G;
-typedef	struct	Lock		Lock;
-typedef	struct	M		M;
-typedef	struct	P		P;
-typedef	struct	Note		Note;
+typedef	struct	g		G;
+typedef	struct	mutex		Lock;
+typedef	struct	m		M;
+typedef	struct	p		P;
+typedef	struct	note		Note;
 typedef	struct	String		String;
 typedef	struct	FuncVal		FuncVal;
 typedef	struct	SigTab		SigTab;
-typedef	struct	MCache		MCache;
+typedef	struct	mcache		MCache;
 typedef struct	FixAlloc	FixAlloc;
 typedef	struct	Hchan		Hchan;
 typedef	struct	Timers		Timers;
 typedef	struct	Timer		Timer;
-typedef	struct	GCStats		GCStats;
+typedef	struct	gcstats		GCStats;
 typedef	struct	LFNode		LFNode;
 typedef	struct	ParFor		ParFor;
 typedef	struct	ParForThread	ParForThread;
-typedef	struct	CgoMal		CgoMal;
+typedef	struct	cgoMal		CgoMal;
 typedef	struct	PollDesc	PollDesc;
 typedef	struct	DebugVars	DebugVars;
 
@@ -81,8 +81,8 @@ typedef	struct	__go_open_array		Slice;
 typedef struct	__go_interface		Iface;
 typedef	struct	__go_empty_interface	Eface;
 typedef	struct	__go_type_descriptor	Type;
-typedef	struct	__go_defer_stack	Defer;
-typedef	struct	__go_panic_stack	Panic;
+typedef	struct	_defer			Defer;
+typedef	struct	_panic			Panic;
 
 typedef struct	__go_ptr_type		PtrType;
 typedef struct	__go_func_type		FuncType;
@@ -90,9 +90,26 @@ typedef struct	__go_interface_type	InterfaceType;
 typedef struct	__go_map_type		MapType;
 typedef struct	__go_channel_type	ChanType;
 
-typedef struct  Traceback	Traceback;
+typedef struct  traceback	Traceback;
 
-typedef struct	Location	Location;
+typedef struct	location	Location;
+
+struct String
+{
+	const byte*	str;
+	intgo		len;
+};
+
+struct FuncVal
+{
+	void	(*fn)(void);
+	// variable-size, fn-specific data here
+};
+
+#include "array.h"
+#include "interface.h"
+
+#include "runtime.inc"
 
 /*
  * Per-CPU declaration.
@@ -103,33 +120,6 @@ extern G*	runtime_g(void);
 extern M	runtime_m0;
 extern G	runtime_g0;
 
-/*
- * defined constants
- */
-enum
-{
-	// G status
-	//
-	// If you add to this list, add to the list
-	// of "okay during garbage collection" status
-	// in mgc0.c too.
-	Gidle,
-	Grunnable,
-	Grunning,
-	Gsyscall,
-	Gwaiting,
-	Gmoribund_unused,  // currently unused, but hardcoded in gdb scripts
-	Gdead,
-};
-enum
-{
-	// P status
-	Pidle,
-	Prunning,
-	Psyscall,
-	Pgcstop,
-	Pdead,
-};
 enum
 {
 	true	= 1,
@@ -146,200 +136,12 @@ enum
 	// Global <-> per-M stack segment cache transfer batch size.
 	StackCacheBatch = 16,
 };
-/*
- * structures
- */
-struct	Lock
-{
-	// Futex-based impl treats it as uint32 key,
-	// while sema-based impl as M* waitm.
-	// Used to be a union, but unions break precise GC.
-	uintptr	key;
-};
-struct	Note
-{
-	// Futex-based impl treats it as uint32 key,
-	// while sema-based impl as M* waitm.
-	// Used to be a union, but unions break precise GC.
-	uintptr	key;
-};
-struct String
-{
-	const byte*	str;
-	intgo		len;
-};
-struct FuncVal
-{
-	void	(*fn)(void);
-	// variable-size, fn-specific data here
-};
-struct	GCStats
-{
-	// the struct must consist of only uint64's,
-	// because it is casted to uint64[].
-	uint64	nhandoff;
-	uint64	nhandoffcnt;
-	uint64	nprocyield;
-	uint64	nosyield;
-	uint64	nsleep;
-};
-
-// A location in the program, used for backtraces.
-struct	Location
-{
-	uintptr	pc;
-	String	filename;
-	String	function;
-	intgo	lineno;
-};
-
-struct	G
-{
-	Defer*	defer;
-	Panic*	panic;
-	void*	exception;	// current exception being thrown
-	bool	is_foreign;	// whether current exception from other language
-	void	*gcstack;	// if status==Gsyscall, gcstack = stackbase to use during gc
-	size_t	gcstack_size;
-	void*	gcnext_segment;
-	void*	gcnext_sp;
-	void*	gcinitial_sp;
-	ucontext_t gcregs;
-	byte*	entry;		// initial function
-	void*	param;		// passed parameter on wakeup
-	bool	fromgogo;	// reached from gogo
-	int16	status;
-	uint32	selgen;		// valid sudog pointer
-	int64	goid;
-	int64	waitsince;	// approx time when the G become blocked
-	const char*	waitreason;	// if status==Gwaiting
-	G*	schedlink;
-	bool	ispanic;
-	bool	issystem;	// do not output in stack dump
-	bool	isbackground;	// ignore in deadlock detector
-	bool	paniconfault;	// panic (instead of crash) on unexpected fault address
-	M*	m;		// for debuggers, but offset not hard-coded
-	M*	lockedm;
-	int32	sig;
-	int32	writenbuf;
-	byte*	writebuf;
-	uintptr	sigcode0;
-	uintptr	sigcode1;
-	// uintptr	sigpc;
-	uintptr	gopc;	// pc of go statement that created this goroutine
-
-	int32	ncgo;
-	CgoMal*	cgomal;
-
-	Traceback* traceback;
-
-	ucontext_t	context;
-	void*		stack_context[10];
-};
-
-struct	M
-{
-	G*	g0;		// goroutine with scheduling stack
-	G*	gsignal;	// signal-handling G
-	byte*	gsignalstack;
-	size_t	gsignalstacksize;
-	void	(*mstartfn)(void);
-	G*	curg;		// current running goroutine
-	G*	caughtsig;	// goroutine running during fatal signal
-	P*	p;		// attached P for executing Go code (nil if not executing Go code)
-	P*	nextp;
-	int32	id;
-	int32	mallocing;
-	int32	throwing;
-	int32	gcing;
-	int32	locks;
-	int32	softfloat;
-	int32	dying;
-	int32	profilehz;
-	int32	helpgc;
-	bool	spinning;	// M is out of work and is actively looking for work
-	bool	blocked;	// M is blocked on a Note
-	uint32	fastrand;
-	uint64	ncgocall;	// number of cgo calls in total
-	int32	ncgo;		// number of cgo calls currently in progress
-	CgoMal*	cgomal;
-	Note	park;
-	M*	alllink;	// on allm
-	M*	schedlink;
-	MCache	*mcache;
-	G*	lockedg;
-	Location createstack[32];	// Stack that created this thread.
-	uint32	locked;	// tracking for LockOSThread
-	M*	nextwaitm;	// next M waiting for lock
-	uintptr	waitsema;	// semaphore for parking on locks
-	uint32	waitsemacount;
-	uint32	waitsemalock;
-	GCStats	gcstats;
-	bool	needextram;
-	bool	dropextram;	// for gccgo: drop after call is done.
-	uint8	traceback;
-	bool	(*waitunlockf)(G*, void*);
-	void*	waitlock;
-	uintptr	end[];
-};
-
-struct P
-{
-	Lock;
-
-	int32	id;
-	uint32	status;		// one of Pidle/Prunning/...
-	P*	link;
-	uint32	schedtick;	// incremented on every scheduler call
-	uint32	syscalltick;	// incremented on every system call
-	M*	m;		// back-link to associated M (nil if idle)
-	MCache*	mcache;
-	Defer*	deferpool;	// pool of available Defer structs (see panic.c)
-
-	// Cache of goroutine ids, amortizes accesses to runtime_sched.goidgen.
-	uint64	goidcache;
-	uint64	goidcacheend;
-
-	// Queue of runnable goroutines.
-	uint32	runqhead;
-	uint32	runqtail;
-	G*	runq[256];
-
-	// Available G's (status == Gdead)
-	G*	gfree;
-	int32	gfreecnt;
-
-	byte	pad[64];
-};
-
-// The m->locked word holds two pieces of state counting active calls to LockOSThread/lockOSThread.
-// The low bit (LockExternal) is a boolean reporting whether any LockOSThread call is active.
-// External locks are not recursive; a second lock is silently ignored.
-// The upper bits of m->lockedcount record the nesting depth of calls to lockOSThread
-// (counting up by LockInternal), popped by unlockOSThread (counting down by LockInternal).
-// Internal locks can be recursive. For instance, a lock for cgo can occur while the main
-// goroutine is holding the lock during the initialization phase.
-enum
-{
-	LockExternal = 1,
-	LockInternal = 2,
-};
 
 struct	SigTab
 {
 	int32	sig;
 	int32	flags;
 	void*   fwdsig;
-};
-enum
-{
-	SigNotify = 1<<0,	// let signal.Notify have signal, even if from kernel
-	SigKill = 1<<1,		// if signal.Notify doesn't take it, exit quietly
-	SigThrow = 1<<2,	// if signal.Notify doesn't take it, exit loudly
-	SigPanic = 1<<3,	// if the signal is from the kernel, panic
-	SigDefault = 1<<4,	// if the signal isn't explicitly requested, don't monitor it
-	SigHandling = 1<<5,	// our signal handler is registered
-	SigGoExit = 1<<6,	// cause all runtime procs to exit (only used on Plan 9).
 };
 
 // Layout of in-memory per-function information prepared by linker
@@ -436,14 +238,6 @@ struct ParFor
 	uint64 nprocyield;
 	uint64 nosyield;
 	uint64 nsleep;
-};
-
-// Track memory allocated by code not written in Go during a cgo call,
-// so that the garbage collector can see them.
-struct CgoMal
-{
-	CgoMal	*next;
-	void	*alloc;
 };
 
 // Holds variables parsed from GODEBUG env var.
@@ -565,7 +359,7 @@ void	runtime_ready(G*);
 String	runtime_getenv(const char*);
 int32	runtime_atoi(const byte*, intgo);
 void*	runtime_mstart(void*);
-G*	runtime_malg(int32, byte**, size_t*);
+G*	runtime_malg(int32, byte**, uintptr*);
 void	runtime_mpreinit(M*);
 void	runtime_minit(void);
 void	runtime_unminit(void);
@@ -604,7 +398,7 @@ int32	runtime_round2(int32 x); // round x up to a power of 2.
 #define runtime_atomicloadp(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
 #define runtime_atomicstorep(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
 
-void runtime_setmg(M*, G*);
+void runtime_setg(G*);
 void runtime_newextram(void);
 #define runtime_exit(s) exit(s)
 #define runtime_breakpoint() __builtin_trap()

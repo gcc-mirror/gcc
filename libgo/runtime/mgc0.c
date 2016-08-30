@@ -321,7 +321,7 @@ markonly(const void *obj)
 	x = k;
 	x -= (uintptr)runtime_mheap.arena_start>>PageShift;
 	s = runtime_mheap.spans[x];
-	if(s == nil || k < s->start || (const byte*)obj >= s->limit || s->state != MSpanInUse)
+	if(s == nil || k < s->start || (uintptr)obj >= s->limit || s->state != MSpanInUse)
 		return false;
 	p = (byte*)((uintptr)s->start<<PageShift);
 	if(s->sizeclass == 0) {
@@ -517,7 +517,7 @@ flushptrbuf(Scanbuf *sbuf)
 		x = k;
 		x -= (uintptr)arena_start>>PageShift;
 		s = runtime_mheap.spans[x];
-		if(s == nil || k < s->start || obj >= s->limit || s->state != MSpanInUse)
+		if(s == nil || k < s->start || (uintptr)obj >= s->limit || s->state != MSpanInUse)
 			continue;
 		p = (byte*)((uintptr)s->start<<PageShift);
 		if(s->sizeclass == 0) {
@@ -651,8 +651,8 @@ static uintptr defaultProg[2] = {PtrSize, GC_DEFAULT_PTR};
 static uintptr chanProg[2] = {0, GC_CHAN};
 
 // Local variables of a program fragment or loop
-typedef struct Frame Frame;
-struct Frame {
+typedef struct GCFrame GCFrame;
+struct GCFrame {
 	uintptr count, elemsize, b;
 	const uintptr *loop_or_ret;
 };
@@ -731,7 +731,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 	const Type *t, *et;
 	Slice *sliceptr;
 	String *stringptr;
-	Frame *stack_ptr, stack_top, stack[GC_STACK_CAPACITY+4];
+	GCFrame *stack_ptr, stack_top, stack[GC_STACK_CAPACITY+4];
 	BufferList *scanbuffers;
 	Scanbuf sbuf;
 	Eface *eface;
@@ -1057,7 +1057,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 
 			// Stack push.
 			*stack_ptr-- = stack_top;
-			stack_top = (Frame){count, elemsize, i, pc};
+			stack_top = (GCFrame){count, elemsize, i, pc};
 			continue;
 
 		case GC_ARRAY_NEXT:
@@ -1074,7 +1074,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 		case GC_CALL:
 			// Stack push.
 			*stack_ptr-- = stack_top;
-			stack_top = (Frame){1, 0, stack_top.b + pc[1], pc+3 /*return address*/};
+			stack_top = (GCFrame){1, 0, stack_top.b + pc[1], pc+3 /*return address*/};
 			pc = (const uintptr*)((const byte*)pc + *(const int32*)(pc+2));  // target of the CALL instruction
 			continue;
 
@@ -1357,7 +1357,7 @@ markroot(ParFor *desc, uint32 i)
 		gp = runtime_allg[i - RootCount];
 		// remember when we've first observed the G blocked
 		// needed only to output in traceback
-		if((gp->status == Gwaiting || gp->status == Gsyscall) && gp->waitsince == 0)
+		if((gp->atomicstatus == _Gwaiting || gp->atomicstatus == _Gsyscall) && gp->waitsince == 0)
 			gp->waitsince = work.tstart;
 		addstackroots(gp, &wbuf);
 		break;
@@ -1472,17 +1472,17 @@ handoff(Workbuf *b)
 static void
 addstackroots(G *gp, Workbuf **wbufp)
 {
-	switch(gp->status){
+	switch(gp->atomicstatus){
 	default:
-		runtime_printf("unexpected G.status %d (goroutine %p %D)\n", gp->status, gp, gp->goid);
+		runtime_printf("unexpected G.status %d (goroutine %p %D)\n", gp->atomicstatus, gp, gp->goid);
 		runtime_throw("mark - bad status");
-	case Gdead:
+	case _Gdead:
 		return;
-	case Grunning:
+	case _Grunning:
 		runtime_throw("mark - world not stopped");
-	case Grunnable:
-	case Gsyscall:
-	case Gwaiting:
+	case _Grunnable:
+	case _Gsyscall:
+	case _Gwaiting:
 		break;
 	}
 
@@ -1512,12 +1512,12 @@ addstackroots(G *gp, Workbuf **wbufp)
 		// the system call instead, since that won't change underfoot.
 		if(gp->gcstack != nil) {
 			sp = gp->gcstack;
-			spsize = gp->gcstack_size;
-			next_segment = gp->gcnext_segment;
-			next_sp = gp->gcnext_sp;
-			initial_sp = gp->gcinitial_sp;
+			spsize = gp->gcstacksize;
+			next_segment = gp->gcnextsegment;
+			next_sp = gp->gcnextsp;
+			initial_sp = gp->gcinitialsp;
 		} else {
-			sp = __splitstack_find_context(&gp->stack_context[0],
+			sp = __splitstack_find_context(&gp->stackcontext[0],
 						       &spsize, &next_segment,
 						       &next_sp, &initial_sp);
 		}
@@ -1543,11 +1543,11 @@ addstackroots(G *gp, Workbuf **wbufp)
 	} else {
 		// Scanning another goroutine's stack.
 		// The goroutine is usually asleep (the world is stopped).
-		bottom = (byte*)gp->gcnext_sp;
+		bottom = (byte*)gp->gcnextsp;
 		if(bottom == nil)
 			return;
 	}
-	top = (byte*)gp->gcinitial_sp + gp->gcstack_size;
+	top = (byte*)gp->gcinitialsp + gp->gcstacksize;
 	if(top > bottom)
 		enqueue1(wbufp, (Obj){bottom, top - bottom, 0});
 	else
@@ -2186,8 +2186,8 @@ runtime_gc(int32 force)
 		// switch to g0, call gc(&a), then switch back
 		g = runtime_g();
 		g->param = &a;
-		g->status = Gwaiting;
-		g->waitreason = "garbage collection";
+		g->atomicstatus = _Gwaiting;
+		g->waitreason = runtime_gostringnocopy((const byte*)"garbage collection");
 		runtime_mcall(mgc);
 		m = runtime_m();
 	}
@@ -2214,7 +2214,7 @@ mgc(G *gp)
 {
 	gc(gp->param);
 	gp->param = nil;
-	gp->status = Grunning;
+	gp->atomicstatus = _Grunning;
 	runtime_gogo(gp);
 }
 
@@ -2404,7 +2404,7 @@ runtime_ReadMemStats(MStats *stats)
 	runtime_stoptheworld();
 	runtime_updatememstats(nil);
 	// Size of the trailing by_size array differs between Go and C,
-	// NumSizeClasses was changed, but we can not change Go struct because of backward compatibility.
+	// _NumSizeClasses was changed, but we can not change Go struct because of backward compatibility.
 	runtime_memmove(stats, &mstats, runtime_sizeof_C_MStats);
 	m->gcing = 0;
 	m->locks++;

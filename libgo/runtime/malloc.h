@@ -82,11 +82,11 @@
 
 typedef struct MCentral	MCentral;
 typedef struct MHeap	MHeap;
-typedef struct MSpan	MSpan;
+typedef struct mspan	MSpan;
 typedef struct MStats	MStats;
-typedef struct MLink	MLink;
-typedef struct MTypes	MTypes;
-typedef struct GCStats	GCStats;
+typedef struct mlink	MLink;
+typedef struct mtypes	MTypes;
+typedef struct gcstats	GCStats;
 
 enum
 {
@@ -100,10 +100,10 @@ enum
 {
 	// Computed constant.  The definition of MaxSmallSize and the
 	// algorithm in msize.c produce some number of different allocation
-	// size classes.  NumSizeClasses is that number.  It's needed here
+	// size classes.  _NumSizeClasses is that number.  It's needed here
 	// because there are static arrays of this length; when msize runs its
 	// size choosing algorithm it double-checks that NumSizeClasses agrees.
-	NumSizeClasses = 67,
+	// _NumSizeClasses is defined in runtime2.go as 67.
 
 	// Tunable constants.
 	MaxSmallSize = 32<<10,
@@ -148,13 +148,6 @@ enum
 #else
 #define	MaxMem	((uintptr)-1)
 #endif
-
-// A generic linked list of blocks.  (Typically the block is bigger than sizeof(MLink).)
-struct MLink
-{
-	MLink *next;
-};
-
 // SysAlloc obtains a large chunk of zeroed memory from the
 // operating system, typically on the order of a hundred kilobytes
 // or a megabyte.
@@ -274,7 +267,7 @@ struct MStats
 		uint32 size;
 		uint64 nmalloc;
 		uint64 nfree;
-	} by_size[NumSizeClasses];
+	} by_size[_NumSizeClasses];
 };
 
 extern MStats mstats
@@ -284,7 +277,7 @@ void	runtime_updatememstats(GCStats *stats);
 // Size classes.  Computed and initialized by InitSizes.
 //
 // SizeToClass(0 <= n <= MaxSmallSize) returns the size class,
-//	1 <= sizeclass < NumSizeClasses, for n.
+//	1 <= sizeclass < _NumSizeClasses, for n.
 //	Size class 0 is reserved to mean "not small".
 //
 // class_to_size[i] = largest size in class i
@@ -293,41 +286,14 @@ void	runtime_updatememstats(GCStats *stats);
 
 int32	runtime_SizeToClass(int32);
 uintptr	runtime_roundupsize(uintptr);
-extern	int32	runtime_class_to_size[NumSizeClasses];
-extern	int32	runtime_class_to_allocnpages[NumSizeClasses];
+extern	int32	runtime_class_to_size[_NumSizeClasses];
+extern	int32	runtime_class_to_allocnpages[_NumSizeClasses];
 extern	int8	runtime_size_to_class8[1024/8 + 1];
 extern	int8	runtime_size_to_class128[(MaxSmallSize-1024)/128 + 1];
 extern	void	runtime_InitSizes(void);
 
 
-typedef struct MCacheList MCacheList;
-struct MCacheList
-{
-	MLink *list;
-	uint32 nlist;
-};
-
-// Per-thread (in Go, per-P) cache for small objects.
-// No locking needed because it is per-thread (per-P).
-struct MCache
-{
-	// The following members are accessed on every malloc,
-	// so they are grouped here for better caching.
-	int32 next_sample;		// trigger heap sample after allocating this many bytes
-	intptr local_cachealloc;	// bytes allocated (or freed) from cache since last lock of heap
-	// Allocator cache for tiny objects w/o pointers.
-	// See "Tiny allocator" comment in malloc.goc.
-	byte*	tiny;
-	uintptr	tinysize;
-	// The rest is not accessed on every malloc.
-	MSpan*	alloc[NumSizeClasses];	// spans to allocate from
-	MCacheList free[NumSizeClasses];// lists of explicitly freed objects
-	// Local allocator stats, flushed during GC.
-	uintptr local_nlookup;		// number of pointer lookups
-	uintptr local_largefree;	// bytes freed for large objects (>MaxSmallSize)
-	uintptr local_nlargefree;	// number of frees for large objects (>MaxSmallSize)
-	uintptr local_nsmallfree[NumSizeClasses];	// number of frees for small objects (<=MaxSmallSize)
-};
+typedef struct mcachelist MCacheList;
 
 MSpan*	runtime_MCache_Refill(MCache *c, int32 sizeclass);
 void	runtime_MCache_Free(MCache *c, MLink *p, int32 sizeclass, uintptr size);
@@ -364,11 +330,6 @@ enum
 	MTypes_Words = 2,
 	MTypes_Bytes = 3,
 };
-struct MTypes
-{
-	byte	compression;	// one of MTypes_*
-	uintptr	data;
-};
 
 enum
 {
@@ -380,13 +341,7 @@ enum
 	// if that happens.
 };
 
-typedef struct Special Special;
-struct Special
-{
-	Special*	next;	// linked list in span
-	uint16		offset;	// span offset of object
-	byte		kind;	// kind of Special
-};
+typedef struct special Special;
 
 // The described object has a finalizer set for it.
 typedef struct SpecialFinalizer SpecialFinalizer;
@@ -414,33 +369,6 @@ enum
 	MSpanFree,
 	MSpanListHead,
 	MSpanDead,
-};
-struct MSpan
-{
-	MSpan	*next;		// in a span linked list
-	MSpan	*prev;		// in a span linked list
-	PageID	start;		// starting page number
-	uintptr	npages;		// number of pages in span
-	MLink	*freelist;	// list of free objects
-	// sweep generation:
-	// if sweepgen == h->sweepgen - 2, the span needs sweeping
-	// if sweepgen == h->sweepgen - 1, the span is currently being swept
-	// if sweepgen == h->sweepgen, the span is swept and ready to use
-	// h->sweepgen is incremented by 2 after every GC
-	uint32	sweepgen;
-	uint16	ref;		// capacity - number of objects in freelist
-	uint8	sizeclass;	// size class
-	bool	incache;	// being used by an MCache
-	uint8	state;		// MSpanInUse etc
-	uint8	needzero;	// needs to be zeroed before allocation
-	uintptr	elemsize;	// computed from sizeclass or from npages
-	int64   unusedsince;	// First time spotted by GC in MSpanFree state
-	uintptr npreleased;	// number of pages released to the OS
-	byte	*limit;		// end of data in span
-	MTypes	types;		// types of allocated objects in this span
-	Lock	specialLock;	// guards specials list
-	Special	*specials;	// linked list of special records sorted by offset.
-	MLink	*freebuf;	// objects freed explicitly, not incorporated into freelist yet
 };
 
 void	runtime_MSpan_Init(MSpan *span, PageID start, uintptr npages);
@@ -509,7 +437,7 @@ struct MHeap
 	struct {
 		MCentral;
 		byte pad[64];
-	} central[NumSizeClasses];
+	} central[_NumSizeClasses];
 
 	FixAlloc spanalloc;	// allocator for Span*
 	FixAlloc cachealloc;	// allocator for MCache*
@@ -520,7 +448,7 @@ struct MHeap
 	// Malloc stats.
 	uint64 largefree;	// bytes freed for large objects (>MaxSmallSize)
 	uint64 nlargefree;	// number of frees for large objects (>MaxSmallSize)
-	uint64 nsmallfree[NumSizeClasses];	// number of frees for small objects (<=MaxSmallSize)
+	uint64 nsmallfree[_NumSizeClasses];	// number of frees for small objects (<=MaxSmallSize)
 };
 extern MHeap runtime_mheap;
 

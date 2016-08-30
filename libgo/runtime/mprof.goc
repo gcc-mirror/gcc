@@ -479,7 +479,7 @@ func GoroutineProfile(b Slice) (n int, ok bool) {
 			saveg(g, r++);
 			for(i = 0; i < runtime_allglen; i++) {
 				gp = runtime_allg[i];
-				if(gp == g || gp->status == Gdead)
+				if(gp == g || gp->atomicstatus == _Gdead)
 					continue;
 				saveg(gp, r++);
 			}

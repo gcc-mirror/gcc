@@ -4,7 +4,6 @@
 
 #include "runtime.h"
 #include "malloc.h"
-#include "go-defer.h"
 #include "go-panic.h"
 
 // Code related to defer, panic and recover.
@@ -21,10 +20,10 @@ runtime_newdefer()
 	P *p;
 
 	d = nil;
-	p = runtime_m()->p;
+	p = (P*)runtime_m()->p;
 	d = p->deferpool;
 	if(d)
-		p->deferpool = d->__next;
+		p->deferpool = d->next;
 	if(d == nil) {
 		// deferpool is empty
 		d = runtime_malloc(sizeof(Defer));
@@ -39,10 +38,10 @@ runtime_freedefer(Defer *d)
 {
 	P *p;
 
-	if(d->__special)
+	if(d->special)
 		return;
-	p = runtime_m()->p;
-	d->__next = p->deferpool;
+	p = (P*)runtime_m()->p;
+	d->next = p->deferpool;
 	p->deferpool = d;
 	// No need to wipe out pointers in argp/pc/fn/args,
 	// because we empty the pool before GC.
@@ -58,14 +57,14 @@ __go_rundefer(void)
 	Defer *d;
 
 	g = runtime_g();
-	while((d = g->defer) != nil) {
+	while((d = g->_defer) != nil) {
 		void (*pfn)(void*);
 
-		g->defer = d->__next;
-		pfn = d->__pfn;
-		d->__pfn = nil;
+		g->_defer = d->next;
+		pfn = (void (*) (void *))d->pfn;
+		d->pfn = 0;
 		if (pfn != nil)
-			(*pfn)(d->__arg);
+			(*pfn)(d->arg);
 		runtime_freedefer(d);
 	}
 }
@@ -171,7 +170,7 @@ runtime_canpanic(G *gp)
 		return false;
 	if(m->locks-m->softfloat != 0 || m->mallocing != 0 || m->throwing != 0 || m->gcing != 0 || m->dying != 0)
 		return false;
-	if(gp->status != Grunning)
+	if(gp->atomicstatus != _Grunning)
 		return false;
 #ifdef GOOS_windows
 	if(m->libcallsp != 0)
