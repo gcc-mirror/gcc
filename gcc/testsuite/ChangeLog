@@ -1,5 +1,8 @@
 2016-08-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/77363
+	* g++.dg/debug/dwarf2/pr77363.C: New test.
+
 	PR middle-end/77377
 	* gcc.target/i386/pr77377.c: New test.
 

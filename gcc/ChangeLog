@@ -1,5 +1,10 @@
 2016-08-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/77363
+	* dwarf2out.c (modified_type_die): Use lookup_type_die (type)
+	instead of lookup_type_die (type_main_variant (type)) even for array
+	types.
+
 	PR middle-end/77377
 	* simplify-rtx.c (avoid_constant_pool_reference): For out of bounds
 	constant pool reference return x instead of c.
