@@ -1,3 +1,13 @@
+2016-08-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/22_locale/time_get/get/char/2.cc: Move dg-do run
+	directive above dg-require-namedlocale directive.
+	* testsuite/22_locale/time_get/get/wchar_t/2.cc: Ditto.
+	* testsuite/27_io/manipulators/extended/get_time/char/2.cc: Ditto.
+	* testsuite/27_io/manipulators/extended/get_time/wchar_t/2.cc: Ditto.
+	* testsuite/27_io/manipulators/extended/put_time/char/2.cc: Ditto.
+	* testsuite/27_io/manipulators/extended/put_time/wchar_t/2.cc: Ditto.
+
 2016-08-27  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/77356

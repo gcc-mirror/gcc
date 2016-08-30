@@ -1,5 +1,5 @@
-// { dg-require-namedlocale "de_DE.UTF-8" }
 // { dg-do run { target c++11 } }
+// { dg-require-namedlocale "de_DE.UTF-8" }
 
 // 2014-04-14 Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 
