@@ -1007,6 +1007,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                           is_function<_From>>>::value>
     struct __is_base_to_derived_ref;
 
+  template<typename _Tp, typename... _Args>
+    struct is_constructible;
+
   // Detect whether we have a downcast situation during
   // reference binding.
   template<typename _From, typename _To>
@@ -1017,7 +1020,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename remove_cv<typename remove_reference<_To
         >::type>::type __dst_t;
       typedef __and_<__not_<is_same<__src_t, __dst_t>>,
-		     is_base_of<__src_t, __dst_t>> type;
+		     is_base_of<__src_t, __dst_t>,
+		     __not_<is_constructible<__dst_t, _From>>> type;
       static constexpr bool value = type::value;
     };
 
