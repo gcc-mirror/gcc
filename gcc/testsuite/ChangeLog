@@ -1,3 +1,8 @@
+2016-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69047
+	* gcc.dg/pr69047.c: Fix byte-order check.
+
 2016-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/72866
