@@ -1,3 +1,17 @@
+2016-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc/config/aarch64/aarch64-simd.md
+	(aarch64_ld2<mode>_dreg_le): New.
+	(aarch64_ld2<mode>_dreg_be): New.
+	(aarch64_ld2<mode>_dreg): Removed.
+	(aarch64_ld3<mode>_dreg_le): New.
+	(aarch64_ld3<mode>_dreg_be): New.
+	(aarch64_ld3<mode>_dreg): Removed.
+	(aarch64_ld4<mode>_dreg_le): New.
+	(aarch64_ld4<mode>_dreg_be): New.
+	(aarch64_ld4<mode>_dreg): Removed.
+	(aarch64_ld<VSTRUCT:nregs><VDC:mode>): Wrapper around _le, _be.
+
 2016-08-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (test_one_liner_fixit_insert): Remove
