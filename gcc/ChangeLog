@@ -1,3 +1,8 @@
+2016-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* postreload-gcse.c (bb_has_well_behaved_predecessors): Tweak criterion
+	used for abnormal egdes.
+
 2016-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/72866
