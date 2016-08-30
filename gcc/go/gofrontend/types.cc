@@ -6,6 +6,8 @@
 
 #include "go-system.h"
 
+#include <ostream>
+
 #include "go-c.h"
 #include "gogo.h"
 #include "operator.h"
@@ -5678,6 +5680,276 @@ Struct_type::do_import(Import* imp)
   imp->require_c_string("}");
 
   return Type::make_struct_type(fields, imp->location());
+}
+
+// Whether we can write this struct type to a C header file.
+// We can't if any of the fields are structs defined in a different package.
+
+bool
+Struct_type::can_write_to_c_header(
+    std::vector<const Named_object*>* requires,
+    std::vector<const Named_object*>* declare) const
+{
+  const Struct_field_list* fields = this->fields_;
+  if (fields == NULL || fields->empty())
+    return false;
+  for (Struct_field_list::const_iterator p = fields->begin();
+       p != fields->end();
+       ++p)
+    {
+      if (p->is_anonymous())
+	return false;
+      if (!this->can_write_type_to_c_header(p->type(), requires, declare))
+	return false;
+    }
+  return true;
+}
+
+// Whether we can write the type T to a C header file.
+
+bool
+Struct_type::can_write_type_to_c_header(
+    const Type* t,
+    std::vector<const Named_object*>* requires,
+    std::vector<const Named_object*>* declare) const
+{
+  t = t->forwarded();
+  switch (t->classification())
+    {
+    case TYPE_ERROR:
+    case TYPE_FORWARD:
+      return false;
+
+    case TYPE_VOID:
+    case TYPE_BOOLEAN:
+    case TYPE_INTEGER:
+    case TYPE_FLOAT:
+    case TYPE_COMPLEX:
+    case TYPE_STRING:
+    case TYPE_FUNCTION:
+    case TYPE_MAP:
+    case TYPE_CHANNEL:
+    case TYPE_INTERFACE:
+      return true;
+
+    case TYPE_POINTER:
+      if (t->points_to()->named_type() != NULL
+	  && t->points_to()->struct_type() != NULL)
+	declare->push_back(t->points_to()->named_type()->named_object());
+      return true;
+
+    case TYPE_STRUCT:
+      return t->struct_type()->can_write_to_c_header(requires, declare);
+
+    case TYPE_ARRAY:
+      if (t->is_slice_type())
+	return true;
+      return this->can_write_type_to_c_header(t->array_type()->element_type(),
+					      requires, declare);
+
+    case TYPE_NAMED:
+      {
+	const Named_object* no = t->named_type()->named_object();
+	if (no->package() != NULL)
+	  {
+	    if (t->is_unsafe_pointer_type())
+	      return true;
+	    return false;
+	  }
+	if (t->struct_type() != NULL)
+	  {
+	    requires->push_back(no);
+	    return t->struct_type()->can_write_to_c_header(requires, declare);
+	  }
+	return this->can_write_type_to_c_header(t->base(), requires, declare);
+      }
+
+    case TYPE_CALL_MULTIPLE_RESULT:
+    case TYPE_NIL:
+    case TYPE_SINK:
+    default:
+      go_unreachable();
+    }
+}
+
+// Write this struct to a C header file.
+
+void
+Struct_type::write_to_c_header(std::ostream& os) const
+{
+  const Struct_field_list* fields = this->fields_;
+  for (Struct_field_list::const_iterator p = fields->begin();
+       p != fields->end();
+       ++p)
+    {
+      os << '\t';
+      this->write_field_to_c_header(os, p->field_name(), p->type());
+      os << ';' << std::endl;
+    }
+}
+
+// Write the type of a struct field to a C header file.
+
+void
+Struct_type::write_field_to_c_header(std::ostream& os, const std::string& name,
+				     const Type *t) const
+{
+  bool print_name = true;
+  t = t->forwarded();
+  switch (t->classification())
+    {
+    case TYPE_VOID:
+      os << "void";
+      break;
+
+    case TYPE_BOOLEAN:
+      os << "_Bool";
+      break;
+
+    case TYPE_INTEGER:
+      {
+	const Integer_type* it = t->integer_type();
+	if (it->is_unsigned())
+	  os << 'u';
+	os << "int" << it->bits() << "_t";
+      }
+      break;
+
+    case TYPE_FLOAT:
+      switch (t->float_type()->bits())
+	{
+	case 32:
+	  os << "float";
+	  break;
+	case 64:
+	  os << "double";
+	  break;
+	default:
+	  go_unreachable();
+	}
+      break;
+
+    case TYPE_COMPLEX:
+      switch (t->complex_type()->bits())
+	{
+	case 64:
+	  os << "float _Complex";
+	  break;
+	case 128:
+	  os << "double _Complex";
+	  break;
+	default:
+	  go_unreachable();
+	}
+      break;
+
+    case TYPE_STRING:
+      os << "String";
+      break;
+
+    case TYPE_FUNCTION:
+      os << "FuncVal";
+      break;
+
+    case TYPE_POINTER:
+      {
+	std::vector<const Named_object*> requires;
+	std::vector<const Named_object*> declare;
+	if (!this->can_write_type_to_c_header(t->points_to(), &requires,
+					      &declare))
+	  os << "void*";
+	else
+	  {
+	    this->write_field_to_c_header(os, "", t->points_to());
+	    os << '*';
+	  }
+      }
+      break;
+
+    case TYPE_MAP:
+      os << "Map*";
+      break;
+
+    case TYPE_CHANNEL:
+      os << "Chan*";
+      break;
+
+    case TYPE_INTERFACE:
+      if (t->interface_type()->is_empty())
+	os << "Eface";
+      else
+	os << "Iface";
+      break;
+
+    case TYPE_STRUCT:
+      os << "struct {" << std::endl;
+      t->struct_type()->write_to_c_header(os);
+      os << "\t}";
+      break;
+
+    case TYPE_ARRAY:
+      if (t->is_slice_type())
+	os << "Slice";
+      else
+	{
+	  const Type *ele = t;
+	  std::vector<const Type*> array_types;
+	  while (ele->array_type() != NULL && !ele->is_slice_type())
+	    {
+	      array_types.push_back(ele);
+	      ele = ele->array_type()->element_type();
+	    }
+	  this->write_field_to_c_header(os, "", ele);
+	  os << ' ' << Gogo::message_name(name);
+	  print_name = false;
+	  while (!array_types.empty())
+	    {
+	      ele = array_types.back();
+	      array_types.pop_back();
+	      os << '[';
+	      Numeric_constant nc;
+	      if (!ele->array_type()->length()->numeric_constant_value(&nc))
+		go_unreachable();
+	      mpz_t val;
+	      if (!nc.to_int(&val))
+		go_unreachable();
+	      char* s = mpz_get_str(NULL, 10, val);
+	      os << s;
+	      free(s);
+	      mpz_clear(val);
+	      os << ']';
+	    }
+	}
+      break;
+
+    case TYPE_NAMED:
+      {
+	const Named_object* no = t->named_type()->named_object();
+	if (t->struct_type() != NULL)
+	  os << "struct " << no->message_name();
+	else if (t->is_unsafe_pointer_type())
+	  os << "void*";
+	else if (t == Type::lookup_integer_type("uintptr"))
+	  os << "uintptr_t";
+	else
+	  {
+	    this->write_field_to_c_header(os, name, t->base());
+	    print_name = false;
+	  }
+      }
+      break;
+
+    case TYPE_ERROR:
+    case TYPE_FORWARD:
+    case TYPE_CALL_MULTIPLE_RESULT:
+    case TYPE_NIL:
+    case TYPE_SINK:
+    default:
+      go_unreachable();
+    }
+
+  if (print_name && !name.empty())
+    os << ' ' << Gogo::message_name(name);
 }
 
 // Make a struct type.

@@ -6,6 +6,8 @@
 
 #include "go-system.h"
 
+#include <fstream>
+
 #include "filenames.h"
 
 #include "go-c.h"
@@ -4429,6 +4431,131 @@ Gogo::do_exports()
 		      : ""),
 		     this->imported_init_fns_,
 		     this->package_->bindings());
+
+  if (!this->c_header_.empty() && !saw_errors())
+    this->write_c_header();
+}
+
+// Write the top level named struct types in C format to a C header
+// file.  This is used when building the runtime package, to share
+// struct definitions between C and Go.
+
+void
+Gogo::write_c_header()
+{
+  std::ofstream out;
+  out.open(this->c_header_.c_str());
+  if (out.fail())
+    {
+      error("cannot open %s: %m", this->c_header_.c_str());
+      return;
+    }
+
+  std::list<Named_object*> types;
+  Bindings* top = this->package_->bindings();
+  for (Bindings::const_definitions_iterator p = top->begin_definitions();
+       p != top->end_definitions();
+       ++p)
+    {
+      Named_object* no = *p;
+      if (no->is_type() && no->type_value()->struct_type() != NULL)
+	types.push_back(no);
+      if (no->is_const() && no->const_value()->type()->integer_type() != NULL)
+	{
+	  Numeric_constant nc;
+	  unsigned long val;
+	  if (no->const_value()->expr()->numeric_constant_value(&nc)
+	      && nc.to_unsigned_long(&val) == Numeric_constant::NC_UL_VALID)
+	    {
+	      out << "#define " << no->message_name() << ' ' << val
+		  << std::endl;
+	    }
+	}
+    }
+
+  std::vector<const Named_object*> written;
+  int loop = 0;
+  while (!types.empty())
+    {
+      Named_object* no = types.front();
+      types.pop_front();
+
+      std::vector<const Named_object*> requires;
+      std::vector<const Named_object*> declare;
+      if (!no->type_value()->struct_type()->can_write_to_c_header(&requires,
+								  &declare))
+	continue;
+
+      bool ok = true;
+      for (std::vector<const Named_object*>::const_iterator pr
+	     = requires.begin();
+	   pr != requires.end() && ok;
+	   ++pr)
+	{
+	  for (std::list<Named_object*>::const_iterator pt = types.begin();
+	       pt != types.end() && ok;
+	       ++pt)
+	    if (*pr == *pt)
+	      ok = false;
+	}
+      if (!ok)
+	{
+	  ++loop;
+	  if (loop > 10000)
+	    {
+	      // This should be impossible since the code parsed and
+	      // type checked.
+	      go_unreachable();
+	    }
+
+	  types.push_back(no);
+	  continue;
+	}
+
+      for (std::vector<const Named_object*>::const_iterator pd
+	     = declare.begin();
+	   pd != declare.end();
+	   ++pd)
+	{
+	  if (*pd == no)
+	    continue;
+
+	  std::vector<const Named_object*> drequires;
+	  std::vector<const Named_object*> ddeclare;
+	  if (!(*pd)->type_value()->struct_type()->
+	      can_write_to_c_header(&drequires, &ddeclare))
+	    continue;
+
+	  bool done = false;
+	  for (std::vector<const Named_object*>::const_iterator pw
+		 = written.begin();
+	       pw != written.end();
+	       ++pw)
+	    {
+	      if (*pw == *pd)
+		{
+		  done = true;
+		  break;
+		}
+	    }
+	  if (!done)
+	    {
+	      out << std::endl;
+	      out << "struct " << (*pd)->message_name() << ";" << std::endl;
+	      written.push_back(*pd);
+	    }
+	}
+
+      out << std::endl;
+      out << "struct " << no->message_name() << " {" << std::endl;
+      no->type_value()->struct_type()->write_to_c_header(out);
+      out << "};" << std::endl;
+      written.push_back(no);
+    }
+
+  out.close();
+  if (out.fail())
+    error("error writing to %s: %m", this->c_header_.c_str());
 }
 
 // Find the blocks in order to convert named types defined in blocks.

@@ -83,6 +83,7 @@ struct GTY(()) language_function
 static const char *go_pkgpath = NULL;
 static const char *go_prefix = NULL;
 static const char *go_relative_import_path = NULL;
+static const char *go_c_header = NULL;
 
 /* Language hooks.  */
 
@@ -99,9 +100,18 @@ go_langhook_init (void)
      to, e.g., unsigned_char_type_node) but before calling
      build_common_builtin_nodes (because it calls, indirectly,
      go_type_for_size).  */
-  go_create_gogo (INT_TYPE_SIZE, POINTER_SIZE, go_pkgpath, go_prefix,
-		  go_relative_import_path, go_check_divide_zero,
-		  go_check_divide_overflow, go_debug_escape_level);
+  struct go_create_gogo_args args;
+  args.int_type_size = INT_TYPE_SIZE;
+  args.pointer_size = POINTER_SIZE;
+  args.pkgpath = go_pkgpath;
+  args.prefix = go_prefix;
+  args.relative_import_path = go_relative_import_path;
+  args.c_header = go_c_header;
+  args.check_divide_by_zero = go_check_divide_zero;
+  args.check_divide_overflow = go_check_divide_overflow;
+  args.compiling_runtime = go_compiling_runtime;
+  args.debug_escape_level = go_debug_escape_level;
+  go_create_gogo (&args);
 
   build_common_builtin_nodes ();
 
@@ -245,6 +255,10 @@ go_langhook_handle_option (
 
     case OPT_fgo_relative_import_path_:
       go_relative_import_path = arg;
+      break;
+
+    case OPT_fgo_c_header_:
+      go_c_header = arg;
       break;
 
     default:

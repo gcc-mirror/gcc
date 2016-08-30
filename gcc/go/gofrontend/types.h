@@ -7,6 +7,8 @@
 #ifndef GO_TYPES_H
 #define GO_TYPES_H
 
+#include <ostream>
+
 #include "go-linemap.h"
 #include "escape.h"
 
@@ -2329,6 +2331,16 @@ class Struct_type : public Type
   void
   write_equal_function(Gogo*, Named_type*);
 
+  // Whether we can write this type to a C header file, to implement
+  // -fgo-c-header.
+  bool
+  can_write_to_c_header(std::vector<const Named_object*>*,
+			std::vector<const Named_object*>*) const;
+
+  // Write this type to a C header file, to implement -fgo-c-header.
+  void
+  write_to_c_header(std::ostream&) const;
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2364,6 +2376,14 @@ class Struct_type : public Type
   do_export(Export*) const;
 
  private:
+  bool
+  can_write_type_to_c_header(const Type*,
+			     std::vector<const Named_object*>*,
+			     std::vector<const Named_object*>*) const;
+
+  void
+  write_field_to_c_header(std::ostream&, const std::string&, const Type*) const;
+
   // Used to merge method sets of identical unnamed structs.
   typedef Unordered_map_hash(Struct_type*, Struct_type*, Type_hash_identical,
 			     Type_identical) Identical_structs;
