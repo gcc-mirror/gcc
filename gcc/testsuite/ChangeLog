@@ -1,3 +1,7 @@
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/template/double-greater-than-fixit.C: New test case.
+
 2016-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt57.ad[sb]: New test.
