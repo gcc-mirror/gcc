@@ -1,3 +1,7 @@
+2016-08-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.gcc (*-*-*musl*): Disable gnu-indirect-function.
+
 2016-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* postreload-gcse.c (bb_has_well_behaved_predecessors): Tweak criterion
