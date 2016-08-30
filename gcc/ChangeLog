@@ -1,3 +1,8 @@
+2016-08-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (CALL_REALLY_USED_REGISTERS): Do not
+	include MQ.
+
 2016-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c
