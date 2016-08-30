@@ -1,5 +1,8 @@
 2016-08-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/72866
+	* gcc.dg/vect/pr72866.c: New test.
+
 	PR debug/77363
 	* g++.dg/debug/dwarf2/pr77363.C: New test.
 
