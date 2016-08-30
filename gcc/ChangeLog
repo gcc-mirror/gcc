@@ -1,5 +1,11 @@
 2016-08-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/72866
+	* tree-vect-patterns.c (search_type_for_mask): Turn into
+	a small wrapper, move all code to ...
+	(search_type_for_mask_1): ... this new function.  Add caching
+	and adjust recursive calls.
+
 	PR debug/77363
 	* dwarf2out.c (modified_type_die): Use lookup_type_die (type)
 	instead of lookup_type_die (type_main_variant (type)) even for array
