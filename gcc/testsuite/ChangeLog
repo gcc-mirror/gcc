@@ -1,3 +1,8 @@
+2016-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt57.ad[sb]: New test.
+	* gnat.dg/opt57_pkg.ads: New helper.
+
 2016-08-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69047

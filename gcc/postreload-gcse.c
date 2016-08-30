@@ -962,7 +962,9 @@ bb_has_well_behaved_predecessors (basic_block bb)
 
   FOR_EACH_EDGE (pred, ei, bb->preds)
     {
-      if ((pred->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (pred))
+      /* commit_one_edge_insertion refuses to insert on abnormal edges even if
+	 the source has only one successor so EDGE_CRITICAL_P is too weak.  */
+      if ((pred->flags & EDGE_ABNORMAL) && !single_pred_p (pred->dest))
 	return false;
 
       if ((pred->flags & EDGE_ABNORMAL_CALL) && cfun->has_nonlocal_label)
