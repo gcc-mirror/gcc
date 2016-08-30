@@ -9,7 +9,6 @@
 #include "runtime.h"
 #include "go-alloc.h"
 #include "go-panic.h"
-#include "go-defer.h"
 
 /* This function is called each time we need to defer a call.  */
 
@@ -17,19 +16,19 @@ void
 __go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
 {
   G *g;
-  struct __go_defer_stack *n;
+  Defer *n;
 
   g = runtime_g ();
   n = runtime_newdefer ();
-  n->__next = g->defer;
-  n->__frame = frame;
-  n->__panic = g->panic;
-  n->__pfn = pfn;
-  n->__arg = arg;
-  n->__retaddr = NULL;
-  n->__makefunc_can_recover = 0;
-  n->__special = 0;
-  g->defer = n;
+  n->next = g->_defer;
+  n->frame = frame;
+  n->_panic = g->_panic;
+  n->pfn = (uintptr) pfn;
+  n->arg = arg;
+  n->retaddr = 0;
+  n->makefunccanrecover = 0;
+  n->special = 0;
+  g->_defer = n;
 }
 
 /* This function is called when we want to undefer the stack.  */
@@ -40,19 +39,19 @@ __go_undefer (_Bool *frame)
   G *g;
 
   g = runtime_g ();
-  while (g->defer != NULL && g->defer->__frame == frame)
+  while (g->_defer != NULL && g->_defer->frame == frame)
     {
-      struct __go_defer_stack *d;
+      Defer *d;
       void (*pfn) (void *);
 
-      d = g->defer;
-      pfn = d->__pfn;
-      d->__pfn = NULL;
+      d = g->_defer;
+      pfn = (void (*) (void *)) d->pfn;
+      d->pfn = 0;
 
       if (pfn != NULL)
-	(*pfn) (d->__arg);
+	(*pfn) (d->arg);
 
-      g->defer = d->__next;
+      g->_defer = d->next;
 
       /* This may be called by a cgo callback routine to defer the
 	 call to syscall.CgocallBackDone, in which case we will not
@@ -79,7 +78,7 @@ __go_set_defer_retaddr (void *retaddr)
   G *g;
 
   g = runtime_g ();
-  if (g->defer != NULL)
-    g->defer->__retaddr = __builtin_extract_return_addr (retaddr);
+  if (g->_defer != NULL)
+    g->_defer->retaddr = (uintptr) __builtin_extract_return_addr (retaddr);
   return 0;
 }

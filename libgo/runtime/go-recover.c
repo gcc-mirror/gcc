@@ -7,33 +7,32 @@
 #include "runtime.h"
 #include "interface.h"
 #include "go-panic.h"
-#include "go-defer.h"
 
 /* If the top of the defer stack can be recovered, then return it.
    Otherwise return NULL.  */
 
-static struct __go_defer_stack *
+static Defer *
 current_defer ()
 {
   G *g;
-  struct __go_defer_stack *d;
+  Defer *d;
 
   g = runtime_g ();
 
-  d = g->defer;
+  d = g->_defer;
   if (d == NULL)
     return NULL;
 
   /* The panic which would be recovered is the one on the top of the
      panic stack.  We do not want to recover it if that panic was on
      the top of the panic stack when this function was deferred.  */
-  if (d->__panic == g->panic)
+  if (d->_panic == g->_panic)
     return NULL;
 
   /* The deferred thunk will call _go_set_defer_retaddr.  If this has
      not happened, then we have not been called via defer, and we can
      not recover.  */
-  if (d->__retaddr == NULL)
+  if (d->retaddr == 0)
     return NULL;
 
   return d;
@@ -48,7 +47,7 @@ current_defer ()
 _Bool
 __go_can_recover (void *retaddr)
 {
-  struct __go_defer_stack *d;
+  Defer *d;
   const char* ret;
   const char* dret;
   Location locs[16];
@@ -64,7 +63,7 @@ __go_can_recover (void *retaddr)
 
   ret = (const char *) __builtin_extract_return_addr (retaddr);
 
-  dret = (const char *) d->__retaddr;
+  dret = (const char *) (uintptr) d->retaddr;
   if (ret <= dret && ret + 16 >= dret)
     return 1;
 
@@ -111,7 +110,7 @@ __go_can_recover (void *retaddr)
   /* If the function calling recover was created by reflect.MakeFunc,
      then __go_makefunc_can_recover or __go_makefunc_ffi_can_recover
      will have set the __makefunc_can_recover field.  */
-  if (!d->__makefunc_can_recover)
+  if (!d->makefunccanrecover)
     return 0;
 
   /* We look up the stack, ignoring libffi functions and functions in
@@ -178,7 +177,7 @@ __go_can_recover (void *retaddr)
 void
 __go_makefunc_can_recover (void *retaddr)
 {
-  struct __go_defer_stack *d;
+  Defer *d;
 
   d = current_defer ();
   if (d == NULL)
@@ -186,24 +185,24 @@ __go_makefunc_can_recover (void *retaddr)
 
   /* If we are already in a call stack of MakeFunc functions, there is
      nothing we can usefully check here.  */
-  if (d->__makefunc_can_recover)
+  if (d->makefunccanrecover)
     return;
 
   if (__go_can_recover (retaddr))
-    d->__makefunc_can_recover = 1;
+    d->makefunccanrecover = 1;
 }
 
 /* This function is called when code is about to enter a function
    created by the libffi version of reflect.MakeFunc.  This function
    is passed the names of the callers of the libffi code that called
    the stub.  It uses to decide whether it is permitted to call
-   recover, and sets d->__makefunc_can_recover so that __go_recover
-   can make the same decision.  */
+   recover, and sets d->makefunccanrecover so that __go_recover can
+   make the same decision.  */
 
 void
-__go_makefunc_ffi_can_recover (struct Location *loc, int n)
+__go_makefunc_ffi_can_recover (struct location *loc, int n)
 {
-  struct __go_defer_stack *d;
+  Defer *d;
   const byte *name;
   intgo len;
 
@@ -213,7 +212,7 @@ __go_makefunc_ffi_can_recover (struct Location *loc, int n)
 
   /* If we are already in a call stack of MakeFunc functions, there is
      nothing we can usefully check here.  */
-  if (d->__makefunc_can_recover)
+  if (d->makefunccanrecover)
     return;
 
   /* LOC points to the caller of our caller.  That will be a thunk.
@@ -228,26 +227,26 @@ __go_makefunc_ffi_can_recover (struct Location *loc, int n)
   if (len > 4
       && __builtin_strchr ((const char *) name, '.') == NULL
       && __builtin_strncmp ((const char *) name, "__go_", 4) == 0)
-    d->__makefunc_can_recover = 1;
+    d->makefunccanrecover = 1;
 }
 
 /* This function is called when code is about to exit a function
    created by reflect.MakeFunc.  It is called by the function stub
-   used by MakeFunc.  It clears the __makefunc_can_recover field.
-   It's OK to always clear this field, because __go_can_recover will
-   only be called by a stub created for a function that calls recover.
-   That stub will not call a function created by reflect.MakeFunc, so
-   by the time we get here any caller higher up on the call stack no
+   used by MakeFunc.  It clears the makefunccanrecover field.  It's OK
+   to always clear this field, because __go_can_recover will only be
+   called by a stub created for a function that calls recover.  That
+   stub will not call a function created by reflect.MakeFunc, so by
+   the time we get here any caller higher up on the call stack no
    longer needs the information.  */
 
 void
 __go_makefunc_returning (void)
 {
-  struct __go_defer_stack *d;
+  Defer *d;
 
-  d = runtime_g ()->defer;
+  d = runtime_g ()->_defer;
   if (d != NULL)
-    d->__makefunc_can_recover = 0;
+    d->makefunccanrecover = 0;
 }
 
 /* This is only called when it is valid for the caller to recover the
@@ -257,11 +256,11 @@ struct __go_empty_interface
 __go_recover ()
 {
   G *g;
-  struct __go_panic_stack *p;
+  Panic *p;
 
   g = runtime_g ();
 
-  if (g->panic == NULL || g->panic->__was_recovered)
+  if (g->_panic == NULL || g->_panic->recovered)
     {
       struct __go_empty_interface ret;
 
@@ -269,7 +268,7 @@ __go_recover ()
       ret.__object = NULL;
       return ret;
     }
-  p = g->panic;
-  p->__was_recovered = 1;
-  return p->__arg;
+  p = g->_panic;
+  p->recovered = 1;
+  return p->arg;
 }

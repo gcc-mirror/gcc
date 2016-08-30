@@ -73,7 +73,7 @@ unlocked:
 			// for this lock, chained through m->nextwaitm.
 			// Queue this M.
 			for(;;) {
-				m->nextwaitm = (void*)(v&~LOCKED);
+				m->nextwaitm = v&~LOCKED;
 				if(runtime_casp((void**)&l->key, (void*)v, (void*)((uintptr)m|LOCKED)))
 					break;
 				v = (uintptr)runtime_atomicloadp((void**)&l->key);
@@ -104,7 +104,7 @@ runtime_unlock(Lock *l)
 			// Other M's are waiting for the lock.
 			// Dequeue an M.
 			mp = (void*)(v&~LOCKED);
-			if(runtime_casp((void**)&l->key, (void*)v, mp->nextwaitm)) {
+			if(runtime_cas(&l->key, v, mp->nextwaitm)) {
 				// Dequeued an M.  Wake it.
 				runtime_semawakeup(mp);
 				break;

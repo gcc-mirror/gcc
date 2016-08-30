@@ -8,7 +8,6 @@
 
 #include "runtime.h"
 #include "go-panic.h"
-#include "go-defer.h"
 
 /* This is called when a call to recover is deferred.  That is,
    something like
@@ -82,7 +81,7 @@ __go_deferred_recover ()
   G *g;
 
   g = runtime_g ();
-  if (g->defer == NULL || g->defer->__panic != g->panic)
+  if (g->_defer == NULL || g->_defer->_panic != g->_panic)
     {
       struct __go_empty_interface ret;
 

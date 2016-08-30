@@ -26,11 +26,11 @@ extern void __splitstack_setcontext(void *context[10]);
 
 #endif
 
-#define N SigNotify
-#define K SigKill
-#define T SigThrow
-#define P SigPanic
-#define D SigDefault
+#define N _SigNotify
+#define K _SigKill
+#define T _SigThrow
+#define P _SigPanic
+#define D _SigDefault
 
 /* Signal actions.  This collects the sigtab tables for several
    different targets from the master library.  SIGKILL and SIGSTOP are
@@ -182,14 +182,14 @@ runtime_sighandler (int sig, Siginfo *info,
 #ifdef SA_SIGINFO
       notify = info != NULL && info->si_code == SI_USER;
 #endif
-      if (notify || (t->flags & SigNotify) != 0)
+      if (notify || (t->flags & _SigNotify) != 0)
 	{
 	  if (__go_sigsend (sig))
 	    return;
 	}
-      if ((t->flags & SigKill) != 0)
+      if ((t->flags & _SigKill) != 0)
 	runtime_exit (2);
-      if ((t->flags & SigThrow) == 0)
+      if ((t->flags & _SigThrow) == 0)
 	return;
 
       runtime_startpanic ();
@@ -320,7 +320,7 @@ sig_panic_info_handler (int sig, Siginfo *info, void *context)
 #endif
     }
 
-  /* All signals with SigPanic should be in cases above, and this
+  /* All signals with _SigPanic should be in cases above, and this
      handler should only be invoked for those signals.  */
   __builtin_unreachable ();
 }
@@ -365,7 +365,7 @@ sig_panic_handler (int sig)
 #endif
     }
 
-  /* All signals with SigPanic should be in cases above, and this
+  /* All signals with _SigPanic should be in cases above, and this
      handler should only be invoked for those signals.  */
   __builtin_unreachable ();
 }
@@ -406,7 +406,7 @@ sig_tramp_info (int sig, Siginfo *info, void *context)
       /* We are running on the signal stack.  Set the split stack
 	 context so that the stack guards are checked correctly.  */
 #ifdef USING_SPLIT_STACK
-      __splitstack_setcontext (&mp->gsignal->stack_context[0]);
+      __splitstack_setcontext (&mp->gsignal->stackcontext[0]);
 #endif
     }
 
@@ -451,7 +451,7 @@ runtime_setsig (int32 i, GoSighandler *fn, bool restart)
 
   t = &runtime_sigtab[i];
 
-  if ((t->flags & SigPanic) == 0)
+  if ((t->flags & _SigPanic) == 0)
     {
 #ifdef SA_SIGINFO
       sa.sa_flags = SA_ONSTACK | SA_SIGINFO;

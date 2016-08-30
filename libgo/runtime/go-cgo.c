@@ -36,7 +36,6 @@ void
 syscall_cgocall ()
 {
   M* m;
-  G* g;
 
   if (runtime_needextram && runtime_cas (&runtime_needextram, 1, 0))
     runtime_newextram ();
@@ -45,8 +44,7 @@ syscall_cgocall ()
 
   m = runtime_m ();
   ++m->ncgocall;
-  g = runtime_g ();
-  ++g->ncgo;
+  ++m->ncgo;
   runtime_entersyscall ();
 }
 
@@ -59,18 +57,18 @@ syscall_cgocalldone ()
 
   g = runtime_g ();
   __go_assert (g != NULL);
-  --g->ncgo;
-  if (g->ncgo == 0)
+  --g->m->ncgo;
+  if (g->m->ncgo == 0)
     {
       /* We are going back to Go, and we are not in a recursive call.
 	 Let the garbage collector clean up any unreferenced
 	 memory.  */
-      g->cgomal = NULL;
+      g->m->cgomal = NULL;
     }
 
   /* If we are invoked because the C function called _cgo_panic, then
      _cgo_panic will already have exited syscall mode.  */
-  if (g->status == Gsyscall)
+  if (g->atomicstatus == _Gsyscall)
     runtime_exitsyscall ();
 
   runtime_unlockOSThread();
@@ -93,7 +91,7 @@ syscall_cgocallback ()
 
   runtime_exitsyscall ();
 
-  if (runtime_g ()->ncgo == 0)
+  if (runtime_m ()->ncgo == 0)
     {
       /* The C call to Go came from a thread not currently running any
 	 Go.  In the case of -buildmode=c-archive or c-shared, this
@@ -119,7 +117,7 @@ syscall_cgocallbackdone ()
 
   runtime_entersyscall ();
   mp = runtime_m ();
-  if (mp->dropextram && runtime_g ()->ncgo == 0)
+  if (mp->dropextram && mp->ncgo == 0)
     {
       mp->dropextram = false;
       runtime_dropm ();
@@ -133,16 +131,16 @@ void *
 alloc_saved (size_t n)
 {
   void *ret;
-  G *g;
+  M *m;
   CgoMal *c;
 
   ret = __go_alloc (n);
 
-  g = runtime_g ();
+  m = runtime_m ();
   c = (CgoMal *) __go_alloc (sizeof (CgoMal));
-  c->next = g->cgomal;
+  c->next = m->cgomal;
   c->alloc = ret;
-  g->cgomal = c;
+  m->cgomal = c;
 
   return ret;
 }

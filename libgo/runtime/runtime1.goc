@@ -65,7 +65,7 @@ func sync.runtime_procPin() (p int) {
 	mp = runtime_m();
 	// Disable preemption.
 	mp->locks++;
-	p = mp->p->id;
+	p = ((P*)mp->p)->id;
 }
 
 func sync.runtime_procUnpin() {
@@ -78,7 +78,7 @@ func sync_atomic.runtime_procPin() (p int) {
 	mp = runtime_m();
 	// Disable preemption.
 	mp->locks++;
-	p = mp->p->id;
+	p = ((P*)mp->p)->id;
 }
 
 func sync_atomic.runtime_procUnpin() {

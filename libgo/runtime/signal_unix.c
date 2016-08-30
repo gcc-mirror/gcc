@@ -26,7 +26,7 @@ runtime_initsig(bool preinit)
 	// First call: basic setup.
 	for(i = 0; runtime_sigtab[i].sig != -1; i++) {
 		t = &runtime_sigtab[i];
-		if((t->flags == 0) || (t->flags & SigDefault))
+		if((t->flags == 0) || (t->flags & _SigDefault))
 			continue;
 
 		t->fwdsig = runtime_getsig(i);
@@ -42,10 +42,10 @@ runtime_initsig(bool preinit)
 			}
 		}
 
-		if(runtime_isarchive && (t->flags&SigPanic) == 0)
+		if(runtime_isarchive && (t->flags&_SigPanic) == 0)
 			continue;
 
-		t->flags |= SigHandling;
+		t->flags |= _SigHandling;
 		runtime_setsig(i, runtime_sighandler, true);
 	}
 }
@@ -67,8 +67,8 @@ runtime_sigenable(uint32 sig)
 	if(t == nil)
 		return;
 
-	if((t->flags & SigNotify) && !(t->flags & SigHandling)) {
-		t->flags |= SigHandling;
+	if((t->flags & _SigNotify) && !(t->flags & _SigHandling)) {
+		t->flags |= _SigHandling;
 		t->fwdsig = runtime_getsig(i);
 		runtime_setsig(i, runtime_sighandler, true);
 	}
@@ -92,7 +92,7 @@ runtime_sigdisable(uint32 sig)
 		return;
 
 	if((sig == SIGHUP || sig == SIGINT) && t->fwdsig == GO_SIG_IGN) {
-		t->flags &= ~SigHandling;
+		t->flags &= ~_SigHandling;
 		runtime_setsig(i, t->fwdsig, true);
 	}
 }
@@ -114,8 +114,8 @@ runtime_sigignore(uint32 sig)
 	if(t == nil)
 		return;
 
-	if((t->flags & SigNotify) != 0) {
-		t->flags &= ~SigHandling;
+	if((t->flags & _SigNotify) != 0) {
+		t->flags &= ~_SigHandling;
 		runtime_setsig(i, GO_SIG_IGN, true);
 	}
 }
