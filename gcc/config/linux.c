@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 bool
 linux_libc_has_function (enum function_class fn_class)
 {
-  if (OPTION_GLIBC)
+  if (OPTION_GLIBC || OPTION_MUSL)
     return true;
   if (OPTION_BIONIC)
     if (fn_class == function_c94
