@@ -2474,7 +2474,7 @@ build_component_ref (location_t loc, tree datum, tree component,
 	 where the user has confused "." vs "->".  */
       rich_location richloc (line_table, loc);
       /* "loc" should be the "." token.  */
-      richloc.add_fixit_replace (source_range::from_location (loc), "->");
+      richloc.add_fixit_replace ("->");
       error_at_rich_loc (&richloc,
 			 "%qE is a pointer; did you mean to use %<->%>?",
 			 datum);

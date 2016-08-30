@@ -4446,7 +4446,7 @@ suggest_alternatives_for (location_t location, tree name)
       if (fuzzy_name)
 	{
 	  gcc_rich_location richloc (location);
-	  richloc.add_fixit_misspelled_id (location, fuzzy_name);
+	  richloc.add_fixit_replace (fuzzy_name);
 	  inform_at_rich_loc (&richloc, "suggested alternative: %qs",
 			      fuzzy_name);
 	}

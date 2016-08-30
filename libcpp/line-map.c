@@ -2092,6 +2092,17 @@ rich_location::set_range (line_maps * /*set*/, unsigned int idx,
     m_have_expanded_location = false;
 }
 
+/* Methods for adding insertion fix-it hints.  */
+
+/* Add a fixit-hint, suggesting insertion of NEW_CONTENT
+   at the primary range's caret location.  */
+
+void
+rich_location::add_fixit_insert (const char *new_content)
+{
+  add_fixit_insert (get_loc (), new_content);
+}
+
 /* Add a fixit-hint, suggesting insertion of NEW_CONTENT
    at WHERE.  */
 
@@ -2107,6 +2118,27 @@ rich_location::add_fixit_insert (source_location where,
   linemap_assert (m_num_fixit_hints < MAX_FIXIT_HINTS);
   m_fixit_hints[m_num_fixit_hints++]
     = new fixit_insert (where, new_content);
+}
+
+/* Methods for adding removal fix-it hints.  */
+
+/* Add a fixit-hint, suggesting removal of the content covered
+   by range 0.  */
+
+void
+rich_location::add_fixit_remove ()
+{
+  add_fixit_remove (get_loc ());
+}
+
+/* Add a fixit-hint, suggesting removal of the content between
+   the start and finish of WHERE.  */
+
+void
+rich_location::add_fixit_remove (source_location where)
+{
+  source_range range = get_range_from_loc (m_line_table, where);
+  add_fixit_remove (range);
 }
 
 /* Add a fixit-hint, suggesting removal of the content at
@@ -2154,6 +2186,28 @@ column_before_p (line_maps *set, source_location a, source_location b)
     = SOURCE_COLUMN (linemap_check_ordinary (linemap_b), b);
 
   return column_b == column_a + 1;
+}
+
+/* Add a fixit-hint, suggesting replacement of the content covered
+   by range 0 with NEW_CONTENT.  */
+
+void
+rich_location::add_fixit_replace (const char *new_content)
+{
+  add_fixit_replace (get_loc (), new_content);
+}
+
+/* Methods for adding "replace" fix-it hints.  */
+
+/* Add a fixit-hint, suggesting replacement of the content between
+   the start and finish of WHERE with NEW_CONTENT.  */
+
+void
+rich_location::add_fixit_replace (source_location where,
+				  const char *new_content)
+{
+  source_range range = get_range_from_loc (m_line_table, where);
+  add_fixit_replace (range, new_content);
 }
 
 /* Add a fixit-hint, suggesting replacement of the content at

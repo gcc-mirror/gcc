@@ -1,3 +1,16 @@
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::add_fixit_insert): Add
+	comments.  Add overload omitting the source_location param.
+	(rich_location::add_fixit_remove): Add comments.  Add overloads
+	omitting the range, and accepting a source_location.
+	(rich_location::add_fixit_replace): Likewise.
+	* line-map.c (rich_location::add_fixit_insert): Add comments.  Add
+	overload omitting the source_location param.
+	(rich_location::add_fixit_remove): Add comments.  Add overloads
+	omitting the range, and accepting a source_location.
+	(rich_location::add_fixit_replace): Likewise.
+
 2016-08-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (get_pure_location): New decl.

@@ -1,3 +1,17 @@
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (test_one_liner_fixit_insert): Remove
+	redundant location param.
+	(test_one_liner_fixit_remove): Likewise.
+	(test_one_liner_fixit_replace): Likewise.
+	(test_one_liner_fixit_replace_equal_secondary_range): Likewise.
+	* gcc-rich-location.c
+	(gcc_rich_location::add_fixit_misspelled_id): Eliminate call to
+	get_range_from_loc.  Drop overload taking a const char *.
+	* gcc-rich-location.h
+	(gcc_rich_location::add_fixit_misspelled_id): Drop overload taking
+	a const char *.
+
 2016-08-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/linux.c (linux_libc_has_function): Return true on musl.

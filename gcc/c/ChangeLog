@@ -1,3 +1,14 @@
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (implicit_decl_warning): Use add_fixit_replace
+	rather than add_fixit_misspelled_id.
+	(undeclared_variable): Likewise.
+	* c-parser.c (c_parser_declaration_or_fndef): Likewise.  Remove
+	now-redundant "here" params from add_fixit_insert method calls.
+	(c_parser_parameter_declaration): Likewise.
+	* c-typeck.c (build_component_ref): Remove now-redundant range
+	param from add_fixit_replace method calls.
+
 2016-08-25  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c (parser_build_binary_op): Pass LHS to

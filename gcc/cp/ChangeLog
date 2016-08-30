@@ -1,3 +1,9 @@
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.c (suggest_alternatives_for): Use add_fixit_replace
+	rather than add_fixit_misspelled_id.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+
 2016-08-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/77379

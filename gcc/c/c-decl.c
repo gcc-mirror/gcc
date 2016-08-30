@@ -3096,7 +3096,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	if (hint)
 	  {
 	    gcc_rich_location richloc (loc);
-	    richloc.add_fixit_misspelled_id (loc, hint);
+	    richloc.add_fixit_replace (hint);
 	    warned = pedwarn_at_rich_loc
 	      (&richloc, OPT_Wimplicit_function_declaration,
 	       "implicit declaration of function %qE; did you mean %qs?",
@@ -3109,7 +3109,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	if (hint)
 	  {
 	    gcc_rich_location richloc (loc);
-	    richloc.add_fixit_misspelled_id (loc, hint);
+	    richloc.add_fixit_replace (hint);
 	    warned = warning_at_rich_loc
 	      (&richloc, OPT_Wimplicit_function_declaration,
 	       G_("implicit declaration of function %qE;did you mean %qs?"),
@@ -3437,7 +3437,7 @@ undeclared_variable (location_t loc, tree id)
       if (guessed_id)
 	{
 	  gcc_rich_location richloc (loc);
-	  richloc.add_fixit_misspelled_id (loc, guessed_id);
+	  richloc.add_fixit_replace (guessed_id);
 	  error_at_rich_loc (&richloc,
 			     "%qE undeclared here (not in a function);"
 			     " did you mean %qs?",
@@ -3455,7 +3455,7 @@ undeclared_variable (location_t loc, tree id)
 	  if (guessed_id)
 	    {
 	      gcc_rich_location richloc (loc);
-	      richloc.add_fixit_misspelled_id (loc, guessed_id);
+	      richloc.add_fixit_replace (guessed_id);
 	      error_at_rich_loc
 		(&richloc,
 		 "%qE undeclared (first use in this function);"
