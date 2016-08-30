@@ -2127,9 +2127,10 @@ be disabled using -std=legacy.
 @cindex @code{RECORD}
 
 Record structures are a pre-Fortran-90 vendor extension to create
-user-defined aggregate data types.  GNU Fortran does not support
-record structures, only Fortran 90's ``derived types'', which have
-a different syntax.
+user-defined aggregate data types.  Support for record structures in GNU
+Fortran can be enabled with the @option{-fdec-structure} compile flag.
+If you have a choice, you should instead use Fortran 90's ``derived types'',
+which have a different syntax.
 
 In many cases, record structures can easily be converted to derived types.
 To convert, replace @code{STRUCTURE /}@var{structure-name}@code{/}
