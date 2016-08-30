@@ -1,3 +1,16 @@
+2016-08-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Do not emit
+	USEs of LR_REGNO in returns and sibcalls.
+	(rs6000_output_mi_thunk): Similar.
+	(rs6000_sibcall_aix): Similar.
+	* config/rs6000/rs6000.md (sibcall, sibcall_value, sibcall_local32,
+	sibcall_local64, sibcall_value_local32, sibcall_value_local64,
+	sibcall_nonlocal_sysv<mode>, sibcall_value_nonlocal_sysv<mode>):
+	Remove the USE of LR_REGNO from the patterns as well.  Delete an
+	obsolete comment.
+	(return_internal_<mode>): Delete.
+
 2016-08-30  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc/config/aarch64/aarch64-simd.md

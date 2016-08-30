@@ -28277,7 +28277,6 @@ rs6000_emit_epilogue (int sibcall)
 	 longer necessary.  */
 
       p = rtvec_alloc (9
-		       + 1
 		       + 32 - info->first_gp_reg_save
 		       + LAST_ALTIVEC_REGNO + 1 - info->first_altivec_reg_save
 		       + 63 + 1 - info->first_fp_reg_save);
@@ -28288,9 +28287,6 @@ rs6000_emit_epilogue (int sibcall)
 
       j = 0;
       RTVEC_ELT (p, j++) = ret_rtx;
-      RTVEC_ELT (p, j++) = gen_rtx_USE (VOIDmode,
-					gen_rtx_REG (Pmode,
-						     LR_REGNO));
       RTVEC_ELT (p, j++)
 	= gen_rtx_USE (VOIDmode, gen_rtx_SYMBOL_REF (Pmode, alloc_rname));
       /* The instruction pattern requires a clobber here;
@@ -29013,73 +29009,63 @@ rs6000_emit_epilogue (int sibcall)
       emit_insn (gen_add3_insn (sp_reg_rtx, sp_reg_rtx, sa));
     }
 
-  if (!sibcall)
+  if (!sibcall && restoring_FPRs_inline)
     {
-      rtvec p;
+      if (cfa_restores)
+	{
+	  /* We can't hang the cfa_restores off a simple return,
+	     since the shrink-wrap code sometimes uses an existing
+	     return.  This means there might be a path from
+	     pre-prologue code to this return, and dwarf2cfi code
+	     wants the eh_frame unwinder state to be the same on
+	     all paths to any point.  So we need to emit the
+	     cfa_restores before the return.  For -m64 we really
+	     don't need epilogue cfa_restores at all, except for
+	     this irritating dwarf2cfi with shrink-wrap
+	     requirement;  The stack red-zone means eh_frame info
+	     from the prologue telling the unwinder to restore
+	     from the stack is perfectly good right to the end of
+	     the function.  */
+	  emit_insn (gen_blockage ());
+	  emit_cfa_restores (cfa_restores);
+	  cfa_restores = NULL_RTX;
+	}
+
+      emit_jump_insn (targetm.gen_simple_return ());
+    }
+
+  if (!sibcall && !restoring_FPRs_inline)
+    {
       bool lr = (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR) == 0;
-      if (! restoring_FPRs_inline)
-	{
-	  p = rtvec_alloc (4 + 64 - info->first_fp_reg_save);
-	  RTVEC_ELT (p, 0) = ret_rtx;
-	}
-      else
-	{
-	  if (cfa_restores)
-	    {
-	      /* We can't hang the cfa_restores off a simple return,
-		 since the shrink-wrap code sometimes uses an existing
-		 return.  This means there might be a path from
-		 pre-prologue code to this return, and dwarf2cfi code
-		 wants the eh_frame unwinder state to be the same on
-		 all paths to any point.  So we need to emit the
-		 cfa_restores before the return.  For -m64 we really
-		 don't need epilogue cfa_restores at all, except for
-		 this irritating dwarf2cfi with shrink-wrap
-		 requirement;  The stack red-zone means eh_frame info
-		 from the prologue telling the unwinder to restore
-		 from the stack is perfectly good right to the end of
-		 the function.  */
-	      emit_insn (gen_blockage ());
-	      emit_cfa_restores (cfa_restores);
-	      cfa_restores = NULL_RTX;
-	    }
-	  p = rtvec_alloc (2);
-	  RTVEC_ELT (p, 0) = simple_return_rtx;
-	}
+      rtvec p = rtvec_alloc (3 + !!lr + 64 - info->first_fp_reg_save);
+      int elt = 0;
+      RTVEC_ELT (p, elt++) = ret_rtx;
+      if (lr)
+	RTVEC_ELT (p, elt++)
+	  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
 
-      RTVEC_ELT (p, 1) = ((restoring_FPRs_inline || !lr)
-			  ? gen_rtx_USE (VOIDmode,
-					 gen_rtx_REG (Pmode, LR_REGNO))
-			  : gen_rtx_CLOBBER (VOIDmode,
-					     gen_rtx_REG (Pmode, LR_REGNO)));
-
-      /* If we have to restore more than two FP registers, branch to the
+      /* We have to restore more than two FP registers, so branch to the
 	 restore function.  It will return to our caller.  */
-      if (! restoring_FPRs_inline)
+      int i;
+      int reg;
+      rtx sym;
+
+      if (flag_shrink_wrap)
+	cfa_restores = add_crlr_cfa_restore (info, cfa_restores);
+
+      sym = rs6000_savres_routine_sym (info, SAVRES_FPR | (lr ? SAVRES_LR : 0));
+      RTVEC_ELT (p, elt++) = gen_rtx_USE (VOIDmode, sym);
+      reg = (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)? 1 : 11;
+      RTVEC_ELT (p, elt++) = gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode, reg));
+
+      for (i = 0; i < 64 - info->first_fp_reg_save; i++)
 	{
-	  int i;
-	  int reg;
-	  rtx sym;
+	  rtx reg = gen_rtx_REG (DFmode, info->first_fp_reg_save + i);
 
+	  RTVEC_ELT (p, elt++)
+	    = gen_frame_load (reg, sp_reg_rtx, info->fp_save_offset + 8 * i);
 	  if (flag_shrink_wrap)
-	    cfa_restores = add_crlr_cfa_restore (info, cfa_restores);
-
-	  sym = rs6000_savres_routine_sym (info,
-					   SAVRES_FPR | (lr ? SAVRES_LR : 0));
-	  RTVEC_ELT (p, 2) = gen_rtx_USE (VOIDmode, sym);
-	  reg = (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)? 1 : 11;
-	  RTVEC_ELT (p, 3) = gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode, reg));
-
-	  for (i = 0; i < 64 - info->first_fp_reg_save; i++)
-	    {
-	      rtx reg = gen_rtx_REG (DFmode, info->first_fp_reg_save + i);
-
-	      RTVEC_ELT (p, i + 4)
-		= gen_frame_load (reg, sp_reg_rtx, info->fp_save_offset + 8 * i);
-	      if (flag_shrink_wrap)
-		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
-					       cfa_restores);
-	    }
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
 
       emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
@@ -29667,13 +29653,10 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      generate sibcall RTL explicitly.  */
   insn = emit_call_insn (
 	   gen_rtx_PARALLEL (VOIDmode,
-	     gen_rtvec (4,
+	     gen_rtvec (3,
 			gen_rtx_CALL (VOIDmode,
 				      funexp, const0_rtx),
 			gen_rtx_USE (VOIDmode, const0_rtx),
-			gen_rtx_USE (VOIDmode,
-				     gen_rtx_REG (SImode,
-						  LR_REGNO)),
 			simple_return_rtx)));
   SIBLING_CALL_P (insn) = 1;
   emit_barrier ();
@@ -37578,9 +37561,6 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 
   /* Note use of the TOC register.  */
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), gen_rtx_REG (Pmode, TOC_REGNUM));
-  /* We need to also mark a use of the link register since the function we
-     sibling-call to will use it to return to our caller.  */
-  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), gen_rtx_REG (Pmode, LR_REGNO));
 }
 
 /* Return whether we need to always update the saved TOC pointer when we update
