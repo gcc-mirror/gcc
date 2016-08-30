@@ -1,3 +1,9 @@
+2016-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/77389
+	* g++.dg/debug/dwarf2/template-params-12f.C: Pass -gno-strict-dwarf
+	in dg-options.
+
 2016-08-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/pr77372.f90: Moved to ...
