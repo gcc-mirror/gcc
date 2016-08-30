@@ -1,3 +1,7 @@
+2016-08-30  Fritz Reese  <fritzoreese@gmail.com>
+
+	* gfortran.texi: Fix typo in STRUCTURE documentation.
+
 2016-08-29  Fritz Reese  <fritzoreese@gmail.com>
 
 	Fix, reorganize, and clarify comparisons of anonymous types/components.
