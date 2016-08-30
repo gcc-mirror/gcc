@@ -1,5 +1,9 @@
 2016-08-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
+	* config/linux.c (linux_libc_has_function): Return true on musl.
+
+2016-08-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
 	* config.gcc (*-*-*musl*): Disable gnu-indirect-function.
 
 2016-08-30  Eric Botcazou  <ebotcazou@adacore.com>
