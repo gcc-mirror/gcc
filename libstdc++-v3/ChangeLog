@@ -1,3 +1,15 @@
+2016-08-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/77395
+	* include/std/type_traits (is_constructible): Forward-declare...
+	(__is_base_to_derived_ref): ...and use here.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust.
+	* testsuite/20_util/is_constructible/77395.cc: New.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/tuple/77395.cc: New.
+
 2016-08-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/22_locale/time_get/get/char/2.cc: Move dg-do run
