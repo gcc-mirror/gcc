@@ -250,6 +250,12 @@ class Gogo
   set_relative_import_path(const std::string& s)
   { this->relative_import_path_ = s; }
 
+  // Set the C header file to write.  This is used for the runtime
+  // package.
+  void
+  set_c_header(const std::string& s)
+  { this->c_header_ = s; }
+
   // Return whether to check for division by zero in binary operations.
   bool
   check_divide_by_zero() const
@@ -269,6 +275,16 @@ class Gogo
   void
   set_check_divide_overflow(bool b)
   { this->check_divide_overflow_ = b; }
+
+  // Return whether we are compiling the runtime package.
+  bool
+  compiling_runtime() const
+  { return this->compiling_runtime_; }
+
+  // Set whether we are compiling the runtime package.
+  void
+  set_compiling_runtime(bool b)
+  { this->compiling_runtime_ = b; }
 
   // Return the level of escape analysis debug information to emit.
   int
@@ -731,6 +747,9 @@ class Gogo
   const Bindings*
   current_bindings() const;
 
+  void
+  write_c_header();
+
   // Get the decl for the magic initialization function.
   Named_object*
   initialization_function_decl();
@@ -841,12 +860,17 @@ class Gogo
   // The relative import path, from the -fgo-relative-import-path
   // option.
   std::string relative_import_path_;
+  // The C header file to write, from the -fgo-c-header option.
+  std::string c_header_;
   // Whether or not to check for division by zero, from the
   // -fgo-check-divide-zero option.
   bool check_divide_by_zero_;
   // Whether or not to check for division overflow, from the
   // -fgo-check-divide-overflow option.
   bool check_divide_overflow_;
+  // Whether we are compiling the runtime package, from the
+  // -fgo-compiling-runtime option.
+  bool compiling_runtime_;
   // The level of escape analysis debug information to emit, from the
   // -fgo-debug-escape option.
   int debug_escape_level_;

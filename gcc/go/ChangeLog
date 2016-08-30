@@ -1,3 +1,13 @@
+2016-08-29  Ian Lance Taylor  <iant@google.com>
+
+	* lang.opt (fgo-c-header, fgo-compiling-runtime): New options.
+	* go-c.h (struct go_create_gogo_args): Define.
+	(go_create_gogo): Change declaration to take struct pointer.
+	* go-lang.c (go_c_header): New static variable.
+	(go_langhook_init): Update call to go_create_gogo.
+	* gccgo.texi (Invoking gccgo): Document -fgo-c-header and
+	-fgo-compiling-runtime.
+
 2016-08-09  Ian Lance Taylor  <iant@google.com>
 
 	* gccgo.texi (Invoking gccgo): Document -fgo-optimize-allocs and

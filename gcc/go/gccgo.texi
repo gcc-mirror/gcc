@@ -239,6 +239,17 @@ heap when possible.  In the future this may be the default.
 Output escape analysis debugging information.  Larger values of
 @var{n} generate more information.
 
+@item -fgo-c-header=@var{file}
+@cindex @option{-fgo-c-header}
+Write top-level named Go struct definitions to @var{file} as C code.
+This is used when compiling the runtime package.
+
+@item -fgo-compiling-runtime
+@cindex @option{-fgo-compiling-runtime}
+Apply special rules for compiling the runtime package.  Implicit
+memory allocation is forbidden.  Some additional compiler directives
+are supported.
+
 @item -g
 @cindex @option{-g for gccgo}
 This is the standard @command{gcc} option (@pxref{Debugging Options, ,

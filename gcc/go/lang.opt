@@ -37,6 +37,10 @@ Wall
 Go
 ; Documented in c.opt
 
+fgo-c-header=
+Go Joined RejectNegative
+-fgo-c-header=<file>	Write Go struct definitions to file as C code.
+
 fgo-check-divide-zero
 Go Var(go_check_divide_zero) Init(1)
 Add explicit checks for division by zero.
@@ -44,6 +48,10 @@ Add explicit checks for division by zero.
 fgo-check-divide-overflow
 Go Var(go_check_divide_overflow) Init(1)
 Add explicit checks for division overflow in INT_MIN / -1.
+
+fgo-compiling-runtime
+Go Var(go_compiling_runtime) Init(0)
+Apply special rules for compiling runtime package.
 
 fgo-dump-
 Go Joined RejectNegative
