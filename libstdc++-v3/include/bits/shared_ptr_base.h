@@ -873,6 +873,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using _Convertible
 	  = typename enable_if<is_convertible<_Ptr, _Tp*>::value>::type;
 
+      template<typename _Ptr>
+	using _Assignable = typename
+	  enable_if<is_convertible<_Ptr, _Tp*>::value, __shared_ptr&>::type;
+
     public:
       typedef _Tp   element_type;
 
@@ -983,7 +987,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr __shared_ptr(nullptr_t) noexcept : __shared_ptr() { }
 
       template<typename _Tp1>
-	__shared_ptr&
+	_Assignable<_Tp1*>
 	operator=(const __shared_ptr<_Tp1, _Lp>& __r) noexcept
 	{
 	  _M_ptr = __r._M_ptr;
@@ -1009,7 +1013,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<class _Tp1>
-	__shared_ptr&
+	_Assignable<_Tp1*>
 	operator=(__shared_ptr<_Tp1, _Lp>&& __r) noexcept
 	{
 	  __shared_ptr(std::move(__r)).swap(*this);
@@ -1017,7 +1021,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp1, typename _Del>
-	__shared_ptr&
+	_Assignable<typename unique_ptr<_Tp1, _Del>::pointer>
 	operator=(std::unique_ptr<_Tp1, _Del>&& __r)
 	{
 	  __shared_ptr(std::move(__r)).swap(*this);
@@ -1029,7 +1033,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __shared_ptr().swap(*this); }
 
       template<typename _Tp1>
-	void
+	_Convertible<_Tp1*>
 	reset(_Tp1* __p) // _Tp1 must be complete.
 	{
 	  // Catch self-reset errors.
@@ -1038,12 +1042,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp1, typename _Deleter>
-	void
+	_Convertible<_Tp1*>
 	reset(_Tp1* __p, _Deleter __d)
 	{ __shared_ptr(__p, __d).swap(*this); }
 
       template<typename _Tp1, typename _Deleter, typename _Alloc>
-	void
+	_Convertible<_Tp1*>
         reset(_Tp1* __p, _Deleter __d, _Alloc __a)
         { __shared_ptr(__p, __d, std::move(__a)).swap(*this); }
 

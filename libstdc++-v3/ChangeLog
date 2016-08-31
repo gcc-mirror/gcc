@@ -1,5 +1,26 @@
 2016-08-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr.h (_Assignable): New alias template.
+	(shared_ptr::operator=(const shared_ptr<_Tp1>&))
+	(shared_ptr::operator=(shared_ptr<_Tp1>&&))
+	(shared_ptr::operator=(unique_ptr<_Tp1>&&)): Constrain with
+	_Assignable.
+	* include/bits/shared_ptr_base.h (_Assignable): New alias template.
+	(__shared_ptr::operator=(const __shared_ptr<_Tp1>&))
+	(__shared_ptr::operator=(__shared_ptr<_Tp1>&&))
+	(__shared_ptr::operator=(unique_ptr<_Tp1>&&)): Constrain with
+	_Assignable.
+	(__shared_ptr::reset(_Tp1*), __shared_ptr::reset(_Tp1*, _Deleter))
+	(__shared_ptr::reset(_Tp1*, _Deleter, _Alloc)): Constrain with
+	_Convertible.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Change dg-error to
+	match on any line.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/sfinae.cc: New test.
+	* testsuite/20_util/shared_ptr/assign/shared_ptr_neg.cc: Update
+	expected errors. Remove unnecessary code.
+	* testsuite/20_util/shared_ptr/modifiers/reset_sfinae.cc: New test.
+
 	* include/bits/stl_tree.h (_Rb_tree::operator=(_Rb_tree&&)): Move
 	comparison object.
 	* testsuite/23_containers/set/move_comparison.cc: New test.
