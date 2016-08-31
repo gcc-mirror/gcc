@@ -4001,10 +4001,7 @@ gfc_trans_omp_parallel_workshare (gfc_code *code)
 				       code->loc);
   pushlevel ();
   stmt = gfc_trans_omp_workshare (code, &workshare_clauses);
-  if (TREE_CODE (stmt) != BIND_EXPR)
-    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
-  else
-    poplevel (0, 0);
+  stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
 		     omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;

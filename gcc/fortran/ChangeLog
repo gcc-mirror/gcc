@@ -1,5 +1,9 @@
 2016-08-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/77352
+	* trans-openmp.c (gfc_trans_omp_parallel_workshare): Always add a
+	BIND_EXPR with BLOCK around what gfc_trans_omp_workshare returns.
+
 	PR fortran/77374
 	* parse.c (parse_omp_oacc_atomic): Copy over cp->ext.omp_atomic
 	to cp->block->ext.omp_atomic.
