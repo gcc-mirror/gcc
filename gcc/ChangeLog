@@ -1,3 +1,9 @@
+2016-08-31  Jakub Sejdak  <jakub.sejdak@phoesys.com>
+
+	* config.gcc: Add support for arm*-*-phoenix* targets.
+	* config/arm/t-phoenix: New.
+	* config/phoenix.h: New.
+
 2016-08-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77403
