@@ -1,3 +1,7 @@
+2016-08-31  Jakub Sejdak  <jakub.sejdak@phoesys.com>
+
+	* config.host: Add support for arm*-*-phoenix* targets.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
