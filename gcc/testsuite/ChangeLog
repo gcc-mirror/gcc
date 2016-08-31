@@ -1,3 +1,18 @@
+2016-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48298
+	* gfortran.dg/dtio_1.f90: New test.
+	* gfortran.dg/dtio_2.f90: New test.
+	* gfortran.dg/dtio_3.f90: New test.
+	* gfortran.dg/dtio_4.f90: New test.
+	* gfortran.dg/dtio_5.f90: New test.
+	* gfortran.dg/dtio_6.f90: New test.
+	* gfortran.dg/dtio_7.f90: New test.
+	* gfortran.dg/dtio_8.f90: New test.
+	* gfortran.dg/dtio_9.f90: New test.
+	* gfortran.dg/dtio_10.f90: New test.
+
 2016-08-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c

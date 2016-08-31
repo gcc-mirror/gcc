@@ -102,6 +102,12 @@ gfc_op2string (gfc_intrinsic_op op)
     case INTRINSIC_NONE:
       return "none";
 
+    /* DTIO  */
+    case INTRINSIC_FORMATTED:
+      return "formatted";
+    case INTRINSIC_UNFORMATTED:
+      return "unformatted";
+
     default:
       break;
     }

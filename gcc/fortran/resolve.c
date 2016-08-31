@@ -6689,6 +6689,11 @@ derived_inaccessible (gfc_symbol *sym)
 
   for (c = sym->components; c; c = c->next)
     {
+	/* Prevent an infinite loop through this function.  */
+	if (c->ts.type == BT_DERIVED && c->attr.pointer
+	    && sym == c->ts.u.derived)
+	  continue;
+
 	if (c->ts.type == BT_DERIVED && derived_inaccessible (c->ts.u.derived))
 	  return 1;
     }
@@ -8642,9 +8647,13 @@ static void
 resolve_transfer (gfc_code *code)
 {
   gfc_typespec *ts;
-  gfc_symbol *sym;
+  gfc_symbol *sym, *derived;
   gfc_ref *ref;
   gfc_expr *exp;
+  bool write = false;
+  bool formatted = false;
+  gfc_dt *dt = code->ext.dt;
+  gfc_symbol *dtio_sub = NULL;
 
   exp = code->expr1;
 
@@ -8668,7 +8677,7 @@ resolve_transfer (gfc_code *code)
   /* If we are reading, the variable will be changed.  Note that
      code->ext.dt may be NULL if the TRANSFER is related to
      an INQUIRE statement -- but in this case, we are not reading, either.  */
-  if (code->ext.dt && code->ext.dt->dt_io_kind->value.iokind == M_READ
+  if (dt && dt->dt_io_kind->value.iokind == M_READ
       && !gfc_check_vardef_context (exp, false, false, false,
 				    _("item in READ")))
     return;
@@ -8680,9 +8689,53 @@ resolve_transfer (gfc_code *code)
     if (ref->type == REF_COMPONENT)
       ts = &ref->u.c.component->ts;
 
-  if (ts->type == BT_CLASS)
+  if (dt && dt->dt_io_kind->value.iokind != M_INQUIRE
+      && (ts->type == BT_DERIVED || ts->type == BT_CLASS))
     {
-      /* FIXME: Test for defined input/output.  */
+      if (ts->type == BT_DERIVED)
+	derived = ts->u.derived;
+      else
+	derived = ts->u.derived->components->ts.u.derived;
+
+      if (dt->format_expr)
+	{
+	  char *fmt;
+	  fmt = gfc_widechar_to_char (dt->format_expr->value.character.string,
+				      -1);
+	  if (strtok (fmt, "DT") != NULL)
+	    formatted = true;
+	}
+      else if (dt->format_label == &format_asterisk)
+	{
+	  /* List directed io must call the formatted DTIO procedure.  */
+	  formatted = true;
+	}
+
+      write = dt->dt_io_kind->value.iokind == M_WRITE
+	      || dt->dt_io_kind->value.iokind == M_PRINT;
+      dtio_sub = gfc_find_specific_dtio_proc (derived, write, formatted);
+
+      if (dtio_sub != NULL && exp->expr_type == EXPR_VARIABLE)
+	{
+	  sym = exp->symtree->n.sym->ns->proc_name;
+	  /* Check to see if this is a nested DTIO call, with the
+	     dummy as the io-list object.  */
+	  if (sym && sym == dtio_sub && sym->formal
+	      && sym->formal->sym == exp->symtree->n.sym
+	      && exp->ref == NULL)
+	    {
+	      if (!sym->attr.recursive)
+		{
+		  gfc_error ("DTIO %s procedure at %L must be recursive",
+			     sym->name, &sym->declared_at);
+		  return;
+		}
+	    }
+	}
+    }
+
+  if (ts->type == BT_CLASS && dtio_sub == NULL)
+    {
       gfc_error ("Data transfer element at %L cannot be polymorphic unless "
                 "it is processed by a defined input/output procedure",
                 &code->loc);
@@ -8692,8 +8745,9 @@ resolve_transfer (gfc_code *code)
   if (ts->type == BT_DERIVED)
     {
       /* Check that transferred derived type doesn't contain POINTER
-	 components.  */
-      if (ts->u.derived->attr.pointer_comp)
+	 components unless it is processed by a defined input/output
+	 procedure".  */
+      if (ts->u.derived->attr.pointer_comp && dtio_sub == NULL)
 	{
 	  gfc_error ("Data transfer element at %L cannot have POINTER "
 		     "components unless it is processed by a defined "
@@ -8709,7 +8763,7 @@ resolve_transfer (gfc_code *code)
 	  return;
 	}
 
-      if (ts->u.derived->attr.alloc_comp)
+      if (ts->u.derived->attr.alloc_comp && dtio_sub == NULL)
 	{
 	  gfc_error ("Data transfer element at %L cannot have ALLOCATABLE "
 		     "components unless it is processed by a defined "
@@ -8726,10 +8780,11 @@ resolve_transfer (gfc_code *code)
 			       "cannot have PRIVATE components", &code->loc))
 	    return;
 	}
-      else if (derived_inaccessible (ts->u.derived))
+      else if (derived_inaccessible (ts->u.derived) && dtio_sub == NULL)
 	{
 	  gfc_error ("Data transfer element at %L cannot have "
-		     "PRIVATE components",&code->loc);
+		     "PRIVATE components unless it is processed by "
+		     "a defined input/output procedure", &code->loc);
 	  return;
 	}
     }
@@ -10900,6 +10955,21 @@ resolve_bind_c_derived_types (gfc_symbol *derived_sym)
   return;
 }
 
+
+/* Check the interfaces of DTIO procedures associated with derived
+   type 'sym'.  These procedures can either have typebound bindings or
+   can appear in DTIO generic interfaces.  */
+
+static void
+gfc_verify_DTIO_procedures (gfc_symbol *sym)
+{
+  if (!sym || sym->attr.flavor != FL_DERIVED)
+    return;
+
+  gfc_check_dtio_interfaces (sym);
+
+  return;
+}
 
 /* Verify that any binding labels used in a given namespace do not collide
    with the names or binding labels of any global symbols.  Multiple INTERFACE
@@ -13421,11 +13491,31 @@ resolve_fl_derived (gfc_symbol *sym)
 }
 
 
+/* Check for formatted read and write DTIO procedures.  */
+
+static bool
+dtio_procs_present (gfc_symbol *sym)
+{
+  gfc_symbol *derived;
+
+  if (sym->ts.type == BT_CLASS)
+    derived = CLASS_DATA (sym)->ts.u.derived;
+  else if (sym->ts.type == BT_DERIVED)
+    derived = sym->ts.u.derived;
+  else
+    return false;
+
+  return gfc_find_specific_dtio_proc (derived, true, true) != NULL
+	 && gfc_find_specific_dtio_proc (derived, false, true) != NULL;
+}
+
+
 static bool
 resolve_fl_namelist (gfc_symbol *sym)
 {
   gfc_namelist *nl;
   gfc_symbol *nlsym;
+  bool dtio;
 
   for (nl = sym->namelist; nl; nl = nl->next)
     {
@@ -13459,9 +13549,9 @@ resolve_fl_namelist (gfc_symbol *sym)
 			      sym->name, &sym->declared_at))
 	return false;
 
-      /* FIXME: Once UDDTIO is implemented, the following can be
-	 removed.  */
-      if (nl->sym->ts.type == BT_CLASS)
+      dtio = dtio_procs_present (nl->sym);
+
+      if (nl->sym->ts.type == BT_CLASS && !dtio)
 	{
 	  gfc_error ("NAMELIST object %qs in namelist %qs at %L is "
 		     "polymorphic and requires a defined input/output "
@@ -13479,13 +13569,14 @@ resolve_fl_namelist (gfc_symbol *sym)
 			       sym->name, &sym->declared_at))
 	    return false;
 
-	 /* FIXME: Once UDDTIO is implemented, the following can be
-	    removed.  */
-	  gfc_error ("NAMELIST object %qs in namelist %qs at %L has "
-		     "ALLOCATABLE or POINTER components and thus requires "
-		     "a defined input/output procedure", nl->sym->name,
-		     sym->name, &sym->declared_at);
-	  return false;
+	  if (!dtio)
+	    {
+	      gfc_error ("NAMELIST object %qs in namelist %qs at %L has "
+			"ALLOCATABLE or POINTER components and thus requires "
+			"a defined input/output procedure", nl->sym->name,
+			sym->name, &sym->declared_at);
+	      return false;
+	    }
 	}
     }
 
@@ -13503,6 +13594,11 @@ resolve_fl_namelist (gfc_symbol *sym)
 			 nl->sym->name, sym->name, &sym->declared_at);
 	      return false;
 	    }
+
+	  /* If the derived type has specific DTIO procedures for both read and
+	     write then namelist objects with private components are OK.  */
+	  if (dtio_procs_present (nl->sym))
+	    continue;
 
 	  /* Types with private components that came here by USE-association.  */
 	  if (nl->sym->ts.type == BT_DERIVED
@@ -15526,6 +15622,8 @@ resolve_types (gfc_namespace *ns)
     warn_unused_fortran_label (ns->st_labels);
 
   gfc_resolve_uops (ns->uop_root);
+
+  gfc_traverse_ns (ns, gfc_verify_DTIO_procedures);
 
   gfc_resolve_omp_declare_simd (ns);
 

@@ -1091,7 +1091,7 @@ GFORTRAN_1.1 {
     _gfortran_transpose_char4;
     _gfortran_unpack0_char4;
     _gfortran_unpack1_char4;
-} GFORTRAN_1.0; 
+} GFORTRAN_1.0;
 
 
 GFORTRAN_1.2 {
@@ -1099,12 +1099,12 @@ GFORTRAN_1.2 {
     _gfortran_clz128;
     _gfortran_ctz128;
     _gfortran_is_extension_of;
-} GFORTRAN_1.1; 
+} GFORTRAN_1.1;
 
 GFORTRAN_1.3 {
   global:
     _gfortran_error_stop_string;
-} GFORTRAN_1.2; 
+} GFORTRAN_1.2;
 
 GFORTRAN_1.4 {
   global:
@@ -1187,13 +1187,13 @@ GFORTRAN_1.4 {
     _gfortran_cshift0_16_char4;
     _gfortran_eoshift0_16_char4;
     _gfortran_eoshift2_16_char4;
-} GFORTRAN_1.3; 
+} GFORTRAN_1.3;
 
 GFORTRAN_1.5 {
   global:
     _gfortran_ftell2;
     _gfortran_backtrace;
-} GFORTRAN_1.4; 
+} GFORTRAN_1.4;
 
 GFORTRAN_1.6 {
   global:
@@ -1274,7 +1274,7 @@ GFORTRAN_1.6 {
     __ieee_exceptions_MOD_ieee_support_flag_noarg;
     __ieee_exceptions_MOD_ieee_support_halting;
     __ieee_exceptions_MOD_ieee_usual;
-} GFORTRAN_1.5; 
+} GFORTRAN_1.5;
 
 GFORTRAN_1.7 {
   global:
@@ -1287,7 +1287,13 @@ GFORTRAN_1.7 {
     _gfortran_mvbits_i16;
     _gfortran_shape_1;
     _gfortran_shape_2;
-} GFORTRAN_1.6; 
+} GFORTRAN_1.6;
+
+GFORTRAN_1.8 {
+  global:
+    _gfortran_st_set_nml_dtio_var;
+    _gfortran_transfer_derived;
+} GFORTRAN_1.7;
 
 F2C_1.0 {
   global:

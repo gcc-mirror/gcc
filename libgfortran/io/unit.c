@@ -348,7 +348,7 @@ retry:
     }
 
 found:
-  if (p != NULL)
+  if (p != NULL && (p->child_dtio == 0))
     {
       /* Fast path.  */
       if (! __gthread_mutex_trylock (&p->lock))
@@ -363,7 +363,7 @@ found:
 
   __gthread_mutex_unlock (&unit_lock);
 
-  if (p != NULL)
+  if (p != NULL && (p->child_dtio == 0))
     {
       __gthread_mutex_lock (&p->lock);
       if (p->closed)
@@ -464,7 +464,7 @@ get_internal_unit (st_parameter_dt *dtp)
       else
 	  len = string_len_trim_char4 (dtp->internal_unit_len,
 			      (const gfc_char4_t*) dtp->internal_unit);
-      dtp->internal_unit_len = len; 
+      dtp->internal_unit_len = len;
       iunit->recl = dtp->internal_unit_len;
     }
 
@@ -524,7 +524,7 @@ get_internal_unit (st_parameter_dt *dtp)
   dtp->u.p.at_eof = 0;
 
   /* This flag tells us the unit is assigned to internal I/O.  */
-  
+
   dtp->u.p.unit_is_internal = 1;
 
   return iunit;
@@ -544,13 +544,13 @@ free_internal_unit (st_parameter_dt *dtp)
   if (dtp->u.p.current_unit != NULL)
     {
       free (dtp->u.p.current_unit->ls);
-  
+
       free (dtp->u.p.current_unit->s);
-  
+
       destroy_unit_mutex (dtp->u.p.current_unit);
     }
 }
-      
+
 
 
 /* get_unit()-- Returns the unit structure associated with the integer
@@ -612,14 +612,14 @@ init_units (void)
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
       u->flags.round = ROUND_UNSPECIFIED;
-     
+
       u->recl = options.default_recl;
       u->endfile = NO_ENDFILE;
 
       u->filename = strdup (stdin_name);
 
       fbuf_init (u, 0);
-    
+
       __gthread_mutex_unlock (&u->lock);
     }
 
@@ -644,9 +644,9 @@ init_units (void)
 
       u->recl = options.default_recl;
       u->endfile = AT_ENDFILE;
-    
+
       u->filename = strdup (stdout_name);
-      
+
       fbuf_init (u, 0);
 
       __gthread_mutex_unlock (&u->lock);
@@ -674,7 +674,7 @@ init_units (void)
       u->endfile = AT_ENDFILE;
 
       u->filename = strdup (stderr_name);
-      
+
       fbuf_init (u, 256);  /* 256 bytes should be enough, probably not doing
                               any kind of exotic formatting to stderr.  */
 
@@ -694,7 +694,7 @@ static int
 close_unit_1 (gfc_unit *u, int locked)
 {
   int i, rc;
-  
+
   /* If there are previously written bytes from a write with ADVANCE="no"
      Reposition the buffer before closing.  */
   if (u->previous_nonadvancing_write)
@@ -715,7 +715,7 @@ close_unit_1 (gfc_unit *u, int locked)
   free (u->filename);
   u->filename = NULL;
 
-  free_format_hash_table (u);  
+  free_format_hash_table (u);
   fbuf_destroy (u);
 
   if (!locked)
@@ -788,7 +788,7 @@ unit_truncate (gfc_unit * u, gfc_offset pos, st_parameter_common * common)
       else
 	fbuf_flush (u, u->mode);
     }
-  
+
   /* struncate() should flush the stream buffer if necessary, so don't
      bother calling sflush() here.  */
   ret = struncate (u->s, pos);
@@ -838,7 +838,7 @@ filename_from_unit (int n)
 void
 finish_last_advance_record (gfc_unit *u)
 {
-  
+
   if (u->saved_pos > 0)
     fbuf_seek (u, u->saved_pos, SEEK_CUR);
 

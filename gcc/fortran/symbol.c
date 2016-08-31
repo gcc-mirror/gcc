@@ -87,6 +87,15 @@ const mstring save_status[] =
     minit ("IMPLICIT-SAVE", SAVE_IMPLICIT),
 };
 
+/* Set the mstrings for DTIO procedure names.  */
+const mstring dtio_procs[] =
+{
+    minit ("_dtio_formatted_read", DTIO_RF),
+    minit ("_dtio_formatted_write", DTIO_WF),
+    minit ("_dtio_unformatted_read", DTIO_RUF),
+    minit ("_dtio_unformatted_write", DTIO_WUF),
+};
+
 /* This is to make sure the backend generates setup code in the correct
    order.  */
 

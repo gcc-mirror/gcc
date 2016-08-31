@@ -70,7 +70,7 @@ free_format_hash_table (gfc_unit *u)
 	  free (u->format_hash_table[i].key);
 	}
       u->format_hash_table[i].key = NULL;
-      u->format_hash_table[i].key_len = 0;      
+      u->format_hash_table[i].key_len = 0;
       u->format_hash_table[i].hashed_fmt = NULL;
     }
 }
@@ -84,7 +84,7 @@ reset_node (fnode *fn)
 
   fn->count = 0;
   fn->current = NULL;
-  
+
   if (fn->format != FMT_LPAREN)
     return;
 
@@ -261,10 +261,19 @@ void
 free_format_data (format_data *fmt)
 {
   fnode_array *fa, *fa_next;
-
+  fnode *fnp;
 
   if (fmt == NULL)
     return;
+
+  /* Free vlist descriptors in the fnode_array if one was allocated.  */
+  for (fnp = fmt->array.array; fnp->format != FMT_NONE; fnp++)
+    if (fnp->format == FMT_DT)
+	{
+	  if (GFC_DESCRIPTOR_DATA(fnp->u.udf.vlist))
+	    free (GFC_DESCRIPTOR_DATA(fnp->u.udf.vlist));
+	  free (fnp->u.udf.vlist);
+	}
 
   for (fa = fmt->array.next; fa; fa = fa_next)
     {
@@ -545,6 +554,9 @@ format_lex (format_data *fmt)
 	case 'C':
 	  token = FMT_DC;
 	  break;
+	case 'T':
+	  token = FMT_DT;
+	  break;
 	default:
 	  token = FMT_D;
 	  unget_char (fmt);
@@ -740,7 +752,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       tail->u.string.length = fmt->value;
       tail->repeat = 1;
       goto optional_comma;
-      
+
     case FMT_RC:
     case FMT_RD:
     case FMT_RN:
@@ -806,6 +818,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
     case FMT_EN:
     case FMT_ES:
     case FMT_D:
+    case FMT_DT:
     case FMT_L:
     case FMT_A:
     case FMT_F:
@@ -849,6 +862,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
   /* In this state, t must currently be a data descriptor.  Deal with
      things that can/must follow the descriptor */
  data_desc:
+
   switch (t)
     {
     case FMT_L:
@@ -997,7 +1011,57 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	}
 
       break;
+    case FMT_DT:
+      *seen_dd = true;
+      get_fnode (fmt, &head, &tail, t);
+      tail->repeat = repeat;
 
+      t = format_lex (fmt);
+
+      /* Initialize the vlist to a zero size array.  */
+      tail->u.udf.vlist= xmalloc (sizeof(gfc_array_i4));
+      GFC_DESCRIPTOR_DATA(tail->u.udf.vlist) = NULL;
+      GFC_DIMENSION_SET(tail->u.udf.vlist->dim[0],1, 0, 0);
+
+      if (t == FMT_STRING)
+        {
+	  /* Get pointer to the optional format string.  */
+	  tail->u.udf.string = fmt->string;
+	  tail->u.udf.string_len = fmt->value;
+	  t = format_lex (fmt);
+	}
+      if (t == FMT_LPAREN)
+        {
+	  /* Temporary buffer to hold the vlist values.  */
+	  GFC_INTEGER_4 temp[FARRAY_SIZE];
+	  int i = 0;
+	loop:
+	  t = format_lex (fmt);
+	  if (t != FMT_POSINT)
+	    {
+	      fmt->error = posint_required;
+	      goto finished;
+	    }
+	  /* Save the positive integer value.  */
+	  temp[i++] = fmt->value;
+	  t = format_lex (fmt);
+	  if (t == FMT_COMMA)
+	    goto loop;
+	  if (t == FMT_RPAREN)
+	    {
+	      /* We have parsed the complete vlist so initialize the
+	         array descriptor and save it in the format node.  */
+	      gfc_array_i4 *vp = tail->u.udf.vlist;
+	      GFC_DESCRIPTOR_DATA(vp) = xmalloc (i * sizeof(GFC_INTEGER_4));
+	      GFC_DIMENSION_SET(vp->dim[0],1, i, 1);
+	      memcpy (GFC_DESCRIPTOR_DATA(vp), temp, i * sizeof(GFC_INTEGER_4));
+	      break;
+	    }
+	  fmt->error = unexpected_element;
+	  goto finished;
+	}
+      fmt->saved_token = t;
+      break;
     case FMT_H:
       if (repeat > fmt->format_string_len)
 	{
@@ -1219,9 +1283,12 @@ parse_format (st_parameter_dt *dtp)
   format_data *fmt;
   bool format_cache_ok, seen_data_desc = false;
 
-  /* Don't cache for internal units and set an arbitrary limit on the size of
-     format strings we will cache.  (Avoids memory issues.)  */
-  format_cache_ok = !is_internal_unit (dtp);
+  /* Don't cache for internal units and set an arbitrary limit on the
+     size of format strings we will cache.  (Avoids memory issues.)
+     Also, the format_hash_table resides in the current_unit, so
+     child_dtio procedures would overwrite the parent table  */
+  format_cache_ok = !is_internal_unit (dtp)
+		    && (dtp->u.p.current_unit->child_dtio == 0);
 
   /* Lookup format string to see if it has already been parsed.  */
   if (format_cache_ok)
@@ -1256,6 +1323,10 @@ parse_format (st_parameter_dt *dtp)
 
   fmt->reversion_ok = 0;
   fmt->saved_format = NULL;
+
+  /* Initialize the fnode_array.  */
+
+  memset (&(fmt->array), 0, sizeof(fmt->array));
 
   /* Allocate the first format node as the root of the tree.  */
 
@@ -1392,7 +1463,7 @@ next_format (st_parameter_dt *dtp)
   if (!fmt->reversion_ok &&
       (t == FMT_I || t == FMT_B || t == FMT_O || t == FMT_Z || t == FMT_F ||
        t == FMT_E || t == FMT_EN || t == FMT_ES || t == FMT_G || t == FMT_L ||
-       t == FMT_A || t == FMT_D))
+       t == FMT_A || t == FMT_D || t == FMT_DT))
     fmt->reversion_ok = 1;
   return f;
 }
