@@ -1,3 +1,8 @@
+2016-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c: Move "namespace selftest {" to top of file,
+	removing explicit "selftest::" qualifiers throughout.
+
 2016-08-31  Marc Glisse  <marc.glisse@inria.fr>
 
 	* config/i386/avx512fintrin.h (__m512_u, __m512i_u, __m512d_u):
