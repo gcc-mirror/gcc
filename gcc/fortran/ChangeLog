@@ -1,8 +1,18 @@
+2016-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/77374
+	* parse.c (parse_omp_oacc_atomic): Copy over cp->ext.omp_atomic
+	to cp->block->ext.omp_atomic.
+	* resolve.c (gfc_resolve_blocks): Assert block with one or two
+	EXEC_ASSIGNs for EXEC_*_ATOMIC.
+	* openmp.c (resolve_omp_atomic): Don't assert one or two
+	EXEC_ASSIGNs, instead return quietly for EXEC_NOPs and otherwise
+	error unexpected statements.
+
 2016-08-31  Paul Thomas  <pault@gcc.gnu.org>
-	Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/48298
-
 	* decl.c (access_attr_decl): Include case INTERFACE_DTIO as
 	appropriate.
 	* gfortran.h : Add INTRINSIC_FORMATTED and

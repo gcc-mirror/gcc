@@ -4695,6 +4695,7 @@ parse_omp_oacc_atomic (bool omp_p)
   np = new_level (cp);
   np->op = cp->op;
   np->block = NULL;
+  np->ext.omp_atomic = cp->ext.omp_atomic;
   count = 1 + ((cp->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
 	       == GFC_OMP_ATOMIC_CAPTURE);
 
