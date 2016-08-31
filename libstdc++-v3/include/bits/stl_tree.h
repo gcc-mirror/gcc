@@ -1436,7 +1436,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     noexcept(_Alloc_traits::_S_nothrow_move()
 	     && is_nothrow_move_assignable<_Compare>::value)
     {
-      _M_impl._M_key_compare = __x._M_impl._M_key_compare;
+      _M_impl._M_key_compare = std::move(__x._M_impl._M_key_compare);
       constexpr bool __move_storage =
 	  _Alloc_traits::_S_propagate_on_move_assign()
 	  || _Alloc_traits::_S_always_equal();
