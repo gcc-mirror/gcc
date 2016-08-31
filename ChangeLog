@@ -1,3 +1,7 @@
+2016-08-31  Jakub Sejdak  <jakub.sejdak@phoesys.com>
+
+	* config.sub: Add support for Phoenix-RTOS targets.
+
 2016-08-22  Release Manager
 
 	* GCC 6.2.0 released.
