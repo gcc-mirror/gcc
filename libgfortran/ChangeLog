@@ -1,4 +1,12 @@
 2016-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/77393
+	* io/write.c (kind_from_size): New function to calculate required buffer
+	size based on kind type. (select_buffer, select_string): Use new
+	function. (write_float_0, write_real, write_real_g0, write_complex):
+	Adjust calls to pass parameters needed by new function.
+
+2016-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libgfortran/48298
