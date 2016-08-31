@@ -1,3 +1,8 @@
+2016-08-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/73714
+	* match.pd (a * (1 << b)): Revert change from 2016-05-23.
+
 2016-08-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftest.c: Move "namespace selftest {" to top of file,
