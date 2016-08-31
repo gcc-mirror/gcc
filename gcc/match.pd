@@ -468,8 +468,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (mult:c @0 (convert? (lshift integer_onep@1 @2)))
   (if (! FLOAT_TYPE_P (type)
-       && (element_precision (type) <= element_precision (TREE_TYPE (@1))
-	   || TYPE_UNSIGNED (TREE_TYPE (@1))))
+       && tree_nop_conversion_p (type, TREE_TYPE (@1)))
    (lshift @0 @2)))
 
 /* Fold (C1/X)*C2 into (C1*C2)/X.  */
