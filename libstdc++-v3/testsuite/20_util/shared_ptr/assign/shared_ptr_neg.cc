@@ -28,24 +28,10 @@ struct B { };
 // 20.6.6.2.3 shared_ptr assignment [util.smartptr.shared.assign]
 
 // Assignment from incompatible shared_ptr<Y>
-int
+void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a;
   std::shared_ptr<B> b;
-  a = b;                      // { dg-error "here" }
-
-  return 0;
+  a = b;                      // { dg-error "no match" }
 }
-
-int 
-main()
-{
-  test01();
-  return 0;
-}
-// { dg-error "In instantiation" "" { target *-*-* } 0 }
-// { dg-error "cannot convert" "" { target *-*-* } 0 }
-// { dg-error "required from" "" { target *-*-* } 0 }
