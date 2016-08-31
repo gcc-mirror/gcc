@@ -1,3 +1,22 @@
+2016-08-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	* config/i386/avx512fintrin.h (__m512_u, __m512i_u, __m512d_u):
+	New types.
+	(_mm512_loadu_pd, _mm512_storeu_pd, _mm512_loadu_ps,
+	_mm512_storeu_ps, _mm512_loadu_si512, _mm512_storeu_si512):
+	Replace builtin with vector extension.
+	* config/i386/avxintrin.h (__m256_u, __m256i_u, __m256d_u):
+	New types.
+	(_mm256_loadu_pd, _mm256_storeu_pd, _mm256_loadu_ps,
+	_mm256_storeu_ps, _mm256_loadu_si256, _mm256_storeu_si256):
+	Replace builtin with vector extension.
+	* config/i386/emmintrin.h (__m128i_u, __m128d_u): New types.
+	(_mm_loadu_pd, _mm_storeu_pd, _mm_loadu_si128, _mm_storeu_si128):
+	Replace builtin with vector extension.
+	* config/i386/xmmintrin.h (__m128_u): New type.
+	(_mm_loadu_ps, _mm_storeu_ps): Replace builtin with vector extension.
+	(_mm_load_ps, _mm_store_ps): Simplify.
+
 2016-08-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (thumb1_size_rtx_costs) <SET>: Add missing guard.

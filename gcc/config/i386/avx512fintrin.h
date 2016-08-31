@@ -52,6 +52,11 @@ typedef float __m512 __attribute__ ((__vector_size__ (64), __may_alias__));
 typedef long long __m512i __attribute__ ((__vector_size__ (64), __may_alias__));
 typedef double __m512d __attribute__ ((__vector_size__ (64), __may_alias__));
 
+/* Unaligned version of the same type.  */
+typedef float __m512_u __attribute__ ((__vector_size__ (64), __may_alias__, __aligned__ (1)));
+typedef long long __m512i_u __attribute__ ((__vector_size__ (64), __may_alias__, __aligned__ (1)));
+typedef double __m512d_u __attribute__ ((__vector_size__ (64), __may_alias__, __aligned__ (1)));
+
 typedef unsigned char  __mmask8;
 typedef unsigned short __mmask16;
 
@@ -5674,10 +5679,7 @@ extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_loadu_pd (void const *__P)
 {
-  return (__m512d) __builtin_ia32_loadupd512_mask ((const double *) __P,
-						   (__v8df)
-						   _mm512_undefined_pd (),
-						   (__mmask8) -1);
+  return *(__m512d_u *)__P;
 }
 
 extern __inline __m512d
@@ -5703,8 +5705,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_storeu_pd (void *__P, __m512d __A)
 {
-  __builtin_ia32_storeupd512_mask ((double *) __P, (__v8df) __A,
-				   (__mmask8) -1);
+  *(__m512d_u *)__P = __A;
 }
 
 extern __inline void
@@ -5719,10 +5720,7 @@ extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_loadu_ps (void const *__P)
 {
-  return (__m512) __builtin_ia32_loadups512_mask ((const float *) __P,
-						  (__v16sf)
-						  _mm512_undefined_ps (),
-						  (__mmask16) -1);
+  return *(__m512_u *)__P;
 }
 
 extern __inline __m512
@@ -5748,8 +5746,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_storeu_ps (void *__P, __m512 __A)
 {
-  __builtin_ia32_storeups512_mask ((float *) __P, (__v16sf) __A,
-				   (__mmask16) -1);
+  *(__m512_u *)__P = __A;
 }
 
 extern __inline void
@@ -5791,10 +5788,7 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_loadu_si512 (void const *__P)
 {
-  return (__m512i) __builtin_ia32_loaddqusi512_mask ((const int *) __P,
-						     (__v16si)
-						     _mm512_setzero_si512 (),
-						     (__mmask16) -1);
+  return *(__m512i_u *)__P;
 }
 
 extern __inline __m512i
@@ -5820,8 +5814,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_storeu_si512 (void *__P, __m512i __A)
 {
-  __builtin_ia32_storedqusi512_mask ((int *) __P, (__v16si) __A,
-				     (__mmask16) -1);
+  *(__m512i_u *)__P = __A;
 }
 
 extern __inline void
