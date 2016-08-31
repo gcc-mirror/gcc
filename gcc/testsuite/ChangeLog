@@ -1,3 +1,10 @@
+2016-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/77418
+	* gfortran.dg/dtio_5.f90: Remove the non-standard deallocation
+	of the associate entity and replace with a pointer to the
+	intended item on the stack.
+
 2016-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	Paul Thomas  <pault@gcc.gnu.org>
 
