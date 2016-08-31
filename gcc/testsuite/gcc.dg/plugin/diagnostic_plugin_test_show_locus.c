@@ -325,6 +325,59 @@ test_show_locus (function *fun)
       warning_at (input_location, 0,
 		  "example of plus in format code for %q+D", local);
     }
+
+  /* Example of many locations and many fixits.
+     Underline (separately) every word in a comment, and convert them
+     to upper case.  */
+  if (0 == strcmp (fnname, "test_many_nested_locations"))
+    {
+      const char *file = LOCATION_FILE (fnstart);
+      const int start_line = fnstart_line + 2;
+      const int finish_line = start_line + 7;
+      location_t loc = get_loc (start_line - 1, 2);
+      rich_location richloc (line_table, loc);
+      for (int line = start_line; line <= finish_line; line++)
+	{
+	  int line_size;
+	  const char *content = location_get_source_line (file, line,
+							  &line_size);
+	  gcc_assert (content);
+	  /* Split line up into words.  */
+	  for (int idx = 0; idx < line_size; idx++)
+	    {
+	      if (ISALPHA (content[idx]))
+		{
+		  int start_idx = idx;
+		  while (idx < line_size && ISALPHA (content[idx]))
+		    idx++;
+		  if (idx == line_size || !ISALPHA (content[idx]))
+		    {
+		      location_t start_of_word = get_loc (line, start_idx);
+		      location_t end_of_word = get_loc (line, idx - 1);
+		      location_t word
+			= make_location (start_of_word, start_of_word,
+					 end_of_word);
+		      richloc.add_range (word, true);
+
+		      /* Add a fixit, converting to upper case.  */
+		      char *copy = xstrndup (content + start_idx,
+					     idx - start_idx);
+		      for (char *ch = copy; *ch; ch++)
+			*ch = TOUPPER (*ch);
+		      richloc.add_fixit_replace (word, copy);
+		      free (copy);
+		    }
+		}
+	    }
+	}
+      /* Verify that we added enough locations to fully exercise
+	 rich_location.  We want to exceed both the
+	 statically-allocated buffer in class rich_location,
+	 and then trigger a reallocation of the dynamic buffer.  */
+      gcc_assert (richloc.get_num_locations () > 3 + (2 * 16));
+      warning_at_rich_loc (&richloc, 0, "test of %i locations",
+			   richloc.get_num_locations ());
+    }
 }
 
 unsigned int

@@ -1,5 +1,23 @@
 2016-08-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic-show-locus.c (colorizer::begin_state): Support more
+	than 3 ranges per diagnostic by alternating between color 1 and
+	color 2.
+	(layout::layout): Replace use of rich_location::MAX_RANGES
+	with richloc->get_num_locations ().
+	(layout::calculate_line_spans): Replace use of
+	rich_location::MAX_RANGES with m_layout_ranges.length ().
+	(layout::print_annotation_line): Handle arbitrary numbers of
+	ranges in caret-printing by defaulting to '^'.
+	(selftest::test_one_liner_many_fixits): New function.
+	(test_diagnostic_show_locus_one_liner): Call it.
+	* diagnostic.c (diagnostic_initialize): Update for renaming
+	of rich_location::MAX_RANGES to
+	rich_location::STATICALLY_ALLOCATED_RANGES.
+	* diagnostic.h (struct diagnostic_context): Likewise.
+
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
 	* selftest.c (selftest::named_temp_file::named_temp_file): New
 	ctor.
 	(selftest::temp_source_file::~temp_source_file): Move to...

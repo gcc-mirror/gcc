@@ -1,5 +1,12 @@
 2016-08-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c
+	(test_many_nested_locations): New function.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(test_show_locus): Handle "test_many_nested_locations".
+
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
 	* g++.dg/template/double-greater-than-fixit.C: New test case.
 
 2016-08-30  Eric Botcazou  <ebotcazou@adacore.com>
