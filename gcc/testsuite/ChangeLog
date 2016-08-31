@@ -1,3 +1,11 @@
+2016-08-31  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	Backport from mainline
+	2016-08-27  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/71077
+	* gcc.target/i386/pr71077.c: New test.
+
 2016-08-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77403
