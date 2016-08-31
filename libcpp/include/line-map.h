@@ -1412,7 +1412,6 @@ semi_embedded_vec<T, NUM_EMBEDDED>::truncate (int len)
 
 class fixit_hint;
   class fixit_insert;
-  class fixit_remove;
   class fixit_replace;
 
 /* A "rich" source code location, for use when printing diagnostics.
@@ -1599,7 +1598,7 @@ public:
   virtual ~fixit_hint () {}
 
   virtual enum kind get_kind () const = 0;
-  virtual bool affects_line_p (const char *file, int line) = 0;
+  virtual bool affects_line_p (const char *file, int line) const = 0;
   virtual source_location get_start_loc () const = 0;
   virtual bool maybe_get_end_loc (source_location *out) const = 0;
   /* Vfunc for consolidating successor fixits.  */
@@ -1615,7 +1614,7 @@ class fixit_insert : public fixit_hint
 		const char *new_content);
   ~fixit_insert ();
   enum kind get_kind () const { return INSERT; }
-  bool affects_line_p (const char *file, int line);
+  bool affects_line_p (const char *file, int line) const;
   source_location get_start_loc () const { return m_where; }
   bool maybe_get_end_loc (source_location *) const { return false; }
   bool maybe_append_replace (line_maps *set,
@@ -1640,7 +1639,7 @@ class fixit_replace : public fixit_hint
   ~fixit_replace ();
 
   enum kind get_kind () const { return REPLACE; }
-  bool affects_line_p (const char *file, int line);
+  bool affects_line_p (const char *file, int line) const;
   source_location get_start_loc () const { return m_src_range.m_start; }
   bool maybe_get_end_loc (source_location *out) const
   {

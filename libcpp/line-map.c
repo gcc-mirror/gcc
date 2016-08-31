@@ -2314,7 +2314,7 @@ fixit_insert::~fixit_insert ()
 /* Implementation of fixit_hint::affects_line_p for fixit_insert.  */
 
 bool
-fixit_insert::affects_line_p (const char *file, int line)
+fixit_insert::affects_line_p (const char *file, int line) const
 {
   expanded_location exploc
     = linemap_client_expand_location_to_spelling_point (m_where);
@@ -2351,7 +2351,7 @@ fixit_replace::~fixit_replace ()
 /* Implementation of fixit_hint::affects_line_p for fixit_replace.  */
 
 bool
-fixit_replace::affects_line_p (const char *file, int line)
+fixit_replace::affects_line_p (const char *file, int line) const
 {
   return m_src_range.intersects_line_p (file, line);
 }
