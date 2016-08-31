@@ -1,3 +1,14 @@
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c (selftest::named_temp_file::named_temp_file): New
+	ctor.
+	(selftest::temp_source_file::~temp_source_file): Move to...
+	(selftest::named_temp_file::~named_temp_file): ...here.
+	(selftest::test_named_temp_file): New function.
+	(selftest::selftest_c_tests): Call test_named_temp_file.
+	* selftest.h (class named_temp_file): New class.
+	(class temp_source_file): Convert to a subclass of named_temp_file.
+
 2016-08-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Do not emit
