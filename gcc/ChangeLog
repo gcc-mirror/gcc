@@ -1,3 +1,7 @@
+2016-08-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (thumb1_size_rtx_costs) <SET>: Add missing guard.
+
 2016-08-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (colorizer::begin_state): Support more

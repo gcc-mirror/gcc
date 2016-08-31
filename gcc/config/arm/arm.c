@@ -9127,7 +9127,8 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       if (satisfies_constraint_J (SET_SRC (x))
 	  || satisfies_constraint_K (SET_SRC (x))
 	     /* Too big an immediate for a 2-byte mov, using MOVT.  */
-	  || (UINTVAL (SET_SRC (x)) >= 256
+	  || (CONST_INT_P (SET_SRC (x))
+	      && UINTVAL (SET_SRC (x)) >= 256
 	      && TARGET_HAVE_MOVT
 	      && satisfies_constraint_j (SET_SRC (x)))
 	     /* thumb1_movdi_insn.  */
