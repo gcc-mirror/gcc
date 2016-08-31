@@ -1,3 +1,8 @@
+2016-08-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.target/i386/pr59539-2.c: Adapt options.
+	* gcc.target/i386/avx512f-vmovdqu32-1.c: Relax expected asm.
+
 2016-08-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77418
