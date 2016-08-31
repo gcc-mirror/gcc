@@ -1357,11 +1357,52 @@ get_precision (st_parameter_dt *dtp, const fnode *f, const char *source, int kin
     return determine_en_precision (dtp, f, source, kind);
 }
 
+/* 4932 is the maximum exponent of long double and quad precision, 3
+   extra characters for the sign, the decimal point, and the
+   trailing null.  Extra digits are added by the calling functions for
+   requested precision. Likewise for float and double.  F0 editing produces
+   full precision output.  */
+static int
+size_from_kind (st_parameter_dt *dtp, const fnode *f, int kind)
+{
+  int size;
+
+  if (f->format == FMT_F && f->u.real.w == 0)
+    {
+      switch (kind)
+      {
+	case 4:
+	  size = 38 + 3; /* These constants shown for clarity.  */
+	  break;
+	case 8:
+	  size = 308 + 3;
+	  break;
+	case 10:
+	  size = 4932 + 3;
+	  break;
+	case 16:
+	  size = 4932 + 3;
+	  break;
+	default:
+	  internal_error (&dtp->common, "bad real kind");
+	  break;
+      }
+    }
+  else
+    size = f->u.real.w + 1; /* One byte for a NULL character.  */
+
+  return size;
+}
+
 static char *
-select_buffer (int precision, char *buf, size_t *size)
+select_buffer (st_parameter_dt *dtp, const fnode *f, int precision,
+	       char *buf, size_t *size, int kind)
 {
   char *result;
-  *size = BUF_STACK_SZ / 2 + precision;
+  
+  /* The buffer needs at least one more byte to allow room for normalizing.  */
+  *size = size_from_kind (dtp, f, kind) + precision + 1;
+
   if (*size > BUF_STACK_SZ)
      result = xmalloc (*size);
   else
@@ -1370,10 +1411,11 @@ select_buffer (int precision, char *buf, size_t *size)
 }
 
 static char *
-select_string (const fnode *f, char *buf, size_t *size)
+select_string (st_parameter_dt *dtp, const fnode *f, char *buf, size_t *size,
+	       int kind)
 {
   char *result;
-  *size = f->u.real.w + 1;
+  *size = size_from_kind (dtp, f, kind) + f->u.real.d;
   if (*size > BUF_STACK_SZ)
      result = xmalloc (*size);
   else
@@ -1397,6 +1439,7 @@ write_float_string (st_parameter_dt *dtp, char *fstr, size_t len)
   memcpy (p, fstr, len);
 }
 
+
 static void
 write_float_0 (st_parameter_dt *dtp, const fnode *f, const char *source, int kind)
 {
@@ -1409,10 +1452,10 @@ write_float_0 (st_parameter_dt *dtp, const fnode *f, const char *source, int kin
   int precision = get_precision (dtp, f, source, kind);
 
   /* String buffer to hold final result.  */
-  result = select_string (f, str_buf, &res_len);
-
-  buffer = select_buffer (precision, buf_stack, &buf_size);
-
+  result = select_string (dtp, f, str_buf, &res_len, kind);
+  
+  buffer = select_buffer (dtp, f, precision, buf_stack, &buf_size, kind);
+  
   get_float_string (dtp, f, source , kind, 0, buffer,
                            precision, buf_size, result, &res_len);
   write_float_string (dtp, result, res_len);
@@ -1527,11 +1570,11 @@ write_real (st_parameter_dt *dtp, const char *source, int kind)
   int precision = get_precision (dtp, &f, source, kind);
 
   /* String buffer to hold final result.  */
-  result = select_string (&f, str_buf, &res_len);
+  result = select_string (dtp, &f, str_buf, &res_len, kind);
 
-  /* scratch buffer to hold final result.  */
-  buffer = select_buffer (precision, buf_stack, &buf_size);
-
+  /* Scratch buffer to hold final result.  */
+  buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
+  
   get_float_string (dtp, &f, source , kind, 1, buffer,
                            precision, buf_size, result, &res_len);
   write_float_string (dtp, result, res_len);
@@ -1572,9 +1615,9 @@ write_real_g0 (st_parameter_dt *dtp, const char *source, int kind, int d)
   int precision = get_precision (dtp, &f, source, kind);
 
   /* String buffer to hold final result.  */
-  result = select_string (&f, str_buf, &res_len);
+  result = select_string (dtp, &f, str_buf, &res_len, kind);
 
-  buffer = select_buffer (precision, buf_stack, &buf_size);
+  buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
 
   get_float_string (dtp, &f, source , kind, comp_d, buffer,
                            precision, buf_size, result, &res_len);
@@ -1620,10 +1663,10 @@ write_complex (st_parameter_dt *dtp, const char *source, int kind, size_t size)
   int precision = get_precision (dtp, &f, source, kind);
 
   /* String buffers to hold final result.  */
-  result1 = select_string (&f, str1_buf, &res_len1);
-  result2 = select_string (&f, str2_buf, &res_len2);
+  result1 = select_string (dtp, &f, str1_buf, &res_len1, kind);
+  result2 = select_string (dtp, &f, str2_buf, &res_len2, kind);
 
-  buffer = select_buffer (precision, buf_stack, &buf_size);
+  buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
 
   get_float_string (dtp, &f, source , kind, 0, buffer,
                            precision, buf_size, result1, &res_len1);
