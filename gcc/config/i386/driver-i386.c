@@ -498,7 +498,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512dq = ebx & bit_AVX512DQ;
       has_avx512bw = ebx & bit_AVX512BW;
       has_avx512vl = ebx & bit_AVX512VL;
-      has_avx512vl = ebx & bit_AVX512IFMA;
+      has_avx512ifma = ebx & bit_AVX512IFMA;
 
       has_prefetchwt1 = ecx & bit_PREFETCHWT1;
       has_avx512vbmi = ecx & bit_AVX512VBMI;
