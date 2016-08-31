@@ -1,3 +1,8 @@
+2016-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/enable_shared_from_this/members/weak_from_this.cc:
+	New test.
+
 2016-08-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/77395
