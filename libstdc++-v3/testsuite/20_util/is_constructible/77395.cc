@@ -1,8 +1,7 @@
 // { dg-options "-std=gnu++11" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,38 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 2263 }
-
+#include <type_traits>
 #include <utility>
 
-void test01()
+struct derived;
+struct base
 {
-  std::declval<int>();		// { dg-error "required from here" }
+  operator derived & () &;
+  operator derived const & () const &;
+  operator derived && () &&;
+};
+
+struct derived : base {};
+
+base::operator derived & () &
+{
+  return *static_cast<derived *>(this);
+}
+
+base::operator derived const & () const &
+{
+  return *static_cast<derived const *>(this);
+}
+
+base::operator derived && () &&
+{
+  return std::move(*static_cast<derived *>(this));
+}
+
+int main()
+{
+  base b;
+  derived&& d(static_cast<derived&&>(std::move(b)));
+  derived&& d2(std::move(b));
+  static_assert(std::is_constructible<derived&&, base&&>::value, "");
 }
