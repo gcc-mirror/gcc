@@ -1,3 +1,51 @@
+2016-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libgfortran/48298
+	* gfortran.map : Flag _st_set_nml_dtio_var and
+	_gfortran_transfer_derived.
+	* io/format.c (format_lex): Detect DTIO formatting.
+	(parse_format_list): Parse the DTIO format.
+	(next_format): Include FMT_DT.
+	* io/format.h : Likewise. Add structure 'udf' to structure
+	'fnode' to carry the IOTYPE string and the 'vlist'.
+	* io/io.h : Add prototypes for the two types of DTIO subroutine
+	and a typedef for gfc_class. Also, add to 'namelist_type'
+	fields for the pointer to the DTIO procedure and the vtable.
+	Add fields to struct st_parameter_dt for pointers to the two
+	types of DTIO subroutine. Add to gfc_unit DTIO specific fields.
+	(internal_proto): Add prototype for 'read_user_defined' and
+	'write_user_defined'.
+	* io/list_read.c (check_buffers): Use the 'current_unit' field.
+	(unget_char): Likewise.
+	(eat_spaces): Likewise.
+	(list_formatted_read_scalar): For case BT_CLASS, call the DTIO
+	procedure.
+	(nml_get_obj_data): Likewise when DTIO procedure is present,.
+	* io/transfer.c : Export prototypes for 'transfer_derived' and
+	'transfer_derived_write'.
+	(unformatted_read): For case BT_CLASS, call the DTIO procedure.
+	(unformatted_write): Likewise.
+	(formatted_transfer_scalar_read): Likewise.
+	(formatted_transfer_scalar_write: Likewise.
+	(transfer_derived): New function.
+	(data_transfer_init): Set last_char if no child_dtio.
+	(finalize_transfer): Return if child_dtio set.
+	(st_write_done): Add condition for child_dtio not set.
+	Add extra arguments for st_set_nml_var prototype.
+	(set_nml_var): New function that contains the contents of the
+	old version of st_set_nml_var. Also sets the 'dtio_sub' and
+	'vtable' fields of the 'nml' structure.
+	(st_set_nml_var): Now just calls set_nml_var with 'dtio_sub'
+	and 'vtable' NULL.
+	(st_set_nml_dtio_var): New function that calls set_nml_var.
+	* io/unit.c (get_external_unit): If the found unit child_dtio
+	is non zero, don't do any mutex locking/unlocking.  Just
+	return the unit.
+	* io/unix.c (tempfile_open): Revert to C style comment.
+	* io/write.c (list_formatted_write_scalar): Do the DTIO call.
+	(nml_write_obj): Add BT_CLASS and do the DTIO call.
+
 2016-08-29  Nathan Sidwell  <nathan@acm.org>
 
 	* configure.ac (nvptx-*): Hardwire newlib.
@@ -120,7 +168,7 @@
 	(read_character): Remove condition testing c = '!' which is now inside
 	the is_separator macro. (parse_real): Reject '!' unless in namelist mode.
 	(read_complex): Reject '!' unless in namelist mode. (read_real): Likewise
-	reject '!'. 
+	reject '!'.
 
 2016-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

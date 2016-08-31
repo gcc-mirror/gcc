@@ -115,6 +115,19 @@ fold_unary_intrinsic (gfc_intrinsic_op op)
 }
 
 
+/* Return the operator depending on the DTIO moded string.  */
+
+static gfc_intrinsic_op
+dtio_op (char* mode)
+{
+  if (strncmp (mode, "formatted", 9) == 0)
+    return INTRINSIC_FORMATTED;
+  if (strncmp (mode, "unformatted", 9) == 0)
+    return INTRINSIC_UNFORMATTED;
+  return INTRINSIC_NONE;
+}
+
+
 /* Match a generic specification.  Depending on which type of
    interface is found, the 'name' or 'op' pointers may be set.
    This subroutine doesn't return MATCH_NO.  */
@@ -160,6 +173,40 @@ gfc_match_generic_spec (interface_type *type,
       strcpy (name, buffer);
       *type = INTERFACE_USER_OP;
       return MATCH_YES;
+    }
+
+  if (gfc_match (" read ( %n )", buffer) == MATCH_YES)
+    {
+      *op = dtio_op (buffer);
+      if (*op == INTRINSIC_FORMATTED)
+	{
+	  strcpy (name, gfc_code2string (dtio_procs, DTIO_RF));
+	  *type = INTERFACE_DTIO;
+	}
+      if (*op == INTRINSIC_UNFORMATTED)
+	{
+	  strcpy (name, gfc_code2string (dtio_procs, DTIO_RUF));
+	  *type = INTERFACE_DTIO;
+	}
+      if (*op != INTRINSIC_NONE)
+	return MATCH_YES;
+    }
+
+  if (gfc_match (" write ( %n )", buffer) == MATCH_YES)
+    {
+      *op = dtio_op (buffer);
+      if (*op == INTRINSIC_FORMATTED)
+	{
+	  strcpy (name, gfc_code2string (dtio_procs, DTIO_WF));
+	  *type = INTERFACE_DTIO;
+	}
+      if (*op == INTRINSIC_UNFORMATTED)
+	{
+	  strcpy (name, gfc_code2string (dtio_procs, DTIO_WUF));
+	  *type = INTERFACE_DTIO;
+	}
+      if (*op != INTRINSIC_NONE)
+	return MATCH_YES;
     }
 
   if (gfc_match_name (buffer) == MATCH_YES)
@@ -209,6 +256,7 @@ gfc_match_interface (void)
 
   switch (type)
     {
+    case INTERFACE_DTIO:
     case INTERFACE_GENERIC:
       if (gfc_get_symbol (name, NULL, &sym))
 	return MATCH_ERROR;
@@ -349,7 +397,7 @@ gfc_match_end_interface (void)
 	      if (strcmp(s2, "none") == 0)
 		gfc_error ("Expecting %<END INTERFACE OPERATOR (%s)%> "
 			   "at %C, ", s1);
-	      else		
+	      else
 		gfc_error ("Expecting %<END INTERFACE OPERATOR (%s)%> at %C, "
 			   "but got %s", s1, s2);
 	    }
@@ -371,6 +419,7 @@ gfc_match_end_interface (void)
 
       break;
 
+    case INTERFACE_DTIO:
     case INTERFACE_GENERIC:
       if (type != current_interface.type
 	  || strcmp (current_interface.sym->name, name) != 0)
@@ -3957,7 +4006,7 @@ gfc_extend_expr (gfc_expr *e)
       else
 	return MATCH_YES;
     }
- 
+
   if (i == INTRINSIC_USER)
     {
       for (ns = gfc_current_ns; ns; ns = ns->parent)
@@ -4148,60 +4197,60 @@ gfc_add_interface (gfc_symbol *new_sym)
 	  {
 	    case INTRINSIC_EQ:
 	    case INTRINSIC_EQ_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_EQ], new_sym, 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_EQ], new_sym,
 					    gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_EQ_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_EQ_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_NE:
 	    case INTRINSIC_NE_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_NE], new_sym, 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_NE], new_sym,
 					    gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_NE_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_NE_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_GT:
 	    case INTRINSIC_GT_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_GT], 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_GT],
 					    new_sym, gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_GT_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_GT_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_GE:
 	    case INTRINSIC_GE_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_GE], 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_GE],
 					    new_sym, gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_GE_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_GE_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_LT:
 	    case INTRINSIC_LT_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_LT], 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_LT],
 					    new_sym, gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_LT_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_LT_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    case INTRINSIC_LE:
 	    case INTRINSIC_LE_OS:
-	      if (!gfc_check_new_interface (ns->op[INTRINSIC_LE], 
+	      if (!gfc_check_new_interface (ns->op[INTRINSIC_LE],
 					    new_sym, gfc_current_locus)
-	          || !gfc_check_new_interface (ns->op[INTRINSIC_LE_OS], 
+	          || !gfc_check_new_interface (ns->op[INTRINSIC_LE_OS],
 					       new_sym, gfc_current_locus))
 		return false;
 	      break;
 
 	    default:
-	      if (!gfc_check_new_interface (ns->op[current_interface.op], 
+	      if (!gfc_check_new_interface (ns->op[current_interface.op],
 					    new_sym, gfc_current_locus))
 		return false;
 	  }
@@ -4210,13 +4259,14 @@ gfc_add_interface (gfc_symbol *new_sym)
       break;
 
     case INTERFACE_GENERIC:
+    case INTERFACE_DTIO:
       for (ns = current_interface.ns; ns; ns = ns->parent)
 	{
 	  gfc_find_symbol (current_interface.sym->name, ns, 0, &sym);
 	  if (sym == NULL)
 	    continue;
 
-	  if (!gfc_check_new_interface (sym->generic, 
+	  if (!gfc_check_new_interface (sym->generic,
 					new_sym, gfc_current_locus))
 	    return false;
 	}
@@ -4225,7 +4275,7 @@ gfc_add_interface (gfc_symbol *new_sym)
       break;
 
     case INTERFACE_USER_OP:
-      if (!gfc_check_new_interface (current_interface.uop->op, 
+      if (!gfc_check_new_interface (current_interface.uop->op,
 				    new_sym, gfc_current_locus))
 	return false;
 
@@ -4257,6 +4307,7 @@ gfc_current_interface_head (void)
 	break;
 
       case INTERFACE_GENERIC:
+      case INTERFACE_DTIO:
 	return current_interface.sym->generic;
 	break;
 
@@ -4280,6 +4331,7 @@ gfc_set_current_interface_head (gfc_interface *i)
 	break;
 
       case INTERFACE_GENERIC:
+      case INTERFACE_DTIO:
 	current_interface.sym->generic = i;
 	break;
 
@@ -4495,4 +4547,311 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
     }
 
   return true;
+}
+
+
+/* The following three functions check that the formal arguments
+   of user defined derived type IO procedures are compliant with
+   the requirements of the standard.  */
+
+static void
+check_dtio_arg_TKR_intent (gfc_symbol *fsym, bool typebound, bt type,
+			   int kind, int rank, sym_intent intent)
+{
+  if (fsym->ts.type != type)
+    gfc_error ("DTIO dummy argument at %L must be of type %s",
+	       &fsym->declared_at, gfc_basic_typename (type));
+
+  if (fsym->ts.type != BT_CLASS && fsym->ts.type != BT_DERIVED
+      && fsym->ts.kind != kind)
+    gfc_error ("DTIO dummy argument at %L must be of KIND = %d",
+	       &fsym->declared_at, kind);
+
+  if (!typebound
+      && rank == 0
+      && (((type == BT_CLASS) && CLASS_DATA (fsym)->attr.dimension)
+	  || ((type != BT_CLASS) && fsym->attr.dimension)))
+    gfc_error ("DTIO dummy argument at %L be a scalar",
+	       &fsym->declared_at);
+  else if (rank == 1
+	   && (fsym->as == NULL || fsym->as->type != AS_ASSUMED_SHAPE))
+    gfc_error ("DTIO dummy argument at %L must be an "
+	       "ASSUMED SHAPE ARRAY", &fsym->declared_at);
+
+  if (fsym->attr.intent != intent)
+    gfc_error ("DTIO dummy argument at %L must have intent %s",
+	       &fsym->declared_at, gfc_code2string (intents, (int)intent));
+  return;
+}
+
+
+static void
+check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
+		       bool typebound, bool formatted, int code)
+{
+  gfc_symbol *dtio_sub, *generic_proc, *fsym;
+  gfc_typebound_proc *tb_io_proc, *specific_proc;
+  gfc_interface *intr;
+  gfc_formal_arglist *formal;
+  int arg_num;
+
+  bool read = ((dtio_codes)code == DTIO_RF)
+	       || ((dtio_codes)code == DTIO_RUF);
+  bt type;
+  sym_intent intent;
+  int kind;
+
+  dtio_sub = NULL;
+  if (typebound)
+    {
+      /* Typebound DTIO binding.  */
+      tb_io_proc = tb_io_st->n.tb;
+      gcc_assert (tb_io_proc != NULL);
+      gcc_assert (tb_io_proc->is_generic);
+      gcc_assert (tb_io_proc->u.generic->next == NULL);
+
+      specific_proc = tb_io_proc->u.generic->specific;
+      gcc_assert (!specific_proc->is_generic);
+
+      dtio_sub = specific_proc->u.specific->n.sym;
+    }
+  else
+    {
+      generic_proc = tb_io_st->n.sym;
+      gcc_assert (generic_proc);
+      gcc_assert (generic_proc->generic);
+
+      for (intr = tb_io_st->n.sym->generic; intr; intr = intr->next)
+	{
+	  if (intr->sym && intr->sym->formal
+	      && ((intr->sym->formal->sym->ts.type == BT_CLASS
+	           && CLASS_DATA (intr->sym->formal->sym)->ts.u.derived
+							     == derived)
+		  || (intr->sym->formal->sym->ts.type == BT_DERIVED
+		      && intr->sym->formal->sym->ts.u.derived == derived)))
+	    {
+	      dtio_sub = intr->sym;
+	      break;
+	    }
+	}
+
+      if (dtio_sub == NULL)
+	return;
+    }
+
+  gcc_assert (dtio_sub);
+  if (!dtio_sub->attr.subroutine)
+    gfc_error ("DTIO procedure %s at %L must be a subroutine",
+	       dtio_sub->name, &dtio_sub->declared_at);
+
+  /* Now go through the formal arglist.  */
+  arg_num = 1;
+  for (formal = dtio_sub->formal; formal; formal = formal->next, arg_num++)
+    {
+      if (!formatted && arg_num == 3)
+	arg_num = 5;
+      fsym = formal->sym;
+      switch (arg_num)
+	{
+	case(1):			/* DTV  */
+	  type = derived->attr.sequence || derived->attr.is_bind_c ?
+		 BT_DERIVED : BT_CLASS;
+	  kind = 0;
+	  intent = read ? INTENT_INOUT : INTENT_IN;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+
+	case(2):			/* UNIT  */
+	  type = BT_INTEGER;
+	  kind = gfc_default_integer_kind;
+	  intent = INTENT_IN;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+	case(3):			/* IOTYPE  */
+	  type = BT_CHARACTER;
+	  kind = gfc_default_character_kind;
+	  intent = INTENT_IN;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+	case(4):			/* VLIST  */
+	  type = BT_INTEGER;
+	  kind = gfc_default_integer_kind;
+	  intent = INTENT_IN;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     1, intent);
+	  break;
+	case(5):			/* IOSTAT  */
+	  type = BT_INTEGER;
+	  kind = gfc_default_integer_kind;
+	  intent = INTENT_OUT;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+	case(6):			/* IOMSG  */
+	  type = BT_CHARACTER;
+	  kind = gfc_default_character_kind;
+	  intent = INTENT_INOUT;
+	  check_dtio_arg_TKR_intent (fsym, typebound, type, kind,
+				     0, intent);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  derived->attr.has_dtio_procs = 1;
+  return;
+}
+
+void
+gfc_check_dtio_interfaces (gfc_symbol *derived)
+{
+  gfc_symtree *tb_io_st;
+  bool t = false;
+  int code;
+  bool formatted;
+
+  if (derived->attr.is_class == 1 || derived->attr.vtype == 1)
+    return;
+
+  /* Check typebound DTIO bindings.  */
+  for (code = 0; code < 4; code++)
+    {
+      formatted = ((dtio_codes)code == DTIO_RF)
+		   || ((dtio_codes)code == DTIO_WF);
+
+      tb_io_st = gfc_find_typebound_proc (derived, &t,
+					  gfc_code2string (dtio_procs, code),
+					  true, &derived->declared_at);
+      if (tb_io_st != NULL)
+	check_dtio_interface1 (derived, tb_io_st, true, formatted, code);
+    }
+
+  /* Check generic DTIO interfaces.  */
+  for (code = 0; code < 4; code++)
+    {
+      formatted = ((dtio_codes)code == DTIO_RF)
+		   || ((dtio_codes)code == DTIO_WF);
+
+      tb_io_st = gfc_find_symtree (derived->ns->sym_root,
+				   gfc_code2string (dtio_procs, code));
+      if (tb_io_st != NULL)
+	check_dtio_interface1 (derived, tb_io_st, false, formatted, code);
+    }
+}
+
+
+gfc_symbol *
+gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
+{
+  gfc_symtree *tb_io_st = NULL;
+  gfc_symbol *dtio_sub = NULL;
+  gfc_symbol *extended;
+  gfc_typebound_proc *tb_io_proc, *specific_proc;
+  bool t = false;
+
+  /* Try to find a typebound DTIO binding.  */
+  if (formatted == true)
+    {
+      if (write == true)
+        tb_io_st = gfc_find_typebound_proc (derived, &t,
+					    gfc_code2string (dtio_procs,
+							     DTIO_WF),
+					    true,
+					    &derived->declared_at);
+      else
+        tb_io_st = gfc_find_typebound_proc (derived, &t,
+					    gfc_code2string (dtio_procs,
+							     DTIO_RF),
+					    true,
+					    &derived->declared_at);
+    }
+  else
+    {
+      if (write == true)
+        tb_io_st = gfc_find_typebound_proc (derived, &t,
+					    gfc_code2string (dtio_procs,
+							     DTIO_WUF),
+					    true,
+					    &derived->declared_at);
+      else
+        tb_io_st = gfc_find_typebound_proc (derived, &t,
+					    gfc_code2string (dtio_procs,
+							     DTIO_RUF),
+					    true,
+					    &derived->declared_at);
+    }
+
+  if (tb_io_st != NULL)
+    {
+      tb_io_proc = tb_io_st->n.tb;
+      gcc_assert (tb_io_proc != NULL);
+      gcc_assert (tb_io_proc->is_generic);
+      gcc_assert (tb_io_proc->u.generic->next == NULL);
+
+      specific_proc = tb_io_proc->u.generic->specific;
+      gcc_assert (!specific_proc->is_generic);
+
+      dtio_sub = specific_proc->u.specific->n.sym;
+    }
+
+  if (tb_io_st != NULL)
+    goto finish;
+
+  /* If there is not a typebound binding, look for a generic
+     DTIO interface.  */
+  for (extended = derived; extended;
+       extended = gfc_get_derived_super_type (extended))
+    {
+      if (formatted == true)
+	{
+	  if (write == true)
+	    tb_io_st = gfc_find_symtree (extended->ns->sym_root,
+					 gfc_code2string (dtio_procs,
+							  DTIO_WF));
+	  else
+	    tb_io_st = gfc_find_symtree (extended->ns->sym_root,
+					 gfc_code2string (dtio_procs,
+							  DTIO_RF));
+	}
+      else
+	{
+	  if (write == true)
+	    tb_io_st = gfc_find_symtree (extended->ns->sym_root,
+					 gfc_code2string (dtio_procs,
+							  DTIO_WUF));
+	  else
+	    tb_io_st = gfc_find_symtree (extended->ns->sym_root,
+					 gfc_code2string (dtio_procs,
+							  DTIO_RUF));
+	}
+
+      if (tb_io_st != NULL
+	  && tb_io_st->n.sym
+	  && tb_io_st->n.sym->generic)
+	{
+	  gfc_interface *intr;
+	  for (intr = tb_io_st->n.sym->generic; intr; intr = intr->next)
+	    {
+	      gfc_symbol *fsym = intr->sym->formal->sym;
+	      if (intr->sym && intr->sym->formal
+		  && ((fsym->ts.type == BT_CLASS
+		      && CLASS_DATA (fsym)->ts.u.derived == extended)
+		    || (fsym->ts.type == BT_DERIVED
+			&& fsym->ts.u.derived == extended)))
+		{
+		  dtio_sub = intr->sym;
+		  break;
+		}
+	    }
+	}
+    }
+
+finish:
+  if (dtio_sub && derived != CLASS_DATA (dtio_sub->formal->sym)->ts.u.derived)
+    gfc_find_derived_vtab (derived);
+
+  return dtio_sub;
 }

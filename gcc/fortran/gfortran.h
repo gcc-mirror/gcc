@@ -177,8 +177,10 @@ enum gfc_intrinsic_op
   /* .EQ., .NE., .GT., .GE., .LT., .LE. (OS = Old-Style)  */
   INTRINSIC_EQ_OS, INTRINSIC_NE_OS, INTRINSIC_GT_OS, INTRINSIC_GE_OS,
   INTRINSIC_LT_OS, INTRINSIC_LE_OS,
-  INTRINSIC_NOT, INTRINSIC_USER, INTRINSIC_ASSIGN,
-  INTRINSIC_PARENTHESES, GFC_INTRINSIC_END /* Sentinel */
+  INTRINSIC_NOT, INTRINSIC_USER, INTRINSIC_ASSIGN, INTRINSIC_PARENTHESES,
+  /* User defined derived type pseudo operator.  */
+  INTRINSIC_FORMATTED, INTRINSIC_UNFORMATTED,
+  GFC_INTRINSIC_END /* Sentinel */
 };
 
 /* This macro is the number of intrinsic operators that exist.
@@ -261,7 +263,8 @@ enum gfc_statement
 enum interface_type
 {
   INTERFACE_NAMELESS = 1, INTERFACE_GENERIC,
-  INTERFACE_INTRINSIC_OP, INTERFACE_USER_OP, INTERFACE_ABSTRACT
+  INTERFACE_INTRINSIC_OP, INTERFACE_USER_OP, INTERFACE_ABSTRACT,
+  INTERFACE_DTIO
 };
 
 /* Symbol flavors: these are all mutually exclusive.
@@ -312,6 +315,12 @@ extern const mstring intents[];
 extern const mstring access_types[];
 extern const mstring ifsrc_types[];
 extern const mstring save_status[];
+
+/* Strings for DTIO procedure names.  In symbol.c.  */
+extern const mstring dtio_procs[];
+
+enum dtio_codes
+{ DTIO_RF = 0, DTIO_WF, DTIO_RUF, DTIO_WUF };
 
 /* Enumeration of all the generic intrinsic functions.  Used by the
    backend for identification of a function.  */
@@ -784,7 +793,7 @@ typedef struct
   unsigned implicit_pure:1;
 
   /* This is set for a procedure that contains expressions referencing
-     arrays coming from outside its namespace.  
+     arrays coming from outside its namespace.
      This is used to force the creation of a temporary when the LHS of
      an array assignment may be used by an elemental procedure appearing
      on the RHS.  */
@@ -841,7 +850,8 @@ typedef struct
      entities.  */
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
 	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1,
-	   event_comp:1, defined_assign_comp:1, unlimited_polymorphic:1;
+	   event_comp:1, defined_assign_comp:1, unlimited_polymorphic:1,
+	   has_dtio_procs:1;
 
   /* This is a temporary selector for SELECT TYPE or an associate
      variable for SELECT_TYPE or ASSOCIATE.  */
@@ -3170,6 +3180,9 @@ bool gfc_check_operator_interface (gfc_symbol*, gfc_intrinsic_op, locus);
 int gfc_has_vector_subscript (gfc_expr*);
 gfc_intrinsic_op gfc_equivalent_op (gfc_intrinsic_op);
 bool gfc_check_typebound_override (gfc_symtree*, gfc_symtree*);
+void gfc_check_dtio_interfaces (gfc_symbol*);
+gfc_symbol* gfc_find_specific_dtio_proc (gfc_symbol*, bool, bool);
+
 
 /* io.c */
 extern gfc_st_label format_asterisk;

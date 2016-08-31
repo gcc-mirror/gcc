@@ -113,7 +113,7 @@ enum format_token
   FMT_RPAREN, FMT_X, FMT_SIGN, FMT_BLANK, FMT_CHAR, FMT_P, FMT_IBOZ, FMT_F,
   FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END,
   FMT_ERROR, FMT_DC, FMT_DP, FMT_T, FMT_TR, FMT_TL, FMT_STAR, FMT_RC,
-  FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ
+  FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ, FMT_DT
 };
 
 /* Local variables for checking format strings.  The saved_token is
@@ -463,6 +463,44 @@ format_lex (void)
 	    return FMT_ERROR;
 	  token = FMT_DC;
 	}
+      else if (c == 'T')
+	{
+	  if (!gfc_notify_std (GFC_STD_F2003, "Fortran 2003: DT format "
+	      "specifier not allowed at %C"))
+	    return FMT_ERROR;
+	  token = FMT_DT;
+	  c = next_char_not_space (&error);
+	  if (c == '\'' || c == '"')
+	    {
+	      delim = c;
+	      value = 0;
+
+	      for (;;)
+		{
+		  c = next_char (INSTRING_WARN);
+		  if (c == '\0')
+		    {
+		      token = FMT_END;
+		      break;
+		    }
+
+		  if (c == delim)
+		    {
+		      c = next_char (NONSTRING);
+
+		      if (c == '\0')
+			{
+			  token = FMT_END;
+			  break;
+			}
+		      unget_char ();
+		      break;
+		    }
+		}
+	    }
+	  else
+	    unget_char ();
+	}
       else
 	{
 	  token = FMT_D;
@@ -651,6 +689,54 @@ format_item_1:
 			   "space count at %L", &format_locus))
 	return false;
       goto between_desc;
+
+    case FMT_DT:
+      t = format_lex ();
+      if (t == FMT_ERROR)
+	goto fail;
+      switch (t)
+	{
+	case FMT_RPAREN:
+	  level--;
+	  if (level < 0)
+	    goto finished;
+	  goto between_desc;
+
+	case FMT_COMMA:
+	  goto format_item;
+
+	case FMT_LPAREN:
+
+  dtio_vlist:
+	  t = format_lex ();
+	  if (t == FMT_ERROR)
+	    goto fail;
+
+	  if (t != FMT_POSINT)
+	    {
+	      error = posint_required;
+	      goto syntax;
+	    }
+
+	  t = format_lex ();
+	  if (t == FMT_ERROR)
+	    goto fail;
+
+	  if (t == FMT_COMMA)
+	    goto dtio_vlist;
+	  if (t != FMT_RPAREN)
+	    {
+	      error = _("Right parenthesis expected at %C");
+	      goto syntax;
+	    }
+	  goto between_desc;
+
+	default:
+	  error = unexpected_element;
+	  goto syntax;
+	}
+
+      goto format_item;
 
     case FMT_SIGN:
     case FMT_BLANK:

@@ -1,3 +1,61 @@
+2016-08-31  Paul Thomas  <pault@gcc.gnu.org>
+	Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/48298
+
+	* decl.c (access_attr_decl): Include case INTERFACE_DTIO as
+	appropriate.
+	* gfortran.h : Add INTRINSIC_FORMATTED and
+	INTRINSIC_UNFORMATTED to gfc_intrinsic_op. Add INTERFACE_DTIO
+	to interface type. Add new enum 'dtio_codes'. Add bitfield
+	'has_dtio_procs' to symbol_attr. Add prototypes
+	'gfc_check_dtio_interfaces' and 'gfc_find_specific_dtio_proc'.
+	* interface.c (dtio_op): New function.
+	(gfc_match_generic_spec): Match generic DTIO interfaces.
+	(gfc_match_interface): Treat DTIO interfaces in the same way as
+	(gfc_current_interface_head): Add INTERFACE_DTIO appropriately.
+	(check_dtio_arg_TKR_intent): New function.
+	(check_dtio_interface1): New function.
+	(gfc_check_dtio_interfaces): New function.
+	(gfc_find_specific_dtio_proc): New function.
+	* io.c : Add FMT_DT to format_token.
+	(format_lex): Handle DTIO formatting.
+	* match.c (gfc_op2string): Add DTIO operators.
+	* resolve.c (derived_inaccessible): Ignore pointer components
+	to enclosing derived type.
+	(resolve_transfer): Resolve transfers that involve DTIO.
+	procedures. Find the specific subroutine for the transfer and
+	use its existence to over-ride some of the constraints on
+	derived types. If the transfer is recursive, require that the
+	subroutine be so qualified.
+	(dtio_procs_present): New function.
+	(resolve_fl_namelist): Remove inhibition of polymorphic objects
+	in namelists if DTIO read and write subroutines exist. Likewise
+	for derived types.
+	(resolve_types): Invoke 'gfc_verify_dtio_procedures'.
+	* symbol.c : Set 'dtio_procs' using 'minit'.
+	* trans-decl.c (gfc_finish_var_decl): If a derived-type/class
+	object is associated with DTIO procedures, make it TREE_STATIC.
+	* trans-expr.c (gfc_get_vptr_from_expr): If the expression
+	drills down to a PARM_DECL, extract the vptr correctly.
+	(gfc_conv_derived_to_class): Check 'info' in the test for
+	'useflags'. If the se expression exists and is a pointer, use
+	it as the class _data.
+	* trans-io.c : Add IOCALL_X_DERIVED to iocall and the function
+	prototype. Likewise for IOCALL_SET_NML_DTIO_VAL.
+	(set_parameter_tree): Renamed from 'set_parameter_const', now
+	returns void and has new tree argument. Calls modified to match
+	new interface.
+	(transfer_namelist_element): Transfer DTIO procedure pointer
+	and vpointer using the new function IOCALL_SET_NML_DTIO_VAL.
+	(get_dtio_proc): New function.
+	(transfer_expr): Add new argument for the vptr field of class
+	objects. Add the code to call the specific DTIO proc, convert
+	derived types to class and call IOCALL_X_DERIVED.
+	(trans_transfer): Add BT_CLASS to structures for treatment by
+	the scalarizer. Obtain the vptr for the dynamic type, both for
+	scalar and array transfer.
+
 2016-08-30  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.texi: Fix typo in STRUCTURE documentation.

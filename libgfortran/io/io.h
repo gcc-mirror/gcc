@@ -94,6 +94,30 @@ typedef struct array_loop_spec
 }
 array_loop_spec;
 
+/* User defined input/output iomsg length. */
+
+#define IOMSG_LEN 256
+
+/* Subroutine formatted_dtio (struct, unit, iotype, v_list, iostat,
+			      iomsg, (_iotype), (_iomsg))  */
+typedef void (*formatted_dtio)(void *, GFC_INTEGER_4 *, char *, gfc_array_i4 *,
+			       GFC_INTEGER_4 *, char *,
+			       gfc_charlen_type, gfc_charlen_type);
+
+/* Subroutine unformatted_dtio (struct, unit, iostat, iomsg, (_iomsg))  */
+typedef void (*unformatted_dtio)(void *, GFC_INTEGER_4 *, GFC_INTEGER_4 *,
+				 char *, gfc_charlen_type);
+
+/* The dtio calls for namelist require a CLASS object to be built.  */
+typedef struct gfc_class
+{
+  void *data;
+  void *vptr;
+  index_type len;
+}
+gfc_class;
+
+
 /* A structure to build a hash table for format data.  */
 
 #define FORMAT_HASH_SIZE 16
@@ -135,6 +159,12 @@ typedef struct namelist_type
 
   /* Address for the start of the object's data.  */
   void * mem_pos;
+
+  /* Address of specific DTIO subroutine.  */
+  void * dtio_sub;
+
+  /* Address of vtable if dtio_sub non-null.  */
+  void * vtable;
 
   /* Flag to show that a read is to be attempted for this node.  */
   int touched;
@@ -462,7 +492,7 @@ typedef struct st_parameter_dt
 	  /* Used for ungetc() style functionality. Possible values
 	     are an unsigned char, EOF, or EOF - 1 used to mark the
 	     field as not valid.  */
-	  int last_char;
+	  int last_char; /* No longer used, moved to gfc_unit.  */
 	  char nml_delim;
 
 	  int repeat_count;
@@ -484,6 +514,8 @@ typedef struct st_parameter_dt
 	     largest kind.  */
 	  char value[32];
 	  GFC_IO_INT size_used;
+	  formatted_dtio fdtio_ptr;
+	  unformatted_dtio ufdtio_ptr;
 	} p;
       /* This pad size must be equal to the pad_size declared in
 	 trans-io.c (gfc_build_io_library_fndecls).  The above structure
@@ -607,6 +639,10 @@ typedef struct gfc_unit
   /* Function pointer, points to list_read worker functions.  */
   int (*next_char_fn_ptr) (st_parameter_dt *);
   void (*push_char_fn_ptr) (st_parameter_dt *, int);
+
+  /* DTIO Parent/Child procedure, 0 = parent, >0 = child level.  */
+  int child_dtio;
+  int last_char;
 }
 gfc_unit;
 
@@ -728,6 +764,12 @@ internal_proto(read_radix);
 extern void read_decimal (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(read_decimal);
 
+extern void read_user_defined (st_parameter_dt *, void *);
+internal_proto(read_user_defined);
+
+extern void read_user_defined (st_parameter_dt *, void *);
+internal_proto(read_user_defined);
+
 /* list_read.c */
 
 extern void list_formatted_read (st_parameter_dt *, bt, void *, int, size_t,
@@ -789,6 +831,12 @@ internal_proto(write_x);
 
 extern void write_z (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_z);
+
+extern void write_user_defined (st_parameter_dt *, void *);
+internal_proto(write_user_defined);
+
+extern void write_user_defined (st_parameter_dt *, void *);
+internal_proto(write_user_defined);
 
 extern void list_formatted_write (st_parameter_dt *, bt, void *, int, size_t,
 				  size_t);

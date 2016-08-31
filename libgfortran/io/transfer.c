@@ -57,7 +57,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       transfer_complex
       transfer_real128
       transfer_complex128
-   
+
     and for WRITE
 
       transfer_integer_write
@@ -121,6 +121,15 @@ export_proto(transfer_array);
 extern void transfer_array_write (st_parameter_dt *, gfc_array_char *, int,
 			    gfc_charlen_type);
 export_proto(transfer_array_write);
+
+/* User defined derived type input/output.  */
+extern void
+transfer_derived (st_parameter_dt *dtp, void *dtio_source, void *dtio_proc);
+export_proto(transfer_derived);
+
+extern void
+transfer_derived_write (st_parameter_dt *dtp, void *dtio_source, void *dtio_proc);
+export_proto(transfer_derived_write);
 
 static void us_read (st_parameter_dt *, int);
 static void us_write (st_parameter_dt *, int);
@@ -315,7 +324,7 @@ read_sf (st_parameter_dt *dtp, int * length)
 	     the rest of the I/O statement.  Set the corresponding flag.  */
 	  if (dtp->u.p.advance_status == ADVANCE_NO || dtp->u.p.seen_dollar)
 	    dtp->u.p.eor_condition = 1;
-	    
+
 	  /* If we encounter a CR, it might be a CRLF.  */
 	  if (q == '\r') /* Probably a CRLF */
 	    {
@@ -548,7 +557,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
 
   if (is_stream_io (dtp))
     {
-      have_read_record = sread (dtp->u.p.current_unit->s, buf, 
+      have_read_record = sread (dtp->u.p.current_unit->s, buf,
 				nbytes);
       if (unlikely (have_read_record < 0))
 	{
@@ -556,7 +565,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
 	  return;
 	}
 
-      dtp->u.p.current_unit->strm_pos += (gfc_offset) have_read_record; 
+      dtp->u.p.current_unit->strm_pos += (gfc_offset) have_read_record;
 
       if (unlikely ((ssize_t) nbytes != have_read_record))
 	{
@@ -590,7 +599,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
 	  return;
 	}
 
-      if (to_read_record != (ssize_t) nbytes)  
+      if (to_read_record != (ssize_t) nbytes)
 	{
 	  /* Short read, e.g. if we hit EOF.  Apparently, we read
 	   more than was written to the last record.  */
@@ -639,7 +648,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
 
       dtp->u.p.current_unit->bytes_left_subrecord -= to_read_subrecord;
 
-      have_read_subrecord = sread (dtp->u.p.current_unit->s, 
+      have_read_subrecord = sread (dtp->u.p.current_unit->s,
 				   buf + have_read_record, to_read_subrecord);
       if (unlikely (have_read_subrecord < 0))
 	{
@@ -760,7 +769,7 @@ write_block (st_parameter_dt *dtp, int length)
 	  return NULL;
 	}
     }
-    
+
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
     dtp->u.p.size_used += (GFC_IO_INT) length;
 
@@ -793,7 +802,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 	  return false;
 	}
 
-      dtp->u.p.current_unit->strm_pos += (gfc_offset) have_written; 
+      dtp->u.p.current_unit->strm_pos += (gfc_offset) have_written;
 
       return true;
     }
@@ -811,7 +820,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
       if (buf == NULL && nbytes == 0)
 	return true;
 
-      have_written = swrite (dtp->u.p.current_unit->s, buf, nbytes); 
+      have_written = swrite (dtp->u.p.current_unit->s, buf, nbytes);
       if (unlikely (have_written < 0))
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);
@@ -849,7 +858,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
       dtp->u.p.current_unit->bytes_left_subrecord -=
 	(gfc_offset) to_write_subrecord;
 
-      to_write_subrecord = swrite (dtp->u.p.current_unit->s, 
+      to_write_subrecord = swrite (dtp->u.p.current_unit->s,
 				   buf + have_written, to_write_subrecord);
       if (unlikely (to_write_subrecord < 0))
 	{
@@ -857,7 +866,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 	  return false;
 	}
 
-      dtp->u.p.current_unit->strm_pos += (gfc_offset) to_write_subrecord; 
+      dtp->u.p.current_unit->strm_pos += (gfc_offset) to_write_subrecord;
       nbytes -= to_write_subrecord;
       have_written += to_write_subrecord;
 
@@ -903,7 +912,7 @@ reverse_memcpy (void *dest, const void *src, size_t n)
 static void
 bswap_array (void *dest, const void *src, size_t size, size_t nelems)
 {
-  const char *ps; 
+  const char *ps;
   char *pd;
 
   switch (size)
@@ -988,6 +997,40 @@ static void
 unformatted_read (st_parameter_dt *dtp, bt type,
 		  void *dest, int kind, size_t size, size_t nelems)
 {
+  if (type == BT_CLASS)
+    {
+	  int unit = dtp->u.p.current_unit->unit_number;
+	  char tmp_iomsg[IOMSG_LEN] = "";
+	  char *child_iomsg;
+	  gfc_charlen_type child_iomsg_len;
+	  int noiostat;
+	  int *child_iostat = NULL;
+
+	  /* Set iostat, intent(out).  */
+	  noiostat = 0;
+	  child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
+			  dtp->common.iostat : &noiostat;
+
+	  /* Set iomsg, intent(inout).  */
+	  if (dtp->common.flags & IOPARM_HAS_IOMSG)
+	    {
+	      child_iomsg = dtp->common.iomsg;
+	      child_iomsg_len = dtp->common.iomsg_len;
+	    }
+	  else
+	    {
+	      child_iomsg = tmp_iomsg;
+	      child_iomsg_len = IOMSG_LEN;
+	    }
+
+	  /* Call the user defined unformatted READ procedure.  */
+	  dtp->u.p.current_unit->child_dtio++;
+	  dtp->u.p.ufdtio_ptr (dest, &unit, child_iostat, child_iomsg,
+			      child_iomsg_len);
+	  dtp->u.p.current_unit->child_dtio--;
+	  return;
+    }
+
   if (type == BT_CHARACTER)
     size *= GFC_SIZE_OF_CHAR_KIND(kind);
   read_block_direct (dtp, dest, size * nelems);
@@ -1016,13 +1059,47 @@ unformatted_read (st_parameter_dt *dtp, bt type,
 /* Master function for unformatted writes.  NOTE: For kind=10 the size is 16
    bytes on 64 bit machines.  The unused bytes are not initialized and never
    used, which can show an error with memory checking analyzers like
-   valgrind.  */
+   valgrind.  We us BT_CLASS to denote a User Defined I/O call.  */
 
 static void
 unformatted_write (st_parameter_dt *dtp, bt type,
 		   void *source, int kind, size_t size, size_t nelems)
 {
-  if (likely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE) 
+  if (type == BT_CLASS)
+    {
+	  int unit = dtp->u.p.current_unit->unit_number;
+	  char tmp_iomsg[IOMSG_LEN] = "";
+	  char *child_iomsg;
+	  gfc_charlen_type child_iomsg_len;
+	  int noiostat;
+	  int *child_iostat = NULL;
+
+	  /* Set iostat, intent(out).  */
+	  noiostat = 0;
+	  child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
+			  dtp->common.iostat : &noiostat;
+
+	  /* Set iomsg, intent(inout).  */
+	  if (dtp->common.flags & IOPARM_HAS_IOMSG)
+	    {
+	      child_iomsg = dtp->common.iomsg;
+	      child_iomsg_len = dtp->common.iomsg_len;
+	    }
+	  else
+	    {
+	      child_iomsg = tmp_iomsg;
+	      child_iomsg_len = IOMSG_LEN;
+	    }
+
+	  /* Call the user defined unformatted WRITE procedure.  */
+	  dtp->u.p.current_unit->child_dtio++;
+	  dtp->u.p.ufdtio_ptr (source, &unit, child_iostat, child_iomsg,
+			      child_iomsg_len);
+	  dtp->u.p.current_unit->child_dtio--;
+	  return;
+    }
+
+  if (likely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE)
       || kind == 1)
     {
       size_t stride = type == BT_CHARACTER ?
@@ -1045,13 +1122,13 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	  nelems *= size;
 	  size = kind;
 	}
-  
+
       /* Break up complex into its constituent reals.  */
       if (type == BT_COMPLEX)
 	{
 	  nelems *= 2;
 	  size /= 2;
-	}      
+	}
 
       /* By now, all complex variables have been split into their
 	 constituent reals.  */
@@ -1099,6 +1176,9 @@ type_name (bt type)
     case BT_COMPLEX:
       p = "COMPLEX";
       break;
+    case BT_CLASS:
+      p = "CLASS or DERIVED";
+      break;
     default:
       internal_error (NULL, "type_name(): Bad type");
     }
@@ -1115,7 +1195,7 @@ static void
 write_constant_string (st_parameter_dt *dtp, const fnode *f)
 {
   char c, delimiter, *p, *q;
-  int length; 
+  int length;
 
   length = f->u.string.length;
   if (length == 0)
@@ -1124,7 +1204,7 @@ write_constant_string (st_parameter_dt *dtp, const fnode *f)
   p = write_block (dtp, length);
   if (p == NULL)
     return;
-    
+
   q = f->u.string.p;
   delimiter = q[-1];
 
@@ -1151,7 +1231,7 @@ require_type (st_parameter_dt *dtp, bt expected, bt actual, const fnode *f)
     return 0;
 
   /* Adjust item_count before emitting error message.  */
-  snprintf (buffer, BUFLEN, 
+  snprintf (buffer, BUFLEN,
 	    "Expected %s for item %d in formatted transfer, got %s",
 	   type_name (expected), dtp->u.p.item_count - 1, type_name (actual));
 
@@ -1170,7 +1250,7 @@ require_numeric_type (st_parameter_dt *dtp, bt actual, const fnode *f)
     return 0;
 
   /* Adjust item_count before emitting error message.  */
-  snprintf (buffer, BUFLEN, 
+  snprintf (buffer, BUFLEN,
 	    "Expected numeric type for item %d in formatted transfer, got %s",
 	    dtp->u.p.item_count - 1, type_name (actual));
 
@@ -1273,7 +1353,7 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 
 	case FMT_O:
 	  if (n == 0)
-	    goto need_read_data; 
+	    goto need_read_data;
 	  if (!(compile_options.allow_std & GFC_STD_GNU)
 	      && require_numeric_type (dtp, type, f))
 	    return;
@@ -1320,6 +1400,65 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  if (require_type (dtp, BT_REAL, type, f))
 	    return;
 	  read_f (dtp, f, p, kind);
+	  break;
+
+	case FMT_DT:
+	  if (n == 0)
+	    goto need_read_data;
+	  if (require_type (dtp, BT_CLASS, type, f))
+	    return;
+	  int unit = dtp->u.p.current_unit->unit_number;
+	  char dt[] = "DT";
+	  char tmp_iomsg[IOMSG_LEN] = "";
+	  char *child_iomsg;
+	  gfc_charlen_type child_iomsg_len;
+	  int noiostat;
+	  int *child_iostat = NULL;
+	  char *iotype = f->u.udf.string;
+	  gfc_charlen_type iotype_len = f->u.udf.string_len;
+
+	  /* Build the iotype string.  */
+	  if (iotype_len == 0)
+	    {
+	      iotype_len = 2;
+	      iotype = dt;
+	    }
+	  else
+	    {
+	      iotype_len += 2;
+	      iotype = xmalloc (iotype_len);
+	      iotype[0] = dt[0];
+	      iotype[1] = dt[1];
+	      memcpy (iotype + 2, f->u.udf.string, f->u.udf.string_len);
+	    }
+
+	  /* Set iostat, intent(out).  */
+	  noiostat = 0;
+	  child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
+			  dtp->common.iostat : &noiostat;
+
+	  /* Set iomsg, intent(inout).  */
+	  if (dtp->common.flags & IOPARM_HAS_IOMSG)
+	    {
+	      child_iomsg = dtp->common.iomsg;
+	      child_iomsg_len = dtp->common.iomsg_len;
+	    }
+	  else
+	    {
+	      child_iomsg = tmp_iomsg;
+	      child_iomsg_len = IOMSG_LEN;
+	    }
+
+	  /* Call the user defined formatted READ procedure.  */
+	  dtp->u.p.current_unit->child_dtio++;
+	  dtp->u.p.fdtio_ptr (p, &unit, iotype, f->u.udf.vlist,
+			      child_iostat, child_iomsg,
+			      iotype_len, child_iomsg_len);
+	  dtp->u.p.current_unit->child_dtio--;
+
+	  if (f->u.udf.string_len != 0)
+	    free (iotype);
+	  /* Note: vlist is freed in free_format_data.  */
 	  break;
 
 	case FMT_E:
@@ -1438,7 +1577,7 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	    }
 	  if (dtp->u.p.skips < 0)
 	    {
-              if (is_internal_unit (dtp))  
+              if (is_internal_unit (dtp))
                 sseek (dtp->u.p.current_unit->s, dtp->u.p.skips, SEEK_CUR);
               else
                 fbuf_seek (dtp->u.p.current_unit, dtp->u.p.skips, SEEK_CUR);
@@ -1624,13 +1763,14 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 
       /* Now discharge T, TR and X movements to the right.  This is delayed
 	 until a data producing format to suppress trailing spaces.  */
-	 
+
       t = f->format;
       if (dtp->u.p.mode == WRITING && dtp->u.p.skips != 0
 	&& ((n>0 && (  t == FMT_I  || t == FMT_B  || t == FMT_O
 		    || t == FMT_Z  || t == FMT_F  || t == FMT_E
 		    || t == FMT_EN || t == FMT_ES || t == FMT_G
-		    || t == FMT_L  || t == FMT_A  || t == FMT_D))
+		    || t == FMT_L  || t == FMT_A  || t == FMT_D
+		    || t == FMT_DT))
 	    || t == FMT_STRING))
 	{
 	  if (dtp->u.p.skips > 0)
@@ -1639,13 +1779,13 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	      write_x (dtp, dtp->u.p.skips, dtp->u.p.pending_spaces);
 	      tmp = (int)(dtp->u.p.current_unit->recl
 			  - dtp->u.p.current_unit->bytes_left);
-	      dtp->u.p.max_pos = 
+	      dtp->u.p.max_pos =
 		dtp->u.p.max_pos > tmp ? dtp->u.p.max_pos : tmp;
 	      dtp->u.p.skips = 0;
 	    }
 	  if (dtp->u.p.skips < 0)
 	    {
-              if (is_internal_unit (dtp))  
+              if (is_internal_unit (dtp))
 	        sseek (dtp->u.p.current_unit->s, dtp->u.p.skips, SEEK_CUR);
               else
                 fbuf_seek (dtp->u.p.current_unit, dtp->u.p.skips, SEEK_CUR);
@@ -1684,7 +1824,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 
 	case FMT_O:
 	  if (n == 0)
-	    goto need_data; 
+	    goto need_data;
 	  if (!(compile_options.allow_std & GFC_STD_GNU)
 	      && require_numeric_type (dtp, type, f))
 	    return;
@@ -1731,6 +1871,63 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  if (require_type (dtp, BT_REAL, type, f))
 	    return;
 	  write_d (dtp, f, p, kind);
+	  break;
+
+	case FMT_DT:
+	  if (n == 0)
+	    goto need_data;
+	  int unit = dtp->u.p.current_unit->unit_number;
+	  char dt[] = "DT";
+	  char tmp_iomsg[IOMSG_LEN] = "";
+	  char *child_iomsg;
+	  gfc_charlen_type child_iomsg_len;
+	  int noiostat;
+	  int *child_iostat = NULL;
+	  char *iotype = f->u.udf.string;
+	  gfc_charlen_type iotype_len = f->u.udf.string_len;
+
+	  /* Build the iotype string.  */
+	  if (iotype_len == 0)
+	    {
+	      iotype_len = 2;
+	      iotype = dt;
+	    }
+	  else
+	    {
+	      iotype_len += 2;
+	      iotype = xmalloc (iotype_len);
+	      iotype[0] = dt[0];
+	      iotype[1] = dt[1];
+	      memcpy (iotype + 2, f->u.udf.string, f->u.udf.string_len);
+	    }
+
+	  /* Set iostat, intent(out).  */
+	  noiostat = 0;
+	  child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
+			  dtp->common.iostat : &noiostat;
+
+	  /* Set iomsg, intent(inout).  */
+	  if (dtp->common.flags & IOPARM_HAS_IOMSG)
+	    {
+	      child_iomsg = dtp->common.iomsg;
+	      child_iomsg_len = dtp->common.iomsg_len;
+	    }
+	  else
+	    {
+	      child_iomsg = tmp_iomsg;
+	      child_iomsg_len = IOMSG_LEN;
+	    }
+
+	  /* Call the user defined formatted WRITE procedure.  */
+	  dtp->u.p.current_unit->child_dtio++;
+	  dtp->u.p.fdtio_ptr (p, &unit, iotype, f->u.udf.vlist,
+			      child_iostat, child_iomsg,
+			      iotype_len, child_iomsg_len);
+	  dtp->u.p.current_unit->child_dtio--;
+
+	  if (f->u.udf.string_len != 0)
+	    free (iotype);
+	  /* Note: vlist is freed in free_format_data.  */
 	  break;
 
 	case FMT_E:
@@ -2198,6 +2395,25 @@ transfer_array_write (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
   transfer_array (dtp, desc, kind, charlen);
 }
 
+
+/* User defined input/output iomsg. */
+
+#define IOMSG_LEN 256
+
+void
+transfer_derived (st_parameter_dt *parent, void *dtio_source, void *dtio_proc)
+{
+  if (parent->u.p.current_unit)
+    {
+      if (parent->u.p.current_unit->flags.form == FORM_UNFORMATTED)
+	parent->u.p.ufdtio_ptr = (unformatted_dtio) dtio_proc;
+      else
+	parent->u.p.fdtio_ptr = (formatted_dtio) dtio_proc;
+    }
+  parent->u.p.transfer (parent, BT_CLASS, dtio_source, 0, 0, 1);
+}
+
+
 /* Preposition a sequential unformatted file while reading.  */
 
 static void
@@ -2340,7 +2556,7 @@ pre_position (st_parameter_dt *dtp)
 	 was specified, we continue from where we last left off.  I.e.
 	 there is nothing to do here.  */
       break;
-    
+
     case UNFORMATTED_SEQUENTIAL:
       if (dtp->u.p.mode == READING)
 	us_read (dtp, 0);
@@ -2384,6 +2600,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
     dtp->u.p.size_used = 0;  /* Initialize the count.  */
 
   dtp->u.p.current_unit = get_unit (dtp, 1);
+
   if (dtp->u.p.current_unit->s == NULL)
     {  /* Open the unit with some default flags.  */
        st_parameter_open opp;
@@ -2431,15 +2648,15 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	case GFC_CONVERT_NATIVE:
 	case GFC_CONVERT_SWAP:
 	  break;
-	 
+
 	case GFC_CONVERT_BIG:
 	  conv = big_endian ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
 	  break;
-      
+
 	case GFC_CONVERT_LITTLE:
 	  conv = big_endian ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
 	  break;
-	 
+
 	default:
 	  internal_error (&opp.common, "Illegal value for CONVERT");
 	  break;
@@ -2542,7 +2759,6 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 			"EOF marker, possibly use REWIND or BACKSPACE");
 	  return;
 	}
-
     }
   /* Process the ADVANCE option.  */
 
@@ -2589,7 +2805,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	  return;
 	}
 
-      if ((cf & IOPARM_DT_HAS_SIZE) != 0 
+      if ((cf & IOPARM_DT_HAS_SIZE) != 0
 	  && dtp->u.p.advance_status != ADVANCE_NO)
 	{
 	  generate_error (&dtp->common, LIBERROR_MISSING_OPTION,
@@ -2653,7 +2869,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	= !(cf & IOPARM_DT_HAS_SIGN) ? SIGN_UNSPECIFIED :
 	  find_option (&dtp->common, dtp->sign, dtp->sign_len, sign_opt,
 			"Bad SIGN parameter in data transfer statement");
-  
+
   if (dtp->u.p.sign_status == SIGN_UNSPECIFIED)
 	dtp->u.p.sign_status = dtp->u.p.current_unit->flags.sign;
 
@@ -2663,7 +2879,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	  find_option (&dtp->common, dtp->blank, dtp->blank_len,
 			blank_opt,
 			"Bad BLANK parameter in data transfer statement");
-  
+
   if (dtp->u.p.blank_status == BLANK_UNSPECIFIED)
 	dtp->u.p.blank_status = dtp->u.p.current_unit->flags.blank;
 
@@ -2703,28 +2919,28 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
   /* Check the POS= specifier: that it is in range and that it is used with a
      unit that has been connected for STREAM access. F2003 9.5.1.10.  */
-  
+
   if (((cf & IOPARM_DT_HAS_POS) != 0))
     {
       if (is_stream_io (dtp))
         {
-          
+
           if (dtp->pos <= 0)
             {
               generate_error (&dtp->common, LIBERROR_BAD_OPTION,
                               "POS=specifier must be positive");
               return;
             }
-          
+
           if (dtp->pos >= dtp->u.p.current_unit->maxrec)
             {
               generate_error (&dtp->common, LIBERROR_BAD_OPTION,
                               "POS=specifier too large");
               return;
             }
-          
+
           dtp->rec = dtp->pos;
-          
+
           if (dtp->u.p.mode == READING)
             {
               /* Reset the endfile flag; if we hit EOF during reading
@@ -2732,7 +2948,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
                  rather than worrying about it here.  */
               dtp->u.p.current_unit->endfile = NO_ENDFILE;
             }
-         
+
           if (dtp->pos != dtp->u.p.current_unit->strm_pos)
             {
               fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
@@ -2752,7 +2968,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
           return;
         }
     }
-  
+
 
   /* Sanity checks on the record number.  */
   if ((cf & IOPARM_DT_HAS_REC) != 0)
@@ -2789,11 +3005,11 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
       /* Position the file.  */
       if (sseek (dtp->u.p.current_unit->s, (gfc_offset) (dtp->rec - 1)
-                 * dtp->u.p.current_unit->recl, SEEK_SET) < 0)
-        {
-          generate_error (&dtp->common, LIBERROR_OS, NULL);
-          return;
-        }
+		 * dtp->u.p.current_unit->recl, SEEK_SET) < 0)
+	{
+	  generate_error (&dtp->common, LIBERROR_OS, NULL);
+	  return;
+	}
 
       /* TODO: This is required to maintain compatibility between
          4.3 and 4.4 runtime. Remove when ABI changes from 4.3 */
@@ -2822,7 +3038,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   dtp->u.p.max_pos = dtp->u.p.current_unit->saved_pos;
 
   pre_position (dtp);
-  
+
 
   /* Set up the subroutine that will handle the transfers.  */
 
@@ -2834,8 +3050,9 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	{
 	  if ((cf & IOPARM_DT_LIST_FORMAT) != 0)
 	    {
-	        dtp->u.p.last_char = EOF - 1;
-		dtp->u.p.transfer = list_formatted_read;
+	      if (dtp->u.p.current_unit->child_dtio  == 0)
+	        dtp->u.p.current_unit->last_char = EOF - 1;
+	      dtp->u.p.transfer = list_formatted_read;
 	    }
 	  else
 	    dtp->u.p.transfer = formatted_transfer;
@@ -2896,14 +3113,14 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
    returns the index of the last element of the array, and also returns
    starting record, where the first I/O goes to (necessary in case of
    negative strides).  */
-   
+
 gfc_offset
 init_loop_spec (gfc_array_char *desc, array_loop_spec *ls,
 		gfc_offset *start_record)
 {
   int rank = GFC_DESCRIPTOR_RANK(desc);
   int i;
-  gfc_offset index; 
+  gfc_offset index;
   int empty;
 
   empty = 0;
@@ -2916,7 +3133,7 @@ init_loop_spec (gfc_array_char *desc, array_loop_spec *ls,
       ls[i].start = GFC_DESCRIPTOR_LBOUND(desc,i);
       ls[i].end = GFC_DESCRIPTOR_UBOUND(desc,i);
       ls[i].step = GFC_DESCRIPTOR_STRIDE(desc,i);
-      empty = empty || (GFC_DESCRIPTOR_UBOUND(desc,i) 
+      empty = empty || (GFC_DESCRIPTOR_UBOUND(desc,i)
 			< GFC_DESCRIPTOR_LBOUND(desc,i));
 
       if (GFC_DESCRIPTOR_STRIDE(desc,i) > 0)
@@ -2941,13 +3158,13 @@ init_loop_spec (gfc_array_char *desc, array_loop_spec *ls,
 
 /* Determine the index to the next record in an internal unit array by
    by incrementing through the array_loop_spec.  */
-   
+
 gfc_offset
 next_array_record (st_parameter_dt *dtp, array_loop_spec *ls, int *finished)
 {
   int i, carry;
   gfc_offset index;
-  
+
   carry = 1;
   index = 0;
 
@@ -2992,13 +3209,13 @@ skip_record (st_parameter_dt *dtp, ssize_t bytes)
 
   /* Direct access files do not generate END conditions,
      only I/O errors.  */
-  if (sseek (dtp->u.p.current_unit->s, 
+  if (sseek (dtp->u.p.current_unit->s,
 	     dtp->u.p.current_unit->bytes_left_subrecord, SEEK_CUR) < 0)
     {
       /* Seeking failed, fall back to seeking by reading data.  */
       while (dtp->u.p.current_unit->bytes_left_subrecord > 0)
 	{
-	  rlength = 
+	  rlength =
 	    (MAX_READ < dtp->u.p.current_unit->bytes_left_subrecord) ?
 	    MAX_READ : dtp->u.p.current_unit->bytes_left_subrecord;
 
@@ -3066,7 +3283,7 @@ next_record_r (st_parameter_dt *dtp, int done)
     /* No records in unformatted STREAM I/O.  */
     case UNFORMATTED_STREAM:
       return;
-    
+
     case UNFORMATTED_SEQUENTIAL:
       next_record_r_unf (dtp, 1);
       dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
@@ -3107,13 +3324,13 @@ next_record_r (st_parameter_dt *dtp, int done)
 		}
 	      dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
 	    }
-	  else  
+	  else
 	    {
 	      bytes_left = (int) dtp->u.p.current_unit->bytes_left;
-	      bytes_left = min_off (bytes_left, 
+	      bytes_left = min_off (bytes_left,
 		      ssize (dtp->u.p.current_unit->s)
 		      - stell (dtp->u.p.current_unit->s));
-	      if (sseek (dtp->u.p.current_unit->s, 
+	      if (sseek (dtp->u.p.current_unit->s,
 			 bytes_left, SEEK_CUR) < 0)
 	        {
 		  generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
@@ -3121,16 +3338,16 @@ next_record_r (st_parameter_dt *dtp, int done)
 		}
 	      dtp->u.p.current_unit->bytes_left
 		= dtp->u.p.current_unit->recl;
-	    } 
+	    }
 	  break;
 	}
-      else 
+      else
 	{
 	  do
 	    {
               errno = 0;
               cc = fbuf_getc (dtp->u.p.current_unit);
-	      if (cc == EOF) 
+	      if (cc == EOF)
 		{
                   if (errno != 0)
                     generate_error (&dtp->common, LIBERROR_OS, NULL);
@@ -3144,10 +3361,10 @@ next_record_r (st_parameter_dt *dtp, int done)
 		    }
 		  break;
                 }
-	      
+
 	      if (is_stream_io (dtp))
 		dtp->u.p.current_unit->strm_pos++;
-              
+
               p = (char) cc;
 	    }
 	  while (p != '\n');
@@ -3240,7 +3457,7 @@ next_record_w_unf (st_parameter_dt *dtp, int next_subrecord)
   /* Seek to the head and overwrite the bogus length with the real
      length.  */
 
-  if (unlikely (sseek (dtp->u.p.current_unit->s, - m - record_marker, 
+  if (unlikely (sseek (dtp->u.p.current_unit->s, - m - record_marker,
 		       SEEK_CUR) < 0))
     goto io_error;
 
@@ -3301,7 +3518,7 @@ sset (stream * s, int c, ssize_t nbyte)
 	return trans;
       bytes_left -= trans;
     }
-	       
+
   return nbyte - bytes_left;
 }
 
@@ -3330,8 +3547,8 @@ next_record_w (st_parameter_dt *dtp, int done)
 
       fbuf_seek (dtp->u.p.current_unit, 0, SEEK_END);
       fbuf_flush (dtp->u.p.current_unit, WRITING);
-      if (sset (dtp->u.p.current_unit->s, ' ', 
-		dtp->u.p.current_unit->bytes_left) 
+      if (sset (dtp->u.p.current_unit->s, ' ',
+		dtp->u.p.current_unit->bytes_left)
 	  != dtp->u.p.current_unit->bytes_left)
 	goto io_error;
 
@@ -3362,7 +3579,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 	      int finished;
 
 	      length = (int) dtp->u.p.current_unit->bytes_left;
-	      
+
 	      /* If the farthest position reached is greater than current
 	      position, adjust the position and set length to pad out
 	      whats left.  Otherwise just pad whats left.
@@ -3372,7 +3589,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 	      if (max_pos > m)
 		{
 		  length = (int) (max_pos - m);
-		  if (sseek (dtp->u.p.current_unit->s, 
+		  if (sseek (dtp->u.p.current_unit->s,
 			     length, SEEK_CUR) < 0)
 		    {
 		      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
@@ -3399,7 +3616,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 					  &finished);
 	      if (finished)
 		dtp->u.p.current_unit->endfile = AT_ENDFILE;
-	      
+
 	      /* Now seek to this record */
 	      record = record * dtp->u.p.current_unit->recl;
 
@@ -3425,7 +3642,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 		  if (max_pos > m)
 		    {
 		      length = (int) (max_pos - m);
-		      if (sseek (dtp->u.p.current_unit->s, 
+		      if (sseek (dtp->u.p.current_unit->s,
 				 length, SEEK_CUR) < 0)
 		        {
 			  generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
@@ -3540,6 +3757,18 @@ finalize_transfer (st_parameter_dt *dtp)
 {
   GFC_INTEGER_4 cf = dtp->common.flags;
 
+  if ((dtp->u.p.ionml != NULL)
+      && (cf & IOPARM_DT_HAS_NAMELIST_NAME) != 0)
+    {
+       if ((cf & IOPARM_DT_NAMELIST_READ_MODE) != 0)
+	 namelist_read (dtp);
+       else
+	 namelist_write (dtp);
+    }
+
+  if (dtp->u.p.current_unit && (dtp->u.p.current_unit->child_dtio  > 0))
+    return;
+
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
     *dtp->size = dtp->u.p.size_used;
 
@@ -3554,15 +3783,6 @@ finalize_transfer (st_parameter_dt *dtp)
       if (dtp->u.p.current_unit && current_mode (dtp) == UNFORMATTED_SEQUENTIAL)
 	dtp->u.p.current_unit->current_record = 0;
       goto done;
-    }
-
-  if ((dtp->u.p.ionml != NULL)
-      && (cf & IOPARM_DT_HAS_NAMELIST_NAME) != 0)
-    {
-       if ((cf & IOPARM_DT_NAMELIST_READ_MODE) != 0)
-	 namelist_read (dtp);
-       else
-	 namelist_write (dtp);
     }
 
   dtp->u.p.transfer = NULL;
@@ -3607,7 +3827,7 @@ finalize_transfer (st_parameter_dt *dtp)
 	  write_x (dtp, dtp->u.p.skips, dtp->u.p.pending_spaces);
 	  tmp = (int)(dtp->u.p.current_unit->recl
 		      - dtp->u.p.current_unit->bytes_left);
-	  dtp->u.p.max_pos = 
+	  dtp->u.p.max_pos =
 	    dtp->u.p.max_pos > tmp ? dtp->u.p.max_pos : tmp;
 	  dtp->u.p.skips = 0;
 	}
@@ -3618,9 +3838,9 @@ finalize_transfer (st_parameter_dt *dtp)
       fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
       goto done;
     }
-  else if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED 
+  else if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED
            && dtp->u.p.mode == WRITING && !is_internal_unit (dtp))
-      fbuf_seek (dtp->u.p.current_unit, 0, SEEK_END);    
+      fbuf_seek (dtp->u.p.current_unit, 0, SEEK_END);
 
   dtp->u.p.current_unit->saved_pos = 0;
 
@@ -3648,9 +3868,9 @@ finalize_transfer (st_parameter_dt *dtp)
    data transfer, it just updates the length counter.  */
 
 static void
-iolength_transfer (st_parameter_dt *dtp, bt type __attribute__((unused)), 
+iolength_transfer (st_parameter_dt *dtp, bt type __attribute__((unused)),
 		   void *dest __attribute__ ((unused)),
-		   int kind __attribute__((unused)), 
+		   int kind __attribute__((unused)),
 		   size_t size, size_t nelems)
 {
   if ((dtp->common.flags & IOPARM_DT_HAS_IOLENGTH) != 0)
@@ -3722,7 +3942,7 @@ void
 st_read_done (st_parameter_dt *dtp)
 {
   finalize_transfer (dtp);
-  
+
   if (is_internal_unit (dtp) || dtp->u.p.format_not_saved)
     {
       free_format_data (dtp->u.p.fmt);
@@ -3735,7 +3955,7 @@ st_read_done (st_parameter_dt *dtp)
     unlock_unit (dtp->u.p.current_unit);
 
   free_internal_unit (dtp);
-  
+
   library_end ();
 }
 
@@ -3759,8 +3979,9 @@ st_write_done (st_parameter_dt *dtp)
 
   /* Deal with endfile conditions associated with sequential files.  */
 
-  if (dtp->u.p.current_unit != NULL 
-      && dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
+  if (dtp->u.p.current_unit != NULL
+      && dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL
+      && dtp->u.p.current_unit->child_dtio == 0)
     switch (dtp->u.p.current_unit->endfile)
       {
       case AT_ENDFILE:		/* Remain at the endfile record.  */
@@ -3773,7 +3994,7 @@ st_write_done (st_parameter_dt *dtp)
       case NO_ENDFILE:
 	/* Get rid of whatever is after this record.  */
         if (!is_internal_unit (dtp))
-          unit_truncate (dtp->u.p.current_unit, 
+          unit_truncate (dtp->u.p.current_unit,
                          stell (dtp->u.p.current_unit->s),
                          &dtp->common);
 	dtp->u.p.current_unit->endfile = AT_ENDFILE;
@@ -3790,7 +4011,7 @@ st_write_done (st_parameter_dt *dtp)
 
   if (dtp->u.p.current_unit != NULL)
     unlock_unit (dtp->u.p.current_unit);
-  
+
   free_internal_unit (dtp);
 
   library_end ();
@@ -3807,15 +4028,10 @@ st_wait (st_parameter_wait *wtp __attribute__((unused)))
 /* Receives the scalar information for namelist objects and stores it
    in a linked list of namelist_info types.  */
 
-extern void st_set_nml_var (st_parameter_dt *dtp, void *, char *,
-			    GFC_INTEGER_4, gfc_charlen_type, GFC_INTEGER_4);
-export_proto(st_set_nml_var);
-
-
-void
-st_set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
-		GFC_INTEGER_4 len, gfc_charlen_type string_length,
-		GFC_INTEGER_4 dtype)
+static void
+set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
+	     GFC_INTEGER_4 len, gfc_charlen_type string_length,
+	     GFC_INTEGER_4 dtype, void *dtio_sub, void *vtable)
 {
   namelist_info *t1 = NULL;
   namelist_info *nml;
@@ -3824,6 +4040,8 @@ st_set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
   nml = (namelist_info*) xmalloc (sizeof (namelist_info));
 
   nml->mem_pos = var_addr;
+  nml->dtio_sub = dtio_sub;
+  nml->vtable = vtable;
 
   nml->var_name = (char*) xmalloc (var_name_len + 1);
   memcpy (nml->var_name, var_name, var_name_len);
@@ -3861,6 +4079,37 @@ st_set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
       for (t1 = dtp->u.p.ionml; t1->next; t1 = t1->next);
       t1->next = nml;
     }
+}
+
+extern void st_set_nml_var (st_parameter_dt *dtp, void *, char *,
+			    GFC_INTEGER_4, gfc_charlen_type, GFC_INTEGER_4);
+export_proto(st_set_nml_var);
+
+void
+st_set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
+		GFC_INTEGER_4 len, gfc_charlen_type string_length,
+		GFC_INTEGER_4 dtype)
+{
+  set_nml_var (dtp, var_addr, var_name, len, string_length,
+	       dtype, NULL, NULL);
+}
+
+
+/* Essentially the same as previous but carrying the dtio procedure
+   and the vtable as additional arguments.  */
+extern void st_set_nml_dtio_var (st_parameter_dt *dtp, void *, char *,
+				 GFC_INTEGER_4, gfc_charlen_type, GFC_INTEGER_4,
+				 void *, void *);
+export_proto(st_set_nml_dtio_var);
+
+
+void
+st_set_nml_dtio_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
+		     GFC_INTEGER_4 len, gfc_charlen_type string_length,
+		     GFC_INTEGER_4 dtype, void *dtio_sub, void *vtable)
+{
+  set_nml_var (dtp, var_addr, var_name, len, string_length,
+	       dtype, dtio_sub, vtable);
 }
 
 /* Store the dimensional information for the namelist object.  */
@@ -3911,7 +4160,7 @@ hit_eof (st_parameter_dt * dtp)
         else
           dtp->u.p.current_unit->endfile = AT_ENDFILE;
 	break;
-        
+
       case AFTER_ENDFILE:
 	generate_error (&dtp->common, LIBERROR_ENDFILE, NULL);
 	dtp->u.p.current_unit->current_record = 0;

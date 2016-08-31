@@ -1121,7 +1121,7 @@ tempfile_open (const char *tempdir, char **fname)
      )
     slash = "";
 
-  // Take care that the template is longer in the mktemp() branch.
+  /* Take care that the template is longer in the mktemp() branch.  */
   char * template = xmalloc (tempdirlen + 23);
 
 #ifdef HAVE_MKSTEMP
