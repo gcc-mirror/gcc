@@ -136,6 +136,7 @@ contains
 
   function pop_integer(this) result(item)
     class(integer_stack) :: this
+    class(stack), pointer :: dealloc_item
     integer item
 
     if (this%empty()) then
@@ -149,8 +150,9 @@ contains
           class default
           stop 'Error #1! pop_integer encountered non-integer stack item'
        end select
+       dealloc_item => this%next
        this%next => top%next
-       deallocate(top)
+       deallocate(dealloc_item)
        class default
        stop 'Error #2! pop_integer encountered non-integer_stack item'
     end select
