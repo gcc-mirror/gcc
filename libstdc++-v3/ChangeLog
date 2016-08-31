@@ -1,5 +1,9 @@
 2016-08-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_tree.h (_Rb_tree::operator=(_Rb_tree&&)): Move
+	comparison object.
+	* testsuite/23_containers/set/move_comparison.cc: New test.
+
 	* testsuite/20_util/enable_shared_from_this/members/weak_from_this.cc:
 	New test.
 
