@@ -120,6 +120,23 @@ selftest::assert_str_contains (const location &loc,
 	 desc_haystack, desc_needle, val_haystack, val_needle);
 }
 
+/* Constructor.  Generate a name for the file.  */
+
+selftest::named_temp_file::named_temp_file (const char *suffix)
+{
+  m_filename = make_temp_file (suffix);
+  ASSERT_NE (m_filename, NULL);
+}
+
+/* Destructor.  Delete the tempfile.  */
+
+selftest::named_temp_file::~named_temp_file ()
+{
+  unlink (m_filename);
+  diagnostics_file_cache_forcibly_evict_file (m_filename);
+  free (m_filename);
+}
+
 /* Constructor.  Create a tempfile using SUFFIX, and write CONTENT to
    it.  Abort if anything goes wrong, using LOC as the effective
    location in the problem report.  */
@@ -127,25 +144,14 @@ selftest::assert_str_contains (const location &loc,
 selftest::temp_source_file::temp_source_file (const location &loc,
 					      const char *suffix,
 					      const char *content)
+: named_temp_file (suffix)
 {
-  m_filename = make_temp_file (suffix);
-  ASSERT_NE (m_filename, NULL);
-
-  FILE *out = fopen (m_filename, "w");
+  FILE *out = fopen (get_filename (), "w");
   if (!out)
     ::selftest::fail_formatted (loc, "unable to open tempfile: %s",
-				m_filename);
+				get_filename ());
   fprintf (out, "%s", content);
   fclose (out);
-}
-
-/* Destructor.  Delete the tempfile.  */
-
-selftest::temp_source_file::~temp_source_file ()
-{
-  unlink (m_filename);
-  diagnostics_file_cache_forcibly_evict_file (m_filename);
-  free (m_filename);
 }
 
 /* Selftests for the selftest system itself.  */
@@ -167,12 +173,27 @@ test_assertions ()
   ASSERT_STR_CONTAINS ("foo bar baz", "bar");
 }
 
+/* Verify named_temp_file.  */
+
+static void
+test_named_temp_file ()
+{
+  named_temp_file t (".txt");
+  FILE *f = fopen (t.get_filename (), "w");
+  if (!f)
+    selftest::fail_formatted (SELFTEST_LOCATION,
+			      "unable to open %s for writing",
+			      t.get_filename ());
+  fclose (f);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 selftest_c_tests ()
 {
   test_assertions ();
+  test_named_temp_file ();
 }
 
 } // namespace selftest
