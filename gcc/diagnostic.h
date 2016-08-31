@@ -109,7 +109,7 @@ struct diagnostic_context
   int caret_max_width;
 
   /* Character used for caret diagnostics.  */
-  char caret_chars[rich_location::MAX_RANGES];
+  char caret_chars[rich_location::STATICALLY_ALLOCATED_RANGES];
 
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */

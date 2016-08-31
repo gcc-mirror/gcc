@@ -147,7 +147,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
     context->classify_diagnostic[i] = DK_UNSPECIFIED;
   context->show_caret = false;
   diagnostic_set_caret_max_width (context, pp_line_cutoff (context->printer));
-  for (i = 0; i < rich_location::MAX_RANGES; i++)
+  for (i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
     context->caret_chars[i] = '^';
   context->show_option_requested = false;
   context->abort_on_error = false;
