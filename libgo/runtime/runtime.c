@@ -272,7 +272,14 @@ runtime_tickspersecond(void)
 void
 runtime_mpreinit(M *mp)
 {
-	mp->gsignal = runtime_malg(32*1024, (byte**)&mp->gsignalstack, &mp->gsignalstacksize);	// OS X wants >=8K, Linux >=2K
+	int32 stacksize = 32 * 1024;	// OS X wants >=8K, Linux >=2K
+
+#ifdef SIGSTKSZ
+	if(stacksize < SIGSTKSZ)
+		stacksize = SIGSTKSZ;
+#endif
+
+	mp->gsignal = runtime_malg(stacksize, (byte**)&mp->gsignalstack, &mp->gsignalstacksize);
 	mp->gsignal->m = mp;
 }
 
