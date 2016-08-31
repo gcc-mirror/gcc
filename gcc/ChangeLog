@@ -1,3 +1,8 @@
+2016-08-31  Ilya Verbin  <iverbin@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Fix detection of
+	AVX512IFMA.
+
 2016-08-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (class layout): Add field m_fixit_hints.
