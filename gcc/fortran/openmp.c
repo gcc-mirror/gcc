@@ -3946,12 +3946,33 @@ resolve_omp_atomic (gfc_code *code)
     = (gfc_omp_atomic_op) (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK);
 
   code = code->block->next;
-  gcc_assert (code->op == EXEC_ASSIGN);
-  gcc_assert (((aop != GFC_OMP_ATOMIC_CAPTURE) && code->next == NULL)
-	      || ((aop == GFC_OMP_ATOMIC_CAPTURE)
-		  && code->next != NULL
-		  && code->next->op == EXEC_ASSIGN
-		  && code->next->next == NULL));
+  /* resolve_blocks asserts this is initially EXEC_ASSIGN.
+     If it changed to EXEC_NOP, assume an error has been emitted already.  */
+  if (code->op == EXEC_NOP)
+    return;
+  if (code->op != EXEC_ASSIGN)
+    {
+    unexpected:
+      gfc_error ("unexpected !$OMP ATOMIC expression at %L", &code->loc);
+      return;
+    }
+  if (aop != GFC_OMP_ATOMIC_CAPTURE)
+    {
+      if (code->next != NULL)
+	goto unexpected;
+    }
+  else
+    {
+      if (code->next == NULL)
+	goto unexpected;
+      if (code->next->op == EXEC_NOP)
+	return;
+      if (code->next->op != EXEC_ASSIGN || code->next->next)
+	{
+	  code = code->next;
+	  goto unexpected;
+	}
+    }
 
   if (code->expr1->expr_type != EXPR_VARIABLE
       || code->expr1->symtree == NULL
