@@ -1,3 +1,7 @@
+2016-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Binaries): www.opencsw.org now uses https.
+
 2016-08-31  Jakub Sejdak  <jakub.sejdak@phoesys.com>
 
 	* config.gcc: Add support for arm*-*-phoenix* targets.
