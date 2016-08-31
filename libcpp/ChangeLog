@@ -1,3 +1,12 @@
+2016-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class fixit_remove): Remove stray decl.
+	(fixit_hint::affects_line_p): Make const.
+	(fixit_insert::affects_line_p): Likewise.
+	(fixit_replace::affects_line_p): Likewise.
+	* line-map.c (fixit_insert::affects_line_p): Likewise.
+	(fixit_replace::affects_line_p): Likewise.
+
 2016-08-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (class semi_embedded_vec): New class.
