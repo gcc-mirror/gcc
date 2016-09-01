@@ -397,7 +397,7 @@
 
 (define_insn "*save_world"
  [(match_parallel 0 "save_world_operation"
-                  [(clobber (reg:SI 65))
+                  [(clobber (reg:SI LR_REGNO))
                    (use (match_operand:SI 1 "call_operand" "s"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"         
  "bl %z1"
@@ -407,7 +407,7 @@
 (define_insn "*restore_world"
  [(match_parallel 0 "restore_world_operation"
                   [(return)
-		   (use (reg:SI 65))
+		   (use (reg:SI LR_REGNO))
                    (use (match_operand:SI 1 "call_operand" "s"))
                    (clobber (match_operand:SI 2 "gpc_reg_operand" "=r"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"
@@ -421,7 +421,7 @@
 ;; to describe the operation to dwarf2out_frame_debug_expr.
 (define_insn "*save_vregs_<mode>_r11"
   [(match_parallel 0 "any_parallel_operand"
-     [(clobber (reg:P 65))
+     [(clobber (reg:P LR_REGNO))
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 11))
       (use (reg:P 0))
@@ -435,7 +435,7 @@
 
 (define_insn "*save_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
-     [(clobber (reg:P 65))
+     [(clobber (reg:P LR_REGNO))
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 12))
       (use (reg:P 0))
@@ -449,7 +449,7 @@
 
 (define_insn "*restore_vregs_<mode>_r11"
   [(match_parallel 0 "any_parallel_operand"
-     [(clobber (reg:P 65))
+     [(clobber (reg:P LR_REGNO))
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 11))
       (use (reg:P 0))
@@ -463,7 +463,7 @@
 
 (define_insn "*restore_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
-     [(clobber (reg:P 65))
+     [(clobber (reg:P LR_REGNO))
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 12))
       (use (reg:P 0))
