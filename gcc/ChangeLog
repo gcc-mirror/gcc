@@ -1,3 +1,9 @@
+2016-09-01  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_legitimize_address_displacement):
+	New function.
+	(TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT): Define.
+
 2016-09-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (*ands<mode>_compare0): New pattern.

@@ -4191,6 +4191,24 @@ aarch64_legitimate_address_p (machine_mode mode, rtx x,
   return aarch64_classify_address (&addr, x, mode, outer_code, strict_p);
 }
 
+/* Split an out-of-range address displacement into a base and offset.
+   Use 4KB range for 1- and 2-byte accesses and a 16KB range otherwise
+   to increase opportunities for sharing the base address of different sizes.
+   For TI/TFmode and unaligned accesses use a 256-byte range.  */
+static bool
+aarch64_legitimize_address_displacement (rtx *disp, rtx *off, machine_mode mode)
+{
+  HOST_WIDE_INT mask = GET_MODE_SIZE (mode) < 4 ? 0xfff : 0x3fff;
+
+  if (mode == TImode || mode == TFmode ||
+      (INTVAL (*disp) & (GET_MODE_SIZE (mode) - 1)) != 0)
+    mask = 0xff;
+
+  *off = GEN_INT (INTVAL (*disp) & ~mask);
+  *disp = GEN_INT (INTVAL (*disp) & mask);
+  return true;
+}
+
 /* Return TRUE if rtx X is immediate constant 0.0 */
 bool
 aarch64_float_const_zero_rtx_p (rtx x)
@@ -14134,6 +14152,10 @@ aarch64_optab_supported_p (int op, machine_mode mode1, machine_mode,
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P aarch64_legitimate_constant_p
+
+#undef TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT
+#define TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT \
+  aarch64_legitimize_address_displacement
 
 #undef TARGET_LIBGCC_CMP_RETURN_MODE
 #define TARGET_LIBGCC_CMP_RETURN_MODE aarch64_libgcc_cmp_return_mode
