@@ -3811,6 +3811,18 @@
   [(set_attr "type" "alus_imm")]
 )
 
+(define_insn "*ands<mode>_compare0"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (zero_extend:GPI (match_operand:SHORT 1 "register_operand" "r"))
+	 (const_int 0)))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(zero_extend:GPI (match_dup 1)))]
+  ""
+  "ands\\t%<GPI:w>0, %<GPI:w>1, <short_mask>"
+  [(set_attr "type" "alus_imm")]
+)
+
 (define_insn "*and<mode>3nr_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ

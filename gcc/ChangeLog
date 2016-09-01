@@ -1,3 +1,9 @@
+2016-09-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (*ands<mode>_compare0): New pattern.
+	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Return CC_NZmode
+	for comparisons of integer ZERO_EXTEND against zero.
+
 2016-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Also disable the

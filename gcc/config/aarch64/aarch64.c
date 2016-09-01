@@ -4264,6 +4264,14 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
       && (GET_MODE (x) == HImode || GET_MODE (x) == QImode))
     return CC_NZmode;
 
+  /* Similarly, comparisons of zero_extends from shorter modes can
+     be performed using an ANDS with an immediate mask.  */
+  if (y == const0_rtx && GET_CODE (x) == ZERO_EXTEND
+      && (GET_MODE (x) == SImode || GET_MODE (x) == DImode)
+      && (GET_MODE (XEXP (x, 0)) == HImode || GET_MODE (XEXP (x, 0)) == QImode)
+      && (code == EQ || code == NE))
+    return CC_NZmode;
+
   if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
       && y == const0_rtx
       && (code == EQ || code == NE || code == LT || code == GE)
