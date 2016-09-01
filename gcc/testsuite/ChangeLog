@@ -1,6 +1,11 @@
 2016-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77259
+	* g++.dg/ipa/devirt-52.C: New test.
+
 	2016-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/71910
