@@ -1,3 +1,8 @@
+2016-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-inline-analysis.c (param_change_prob): Get to the base object
+	first in all cases.
+
 2016-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*restore_gpregs_<mode>_r11,

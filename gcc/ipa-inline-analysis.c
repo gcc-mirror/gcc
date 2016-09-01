@@ -2183,28 +2183,33 @@ param_change_prob (gimple *stmt, int i)
 {
   tree op = gimple_call_arg (stmt, i);
   basic_block bb = gimple_bb (stmt);
-  tree base;
 
-  /* Global invariants neve change.  */
-  if (is_gimple_min_invariant (op))
+  if (TREE_CODE (op) == WITH_SIZE_EXPR)
+    op = TREE_OPERAND (op, 0);
+
+  tree base = get_base_address (op);
+
+  /* Global invariants never change.  */
+  if (is_gimple_min_invariant (base))
     return 0;
+
   /* We would have to do non-trivial analysis to really work out what
      is the probability of value to change (i.e. when init statement
      is in a sibling loop of the call). 
 
      We do an conservative estimate: when call is executed N times more often
      than the statement defining value, we take the frequency 1/N.  */
-  if (TREE_CODE (op) == SSA_NAME)
+  if (TREE_CODE (base) == SSA_NAME)
     {
       int init_freq;
 
       if (!bb->frequency)
 	return REG_BR_PROB_BASE;
 
-      if (SSA_NAME_IS_DEFAULT_DEF (op))
+      if (SSA_NAME_IS_DEFAULT_DEF (base))
 	init_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
       else
-	init_freq = gimple_bb (SSA_NAME_DEF_STMT (op))->frequency;
+	init_freq = gimple_bb (SSA_NAME_DEF_STMT (base))->frequency;
 
       if (!init_freq)
 	init_freq = 1;
@@ -2213,9 +2218,7 @@ param_change_prob (gimple *stmt, int i)
       else
 	return REG_BR_PROB_BASE;
     }
-
-  base = get_base_address (op);
-  if (base)
+  else
     {
       ao_ref refd;
       int max;
@@ -2256,7 +2259,6 @@ param_change_prob (gimple *stmt, int i)
       else
 	return REG_BR_PROB_BASE;
     }
-  return REG_BR_PROB_BASE;
 }
 
 /* Find whether a basic block BB is the final block of a (half) diamond CFG
