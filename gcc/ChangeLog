@@ -1,3 +1,12 @@
+2016-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/71910
+	* tree-cfg.c (execute_fixup_cfg): Add node variable, use it.  Before inlining,
+	add cgraph edge for the added __builtin_unreachable call.
+
 2016-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (SPU Built-in Functions): Remove stale
