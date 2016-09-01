@@ -1,3 +1,8 @@
+2016-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* c-typeck.c (composite_type): Add FALLTHRU comment.
+
 2016-08-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_declaration_or_fndef): Add trailing space

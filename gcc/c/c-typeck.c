@@ -605,8 +605,8 @@ composite_type (tree t1, tree t2)
 
 	t1 = build_function_type (valtype, newargs);
 	t1 = qualify_type (t1, t2);
-	/* ... falls through ...  */
       }
+      /* FALLTHRU */
 
     default:
       return build_type_attribute_variant (t1, attributes);

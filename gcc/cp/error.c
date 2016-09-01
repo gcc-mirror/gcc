@@ -575,7 +575,7 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 
     default:
       pp_unsupported_tree (pp, t);
-      /* Fall through to error.  */
+      /* Fall through.  */
 
     case ERROR_MARK:
       pp_string (pp, M_("<type error>"));
@@ -1276,7 +1276,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 
     default:
       pp_unsupported_tree (pp, t);
-      /* Fall through to error.  */
+      /* Fall through.  */
 
     case ERROR_MARK:
       pp_string (pp, M_("<declaration error>"));
@@ -2777,7 +2777,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	  `report_error_function'.  That could cause an infinite loop.  */
     default:
       pp_unsupported_tree (pp, t);
-      /* fall through to ERROR_MARK...  */
+      /* Fall through.  */
     case ERROR_MARK:
       pp_string (pp, M_("<expression error>"));
       break;
