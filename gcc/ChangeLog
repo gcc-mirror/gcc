@@ -1,3 +1,9 @@
+2016-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md: Use CR6_REGNO instead of 74 throughout.
+	* config/rs6000/vector.md: Ditto.
+	* config/rs6000/vsx.md: Ditto.
+
 2016-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-inline-analysis.c (param_change_prob): Get to the base object

@@ -670,7 +670,7 @@
 ;; setting CR6 to indicate a combined status
 (define_expand "vector_eq_<mode>_p"
   [(parallel
-    [(set (reg:CC 74)
+    [(set (reg:CC CR6_REGNO)
 	  (unspec:CC [(eq:CC (match_operand:VEC_A 1 "vlogical_operand" "")
 			     (match_operand:VEC_A 2 "vlogical_operand" ""))]
 		     UNSPEC_PREDICATE))
@@ -682,7 +682,7 @@
 
 (define_expand "vector_gt_<mode>_p"
   [(parallel
-    [(set (reg:CC 74)
+    [(set (reg:CC CR6_REGNO)
 	  (unspec:CC [(gt:CC (match_operand:VEC_A 1 "vlogical_operand" "")
 			     (match_operand:VEC_A 2 "vlogical_operand" ""))]
 		     UNSPEC_PREDICATE))
@@ -694,7 +694,7 @@
 
 (define_expand "vector_ge_<mode>_p"
   [(parallel
-    [(set (reg:CC 74)
+    [(set (reg:CC CR6_REGNO)
 	  (unspec:CC [(ge:CC (match_operand:VEC_F 1 "vfloat_operand" "")
 			     (match_operand:VEC_F 2 "vfloat_operand" ""))]
 		     UNSPEC_PREDICATE))
@@ -706,7 +706,7 @@
 
 (define_expand "vector_gtu_<mode>_p"
   [(parallel
-    [(set (reg:CC 74)
+    [(set (reg:CC CR6_REGNO)
 	  (unspec:CC [(gtu:CC (match_operand:VEC_I 1 "vint_operand" "")
 			      (match_operand:VEC_I 2 "vint_operand" ""))]
 		     UNSPEC_PREDICATE))
@@ -720,14 +720,14 @@
 
 (define_expand "cr6_test_for_zero"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(eq:SI (reg:CC 74)
+	(eq:SI (reg:CC CR6_REGNO)
 	       (const_int 0)))]
   "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
 (define_expand "cr6_test_for_zero_reverse"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(eq:SI (reg:CC 74)
+	(eq:SI (reg:CC CR6_REGNO)
 	       (const_int 0)))
    (set (match_dup 0)
 	(xor:SI (match_dup 0)
@@ -737,14 +737,14 @@
 
 (define_expand "cr6_test_for_lt"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(lt:SI (reg:CC 74)
+	(lt:SI (reg:CC CR6_REGNO)
 	       (const_int 0)))]
   "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
 (define_expand "cr6_test_for_lt_reverse"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(lt:SI (reg:CC 74)
+	(lt:SI (reg:CC CR6_REGNO)
 	       (const_int 0)))
    (set (match_dup 0)
 	(xor:SI (match_dup 0)

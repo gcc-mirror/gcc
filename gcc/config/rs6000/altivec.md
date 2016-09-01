@@ -2274,7 +2274,7 @@
 ;; Compare vectors producing a vector result and a predicate, setting CR6 to
 ;; indicate a combined status
 (define_insn "*altivec_vcmpequ<VI_char>_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(eq:CC (match_operand:VI2 1 "register_operand" "v")
 			   (match_operand:VI2 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2286,7 +2286,7 @@
   [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_vcmpgts<VI_char>_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(gt:CC (match_operand:VI2 1 "register_operand" "v")
 			   (match_operand:VI2 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2298,7 +2298,7 @@
   [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_vcmpgtu<VI_char>_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(gtu:CC (match_operand:VI2 1 "register_operand" "v")
 			    (match_operand:VI2 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2310,7 +2310,7 @@
   [(set_attr "type" "veccmpfx")])
 
 (define_insn "*altivec_vcmpeqfp_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(eq:CC (match_operand:V4SF 1 "register_operand" "v")
 			   (match_operand:V4SF 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2322,7 +2322,7 @@
   [(set_attr "type" "veccmp")])
 
 (define_insn "*altivec_vcmpgtfp_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(gt:CC (match_operand:V4SF 1 "register_operand" "v")
 			   (match_operand:V4SF 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2334,7 +2334,7 @@
   [(set_attr "type" "veccmp")])
 
 (define_insn "*altivec_vcmpgefp_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(ge:CC (match_operand:V4SF 1 "register_operand" "v")
 			   (match_operand:V4SF 2 "register_operand" "v"))]
 		   UNSPEC_PREDICATE))
@@ -2346,7 +2346,7 @@
   [(set_attr "type" "veccmp")])
 
 (define_insn "altivec_vcmpbfp_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(match_operand:V4SF 1 "register_operand" "v")
 		    (match_operand:V4SF 2 "register_operand" "v")]
 		   UNSPEC_VCMPBFP))
@@ -3634,7 +3634,7 @@
 		      (match_operand:V1TI 2 "register_operand" "")
 		      (match_operand:QI 3 "const_0_to_1_operand" "")]
 		     UNSPEC_BCD_ADD_SUB))
-   (clobber (reg:CCFP 74))]
+   (clobber (reg:CCFP CR6_REGNO))]
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
   [(set_attr "length" "4")
@@ -3646,7 +3646,7 @@
 ;; probably should be one that can go in the VMX (Altivec) registers, so we
 ;; can't use DDmode or DFmode.
 (define_insn "*bcd<bcd_add_sub>_test"
-  [(set (reg:CCFP 74)
+  [(set (reg:CCFP CR6_REGNO)
 	(compare:CCFP
 	 (unspec:V2DF [(match_operand:V1TI 1 "register_operand" "v")
 		       (match_operand:V1TI 2 "register_operand" "v")
@@ -3665,7 +3665,7 @@
 		      (match_operand:V1TI 2 "register_operand" "v")
 		      (match_operand:QI 3 "const_0_to_1_operand" "i")]
 		     UNSPEC_BCD_ADD_SUB))
-   (set (reg:CCFP 74)
+   (set (reg:CCFP CR6_REGNO)
 	(compare:CCFP
 	 (unspec:V2DF [(match_dup 1)
 		       (match_dup 2)
@@ -3699,7 +3699,7 @@
   [(set_attr "type" "integer")])
 
 (define_expand "bcd<bcd_add_sub>_<code>"
-  [(parallel [(set (reg:CCFP 74)
+  [(parallel [(set (reg:CCFP CR6_REGNO)
 		   (compare:CCFP
 		    (unspec:V2DF [(match_operand:V1TI 1 "register_operand" "")
 				  (match_operand:V1TI 2 "register_operand" "")
@@ -3708,7 +3708,7 @@
 		    (match_dup 4)))
 	      (clobber (match_scratch:V1TI 5 ""))])
    (set (match_operand:SI 0 "register_operand" "")
-	(BCD_TEST:SI (reg:CCFP 74)
+	(BCD_TEST:SI (reg:CCFP CR6_REGNO)
 		     (const_int 0)))]
   "TARGET_P8_VECTOR"
 {
@@ -3727,8 +3727,8 @@
 				 (match_operand:V1TI 2 "register_operand" "")
 				 (match_operand:QI 3 "const_0_to_1_operand" "")]
 				UNSPEC_BCD_ADD_SUB))
-	      (clobber (reg:CCFP 74))])
-   (parallel [(set (reg:CCFP 74)
+	      (clobber (reg:CCFP CR6_REGNO))])
+   (parallel [(set (reg:CCFP CR6_REGNO)
 		   (compare:CCFP
 		    (unspec:V2DF [(match_dup 1)
 				  (match_dup 2)
@@ -3742,7 +3742,7 @@
 				 (match_dup 2)
 				 (match_dup 3)]
 				UNSPEC_BCD_ADD_SUB))
-	      (set (reg:CCFP 74)
+	      (set (reg:CCFP CR6_REGNO)
 		   (compare:CCFP
 		    (unspec:V2DF [(match_dup 1)
 				  (match_dup 2)

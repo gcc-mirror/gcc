@@ -1499,7 +1499,7 @@
 ;; Compare vectors producing a vector result and a predicate, setting CR6 to
 ;; indicate a combined status
 (define_insn "*vsx_eq_<mode>_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC
 	 [(eq:CC (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,?<VSa>")
 		 (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,?<VSa>"))]
@@ -1512,7 +1512,7 @@
   [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_gt_<mode>_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC
 	 [(gt:CC (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,?<VSa>")
 		 (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,?<VSa>"))]
@@ -1525,7 +1525,7 @@
   [(set_attr "type" "<VStype_simple>")])
 
 (define_insn "*vsx_ge_<mode>_p"
-  [(set (reg:CC 74)
+  [(set (reg:CC CR6_REGNO)
 	(unspec:CC
 	 [(ge:CC (match_operand:VSX_F 1 "vsx_register_operand" "<VSr>,?<VSa>")
 		 (match_operand:VSX_F 2 "vsx_register_operand" "<VSr>,?<VSa>"))]
