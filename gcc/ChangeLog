@@ -1,3 +1,10 @@
+2016-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md
+	(define_insn "*return_and_restore_fpregs_aix_<mode>_r11"): Delete
+	the use of the link register.
+	(define_insn "*return_and_restore_fpregs_aix_<mode>_r1"): Ditto.
+
 2016-09-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Michael Meissner <meissner@linux.vnet.ibm.com>
 
