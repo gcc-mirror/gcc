@@ -5957,11 +5957,12 @@ ix86_option_override_internal (bool main_args_p,
   if (!(opts_set->x_target_flags & MASK_STV))
     opts->x_target_flags |= MASK_STV;
   /* Disable STV if -mpreferred-stack-boundary={2,3} or
-     -mincoming-stack-boundary={2,3} - the needed
+     -mincoming-stack-boundary={2,3} or -mstackrealign - the needed
      stack realignment will be extra cost the pass doesn't take into
      account and the pass can't realign the stack.  */
   if (ix86_preferred_stack_boundary < 128
-      || ix86_incoming_stack_boundary < 128)
+      || ix86_incoming_stack_boundary < 128
+      || opts->x_ix86_force_align_arg_pointer)
     opts->x_target_flags &= ~MASK_STV;
   if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL]
       && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
