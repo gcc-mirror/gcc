@@ -1,3 +1,8 @@
+2016-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt58.adb: New test.
+	* gnat.dg/opt58_pkg.ads: New helper.
+
 2016-09-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77436
