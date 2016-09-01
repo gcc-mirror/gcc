@@ -3552,7 +3552,9 @@ gfc_trans_omp_parallel (gfc_code *code)
   gfc_start_block (&block);
   omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 				       code->loc);
+  pushlevel ();
   stmt = gfc_trans_omp_code (code->block->next, true);
+  stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
 		     omp_clauses);
   gfc_add_expr_to_block (&block, stmt);
@@ -4060,7 +4062,9 @@ gfc_trans_omp_task (gfc_code *code)
   gfc_start_block (&block);
   omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 				       code->loc);
+  pushlevel ();
   stmt = gfc_trans_omp_code (code->block->next, true);
+  stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   stmt = build2_loc (input_location, OMP_TASK, void_type_node, stmt,
 		     omp_clauses);
   gfc_add_expr_to_block (&block, stmt);
@@ -4213,7 +4217,11 @@ gfc_trans_omp_target (gfc_code *code)
       = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_TARGET],
 			       code->loc);
   if (code->op == EXEC_OMP_TARGET)
-    stmt = gfc_trans_omp_code (code->block->next, true);
+    {
+      pushlevel ();
+      stmt = gfc_trans_omp_code (code->block->next, true);
+      stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
+    }
   else
     {
       pushlevel ();
