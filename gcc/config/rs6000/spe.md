@@ -3464,7 +3464,7 @@
 ;; Out-of-line prologues and epilogues.
 (define_insn "*save_gpregs_spe"
   [(match_parallel 0 "any_parallel_operand"
-		   [(clobber (reg:P 65))
+		   [(clobber (reg:P LR_REGNO))
 		    (use (match_operand:P 1 "symbol_ref_operand" "s"))
 		    (use (reg:P 11))
 		    (set (match_operand:V2SI 2 "memory_operand" "=m")
@@ -3476,7 +3476,7 @@
 
 (define_insn "*restore_gpregs_spe"
  [(match_parallel 0 "any_parallel_operand"
-		  [(clobber (reg:P 65))
+		  [(clobber (reg:P LR_REGNO))
 		   (use (match_operand:P 1 "symbol_ref_operand" "s"))
 		   (use (reg:P 11))
 		   (set (match_operand:V2SI 2 "gpc_reg_operand" "=r")
@@ -3489,7 +3489,7 @@
 (define_insn "*return_and_restore_gpregs_spe"
  [(match_parallel 0 "any_parallel_operand"
 		  [(return)
-		   (clobber (reg:P 65))
+		   (clobber (reg:P LR_REGNO))
 		   (use (match_operand:P 1 "symbol_ref_operand" "s"))
 		   (use (reg:P 11))
 		   (set (match_operand:V2SI 2 "gpc_reg_operand" "=r")

@@ -1958,7 +1958,7 @@ typedef struct rs6000_args
 #define TRAMPOLINE_SIZE rs6000_trampoline_size ()
 
 /* Definitions for __builtin_return_address and __builtin_frame_address.
-   __builtin_return_address (0) should give link register (65), enable
+   __builtin_return_address (0) should give link register (LR_REGNO), enable
    this.  */
 /* This should be uncommented, so that the link register is used, but
    currently this would result in unmatched insns and spilling fixed
