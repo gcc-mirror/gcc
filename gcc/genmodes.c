@@ -486,7 +486,8 @@ make_vector_modes (enum mode_class cl, unsigned int width,
 {
   struct mode_data *m;
   struct mode_data *v;
-  char buf[8];
+  /* Big enough for a 32-bit UINT_MAX plus the text.  */
+  char buf[12];
   unsigned int ncomponents;
   enum mode_class vclass = vector_class (cl);
 

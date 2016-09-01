@@ -4051,7 +4051,8 @@ parser::parse_expr ()
   else if (force_capture)
     {
       unsigned num = capture_ids->elements ();
-      char id[8];
+      /* Big enough for a 32-bit UINT_MAX plus prefix.  */
+      char id[13];
       bool existed;
       sprintf (id, "__%u", num);
       capture_ids->get_or_insert (xstrdup (id), &existed);

@@ -1,3 +1,13 @@
+2016-09-01 Martin Sebor  <msebor@redhat.com>
+
+	* genmatch.c (parser::parse_expr): Increase buffer size to guarantee
+	it fits the output of the formatted function regardless of its
+	arguments.
+	* gcc/genmodes.c (parser::parse_expr): Same.
+	* gimplify.c (gimplify_asm_expr): Same.
+	* passes.c (pass_manager::register_one_dump_file): Same.
+	* print-tree.c (print_node): Same.
+
 2016-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/altivec.md: Use VSCR_REGNO instead of 110 throughout.

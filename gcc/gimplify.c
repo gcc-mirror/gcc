@@ -5346,7 +5346,8 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	     flexibility, split it into separate input and output
  	     operands.  */
 	  tree input;
-	  char buf[10];
+	  /* Buffer big enough to format a 32-bit UINT_MAX into.  */
+	  char buf[11];
 
 	  /* Turn the in/out constraint into an output constraint.  */
 	  char *p = xstrdup (constraint);
@@ -5356,7 +5357,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  /* And add a matching input constraint.  */
 	  if (allows_reg)
 	    {
-	      sprintf (buf, "%d", i);
+	      sprintf (buf, "%u", i);
 
 	      /* If there are multiple alternatives in the constraint,
 		 handle each of them individually.  Those that allow register

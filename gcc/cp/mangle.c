@@ -1740,7 +1740,9 @@ static void
 write_real_cst (const tree value)
 {
   long target_real[4];  /* largest supported float */
-  char buffer[9];       /* eight hex digits in a 32-bit number */
+  /* Buffer for eight hex digits in a 32-bit number but big enough
+     even for 64-bit long to avoid warnings.  */
+  char buffer[17];
   int i, limit, dir;
 
   tree type = TREE_TYPE (value);
