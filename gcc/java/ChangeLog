@@ -1,3 +1,10 @@
+2016-09-01 Martin Sebor  <msebor@redhat.com>
+
+	* decl.c (give_name_to_locals): Increase buffer size to guarantee
+	it fits the output of the formatted function regardless of its
+	arguments.
+	* mangle_name.c (append_unicode_mangled_name): Same.
+
 2016-08-26  Richard Biener  <rguenther@suse.de>
 
 	java/

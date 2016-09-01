@@ -1721,7 +1721,8 @@ give_name_to_locals (JCF *jcf)
 	    DECL_NAME (parm) = get_identifier ("this");
 	  else
 	    {
-	      char buffer[12];
+	      /* Buffer large enough for INT_MAX plus prefix.  */
+	      char buffer[15];
 	      sprintf (buffer, "ARG_%d", arg_i);
 	      DECL_NAME (parm) = get_identifier (buffer);
 	    }

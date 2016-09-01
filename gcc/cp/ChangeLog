@@ -1,3 +1,8 @@
+2016-09-01 Martin Sebor  <msebor@redhat.com>
+
+	* mangle.c: Increase buffer size to guarantee it fits the output
+	of the formatted function regardless of its arguments.
+
 2016-09-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652

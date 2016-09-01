@@ -231,7 +231,8 @@ void
 append_gpp_mangled_name (const char *name, int len)
 {
   int encoded_len, needs_escapes;
-  char buf[6];
+  /* Buffer large enough for INT_MIN.  */
+  char buf[9];
 
   MANGLE_CXX_KEYWORDS (name, len);
 
@@ -270,7 +271,8 @@ append_unicode_mangled_name (const char *name, int len)
       /* Everything else needs encoding */
       else
 	{
-	  char buf [9];
+	  /* Buffer large enough for UINT_MAX plus the prefix.  */
+	  char buf [13];
 	  if (ch == '_' || ch == 'U')
 	    {
 	      /* Prepare to recognize __U */

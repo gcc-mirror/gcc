@@ -694,8 +694,10 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  i = 0;
 	  FOR_EACH_CALL_EXPR_ARG (arg, iter, node)
 	    {
-	      char temp[10];
-	      sprintf (temp, "arg %d", i);
+	      /* Buffer big enough to format a 32-bit UINT_MAX into, plus
+		 the text.  */
+	      char temp[15];
+	      sprintf (temp, "arg %u", i);
 	      print_node (file, temp, arg, indent + 4);
 	      i++;
 	    }
@@ -706,7 +708,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
 	  for (i = 0; i < len; i++)
 	    {
-	      char temp[10];
+	      /* Buffer big enough to format a 32-bit UINT_MAX into, plus
+		 the text.  */
+	      char temp[15];
 
 	      sprintf (temp, "arg %d", i);
 	      print_node (file, temp, TREE_OPERAND (node, i), indent + 4);
@@ -824,7 +828,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  for (i = 0; i < len; i++)
 	    if (TREE_VEC_ELT (node, i))
 	      {
-		char temp[10];
+	      /* Buffer big enough to format a 32-bit UINT_MAX into, plus
+		 the text.  */
+		char temp[15];
 		sprintf (temp, "elt %d", i);
 		print_node (file, temp, TREE_VEC_ELT (node, i), indent + 4);
 	      }

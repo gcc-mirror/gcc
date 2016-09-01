@@ -1603,7 +1603,7 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 {
   tree arg;
   const tree node = TREE_TYPE (func);
-  char buf[16];
+  char buf[17];
   int num = 0, num_args = 0, have_args = true, have_ellipsis = false;
 
   /* Compute number of arguments.  */
