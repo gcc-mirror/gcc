@@ -1,3 +1,8 @@
+2016-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Add trailing space
+	to the insertion fixits for "struct", "union", and "enum".
+
 2016-08-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c (implicit_decl_warning): Use add_fixit_replace
