@@ -1,3 +1,9 @@
+2016-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77436
+	* tree-chrec.c (tree_fold_binomial): Use widest_int, properly
+	check whether the result fits the desired result type.
+
 2016-09-01  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.md (cbranch<mode>4): Op 2 can be const.
