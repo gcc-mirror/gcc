@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-fsignaling-nans" } */
 /* { dg-add-options float32x } */
+/* { dg-add-options ieee } */
 /* { dg-require-effective-target float32x_runtime } */
 /* { dg-require-effective-target fenv_exceptions } */
 

@@ -1,3 +1,24 @@
+2016-09-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/torture/float128-builtin.c, gcc.dg/torture/float128-floath.c,
+	gcc.dg/torture/float128-ieee-nan.c, gcc.dg/torture/float128-tg-2.c,
+	gcc.dg/torture/float128-tg.c, gcc.dg/torture/float128x-builtin.c,
+	gcc.dg/torture/float128x-floath.c, gcc.dg/torture/float128x-nan.c,
+	gcc.dg/torture/float128x-tg-2.c, gcc.dg/torture/float128x-tg.c,
+	gcc.dg/torture/float16-builtin.c, gcc.dg/torture/float16-floath.c,
+	gcc.dg/torture/float16-nan.c, gcc.dg/torture/float16-tg-2.c,
+	gcc.dg/torture/float16-tg.c, gcc.dg/torture/float32-builtin.c,
+	gcc.dg/torture/float32-floath.c, gcc.dg/torture/float32-nan.c,
+	gcc.dg/torture/float32-tg-2.c, gcc.dg/torture/float32-tg.c,
+	gcc.dg/torture/float32x-builtin.c, gcc.dg/torture/float32x-floath.c,
+	gcc.dg/torture/float32x-nan.c, gcc.dg/torture/float32x-tg-2.c,
+	gcc.dg/torture/float32x-tg.c, gcc.dg/torture/float64-builtin.c,
+	gcc.dg/torture/float64-floath.c, gcc.dg/torture/float64-nan.c,
+	gcc.dg/torture/float64-tg-2.c, gcc.dg/torture/float64-tg.c,
+	gcc.dg/torture/float64x-builtin.c, gcc.dg/torture/float64x-floath.c,
+	gcc.dg/torture/float64x-nan.c, gcc.dg/torture/float64x-tg-2.c,
+	gcc.dg/torture/float64x-tg.c: Use dg-add-options ieee.
+
 2016-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt58.adb: New test.
