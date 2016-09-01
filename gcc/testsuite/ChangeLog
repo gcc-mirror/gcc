@@ -1,3 +1,10 @@
+2016-09-01  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/pr64252.c: Require int32plus.
+	* gcc.dg/pr66299-1.c: Likewise.
+	* gcc.dg/pr66299-2.c: Likewise.
+	* gcc.dg/torture/20131115-1.c: Skip for avr.
+
 2016-09-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/ands_3.c: New test.
