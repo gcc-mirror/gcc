@@ -1,3 +1,7 @@
+2016-09-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ands_3.c: New test.
+
 2016-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/77352
