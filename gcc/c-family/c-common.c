@@ -11547,7 +11547,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	/* Handle these 4 together so that they can fall through to the next
 	   case if the call is transformed to an _N variant.  */
         switch (orig_code)
-	{
+	  {
 	  case BUILT_IN_ATOMIC_EXCHANGE:
 	    {
 	      if (resolve_overloaded_atomic_exchange (loc, function, params,
@@ -11588,17 +11588,15 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	    }
 	  default:
 	    gcc_unreachable ();
-	}
-	/* Fallthrough to the normal processing.  */
+	  }
       }
+      /* FALLTHRU */
     case BUILT_IN_ATOMIC_EXCHANGE_N:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N:
     case BUILT_IN_ATOMIC_LOAD_N:
     case BUILT_IN_ATOMIC_STORE_N:
-      {
-	fetch_op = false;
-	/* Fallthrough to further processing.  */
-      }
+      fetch_op = false;
+      /* FALLTHRU */
     case BUILT_IN_ATOMIC_ADD_FETCH_N:
     case BUILT_IN_ATOMIC_SUB_FETCH_N:
     case BUILT_IN_ATOMIC_AND_FETCH_N:
@@ -11611,10 +11609,8 @@ resolve_overloaded_builtin (location_t loc, tree function,
     case BUILT_IN_ATOMIC_FETCH_NAND_N:
     case BUILT_IN_ATOMIC_FETCH_XOR_N:
     case BUILT_IN_ATOMIC_FETCH_OR_N:
-      {
-        orig_format = false;
-	/* Fallthru for parameter processing.  */
-      }
+      orig_format = false;
+      /* FALLTHRU */
     case BUILT_IN_SYNC_FETCH_AND_ADD_N:
     case BUILT_IN_SYNC_FETCH_AND_SUB_N:
     case BUILT_IN_SYNC_FETCH_AND_OR_N:

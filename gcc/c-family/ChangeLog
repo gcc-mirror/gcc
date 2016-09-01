@@ -1,3 +1,9 @@
+2016-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* c-common.c (resolve_overloaded_builtin): Fix formatting.  Add
+	FALLTHRU comments.
+
 2016-08-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/77292
