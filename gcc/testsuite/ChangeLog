@@ -1,6 +1,11 @@
 2016-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/77374
+	* gfortran.dg/gomp/pr77374.f08: New test.
+
 	2016-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/72866
