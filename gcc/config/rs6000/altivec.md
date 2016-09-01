@@ -371,7 +371,7 @@
 
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(reg:SI 109)] UNSPEC_GET_VRSAVE))]
+	(unspec:SI [(reg:SI VRSAVE_REGNO)] UNSPEC_GET_VRSAVE))]
   "TARGET_ALTIVEC"
 {
   if (TARGET_MACHO)
@@ -383,9 +383,9 @@
 
 (define_insn "*set_vrsave_internal"
   [(match_parallel 0 "vrsave_operation"
-     [(set (reg:SI 109)
+     [(set (reg:SI VRSAVE_REGNO)
 	   (unspec_volatile:SI [(match_operand:SI 1 "register_operand" "r")
-				(reg:SI 109)] UNSPECV_SET_VRSAVE))])]
+				(reg:SI VRSAVE_REGNO)] UNSPECV_SET_VRSAVE))])]
   "TARGET_ALTIVEC"
 {
   if (TARGET_MACHO)
