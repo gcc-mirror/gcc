@@ -541,7 +541,7 @@
   [(set (pc)
 	(if_then_else (match_operator 0 "nvptx_comparison_operator"
 		       [(match_operand:HSDIM 1 "nvptx_register_operand" "")
-			(match_operand:HSDIM 2 "nvptx_register_operand" "")])
+			(match_operand:HSDIM 2 "nvptx_nonmemory_operand" "")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
   ""
@@ -556,7 +556,7 @@
   [(set (pc)
 	(if_then_else (match_operator 0 "nvptx_float_comparison_operator"
 		       [(match_operand:SDFM 1 "nvptx_register_operand" "")
-			(match_operand:SDFM 2 "nvptx_register_operand" "")])
+			(match_operand:SDFM 2 "nvptx_nonmemory_operand" "")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
   ""
