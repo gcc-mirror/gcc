@@ -1,5 +1,9 @@
 2016-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/altivec.md: Use VSCR_REGNO instead of 110 throughout.
+
+2016-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/altivec.md: Use VRSAVE_REGNO instead of 109 throughout.
 
 2016-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
