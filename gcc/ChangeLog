@@ -1,5 +1,18 @@
 2016-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*restore_gpregs_<mode>_r11,
+	*restore_gpregs_<mode>_r12, *restore_gpregs_<mode>_r1,
+	*return_and_restore_gpregs_<mode>_r11,
+	*return_and_restore_gpregs_<mode>_r12,
+	*return_and_restore_gpregs_<mode>_r1,
+	*return_and_restore_fpregs_<mode>_r11,
+	*return_and_restore_fpregs_<mode>_r12,
+	*return_and_restore_fpregs_<mode>_r1): Use the hard register LR_REGNO
+	directly instead of via the "l" constraint.  Renumber operands.
+	Fix whitespace.
+
+2016-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/altivec.md (*save_world, *save_vregs_<mode>_r11,
 	save_vregs_<mode>_r12, *restore_vregs_<mode>_r11,
 	*restore_vregs_<mode>_r12): Use LR_REGNO instead of 65.
