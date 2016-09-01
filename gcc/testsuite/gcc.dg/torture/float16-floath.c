@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "" } */
 /* { dg-add-options float16 } */
+/* { dg-add-options ieee } */
 /* { dg-require-effective-target float16_runtime } */
 
 #define WIDTH 16
