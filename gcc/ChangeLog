@@ -1,3 +1,12 @@
+2016-09-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Michael Meissner <meissner@linux.vnet.ibm.com>
+
+	PR target/72827
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Avoid
+	reg+reg addressing for TImode.
+	(rs6000_legitimate_address_p): Only allow register indirect
+	addressing for TImode, even without TARGET_QUAD_MEMORY.
+
 2016-09-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77436
