@@ -1,5 +1,6 @@
 // PR c++/57728
 // { dg-do link { target c++11 } }
+// { dg-options -save-temps }
 
 template<typename T>
 struct A
