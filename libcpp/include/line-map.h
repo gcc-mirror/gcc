@@ -1567,6 +1567,7 @@ class rich_location
   unsigned int get_num_fixit_hints () const { return m_fixit_hints.count (); }
   fixit_hint *get_fixit_hint (int idx) const { return m_fixit_hints[idx]; }
   fixit_hint *get_last_fixit_hint () const;
+  bool seen_impossible_fixit_p () const { return m_seen_impossible_fixit; }
 
 private:
   bool reject_impossible_fixit (source_location where);

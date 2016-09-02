@@ -41,6 +41,7 @@ extern bool is_location_from_builtin_token (source_location);
 extern expanded_location expand_location (source_location);
 extern const char *location_get_source_line (const char *file_path, int line,
 					     int *line_size);
+extern bool location_missing_trailing_newline (const char *file_path);
 extern expanded_location expand_location_to_spelling_point (source_location);
 extern source_location expansion_point_location_if_in_system_header (source_location);
 extern source_location expansion_point_location (source_location);

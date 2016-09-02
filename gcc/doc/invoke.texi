@@ -3343,7 +3343,9 @@ for 88-color and 256-color modes background colors.
 
 The default @env{GCC_COLORS} is
 @smallexample
-error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:quote=01:fixit-insert=32:fixit-delete=31
+error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:quote=01:\
+fixit-insert=32:fixit-delete=31:\
+diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32
 @end smallexample
 @noindent
 where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
@@ -3391,6 +3393,22 @@ be inserted or replaced.
 @vindex fixit-delete GCC_COLORS @r{capability}
 SGR substring for fix-it hints suggesting text to
 be deleted.
+
+@item diff-filename=
+@vindex diff-filename GCC_COLORS @r{capability}
+SGR substring for filename headers within generated patches.
+
+@item diff-hunk=
+@vindex diff-hunk GCC_COLORS @r{capability}
+SGR substring for the starts of hunks within generated patches.
+
+@item diff-delete=
+@vindex diff-delete GCC_COLORS @r{capability}
+SGR substring for deleted lines within generated patches.
+
+@item diff-insert=
+@vindex diff-insert GCC_COLORS @r{capability}
+SGR substring for inserted lines within generated patches.
 @end table
 
 @item -fno-diagnostics-show-option

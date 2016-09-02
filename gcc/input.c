@@ -95,6 +95,11 @@ struct fcache
      before the line map has seen the end of the file.  */
   size_t total_lines;
 
+  /* Could this file be missing a trailing newline on its final line?
+     Initially true (to cope with empty files), set to true/false
+     as each line is read.  */
+  bool missing_trailing_newline;
+
   /* This is a record of the beginning and end of the lines we've seen
      while reading the file.  This is useful to avoid walking the data
      from the beginning when we are asked to read a line that is
@@ -280,6 +285,7 @@ diagnostics_file_cache_forcibly_evict_file (const char *file_path)
   r->line_record.truncate (0);
   r->use_count = 0;
   r->total_lines = 0;
+  r->missing_trailing_newline = true;
 }
 
 /* Return the file cache that has been less used, recently, or the
@@ -348,6 +354,7 @@ add_file_to_cache_tab (const char *file_path)
      add_file_to_cache_tab is called.  */
   r->use_count = ++highest_use_count;
   r->total_lines = total_lines_num (file_path);
+  r->missing_trailing_newline = true;
 
   return r;
 }
@@ -372,7 +379,7 @@ lookup_or_add_file_to_cache_tab (const char *file_path)
 fcache::fcache ()
 : use_count (0), file_path (NULL), fp (NULL), data (0),
   size (0), nb_read (0), line_start_idx (0), line_num (0),
-  total_lines (0)
+  total_lines (0), missing_trailing_newline (true)
 {
   line_record.create (0);
 }
@@ -507,16 +514,24 @@ get_next_line (fcache *c, char **line, ssize_t *line_len)
 	    }
 	}
       if (line_end == NULL)
-	/* We've loadded all the file into the cache and still no
-	   '\n'.  Let's say the line ends up at one byte passed the
-	   end of the file.  This is to stay consistent with the case
-	   of when the line ends up with a '\n' and line_end points to
-	   that terminal '\n'.  That consistency is useful below in
-	   the len calculation.  */
-	line_end = c->data + c->nb_read ;
+	{
+	  /* We've loadded all the file into the cache and still no
+	     '\n'.  Let's say the line ends up at one byte passed the
+	     end of the file.  This is to stay consistent with the case
+	     of when the line ends up with a '\n' and line_end points to
+	     that terminal '\n'.  That consistency is useful below in
+	     the len calculation.  */
+	  line_end = c->data + c->nb_read ;
+	  c->missing_trailing_newline = true;
+	}
+      else
+	c->missing_trailing_newline = false;
     }
   else
-    next_line_start = line_end + 1;
+    {
+      next_line_start = line_end + 1;
+      c->missing_trailing_newline = false;
+    }
 
   if (ferror (c->fp))
     return -1;
@@ -749,6 +764,20 @@ location_get_source_line (const char *file_path, int line,
     *line_len = len;
 
   return read ? buffer : NULL;
+}
+
+/* Determine if FILE_PATH missing a trailing newline on its final line.
+   Only valid to call once all of the file has been loaded, by
+   requesting a line number beyond the end of the file.  */
+
+bool
+location_missing_trailing_newline (const char *file_path)
+{
+  fcache *c = lookup_or_add_file_to_cache_tab (file_path);
+  if (c == NULL)
+    return false;
+
+  return c->missing_trailing_newline;
 }
 
 /* Test if the location originates from the spelling location of a
