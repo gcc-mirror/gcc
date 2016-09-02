@@ -1075,7 +1075,7 @@ free_original_copy_tables (void)
   delete bb_copy;
   bb_copy = NULL;
   delete bb_original;
-  bb_copy = NULL;
+  bb_original = NULL;
   delete loop_copy;
   loop_copy = NULL;
   delete original_copy_bb_pool;
