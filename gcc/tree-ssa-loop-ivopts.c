@@ -5168,10 +5168,11 @@ cand_value_at (struct loop *loop, struct iv_cand *cand, gimple *at, tree niter,
   aff_tree step, delta, nit;
   struct iv *iv = cand->iv;
   tree type = TREE_TYPE (iv->base);
-  tree steptype = type;
+  tree steptype;
   if (POINTER_TYPE_P (type))
     steptype = sizetype;
-  steptype = unsigned_type_for (type);
+  else
+    steptype = unsigned_type_for (type);
 
   tree_to_aff_combination (iv->step, TREE_TYPE (iv->step), &step);
   aff_combination_convert (&step, steptype);

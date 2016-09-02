@@ -1,4 +1,11 @@
 2016-09-02  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenth@suse.de>
+
+	PR tree-optimization/77444
+	* tree-ssa-loop-ivopts.c (cand_value_at): For pointers use sizetype
+	as steptype, remove redundant initialization.
+
+2016-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/77396
 	* sanopt.c: Include gimple-ssa.h, tree-phinodes.h and ssa-iterators.h.
