@@ -248,7 +248,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option -fno-diagnostics-show-caret @gol
--fdiagnostics-parseable-fixits}
+-fdiagnostics-parseable-fixits -fdiagnostics-generate-patch}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -3459,6 +3459,27 @@ newline as ``\n'', double quotes as ``\"'', non-printable characters as octal
 An empty replacement string indicates that the given range is to be removed.
 An empty range (e.g. ``45:3-45:3'') indicates that the string is to
 be inserted at the given position.
+
+@item -fdiagnostics-generate-patch
+@opindex fdiagnostics-generate-patch
+Print fix-it hints to stderr in unified diff format, after any diagnostics
+are printed.  For example:
+
+@smallexample
+--- test.c
++++ test.c
+@@ -42,5 +42,5 @@
+
+ void show_cb(GtkDialog *dlg)
+ @{
+-  gtk_widget_showall(dlg);
++  gtk_widget_show_all(dlg);
+ @}
+
+@end smallexample
+
+The diff may or may not be colorized, following the same rules
+as for diagnostics (see @option{-fdiagnostics-color}).
 
 @end table
 

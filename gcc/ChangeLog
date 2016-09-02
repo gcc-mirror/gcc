@@ -1,3 +1,22 @@
+2016-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-generate-patch): New option.
+	* diagnostic.c: Include "edit-context.h".
+	(diagnostic_initialize): Initialize context->edit_context_ptr.
+	(diagnostic_finish): Delete context->edit_context_ptr.
+	(diagnostic_report_diagnostic): Add fix-it hints from the
+	diagnostic to context->edit_context_ptr, if any.
+	* diagnostic.h (class edit_context): Add forward decl.
+	(struct diagnostic_context): Add field "edit_context_ptr".
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	-fdiagnostics-generate-patch.
+	(-fdiagnostics-generate-patch): New item.
+	* toplev.c: Include "edit-context.h".
+	(process_options): Set global_dc->edit_context_ptr to a new
+	edit_context if the options need one.
+	(toplev::main): Handle -fdiagnostics-generate-patch by using
+	global_dc->edit_context_ptr.
+
 2016-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/65467

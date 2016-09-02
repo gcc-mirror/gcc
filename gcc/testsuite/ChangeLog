@@ -1,3 +1,11 @@
+2016-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-show-locus-generate-patch.c: New
+	test case.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-show-locus-generate-patch.c to the sources
+	for diagnostic_plugin_test_show_locus.c.
+
 2016-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/65467

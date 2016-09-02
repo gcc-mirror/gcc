@@ -1196,6 +1196,10 @@ fdiagnostics-parseable-fixits
 Common Var(flag_diagnostics_parseable_fixits)
 Print fixit hints in machine-readable form.
 
+fdiagnostics-generate-patch
+Common Var(flag_diagnostics_generate_patch)
+Print fix-it hints to stderr in unified diff format.
+
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them.
