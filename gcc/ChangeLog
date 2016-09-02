@@ -1,3 +1,16 @@
+2016-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65467
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Diagnose implicit
+	map and firstprivate clauses on target construct for _Atomic
+	qualified decls.
+	(gimplify_adjust_omp_clauses): Diagnose explicit firstprivate clauses
+	on target construct for _Atomic qualified decls.
+	* omp-low.c (use_pointer_for_field): Return true for _Atomic qualified
+	decls.
+	* omp-simd-clone.c (simd_clone_clauses_extract): Warn and give up for
+	_Atomic qualified arguments not mentioned in uniform clause.
+
 2016-09-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS-libcommon): Add edit-context.o.

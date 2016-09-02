@@ -1,5 +1,12 @@
 2016-09-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/65467
+	* gcc.dg/gomp/_Atomic-1.c: New test.
+	* gcc.dg/gomp/_Atomic-2.c: New test.
+	* gcc.dg/gomp/_Atomic-3.c: New test.
+	* gcc.dg/gomp/_Atomic-4.c: New test.
+	* gcc.dg/gomp/_Atomic-5.c: New test.
+
 	PR sanitizer/77396
 	* g++.dg/asan/pr77396.C: New test.
 

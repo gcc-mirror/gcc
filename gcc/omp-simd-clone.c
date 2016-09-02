@@ -126,13 +126,11 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
   clone_info->cilk_elemental = cilk_clone;
 
   if (!clauses)
-    {
-      args.release ();
-      return clone_info;
-    }
+    goto out;
+
   clauses = TREE_VALUE (clauses);
   if (!clauses || TREE_CODE (clauses) != OMP_CLAUSE)
-    return clone_info;
+    goto out;
 
   for (t = clauses; t; t = OMP_CLAUSE_CHAIN (t))
     {
@@ -252,6 +250,28 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
 	  break;
 	}
     }
+
+ out:
+  if (TYPE_ATOMIC (TREE_TYPE (TREE_TYPE (node->decl))))
+    {
+      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		  "ignoring %<#pragma omp declare simd%> on function "
+		  "with %<_Atomic%> qualified return type");
+      args.release ();
+      return NULL;
+    }
+
+  for (unsigned int argno = 0; argno < clone_info->nargs; argno++)
+    if (TYPE_ATOMIC (args[argno])
+	&& clone_info->args[argno].arg_type != SIMD_CLONE_ARG_TYPE_UNIFORM)
+      {
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "ignoring %<#pragma omp declare simd%> on function "
+		    "with %<_Atomic%> qualified non-%<uniform%> argument");
+	args.release ();
+	return NULL;
+      }
+
   args.release ();
   return clone_info;
 }

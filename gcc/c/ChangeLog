@@ -1,3 +1,32 @@
+2016-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65467
+	* c-parser.c (c_parser_declspecs): Don't sorry about _Atomic if
+	flag_openmp.
+	(c_parser_omp_variable_list): Use convert_lvalue_to_rvalue
+	instead of mark_exp_read on low_bound/length expression.
+	(c_parser_omp_clause_num_gangs, c_parser_omp_clause_num_threads,
+	c_parser_omp_clause_num_tasks, c_parser_omp_clause_grainsize,
+	c_parser_omp_clause_priority, c_parser_omp_clause_hint,
+	c_parser_omp_clause_num_workers, c_parser_oacc_shape_clause,
+	c_parser_oacc_clause_tile, c_parser_omp_clause_schedule,
+	c_parser_omp_clause_vector_length, c_parser_omp_clause_num_teams,
+	c_parser_omp_clause_thread_limit, c_parser_omp_clause_aligned,
+	c_parser_omp_clause_linear, c_parser_omp_clause_safelen,
+	c_parser_omp_clause_simdlen, c_parser_omp_clause_device,
+	c_parser_omp_clause_dist_schedule): Use convert_lvalue_to_rvalue
+	instead of mark_expr_read.
+	(c_parser_omp_declare_reduction): Reject _Atomic qualified types.
+	* c-objc-common.h (LANG_HOOKS_OMP_CLAUSE_COPY_CTOR,
+	LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP): Redefine.
+	* c-tree.h (c_omp_clause_copy_ctor): New prototype.
+	* c-typeck.c (handle_omp_array_sections_1): Diagnose _Atomic qualified
+	array section bases outside of depend clause, for depend clause
+	use convert_lvalue_to_rvalue on the base.
+	(c_finish_omp_clauses): Reject _Atomic qualified vars in reduction,
+	linear, aligned, map, to and from clauses.
+	(c_omp_clause_copy_ctor): New function.
+
 2016-09-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652

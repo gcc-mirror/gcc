@@ -2600,10 +2600,6 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	     and objc_types_are_equivalent may also need updates.  */
 	  if (c_dialect_objc ())
 	    sorry ("%<_Atomic%> in Objective-C");
-	  /* C parser handling of OpenMP constructs needs checking for
-	     correct lvalue-to-rvalue conversions.  */
-	  if (flag_openmp)
-	    sorry ("%<_Atomic%> with OpenMP");
 	  if (flag_isoc99)
 	    pedwarn_c99 (loc, OPT_Wpedantic,
 			 "ISO C99 does not support the %<_Atomic%> qualifier");
@@ -10718,8 +10714,12 @@ c_parser_omp_variable_list (c_parser *parser,
 		  c_parser_consume_token (parser);
 		  if (!c_parser_next_token_is (parser, CPP_COLON))
 		    {
-		      low_bound = c_parser_expression (parser).value;
-		      mark_exp_read (low_bound);
+		      location_t expr_loc
+			= c_parser_peek_token (parser)->location;
+		      c_expr expr = c_parser_expression (parser);
+		      expr = convert_lvalue_to_rvalue (expr_loc, expr,
+						       false, true);
+		      low_bound = expr.value;
 		    }
 		  if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 		    length = integer_one_node;
@@ -10734,8 +10734,12 @@ c_parser_omp_variable_list (c_parser *parser,
 			}
 		      if (!c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 			{
-			  length = c_parser_expression (parser).value;
-			  mark_exp_read (length);
+			  location_t expr_loc
+			    = c_parser_peek_token (parser)->location;
+			  c_expr expr = c_parser_expression (parser);
+			  expr = convert_lvalue_to_rvalue (expr_loc, expr,
+							   false, true);
+			  length = expr.value;
 			}
 		    }
 		  /* Look for the closing `]'.  */
@@ -11257,8 +11261,9 @@ c_parser_omp_clause_num_gangs (c_parser *parser, tree list)
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -11301,8 +11306,9 @@ c_parser_omp_clause_num_threads (c_parser *parser, tree list)
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -11345,8 +11351,9 @@ c_parser_omp_clause_num_tasks (c_parser *parser, tree list)
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -11389,8 +11396,9 @@ c_parser_omp_clause_grainsize (c_parser *parser, tree list)
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -11433,8 +11441,9 @@ c_parser_omp_clause_priority (c_parser *parser, tree list)
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -11477,8 +11486,10 @@ c_parser_omp_clause_hint (c_parser *parser, tree list)
   location_t hint_loc = c_parser_peek_token (parser)->location;
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      location_t expr_loc = c_parser_peek_token (parser)->location;
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -11581,8 +11592,9 @@ c_parser_omp_clause_num_workers (c_parser *parser, tree list)
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -11703,11 +11715,12 @@ c_parser_oacc_shape_clause (c_parser *parser, omp_clause_code kind,
 	    }
 
 	  location_t expr_loc = c_parser_peek_token (parser)->location;
-	  tree expr = c_parser_expr_no_commas (parser, NULL).value;
+	  c_expr cexpr = c_parser_expr_no_commas (parser, NULL);
+	  cexpr = convert_lvalue_to_rvalue (expr_loc, cexpr, false, true);
+	  tree expr = cexpr.value;
 	  if (expr == error_mark_node)
 	    goto cleanup_error;
 
-	  mark_exp_read (expr);
 	  expr = c_fully_fold (expr, false, NULL);
 
 	  /* Attempt to statically determine when the number isn't a
@@ -11842,7 +11855,9 @@ c_parser_oacc_clause_tile (c_parser *parser, tree list)
       else
 	{
 	  expr_loc = c_parser_peek_token (parser)->location;
-	  expr = c_parser_expr_no_commas (parser, NULL).value;
+	  c_expr cexpr = c_parser_expr_no_commas (parser, NULL);
+	  cexpr = convert_lvalue_to_rvalue (expr_loc, cexpr, false, true);
+	  expr = cexpr.value;
 
 	  if (expr == error_mark_node)
 	    {
@@ -11857,7 +11872,6 @@ c_parser_oacc_clause_tile (c_parser *parser, tree list)
 	      return list;
 	    }
 
-	  mark_exp_read (expr);
 	  expr = c_fully_fold (expr, false, NULL);
 
 	  /* Attempt to statically determine when expr isn't positive.  */
@@ -12180,8 +12194,9 @@ c_parser_omp_clause_schedule (c_parser *parser, tree list)
       c_parser_consume_token (parser);
 
       here = c_parser_peek_token (parser)->location;
-      t = c_parser_expr_no_commas (parser, NULL).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+      expr = convert_lvalue_to_rvalue (here, expr, false, true);
+      t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       if (OMP_CLAUSE_SCHEDULE_KIND (c) == OMP_CLAUSE_SCHEDULE_RUNTIME)
@@ -12266,8 +12281,9 @@ c_parser_omp_clause_vector_length (c_parser *parser, tree list)
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -12369,8 +12385,9 @@ c_parser_omp_clause_num_teams (c_parser *parser, tree list)
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -12412,8 +12429,9 @@ c_parser_omp_clause_thread_limit (c_parser *parser, tree list)
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      tree c, t = c_parser_expression (parser).value;
-      mark_exp_read (t);
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -12465,8 +12483,10 @@ c_parser_omp_clause_aligned (c_parser *parser, tree list)
   if (c_parser_next_token_is (parser, CPP_COLON))
     {
       c_parser_consume_token (parser);
-      tree alignment = c_parser_expr_no_commas (parser, NULL).value;
-      mark_exp_read (alignment);
+      location_t expr_loc = c_parser_peek_token (parser)->location;
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree alignment = expr.value;
       alignment = c_fully_fold (alignment, false, NULL);
       if (TREE_CODE (alignment) != INTEGER_CST
 	  || !INTEGRAL_TYPE_P (TREE_TYPE (alignment))
@@ -12528,8 +12548,10 @@ c_parser_omp_clause_linear (c_parser *parser, tree list, bool is_cilk_simd_fn)
   if (c_parser_next_token_is (parser, CPP_COLON))
     {
       c_parser_consume_token (parser);
-      step = c_parser_expression (parser).value;
-      mark_exp_read (step);
+      location_t expr_loc = c_parser_peek_token (parser)->location;
+      c_expr expr = c_parser_expression (parser);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      step = expr.value;
       step = c_fully_fold (step, false, NULL);
       if (is_cilk_simd_fn && TREE_CODE (step) == PARM_DECL)
 	{
@@ -12569,8 +12591,10 @@ c_parser_omp_clause_safelen (c_parser *parser, tree list)
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return list;
 
-  t = c_parser_expr_no_commas (parser, NULL).value;
-  mark_exp_read (t);
+  location_t expr_loc = c_parser_peek_token (parser)->location;
+  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+  expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+  t = expr.value;
   t = c_fully_fold (t, false, NULL);
   if (TREE_CODE (t) != INTEGER_CST
       || !INTEGRAL_TYPE_P (TREE_TYPE (t))
@@ -12605,8 +12629,10 @@ c_parser_omp_clause_simdlen (c_parser *parser, tree list)
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return list;
 
-  t = c_parser_expr_no_commas (parser, NULL).value;
-  mark_exp_read (t);
+  location_t expr_loc = c_parser_peek_token (parser)->location;
+  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+  expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+  t = expr.value;
   t = c_fully_fold (t, false, NULL);
   if (TREE_CODE (t) != INTEGER_CST
       || !INTEGRAL_TYPE_P (TREE_TYPE (t))
@@ -12921,8 +12947,10 @@ c_parser_omp_clause_device (c_parser *parser, tree list)
   location_t clause_loc = c_parser_peek_token (parser)->location;
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
-      tree c, t = c_parser_expr_no_commas (parser, NULL).value;
-      mark_exp_read (t);
+      location_t expr_loc = c_parser_peek_token (parser)->location;
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
 
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -12970,8 +12998,10 @@ c_parser_omp_clause_dist_schedule (c_parser *parser, tree list)
     {
       c_parser_consume_token (parser);
 
-      t = c_parser_expr_no_commas (parser, NULL).value;
-      mark_exp_read (t);
+      location_t expr_loc = c_parser_peek_token (parser)->location;
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      t = expr.value;
       t = c_fully_fold (t, false, NULL);
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
     }
@@ -16876,6 +16906,9 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
 		   || TREE_CODE (type) == ARRAY_TYPE)
 	    error_at (loc, "function or array type in "
 		      "%<#pragma omp declare reduction%>");
+	  else if (TYPE_ATOMIC (type))
+	    error_at (loc, "%<_Atomic%> qualified type in "
+			   "%<#pragma omp declare reduction%>");
 	  else if (TYPE_QUALS_NO_ADDR_SPACE (type))
 	    error_at (loc, "const, volatile or restrict qualified type in "
 			   "%<#pragma omp declare reduction%>");
