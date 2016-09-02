@@ -1,3 +1,7 @@
+2016-09-02  Kirill Yukhin  <kirill.yukhin@gmaile.com>
+
+	* gcc.target/i386/avx512f-klogic-2.c: Fix operand calculation order.
+
 2016-09-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-show-locus-generate-patch.c: New
