@@ -1,3 +1,9 @@
+2016-09-01 Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71831
+	* gcc.dg/builtin-object-size-16.c: New test.
+	* gcc.dg/builtin-object-size-17.c: New test.
+
 2016-09-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/77393

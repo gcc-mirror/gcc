@@ -10030,8 +10030,15 @@ __atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @findex __builtin___fprintf_chk
 @findex __builtin___vfprintf_chk
 
-GCC implements a limited buffer overflow protection mechanism
-that can prevent some buffer overflow attacks.
+GCC implements a limited buffer overflow protection mechanism that can
+prevent some buffer overflow attacks by determining the sizes of objects
+into which data is about to be written and preventing the writes when
+the size isn't sufficient.  The built-in functions described below yield
+the best results when used together and when optimization is enabled.
+For example, to detect object sizes across function boundaries or to
+follow pointer assignments through non-trivial control flow they rely
+on various optimization passes enabled with @option{-O2}.  However, to
+a limited extent, they can be used without optimization as well.
 
 @deftypefn {Built-in Function} {size_t} __builtin_object_size (void * @var{ptr}, int @var{type})
 is a built-in construct that returns a constant number of bytes from
