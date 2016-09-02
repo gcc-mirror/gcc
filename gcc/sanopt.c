@@ -33,6 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "params.h"
 #include "tree-hash-traits.h"
+#include "gimple-ssa.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
 
 
 /* This is used to carry information about basic blocks.  It is
@@ -537,6 +540,28 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 
       if (asan_check_optimize && !nonfreeing_call_p (stmt))
 	info->freeing_call_events++;
+
+      /* If __asan_before_dynamic_init ("module"); is followed by
+	 __asan_after_dynamic_init (); without intervening memory loads/stores,
+	 there is nothing to guard, so optimize both away.  */
+      if (asan_check_optimize
+	  && gimple_call_builtin_p (stmt, BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT))
+	{
+	  use_operand_p use;
+	  gimple *use_stmt;
+	  if (single_imm_use (gimple_vdef (stmt), &use, &use_stmt))
+	    {
+	      if (is_gimple_call (use_stmt)
+		  && gimple_call_builtin_p (use_stmt,
+					    BUILT_IN_ASAN_AFTER_DYNAMIC_INIT))
+		{
+		  unlink_stmt_vdef (use_stmt);
+		  gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
+		  gsi_remove (&gsi2, true);
+		  remove = true;
+		}
+	    }
+	}
 
       if (gimple_call_internal_p (stmt))
 	switch (gimple_call_internal_fn (stmt))

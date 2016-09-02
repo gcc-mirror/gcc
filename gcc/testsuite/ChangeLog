@@ -1,4 +1,9 @@
-2016-09-01 Martin Sebor  <msebor@redhat.com>
+2016-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77396
+	* g++.dg/asan/pr77396.C: New test.
+
+2016-09-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/71831
 	* gcc.dg/builtin-object-size-16.c: New test.
@@ -1105,7 +1110,7 @@
 	* gcc.dg/tree-ssa/vrp105.c: New test.
 	* gcc.dg/tree-ssa/vrp106.c: New test.
 
-2016-08-05 Martin Sebor  <msebor@redhat.com>
+2016-08-05  Martin Sebor  <msebor@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-cast.C: Avoid assuming (void*)1 is spelled
 	1ul in diagnostics.  Remove hyphen from "constant-expression."
@@ -1339,7 +1344,7 @@
 	PR fortran/68566
 	* gfortran.dg/pr68566.f90: new test.
 
-2016-07-30 Martin Sebor  <msebor@redhat.com>
+2016-07-30  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/60760
 	PR c++/71091
@@ -1687,7 +1692,7 @@
 	* gfortran.dg/c_sizeof_6.f90: here.  Test for error.
 	* gfortran.dg/pr71935.f90: New test.
 
-2016-07-22 Martin Sebor  <msebor@redhat.com>
+2016-07-22  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71675
 	* g++.dg/ext/atomic-3.C: New test.
@@ -3340,7 +3345,7 @@
 	PR target/71103
 	* gcc.target/avr/torture/pr71103-2.c: New test.
 
-2016-06-19 Martin Sebor  <msebor@redhat.com>
+2016-06-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c/69507
 	* gcc.dg/alignof.c: New test.

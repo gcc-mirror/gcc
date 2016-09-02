@@ -1,4 +1,10 @@
-2016-09-01 Martin Sebor  <msebor@redhat.com>
+2016-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77396
+	* decl2.c (do_static_initialization_or_destruction): Only
+	call asan_dynamic_init_call if INITP is true.
+
+2016-09-01  Martin Sebor  <msebor@redhat.com>
 
 	* mangle.c: Increase buffer size to guarantee it fits the output
 	of the formatted function regardless of its arguments.
@@ -299,7 +305,7 @@
 	* cp-gimplify.c (cp_fully_fold): Only maybe_constant_value in
 	C++11 and up.
 
-2016-07-30 Martin Sebor  <msebor@redhat.com>
+2016-07-30  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/60760
 	PR c++/71091
