@@ -1,3 +1,14 @@
+2016-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77396
+	* sanopt.c: Include gimple-ssa.h, tree-phinodes.h and ssa-iterators.h.
+	(sanopt_optimize_walker): Optimize away
+	__asan_before_dynamic_init (...) followed by
+	__asan_after_dynamic_init () without intervening memory loads/stores.
+	* ipa-pure-const.c (special_builtin_state): Handle
+	BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT and
+	BUILT_IN_ASAN_AFTER_DYNAMIC_INIT.
+
 2016-09-02  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* cfg.c (free_original_copy_tables): Replace second assignment of
@@ -28,7 +39,7 @@
 	* ipa-cp.c (ipcp_store_bits_results): Change option name from
 	-fipa-cp-bit to -fipa-bit-cp.
 
-2016-09-01 Martin Sebor  <msebor@redhat.com>
+2016-09-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/71831
 	* tree-object-size.h: Return bool instead of the size and add
@@ -45,7 +56,7 @@
 	* doc/extend.texi (Object Size Checking): Update.
 	* ubsan.c (instrument_object_size): Adjust.
 
-2016-09-01 Martin Sebor  <msebor@redhat.com>
+2016-09-01  Martin Sebor  <msebor@redhat.com>
 
 	* genmatch.c (parser::parse_expr): Increase buffer size to guarantee
 	it fits the output of the formatted function regardless of its
@@ -3487,11 +3498,11 @@
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
 	Reformat two multi-line strings.
 
-2016-07-22 Martin Sebor  <msebor@redhat.com>
+2016-07-22  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (Compound Literals): Add '@' missed in last commit.
 
-2016-07-22 Martin Sebor  <msebor@redhat.com>
+2016-07-22  Martin Sebor  <msebor@redhat.com>
 
 	PR c/71560
 	* doc/extend.texi (Compound Literals): Correct and clarify.
