@@ -1,3 +1,17 @@
+2016-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add typed-splay-tree.o.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	typed_splay_tree_c_tests.
+	* selftest.h (typed_splay_tree_c_tests): New decl.
+	* typed-splay-tree.c: New file.
+	* typed-splay-tree.h (typed_splay_tree::foreach_fn): New typedef.
+	(typed_splay_tree::max): New method.
+	(typed_splay_tree::min): New method.
+	(typed_splay_tree::foreach): New method.
+	(typed_splay_tree::closure): New struct.
+	(typed_splay_tree::inner_foreach_fn): New function.
+
 2016-09-02  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* ipa-cp.c (ipcp_store_bits_results): Change option name from

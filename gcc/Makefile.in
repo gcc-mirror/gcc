@@ -1542,6 +1542,7 @@ OBJS = \
 	tree-vectorizer.o \
 	tree-vrp.o \
 	tree.o \
+	typed-splay-tree.o \
 	valtrack.o \
 	value-prof.o \
 	var-tracking.o \

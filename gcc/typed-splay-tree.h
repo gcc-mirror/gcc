@@ -33,6 +33,7 @@ class typed_splay_tree
   typedef int (*compare_fn) (key_type, key_type);
   typedef void (*delete_key_fn) (key_type);
   typedef void (*delete_value_fn) (value_type);
+  typedef int (*foreach_fn) (key_type, value_type, void *);
 
   typed_splay_tree (compare_fn,
 		    delete_key_fn,
@@ -43,8 +44,23 @@ class typed_splay_tree
   value_type predecessor (key_type k);
   value_type successor (key_type k);
   void insert (key_type k, value_type v);
+  value_type max ();
+  value_type min ();
+  int foreach (foreach_fn, void *);
 
  private:
+  /* Helper type for typed_splay_tree::foreach.  */
+  struct closure
+  {
+    closure (foreach_fn outer_cb, void *outer_user_data)
+    : m_outer_cb (outer_cb), m_outer_user_data (outer_user_data) {}
+
+    foreach_fn m_outer_cb;
+    void *m_outer_user_data;
+  };
+
+  static int inner_foreach_fn (splay_tree_node node, void *user_data);
+
   static value_type node_to_value (splay_tree_node node);
 
  private:
@@ -118,6 +134,52 @@ typed_splay_tree<KEY_TYPE, VALUE_TYPE>::insert (key_type key,
   splay_tree_insert (m_inner,
 		     (splay_tree_key)key,
 		     (splay_tree_value)value);
+}
+
+/* Get the value with maximal key.  */
+
+template <typename KEY_TYPE, typename VALUE_TYPE>
+inline VALUE_TYPE
+typed_splay_tree<KEY_TYPE, VALUE_TYPE>::max ()
+{
+  return node_to_value (splay_tree_max (m_inner));
+}
+
+/* Get the value with minimal key.  */
+
+template <typename KEY_TYPE, typename VALUE_TYPE>
+inline VALUE_TYPE
+typed_splay_tree<KEY_TYPE, VALUE_TYPE>::min ()
+{
+  return node_to_value (splay_tree_min (m_inner));
+}
+
+/* Call OUTER_CB, passing it the OUTER_USER_DATA, for every node,
+   following an in-order traversal.  If OUTER_CB ever returns a non-zero
+   value, the iteration ceases immediately, and the value is returned.
+   Otherwise, this function returns 0.  */
+
+template <typename KEY_TYPE, typename VALUE_TYPE>
+inline int
+typed_splay_tree<KEY_TYPE, VALUE_TYPE>::foreach (foreach_fn outer_cb,
+						 void *outer_user_data)
+{
+  closure c (outer_cb, outer_user_data);
+
+  return splay_tree_foreach (m_inner, inner_foreach_fn, &c);
+}
+
+/* Helper function for typed_splay_tree::foreach.  */
+
+template <typename KEY_TYPE, typename VALUE_TYPE>
+int
+typed_splay_tree<KEY_TYPE, VALUE_TYPE>::inner_foreach_fn (splay_tree_node node,
+							  void *user_data)
+{
+  closure *c = (closure *)user_data;
+
+  return c->m_outer_cb ((KEY_TYPE)node->key, (VALUE_TYPE)node->value,
+			c->m_outer_user_data);
 }
 
 /* Internal function for converting from splay_tree_node to
