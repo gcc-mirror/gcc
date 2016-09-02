@@ -1,3 +1,8 @@
+2016-09-02  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* cfg.c (free_original_copy_tables): Replace second assignment of
+	bb_copy = NULL by bb_original = NULL. 
+
 2016-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/77421
