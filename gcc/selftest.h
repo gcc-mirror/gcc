@@ -151,6 +151,7 @@ for_each_line_table_case (void (*testcase) (const line_table_case &));
 extern void bitmap_c_tests ();
 extern void diagnostic_c_tests ();
 extern void diagnostic_show_locus_c_tests ();
+extern void edit_context_c_tests ();
 extern void et_forest_c_tests ();
 extern void fold_const_c_tests ();
 extern void fibonacci_heap_c_tests ();

@@ -1561,6 +1561,7 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
+	edit-context.o \
 	pretty-print.o intl.o \
 	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o \
 	selftest.o

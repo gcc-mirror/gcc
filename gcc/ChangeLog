@@ -1,3 +1,26 @@
+2016-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add edit-context.o.
+	* diagnostic-color.c (color_dict): Add "diff-filename",
+	"diff-hunk", "diff-delete", and "diff-insert".
+	(parse_gcc_colors): Update default value of GCC_COLORS in comment
+	to reflect above changes.
+	* doc/invoke.texi (-fdiagnostics-color): Update description of
+	default GCC_COLORS, and of the supported capabilities.
+	* edit-context.c: New file.
+	* edit-context.h: New file.
+	* input.c (struct fcache): Add field "missing_trailing_newline".
+	(diagnostics_file_cache_forcibly_evict_file): Initialize it to
+	true.
+	(add_file_to_cache_tab): Likewise.
+	(fcache::fcache): Likewise.
+	(get_next_line): Update c->missing_trailing_newline.
+	(location_missing_trailing_newline): New function.
+	* input.h (location_missing_trailing_newline): New decl.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	edit_context_c_tests.
+	* selftest.h (edit_context_c_tests): New decl.
+
 2016-09-02  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenth@suse.de>
 

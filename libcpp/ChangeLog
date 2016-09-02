@@ -1,3 +1,8 @@
+2016-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::seen_impossible_fixit_p): New
+	accessor.
+
 2016-08-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (class fixit_remove): Remove stray decl.
