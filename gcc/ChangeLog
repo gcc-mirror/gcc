@@ -1,5 +1,22 @@
 2016-09-01 Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/71831
+	* tree-object-size.h: Return bool instead of the size and add
+	argument for the size.
+	* tree-object-size.c (compute_object_offset): Update signature.
+	(addr_object_size): Same.
+	(compute_builtin_object_size): Return bool instead of the size
+	and add argument for the size.  Handle POINTER_PLUS_EXPR when
+	optimization is disabled.
+	(expr_object_size): Adjust.
+	(plus_stmt_object_size): Adjust.
+	(pass_object_sizes::execute): Adjust.
+	* builtins.c (fold_builtin_object_size): Adjust.
+	* doc/extend.texi (Object Size Checking): Update.
+	* ubsan.c (instrument_object_size): Adjust.
+
+2016-09-01 Martin Sebor  <msebor@redhat.com>
+
 	* genmatch.c (parser::parse_expr): Increase buffer size to guarantee
 	it fits the output of the formatted function regardless of its
 	arguments.
