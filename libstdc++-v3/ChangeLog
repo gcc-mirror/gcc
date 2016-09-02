@@ -1,3 +1,9 @@
+2016-09-02  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* acinclude.m4 (GLIBCXX_CONFIGURE_TESTSUITE): Check for presence of
+	setrlimit on both native and cross targets.
+	* configure: Regenerate.
+
 2016-08-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr.h (_Assignable): New alias template.

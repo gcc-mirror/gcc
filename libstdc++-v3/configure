@@ -79449,8 +79449,7 @@ $as_echo "$ac_cv_x86_rdrand" >&6; }
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 
-  if $GLIBCXX_IS_NATIVE ; then
-    # Do checks for resource limit functions.
+  # Do checks for resource limit functions.
 
   setrlimit_have_headers=yes
   for ac_header in unistd.h sys/time.h sys/resource.h
@@ -79679,6 +79678,7 @@ $as_echo "#define _GLIBCXX_RES_LIMITS 1" >>confdefs.h
 $as_echo "$ac_res_limits" >&6; }
 
 
+  if $GLIBCXX_IS_NATIVE ; then
     # Look for setenv, so that extended locale tests can be performed.
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for setenv declaration" >&5
