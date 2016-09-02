@@ -76,6 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "omp-low.h"
 #include "hsa.h"
+#include "edit-context.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -1221,6 +1222,9 @@ process_options (void)
   /* Some machines may reject certain combinations of options.  */
   targetm.target_option.override ();
 
+  if (flag_diagnostics_generate_patch)
+      global_dc->edit_context_ptr = new edit_context ();
+
   /* Avoid any informative notes in the second run of -fcompare-debug.  */
   if (flag_compare_debug) 
     diagnostic_inhibit_notes (global_dc);
@@ -2146,6 +2150,16 @@ toplev::main (int argc, char **argv)
   /* Invoke registered plugin callbacks if any.  Some plugins could
      emit some diagnostics here.  */
   invoke_plugin_callbacks (PLUGIN_FINISH, NULL);
+
+  if (flag_diagnostics_generate_patch)
+    {
+      gcc_assert (global_dc->edit_context_ptr);
+
+      pretty_printer (pp);
+      pp_show_color (&pp) = pp_show_color (global_dc->printer);
+      global_dc->edit_context_ptr->print_diff (&pp, true);
+      pp_flush (&pp);
+    }
 
   diagnostic_finish (global_dc);
 
