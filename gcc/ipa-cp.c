@@ -4917,7 +4917,7 @@ ipcp_store_bits_results (void)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not considering %s for ipa bitwise propagation "
-				"; -fipa-cp-bit: disabled.\n",
+				"; -fipa-bit-cp: disabled.\n",
 				node->name ());
 	  continue;
 	}
