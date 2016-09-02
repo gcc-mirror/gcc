@@ -34862,7 +34862,6 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4DI_FTYPE_V4DI_V4DI_V4DI_INT_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI_INT_UQI:
     case V2DI_FTYPE_V2DI_V2DI_V2DI_INT_UQI:
-       nargs = 5;
       nargs = 5;
       mask_pos = 1;
       nargs_constant = 1;
