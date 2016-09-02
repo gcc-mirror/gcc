@@ -1,3 +1,9 @@
+2016-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/77421
+	* config/i386/i386.c (ix86_expanded_args_builtin): Remove redundant
+	assignment added in r216794.
+
 2016-09-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add typed-splay-tree.o.
