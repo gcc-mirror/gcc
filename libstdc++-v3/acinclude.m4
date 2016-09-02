@@ -632,10 +632,10 @@ dnl  baseline_dir
 dnl  baseline_subdir_switch
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
-  if $GLIBCXX_IS_NATIVE ; then
-    # Do checks for resource limit functions.
-    GLIBCXX_CHECK_SETRLIMIT
+  # Do checks for resource limit functions.
+  GLIBCXX_CHECK_SETRLIMIT
 
+  if $GLIBCXX_IS_NATIVE ; then
     # Look for setenv, so that extended locale tests can be performed.
     GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
   fi
