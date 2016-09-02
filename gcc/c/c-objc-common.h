@@ -100,6 +100,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING c_omp_predetermined_sharing
 
+#undef LANG_HOOKS_OMP_CLAUSE_COPY_CTOR
+#define LANG_HOOKS_OMP_CLAUSE_COPY_CTOR c_omp_clause_copy_ctor
+
+#undef LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP
+#define LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP c_omp_clause_copy_ctor
+
 #undef LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P c_vla_unspec_p
 #endif /* GCC_C_OBJC_COMMON */

@@ -1,4 +1,10 @@
-2016-09-01 Martin Sebor  <msebor@redhat.com>
+2016-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65467
+	* c-omp.c (c_finish_omp_atomic): Reject _Atomic qualified expressions.
+	(c_finish_omp_for): Reject _Atomic qualified iterators.
+
+2016-09-01  Martin Sebor  <msebor@redhat.com>
 
 	* c-ada-spec.c (dump_ada_function_declaration): Increase buffer
 	size to guarantee it fits the output of the formatted function
@@ -290,7 +296,7 @@
 	PR c++/65970
 	* c.opt (fconstexpr-loop-limit): New.
 
-2016-07-22 Martin Sebor  <msebor@redhat.com>
+2016-07-22  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71675
 	* c-common.c (resolve_overloaded_builtin): Avoid converting

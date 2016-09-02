@@ -1120,7 +1120,8 @@ maybe_lookup_field (tree var, omp_context *ctx)
 static bool
 use_pointer_for_field (tree decl, omp_context *shared_ctx)
 {
-  if (AGGREGATE_TYPE_P (TREE_TYPE (decl)))
+  if (AGGREGATE_TYPE_P (TREE_TYPE (decl))
+      || TYPE_ATOMIC (TREE_TYPE (decl)))
     return true;
 
   /* We can only use copy-in/copy-out semantics for shared variables

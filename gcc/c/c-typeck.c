@@ -12072,6 +12072,13 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       if (error_operand_p (t))
 	return error_mark_node;
       ret = t;
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+	  && TYPE_ATOMIC (strip_array_types (TREE_TYPE (t))))
+	{
+	  error_at (OMP_CLAUSE_LOCATION (c), "%<_Atomic%> %qE in %qs clause",
+		    t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	  return error_mark_node;
+	}
       if (TREE_CODE (t) == COMPONENT_REF
 	  && ort == C_ORT_OMP
 	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
@@ -12109,12 +12116,34 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  return error_mark_node;
 	}
       else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
-	       && VAR_P (t) && DECL_THREAD_LOCAL_P (t))
+	       && TYPE_ATOMIC (TREE_TYPE (t)))
+	{
+	  error_at (OMP_CLAUSE_LOCATION (c), "%<_Atomic%> %qD in %qs clause",
+		    t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	  return error_mark_node;
+	}
+      else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+	       && VAR_P (t)
+	       && DECL_THREAD_LOCAL_P (t))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "%qD is threadprivate variable in %qs clause", t,
 		    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
+	}
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+	  && TYPE_ATOMIC (TREE_TYPE (t))
+	  && POINTER_TYPE_P (TREE_TYPE (t)))
+	{
+	  /* If the array section is pointer based and the pointer
+	     itself is _Atomic qualified, we need to atomically load
+	     the pointer.  */
+	  c_expr expr;
+	  memset (&expr, 0, sizeof (expr));
+	  expr.value = ret;
+	  expr = convert_lvalue_to_rvalue (OMP_CLAUSE_LOCATION (c),
+					   expr, false, false);
+	  ret = expr.value;
 	}
       return ret;
     }
@@ -12675,7 +12704,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  oacc_async = true;
 	  break;
 	}
-	  
+
   for (pc = &clauses, c = clauses; c ; c = *pc)
     {
       bool remove = false;
@@ -12749,6 +12778,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		t = build_fold_addr_expr (t);
 	      t = build2 (MEM_REF, atype, t, build_int_cst (ptype, 0));
 	      OMP_CLAUSE_DECL (c) = t;
+	    }
+	  if (TYPE_ATOMIC (type))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<_Atomic%> %qE in %<reduction%> clause", t);
+	      remove = true;
+	      break;
 	    }
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == NULL_TREE
 	      && (FLOAT_TYPE_P (type)
@@ -12964,6 +13000,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  remove = true;
 		  break;
 		}
+	      if (TYPE_ATOMIC (TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<_Atomic%> %qD in %<linear%> clause", t);
+		  remove = true;
+		  break;
+		}
 	    }
 	  if (ort == C_ORT_OMP_DECLARE_SIMD)
 	    {
@@ -13112,6 +13155,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"an array", t);
 	      remove = true;
 	    }
+	  else if (TYPE_ATOMIC (TREE_TYPE (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<_Atomic%> %qD in %<aligned%> clause", t);
+	      remove = true;
+	      break;
+	    }
 	  else if (bitmap_bit_p (&aligned_head, DECL_UID (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
@@ -13197,6 +13247,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		      remove = true;
 		    }
+		  else if (TYPE_ATOMIC (TREE_TYPE (t)))
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%<_Atomic%> %qE in %qs clause", t,
+				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      remove = true;
+		    }
 		  while (TREE_CODE (t) == ARRAY_REF)
 		    t = TREE_OPERAND (t, 0);
 		  if (TREE_CODE (t) == COMPONENT_REF
@@ -13251,6 +13308,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		  remove = true;
 		}
+	      else if (TYPE_ATOMIC (TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<_Atomic%> %qE in %qs clause", t,
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		}
 	      while (TREE_CODE (t) == COMPONENT_REF)
 		{
 		  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
@@ -13301,6 +13365,15 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD does not have a mappable type in %qs clause", t,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  else if (TREE_TYPE (t) == error_mark_node)
+	    remove = true;
+	  else if (TYPE_ATOMIC (strip_array_types (TREE_TYPE (t))))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<_Atomic%> %qE in %qs clause", t,
 			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
@@ -13642,6 +13715,50 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
   bitmap_obstack_release (NULL);
   return clauses;
+}
+
+/* Return code to initialize DST with a copy constructor from SRC.
+   C doesn't have copy constructors nor assignment operators, only for
+   _Atomic vars we need to perform __atomic_load from src into a temporary
+   followed by __atomic_store of the temporary to dst.  */
+
+tree
+c_omp_clause_copy_ctor (tree clause, tree dst, tree src)
+{
+  if (!really_atomic_lvalue (dst) && !really_atomic_lvalue (src))
+    return build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, src);
+
+  location_t loc = OMP_CLAUSE_LOCATION (clause);
+  tree type = TREE_TYPE (dst);
+  tree nonatomic_type = build_qualified_type (type, TYPE_UNQUALIFIED);
+  tree tmp = create_tmp_var (nonatomic_type);
+  tree tmp_addr = build_fold_addr_expr (tmp);
+  TREE_ADDRESSABLE (tmp) = 1;
+  TREE_NO_WARNING (tmp) = 1;
+  tree src_addr = build_fold_addr_expr (src);
+  tree dst_addr = build_fold_addr_expr (dst);
+  tree seq_cst = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
+  vec<tree, va_gc> *params;
+  /* Expansion of a generic atomic load may require an addition
+     element, so allocate enough to prevent a resize.  */
+  vec_alloc (params, 4);
+
+  /* Build __atomic_load (&src, &tmp, SEQ_CST);  */
+  tree fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_LOAD);
+  params->quick_push (src_addr);
+  params->quick_push (tmp_addr);
+  params->quick_push (seq_cst);
+  tree load = c_build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+
+  vec_alloc (params, 4);
+
+  /* Build __atomic_store (&dst, &tmp, SEQ_CST);  */
+  fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_STORE);
+  params->quick_push (dst_addr);
+  params->quick_push (tmp_addr);
+  params->quick_push (seq_cst);
+  tree store = c_build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+  return build2 (COMPOUND_EXPR, void_type_node, load, store);
 }
 
 /* Create a transaction node.  */

@@ -199,6 +199,11 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
       error_at (loc, "invalid expression type for %<#pragma omp atomic%>");
       return error_mark_node;
     }
+  if (TYPE_ATOMIC (type))
+    {
+      error_at (loc, "%<_Atomic%> expression in %<#pragma omp atomic%>");
+      return error_mark_node;
+    }
 
   if (opcode == RDIV_EXPR)
     opcode = TRUNC_DIV_EXPR;
@@ -479,6 +484,14 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	{
 	  error_at (elocus, "invalid type for iteration variable %qE", decl);
 	  fail = true;
+	}
+      else if (TYPE_ATOMIC (TREE_TYPE (decl)))
+	{
+	  error_at (elocus, "%<_Atomic%> iteration variable %qE", decl);
+	  fail = true;
+	  /* _Atomic iterator confuses stuff too much, so we risk ICE
+	     trying to diagnose it further.  */
+	  continue;
 	}
 
       /* In the case of "for (int i = 0...)", init will be a decl.  It should

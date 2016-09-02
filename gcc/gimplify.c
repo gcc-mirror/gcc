@@ -7911,7 +7911,15 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   if (private_debug)
     code = OMP_CLAUSE_PRIVATE;
   else if (flags & GOVD_MAP)
-    code = OMP_CLAUSE_MAP;
+    {
+      code = OMP_CLAUSE_MAP;
+      if ((gimplify_omp_ctxp->region_type & ORT_ACC) == 0
+	  && TYPE_ATOMIC (strip_array_types (TREE_TYPE (decl))))
+	{
+	  error ("%<_Atomic%> %qD in implicit %<map%> clause", decl);
+	  return 0;
+	}
+    }
   else if (flags & GOVD_SHARED)
     {
       if (is_global_var (decl))
@@ -7935,7 +7943,17 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   else if (flags & GOVD_PRIVATE)
     code = OMP_CLAUSE_PRIVATE;
   else if (flags & GOVD_FIRSTPRIVATE)
-    code = OMP_CLAUSE_FIRSTPRIVATE;
+    {
+      code = OMP_CLAUSE_FIRSTPRIVATE;
+      if ((gimplify_omp_ctxp->region_type & ORT_TARGET)
+	  && (gimplify_omp_ctxp->region_type & ORT_ACC) == 0
+	  && TYPE_ATOMIC (strip_array_types (TREE_TYPE (decl))))
+	{
+	  error ("%<_Atomic%> %qD in implicit %<firstprivate%> clause on "
+		 "%<target%> construct", decl);
+	  return 0;
+	}
+    }
   else if (flags & GOVD_LASTPRIVATE)
     code = OMP_CLAUSE_LASTPRIVATE;
   else if (flags & GOVD_ALIGNED)
@@ -8090,9 +8108,21 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 
       switch (OMP_CLAUSE_CODE (c))
 	{
+	case OMP_CLAUSE_FIRSTPRIVATE:
+	  if ((ctx->region_type & ORT_TARGET)
+	      && (ctx->region_type & ORT_ACC) == 0
+	      && TYPE_ATOMIC (strip_array_types
+					(TREE_TYPE (OMP_CLAUSE_DECL (c)))))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<_Atomic%> %qD in %<firstprivate%> clause on "
+			"%<target%> construct", OMP_CLAUSE_DECL (c));
+	      remove = true;
+	      break;
+	    }
+	  /* FALLTHRU */
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_SHARED:
-	case OMP_CLAUSE_FIRSTPRIVATE:
 	case OMP_CLAUSE_LINEAR:
 	  decl = OMP_CLAUSE_DECL (c);
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
