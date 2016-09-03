@@ -1,3 +1,7 @@
+2016-09-03  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* ubsan.c (ubsan_use_new_style_p): Fix check for empty string.
+
 2016-09-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.opt (fdiagnostics-generate-patch): New option.
