@@ -1,6 +1,7 @@
 /* PR c/65467 */
 /* { dg-do compile } */
 /* { dg-additional-options "-std=c11" } */
+/* { dg-require-effective-target vect_simd_clones } */
 
 #pragma omp declare simd
 int
