@@ -1,3 +1,8 @@
+2016-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65467
+	* gcc.dg/gomp/_Atomic-4.c: Require vect_simd_clones effective target.
+
 2016-09-02  Kirill Yukhin  <kirill.yukhin@gmaile.com>
 
 	* gcc.target/i386/avx512f-klogic-2.c: Fix operand calculation order.
