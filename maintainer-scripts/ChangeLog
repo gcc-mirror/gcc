@@ -1,3 +1,8 @@
+2016-09-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_svn (CSS): Introduce.
+	Have generated files refer to it.
+
 2016-08-17  Martin Liska  <mliska@suse.cz>
 
 	* branch_changer.py: Describe the script. Add sample usage
