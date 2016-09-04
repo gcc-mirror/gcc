@@ -1,3 +1,22 @@
+2016-09-04  John David Anglin  <danglin@gcc.gnu.org>
+
+	* src/pa/ffi.c (ffi_struct_type): Put type declaration on separate line.
+	(ffi_prep_args_pa32): Likewise.
+	(ffi_size_stack_pa32): Likewise.
+	(ffi_prep_cif_machdep): Likewise.
+	(ffi_call): Likewise.  Rename to ffi_call_int.  Add closure argument
+	and update call to ffi_call_pa32.
+	(ffi_call, ffi_call_go, ffi_prep_go_closure): New.
+	(ffi_closure_inner_pa32): Update to handle go closures.
+	* src/pa/ffitarget.h (FFI_GO_CLOSURES): Define.
+	* src/pa/hpux32.S (ffi_call_pa32): Pass go closure argument in static
+	chain register (%ret1).
+	(ffi_closure_pa32): Set closure type argument to zero.
+	(ffi_go_closure_pa32): New function.  Add unwind data for it.
+	* src/pa/linux.S: Likewise.  Use cfi directives for unwind data.
+	* testsuite/libffi.go/static-chain.h (STATIC_CHAIN_REG): Define for
+	hppa.
+
 2016-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libffi/65567

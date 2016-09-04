@@ -4,6 +4,12 @@
 # define STATIC_CHAIN_REG  "$1"
 #elif defined(__arm__)
 # define STATIC_CHAIN_REG  "ip"
+#elif defined(__hppa__)
+# if defined(__LP64)
+#   define define STATIC_CHAIN_REG  "%r31"
+# else
+#   define define STATIC_CHAIN_REG  "%r29"   /* %ret1 */
+# endif
 #elif defined(__sparc__)
 # if defined(__arch64__) || defined(__sparcv9)
 #  define STATIC_CHAIN_REG "g5"
