@@ -1,3 +1,8 @@
+2016-09-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77460
+	* gfortran.dg/pr77460.f90: New test.
+
 2016-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/65467

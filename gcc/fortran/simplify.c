@@ -489,6 +489,8 @@ simplify_transformation_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *
 	}
 
       result = op (result, gfc_copy_expr (a));
+      if (!result)
+	return result;
     }
 
   return result;
