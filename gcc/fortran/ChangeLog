@@ -1,3 +1,9 @@
+2016-09-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77460
+	* simplify.c (simplify_transformation_to_scalar):  On error, result
+	may be NULL, simply return.
+
 2016-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/77352
