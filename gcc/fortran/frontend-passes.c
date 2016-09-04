@@ -164,17 +164,32 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   gfc_expr *expr1, *expr2;
   gfc_code *co = *c;
   gfc_expr *n;
+  gfc_ref *ref;
+  bool found_substr;
 
   if (co->op != EXEC_ASSIGN)
     return 0;
 
   expr1 = co->expr1;
   if (expr1->ts.type != BT_CHARACTER || expr1->rank != 0
-      || !expr1->symtree->n.sym->attr.allocatable)
+      || !gfc_expr_attr(expr1).allocatable
+      || !expr1->ts.deferred)
     return 0;
 
   expr2 = gfc_discard_nops (co->expr2);
   if (expr2->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  found_substr = false;
+  for (ref = expr2->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_SUBSTRING)
+	{
+	  found_substr = true;
+	  break;
+	}
+    }
+  if (!found_substr)
     return 0;
 
   if (!gfc_check_dependency (expr1, expr2, true))
@@ -190,7 +205,7 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   current_code = c;
   inserted_block = NULL;
   changed_statement = NULL;
-  n = create_var (expr2, "trim");
+  n = create_var (expr2, "realloc_string");
   co->expr2 = n;
   return 0;
 }
