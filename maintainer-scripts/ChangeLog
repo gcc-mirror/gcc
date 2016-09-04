@@ -1,5 +1,6 @@
 2016-09-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	PR documentation/50642 
 	* update_web_docs_svn (CSS): Introduce.
 	Have generated files refer to it.
 
