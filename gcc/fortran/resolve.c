@@ -11488,6 +11488,27 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 }
 
 
+/* F2008, C402 (R401):  A colon shall not be used as a type-param-value
+   except in the declaration of an entity or component that has the POINTER
+   or ALLOCATABLE attribute.  */
+
+static bool
+deferred_requirements (gfc_symbol *sym)
+{
+  if (sym->ts.deferred
+      && !(sym->attr.pointer
+	   || sym->attr.allocatable
+	   || sym->attr.omp_udr_artificial_var))
+    {
+      gfc_error ("Entity %qs at %L has a deferred type parameter and "
+		 "requires either the POINTER or ALLOCATABLE attribute",
+		 sym->name, &sym->declared_at);
+      return false;
+    }
+  return true;
+}
+
+
 /* Resolve symbols with flavor variable.  */
 
 static bool
@@ -11527,17 +11548,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     }
 
   /* Constraints on deferred type parameter.  */
-  if (sym->ts.deferred
-      && !(sym->attr.pointer
-	   || sym->attr.allocatable
-	   || sym->attr.omp_udr_artificial_var))
-    {
-      gfc_error ("Entity %qs at %L has a deferred type parameter and "
-		 "requires either the pointer or allocatable attribute",
-		     sym->name, &sym->declared_at);
-      specification_expr = saved_specification_expr;
-      return false;
-    }
+  if (!deferred_requirements (sym))
+    return false;
 
   if (sym->ts.type == BT_CHARACTER)
     {
@@ -13681,6 +13693,10 @@ resolve_fl_parameter (gfc_symbol *sym)
 		 "or of deferred shape", sym->name, &sym->declared_at);
       return false;
     }
+
+  /* Constraints on deferred type parameter.  */
+  if (!deferred_requirements (sym))
+    return false;
 
   /* Make sure a parameter that has been implicitly typed still
      matches the implicit type, since PARAMETER statements can precede

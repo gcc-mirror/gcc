@@ -1,5 +1,11 @@
 2016-09-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/77391
+	* resolve.c (deferred_requirements): New function to check F2008:C402.
+	(resolve_fl_variable,resolve_fl_parameter): Use it.
+ 
+2016-09-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/77460
 	* simplify.c (simplify_transformation_to_scalar):  On error, result
 	may be NULL, simply return.
