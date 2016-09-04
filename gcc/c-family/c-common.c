@@ -5834,7 +5834,12 @@ build_va_arg (location_t loc, tree expr, tree type)
       /* Verify that &ap is still recognized as having va_list type.  */
       tree canon_expr_type
 	= targetm.canonical_va_list_type (TREE_TYPE (expr));
-      gcc_assert (canon_expr_type != NULL_TREE);
+      if (canon_expr_type == NULL_TREE)
+	{
+	  error_at (loc,
+		    "first argument to %<va_arg%> not of type %<va_list%>");
+	  return error_mark_node;
+	}
 
       return build_va_arg_1 (loc, type, expr);
     }
@@ -5902,7 +5907,12 @@ build_va_arg (location_t loc, tree expr, tree type)
       /* Verify that &ap is still recognized as having va_list type.  */
       tree canon_expr_type
 	= targetm.canonical_va_list_type (TREE_TYPE (expr));
-      gcc_assert (canon_expr_type != NULL_TREE);
+      if (canon_expr_type == NULL_TREE)
+	{
+	  error_at (loc,
+		    "first argument to %<va_arg%> not of type %<va_list%>");
+	  return error_mark_node;
+	}
     }
   else
     {
