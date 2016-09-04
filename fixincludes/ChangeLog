@@ -1,3 +1,8 @@
+2016-09-04  John David Anglin  <danglin@gcc.gnu.org>
+
+	* inclhack.def (hpux_longjmp): Adjust select regular expression.
+	* fixincl.x: Regenerate.
+
 2016-08-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	* inclhack.def (hpux_longjmp): New fix.

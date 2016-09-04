@@ -2648,7 +2648,7 @@ fix = {
     hackname = hpux_longjmp;
     mach     = "*-hp-hpux*";
     files    = setjmp.h;
-    select   = "^[ \t]*extern[ \t]+void.*longjmp[ \t]+__\\(\\(.*int\\)\\)";
+    select   = "^[ \t]*extern[ \t]+void[ \t]+.*longjmp[ \t]*\(__\\(\\(.*int\\)\\)|\\(.*int\\)|\\(\\)\)";
 
     c_fix     = format;
     c_fix_arg = "%0 __attribute__ ((__noreturn__))";
