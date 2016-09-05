@@ -312,7 +312,7 @@ namespace __variant
       _M_storage() const
       {
 	return const_cast<void*>(
-	  static_cast<const void*>(&_M_first._M_storage));
+	  static_cast<const void*>(std::addressof(_M_first._M_storage)));
       }
 
       union

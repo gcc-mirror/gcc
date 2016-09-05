@@ -1,3 +1,8 @@
+2016-09-05  Mikhail Strelnikov  <mikhail.strelnikov@gmail.com>
+
+	* include/std/variant (_Variant_storage::_M_storage()): Use std::addressof
+	instead of operator& to take address.
+
 2016-09-02  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* acinclude.m4 (GLIBCXX_CONFIGURE_TESTSUITE): Check for presence of
