@@ -278,7 +278,7 @@
 	* c-typeck.c (build_conditional_expr): Return error_mark_node if
 	c_common_type returns error_mark_node.
 
-2016-06-19 Martin Sebor  <msebor@redhat.com>
+2016-06-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c/69507
 	* c-parser.c (c_parser_alignof_expression): Avoid diagnosing
@@ -2027,7 +2027,7 @@
 	* c-typeck.c (build_array_ref): Pass loc down to
 	warn_array_subscript_with_type_char.
 
-2014-12-20  Martin Uecker <uecker@eecs.berkeley.edu>
+2014-12-20  Martin Uecker  <uecker@eecs.berkeley.edu>
 
 	* c-typeck.c: New behavious for pointers to arrays with qualifiers
         (common-pointer-type): For pointers to arrays take qualifiers from
@@ -2349,7 +2349,7 @@
 	Likewise.
 	(c_parser_postfix_expression) <case RID_C99_FUNCTION_NAME>: Likewise.
 
-2014-08-10 Marek Polacek  <polacek@redhat.com>
+2014-08-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c/51849
 	* c-decl.c (build_array_declarator): Remove check for !flag_isoc99.
@@ -2436,7 +2436,7 @@
 	function parameter.
 
 2014-07-02  Jan Hubicka  <hubicka@ucw.cz>
-	    Chen Gang <gang.chen.5i5j@gmail.com>
+	    Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	* c-decl.c (duplicate_decls): CLear DECL_STRUCT_FUNCTION before
 	releasing symbol.

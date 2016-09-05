@@ -222,7 +222,7 @@
 	(define_insn "*return_and_restore_fpregs_aix_<mode>_r1"): Ditto.
 
 2016-09-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-	    Michael Meissner <meissner@linux.vnet.ibm.com>
+	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/72827
 	* config/rs6000/rs6000.c (rs6000_legitimize_address): Avoid
@@ -697,8 +697,8 @@
 	(gen_scheduled_generic_parms_dies): Do not set early dwarf here.
 	(dwarf2out_early_finish): But do it here.
 
-2016-08-24  Michael Collison <michael.collison@linaro.org>
-	    Michael Collison <michael.collison@arm.com>
+2016-08-24  Michael Collison  <michael.collison@linaro.org>
+	    Michael Collison  <michael.collison@arm.com>
 
 	* config/arm/arm-modes.def: Add new condition code mode CC_V
 	to represent the overflow bit.
@@ -1253,8 +1253,8 @@
 	When doing auto-parallelizing also prevent use of PHIs that
 	carry dependences across loop backedges.
 
-2016-08-18  Tamar Christina  <tamar.christina@arm.com>
-	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+2016-08-18  Tamar Christina  <tamar.christina@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* varasm.c (default_use_anchors_for_symbol_p): Reject too large decls.
 
@@ -1298,7 +1298,7 @@
 	when find_reloads_toplev returns address_reloaded==-1.
 	(alternative_allows_const_pool_ref): Update comment.
 
-2015-08-17  Alan Hayward <alan.hayward@arm.com>
+2015-08-17  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71752
 	* tree-vect-loop.c (vectorizable_reduction): Keep SLP operand ordering.
@@ -1796,7 +1796,7 @@
 	the currently executable edges have fixed ranges.  Always
 	go through update_value_range.
 
-2016-08-12  Alexandre Oliva <aoliva@redhat.com>
+2016-08-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/63240
 	* langhooks-def.h
@@ -2778,7 +2778,7 @@
 	fix_debug_reg_uses after changing source register mode to
 	V1TImode if source register is undefined.
 
-2015-08-01  Alan Hayward <alan.hayward@arm.com>
+2015-08-01  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71818
 	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Don't advance IVs
@@ -3160,7 +3160,7 @@
 	choosing a better vector mode to do the extraction from.
 
 2016-07-26  Richard Biener  <rguenther@suse.de>
-	    Prathamesh Kulkarni <prathamesh.kulkarni@linaro.org>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR middle-end/70920
 	* match.pd ((intptr)x eq/ne CST to x eq/ne (typeof x) CST): New
@@ -6299,7 +6299,7 @@
 	* tree-ssa-loop-ivopts.c (determine_group_iv_cost_address): Compute
 	cost for all uses in group.
 
-2016-06-17 Bin Cheng  <bin.cheng@arm.com>
+2016-06-17  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Only
 	insert gimple seq if it's not empty.
@@ -9785,7 +9785,7 @@
 	builtin __SANITIZE_THREAD__ macros for fsanitize=thread switch.
 	* doc/cpp.texi: Document new macros.
 
-2016-05-19 Bin Cheng  <bin.cheng@arm.com>
+2016-05-19  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/69848
 	* tree-vect-loop.c (vectorizable_reduction): Don't factor
@@ -10014,7 +10014,7 @@
 	cleanup_cfg with CLEANUP_EXPENSIVE after shrink-wrapping instead
 	of before.  Add a comment.
 
-2016-05-18 Bin Cheng  <bin.cheng@arm.com>
+2016-05-18  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Check invariant
 	expression pointer, not pointer to the pointer.
@@ -15217,7 +15217,7 @@
 	(possible_polymorphic_call_target_p): Fix formatting.
 
 2016-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-	    Jakub Jelinek <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70457
 	* tree-inline.c (estimate_num_insn): Use gimple_call_builtin_p
@@ -16391,7 +16391,7 @@
 	* config/aarch64/aarch64.opt (aarch64_fix_a53_err843419): Save.
 
 2016-03-10  Alan Lawrence  <alan.lawrence@arm.com>
-	Jakub Jelinek <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	* common.opt (funconstrained-commons, flag_unconstrained_commons): New.
 	* tree.c (array_at_struct_end_p): Do not limit to size of decl for
@@ -18931,7 +18931,7 @@
 	* wide-int.cc (canonize_uhwi): New function.
 	(wi::divmod_internal): Use it.
 
-2016-02-02  James Norris  <jnorris@codesourcery.com
+2016-02-02  James Norris  <jnorris@codesourcery.com>
 
 	* gimplify.c (omp_notice_variable): Add usage check.
 

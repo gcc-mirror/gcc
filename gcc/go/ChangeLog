@@ -1,4 +1,4 @@
-2016-09-01 Martin Sebor  <msebor@redhat.com>
+2016-09-01  Martin Sebor  <msebor@redhat.com>
 
 	* gofrontend/expressions.cc: Increase buffer size to guarantee
 	it fits the output of the formatted function regardless of its

@@ -95,13 +95,13 @@
 	* interface.c (compare_components, gfc_compare_derived_types): Use new
 	functions.
 
-2016-08-27  Steven G. Kargl <kargl@gcc.gnu.org>
+2016-08-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77380
 	* dependency.c (gfc_check_dependency): Do not assert with
 	-fcoarray=lib.
 
-2016-08-27  Steven G. Kargl <kargl@gcc.gnu.org>
+2016-08-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77372
 	simplify.c (simplify_ieee_selected_real_kind): Check for NULL pointers.
@@ -271,7 +271,7 @@
 	* intrinsic.c (add_function, add_subroutine): New B/I/J/K intrinsic
 	variants.
 
-2016-07-30  Steven G. Kargl <kargl@gcc.gnu.org>
+2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/41922
 	* target-memory.c (expr_to_char): Pass in locus and use it in error
@@ -395,7 +395,7 @@
 	a static one.
 
 2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-	    Marco Restelli <mrestelli@gmail.com>
+	    Marco Restelli  <mrestelli@gmail.com>
 
 	PR fortran/62125
 	* symbol.c (select_type_insert_tmp): Recursively call self to take care
@@ -950,7 +950,7 @@
 	* dump-parse-tree.c (show_code_node):  Print association
 	list of a block if present.  Handle EXEC_END_BLOCK.
 
-2016-02-28  Harald Anlauf <anlauf@gmx.de>
+2016-02-28  Harald Anlauf  <anlauf@gmx.de>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/56007
@@ -1136,7 +1136,7 @@
 	* frontend-passes.c (matmul_lhs_realloc):  Add
 	forgotten break statement.
 
-2016-01-24  Dominique d'Humieres <dominiq@lps.ens.fr>
+2016-01-24  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/68283
 	* primary.c (gfc_variable_attr): revert revision r221955,

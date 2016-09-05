@@ -239,12 +239,12 @@
 	PR tree-optimization/71077
 	* gcc.target/i386/pr71077.c: New test.
 
-2016-08-27  Steven G. Kargl <kargl@gcc.gnu.org>
+2016-08-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77380
 	* gfortran.dg/pr77380.f90: New test.
 
-2016-08-27  Steven G. Kargl <kargl@gcc.gnu.org>
+2016-08-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77372
 	gfortran.dg/pr77372.f90: New test.
@@ -298,8 +298,8 @@
 	PR fortran/77358
 	* gfortran.dg/submodule_17.f08: New test.
 
-2016-08-24  Michael Collison <michael.collison@linaro.org>
-	    Michael Collison <michael.collison@arm.com>
+2016-08-24  Michael Collison  <michael.collison@linaro.org>
+	    Michael Collison  <michael.collison@arm.com>
 
 	* gcc.target/arm/builtin_saddl.c: New testcase.
 	* gcc.target/arm/builtin_saddll.c: New testcase.
@@ -605,7 +605,7 @@
 	PR fortran/67496
 	* gfortran.dg/pr67496.f90: New test.
 
-2015-08-17  Alan Hayward <alan.hayward@arm.com>
+2015-08-17  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71752
 	* gcc.dg/vect/pr71752.c: New.
@@ -833,7 +833,7 @@
 	PR tree-optimization/72851
 	* gcc.dg/torture/pr72851.c: New testcase.
 
-2016-08-12  Alexandre Oliva <aoliva@redhat.com>
+2016-08-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/63240
 	* g++.dg/debug/dwarf2/defaulted-member-function-1.C: New.
@@ -1348,7 +1348,7 @@
 	PR target/72748
 	* gcc.target/i386/pr72748.c: New test.
 
-2015-08-01  Alan Hayward <alan.hayward@arm.com>
+2015-08-01  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/71818
 	* gcc.dg/vect/pr71818.c: New
@@ -1376,7 +1376,7 @@
 	* lib/target-supports.exp (check_effective_target_c): Fix indentation.
 	(check_effective_target_c++): Likewise. Also match for libstdc++.
 
-2016-07-30  Steven G. Kargl <kargl@gcc.gnu.org>
+2016-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/41922
 	* gfortran.dg/equiv_constraint_5.f90: Adjust the error message.
@@ -1704,7 +1704,7 @@
 	EFFECTIVE_TARGETS list.  Return the number of supported targets.
 
 2016-07-26  Richard Biener  <rguenther@suse.de>
-	    Prathamesh Kulkarni <prathamesh.kulkarni@linaro.org>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR middle-end/70920
 	* gcc.dg/pr70920-1.c: New test-case.
@@ -1973,7 +1973,7 @@
 	* g++.dg/cpp0x/nullptr35.C (caught): Fix typo.
 
 2016-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-	    Marco Restelli <mrestelli@gmail.com>
+	    Marco Restelli  <mrestelli@gmail.com>
 
 	PR fortran/62125
 	* gfortran.dg/pr62125.f90: New test.
@@ -2419,7 +2419,7 @@
 	* gcc.target/i386/mpx/mpx-check.h: Check XGETBV output
 	if kernel supports MPX.
 
-2016-07-05  Kito Cheng <kito.cheng@gmail.com>
+2016-07-05  Kito Cheng  <kito.cheng@gmail.com>
 
 	* gcc.c-torture/compile/pr69102.c: Require fpic support.
 
@@ -6548,7 +6548,7 @@
 	PR tree-optimization/70780
 	* gcc.dg/torture/pr70780.c: New testcase.
 
-2016-04-25  Michael Collison <michael.collison@arm.com>
+2016-04-25  Michael Collison  <michael.collison@arm.com>
 
 	* gcc.target/arm/neon-vaddws16.c: New test.
 	* gcc.target/arm/neon-vaddws32.c: New test.
@@ -7260,7 +7260,7 @@
 	* g++.dg/ipa/devirt-51.C: New testcase.
 
 2016-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-	    Jakub Jelinek <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70457
 	* gcc.dg/torture/pr70457.c: New.
@@ -7490,7 +7490,7 @@
 	PR tree-optimization/59124
 	* gcc.dg/Warray-bounds-19.c: New test.
 
-2016-03-29  Zachary T Welch <zwelch@codesourcery.com>
+2016-03-29  Zachary T Welch  <zwelch@codesourcery.com>
 
 	* lib/prune.exp (escape_regex_chars): New.
 	(prune_file_path): Update to quote metcharacters for regexp.
