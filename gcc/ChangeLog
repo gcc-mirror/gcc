@@ -1,3 +1,13 @@
+2016-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77476
+	* config/i386/i386.md (isa): Add x64_avx512bw.
+	(*zero_extendsidi2): For alternative 11 use x64_avx512bw isa.
+	(kmov_isa): New mode attr.
+	(zero_extend<mode>di2): Use <kmov_isa> isa for the last alternative.
+	(*zero_extend<mode>si2): Likewise.
+	(*zero_extendqihi2): Use avx512dq isa for the last alternative.
+
 2016-09-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (SPU Options): nops -> NOPs.
