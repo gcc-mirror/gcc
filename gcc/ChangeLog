@@ -1,3 +1,8 @@
+2016-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/77425
+	* ipa-devirt.c (get_odr_type): Set val->id unconditionally.
+
 2016-09-03  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* ubsan.c (ubsan_use_new_style_p): Fix check for empty string.
