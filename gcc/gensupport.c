@@ -1632,33 +1632,30 @@ duplicate_each_alternative (const char * str, int n_dup)
 static const char *
 alter_output_for_subst_insn (rtx insn, int alt)
 {
-  const char *insn_out, *sp ;
-  char *old_out, *new_out, *cp;
-  int i, j, new_len;
+  const char *insn_out, *old_out;
+  char *new_out, *cp;
+  size_t old_len, new_len;
+  int j;
 
   insn_out = XTMPL (insn, 3);
 
-  if (alt < 2 || *insn_out == '*' || *insn_out != '@')
+  if (alt < 2 || *insn_out != '@')
     return insn_out;
 
-  old_out = XNEWVEC (char, strlen (insn_out)),
-  sp = insn_out;
+  old_out = insn_out + 1;
+  while (ISSPACE (*old_out))
+    old_out++;
+  old_len = strlen (old_out);
 
-  while (ISSPACE (*sp) || *sp == '@')
-    sp++;
-
-  for (i = 0; *sp;)
-    old_out[i++] = *sp++;
-
-  new_len = alt * (i + 1) + 1;
+  new_len = alt * (old_len + 1) + 1;
 
   new_out = XNEWVEC (char, new_len);
   new_out[0] = '@';
 
-  for (j = 0, cp = new_out + 1; j < alt; j++, cp += i + 1)
+  for (j = 0, cp = new_out + 1; j < alt; j++, cp += old_len + 1)
     {
-      memcpy (cp, old_out, i);
-      *(cp+i) = (j == alt - 1) ? '\0' : '\n';
+      memcpy (cp, old_out, old_len);
+      cp[old_len] = (j == alt - 1) ? '\0' : '\n';
     }
 
   return new_out;
