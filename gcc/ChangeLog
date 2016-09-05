@@ -1,3 +1,8 @@
+2016-09-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (SPU Options): nops -> NOPs.
+	(x86 Options): Ditto.
+
 2016-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/77475
