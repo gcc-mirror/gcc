@@ -1,3 +1,8 @@
+2016-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77396
+	* asan/asan_globals.cc: Cherry-pick upstream r280657.
+
 2016-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/71042

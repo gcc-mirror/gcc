@@ -1,3 +1,8 @@
+2016-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77396
+	* g++.dg/asan/pr77396-2.C: New test.
+
 2016-09-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/77452
