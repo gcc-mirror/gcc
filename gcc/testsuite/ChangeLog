@@ -1,5 +1,8 @@
 2016-09-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* lib/target-supports.exp (check_effective_target_vect_simd_clones):
+	Update comment to mention also avx512f.
+
 	PR sanitizer/77396
 	* g++.dg/asan/pr77396-2.C: New test.
 

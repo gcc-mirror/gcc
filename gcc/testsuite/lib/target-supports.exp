@@ -2909,10 +2909,10 @@ proc check_effective_target_vect_simd_clones { } {
     } else {
 	set et_vect_simd_clones_saved($et_index) 0
 	if { [istarget i?86-*-*] || [istarget x86_64-*-*] } {
-	    # On i?86/x86_64 #pragma omp declare simd builds a sse2, avx and
-	    # avx2 clone.  Only the right clone for the specified arch will be
-	    # chosen, but still we need to at least be able to assemble
-	    # avx2.
+	    # On i?86/x86_64 #pragma omp declare simd builds a sse2, avx, avx2
+	    # and avx512f clone.  Only the right clone for the specified arch
+	    # will be chosen, but still we need to at least be able to assemble
+	    # avx512f.
 	    if { [check_effective_target_avx512f] } {
 		set et_vect_simd_clones_saved($et_index) 1
 	    }
