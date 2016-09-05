@@ -1,3 +1,9 @@
+2016-09-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/77452
+	* explow.c (plus_constant) <case MEM>: Extract scalar constant from
+	inner-mode reference to a CONST_VECTOR constant in the constant pool.
+
 2016-09-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/77423
