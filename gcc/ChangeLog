@@ -1,3 +1,9 @@
+2016-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77475
+	* toplev.c (process_options): Temporarily set input_location
+	to UNKNOWN_LOCATION around targetm.target_option.override () call.
+
 2016-09-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/77452

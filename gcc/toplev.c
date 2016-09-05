@@ -1220,7 +1220,10 @@ process_options (void)
   no_backend = lang_hooks.post_options (&main_input_filename);
 
   /* Some machines may reject certain combinations of options.  */
+  location_t saved_location = input_location;
+  input_location = UNKNOWN_LOCATION;
   targetm.target_option.override ();
+  input_location = saved_location;
 
   if (flag_diagnostics_generate_patch)
       global_dc->edit_context_ptr = new edit_context ();
