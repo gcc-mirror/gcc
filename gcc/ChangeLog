@@ -1,5 +1,10 @@
 2016-09-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR other/77421
+	* gensupport.c (alter_output_for_subst_insn): Remove redundant
+	*insn_out == '*' test.  Don't copy unnecessary to yet another
+	memory buffer, and don't leak it.
+
 	PR rtl-optimization/77425
 	* ipa-devirt.c (get_odr_type): Set val->id unconditionally.
 
