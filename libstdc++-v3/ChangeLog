@@ -1,3 +1,7 @@
+2016-09-05  Tim Shen  <timshen@google.com>
+
+	* include/std/variant: include bits/move.h for std::addressof.
+
 2016-09-05  Mikhail Strelnikov  <mikhail.strelnikov@gmail.com>
 
 	* include/std/variant (_Variant_storage::_M_storage()): Use std::addressof
