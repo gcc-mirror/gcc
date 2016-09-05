@@ -96,7 +96,7 @@
 	* semantics.c (finish_omp_clauses): Add FALLTHRU.
 	* tree.c (lvalue_kind): Likewise.
 
-2016-08-12  Alexandre Oliva <aoliva@redhat.com>
+2016-08-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/63240
 	* cp-objcp-common.c (cp_function_decl_defaulted): New.

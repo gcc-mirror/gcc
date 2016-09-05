@@ -1,4 +1,4 @@
-2016-09-01 Martin Sebor  <msebor@redhat.com>
+2016-09-01  Martin Sebor  <msebor@redhat.com>
 
 	* decl.c (give_name_to_locals): Increase buffer size to guarantee
 	it fits the output of the formatted function regardless of its
@@ -1060,7 +1060,7 @@
 	java_init_options.
 	(LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.
 
-2010-10-04  Andi Kleen <ak@linux.intel.com>
+2010-10-04  Andi Kleen  <ak@linux.intel.com>
 
 	* Make-lang.in (xgcj, jc1, jcf-dump, jvgenmain):
 	Add + to build rule.
@@ -1495,7 +1495,7 @@
 	(build_jni_stub): Remove unused res_type variable.
 	* verify-impl.c (check_field_constant): Remove unused len variable.
 
-2009-10-20  Joel Dice <dicej@mailsnare.net>
+2009-10-20  Joel Dice  <dicej@mailsnare.net>
 
 	PR java/28474
 	* mangle_name.c (append_unicode_mangled_name): Fix mangling
@@ -1690,7 +1690,7 @@
 
 	* jcf-parse.c (handle_constant): Add cast to enum type.
 
-2009-04-21  Taras Glek <tglek@mozilla.com>
+2009-04-21  Taras Glek  <tglek@mozilla.com>
 
 	* builtins.c: Update GTY annotations to new syntax
 	* decl.c: Likewise
@@ -1994,7 +1994,7 @@
 	* jcf-dump.c (print_constant): Use
 	HOST_LONG_LONG_FORMAT.
 
-2008-05-07  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-07  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* decl.c (java_init_decl_processing): Change DECL_IS_PURE to
 	DECL_PURE_P.
@@ -2196,7 +2196,7 @@
 	* lang.c (java_dump_tree): Update.
 	* java-tree.h (DECL_FUNCTION_BODY): Remove.
 
-2007-09-11  Jan Hubicka <jh@suse.cz>
+2007-09-11  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (java_expand_body): Kill.
 	(LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.
@@ -3938,7 +3938,7 @@
 	* gjavah.c (decompile_method): Add ATTRIBUTE_UNUSED
 
 2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
-	    Wil Mahan <wmahan@gmail.com>
+	    Wil Mahan  <wmahan@gmail.com>
 
 	PR java/23620
 	* class.c (make_class): Create empty binfo here.
@@ -4089,7 +4089,7 @@
 	* java-gimplify.c (java_gimplify_modify_expr): Fix any pointer
 	type mismatches to make legal GIMPLE.
 
-2005-08-10  Robin Green <greenrd@greenrd.org>
+2005-08-10  Robin Green  <greenrd@greenrd.org>
 
 	PR java/23230:
 	* parse.y (maybe_use_access_method): Generalize check from
@@ -4447,7 +4447,7 @@
 	* jcf-write.c (generate_bytecode_insns) <SAVE_EXPR>: Don't call
 	NOTE_PUSH.
 
-2005-05-12  Aaron Luchko <aluchko@redhat.com>
+2005-05-12  Aaron Luchko  <aluchko@redhat.com>
 
 	* gcj.texi: Add '-verify', '-noverify', and '-verifyremote'.
 
@@ -6288,7 +6288,7 @@
 	* jcf-write.c (find_constant_index): Canonicalize NaNs when
 	generating bytecode.
 
-2004-08-16  Elliot Lee <sopwith@redhat.com>
+2004-08-16  Elliot Lee  <sopwith@redhat.com>
 
 	PR java/9677
 	* jcf-parse.c (java_parse_file): Handle filenames with embedded
@@ -7098,7 +7098,7 @@
 	class in an interface - create helper class nested in outer interface.
 	(build_assertion):  Short-circuit if enable_assertions is false.
 
-2004-03-18  Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
+2004-03-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* java-tree.h: Changes throughout to add checking to macros
 	and numerous whitespace changes.
@@ -8518,7 +8518,7 @@
 	* parse.y (java_expand_classes): Scan the whole class list looking
 	for access methods that haven't yet been expanded.
 
-2003-01-31 Adrian Bunk <bunk@fs.tum.de>
+2003-01-31 Adrian Bunk  <bunk@fs.tum.de>
 
 	Fix for java/4269:
 
@@ -8838,7 +8838,7 @@
 
 	* gcj.texi (GNU Classpath Properties): Document new properties.
 
-2003-01-02  Steven Bosscher <s.bosscher@student.tudelft.nl>
+2003-01-02  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* java/jcf-reader.c, java/jvgenmain.c, java/keyword.gperf,
 	java/lang-options.h, java/mangle.c, java/mangle_name.c,
@@ -8933,8 +8933,8 @@
 
 	* gcj.texi: Change version number to 3.4.
 
-2002-12-05  Ranjit Mathew <rmathew@hotmail.com>
-	Andrew Haley <aph@redhat.com>
+2002-12-05  Ranjit Mathew  <rmathew@hotmail.com>
+	Andrew Haley  <aph@redhat.com>
 
 	* parse.y (source_end_java_method): Remove custom encoding of line
 	numbers for a function decl before passing it to the back end.
@@ -8979,8 +8979,8 @@
 	* parse.y (patch_binop): Cast right hand side of shift expression
 	to `int'.  Fixes PR java/8676.
 
-2002-11-22  Ranjit Mathew <rmathew@hotmail.com>
-	    Andrew Haley <aph@redhat.com>
+2002-11-22  Ranjit Mathew  <rmathew@hotmail.com>
+	    Andrew Haley  <aph@redhat.com>
 
 	* gcc/java/jcf-write.c (write_classfile): Remove target
 	class file, if it exists, before renaming the temporary
@@ -9069,7 +9069,7 @@
 	* lang.c (dump_compound_expr): New.
 	(java_dump_tree): New.
 
-2002-10-20  Ranjit Mathew <rmathew@hotmail.com>
+2002-10-20  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* gcj.texi: Added item describing the GCJ runtime property
 	"gnu.gcj.progname".
@@ -9236,7 +9236,7 @@
 	* except.c (link_handler): Initialize `expanded' in new eh_range.
 	(binding_depth, is_class_level, current_pc): Declare extern.
 
-2002-09-01  Mark Wielaard <mark@klomp.org>
+2002-09-01  Mark Wielaard  <mark@klomp.org>
 
 	* gcj.texi: Add chapter about system properties.
 	Fixed some typos.
@@ -9337,7 +9337,7 @@
 	(jcf_path_init): Use GET_ENVIRONMENT.
 
 2002-07-10  Roger Sayle  <roger@eyesopen.com>
-	    Zack Weinberg <zack@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
 
 	* builtins.c (initialize_builtins): Remove defines that
 	handled C/C++ specific junk hereby removed from builtins.def.
@@ -10046,7 +10046,7 @@
 	(java.install-common): Link native driver to
 	JAVA_TARGET_INSTALL_NAME.
 
-2002-03-05  David Billinghurst <David.Billinghurst@riotinto.com>
+2002-03-05  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* builtins.c(cos_builtin): method_return_type ATTRIBUTE_UNUSED
 	* builtins.c(sin_builtin): Likewise
@@ -10212,7 +10212,7 @@
 	recognize strictfp flag.
 	* jcf.h (ACC_STRICT): New define.
 
-2002-02-12  David Billinghurst <Davod.Billinghurst@riotinto.com>
+2002-02-12  David Billinghurst  <Davod.Billinghurst@riotinto.com>
 
 	* class.c(build_utf8_ref): Move declaration of decl_size
 
@@ -10261,7 +10261,7 @@
 	* parse.y (java_complete_expand_methods): Set
 	current_function_decl before building JNI stub.
 
-2002-01-26 Andreas Tobler <a.tobler@schweiz.ch>
+2002-01-26  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* gcc/java/builtins.c (sqrt_builtin): Use BUILT_IN_SQRT, not
 	BUILT_IN_SQRTF.
@@ -10762,7 +10762,7 @@
 	Strip `main' from classname.
 	Fixes PR java/227.
 
-2001-11-18  Roger Sayle <roger@eyesopen.com>
+2001-11-18  Roger Sayle  <roger@eyesopen.com>
 
 	* parse.h (java_expand_switch): Remove old prototype.
 
@@ -12073,7 +12073,7 @@
 	too early to lay innerclasses out.
 
 2001-03-20  Tom Tromey  <tromey@redhat.com>
-	    Alexandre Petit-Bianco <apbianco@redhat.com>
+	    Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (patch_assignment): Handle the case of a SAVE_EXPR
 	inside an array reference. Insertion of the array store check
@@ -13002,7 +13002,7 @@
 	necessary.
 	Fixes gcj/367.
 
-2000-11-23  J"orn Rennecke <amylaar@redhat.com>
+2000-11-23  J"orn Rennecke  <amylaar@redhat.com>
 
 	* Make-lang.in (jvspec.o): Depend on $(CONFIG_H).
 
@@ -14585,7 +14585,7 @@
 	* parse.y (source_start_java_method): Deleted unnecessary code.
 	(patch_method_invocation): Fixed comment.
 
-2000-04-24  Robert Lipe <robertlipe@usa.net>
+2000-04-24  Robert Lipe  <robertlipe@usa.net>
 
 	* parse.h (_jdep): Member `kind' now ENUM_BITFIELD.
 
@@ -14958,7 +14958,7 @@
 	(resolve_qualified_expression_name): Handle situation where `this'
 	is implied.
 
-2000-03-13  Hans Boehm <boehm@acm.org>
+2000-03-13  Hans Boehm  <boehm@acm.org>
 
 	* typeck.c (build_prim_array_type): Correctly set the high word too.
 
@@ -15011,7 +15011,7 @@
 	* parse.y (patch_invoke): Call `build_invokeinterface' with new
 	parameters.
 
-2000-03-06  Bryce McKinlay <bryce@albatross.co.nz>
+2000-03-06  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* typeck.c (lookup_do): Search superinterfaces first
 	when looking up an interface method. From Godmar Back
@@ -16224,7 +16224,7 @@
 	check.
 	* expr.c (expand_java_arraystore): Likewise.
 
-1999-11-28 Anthony Green <green@cygnus.com>
+1999-11-28 Anthony Green  <green@cygnus.com>
 
 	* decl.c (find_local_variable): Reuse single slot decls when
 	  appropriate.
@@ -16301,7 +16301,7 @@
 	* parse.y (resolve_qualified_expression_name): Handle PLUS_EXPR.
 	(qualify_ambiguous_name): Likewise.
 
-1999-11-03  Godmar Back <gback@cs.utah.edu>
+1999-11-03  Godmar Back  <gback@cs.utah.edu>
 
 	* typeck.c: (lookup_java_method):  search all inherited
 	interfaces when looking up interface method.
@@ -16319,7 +16319,7 @@
 	(complete_function_arguments): Use CALL_EXPLICIT_CONSTRUCTOR_P
 	instead of `CALL_THIS_CONSTRUCTOR_P'.
 
-1999-10-30  Todd T. Fries <todd@lighthouse.fries.net>
+1999-10-30  Todd T. Fries  <todd@lighthouse.fries.net>
 
 	* check-init.c: Fix typo in comment.
 
@@ -16894,7 +16894,7 @@
 	(java_complete_expand_methods, java_expand_finals): Make static.
 	(convert_narrow): Remove static prototype.
 
-1999-08-03  J"orn Rennecke <amylaar@cygnus.co.uk>
+1999-08-03  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* Makefile.in (decl.o): Depends on $(srcdir)/../defaults.h.
 
@@ -18257,7 +18257,7 @@ Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	separator, rather than '/'.
 	(make_class_data): Likewise.
 
-1999-02-03  Marc Espie <Marc.Espie@liafa.jussieu.fr>
+1999-02-03  Marc Espie  <Marc.Espie@liafa.jussieu.fr>
 
 	* Make-lang.in ($(GCJ)(exeext)): Remove choose-temp.o, pexecute.o and
 	mkstemp.o.  Get them from libiberty now.
@@ -18622,7 +18622,7 @@ Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* parse.y (java_complete_expand_method): Call check_for_initialization.
 	* parse.h (BLOCK_EXPR_DECLS, BLOCK_EXPR_BODY):  Moved to java-tree.h.
 
-1999-01-06  Graham <grahams@rcp.co.uk>
+1999-01-06  Graham  <grahams@rcp.co.uk>
 
 	* parse.y : include system.h instead of including
 	standard headers directly with the exception of <dirent.h>.
@@ -19072,7 +19072,7 @@ Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (CHECK_PC_IN_RANGE):  Add void cast to kill warnings.
 
-1998-11-25  Marc Espie <espie@quatramaran.ens.fr>
+1998-11-25  Marc Espie  <espie@quatramaran.ens.fr>
 
 	* jcf-write.c (generate_bytecode_conditional): Fix typo.
 
@@ -21858,7 +21858,7 @@ Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	mangle_class_field.
 	(push_class_static_dummy_field): Likewise.
 
-1998-05-17  Michael Tiemann <tiemann@cygnus.com>
+1998-05-17  Michael Tiemann  <tiemann@cygnus.com>
 
 	* parse.y (source_start_java_method): Use TREE_SET_CODE instead
 	of assigning to TREE_CODE.  The latter method exploits a feature
