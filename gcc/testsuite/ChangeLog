@@ -1,3 +1,8 @@
+2016-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/77423
+	* c-c++-common/Wlogical-not-parentheses-3.c: New test.
+
 2016-09-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77391

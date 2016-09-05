@@ -1479,6 +1479,36 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
     }
 }
 
+/* Return true iff T is a boolean promoted to int.  */
+
+static bool
+bool_promoted_to_int_p (tree t)
+{
+  return (CONVERT_EXPR_P (t)
+	  && TREE_TYPE (t) == integer_type_node
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == BOOLEAN_TYPE);
+}
+
+/* Return true iff EXPR only contains boolean operands, or comparisons.  */
+
+static bool
+expr_has_boolean_operands_p (tree expr)
+{
+  STRIP_NOPS (expr);
+
+  if (CONVERT_EXPR_P (expr))
+    return bool_promoted_to_int_p (expr);
+  else if (UNARY_CLASS_P (expr))
+    return expr_has_boolean_operands_p (TREE_OPERAND (expr, 0));
+  else if (BINARY_CLASS_P (expr))
+    return (expr_has_boolean_operands_p (TREE_OPERAND (expr, 0))
+	    && expr_has_boolean_operands_p (TREE_OPERAND (expr, 1)));
+  else if (COMPARISON_CLASS_P (expr))
+    return true;
+  else
+    return false;
+}
+
 /* Warn about logical not used on the left hand side operand of a comparison.
    This function assumes that the LHS is inside of TRUTH_NOT_EXPR.
    Do not warn if RHS is of a boolean type, a logical operator, or
@@ -1492,6 +1522,10 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
       || TREE_TYPE (rhs) == NULL_TREE
       || TREE_CODE (TREE_TYPE (rhs)) == BOOLEAN_TYPE
       || truth_value_p (TREE_CODE (rhs)))
+    return;
+
+  /* Don't warn for expression like !x == ~(bool1 | bool2).  */
+  if (expr_has_boolean_operands_p (rhs))
     return;
 
   /* Don't warn for !x == 0 or !y != 0, those are equivalent to
@@ -12415,9 +12449,7 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
 	 don't want to warn here.  */
       tree noncst = TREE_CODE (op0) == INTEGER_CST ? op1 : op0;
       /* Handle booleans promoted to integers.  */
-      if (CONVERT_EXPR_P (noncst)
-	  && TREE_TYPE (noncst) == integer_type_node
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (noncst, 0))) == BOOLEAN_TYPE)
+      if (bool_promoted_to_int_p (noncst))
 	/* Warn.  */;
       else if (TREE_CODE (TREE_TYPE (noncst)) != BOOLEAN_TYPE
 	       && !truth_value_p (TREE_CODE (noncst)))

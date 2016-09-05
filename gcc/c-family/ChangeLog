@@ -1,3 +1,11 @@
+2016-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/77423
+	* c-common.c (bool_promoted_to_int_p): New function.
+	(expr_has_boolean_operands_p): New function.
+	(warn_logical_not_parentheses): Return if expr_has_boolean_operands_p.
+	(maybe_warn_bool_compare): Use bool_promoted_to_int_p.
+
 2016-09-04  Tom de Vries  <tom@codesourcery.com>
 
 	revert:

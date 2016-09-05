@@ -1,3 +1,8 @@
+2016-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/77423
+	* doc/invoke.texi: Update -Wlogical-not-parentheses documentation.
+
 2016-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/77421
