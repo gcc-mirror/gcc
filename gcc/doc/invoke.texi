@@ -22846,16 +22846,16 @@ more efficient.  The default behavior is to use atomic updates.
 @item -mdual-nops
 @itemx -mdual-nops=@var{n}
 @opindex mdual-nops
-By default, GCC inserts nops to increase dual issue when it expects
+By default, GCC inserts NOPs to increase dual issue when it expects
 it to increase performance.  @var{n} can be a value from 0 to 10.  A
-smaller @var{n} inserts fewer nops.  10 is the default, 0 is the
+smaller @var{n} inserts fewer NOPs.  10 is the default, 0 is the
 same as @option{-mno-dual-nops}.  Disabled with @option{-Os}.
 
 @item -mhint-max-nops=@var{n}
 @opindex mhint-max-nops
-Maximum number of nops to insert for a branch hint.  A branch hint must
+Maximum number of NOPs to insert for a branch hint.  A branch hint must
 be at least 8 instructions away from the branch it is affecting.  GCC
-inserts up to @var{n} nops to enforce this, otherwise it does not
+inserts up to @var{n} NOPs to enforce this, otherwise it does not
 generate the branch hint.
 
 @item -mhint-max-distance=@var{n}
@@ -24640,7 +24640,7 @@ automatically patching and out calls.
 @itemx -mno-nop-mcount
 @opindex mnop-mcount
 If profiling is active (@option{-pg}), generate the calls to
-the profiling functions as nops. This is useful when they
+the profiling functions as NOPs. This is useful when they
 should be patched in later dynamically. This is likely only
 useful together with @option{-mrecord-mcount}.
 
