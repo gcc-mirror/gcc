@@ -17,13 +17,14 @@
 # store			lagra
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 6.1.0\n"
+"Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-07-15 19:05+0200\n"
+"PO-Revision-Date: 2016-09-03 11:38+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -5819,16 +5820,12 @@ msgid "Treat lines with 'D' in column one as comments."
 msgstr "Tolka rader med ”D” i kolumn ett som kommentarer."
 
 #: fortran/lang.opt:421
-#, fuzzy
-#| msgid "Enable Plan 9 language extensions."
 msgid "Enable all DEC language extensions."
-msgstr "Aktivera språkutvidgningar från Plan 9."
+msgstr "Aktivera språkutvidgningar från DEC."
 
 #: fortran/lang.opt:425
-#, fuzzy
-#| msgid "Enable support for the old GCC ABI."
 msgid "Enable support for DEC STRUCTURE/RECORD."
-msgstr "Aktivera stöd för det gamla GCC-ABI:et."
+msgstr "Aktivera stöd för DEC STRUCTURE/RECORD."
 
 #: fortran/lang.opt:429
 msgid "Set the default double precision kind to an 8 byte wide type."
@@ -10018,10 +10015,8 @@ msgid "Use UltraSPARC Visual Instruction Set version 3.0 extensions."
 msgstr "Utnyttja UltraSPARC-utökningarna Visual Instruction Set version 3.0."
 
 #: config/sparc/sparc.opt:78
-#, fuzzy
-#| msgid "Use UltraSPARC Visual Instruction Set version 1.0 extensions."
 msgid "Use UltraSPARC Visual Instruction Set version 4.0 extensions."
-msgstr "Utnyttja UltraSPARC-utökningarna Visual Instruction Set version 1.0."
+msgstr "Utnyttja UltraSPARC-utökningarna Visual Instruction Set version 4.0."
 
 #: config/sparc/sparc.opt:82
 msgid "Use UltraSPARC Compare-and-Branch extensions."
@@ -10400,10 +10395,8 @@ msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)."
 msgstr "-mlong-double-<n>\tAnge storlek på long double (64 eller 128 bitar)."
 
 #: config/rs6000/rs6000.opt:474
-#, fuzzy
-#| msgid "Enable clip instructions."
 msgid "Enable Local Register Allocation."
-msgstr "Använd clip-instruktioner."
+msgstr "Aktivera lokal registerallokering."
 
 #: config/rs6000/rs6000.opt:478
 msgid "Determine which dependences between insns are considered costly."
@@ -10514,34 +10507,24 @@ msgid "Fuse certain operations together for better performance on power9."
 msgstr "Smält samman vissa operationer för bättre prestanda på power9."
 
 #: config/rs6000/rs6000.opt:610
-#, fuzzy
-#| msgid "Use/do not use vector and scalar instructions added in ISA 3.0."
 msgid "Use/do not use certain scalar instructions added in ISA 3.0."
-msgstr "Använd/använd inte vektor- och skalära instruktioner som lades till i ISA 3.0."
+msgstr "Använd/använd inte vissa skalära instruktioner som lades till i ISA 3.0."
 
 #: config/rs6000/rs6000.opt:614
-#, fuzzy
-#| msgid "Use/do not use vector and scalar instructions added in ISA 3.0."
 msgid "Use/do not use vector instructions added in ISA 3.0."
-msgstr "Använd/använd inte vektor- och skalära instruktioner som lades till i ISA 3.0."
+msgstr "Använd/använd inte vektorinstruktioner som lades till i ISA 3.0."
 
 #: config/rs6000/rs6000.opt:618
-#, fuzzy
-#| msgid "Use/do not use vector and scalar instructions added in ISA 3.0."
 msgid "Use/do not use scalar register+offset memory instructions added in ISA 3.0."
-msgstr "Använd/använd inte vektor- och skalära instruktioner som lades till i ISA 3.0."
+msgstr "Använd/använd inte skalära register+avstånd-minnesinstruktioner som lades till i ISA 3.0."
 
 #: config/rs6000/rs6000.opt:622
-#, fuzzy
-#| msgid "Use/do not use vector and scalar instructions added in ISA 3.0."
 msgid "Use/do not use vector register+offset memory instructions added in ISA 3.0."
-msgstr "Använd/använd inte vektor- och skalära instruktioner som lades till i ISA 3.0."
+msgstr "Använd/använd inte register+avstånd vektorminnesinstruktioner som lades till i ISA 3.0."
 
 #: config/rs6000/rs6000.opt:626
-#, fuzzy
-#| msgid "Use/do not use vector and scalar instructions added in ISA 3.0."
 msgid "Use/do not use register+offset memory instructions added in ISA 3.0."
-msgstr "Använd/använd inte vektor- och skalära instruktioner som lades till i ISA 3.0."
+msgstr "Använd/använd inte register+avstånds-minnesinstruktioner som lades till i ISA 3.0."
 
 #: config/rs6000/rs6000.opt:630
 msgid "Use/do not use the new min/max instructions defined in ISA 3.0."
@@ -28590,10 +28573,9 @@ msgid "-mpower9-dform requires -mupper-regs-sf"
 msgstr "-mpower9-dform behöver -mupper-regs-sf"
 
 #: config/rs6000/rs6000.c:4291
-#, fuzzy, gcc-internal-format
-#| msgid "-mvsx-timode requires -mvsx"
+#, gcc-internal-format
 msgid "-mvsx-timode might need -mlra"
-msgstr "-mvsx-timode behöver -mvsx"
+msgstr "-mvsx-timode behöver -mlra"
 
 #: config/rs6000/rs6000.c:4316
 #, gcc-internal-format
@@ -28706,10 +28688,9 @@ msgid "argument 2 must be a 5-bit unsigned literal"
 msgstr "argument 2 måste vara en 5-bitars literal utan tecken"
 
 #: config/rs6000/rs6000.c:13350
-#, fuzzy, gcc-internal-format
-#| msgid "argument 1 must be a 1-bit unsigned literal"
+#, gcc-internal-format
 msgid "argument 1 must be a 6-bit unsigned literal"
-msgstr "argument 1 måste vara en 1-bitars literal utan tecken"
+msgstr "argument 1 måste vara en 6-bitars literal utan tecken"
 
 #: config/rs6000/rs6000.c:13389
 #, gcc-internal-format
@@ -28874,22 +28855,19 @@ msgid "Builtin function %s requires the -mpower8-vector option"
 msgstr "Den inbyggda funktionen %s behöver flaggan -mpower8-vector"
 
 #: config/rs6000/rs6000.c:15385
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mpower8-vector option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mpower9-vector option"
-msgstr "Den inbyggda funktionen %s behöver flaggan -mpower8-vector"
+msgstr "Den inbyggda funktionen %s behöver flaggan -mpower9-vector"
 
 #: config/rs6000/rs6000.c:15388
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mpower8-vector option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mpower9-misc and -m64 options"
-msgstr "Den inbyggda funktionen %s behöver flaggan -mpower8-vector"
+msgstr "Den inbyggda funktionen %s behöver flaggorna -mpower9-misc och -m64"
 
 #: config/rs6000/rs6000.c:15391
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mpower8-vector option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mpower9-misc option"
-msgstr "Den inbyggda funktionen %s behöver flaggan -mpower8-vector"
+msgstr "Den inbyggda funktionen %s behöver flaggan -mpower9-misc"
 
 #: config/rs6000/rs6000.c:15394
 #, gcc-internal-format, gfc-internal-format
@@ -28902,10 +28880,9 @@ msgid "Builtin function %s requires the -mhard-float option"
 msgstr "Den inbyggda funktionen %s behöver flaggan -mhard-float"
 
 #: config/rs6000/rs6000.c:15399
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mhard-float option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mfloat128 option"
-msgstr "Den inbyggda funktionen %s behöver flaggan -mhard-float"
+msgstr "Den inbyggda funktionen %s behöver flaggan -mfloat128"
 
 #: config/rs6000/rs6000.c:15401
 #, gcc-internal-format, gfc-internal-format
@@ -36001,10 +35978,9 @@ msgid "non-constant array initialization"
 msgstr "ickekonstant vektorinitierare"
 
 #: cp/constexpr.c:5198
-#, fuzzy, gcc-internal-format
-#| msgid "%<delete[]%> is not a constant-expression"
+#, gcc-internal-format
 msgid "%<goto%> is not a constant-expression"
-msgstr "%<delete[]%> är inte ett konstantuttryck"
+msgstr "%<goto%> är inte ett konstantuttryck"
 
 # ast = abstract syntax tree
 #: cp/constexpr.c:5206
@@ -37234,10 +37210,9 @@ msgid "assignment (not initialization) in declaration"
 msgstr "tilldelning (inte initiering) i deklaration"
 
 #: cp/decl.c:6645
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of member function %qD (did you forget the %<()%> ?)"
+#, gcc-internal-format
 msgid "initializer for %<decltype(auto) %D%> has function type (did you forget the %<()%> ?)"
-msgstr "ogiltig användning av medlemsfunktionen %qD (glömde du %<()%> ?)"
+msgstr "initieraren för %<decltype(auto) %qD%> har funktionstyp (glömde du %<()%> ?)"
 
 #: cp/decl.c:6746
 #, gcc-internal-format
@@ -41114,10 +41089,9 @@ msgid "mixing declarations and function-definitions is forbidden"
 msgstr "att blanda deklarationer och funktionsdefinitioner är förbjudet"
 
 #: cp/parser.c:12454
-#, fuzzy, gcc-internal-format
-#| msgid "types may not be defined in exception-declarations"
+#, gcc-internal-format
 msgid "types may not be defined in a for-range-declaration"
-msgstr "typer får inte definieras i undantagsdeklarationer"
+msgstr "typer får inte definieras i en for-range-deklaration"
 
 #: cp/parser.c:12508
 #, gcc-internal-format
@@ -42655,16 +42629,14 @@ msgid "%qD is not declared in %qD"
 msgstr "%qD inte deklarerad i %qD"
 
 #: cp/pt.c:2965
-#, fuzzy, gcc-internal-format
-#| msgid "friend declaration %qD may not have virt-specifiers"
+#, gcc-internal-format
 msgid "friend declaration %qD is not visible to explicit specialization"
-msgstr "vändeklarationen %qD får inte ha virt-specificerare"
+msgstr "vändeklarationen %qD  är inte synlig för en explicit specialisering"
 
 #: cp/pt.c:2968
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration here"
+#, gcc-internal-format
 msgid "friend declaration here"
-msgstr "tidigare deklaration här"
+msgstr "vändeklarationen här"
 
 #: cp/pt.c:3073
 #, gcc-internal-format
@@ -43279,10 +43251,9 @@ msgid "template constraint failure"
 msgstr "mallbegränsningsfel"
 
 #: cp/pt.c:8700
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a variable template"
+#, gcc-internal-format
 msgid "use of invalid variable template %qE"
-msgstr "%qD är inte en variabelmall"
+msgstr "användning av felaktig variabelmall %qE"
 
 #: cp/pt.c:9094
 #, gcc-internal-format, gfc-internal-format
@@ -47000,52 +46971,44 @@ msgid "DATA statement at %C is not allowed in a PURE procedure"
 msgstr "DATA-sats vid %C får inte förekomma i en PURE-procedur"
 
 #: fortran/decl.c:638
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Old-style initialization at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Empty old style initializer list at %C"
-msgstr "Gammaldags initiering vid %C"
+msgstr "Tom gammaldags initierarlista vid %C"
 
 #: fortran/decl.c:658
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "extra elements in scalar initializer"
+#, gcc-internal-format, gfc-internal-format
 msgid "Repeat spec invalid in scalar initializer at %C"
-msgstr "extra element i skalär initierare"
+msgstr "Repetitionsspecifikationen är felaktig i skalär initierare vid %C"
 
 #: fortran/decl.c:663
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "vectorlength must be an integer constant"
+#, gcc-internal-format, gfc-internal-format
 msgid "Repeat spec must be an integer at %C"
-msgstr "vektorlängd måste vara en heltalskonstant"
+msgstr "Repetitionsspecifikationen måste vara ett heltal vid %C"
 
 #: fortran/decl.c:672
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expected alternate return label at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected data constant after repeat spec at %C"
-msgstr "Alternativ returetikett förväntades vid %C"
+msgstr "Datakonstant förväntades efter repetitionsspecifikation vid %C"
 
 #: fortran/decl.c:703
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expected scalar initialization expression at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "End of scalar initializer expected at %C"
-msgstr "Ett skalärt initieringsuttryck förväntades vid %C"
+msgstr "Slut på skalärt initieringsuttryck förväntades vid %C"
 
 #: fortran/decl.c:730
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "excess elements in array initializer"
+#, gcc-internal-format, gfc-internal-format
 msgid "Not enough elements in array initializer at %C"
-msgstr "överflödiga element i vektorinitierare"
+msgstr "Inte tillräckligt med element i vektorinitieraren vid %C"
 
 #: fortran/decl.c:732
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "excess elements in array initializer"
+#, gcc-internal-format, gfc-internal-format
 msgid "Too many elements in array initializer at %C"
-msgstr "överflödiga element i vektorinitierare"
+msgstr "För många element i vektorinitieraren vid %C"
 
 #: fortran/decl.c:751
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in OpenMP variable list at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in old style initializer list at %C"
-msgstr "Syntaxfel i OpenMP-variabellista vid %C"
+msgstr "Syntaxfel i gammaldags initierarlista vid %C"
 
 #: fortran/decl.c:774
 #, gcc-internal-format, gfc-internal-format
@@ -47203,10 +47166,9 @@ msgid "Array component of structure at %C must have explicit or deferred shape"
 msgstr "Vektorkomponent i post vid %C måste ha fördröjd form"
 
 #: fortran/decl.c:1867
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Component %qs at %C already declared at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Component '%s' at %C already declared at %L"
-msgstr "Komponenten %qs vid %C är redan deklarerad vid %L"
+msgstr "Komponenten ”%s” vid %C är redan deklarerad vid %L"
 
 #: fortran/decl.c:1953
 #, gcc-internal-format, gfc-internal-format
@@ -47289,10 +47251,9 @@ msgid "Invalid old style initialization for derived type component at %C"
 msgstr "Felaktig gammaldags initiering av härledd typkomponent vid %C"
 
 #: fortran/decl.c:2361
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Error in pointer initialization at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in old style initialization of %s at %C"
-msgstr "Fel i pekarinitiering vid %C"
+msgstr "Syntaxfel i gammaldags initiering av %s vid %C"
 
 #: fortran/decl.c:2381 fortran/decl.c:5584
 #, gcc-internal-format, gfc-internal-format
@@ -47372,13 +47333,12 @@ msgstr "Syntaxfel i CHARACTER-deklaration vid %C"
 #: fortran/decl.c:2951
 #, gcc-internal-format, gfc-internal-format
 msgid "RECORD at %C is an extension, enable it with -fdec-structure"
-msgstr ""
+msgstr "RECORD vid %C är en utökning, aktivera den med -fdec-structure"
 
 #: fortran/decl.c:2957
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Interface-name expected after %<(%> at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Structure name expected after RECORD at %C"
-msgstr "Gränssnittsnamn förväntades efter %<(%> vid %C"
+msgstr "Postnamn förväntades efter RECORD vid %C"
 
 #: fortran/decl.c:3000
 #, gcc-internal-format, gfc-internal-format
@@ -47412,10 +47372,9 @@ msgid "DOUBLE COMPLEX at %C"
 msgstr "DOUBLE COMPLEX vid %C"
 
 #: fortran/decl.c:3146
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Type name %qs at %C is ambiguous"
+#, gcc-internal-format, gfc-internal-format
 msgid "Type name '%s' at %C is ambiguous"
-msgstr "Typnamnet %qs vid %C är tvetydigt"
+msgstr "Typnamnet ”%s” vid %C är tvetydigt"
 
 #: fortran/decl.c:3224
 #, gcc-internal-format, gfc-internal-format
@@ -47671,22 +47630,19 @@ msgid "PURE and IMPURE must not appear both at %C"
 msgstr "PURE och IMPURE får inte båda finnas vid %C"
 
 #: fortran/decl.c:4998
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Mismatch in ELEMENTAL attribute between MODULE PROCEDURE at %L and its interface in %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "ELEMENTAL prefix in MODULE PROCEDURE interface is missing at %L"
-msgstr "ELEMENTAL-attribut stämmer inte mellan MODULE PROCEDURE vid %L och dess gränssnitt i %s"
+msgstr "ELEMENTAL-prefixet i MODULE PROCEDURE-gränssnittet saknas vid %L"
 
 #: fortran/decl.c:5005
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "double colon in MODULE PROCEDURE statement at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "PURE prefix in MODULE PROCEDURE interface is missing at %L"
-msgstr "dubbelkolon i MODULE PROCEDURE-sats vid %L"
+msgstr "PURE-prefixet i MODULE PROCEDURE-gränssnittet saknas vid %L"
 
 #: fortran/decl.c:5012
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Mismatch in RECURSIVE attribute between MODULE PROCEDURE at %L and its interface in %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "RECURSIVE prefix in MODULE PROCEDURE interface is missing at %L"
-msgstr "RECURSIVE-attribut stämmer inte mellan MODULE PROCEDURE vid %L och dess gränssnitt i %s"
+msgstr "RECURSIVE-prefixet i MODULE PROCEDURE-gränssnittet saknas vid %L"
 
 #: fortran/decl.c:5075 fortran/primary.c:1779
 #, gcc-internal-format, gfc-internal-format
@@ -47836,10 +47792,9 @@ msgid "ENTRY statement at %C cannot appear within an INTERFACE"
 msgstr "ENTRY-sats vid %C kan inte förekomma inuti ett INTERFACE"
 
 #: fortran/decl.c:6114
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ENTRY statement at %C cannot appear within a SELECT block"
+#, gcc-internal-format, gfc-internal-format
 msgid "ENTRY statement at %C cannot appear within a STRUCTURE block"
-msgstr "ENTRY-sats vid %C kan inte förekomma inuti ett SELECT-block"
+msgstr "ENTRY-sats vid %C kan inte förekomma inuti ett STRUCTURE-block"
 
 #: fortran/decl.c:6118
 #, gcc-internal-format, gfc-internal-format
@@ -48220,48 +48175,42 @@ msgstr "ABSTRACT typ vid %C"
 #: fortran/decl.c:8391
 #, gcc-internal-format, gfc-internal-format
 msgid "Failed to create structure type '%s' at %C"
-msgstr ""
+msgstr "Misslyckades att skapa en post av typen ”%s” vid %C"
 
 #: fortran/decl.c:8397
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Derived type definition of %qs at %C has already been defined"
+#, gcc-internal-format, gfc-internal-format
 msgid "Type definition of '%s' at %C was already defined at %L"
-msgstr "Härledd typdefinition %qs vid %C har redan definierats"
+msgstr "Typdefinitionen av ”%s” vid %C definierades redan vid %L"
 
 #: fortran/decl.c:8444
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Junk after ASSOCIATE statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Junk after MAP statement at %C"
-msgstr "Skräp efter ASSOCIATE-sats vid %C"
+msgstr "Skräp efter MAP-sats vid %C"
 
 #: fortran/decl.c:8477
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Junk after ASSOCIATE statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Junk after UNION statement at %C"
-msgstr "Skräp efter ASSOCIATE-sats vid %C"
+msgstr "Skräp efter UNION-sats vid %C"
 
 #: fortran/decl.c:8512
 #, gcc-internal-format, gfc-internal-format
 msgid "STRUCTURE at %C is a DEC extension, enable with -fdec-structure"
-msgstr ""
+msgstr "STRUCTURE vid %C är en DEC-utökning, aktivera den med -fdec-structure"
 
 #: fortran/decl.c:8525
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected junk after function declaration at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Structure name expected in non-nested structure declaration at %C"
-msgstr "Oväntat skräp efter funktionsdeklaration vid %C"
+msgstr "Postnamn förväntades i icke nästad postdeklaration vid %C"
 
 #: fortran/decl.c:8543
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Junk after ASSOCIATE statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Junk after non-nested STRUCTURE statement at %C"
-msgstr "Skräp efter ASSOCIATE-sats vid %C"
+msgstr "Skräp efter icke nästad STRUCTURE-sats vid %C"
 
 #: fortran/decl.c:8550
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Type name %qs at %C cannot be the same as an intrinsic type"
+#, gcc-internal-format, gfc-internal-format
 msgid "Structure name '%s' at %C cannot be the same as an intrinsic type"
-msgstr "Typnamnet %qs vid %C kan inte vara samma som en inbyggd typ"
+msgstr "Postnamnet ”%s” vid %C får inte vara samma som en inbyggd typ"
 
 #: fortran/decl.c:8611
 #, gcc-internal-format, gfc-internal-format
@@ -50497,15 +50446,14 @@ msgid "gfc_op2string(): Bad code"
 msgstr "gfc_op2string(): Felaktig kod"
 
 #: fortran/match.c:186
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expected structure component name at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected structure component or operator name after '.' at %C"
-msgstr "Postkomponentnamn förväntades vid %C"
+msgstr "Postkomponentnamn eller operatornamn förväntades efter ”.” vid %C"
 
 #: fortran/match.c:218
 #, gcc-internal-format, gfc-internal-format
 msgid "'%s' is neither a defined operator nor a structure component in dotted string at %C"
-msgstr ""
+msgstr "”%s” är varken en definierad operator eller en postkomponent i en punktsträng vid %C"
 
 #: fortran/match.c:288
 #, gcc-internal-format
@@ -51602,10 +51550,9 @@ msgid "Syntax error in OpenACC expression list at %C"
 msgstr "Syntaxfel i OpenACC-uttryckslista vid %C"
 
 #: fortran/openmp.c:457
-#, fuzzy, gcc-internal-format
-#| msgid "incorrectly nested OpenACC loop parallelism"
+#, gcc-internal-format
 msgid "Unexpected OpenACC parallelism."
-msgstr "felaktigt nästad OpenACC-slingeparallellism"
+msgstr "Oväntad OpenACC-parallellism"
 
 #: fortran/openmp.c:489
 #, gcc-internal-format, gfc-internal-format
@@ -52728,19 +52675,17 @@ msgstr "Icke co-vektorkomponenten %s vid %L av typen EVENT_TYPE eller med en und
 #: fortran/parse.c:2968
 #, gcc-internal-format, gfc-internal-format
 msgid "failed to create map component '%s'"
-msgstr ""
+msgstr "misslyckades att skapa en avbildningskomponent ”%s”"
 
 #: fortran/parse.c:3001
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to find class '%s'"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed to create union component '%s'"
-msgstr "kunde inte hitta klassen ”%s”"
+msgstr "kunde inte hitta skapa unionkomponenten ”%s”"
 
 #: fortran/parse.c:3056
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in data declaration at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in nested structure declaration at %C"
-msgstr "Syntaxfel i datadeklaration vid %C"
+msgstr "Syntaxfel i nästad postdeklaration vid %C"
 
 #: fortran/parse.c:3143
 #, gcc-internal-format, gfc-internal-format
@@ -53251,10 +53196,9 @@ msgid "Symbol %qs at %C has no IMPLICIT type"
 msgstr "Symbolen  %qs vid %C har ingen IMPLICIT-typ"
 
 #: fortran/primary.c:1994
-#, fuzzy, gcc-internal-format
-#| msgid "Unexpected %<%%%> for nonderived-type variable %qs at %C"
+#, gcc-internal-format
 msgid "Unexpected %<%c%> for nonderived-type variable %qs at %C"
-msgstr "Oväntat %<%%%> för variabel med icke härled typ %qs vid %C"
+msgstr "Oväntat %<%c%> för variabel med icke härled typ %qs vid %C"
 
 #: fortran/primary.c:2012
 #, gcc-internal-format, gfc-internal-format
@@ -53372,10 +53316,9 @@ msgid "Symbol at %C is not appropriate for an expression"
 msgstr "Symbol vid %C passar inte som uttryck"
 
 #: fortran/primary.c:3342
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The name %qs cannot be used as a defined operator at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Derived type '%s' cannot be used as a variable at %C"
-msgstr "Namnet %qs får inte användas som en definierad operator vid %C"
+msgstr "Den härledda typen ”%s” får inte användas som en variabel vid %C"
 
 #: fortran/primary.c:3383
 #, gcc-internal-format, gfc-internal-format
@@ -55268,10 +55211,9 @@ msgid "Component %qs with CLASS at %L must be allocatable or pointer"
 msgstr "Procedur %qs med CLASS vid %L måste vara allokerbar eller en pekare"
 
 #: fortran/resolve.c:13339
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "non-constant initialization expression at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Conflicting initializers in union at %L and %L"
-msgstr "ej konstant initieringsuttryck vid %L"
+msgstr "Initierare som står i konflikt i unionen vid %L och %L"
 
 #: fortran/resolve.c:13383
 #, gcc-internal-format
@@ -58362,18 +58304,3 @@ msgstr "%<-fobjc-sjlj-exceptions%> ignoreras för %<-fnext-runtime%> när %<-fob
 #, gcc-internal-format
 msgid "creating selector for nonexistent method %qE"
 msgstr "skapar väljare för icke existerande metod %qE"
-
-#~ msgid "Clause not supported yet"
-#~ msgstr "Klausulen stödjs inte än"
-
-#~ msgid "internal error: builtin function %s had no type"
-#~ msgstr "internt fel: inbyggd funktion %s har ingen typ"
-
-#~ msgid "%qD is not a constant"
-#~ msgstr "%qD är inte en konstant"
-
-#~ msgid "constraints for %qD not satisfied"
-#~ msgstr "begränsningarna för %qD är inte uppfyllda"
-
-#~ msgid "Unexpected junk in !$ACC WAIT at %C"
-#~ msgstr "Oväntat skräp efter !$ACC WAIT vid %C"
