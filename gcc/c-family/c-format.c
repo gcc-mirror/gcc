@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-format.h"
 #include "diagnostic.h"
 #include "selftest.h"
+#include "builtins.h"
 
 /* Handle attributes associated with format checking.  */
 
@@ -1212,9 +1213,17 @@ check_function_format (tree attrs, int nargs, tree *argarray)
 		params = tree_cons (NULL_TREE, argarray[i], params);
 	      check_format_info (&info, params);
 	    }
+
+	  /* Attempt to detect whether the current function might benefit
+	     from the format attribute if the called function is decorated
+	     with it.  Avoid using calls with string literal formats for
+	     guidance since those are unlikely to be viable candidates.  */
 	  if (warn_suggest_attribute_format && info.first_arg_num == 0
 	      && (format_types[info.format_type].flags
-		  & (int) FMT_FLAG_ARG_CONVERT))
+		  & (int) FMT_FLAG_ARG_CONVERT)
+	      /* c_strlen will fail for a function parameter but succeed
+		 for a literal or constant array.  */
+	      && !c_strlen (argarray[info.format_num - 1], 1))
 	    {
 	      tree c;
 	      for (c = TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl));
@@ -1242,8 +1251,9 @@ check_function_format (tree attrs, int nargs, tree *argarray)
 			break;
 		    }
 		  if (args != 0)
-		    warning (OPT_Wsuggest_attribute_format, "function might "
-			     "be possible candidate for %qs format attribute",
+		    warning (OPT_Wsuggest_attribute_format, "function %qD "
+			     "might be a candidate for %qs format attribute",
+			     current_function_decl,
 			     format_types[info.format_type].name);
 		}
 	    }
