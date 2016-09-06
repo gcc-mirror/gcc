@@ -1,3 +1,9 @@
+2016-09-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/77393
+	* gfortran.dg/fmt_f0_2.f90: Update test.
+	* gfortran.dg/fmt_f0_3.f90: New test.
+
 2016-09-07  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR debug/77389
