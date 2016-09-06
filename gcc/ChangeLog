@@ -1,3 +1,9 @@
+2016-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77479
+	* tree-vrp.c (update_value_range): Extend overflow handling to
+	VARYING.
+
 2016-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77476
