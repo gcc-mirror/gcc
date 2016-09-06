@@ -1,3 +1,12 @@
+2016-09-07  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR debug/77389
+	* g++.dg/debug/dwarf2/template-params-12g.C: Pass -gno-strict-dwarf
+	in dg-options.
+
+	PR debug/57519
+	* g++.dg/debug/dwarf2/imported-decl-2.C: Likewise.
+
 2016-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69255
