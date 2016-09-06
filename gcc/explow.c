@@ -106,7 +106,15 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
       if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
 	{
-	  tem = plus_constant (mode, get_pool_constant (XEXP (x, 0)), c);
+	  rtx cst = get_pool_constant (XEXP (x, 0));
+
+	  if (GET_CODE (cst) == CONST_VECTOR
+	      && GET_MODE_INNER (GET_MODE (cst)) == mode)
+	    {
+	      cst = gen_lowpart (mode, cst);
+	      gcc_assert (cst);
+	    }
+	  tem = plus_constant (mode, cst, c);
 	  tem = force_const_mem (GET_MODE (x), tem);
 	  /* Targets may disallow some constants in the constant pool, thus
 	     force_const_mem may return NULL_RTX.  */

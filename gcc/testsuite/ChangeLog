@@ -1,5 +1,13 @@
 2016-09-06  Uros Bizjak  <ubizjak@gmail.com>
 
+	Backport from mainline
+	2016-09-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/77452
+	* gcc.target/i386/pr77452.c: New test.
+
+2016-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gfortran.dg/c_by_val_1.f: Correct the call to c_to_c and c_to_c8.
 
 2016-09-01  Jakub Jelinek  <jakub@redhat.com>
