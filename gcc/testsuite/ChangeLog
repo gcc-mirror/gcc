@@ -1,4 +1,11 @@
-2016-09-06 Martin Sebor  <msebor@redhat.com>
+2016-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69255
+	* gcc.target/i386/pr69255-1.c: New test.
+	* gcc.target/i386/pr69255-2.c: New test.
+	* gcc.target/i386/pr69255-3.c: New test.
+
+2016-09-06  Martin Sebor  <msebor@redhat.com>
 
 	PR c/77336
 	* gcc.dg/format/miss-7.c: New test.

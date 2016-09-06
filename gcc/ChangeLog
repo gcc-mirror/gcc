@@ -1,3 +1,9 @@
+2016-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69255
+	* config/i386/i386.c (ix86_expand_builtin): For builtin with
+	unsupported or unknown ISA, use expand_call.
+
 2016-09-06  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/77378
