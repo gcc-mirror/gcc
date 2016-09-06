@@ -36107,7 +36107,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  error ("%qE needs isa option %s", fndecl, opts);
 	  free (opts);
 	}
-      return const0_rtx;
+      return expand_call (exp, target, ignore);
     }
 
   switch (fcode)
