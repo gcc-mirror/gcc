@@ -1,3 +1,7 @@
+2016-09-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/Wno-frame-address.c: Skip for avr-*-*.
+
 2016-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77476
