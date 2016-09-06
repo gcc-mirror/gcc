@@ -1,4 +1,4 @@
-2016-09-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2016-09-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/77393
 	* gfortran.dg/fmt_f0_2.f90: Update test.
