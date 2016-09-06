@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-ccp1" } */
+/* { dg-options "-O -fdump-tree-fre1" } */
 
 typedef int v4si __attribute__ ((vector_size (16)));
 
@@ -11,4 +11,4 @@ main (int argc, char** argv)
   return ((v4si){1, 2, 42, 0})[j];
 }
 
-/* { dg-final { scan-tree-dump "return 42;" "ccp1" } } */
+/* { dg-final { scan-tree-dump "return 42;" "fre1" } } */

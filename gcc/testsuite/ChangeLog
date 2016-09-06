@@ -1,3 +1,9 @@
+2016-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR c/77450
+	* c-c++-common/vector-subscript-7.c: Adjust.
+	* c-c++-common/vector-subscript-8.c: New testcase.
+
 2016-09-06  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/Wno-frame-address.c: Skip for avr-*-*.
