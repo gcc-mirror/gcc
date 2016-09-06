@@ -744,23 +744,29 @@ update_value_range (const_tree var, value_range *new_vr)
       value_range_type rtype = get_range_info (var, &min, &max);
       if (rtype == VR_RANGE || rtype == VR_ANTI_RANGE)
 	{
-	  value_range nr;
-	  nr.type = rtype;
+	  tree nr_min, nr_max;
 	  /* Range info on SSA names doesn't carry overflow information
 	     so make sure to preserve the overflow bit on the lattice.  */
-	  if (new_vr->type == VR_RANGE
-	      && is_negative_overflow_infinity (new_vr->min)
-	      && wi::eq_p (new_vr->min, min))
-	    nr.min = new_vr->min;
+	  if (rtype == VR_RANGE
+	      && needs_overflow_infinity (TREE_TYPE (var))
+	      && (new_vr->type == VR_VARYING
+		  || (new_vr->type == VR_RANGE
+		      && is_negative_overflow_infinity (new_vr->min)))
+	      && wi::eq_p (vrp_val_min (TREE_TYPE (var)), min))
+	    nr_min = negative_overflow_infinity (TREE_TYPE (var));
 	  else
-	    nr.min = wide_int_to_tree (TREE_TYPE (var), min);
-	  if (new_vr->type == VR_RANGE
-	      && is_positive_overflow_infinity (new_vr->max)
-	      && wi::eq_p (new_vr->max, max))
-	    nr.max = new_vr->max;
+	    nr_min = wide_int_to_tree (TREE_TYPE (var), min);
+	  if (rtype == VR_RANGE
+	      && needs_overflow_infinity (TREE_TYPE (var))
+	      && (new_vr->type == VR_VARYING
+		  || (new_vr->type == VR_RANGE
+		      && is_positive_overflow_infinity (new_vr->max)))
+	      && wi::eq_p (vrp_val_max (TREE_TYPE (var)), max))
+	    nr_max = positive_overflow_infinity (TREE_TYPE (var));
 	  else
-	    nr.max = wide_int_to_tree (TREE_TYPE (var), max);
-	  nr.equiv = NULL;
+	    nr_max = wide_int_to_tree (TREE_TYPE (var), max);
+	  value_range nr = VR_INITIALIZER;
+	  set_and_canonicalize_value_range (&nr, rtype, nr_min, nr_max, NULL);
 	  vrp_intersect_ranges (new_vr, &nr);
 	}
     }
