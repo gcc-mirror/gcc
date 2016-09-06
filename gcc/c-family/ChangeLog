@@ -1,3 +1,9 @@
+2016-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR c/77450
+	* c-common.c (c_common_mark_addressable_vec): Handle
+	COMPOUND_LITERAL_EXPR.
+
 2016-09-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/77423
