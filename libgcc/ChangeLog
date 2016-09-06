@@ -1,3 +1,10 @@
+2016-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/77378
+	PR gcov-profile/77466
+	* libgcov-profiler.c: Use __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{4,8} to
+	conditionaly enable/disable *_atomic functions.
+
 2016-08-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.host (i[34567]86-*-* | x86_64-*-*): Enable TFmode soft-fp

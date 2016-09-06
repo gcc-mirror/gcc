@@ -1,3 +1,10 @@
+2016-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/77378
+	PR gcov-profile/77466
+	* tree-profile.c (tree_profiling): Detect whether target can use
+	-fprofile-update=atomic.
+
 2016-09-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77479
