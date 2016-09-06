@@ -528,12 +528,47 @@ gimple_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
+#ifndef HAVE_sync_compare_and_swapsi
+#define HAVE_sync_compare_and_swapsi 0
+#endif
+#ifndef HAVE_atomic_compare_and_swapsi
+#define HAVE_atomic_compare_and_swapsi 0
+#endif
+
+#ifndef HAVE_sync_compare_and_swapdi
+#define HAVE_sync_compare_and_swapdi 0
+#endif
+#ifndef HAVE_atomic_compare_and_swapdi
+#define HAVE_atomic_compare_and_swapdi 0
+#endif
+
 /* Profile all functions in the callgraph.  */
 
 static unsigned int
 tree_profiling (void)
 {
   struct cgraph_node *node;
+
+  /* Verify whether we can utilize atomic update operations.  */
+  if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
+    {
+      bool can_support = false;
+      unsigned HOST_WIDE_INT gcov_type_size
+	= tree_to_uhwi (TYPE_SIZE_UNIT (get_gcov_type ()));
+      if (gcov_type_size == 4)
+	can_support
+	  = HAVE_sync_compare_and_swapsi || HAVE_atomic_compare_and_swapsi;
+      else if (gcov_type_size == 8)
+	can_support
+	  = HAVE_sync_compare_and_swapdi || HAVE_atomic_compare_and_swapdi;
+
+      if (!can_support)
+      {
+	warning (0, "target does not support atomic profile update, "
+		 "single mode is selected");
+	flag_profile_update = PROFILE_UPDATE_SINGLE;
+      }
+    }
 
   /* This is a small-ipa pass that gets called only once, from
      cgraphunit.c:ipa_passes().  */
