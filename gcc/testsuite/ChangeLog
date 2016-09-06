@@ -1,3 +1,7 @@
+2016-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/c_by_val_1.f: Correct the call to c_to_c and c_to_c8.
+
 2016-09-06  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/77378
