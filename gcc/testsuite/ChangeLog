@@ -1,3 +1,9 @@
+2016-09-07  Richard Biener  <rguenther@suse.de>
+
+	PR c/77450
+	* c-c++-common/vector-subscript-8.c: Move ..
+	* gcc.dg/pr77450.c: ... here.
+
 2016-09-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/77393
