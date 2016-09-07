@@ -1,3 +1,13 @@
+2016-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77475
+	* gcc.target/aarch64/arch-diagnostics-1.c: Expect error on line 0.
+	* gcc.target/aarch64/arch-diagnostics-2.c: Likewise.
+	* gcc.target/aarch64/cpu-diagnostics-1.c: Likewise.
+	* gcc.target/aarch64/cpu-diagnostics-2.c: Likewise.
+	* gcc.target/aarch64/cpu-diagnostics-3.c: Likewise.
+	* gcc.target/aarch64/cpu-diagnostics-4.c: Likewise.
+
 2016-09-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c: Include
