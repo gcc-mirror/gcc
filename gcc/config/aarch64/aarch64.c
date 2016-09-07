@@ -5082,9 +5082,19 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
       /* For offsets aren't a multiple of the access size, the limit is
 	 -256...255.  */
       else if (offset & (GET_MODE_SIZE (mode) - 1))
-	base_offset = (offset + 0x100) & ~0x1ff;
+	{
+	  base_offset = (offset + 0x100) & ~0x1ff;
+
+	  /* BLKmode typically uses LDP of X-registers.  */
+	  if (mode == BLKmode)
+	    base_offset = (offset + 512) & ~0x3ff;
+	}
+      /* Small negative offsets are supported.  */
+      else if (IN_RANGE (offset, -256, 0))
+	base_offset = 0;
+      /* Use 12-bit offset by access size.  */
       else
-	base_offset = offset & ~0xfff;
+	base_offset = offset & (~0xfff * GET_MODE_SIZE (mode));
 
       if (base_offset != 0)
 	{
