@@ -1,3 +1,18 @@
+2016-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (get_cpp_ttype_from_string_type): Handle being passed
+	a POINTER_TYPE.
+	(substring_loc::get_location): Move to substring-locations.c,
+	keeping implementation as...
+	(c_get_substring_location): New function, from the above, reworked
+	to use accessors rather than member lookup.
+	* c-common.h (class substring_loc): Move to substring-locations.h,
+	replacing with a forward decl.
+	(c_get_substring_location): New decl.
+	* c-format.c: Include "substring-locations.h".
+	(format_warning_va): Move to substring-locations.c.
+	(format_warning_at_substring): Likewise.
+
 2016-09-06 Martin Sebor  <msebor@redhat.com>
 
 	PR c/77336

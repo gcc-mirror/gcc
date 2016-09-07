@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hooks.h"
 
 struct diagnostic_info;
+class substring_loc;
 
 /* Note to creators of new hooks:
 
@@ -81,6 +82,9 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 					       tree);
 extern bool lhd_omp_mappable_type (tree);
 
+extern const char *lhd_get_substring_location (const substring_loc &,
+					       location_t *out_loc);
+
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
 #define LANG_HOOKS_INIT			hook_bool_void_false
@@ -121,6 +125,7 @@ extern bool lhd_omp_mappable_type (tree);
 #define LANG_HOOKS_EH_USE_CXA_END_CLEANUP	false
 #define LANG_HOOKS_DEEP_UNSHARING	false
 #define LANG_HOOKS_RUN_LANG_SELFTESTS   lhd_do_nothing
+#define LANG_HOOKS_GET_SUBSTRING_LOCATION lhd_get_substring_location
 
 /* Attribute hooks.  */
 #define LANG_HOOKS_ATTRIBUTE_TABLE		NULL
@@ -323,7 +328,8 @@ extern void lhd_end_section (void);
   LANG_HOOKS_BLOCK_MAY_FALLTHRU, \
   LANG_HOOKS_EH_USE_CXA_END_CLEANUP, \
   LANG_HOOKS_DEEP_UNSHARING, \
-  LANG_HOOKS_RUN_LANG_SELFTESTS \
+  LANG_HOOKS_RUN_LANG_SELFTESTS, \
+  LANG_HOOKS_GET_SUBSTRING_LOCATION \
 }
 
 #endif /* GCC_LANG_HOOKS_DEF_H */

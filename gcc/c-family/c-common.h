@@ -1132,35 +1132,9 @@ extern const char *cb_get_suggestion (cpp_reader *, const char *,
 
 extern GTY(()) string_concat_db *g_string_concat_db;
 
-/* libcpp can calculate location information about a range of characters
-   within a string literal, but doing so is non-trivial.
-
-   This class encapsulates such a source location, so that it can be
-   passed around (e.g. within c-format.c).  It is effectively a deferred
-   call into libcpp.  If needed by a diagnostic, the actual source_range
-   can be calculated by calling the get_range method.  */
-
-class substring_loc
-{
- public:
-  substring_loc (location_t fmt_string_loc, tree string_type,
-		 int caret_idx, int start_idx, int end_idx)
-  : m_fmt_string_loc (fmt_string_loc), m_string_type (string_type),
-    m_caret_idx (caret_idx), m_start_idx (start_idx), m_end_idx (end_idx) {}
-
-  void set_caret_index (int caret_idx) { m_caret_idx = caret_idx; }
-
-  const char *get_location (location_t *out_loc) const;
-
-  location_t get_fmt_string_loc () const { return m_fmt_string_loc; }
-
- private:
-  location_t m_fmt_string_loc;
-  tree m_string_type;
-  int m_caret_idx;
-  int m_start_idx;
-  int m_end_idx;
-};
+class substring_loc;
+extern const char *c_get_substring_location (const substring_loc &substr_loc,
+					     location_t *out_loc);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);

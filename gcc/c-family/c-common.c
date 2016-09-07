@@ -1122,6 +1122,9 @@ static enum cpp_ttype
 get_cpp_ttype_from_string_type (tree string_type)
 {
   gcc_assert (string_type);
+  if (TREE_CODE (string_type) == POINTER_TYPE)
+    string_type = TREE_TYPE (string_type);
+
   if (TREE_CODE (string_type) != ARRAY_TYPE)
     return CPP_OTHER;
 
@@ -1148,23 +1151,23 @@ get_cpp_ttype_from_string_type (tree string_type)
 
 GTY(()) string_concat_db *g_string_concat_db;
 
-/* Attempt to determine the source location of the substring.
-   If successful, return NULL and write the source location to *OUT_LOC.
-   Otherwise return an error message.  Error messages are intended
-   for GCC developers (to help debugging) rather than for end-users.  */
+/* Implementation of LANG_HOOKS_GET_SUBSTRING_LOCATION.  */
 
 const char *
-substring_loc::get_location (location_t *out_loc) const
+c_get_substring_location (const substring_loc &substr_loc,
+			  location_t *out_loc)
 {
-  gcc_assert (out_loc);
-
-  enum cpp_ttype tok_type = get_cpp_ttype_from_string_type (m_string_type);
+  enum cpp_ttype tok_type
+    = get_cpp_ttype_from_string_type (substr_loc.get_string_type ());
   if (tok_type == CPP_OTHER)
     return "unrecognized string type";
 
   return get_source_location_for_substring (parse_in, g_string_concat_db,
-					    m_fmt_string_loc, tok_type,
-					    m_caret_idx, m_start_idx, m_end_idx,
+					    substr_loc.get_fmt_string_loc (),
+					    tok_type,
+					    substr_loc.get_caret_idx (),
+					    substr_loc.get_start_idx (),
+					    substr_loc.get_end_idx (),
 					    out_loc);
 }
 

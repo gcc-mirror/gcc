@@ -1,3 +1,22 @@
+2016-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add substring-locations.o.
+	* langhooks-def.h (class substring_loc): New forward decl.
+	(lhd_get_substring_location): New decl.
+	(LANG_HOOKS_GET_SUBSTRING_LOCATION): New macro.
+	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_GET_SUBSTRING_LOCATION.
+	* langhooks.c (lhd_get_substring_location): New function.
+	* langhooks.h (class substring_loc): New forward decl.
+	(struct lang_hooks): Add field get_substring_location.
+	* substring-locations.c: New file, taking definition of
+	format_warning_va and format_warning_at_substring from
+	c-family/c-format.c, making them non-static.
+	* substring-locations.h (class substring_loc): Move class here
+	from c-family/c-common.h.  Add and rewrite comments.
+	(format_warning_va): New decl.
+	(format_warning_at_substring): New decl.
+	(get_source_location_for_substring): Add comment.
+
 2016-09-07  Eric Gallager  <egall@gwmail.gwu.edu>
 
 	* config/i386/i386.c: Add 'U' suffix to processor feature bits
