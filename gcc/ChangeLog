@@ -1,3 +1,10 @@
+2016-09-07  Eric Gallager  <egall@gwmail.gwu.edu>
+
+	* config/i386/i386.c: Add 'U' suffix to processor feature bits
+	to avoid -Wnarrowing warning.
+	* config/i386/x86-tune.def: Likewise for DEF_TUNE selector bitmasks.
+	* opts.c: Likewise for SANITIZER_OPT bitmasks.
+
 2016-09-07  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_legitimize_address):
