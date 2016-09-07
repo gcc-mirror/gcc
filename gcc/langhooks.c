@@ -693,6 +693,14 @@ lhd_enum_underlying_base_type (const_tree enum_type)
 					 TYPE_UNSIGNED (enum_type));
 }
 
+/* Default implementation of LANG_HOOKS_GET_SUBSTRING_LOCATION.  */
+
+const char *
+lhd_get_substring_location (const substring_loc &, location_t *)
+{
+  return "unimplemented";
+}
+
 /* Returns true if the current lang_hooks represents the GNU C frontend.  */
 
 bool

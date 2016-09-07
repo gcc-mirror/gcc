@@ -33,6 +33,7 @@
 #include "print-tree.h"
 #include "cpplib.h"
 #include "c-family/c-pragma.h"
+#include "substring-locations.h"
 
 int plugin_is_GPL_compatible;
 

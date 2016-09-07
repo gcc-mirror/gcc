@@ -34,6 +34,8 @@ typedef void (*lang_print_tree_hook) (FILE *, tree, int indent);
 enum classify_record
   { RECORD_IS_STRUCT, RECORD_IS_CLASS, RECORD_IS_INTERFACE };
 
+class substring_loc;
+
 /* The following hooks are documented in langhooks.c.  Must not be
    NULL.  */
 
@@ -512,6 +514,13 @@ struct lang_hooks
 
   /* Run all lang-specific selftests.  */
   void (*run_lang_selftests) (void);
+
+  /* Attempt to determine the source location of the substring.
+     If successful, return NULL and write the source location to *OUT_LOC.
+     Otherwise return an error message.  Error messages are intended
+     for GCC developers (to help debugging) rather than for end-users.  */
+  const char *(*get_substring_location) (const substring_loc &,
+					 location_t *out_loc);
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */

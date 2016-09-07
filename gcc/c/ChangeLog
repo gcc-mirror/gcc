@@ -1,3 +1,8 @@
+2016-09-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-lang.c (LANG_HOOKS_GET_SUBSTRING_LOCATION): Use
+	c_get_substring_location for this new langhook.
+
 2016-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/65467
