@@ -1,3 +1,8 @@
+2016-09-07  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_legitimize_address):
+	Avoid use of base_offset if offset already in range.
+
 2016-09-07  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh-protos.h (struct sh_atomic_model,
