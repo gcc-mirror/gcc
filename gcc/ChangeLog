@@ -1,3 +1,15 @@
+2016-09-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (struct sh_atomic_model,
+	selected_atomic_model, TARGET_ATOMIC_ANY, TARGET_ATOMIC_STRICT,
+	TARGET_ATOMIC_SOFT_GUSA, TARGET_ATOMIC_HARD_LLCS,
+	TARGET_ATOMIC_SOFT_TCB, TARGET_ATOMIC_SOFT_IMASK): Move to...
+	* config/sh/sh.h (struct sh_atomic_model,
+	selected_atomic_model, TARGET_ATOMIC_ANY, TARGET_ATOMIC_STRICT,
+	TARGET_ATOMIC_SOFT_GUSA, TARGET_ATOMIC_HARD_LLCS,
+	TARGET_ATOMIC_SOFT_TCB, TARGET_ATOMIC_SOFT_IMASK): ...here.
+	Guard with __cplusplus.
+
 2016-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69255
