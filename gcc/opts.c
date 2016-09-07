@@ -1471,9 +1471,9 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (returns-nonnull-attribute, SANITIZE_RETURNS_NONNULL_ATTRIBUTE),
   SANITIZER_OPT (object-size, SANITIZE_OBJECT_SIZE),
   SANITIZER_OPT (vptr, SANITIZE_VPTR),
-  SANITIZER_OPT (all, ~0),
+  SANITIZER_OPT (all, ~0U),
 #undef SANITIZER_OPT
-  { NULL, 0, 0 }
+  { NULL, 0U, 0UL }
 };
 
 /* Parse comma separated sanitizer suboptions from P for option SCODE,

@@ -535,15 +535,15 @@ DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, "avoid_false_dep_for_bmi",
    on simulation result. But after P4 was made, no performance benefit
    was observed with branch hints.  It also increases the code size.
    As a result, icc never generates branch hints.  */
-DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS, "branch_prediction_hints", 0)
+DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS, "branch_prediction_hints", 0U)
 
 /* X86_TUNE_QIMODE_MATH: Enable use of 8bit arithmetic.  */
-DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", ~0)
+DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", ~0U)
 
 /* X86_TUNE_PROMOTE_QI_REGS: This enables generic code that promotes all 8bit
    arithmetic to 32bit via PROMOTE_MODE macro.  This code generation scheme
    is usually used for RISC targets.  */
-DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0)
+DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0U)
 
 /* X86_TUNE_ADJUST_UNROLL: This enables adjusting the unroll factor based
    on hardware capabilities. Bdver3 hardware has a loop buffer which makes
