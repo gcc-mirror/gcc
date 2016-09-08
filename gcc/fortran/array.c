@@ -1089,6 +1089,7 @@ match_array_cons_element (gfc_constructor_base *result)
 match
 gfc_match_array_constructor (gfc_expr **result)
 {
+  gfc_constructor *c;
   gfc_constructor_base head, new_cons;
   gfc_undo_change_set changed_syms;
   gfc_expr *expr;
@@ -1194,8 +1195,6 @@ done:
 	 be converted.  See PR fortran/67803.  */
       if (ts.type == BT_CHARACTER)
 	{
-	  gfc_constructor *c;
-
 	  c = gfc_constructor_first (head);
 	  for (; c; c = gfc_constructor_next (c))
 	    {
@@ -1217,6 +1216,14 @@ done:
 		  return MATCH_ERROR;
 		}
 	    }
+	}
+
+      /* Walk the constructor and ensure type conversion for numeric types.  */
+      if (gfc_numeric_ts (&ts))
+	{
+	  c = gfc_constructor_first (head);
+	  for (; c; c = gfc_constructor_next (c))
+	    gfc_convert_type (c->expr, &ts, 1);
 	}
     }
   else
