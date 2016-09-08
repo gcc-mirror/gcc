@@ -1,3 +1,9 @@
+2016-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/77516
+	* omp-low.c (lower_rec_simd_input_clauses): Use max_vf for non-positive
+	OMP_CLAUSE_SAFELEN_EXPR.
+
 2016-09-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add substring-locations.o.

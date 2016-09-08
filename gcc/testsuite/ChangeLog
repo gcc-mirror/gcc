@@ -1,3 +1,8 @@
+2016-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/77516
+	* gfortran.dg/gomp/pr77516.f90: New test.
+
 2016-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/77475
