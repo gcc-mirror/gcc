@@ -1,3 +1,10 @@
+2016-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/77500
+	* trans-openmp.c (gfc_trans_omp_atomic): For atomic write or
+	swap, don't try to look through GFC_ISYM_CONVERSION.  In other cases,
+	check that value.function.isym is non-NULL before dereferencing it.
+
 2016-09-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77391
