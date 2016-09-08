@@ -1,3 +1,10 @@
+2016-09-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69514
+	* array.c (gfc_match_array_constructor):  If type-spec is present,
+	walk the array constructor performing possible conversions for 
+	numeric types.
+
 2016-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/77500

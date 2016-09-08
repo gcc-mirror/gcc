@@ -1,3 +1,10 @@
+2016-09-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Louis Krupp      <lkrupp@gcc.gnu.org>
+
+	PR fortran/69514
+	* gfortran.dg/pr69514_1.f90: New test.
+	* gfortran.dg/pr69514_2.f90: New test.
+
 2016-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/77500
