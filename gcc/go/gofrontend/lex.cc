@@ -985,6 +985,52 @@ Lex::is_hex_digit(char c)
 	  || (c >= 'a' && c <= 'f'));
 }
 
+// not a hex value
+#define NHV 100
+
+// for use by Lex::hex_val
+static const unsigned char hex_value_lookup_table[256] =
+{
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, // NUL SOH STX ETX EOT ENQ ACK BEL
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //  BS  HT  LF  VT  FF  CR  SO  SI
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, // DLE DC1 DC2 DC3 DC4 NAK SYN ETB
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, // CAN  EM SUB ESC  FS  GS  RS  US
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //  SP   !   "   #   $   %   &   '
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //   (   )   *   +   ,   -   .   /
+    0,   1,   2,   3,   4,   5,   6,   7, //   0   1   2   3   4   5   6   7
+    8,   9, NHV, NHV, NHV, NHV, NHV, NHV, //   8   9   :   ;   <   =   >   ?
+  NHV,  10,  11,  12,  13,  14,  15, NHV, //   @   A   B   C   D   E   F   G
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //   H   I   J   K   L   M   N   O
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //   P   Q   R   S   T   U   V   W
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //   X   Y   Z   [   \   ]   ^   _
+  NHV,  10,  11,  12,  13,  14,  15, NHV, //   `   a   b   c   d   e   f   g
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //   h   i   j   k   l   m   n   o
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //   p   q   r   s   t   u   v   w
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //   x   y   z   {   |   }   ~
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV, //
+  NHV, NHV, NHV, NHV, NHV, NHV, NHV, NHV //
+};
+
+unsigned
+Lex::hex_val(char c)
+{
+  return hex_value_lookup_table[static_cast<unsigned char>(c)];
+}
+
 // Return whether an exponent could start at P.
 
 bool
@@ -1212,7 +1258,7 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
 	  *is_character = false;
 	  if (Lex::is_hex_digit(p[1]) && Lex::is_hex_digit(p[2]))
 	    {
-	      *value = (hex_value(p[1]) << 4) + hex_value(p[2]);
+	      *value = (Lex::hex_val(p[1]) << 4) + Lex::hex_val(p[2]);
 	      return p + 3;
 	    }
 	  error_at(this->location(), "invalid hex character");
@@ -1259,10 +1305,10 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
 	  if (Lex::is_hex_digit(p[1]) && Lex::is_hex_digit(p[2])
 	      && Lex::is_hex_digit(p[3]) && Lex::is_hex_digit(p[4]))
 	    {
-	      *value = ((hex_value(p[1]) << 12)
-			+ (hex_value(p[2]) << 8)
-			+ (hex_value(p[3]) << 4)
-			+ hex_value(p[4]));
+	      *value = ((Lex::hex_val(p[1]) << 12)
+			+ (Lex::hex_val(p[2]) << 8)
+			+ (Lex::hex_val(p[3]) << 4)
+			+ Lex::hex_val(p[4]));
 	      if (*value >= 0xd800 && *value < 0xe000)
 		{
 		  error_at(this->location(),
@@ -1282,14 +1328,14 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
 	      && Lex::is_hex_digit(p[5]) && Lex::is_hex_digit(p[6])
 	      && Lex::is_hex_digit(p[7]) && Lex::is_hex_digit(p[8]))
 	    {
-	      *value = ((hex_value(p[1]) << 28)
-			+ (hex_value(p[2]) << 24)
-			+ (hex_value(p[3]) << 20)
-			+ (hex_value(p[4]) << 16)
-			+ (hex_value(p[5]) << 12)
-			+ (hex_value(p[6]) << 8)
-			+ (hex_value(p[7]) << 4)
-			+ hex_value(p[8]));
+	      *value = ((Lex::hex_val(p[1]) << 28)
+			+ (Lex::hex_val(p[2]) << 24)
+			+ (Lex::hex_val(p[3]) << 20)
+			+ (Lex::hex_val(p[4]) << 16)
+			+ (Lex::hex_val(p[5]) << 12)
+			+ (Lex::hex_val(p[6]) << 8)
+			+ (Lex::hex_val(p[7]) << 4)
+			+ Lex::hex_val(p[8]));
 	      if (*value > 0x10ffff
 		  || (*value >= 0xd800 && *value < 0xe000))
 		{
@@ -2721,10 +2767,10 @@ Lex::is_exported_name(const std::string& name)
       for (size_t i = 2; i < len && p[i] != '$'; ++i)
 	{
 	  c = p[i];
-	  if (!hex_p(c))
+	  if (!Lex::is_hex_digit(c))
 	    return false;
 	  ci <<= 4;
-	  ci |= hex_value(c);
+	  ci |= Lex::hex_val(c);
 	}
       return Lex::is_unicode_uppercase(ci);
     }
