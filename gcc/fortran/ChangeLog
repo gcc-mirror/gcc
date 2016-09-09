@@ -1,3 +1,8 @@
+2016-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77507
+	* intrinsic.c (add_functions):  Use correct keyword.
+
 2016-09-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/69514

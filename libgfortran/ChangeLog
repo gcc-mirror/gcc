@@ -1,3 +1,9 @@
+2016-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77507
+ 	* ieee/ieee_arithmetic.F90 (IEEE_VALUE_4,IEEE_VALUE_8,IEEE_VALULE_10,
+	IEEE_VALUE_16):  Use correct keyword.
+
 2016-09-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/77393
