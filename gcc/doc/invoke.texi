@@ -190,7 +190,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
--fargs-in-order=@var{n} -fcheck-new @gol
+-faligned-new=@var{n} -fargs-in-order=@var{n} -fcheck-new @gol
 -fconstexpr-depth=@var{n} -fconstexpr-loop-limit=@var{n} @gol
 -ffriend-injection @gol
 -fno-elide-constructors @gol
@@ -2236,6 +2236,15 @@ option is used for the warning.
 @opindex fno-access-control
 Turn off all access checking.  This switch is mainly useful for working
 around bugs in the access control code.
+
+@item -faligned-new
+@opindex faligned-new
+Enable support for C++17 @code{new} of types that require more
+alignment than @code{void* ::operator new(std::size_t)} provides.  A
+numeric argument such as @code{-faligned-new=32} can be used to
+specify how much alignment (in bytes) is provided by that function,
+but few users will need to override the default of
+@code{alignof(std::max_align_t)}.
 
 @item -fcheck-new
 @opindex fcheck-new
@@ -5061,6 +5070,18 @@ and @option{-pedantic} without GNU extensions, this option
 disables the warnings about non-ISO @code{printf} / @code{scanf} format
 width specifiers @code{I32}, @code{I64}, and @code{I} used on Windows targets,
 which depend on the MS runtime.
+
+@item -Waligned-new
+@opindex Waligned-new
+@opindex Wno-aligned-new
+Warn about a new-expression of a type that requires greater alignment
+than the @code{alignof(std::max_align_t)} but uses an allocation
+function without an explicit alignment parameter. This option is
+enabled by @option{-Wall}.
+
+Normally this only warns about global allocation functions, but
+@option{-Waligned-new=all} also warns about class member allocation
+functions.
 
 @item -Wplacement-new
 @itemx -Wplacement-new=@var{n}

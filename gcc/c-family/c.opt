@@ -271,6 +271,26 @@ Waddress
 C ObjC C++ ObjC++ Var(warn_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious uses of memory addresses.
 
+Enum
+Name(warn_aligned_new_level) Type(int) UnknownError(argument %qs to %<-Waligned-new%> not recognized)
+
+EnumValue
+Enum(warn_aligned_new_level) String(none) Value(0)
+
+EnumValue
+Enum(warn_aligned_new_level) String(global) Value(1)
+
+EnumValue
+Enum(warn_aligned_new_level) String(all) Value(2)
+
+Waligned-new
+C++ ObjC++ Alias(Waligned-new=,global,none)
+Warn about 'new' of type with extended alignment without -faligned-new.
+
+Waligned-new=
+C++ ObjC++ Var(warn_aligned_new) Enum(warn_aligned_new_level) Joined Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
+-Waligned-new=all Warn even if 'new' uses a class member allocation function.
+
 Wall
 C ObjC C++ ObjC++ Warning
 Enable most warning messages.
@@ -1031,6 +1051,14 @@ Enforce class member access control semantics.
 fada-spec-parent=
 C ObjC C++ ObjC++ RejectNegative Joined Var(ada_specs_parent)
 -fada-spec-parent=unit  Dump Ada specs as child units of given parent.
+
+faligned-new
+C++ ObjC++ Alias(faligned-new=,1,0)
+Support C++17 allocation of over-aligned types.
+
+faligned-new=
+C++ ObjC++ Joined Var(aligned_new_threshhold) UInteger Init(-1)
+-faligned-new=<N> Use C++17 over-aligned type allocation for alignments greater than N.
 
 fall-virtual
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)

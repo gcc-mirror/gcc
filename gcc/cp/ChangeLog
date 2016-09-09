@@ -1,3 +1,18 @@
+2016-09-09  Jason Merrill  <jason@redhat.com>
+
+	Implement P0035R4, C++17 new of over-aligned types.
+	* cp-tree.h (enum cp_tree_index): Add CPTI_ALIGN_TYPE.
+	(align_type_node): New macro.
+	* call.c (build_operator_new_call): Handle C++17 aligned new.
+	(second_parm_is_size_t, build_op_delete_call): Likewise.
+	(non_placement_deallocation_fn_p): Likewise. Rename to
+	usual_deallocation_fn_p.
+	(aligned_allocation_fn_p, aligned_deallocation_fn_p): New.
+	* decl.c (cxx_init_decl_processing): Add aligned new support.
+	* init.c (type_has_new_extended_alignment): New.
+	(build_new_1): Handle aligned new.
+	* tree.c (vec_copy_and_insert): New.
+
 2016-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/77396

@@ -863,6 +863,7 @@ extern bool keyword_begins_type_specifier (enum rid);
 extern bool keyword_is_storage_class_specifier (enum rid);
 extern bool keyword_is_type_qualifier (enum rid);
 extern bool keyword_is_decl_specifier (enum rid);
+extern unsigned max_align_t_align (void);
 extern bool cxx_fundamental_alignment_p (unsigned);
 extern bool pointer_to_zero_sized_aggr_p (tree);
 extern bool diagnose_mismatched_attributes (tree, tree);

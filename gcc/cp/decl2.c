@@ -4488,7 +4488,7 @@ maybe_warn_sized_delete (enum tree_code code)
     {
       tree fn = OVL_CURRENT (ovl);
       /* We're only interested in usual deallocation functions.  */
-      if (!non_placement_deallocation_fn_p (fn))
+      if (!usual_deallocation_fn_p (fn))
 	continue;
       if (FUNCTION_ARG_CHAIN (fn) == void_list_node)
 	unsized = fn;

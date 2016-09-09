@@ -88,6 +88,16 @@ sources = \
 	new_opnt.cc \
 	new_opv.cc \
 	new_opvnt.cc \
+	new_opa.cc \
+	new_opant.cc \
+	new_opva.cc \
+	new_opvant.cc \
+	del_opa.cc \
+	del_opant.cc \
+	del_opsa.cc \
+	del_opva.cc \
+	del_opvant.cc \
+	del_opvsa.cc \
 	pbase_type_info.cc \
 	pmem_type_info.cc \
 	pointer_type_info.cc \
@@ -188,6 +198,28 @@ del_opvs.lo: del_opvs.cc
 	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
 del_opvs.o: del_opvs.cc
 	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+
+# Use special rules for the C++17 sources so that the proper flags are passed.
+new_opa.lo: new_opa.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+new_opant.lo: new_opant.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+new_opva.lo: new_opva.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+new_opvant.lo: new_opvant.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opa.lo: del_opa.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opant.lo: del_opant.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opsa.lo: del_opsa.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opva.lo: del_opva.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opvant.lo: del_opvant.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opvsa.lo: del_opvsa.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

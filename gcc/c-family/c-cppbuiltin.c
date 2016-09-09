@@ -944,6 +944,12 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_define (pfile, "__cpp_transactional_memory=210500");
       if (flag_sized_deallocation)
 	cpp_define (pfile, "__cpp_sized_deallocation=201309");
+      if (aligned_new_threshhold)
+	{
+	  cpp_define (pfile, "__cpp_aligned_new=201606");
+	  cpp_define_formatted (pfile, "__STDCPP_DEFAULT_NEW_ALIGNMENT__=%d",
+				aligned_new_threshhold);
+	}
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */

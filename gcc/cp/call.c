@@ -4211,13 +4211,14 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p,
 
 tree
 build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
-			 tree *size, tree *cookie_size, tree size_check,
+			 tree *size, tree *cookie_size,
+			 tree align_arg, tree size_check,
 			 tree *fn, tsubst_flags_t complain)
 {
   tree original_size = *size;
   tree fns;
   struct z_candidate *candidates;
-  struct z_candidate *cand;
+  struct z_candidate *cand = NULL;
   bool any_viable_p;
 
   if (fn)
@@ -4247,9 +4248,20 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
      we disregard block-scope declarations of "operator new".  */
   fns = lookup_function_nonclass (fnname, *args, /*block_p=*/false);
 
+  if (align_arg)
+    {
+      vec<tree, va_gc>* align_args
+	= vec_copy_and_insert (*args, align_arg, 1);
+      cand = perform_overload_resolution (fns, align_args, &candidates,
+					  &any_viable_p, tf_none);
+      /* If no aligned allocation function matches, try again without the
+	 alignment.  */
+    }
+
   /* Figure out what function is being called.  */
-  cand = perform_overload_resolution (fns, *args, &candidates, &any_viable_p,
-				      complain);
+  if (!cand)
+    cand = perform_overload_resolution (fns, *args, &candidates, &any_viable_p,
+					complain);
 
   /* If no suitable function could be found, issue an error message
      and give up.  */
@@ -5945,16 +5957,65 @@ static bool
 second_parm_is_size_t (tree fn)
 {
   tree t = FUNCTION_ARG_CHAIN (fn);
-  return (t
-	  && same_type_p (TREE_VALUE (t), size_type_node)
-	  && TREE_CHAIN (t) == void_list_node);
+  if (!t || !same_type_p (TREE_VALUE (t), size_type_node))
+    return false;
+  t = TREE_CHAIN (t);
+  if (t == void_list_node)
+    return true;
+  if (aligned_new_threshhold && t
+      && same_type_p (TREE_VALUE (t), align_type_node)
+      && TREE_CHAIN (t) == void_list_node)
+    return true;
+  return false;
+}
+
+/* True if T, an allocation function, has std::align_val_t as its second
+   argument.  */
+
+bool
+aligned_allocation_fn_p (tree t)
+{
+  if (!aligned_new_threshhold)
+    return false;
+
+  tree a = FUNCTION_ARG_CHAIN (t);
+  return (a && same_type_p (TREE_VALUE (a), align_type_node));
+}
+
+/* Returns true iff T, an element of an OVERLOAD chain, is a usual deallocation
+   function (3.7.4.2 [basic.stc.dynamic.deallocation]) with a parameter of
+   std::align_val_t.  */
+
+static bool
+aligned_deallocation_fn_p (tree t)
+{
+  if (!aligned_new_threshhold)
+    return false;
+
+  /* A template instance is never a usual deallocation function,
+     regardless of its signature.  */
+  if (TREE_CODE (t) == TEMPLATE_DECL
+      || primary_template_instantiation_p (t))
+    return false;
+
+  tree a = FUNCTION_ARG_CHAIN (t);
+  if (same_type_p (TREE_VALUE (a), align_type_node)
+      && TREE_CHAIN (a) == void_list_node)
+    return true;
+  if (!same_type_p (TREE_VALUE (a), size_type_node))
+    return false;
+  a = TREE_CHAIN (a);
+  if (a && same_type_p (TREE_VALUE (a), align_type_node)
+      && TREE_CHAIN (a) == void_list_node)
+    return true;
+  return false;
 }
 
 /* Returns true iff T, an element of an OVERLOAD chain, is a usual
    deallocation function (3.7.4.2 [basic.stc.dynamic.deallocation]).  */
 
 bool
-non_placement_deallocation_fn_p (tree t)
+usual_deallocation_fn_p (tree t)
 {
   /* A template instance is never a usual deallocation function,
      regardless of its signature.  */
@@ -5970,9 +6031,14 @@ non_placement_deallocation_fn_p (tree t)
      of which has type std::size_t (18.2), then this function is a usual
      deallocation function.  */
   bool global = DECL_NAMESPACE_SCOPE_P (t);
-  if (FUNCTION_ARG_CHAIN (t) == void_list_node
+  tree chain = FUNCTION_ARG_CHAIN (t);
+  if (!chain)
+    return false;
+  if (chain == void_list_node
       || ((!global || flag_sized_deallocation)
 	  && second_parm_is_size_t (t)))
+    return true;
+  if (aligned_deallocation_fn_p (t))
     return true;
   return false;
 }
@@ -6076,7 +6142,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 		 t; t = OVL_NEXT (t))
 	      {
 		tree elt = OVL_CURRENT (t);
-		if (non_placement_deallocation_fn_p (elt)
+		if (usual_deallocation_fn_p (elt)
 		    && FUNCTION_ARG_CHAIN (elt) == void_list_node)
 		  goto ok;
 	      }
@@ -6118,51 +6184,62 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	 t; t = OVL_NEXT (t))
       {
 	tree elt = OVL_CURRENT (t);
-	if (non_placement_deallocation_fn_p (elt))
+	if (usual_deallocation_fn_p (elt))
 	  {
-	    fn = elt;
-	    /* "If a class T has a member deallocation function named
-	       operator delete with exactly one parameter, then that
-	       function is a usual (non-placement) deallocation
-	       function. If class T does not declare such an operator
-	       delete but does declare a member deallocation function named
-	       operator delete with exactly two parameters, the second of
-	       which has type std::size_t (18.2), then this function is a
-	       usual deallocation function."
-
-	       So in a class (void*) beats (void*, size_t).  */
-	    if (DECL_CLASS_SCOPE_P (fn))
+	    if (!fn)
 	      {
-		if (FUNCTION_ARG_CHAIN (fn) == void_list_node)
-		  break;
+		fn = elt;
+		continue;
 	      }
-	    /* At global scope (in C++14 and above) the rules are different:
 
-	       If deallocation function lookup finds both a usual
-	       deallocation function with only a pointer parameter and a
-	       usual deallocation function with both a pointer parameter
-	       and a size parameter, the function to be called is selected
-	       as follows:
+	    /* -- If the type has new-extended alignment, a function with a
+	       parameter of type std::align_val_t is preferred; otherwise a
+	       function without such a parameter is preferred. If exactly one
+	       preferred function is found, that function is selected and the
+	       selection process terminates. If more than one preferred
+	       function is found, all non-preferred functions are eliminated
+	       from further consideration.  */
+	    if (aligned_new_threshhold)
+	      {
+		bool want_align = type_has_new_extended_alignment (type);
+		bool fn_align = aligned_deallocation_fn_p (fn);
+		bool elt_align = aligned_deallocation_fn_p (elt);
 
-	       * If the type is complete and if, for the second alternative
-	       (delete array) only, the operand is a pointer to a class
-	       type with a non-trivial destructor or a (possibly
-	       multi-dimensional) array thereof, the function with two
-	       parameters is selected.
+		if (elt_align != fn_align)
+		  {
+		    if (want_align == elt_align)
+		      fn = elt;
+		    continue;
+		  }
+	      }
 
-	       * Otherwise, it is unspecified which of the two deallocation
-	       functions is selected. */
+	    /* -- If the deallocation functions have class scope, the one
+	       without a parameter of type std::size_t is selected.  */
+	    bool want_size;
+	    if (DECL_CLASS_SCOPE_P (fn))
+	      want_size = false;
+
+	    /* -- If the type is complete and if, for the second alternative
+	       (delete array) only, the operand is a pointer to a class type
+	       with a non-trivial destructor or a (possibly multi-dimensional)
+	       array thereof, the function with a parameter of type std::size_t
+	       is selected.
+
+	       -- Otherwise, it is unspecified whether a deallocation function
+	       with a parameter of type std::size_t is selected.  */
 	    else
 	      {
-		bool want_size = COMPLETE_TYPE_P (type);
+		want_size = COMPLETE_TYPE_P (type);
 		if (code == VEC_DELETE_EXPR
 		    && !TYPE_VEC_NEW_USES_COOKIE (type))
 		  /* We need a cookie to determine the array size.  */
 		  want_size = false;
-		bool have_size = (FUNCTION_ARG_CHAIN (fn) != void_list_node);
-		if (want_size == have_size)
-		  break;
 	      }
+	    bool fn_size = second_parm_is_size_t (fn);
+	    bool elt_size = second_parm_is_size_t (elt);
+	    gcc_assert (fn_size != elt_size);
+	    if (want_size == elt_size)
+	      fn = elt;
 	  }
       }
 
@@ -6200,8 +6277,13 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	  tree ret;
 	  vec<tree, va_gc> *args = make_tree_vector ();
 	  args->quick_push (addr);
-	  if (FUNCTION_ARG_CHAIN (fn) != void_list_node)
+	  if (second_parm_is_size_t (fn))
 	    args->quick_push (size);
+	  if (aligned_deallocation_fn_p (fn))
+	    {
+	      tree al = build_int_cst (align_type_node, TYPE_ALIGN_UNIT (type));
+	      args->quick_push (al);
+	    }
 	  ret = cp_build_function_call_vec (fn, &args, complain);
 	  release_tree_vector (args);
 	  return ret;

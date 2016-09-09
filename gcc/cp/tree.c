@@ -2920,6 +2920,30 @@ build_min_non_dep_op_overload (enum tree_code op,
   return call;
 }
 
+/* Return a new tree vec copied from VEC, with ELT inserted at index IDX.  */
+
+vec<tree, va_gc> *
+vec_copy_and_insert (vec<tree, va_gc> *old_vec, tree elt, unsigned idx)
+{
+  unsigned len = vec_safe_length (old_vec);
+  gcc_assert (idx <= len);
+
+  vec<tree, va_gc> *new_vec = NULL;
+  vec_alloc (new_vec, len + 1);
+
+  unsigned i;
+  for (i = 0; i < len; ++i)
+    {
+      if (i == idx)
+	new_vec->quick_push (elt);
+      new_vec->quick_push ((*old_vec)[i]);
+    }
+  if (i == idx)
+    new_vec->quick_push (elt);
+
+  return new_vec;
+}
+
 tree
 get_type_decl (tree t)
 {

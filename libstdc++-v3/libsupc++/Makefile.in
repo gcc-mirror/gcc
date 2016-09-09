@@ -125,9 +125,11 @@ am__objects_1 = array_type_info.lo atexit_arm.lo atexit_thread.lo \
 	function_type_info.lo fundamental_type_info.lo guard.lo \
 	guard_error.lo hash_bytes.lo nested_exception.lo \
 	new_handler.lo new_op.lo new_opnt.lo new_opv.lo new_opvnt.lo \
-	pbase_type_info.lo pmem_type_info.lo pointer_type_info.lo \
-	pure.lo si_class_type_info.lo tinfo.lo tinfo2.lo vec.lo \
-	vmi_class_type_info.lo vterminate.lo
+	new_opa.lo new_opant.lo new_opva.lo new_opvant.lo del_opa.lo \
+	del_opant.lo del_opsa.lo del_opva.lo del_opvant.lo \
+	del_opvsa.lo pbase_type_info.lo pmem_type_info.lo \
+	pointer_type_info.lo pure.lo si_class_type_info.lo tinfo.lo \
+	tinfo2.lo vec.lo vmi_class_type_info.lo vterminate.lo
 @GLIBCXX_HOSTED_TRUE@am__objects_2 = cp-demangle.lo
 @ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@am__objects_3 =  \
 @ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@	vtv_stubs.lo
@@ -445,6 +447,16 @@ sources = \
 	new_opnt.cc \
 	new_opv.cc \
 	new_opvnt.cc \
+	new_opa.cc \
+	new_opant.cc \
+	new_opva.cc \
+	new_opvant.cc \
+	del_opa.cc \
+	del_opant.cc \
+	del_opsa.cc \
+	del_opva.cc \
+	del_opvant.cc \
+	del_opvsa.cc \
 	pbase_type_info.cc \
 	pmem_type_info.cc \
 	pointer_type_info.cc \
@@ -915,6 +927,28 @@ del_opvs.lo: del_opvs.cc
 	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
 del_opvs.o: del_opvs.cc
 	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+
+# Use special rules for the C++17 sources so that the proper flags are passed.
+new_opa.lo: new_opa.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+new_opant.lo: new_opant.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+new_opva.lo: new_opva.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+new_opvant.lo: new_opvant.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opa.lo: del_opa.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opant.lo: del_opant.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opsa.lo: del_opsa.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opva.lo: del_opva.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opvant.lo: del_opvant.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
+del_opvsa.lo: del_opvsa.cc
+	$(LTCXXCOMPILE) -std=gnu++1z -c $<
 
 install-stdHEADERS: $(std_HEADERS)
 	@$(NORMAL_INSTALL)
