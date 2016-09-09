@@ -2267,8 +2267,8 @@ not provide a @file{stdint.h} header on those systems.
 @itemx __INT_FAST64_WIDTH__
 @itemx __INTPTR_WIDTH__
 @itemx __INTMAX_WIDTH__
-Defined to the widths of the corresponding types.  They exist to make
-the implementations of @file{limits.h} and @file{stdint.h} make
+Defined to the bit widths of the corresponding types.  They exist to
+make the implementations of @file{limits.h} and @file{stdint.h} behave
 correctly.  You should not use these macros directly; instead, include
 the appropriate headers.  Some of these macros may not be defined on
 particular systems if GCC does not provide a @file{stdint.h} header on
