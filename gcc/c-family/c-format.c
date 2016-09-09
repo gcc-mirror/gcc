@@ -2355,20 +2355,12 @@ argument_parser::find_format_char_info (char format_char)
     ++fci;
   if (fci->format_chars == 0)
     {
-      if (ISGRAPH (format_char))
-	format_warning_at_char (format_string_loc, format_string_cst,
-				format_chars - orig_format_chars,
-				OPT_Wformat_,
-				"unknown conversion type character"
-				" %qc in format",
-				format_char);
-      else
-	format_warning_at_char (format_string_loc, format_string_cst,
-				format_chars - orig_format_chars,
-				OPT_Wformat_,
-				"unknown conversion type character"
-				" 0x%x in format",
-				format_char);
+      format_warning_at_char (format_string_loc, format_string_cst,
+			      format_chars - orig_format_chars,
+			      OPT_Wformat_,
+			      "unknown conversion type character"
+			      " %qc in format",
+			      format_char);
       return NULL;
     }
 

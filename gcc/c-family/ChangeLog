@@ -1,3 +1,10 @@
+2016-09-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c/77520
+	PR c/77521
+	* c-format.c (argument_parser::find_format_char_info): Use %qc
+	format directive unconditionally.
+
 2016-09-09  Jason Merrill  <jason@redhat.com>
 
 	Implement C++17 new of over-aligned types.
