@@ -9050,8 +9050,7 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
       Location loc = this->location();
 
       int i = 0;
-      /* Buffer large enough for INT_MAX plus the prefix.  */
-      char buf[14];
+      char buf[20];
       for (Typed_identifier_list::const_iterator p = results->begin();
            p != results->end();
            ++p, ++i)

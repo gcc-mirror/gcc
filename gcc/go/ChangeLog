@@ -4,12 +4,6 @@
 	* Make-lang.in (GO_OBJS): Add go/go-sha1.o.
 	(CFLAGS-go/go-sha1.o): New variable.
 
-2016-09-01  Martin Sebor  <msebor@redhat.com>
-
-	* gofrontend/expressions.cc: Increase buffer size to guarantee
-	it fits the output of the formatted function regardless of its
-	arguments.
-
 2016-08-29  Ian Lance Taylor  <iant@google.com>
 
 	* lang.opt (fgo-c-header, fgo-compiling-runtime): New options.
