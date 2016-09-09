@@ -1,5 +1,11 @@
 2016-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/77506
+	* array.c (gfc_match_array_constructor): CHARACTER(len=*) cannot
+	appear in an array constructor.
+
+2016-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/77507
 	* intrinsic.c (add_functions):  Use correct keyword.
 
