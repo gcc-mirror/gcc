@@ -1239,7 +1239,8 @@ add_functions (void)
     *z = "z", *ln = "len", *ut = "unit", *han = "handler",
     *num = "number", *tm = "time", *nm = "name", *md = "mode",
     *vl = "values", *p1 = "path1", *p2 = "path2", *com = "command",
-    *ca = "coarray", *sub = "sub", *dist = "distance", *failed="failed";
+    *ca = "coarray", *sub = "sub", *dist = "distance", *failed="failed",
+    *c_ptr_1 = "c_ptr_1", *c_ptr_2 = "c_ptr_2";
 
   int di, dr, dd, dl, dc, dz, ii;
 
@@ -2914,8 +2915,8 @@ add_functions (void)
   /* The following functions are part of ISO_C_BINDING.  */
   add_sym_2 ("c_associated", GFC_ISYM_C_ASSOCIATED, CLASS_INQUIRY, ACTUAL_NO,
 	     BT_LOGICAL, dl, GFC_STD_F2003, gfc_check_c_associated, NULL, NULL,
-	     "C_PTR_1", BT_VOID, 0, REQUIRED,
-	     "C_PTR_2", BT_VOID, 0, OPTIONAL);
+	     c_ptr_1, BT_VOID, 0, REQUIRED,
+	     c_ptr_2, BT_VOID, 0, OPTIONAL);
   make_from_module();
 
   add_sym_1 ("c_loc", GFC_ISYM_C_LOC, CLASS_INQUIRY, ACTUAL_NO,
