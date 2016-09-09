@@ -2396,9 +2396,6 @@ __go_go(void (*fn)(void*), void* arg)
 		uc = ucontext_arg(&vnewg->context[0]);
 		getcontext(uc);
 		uc->uc_stack.ss_sp = vsp;
-#ifdef MAKECONTEXT_STACK_TOP
-		uc->uc_stack.ss_sp += vspsize;
-#endif
 		uc->uc_stack.ss_size = vspsize;
 		makecontext(uc, kickoff, 0);
 
