@@ -1142,6 +1142,15 @@ gfc_match_array_constructor (gfc_expr **result)
 	      gfc_restore_last_undo_checkpoint ();
 	      goto cleanup;
 	    }
+
+	  if (ts.type == BT_CHARACTER
+	      && ts.u.cl && !ts.u.cl->length && !ts.u.cl->length_from_typespec)
+	    {
+	      gfc_error ("Type-spec at %L cannot contain an asterisk for a "
+			 "type parameter", &where);
+	      gfc_restore_last_undo_checkpoint ();
+	      goto cleanup;
+	    }
 	}
     }
   else if (m == MATCH_ERROR)
