@@ -34,6 +34,12 @@ extern void __clear_cache (char *, char *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
   __attribute__ ((__noreturn__));
 
+#ifdef __LIBGCC_HAS_HF_MODE__
+#define LIBGCC2_HAS_HF_MODE 1
+#else
+#define LIBGCC2_HAS_HF_MODE 0
+#endif
+
 #ifdef __LIBGCC_HAS_SF_MODE__
 #define LIBGCC2_HAS_SF_MODE 1
 #else
@@ -133,6 +139,10 @@ typedef unsigned int UTItype	__attribute__ ((mode (TI)));
 #endif
 #endif
 
+#if LIBGCC2_HAS_HF_MODE
+typedef		float HFtype	__attribute__ ((mode (HF)));
+typedef _Complex float HCtype	__attribute__ ((mode (HC)));
+#endif
 #if LIBGCC2_HAS_SF_MODE
 typedef 	float SFtype	__attribute__ ((mode (SF)));
 typedef _Complex float SCtype	__attribute__ ((mode (SC)));
@@ -424,6 +434,10 @@ extern SItype __negvsi2 (SItype);
 #endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 
 #undef int
+#if LIBGCC2_HAS_HF_MODE
+extern HCtype __divhc3 (HFtype, HFtype, HFtype, HFtype);
+extern HCtype __mulhc3 (HFtype, HFtype, HFtype, HFtype);
+#endif
 #if LIBGCC2_HAS_SF_MODE
 extern DWtype __fixsfdi (SFtype);
 extern SFtype __floatdisf (DWtype);

@@ -1,3 +1,14 @@
+2016-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR target/63250
+	*  Makefile.in (lib2funcs): Build _mulhc3 and _divhc3.
+	* libgcc2.h (LIBGCC_HAS_HF_MODE): Conditionally define.
+	(HFtype): Likewise.
+	(HCtype): Likewise.
+	(__divhc3): Likewise.
+	(__mulhc3): Likewise.
+	* libgcc2.c: Support _mulhc3 and _divhc3.
+
 2016-09-07  Joseph Myers  <joseph@codesourcery.com>
 
 	PR libgcc/77519
