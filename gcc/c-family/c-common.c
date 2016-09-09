@@ -12878,6 +12878,19 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
   return stv_nothing;
 }
 
+/* Return the alignment of std::max_align_t.
+
+   [support.types.layout] The type max_align_t is a POD type whose alignment
+   requirement is at least as great as that of every scalar type, and whose
+   alignment requirement is supported in every context.  */
+
+unsigned
+max_align_t_align ()
+{
+  return MAX (TYPE_ALIGN (long_long_integer_type_node),
+	      TYPE_ALIGN (long_double_type_node));
+}
+
 /* Return true iff ALIGN is an integral constant that is a fundamental
    alignment, as defined by [basic.align] in the c++-11
    specifications.
@@ -12886,14 +12899,12 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 
        [A fundamental alignment is represented by an alignment less than or
         equal to the greatest alignment supported by the implementation
-        in all contexts, which is equal to
-        alignof(max_align_t)].  */
+        in all contexts, which is equal to alignof(max_align_t)].  */
 
 bool
-cxx_fundamental_alignment_p  (unsigned align)
+cxx_fundamental_alignment_p (unsigned align)
 {
-  return (align <=  MAX (TYPE_ALIGN (long_long_integer_type_node),
-			 TYPE_ALIGN (long_double_type_node)));
+  return (align <= max_align_t_align ());
 }
 
 /* Return true if T is a pointer to a zero-sized aggregate.  */

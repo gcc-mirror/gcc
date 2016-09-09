@@ -2197,6 +2197,18 @@ CXXABI_1.3.11 {
     __cxa_init_primary_exception;
     _ZNSt15__exception_ptr13exception_ptrC1EPv;
 
+    # C++17 aligned new/delete
+    _ZnwmSt11align_val_t;
+    _ZnwmSt11align_val_tRKSt9nothrow_t;
+    _ZnamSt11align_val_t;
+    _ZnamSt11align_val_tRKSt9nothrow_t;
+    _ZdlPvSt11align_val_t;
+    _ZdlPvSt11align_val_tRKSt9nothrow_t;
+    _ZdlPvmSt11align_val_t;
+    _ZdaPvSt11align_val_t;
+    _ZdaPvSt11align_val_tRKSt9nothrow_t;
+    _ZdaPvmSt11align_val_t;
+
 } CXXABI_1.3.10;
 
 # Symbols in the support library (libsupc++) supporting transactional memory.

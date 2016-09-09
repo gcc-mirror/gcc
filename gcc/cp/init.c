@@ -2569,6 +2569,15 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
     }
 }
 
+/* True if alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__.  */
+
+bool
+type_has_new_extended_alignment (tree t)
+{
+  return (aligned_new_threshhold
+	  && TYPE_ALIGN_UNIT (t) > (unsigned)aligned_new_threshhold);
+}
+
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -2840,6 +2849,10 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	}
     }
 
+  tree align_arg = NULL_TREE;
+  if (type_has_new_extended_alignment (elt_type))
+    align_arg = build_int_cst (align_type_node, TYPE_ALIGN_UNIT (elt_type));
+
   alloc_fn = NULL_TREE;
 
   /* If PLACEMENT is a single simple pointer type not passed by
@@ -2954,12 +2967,28 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
                 }
 	      return error_mark_node;
 	    }
-	  alloc_call = build_new_method_call (build_dummy_object (elt_type),
-					      fns, placement,
-					      /*conversion_path=*/NULL_TREE,
-					      LOOKUP_NORMAL,
-					      &alloc_fn,
-					      complain);
+	  tree dummy = build_dummy_object (elt_type);
+	  alloc_call = NULL_TREE;
+	  if (align_arg)
+	    {
+	      vec<tree, va_gc> *align_args
+		= vec_copy_and_insert (*placement, align_arg, 1);
+	      alloc_call
+		= build_new_method_call (dummy, fns, &align_args,
+					 /*conversion_path=*/NULL_TREE,
+					 LOOKUP_NORMAL, &alloc_fn, tf_none);
+	      /* If no matching function is found and the allocated object type
+		 has new-extended alignment, the alignment argument is removed
+		 from the argument list, and overload resolution is performed
+		 again.  */
+	      if (alloc_call == error_mark_node)
+		alloc_call = NULL_TREE;
+	    }
+	  if (!alloc_call)
+	    alloc_call = build_new_method_call (dummy, fns, placement,
+						/*conversion_path=*/NULL_TREE,
+						LOOKUP_NORMAL,
+						&alloc_fn, complain);
 	}
       else
 	{
@@ -2976,6 +3005,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
 	  alloc_call = build_operator_new_call (fnname, placement,
 						&size, &cookie_size,
+						align_arg,
 						outer_nelts_check,
 						&alloc_fn, complain);
 	}
@@ -2985,6 +3015,20 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     return error_mark_node;
 
   gcc_assert (alloc_fn != NULL_TREE);
+
+  if (warn_aligned_new
+      && TYPE_ALIGN (elt_type) > max_align_t_align ()
+      && (warn_aligned_new > 1
+	  || CP_DECL_CONTEXT (alloc_fn) == global_namespace)
+      && !aligned_allocation_fn_p (alloc_fn))
+    {
+      warning (OPT_Waligned_new_, "%<new%> of type %qT with extended "
+	       "alignment %d", elt_type, TYPE_ALIGN_UNIT (elt_type));
+      inform (input_location, "uses %qD, which does not have an alignment "
+	      "parameter", alloc_fn);
+      inform (input_location, "use %<-faligned-new%> to enable C++17 "
+	      "over-aligned new support");
+    }
 
   /* If we found a simple case of PLACEMENT_EXPR above, then copy it
      into a temporary variable.  */

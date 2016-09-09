@@ -1,3 +1,22 @@
+2016-09-09  Jason Merrill  <jason@redhat.com>
+
+	Implement P0035R4, C++17 new of over-aligned types.
+	* libsupc++/new: Declare aligned new/delete operators.
+	* config/abi/pre/gnu.ver: Export them.
+	* configure.ac: Check for aligned_alloc, posix_memalign, memalign,
+	_aligned_malloc.
+	* libsupc++/new_opa.cc: New.
+	* libsupc++/new_opant.cc: New.
+	* libsupc++/new_opva.cc: New.
+	* libsupc++/new_opva.cc: New.
+	* libsupc++/del_opa.cc: New.
+	* libsupc++/del_opant.cc: New.
+	* libsupc++/del_opsa.cc: New.
+	* libsupc++/del_opva.cc: New.
+	* libsupc++/del_opvant.cc: New.
+	* libsupc++/del_opvsa.cc: New.
+	* libsupc++/Makefile.am: Build them.
+
 2016-09-05  Tim Shen  <timshen@google.com>
 
 	* include/std/variant: include bits/move.h for std::addressof.

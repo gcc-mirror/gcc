@@ -4132,6 +4132,17 @@ cxx_init_decl_processing (void)
   /* Now, C++.  */
   current_lang_name = lang_name_cplusplus;
 
+  if (aligned_new_threshhold > 1
+      && exact_log2 (aligned_new_threshhold) == -1)
+    {
+      error ("-faligned-new=%d is not a power of two", aligned_new_threshhold);
+      aligned_new_threshhold = 1;
+    }
+  if (aligned_new_threshhold == -1)
+    aligned_new_threshhold = (cxx_dialect >= cxx1z) ? 1 : 0;
+  if (aligned_new_threshhold == 1)
+    aligned_new_threshhold = max_align_t_align () / BITS_PER_UNIT;
+
   {
     tree newattrs, extvisattr;
     tree newtype, deltype;
@@ -4197,6 +4208,47 @@ cxx_init_decl_processing (void)
 	deltype = build_exception_variant (deltype, empty_except_spec);
 	push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
 	push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+      }
+
+    if (aligned_new_threshhold)
+      {
+	push_namespace (std_identifier);
+	tree align_id = get_identifier ("align_val_t");
+	align_type_node = start_enum (align_id, NULL_TREE, size_type_node,
+				      NULL_TREE, /*scoped*/true, NULL);
+	pop_namespace ();
+
+	/* operator new (size_t, align_val_t); */
+	newtype = build_function_type_list (ptr_type_node, size_type_node,
+					    align_type_node, NULL_TREE);
+	newtype = cp_build_type_attribute_variant (newtype, newattrs);
+	newtype = build_exception_variant (newtype, new_eh_spec);
+	opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
+	DECL_IS_MALLOC (opnew) = 1;
+	DECL_IS_OPERATOR_NEW (opnew) = 1;
+	opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
+	DECL_IS_MALLOC (opnew) = 1;
+	DECL_IS_OPERATOR_NEW (opnew) = 1;
+
+	/* operator delete (void *, align_val_t); */
+	deltype = build_function_type_list (void_type_node, ptr_type_node,
+					    align_type_node, NULL_TREE);
+	deltype = cp_build_type_attribute_variant (deltype, extvisattr);
+	deltype = build_exception_variant (deltype, empty_except_spec);
+	push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+	push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+
+	if (flag_sized_deallocation)
+	  {
+	    /* operator delete (void *, size_t, align_val_t); */
+	    deltype = build_function_type_list (void_type_node, ptr_type_node,
+						size_type_node, align_type_node,
+						NULL_TREE);
+	    deltype = cp_build_type_attribute_variant (deltype, extvisattr);
+	    deltype = build_exception_variant (deltype, empty_except_spec);
+	    push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+	    push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	  }
       }
 
     nullptr_type_node = make_node (NULLPTR_TYPE);

@@ -1,3 +1,12 @@
+2016-09-09  Jason Merrill  <jason@redhat.com>
+
+	Implement C++17 new of over-aligned types.
+	* c.opt: Add -faligned-new and -Waligned-new.
+	* c-common.c (max_align_t_align): Split out from...
+	(cxx_fundamental_alignment_p): ...here.
+	* c-common.h: Declare it.
+	* c-cppbuiltin.c (c_cpp_builtins): Handle aligned new.
+
 2016-09-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (builtin_define_type_width): New function.

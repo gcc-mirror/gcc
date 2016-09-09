@@ -350,6 +350,12 @@
 #  error "__cpp_if_constexpr != 201606"
 #endif
 
+#ifndef __cpp_aligned_new
+#  error "__cpp_aligned_new"
+#elif __cpp_aligned_new != 201606
+#  error "__cpp_aligned_new != 201606"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)

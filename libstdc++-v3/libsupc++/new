@@ -79,6 +79,10 @@ namespace std
   };
 #endif
 
+#if __cpp_aligned_new
+  enum class align_val_t: size_t {};
+#endif
+
   struct nothrow_t
   {
 #if __cplusplus >= 201103L
@@ -135,6 +139,30 @@ void operator delete(void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
+#if __cpp_aligned_new
+void* operator new(std::size_t, std::align_val_t)
+  __attribute__((__externally_visible__));
+void* operator new(std::size_t, std::align_val_t, const std::nothrow_t&)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+void operator delete(void*, std::align_val_t)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+void operator delete(void*, std::align_val_t, const std::nothrow_t&)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+void* operator new[](std::size_t, std::align_val_t)
+  __attribute__((__externally_visible__));
+void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+void operator delete[](void*, std::align_val_t)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+void operator delete[](void*, std::align_val_t, const std::nothrow_t&)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+#if __cpp_sized_deallocation
+void operator delete(void*, std::size_t, std::align_val_t)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+void operator delete[](void*, std::size_t, std::align_val_t)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+#endif // __cpp_sized_deallocation
+#endif // __cpp_aligned_new
 
 // Default placement versions of operator new.
 inline void* operator new(std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
