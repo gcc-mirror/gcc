@@ -54,6 +54,7 @@ static void builtin_define_stdint_macros (void);
 static void builtin_define_constants (const char *, tree);
 static void builtin_define_type_max (const char *, tree);
 static void builtin_define_type_minmax (const char *, const char *, tree);
+static void builtin_define_type_width (const char *, tree, tree);
 static void builtin_define_float_constants (const char *,
 					    const char *,
 					    const char *,
@@ -435,9 +436,15 @@ builtin_define_stdint_macros (void)
   builtin_define_constants ("__INTMAX_C", intmax_type_node);
   builtin_define_type_max ("__UINTMAX_MAX__", uintmax_type_node);
   builtin_define_constants ("__UINTMAX_C", uintmax_type_node);
+  builtin_define_type_width ("__INTMAX_WIDTH__", intmax_type_node,
+			     uintmax_type_node);
   if (sig_atomic_type_node)
-    builtin_define_type_minmax ("__SIG_ATOMIC_MIN__", "__SIG_ATOMIC_MAX__",
-				sig_atomic_type_node);
+    {
+      builtin_define_type_minmax ("__SIG_ATOMIC_MIN__", "__SIG_ATOMIC_MAX__",
+				  sig_atomic_type_node);
+      builtin_define_type_width ("__SIG_ATOMIC_WIDTH__", sig_atomic_type_node,
+				 NULL_TREE);
+    }
   if (int8_type_node)
     builtin_define_type_max ("__INT8_MAX__", int8_type_node);
   if (int16_type_node)
@@ -458,21 +465,32 @@ builtin_define_stdint_macros (void)
     {
       builtin_define_type_max ("__INT_LEAST8_MAX__", int_least8_type_node);
       builtin_define_constants ("__INT8_C", int_least8_type_node);
+      builtin_define_type_width ("__INT_LEAST8_WIDTH__", int_least8_type_node,
+				 uint_least8_type_node);
     }
   if (int_least16_type_node)
     {
       builtin_define_type_max ("__INT_LEAST16_MAX__", int_least16_type_node);
       builtin_define_constants ("__INT16_C", int_least16_type_node);
+      builtin_define_type_width ("__INT_LEAST16_WIDTH__",
+				 int_least16_type_node,
+				 uint_least16_type_node);
     }
   if (int_least32_type_node)
     {
       builtin_define_type_max ("__INT_LEAST32_MAX__", int_least32_type_node);
       builtin_define_constants ("__INT32_C", int_least32_type_node);
+      builtin_define_type_width ("__INT_LEAST32_WIDTH__",
+				 int_least32_type_node,
+				 uint_least32_type_node);
     }
   if (int_least64_type_node)
     {
       builtin_define_type_max ("__INT_LEAST64_MAX__", int_least64_type_node);
       builtin_define_constants ("__INT64_C", int_least64_type_node);
+      builtin_define_type_width ("__INT_LEAST64_WIDTH__",
+				 int_least64_type_node,
+				 uint_least64_type_node);
     }
   if (uint_least8_type_node)
     {
@@ -495,13 +513,29 @@ builtin_define_stdint_macros (void)
       builtin_define_constants ("__UINT64_C", uint_least64_type_node);
     }
   if (int_fast8_type_node)
-    builtin_define_type_max ("__INT_FAST8_MAX__", int_fast8_type_node);
+    {
+      builtin_define_type_max ("__INT_FAST8_MAX__", int_fast8_type_node);
+      builtin_define_type_width ("__INT_FAST8_WIDTH__", int_fast8_type_node,
+				 uint_fast8_type_node);
+    }
   if (int_fast16_type_node)
-    builtin_define_type_max ("__INT_FAST16_MAX__", int_fast16_type_node);
+    {
+      builtin_define_type_max ("__INT_FAST16_MAX__", int_fast16_type_node);
+      builtin_define_type_width ("__INT_FAST16_WIDTH__", int_fast16_type_node,
+				 uint_fast16_type_node);
+    }
   if (int_fast32_type_node)
-    builtin_define_type_max ("__INT_FAST32_MAX__", int_fast32_type_node);
+    {
+      builtin_define_type_max ("__INT_FAST32_MAX__", int_fast32_type_node);
+      builtin_define_type_width ("__INT_FAST32_WIDTH__", int_fast32_type_node,
+				 uint_fast32_type_node);
+    }
   if (int_fast64_type_node)
-    builtin_define_type_max ("__INT_FAST64_MAX__", int_fast64_type_node);
+    {
+      builtin_define_type_max ("__INT_FAST64_MAX__", int_fast64_type_node);
+      builtin_define_type_width ("__INT_FAST64_WIDTH__", int_fast64_type_node,
+				 uint_fast64_type_node);
+    }
   if (uint_fast8_type_node)
     builtin_define_type_max ("__UINT_FAST8_MAX__", uint_fast8_type_node);
   if (uint_fast16_type_node)
@@ -511,7 +545,11 @@ builtin_define_stdint_macros (void)
   if (uint_fast64_type_node)
     builtin_define_type_max ("__UINT_FAST64_MAX__", uint_fast64_type_node);
   if (intptr_type_node)
-    builtin_define_type_max ("__INTPTR_MAX__", intptr_type_node);
+    {
+      builtin_define_type_max ("__INTPTR_MAX__", intptr_type_node);
+      builtin_define_type_width ("__INTPTR_WIDTH__", intptr_type_node,
+				 uintptr_type_node);
+    }
   if (uintptr_type_node)
     builtin_define_type_max ("__UINTPTR_MAX__", uintptr_type_node);
 }
@@ -945,6 +983,24 @@ c_cpp_builtins (cpp_reader *pfile)
   builtin_define_type_minmax ("__WINT_MIN__", "__WINT_MAX__", wint_type_node);
   builtin_define_type_max ("__PTRDIFF_MAX__", ptrdiff_type_node);
   builtin_define_type_max ("__SIZE_MAX__", size_type_node);
+
+  /* These are needed for TS 18661-1.  */
+  builtin_define_type_width ("__SCHAR_WIDTH__", signed_char_type_node,
+			     unsigned_char_type_node);
+  builtin_define_type_width ("__SHRT_WIDTH__", short_integer_type_node,
+			     short_unsigned_type_node);
+  builtin_define_type_width ("__INT_WIDTH__", integer_type_node,
+			     unsigned_type_node);
+  builtin_define_type_width ("__LONG_WIDTH__", long_integer_type_node,
+			     long_unsigned_type_node);
+  builtin_define_type_width ("__LONG_LONG_WIDTH__",
+			     long_long_integer_type_node,
+			     long_long_unsigned_type_node);
+  builtin_define_type_width ("__WCHAR_WIDTH__", underlying_wchar_type_node,
+			     NULL_TREE);
+  builtin_define_type_width ("__WINT_WIDTH__", wint_type_node, NULL_TREE);
+  builtin_define_type_width ("__PTRDIFF_WIDTH__", ptrdiff_type_node, NULL_TREE);
+  builtin_define_type_width ("__SIZE_WIDTH__", size_type_node, NULL_TREE);
 
   if (c_dialect_cxx ())
     for (i = 0; i < NUM_INT_N_ENTS; i ++)
@@ -1691,6 +1747,17 @@ builtin_define_type_minmax (const char *min_macro, const char *max_macro,
 	}
       cpp_define (parse_in, buf);
     }
+}
+
+/* Define WIDTH_MACRO for the width of TYPE.  If TYPE2 is not NULL,
+   both types must have the same width.  */
+
+static void
+builtin_define_type_width (const char *width_macro, tree type, tree type2)
+{
+  if (type2 != NULL_TREE)
+    gcc_assert (TYPE_PRECISION (type) == TYPE_PRECISION (type2));
+  builtin_define_with_int_value (width_macro, TYPE_PRECISION (type));
 }
 
 #include "gt-c-family-c-cppbuiltin.h"

@@ -2247,6 +2247,33 @@ these macros directly; instead, include the appropriate headers.  Some
 of these macros may not be defined on particular systems if GCC does
 not provide a @file{stdint.h} header on those systems.
 
+@item __SCHAR_WIDTH__
+@itemx __SHRT_WIDTH__
+@itemx __INT_WIDTH__
+@itemx __LONG_WIDTH__
+@itemx __LONG_LONG_WIDTH__
+@itemx __PTRDIFF_WIDTH__
+@itemx __SIG_ATOMIC_WIDTH__
+@itemx __SIZE_WIDTH__
+@itemx __WCHAR_WIDTH__
+@itemx __WINT_WIDTH__
+@itemx __INT_LEAST8_WIDTH__
+@itemx __INT_LEAST16_WIDTH__
+@itemx __INT_LEAST32_WIDTH__
+@itemx __INT_LEAST64_WIDTH__
+@itemx __INT_FAST8_WIDTH__
+@itemx __INT_FAST16_WIDTH__
+@itemx __INT_FAST32_WIDTH__
+@itemx __INT_FAST64_WIDTH__
+@itemx __INTPTR_WIDTH__
+@itemx __INTMAX_WIDTH__
+Defined to the widths of the corresponding types.  They exist to make
+the implementations of @file{limits.h} and @file{stdint.h} make
+correctly.  You should not use these macros directly; instead, include
+the appropriate headers.  Some of these macros may not be defined on
+particular systems if GCC does not provide a @file{stdint.h} header on
+those systems.
+
 @item __SIZEOF_INT__
 @itemx __SIZEOF_LONG__
 @itemx __SIZEOF_LONG_LONG__

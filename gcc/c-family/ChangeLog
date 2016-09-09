@@ -1,3 +1,9 @@
+2016-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (builtin_define_type_width): New function.
+	(builtin_define_stdint_macros, c_cpp_builtins): Define type width
+	macros.
+
 2016-09-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (get_cpp_ttype_from_string_type): Handle being passed
