@@ -340,16 +340,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define EXIT_IGNORE_STACK 1
 
-/* Store in the variable DEPTH the initial difference between the
-   frame pointer reg contents and the stack pointer reg contents,
-   as of the start of the function body.  This depends on the layout
-   of the fixed parts of the stack frame and on how registers are saved.
-
-   On the VAX, FRAME_POINTER_REQUIRED is always 1, so the definition of this
-   macro doesn't matter.  But it must be defined.  */
-
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 0;
-
 /* Length in units of the trampoline for entering a nested function.  */
 
 #define TRAMPOLINE_SIZE 15

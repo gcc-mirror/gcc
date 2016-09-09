@@ -1282,8 +1282,7 @@ cris_return_address_on_stack_for_return (void)
     : cris_return_address_on_stack ();
 }
 
-/* This used to be the INITIAL_FRAME_POINTER_OFFSET worker; now only
-   handles FP -> SP elimination offset.  */
+/* This handles FP -> SP elimination offset.  */
 
 static int
 cris_initial_frame_pointer_offset (void)

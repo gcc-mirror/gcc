@@ -286,15 +286,7 @@ static const struct elim_table_1
   const int to;
 } reg_eliminate_1[] =
 
-/* If a set of eliminable registers was specified, define the table from it.
-   Otherwise, default to the normal case of the frame pointer being
-   replaced by the stack pointer.  */
-
-#ifdef ELIMINABLE_REGS
   ELIMINABLE_REGS;
-#else
-  {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}};
-#endif
 
 #define NUM_ELIMINABLE_REGS ARRAY_SIZE (reg_eliminate_1)
 
@@ -3823,26 +3815,17 @@ static bool
 verify_initial_elim_offsets (void)
 {
   HOST_WIDE_INT t;
+  struct elim_table *ep;
 
   if (!num_eliminable)
     return true;
 
-#ifdef ELIMINABLE_REGS
-  {
-   struct elim_table *ep;
-
-   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-     {
-       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
-       if (t != ep->initial_offset)
-	 return false;
-     }
-  }
-#else
-  INITIAL_FRAME_POINTER_OFFSET (t);
-  if (t != reg_eliminate[0].initial_offset)
-    return false;
-#endif
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    {
+      INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
+      if (t != ep->initial_offset)
+	return false;
+    }
 
   return true;
 }
@@ -3854,16 +3837,11 @@ set_initial_elim_offsets (void)
 {
   struct elim_table *ep = reg_eliminate;
 
-#ifdef ELIMINABLE_REGS
   for (; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, ep->initial_offset);
       ep->previous_offset = ep->offset = ep->initial_offset;
     }
-#else
-  INITIAL_FRAME_POINTER_OFFSET (ep->initial_offset);
-  ep->previous_offset = ep->offset = ep->initial_offset;
-#endif
 
   num_not_at_initial_offset = 0;
 }
@@ -3935,9 +3913,7 @@ update_eliminables (HARD_REG_SET *pset)
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if ((ep->from == HARD_FRAME_POINTER_REGNUM
          && targetm.frame_pointer_required ())
-#ifdef ELIMINABLE_REGS
 	|| ! targetm.can_eliminate (ep->from, ep->to)
-#endif
 	)
       ep->can_eliminate = 0;
 
@@ -4058,16 +4034,13 @@ static void
 init_elim_table (void)
 {
   struct elim_table *ep;
-#ifdef ELIMINABLE_REGS
   const struct elim_table_1 *ep1;
-#endif
 
   if (!reg_eliminate)
     reg_eliminate = XCNEWVEC (struct elim_table, NUM_ELIMINABLE_REGS);
 
   num_eliminable = 0;
 
-#ifdef ELIMINABLE_REGS
   for (ep = reg_eliminate, ep1 = reg_eliminate_1;
        ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++, ep1++)
     {
@@ -4080,12 +4053,6 @@ init_elim_table (void)
 		 && (! SUPPORTS_STACK_ALIGNMENT
 		     || ! stack_realign_fp)));
     }
-#else
-  reg_eliminate[0].from = reg_eliminate_1[0].from;
-  reg_eliminate[0].to = reg_eliminate_1[0].to;
-  reg_eliminate[0].can_eliminate = reg_eliminate[0].can_eliminate_previous
-    = ! frame_pointer_needed;
-#endif
 
   /* Count the number of eliminable registers and build the FROM and TO
      REG rtx's.  Note that code in gen_rtx_REG will cause, e.g.,

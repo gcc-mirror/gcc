@@ -5289,7 +5289,7 @@ five otherwise.  This is best for most machines.",
  unsigned int, (void),
  default_case_values_threshold)
 
-/* Retutn true if a function must have and use a frame pointer.  */
+/* Return true if a function must have and use a frame pointer.  */
 DEFHOOK
 (frame_pointer_required,
  "This target hook should return @code{true} if a function must have and use\n\
@@ -5306,7 +5306,7 @@ pointer.\n\
 In certain cases, the compiler does not know how to produce valid code\n\
 without a frame pointer.  The compiler recognizes those cases and\n\
 automatically gives the function a frame pointer regardless of what\n\
-@code{TARGET_FRAME_POINTER_REQUIRED} returns.  You don't need to worry about\n\
+@code{targetm.frame_pointer_required} returns.  You don't need to worry about\n\
 them.\n\
 \n\
 In a function that does not require a frame pointer, the frame pointer\n\
@@ -5321,11 +5321,10 @@ Default return value is @code{false}.",
    from-reg with register number to-reg.  */
 DEFHOOK
 (can_eliminate,
- "This target hook should returns @code{true} if the compiler is allowed to\n\
+ "This target hook should return @code{true} if the compiler is allowed to\n\
 try to replace register number @var{from_reg} with register number\n\
-@var{to_reg}.  This target hook need only be defined if @code{ELIMINABLE_REGS}\n\
-is defined, and will usually be @code{true}, since most of the cases\n\
-preventing register elimination are things that the compiler already\n\
+@var{to_reg}.  This target hook will usually be @code{true}, since most of the\n\
+cases preventing register elimination are things that the compiler already\n\
 knows about.\n\
 \n\
 Default return value is @code{true}.",
