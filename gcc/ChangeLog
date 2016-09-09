@@ -1,3 +1,36 @@
+2016-09-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/tm.texi.in (INITIAL_FRAME_POINTER_OFFSET): Remove.
+	(ELIMINABLE_REGS, TARGET_CAN_ELIMINATE,
+	INITIAL_ELIMINATION_OFFSET) : Update documentation.
+	* target.def (frame_pointer_required, can_eliminate): Likewise.
+	* doc/tm.texi: Regenerated.
+	* builtins.c (expand_builtin_setjmp_receiver): Remove #ifdef
+	ELIMINABLE_REGS.
+	* df-scan.c (df_hard_reg_init): Likewise.
+	* ira.c (ira_setup_eliminable_regset): Likewise.
+	* lra-eliminations.c (reg_eliminate_1, (update_reg_eliminate,
+	init_elim_table): Likewise.
+	* reload1.c (reg_eliminate_1, verify_initial_elim_offsets,
+	set_initial_elim_offsets, update_eliminables,
+	init_elim_table): Likewise.
+	* rtlanal.c (get_initial_register_offset): Likewise.
+	* config/ft32/ft32.h (INITIAL_FRAME_POINTER_OFFSET): Remove.
+	* config/m32r/m32r.h (INITIAL_FRAME_POINTER_OFFSET): Likewise.
+	* config/moxie/moxie.h (INITIAL_FRAME_POINTER_OFFSET): Likewise.
+	* config/vax/vax.h (INITIAL_FRAME_POINTER_OFFSET): Likewise.
+	* config/fr30/fr30.h: Fix comment.
+	* config/frv/frv.c: Likewise.
+	* config/frv/frv.h: Likewise.
+	* config/ft32/ft32.h: Likewise.
+	* config/visium/visium.h: Likewise.
+	* config/pa/pa64-linux.h: Likewise.
+	* config/v850/v850.h: Likewise.
+	* config/cris/cris.c: Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/moxie/moxie.h: Likewise.
+	* config/m32r/m32r.h: Likewise.
+
 2016-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	PR target/77267

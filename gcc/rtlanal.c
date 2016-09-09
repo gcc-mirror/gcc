@@ -345,7 +345,6 @@ rtx_varies_p (const_rtx x, bool for_alias)
 static HOST_WIDE_INT
 get_initial_register_offset (int from, int to)
 {
-#ifdef ELIMINABLE_REGS
   static const struct elim_table_t
   {
     const int from;
@@ -448,33 +447,6 @@ get_initial_register_offset (int from, int to)
     return get_initial_register_offset (from, FRAME_POINTER_REGNUM);
   else
     return 0;
-
-#else
-  HOST_WIDE_INT offset;
-
-  if (to == from)
-    return 0;
-
-  if (reload_completed)
-    {
-      INITIAL_FRAME_POINTER_OFFSET (offset);
-    }
-  else
-    {
-      offset = crtl->outgoing_args_size + get_frame_size ();
-#if !STACK_GROWS_DOWNWARD
-      offset = - offset;
-#endif
-    }
-
-  if (to == STACK_POINTER_REGNUM)
-    return offset;
-  else if (from == STACK_POINTER_REGNUM)
-    return - offset;
-  else
-    return 0;
-
-#endif
 }
 
 /* Return nonzero if the use of X+OFFSET as an address in a MEM with SIZE

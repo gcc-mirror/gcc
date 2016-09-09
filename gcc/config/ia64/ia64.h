@@ -961,10 +961,8 @@ enum reg_class
   {FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},			\
 }
 
-/* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
-   specifies the initial difference between the specified pair of
-   registers.  This macro must be defined if `ELIMINABLE_REGS' is
-   defined.  */
+/* This macro returns the initial difference between the specified pair
+   of registers.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   ((OFFSET) = ia64_initial_elimination_offset ((FROM), (TO)))
 

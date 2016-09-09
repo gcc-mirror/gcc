@@ -3829,10 +3829,9 @@ static bool initialized = false;
 void
 df_hard_reg_init (void)
 {
-#ifdef ELIMINABLE_REGS
   int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
-#endif
+
   if (initialized)
     return;
 
@@ -3840,12 +3839,8 @@ df_hard_reg_init (void)
      mark_used_regs.  */
   CLEAR_HARD_REG_SET (elim_reg_set);
 
-#ifdef ELIMINABLE_REGS
   for (i = 0; i < (int) ARRAY_SIZE (eliminables); i++)
     SET_HARD_REG_BIT (elim_reg_set, eliminables[i].from);
-#else
-  SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);
-#endif
 
   initialized = true;
 }

@@ -2253,10 +2253,9 @@ compute_regs_asm_clobbered (void)
 void
 ira_setup_eliminable_regset (void)
 {
-#ifdef ELIMINABLE_REGS
   int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
-#endif
+
   /* FIXME: If EXIT_IGNORE_STACK is set, we will not save and restore
      sp for alloca.  So we can't eliminate the frame pointer in that
      case.  At some point, we should improve this by emitting the
@@ -2292,7 +2291,6 @@ ira_setup_eliminable_regset (void)
 
   /* Build the regset of all eliminable registers and show we can't
      use those that we already know won't be eliminated.  */
-#ifdef ELIMINABLE_REGS
   for (i = 0; i < (int) ARRAY_SIZE (eliminables); i++)
     {
       bool cannot_elim
@@ -2326,19 +2324,6 @@ ira_setup_eliminable_regset (void)
       else
 	df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
     }
-
-#else
-  if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
-    {
-      SET_HARD_REG_BIT (eliminable_regset, FRAME_POINTER_REGNUM);
-      if (frame_pointer_needed)
-	SET_HARD_REG_BIT (ira_no_alloc_regs, FRAME_POINTER_REGNUM);
-    }
-  else if (frame_pointer_needed)
-    error ("%s cannot be used in asm here", reg_names[FRAME_POINTER_REGNUM]);
-  else
-    df_set_regs_ever_live (FRAME_POINTER_REGNUM, true);
-#endif
 }
 
 

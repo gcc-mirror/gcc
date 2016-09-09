@@ -2076,9 +2076,8 @@ frv_can_eliminate (const int from, const int to)
           : true);
 }
 
-/* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It specifies the
-   initial difference between the specified pair of registers.  This macro must
-   be defined if `ELIMINABLE_REGS' is defined.  */
+/* This function returns the initial difference between the specified
+   pair of registers.  */
 
 /* See frv_stack_info for more details on the frv stack frame.  */
 
