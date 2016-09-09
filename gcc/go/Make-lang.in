@@ -59,6 +59,7 @@ GO_OBJS = \
 	go/go-lang.o \
 	go/go-linemap.o \
 	go/go-optimize.o \
+	go/go-sha1.o \
 	go/go.o \
 	go/gogo.o \
 	go/import.o \
@@ -225,6 +226,7 @@ GOINCLUDES = -I $(srcdir)/go -I $(srcdir)/go/gofrontend
 
 CFLAGS-go/go-gcc.o += $(GOINCLUDES)
 CFLAGS-go/go-linemap.o += $(GOINCLUDES)
+CFLAGS-go/go-sha1.o += $(GOINCLUDES)
 
 go/%.o: go/gofrontend/%.cc
 	$(COMPILE) $(GOINCLUDES) $<

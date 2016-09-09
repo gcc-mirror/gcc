@@ -6,8 +6,7 @@
 
 #include "go-system.h"
 
-#include "sha1.h"
-
+#include "go-sha1.h"
 #include "go-c.h"
 
 #include "gogo.h"
@@ -40,6 +39,7 @@ const int Export::checksum_len;
 Export::Export(Stream* stream)
   : stream_(stream), type_refs_(), type_index_(1), packages_()
 {
+  go_assert(Export::checksum_len == Go_sha1_helper::checksum_len);
 }
 
 // A functor to sort Named_object pointers by name.
@@ -686,9 +686,8 @@ Export::register_builtin_type(Gogo* gogo, const char* name, Builtin_code code)
 
 Export::Stream::Stream()
 {
-  this->checksum_ = new sha1_ctx;
-  memset(this->checksum_, 0, sizeof(sha1_ctx));
-  sha1_init_ctx(this->checksum_);
+  this->sha1_helper_ = go_create_sha1_helper();
+  go_assert(this->sha1_helper_ != NULL);
 }
 
 Export::Stream::~Stream()
@@ -701,7 +700,7 @@ Export::Stream::~Stream()
 void
 Export::Stream::write_and_sum_bytes(const char* bytes, size_t length)
 {
-  sha1_process_bytes(bytes, length, this->checksum_);
+  this->sha1_helper_->process_bytes(bytes, length);
   this->do_write(bytes, length);
 }
 
@@ -710,14 +709,9 @@ Export::Stream::write_and_sum_bytes(const char* bytes, size_t length)
 std::string
 Export::Stream::checksum()
 {
-  // Use a union to provide the required alignment.
-  union
-  {
-    char checksum[Export::checksum_len];
-    long align;
-  } u;
-  sha1_finish_ctx(this->checksum_, u.checksum);
-  return std::string(u.checksum, Export::checksum_len);
+  std::string rval = this->sha1_helper_->finish();
+  delete this->sha1_helper_;
+  return rval;
 }
 
 // Write the checksum string to the export data.
