@@ -166,7 +166,13 @@ static ucontext_t*
 ucontext_arg(void** go_ucontext)
 {
 	uintptr_t p = (uintptr_t)go_ucontext;
-	p = (p + 15) &~ (uintptr_t)0xf;
+	size_t align = __alignof__(ucontext_t);
+	if(align > 16) {
+		// We only ensured space for up to a 16 byte alignment
+		// in libgo/go/runtime/runtime2.go.
+		runtime_throw("required alignment of ucontext_t too large");
+	}
+	p = (p + align - 1) &~ (uintptr_t)(align - 1);
 	return (ucontext_t*)p;
 }
 
