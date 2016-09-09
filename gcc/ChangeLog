@@ -1,3 +1,7 @@
+2016-09-09  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/cpp.texi (__*_WIDTH__): Small wording fixes.
+
 2016-09-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/cpp.texi (__SCHAR_WIDTH__, __SHRT_WIDTH__, __INT_WIDTH__)
