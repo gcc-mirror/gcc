@@ -1,3 +1,9 @@
+2016-09-09  Than McIntosh  <thanm@google.com>
+
+	* go-sha1.cc: New file.
+	* Make-lang.in (GO_OBJS): Add go/go-sha1.o.
+	(CFLAGS-go/go-sha1.o): New variable.
+
 2016-09-01  Martin Sebor  <msebor@redhat.com>
 
 	* gofrontend/expressions.cc: Increase buffer size to guarantee

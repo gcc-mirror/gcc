@@ -9,7 +9,7 @@
 
 #include "string-dump.h"
 
-struct sha1_ctx;
+class Go_sha1_helper;
 class Gogo;
 class Import_init;
 class Bindings;
@@ -109,8 +109,8 @@ class Export : public String_dump
     void
     write_and_sum_bytes(const char*, size_t);
 
-    // The checksum.
-    sha1_ctx* checksum_;
+    // The checksum helper.
+    Go_sha1_helper* sha1_helper_;
   };
 
   Export(Stream*);
