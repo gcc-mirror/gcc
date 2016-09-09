@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <iconv.h>
 #endif
 
+static void pp_quoted_string (pretty_printer *, const char *, size_t = -1);
+
 /* Overwrite the given location/range within this text_info's rich_location.
    For use e.g. when implementing "+" in client format decoders.  */
 
@@ -555,8 +557,20 @@ pp_format (pretty_printer *pp, text_info *text)
 	  break;
 
 	case 'c':
-	  pp_character (pp, va_arg (*text->args_ptr, int));
-	  break;
+	  {
+	    /* When quoting, print alphanumeric, punctuation, and the space
+	       character unchanged, and all others in hexadecimal with the
+	       "\x" prefix.  Otherwise print them all unchanged.  */
+	    int chr = va_arg (*text->args_ptr, int);
+	    if (ISPRINT (chr) || !quote)
+	      pp_character (pp, chr);
+	    else
+	      {
+		const char str [2] = { chr, '\0' };
+		pp_quoted_string (pp, str, 1);
+	      }
+	    break;
+	  }
 
 	case 'd':
 	case 'i':
@@ -577,7 +591,10 @@ pp_format (pretty_printer *pp, text_info *text)
 	  break;
 
 	case 's':
-	  pp_string (pp, va_arg (*text->args_ptr, const char *));
+	  if (quote)
+	    pp_quoted_string (pp, va_arg (*text->args_ptr, const char *));
+	  else
+	    pp_string (pp, va_arg (*text->args_ptr, const char *));
 	  break;
 
 	case 'p':
@@ -937,6 +954,41 @@ pp_string (pretty_printer *pp, const char *str)
 {
   gcc_checking_assert (str);
   pp_maybe_wrap_text (pp, str, str + strlen (str));
+}
+
+/* Append the leading N characters of STRING to the output area of
+   PRETTY-PRINTER, quoting in hexadecimal non-printable characters.
+   Setting N = -1 is as if N were set to strlen (STRING).  The STRING
+   may be line-wrapped if in appropriate mode.  */
+static void
+pp_quoted_string (pretty_printer *pp, const char *str, size_t n /* = -1 */)
+{
+  gcc_checking_assert (str);
+
+  const char *last = str;
+  const char *ps;
+
+  /* Compute the length if not specified.  */
+  if (n == (size_t) -1)
+    n = strlen (str);
+
+  for (ps = str; n; ++ps, --n)
+    {
+      if (ISPRINT (*ps))
+	  continue;
+
+      if (last < ps)
+	pp_maybe_wrap_text (pp, last, ps - 1);
+
+      /* Append the hexadecimal value of the character.  Allocate a buffer
+	 that's large enough for a 32-bit char plus the hex prefix.  */
+      char buf [11];
+      int n = sprintf (buf, "\\x%02x", (unsigned char)*ps);
+      pp_maybe_wrap_text (pp, buf, buf + n);
+      last = ps + 1;
+    }
+
+  pp_maybe_wrap_text (pp, last, ps);
 }
 
 /* Maybe print out a whitespace if needed.  */

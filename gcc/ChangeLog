@@ -1,3 +1,10 @@
+2016-09-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c/77520
+	PR c/77521
+	* pretty-print.c (pp_quoted_string): New function.
+	(pp_format): Call it for %c and %s directives.
+
 2016-09-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* doc/tm.texi.in (INITIAL_FRAME_POINTER_OFFSET): Remove.
