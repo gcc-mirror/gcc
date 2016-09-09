@@ -1538,6 +1538,12 @@
 #endif
 
 
+/* Define if your linker supports --push-state/--pop-state */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_PUSHPOPSTATE_SUPPORT
+#endif
+
+
 /* Define if your linker links a mix of read-only and read-write sections into
    a read-write section. */
 #ifndef USED_FOR_TARGET

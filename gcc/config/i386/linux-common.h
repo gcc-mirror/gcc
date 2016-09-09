@@ -79,13 +79,23 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
+#ifdef HAVE_LD_PUSHPOPSTATE_SUPPORT
+#define MPX_LD_AS_NEEDED_GUARD_PUSH "--push-state --no-as-needed"
+#define MPX_LD_AS_NEEDED_GUARD_POP "--pop-state"
+#else
+#define MPX_LD_AS_NEEDED_GUARD_PUSH ""
+#define MPX_LD_AS_NEEDED_GUARD_POP ""
+#endif
+
 #ifndef LIBMPX_SPEC
 #if defined(HAVE_LD_STATIC_DYNAMIC)
 #define LIBMPX_SPEC "\
 %{mmpx:%{fcheck-pointer-bounds:\
     %{static:--whole-archive -lmpx --no-whole-archive" LIBMPX_LIBS "}\
     %{!static:%{static-libmpx:" LD_STATIC_OPTION " --whole-archive}\
-    -lmpx %{static-libmpx:--no-whole-archive " LD_DYNAMIC_OPTION \
+    %{!static-libmpx:" MPX_LD_AS_NEEDED_GUARD_PUSH "} -lmpx \
+    %{!static-libmpx:" MPX_LD_AS_NEEDED_GUARD_POP "} \
+    %{static-libmpx:--no-whole-archive " LD_DYNAMIC_OPTION \
     LIBMPX_LIBS "}}}}"
 #else
 #define LIBMPX_SPEC "\
@@ -98,8 +108,8 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBMPXWRAPPERS_SPEC "\
 %{mmpx:%{fcheck-pointer-bounds:%{!fno-chkp-use-wrappers:\
     %{static:-lmpxwrappers}\
-    %{!static:%{static-libmpxwrappers:" LD_STATIC_OPTION " --whole-archive}\
-    -lmpxwrappers %{static-libmpxwrappers:--no-whole-archive "\
+    %{!static:%{static-libmpxwrappers:" LD_STATIC_OPTION "}\
+    -lmpxwrappers %{static-libmpxwrappers: "\
     LD_DYNAMIC_OPTION "}}}}}"
 #else
 #define LIBMPXWRAPPERS_SPEC "\

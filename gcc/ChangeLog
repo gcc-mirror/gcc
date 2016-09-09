@@ -1,3 +1,18 @@
+2016-09-10  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR target/77267
+	* config.in: Regenerate.
+	* config/i386/linux-common.h (MPX_LD_AS_NEEDED_GUARD_PUSH):
+	New macro.
+	(MPX_LD_AS_NEEDED_GUARD_PUSH): Ditto.
+	(LIBMPXWRAPPERS_SPEC): Remove "--no-whole-archive" from
+	static-libmpxwrappers case.
+	(LIBMPX_SPEC): Add guards with MPX_LD_AS_NEEDED_GUARD_PUSH and
+	MPX_LD_AS_NEEDED_GUARD_POP.
+	* configure: Regenerate.
+	* configure.ac (HAVE_LD_PUSHPOPSTATE_SUPPORT): New variable.
+	defined if linker support "--push-state"/"--pop-state".
+
 2016-09-09  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* doc/cpp.texi (__*_WIDTH__): Small wording fixes.
