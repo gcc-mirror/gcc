@@ -1,3 +1,17 @@
+2016-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/cpp.texi (__SCHAR_WIDTH__, __SHRT_WIDTH__, __INT_WIDTH__)
+	(__LONG_WIDTH__, __LONG_LONG_WIDTH__, __PTRDIFF_WIDTH__)
+	(__SIG_ATOMIC_WIDTH__, __SIZE_WIDTH__, __WCHAR_WIDTH__)
+	(__WINT_WIDTH__, __INT_LEAST8_WIDTH__, __INT_LEAST16_WIDTH__)
+	(__INT_LEAST32_WIDTH__, __INT_LEAST64_WIDTH__)
+	(__INT_FAST8_WIDTH__, __INT_FAST16_WIDTH__, __INT_FAST32_WIDTH__)
+	(__INT_FAST64_WIDTH__, __INTPTR_WIDTH__, __INTMAX_WIDTH__):
+	Document.
+	* ginclude/stdint-gcc.h [__STDC_WANT_IEC_60559_BFP_EXT__]: Define
+	width macros from TS 18661-1.
+	* glimits.h [__STDC_WANT_IEC_60559_BFP_EXT__]: Likewise.
+
 2016-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/77516

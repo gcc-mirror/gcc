@@ -1,3 +1,7 @@
+2016-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/limits-width-1.c, gcc.dg/stdint-width-1.c: New tests.
+
 2016-09-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Louis Krupp      <lkrupp@gcc.gnu.org>
 
