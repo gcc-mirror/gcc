@@ -805,7 +805,11 @@ var (
 
 // _ucontext_t is a Go version of the C ucontext_t type, used by getcontext.
 // _sizeof_ucontext_t is defined by the Makefile from <ucontext.h>.
-type _ucontext_t [_sizeof_ucontext_t / unsafe.Sizeof(uintptr(0))]unsafe.Pointer
+// On some systems getcontext and friends require a value that is
+// aligned to a 16-byte boundary.  We implement this by increasing the
+// required size and picking an appropriate offset when we use the
+// array.
+type _ucontext_t [(_sizeof_ucontext_t + 15) / unsafe.Sizeof(unsafe.Pointer(nil))]unsafe.Pointer
 
 // traceback is used to collect stack traces from other goroutines.
 type traceback struct {

@@ -156,6 +156,20 @@ fixcontext(ucontext_t *c)
 
 #endif
 
+// ucontext_arg returns a properly aligned ucontext_t value.  On some
+// systems a ucontext_t value must be aligned to a 16-byte boundary.
+// The g structure that has fields of type ucontext_t is defined in
+// Go, and Go has no simple way to align a field to such a boundary.
+// So we make the field larger in runtime2.go and pick an appropriate
+// offset within the field here.
+static ucontext_t*
+ucontext_arg(void** go_ucontext)
+{
+	uintptr_t p = (uintptr_t)go_ucontext;
+	p = (p + 15) &~ (uintptr_t)0xf;
+	return (ucontext_t*)p;
+}
+
 // We can not always refer to the TLS variables directly.  The
 // compiler will call tls_get_addr to get the address of the variable,
 // and it may hold it in a register across a call to schedule.  When
@@ -245,8 +259,8 @@ runtime_gogo(G* newg)
 #endif
 	g = newg;
 	newg->fromgogo = true;
-	fixcontext((ucontext_t*)&newg->context[0]);
-	setcontext((ucontext_t*)&newg->context[0]);
+	fixcontext(ucontext_arg(&newg->context[0]));
+	setcontext(ucontext_arg(&newg->context[0]));
 	runtime_throw("gogo setcontext returned");
 }
 
@@ -278,7 +292,7 @@ runtime_mcall(void (*pfn)(G*))
 		gp->gcnextsp = &pfn;
 #endif
 		gp->fromgogo = false;
-		getcontext((ucontext_t*)&gp->context[0]);
+		getcontext(ucontext_arg(&gp->context[0]));
 
 		// When we return from getcontext, we may be running
 		// in a new thread.  That means that g may have
@@ -305,8 +319,8 @@ runtime_mcall(void (*pfn)(G*))
 		// the getcontext call just above.
 		g = mp->g0;
 
-		fixcontext((ucontext_t*)&mp->g0->context[0]);
-		setcontext((ucontext_t*)&mp->g0->context[0]);
+		fixcontext(ucontext_arg(&mp->g0->context[0]));
+		setcontext(ucontext_arg(&mp->g0->context[0]));
 		runtime_throw("runtime: mcall function returned");
 	}
 }
@@ -709,7 +723,7 @@ runtime_tracebackothers(G * volatile me)
 #ifdef USING_SPLIT_STACK
 		__splitstack_getcontext(&me->stackcontext[0]);
 #endif
-		getcontext((ucontext_t*)&me->context[0]);
+		getcontext(ucontext_arg(&me->context[0]));
 
 		if(gp->traceback != nil) {
 		  runtime_gogo(gp);
@@ -750,7 +764,7 @@ runtime_tracebackothers(G * volatile me)
 #ifdef USING_SPLIT_STACK
 			__splitstack_getcontext(&me->stackcontext[0]);
 #endif
-			getcontext((ucontext_t*)&me->context[0]);
+			getcontext(ucontext_arg(&me->context[0]));
 
 			if(gp->traceback != nil) {
 				runtime_gogo(gp);
@@ -1063,7 +1077,7 @@ runtime_mstart(void* mp)
 	g->gcstacksize = 0;
 	g->gcnextsp = &mp;
 #endif
-	getcontext((ucontext_t*)&g->context[0]);
+	getcontext(ucontext_arg(&g->context[0]));
 
 	if(g->entry != nil) {
 		// Got here from mcall.
@@ -1251,7 +1265,7 @@ runtime_needm(void)
 	g->gcstacksize = 0;
 	g->gcnextsp = &mp;
 #endif
-	getcontext((ucontext_t*)&g->context[0]);
+	getcontext(ucontext_arg(&g->context[0]));
 
 	if(g->entry != nil) {
 		// Got here from mcall.
@@ -1282,6 +1296,7 @@ runtime_newextram(void)
 	G *gp;
 	byte *g0_sp, *sp;
 	uintptr g0_spsize, spsize;
+	ucontext_t *uc;
 
 	// Create extra goroutine locked to extra m.
 	// The goroutine is the context in which the cgo callback will run.
@@ -1302,10 +1317,11 @@ runtime_newextram(void)
 
 	// The context for gp will be set up in runtime_needm.  But
 	// here we need to set up the context for g0.
-	getcontext((ucontext_t*)&mp->g0->context[0]);
-	((ucontext_t*)&mp->g0->context[0])->uc_stack.ss_sp = g0_sp;
-	((ucontext_t*)&mp->g0->context[0])->uc_stack.ss_size = (size_t)g0_spsize;
-	makecontext((ucontext_t*)&mp->g0->context[0], kickoff, 0);
+	uc = ucontext_arg(&mp->g0->context[0]);
+	getcontext(uc);
+	uc->uc_stack.ss_sp = g0_sp;
+	uc->uc_stack.ss_size = (size_t)g0_spsize;
+	makecontext(uc, kickoff, 0);
 
 	// Add m to the extra list.
 	mnext = lockextra(true);
@@ -2007,7 +2023,7 @@ runtime_entersyscall()
 {
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	getcontext((ucontext_t*)&g->gcregs[0]);
+	getcontext(ucontext_arg(&g->gcregs[0]));
 
 	// Do the work in a separate function, so that this function
 	// doesn't save any registers on its own stack.  If this
@@ -2086,7 +2102,7 @@ runtime_entersyscallblock(void)
 
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	getcontext((ucontext_t*)&g->gcregs[0]);
+	getcontext(ucontext_arg(&g->gcregs[0]));
 
 	g->atomicstatus = _Gsyscall;
 
@@ -2375,14 +2391,16 @@ __go_go(void (*fn)(void*), void* arg)
 		byte * volatile vsp = sp;
 		size_t volatile vspsize = spsize;
 		G * volatile vnewg = newg;
+		ucontext_t * volatile uc;
 
-		getcontext((ucontext_t*)&vnewg->context[0]);
-		((ucontext_t*)&vnewg->context[0])->uc_stack.ss_sp = vsp;
+		uc = ucontext_arg(&vnewg->context[0]);
+		getcontext(uc);
+		uc->uc_stack.ss_sp = vsp;
 #ifdef MAKECONTEXT_STACK_TOP
-		((ucontext_t*)&vnewg->context[0])->uc_stack.ss_sp += vspsize;
+		uc->uc_stack.ss_sp += vspsize;
 #endif
-		((ucontext_t*)&vnewg->context[0])->uc_stack.ss_size = vspsize;
-		makecontext((ucontext_t*)&vnewg->context[0], kickoff, 0);
+		uc->uc_stack.ss_size = vspsize;
+		makecontext(uc, kickoff, 0);
 
 		runqput(p, vnewg);
 
