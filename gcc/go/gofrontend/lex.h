@@ -454,6 +454,9 @@ class Lex
   octal_value(char c)
   { return c - '0'; }
 
+  static unsigned
+  hex_val(char c);
+
   Token
   make_invalid_token()
   { return Token::make_invalid_token(this->location()); }
