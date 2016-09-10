@@ -2,7 +2,7 @@
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77532
-	^ interface.c (check_dtio_arg_TKR_intent): Return after error.
+	* interface.c (check_dtio_arg_TKR_intent): Return after error.
 	(check_dtio_interface1): Remove asserts, test for NULL and return
 	if found.
 
