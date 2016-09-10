@@ -1,3 +1,12 @@
+2016-09-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR rtl-optimization/77289
+	* lra-constraints.c (get_final_hard_regno): Add support for non hard
+	register numbers.  Remove support for subregs.
+	(get_hard_regno): Use SUBREG_P.  Don't call get_final_hard_regno().
+	(get_reg_class): Delete removed get_final_hard_regno() argument.
+	(uses_hard_regs_p): Call get_final_hard_regno().
+
 2016-09-09  Martin Sebor  <msebor@redhat.com>
 
 	PR c/77520
