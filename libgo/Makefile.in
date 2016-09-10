@@ -212,6 +212,7 @@ am__DEPENDENCIES_1 = bufio.lo bytes.lo bytes/index.lo context.lo \
 	old/regexp.lo old/template.lo os/exec.lo os/signal.lo \
 	os/user.lo path/filepath.lo regexp/syntax.lo \
 	net/rpc/jsonrpc.lo runtime/debug.lo runtime/pprof.lo \
+	runtime/internal/atomic.lo runtime/internal/atomic_c.lo \
 	sync/atomic.lo sync/atomic_c.lo text/scanner.lo \
 	text/tabwriter.lo text/template.lo text/template/parse.lo \
 	testing/iotest.lo testing/quick.lo unicode/utf16.lo \
@@ -1096,6 +1097,8 @@ libgo_go_objs = \
 	net/rpc/jsonrpc.lo \
 	runtime/debug.lo \
 	runtime/pprof.lo \
+	runtime/internal/atomic.lo \
+	runtime/internal/atomic_c.lo \
 	sync/atomic.lo \
 	sync/atomic_c.lo \
 	text/scanner.lo \
@@ -1247,6 +1250,7 @@ runtime_go_lo_GOCFLAGS = -fgo-c-header=runtime.inc.tmp -fgo-compiling-runtime
 # otherwise we can't get the line numbers.
 # Also use -fno-inline to get better results from the memory profiler.
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
+runtime_internal_atomic_lo_GOCFLAGS = -fgo-compiling-runtime
 
 # How to build a .gox file from a .lo file.
 BUILDGOX = \
@@ -1384,6 +1388,7 @@ TEST_PACKAGES = \
 	path/filepath/check \
 	regexp/syntax/check \
 	runtime/pprof/check \
+	runtime/internal/atomic/check \
 	sync/atomic/check \
 	text/scanner/check \
 	text/tabwriter/check \
@@ -4987,6 +4992,17 @@ runtime/pprof/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: runtime/pprof/check
 
+@go_include@ runtime/internal/atomic.lo.dep
+runtime/internal/atomic.lo.dep: $(srcdir)/go/runtime/internal/atomic/*.go
+	$(BUILDDEPS)
+runtime/internal/atomic.lo:
+	$(BUILDPACKAGE)
+runtime/internal/atomic_c.lo: go/runtime/internal/atomic/atomic.c runtime.inc runtime/internal/atomic.lo
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/runtime/internal/atomic/atomic.c
+runtime/internal/atomic/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: runtime/internal/atomic/check
+
 @go_include@ sync/atomic.lo.dep
 sync/atomic.lo.dep: $(srcdir)/go/sync/atomic/*.go
 	$(BUILDDEPS)
@@ -5414,6 +5430,8 @@ regexp/syntax.gox: regexp/syntax.lo
 runtime/debug.gox: runtime/debug.lo
 	$(BUILDGOX)
 runtime/pprof.gox: runtime/pprof.lo
+	$(BUILDGOX)
+runtime/internal/atomic.gox: runtime/internal/atomic.lo
 	$(BUILDGOX)
 
 sync/atomic.gox: sync/atomic.lo

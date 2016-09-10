@@ -843,6 +843,8 @@ libgo_go_objs = \
 	net/rpc/jsonrpc.lo \
 	runtime/debug.lo \
 	runtime/pprof.lo \
+	runtime/internal/atomic.lo \
+	runtime/internal/atomic_c.lo \
 	sync/atomic.lo \
 	sync/atomic_c.lo \
 	text/scanner.lo \
@@ -2365,6 +2367,18 @@ runtime/pprof/check: $(CHECK_DEPS)
 # Also use -fno-inline to get better results from the memory profiler.
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 
+@go_include@ runtime/internal/atomic.lo.dep
+runtime/internal/atomic.lo.dep: $(srcdir)/go/runtime/internal/atomic/*.go
+	$(BUILDDEPS)
+runtime_internal_atomic_lo_GOCFLAGS = -fgo-compiling-runtime
+runtime/internal/atomic.lo:
+	$(BUILDPACKAGE)
+runtime/internal/atomic_c.lo: go/runtime/internal/atomic/atomic.c runtime.inc runtime/internal/atomic.lo
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/runtime/internal/atomic/atomic.c
+runtime/internal/atomic/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: runtime/internal/atomic/check
+
 @go_include@ sync/atomic.lo.dep
 sync/atomic.lo.dep: $(srcdir)/go/sync/atomic/*.go
 	$(BUILDDEPS)
@@ -2800,6 +2814,8 @@ runtime/debug.gox: runtime/debug.lo
 	$(BUILDGOX)
 runtime/pprof.gox: runtime/pprof.lo
 	$(BUILDGOX)
+runtime/internal/atomic.gox: runtime/internal/atomic.lo
+	$(BUILDGOX)
 
 sync/atomic.gox: sync/atomic.lo
 	$(BUILDGOX)
@@ -2954,6 +2970,7 @@ TEST_PACKAGES = \
 	path/filepath/check \
 	regexp/syntax/check \
 	runtime/pprof/check \
+	runtime/internal/atomic/check \
 	sync/atomic/check \
 	text/scanner/check \
 	text/tabwriter/check \
