@@ -182,21 +182,22 @@ get_try_hard_regno (int regno)
   return ira_class_hard_regs[rclass][0];
 }
 
-/* Return final hard regno (plus offset) which will be after
-   elimination.	 We do this for matching constraints because the final
-   hard regno could have a different class.  */
+/* Return the final hard regno which will be after elimination.
+   We do this because the final hard regno could have a different class.  */
 static int
-get_final_hard_regno (int hard_regno, int offset)
+get_final_hard_regno (int regno)
 {
-  if (hard_regno < 0)
-    return hard_regno;
-  hard_regno = lra_get_elimination_hard_regno (hard_regno);
-  return hard_regno + offset;
+  if (! HARD_REGISTER_NUM_P (regno))
+    regno = lra_get_regno_hard_regno (regno);
+  if (regno < 0)
+    return regno;
+  return lra_get_elimination_hard_regno (regno);
 }
 
-/* Return hard regno of X after removing subreg and making
-   elimination.  If X is not a register or subreg of register, return
-   -1.  For pseudo use its assignment.  */
+/* Return the hard regno of X after removing its subreg.  If X is not
+   a register or a subreg of a register, return -1.  If X is a pseudo,
+   use its assignment.  We do not process register eliminiations while
+   matching constraints.  See PR77289.  */
 static int
 get_hard_regno (rtx x)
 {
@@ -204,19 +205,19 @@ get_hard_regno (rtx x)
   int offset, hard_regno;
 
   reg = x;
-  if (GET_CODE (x) == SUBREG)
+  if (SUBREG_P (x))
     reg = SUBREG_REG (x);
   if (! REG_P (reg))
     return -1;
-  if ((hard_regno = REGNO (reg)) >= FIRST_PSEUDO_REGISTER)
+  if (! HARD_REGISTER_NUM_P (hard_regno = REGNO (reg)))
     hard_regno = lra_get_regno_hard_regno (hard_regno);
   if (hard_regno < 0)
     return -1;
   offset = 0;
-  if (GET_CODE (x) == SUBREG)
+  if (SUBREG_P (x))
     offset += subreg_regno_offset (hard_regno, GET_MODE (reg),
 				   SUBREG_BYTE (x),  GET_MODE (x));
-  return get_final_hard_regno (hard_regno, offset);
+  return hard_regno + offset;
 }
 
 /* If REGNO is a hard register or has been allocated a hard register,
@@ -232,7 +233,7 @@ get_reg_class (int regno)
     hard_regno = lra_get_regno_hard_regno (regno);
   if (hard_regno >= 0)
     {
-      hard_regno = get_final_hard_regno (hard_regno, 0);
+      hard_regno = get_final_hard_regno (hard_regno);
       return REGNO_REG_CLASS (hard_regno);
     }
   if (regno >= new_regno_start)
@@ -1712,7 +1713,7 @@ uses_hard_regs_p (rtx x, HARD_REG_SET set)
 
   if (REG_P (x))
     {
-      x_hard_regno = get_hard_regno (x);
+      x_hard_regno = get_final_hard_regno (REGNO (x));
       return (x_hard_regno >= 0
 	      && overlaps_hard_reg_set_p (set, mode, x_hard_regno));
     }
