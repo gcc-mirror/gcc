@@ -80,15 +80,6 @@ go_field_alignment (tree t)
   return v / BITS_PER_UNIT;
 }
 
-/* Return the size and alignment of a trampoline.  */
-
-void
-go_trampoline_info (unsigned int *size, unsigned int *alignment)
-{
-  *size = TRAMPOLINE_SIZE;
-  *alignment = TRAMPOLINE_ALIGNMENT;
-}
-
 /* This is called by the Go frontend proper if the unsafe package was
    imported.  When that happens we can not do type-based alias
    analysis.  */
