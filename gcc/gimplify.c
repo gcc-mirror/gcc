@@ -11990,6 +11990,11 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
   if (have_va_type == error_mark_node)
     return GS_ERROR;
   have_va_type = targetm.canonical_va_list_type (have_va_type);
+  if (have_va_type == NULL_TREE
+      && TREE_CODE (valist) == ADDR_EXPR)
+    /* Handle 'Case 1: Not an array type' from c-common.c/build_va_arg.  */
+    have_va_type
+      = targetm.canonical_va_list_type (TREE_TYPE (TREE_TYPE (valist)));
   gcc_assert (have_va_type != NULL_TREE);
 
   /* Generate a diagnostic for requesting data of a type that cannot

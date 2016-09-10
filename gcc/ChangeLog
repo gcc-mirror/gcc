@@ -1,3 +1,11 @@
+2016-09-10  Tom de Vries  <tom@codesourcery.com>
+
+	PR C/71602
+	* builtins.c (std_canonical_va_list_type): Strictly return non-null for
+	va_list type only.
+	* config/i386/i386.c (ix86_canonical_va_list_type): Same.
+	* gimplify.c (gimplify_va_arg_expr): Handle &va_list.
+
 2016-09-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR rtl-optimization/77289
