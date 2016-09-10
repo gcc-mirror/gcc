@@ -1,3 +1,9 @@
+2016-09-10  Paul Thomas  <pault@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77532
+	gfortran.dg/dtio_11.f90: new test.
+
 2016-09-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77507

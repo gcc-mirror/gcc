@@ -4559,8 +4559,11 @@ check_dtio_arg_TKR_intent (gfc_symbol *fsym, bool typebound, bt type,
 			   int kind, int rank, sym_intent intent)
 {
   if (fsym->ts.type != type)
-    gfc_error ("DTIO dummy argument at %L must be of type %s",
-	       &fsym->declared_at, gfc_basic_typename (type));
+    {
+      gfc_error ("DTIO dummy argument at %L must be of type %s",
+		 &fsym->declared_at, gfc_basic_typename (type));
+      return;
+    }
 
   if (fsym->ts.type != BT_CLASS && fsym->ts.type != BT_DERIVED
       && fsym->ts.kind != kind)
@@ -4606,20 +4609,23 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
     {
       /* Typebound DTIO binding.  */
       tb_io_proc = tb_io_st->n.tb;
-      gcc_assert (tb_io_proc != NULL);
+      if (tb_io_proc == NULL)
+	return;
+
       gcc_assert (tb_io_proc->is_generic);
       gcc_assert (tb_io_proc->u.generic->next == NULL);
 
       specific_proc = tb_io_proc->u.generic->specific;
-      gcc_assert (!specific_proc->is_generic);
+      if (specific_proc == NULL || specific_proc->is_generic)
+	return;
 
       dtio_sub = specific_proc->u.specific->n.sym;
     }
   else
     {
       generic_proc = tb_io_st->n.sym;
-      gcc_assert (generic_proc);
-      gcc_assert (generic_proc->generic);
+      if (generic_proc == NULL || generic_proc->generic == NULL)
+	return;
 
       for (intr = tb_io_st->n.sym->generic; intr; intr = intr->next)
 	{
