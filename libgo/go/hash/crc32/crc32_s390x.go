@@ -6,14 +6,9 @@
 
 package crc32
 
-import (
-	"unsafe"
-)
-
 const (
 	vxMinLen    = 64
-	vxAlignment = 16
-	vxAlignMask = vxAlignment - 1
+	vxAlignMask = 15 // align to 16 bytes
 )
 
 // hasVectorFacility reports whether the machine has the z/Architecture
@@ -51,20 +46,13 @@ func genericIEEE(crc uint32, p []byte) uint32 {
 	return update(crc, IEEETable, p)
 }
 
-// updateCastagnoli calculates the checksum of p using genericCastagnoli to
-// align the data appropriately for vectorCastagnoli. It avoids using
-// vectorCastagnoli entirely if the length of p is less than or equal to
-// vxMinLen.
+// updateCastagnoli calculates the checksum of p using
+// vectorizedCastagnoli if possible and falling back onto
+// genericCastagnoli as needed.
 func updateCastagnoli(crc uint32, p []byte) uint32 {
 	// Use vectorized function if vector facility is available and
 	// data length is above threshold.
-	if hasVX && len(p) > vxMinLen {
-		pAddr := uintptr(unsafe.Pointer(&p[0]))
-		if pAddr&vxAlignMask != 0 {
-			prealign := vxAlignment - int(pAddr&vxAlignMask)
-			crc = genericCastagnoli(crc, p[:prealign])
-			p = p[prealign:]
-		}
+	if hasVX && len(p) >= vxMinLen {
 		aligned := len(p) & ^vxAlignMask
 		crc = vectorizedCastagnoli(crc, p[:aligned])
 		p = p[aligned:]
@@ -77,19 +65,12 @@ func updateCastagnoli(crc uint32, p []byte) uint32 {
 	return genericCastagnoli(crc, p)
 }
 
-// updateIEEE calculates the checksum of p using genericIEEE to align the data
-// appropriately for vectorIEEE. It avoids using vectorIEEE entirely if the length
-// of p is less than or equal to vxMinLen.
+// updateIEEE calculates the checksum of p using vectorizedIEEE if
+// possible and falling back onto genericIEEE as needed.
 func updateIEEE(crc uint32, p []byte) uint32 {
 	// Use vectorized function if vector facility is available and
 	// data length is above threshold.
-	if hasVX && len(p) > vxMinLen {
-		pAddr := uintptr(unsafe.Pointer(&p[0]))
-		if pAddr&vxAlignMask != 0 {
-			prealign := vxAlignment - int(pAddr&vxAlignMask)
-			crc = genericIEEE(crc, p[:prealign])
-			p = p[prealign:]
-		}
+	if hasVX && len(p) >= vxMinLen {
 		aligned := len(p) & ^vxAlignMask
 		crc = vectorizedIEEE(crc, p[:aligned])
 		p = p[aligned:]
