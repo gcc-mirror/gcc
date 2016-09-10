@@ -7,7 +7,6 @@
 #include "go-system.h"
 
 #include "filenames.h"
-#include "simple-object.h"
 
 #include "go-c.h"
 #include "gogo.h"
@@ -233,7 +232,7 @@ Import::find_export_data(const std::string& filename, int fd, Location location)
   return NULL;
 }
 
-// Look for export data in a simple_object.
+// Look for export data in an object file.
 
 Import::Stream*
 Import::find_object_export_data(const std::string& filename,
