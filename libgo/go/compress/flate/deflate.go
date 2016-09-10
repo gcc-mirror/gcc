@@ -15,7 +15,17 @@ const (
 	BestSpeed          = 1
 	BestCompression    = 9
 	DefaultCompression = -1
-	HuffmanOnly        = -2 // Disables match search and only does Huffman entropy reduction.
+
+	// HuffmanOnly disables Lempel-Ziv match searching and only performs Huffman
+	// entropy encoding. This mode is useful in compressing data that has
+	// already been compressed with an LZ style algorithm (e.g. Snappy or LZ4)
+	// that lacks an entropy encoder. Compression gains are achieved when
+	// certain bytes in the input stream occur more frequently than others.
+	//
+	// Note that HuffmanOnly produces a compressed output that is
+	// RFC 1951 compliant. That is, any valid DEFLATE decompressor will
+	// continue to be able to decompress this output.
+	HuffmanOnly = -2
 )
 
 const (
@@ -644,7 +654,6 @@ func (d *compressor) close() error {
 // a very fast compression for all types of input, but sacrificing considerable
 // compression efficiency.
 //
-//
 // If level is in the range [-2, 9] then the error returned will be nil.
 // Otherwise the error returned will be non-nil.
 func NewWriter(w io.Writer, level int) (*Writer, error) {
@@ -715,7 +724,7 @@ func (w *Writer) Close() error {
 // the result of NewWriter or NewWriterDict called with dst
 // and w's level and dictionary.
 func (w *Writer) Reset(dst io.Writer) {
-	if dw, ok := w.d.w.w.(*dictWriter); ok {
+	if dw, ok := w.d.w.writer.(*dictWriter); ok {
 		// w was created with NewWriterDict
 		dw.w = dst
 		w.d.reset(dw)
