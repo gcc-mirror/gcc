@@ -1,3 +1,8 @@
+2016-09-10  Mark Wielaard  <mjw@redhat.com>
+
+	* cp-demangle.c (d_substitution): Change struct demangle_component
+	variable name from c to dc.
+
 2016-08-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
