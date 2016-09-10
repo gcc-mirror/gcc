@@ -1,3 +1,8 @@
+2016-09-10  Ian Lance Taylor  <iant@golang.org>
+
+	* go-backend.c (go_trampoline_info): Remove.
+	* go-c.h (go_trampoline_info): Don't declare.
+
 2016-09-09  Than McIntosh  <thanm@google.com>
 
 	* go-sha1.cc: New file.
