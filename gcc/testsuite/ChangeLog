@@ -1,3 +1,9 @@
+2016-09-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77507
+	* gfortran.dg/c_assoc_2.f03: Update error message for revision 240050
+	* gfortran.dg/c_assoc_4.f90: Ditto.
+
 2016-09-10  Tom de Vries  <tom@codesourcery.com>
 
 	PR C/71602
