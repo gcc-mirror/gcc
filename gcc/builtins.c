@@ -4087,10 +4087,6 @@ std_canonical_va_list_type (tree type)
 {
   tree wtype, htype;
 
-  if (INDIRECT_REF_P (type))
-    type = TREE_TYPE (type);
-  else if (POINTER_TYPE_P (type) && POINTER_TYPE_P (TREE_TYPE (type)))
-    type = TREE_TYPE (type);
   wtype = va_list_type_node;
   htype = type;
   /* Treat structure va_list types.  */

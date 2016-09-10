@@ -1,3 +1,8 @@
+2016-09-10  Tom de Vries  <tom@codesourcery.com>
+
+	PR C/71602
+	* c-c++-common/va-arg-va-list-type.c: New test.
+
 2016-09-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR rtl-optimization/77289

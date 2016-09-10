@@ -48562,14 +48562,6 @@ ix86_fn_abi_va_list (tree fndecl)
 static tree
 ix86_canonical_va_list_type (tree type)
 {
-  /* Resolve references and pointers to va_list type.  */
-  if (TREE_CODE (type) == MEM_REF)
-    type = TREE_TYPE (type);
-  else if (POINTER_TYPE_P (type) && POINTER_TYPE_P (TREE_TYPE(type)))
-    type = TREE_TYPE (type);
-  else if (POINTER_TYPE_P (type) && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
-    type = TREE_TYPE (type);
-
   if (TARGET_64BIT)
     {
       if (lookup_attribute ("ms_abi va_list", TYPE_ATTRIBUTES (type)))
