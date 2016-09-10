@@ -1,5 +1,12 @@
 2016-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/77420
+	* module.c (load_equiv): If the current namespace has a list of
+	equivalence statements, initialize duplicate to false and then
+	look for duplicates; otherwise, initialize it to true.
+
+2016-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/77506
 	* array.c (gfc_match_array_constructor): CHARACTER(len=*) cannot
 	appear in an array constructor.
