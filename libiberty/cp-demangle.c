@@ -3769,7 +3769,7 @@ d_substitution (struct d_info *di, int prefix)
 	    {
 	      const char *s;
 	      int len;
-	      struct demangle_component *c;
+	      struct demangle_component *dc;
 
 	      if (p->set_last_name != NULL)
 		di->last_name = d_make_sub (di, p->set_last_name,
@@ -3785,15 +3785,15 @@ d_substitution (struct d_info *di, int prefix)
 		  len = p->simple_len;
 		}
 	      di->expansion += len;
-	      c = d_make_sub (di, s, len);
+	      dc = d_make_sub (di, s, len);
 	      if (d_peek_char (di) == 'B')
 		{
 		  /* If there are ABI tags on the abbreviation, it becomes
 		     a substitution candidate.  */
-		  c = d_abi_tags (di, c);
-		  d_add_substitution (di, c);
+		  dc = d_abi_tags (di, dc);
+		  d_add_substitution (di, dc);
 		}
-	      return c;
+	      return dc;
 	    }
 	}
 
