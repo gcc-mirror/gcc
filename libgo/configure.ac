@@ -142,6 +142,11 @@ AC_SUBST(LIBATOMIC)
 go_include="-include"
 AC_SUBST(go_include)
 
+# All known GOOS values.  This is the union of all operating systems
+# supported by the gofrontend and all operating systems supported by
+# the gc toolchain.
+ALLGOOS="android darwin dragonfly freebsd irix linux netbsd openbsd plan9 rtems solaris windows"
+
 is_darwin=no
 is_freebsd=no
 is_irix=no
@@ -174,6 +179,7 @@ AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
 AM_CONDITIONAL(LIBGO_IS_BSD, test $is_darwin = yes -o $is_dragonfly = yes -o $is_freebsd = yes -o $is_netbsd = yes -o $is_openbsd = yes)
 AC_SUBST(GOOS)
+AC_SUBST(ALLGOOS)
 
 dnl Test whether we need to use DejaGNU or whether we can use the
 dnl simpler gotest approach.  We can only use gotest for a native
@@ -186,35 +192,46 @@ case ${host} in
 esac
 AC_SUBST(USE_DEJAGNU)
 
-dnl N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
-is_386=no
-is_alpha=no
-is_arm=no
-is_arm64=no
-is_ia64=no
-is_m68k=no
-mips_abi=unknown
-is_ppc=no
-is_ppc64=no
-is_ppc64le=no
-is_s390=no
-is_s390x=no
-is_sparc=no
-is_sparc64=no
-is_x86_64=no
+# All known GOARCH values.  This is the union of all architectures
+# supported by the gofrontend and all architectures supported by the
+# gc toolchain.
+# N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mipso32 mipsn32 mipso64 mipsn64 mips mipsle mips64 mips64le mips64p32 mips64pe32le ppc ppc64 ppc64le s390 s390x sparc sparc64"
+
+# All known GOARCH_FAMILY values.
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SPARC SPARC64"
+
 GOARCH=unknown
+GOARCH_FAMILY=unknown
+GOARCH_BIGENDIAN=0
+GOARCH_CACHELINESIZE=64
+GOARCH_PHYSPAGESIZE=4096
+GOARCH_PCQUANTUM=1
+GOARCH_INT64ALIGN=8
+GOARCH_HUGEPAGESIZE=0
+GOARCH_MINFRAMESIZE=0
 case ${host} in
   alpha*-*-*)
-    is_alpha=yes
     GOARCH=alpha
+    GOARCH_FAMILY=ALPHA
+    GOARCH_PHYSPAGESIZE=8192
+    GOARCH_PCQUANTUM=4
     ;;
   aarch64-*-*)
-    is_arm64=yes
     GOARCH=arm64
+    GOARCH_FAMILY=ARM64
+    GOARCH_CACHELINESIZE=32
+    GOARCH_PHYSPAGESIZE=65536
+    GOARCH_PCQUANTUm=4
+    GOARCH_MINFRAMESIZE=8
     ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
-    is_arm=yes
     GOARCH=arm
+    GOARCH_FAMILY=ARM
+    GOARCH_CACHELINESIZE=32
+    GOARCH_PCQUANTUM=4
+    GOARCH_INT64ALIGN=4
+    GOARCH_MINFRAMESIZE=4
     ;;
 changequote(,)dnl
   i[34567]86-*-* | x86_64-*-*)
@@ -223,20 +240,29 @@ changequote([,])dnl
 #ifdef __x86_64__
 #error 64-bit
 #endif],
-[is_386=yes], [is_x86_64=yes])
-    if test "$is_386" = "yes"; then
-      GOARCH=386
-    else
-      GOARCH=amd64
-    fi
+[GOARCH=386
+GOARCH_FAMILY=I386
+GOARCH_INT64ALIGN=4
+GOARCH_HUGEPAGESIZE="1 << 21"
+],
+[GOARCH=amd64
+GOARCH_FAMILY=AMD64
+GOARCH_HUGEPAGESIZE="1 << 21"
+])
     ;;
   ia64-*-*)
-    is_ia64=yes
     GOARCH=ia64
+    GOARCH_FAMILY=IA64
+    GOARCH_CACHELINESIZE=16384
+    GOARCH_PHYSPAGESIZE=8192
     ;;
   m68k*-*-*)
-    is_m68k=yes
     GOARCH=m68k
+    GOARCH_FAMILY=M68K
+    GOARCH_BIGENDIAN=1
+    GOARCH_CACHELINESIZE=16
+    GOARCH_PCQUANTUM=4
+    GOARCH_INT64ALIGN=4
     ;;
   mips*-*-*)
     AC_COMPILE_IFELSE([
@@ -267,72 +293,98 @@ changequote([,])dnl
     "n64") GOARCH=mipsn64 ;;
     "o64") GOARCH=mipso64 ;;
     esac
+    case "$mips_abi" in
+    "o32" | "n32")
+        GOARCH_FAMILY=MIPS
+	GOARCH_INT64ALIGN=4
+	GOARCH_MINFRAMESIZE=4
+        ;;
+    "n64" | "o64")
+        GOARCH_FAMILY=MIPS64
+	GOARCH_MINFRAMESIZE=8
+        ;;
+    esac
+    case "${host}" in
+    mips*el)
+        ;;
+    *)
+	GOARCH_BIGENDIAN=1
+        ;;
+    esac
+    GOARCH_CACHELINESIZE=32
+    GOARCH_PHYSPAGESIZE=16384
+    GOARCH_PCQUANTUM=4
     ;;
   rs6000*-*-* | powerpc*-*-*)
     AC_COMPILE_IFELSE([
 #ifdef _ARCH_PPC64
 #error 64-bit
 #endif],
-[is_ppc=yes],
-    [AC_COMPILE_IFELSE([
+[GOARCH=ppc
+GOARCH_FAMILY=PPC
+GOARCH_BIGENDIAN=1
+GOARCH_INT64ALIGN=4
+],
+    [
+GOARCH_FAMILY=PPC64
+AC_COMPILE_IFELSE([
 #if defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
 #error 64be
 #endif],
-[is_ppc64le=yes],[is_ppc64=yes])])
-    if test "$is_ppc" = "yes"; then
-      GOARCH=ppc
-    elif test "$is_ppc64" = "yes"; then
-      GOARCH=ppc64
-    else
-      GOARCH=ppc64le
-    fi
+[GOARCH=ppc64le
+],
+[GOARCH=ppc64
+GOARCH_BIGENDIAN=1
+])])
+    GOARCH_PHYSPAGESIZE=65536
+    GOARCH_PCQUANTUM=4
+    GOARCH_MINFRAMESIZE=32
     ;;
   s390*-*-*)
     AC_COMPILE_IFELSE([
 #if defined(__s390x__)
 #error 64-bit
 #endif],
-[is_s390=yes], [is_s390x=yes])
-    if test "$is_s390" = "yes"; then
-      GOARCH=s390
-    else
-      GOARCH=s390x
-    fi
+[GOARCH=s390
+GOARCH_FAMILY=S390
+GOARCH_INT64ALIGN=4
+GOARCH_MINFRAMESIZE=4
+], [GOARCH=s390x
+GOARCH_FAMILY=S390X
+GOARCH_MINFRAMESIZE=8
+])
+    GOARCH_BIGENDIAN=1
+    GOARCH_CACHELINESIZE=256
+    GOARCH_PCQUANTUM=2
     ;;
   sparc*-*-*)
     AC_COMPILE_IFELSE([
 #if defined(__sparcv9) || defined(__arch64__)
 #error 64-bit
 #endif],
-[is_sparc=yes], [is_sparc64=yes])
-    if test "$is_sparc" = "yes"; then
-      GOARCH=sparc
-    else
-      GOARCH=sparc64
-    fi
+[GOARCH=sparc
+GOARCH_FAMILY=SPARC
+GOARCH_INT64ALIGN=4
+],
+[GOARCH=sparc64
+GOARCH_FAMILY=SPARC64
+])
+    GOARCH_BIGENDIAN=1
+    GOARCH_PHYSPAGESIZE=8192
+    GOARCH_PCQUANTUM=4
     ;;
 esac
-AM_CONDITIONAL(LIBGO_IS_386, test $is_386 = yes)
-AM_CONDITIONAL(LIBGO_IS_ALPHA, test $is_alpha = yes)
-AM_CONDITIONAL(LIBGO_IS_ARM, test $is_arm = yes)
-AM_CONDITIONAL(LIBGO_IS_ARM64, test $is_arm64 = yes)
-AM_CONDITIONAL(LIBGO_IS_IA64, test $is_ia64 = yes)
-AM_CONDITIONAL(LIBGO_IS_M68K, test $is_m68k = yes)
-AM_CONDITIONAL(LIBGO_IS_MIPS, test $mips_abi != unknown)
-AM_CONDITIONAL(LIBGO_IS_MIPSO32, test $mips_abi = o32)
-AM_CONDITIONAL(LIBGO_IS_MIPSN32, test $mips_abi = n32)
-AM_CONDITIONAL(LIBGO_IS_MIPSN64, test $mips_abi = n64)
-AM_CONDITIONAL(LIBGO_IS_MIPSO64, test $mips_abi = o64)
-AM_CONDITIONAL(LIBGO_IS_MIPS64, test $mips_abi = n64 -o $mips_abi = o64)
-AM_CONDITIONAL(LIBGO_IS_PPC, test $is_ppc = yes)
-AM_CONDITIONAL(LIBGO_IS_PPC64, test $is_ppc64 = yes)
-AM_CONDITIONAL(LIBGO_IS_PPC64LE, test $is_ppc64le = yes)
-AM_CONDITIONAL(LIBGO_IS_S390, test $is_s390 = yes)
-AM_CONDITIONAL(LIBGO_IS_S390X, test $is_s390x = yes)
-AM_CONDITIONAL(LIBGO_IS_SPARC, test $is_sparc = yes)
-AM_CONDITIONAL(LIBGO_IS_SPARC64, test $is_sparc64 = yes)
-AM_CONDITIONAL(LIBGO_IS_X86_64, test $is_x86_64 = yes)
 AC_SUBST(GOARCH)
+AC_SUBST(GOARCH_FAMILY)
+AC_SUBST(GOARCH_BIGENDIAN)
+AC_SUBST(GOARCH_CACHELINESIZE)
+AC_SUBST(GOARCH_PHYSPAGESIZE)
+AC_SUBST(GOARCH_PCQUANTUM)
+AC_SUBST(GOARCH_INT64ALIGN)
+AC_SUBST(GOARCH_HUGEPAGESIZE)
+AC_SUBST(GOARCH_MINFRAMESIZE)
+AC_SUBST(ALLGOARCH)
+AC_SUBST(ALLGOARCHFAMILY)
 
 dnl Some files are only present when needed for specific architectures.
 GO_LIBCALL_OS_FILE=

@@ -692,6 +692,28 @@ Gcc_backend::Gcc_backend()
 						NULL_TREE),
 		       false, false);
 
+  // Used by runtime/internal/sys.
+  this->define_builtin(BUILT_IN_CTZ, "__builtin_ctz", "ctz",
+		       build_function_type_list(integer_type_node,
+						unsigned_type_node,
+						NULL_TREE),
+		       true, false);
+  this->define_builtin(BUILT_IN_CTZLL, "__builtin_ctzll", "ctzll",
+		       build_function_type_list(integer_type_node,
+						long_long_unsigned_type_node,
+						NULL_TREE),
+		       true, false);
+  this->define_builtin(BUILT_IN_BSWAP32, "__builtin_bswap32", "bswap32",
+		       build_function_type_list(uint32_type_node,
+						uint32_type_node,
+						NULL_TREE),
+		       true, false);
+  this->define_builtin(BUILT_IN_BSWAP64, "__builtin_bswap64", "bswap64",
+		       build_function_type_list(uint64_type_node,
+						uint64_type_node,
+						NULL_TREE),
+		       true, false);
+
   // We provide some functions for the math library.
   tree math_function_type = build_function_type_list(double_type_node,
 						     double_type_node,
