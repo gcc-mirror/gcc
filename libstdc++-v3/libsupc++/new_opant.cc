@@ -24,6 +24,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <bits/c++config.h>
+#include <bits/exception_defines.h>
 #include "new"
 
 _GLIBCXX_WEAK_DEFINITION void*

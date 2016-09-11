@@ -1,3 +1,8 @@
+2016-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opant.cc: Include exception_defines.h.
+	* libsupc++/new_opvant.cc: Likewise.
+
 2016-09-09  Jason Merrill  <jason@redhat.com>
 
 	Implement P0035R4, C++17 new of over-aligned types.
