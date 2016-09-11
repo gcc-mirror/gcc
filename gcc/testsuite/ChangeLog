@@ -1,3 +1,8 @@
+2016-08-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64316
+	* gcc.dg/ipa/pr63416.c: New testcase.
+
 2016-09-10  Paul Thomas  <pault@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
