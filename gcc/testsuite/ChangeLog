@@ -1,5 +1,10 @@
 2016-08-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/61159
+	* compile/pr61159.c: New testcase
+
+2016-08-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/64316
 	* gcc.dg/ipa/pr63416.c: New testcase.
 
