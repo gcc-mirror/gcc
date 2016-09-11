@@ -1,3 +1,8 @@
+2016-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/pr77507.f90: Move to ...
+	* gfortran.dg/ieee/pr77507.f90: here.
+
 2016-08-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61159
