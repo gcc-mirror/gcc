@@ -629,48 +629,19 @@ GO_SYSCALL_OS_ARCH_FILE
 GO_SYSCALL_OS_FILE
 GO_LIBCALL_OS_ARCH_FILE
 GO_LIBCALL_OS_FILE
+ALLGOARCHFAMILY
+ALLGOARCH
+GOARCH_MINFRAMESIZE
+GOARCH_HUGEPAGESIZE
+GOARCH_INT64ALIGN
+GOARCH_PCQUANTUM
+GOARCH_PHYSPAGESIZE
+GOARCH_CACHELINESIZE
+GOARCH_BIGENDIAN
+GOARCH_FAMILY
 GOARCH
-LIBGO_IS_X86_64_FALSE
-LIBGO_IS_X86_64_TRUE
-LIBGO_IS_SPARC64_FALSE
-LIBGO_IS_SPARC64_TRUE
-LIBGO_IS_SPARC_FALSE
-LIBGO_IS_SPARC_TRUE
-LIBGO_IS_S390X_FALSE
-LIBGO_IS_S390X_TRUE
-LIBGO_IS_S390_FALSE
-LIBGO_IS_S390_TRUE
-LIBGO_IS_PPC64LE_FALSE
-LIBGO_IS_PPC64LE_TRUE
-LIBGO_IS_PPC64_FALSE
-LIBGO_IS_PPC64_TRUE
-LIBGO_IS_PPC_FALSE
-LIBGO_IS_PPC_TRUE
-LIBGO_IS_MIPS64_FALSE
-LIBGO_IS_MIPS64_TRUE
-LIBGO_IS_MIPSO64_FALSE
-LIBGO_IS_MIPSO64_TRUE
-LIBGO_IS_MIPSN64_FALSE
-LIBGO_IS_MIPSN64_TRUE
-LIBGO_IS_MIPSN32_FALSE
-LIBGO_IS_MIPSN32_TRUE
-LIBGO_IS_MIPSO32_FALSE
-LIBGO_IS_MIPSO32_TRUE
-LIBGO_IS_MIPS_FALSE
-LIBGO_IS_MIPS_TRUE
-LIBGO_IS_M68K_FALSE
-LIBGO_IS_M68K_TRUE
-LIBGO_IS_IA64_FALSE
-LIBGO_IS_IA64_TRUE
-LIBGO_IS_ARM64_FALSE
-LIBGO_IS_ARM64_TRUE
-LIBGO_IS_ARM_FALSE
-LIBGO_IS_ARM_TRUE
-LIBGO_IS_ALPHA_FALSE
-LIBGO_IS_ALPHA_TRUE
-LIBGO_IS_386_FALSE
-LIBGO_IS_386_TRUE
 USE_DEJAGNU
+ALLGOOS
 GOOS
 LIBGO_IS_BSD_FALSE
 LIBGO_IS_BSD_TRUE
@@ -11130,7 +11101,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11133 "configure"
+#line 11104 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11236,7 +11207,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11239 "configure"
+#line 11210 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13522,6 +13493,11 @@ fi
 go_include="-include"
 
 
+# All known GOOS values.  This is the union of all operating systems
+# supported by the gofrontend and all operating systems supported by
+# the gc toolchain.
+ALLGOOS="android darwin dragonfly freebsd irix linux netbsd openbsd plan9 rtems solaris windows"
+
 is_darwin=no
 is_freebsd=no
 is_irix=no
@@ -13625,6 +13601,7 @@ fi
 
 
 
+
 USE_DEJAGNU=no
 case ${host} in
   *-*-rtems*) USE_DEJAGNU=yes ;;
@@ -13633,34 +13610,46 @@ case ${host} in
 esac
 
 
-is_386=no
-is_alpha=no
-is_arm=no
-is_arm64=no
-is_ia64=no
-is_m68k=no
-mips_abi=unknown
-is_ppc=no
-is_ppc64=no
-is_ppc64le=no
-is_s390=no
-is_s390x=no
-is_sparc=no
-is_sparc64=no
-is_x86_64=no
+# All known GOARCH values.  This is the union of all architectures
+# supported by the gofrontend and all architectures supported by the
+# gc toolchain.
+# N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mipso32 mipsn32 mipso64 mipsn64 mips mipsle mips64 mips64le mips64p32 mips64pe32le ppc ppc64 ppc64le s390 s390x sparc sparc64"
+
+# All known GOARCH_FAMILY values.
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SPARC SPARC64"
+
 GOARCH=unknown
+GOARCH_FAMILY=unknown
+GOARCH_BIGENDIAN=0
+GOARCH_CACHELINESIZE=64
+GOARCH_PHYSPAGESIZE=4096
+GOARCH_PCQUANTUM=1
+GOARCH_INT64ALIGN=8
+GOARCH_HUGEPAGESIZE=0
+GOARCH_MINFRAMESIZE=0
 case ${host} in
   alpha*-*-*)
-    is_alpha=yes
     GOARCH=alpha
+    GOARCH_FAMILY=ALPHA
+    GOARCH_PHYSPAGESIZE=8192
+    GOARCH_PCQUANTUM=4
     ;;
   aarch64-*-*)
-    is_arm64=yes
     GOARCH=arm64
+    GOARCH_FAMILY=ARM64
+    GOARCH_CACHELINESIZE=32
+    GOARCH_PHYSPAGESIZE=65536
+    GOARCH_PCQUANTUm=4
+    GOARCH_MINFRAMESIZE=8
     ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
-    is_arm=yes
     GOARCH=arm
+    GOARCH_FAMILY=ARM
+    GOARCH_CACHELINESIZE=32
+    GOARCH_PCQUANTUM=4
+    GOARCH_INT64ALIGN=4
+    GOARCH_MINFRAMESIZE=4
     ;;
   i[34567]86-*-* | x86_64-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13671,24 +13660,32 @@ case ${host} in
 #endif
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  is_386=yes
+  GOARCH=386
+GOARCH_FAMILY=I386
+GOARCH_INT64ALIGN=4
+GOARCH_HUGEPAGESIZE="1 << 21"
+
 else
-  is_x86_64=yes
+  GOARCH=amd64
+GOARCH_FAMILY=AMD64
+GOARCH_HUGEPAGESIZE="1 << 21"
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    if test "$is_386" = "yes"; then
-      GOARCH=386
-    else
-      GOARCH=amd64
-    fi
     ;;
   ia64-*-*)
-    is_ia64=yes
     GOARCH=ia64
+    GOARCH_FAMILY=IA64
+    GOARCH_CACHELINESIZE=16384
+    GOARCH_PHYSPAGESIZE=8192
     ;;
   m68k*-*-*)
-    is_m68k=yes
     GOARCH=m68k
+    GOARCH_FAMILY=M68K
+    GOARCH_BIGENDIAN=1
+    GOARCH_CACHELINESIZE=16
+    GOARCH_PCQUANTUM=4
+    GOARCH_INT64ALIGN=4
     ;;
   mips*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13747,6 +13744,27 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     "n64") GOARCH=mipsn64 ;;
     "o64") GOARCH=mipso64 ;;
     esac
+    case "$mips_abi" in
+    "o32" | "n32")
+        GOARCH_FAMILY=MIPS
+	GOARCH_INT64ALIGN=4
+	GOARCH_MINFRAMESIZE=4
+        ;;
+    "n64" | "o64")
+        GOARCH_FAMILY=MIPS64
+	GOARCH_MINFRAMESIZE=8
+        ;;
+    esac
+    case "${host}" in
+    mips*el)
+        ;;
+    *)
+	GOARCH_BIGENDIAN=1
+        ;;
+    esac
+    GOARCH_CACHELINESIZE=32
+    GOARCH_PHYSPAGESIZE=16384
+    GOARCH_PCQUANTUM=4
     ;;
   rs6000*-*-* | powerpc*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13757,9 +13775,15 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 #endif
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  is_ppc=yes
+  GOARCH=ppc
+GOARCH_FAMILY=PPC
+GOARCH_BIGENDIAN=1
+GOARCH_INT64ALIGN=4
+
 else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+
+GOARCH_FAMILY=PPC64
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #if defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
@@ -13767,20 +13791,19 @@ else
 #endif
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  is_ppc64le=yes
+  GOARCH=ppc64le
+
 else
-  is_ppc64=yes
+  GOARCH=ppc64
+GOARCH_BIGENDIAN=1
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    if test "$is_ppc" = "yes"; then
-      GOARCH=ppc
-    elif test "$is_ppc64" = "yes"; then
-      GOARCH=ppc64
-    else
-      GOARCH=ppc64le
-    fi
+    GOARCH_PHYSPAGESIZE=65536
+    GOARCH_PCQUANTUM=4
+    GOARCH_MINFRAMESIZE=32
     ;;
   s390*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13791,16 +13814,21 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 #endif
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  is_s390=yes
+  GOARCH=s390
+GOARCH_FAMILY=S390
+GOARCH_INT64ALIGN=4
+GOARCH_MINFRAMESIZE=4
+
 else
-  is_s390x=yes
+  GOARCH=s390x
+GOARCH_FAMILY=S390X
+GOARCH_MINFRAMESIZE=8
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    if test "$is_s390" = "yes"; then
-      GOARCH=s390
-    else
-      GOARCH=s390x
-    fi
+    GOARCH_BIGENDIAN=1
+    GOARCH_CACHELINESIZE=256
+    GOARCH_PCQUANTUM=2
     ;;
   sparc*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13811,177 +13839,30 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 #endif
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  is_sparc=yes
+  GOARCH=sparc
+GOARCH_FAMILY=SPARC
+GOARCH_INT64ALIGN=4
+
 else
-  is_sparc64=yes
+  GOARCH=sparc64
+GOARCH_FAMILY=SPARC64
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    if test "$is_sparc" = "yes"; then
-      GOARCH=sparc
-    else
-      GOARCH=sparc64
-    fi
+    GOARCH_BIGENDIAN=1
+    GOARCH_PHYSPAGESIZE=8192
+    GOARCH_PCQUANTUM=4
     ;;
 esac
- if test $is_386 = yes; then
-  LIBGO_IS_386_TRUE=
-  LIBGO_IS_386_FALSE='#'
-else
-  LIBGO_IS_386_TRUE='#'
-  LIBGO_IS_386_FALSE=
-fi
 
- if test $is_alpha = yes; then
-  LIBGO_IS_ALPHA_TRUE=
-  LIBGO_IS_ALPHA_FALSE='#'
-else
-  LIBGO_IS_ALPHA_TRUE='#'
-  LIBGO_IS_ALPHA_FALSE=
-fi
 
- if test $is_arm = yes; then
-  LIBGO_IS_ARM_TRUE=
-  LIBGO_IS_ARM_FALSE='#'
-else
-  LIBGO_IS_ARM_TRUE='#'
-  LIBGO_IS_ARM_FALSE=
-fi
 
- if test $is_arm64 = yes; then
-  LIBGO_IS_ARM64_TRUE=
-  LIBGO_IS_ARM64_FALSE='#'
-else
-  LIBGO_IS_ARM64_TRUE='#'
-  LIBGO_IS_ARM64_FALSE=
-fi
 
- if test $is_ia64 = yes; then
-  LIBGO_IS_IA64_TRUE=
-  LIBGO_IS_IA64_FALSE='#'
-else
-  LIBGO_IS_IA64_TRUE='#'
-  LIBGO_IS_IA64_FALSE=
-fi
 
- if test $is_m68k = yes; then
-  LIBGO_IS_M68K_TRUE=
-  LIBGO_IS_M68K_FALSE='#'
-else
-  LIBGO_IS_M68K_TRUE='#'
-  LIBGO_IS_M68K_FALSE=
-fi
 
- if test $mips_abi != unknown; then
-  LIBGO_IS_MIPS_TRUE=
-  LIBGO_IS_MIPS_FALSE='#'
-else
-  LIBGO_IS_MIPS_TRUE='#'
-  LIBGO_IS_MIPS_FALSE=
-fi
 
- if test $mips_abi = o32; then
-  LIBGO_IS_MIPSO32_TRUE=
-  LIBGO_IS_MIPSO32_FALSE='#'
-else
-  LIBGO_IS_MIPSO32_TRUE='#'
-  LIBGO_IS_MIPSO32_FALSE=
-fi
 
- if test $mips_abi = n32; then
-  LIBGO_IS_MIPSN32_TRUE=
-  LIBGO_IS_MIPSN32_FALSE='#'
-else
-  LIBGO_IS_MIPSN32_TRUE='#'
-  LIBGO_IS_MIPSN32_FALSE=
-fi
 
- if test $mips_abi = n64; then
-  LIBGO_IS_MIPSN64_TRUE=
-  LIBGO_IS_MIPSN64_FALSE='#'
-else
-  LIBGO_IS_MIPSN64_TRUE='#'
-  LIBGO_IS_MIPSN64_FALSE=
-fi
-
- if test $mips_abi = o64; then
-  LIBGO_IS_MIPSO64_TRUE=
-  LIBGO_IS_MIPSO64_FALSE='#'
-else
-  LIBGO_IS_MIPSO64_TRUE='#'
-  LIBGO_IS_MIPSO64_FALSE=
-fi
-
- if test $mips_abi = n64 -o $mips_abi = o64; then
-  LIBGO_IS_MIPS64_TRUE=
-  LIBGO_IS_MIPS64_FALSE='#'
-else
-  LIBGO_IS_MIPS64_TRUE='#'
-  LIBGO_IS_MIPS64_FALSE=
-fi
-
- if test $is_ppc = yes; then
-  LIBGO_IS_PPC_TRUE=
-  LIBGO_IS_PPC_FALSE='#'
-else
-  LIBGO_IS_PPC_TRUE='#'
-  LIBGO_IS_PPC_FALSE=
-fi
-
- if test $is_ppc64 = yes; then
-  LIBGO_IS_PPC64_TRUE=
-  LIBGO_IS_PPC64_FALSE='#'
-else
-  LIBGO_IS_PPC64_TRUE='#'
-  LIBGO_IS_PPC64_FALSE=
-fi
-
- if test $is_ppc64le = yes; then
-  LIBGO_IS_PPC64LE_TRUE=
-  LIBGO_IS_PPC64LE_FALSE='#'
-else
-  LIBGO_IS_PPC64LE_TRUE='#'
-  LIBGO_IS_PPC64LE_FALSE=
-fi
-
- if test $is_s390 = yes; then
-  LIBGO_IS_S390_TRUE=
-  LIBGO_IS_S390_FALSE='#'
-else
-  LIBGO_IS_S390_TRUE='#'
-  LIBGO_IS_S390_FALSE=
-fi
-
- if test $is_s390x = yes; then
-  LIBGO_IS_S390X_TRUE=
-  LIBGO_IS_S390X_FALSE='#'
-else
-  LIBGO_IS_S390X_TRUE='#'
-  LIBGO_IS_S390X_FALSE=
-fi
-
- if test $is_sparc = yes; then
-  LIBGO_IS_SPARC_TRUE=
-  LIBGO_IS_SPARC_FALSE='#'
-else
-  LIBGO_IS_SPARC_TRUE='#'
-  LIBGO_IS_SPARC_FALSE=
-fi
-
- if test $is_sparc64 = yes; then
-  LIBGO_IS_SPARC64_TRUE=
-  LIBGO_IS_SPARC64_FALSE='#'
-else
-  LIBGO_IS_SPARC64_TRUE='#'
-  LIBGO_IS_SPARC64_FALSE=
-fi
-
- if test $is_x86_64 = yes; then
-  LIBGO_IS_X86_64_TRUE=
-  LIBGO_IS_X86_64_FALSE='#'
-else
-  LIBGO_IS_X86_64_TRUE='#'
-  LIBGO_IS_X86_64_FALSE=
-fi
 
 
 
@@ -15796,86 +15677,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_BSD_TRUE}" && test -z "${LIBGO_IS_BSD_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_BSD\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_386_TRUE}" && test -z "${LIBGO_IS_386_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_386\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_ALPHA_TRUE}" && test -z "${LIBGO_IS_ALPHA_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_ALPHA\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_ARM_TRUE}" && test -z "${LIBGO_IS_ARM_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_ARM\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_ARM64_TRUE}" && test -z "${LIBGO_IS_ARM64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_ARM64\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_IA64_TRUE}" && test -z "${LIBGO_IS_IA64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_IA64\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_M68K_TRUE}" && test -z "${LIBGO_IS_M68K_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_M68K\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_MIPS_TRUE}" && test -z "${LIBGO_IS_MIPS_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_MIPS\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_MIPSO32_TRUE}" && test -z "${LIBGO_IS_MIPSO32_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_MIPSO32\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_MIPSN32_TRUE}" && test -z "${LIBGO_IS_MIPSN32_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_MIPSN32\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_MIPSN64_TRUE}" && test -z "${LIBGO_IS_MIPSN64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_MIPSN64\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_MIPSO64_TRUE}" && test -z "${LIBGO_IS_MIPSO64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_MIPSO64\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_MIPS64_TRUE}" && test -z "${LIBGO_IS_MIPS64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_MIPS64\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_PPC_TRUE}" && test -z "${LIBGO_IS_PPC_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_PPC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_PPC64_TRUE}" && test -z "${LIBGO_IS_PPC64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_PPC64\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_PPC64LE_TRUE}" && test -z "${LIBGO_IS_PPC64LE_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_PPC64LE\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_S390_TRUE}" && test -z "${LIBGO_IS_S390_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_S390\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_S390X_TRUE}" && test -z "${LIBGO_IS_S390X_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_S390X\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_SPARC_TRUE}" && test -z "${LIBGO_IS_SPARC_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_SPARC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_SPARC64_TRUE}" && test -z "${LIBGO_IS_SPARC64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_SPARC64\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${LIBGO_IS_X86_64_TRUE}" && test -z "${LIBGO_IS_X86_64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_X86_64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_SPLIT_STACK_TRUE}" && test -z "${USING_SPLIT_STACK_FALSE}"; then

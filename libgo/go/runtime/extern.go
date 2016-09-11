@@ -157,6 +157,8 @@ of the run-time system.
 */
 package runtime
 
+import "runtime/internal/sys"
+
 // Gosched yields the processor, allowing other goroutines to run.  It does not
 // suspend the current goroutine, so execution resumes automatically.
 func Gosched()
@@ -282,23 +284,23 @@ func GOROOT() string {
 	if s != "" {
 		return s
 	}
-	return defaultGoroot
+	return sys.DefaultGoroot
 }
 
 // Version returns the Go tree's version string.
 // It is either the commit hash and date at the time of the build or,
 // when possible, a release tag like "go1.3".
 func Version() string {
-	return theVersion
+	return sys.TheVersion
 }
 
 // GOOS is the running program's operating system target:
 // one of darwin, freebsd, linux, and so on.
-const GOOS string = theGoos
+const GOOS string = sys.GOOS
 
 // GOARCH is the running program's architecture target:
 // 386, amd64, arm, or s390x.
-const GOARCH string = theGoarch
+const GOARCH string = sys.GOARCH
 
 // GCCGOTOOLDIR is the Tool Dir for the gccgo build
-const GCCGOTOOLDIR string = theGccgoToolDir
+const GCCGOTOOLDIR string = sys.GccgoToolDir
