@@ -62,6 +62,7 @@
 #include <unordered_map>
 #include <vector>
 #include <array>
+#include <utility>
 #include <bits/stl_algo.h>
 #endif
 
@@ -2217,12 +2218,17 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       { }
 
       template<typename _ForwardIterator2>
-	_ForwardIterator2
+        pair<_ForwardIterator2, _ForwardIterator2>
 	operator()(_ForwardIterator2 __first, _ForwardIterator2 __last) const
 	{
-	  return std::search(__first, __last,
-			     std::get<0>(_M_m), std::get<1>(_M_m),
-			     std::get<2>(_M_m));
+	  _ForwardIterator2 __first_ret =
+	    std::search(__first, __last,
+			std::get<0>(_M_m), std::get<1>(_M_m),
+			std::get<2>(_M_m));
+	  _ForwardIterator2 __second_ret = __first_ret == __last ?
+	    __last :  std::next(__first_ret, std::distance(std::get<0>(_M_m),
+							   std::get<1>(_M_m)));
+	  return std::make_pair(__first_ret, __second_ret);
 	}
 
     private:
@@ -2328,7 +2334,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 			   _BinaryPredicate __pred = _BinaryPredicate());
 
       template<typename _RandomAccessIterator2>
-	_RandomAccessIterator2
+        pair<_RandomAccessIterator2, _RandomAccessIterator2>
 	operator()(_RandomAccessIterator2 __first,
 		   _RandomAccessIterator2 __last) const;
 
@@ -2389,26 +2395,27 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       { }
 
       template<typename _RandomAccessIterator2>
-	_RandomAccessIterator2
+        pair<_RandomAccessIterator2, _RandomAccessIterator2>
 	operator()(_RandomAccessIterator2 __first,
 		   _RandomAccessIterator2 __last) const
 	{
 	  const auto& __pred = this->_M_pred();
 	  auto __patlen = _M_pat_end - _M_pat;
 	  if (__patlen == 0)
-	    return __first;
+	    return std::make_pair(__first, __first);
 	  auto __len = __last - __first;
 	  while (__len >= __patlen)
 	    {
 	      for (auto __scan = __patlen - 1;
 		   __pred(__first[__scan], _M_pat[__scan]); --__scan)
 		if (__scan == 0)
-		  return __first;
+		  return std::make_pair(__first,
+					std::next(__first, __patlen));
 	      auto __shift = _M_bad_char_shift(__first[__patlen - 1]);
 	      __len -= __shift;
 	      __first += __shift;
 	    }
-	  return __last;
+	  return std::make_pair(__last, __last);
 	}
 
     private:
@@ -2479,14 +2486,14 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
   template<typename _RAIter, typename _Hash, typename _BinaryPredicate>
   template<typename _RandomAccessIterator2>
-    _RandomAccessIterator2
+    pair<_RandomAccessIterator2, _RandomAccessIterator2>
     boyer_moore_searcher<_RAIter, _Hash, _BinaryPredicate>::
     operator()(_RandomAccessIterator2 __first,
 	       _RandomAccessIterator2 __last) const
     {
       auto __patlen = _M_pat_end - _M_pat;
       if (__patlen == 0)
-	return __first;
+	return std::make_pair(__first, __first);
       const auto& __pred = this->_M_pred();
       __diff_type __i = __patlen - 1;
       auto __stringlen = __last - __first;
@@ -2499,11 +2506,12 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	      --__j;
 	    }
 	  if (__j < 0)
-	    return __first + __i + 1;
+	    return std::make_pair(__first + __i + 1, std::next(__first,
+							       __patlen));
 	  __i += std::max(_M_bad_char_shift(__first[__i]),
 			  _M_good_suffix[__j]);
 	}
-      return __last;
+      return std::make_pair(__last, __last);
     }
 
 #endif
