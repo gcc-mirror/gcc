@@ -1,3 +1,10 @@
+2016-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/72858
+	* gcc.dg/format/diagnostic-ranges.c: Update expected suggestions
+	to preserve conversion chars, and to preserve prefix information.
+	* gcc.dg/format/pr72858.c: New test case.
+
 2016-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/pr77507.f90: Move to ...

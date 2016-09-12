@@ -30,7 +30,7 @@ void test_mismatching_types (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf("hello %i", (long)0);
                  ~^
-                 %ld
+                 %li
    { dg-end-multiline-output "" } */
 }
 
@@ -88,7 +88,7 @@ void test_hex (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf("hello \x25\x69", msg);
                  ~~~~^~~~
-                 %s
+                 \x25s
    { dg-end-multiline-output "" } */
 }
 
@@ -102,7 +102,7 @@ void test_oct (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf("hello \045\151", msg);
                  ~~~~^~~~
-                 %s
+                 \045s
    { dg-end-multiline-output "" } */
 }
 
@@ -121,7 +121,7 @@ void test_multiple (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf("prefix"  "\x25"  "\151"  "suffix",
                      ~~~~~~~~^~~~
-                     %s
+                     \x25"  "s
   { dg-end-multiline-output "" } */
 }
 
@@ -267,7 +267,7 @@ void test_non_contiguous_strings (void)
   /* { dg-begin-multiline-output "" }
    __builtin_printf(" %" "d ", 0.5);
                       ~~~~^
-                      %f
+                      %" "f
    { dg-end-multiline-output "" } */
 }
 

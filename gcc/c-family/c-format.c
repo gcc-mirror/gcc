@@ -994,12 +994,16 @@ static const format_flag_spec *get_flag_spec (const format_flag_spec *,
 
 static void check_format_types (const substring_loc &fmt_loc,
 				format_wanted_type *,
-				const format_kind_info *fki);
+				const format_kind_info *fki,
+				int offset_to_type_start,
+				char conversion_char);
 static void format_type_warning (const substring_loc &fmt_loc,
 				 source_range *param_range,
 				 format_wanted_type *, tree,
 				 tree,
-				 const format_kind_info *fki);
+				 const format_kind_info *fki,
+				 int offset_to_type_start,
+				 char conversion_char);
 
 /* Decode a format type from a string, returning the type, or
    format_type_error if not valid, in which case the caller should print an
@@ -1779,7 +1783,9 @@ class argument_parser
 		       tree &params,
 		       const int alloc_flag,
 		       const char * const format_start,
-		       location_t fmt_param_loc);
+		       const char * const type_start,
+		       location_t fmt_param_loc,
+		       char conversion_char);
 
  private:
   const function_format_info *const info;
@@ -2552,7 +2558,9 @@ check_argument_type (const format_char_info *fci,
 		     tree &params,
 		     const int alloc_flag,
 		     const char * const format_start,
-		     location_t fmt_param_loc)
+		     const char * const type_start,
+		     location_t fmt_param_loc,
+		     char conversion_char)
 {
   if (info->first_arg_num == 0)
     return true;
@@ -2658,7 +2666,10 @@ check_argument_type (const format_char_info *fci,
       substring_loc fmt_loc (fmt_param_loc, TREE_TYPE (format_string_cst),
 			     offset_to_format_end,
 			     offset_to_format_start, offset_to_format_end);
-      check_format_types (fmt_loc, first_wanted_type, fki);
+      ptrdiff_t offset_to_type_start = type_start - orig_format_chars;
+      check_format_types (fmt_loc, first_wanted_type, fki,
+			  offset_to_type_start,
+			  conversion_char);
     }
 
   return true;
@@ -2737,6 +2748,13 @@ check_format_info_main (format_check_results *res,
 
       arg_parser.handle_alloc_chars ();
 
+      /* The rest of the conversion specification is the length modifier
+	 (if any), and the conversion specifier, so this is where the
+	 type information starts.  If we need to issue a suggestion
+	 about a type mismatch, then we should preserve everything up
+	 to here. */
+      const char *type_start = format_chars;
+
       /* Read any length modifier, if this kind of format has them.  */
       const length_modifier len_modifier
 	= arg_parser.read_any_length_modifier ();
@@ -2794,7 +2812,9 @@ check_format_info_main (format_check_results *res,
 					   suppressed,
 					   arg_num, params,
 					   alloc_flag,
-					   format_start, fmt_param_loc))
+					   format_start, type_start,
+					   fmt_param_loc,
+					   format_char))
 	return;
     }
 
@@ -2814,11 +2834,58 @@ check_format_info_main (format_check_results *res,
 }
 
 /* Check the argument types from a single format conversion (possibly
-   including width and precision arguments).  FMT_LOC is the
-   location of the format conversion.  */
+   including width and precision arguments).
+
+   FMT_LOC is the location of the format conversion.
+
+   TYPES is a singly-linked list expressing the parts of the format
+   conversion that expect argument types, and the arguments they
+   correspond to.
+
+   OFFSET_TO_TYPE_START is the offset within the execution-charset encoded
+   format string to where type information begins for the conversion
+   (the length modifier and conversion specifier).
+
+   CONVERSION_CHAR is the user-provided conversion specifier.
+
+   For example, given:
+
+     sprintf (d, "before %-+*.*lld after", arg3, arg4, arg5);
+
+   then FMT_LOC covers this range:
+
+     sprintf (d, "before %-+*.*lld after", arg3, arg4, arg5);
+                         ^^^^^^^^^
+
+   and TYPES in this case is a three-entry singly-linked list consisting of:
+   (1) the check for the field width here:
+         sprintf (d, "before %-+*.*lld after", arg3, arg4, arg5);
+                                ^              ^^^^
+       against arg3, and
+   (2) the check for the field precision here:
+         sprintf (d, "before %-+*.*lld after", arg3, arg4, arg5);
+                                 ^^                  ^^^^
+       against arg4, and
+   (3) the check for the length modifier and conversion char here:
+         sprintf (d, "before %-+*.*lld after", arg3, arg4, arg5);
+                                   ^^^                     ^^^^
+       against arg5.
+
+   OFFSET_TO_TYPE_START is 13, the offset to the "lld" within the
+   STRING_CST:
+
+                  0000000000111111111122
+                  0123456789012345678901
+     sprintf (d, "before %-+*.*lld after", arg3, arg4, arg5);
+                               ^ ^
+                               | ` CONVERSION_CHAR: 'd'
+                               type starts here.  */
+
 static void
 check_format_types (const substring_loc &fmt_loc,
-		    format_wanted_type *types, const format_kind_info *fki)
+		    format_wanted_type *types, const format_kind_info *fki,
+		    int offset_to_type_start,
+		    char conversion_char)
 {
   for (; types != 0; types = types->next)
     {
@@ -2845,7 +2912,8 @@ check_format_types (const substring_loc &fmt_loc,
       cur_param = types->param;
       if (!cur_param)
         {
-	  format_type_warning (fmt_loc, NULL, types, wanted_type, NULL, fki);
+	  format_type_warning (fmt_loc, NULL, types, wanted_type, NULL, fki,
+			       offset_to_type_start, conversion_char);
           continue;
         }
 
@@ -2930,7 +2998,8 @@ check_format_types (const substring_loc &fmt_loc,
 	  else
 	    {
 	      format_type_warning (fmt_loc, param_range_ptr,
-				   types, wanted_type, orig_cur_type, fki);
+				   types, wanted_type, orig_cur_type, fki,
+				   offset_to_type_start, conversion_char);
 	      break;
 	    }
 	}
@@ -2999,7 +3068,8 @@ check_format_types (const substring_loc &fmt_loc,
 	continue;
       /* Now we have a type mismatch.  */
       format_type_warning (fmt_loc, param_range_ptr, types,
-			   wanted_type, orig_cur_type, fki);
+			   wanted_type, orig_cur_type, fki,
+			   offset_to_type_start, conversion_char);
     }
 }
 
@@ -3064,16 +3134,47 @@ test_get_modifier_for_format_len ()
 
 #endif /* CHECKING_P */
 
-/* Generate a string containing the format string that should be
-   used to format arguments of type ARG_TYPE within FKI (effectively
-   the inverse of the checking code).
+/* Determine if SPEC_TYPE and ARG_TYPE are sufficiently similar for a
+   format_type_detail using SPEC_TYPE to be offered as a suggestion for
+   Wformat type errors where the argument has type ARG_TYPE.  */
+
+static bool
+matching_type_p (tree spec_type, tree arg_type)
+{
+  gcc_assert (spec_type);
+  gcc_assert (arg_type);
+
+  spec_type = TYPE_CANONICAL (spec_type);
+  arg_type = TYPE_CANONICAL (arg_type);
+
+  if (TREE_CODE (spec_type) == INTEGER_TYPE
+      && TREE_CODE (arg_type) == INTEGER_TYPE
+      && (TYPE_UNSIGNED (spec_type)
+	  ? spec_type == c_common_unsigned_type (arg_type)
+	  : spec_type == c_common_signed_type (arg_type)))
+    return true;
+
+  return spec_type == arg_type;
+}
+
+/* Subroutine of get_format_for_type.
+
+   Generate a string containing the length modifier and conversion specifier
+   that should be used to format arguments of type ARG_TYPE within FKI
+   (effectively the inverse of the checking code).
+
+   If CONVERSION_CHAR is not zero (the first pass), the resulting suggestion
+   is required to use it, for correcting bogus length modifiers.
+   If CONVERSION_CHAR is zero (the second pass), then allow any suggestion
+   that matches ARG_TYPE.
 
    If successful, returns a non-NULL string which should be freed
-   by the called.
+   by the caller.
    Otherwise, returns NULL.  */
 
 static char *
-get_format_for_type (const format_kind_info *fki, tree arg_type)
+get_format_for_type_1 (const format_kind_info *fki, tree arg_type,
+		       char conversion_char)
 {
   gcc_assert (arg_type);
 
@@ -3082,6 +3183,10 @@ get_format_for_type (const format_kind_info *fki, tree arg_type)
        spec->format_chars;
        spec++)
     {
+      if (conversion_char)
+	if (!strchr (spec->format_chars, conversion_char))
+	  continue;
+
       tree effective_arg_type = deref_n_times (arg_type,
 					       spec->pointer_count);
       if (!effective_arg_type)
@@ -3091,8 +3196,7 @@ get_format_for_type (const format_kind_info *fki, tree arg_type)
 	  const format_type_detail *ftd = &spec->types[i];
 	  if (!ftd->type)
 	    continue;
-	  if (TYPE_CANONICAL (*ftd->type)
-	      == TYPE_CANONICAL (effective_arg_type))
+	  if (matching_type_p (*ftd->type, effective_arg_type))
 	    {
 	      const char *len_modifier
 		= get_modifier_for_format_len (fki->length_char_specs,
@@ -3100,13 +3204,166 @@ get_format_for_type (const format_kind_info *fki, tree arg_type)
 	      if (!len_modifier)
 		len_modifier = "";
 
-	      return xasprintf ("%%%s%c",
-				len_modifier,
-				spec->format_chars[0]);
+	      if (conversion_char)
+		/* We found a match, using the given conversion char - the
+		   length modifier was incorrect (or absent).
+		   Provide a suggestion using the conversion char with the
+		   correct length modifier for the type.  */
+		return xasprintf ("%s%c", len_modifier, conversion_char);
+	      else
+		/* 2nd pass: no match was possible using the user-provided
+		   conversion char, but we do have a match without using it.
+		   Provide a suggestion using the first conversion char
+		   listed for the given type.  */
+		return xasprintf ("%s%c", len_modifier, spec->format_chars[0]);
 	    }
 	}
    }
+
   return NULL;
+}
+
+/* Generate a string containing the length modifier and conversion specifier
+   that should be used to format arguments of type ARG_TYPE within FKI
+   (effectively the inverse of the checking code).
+
+   If successful, returns a non-NULL string which should be freed
+   by the caller.
+   Otherwise, returns NULL.  */
+
+static char *
+get_format_for_type (const format_kind_info *fki, tree arg_type,
+		     char conversion_char)
+{
+  gcc_assert (arg_type);
+  gcc_assert (conversion_char);
+
+  /* First pass: look for a format_char_info containing CONVERSION_CHAR
+     If we find one, then presumably the length modifier was incorrect
+     (or absent).  */
+  char *result = get_format_for_type_1 (fki, arg_type, conversion_char);
+  if (result)
+    return result;
+
+  /* Second pass: we didn't find a match for CONVERSION_CHAR, so try
+     matching just on the type. */
+  return get_format_for_type_1 (fki, arg_type, '\0');
+}
+
+/* Attempt to get a string for use as a replacement fix-it hint for the
+   source range in FMT_LOC.
+
+   Preserve all of the text within the range of FMT_LOC up to
+   OFFSET_TO_TYPE_START, replacing the rest with an appropriate
+   length modifier and conversion specifier for ARG_TYPE, attempting
+   to keep the user-provided CONVERSION_CHAR if possible.
+
+   For example, given a long vs long long mismatch for arg5 here:
+
+    000000000111111111122222222223333333333|
+    123456789012345678901234567890123456789` column numbers
+                   0000000000111111111122|
+                   0123456789012345678901` string offsets
+                          V~~~~~~~~ : range of FMT_LOC, from cols 23-31
+      sprintf (d, "before %-+*.*lld after", arg3, arg4, arg5);
+                                ^ ^
+                                | ` CONVERSION_CHAR: 'd'
+                                type starts here
+
+   where OFFSET_TO_TYPE_START is 13 (the offset to the "lld" within the
+   STRING_CST), where the user provided:
+     %-+*.*lld
+   the result (assuming "long" argument 5) should be:
+     %-+*.*ld
+
+   If successful, returns a non-NULL string which should be freed
+   by the caller.
+   Otherwise, returns NULL.  */
+
+static char *
+get_corrected_substring (const substring_loc &fmt_loc,
+			 format_wanted_type *type, tree arg_type,
+			 const format_kind_info *fki,
+			 int offset_to_type_start, char conversion_char)
+{
+  /* Attempt to provide hints for argument types, but not for field widths
+     and precisions.  */
+  if (!arg_type)
+    return NULL;
+  if (type->kind != CF_KIND_FORMAT)
+    return NULL;
+
+  /* Locate the current code within the source range, rejecting
+     any awkward cases where the format string occupies more than
+     one line.
+     Lookup the place where the type starts (including any length
+     modifiers), getting it as the caret location.  */
+  substring_loc type_loc (fmt_loc);
+  type_loc.set_caret_index (offset_to_type_start);
+
+  location_t fmt_substring_loc;
+  const char *err = type_loc.get_location (&fmt_substring_loc);
+  if (err)
+    return NULL;
+
+  source_range fmt_substring_range
+    = get_range_from_loc (line_table, fmt_substring_loc);
+
+  expanded_location caret
+    = expand_location_to_spelling_point (fmt_substring_loc);
+  expanded_location start
+    = expand_location_to_spelling_point (fmt_substring_range.m_start);
+  expanded_location finish
+    = expand_location_to_spelling_point (fmt_substring_range.m_finish);
+  if (caret.file != start.file)
+    return NULL;
+  if (start.file != finish.file)
+    return NULL;
+  if (caret.line != start.line)
+    return NULL;
+  if (start.line != finish.line)
+    return NULL;
+  if (start.column > caret.column)
+    return NULL;
+  if (start.column > finish.column)
+    return NULL;
+  if (caret.column > finish.column)
+    return NULL;
+
+  int line_width;
+  const char *line = location_get_source_line (start.file, start.line,
+					       &line_width);
+  if (line == NULL)
+    return NULL;
+
+  /* If we got this far, then we have the line containing the
+     existing conversion specification.
+
+     Generate a trimmed copy, containing the prefix part of the conversion
+     specification, up to the (but not including) the length modifier.
+     In the above example, this would be "%-+*.*".  */
+  const char *current_content = line + start.column - 1;
+  int length_up_to_type = caret.column - start.column;
+  char *prefix = xstrndup (current_content, length_up_to_type);
+
+  /* Now attempt to generate a suggestion for the rest of the specification
+     (length modifier and conversion char), based on ARG_TYPE and
+     CONVERSION_CHAR.
+     In the above example, this would be "ld".  */
+  char *format_for_type = get_format_for_type (fki, arg_type, conversion_char);
+  if (!format_for_type)
+    {
+      free (prefix);
+      return NULL;
+    }
+
+  /* Success.  Generate the resulting suggestion for the whole range of
+     FMT_LOC by concatenating the two strings.
+     In the above example, this would be "%-+*.*ld".  */
+  char *result = concat (prefix, format_for_type, NULL);
+  free (format_for_type);
+  free (prefix);
+  return result;
 }
 
 /* Give a warning about a format argument of different type from that expected.
@@ -3118,13 +3375,36 @@ get_format_for_type (const format_kind_info *fki, tree arg_type)
    precision"), the placement in the format string, a possibly more
    friendly name of WANTED_TYPE, and the number of pointer dereferences
    are taken from TYPE.  ARG_TYPE is the type of the actual argument,
-   or NULL if it is missing.  */
+   or NULL if it is missing.
+
+   OFFSET_TO_TYPE_START is the offset within the execution-charset encoded
+   format string to where type information begins for the conversion
+   (the length modifier and conversion specifier).
+   CONVERSION_CHAR is the user-provided conversion specifier.
+
+   For example, given a type mismatch for argument 5 here:
+
+    00000000011111111112222222222333333333344444444445555555555|
+    12345678901234567890123456789012345678901234567890123456789` column numbers
+                   0000000000111111111122|
+                   0123456789012345678901` offsets within STRING_CST
+                          V~~~~~~~~ : range of WHOLE_FMT_LOC, from cols 23-31
+      sprintf (d, "before %-+*.*lld after", int_expr, int_expr, long_expr);
+                                ^ ^                             ^~~~~~~~~
+                                | ` CONVERSION_CHAR: 'd'        *PARAM_RANGE
+                                type starts here
+
+   OFFSET_TO_TYPE_START is 13, the offset to the "lld" within the
+   STRING_CST.  */
+
 static void
 format_type_warning (const substring_loc &whole_fmt_loc,
 		     source_range *param_range,
 		     format_wanted_type *type,
 		     tree wanted_type, tree arg_type,
-		     const format_kind_info *fki)
+		     const format_kind_info *fki,
+		     int offset_to_type_start,
+		     char conversion_char)
 {
   enum format_specifier_kind kind = type->kind;
   const char *wanted_type_name = type->wanted_type_name;
@@ -3171,18 +3451,18 @@ format_type_warning (const substring_loc &whole_fmt_loc,
   substring_loc fmt_loc (whole_fmt_loc);
   fmt_loc.set_caret_index (type->offset_loc - 1);
 
-  /* Attempt to provide hints for argument types, but not for field widths
-     and precisions.  */
-  char *format_for_type = NULL;
-  if (arg_type && kind == CF_KIND_FORMAT)
-    format_for_type = get_format_for_type (fki, arg_type);
+  /* Get a string for use as a replacement fix-it hint for the range in
+     fmt_loc, or NULL.  */
+  char *corrected_substring
+    = get_corrected_substring (fmt_loc, type, arg_type, fki,
+			       offset_to_type_start, conversion_char);
 
   if (wanted_type_name)
     {
       if (arg_type)
 	format_warning_at_substring
 	  (fmt_loc, param_range,
-	   format_for_type, OPT_Wformat_,
+	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%s%s%>, "
 	   "but argument %d has type %qT",
 	   gettext (kind_descriptions[kind]),
@@ -3192,7 +3472,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
       else
 	format_warning_at_substring
 	  (fmt_loc, param_range,
-	   format_for_type, OPT_Wformat_,
+	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%s%s%> argument",
 	   gettext (kind_descriptions[kind]),
 	   (kind == CF_KIND_FORMAT ? "%" : ""),
@@ -3203,7 +3483,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
       if (arg_type)
 	format_warning_at_substring
 	  (fmt_loc, param_range,
-	   format_for_type, OPT_Wformat_,
+	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%T%s%>, "
 	   "but argument %d has type %qT",
 	   gettext (kind_descriptions[kind]),
@@ -3213,14 +3493,14 @@ format_type_warning (const substring_loc &whole_fmt_loc,
       else
 	format_warning_at_substring
 	  (fmt_loc, param_range,
-	   format_for_type, OPT_Wformat_,
+	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%T%s%> argument",
 	   gettext (kind_descriptions[kind]),
 	   (kind == CF_KIND_FORMAT ? "%" : ""),
 	   format_length, format_start, wanted_type, p);
     }
 
-  free (format_for_type);
+  free (corrected_substring);
 }
 
 
@@ -3759,25 +4039,28 @@ get_info (const char *name)
   return fki;
 }
 
-/* Verify that get_format_for_type (FKI, TYPE) is EXPECTED_FORMAT.  */
+/* Verify that get_format_for_type (FKI, TYPE, CONVERSION_CHAR)
+   is EXPECTED_FORMAT.  */
 
 static void
 assert_format_for_type_streq (const location &loc, const format_kind_info *fki,
-			      const char *expected_format, tree type)
+			      const char *expected_format, tree type,
+			      char conversion_char)
 {
   gcc_assert (fki);
   gcc_assert (expected_format);
   gcc_assert (type);
 
-  char *actual_format = get_format_for_type (fki, type);
+  char *actual_format = get_format_for_type (fki, type, conversion_char);
   ASSERT_STREQ_AT (loc, expected_format, actual_format);
   free (actual_format);
 }
 
 /* Selftests for get_format_for_type.  */
 
-#define ASSERT_FORMAT_FOR_TYPE_STREQ(EXPECTED_FORMAT, TYPE) \
-  assert_format_for_type_streq (SELFTEST_LOCATION, (fki), (EXPECTED_FORMAT), (TYPE))
+#define ASSERT_FORMAT_FOR_TYPE_STREQ(EXPECTED_FORMAT, TYPE, CONVERSION_CHAR) \
+  assert_format_for_type_streq (SELFTEST_LOCATION, (fki), (EXPECTED_FORMAT), \
+				(TYPE), (CONVERSION_CHAR))
 
 /* Selftest for get_format_for_type for "printf"-style functions.  */
 
@@ -3787,15 +4070,34 @@ test_get_format_for_type_printf ()
   const format_kind_info *fki = get_info ("gnu_printf");
   ASSERT_NE (fki, NULL);
 
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%f", double_type_node);
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%Lf", long_double_type_node);
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%d", integer_type_node);
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%o", unsigned_type_node);
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%ld", long_integer_type_node);
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%lo", long_unsigned_type_node);
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%lld", long_long_integer_type_node);
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%llo", long_long_unsigned_type_node);
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%s", build_pointer_type (char_type_node));
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("f", double_type_node, 'i');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("Lf", long_double_type_node, 'i');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("f", double_type_node, 'o');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("Lf", long_double_type_node, 'o');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("f", double_type_node, 'x');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("Lf", long_double_type_node, 'x');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("f", double_type_node, 'X');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("Lf", long_double_type_node, 'X');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("d", integer_type_node, 'd');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("i", integer_type_node, 'i');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("o", integer_type_node, 'o');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("x", integer_type_node, 'x');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("X", integer_type_node, 'X');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("d", unsigned_type_node, 'd');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("i", unsigned_type_node, 'i');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("o", unsigned_type_node, 'o');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("x", unsigned_type_node, 'x');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("X", unsigned_type_node, 'X');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("ld", long_integer_type_node, 'd');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("li", long_integer_type_node, 'i');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("lx", long_integer_type_node, 'x');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("lo", long_unsigned_type_node, 'o');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("lx", long_unsigned_type_node, 'x');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("lld", long_long_integer_type_node, 'd');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("lli", long_long_integer_type_node, 'i');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("llo", long_long_unsigned_type_node, 'o');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("llx", long_long_unsigned_type_node, 'x');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("s", build_pointer_type (char_type_node), 'i');
 }
 
 /* Selftest for get_format_for_type for "scanf"-style functions.  */
@@ -3805,18 +4107,18 @@ test_get_format_for_type_scanf ()
 {
   const format_kind_info *fki = get_info ("gnu_scanf");
   ASSERT_NE (fki, NULL);
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%d", build_pointer_type (integer_type_node));
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%u", build_pointer_type (unsigned_type_node));
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%ld",
-				build_pointer_type (long_integer_type_node));
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%lu",
-				build_pointer_type (long_unsigned_type_node));
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("d", build_pointer_type (integer_type_node), 'd');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("u", build_pointer_type (unsigned_type_node), 'u');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("ld",
+				build_pointer_type (long_integer_type_node), 'd');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("lu",
+				build_pointer_type (long_unsigned_type_node), 'u');
   ASSERT_FORMAT_FOR_TYPE_STREQ
-    ("%lld", build_pointer_type (long_long_integer_type_node));
+    ("lld", build_pointer_type (long_long_integer_type_node), 'd');
   ASSERT_FORMAT_FOR_TYPE_STREQ
-    ("%llu", build_pointer_type (long_long_unsigned_type_node));
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%e", build_pointer_type (float_type_node));
-  ASSERT_FORMAT_FOR_TYPE_STREQ ("%le", build_pointer_type (double_type_node));
+    ("llu", build_pointer_type (long_long_unsigned_type_node), 'u');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("e", build_pointer_type (float_type_node), 'e');
+  ASSERT_FORMAT_FOR_TYPE_STREQ ("le", build_pointer_type (double_type_node), 'e');
 }
 
 #undef ASSERT_FORMAT_FOR_TYPE_STREQ

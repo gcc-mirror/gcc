@@ -1,3 +1,37 @@
+2016-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/72858
+	* c-format.c (argument_parser::check_argument_type): Add params
+	"type_start" and "conversion_char".  Use the former to generate
+	offset_to_type_start and pass it and conversion_char to
+	check_format_types.
+	(check_format_info_main): Capture the start of the type
+	information as "type_start", and pass it an format_char
+	to arg_parser.check_argument_type.
+	(check_format_types): Provide an example in the leading comment.
+	Add params "offset_to_type_start" and "conversion_char"; pass
+	them to format_type_warning calls.
+	(test_get_modifier_for_format_len): Likewise.
+	(matching_type_p): New function.
+	(get_format_for_type): Add param "conversion_char" and move
+	implementation into...
+	(get_format_for_type_1): ...new function, called twice.
+	Use new function matching_type_p rather than checking for
+	TYPE_CANONICAL equality.
+	(get_corrected_substring): New function.
+	(format_type_warning): Provide an example in the leading comment.
+	Add params "offset_to_type_start" and "conversion_char".  Replace
+	call to get_format_for_type with call to get_corrected_substring
+	and move rejection of hints for widths/precisions there.
+	(assert_format_for_type_streq): Add param "conversion_char".
+	(ASSERT_FORMAT_FOR_TYPE_STREQ): Add param CONVERSION_CHAR.
+	(test_get_format_for_type_printf): Add conversion chars to the
+	tests, adding coverage for various combinations of integer
+	vs double conversions, and for preserving octal and hexadecimal
+	conversions.
+	(test_get_format_for_type_scanf): Add conversion chars to the
+	tests.
+
 2016-09-10  Tom de Vries  <tom@codesourcery.com>
 
 	PR C/71602
