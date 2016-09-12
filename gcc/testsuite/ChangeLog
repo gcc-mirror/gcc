@@ -1,3 +1,14 @@
+2016-09-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/compat/scalar-by-value-4_x.c: Also test passing of
+	variable arguments.
+	* gcc.dg/compat/scalar-by-value-4_y.c (testva##NAME): New.
+	* gcc.dg/compat/scalar-by-value-4_main.c: Update description comment.
+	* gcc.dg/compat/scalar-return-4_x.c: Also test returning of
+	variable argument.
+	* gcc.dg/compat/scalar-return-4_y.c (testva##NAME): New.
+	* gcc.dg/compat/scalar-return-4_main.c: Update description comment.
+
 2016-09-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/77496
