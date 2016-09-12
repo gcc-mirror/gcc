@@ -1,3 +1,8 @@
+2016-09-12  Orlando Arias  <oarias@knights.ucf.edu>
+
+	PR target/77570
+	* config/msp430/msp430.md (delay_cycles_32x): Fix pushm/popm.
+
 2016-09-12  Marek Polacek  <polacek@redhat.com>
 
 	* doc/extend.texi: Use lowercase "boolean".
