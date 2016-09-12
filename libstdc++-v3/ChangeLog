@@ -1,3 +1,17 @@
+2016-09-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement C++17 string searchers.
+	* include/std/functional: (unordered_map, vector): New includes
+	in C++17 mode.
+	(array, bits/stl_algo.h): Likewise.
+	(default_searcher, __boyer_moore_map_base): New.
+	(__boyer_moore_array_base, __is_std_equal_to): Likewise.
+	(__boyer_moore_base_t, boyer_moore_searcher): Likewise.
+	(boyer_moore_horspool_searcher, make_default_searcher): Likewise.
+	(make_boyer_moore_searcher): Likewise.
+	(make_boyer_moore_horspool_searcher): Likewise.
+	* testsuite/20_util/function_objects/searchers.cc: New.
+
 2016-09-12  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* testsuite/22_locale/codecvt/codecvt_utf16/requirements/1.cc:
