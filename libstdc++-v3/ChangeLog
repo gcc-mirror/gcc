@@ -1,3 +1,7 @@
+2016-09-12  Jason Merrill  <jason@redhat.com>
+
+	* config/abi/pre/gnu.ver: Use [jmy] for size_t.
+
 2016-09-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement P0253R1, Fixing a design mistake in the searchers
