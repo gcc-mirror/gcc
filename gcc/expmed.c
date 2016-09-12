@@ -2572,7 +2572,6 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   entry_ptr = alg_hash_entry_ptr (hash_index);
   if (entry_ptr->t == t
       && entry_ptr->mode == mode
-      && entry_ptr->mode == mode
       && entry_ptr->speed == speed
       && entry_ptr->alg != alg_unknown)
     {

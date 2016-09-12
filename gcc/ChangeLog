@@ -1,3 +1,8 @@
+2016-09-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/77426
+	* expmed.c (synth_mult): Delete duplicate mode check.
+
 2016-09-10  Tom de Vries  <tom@codesourcery.com>
 
 	PR C/71602
