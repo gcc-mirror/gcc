@@ -15,9 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do compile { target c++11 } }
 // { dg-require-atomic-builtins "" }
 // { dg-require-cstdint "" }
-// { dg-do compile { target c++11 } }
 
 #include <atomic>
 #include <cstdint>

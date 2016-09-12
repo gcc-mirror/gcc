@@ -1,3 +1,256 @@
+2016-09-12  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* testsuite/22_locale/codecvt/codecvt_utf16/requirements/1.cc:
+	Move dg-do directive before dg-require.
+	* testsuite/22_locale/codecvt/codecvt_utf8/requirements/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/requirements/1.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/utf8.cc: Likewise.
+	* testsuite/22_locale/locale/cons/unicode.cc: Likewise.
+	* testsuite/23_containers/deque/debug/assign1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/assign2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/assign3_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/insert5_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/shrink_to_fit.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/60499.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after2_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after3_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after4_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after5_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after6_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after7_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after8_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after9_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/insert_after1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/insert_after2_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/insert_after3_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/insert_after4_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after2_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after3_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after4_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after5_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after6_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after7_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/assign1_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/assign2_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/assign3_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert5_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/60499.cc: Likewise.
+	* testsuite/23_containers/map/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/map/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/60499.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/60499.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/60499.cc: Likewise.
+	* testsuite/23_containers/set/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/set/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/60499.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/begin1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/begin2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/bucket_size_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/cbegin_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/cend_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/end1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/end2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_compare_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_range_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/max_load_factor_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/use_erased_local_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/use_invalid_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/use_invalid_local_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/60499.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/begin1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/begin2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/bucket_size_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/cbegin_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/cend_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/construct1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/construct2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/construct3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/end1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/end2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/invalid_local_iterator_compare_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/invalid_local_iterator_range_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/max_load_factor_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/use_erased_local_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/use_invalid_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/use_invalid_local_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/60499.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/begin1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/begin2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/bucket_size_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/cbegin_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/cend_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/construct1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/construct2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/construct3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/end1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/end2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/invalid_local_iterator_compare_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/invalid_local_iterator_range_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/max_load_factor_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/use_erased_local_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/use_invalid_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/use_invalid_local_iterator_neg.cc:
+	Likewise.
+	*  testsuite/23_containers/unordered_set/debug/60499.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/begin1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/begin2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/bucket_size_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/cbegin_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/cend_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/end1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/end2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/invalid_local_iterator_compare_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/invalid_local_iterator_range_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/max_load_factor_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/use_erased_local_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/use_invalid_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/use_invalid_local_iterator_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/debug/52433.cc: Likewise.
+	* testsuite/23_containers/vector/debug/60499.cc: Likewise.
+	* testsuite/23_containers/vector/debug/bool/shrink_to_fit.cc: Likewise.
+	* testsuite/23_containers/vector/debug/iterator_self_move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/shrink_to_fit.cc: Likewise.
+	* testsuite/25_algorithms/pop_heap/complexity.cc: Likewise.
+	* testsuite/25_algorithms/push_heap/complexity.cc: Likewise.
+	* testsuite/25_algorithms/sort_heap/complexity.cc: Likewise.
+	* testsuite/29_atomics/atomic/60658.cc: Likewise.
+	* testsuite/29_atomics/atomic/60695.cc: Likewise.
+	* testsuite/29_atomics/atomic/62259.cc: Likewise.
+	* testsuite/29_atomics/atomic/64658.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/49445.cc: Likewise.
+	* testsuite/29_atomics/atomic/operators/51811.cc: Likewise.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc: Likewise.
+
 2016-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/new_opant.cc: Include exception_defines.h.
