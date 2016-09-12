@@ -4665,8 +4665,11 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
   if (!arg2)
     {
       if (complain & tf_error)
-	pedwarn (loc, OPT_Wpedantic, 
+	pedwarn (loc, OPT_Wpedantic,
 		 "ISO C++ forbids omitting the middle term of a ?: expression");
+
+      if ((complain & tf_warning) && !truth_value_p (TREE_CODE (arg1)))
+	warn_for_omitted_condop (loc, arg1);
 
       /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */
       if (lvalue_p (arg1))

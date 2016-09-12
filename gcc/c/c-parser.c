@@ -6425,14 +6425,17 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
       tree eptype = NULL_TREE;
 
       middle_loc = c_parser_peek_token (parser)->location;
-      pedwarn (middle_loc, OPT_Wpedantic, 
+      pedwarn (middle_loc, OPT_Wpedantic,
 	       "ISO C forbids omitting the middle term of a ?: expression");
-      warn_for_omitted_condop (middle_loc, cond.value);
       if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
 	{
 	  eptype = TREE_TYPE (cond.value);
 	  cond.value = TREE_OPERAND (cond.value, 0);
 	}
+      tree e = cond.value;
+      while (TREE_CODE (e) == COMPOUND_EXPR)
+	e = TREE_OPERAND (e, 1);
+      warn_for_omitted_condop (middle_loc, e);
       /* Make sure first operand is calculated only once.  */
       exp1.value = c_save_expr (default_conversion (cond.value));
       if (eptype)
