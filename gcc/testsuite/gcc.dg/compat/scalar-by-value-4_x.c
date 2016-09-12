@@ -13,6 +13,7 @@ test##NAME (TYPE x01, TYPE x02, TYPE x03, TYPE x04,		\
             TYPE x05, TYPE x06, TYPE x07, TYPE x08,		\
             TYPE x09, TYPE x10, TYPE x11, TYPE x12,		\
             TYPE x13, TYPE x14, TYPE x15, TYPE x16);		\
+extern void testva##NAME (int n, ...);				\
 								\
 void								\
 check##NAME (TYPE x, TYPE v)					\
@@ -60,6 +61,81 @@ testit##NAME (void)						\
 	      g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 	      g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
 	      g13##NAME, g14##NAME, g15##NAME, g16##NAME);	\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" testva:");					\
+  DEBUG_NL;							\
+  testva##NAME (1,						\
+		g01##NAME);					\
+  DEBUG_NL;							\
+  testva##NAME (2,						\
+		g01##NAME, g02##NAME);				\
+  DEBUG_NL;							\
+  testva##NAME (3,						\
+		g01##NAME, g02##NAME, g03##NAME);		\
+  DEBUG_NL;							\
+  testva##NAME (4,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME);	\
+  DEBUG_NL;							\
+  testva##NAME (5,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME);					\
+  DEBUG_NL;							\
+  testva##NAME (6,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME);				\
+  DEBUG_NL;							\
+  testva##NAME (7,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME);		\
+  DEBUG_NL;							\
+  testva##NAME (8,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME, g08##NAME);	\
+  DEBUG_NL;							\
+  testva##NAME (9,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
+		g09##NAME);					\
+  DEBUG_NL;							\
+  testva##NAME (10,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
+		g09##NAME, g10##NAME);				\
+  DEBUG_NL;							\
+  testva##NAME (11,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
+		g09##NAME, g10##NAME, g11##NAME);		\
+  DEBUG_NL;							\
+  testva##NAME (12,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
+		g09##NAME, g10##NAME, g11##NAME, g12##NAME);	\
+  DEBUG_NL;							\
+  testva##NAME (13,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
+		g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
+		g13##NAME);					\
+  DEBUG_NL;							\
+  testva##NAME (14,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
+		g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
+		g13##NAME, g14##NAME);				\
+  DEBUG_NL;							\
+  testva##NAME (15,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
+		g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
+		g13##NAME, g14##NAME, g15##NAME);		\
+  DEBUG_NL;							\
+  testva##NAME (16,						\
+		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
+		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
+		g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
+		g13##NAME, g14##NAME, g15##NAME, g16##NAME);	\
   DEBUG_NL;							\
   DEBUG_FPUTS (#NAME);						\
   DEBUG_FPUTS (" test2: ");					\
