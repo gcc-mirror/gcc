@@ -52,11 +52,11 @@ test01()
       auto he = h + std::strlen(h);
       auto res = std::search(h, he, n, ne);
       auto d_res = d(h, he);
-      VERIFY( d_res == res );
+      VERIFY( d_res.first == res );
       auto bm_res = bm(h, he);
-      VERIFY( bm_res == res );
+      VERIFY( bm_res.first == res );
       auto bmh_res = bmh(h, he);
-      VERIFY( bmh_res == res );
+      VERIFY( bmh_res.first == res );
     }
   }
 }
@@ -85,11 +85,11 @@ test02()
       auto he = h + std::wcslen(h);
       auto res = std::search(h, he, n, ne);
       auto d_res = d(h, he);
-      VERIFY( d_res == res );
+      VERIFY( d_res.first == res );
       auto bm_res = bm(h, he);
-      VERIFY( bm_res == res );
+      VERIFY( bm_res.first == res );
       auto bmh_res = bmh(h, he);
-      VERIFY( bmh_res == res );
+      VERIFY( bmh_res.first == res );
     }
   }
 #endif
@@ -122,11 +122,11 @@ test03()
 
   auto res = std::search(haystack, he, needle, ne, eq);
   auto d_res = d(haystack, he);
-  VERIFY( d_res == res );
+  VERIFY( d_res.first == res );
   auto bm_res = bm(haystack, he);
-  VERIFY( bm_res == res );
+  VERIFY( bm_res.first == res );
   auto bmh_res = bmh(haystack, he);
-  VERIFY( bmh_res == res );
+  VERIFY( bmh_res.first == res );
 }
 
 int

@@ -1,5 +1,15 @@
 2016-09-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Implement P0253R1, Fixing a design mistake in the searchers
+	interface in Library Fundamentals.
+	* include/std/functional: (utility): New include in C++17 mode.
+	(default_searcher): Use a pair as return type, adjust the definition.
+	(boyer_moore_searcher): Likewise.
+	(boyer_moore_horspool_searcher): Likewise.
+	* testsuite/20_util/function_objects/searchers.cc: Adjust.
+
+2016-09-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement C++17 string searchers.
 	* include/std/functional: (unordered_map, vector): New includes
 	in C++17 mode.
