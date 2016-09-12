@@ -1,3 +1,8 @@
+2016-09-12  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/aarch64/thunderxloadpair.c: New testcase.
+	* gcc.target/aarch64/thunderxnoloadpair.c: New testcase.
+
 2016-09-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/compat/scalar-by-value-4_x.c: Also test passing of

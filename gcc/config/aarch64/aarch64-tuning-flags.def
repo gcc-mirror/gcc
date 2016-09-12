@@ -29,3 +29,8 @@
      AARCH64_TUNE_ to give an enum name. */
 
 AARCH64_EXTRA_TUNING_OPTION ("rename_fma_regs", RENAME_FMA_REGS)
+
+/* Don't create non-8 byte aligned load/store pair.  That is if the
+two load/stores are not at least 8 byte aligned don't create load/store
+pairs.   */
+AARCH64_EXTRA_TUNING_OPTION ("slow_unaligned_ldpw", SLOW_UNALIGNED_LDPW)

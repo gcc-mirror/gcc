@@ -1,3 +1,14 @@
+2016-09-12  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (SLOW_UNALIGNED_LDPW):
+	New tuning option.
+	* config/aarch64/aarch64.c (thunderx_tunings): Enable
+	AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW.
+	(aarch64_operands_ok_for_ldpstp): Return false if
+	AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW and the mode
+	was SImode and the alignment is less than 8 byte.
+	(aarch64_operands_adjust_ok_for_ldpstp): Likewise.
+
 2016-09-12  Orlando Arias  <oarias@knights.ucf.edu>
 
 	PR target/77570
