@@ -15,9 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 //
+// { dg-do run { xfail *-*-* } }
 // { dg-require-debug-mode "" }
 // { dg-options "-D_GLIBCXX_DEBUG_PEDANTIC" }
-// { dg-do run { xfail *-*-* } }
 
 #include <list>
 #include <debug/checks.h>

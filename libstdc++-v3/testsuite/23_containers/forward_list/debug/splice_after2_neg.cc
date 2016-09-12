@@ -1,5 +1,5 @@
-// { dg-require-debug-mode "" }
 // { dg-do run { target c++11 xfail *-*-* } }
+// { dg-require-debug-mode "" }
 
 // Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //
