@@ -700,7 +700,7 @@ predicates used with @code{match_operand} have names that end in
 @samp{_operand}, and those used with @code{match_operator} have names
 that end in @samp{_operator}.
 
-All predicates are Boolean functions (in the mathematical sense) of
+All predicates are boolean functions (in the mathematical sense) of
 two arguments: the RTL expression that is being considered at that
 position in the instruction pattern, and the machine mode that the
 @code{match_operand} or @code{match_operator} specifies.  In this
@@ -4274,7 +4274,7 @@ constraint.  Docstrings are explained further below.
 @end deffn
 
 Non-register constraints are more like predicates: the constraint
-definition gives a Boolean expression which indicates whether the
+definition gives a boolean expression which indicates whether the
 constraint matches.
 
 @deffn {MD Expression} define_constraint name docstring exp

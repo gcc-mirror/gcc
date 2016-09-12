@@ -9486,7 +9486,7 @@ the pointer points.
 @end smallexample
 
 The object pointed to by the first argument must be of integer or pointer
-type.  It must not be a Boolean type.
+type.  It must not be a boolean type.
 
 @emph{Note:} GCC 4.4 and later implement @code{__sync_fetch_and_nand}
 as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
@@ -9772,7 +9772,7 @@ they are not scaled by the size of the type to which the pointer points.
 @end smallexample
 
 The object pointed to by the first argument must be of integer or pointer
-type.  It must not be a Boolean type.  All memory orders are valid.
+type.  It must not be a boolean type.  All memory orders are valid.
 
 @end deftypefn
 
@@ -9896,7 +9896,7 @@ behavior for all argument values.
 
 The first built-in function allows arbitrary integral types for operands and
 the result type must be pointer to some integral type other than enumerated or
-Boolean type, the rest of the built-in functions have explicit integer types.
+boolean type, the rest of the built-in functions have explicit integer types.
 
 The compiler will attempt to use hardware instructions to implement
 these built-in functions where possible, like conditional jump on overflow
@@ -9942,7 +9942,7 @@ These built-in functions are similar to @code{__builtin_add_overflow},
 @code{__builtin_sub_overflow}, or @code{__builtin_mul_overflow}, except that
 they don't store the result of the arithmetic operation anywhere and the
 last argument is not a pointer, but some expression with integral type other
-than enumerated or Boolean type.
+than enumerated or boolean type.
 
 The built-in functions promote the first two operands into infinite precision signed type
 and perform addition on those promoted operands. The result is then

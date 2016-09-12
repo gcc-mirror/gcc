@@ -1891,7 +1891,7 @@ This hook may conditionally modify five variables
 @code{fixed_regs}, @code{call_used_regs}, @code{global_regs},
 @code{reg_names}, and @code{reg_class_contents}, to take into account
 any dependence of these register sets on target flags.  The first three
-of these are of type @code{char []} (interpreted as Boolean vectors).
+of these are of type @code{char []} (interpreted as boolean vectors).
 @code{global_regs} is a @code{const char *[]}, and
 @code{reg_class_contents} is a @code{HARD_REG_SET}.  Before the macro is
 called, @code{fixed_regs}, @code{call_used_regs},
