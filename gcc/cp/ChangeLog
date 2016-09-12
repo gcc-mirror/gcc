@@ -1,3 +1,9 @@
+2016-09-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/77496
+	* call.c (build_conditional_expr_1): Call warn_for_omitted_condop.
+	* class.c (instantiate_type): Look through the SAVE_EXPR.
+
 2016-09-09  Jason Merrill  <jason@redhat.com>
 
 	Implement P0035R4, C++17 new of over-aligned types.

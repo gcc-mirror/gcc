@@ -10602,17 +10602,21 @@ fold_offsetof (tree expr)
   return convert (size_type_node, fold_offsetof_1 (expr));
 }
 
-/* Warn for A ?: C expressions (with B omitted) where A is a boolean 
+/* Warn for A ?: C expressions (with B omitted) where A is a boolean
    expression, because B will always be true. */
 
 void
-warn_for_omitted_condop (location_t location, tree cond) 
-{ 
-  if (truth_value_p (TREE_CODE (cond))) 
-      warning_at (location, OPT_Wparentheses, 
+warn_for_omitted_condop (location_t location, tree cond)
+{
+  /* In C++ template declarations it can happen that the type is dependent
+     and not yet known, thus TREE_TYPE (cond) == NULL_TREE.  */
+  if (truth_value_p (TREE_CODE (cond))
+      || (TREE_TYPE (cond) != NULL_TREE
+	  && TREE_CODE (TREE_TYPE (cond)) == BOOLEAN_TYPE))
+      warning_at (location, OPT_Wparentheses,
 		"the omitted middle operand in ?: will always be %<true%>, "
 		"suggest explicit middle operand");
-} 
+}
 
 /* Give an error for storing into ARG, which is 'const'.  USE indicates
    how ARG was being used.  */

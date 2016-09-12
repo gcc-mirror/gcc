@@ -1,3 +1,9 @@
+2016-09-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/77496
+	* c-parser.c (c_parser_conditional_expression): Pass the rightmost
+	COMPOUND_EXPR to warn_for_omitted_condop.
+
 2016-09-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-lang.c (LANG_HOOKS_GET_SUBSTRING_LOCATION): Use
