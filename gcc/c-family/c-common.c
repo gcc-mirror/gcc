@@ -7836,8 +7836,7 @@ check_user_alignment (const_tree align, bool allow_zero)
   return i;
 }
 
-/* 
-   If in c++-11, check if the c++-11 alignment constraint with respect
+/* If in c++-11, check if the c++-11 alignment constraint with respect
    to fundamental alignment (in [dcl.align]) are satisfied.  If not in
    c++-11 mode, does nothing.
 
@@ -7862,7 +7861,7 @@ check_cxx_fundamental_alignment_constraints (tree node,
 					     int flags)
 {
   bool alignment_too_large_p = false;
-  unsigned requested_alignment = 1U << align_log;
+  unsigned requested_alignment = (1U << align_log) * BITS_PER_UNIT;
   unsigned max_align = 0;
 
   if ((!(flags & ATTR_FLAG_CXX11) && !warn_cxx_compat)
@@ -7906,15 +7905,19 @@ check_cxx_fundamental_alignment_constraints (tree node,
     }
   else if (TYPE_P (node))
     {
-      /* Let's be liberal for types.  */
-      if (requested_alignment > (max_align = BIGGEST_ALIGNMENT))
+      /* Let's be liberal for types.  BIGGEST_ALIGNMENT is the largest
+	 alignment a built-in type can require, MAX_OFILE_ALIGNMENT is the
+	 largest alignment the object file can represent, but a type that is
+	 only allocated dynamically could request even larger alignment.  So
+	 only limit type alignment to what TYPE_ALIGN can represent.  */
+      if (requested_alignment > (max_align = 8U << 28))
 	alignment_too_large_p = true;
     }
 
   if (alignment_too_large_p)
     pedwarn (input_location, OPT_Wattributes,
 	     "requested alignment %d is larger than %d",
-	     requested_alignment, max_align);
+	     requested_alignment / BITS_PER_UNIT, max_align / BITS_PER_UNIT);
 
   return !alignment_too_large_p;
 }

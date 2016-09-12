@@ -1,3 +1,8 @@
+2016-09-12  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (check_cxx_fundamental_alignment_constraints): Fix
+	bit/byte confusion, allow large alignment for types.
+
 2016-09-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/77496
