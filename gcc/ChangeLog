@@ -1,3 +1,11 @@
+2016-09-12  Marek Polacek  <polacek@redhat.com>
+
+	* doc/extend.texi: Use lowercase "boolean".
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* target.def: Likewise.
+	* doc/tm.texi: Regenerated.
+
 2016-09-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/77426

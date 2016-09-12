@@ -5497,7 +5497,7 @@ if (a < 0 && a < 0) @{ @dots{} @}
 @opindex Wlogical-not-parentheses
 @opindex Wno-logical-not-parentheses
 Warn about logical not used on the left hand side operand of a comparison.
-This option does not warn if the right operand is considered to be a Boolean
+This option does not warn if the right operand is considered to be a boolean
 expression.  Its purpose is to detect suspicious code like the following:
 @smallexample
 int a;
