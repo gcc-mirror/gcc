@@ -1,3 +1,8 @@
+2016-09-13  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (check_cxx_fundamental_alignment_constraints): Don't
+	limit types at all.
+
 2016-09-12  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (check_cxx_fundamental_alignment_constraints): Fix

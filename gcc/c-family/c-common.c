@@ -7905,13 +7905,8 @@ check_cxx_fundamental_alignment_constraints (tree node,
     }
   else if (TYPE_P (node))
     {
-      /* Let's be liberal for types.  BIGGEST_ALIGNMENT is the largest
-	 alignment a built-in type can require, MAX_OFILE_ALIGNMENT is the
-	 largest alignment the object file can represent, but a type that is
-	 only allocated dynamically could request even larger alignment.  So
-	 only limit type alignment to what TYPE_ALIGN can represent.  */
-      if (requested_alignment > (max_align = 8U << 28))
-	alignment_too_large_p = true;
+      /* Let's be liberal for types; don't limit their alignment any more than
+	 check_user_alignment already did.  */
     }
 
   if (alignment_too_large_p)
