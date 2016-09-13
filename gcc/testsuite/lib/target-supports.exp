@@ -7699,3 +7699,10 @@ proc check_effective_target_offload_hsa { } {
 	int main () {return 0;}
     } "-foffload=hsa" ]
 }
+
+# Return 1 if the target support -fprofile-update=atomic
+proc check_effective_target_profile_update_atomic {} {
+    return [check_no_compiler_messages profile_update_atomic assembly {
+	int main (void) { return 0; }
+    } "-fprofile-update=atomic -fprofile-generate"]
+}

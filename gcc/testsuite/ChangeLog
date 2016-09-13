@@ -1,3 +1,10 @@
+2016-09-13  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/gcov-threads-1.C: Use profile_update_atomic
+	effective target.
+	* gcc.dg/tree-prof/val-profiler-threads-1.c: Likewise.
+	* lib/target-supports.exp: Define the new target.
+
 2016-09-12  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.target/aarch64/thunderxloadpair.c: New testcase.
