@@ -1,4 +1,6 @@
 /* { dg-options "-O0 -pthread -fprofile-update=atomic" } */
+/* { dg-require-effective-target profile_update_atomic } */
+
 #include <pthread.h>
 
 #define NUM_THREADS	8
