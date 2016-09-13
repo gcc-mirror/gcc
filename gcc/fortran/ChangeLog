@@ -1,3 +1,8 @@
+2016-09-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77420
+	* module.c (load_equiv):  Revert revision 240063.
+
 2016-09-10  Paul Thomas  <pault@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

@@ -4647,7 +4647,7 @@ load_equiv (void)
       }
 
     /* Check for duplicate equivalences being loaded from different modules */
-    duplicate = gfc_current_ns->equiv ? false:true;
+    duplicate = false;
     for (equiv = gfc_current_ns->equiv; equiv; equiv = equiv->next)
       {
 	if (equiv->module && head->module
