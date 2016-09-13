@@ -182,27 +182,15 @@ get_try_hard_regno (int regno)
   return ira_class_hard_regs[rclass][0];
 }
 
-/* Return the final hard regno which will be after elimination.
-   We do this because the final hard regno could have a different class.  */
-static int
-get_final_hard_regno (int regno)
-{
-  if (! HARD_REGISTER_NUM_P (regno))
-    regno = lra_get_regno_hard_regno (regno);
-  if (regno < 0)
-    return regno;
-  return lra_get_elimination_hard_regno (regno);
-}
-
 /* Return the hard regno of X after removing its subreg.  If X is not
    a register or a subreg of a register, return -1.  If X is a pseudo,
-   use its assignment.  We do not process register eliminiations while
-   matching constraints.  See PR77289.  */
+   use its assignment.  If FINAL_P return the final hard regno which will
+   be after elimination.  */
 static int
-get_hard_regno (rtx x)
+get_hard_regno (rtx x, bool final_p)
 {
   rtx reg;
-  int offset, hard_regno;
+  int hard_regno;
 
   reg = x;
   if (SUBREG_P (x))
@@ -213,11 +201,12 @@ get_hard_regno (rtx x)
     hard_regno = lra_get_regno_hard_regno (hard_regno);
   if (hard_regno < 0)
     return -1;
-  offset = 0;
+  if (final_p)
+    hard_regno = lra_get_elimination_hard_regno (hard_regno);
   if (SUBREG_P (x))
-    offset += subreg_regno_offset (hard_regno, GET_MODE (reg),
-				   SUBREG_BYTE (x),  GET_MODE (x));
-  return hard_regno + offset;
+    hard_regno += subreg_regno_offset (hard_regno, GET_MODE (reg),
+				       SUBREG_BYTE (x),  GET_MODE (x));
+  return hard_regno;
 }
 
 /* If REGNO is a hard register or has been allocated a hard register,
@@ -229,11 +218,11 @@ get_reg_class (int regno)
 {
   int hard_regno;
 
-  if ((hard_regno = regno) >= FIRST_PSEUDO_REGISTER)
+  if (! HARD_REGISTER_NUM_P (hard_regno = regno))
     hard_regno = lra_get_regno_hard_regno (regno);
   if (hard_regno >= 0)
     {
-      hard_regno = get_final_hard_regno (hard_regno);
+      hard_regno = lra_get_elimination_hard_regno (hard_regno);
       return REGNO_REG_CLASS (hard_regno);
     }
   if (regno >= new_regno_start)
@@ -694,7 +683,7 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
     {
       int j;
 
-      i = get_hard_regno (x);
+      i = get_hard_regno (x, false);
       if (i < 0)
 	goto slow;
 
@@ -1713,7 +1702,7 @@ uses_hard_regs_p (rtx x, HARD_REG_SET set)
 
   if (REG_P (x))
     {
-      x_hard_regno = get_final_hard_regno (REGNO (x));
+      x_hard_regno = get_hard_regno (x, true);
       return (x_hard_regno >= 0
 	      && overlaps_hard_reg_set_p (set, mode, x_hard_regno));
     }
@@ -1840,7 +1829,7 @@ process_alt_operands (int only_alternative)
 
       op = no_subreg_reg_operand[nop] = *curr_id->operand_loc[nop];
       /* The real hard regno of the operand after the allocation.  */
-      hard_regno[nop] = get_hard_regno (op);
+      hard_regno[nop] = get_hard_regno (op, true);
 
       operand_reg[nop] = reg = op;
       biggest_mode[nop] = GET_MODE (op);
@@ -2001,7 +1990,7 @@ process_alt_operands (int only_alternative)
 		    lra_assert (nop > m);
 
 		    this_alternative_matches = m;
-		    m_hregno = get_hard_regno (*curr_id->operand_loc[m]);
+		    m_hregno = get_hard_regno (*curr_id->operand_loc[m], false);
 		    /* We are supposed to match a previous operand.
 		       If we do, we win if that one did.  If we do
 		       not, count both of the operands as losers.

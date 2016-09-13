@@ -1,3 +1,13 @@
+2016-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR rtl-optimization/77289
+	* lra-constraints.c (get_final_hard_regno): Removed.
+	(get_hard_regno): Add new parameter final_p.
+	(get_reg_class): Directly call lra_get_elimination_hard_regno.
+	(operands_match_p): Adjust call to get_hard_regno.
+	(uses_hard_regs_p): Likewise.
+	(process_alt_operands): Likewise.
+
 2016-09-13  Joe Seymour  <joe.s@somniumtech.com>
 
 	PR target/70713
