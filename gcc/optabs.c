@@ -3716,13 +3716,17 @@ can_compare_p (enum rtx_code code, machine_mode mode,
 }
 
 /* This function is called when we are going to emit a compare instruction that
-   compares the values found in *PX and *PY, using the rtl operator COMPARISON.
-
-   *PMODE is the mode of the inputs (in case they are const_int).
-   *PUNSIGNEDP nonzero says that the operands are unsigned;
-   this matters if they need to be widened (as given by METHODS).
+   compares the values found in X and Y, using the rtl operator COMPARISON.
 
    If they have mode BLKmode, then SIZE specifies the size of both operands.
+
+   UNSIGNEDP nonzero says that the operands are unsigned;
+   this matters if they need to be widened (as given by METHODS).
+
+   *PTEST is where the resulting comparison RTX is returned or NULL_RTX
+   if we failed to produce one.
+
+   *PMODE is the mode of the inputs (in case they are const_int).
 
    This function performs all the setup necessary so that the caller only has
    to emit a single comparison insn.  This setup can involve doing a BLKmode

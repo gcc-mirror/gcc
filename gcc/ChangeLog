@@ -1,3 +1,7 @@
+2016-09-13  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* optabs.c (prepare_cmp_insn): Update documentation comment.
+
 2016-09-13  Jakub Jelinek  <jakub@redhat.com>
 	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
