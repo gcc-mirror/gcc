@@ -1,3 +1,10 @@
+2016-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* edit-context.c (edited_line::get_len): New accessor.
+	(edited_file::print_diff): Split out hunk-printing into...
+	(edited_file::print_diff_hunk): New method.
+	(edited_file::print_diff_line): New method.
+
 2016-09-12  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-tuning-flags.def (SLOW_UNALIGNED_LDPW):

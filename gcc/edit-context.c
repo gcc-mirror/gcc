@@ -89,6 +89,10 @@ class edited_file
  private:
   bool print_content (pretty_printer *pp);
   void print_diff (pretty_printer *pp, bool show_filenames);
+  void print_diff_hunk (pretty_printer *pp, int start_of_hunk,
+			int end_of_hunk);
+  void print_diff_line (pretty_printer *pp, char prefix_char,
+			const char *line, int line_size);
   edited_line *get_line (int line);
   edited_line *get_or_insert_line (int line);
   int get_num_lines (bool *missing_trailing_newline);
@@ -112,6 +116,7 @@ class edited_line
 
   int get_line_num () const { return m_line_num; }
   const char *get_content () const { return m_content; }
+  int get_len () const { return m_len; }
 
   int get_effective_column (int orig_column) const;
   bool apply_insert (int column, const char *str, int len);
@@ -529,80 +534,91 @@ edited_file::print_diff (pretty_printer *pp, bool show_filenames)
       if (end_of_hunk > line_count)
 	end_of_hunk = line_count;
 
-      int num_lines = end_of_hunk - start_of_hunk + 1;
-
-      pp_string (pp, colorize_start (pp_show_color (pp), "diff-hunk"));
-      pp_printf (pp, "@@ -%i,%i +%i,%i @@\n", start_of_hunk, num_lines,
-		 start_of_hunk, num_lines);
-      pp_string (pp, colorize_stop (pp_show_color (pp)));
-
-      int line_num = start_of_hunk;
-      while (line_num <= end_of_hunk)
-	{
-	  edited_line *el = get_line (line_num);
-	  if (el)
-	    {
-	      /* We have an edited line.
-		 Consolidate into runs of changed lines.  */
-	      const int first_changed_line_in_run = line_num;
-	      while (get_line (line_num))
-		line_num++;
-	      const int last_changed_line_in_run = line_num - 1;
-
-	      pp_string (pp, colorize_start (pp_show_color (pp),
-					     "diff-delete"));
-
-	      /* Show old version of lines.  */
-	      for (line_num = first_changed_line_in_run;
-		   line_num <= last_changed_line_in_run;
-		   line_num++)
-		{
-		  int line_size;
-		  const char *old_line
-		    = location_get_source_line (m_filename, line_num,
-						&line_size);
-		  pp_character (pp, '-');
-		  for (int i = 0; i < line_size; i++)
-		    pp_character (pp, old_line[i]);
-		  pp_character (pp, '\n');
-		}
-
-	      pp_string (pp, colorize_stop (pp_show_color (pp)));
-
-	      pp_string (pp, colorize_start (pp_show_color (pp),
-					     "diff-insert"));
-
-	      /* Show new version of lines.  */
-	      for (line_num = first_changed_line_in_run;
-		   line_num <= last_changed_line_in_run;
-		   line_num++)
-		{
-		  edited_line *el_in_run = get_line (line_num);
-		  gcc_assert (el_in_run);
-		  pp_character (pp, '+');
-		  pp_string (pp, el_in_run->get_content ());
-		  pp_character (pp, '\n');
-		}
-
-	      pp_string (pp, colorize_stop (pp_show_color (pp)));
-	    }
-	  else
-	    {
-	      /* Unchanged line.  */
-	      int line_size;
-	      const char *old_line
-		= location_get_source_line (m_filename, line_num,
-					    &line_size);
-	      pp_character (pp, ' ');
-	      for (int i = 0; i < line_size; i++)
-		pp_character (pp, old_line[i]);
-	      pp_character (pp, '\n');
-	      line_num++;
-	    }
-	}
+      print_diff_hunk (pp, start_of_hunk, end_of_hunk);
 
       el = m_edited_lines.successor (el->get_line_num ());
     }
+}
+
+/* Print one hunk within a unified diff to PP, covering the
+   given range of lines.  */
+
+void
+edited_file::print_diff_hunk (pretty_printer *pp, int start_of_hunk,
+			      int end_of_hunk)
+{
+  int num_lines = end_of_hunk - start_of_hunk + 1;
+
+  pp_string (pp, colorize_start (pp_show_color (pp), "diff-hunk"));
+  pp_printf (pp, "@@ -%i,%i +%i,%i @@\n", start_of_hunk, num_lines,
+	     start_of_hunk, num_lines);
+  pp_string (pp, colorize_stop (pp_show_color (pp)));
+
+  int line_num = start_of_hunk;
+  while (line_num <= end_of_hunk)
+    {
+      edited_line *el = get_line (line_num);
+      if (el)
+	{
+	  /* We have an edited line.
+	     Consolidate into runs of changed lines.  */
+	  const int first_changed_line_in_run = line_num;
+	  while (get_line (line_num))
+	    line_num++;
+	  const int last_changed_line_in_run = line_num - 1;
+
+	  /* Show old version of lines.  */
+	  pp_string (pp, colorize_start (pp_show_color (pp),
+					 "diff-delete"));
+	  for (line_num = first_changed_line_in_run;
+	       line_num <= last_changed_line_in_run;
+	       line_num++)
+	    {
+	      int line_len;
+	      const char *old_line
+		= location_get_source_line (m_filename, line_num, &line_len);
+	      print_diff_line (pp, '-', old_line, line_len);
+	    }
+	  pp_string (pp, colorize_stop (pp_show_color (pp)));
+
+	  /* Show new version of lines.  */
+	  pp_string (pp, colorize_start (pp_show_color (pp),
+					 "diff-insert"));
+	  for (line_num = first_changed_line_in_run;
+	       line_num <= last_changed_line_in_run;
+	       line_num++)
+	    {
+	      edited_line *el_in_run = get_line (line_num);
+	      gcc_assert (el_in_run);
+	      print_diff_line (pp, '+', el_in_run->get_content (),
+			       el_in_run->get_len ());
+	    }
+	  pp_string (pp, colorize_stop (pp_show_color (pp)));
+	}
+      else
+	{
+	  /* Unchanged line.  */
+	  int line_len;
+	  const char *old_line
+	    = location_get_source_line (m_filename, line_num, &line_len);
+	  print_diff_line (pp, ' ', old_line, line_len);
+	  line_num++;
+	}
+    }
+}
+
+/* Print one line within a diff, starting with PREFIX_CHAR,
+   followed by the LINE of content, of length LEN.  LINE is
+   not necessarily 0-terminated.  Print a trailing newline.  */
+
+void
+edited_file::print_diff_line (pretty_printer *pp, char prefix_char,
+			      const char *line, int len)
+{
+  pp_character (pp, prefix_char);
+  for (int i = 0; i < len; i++)
+    pp_character (pp, line[i]);
+  pp_character (pp, '\n');
 }
 
 /* Get the state of LINE within the file, or NULL if it is untouched.  */
