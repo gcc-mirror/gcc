@@ -12298,7 +12298,7 @@ set_underlying_type (tree x)
 {
   if (x == error_mark_node)
     return;
-  if (DECL_IS_BUILTIN (x))
+  if (DECL_IS_BUILTIN (x) && TREE_CODE (TREE_TYPE (x)) != ARRAY_TYPE)
     {
       if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	TYPE_NAME (TREE_TYPE (x)) = x;

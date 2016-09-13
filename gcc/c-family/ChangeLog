@@ -1,4 +1,10 @@
 2016-09-13  Jason Merrill  <jason@redhat.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR c++/77427
+	* c-common.c (set_underlying_type): Don't treat array as builtin type.
+
+2016-09-13  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (check_cxx_fundamental_alignment_constraints): Don't
 	limit types at all.
