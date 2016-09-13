@@ -1,3 +1,18 @@
+2016-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement P0040R3, Extending memory management tools.
+	* include/bits/stl_uninitialized.h (utility): New include
+	in C++17 mode.
+	(uninitialized_default_construct): New.
+	(uninitialized_default_construct_n): Likewise.
+	(uninitialized_value_construct): Likewise.
+	(uninitialized_value_construct_n): Likewise.
+	(uninitialized_move): Likewise.
+	(uninitialized_move_n): Likewise.
+	(destroy_at, destroy, destroy_n): Likewise.
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/1.cc:
+	New.
+
 2016-09-12  Jason Merrill  <jason@redhat.com>
 
 	* config/abi/pre/gnu.ver: Use [jmy] for size_t.
