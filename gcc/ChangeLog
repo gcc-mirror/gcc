@@ -1,3 +1,9 @@
+2016-09-13  Joe Seymour  <joe.s@somniumtech.com>
+
+	PR target/70713
+	* config/msp430/msp430.c (msp430_start_function): Emit an error
+	if a function is both weak and specifies an interrupt number.
+
 2016-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/77454
