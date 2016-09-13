@@ -5754,8 +5754,29 @@ static bool
 alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			 machine_mode mode,
 			 const_tree type ATTRIBUTE_UNUSED,
-			 bool named ATTRIBUTE_UNUSED)
+			 bool named)
 {
+  /* Pass float and _Complex float variable arguments by reference.
+     This avoids 64-bit store from a FP register to a pretend args save area
+     and subsequent 32-bit load from the saved location to a FP register.
+
+     Note that 32-bit loads and stores to/from a FP register on alpha reorder
+     bits to form a canonical 64-bit value in the FP register.  This fact
+     invalidates compiler assumption that 32-bit FP value lives in the lower
+     32-bits of the passed 64-bit FP value, so loading the 32-bit value from
+     the stored 64-bit location using 32-bit FP load is invalid on alpha.
+
+     This introduces sort of ABI incompatibility, but until _Float32 was
+     introduced, C-family languages promoted 32-bit float variable arg to
+     a 64-bit double, and it was not allowed to pass float as a varible
+     argument.  Passing _Complex float as a variable argument never
+     worked on alpha.  Thus, we have no backward compatibility issues
+     to worry about, and passing unpromoted _Float32 and _Complex float
+     as a variable argument will actually work in the future.  */
+
+  if (mode == SFmode || mode == SCmode)
+    return !named;
+
   return mode == TFmode || mode == TCmode;
 }
 

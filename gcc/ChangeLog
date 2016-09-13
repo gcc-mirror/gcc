@@ -1,3 +1,8 @@
+2016-09-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_pass_by_reference): Pass un-named
+	SFmode and SCmode arguments by reference.
+
 2016-09-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (selftest::test_one_liner_fixit_insert):
@@ -6,8 +11,7 @@
 	for renaming of add_fixit_insert to add_fixit_insert_before.
 	(selftest::test_one_liner_fixit_insert_after): New function.
 	(selftest::test_one_liner_fixit_validation_adhoc_locations):
-	Update for renaming of add_fixit_insert to
-	add_fixit_insert_before.
+	Update for renaming of add_fixit_insert to add_fixit_insert_before.
 	(selftest::test_one_liner_many_fixits): Likewise.
 	(selftest::test_diagnostic_show_locus_one_liner): Update for
 	renaming, call new test function.
@@ -16,16 +20,14 @@
 	(selftest::test_fixit_consolidation): Likewise.
 	* diagnostic.c (selftest::test_print_parseable_fixits_insert):
 	Likewise.
-	* edit-context.c (selftest::test_applying_fixits_insert): Rename
-	to...
+	* edit-context.c (selftest::test_applying_fixits_insert): Rename to...
 	(selftest::test_applying_fixits_insert_before): ...this.
 	(selftest::test_applying_fixits_insert): Update for renaming of
 	add_fixit_insert to add_fixit_insert_before.
 	(selftest::test_applying_fixits_insert_after): New function.
 	(selftest::test_applying_fixits_insert_after_at_line_end): New
 	function.
-	(selftest::test_applying_fixits_insert_after_failure): New
-	function.
+	(selftest::test_applying_fixits_insert_after_failure): New function.
 	(selftest::test_applying_fixits_multiple): Update for renaming of
 	add_fixit_insert to add_fixit_insert_before.
 	(selftest::change_line): Likewise.
@@ -33,8 +35,8 @@
 	(selftest::test_applying_fixits_line_out_of_range): Likewise.
 	(selftest::test_applying_fixits_column_validation): Likewise.
 	(selftest::test_applying_fixits_column_validation): Likewise.
-	(selftest::edit_context_c_tests): Update for renamed test
-	function; call new test functions.
+	(selftest::edit_context_c_tests): Update for renamed test function;
+	call new test functions.
 
 2016-09-13  Pat Haugen  <pthaugen@us.ibm.com>
 
