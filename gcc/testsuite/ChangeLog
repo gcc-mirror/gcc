@@ -1,3 +1,10 @@
+2016-09-13  Joe Seymour  <joe.s@somniumtech.com>
+
+	PR target/70713
+	* gcc.target/msp430/function-attributes-1.c: New test.
+	* gcc.target/msp430/function-attributes-2.c: New test.
+	* gcc.target/msp430/function-attributes-3.c: New test.
+
 2016-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp0x/gen-attrs-61.C: New test.
