@@ -1923,12 +1923,11 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
     {
       tree val = NULL;
 
-      update_stmt_if_modified (stmt);
-
       if (gimple_code (stmt) == GIMPLE_COND)
         val = fold_binary_loc (gimple_location (stmt),
-			   gimple_cond_code (stmt), boolean_type_node,
-                           gimple_cond_lhs (stmt),  gimple_cond_rhs (stmt));
+			       gimple_cond_code (stmt), boolean_type_node,
+			       gimple_cond_lhs (stmt),
+			       gimple_cond_rhs (stmt));
       else if (gswitch *swtch_stmt = dyn_cast <gswitch *> (stmt))
 	val = gimple_switch_index (swtch_stmt);
 
@@ -1946,12 +1945,16 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 		    gimple_cond_make_true (as_a <gcond *> (stmt));
 		  else
 		    gcc_unreachable ();
+
+		  gimple_set_modified (stmt, true);
 		}
 
 	      /* Further simplifications may be possible.  */
 	      cfg_altered = true;
 	    }
 	}
+
+      update_stmt_if_modified (stmt);
 
       /* If we simplified a statement in such a way as to be shown that it
 	 cannot trap, update the eh information and the cfg to match.  */

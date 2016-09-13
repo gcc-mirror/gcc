@@ -1,5 +1,8 @@
 2016-09-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/77454
+	* gcc.dg/pr77454.c: New test.
+
 	PR c++/77553
 	* g++.dg/cpp1y/constexpr-77553.C: New test.
 

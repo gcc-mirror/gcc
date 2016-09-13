@@ -1,3 +1,10 @@
+2016-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77454
+	* tree-ssa-dom.c (optimize_stmt): Set modified flag on stmt after
+	changing GIMPLE_COND.  Move update_stmt_if_modified call after this.
+	Formatting fix.
+
 2016-09-13  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-builtins.c 
