@@ -1,5 +1,8 @@
 2016-09-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp0x/gen-attrs-61.C: New test.
+	* g++.dg/cpp1z/gen-attrs1.C: New test.
+
 	PR tree-optimization/77454
 	* gcc.dg/pr77454.c: New test.
 
