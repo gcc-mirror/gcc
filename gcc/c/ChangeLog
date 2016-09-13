@@ -1,3 +1,8 @@
+2016-09-13  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (build_unary_op): Rename FLAG parameter to NOCONVERT.  Use
+	it.
+
 2016-09-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/77496

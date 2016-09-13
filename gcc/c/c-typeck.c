@@ -4112,17 +4112,17 @@ cas_loop:
 /* Construct and perhaps optimize a tree representation
    for a unary operation.  CODE, a tree_code, specifies the operation
    and XARG is the operand.
-   For any CODE other than ADDR_EXPR, FLAG nonzero suppresses
+   For any CODE other than ADDR_EXPR, NOCONVERT nonzero suppresses
    the default promotions (such as from short to int).
-   For ADDR_EXPR, the default promotions are not applied; FLAG nonzero
+   For ADDR_EXPR, the default promotions are not applied; NOCONVERT nonzero
    allows non-lvalues; this is only used to handle conversion of non-lvalue
    arrays to pointers in C99.
 
    LOCATION is the location of the operator.  */
 
 tree
-build_unary_op (location_t location,
-		enum tree_code code, tree xarg, int flag)
+build_unary_op (location_t location, enum tree_code code, tree xarg,
+		int noconvert)
 {
   /* No default_conversion here.  It causes trouble for ADDR_EXPR.  */
   tree arg = xarg;
@@ -4131,7 +4131,6 @@ build_unary_op (location_t location,
   tree val;
   tree ret = error_mark_node;
   tree eptype = NULL_TREE;
-  int noconvert = flag;
   const char *invalid_op_diag;
   bool int_operands;
 
@@ -4276,7 +4275,8 @@ build_unary_op (location_t location,
       if (TREE_CODE (arg) == C_MAYBE_CONST_EXPR)
 	{
 	  tree inner = build_unary_op (location, code,
-				       C_MAYBE_CONST_EXPR_EXPR (arg), flag);
+				       C_MAYBE_CONST_EXPR_EXPR (arg),
+				       noconvert);
 	  if (inner == error_mark_node)
 	    return error_mark_node;
 	  ret = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (inner),
@@ -4486,7 +4486,7 @@ build_unary_op (location_t location,
 
       /* Anything not already handled and not a true memory reference
 	 or a non-lvalue array is an error.  */
-      if (typecode != FUNCTION_TYPE && !flag
+      if (typecode != FUNCTION_TYPE && !noconvert
 	  && !lvalue_or_else (location, arg, lv_addressof))
 	return error_mark_node;
 
@@ -4495,7 +4495,8 @@ build_unary_op (location_t location,
       if (TREE_CODE (arg) == C_MAYBE_CONST_EXPR)
 	{
 	  tree inner = build_unary_op (location, code,
-				       C_MAYBE_CONST_EXPR_EXPR (arg), flag);
+				       C_MAYBE_CONST_EXPR_EXPR (arg),
+				       noconvert);
 	  ret = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (inner),
 			C_MAYBE_CONST_EXPR_PRE (arg), inner);
 	  gcc_assert (!C_MAYBE_CONST_EXPR_INT_OPERANDS (arg));
