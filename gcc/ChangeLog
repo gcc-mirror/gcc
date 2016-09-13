@@ -1,3 +1,10 @@
+2016-09-13  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR tree-optimization/77536
+	PR rtl-optimization/68212
+	* config/rs6000/rs6000.md (div->recip splitter): Remove
+	optimize_insn_for_speed_p condition.
+
 2016-09-13  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* optabs.c (prepare_cmp_insn): Update documentation comment.
