@@ -1,3 +1,23 @@
+2016-09-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class rich_location): Add description of
+	fix-it hints to leading comment.
+	(rich_location::add_fixit_insert): Rename both overloaded methods
+	to..
+	(rich_location::add_fixit_insert_before): ...this, updating their
+	comments.
+	(rich_location::add_fixit_insert_after): Two new overloaded
+	methods.
+	(rich_location::stop_supporting_fixits): New method.
+	* line-map.c (rich_location::add_fixit_insert): Rename both
+	overloaded methods to..
+	(rich_location::add_fixit_insert_before): ...this, updating their
+	comments.
+	(rich_location::add_fixit_insert_after): Two new methods.
+	(rich_location::reject_impossible_fixit): Split out
+	failure-handling into...
+	(rich_location::stop_supporting_fixits): New method.
+
 2016-09-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (rich_location::seen_impossible_fixit_p): New

@@ -21594,7 +21594,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  next_loc = linemap_position_for_loc_and_offset (line_table, loc, 1);
 
 	rich_location richloc (line_table, next_loc);
-	richloc.add_fixit_insert (next_loc, ";");
+	richloc.add_fixit_insert_before (next_loc, ";");
 
 	if (CLASSTYPE_DECLARED_CLASS (type))
 	  error_at_rich_loc (&richloc,
@@ -22037,7 +22037,8 @@ cp_parser_class_head (cp_parser* parser,
                          class_head_start_location,
                          get_finish (type_start_token->location));
       rich_location richloc (line_table, reported_loc);
-      richloc.add_fixit_insert (class_head_start_location, "template <> ");
+      richloc.add_fixit_insert_before (class_head_start_location,
+                                       "template <> ");
       error_at_rich_loc
         (&richloc,
          "an explicit specialization must be preceded by %<template <>%>");

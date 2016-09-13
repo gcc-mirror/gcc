@@ -1661,17 +1661,36 @@ test_one_liner_multiple_carets_and_ranges ()
 /* Insertion fix-it hint: adding an "&" to the front of "bar.field". */
 
 static void
-test_one_liner_fixit_insert ()
+test_one_liner_fixit_insert_before ()
 {
   test_diagnostic_context dc;
   location_t caret = linemap_position_for_column (line_table, 7);
   rich_location richloc (line_table, caret);
-  richloc.add_fixit_insert ("&");
+  richloc.add_fixit_insert_before ("&");
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
 		" foo = bar.field;\n"
 		"       ^\n"
 		"       &\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Insertion fix-it hint: adding a "[0]" after "foo". */
+
+static void
+test_one_liner_fixit_insert_after ()
+{
+  test_diagnostic_context dc;
+  location_t start = linemap_position_for_column (line_table, 1);
+  location_t finish = linemap_position_for_column (line_table, 3);
+  location_t foo = make_location (start, start, finish);
+  rich_location richloc (line_table, foo);
+  richloc.add_fixit_insert_after ("[0]");
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		" ^~~\n"
+		"    [0]\n",
 		pp_formatted_text (dc.printer));
 }
 
@@ -1785,7 +1804,7 @@ test_one_liner_fixit_validation_adhoc_locations ()
   /* Insert.  */
   {
     rich_location richloc (line_table, loc);
-    richloc.add_fixit_insert (loc, "test");
+    richloc.add_fixit_insert_before (loc, "test");
     /* It should not have been discarded by the validator.  */
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
@@ -1843,7 +1862,7 @@ test_one_liner_many_fixits ()
   location_t equals = linemap_position_for_column (line_table, 5);
   rich_location richloc (line_table, equals);
   for (int i = 0; i < 19; i++)
-    richloc.add_fixit_insert ("a");
+    richloc.add_fixit_insert_before ("a");
   ASSERT_EQ (19, richloc.get_num_fixit_hints ());
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
@@ -1898,7 +1917,8 @@ test_diagnostic_show_locus_one_liner (const line_table_case &case_)
   test_one_liner_simple_caret ();
   test_one_liner_caret_and_range ();
   test_one_liner_multiple_carets_and_ranges ();
-  test_one_liner_fixit_insert ();
+  test_one_liner_fixit_insert_before ();
+  test_one_liner_fixit_insert_after ();
   test_one_liner_fixit_remove ();
   test_one_liner_fixit_replace ();
   test_one_liner_fixit_replace_non_equal_range ();
@@ -1949,7 +1969,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     const location_t colon
       = linemap_position_for_line_and_column (line_table, ord_map, 2, 25);
     rich_location richloc (line_table, colon);
-    richloc.add_fixit_insert (x, ".");
+    richloc.add_fixit_insert_before (x, ".");
     richloc.add_fixit_replace (colon, "=");
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("\n"
@@ -1970,7 +1990,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     const location_t colon
       = linemap_position_for_line_and_column (line_table, ord_map, 6, 25);
     rich_location richloc (line_table, colon);
-    richloc.add_fixit_insert (y, ".");
+    richloc.add_fixit_insert_before (y, ".");
     richloc.add_fixit_replace (colon, "=");
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("\n"
@@ -2012,8 +2032,8 @@ test_fixit_consolidation (const line_table_case &case_)
   /* Insert + insert. */
   {
     rich_location richloc (line_table, caret);
-    richloc.add_fixit_insert (c10, "foo");
-    richloc.add_fixit_insert (c15, "bar");
+    richloc.add_fixit_insert_before (c10, "foo");
+    richloc.add_fixit_insert_before (c15, "bar");
 
     if (c15 > LINE_MAP_MAX_LOCATION_WITH_COLS)
       /* Bogus column info for 2nd fixit, so no fixits.  */
@@ -2026,7 +2046,7 @@ test_fixit_consolidation (const line_table_case &case_)
   /* Insert + replace. */
   {
     rich_location richloc (line_table, caret);
-    richloc.add_fixit_insert (c10, "foo");
+    richloc.add_fixit_insert_before (c10, "foo");
     richloc.add_fixit_replace (source_range::from_locations (c15, c17),
 			       "bar");
 
@@ -2043,7 +2063,7 @@ test_fixit_consolidation (const line_table_case &case_)
     rich_location richloc (line_table, caret);
     richloc.add_fixit_replace (source_range::from_locations (c10, c15),
 			       "bar");
-    richloc.add_fixit_insert (c17, "foo");
+    richloc.add_fixit_insert_before (c17, "foo");
 
     if (c17 > LINE_MAP_MAX_LOCATION_WITH_COLS)
       /* Bogus column info for 2nd fixit, so no fixits.  */

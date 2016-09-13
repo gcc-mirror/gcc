@@ -2109,26 +2109,61 @@ rich_location::set_range (line_maps * /*set*/, unsigned int idx,
 /* Methods for adding insertion fix-it hints.  */
 
 /* Add a fixit-hint, suggesting insertion of NEW_CONTENT
-   at the primary range's caret location.  */
+   immediately before the primary range's start location.  */
 
 void
-rich_location::add_fixit_insert (const char *new_content)
+rich_location::add_fixit_insert_before (const char *new_content)
 {
-  add_fixit_insert (get_loc (), new_content);
+  add_fixit_insert_before (get_loc (), new_content);
 }
 
 /* Add a fixit-hint, suggesting insertion of NEW_CONTENT
-   at WHERE.  */
+   immediately before the start of WHERE.  */
 
 void
-rich_location::add_fixit_insert (source_location where,
-				 const char *new_content)
+rich_location::add_fixit_insert_before (source_location where,
+					const char *new_content)
 {
-  where = get_pure_location (m_line_table, where);
+  source_location start = get_range_from_loc (m_line_table, where).m_start;
 
-  if (reject_impossible_fixit (where))
+  if (reject_impossible_fixit (start))
     return;
-  add_fixit (new fixit_insert (where, new_content));
+  add_fixit (new fixit_insert (start, new_content));
+}
+
+/* Add a fixit-hint, suggesting insertion of NEW_CONTENT
+   immediately after the primary range's end-point.  */
+
+void
+rich_location::add_fixit_insert_after (const char *new_content)
+{
+  add_fixit_insert_after (get_loc (), new_content);
+}
+
+/* Add a fixit-hint, suggesting insertion of NEW_CONTENT
+   immediately after the end-point of WHERE.  */
+
+void
+rich_location::add_fixit_insert_after (source_location where,
+				       const char *new_content)
+{
+  source_location finish = get_range_from_loc (m_line_table, where).m_finish;
+
+  if (reject_impossible_fixit (finish))
+    return;
+
+  source_location next_loc
+    = linemap_position_for_loc_and_offset (m_line_table, finish, 1);
+
+  /* linemap_position_for_loc_and_offset can fail, if so, it returns
+     its input value.  */
+  if (next_loc == finish)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
+
+  add_fixit (new fixit_insert (next_loc, new_content));
 }
 
 /* Methods for adding removal fix-it hints.  */
@@ -2278,14 +2313,22 @@ rich_location::reject_impossible_fixit (source_location where)
   /* Otherwise we have an attempt to add a fix-it with an "awkward"
      location: either one that we can't obtain column information
      for (within an ordinary map), or one within a macro expansion.  */
+  stop_supporting_fixits ();
+  return true;
+}
+
+/* Mark this rich_location as not supporting fixits, purging any that were
+   already added.  */
+
+void
+rich_location::stop_supporting_fixits ()
+{
   m_seen_impossible_fixit = true;
 
   /* Purge the rich_location of any fix-its that were already added. */
   for (unsigned int i = 0; i < m_fixit_hints.count (); i++)
     delete get_fixit_hint (i);
   m_fixit_hints.truncate (0);
-
-  return true;
 }
 
 /* Add HINT to the fix-it hints in this rich_location.  */

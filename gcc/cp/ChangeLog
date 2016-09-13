@@ -1,3 +1,9 @@
+2016-09-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (cp_parser_class_specifier_1): Update for renaming of
+	add_fixit_insert to add_fixit_insert_before.
+	(cp_parser_class_head): Likewise.
+
 2016-09-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/77496

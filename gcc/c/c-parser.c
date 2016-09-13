@@ -1685,7 +1685,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       if (tag_exists_p (RECORD_TYPE, name))
 	{
 	  /* This is not C++ with its implicit typedef.  */
-	  richloc.add_fixit_insert ("struct ");
+	  richloc.add_fixit_insert_before ("struct ");
 	  error_at_rich_loc (&richloc,
 			     "unknown type name %qE;"
 			     " use %<struct%> keyword to refer to the type",
@@ -1693,7 +1693,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       else if (tag_exists_p (UNION_TYPE, name))
 	{
-	  richloc.add_fixit_insert ("union ");
+	  richloc.add_fixit_insert_before ("union ");
 	  error_at_rich_loc (&richloc,
 			     "unknown type name %qE;"
 			     " use %<union%> keyword to refer to the type",
@@ -1701,7 +1701,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       else if (tag_exists_p (ENUMERAL_TYPE, name))
 	{
-	  richloc.add_fixit_insert ("enum ");
+	  richloc.add_fixit_insert_before ("enum ");
 	  error_at_rich_loc (&richloc,
 			     "unknown type name %qE;"
 			     " use %<enum%> keyword to refer to the type",

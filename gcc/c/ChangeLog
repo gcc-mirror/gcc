@@ -1,3 +1,8 @@
+2016-09-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Update for renaming
+	of add_fixit_insert to add_fixit_insert_before.
+
 2016-09-13  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c (build_unary_op): Rename FLAG parameter to NOCONVERT.  Use
