@@ -1,3 +1,8 @@
+2016-09-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.c 
+	(aarch64_init_simd_builtins): Fix builtin type signature printing.
+
 2016-09-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_pass_by_reference): Pass un-named

@@ -762,16 +762,16 @@ aarch64_init_simd_builtins (void)
 
 	  if (qualifiers & qualifier_unsigned)
 	    {
-	      type_signature[arg_num] = 'u';
+	      type_signature[op_num] = 'u';
 	      print_type_signature_p = true;
 	    }
 	  else if (qualifiers & qualifier_poly)
 	    {
-	      type_signature[arg_num] = 'p';
+	      type_signature[op_num] = 'p';
 	      print_type_signature_p = true;
 	    }
 	  else
-	    type_signature[arg_num] = 's';
+	    type_signature[op_num] = 's';
 
 	  /* Skip an internal operand for vget_{low, high}.  */
 	  if (qualifiers & qualifier_internal)
