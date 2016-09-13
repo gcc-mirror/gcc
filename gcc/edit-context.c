@@ -918,10 +918,10 @@ test_get_content ()
   }
 }
 
-/* Test applying an "insert" fixit.  */
+/* Test applying an "insert" fixit, using insert_before.  */
 
 static void
-test_applying_fixits_insert (const line_table_case &case_)
+test_applying_fixits_insert_before (const line_table_case &case_)
 {
   /* Create a tempfile and write some text to it.
      .........................0000000001111111.
@@ -937,7 +937,7 @@ test_applying_fixits_insert (const line_table_case &case_)
   /* Add a comment in front of "bar.field".  */
   location_t start = linemap_position_for_column (line_table, 7);
   rich_location richloc (line_table, start);
-  richloc.add_fixit_insert ("/* inserted */");
+  richloc.add_fixit_insert_before ("/* inserted */");
 
   if (start > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
@@ -969,6 +969,142 @@ test_applying_fixits_insert (const line_table_case &case_)
 		"-foo = bar.field;\n"
 		"+foo = /* inserted */bar.field;\n"
 		" /* after */\n", diff);
+}
+
+/* Test applying an "insert" fixit, using insert_after, with
+   a range of length > 1 (to ensure that the end-point of
+   the input range is used).  */
+
+static void
+test_applying_fixits_insert_after (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     .........................0000000001111111.
+     .........................1234567890123456.  */
+  const char *old_content = ("/* before */\n"
+			     "foo = bar.field;\n"
+			     "/* after */\n");
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", old_content);
+  const char *filename = tmp.get_filename ();
+  line_table_test ltt (case_);
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 2);
+
+  /* Add a comment after "field".  */
+  location_t start = linemap_position_for_column (line_table, 11);
+  location_t finish = linemap_position_for_column (line_table, 15);
+  location_t field = make_location (start, start, finish);
+  rich_location richloc (line_table, field);
+  richloc.add_fixit_insert_after ("/* inserted */");
+
+  if (finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  /* Verify that the text was inserted after the end of "field". */
+  edit_context edit;
+  edit.add_fixits (&richloc);
+  auto_free <char *> new_content = edit.get_content (filename);
+  ASSERT_STREQ ("/* before */\n"
+		"foo = bar.field/* inserted */;\n"
+		"/* after */\n", new_content);
+
+  /* Verify diff.  */
+  auto_free <char *> diff = edit.generate_diff (false);
+  ASSERT_STREQ ("@@ -1,3 +1,3 @@\n"
+		" /* before */\n"
+		"-foo = bar.field;\n"
+		"+foo = bar.field/* inserted */;\n"
+		" /* after */\n", diff);
+}
+
+/* Test applying an "insert" fixit, using insert_after at the end of
+   a line (contrast with test_applying_fixits_insert_after_failure
+   below).  */
+
+static void
+test_applying_fixits_insert_after_at_line_end (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     .........................0000000001111111.
+     .........................1234567890123456.  */
+  const char *old_content = ("/* before */\n"
+			     "foo = bar.field;\n"
+			     "/* after */\n");
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", old_content);
+  const char *filename = tmp.get_filename ();
+  line_table_test ltt (case_);
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 2);
+
+  /* Add a comment after the semicolon.  */
+  location_t loc = linemap_position_for_column (line_table, 16);
+  rich_location richloc (line_table, loc);
+  richloc.add_fixit_insert_after ("/* inserted */");
+
+  if (loc > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  edit_context edit;
+  edit.add_fixits (&richloc);
+  auto_free <char *> new_content = edit.get_content (filename);
+  ASSERT_STREQ ("/* before */\n"
+		"foo = bar.field;/* inserted */\n"
+		"/* after */\n", new_content);
+
+  /* Verify diff.  */
+  auto_free <char *> diff = edit.generate_diff (false);
+  ASSERT_STREQ ("@@ -1,3 +1,3 @@\n"
+		" /* before */\n"
+		"-foo = bar.field;\n"
+		"+foo = bar.field;/* inserted */\n"
+		" /* after */\n", diff);
+}
+
+/* Test of a failed attempt to apply an "insert" fixit, using insert_after,
+   due to the relevant linemap ending.  Contrast with
+   test_applying_fixits_insert_after_at_line_end above.  */
+
+static void
+test_applying_fixits_insert_after_failure (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     .........................0000000001111111.
+     .........................1234567890123456.  */
+  const char *old_content = ("/* before */\n"
+			     "foo = bar.field;\n"
+			     "/* after */\n");
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", old_content);
+  const char *filename = tmp.get_filename ();
+  line_table_test ltt (case_);
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 2);
+
+  /* Add a comment after the semicolon.  */
+  location_t loc = linemap_position_for_column (line_table, 16);
+  rich_location richloc (line_table, loc);
+
+  /* We want a failure of linemap_position_for_loc_and_offset.
+     We can do this by starting a new linemap at line 3, so that
+     there is no appropriate location value for the insertion point
+     within the linemap for line 2.  */
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 3);
+
+  /* The failure fails to happen at the transition point from
+     packed ranges to unpacked ranges (where there are some "spare"
+     location_t values).  Skip the test there.  */
+  if (loc >= LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES)
+    return;
+
+  /* Offsetting "loc" should now fail (by returning the input loc. */
+  ASSERT_EQ (loc, linemap_position_for_loc_and_offset (line_table, loc, 1));
+
+  /* Hence attempting to use add_fixit_insert_after at the end of the line
+     should now fail.  */
+  richloc.add_fixit_insert_after ("/* inserted */");
+  ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
+
+  edit_context edit;
+  edit.add_fixits (&richloc);
+  ASSERT_FALSE (edit.valid_p ());
+  ASSERT_EQ (NULL, edit.get_content (filename));
+  ASSERT_EQ (NULL, edit.generate_diff (false));
 }
 
 /* Test applying a "replace" fixit that grows the affected line.  */
@@ -1135,11 +1271,11 @@ test_applying_fixits_multiple (const line_table_case &case_)
 
   /* Add a comment in front of "bar.field".  */
   rich_location insert_a (line_table, c7);
-  insert_a.add_fixit_insert (c7, "/* alpha */");
+  insert_a.add_fixit_insert_before (c7, "/* alpha */");
 
   /* Add a comment after "bar.field;".  */
   rich_location insert_b (line_table, c17);
-  insert_b.add_fixit_insert (c17, "/* beta */");
+  insert_b.add_fixit_insert_before (c17, "/* beta */");
 
   /* Replace "bar" with "pub".   */
   rich_location replace_a (line_table, c7);
@@ -1203,7 +1339,7 @@ change_line (edit_context &edit, int line_num)
     }
 
   rich_location insert (line_table, loc);
-  insert.add_fixit_insert ("CHANGED: ");
+  insert.add_fixit_insert_before ("CHANGED: ");
   edit.add_fixits (&insert);
   return loc;
 }
@@ -1371,8 +1507,8 @@ test_applying_fixits_unreadable_file ()
   location_t loc = linemap_position_for_column (line_table, 1);
 
   rich_location insert (line_table, loc);
-  insert.add_fixit_insert ("change 1");
-  insert.add_fixit_insert ("change 2");
+  insert.add_fixit_insert_before ("change 1");
+  insert.add_fixit_insert_before ("change 2");
 
   edit_context edit;
   /* Attempting to add the fixits affecting the unreadable file
@@ -1403,7 +1539,7 @@ test_applying_fixits_line_out_of_range ()
   location_t loc = linemap_position_for_column (line_table, 1);
 
   rich_location insert (line_table, loc);
-  insert.add_fixit_insert ("change");
+  insert.add_fixit_insert_before ("change");
 
   /* Verify that attempting the insertion puts an edit_context
      into an invalid state.  */
@@ -1440,7 +1576,7 @@ test_applying_fixits_column_validation (const line_table_case &case_)
   /* Verify inserting at the end of the line.  */
   {
     rich_location richloc (line_table, c11);
-    richloc.add_fixit_insert (c15, " change");
+    richloc.add_fixit_insert_before (c15, " change");
 
     /* Col 15 is at the end of the line, so the insertion
        should succeed.  */
@@ -1456,7 +1592,7 @@ test_applying_fixits_column_validation (const line_table_case &case_)
   /* Verify inserting beyond the end of the line.  */
   {
     rich_location richloc (line_table, c11);
-    richloc.add_fixit_insert (c16, " change");
+    richloc.add_fixit_insert_before (c16, " change");
 
     /* Col 16 is beyond the end of the line, so the insertion
        should fail gracefully.  */
@@ -1510,7 +1646,10 @@ void
 edit_context_c_tests ()
 {
   test_get_content ();
-  for_each_line_table_case (test_applying_fixits_insert);
+  for_each_line_table_case (test_applying_fixits_insert_before);
+  for_each_line_table_case (test_applying_fixits_insert_after);
+  for_each_line_table_case (test_applying_fixits_insert_after_at_line_end);
+  for_each_line_table_case (test_applying_fixits_insert_after_failure);
   for_each_line_table_case (test_applying_fixits_growing_replace);
   for_each_line_table_case (test_applying_fixits_shrinking_replace);
   for_each_line_table_case (test_applying_fixits_remove);

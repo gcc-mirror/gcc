@@ -1,3 +1,9 @@
+2016-09-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (warn_logical_not_parentheses): Replace
+	rich_location::add_fixit_insert calls with add_fixit_insert_before
+	and add_fixit_insert_after, eliminating the "next_loc" calculation.
+
 2016-09-13  Jason Merrill  <jason@redhat.com>
 	    Tom de Vries  <tom@codesourcery.com>
 

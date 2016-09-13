@@ -263,8 +263,8 @@ test_show_locus (function *fun)
       location_t start = get_loc (line, 19);
       location_t finish = get_loc (line, 22);
       rich_location richloc (line_table, make_location (start, start, finish));
-      richloc.add_fixit_insert (start, "{");
-      richloc.add_fixit_insert (get_loc (line, 23), "}");
+      richloc.add_fixit_insert_before ("{");
+      richloc.add_fixit_insert_after ("}");
       warning_at_rich_loc (&richloc, 0, "example of insertion hints");
     }
 

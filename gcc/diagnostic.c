@@ -1504,7 +1504,7 @@ test_print_parseable_fixits_insert ()
   linemap_line_start (line_table, 5, 100);
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
   location_t where = linemap_position_for_column (line_table, 10);
-  richloc.add_fixit_insert (where, "added content");
+  richloc.add_fixit_insert_before (where, "added content");
 
   print_parseable_fixits (&pp, &richloc);
   ASSERT_STREQ ("fix-it:\"test.c\":{5:10-5:10}:\"added content\"\n",

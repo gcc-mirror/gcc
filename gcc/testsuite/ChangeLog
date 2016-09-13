@@ -1,3 +1,9 @@
+2016-09-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(test_show_locus): Replace rich_location::add_fixit_insert calls
+	with add_fixit_insert_before and add_fixit_insert_after.
+
 2016-09-13  Jason Merrill  <jason@redhat.com>
 	    Tom de Vries  <tom@codesourcery.com>
 
