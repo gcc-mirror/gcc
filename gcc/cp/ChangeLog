@@ -1,3 +1,12 @@
+2016-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77553
+	* constexpr.c (cxx_fold_pointer_plus_expression): New function.
+	(cxx_eval_binary_expression): Use it for POINTER_PLUS_EXPR.
+	(cxx_eval_pointer_plus_expression): Remove.
+	(cxx_eval_constant_expression) <case POINTER_PLUS_EXPR>: Don't
+	call cxx_eval_pointer_plus_expression.
+
 2016-09-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* parser.c (cp_parser_class_specifier_1): Update for renaming of

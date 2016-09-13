@@ -1813,6 +1813,63 @@ cxx_eval_unary_expression (const constexpr_ctx *ctx, tree t,
   return r;
 }
 
+/* Helper function for cxx_eval_binary_expression.  Try to optimize
+   original POINTER_PLUS_EXPR T, LHS p+ RHS, return NULL_TREE if the
+   generic folding should be used.  */
+
+static tree
+cxx_fold_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
+				  tree lhs, tree rhs, bool *non_constant_p,
+				  bool *overflow_p)
+{
+  STRIP_NOPS (lhs);
+  if (TREE_CODE (lhs) != ADDR_EXPR)
+    return NULL_TREE;
+
+  lhs = TREE_OPERAND (lhs, 0);
+
+  /* &A[i] p+ j => &A[i + j] */
+  if (TREE_CODE (lhs) == ARRAY_REF
+      && TREE_CODE (TREE_OPERAND (lhs, 1)) == INTEGER_CST
+      && TREE_CODE (rhs) == INTEGER_CST
+      && TYPE_SIZE_UNIT (TREE_TYPE (lhs))
+      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST)
+    {
+      tree orig_type = TREE_TYPE (t);
+      location_t loc = EXPR_LOCATION (t);
+      tree type = TREE_TYPE (lhs);
+
+      t = fold_convert_loc (loc, ssizetype, TREE_OPERAND (lhs, 1));
+      tree nelts = array_type_nelts_top (TREE_TYPE (TREE_OPERAND (lhs, 0)));
+      nelts = cxx_eval_constant_expression (ctx, nelts, false, non_constant_p,
+					    overflow_p);
+      if (*non_constant_p)
+	return NULL_TREE;
+      /* Don't fold an out-of-bound access.  */
+      if (!tree_int_cst_le (t, nelts))
+	return NULL_TREE;
+      rhs = cp_fold_convert (ssizetype, rhs);
+      /* Don't fold if rhs can't be divided exactly by TYPE_SIZE_UNIT.
+	 constexpr int A[1]; ... (char *)&A[0] + 1 */
+      if (!integer_zerop (fold_build2_loc (loc, TRUNC_MOD_EXPR, sizetype,
+					   rhs, TYPE_SIZE_UNIT (type))))
+	return NULL_TREE;
+      /* Make sure to treat the second operand of POINTER_PLUS_EXPR
+	 as signed.  */
+      rhs = fold_build2_loc (loc, EXACT_DIV_EXPR, ssizetype, rhs,
+			     TYPE_SIZE_UNIT (type));
+      t = size_binop_loc (loc, PLUS_EXPR, rhs, t);
+      t = build4_loc (loc, ARRAY_REF, type, TREE_OPERAND (lhs, 0),
+		      t, NULL_TREE, NULL_TREE);
+      t = cp_build_addr_expr (t, tf_warning_or_error);
+      t = cp_fold_convert (orig_type, t);
+      return cxx_eval_constant_expression (ctx, t, /*lval*/false,
+					   non_constant_p, overflow_p);
+    }
+
+  return NULL_TREE;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Like cxx_eval_unary_expression, except for binary expressions.  */
 
@@ -1865,6 +1922,9 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 	error ("arithmetic involving a null pointer in %qE", lhs);
       return t;
     }
+  else if (code == POINTER_PLUS_EXPR)
+    r = cxx_fold_pointer_plus_expression (ctx, t, lhs, rhs, non_constant_p,
+					  overflow_p);
 
   if (r == NULL_TREE)
     r = fold_binary_loc (loc, code, type, lhs, rhs);
@@ -3579,69 +3639,6 @@ cxx_eval_switch_expr (const constexpr_ctx *ctx, tree t,
   return NULL_TREE;
 }
 
-/* Subroutine of cxx_eval_constant_expression.
-   Attempt to reduce a POINTER_PLUS_EXPR expression T.  */
-
-static tree
-cxx_eval_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
-				  bool lval, bool *non_constant_p,
-				  bool *overflow_p)
-{
-  tree orig_type = TREE_TYPE (t);
-  tree op00 = TREE_OPERAND (t, 0);
-  tree op01 = TREE_OPERAND (t, 1);
-  location_t loc = EXPR_LOCATION (t);
-
-  op00 = cxx_eval_constant_expression (ctx, op00, lval,
-				       non_constant_p, overflow_p);
-
-  STRIP_NOPS (op00);
-  if (TREE_CODE (op00) != ADDR_EXPR)
-    return NULL_TREE;
-
-  op01 = cxx_eval_constant_expression (ctx, op01, lval,
-				       non_constant_p, overflow_p);
-  op00 = TREE_OPERAND (op00, 0);
-
-  /* &A[i] p+ j => &A[i + j] */
-  if (TREE_CODE (op00) == ARRAY_REF
-      && TREE_CODE (TREE_OPERAND (op00, 1)) == INTEGER_CST
-      && TREE_CODE (op01) == INTEGER_CST
-      && TYPE_SIZE_UNIT (TREE_TYPE (op00))
-      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (op00))) == INTEGER_CST)
-    {
-      tree type = TREE_TYPE (op00);
-      t = fold_convert_loc (loc, ssizetype, TREE_OPERAND (op00, 1));
-      tree nelts = array_type_nelts_top (TREE_TYPE (TREE_OPERAND (op00, 0)));
-      nelts = cxx_eval_constant_expression (ctx, nelts, false, non_constant_p,
-					    overflow_p);
-      if (*non_constant_p)
-	return NULL_TREE;
-      /* Don't fold an out-of-bound access.  */
-      if (!tree_int_cst_le (t, nelts))
-	return NULL_TREE;
-      op01 = cp_fold_convert (ssizetype, op01);
-      /* Don't fold if op01 can't be divided exactly by TYPE_SIZE_UNIT.
-	 constexpr int A[1]; ... (char *)&A[0] + 1 */
-      if (!integer_zerop (fold_build2_loc (loc, TRUNC_MOD_EXPR, sizetype,
-					   op01, TYPE_SIZE_UNIT (type))))
-	return NULL_TREE;
-      /* Make sure to treat the second operand of POINTER_PLUS_EXPR
-	 as signed.  */
-      op01 = fold_build2_loc (loc, EXACT_DIV_EXPR, ssizetype, op01,
-			      TYPE_SIZE_UNIT (type));
-      t = size_binop_loc (loc, PLUS_EXPR, op01, t);
-      t = build4_loc (loc, ARRAY_REF, type, TREE_OPERAND (op00, 0),
-		      t, NULL_TREE, NULL_TREE);
-      t = cp_build_addr_expr (t, tf_warning_or_error);
-      t = cp_fold_convert (orig_type, t);
-      return cxx_eval_constant_expression (ctx, t, lval, non_constant_p,
-					   overflow_p);
-    }
-
-  return NULL_TREE;
-}
-
 /* Attempt to reduce the expression T to a constant value.
    On failure, issue diagnostic and return error_mark_node.  */
 /* FIXME unify with c_fully_fold */
@@ -3984,12 +3981,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case POINTER_PLUS_EXPR:
-      r = cxx_eval_pointer_plus_expression (ctx, t, lval, non_constant_p,
-					    overflow_p);
-      if (r)
-	break;
-      /* fall through */
-
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
