@@ -1,5 +1,15 @@
 2016-09-13  Jakub Jelinek  <jakub@redhat.com>
 
+	Implement P0028R4, C++17 using attribute namespaces without repetition
+	* parser.c (cp_parser_std_attribute): Add ATTR_NS argument.  Diagnose
+	non-NULL ATTR_NS with scoped attribute token.  Handle non-NULL
+	ATTR_NS with non-scoped attribute tokens.  Allow named ops in
+	identifier after ::.
+	(cp_parser_std_attribute_list): Add ATTR_NS argument, pass it down
+	to cp_parser_std_attribute calls.
+	(cp_parser_std_attribute_spec): Parse optional C++17
+	attribute-using-prefix, adjust grammar in function comment.
+
 	PR c++/77553
 	* constexpr.c (cxx_fold_pointer_plus_expression): New function.
 	(cxx_eval_binary_expression): Use it for POINTER_PLUS_EXPR.
