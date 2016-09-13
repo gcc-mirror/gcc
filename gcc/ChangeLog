@@ -1,3 +1,11 @@
+2016-09-13  Jakub Jelinek  <jakub@redhat.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/77475
+	* opts.h (candidates_list_and_hint): Declare.
+	* opts-common.c (candidates_list_and_hint): New function.
+	(cmdline_handle_error): Use it.
+
 2016-09-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* edit-context.c (edited_line::get_len): New accessor.
