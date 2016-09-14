@@ -1985,6 +1985,8 @@ mips*-img-linux*)
 	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-img-linux"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=37 MIPS_ABI_DEFAULT=ABI_32"
+	with_arch_32="mips32r6"
+	with_arch_64="mips64r6"
 	gnu_ld=yes
 	gas=yes
 	;;
@@ -1993,6 +1995,8 @@ mips*-mti-linux*)
 	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-mti-linux"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
+	with_arch_32="mips32r2"
+	with_arch_64="mips64r2"
 	gnu_ld=yes
 	gas=yes
 	;;
@@ -2047,11 +2051,15 @@ mips*-mti-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
 	tmake_file="mips/t-mti-elf"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
+	with_arch_32="mips32r2"
+	with_arch_64="mips64r2"
 	;;
 mips*-img-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
 	tmake_file="mips/t-img-elf"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=37 MIPS_ABI_DEFAULT=ABI_32"
+	with_arch_32="mips32r6"
+	with_arch_64="mips64r6"
 	;;
 mips*-sde-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h"
