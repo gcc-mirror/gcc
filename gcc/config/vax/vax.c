@@ -96,6 +96,9 @@ static bool vax_mode_dependent_address_p (const_rtx, addr_space_t);
 #undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
 #define TARGET_BUILTIN_SETJMP_FRAME_VALUE vax_builtin_setjmp_frame_value
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P vax_legitimate_address_p
 #undef TARGET_MODE_DEPENDENT_ADDRESS_P

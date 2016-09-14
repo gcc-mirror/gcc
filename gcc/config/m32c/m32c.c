@@ -1632,6 +1632,9 @@ m32c_trampoline_init (rtx m_tramp, tree fndecl, rtx chainval)
 #undef A0
 }
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 /* Addressing Modes */
 
 /* The r8c/m32c family supports a wide range of non-orthogonal

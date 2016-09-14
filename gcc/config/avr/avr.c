@@ -13843,6 +13843,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 #undef  TARGET_CONVERT_TO_TYPE
 #define TARGET_CONVERT_TO_TYPE avr_convert_to_type
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef  TARGET_ADDR_SPACE_SUBSET_P
 #define TARGET_ADDR_SPACE_SUBSET_P avr_addr_space_subset_p
 

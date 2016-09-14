@@ -491,6 +491,9 @@ static bool frv_class_likely_spilled_p 		(reg_class_t);
 #undef  TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD frv_secondary_reload
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P frv_legitimate_address_p
 

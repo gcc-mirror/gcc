@@ -6748,6 +6748,9 @@ c6x_debug_unwind_info (void)
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P c6x_legitimate_address_p
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P c6x_in_small_data_p
 #undef	TARGET_ASM_SELECT_RTX_SECTION

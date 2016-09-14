@@ -1,3 +1,43 @@
+2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/alpha/alpha.c (TARGET_LRA_P): New macro, defined to
+	hook_bool_void_false.
+	* config/avr/avr.c: Ditto.
+	* config/bfin/bfin.c: Ditto.
+	* config/c6x/c6x.c: Ditto.
+	* config/cr16/cr16.c: Ditto.
+	* config/cris/cris.c: Ditto.
+	* config/epiphany/epiphany.c: Ditto.
+	* config/fr30/fr30.c: Ditto.
+	* config/frv/frv.c: Ditto.
+	* config/h8300/h8300.c: Ditto.
+	* config/ia64/ia64.c: Ditto.
+	* config/iq2000/iq2000.c: Ditto.
+	* config/lm32/lm32.c: Ditto.
+	* config/m32c/m32c.c: Ditto.
+	* config/m32r/m32r.c: Ditto.
+	* config/m68k/m68k.c: Ditto.
+	* config/mcore/mcore.c: Ditto.
+	* config/microblaze/microblaze.c: Ditto.
+	* config/mmix/mmix.c: Ditto.
+	* config/mn10300/mn10300.c: Ditto.
+	* config/moxie/moxie.c: Ditto.
+	* config/msp430/msp430.c: Ditto.
+	* config/nios2/nios2.c: Ditto.
+	* config/nvptx/nvptx.c: Ditto.
+	* config/pa/pa.c: Ditto.
+	* config/pdp11/pdp11.c: Ditto.
+	* config/rl78/rl78.c: Ditto.
+	* config/sparc/sparc.c: Ditto.
+	* config/spu/spu.c: Ditto.
+	* config/stormy16/stormy16.c: Ditto.
+	* config/tilegx/tilegx.c: Ditto.
+	* config/tilepro/tilepro.c: Ditto.
+	* config/v850/v850.c: Ditto.
+	* config/vax/vax.c: Ditto.
+	* config/visium/visium.c: Ditto.
+	* config/xtensa/xtensa.c: Ditto.
+
 2016-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/68260

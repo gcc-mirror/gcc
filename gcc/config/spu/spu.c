@@ -7153,6 +7153,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 /*  TARGET overrides.  */
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE spu_addr_space_pointer_mode
 

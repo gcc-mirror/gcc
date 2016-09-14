@@ -10060,6 +10060,9 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #define TARGET_MANGLE_TYPE alpha_mangle_type
 #endif
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P alpha_legitimate_address_p
 

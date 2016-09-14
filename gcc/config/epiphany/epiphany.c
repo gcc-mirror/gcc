@@ -102,6 +102,8 @@ static rtx_insn *frame_insn (rtx);
 #define TARGET_SCHED_ISSUE_RATE epiphany_issue_rate
 #define TARGET_SCHED_ADJUST_COST epiphany_adjust_cost
 
+#define TARGET_LRA_P hook_bool_void_false
+
 #define TARGET_LEGITIMATE_ADDRESS_P epiphany_legitimate_address_p
 
 #define TARGET_SECONDARY_RELOAD epiphany_secondary_reload
