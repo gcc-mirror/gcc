@@ -1,3 +1,10 @@
+2016-09-14  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config.gcc (mips*-mti-elf*, mips*-mti-linux*): Set mips32r2
+	and mips64r2 as default 32-bit and 64-bit architectures.
+	(mips*-img-elf*, mips*-img-linux*): Set mips32r6 and mips64r6
+	as default 32-bit and 64-bit architectures.
+
 2016-09-14  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* loop-unroll.c (unroll_loop_runtime_iterations): Set probability of succ edge.
