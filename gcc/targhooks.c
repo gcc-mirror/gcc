@@ -995,7 +995,7 @@ default_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
 extern bool
 default_lra_p (void)
 {
-  return false;
+  return true;
 }
 
 int
