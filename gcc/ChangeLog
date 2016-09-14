@@ -1,3 +1,7 @@
+2016-09-14  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* loop-unroll.c (unroll_loop_runtime_iterations): Set probability of succ edge.
+
 2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* target.def (lra_p): Change commentary (for the manual) for the
