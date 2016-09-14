@@ -1,3 +1,8 @@
+2016-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77549
+	* g++.dg/lookup/pr77549.C: New test.
+
 2016-09-14  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/gomp/atomic-12.c: Use -Wno-deprecated.
