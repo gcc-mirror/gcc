@@ -3723,7 +3723,7 @@ force_edge_cold (edge e, bool impossible)
   int prob_scale = REG_BR_PROB_BASE;
 
   /* If edge is already improbably or cold, just return.  */
-  if (e->probability <= impossible ? PROB_VERY_UNLIKELY : 0
+  if (e->probability <= (impossible ? PROB_VERY_UNLIKELY : 0)
       && (!impossible || !e->count))
     return;
   FOR_EACH_EDGE (e2, ei, e->src->succs)
