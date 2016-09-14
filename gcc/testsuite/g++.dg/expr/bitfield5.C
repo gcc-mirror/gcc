@@ -8,10 +8,10 @@ struct S {
 S s;
 
 int main() {
-  s.x++;
+  s.x++; // { dg-warning "deprecated" }
   if (s.x != 1)
     return 1;
-  ++s.x;
+  ++s.x; // { dg-warning "deprecated" }
   if (s.x != 1)
     return 2;
 }

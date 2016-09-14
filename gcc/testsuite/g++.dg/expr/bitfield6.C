@@ -7,5 +7,5 @@ struct S {
 S s;
 
 void f() {
-  ++s.x = false;
+  ++s.x = false; // { dg-warning "deprecated" }
 }

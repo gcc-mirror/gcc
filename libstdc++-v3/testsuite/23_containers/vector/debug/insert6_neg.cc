@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // { dg-do run { xfail *-*-* } }
+// { dg-options "-Wno-deprecated" }
 
 #include <vector>
 #include <debug/vector>

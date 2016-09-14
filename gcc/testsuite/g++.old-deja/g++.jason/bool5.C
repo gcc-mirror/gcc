@@ -2,10 +2,10 @@
 int main ()
 {
   bool b = false;
-  int i = b++;
+  int i = b++; // { dg-warning "deprecated" }
   if (i != false || b != true)
     return 1;
-  i = b++;
+  i = b++; // { dg-warning "deprecated" }
   if (i != true || b != true)
     return 1;
 }

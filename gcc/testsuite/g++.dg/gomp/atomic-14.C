@@ -8,12 +8,12 @@ int
 foo (void)
 {
   #pragma omp atomic
-    (*baz ())--;	// { dg-error "invalid use of Boolean" }
+    (*baz ())--;	// { dg-error "use of an operand of type .bool." }
   #pragma omp atomic
-    --(*baz ());	// { dg-error "invalid use of Boolean" }
+    --(*baz ());	// { dg-error "use of an operand of type .bool." }
   #pragma omp atomic
-    atomicvar--;	// { dg-error "invalid use of Boolean" }
+    atomicvar--;	// { dg-error "use of an operand of type .bool." }
   #pragma omp atomic
-    --atomicvar;	// { dg-error "invalid use of Boolean" }
+    --atomicvar;	// { dg-error "use of an operand of type .bool." }
   return 0;
 }

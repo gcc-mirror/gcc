@@ -1,3 +1,23 @@
+2016-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/gomp/atomic-12.c: Use -Wno-deprecated.
+	* c-c++-common/gomp/atomic-13.c: Likewise.
+	* c-c++-common/gomp/atomic-14.c: Likewise.
+	* g++.dg/cpp1y/lambda-init11.C: Remove invalid code.
+	* g++.dg/cpp1z/bool-increment1.C: New test.
+	* c-c++-common/pr60439.c: Add dg-warning.
+	* g++.dg/expr/bitfield4.C: Likewise.
+	* g++.dg/expr/bitfield5.C: Likewise.
+	* g++.dg/expr/bitfield6.C: Likewise.
+	* g++.dg/expr/bool1.C: Likewise.
+	* g++.dg/expr/bool3.C: Likewise.
+	* g++.dg/expr/lval3.C: Likewise.
+	* g++.dg/expr/lval4.C: Likewise.
+	* g++.old-deja/g++.jason/bool5.C: Likewise.
+	* g++.dg/expr/bitfield3.C: Adjust dg-error.
+	* g++.dg/other/error18.C: Likewise.
+	* g++.dg/gomp/atomic-14.C: Likewise.
+
 2016-09-14  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/77539
