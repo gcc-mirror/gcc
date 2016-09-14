@@ -4,6 +4,7 @@ f()
 {
   bool i = 0;
   ++i = 3;
+  // { dg-warning "deprecated" "" { target *-*-* } 6 }
 }
 
 

@@ -1,6 +1,6 @@
 /* PR middle-end/45423 */
 /* { dg-do compile } */
-/* { dg-options "-fopenmp" } */
+/* { dg-options "-fopenmp -Wno-deprecated" } */
 
 #ifdef __cplusplus
 bool *baz ();

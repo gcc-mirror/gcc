@@ -1,3 +1,7 @@
+2016-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/libgomp.c++/atomic-3.C: Use -Wno-deprecated.
+
 2016-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/71014

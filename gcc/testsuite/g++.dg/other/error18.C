@@ -7,5 +7,5 @@ struct A
 
 void f(A a)
 {
-  a.b--; // { dg-error "Boolean expression" }
+  a.b--; // { dg-error "use of an operand of type .bool." }
 }
