@@ -1,5 +1,12 @@
 2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/aarch64/aarch64.c (TARGET_LRA_P): Delete macro.
+	* config/arm/arm.c (TARGET_LRA_P): Delete macro.
+	* config/i386/i386.c (TARGET_LRA_P): Delete macro.
+	* config/nds32/nds32.c (TARGET_LRA_P): Delete macro.
+
+2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* targhooks.c (default_lra_p): Return true instead of false.
 
 2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
