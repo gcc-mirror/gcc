@@ -1,3 +1,8 @@
+2016-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/68260
+	* c-c++-common/tsan/pr68260.c: New test.
+
 2016-09-13  Joe Seymour  <joe.s@somniumtech.com>
 
 	PR target/70713
