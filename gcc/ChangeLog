@@ -1,5 +1,11 @@
 2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* target.def (lra_p): Change commentary (for the manual) for the
+	new default.
+	* doc/tm.texi: Regenerate.
+
+2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/aarch64/aarch64.c (TARGET_LRA_P): Delete macro.
 	* config/arm/arm.c (TARGET_LRA_P): Delete macro.
 	* config/i386/i386.c (TARGET_LRA_P): Delete macro.
