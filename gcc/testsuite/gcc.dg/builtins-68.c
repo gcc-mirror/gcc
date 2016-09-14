@@ -1,7 +1,7 @@
 /* PR middle-end/69780 - [4.9/5/6 Regression] ICE on
      __builtin_alloca_with_align with small alignment */
-/* { dg-require-effective-target alloca } */
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-Wno-long-long" } */
 
 #define CHAR_BIT  __CHAR_BIT__

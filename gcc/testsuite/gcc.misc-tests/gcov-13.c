@@ -1,8 +1,8 @@
 /* Test gcov weak ellision.  */
 
+/* { dg-do run { target native } } */
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
 /* { dg-require-weak "" } */
-/* { dg-do run { target native } } */
 /* { dg-additional-sources "gcovpart-13b.c" } */
 /* { dg-skip-if "weak ellision not supported" { { hppa*-*-hpux* } && { ! lp64 } } { "*" } { "" } } */
 

@@ -17,8 +17,8 @@
 
 // 25.3.6 Heap operations [lib.alg.heap.operations]
 
-// { dg-require-debug-mode "" }
 // { dg-do run { xfail *-*-* } }
+// { dg-require-debug-mode "" }
 
 #include <algorithm>
 

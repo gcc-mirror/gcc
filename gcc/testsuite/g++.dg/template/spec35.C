@@ -2,8 +2,8 @@
 // C++ DR 605 -- "...the linkage of an explicit specialization must be that of
 // the template."
 
-// { dg-require-weak "" }
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
+// { dg-require-weak "" }
 
 template<class T>
 static void f1 (T) { }

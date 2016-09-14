@@ -1,3 +1,31 @@
+2016-09-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Move dg-do directive before dg-skip.
+	* testsuite/21_strings/debug/iterator_self_move_assign_neg.cc:
+	Move dg-do directive before dg-require.
+	* testsuite/21_strings/debug/self_move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/57779_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/60587_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/assign1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/assign2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/assign3_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert5_neg.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/irreflexive.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/debug/irreflexive_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/pop_heap/empty2_neg.cc: Likewise.
+	* testsuite/25_algorithms/pop_heap/empty_neg.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-5.cc: Likewise.
+	* testsuite/ext/special_functions/conf_hyperg/check_nan.cc: Likewise.
+	* testsuite/ext/special_functions/hyperg/check_nan.cc: Likewise.
+
 2016-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement P0040R3, Extending memory management tools.

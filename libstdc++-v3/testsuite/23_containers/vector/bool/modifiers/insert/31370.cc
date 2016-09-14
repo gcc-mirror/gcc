@@ -17,8 +17,8 @@
 
 // 23.2.5 class vector<bool> [lib.vector.bool]
 
-// { dg-skip-if "" { powerpc64-*-freebsd* } { "*" } { "" } }
 // { dg-do run { xfail *-*-darwin8.[0-4].* } }
+// { dg-skip-if "" { powerpc64-*-freebsd* } { "*" } { "" } }
 
 #include <vector>
 #include <stdexcept>
