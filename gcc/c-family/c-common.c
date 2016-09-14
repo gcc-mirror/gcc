@@ -7868,43 +7868,21 @@ check_cxx_fundamental_alignment_constraints (tree node,
   if (cxx_fundamental_alignment_p (requested_alignment))
     return true;
 
-  if (DECL_P (node))
+  if (VAR_P (node))
     {
       if (TREE_STATIC (node))
-	{
-	  /* For file scope variables and static members, the target
-	     supports alignments that are at most
-	     MAX_OFILE_ALIGNMENT.  */
-	  if (requested_alignment > (max_align = MAX_OFILE_ALIGNMENT))
-	    alignment_too_large_p = true;
-	}
+	/* For file scope variables and static members, the target supports
+	   alignments that are at most MAX_OFILE_ALIGNMENT.  */
+	max_align = MAX_OFILE_ALIGNMENT;
       else
-	{
-#ifdef BIGGEST_FIELD_ALIGNMENT
-#define MAX_TARGET_FIELD_ALIGNMENT BIGGEST_FIELD_ALIGNMENT
-#else
-#define MAX_TARGET_FIELD_ALIGNMENT BIGGEST_ALIGNMENT
-#endif
-	  /* For non-static members, the target supports either
-	     alignments that at most either BIGGEST_FIELD_ALIGNMENT
-	     if it is defined or BIGGEST_ALIGNMENT.  */
-	  max_align = MAX_TARGET_FIELD_ALIGNMENT;
-	  if (TREE_CODE (node) == FIELD_DECL
-	      && requested_alignment > (max_align = MAX_TARGET_FIELD_ALIGNMENT))
-	    alignment_too_large_p = true;
-#undef MAX_TARGET_FIELD_ALIGNMENT
-	  /* For stack variables, the target supports at most
-	     MAX_STACK_ALIGNMENT.  */
-	  else if (decl_function_context (node) != NULL
-		   && requested_alignment > (max_align = MAX_STACK_ALIGNMENT))
-	    alignment_too_large_p = true;
-	}
+	/* For stack variables, the target supports at most
+	   MAX_STACK_ALIGNMENT.  */
+	max_align = MAX_STACK_ALIGNMENT;
+      if (requested_alignment > max_align)
+	alignment_too_large_p = true;
     }
-  else if (TYPE_P (node))
-    {
-      /* Let's be liberal for types; don't limit their alignment any more than
-	 check_user_alignment already did.  */
-    }
+  /* Let's be liberal for types and fields; don't limit their alignment any
+     more than check_user_alignment already did.  */
 
   if (alignment_too_large_p)
     pedwarn (input_location, OPT_Wattributes,
