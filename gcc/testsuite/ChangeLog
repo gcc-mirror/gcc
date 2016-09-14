@@ -1,3 +1,10 @@
+2016-09-14  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/77539
+	* g++.dg/cpp0x/constexpr-recursion3.C: New.
+	* g++.dg/ubsan/pr63956.C: Adjust error location.
+	* g++.dg/cpp1y/pr77539.C: New.
+
 2016-09-13  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
