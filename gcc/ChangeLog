@@ -1,3 +1,9 @@
+2016-09-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/77574
+	* predict.c (force_edge_cold): Add braces to a condition.
+
 2016-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR rtl-optimization/77289
