@@ -1,5 +1,9 @@
 2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* targhooks.c (default_lra_p): Return true instead of false.
+
+2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/alpha/alpha.c (TARGET_LRA_P): New macro, defined to
 	hook_bool_void_false.
 	* config/avr/avr.c: Ditto.
