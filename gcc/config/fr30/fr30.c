@@ -179,6 +179,9 @@ static int fr30_num_arg_regs (machine_mode, const_tree);
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE fr30_can_eliminate
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE fr30_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT

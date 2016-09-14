@@ -119,6 +119,9 @@ static const struct attribute_spec m32r_attribute_table[] =
 #undef  TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
 #define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P m32r_attribute_identifier
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P m32r_legitimate_address_p
 #undef TARGET_LEGITIMIZE_ADDRESS

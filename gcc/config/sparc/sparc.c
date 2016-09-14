@@ -827,6 +827,9 @@ char sparc_hard_reg_printed[8];
 #define TARGET_MANGLE_TYPE sparc_mangle_type
 #endif
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P sparc_legitimate_address_p
 

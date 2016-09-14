@@ -99,6 +99,8 @@ static void lm32_function_arg_advance (cumulative_args_t cum,
 #define TARGET_MAX_ANCHOR_OFFSET 0x7fff
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE lm32_can_eliminate
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P lm32_legitimate_address_p
 

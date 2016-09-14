@@ -172,6 +172,9 @@ static void cr16_print_operand_address (FILE *, machine_mode, rtx);
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P     cr16_legitimate_address_p
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 /* Returning function value.  */
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE 		cr16_function_value

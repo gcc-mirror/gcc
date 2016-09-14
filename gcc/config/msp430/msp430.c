@@ -1490,6 +1490,9 @@ msp430_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   return addr;
 }
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 /* Addressing Modes */
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
