@@ -1,3 +1,7 @@
+2016-09-13  Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	* gfortran.dg/dec_structure_14.f90: New testcase.
+
 2016-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/68260
