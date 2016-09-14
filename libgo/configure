@@ -13640,7 +13640,7 @@ case ${host} in
     GOARCH_FAMILY=ARM64
     GOARCH_CACHELINESIZE=32
     GOARCH_PHYSPAGESIZE=65536
-    GOARCH_PCQUANTUm=4
+    GOARCH_PCQUANTUM=4
     GOARCH_MINFRAMESIZE=8
     ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
