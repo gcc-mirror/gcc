@@ -16257,7 +16257,7 @@ tsubst_copy_and_build (tree t,
 
     case FIX_TRUNC_EXPR:
       RETURN (cp_build_unary_op (FIX_TRUNC_EXPR, RECUR (TREE_OPERAND (t, 0)),
-				 0, complain));
+				 false, complain));
 
     case ADDR_EXPR:
       op1 = TREE_OPERAND (t, 0);

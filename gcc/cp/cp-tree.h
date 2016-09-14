@@ -6673,7 +6673,7 @@ extern tree build_x_unary_op			(location_t,
 						 enum tree_code, cp_expr,
                                                  tsubst_flags_t);
 extern tree cp_build_addr_expr			(tree, tsubst_flags_t);
-extern tree cp_build_unary_op                   (enum tree_code, tree, int, 
+extern tree cp_build_unary_op                   (enum tree_code, tree, bool,
                                                  tsubst_flags_t);
 extern tree unary_complex_lvalue		(enum tree_code, tree);
 extern tree build_x_conditional_expr		(location_t, tree, tree, tree, 

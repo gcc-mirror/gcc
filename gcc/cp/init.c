@@ -4096,13 +4096,14 @@ build_vec_init (tree base, tree maxindex, tree init,
 	    finish_expr_stmt (one_init);
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 
-	  one_init = cp_build_unary_op (PREINCREMENT_EXPR, base, 0, complain);
+	  one_init = cp_build_unary_op (PREINCREMENT_EXPR, base, false,
+					complain);
 	  if (one_init == error_mark_node)
 	    errors = true;
 	  else
 	    finish_expr_stmt (one_init);
 
-	  one_init = cp_build_unary_op (PREDECREMENT_EXPR, iterator, 0,
+	  one_init = cp_build_unary_op (PREDECREMENT_EXPR, iterator, false,
 					complain);
 	  if (one_init == error_mark_node)
 	    errors = true;
@@ -4155,7 +4156,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       finish_for_cond (build2 (GT_EXPR, boolean_type_node, iterator,
 			       build_int_cst (TREE_TYPE (iterator), -1)),
 		       for_stmt, false);
-      elt_init = cp_build_unary_op (PREDECREMENT_EXPR, iterator, 0,
+      elt_init = cp_build_unary_op (PREDECREMENT_EXPR, iterator, false,
 				    complain);
       if (elt_init == error_mark_node)
 	errors = true;
@@ -4272,10 +4273,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 	finish_expr_stmt (elt_init);
       current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 
-      finish_expr_stmt (cp_build_unary_op (PREINCREMENT_EXPR, base, 0,
+      finish_expr_stmt (cp_build_unary_op (PREINCREMENT_EXPR, base, false,
                                            complain));
       if (base2)
-	finish_expr_stmt (cp_build_unary_op (PREINCREMENT_EXPR, base2, 0,
+	finish_expr_stmt (cp_build_unary_op (PREINCREMENT_EXPR, base2, false,
                                              complain));
 
       finish_for_stmt (for_stmt);

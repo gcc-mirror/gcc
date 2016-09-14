@@ -1,3 +1,19 @@
+2016-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (cp_build_unary_op): Change nonconvert parameter type to
+	bool.
+	* decl2.c (one_static_initialization_or_destruction): Use true instead
+	of 1.
+	* init.c (build_vec_init): Use false instead of 0.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* semantics.c (simplify_loop_decl_cond): Likewise.
+	* typeck.c (rationalize_conditional_expr): Likewise.
+	(cp_build_binary_op): Use true instead of 1.
+	(cp_build_unary_op): Change nonconvert parameter type to bool.  Use true
+	instead of 1.
+	(build_unary_op): Change nonconvert parameter type to bool.
+	(unary_complex_lvalue): Use false instead of 0.
+
 2016-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Implement P0028R4, C++17 using attribute namespaces without repetition

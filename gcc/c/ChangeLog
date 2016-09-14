@@ -1,3 +1,18 @@
+2016-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* c-array-notation.c (create_cmp_incr): Use false instead of 0.
+	(fix_array_notation_expr): Likewise.
+	* c-decl.c (finish_decl): Likewise.
+	* c-parser.c (c_parser_postfix_expression_after_primary): Likewise.
+	* c-typeck.c (array_to_pointer_conversion): Use true instead of 1.
+	(function_to_pointer_conversion): Use false instead of 0.
+	(convert_lvalue_to_rvalue): Likewise.
+	(parser_build_unary_op): Likewise.
+	(build_atomic_assign): Likewise.
+	(build_unary_op): Change nonconvert parameter type to bool, use
+	true/false instead of 1/0.
+	(build_binary_op): Use true instead of 1.
+
 2016-09-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_declaration_or_fndef): Update for renaming
