@@ -22,9 +22,8 @@
 // equivalent and interchangable. Currently however, cin.rdbuf()->sungetc()
 // only returns characters that were read with cin.rdbuf()->sbumpc()
 
-// { dg-require-fileio "" }
-
 // { dg-do run { xfail *-*-* } }
+// { dg-require-fileio "" }
 
 #include <iostream>
 #include <cstdio>
