@@ -1,3 +1,7 @@
+2016-09-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* simplify.c (gfc_simplify_repeat): Fix a misplaced closing ')'.
+
 2016-09-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77420
