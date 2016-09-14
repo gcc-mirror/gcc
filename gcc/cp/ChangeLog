@@ -1,3 +1,9 @@
+2016-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77549
+	* name-lookup.c (consider_binding_level): Look through TREE_LIST
+	and OVERLOAD.
+
 2016-09-14  Marek Polacek  <polacek@redhat.com>
 
 	* typeck.c (cp_build_unary_op): Diagnose incrementing boolean
