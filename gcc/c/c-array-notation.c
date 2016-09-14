@@ -104,7 +104,7 @@ create_cmp_incr (location_t loc, vec<an_loop_parts> *node, size_t rank,
     {
       tree var = (*node)[ii].var;
       tree length = an_info[0][ii].length;
-      (*node)[ii].incr = build_unary_op (loc, POSTINCREMENT_EXPR, var, 0);
+      (*node)[ii].incr = build_unary_op (loc, POSTINCREMENT_EXPR, var, false);
       (*node)[ii].cmp = build2 (LT_EXPR, boolean_type_node, var, length);
     }
 }
@@ -1088,7 +1088,7 @@ fix_array_notation_expr (location_t location, enum tree_code code,
 
   arg = default_function_array_read_conversion (location, arg);
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
-    arg.value = build_unary_op (location, code, arg.value, 0);
+    arg.value = build_unary_op (location, code, arg.value, false);
   else if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
     arg = parser_build_unary_op (location, code, arg);
 

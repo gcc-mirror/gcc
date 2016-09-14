@@ -1,3 +1,9 @@
+2016-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (c_common_truthvalue_conversion): Use false instead of 0.
+	* c-common.h (build_unary_op): Change nonconvert parameter type to bool.
+	* c-omp.c (c_finish_omp_atomic): Use false instead of 0.
+
 2016-09-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (warn_logical_not_parentheses): Replace

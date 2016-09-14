@@ -8478,8 +8478,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  else
 	    {
 	      expr = default_function_array_read_conversion (expr_loc, expr);
-	      expr.value = build_unary_op (op_loc,
-					   POSTINCREMENT_EXPR, expr.value, 0);
+	      expr.value = build_unary_op (op_loc, POSTINCREMENT_EXPR,
+					   expr.value, false);
 	    }
 	  set_c_expr_source_range (&expr, start, finish);
 	  expr.original_code = ERROR_MARK;
@@ -8497,8 +8497,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  else
 	    {
 	      expr = default_function_array_read_conversion (expr_loc, expr);
-	      expr.value = build_unary_op (op_loc,
-					   POSTDECREMENT_EXPR, expr.value, 0);
+	      expr.value = build_unary_op (op_loc, POSTDECREMENT_EXPR,
+					   expr.value, false);
 	    }
 	  set_c_expr_source_range (&expr, start, finish);
 	  expr.original_code = ERROR_MARK;

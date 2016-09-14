@@ -4599,7 +4599,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	     : truthvalue_false_node;
 
     case FUNCTION_DECL:
-      expr = build_unary_op (location, ADDR_EXPR, expr, 0);
+      expr = build_unary_op (location, ADDR_EXPR, expr, false);
       /* Fall through.  */
 
     case ADDR_EXPR:
@@ -4739,10 +4739,10 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 		? TRUTH_OR_EXPR : TRUTH_ORIF_EXPR),
 	c_common_truthvalue_conversion
 	       (location,
-		build_unary_op (location, REALPART_EXPR, t, 0)),
+		build_unary_op (location, REALPART_EXPR, t, false)),
 	c_common_truthvalue_conversion
 	       (location,
-		build_unary_op (location, IMAGPART_EXPR, t, 0)),
+		build_unary_op (location, IMAGPART_EXPR, t, false)),
 	       0));
       goto ret;
     }

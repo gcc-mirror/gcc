@@ -212,7 +212,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 
   /* Take and save the address of the lhs.  From then on we'll reference it
      via indirection.  */
-  addr = build_unary_op (loc, ADDR_EXPR, lhs, 0);
+  addr = build_unary_op (loc, ADDR_EXPR, lhs, false);
   if (addr == error_mark_node)
     return error_mark_node;
   if (!test)
@@ -303,14 +303,14 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 			     loc, x, NULL_TREE);
       if (rhs1 && rhs1 != lhs)
 	{
-	  tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, 0);
+	  tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, false);
 	  if (rhs1addr == error_mark_node)
 	    return error_mark_node;
 	  x = omit_one_operand_loc (loc, type, x, rhs1addr);
 	}
       if (lhs1 && lhs1 != lhs)
 	{
-	  tree lhs1addr = build_unary_op (loc, ADDR_EXPR, lhs1, 0);
+	  tree lhs1addr = build_unary_op (loc, ADDR_EXPR, lhs1, false);
 	  if (lhs1addr == error_mark_node)
 	    return error_mark_node;
 	  if (code == OMP_ATOMIC_CAPTURE_OLD)
@@ -325,7 +325,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     }
   else if (rhs1 && rhs1 != lhs)
     {
-      tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, 0);
+      tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, false);
       if (rhs1addr == error_mark_node)
 	return error_mark_node;
       x = omit_one_operand_loc (loc, type, x, rhs1addr);
