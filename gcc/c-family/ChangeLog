@@ -1,3 +1,8 @@
+2016-09-14  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (check_cxx_fundamental_alignment_constraints): Don't
+	limit FIELD_DECL, either.
+
 2016-09-14  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (c_common_truthvalue_conversion): Use false instead of 0.
