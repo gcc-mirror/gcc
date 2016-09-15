@@ -1,5 +1,9 @@
 2016-09-15  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/fold-reassoc-2.c: Fix dump scan.
+
+2016-09-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/77514
 	* gcc.dg/torture/pr77514.c: New testcase.
 

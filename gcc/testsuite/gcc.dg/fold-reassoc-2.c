@@ -10,4 +10,4 @@ int bar (int i)
   return (i + 2) + ~i;
 }
 
-/* { dg-final { scan-tree-dump "return 1;" "original" } } */
+/* { dg-final { scan-tree-dump-times "return 1;" 2 "original" } } */
