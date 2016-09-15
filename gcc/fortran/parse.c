@@ -2399,6 +2399,29 @@ accept_statement (gfc_statement st)
 }
 
 
+/* Clear default character types with charlen pointers that are about
+   to become invalid.  */
+
+static void
+clear_default_charlen (gfc_namespace *ns, const gfc_charlen *cl,
+		       const gfc_charlen *end)
+{
+  gfc_typespec *ts;
+
+  for (ts = &ns->default_type[0]; ts < &ns->default_type[GFC_LETTERS]; ts++)
+      if (ts->type == BT_CHARACTER)
+	{
+	  const gfc_charlen *cl2;
+	  for (cl2 = cl; cl2 != end; cl2 = cl2->next)
+	    if (ts->u.cl == cl2)
+	      {
+		ts->u.cl = NULL;
+		ts->type = BT_UNKNOWN;
+		break;
+	      }
+	 }
+}
+
 /* Undo anything tentative that has been built for the current
    statement.  */
 
@@ -2406,6 +2429,8 @@ static void
 reject_statement (void)
 {
   /* Revert to the previous charlen chain.  */
+  clear_default_charlen (gfc_current_ns,
+			 gfc_current_ns->cl_list, gfc_current_ns->old_cl_list);
   gfc_free_charlen (gfc_current_ns->cl_list, gfc_current_ns->old_cl_list);
   gfc_current_ns->cl_list = gfc_current_ns->old_cl_list;
 
