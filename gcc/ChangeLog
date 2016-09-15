@@ -1,5 +1,9 @@
 2016-09-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/77425
+	* sched-int.h (sd_iterator_cond): Don't update it_ptr->linkp if list
+	is NULL.
+
 	PR middle-end/77475
 	* config/i386/i386.c (ix86_parse_stringop_strategy_string): Simplify,
 	use %qs instead of %s where desirable, use argument instead of arg in
