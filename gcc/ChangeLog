@@ -1,3 +1,14 @@
+2016-09-15  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/77503
+	* tree-vect-loop.c (vectorizable_reduction): Record reduction
+	code for CONST_COND_REDUCTION at analysis stage and use it at
+	transform stage.
+	* tree-vectorizer.h (struct _stmt_vec_info): New field.
+	(STMT_VINFO_VEC_CONST_COND_REDUC_CODE): New macro.
+	* tree-vect-stmts.c (new_stmt_vec_info): Initialize above new
+	field.
+
 2016-09-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77544

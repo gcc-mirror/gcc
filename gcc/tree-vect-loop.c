@@ -5438,7 +5438,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   tree def0, def1, tem, op1 = NULL_TREE;
   bool first_p = true;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
-  tree cond_reduc_val = NULL_TREE, const_cond_cmp = NULL_TREE;
+  tree cond_reduc_val = NULL_TREE;
 
   /* In case of reduction chain we switch to the first stmt in the chain, but
      we don't update STMT_INFO, since only the last stmt is marked as reduction
@@ -5645,7 +5645,19 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	    = INTEGER_INDUC_COND_REDUCTION;
 	}
 
-      if (cond_reduc_dt == vect_constant_def)
+      /* Loop peeling modifies initial value of reduction PHI, which
+	 makes the reduction stmt to be transformed different to the
+	 original stmt analyzed.  We need to record reduction code for
+	 CONST_COND_REDUCTION type reduction at analyzing stage, thus
+	 it can be used directly at transform stage.  */
+      if (STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info) == MAX_EXPR
+	  || STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info) == MIN_EXPR)
+	{
+	  /* Also set the reduction type to CONST_COND_REDUCTION.  */
+	  gcc_assert (cond_reduc_dt == vect_constant_def);
+	  STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = CONST_COND_REDUCTION;
+	}
+      else if (cond_reduc_dt == vect_constant_def)
 	{
 	  enum vect_def_type cond_initial_dt;
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (ops[reduc_index]);
@@ -5667,7 +5679,9 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 		    dump_printf_loc (MSG_NOTE, vect_location,
 				     "condition expression based on "
 				     "compile time constant.\n");
-		  const_cond_cmp = e;
+		  /* Record reduction code at analysis stage.  */
+		  STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info)
+		    = integer_onep (e) ? MAX_EXPR : MIN_EXPR;
 		  STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
 		    = CONST_COND_REDUCTION;
 		}
@@ -5821,10 +5835,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	 we want to base our reduction around.  */
       if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == CONST_COND_REDUCTION)
 	{
-	  gcc_assert (const_cond_cmp != NULL_TREE);
-	  gcc_assert (integer_onep (const_cond_cmp)
-		      || integer_zerop (const_cond_cmp));
-	  orig_code = integer_onep (const_cond_cmp) ? MAX_EXPR : MIN_EXPR;
+	  orig_code = STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info);
+	  gcc_assert (orig_code == MAX_EXPR || orig_code == MIN_EXPR);
 	}
       else if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
 		 == INTEGER_INDUC_COND_REDUCTION)
