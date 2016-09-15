@@ -1,3 +1,8 @@
+2016-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77514
+	* gcc.dg/torture/pr77514.c: New testcase.
+
 2016-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77549

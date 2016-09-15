@@ -2879,7 +2879,21 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
       gimple_seq_discard (forced_stmts);
       return folded;
     }
-
+  /* Likewise if we simplified to sth not queued for insertion.  */
+  bool found = false;
+  gsi = gsi_start (forced_stmts);
+  for (; !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      tree forcedname = gimple_get_lhs (stmt);
+      if (forcedname == folded)
+	found = true;
+    }
+  if (! found)
+    {
+      gimple_seq_discard (forced_stmts);
+      return folded;
+    }
   gcc_assert (TREE_CODE (folded) == SSA_NAME);
 
   /* If we have any intermediate expressions to the value sets, add them
