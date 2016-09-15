@@ -1,3 +1,8 @@
+2016-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77544
+	* fold-const.c (split_tree): Do not split constant ~X.
+
 2016-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/77425
