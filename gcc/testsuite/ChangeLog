@@ -1,3 +1,8 @@
+2016-09-15  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/77503
+	* gcc.dg/vect/pr77503.c: New test.
+
 2016-09-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77544

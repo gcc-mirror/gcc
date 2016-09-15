@@ -657,6 +657,9 @@ typedef struct _stmt_vec_info {
   /* For reduction loops, this is the type of reduction.  */
   enum vect_reduction_type v_reduc_type;
 
+  /* For CONST_COND_REDUCTION, record the reduc code.  */
+  enum tree_code const_cond_reduc_code;
+
   /* The number of scalar stmt references from active SLP instances.  */
   unsigned int num_slp_uses;
 } *stmt_vec_info;
@@ -711,6 +714,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_MEMORY_ACCESS_TYPE(S)   (S)->memory_access_type
 #define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
 #define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
+#define STMT_VINFO_VEC_CONST_COND_REDUC_CODE(S) (S)->const_cond_reduc_code
 
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_base_address
 #define STMT_VINFO_DR_INIT(S)              (S)->dr_init
