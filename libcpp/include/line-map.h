@@ -1551,6 +1551,8 @@ class fixit_hint;
 
    Attempts to add a fix-it hint within a macro expansion will fail.
 
+   We do not yet support newlines in fix-it text; attempts to do so will fail.
+
    The rich_location API handles these failures gracefully, so that
    diagnostics can attempt to add fix-it hints without each needing
    extensive checking.

@@ -1,3 +1,11 @@
+2016-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class rich_location): Note that newlines
+	aren't supported in fix-it text.
+	* line-map.c (rich_location::add_fixit_insert_before): Reject
+	attempts to add fix-its containing newlines.
+	(rich_location::add_fixit_replace): Likewise.
+
 2016-09-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (class rich_location): Add description of

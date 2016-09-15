@@ -1,3 +1,10 @@
+2016-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c
+	(selftest::test_fixit_insert_containing_newline): New function.
+	(selftest::test_fixit_replace_containing_newline): New function.
+	(selftest::diagnostic_show_locus_c_tests): Call the above.
+
 2016-09-15  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/77503
