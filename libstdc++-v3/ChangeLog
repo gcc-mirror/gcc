@@ -4,6 +4,12 @@
 	-Wno-deprecated.
 	* testsuite/util/debug/checks.h (generate_unique<bool>): Specialize.
 
+2016-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/debug/insert6_neg.cc: Remove
+	-Wno-deprecated.
+	* testsuite/util/debug/checks.h (generate_unique<bool>): Specialize.
+
 2016-09-14  Marek Polacek  <polacek@redhat.com>
 
 	* testsuite/23_containers/vector/debug/insert6_neg.cc: Use
