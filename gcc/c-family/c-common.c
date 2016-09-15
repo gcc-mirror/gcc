@@ -7870,7 +7870,7 @@ check_cxx_fundamental_alignment_constraints (tree node,
 
   if (VAR_P (node))
     {
-      if (TREE_STATIC (node))
+      if (TREE_STATIC (node) || DECL_EXTERNAL (node))
 	/* For file scope variables and static members, the target supports
 	   alignments that are at most MAX_OFILE_ALIGNMENT.  */
 	max_align = MAX_OFILE_ALIGNMENT;
