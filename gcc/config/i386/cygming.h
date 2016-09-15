@@ -102,13 +102,15 @@ along with GCC; see the file COPYING3.  If not see
 /* Use section relative relocations for debugging offsets.  Unlike
    other targets that fake this by putting the section VMA at 0, PE
    won't allow it.  */
-#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL, SECTION)	\
+#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL, OFFSET, SECTION) \
   do {								\
     switch (SIZE)						\
       {								\
       case 4:							\
 	fputs ("\t.secrel32\t", FILE);				\
 	assemble_name (FILE, LABEL);				\
+	if (offset != 0)					\
+	  fprintf (FILE, "+" HOST_WIDE_INT_PRINT_DEC, offset)	\
 	break;							\
       case 8:							\
 	/* This is a hack.  There is no 64-bit section relative	\
@@ -118,6 +120,8 @@ along with GCC; see the file COPYING3.  If not see
 	   Fake the 64-bit offset by zero-extending it.  */	\
 	fputs ("\t.secrel32\t", FILE);				\
 	assemble_name (FILE, LABEL);				\
+	if (offset != 0)					\
+	  fprintf (FILE, "+" HOST_WIDE_INT_PRINT_DEC, offset)	\
 	fputs ("\n\t.long\t0", FILE);				\
 	break;							\
       default:							\

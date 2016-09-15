@@ -1,3 +1,21 @@
+2016-09-15  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2asm.h (dw2_asm_output_offset): Add overload with
+	extra offset argument.
+	* dwarf2asm.c (dw2_asm_output_offset): Implement that.
+	* doc/tm.texi.in (ASM_OUTPUT_DWARF_OFFSET): Adjust documentation
+	to reflect new offset parameter.
+	* doc/tm.texi: Regenerate.
+	* config/darwin.h (ASM_OUTPUT_DWARF_OFFSET): Adjust.
+	* config/darwin-protos.h (darwin_asm_output_dwarf_delta): Add
+	offset argument.
+	(darwin_asm_output_dwarf_offset): Likewise.
+	* config/darwin.c (darwin_asm_output_dwarf_delta): Add offset
+	argument.
+	(darwin_asm_output_dwarf_offset): Pass offset argument through.
+	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_OFFSET): Adjust.
+	* config/i386/cygmin.h (ASM_OUTPUT_DWARF_OFFSET): Likewise.
+
 2016-09-15  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR fortran/72743

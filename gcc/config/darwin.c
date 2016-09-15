@@ -2790,7 +2790,8 @@ static int darwin_dwarf_label_counter;
 
 void
 darwin_asm_output_dwarf_delta (FILE *file, int size,
-			       const char *lab1, const char *lab2)
+			       const char *lab1, const char *lab2,
+			       HOST_WIDE_INT offset)
 {
   int islocaldiff = (lab1[0] == '*' && lab1[1] == 'L'
 		     && lab2[0] == '*' && lab2[1] == 'L');
@@ -2804,6 +2805,8 @@ darwin_asm_output_dwarf_delta (FILE *file, int size,
   assemble_name_raw (file, lab1);
   fprintf (file, "-");
   assemble_name_raw (file, lab2);
+  if (offset != 0)
+    fprintf (file, "+" HOST_WIDE_INT_PRINT_DEC, offset);
   if (islocaldiff)
     fprintf (file, "\n\t%s L$set$%d", directive, darwin_dwarf_label_counter++);
 }
@@ -2815,7 +2818,7 @@ darwin_asm_output_dwarf_delta (FILE *file, int size,
 
 void
 darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
-				section *base)
+				HOST_WIDE_INT offset, section *base)
 {
   char sname[64];
   int namelen;
@@ -2826,7 +2829,7 @@ darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
 
   namelen = strchr (base->named.name + 8, ',') - (base->named.name + 8);
   sprintf (sname, "*Lsection%.*s", namelen, base->named.name + 8);
-  darwin_asm_output_dwarf_delta (file, size, lab, sname);
+  darwin_asm_output_dwarf_delta (file, size, lab, sname, offset);
 }
 
 /* Called from the within the TARGET_ASM_FILE_START for each target.  */
