@@ -1,3 +1,9 @@
+2016-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77514
+	* tree-ssa-pre.c (create_expression_by_pieces): Handle garbage
+	only forced_stmts sequence.
+
 2016-09-15  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-ssanames.h (FOR_EACH_SSA_NAME): New.
