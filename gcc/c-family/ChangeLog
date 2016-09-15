@@ -1,3 +1,8 @@
+2016-09-15  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (check_cxx_fundamental_alignment_constraints): Check
+	DECL_EXTERNAL.
+
 2016-09-14  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (check_cxx_fundamental_alignment_constraints): Don't
