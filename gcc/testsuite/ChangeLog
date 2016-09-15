@@ -1,3 +1,13 @@
+2016-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77475
+	* gcc.target/i386/pr65990.c: Adjust expected diagnostics.
+	* gcc.dg/march-generic.c: Likewise.
+	* gcc.target/i386/spellcheck-options-1.c: New test.
+	* gcc.target/i386/spellcheck-options-2.c: New test.
+	* gcc.target/i386/spellcheck-options-3.c: New test.
+	* gcc.target/i386/spellcheck-options-4.c: New test.
+
 2016-09-15  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR fortran/72743
