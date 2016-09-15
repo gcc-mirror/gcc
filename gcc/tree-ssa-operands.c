@@ -1247,11 +1247,8 @@ dump_immediate_uses (FILE *file)
   unsigned int x;
 
   fprintf (file, "Immediate_uses: \n\n");
-  for (x = 1; x < num_ssa_names; x++)
+  FOR_EACH_SSA_NAME (x, var, cfun)
     {
-      var = ssa_name (x);
-      if (!var)
-        continue;
       dump_immediate_uses_for (file, var);
     }
 }

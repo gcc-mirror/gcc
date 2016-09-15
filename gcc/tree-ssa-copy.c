@@ -503,14 +503,13 @@ static bool
 fini_copy_prop (void)
 {
   unsigned i;
+  tree var;
 
   /* Set the final copy-of value for each variable by traversing the
      copy-of chains.  */
-  for (i = 1; i < num_ssa_names; i++)
+  FOR_EACH_SSA_NAME (i, var, cfun)
     {
-      tree var = ssa_name (i);
-      if (!var
-	  || !copy_of[i].value
+      if (!copy_of[i].value
 	  || copy_of[i].value == var)
 	continue;
 

@@ -955,12 +955,11 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
       if (bb == entry)
 	{
 	  unsigned i;
-	  for (i = 1; i < num_ssa_names; i++)
-	    {
-	      tree var = ssa_name (i);
+	  tree var;
 
-	      if (!var
-		  || !SSA_NAME_IS_DEFAULT_DEF (var)
+	  FOR_EACH_SSA_NAME (i, var, cfun)
+	    {
+	      if (!SSA_NAME_IS_DEFAULT_DEF (var)
 		  || !SSA_NAME_VAR (var)
 		  || VAR_P (SSA_NAME_VAR (var)))
 		continue;
@@ -1261,10 +1260,9 @@ create_outofssa_var_map (coalesce_list *cl, bitmap used_in_copy)
   /* Now process result decls and live on entry variables for entry into
      the coalesce list.  */
   first = NULL_TREE;
-  for (i = 1; i < num_ssa_names; i++)
+  FOR_EACH_SSA_NAME (i, var, cfun)
     {
-      var = ssa_name (i);
-      if (var != NULL_TREE && !virtual_operand_p (var))
+      if (!virtual_operand_p (var))
         {
 	  coalesce_with_default (var, cl, used_in_copy);
 
@@ -1806,6 +1804,7 @@ coalesce_ssa_name (void)
   bitmap used_in_copies = BITMAP_ALLOC (NULL);
   var_map map;
   unsigned int i;
+  tree a;
 
   cl = create_coalesce_list ();
   map = create_outofssa_var_map (cl, used_in_copies);
@@ -1817,12 +1816,9 @@ coalesce_ssa_name (void)
     {
       hash_table<ssa_name_var_hash> ssa_name_hash (10);
 
-      for (i = 1; i < num_ssa_names; i++)
+      FOR_EACH_SSA_NAME (i, a, cfun)
 	{
-	  tree a = ssa_name (i);
-
-	  if (a
-	      && SSA_NAME_VAR (a)
+	  if (SSA_NAME_VAR (a)
 	      && !DECL_IGNORED_P (SSA_NAME_VAR (a))
 	      && (!has_zero_uses (a) || !SSA_NAME_IS_DEFAULT_DEF (a)
 		  || !VAR_P (SSA_NAME_VAR (a))))
