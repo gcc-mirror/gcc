@@ -53,6 +53,19 @@ namespace __gnu_test
       }
     };
 
+  template<>
+    struct generate_unique<bool>
+    {
+      typedef bool value_type;
+
+      value_type build()
+      {
+	static value_type _S_;
+	_S_ = !_S_;
+	return _S_;
+      }
+    };
+
   template<typename _Tp1, typename _Tp2>
     struct generate_unique<std::pair<_Tp1, _Tp2> >
     {
