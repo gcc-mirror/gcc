@@ -1624,10 +1624,11 @@ sd_iterator_cond (sd_iterator_def *it_ptr, dep_t *dep_ptr)
 	      sd_next_list (it_ptr->insn,
 			    &it_ptr->types, &list, &it_ptr->resolved_p);
 
-	      it_ptr->linkp = &DEPS_LIST_FIRST (list);
-
 	      if (list)
-		continue;
+		{
+		  it_ptr->linkp = &DEPS_LIST_FIRST (list);
+		  continue;
+		}
 	    }
 
 	  *dep_ptr = NULL;
