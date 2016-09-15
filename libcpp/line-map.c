@@ -2128,6 +2128,12 @@ rich_location::add_fixit_insert_before (source_location where,
 
   if (reject_impossible_fixit (start))
     return;
+  /* We do not yet support newlines within fix-it hints.  */
+  if (strchr (new_content, '\n'))
+    {
+      stop_supporting_fixits ();
+      return;
+    }
   add_fixit (new fixit_insert (start, new_content));
 }
 
@@ -2270,6 +2276,13 @@ rich_location::add_fixit_replace (source_range src_range,
     return;
   if (reject_impossible_fixit (src_range.m_finish))
     return;
+
+  /* We do not yet support newlines within fix-it hints.  */
+  if (strchr (new_content, '\n'))
+    {
+      stop_supporting_fixits ();
+      return;
+    }
 
   /* Consolidate neighboring fixits.  */
   fixit_hint *prev = get_last_fixit_hint ();
