@@ -62,6 +62,10 @@ struct GTY ((variable_size)) range_info_def {
 #define num_ssa_names (vec_safe_length (cfun->gimple_df->ssa_names))
 #define ssa_name(i) ((*cfun->gimple_df->ssa_names)[(i)])
 
+#define FOR_EACH_SSA_NAME(I, VAR, FN)					\
+  for (I = 1; SSANAMES (FN)->iterate (I, &VAR); ++I)			\
+    if (VAR)
+
 /* Sets the value range to SSA.  */
 extern void set_range_info (tree, enum value_range_type, const wide_int_ref &,
 			    const wide_int_ref &);

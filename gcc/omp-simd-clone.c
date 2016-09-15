@@ -931,11 +931,11 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
     }
 
   l = adjustments.length ();
-  for (i = 1; i < num_ssa_names; i++)
+  tree name;
+
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree name = ssa_name (i);
-      if (name
-	  && SSA_NAME_VAR (name)
+      if (SSA_NAME_VAR (name)
 	  && TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL)
 	{
 	  for (j = 0; j < l; j++)

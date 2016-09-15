@@ -4290,7 +4290,6 @@ free_vn_table (vn_tables_t table)
 static void
 init_scc_vn (void)
 {
-  size_t i;
   int j;
   int *rpo_numbers_temp;
 
@@ -4339,12 +4338,11 @@ init_scc_vn (void)
 
   /* Create the VN_INFO structures, and initialize value numbers to
      TOP or VARYING for parameters.  */
-  for (i = 1; i < num_ssa_names; i++)
-    {
-      tree name = ssa_name (i);
-      if (!name)
-	continue;
+  size_t i;
+  tree name;
 
+  FOR_EACH_SSA_NAME (i, name, cfun)
+    {
       VN_INFO_GET (name)->valnum = VN_TOP;
       VN_INFO (name)->needs_insertion = false;
       VN_INFO (name)->expr = NULL;
@@ -4402,11 +4400,12 @@ init_scc_vn (void)
 void
 scc_vn_restore_ssa_info (void)
 {
-  for (unsigned i = 0; i < num_ssa_names; i++)
+  unsigned i;
+  tree name;
+
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree name = ssa_name (i);
-      if (name
-	  && has_VN_INFO (name))
+      if (has_VN_INFO (name))
 	{
 	  if (VN_INFO (name)->needs_insertion)
 	    ;
@@ -4428,6 +4427,7 @@ void
 free_scc_vn (void)
 {
   size_t i;
+  tree name;
 
   delete constant_to_value_id;
   constant_to_value_id = NULL;
@@ -4436,11 +4436,9 @@ free_scc_vn (void)
   shared_lookup_references.release ();
   XDELETEVEC (rpo_numbers);
 
-  for (i = 0; i < num_ssa_names; i++)
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree name = ssa_name (i);
-      if (name
-	  && has_VN_INFO (name)
+      if (has_VN_INFO (name)
 	  && VN_INFO (name)->needs_insertion)
 	release_ssa_name (name);
     }
@@ -4797,13 +4795,11 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 
   /* Initialize the value ids and prune out remaining VN_TOPs
      from dead code.  */
-  for (i = 1; i < num_ssa_names; ++i)
+  tree name;
+
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree name = ssa_name (i);
-      vn_ssa_aux_t info;
-      if (!name)
-	continue;
-      info = VN_INFO (name);
+      vn_ssa_aux_t info = VN_INFO (name);
       if (!info->visited)
 	info->valnum = name;
       if (info->valnum == name
@@ -4814,13 +4810,9 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
     }
 
   /* Propagate.  */
-  for (i = 1; i < num_ssa_names; ++i)
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree name = ssa_name (i);
-      vn_ssa_aux_t info;
-      if (!name)
-	continue;
-      info = VN_INFO (name);
+      vn_ssa_aux_t info = VN_INFO (name);
       if (TREE_CODE (info->valnum) == SSA_NAME
 	  && info->valnum != name
 	  && info->value_id != VN_INFO (info->valnum)->value_id)
@@ -4832,11 +4824,9 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Value numbers:\n");
-      for (i = 0; i < num_ssa_names; i++)
+      FOR_EACH_SSA_NAME (i, name, cfun)
 	{
-	  tree name = ssa_name (i);
-	  if (name
-	      && VN_INFO (name)->visited
+	  if (VN_INFO (name)->visited
 	      && SSA_VAL (name) != name)
 	    {
 	      print_generic_expr (dump_file, name, 0);

@@ -1005,7 +1005,6 @@ error:
 DEBUG_FUNCTION void
 verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
 {
-  size_t i;
   basic_block bb;
   basic_block *definition_block = XCNEWVEC (basic_block, num_ssa_names);
   ssa_op_iter iter;
@@ -1018,24 +1017,23 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
   timevar_push (TV_TREE_SSA_VERIFY);
 
   /* Keep track of SSA names present in the IL.  */
-  for (i = 1; i < num_ssa_names; i++)
+  size_t i;
+  tree name;
+
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree name = ssa_name (i);
-      if (name)
+      gimple *stmt;
+      TREE_VISITED (name) = 0;
+
+      verify_ssa_name (name, virtual_operand_p (name));
+
+      stmt = SSA_NAME_DEF_STMT (name);
+      if (!gimple_nop_p (stmt))
 	{
-	  gimple *stmt;
-	  TREE_VISITED (name) = 0;
-
-	  verify_ssa_name (name, virtual_operand_p (name));
-
-	  stmt = SSA_NAME_DEF_STMT (name);
-	  if (!gimple_nop_p (stmt))
-	    {
-	      basic_block bb = gimple_bb (stmt);
-	      if (verify_def (bb, definition_block,
-			      name, stmt, virtual_operand_p (name)))
-		goto err;
-	    }
+	  basic_block bb = gimple_bb (stmt);
+	  if (verify_def (bb, definition_block,
+			  name, stmt, virtual_operand_p (name)))
+	    goto err;
 	}
     }
 

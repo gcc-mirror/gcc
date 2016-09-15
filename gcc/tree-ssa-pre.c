@@ -3670,15 +3670,14 @@ compute_avail (void)
   basic_block *worklist;
   size_t sp = 0;
   unsigned i;
+  tree name;
 
   /* We pretend that default definitions are defined in the entry block.
      This includes function arguments and the static chain decl.  */
-  for (i = 1; i < num_ssa_names; ++i)
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree name = ssa_name (i);
       pre_expr e;
-      if (!name
-	  || !SSA_NAME_IS_DEFAULT_DEF (name)
+      if (!SSA_NAME_IS_DEFAULT_DEF (name)
 	  || has_zero_uses (name)
 	  || virtual_operand_p (name))
 	continue;

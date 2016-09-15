@@ -898,24 +898,23 @@ ccp_finalize (bool nonzero_p)
 {
   bool something_changed;
   unsigned i;
+  tree name;
 
   do_dbg_cnt ();
 
   /* Derive alignment and misalignment information from partially
      constant pointers in the lattice or nonzero bits from partially
      constant integers.  */
-  for (i = 1; i < num_ssa_names; ++i)
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree name = ssa_name (i);
       ccp_prop_value_t *val;
       unsigned int tem, align;
 
-      if (!name
-	  || (!POINTER_TYPE_P (TREE_TYPE (name))
-	      && (!INTEGRAL_TYPE_P (TREE_TYPE (name))
-		  /* Don't record nonzero bits before IPA to avoid
-		     using too much memory.  */
-		  || !nonzero_p)))
+      if (!POINTER_TYPE_P (TREE_TYPE (name))
+	  && (!INTEGRAL_TYPE_P (TREE_TYPE (name))
+	      /* Don't record nonzero bits before IPA to avoid
+		 using too much memory.  */
+	      || !nonzero_p))
 	continue;
 
       val = get_value (name);

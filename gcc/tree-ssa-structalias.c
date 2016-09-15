@@ -7028,7 +7028,6 @@ static void
 compute_points_to_sets (void)
 {
   basic_block bb;
-  unsigned i;
   varinfo_t vi;
 
   timevar_push (TV_TREE_PTA);
@@ -7077,11 +7076,12 @@ compute_points_to_sets (void)
   cfun->gimple_df->escaped.escaped = 0;
 
   /* Compute the points-to sets for pointer SSA_NAMEs.  */
-  for (i = 0; i < num_ssa_names; ++i)
+  unsigned i;
+  tree ptr;
+
+  FOR_EACH_SSA_NAME (i, ptr, cfun)
     {
-      tree ptr = ssa_name (i);
-      if (ptr
-	  && POINTER_TYPE_P (TREE_TYPE (ptr)))
+      if (POINTER_TYPE_P (TREE_TYPE (ptr)))
 	find_what_p_points_to (cfun->decl, ptr);
     }
 

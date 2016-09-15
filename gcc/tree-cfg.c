@@ -7581,11 +7581,13 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
 
 	    any_var = true;
 	  }
+
+      tree name;
+
       if (gimple_in_ssa_p (cfun))
-	for (ix = 1; ix < num_ssa_names; ++ix)
+	FOR_EACH_SSA_NAME (ix, name, cfun)
 	  {
-	    tree name = ssa_name (ix);
-	    if (name && !SSA_NAME_VAR (name))
+	    if (!SSA_NAME_VAR (name))
 	      {
 		fprintf (file, "  ");
 		print_generic_expr (file, TREE_TYPE (name), flags);

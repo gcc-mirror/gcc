@@ -2341,7 +2341,6 @@ pass_build_ssa::execute (function *fun)
 {
   bitmap_head *dfs;
   basic_block bb;
-  unsigned i;
 
   /* Initialize operand data structures.  */
   init_ssa_operands (fun);
@@ -2385,13 +2384,14 @@ pass_build_ssa::execute (function *fun)
   /* Try to get rid of all gimplifier generated temporaries by making
      its SSA names anonymous.  This way we can garbage collect them
      all after removing unused locals which we do in our TODO.  */
-  for (i = 1; i < num_ssa_names; ++i)
+  unsigned i;
+  tree name;
+
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree decl, name = ssa_name (i);
-      if (!name
-	  || SSA_NAME_IS_DEFAULT_DEF (name))
+      if (SSA_NAME_IS_DEFAULT_DEF (name))
 	continue;
-      decl = SSA_NAME_VAR (name);
+      tree decl = SSA_NAME_VAR (name);
       if (decl
 	  && TREE_CODE (decl) == VAR_DECL
 	  && !VAR_DECL_IS_VIRTUAL_OPERAND (decl)
@@ -3283,12 +3283,12 @@ update_ssa (unsigned update_flags)
 	 placement heuristics.  */
       prepare_block_for_update (start_bb, insert_phi_p);
 
+      tree name;
+
       if (flag_checking)
-	for (i = 1; i < num_ssa_names; ++i)
+	FOR_EACH_SSA_NAME (i, name, cfun)
 	  {
-	    tree name = ssa_name (i);
-	    if (!name
-		|| virtual_operand_p (name))
+	    if (virtual_operand_p (name))
 	      continue;
 
 	    /* For all but virtual operands, which do not have SSA names
