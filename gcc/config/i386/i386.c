@@ -4516,6 +4516,7 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
   const struct stringop_algs *default_algs;
   stringop_size_range input_ranges[MAX_STRINGOP_ALGS];
   char *curr_range_str, *next_range_str;
+  const char *opt = is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=";
   int i = 0, n = 0;
 
   if (is_memset)
@@ -4537,15 +4538,13 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
       if (3 != sscanf (curr_range_str, "%20[^:]:%d:%10s",
                        alg_name, &maxs, align))
         {
-          error ("wrong arg %s to option %s", curr_range_str,
-                 is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=");
+	  error ("wrong argument %qs to option %qs", curr_range_str, opt);
           return;
         }
 
       if (n > 0 && (maxs < (input_ranges[n - 1].max + 1) && maxs != -1))
         {
-          error ("size ranges of option %s should be increasing",
-                 is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=");
+	  error ("size ranges of option %qs should be increasing", opt);
           return;
         }
 
@@ -4555,9 +4554,25 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
 
       if (i == last_alg)
         {
-          error ("wrong stringop strategy name %s specified for option %s",
-                 alg_name,
-                 is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=");
+	  error ("wrong strategy name %qs specified for option %qs",
+		 alg_name, opt);
+
+	  auto_vec <const char *> candidates;
+	  for (i = 0; i < last_alg; i++)
+	    if ((stringop_alg) i != rep_prefix_8_byte || TARGET_64BIT)
+	      candidates.safe_push (stringop_alg_names[i]);
+
+	  char *s;
+	  const char *hint
+	    = candidates_list_and_hint (alg_name, s, candidates);
+	  if (hint)
+	    inform (input_location,
+		    "valid arguments to %qs are: %s; did you mean %qs?",
+		    opt, s, hint);
+	  else
+	    inform (input_location, "valid arguments to %qs are: %s",
+		    opt, s);
+	  XDELETEVEC (s);
           return;
         }
 
@@ -4565,10 +4580,8 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
 	  && !TARGET_64BIT)
 	{
 	  /* rep; movq isn't available in 32-bit code.  */
-	  error ("stringop strategy name %s specified for option %s "
-		 "not supported for 32-bit code",
-                 alg_name,
-                 is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=");
+	  error ("strategy name %qs specified for option %qs "
+		 "not supported for 32-bit code", alg_name, opt);
 	  return;
 	}
 
@@ -4580,8 +4593,7 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
         input_ranges[n].noalign = true;
       else
         {
-          error ("unknown alignment %s specified for option %s",
-                 align, is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=");
+	  error ("unknown alignment %qs specified for option %qs", align, opt);
           return;
         }
       n++;
@@ -4592,15 +4604,13 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
   if (input_ranges[n - 1].max != -1)
     {
       error ("the max value for the last size range should be -1"
-             " for option %s",
-             is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=");
+             " for option %qs", opt);
       return;
     }
 
   if (n > MAX_STRINGOP_ALGS)
     {
-      error ("too many size ranges specified in option %s",
-             is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=");
+      error ("too many size ranges specified in option %qs", opt);
       return;
     }
 
@@ -4731,9 +4741,6 @@ ix86_option_override_internal (bool main_args_p,
   int i;
   unsigned int ix86_arch_mask;
   const bool ix86_tune_specified = (opts->x_ix86_tune_string != NULL);
-  const char *prefix;
-  const char *suffix;
-  const char *sw;
 
 #define PTA_3DNOW	 	(HOST_WIDE_INT_1 << 0)
 #define PTA_3DNOW_A	 	(HOST_WIDE_INT_1 << 1)
@@ -5031,21 +5038,6 @@ ix86_option_override_internal (bool main_args_p,
 
   int const pta_size = ARRAY_SIZE (processor_alias_table);
 
-  /* Set up prefix/suffix so the error messages refer to either the command
-     line argument, or the attribute(target).  */
-  if (main_args_p)
-    {
-      prefix = "-m";
-      suffix = "";
-      sw = "switch";
-    }
-  else
-    {
-      prefix = "option(\"";
-      suffix = "\")";
-      sw = "attribute";
-    }
-
   /* Turn off both OPTION_MASK_ABI_64 and OPTION_MASK_ABI_X32 if
      TARGET_64BIT_DEFAULT is true and TARGET_64BIT is false.  */
   if (TARGET_64BIT_DEFAULT && !TARGET_64BIT_P (opts->x_ix86_isa_flags))
@@ -5118,9 +5110,13 @@ ix86_option_override_internal (bool main_args_p,
 	  opts->x_ix86_tune_string = "generic";
 	}
       else if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
-        warning (OPT_Wdeprecated, "%stune=x86-64%s is deprecated; use "
-                 "%stune=k8%s or %stune=generic%s instead as appropriate",
-                 prefix, suffix, prefix, suffix, prefix, suffix);
+        warning (OPT_Wdeprecated,
+		 main_args_p
+		 ? "%<-mtune=x86-64%> is deprecated; use %<-mtune=k8%> "
+		   "or %<-mtune=generic%> instead as appropriate"
+		 : "%<target(\"tune=x86-64\")%> is deprecated; use "
+		   "%<target(\"tune=k8\")%> or %<target(\"tune=generic\")%> "
+		   "instead as appropriate");
     }
   else
     {
@@ -5474,14 +5470,48 @@ ix86_option_override_internal (bool main_args_p,
     error ("Intel MPX does not support x32");
 
   if (!strcmp (opts->x_ix86_arch_string, "generic"))
-    error ("generic CPU can be used only for %stune=%s %s",
-	   prefix, suffix, sw);
+    error (main_args_p
+	   ? "%<generic%> CPU can be used only for %<-mtune=%> switch"
+	   : "%<generic%> CPU can be used only for "
+	     "%<target(\"tune=\")%> attribute");
   else if (!strcmp (opts->x_ix86_arch_string, "intel"))
-    error ("intel CPU can be used only for %stune=%s %s",
-	   prefix, suffix, sw);
+    error (main_args_p
+	   ? "%<intel%> CPU can be used only for %<-mtune=%> switch"
+	   : "%<intel%> CPU can be used only for "
+	     "%<target(\"tune=\")%> attribute");
   else if (i == pta_size)
-    error ("bad value (%s) for %sarch=%s %s",
-	   opts->x_ix86_arch_string, prefix, suffix, sw);
+    {
+      error (main_args_p
+	     ? "bad value (%qs) for %<-march=%> switch"
+	     : "bad value (%qs) for %<target(\"arch=\")%> attribute",
+	     opts->x_ix86_arch_string);
+
+      auto_vec <const char *> candidates;
+      for (i = 0; i < pta_size; i++)
+	if (strcmp (processor_alias_table[i].name, "generic")
+	    && strcmp (processor_alias_table[i].name, "intel")
+	    && (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
+		|| (processor_alias_table[i].flags & PTA_64BIT)))
+	  candidates.safe_push (processor_alias_table[i].name);
+
+      char *s;
+      const char *hint
+	= candidates_list_and_hint (opts->x_ix86_arch_string, s, candidates);
+      if (hint)
+	inform (input_location,
+		main_args_p
+		? "valid arguments to %<-march=%> switch are: "
+		  "%s; did you mean %qs?"
+		: "valid arguments to %<target(\"arch=\")%> attribute are: "
+		  "%s; did you mean %qs?", s, hint);
+      else
+	inform (input_location,
+		main_args_p
+		? "valid arguments to %<-march=%> switch are: %s"
+		: "valid arguments to %<target(\"arch=\")%> attribute are: %s",
+		s);
+      XDELETEVEC (s);
+    }
 
   ix86_arch_mask = 1u << ix86_arch;
   for (i = 0; i < X86_ARCH_LAST; ++i)
@@ -5523,8 +5553,36 @@ ix86_option_override_internal (bool main_args_p,
       }
 
   if (ix86_tune_specified && i == pta_size)
-    error ("bad value (%s) for %stune=%s %s",
-	   opts->x_ix86_tune_string, prefix, suffix, sw);
+    {
+      error (main_args_p
+	     ? "bad value (%qs) for %<-mtune=%> switch"
+	     : "bad value (%qs) for %<target(\"tune=\")%> attribute",
+	     opts->x_ix86_tune_string);
+
+      auto_vec <const char *> candidates;
+      for (i = 0; i < pta_size; i++)
+	if (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
+	    || (processor_alias_table[i].flags & PTA_64BIT))
+	  candidates.safe_push (processor_alias_table[i].name);
+
+      char *s;
+      const char *hint
+	= candidates_list_and_hint (opts->x_ix86_tune_string, s, candidates);
+      if (hint)
+	inform (input_location,
+		main_args_p
+		? "valid arguments to %<-mtune=%> switch are: "
+		  "%s; did you mean %qs?"
+		: "valid arguments to %<target(\"tune=\")%> attribute are: "
+		  "%s; did you mean %qs?", s, hint);
+      else
+	inform (input_location,
+		main_args_p
+		? "valid arguments to %<-mtune=%> switch are: %s"
+		: "valid arguments to %<target(\"tune=\")%> attribute are: %s",
+		s);
+      XDELETEVEC (s);
+    }
 
   set_ix86_tune_features (ix86_tune, opts->x_ix86_dump_tunes);
 
@@ -5623,7 +5681,9 @@ ix86_option_override_internal (bool main_args_p,
             & ~opts->x_ix86_isa_flags_explicit);
 
       if (TARGET_RTD_P (opts->x_target_flags))
-	warning (0, "%srtd%s is ignored in 64bit mode", prefix, suffix);
+	warning (0,
+		 main_args_p ? "%<-mrtd%> is ignored in 64bit mode"
+			     : "%<target(\"rtd\")%> is ignored in 64bit mode");
     }
   else
     {
@@ -5744,7 +5804,9 @@ ix86_option_override_internal (bool main_args_p,
   /* Accept -msseregparm only if at least SSE support is enabled.  */
   if (TARGET_SSEREGPARM_P (opts->x_target_flags)
       && ! TARGET_SSE_P (opts->x_ix86_isa_flags))
-    error ("%ssseregparm%s used without SSE enabled", prefix, suffix);
+    error (main_args_p
+	   ? "%<-msseregparm%> used without SSE enabled"
+	   : "%<target(\"sseregparm\")%> used without SSE enabled");
 
   if (opts_set->x_ix86_fpmath)
     {
@@ -5809,8 +5871,12 @@ ix86_option_override_internal (bool main_args_p,
       && !(opts->x_target_flags & MASK_ACCUMULATE_OUTGOING_ARGS))
     {
       if (opts_set->x_target_flags & MASK_ACCUMULATE_OUTGOING_ARGS)
-	warning (0, "stack probing requires %saccumulate-outgoing-args%s "
-		 "for correctness", prefix, suffix);
+	warning (0,
+		 main_args_p
+		 ? "stack probing requires %<-maccumulate-outgoing-args%> "
+		   "for correctness"
+		 : "stack probing requires "
+		   "%<target(\"accumulate-outgoing-args\")%> for correctness");
       opts->x_target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
 
@@ -5820,8 +5886,11 @@ ix86_option_override_internal (bool main_args_p,
       && !(opts->x_target_flags & MASK_ACCUMULATE_OUTGOING_ARGS))
     {
       if (opts_set->x_target_flags & MASK_ACCUMULATE_OUTGOING_ARGS)
-	warning (0, "fixed ebp register requires %saccumulate-outgoing-args%s",
-		 prefix, suffix);
+	warning (0,
+		 main_args_p
+		 ? "fixed ebp register requires %<-maccumulate-outgoing-args%>"
+		 : "fixed ebp register requires "
+		   "%<target(\"accumulate-outgoing-args\")%>");
       opts->x_target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
 

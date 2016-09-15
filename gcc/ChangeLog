@@ -1,3 +1,17 @@
+2016-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77475
+	* config/i386/i386.c (ix86_parse_stringop_strategy_string): Simplify,
+	use %qs instead of %s where desirable, use argument instead of arg in
+	the diagnostic wording, add list of supported strategies and
+	spellcheck hint.
+	(ix86_option_override_internal): Emit target("m...") instead of
+	option("m...") in the diagnostic.  Use %qs instead of %s in invalid
+	-march/-mtune option diagnostic.  Add list of supported arches/tunings
+	and spellcheck hint.  Remove prefix, suffix and sw variables, use
+	main_args_p ? "..." : "..." in diagnostics to make translation
+	possible.
+
 2016-09-15  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2asm.h (dw2_asm_output_offset): Add overload with

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mtune=btver2 -mmemcpy-strategy=rep_8byte:-1:noalign" }
 
-/* { dg-error "stringop strategy name rep_8byte specified for option -mmemcpy_strategy= not supported for 32-bit code" "" { target ia32 } 0 } */
+/* { dg-error "stringop strategy name 'rep_8byte' specified for option '-mmemcpy_strategy=' not supported for 32-bit code" "" { target ia32 } 0 } */
 
 struct U9
 {
