@@ -3744,7 +3744,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* Defer in case this is only used for its type.  */;
       else if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
 	/* Defer, there's no lvalue->rvalue conversion.  */;
-      else if (is_really_empty_class (TREE_TYPE (t)))
+      else if (COMPLETE_TYPE_P (TREE_TYPE (t))
+	       && is_really_empty_class (TREE_TYPE (t)))
 	{
 	  /* If the class is empty, we aren't actually loading anything.  */
 	  r = build_constructor (TREE_TYPE (t), NULL);

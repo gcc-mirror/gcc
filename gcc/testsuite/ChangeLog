@@ -1,5 +1,8 @@
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77338
+	* g++.dg/cpp0x/decltype-77338.C: New test.
+
 	PR c++/77375
 	* g++.dg/cpp0x/mutable1.C: New test.
 
