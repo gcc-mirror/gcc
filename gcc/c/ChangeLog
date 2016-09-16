@@ -1,3 +1,7 @@
+2016-09-16  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (lvalue_p): Use true and false instead of 1 and 0.
+
 2016-09-14  Marek Polacek  <polacek@redhat.com>
 
 	* c-array-notation.c (create_cmp_incr): Use false instead of 0.
