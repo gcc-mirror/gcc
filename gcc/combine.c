@@ -14393,6 +14393,8 @@ rest_of_handle_combine (void)
      instructions.  */
   if (rebuild_jump_labels_after_combine)
     {
+      if (dom_info_available_p (CDI_DOMINATORS))
+	free_dominance_info (CDI_DOMINATORS);
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
       cleanup_cfg (0);
