@@ -313,6 +313,9 @@
 #define EH_FRAME_THROUGH_COLLECT2 1
 #define EH_TABLES_CAN_BE_READ_ONLY 1
 
+/* AIX Assembler implicitly assumes DWARF 64 bit extension in 64 bit mode.  */
+#define DWARF_OFFSET_SIZE PTR_SIZE
+
 #define ASM_OUTPUT_DWARF_PCREL(FILE,SIZE,LABEL) \
   rs6000_asm_output_dwarf_pcrel ((FILE), (SIZE), (LABEL));
 
