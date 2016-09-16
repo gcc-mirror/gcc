@@ -35,6 +35,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "unwind-pe.h"
 #include "unwind-dw2-fde.h"
 #include "gthr.h"
+#else
+#if (defined(__GTHREAD_MUTEX_INIT) || defined(__GTHREAD_MUTEX_INIT_FUNCTION)) \
+    && defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
+#define ATOMIC_FDE_FAST_PATH 1
+#endif
 #endif
 
 /* The unseen_objects list contains objects that have been registered
@@ -43,6 +48,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    by decreasing value of pc_begin.  */
 static struct object *unseen_objects;
 static struct object *seen_objects;
+#ifdef ATOMIC_FDE_FAST_PATH
+static int any_objects_registered;
+#endif
 
 #ifdef __GTHREAD_MUTEX_INIT
 static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
@@ -96,6 +104,16 @@ __register_frame_info_bases (const void *begin, struct object *ob,
 
   ob->next = unseen_objects;
   unseen_objects = ob;
+#ifdef ATOMIC_FDE_FAST_PATH
+  /* Set flag that at least one library has registered FDEs.
+     Use relaxed MO here, it is up to the app to ensure that the library
+     loading/initialization happens-before using that library in other
+     threads (in particular unwinding with that library's functions
+     appearing in the backtraces).  Calling that library's functions
+     without waiting for the library to initialize would be racy.  */
+  if (!any_objects_registered)
+    __atomic_store_n (&any_objects_registered, 1, __ATOMIC_RELAXED);
+#endif
 
   __gthread_mutex_unlock (&object_mutex);
 }
@@ -140,6 +158,16 @@ __register_frame_info_table_bases (void *begin, struct object *ob,
 
   ob->next = unseen_objects;
   unseen_objects = ob;
+#ifdef ATOMIC_FDE_FAST_PATH
+  /* Set flag that at least one library has registered FDEs.
+     Use relaxed MO here, it is up to the app to ensure that the library
+     loading/initialization happens-before using that library in other
+     threads (in particular unwinding with that library's functions
+     appearing in the backtraces).  Calling that library's functions
+     without waiting for the library to initialize would be racy.  */
+  if (!any_objects_registered)
+    __atomic_store_n (&any_objects_registered, 1, __ATOMIC_RELAXED);
+#endif
 
   __gthread_mutex_unlock (&object_mutex);
 }
@@ -1000,6 +1028,19 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 {
   struct object *ob;
   const fde *f = NULL;
+
+#ifdef ATOMIC_FDE_FAST_PATH
+  /* For targets where unwind info is usually not registered through these
+     APIs anymore, avoid taking a global lock.
+     Use relaxed MO here, it is up to the app to ensure that the library
+     loading/initialization happens-before using that library in other
+     threads (in particular unwinding with that library's functions
+     appearing in the backtraces).  Calling that library's functions
+     without waiting for the library to initialize would be racy.  */
+  if (__builtin_expect (!__atomic_load_n (&any_objects_registered,
+					  __ATOMIC_RELAXED), 1))
+    return NULL;
+#endif
 
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
