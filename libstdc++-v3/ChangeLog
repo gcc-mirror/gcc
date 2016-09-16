@@ -1,3 +1,10 @@
+2016-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opa.cc [_GLIBCXX_HAVE_POSIX_MEMALIGN] (aligned_alloc):
+	Increase alignment if less than sizeof(void*).
+	[_GLIBCXX_HAVE_ALIGNED_ALLOC] (operator new(size_t, align_val_t)):
+	Increase size if not a multiple of alignment.
+
 2016-09-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/debug_mode.xml: Minor editorial fixes.
