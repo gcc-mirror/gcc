@@ -1,3 +1,9 @@
+2016-09-16  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_OFFSET): Use parameter
+	OFFSET, not offset.
+	* config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Likewise.
+
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77526
