@@ -1,5 +1,10 @@
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77379
+	* g++.dg/abi/abi-tag23.C: Adjust scan-assembler regex for differing
+	thunk offsets.
+	* g++.dg/abi/abi-tag23a.C: Likewise.
+
 	PR c++/77338
 	* g++.dg/cpp0x/decltype-77338.C: New test.
 
