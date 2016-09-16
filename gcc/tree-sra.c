@@ -1680,7 +1680,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 
   misalign = (misalign + offset) & (align - 1);
   if (misalign != 0)
-    align = (misalign & -misalign);
+    align = least_bit_hwi (misalign);
   if (align != TYPE_ALIGN (exp_type))
     exp_type = build_aligned_type (exp_type, align);
 

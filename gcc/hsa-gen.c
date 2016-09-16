@@ -2207,7 +2207,7 @@ gen_hsa_addr_with_align (tree ref, hsa_bb *hbb, BrigAlignment8_t *output_align)
       unsigned align = hsa_byte_alignment (addr->m_symbol->m_align);
       unsigned misalign = addr->m_imm_offset & (align - 1);
       if (misalign)
-        align = (misalign & -misalign);
+        align = least_bit_hwi (misalign);
       *output_align = hsa_alignment_encoding (BITS_PER_UNIT * align);
     }
   return addr;
@@ -2434,7 +2434,7 @@ hsa_bitmemref_alignment (tree ref)
   BrigAlignment8_t base = hsa_object_alignment (ref);
   if (byte_bits == 0)
     return base;
-  return MIN (base, hsa_alignment_encoding (byte_bits & -byte_bits));
+  return MIN (base, hsa_alignment_encoding (least_bit_hwi (byte_bits)));
 }
 
 /* Generate HSAIL instructions loading something into register DEST.  RHS is

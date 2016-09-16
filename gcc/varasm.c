@@ -2632,7 +2632,7 @@ assemble_trampoline_template (void)
 static inline unsigned
 min_align (unsigned int a, unsigned int b)
 {
-  return (a | b) & -(a | b);
+  return least_bit_hwi (a | b);
 }
 
 /* Return the assembler directive for creating a given kind of integer

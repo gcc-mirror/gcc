@@ -3643,13 +3643,13 @@ fold_rtx (rtx x, rtx_insn *insn)
 
 	      if (code == PLUS && const_arg1 == inner_const
 		  && ((HAVE_PRE_INCREMENT
-			  && exact_log2 (INTVAL (const_arg1)) >= 0)
+			  && pow2p_hwi (INTVAL (const_arg1)))
 		      || (HAVE_POST_INCREMENT
-			  && exact_log2 (INTVAL (const_arg1)) >= 0)
+			  && pow2p_hwi (INTVAL (const_arg1)))
 		      || (HAVE_PRE_DECREMENT
-			  && exact_log2 (- INTVAL (const_arg1)) >= 0)
+			  && pow2p_hwi (- INTVAL (const_arg1)))
 		      || (HAVE_POST_DECREMENT
-			  && exact_log2 (- INTVAL (const_arg1)) >= 0)))
+			  && pow2p_hwi (- INTVAL (const_arg1)))))
 		break;
 
 	      /* ??? Vector mode shifts by scalar

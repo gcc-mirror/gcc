@@ -2534,7 +2534,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
     {
       HOST_WIDE_INT sc = INTVAL (XEXP (x, 1));
       unsigned HOST_WIDE_INT uc = sc;
-      if (sc < 0 && -uc == (uc & -uc))
+      if (sc < 0 && pow2_or_zerop (-uc))
 	{
 	  if (xsize > 0)
 	    xsize = -xsize;
@@ -2549,7 +2549,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
     {
       HOST_WIDE_INT sc = INTVAL (XEXP (y, 1));
       unsigned HOST_WIDE_INT uc = sc;
-      if (sc < 0 && -uc == (uc & -uc))
+      if (sc < 0 && pow2_or_zerop (-uc))
 	{
 	  if (ysize > 0)
 	    ysize = -ysize;

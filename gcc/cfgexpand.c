@@ -1008,7 +1008,7 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
 	 important, we'll simply use the alignment that is already set.  */
       if (base == virtual_stack_vars_rtx)
 	offset -= frame_phase;
-      align = offset & -offset;
+      align = least_bit_hwi (offset);
       align *= BITS_PER_UNIT;
       if (align == 0 || align > base_align)
 	align = base_align;

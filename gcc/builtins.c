@@ -305,7 +305,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 	{
 	  ptr_bitmask = TREE_INT_CST_LOW (TREE_OPERAND (addr, 1));
 	  ptr_bitmask *= BITS_PER_UNIT;
-	  align = ptr_bitmask & -ptr_bitmask;
+	  align = least_bit_hwi (ptr_bitmask);
 	  addr = TREE_OPERAND (addr, 0);
 	}
 
@@ -325,7 +325,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 	      unsigned HOST_WIDE_INT step = 1;
 	      if (TMR_STEP (exp))
 		step = TREE_INT_CST_LOW (TMR_STEP (exp));
-	      align = MIN (align, (step & -step) * BITS_PER_UNIT);
+	      align = MIN (align, least_bit_hwi (step) * BITS_PER_UNIT);
 	    }
 	  if (TMR_INDEX2 (exp))
 	    align = BITS_PER_UNIT;
@@ -404,7 +404,7 @@ get_object_alignment (tree exp)
      ptr & (align - 1) == bitpos.  */
 
   if (bitpos != 0)
-    align = (bitpos & -bitpos);
+    align = least_bit_hwi (bitpos);
   return align;
 }
 
@@ -502,7 +502,7 @@ get_pointer_alignment (tree exp)
      ptr & (align - 1) == bitpos.  */
 
   if (bitpos != 0)
-    align = (bitpos & -bitpos);
+    align = least_bit_hwi (bitpos);
 
   return align;
 }
@@ -5559,7 +5559,7 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
 
       /* Either this argument is null, or it's a fake pointer encoding
          the alignment of the object.  */
-      val = val & -val;
+      val = least_bit_hwi (val);
       val *= BITS_PER_UNIT;
 
       if (val == 0 || mode_align < val)

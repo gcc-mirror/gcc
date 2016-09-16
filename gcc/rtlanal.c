@@ -4483,8 +4483,8 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	int sign_index = GET_MODE_PRECISION (GET_MODE (x)) - 1;
 	int width0 = floor_log2 (nz0) + 1;
 	int width1 = floor_log2 (nz1) + 1;
-	int low0 = floor_log2 (nz0 & -nz0);
-	int low1 = floor_log2 (nz1 & -nz1);
+	int low0 = ctz_or_zero (nz0);
+	int low1 = ctz_or_zero (nz1);
 	unsigned HOST_WIDE_INT op0_maybe_minusp
 	  = nz0 & (HOST_WIDE_INT_1U << sign_index);
 	unsigned HOST_WIDE_INT op1_maybe_minusp

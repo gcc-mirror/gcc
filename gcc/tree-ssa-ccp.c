@@ -928,7 +928,7 @@ ccp_finalize (bool nonzero_p)
 	  /* Trailing mask bits specify the alignment, trailing value
 	     bits the misalignment.  */
 	  tem = val->mask.to_uhwi ();
-	  align = (tem & -tem);
+	  align = least_bit_hwi (tem);
 	  if (align > 1)
 	    set_ptr_info_alignment (get_ptr_info (name), align,
 				    (TREE_INT_CST_LOW (val->value)

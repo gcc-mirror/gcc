@@ -1417,11 +1417,11 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	    gcc_unreachable ();
 	}
       /* Is this (cond) ? 2^n : 0?  */
-      else if (ifalse == 0 && exact_log2 (itrue) >= 0
+      else if (ifalse == 0 && pow2p_hwi (itrue)
 	       && STORE_FLAG_VALUE == 1)
 	normalize = 1;
       /* Is this (cond) ? 0 : 2^n?  */
-      else if (itrue == 0 && exact_log2 (ifalse) >= 0 && can_reverse
+      else if (itrue == 0 && pow2p_hwi (ifalse) && can_reverse
 	       && STORE_FLAG_VALUE == 1)
 	{
 	  normalize = 1;

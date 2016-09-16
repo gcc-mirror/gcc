@@ -1805,7 +1805,7 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	  else if (CONST_INT_P (offset))
 	    {
 	      align = INTVAL (offset) * BITS_PER_UNIT | boundary;
-	      align = align & -align;
+	      align = least_bit_hwi (align);
 	    }
 	  set_mem_align (args[i].stack, align);
 
@@ -5026,7 +5026,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	  int pad = used - size;
 	  if (pad)
 	    {
-	      unsigned int pad_align = (pad & -pad) * BITS_PER_UNIT;
+	      unsigned int pad_align = least_bit_hwi (pad) * BITS_PER_UNIT;
 	      parm_align = MIN (parm_align, pad_align);
 	    }
 	}
@@ -5086,7 +5086,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	    parm_align = BITS_PER_UNIT;
 	  else if (excess)
 	    {
-	      unsigned int excess_align = (excess & -excess) * BITS_PER_UNIT;
+	      unsigned int excess_align = least_bit_hwi (excess) * BITS_PER_UNIT;
 	      parm_align = MIN (parm_align, excess_align);
 	    }
 	}
