@@ -32,4 +32,4 @@ int main()
   Final().get_foo();
 }
 
-// { dg-final { scan-assembler "_ZThn16_N7Derived7get_fooEv" } }
+// { dg-final { scan-assembler "_ZThn\[0-9]+_N7Derived7get_fooEv" } }
