@@ -1,4 +1,10 @@
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77526
+	* combine.c (rest_of_handle_combine): If any edges have been purged,
+	free dominators if available.
+
+2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/77594
