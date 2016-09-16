@@ -1,3 +1,10 @@
+2016-09-16  Jakub Jelinek  <jakub@redhat.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/77594
+	* internal-fn.c (expand_arith_overflow) <case MINUS_EXPR>: Don't fall
+	through into expand_addsub_overflow after expand_neg_overflow.
+
 2016-09-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c
