@@ -1,4 +1,10 @@
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/77594
+	* gcc.target/i386/pr77594.c: New test.
+
+2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
 	2016-09-14  Jakub Jelinek  <jakub@redhat.com>
