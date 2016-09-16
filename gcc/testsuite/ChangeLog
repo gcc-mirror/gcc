@@ -1,5 +1,8 @@
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77482
+	* g++.dg/cpp0x/constexpr-77482.C: New test.
+
 	PR c++/77379
 	* g++.dg/abi/abi-tag23.C: Adjust scan-assembler regex for differing
 	thunk offsets.

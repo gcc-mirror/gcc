@@ -1,5 +1,9 @@
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77482
+	* error.c (dump_simple_decl): Only check DECL_DECLARED_CONCEPT_P
+	if DECL_LANG_SPECIFIC is non-NULL.  Fix up formatting.
+
 	PR c++/77338
 	* constexpr.c (cxx_eval_constant_expression) <case PARM_DECL>: Only
 	call is_really_empty_class on complete types.
