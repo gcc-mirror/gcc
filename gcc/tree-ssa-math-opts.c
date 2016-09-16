@@ -2647,7 +2647,7 @@ bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
 	      unsigned HOST_WIDE_INT l
 		= (load_offset * BITS_PER_UNIT) & (align - 1);
 	      if (l)
-		align = l & -l;
+		align = least_bit_hwi (l);
 	    }
 	}
 

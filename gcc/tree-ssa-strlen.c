@@ -1983,7 +1983,7 @@ handle_builtin_memcmp (gimple_stmt_iterator *gsi)
 
   if (tree_fits_uhwi_p (len)
       && (leni = tree_to_uhwi (len)) <= GET_MODE_SIZE (word_mode)
-      && exact_log2 (leni) != -1)
+      && pow2p_hwi (leni))
     {
       leni *= CHAR_TYPE_SIZE;
       unsigned align1 = get_pointer_alignment (arg1);

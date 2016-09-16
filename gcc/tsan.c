@@ -175,7 +175,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
       if ((align - 1) & bitpos)
 	{
 	  align = (align - 1) & bitpos;
-	  align = align & -align;
+	  align = least_bit_hwi (align);
 	}
       expr = build_fold_addr_expr (unshare_expr (base));
       expr = build2 (MEM_REF, char_type_node, expr,

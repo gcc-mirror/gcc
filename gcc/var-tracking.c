@@ -1983,7 +1983,7 @@ static bool
 negative_power_of_two_p (HOST_WIDE_INT i)
 {
   unsigned HOST_WIDE_INT x = -(unsigned HOST_WIDE_INT)i;
-  return x == (x & -x);
+  return pow2_or_zerop (x);
 }
 
 /* Strip constant offsets and alignments off of LOC.  Return the base

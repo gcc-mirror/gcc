@@ -19452,7 +19452,7 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
     }
   else
     {
-      unsigned outermost = this_mask & -this_mask;
+      unsigned outermost = least_bit_hwi (this_mask);
 
       if (outermost && outermost <= outer_mask)
 	{
@@ -19533,7 +19533,7 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask)
       
       /* Determine the outermost partitioning used within this loop. */
       this_mask = loop->inner | GOMP_DIM_MASK (GOMP_DIM_MAX);
-      this_mask = (this_mask & -this_mask);
+      this_mask = least_bit_hwi (this_mask);
 
       /* Pick the partitioning just inside that one.  */
       this_mask >>= 1;

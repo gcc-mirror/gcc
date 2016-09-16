@@ -127,10 +127,10 @@ init_expmed_one_conv (struct init_expmed_rtl *all, machine_mode to_mode,
      comparison purposes here, reduce the bit size by one in that
      case.  */
   if (GET_MODE_CLASS (to_mode) == MODE_PARTIAL_INT
-      && exact_log2 (to_size) != -1)
+      && pow2p_hwi (to_size))
     to_size --;
   if (GET_MODE_CLASS (from_mode) == MODE_PARTIAL_INT
-      && exact_log2 (from_size) != -1)
+      && pow2p_hwi (from_size))
     from_size --;
   
   /* Assume cost of zero-extend and sign-extend is the same.  */
@@ -2635,7 +2635,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   if ((t & 1) == 0)
     {
     do_alg_shift:
-      m = floor_log2 (t & -t);	/* m = number of low zero bits */
+      m = ctz_or_zero (t); /* m = number of low zero bits */
       if (m < maxm)
 	{
 	  q = t >> m;
@@ -2872,9 +2872,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
     {
     do_alg_add_t2_m:
       q = t - 1;
-      q = q & -q;
-      m = exact_log2 (q);
-      if (m >= 0 && m < maxm)
+      m = ctz_hwi (q);
+      if (q && m < maxm)
 	{
 	  op_cost = shiftadd_cost (speed, mode, m);
 	  new_limit.cost = best_cost.cost - op_cost;
@@ -2896,9 +2895,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 
     do_alg_sub_t2_m:
       q = t + 1;
-      q = q & -q;
-      m = exact_log2 (q);
-      if (m >= 0 && m < maxm)
+      m = ctz_hwi (q);
+      if (q && m < maxm)
 	{
 	  op_cost = shiftsub0_cost (speed, mode, m);
 	  new_limit.cost = best_cost.cost - op_cost;
@@ -4214,7 +4212,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			   initial right shift.  */
 			if (mh != 0 && (d & 1) == 0)
 			  {
-			    pre_shift = floor_log2 (d & -d);
+			    pre_shift = ctz_or_zero (d);
 			    mh = choose_multiplier (d >> pre_shift, size,
 						    size - pre_shift,
 						    &ml, &post_shift, &dummy);
@@ -4872,7 +4870,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	    int pre_shift;
 	    rtx t1;
 
-	    pre_shift = floor_log2 (d & -d);
+	    pre_shift = ctz_or_zero (d);
 	    ml = invert_mod2n (d >> pre_shift, size);
 	    t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
 			       pre_shift, NULL_RTX, unsignedp);

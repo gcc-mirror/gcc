@@ -699,7 +699,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	  && !c_strlen (src, 2))
 	{
 	  unsigned ilen = tree_to_uhwi (len);
-	  if (exact_log2 (ilen) != -1)
+	  if (pow2p_hwi (ilen))
 	    {
 	      tree type = lang_hooks.types.type_for_size (ilen * 8, 1);
 	      if (type

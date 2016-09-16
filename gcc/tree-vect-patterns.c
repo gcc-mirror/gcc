@@ -2736,7 +2736,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
 	 for even divisors, using an initial right shift.  */
       if (mh != 0 && (d & 1) == 0)
 	{
-	  pre_shift = floor_log2 (d & -d);
+	  pre_shift = ctz_or_zero (d);
 	  mh = choose_multiplier (d >> pre_shift, prec, prec - pre_shift,
 				  &ml, &post_shift, &dummy_int);
 	  gcc_assert (!mh);

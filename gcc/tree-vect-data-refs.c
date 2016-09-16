@@ -2241,7 +2241,7 @@ vect_analyze_group_access_1 (struct data_reference *dr)
       if (DR_IS_READ (dr)
 	  && (dr_step % type_size) == 0
 	  && groupsize > 0
-	  && exact_log2 (groupsize) != -1)
+	  && pow2p_hwi (groupsize))
 	{
 	  GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = stmt;
 	  GROUP_SIZE (vinfo_for_stmt (stmt)) = groupsize;
@@ -4736,7 +4736,7 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
       else
 	{
 	  /* If length is not equal to 3 then only power of 2 is supported.  */
-	  gcc_assert (exact_log2 (count) != -1);
+	  gcc_assert (pow2p_hwi (count));
 
 	  for (i = 0; i < nelt / 2; i++)
 	    {
@@ -4914,7 +4914,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
   else
     {
       /* If length is not equal to 3 then only power of 2 is supported.  */
-      gcc_assert (exact_log2 (length) != -1);
+      gcc_assert (pow2p_hwi (length));
 
       for (i = 0, n = nelt / 2; i < n; i++)
 	{
@@ -5309,7 +5309,7 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
       else
 	{
 	  /* If length is not equal to 3 then only power of 2 is supported.  */
-	  gcc_assert (exact_log2 (count) != -1);
+	  gcc_assert (pow2p_hwi (count));
 	  for (i = 0; i < nelt; i++)
 	    sel[i] = i * 2;
 	  if (can_vec_perm_p (mode, false, sel))
@@ -5483,7 +5483,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
   else
     {
       /* If length is not equal to 3 then only power of 2 is supported.  */
-      gcc_assert (exact_log2 (length) != -1);
+      gcc_assert (pow2p_hwi (length));
 
       for (i = 0; i < nelt; ++i)
 	sel[i] = i * 2;
@@ -5632,7 +5632,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
   memcpy (result_chain->address (), dr_chain.address (),
 	  length * sizeof (tree));
 
-  if (exact_log2 (length) != -1 && LOOP_VINFO_VECT_FACTOR (loop_vinfo) > 4)
+  if (pow2p_hwi (length) && LOOP_VINFO_VECT_FACTOR (loop_vinfo) > 4)
     {
       unsigned int j, log_length = exact_log2 (length);
       for (i = 0; i < nelt / 2; ++i)
@@ -5880,7 +5880,7 @@ vect_transform_grouped_load (gimple *stmt, vec<tree> dr_chain, int size,
      get chain for loads group using vect_shift_permute_load_chain.  */
   mode = TYPE_MODE (STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt)));
   if (targetm.sched.reassociation_width (VEC_PERM_EXPR, mode) > 1
-      || exact_log2 (size) != -1
+      || pow2p_hwi (size)
       || !vect_shift_permute_load_chain (dr_chain, size, stmt,
 					 gsi, &result_chain))
     vect_permute_load_chain (dr_chain, size, stmt, gsi, &result_chain);

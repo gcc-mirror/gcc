@@ -1874,7 +1874,7 @@ replace_ref (tree *expr, slsr_cand_t c)
      requirement for the data type.  See PR58041.  */
   get_object_alignment_1 (*expr, &align, &misalign);
   if (misalign != 0)
-    align = (misalign & -misalign);
+    align = least_bit_hwi (misalign);
   if (align < TYPE_ALIGN (acc_type))
     acc_type = build_aligned_type (acc_type, align);
 

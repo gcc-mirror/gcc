@@ -494,7 +494,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      || (!has_vector_shift && pre_shift != -1))
 	    {
 	      if (has_vector_shift)
-		pre_shift = floor_log2 (d & -d);
+		pre_shift = ctz_or_zero (d);
 	      else if (pre_shift == -1)
 		{
 		  unsigned int j;

@@ -1,3 +1,10 @@
+2016-09-16  Jason Merrill  <jason@redhat.com>
+
+	* class.c (check_bases, set_one_vmethod_tm_attributes): Use
+	least_bit_hwi.
+	* decl.c (cxx_init_decl_processing): Use pow2p_hwi.
+	* parser.c (cp_parser_cilk_simd_vectorlength): Use pow2p_hwi.
+
 2016-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77549

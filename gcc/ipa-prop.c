@@ -4170,7 +4170,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 			   * BITS_PER_UNIT);
 	      misalign = misalign & (align - 1);
 	      if (misalign != 0)
-		align = (misalign & -misalign);
+		align = least_bit_hwi (misalign);
 	      if (align < TYPE_ALIGN (type))
 		type = build_aligned_type (type, align);
 	      base = force_gimple_operand_gsi (&gsi, base,

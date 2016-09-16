@@ -2251,7 +2251,7 @@ contains_muldiv (rtx x)
 
     case MULT:
       return ! (CONST_INT_P (XEXP (x, 1))
-		&& exact_log2 (UINTVAL (XEXP (x, 1))) >= 0);
+		&& pow2p_hwi (UINTVAL (XEXP (x, 1))));
     default:
       if (BINARY_P (x))
 	return contains_muldiv (XEXP (x, 0))
@@ -5100,7 +5100,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	 instead if this isn't a multiply by a power of two.  */
       if (set_src && code == MINUS && GET_CODE (XEXP (x, 1)) == MULT
 	  && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT
-	  && exact_log2 (INTVAL (XEXP (XEXP (x, 1), 1))) < 0)
+	  && !pow2p_hwi (INTVAL (XEXP (XEXP (x, 1), 1))))
 	{
 	  machine_mode mode = GET_MODE (x);
 	  unsigned HOST_WIDE_INT this_int = INTVAL (XEXP (XEXP (x, 1), 1));
@@ -5916,7 +5916,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	 (and <foo> (const_int pow2-1))  */
       if (GET_CODE (XEXP (x, 1)) == AND
 	  && CONST_INT_P (XEXP (XEXP (x, 1), 1))
-	  && exact_log2 (-UINTVAL (XEXP (XEXP (x, 1), 1))) >= 0
+	  && pow2p_hwi (-UINTVAL (XEXP (XEXP (x, 1), 1)))
 	  && rtx_equal_p (XEXP (XEXP (x, 1), 0), XEXP (x, 0)))
 	return simplify_and_const_int (NULL_RTX, mode, XEXP (x, 0),
 				       -INTVAL (XEXP (XEXP (x, 1), 1)) - 1);
@@ -6236,7 +6236,7 @@ simplify_if_then_else (rtx x)
 	 not equal to zero.  Similarly if it is known to be -1 or 0.  */
 
       if (true_code == EQ && true_val == const0_rtx
-	  && exact_log2 (nzb = nonzero_bits (from, GET_MODE (from))) >= 0)
+	  && pow2p_hwi (nzb = nonzero_bits (from, GET_MODE (from))))
 	{
 	  false_code = EQ;
 	  false_val = gen_int_mode (nzb, GET_MODE (from));
@@ -6673,7 +6673,7 @@ simplify_set (rtx x)
 	       || (old_code == EQ && new_code == NE))
 	      && ! other_changed_previously && op1 == const0_rtx
 	      && HWI_COMPUTABLE_MODE_P (GET_MODE (op0))
-	      && exact_log2 (mask = nonzero_bits (op0, GET_MODE (op0))) >= 0)
+	      && pow2p_hwi (mask = nonzero_bits (op0, GET_MODE (op0))))
 	    {
 	      rtx pat = PATTERN (other_insn), note = 0;
 
@@ -8525,7 +8525,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
 	  smask |= HOST_WIDE_INT_M1U << width;
 
 	if (CONST_INT_P (XEXP (x, 1))
-	    && exact_log2 (- smask) >= 0
+	    && pow2p_hwi (- smask)
 	    && (nonzero_bits (XEXP (x, 0), mode) & ~smask) == 0
 	    && (INTVAL (XEXP (x, 1)) & ~smask) != 0)
 	  return force_to_mode (plus_constant (GET_MODE (x), XEXP (x, 0),
@@ -8557,7 +8557,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
       /* If X is (minus C Y) where C's least set bit is larger than any bit
 	 in the mask, then we may replace with (neg Y).  */
       if (CONST_INT_P (XEXP (x, 0))
-	  && ((UINTVAL (XEXP (x, 0)) & -UINTVAL (XEXP (x, 0))) > mask))
+	  && least_bit_hwi (UINTVAL (XEXP (x, 0))) > mask)
 	{
 	  x = simplify_gen_unary (NEG, GET_MODE (x), XEXP (x, 1),
 				  GET_MODE (x));
@@ -8701,7 +8701,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
 	  && ((INTVAL (XEXP (x, 1))
 	       + num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
 	      >= GET_MODE_PRECISION (GET_MODE (x)))
-	  && exact_log2 (mask + 1) >= 0
+	  && pow2p_hwi (mask + 1)
 	  /* Number of bits left after the shift must be more than the mask
 	     needs.  */
 	  && ((INTVAL (XEXP (x, 1)) + exact_log2 (mask + 1))
@@ -8875,7 +8875,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
       if ((mask & ~STORE_FLAG_VALUE) == 0
 	  && XEXP (x, 1) == const0_rtx
 	  && GET_MODE (XEXP (x, 0)) == mode
-	  && exact_log2 (nonzero_bits (XEXP (x, 0), mode)) >= 0
+	  && pow2p_hwi (nonzero_bits (XEXP (x, 0), mode))
 	  && (nonzero_bits (XEXP (x, 0), mode)
 	      == (unsigned HOST_WIDE_INT) STORE_FLAG_VALUE))
 	return force_to_mode (XEXP (x, 0), mode, mask, next_select);
@@ -9105,7 +9105,7 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
 
   /* Likewise for 0 or a single bit.  */
   else if (HWI_COMPUTABLE_MODE_P (mode)
-	   && exact_log2 (nz = nonzero_bits (x, mode)) >= 0)
+	   && pow2p_hwi (nz = nonzero_bits (x, mode)))
     {
       *ptrue = gen_int_mode (nz, mode), *pfalse = const0_rtx;
       return x;
@@ -9793,7 +9793,7 @@ simplify_and_const_int_1 (machine_mode mode, rtx varop,
      may eliminate it.  */
 
   if (GET_CODE (varop) == PLUS
-      && exact_log2 (constop + 1) >= 0)
+      && pow2p_hwi (constop + 1))
     {
       rtx o0, o1;
 
@@ -11335,7 +11335,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       && (code == EQ || code == NE || code == GE || code == GEU
 	  || code == LT || code == LTU)
       && mode_width - 1 < HOST_BITS_PER_WIDE_INT
-      && exact_log2 (const_op & GET_MODE_MASK (mode)) >= 0
+      && pow2p_hwi (const_op & GET_MODE_MASK (mode))
       && (nonzero_bits (op0, mode)
 	  == (unsigned HOST_WIDE_INT) (const_op & GET_MODE_MASK (mode))))
     {

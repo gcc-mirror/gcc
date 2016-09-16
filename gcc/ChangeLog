@@ -1,3 +1,57 @@
+2016-09-16  Jason Merrill  <jason@redhat.com>
+
+	* hwint.h (least_bit_hwi, pow2_or_zerop, pow2p_hwi, ctz_or_zero):
+	New.
+	* hwint.c (exact_log2): Use pow2p_hwi.
+	(ctz_hwi, ffs_hwi): Use least_bit_hwi.
+	* alias.c (memrefs_conflict_p): Use pow2_or_zerop.
+	* builtins.c (get_object_alignment_2, get_object_alignment)
+	(get_pointer_alignment, fold_builtin_atomic_always_lock_free): Use
+	least_bit_hwi.
+	* calls.c (compute_argument_addresses, store_one_arg): Use
+	least_bit_hwi.
+	* cfgexpand.c (expand_one_stack_var_at): Use least_bit_hwi.
+	* combine.c (force_to_mode): Use least_bit_hwi.
+	(contains_muldiv, find_split_point, combine_simplify_rtx)
+	(simplify_if_then_else, simplify_set, force_to_mode)
+	(if_then_else_cond, simplify_and_const_int_1)
+	(simplify_compare_const): Use pow2p_hwi.
+	* cse.c (fold_rtx): Use pow2p_hwi.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos, adjust_address_1):
+	Use least_bit_hwi.
+	* expmed.c (synth_mult, expand_divmod): Use ctz_or_zero, ctz_hwi.
+	(init_expmed_one_conv): Use pow2p_hwi.
+	* expr.c (is_aligning_offset): Use pow2p_hwi.
+	* fold-const.c (round_up_loc, round_down_loc): Use pow2_or_zerop.
+	(fold_binary_loc): Use pow2p_hwi.
+	* function.c (assign_parm_find_stack_rtl): Use least_bit_hwi.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Use pow2p_hwi.
+	* gimple-ssa-strength-reduction.c (replace_ref): Use least_bit_hwi.
+	* hsa-gen.c (gen_hsa_addr_with_align, hsa_bitmemref_alignment):
+	Use least_bit_hwi.
+	* ifcvt.c (noce_try_store_flag_constants): Use pow2p_hwi.
+	* ipa-cp.c (ipcp_alignment_lattice::meet_with_1): Use least_bit_hwi.
+	* ipa-prop.c (ipa_modify_call_arguments): Use least_bit_hwi.
+	* omp-low.c (oacc_loop_fixed_partitions)
+	(oacc_loop_auto_partitions): Use least_bit_hwi.
+	* rtlanal.c (nonzero_bits1): Use ctz_or_zero.
+	* stor-layout.c (place_field): Use least_bit_hwi.
+	* tree-pretty-print.c (dump_generic_node): Use pow2p_hwi.
+	* tree-sra.c (build_ref_for_offset): Use least_bit_hwi.
+	* tree-ssa-ccp.c (ccp_finalize): Use least_bit_hwi.
+	* tree-ssa-math-opts.c (bswap_replace): Use least_bit_hwi.
+	* tree-ssa-strlen.c (handle_builtin_memcmp): Use pow2p_hwi.
+	* tree-vect-data-refs.c (vect_analyze_group_access_1)
+	(vect_grouped_store_supported, vect_grouped_load_supported)
+	(vect_permute_load_chain, vect_shift_permute_load_chain)
+	(vect_transform_grouped_load): Use pow2p_hwi.
+	* tree-vect-generic.c (expand_vector_divmod): Use ctz_or_zero.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Use ctz_or_zero.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Use
+	least_bit_hwi.
+	* tsan.c (instrument_expr): Use least_bit_hwi.
+	* var-tracking.c (negative_power_of_two_p): Use pow2_or_zerop.
+
 2016-09-16  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_OFFSET): Use parameter
