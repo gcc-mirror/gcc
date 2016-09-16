@@ -1,4 +1,9 @@
 2016-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/profile_mode.xml: Fix typo.
+	* doc/html/manual/profile_mode_devel.html: Regenerate.
+
+2016-09-16  Jonathan Wakely  <jwakely@redhat.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
 	* libsupc++/new_opa.cc [_GLIBCXX_HAVE_ALIGNED_ALLOC]
