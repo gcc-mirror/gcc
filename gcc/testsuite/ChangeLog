@@ -1,6 +1,13 @@
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69255
+	* gcc.target/i386/pr69255-1.c: New test.
+	* gcc.target/i386/pr69255-2.c: New test.
+	* gcc.target/i386/pr69255-3.c: New test.
+
 	2016-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/77396
