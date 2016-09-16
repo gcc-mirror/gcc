@@ -1,3 +1,9 @@
+2016-09-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/77613
+	* config/rs6000/rs6000.c (rtx_is_swappable_p): Add support for
+	splat with truncate.
+
 2016-09-16  Jason Merrill  <jason@redhat.com>
 
 	* hwint.h (least_bit_hwi, pow2_or_zerop, pow2p_hwi, ctz_or_zero):
