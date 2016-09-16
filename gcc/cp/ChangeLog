@@ -1,5 +1,9 @@
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77338
+	* constexpr.c (cxx_eval_constant_expression) <case PARM_DECL>: Only
+	call is_really_empty_class on complete types.
+
 	PR c++/77375
 	* class.c (check_bases): Set CLASSTYPE_HAS_MUTABLE if any
 	TYPE_HAS_MUTABLE_P for any bases.
