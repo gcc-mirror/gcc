@@ -3901,17 +3901,6 @@ make_pass_split_all_insns (gcc::context *ctxt)
   return new pass_split_all_insns (ctxt);
 }
 
-static unsigned int
-rest_of_handle_split_after_reload (void)
-{
-  /* If optimizing, then go ahead and split insns now.  */
-#ifndef STACK_REGS
-  if (optimize > 0)
-#endif
-    split_all_insns ();
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_split_after_reload =
@@ -3935,9 +3924,23 @@ public:
   {}
 
   /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      /* If optimizing, then go ahead and split insns now.  */
+      if (optimize > 0)
+	return true;
+
+#ifdef STACK_REGS
+      return true;
+#else
+      return false;
+#endif
+    }
+
   virtual unsigned int execute (function *)
     {
-      return rest_of_handle_split_after_reload ();
+      split_all_insns ();
+      return 0;
     }
 
 }; // class pass_split_after_reload
