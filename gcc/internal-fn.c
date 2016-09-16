@@ -1833,7 +1833,10 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
 	    {
 	    case MINUS_EXPR:
 	      if (integer_zerop (arg0) && !unsr_p)
-		expand_neg_overflow (loc, lhs, arg1, false);
+		{
+		  expand_neg_overflow (loc, lhs, arg1, false);
+		  return;
+		}
 	      /* FALLTHRU */
 	    case PLUS_EXPR:
 	      expand_addsub_overflow (loc, code, lhs, arg0, arg1,
