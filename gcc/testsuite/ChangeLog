@@ -1,5 +1,8 @@
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/77475
+	* gcc.target/i386/pr65990.c: Adjust dg-error regexp.
+
 	PR target/77526
 	* gcc.target/i386/pr77526.c: New test.
 
