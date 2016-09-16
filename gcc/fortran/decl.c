@@ -920,9 +920,10 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 
       t = gfc_reduce_init_expr (e);
 
-      if (!t && (e->ts.type == BT_UNKNOWN
-		 && e->symtree->n.sym->attr.untyped == 1
-		 && e->symtree->n.sym->ns->seen_implicit_none == 1))
+      if (!t && e->ts.type == BT_UNKNOWN
+	  && e->symtree->n.sym->attr.untyped == 1
+	  && (e->symtree->n.sym->ns->seen_implicit_none == 1
+	      || e->symtree->n.sym->ns->parent->seen_implicit_none == 1))
 	{
 	  gfc_free_expr (e);
 	  goto syntax;
