@@ -1,4 +1,11 @@
 2016-09-16  Jonathan Wakely  <jwakely@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	* libsupc++/new_opa.cc [_GLIBCXX_HAVE_ALIGNED_ALLOC]
+	(operator new(size_t, align_val_t)): Replace modulus operator with
+	mask.
+
+2016-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/new_opa.cc [_GLIBCXX_HAVE_POSIX_MEMALIGN] (aligned_alloc):
 	Increase alignment if less than sizeof(void*).

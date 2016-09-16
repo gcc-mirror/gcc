@@ -69,7 +69,7 @@ operator new (std::size_t sz, std::align_val_t al)
 
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC
   /* C11: the value of size shall be an integral multiple of alignment.  */
-  if (std::size_t rem = sz % align)
+  if (std::size_t rem = sz & (align - 1))
     sz += align - rem;
 #endif
 
