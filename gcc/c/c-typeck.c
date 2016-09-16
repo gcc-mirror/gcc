@@ -4631,7 +4631,7 @@ lvalue_p (const_tree ref)
 
     case COMPOUND_LITERAL_EXPR:
     case STRING_CST:
-      return 1;
+      return true;
 
     case INDIRECT_REF:
     case ARRAY_REF:
@@ -4647,7 +4647,7 @@ lvalue_p (const_tree ref)
       return TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE;
 
     default:
-      return 0;
+      return false;
     }
 }
 
