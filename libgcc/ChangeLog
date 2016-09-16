@@ -1,3 +1,14 @@
+2016-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/71744
+	* unwind-dw2-fde.c (ATOMIC_FDE_FAST_PATH): Define if __register_frame*
+	is not the primary registry and atomics are available.
+	(any_objects_registered): New variable.
+	(__register_frame_info_bases, __register_frame_info_table_bases):
+	Atomically store 1 to any_objects_registered after registering first
+	unwind info.
+	(_Unwind_Find_FDE): Return early if any_objects_registered is 0.
+
 2016-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR target/63250
