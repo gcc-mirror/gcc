@@ -1,3 +1,8 @@
+2016-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Integer Overflow Builtins): Fix type of out
+	parameters for functions taking long long arguments.
+
 2016-09-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* recog.c (rest_of_handle_split_after_reload): Delete.
