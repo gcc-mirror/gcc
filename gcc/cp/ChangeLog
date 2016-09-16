@@ -1,3 +1,9 @@
+2016-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77375
+	* class.c (check_bases): Set CLASSTYPE_HAS_MUTABLE if any
+	TYPE_HAS_MUTABLE_P for any bases.
+
 2016-09-16  Jason Merrill  <jason@redhat.com>
 
 	* class.c (check_bases, set_one_vmethod_tm_attributes): Use

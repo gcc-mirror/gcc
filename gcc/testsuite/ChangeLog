@@ -1,3 +1,8 @@
+2016-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77375
+	* g++.dg/cpp0x/mutable1.C: New test.
+
 2016-09-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77612
