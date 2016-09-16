@@ -1,3 +1,8 @@
+2016-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Integer Overflow Builtins): Fix type of out
+	parameters for functions taking long long arguments.
+
 2016-09-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/77613

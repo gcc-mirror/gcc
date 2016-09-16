@@ -9881,10 +9881,10 @@ together with checking whether the operations overflowed.
 @deftypefn {Built-in Function} bool __builtin_add_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)
 @deftypefnx {Built-in Function} bool __builtin_sadd_overflow (int a, int b, int *res)
 @deftypefnx {Built-in Function} bool __builtin_saddl_overflow (long int a, long int b, long int *res)
-@deftypefnx {Built-in Function} bool __builtin_saddll_overflow (long long int a, long long int b, long int *res)
+@deftypefnx {Built-in Function} bool __builtin_saddll_overflow (long long int a, long long int b, long long int *res)
 @deftypefnx {Built-in Function} bool __builtin_uadd_overflow (unsigned int a, unsigned int b, unsigned int *res)
 @deftypefnx {Built-in Function} bool __builtin_uaddl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)
-@deftypefnx {Built-in Function} bool __builtin_uaddll_overflow (unsigned long long int a, unsigned long long int b, unsigned long int *res)
+@deftypefnx {Built-in Function} bool __builtin_uaddll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)
 
 These built-in functions promote the first two operands into infinite precision signed
 type and perform addition on those promoted operands.  The result is then
@@ -9907,10 +9907,10 @@ after addition, conditional jump on carry etc.
 @deftypefn {Built-in Function} bool __builtin_sub_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)
 @deftypefnx {Built-in Function} bool __builtin_ssub_overflow (int a, int b, int *res)
 @deftypefnx {Built-in Function} bool __builtin_ssubl_overflow (long int a, long int b, long int *res)
-@deftypefnx {Built-in Function} bool __builtin_ssubll_overflow (long long int a, long long int b, long int *res)
+@deftypefnx {Built-in Function} bool __builtin_ssubll_overflow (long long int a, long long int b, long long int *res)
 @deftypefnx {Built-in Function} bool __builtin_usub_overflow (unsigned int a, unsigned int b, unsigned int *res)
 @deftypefnx {Built-in Function} bool __builtin_usubl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)
-@deftypefnx {Built-in Function} bool __builtin_usubll_overflow (unsigned long long int a, unsigned long long int b, unsigned long int *res)
+@deftypefnx {Built-in Function} bool __builtin_usubll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)
 
 These built-in functions are similar to the add overflow checking built-in
 functions above, except they perform subtraction, subtract the second argument
@@ -9921,10 +9921,10 @@ from the first one, instead of addition.
 @deftypefn {Built-in Function} bool __builtin_mul_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)
 @deftypefnx {Built-in Function} bool __builtin_smul_overflow (int a, int b, int *res)
 @deftypefnx {Built-in Function} bool __builtin_smull_overflow (long int a, long int b, long int *res)
-@deftypefnx {Built-in Function} bool __builtin_smulll_overflow (long long int a, long long int b, long int *res)
+@deftypefnx {Built-in Function} bool __builtin_smulll_overflow (long long int a, long long int b, long long int *res)
 @deftypefnx {Built-in Function} bool __builtin_umul_overflow (unsigned int a, unsigned int b, unsigned int *res)
 @deftypefnx {Built-in Function} bool __builtin_umull_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)
-@deftypefnx {Built-in Function} bool __builtin_umulll_overflow (unsigned long long int a, unsigned long long int b, unsigned long int *res)
+@deftypefnx {Built-in Function} bool __builtin_umulll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)
 
 These built-in functions are similar to the add overflow checking built-in
 functions above, except they perform multiplication, instead of addition.
