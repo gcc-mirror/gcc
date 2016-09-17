@@ -1,3 +1,8 @@
+2016-09-17  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_OFFSET): Add cast.
+	* config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Likewise.
+
 2016-09-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* recog.c (rest_of_handle_split_after_reload): Delete.
