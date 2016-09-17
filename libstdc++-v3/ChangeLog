@@ -1,3 +1,10 @@
+2016-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdVariantPrinter): Define.
+	(StdExpAnyPrinter, StdExpOptionalPrinter, StdExpStringViewPrinter):
+	Register for C++17 components in namespace std. Strip inline namespace
+	from typename.
+
 2016-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/profile_mode.xml: Fix typo.
