@@ -1,3 +1,14 @@
+2016-09-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* passes.def (pass_early_thread_jumps): Schedule after forwprop.
+	* tree-pass.h (make_pass_early_thread_jumps): Declare.
+	* tree-ssa-threadbackward.c (fsm_find_thread_path,
+	fsm_find_thread_path, profitable_jump_thread_path,
+	fsm_find_control_statement_thread_paths,
+	find_jump_threads_backwards): Add speed_p parameter.
+	(pass_data_early_thread_jumps): New pass.
+	(make_pass_early_thread_jumps): New function.
+
 2016-09-17  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_OFFSET): Add cast.
