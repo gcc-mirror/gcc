@@ -61,12 +61,14 @@ get_gimple_control_stmt (basic_block bb)
 /* Return true if the CFG contains at least one path from START_BB to END_BB.
    When a path is found, record in PATH the blocks from END_BB to START_BB.
    VISITED_BBS is used to make sure we don't fall into an infinite loop.  Bound
-   the recursion to basic blocks belonging to LOOP.  */
+   the recursion to basic blocks belonging to LOOP.
+   SPEED_P indicate that we could increase code size to improve the code path */
 
 static bool
 fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
 		      vec<basic_block, va_gc> *&path,
-		      hash_set<basic_block> *visited_bbs, loop_p loop)
+		      hash_set<basic_block> *visited_bbs, loop_p loop,
+		      bool speed_p)
 {
   if (loop != start_bb->loop_father)
     return false;
@@ -82,7 +84,8 @@ fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
       edge e;
       edge_iterator ei;
       FOR_EACH_EDGE (e, ei, start_bb->succs)
-	if (fsm_find_thread_path (e->dest, end_bb, path, visited_bbs, loop))
+	if (fsm_find_thread_path (e->dest, end_bb, path, visited_bbs, loop,
+				  speed_p))
 	  {
 	    vec_safe_push (path, start_bb);
 	    return true;
@@ -101,11 +104,13 @@ fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
    value on PATH.  ARG is the value of that SSA_NAME.
 
    BBI will be appended to PATH when we have a profitable jump threading
-   path.  Callers are responsible for removing BBI from PATH in that case. */
+   path.  Callers are responsible for removing BBI from PATH in that case.
+
+   SPEED_P indicate that we could increase code size to improve the code path */
 
 static edge
 profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
-			     basic_block bbi, tree name, tree arg)
+			     basic_block bbi, tree name, tree arg, bool speed_p)
 {
   /* Note BBI is not in the path yet, hence the +1 in the test below
      to make sure BBI is accounted for in the path length test.  */
@@ -307,7 +312,7 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
       return NULL;
     }
 
-  if (optimize_edge_for_speed_p (taken_edge))
+  if (speed_p && optimize_edge_for_speed_p (taken_edge))
     {
       if (n_insns >= PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATH_INSNS))
 	{
@@ -422,13 +427,15 @@ convert_and_register_jump_thread_path (vec<basic_block, va_gc> *path,
 
 /* We trace the value of the SSA_NAME NAME back through any phi nodes looking
    for places where it gets a constant value and save the path.  Stop after
-   having recorded MAX_PATHS jump threading paths.  */
+   having recorded MAX_PATHS jump threading paths.
+
+   SPEED_P indicate that we could increase code size to improve the code path */
 
 static void
 fsm_find_control_statement_thread_paths (tree name,
 					 hash_set<basic_block> *visited_bbs,
 					 vec<basic_block, va_gc> *&path,
-					 bool seen_loop_phi)
+					 bool seen_loop_phi, bool speed_p)
 {
   /* If NAME appears in an abnormal PHI, then don't try to trace its
      value back through PHI nodes.  */
@@ -496,7 +503,7 @@ fsm_find_control_statement_thread_paths (tree name,
 	  hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
 
 	  if (fsm_find_thread_path (var_bb, e->src, next_path, visited_bbs,
-				    e->src->loop_father))
+				    e->src->loop_father, speed_p))
 	    ++e_count;
 
 	  delete visited_bbs;
@@ -562,7 +569,7 @@ fsm_find_control_statement_thread_paths (tree name,
 	      /* Recursively follow SSA_NAMEs looking for a constant
 		 definition.  */
 	      fsm_find_control_statement_thread_paths (arg, visited_bbs, path,
-						       seen_loop_phi);
+						       seen_loop_phi, speed_p);
 
 	      path->pop ();
 	      continue;
@@ -573,7 +580,8 @@ fsm_find_control_statement_thread_paths (tree name,
 
 	  /* If this is a profitable jump thread path, then convert it
 	     into the canonical form and register it.  */
-	  edge taken_edge = profitable_jump_thread_path (path, bbi, name, arg);
+	  edge taken_edge = profitable_jump_thread_path (path, bbi, name, arg,
+							 speed_p);
 	  if (taken_edge)
 	    {
 	      if (bb_loop_depth (taken_edge->src)
@@ -589,7 +597,7 @@ fsm_find_control_statement_thread_paths (tree name,
 
       if (TREE_CODE (arg) == SSA_NAME)
 	fsm_find_control_statement_thread_paths (arg, visited_bbs,
-						 path, seen_loop_phi);
+						 path, seen_loop_phi, speed_p);
 
       else
 	{
@@ -599,7 +607,7 @@ fsm_find_control_statement_thread_paths (tree name,
 	  path->pop ();
 
 	  edge taken_edge = profitable_jump_thread_path (path, var_bb,
-						     name, arg);
+						         name, arg, speed_p);
 	  if (taken_edge)
 	    {
 	      if (bb_loop_depth (taken_edge->src)
@@ -623,10 +631,11 @@ fsm_find_control_statement_thread_paths (tree name,
    is a constant.  Record such paths for jump threading.
 
    It is assumed that BB ends with a control statement and that by
-   finding a path where NAME is a constant, we can thread the path.  */
+   finding a path where NAME is a constant, we can thread the path.
+   SPEED_P indicate that we could increase code size to improve the code path */
 
 void  
-find_jump_threads_backwards (basic_block bb)
+find_jump_threads_backwards (basic_block bb, bool speed_p)
 {     
   gimple *stmt = get_gimple_control_stmt (bb);
   if (!stmt)
@@ -656,7 +665,8 @@ find_jump_threads_backwards (basic_block bb)
   hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
 
   max_threaded_paths = PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATHS);
-  fsm_find_control_statement_thread_paths (name, visited_bbs, bb_path, false);
+  fsm_find_control_statement_thread_paths (name, visited_bbs, bb_path, false,
+					   speed_p);
 
   delete visited_bbs;
   vec_free (bb_path);
@@ -706,7 +716,7 @@ pass_thread_jumps::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       if (EDGE_COUNT (bb->succs) > 1)
-	find_jump_threads_backwards (bb);
+	find_jump_threads_backwards (bb, true);
     }
   bool changed = thread_through_all_blocks (true);
 
@@ -720,4 +730,60 @@ gimple_opt_pass *
 make_pass_thread_jumps (gcc::context *ctxt)
 {
   return new pass_thread_jumps (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_early_thread_jumps =
+{
+  GIMPLE_PASS,
+  "ethread",
+  OPTGROUP_NONE,
+  TV_TREE_SSA_THREAD_JUMPS,
+  ( PROP_cfg | PROP_ssa ),
+  0,
+  0,
+  0,
+  ( TODO_cleanup_cfg | TODO_update_ssa ),
+};
+
+class pass_early_thread_jumps : public gimple_opt_pass
+{
+public:
+  pass_early_thread_jumps (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_early_thread_jumps, ctxt)
+  {}
+
+  opt_pass * clone (void) { return new pass_early_thread_jumps (m_ctxt); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *);
+};
+
+bool
+pass_early_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+
+unsigned int
+pass_early_thread_jumps::execute (function *fun)
+{
+  /* Try to thread each block with more than one successor.  */
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      if (EDGE_COUNT (bb->succs) > 1)
+	find_jump_threads_backwards (bb, false);
+    }
+  thread_through_all_blocks (true);
+  return 0;
+}
+
+}
+
+gimple_opt_pass *
+make_pass_early_thread_jumps (gcc::context *ctxt)
+{
+  return new pass_early_thread_jumps (ctxt);
 }

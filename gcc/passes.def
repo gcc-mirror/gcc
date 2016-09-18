@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 	  /* After CCP we rewrite no longer addressed locals into SSA
 	     form if possible.  */
 	  NEXT_PASS (pass_forwprop);
+          NEXT_PASS (pass_early_thread_jumps);
 	  NEXT_PASS (pass_sra_early);
 	  /* pass_build_ealias is a dummy pass that ensures that we
 	     execute TODO_rebuild_alias at this point.  */
