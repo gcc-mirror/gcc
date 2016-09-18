@@ -1,3 +1,7 @@
+2016-09-18  Kirill Yukhin  <kirill.yukhin@gmaile.com>
+
+	* gcc.target/i386/pr68633.c: Fix expected result.
+
 2016-09-17  Louis Krupp  <louis.krupp@gmail.com>
 
 	PR fortran/68078
