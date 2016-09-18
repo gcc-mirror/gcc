@@ -1,3 +1,9 @@
+2016-09-17  Louis Krupp  <louis.krupp@gmail.com>
+
+	PR fortran/68078
+	* gfortran.dg/pr68078.f90: New test.
+	* gfortran.dg/set_vm_limit.c: New, called by pr68078.
+
 2016-09-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/77613

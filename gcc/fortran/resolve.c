@@ -6928,6 +6928,35 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
   return true;
 }
 
+static void
+cond_init (gfc_code *code, gfc_expr *e, int pointer, gfc_expr *init_e)
+{
+  gfc_code *block;
+  gfc_expr *cond;
+  gfc_code *init_st;
+  gfc_expr *e_to_init = gfc_expr_to_initialize (e);
+
+  cond = pointer
+    ? gfc_build_intrinsic_call (gfc_current_ns, GFC_ISYM_ASSOCIATED,
+	"associated", code->loc, 2, gfc_copy_expr (e_to_init), NULL)
+    : gfc_build_intrinsic_call (gfc_current_ns, GFC_ISYM_ALLOCATED,
+	"allocated", code->loc, 1, gfc_copy_expr (e_to_init));
+
+  init_st = gfc_get_code (EXEC_INIT_ASSIGN);
+  init_st->loc = code->loc;
+  init_st->expr1 = e_to_init;
+  init_st->expr2 = init_e;
+
+  block = gfc_get_code (EXEC_IF);
+  block->loc = code->loc;
+  block->block = gfc_get_code (EXEC_IF);
+  block->block->loc = code->loc;
+  block->block->expr1 = cond;
+  block->block->next = init_st;
+  block->next = code->next;
+
+  code->next = block;
+}
 
 /* Resolve the expression in an ALLOCATE statement, doing the additional
    checks to see whether the expression is OK or not.  The expression must
@@ -7193,14 +7222,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	ts = ts.u.derived->components->ts;
 
       if (gfc_bt_struct (ts.type) && (init_e = gfc_default_initializer (&ts)))
-	{
-	  gfc_code *init_st = gfc_get_code (EXEC_INIT_ASSIGN);
-	  init_st->loc = code->loc;
-	  init_st->expr1 = gfc_expr_to_initialize (e);
-	  init_st->expr2 = init_e;
-	  init_st->next = code->next;
-	  code->next = init_st;
-	}
+	cond_init (code, e, pointer, init_e);
     }
   else if (code->expr3->mold && code->expr3->ts.type == BT_DERIVED)
     {

@@ -1,3 +1,10 @@
+2016_09_17  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/68078
+	* resolve.c (resolve_allocate_expr): Check that derived type
+	pointer, object or array has been successfully allocated before
+	initializing.
+
 2016-09-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77612
