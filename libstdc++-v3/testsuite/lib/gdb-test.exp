@@ -210,6 +210,12 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 	    return
 	}
 
+	-re {Error while executing Python code.[\n\r]} {
+	    fail "$testname"
+	    remote_close target
+	    return
+	}
+
 	-re {^[^$][^\n\r]*[\n\r]+} {
 	    send_log "skipping: $expect_out(buffer)"
 	    exp_continue

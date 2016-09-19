@@ -1,5 +1,7 @@
 2016-09-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/lib/gdb-test.exp (gdb-test): Fail if Python error occurs.
+
 	* python/libstdcxx/v6/printers.py (SingleObjContainerPrinter): Allow
 	display_hint to be set by subclasses.
 	(StdVariantPrinter): Use array for display_hint. Adjust output to be
