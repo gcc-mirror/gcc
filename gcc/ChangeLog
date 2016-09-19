@@ -1,5 +1,8 @@
 2016-09-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	PR c++/77434
+	* doc/invoke.texi: Document -Wint-in-bool-context.
+
 	PR middle-end/77421
 	* dwarf2out.c (output_loc_operands): Fix an assertion.
 

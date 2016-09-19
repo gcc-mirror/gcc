@@ -1,3 +1,8 @@
+2016-09-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/77434
+	* c-c++-common/Wint-in-bool-context.c: New test.
+
 2016-09-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cr-decimal-dig-1.c: New test.

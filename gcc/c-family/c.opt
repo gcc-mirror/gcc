@@ -545,6 +545,10 @@ Wint-conversion
 C ObjC Var(warn_int_conversion) Init(1) Warning
 Warn about incompatible integer to pointer and pointer to integer conversions.
 
+Wint-in-bool-context
+C ObjC C++ ObjC++ Var(warn_int_in_bool_context) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn for suspicious integer expressions in boolean context.
+
 Wint-to-pointer-cast
 C ObjC C++ ObjC++ Var(warn_int_to_pointer_cast) Init(1) Warning
 Warn when there is a cast to a pointer from an integer of a different size.
