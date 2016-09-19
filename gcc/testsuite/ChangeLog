@@ -1,3 +1,8 @@
+2016-09-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/77416
+	* gcc.target/powerpc/pr77416.c: New.
+
 2016-09-19  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/77639
