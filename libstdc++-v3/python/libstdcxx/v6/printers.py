@@ -879,9 +879,10 @@ class StdForwardListPrinter:
 class SingleObjContainerPrinter(object):
     "Base class for printers of containers of single objects"
 
-    def __init__ (self, val, viz):
+    def __init__ (self, val, viz, hint = None):
         self.contained_value = val
         self.visualizer = viz
+        self.hint = hint
 
     def _recognize(self, type):
         """Return TYPE as a string after applying type printers"""
@@ -916,7 +917,7 @@ class SingleObjContainerPrinter(object):
         # if contained value is a map we want to display in the same way
         if hasattr (self.visualizer, 'children') and hasattr (self.visualizer, 'display_hint'):
             return self.visualizer.display_hint ()
-        return None
+        return self.hint
 
 
 class StdExpAnyPrinter(SingleObjContainerPrinter):
@@ -985,7 +986,6 @@ class StdVariantPrinter(SingleObjContainerPrinter):
 
     def __init__(self, typename, val):
         alternatives = self._template_args(val)
-        self.alts = alternatives
         self.typename = "%s<%s>" % (typename, ', '.join([self._recognize(alt) for alt in alternatives]))
         self.index = val['_M_index']
         if self.index >= len(alternatives):
@@ -997,24 +997,25 @@ class StdVariantPrinter(SingleObjContainerPrinter):
             addr = val['_M_first']['_M_storage'].address
             contained_value = addr.cast(self.contained_type.pointer()).dereference()
             visualizer = gdb.default_visualizer(contained_value)
-        super (StdVariantPrinter, self).__init__(contained_value, visualizer)
+        super (StdVariantPrinter, self).__init__(contained_value, visualizer, 'array')
 
-    def _template_args(self, val):
+    @staticmethod
+    def _template_args(val):
         n = 0
-        args = ()
+        args = []
         while True:
             try:
-                args += (val.type.template_argument(n),)
+                args.append(val.type.template_argument(n))
             except:
                 return args
             n += 1
 
     def to_string(self):
         if self.contained_value is None:
-            return "%s [no value]" % self.typename
+            return "%s [no contained value]" % self.typename
         if hasattr(self.visualizer, 'children'):
-            return "%s [alternative %d] %s" % (self.typename, self.index, self.visualizer.to_string())
-        return self.typename
+            return "%s [index %d] containing %s" % (self.typename, self.index, self.visualizer.to_string())
+        return "%s [index %d]" % (self.typename, self.index)
 
 class StdExpStringViewPrinter:
     "Print a std::basic_string_view or std::experimental::basic_string_view"
@@ -1262,6 +1263,7 @@ def register_type_printers(obj):
 
     for pfx in ('', 'w'):
         add_one_type_printer(obj, 'basic_string', pfx + 'string')
+        add_one_type_printer(obj, 'basic_string_view', pfx + 'string_view')
         add_one_type_printer(obj, 'basic_ios', pfx + 'ios')
         add_one_type_printer(obj, 'basic_streambuf', pfx + 'streambuf')
         add_one_type_printer(obj, 'basic_istream', pfx + 'istream')
@@ -1295,6 +1297,9 @@ def register_type_printers(obj):
     add_one_type_printer(obj, 'fpos', 'streampos')
     add_one_type_printer(obj, 'basic_string', 'u16string')
     add_one_type_printer(obj, 'basic_string', 'u32string')
+
+    add_one_type_printer(obj, 'basic_string_view', 'u16string_view')
+    add_one_type_printer(obj, 'basic_string_view', 'u32string_view')
 
     for dur in ('nanoseconds', 'microseconds', 'milliseconds',
                 'seconds', 'minutes', 'hours'):
@@ -1353,11 +1358,14 @@ def register_type_printers(obj):
             'unordered_multiset<{1}>')
 
     # strip the "fundamentals_v1" inline namespace from these types
+    add_one_template_type_printer(obj, 'any<T>',
+            'experimental::fundamentals_v\d::any<(.*)>',
+            'experimental::any<\\1>')
     add_one_template_type_printer(obj, 'optional<T>',
-            'experimental::fundamentals_v1::optional<(.*)>',
+            'experimental::fundamentals_v\d::optional<(.*)>',
             'experimental::optional<\\1>')
     add_one_template_type_printer(obj, 'basic_string_view<C>',
-            'experimental::fundamentals_v1::basic_string_view<(.*), std::char_traits<\\1> >',
+            'experimental::fundamentals_v\d::basic_string_view<(.*), std::char_traits<\\1> >',
             'experimental::basic_string_view<\\1>')
 
 def register_libstdcxx_printers (obj):
