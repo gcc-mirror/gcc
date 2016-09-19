@@ -4650,6 +4650,19 @@ simplify_relational_operation_1 (enum rtx_code code, machine_mode mode,
 				      cmp_mode, XEXP (op0, 0), new_cmp);
     }
 
+  /* (GTU (PLUS a C) (C - 1)) where C is a non-zero constant can be
+     transformed into (LTU a -C).  */
+  if (code == GTU && GET_CODE (op0) == PLUS && CONST_INT_P (op1)
+      && CONST_INT_P (XEXP (op0, 1))
+      && (UINTVAL (op1) == UINTVAL (XEXP (op0, 1)) - 1)
+      && XEXP (op0, 1) != const0_rtx)
+    {
+      rtx new_cmp
+	= simplify_gen_unary (NEG, cmp_mode, XEXP (op0, 1), cmp_mode);
+      return simplify_gen_relational (LTU, mode, cmp_mode,
+				       XEXP (op0, 0), new_cmp);
+    }
+
   /* Canonicalize (LTU/GEU (PLUS a b) b) as (LTU/GEU (PLUS a b) a).  */
   if ((code == LTU || code == GEU)
       && GET_CODE (op0) == PLUS

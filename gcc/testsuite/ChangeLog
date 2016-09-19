@@ -1,3 +1,8 @@
+2016-09-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/gtu_to_ltu_cmp_1.c: New test.
+	* gcc.target/aarch64/gtu_to_ltu_cmp_2.c: New test.
+
 2016-09-19  Jakub Jelinek  <jakub@redhat.com>
 	    Jan Hubicka  <jh@suse.cz>
 

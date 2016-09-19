@@ -1,3 +1,8 @@
+2016-09-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* simplify-rtx.c (simplify_relational_operation_1): Add transformation
+	(GTU (PLUS a C) (C - 1)) --> (LTU a -C).
+
 2016-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* target.def (lra_p): Wordsmithing.
