@@ -119,6 +119,27 @@ enum gfc_coarray_type
 };
 
 
+/* Specify the type of ref handed to the caf communication functions.
+   Please keep in sync with libgfortran/caf/libcaf.h.  */
+enum gfc_caf_ref_type_t {
+  GFC_CAF_REF_COMPONENT,
+  GFC_CAF_REF_ARRAY,
+  GFC_CAF_REF_STATIC_ARRAY
+};
+
+
+/* Give the reference type of an array ref.
+   Please keep in sync with libgfortran/caf/libcaf.h.  */
+enum gfc_caf_array_ref_t {
+  GFC_CAF_ARR_REF_NONE = 0,
+  GFC_CAF_ARR_REF_VECTOR,
+  GFC_CAF_ARR_REF_FULL,
+  GFC_CAF_ARR_REF_RANGE,
+  GFC_CAF_ARR_REF_SINGLE,
+  GFC_CAF_ARR_REF_OPEN_END,
+  GFC_CAF_ARR_REF_OPEN_START
+};
+
 /* The array-specific scalarization information.  The array members of
    this struct are indexed by actual array index, and thus can be sparse.  */
 
@@ -441,14 +462,14 @@ void gfc_conv_expr_lhs (gfc_se * se, gfc_expr * expr);
 void gfc_conv_expr_reference (gfc_se * se, gfc_expr *);
 void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 
-tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);
-
 
 /* trans-expr.c */
+tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);
+tree gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *, gfc_expr *);
 void gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr);
 tree gfc_string_to_single_character (tree len, tree str, int kind);
 tree gfc_get_tree_for_caf_expr (gfc_expr *);
-void gfc_get_caf_token_offset (tree *, tree *, tree, tree, gfc_expr *);
+void gfc_get_caf_token_offset (gfc_se*, tree *, tree *, tree, tree, gfc_expr *);
 tree gfc_caf_get_image_index (stmtblock_t *, gfc_expr *, tree);
 
 /* Find the decl containing the auxiliary variables for assigned variables.  */
@@ -661,7 +682,7 @@ tree gfc_build_memcpy_call (tree, tree, tree);
 
 /* Allocate memory for allocatable variables, with optional status variable.  */
 void gfc_allocate_allocatable (stmtblock_t*, tree, tree, tree, tree,
-			       tree, tree, tree, gfc_expr*);
+			       tree, tree, tree, gfc_expr*, int);
 
 /* Allocate memory, with optional status variable.  */
 void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree);
@@ -760,6 +781,9 @@ extern GTY(()) tree gfor_fndecl_caf_deregister;
 extern GTY(()) tree gfor_fndecl_caf_get;
 extern GTY(()) tree gfor_fndecl_caf_send;
 extern GTY(()) tree gfor_fndecl_caf_sendget;
+extern GTY(()) tree gfor_fndecl_caf_get_by_ref;
+extern GTY(()) tree gfor_fndecl_caf_send_by_ref;
+extern GTY(()) tree gfor_fndecl_caf_sendget_by_ref;
 extern GTY(()) tree gfor_fndecl_caf_sync_all;
 extern GTY(()) tree gfor_fndecl_caf_sync_memory;
 extern GTY(()) tree gfor_fndecl_caf_sync_images;

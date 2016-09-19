@@ -15,11 +15,11 @@ end type t2
 type(t), save :: caf[*],x
 type(t2) :: y
 
-x = caf[4]     ! { dg-error "Sorry, coindexed coarray at \\(1\\) with allocatable component is not yet supported" }
-x%a = caf[4]%a ! { dg-error "Sorry, coindexed access to a pointer or allocatable component of the coindexed coarray at \\(1\\) is not yet supported" }
+x = caf[4] ! OK, now
+x%a = caf[4]%a ! OK, now
 x%b = caf[4]%b ! OK
-x = y%caf2[5]  ! { dg-error "Sorry, coindexed coarray at \\(1\\) with allocatable component is not yet supported" }
-x%a = y%caf2[4]%a ! { dg-error "Sorry, coindexed access to a pointer or allocatable component of the coindexed coarray at \\(1\\) is not yet supported" }
+x = y%caf2[5]  ! OK, now
+x%a = y%caf2[4]%a ! OK, now
 x%b = y%caf2[4]%b ! OK
 end subroutine one
 
@@ -36,10 +36,10 @@ type(t), save :: caf[*],x
 type(t2) :: y
 
 x = caf[4]     ! OK
-x%a = caf[4]%a ! { dg-error "Sorry, coindexed access to a pointer or allocatable component of the coindexed coarray at \\(1\\) is not yet supported" }
+x%a = caf[4]%a ! OK, now
 x%b = caf[4]%b ! OK
 x = y%caf2[5]  ! OK
-x%a = y%caf2[4]%a ! { dg-error "Sorry, coindexed access to a pointer or allocatable component of the coindexed coarray at \\(1\\) is not yet supported" }
+x%a = y%caf2[4]%a !  OK, now
 x%b = y%caf2[4]%b ! OK
 end subroutine two
 
@@ -56,10 +56,10 @@ integer :: x(10)
 type(t2) :: y
 
 x(1) = caf(2)[4]%b ! OK
-x(:) = caf(:)[4]%b ! { dg-error "Sorry, coindexed access at \\(1\\) to a scalar component with an array partref is not yet supported" }
+x(:) = caf(:)[4]%b ! OK now
 
 x(1) = y%caf2(2)[4]%b ! OK
-x(:) = y%caf2(:)[4]%b ! { dg-error "Sorry, coindexed access at \\(1\\) to a scalar component with an array partref is not yet supported" }
+x(:) = y%caf2(:)[4]%b ! OK now
 end subroutine three
 
 subroutine four
@@ -76,10 +76,10 @@ type(t) :: x
 type(t2) :: y
 
 !x = caf[4]    ! Unsupported - and ICEs in resolve_ordinary_assign, cf. PR fortran/65397
-x%a = caf[4]%a ! { dg-error "Sorry, coindexed access to a pointer or allocatable component of the coindexed coarray at \\(1\\) is not yet supported" }
+x%a = caf[4]%a ! OK, now
 x%b = caf[4]%b ! OK
 !x = y%caf2[5] ! Unsupported - and ICEs in resolve_ordinary_assign, cf. PR fortran/65397
-x%a = y%caf2[4]%a ! { dg-error "Sorry, coindexed access to a pointer or allocatable component of the coindexed coarray at \\(1\\) is not yet supported" }
+x%a = y%caf2[4]%a ! Ok, now
 x%b = y%caf2[4]%b ! OK
 end subroutine four
 
@@ -97,10 +97,10 @@ type(t) :: x
 type(t2) :: y
 
 !x = caf[4]     ! OK - but ICEs in resolve_ordinary_assign, cf. PR fortran/65397
-x%a = caf[4]%a ! { dg-error "Sorry, coindexed access to a pointer or allocatable component of the coindexed coarray at \\(1\\) is not yet supported" }
+x%a = caf[4]%a ! OK, now
 x%b = caf[4]%b ! OK
 !x = y%caf2[5]  ! OK - but ICEs in resolve_ordinary_assign, cf. PR fortran/65397
-x%a = y%caf2[4]%a ! { dg-error "Sorry, coindexed access to a pointer or allocatable component of the coindexed coarray at \\(1\\) is not yet supported" }
+x%a = y%caf2[4]%a ! OK, now
 x%b = y%caf2[4]%b ! OK
 end subroutine five
 
@@ -117,8 +117,16 @@ integer :: x(10)
 type(t2) :: y
 
 x(1) = caf(2)[4]%b ! OK
-x(:) = caf(:)[4]%b ! { dg-error "Sorry, coindexed access at \\(1\\) to a scalar component with an array partref is not yet supported" }
+x(:) = caf(:)[4]%b ! OK now
 
 x(1) = y%caf2(2)[4]%b ! OK
-x(:) = y%caf2(:)[4]%b ! { dg-error "Sorry, coindexed access at \\(1\\) to a scalar component with an array partref is not yet supported" }
+x(:) = y%caf2(:)[4]%b ! OK now
 end subroutine six
+
+call one()
+call two()
+call three()
+call four()
+call five()
+call six()
+end

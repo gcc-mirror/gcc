@@ -131,7 +131,8 @@ _gfortran_caf_num_images (int distance __attribute__ ((unused)),
 
 void *
 _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
-			int *stat, char *errmsg, int errmsg_len)
+			int *stat, char *errmsg, int errmsg_len,
+			int num_alloc_comps __attribute__ ((unused)))
 {
   void *local;
   int err;

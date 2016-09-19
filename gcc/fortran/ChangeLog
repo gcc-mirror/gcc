@@ -1,3 +1,80 @@
+2016-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/71952
+	* expr.c (gfc_check_assign): Added flag to control whether datatype
+	conversion is allowed.
+	* gfortran.h: Added caf-token-tree to gfc_component.  Changed
+	prototypes mostly to add whether datatype conversion is allowed.
+	* gfortran.texi: Added documentation for the caf_reference_t and the
+	caf_*_by_ref function.
+	* primary.c (caf_variable_attr): Similar to gfc_variable_attr but
+	focused on the needs of coarrays.
+	(gfc_caf_attr): Same.
+	* resolve.c (resolve_ordinary_assign): Set the conversion allowed
+	flag when not in a coarray.
+	* trans-array.c (gfc_array_init_size): Moved setting of array
+	descriptor's datatype before the alloc, because caf_register needs it.
+	(gfc_array_allocate): Changed notion of whether an array is a coarray.
+	(gfc_array_deallocate): Same.
+	(gfc_alloc_allocatable_for_assignment): Added setting of coarray's
+	array descriptor datatype before the register.  And using deregister/
+	register to mimmick a realloc for coarrays.
+	* trans-decl.c (gfc_build_builtin_function_decls): Corrected signatures
+	of old caf-functions and added signature definitions of the _by_ref
+	ones.
+	(generate_coarray_sym_init): Adapted to new caf_register signature.
+	* trans-expr.c (gfc_conv_scalar_to_descriptor): Make sure a constant
+	is translated to an lvalue expression before use in an array
+	descriptor.
+	(gfc_get_ultimate_alloc_ptr_comps_caf_token): New function.  Get the
+	last allocatable component's coarray token.
+	(gfc_get_tree_for_caf_expr): For top-level object get the coarray
+	token and check for unsupported features.
+	(gfc_get_caf_token_offset): Getting the offset might procude new
+	statements, which now are stored in the pre and post of the current se.
+	(gfc_caf_get_image_index): For this image return a call to
+	caf_this_image.
+	(expr_may_alias_variables): Check that the result is set for testing
+	its properties.
+	(alloc_scalar_allocatable_for_assignment): Added auto allocation of
+	coarray components.
+	(gfc_trans_assignment_1): Rewrite an assign to a coarray object to
+	be a sendget.
+	* trans-intrinsic.c (conv_caf_vector_subscript_elem): Corrected
+	wrong comment.
+	(compute_component_offset): Compute the correct offset a structure
+	member.
+	(conv_expr_ref_to_caf_ref): Convert to a chain of refs into
+	caf_references.
+	(gfc_conv_intrinsic_caf_get): Call caf_get_by_ref instead of caf_get.
+	(conv_caf_send): Call caf_*_by_ref for coarrays that need
+	reallocation.
+	(gfc_conv_intrinsic_function): Adapted to new signuature of the caf
+	drivers.
+	(conv_intrinsic_atomic_op): Add pre and post statements correctly.
+	(conv_intrinsic_atomic_ref): Same.
+	(conv_intrinsic_atomic_cas): Same.
+	(conv_intrinsic_event_query): Same.
+	* trans-stmt.c (gfc_trans_lock_unlock): Same.
+	(gfc_trans_event_post_wait): Same.
+	(gfc_trans_allocate): Support allocation of allocatable coarrays.
+	(gfc_trans_deallocate): And there deallocation.
+	* trans-types.c (gfc_typenode_for_spec): Added flag to control whether
+	a component is part of coarray.  When so, then add space to store a
+	coarray token.
+	(gfc_build_array_type): Same.
+	(gfc_get_array_descriptor_base): Same.
+	(gfc_get_array_type_bounds): Same.
+	(gfc_sym_type): Same.
+	(gfc_get_derived_type): Same.
+	(gfc_get_caf_reference_type): Declare the caf_reference_type.
+	* trans-types.h: Prototype changes only.
+	* trans.c (gfc_allocate_using_lib): Use the updated caf_register
+	signature.
+	(gfc_allocate_allocatable): Same.
+	(gfc_deallocate_with_status): Same.
+	* trans.h: Defined the runtime types for caf_reference_t and the enums.
+
 2016-09-19  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/77584

@@ -3571,6 +3571,7 @@ of such a type
 @menu
 * caf_token_t::
 * caf_register_t::
+* caf_reference_t::
 @end menu
 
 @node caf_token_t
@@ -3597,6 +3598,114 @@ typedef enum caf_register_t {
 caf_register_t;
 @end verbatim
 
+@node caf_reference_t
+@subsection @code{caf_reference_t}
+
+The structure used for implementing arbitrary reference chains.
+A @code{CAF_REFERENCE_T} allows to specify a component reference or any kind
+of array reference of any rank supported by gfortran.  For array references all
+kinds as known by the compiler/Fortran standard are supported indicated by
+a @code{MODE}.
+
+@verbatim
+typedef enum caf_ref_type_t {
+  /* Reference a component of a derived type, either regular one or an
+     allocatable or pointer type.  For regular ones idx in caf_reference_t is
+     set to -1.  */
+  CAF_REF_COMPONENT,
+  /* Reference an allocatable array.  */
+  CAF_REF_ARRAY,
+  /* Reference a non-allocatable/non-pointer array.  I.e., the coarray object
+     has no array descriptor associated and the addressing is done
+     completely using the ref.  */
+  CAF_REF_STATIC_ARRAY
+} caf_ref_type_t;
+@end verbatim
+
+@verbatim
+typedef enum caf_array_ref_t {
+  /* No array ref.  This terminates the array ref.  */
+  CAF_ARR_REF_NONE = 0,
+  /* Reference array elements given by a vector.  Only for this mode
+     caf_reference_t.u.a.dim[i].v is valid.  */
+  CAF_ARR_REF_VECTOR,
+  /* A full array ref (:).  */
+  CAF_ARR_REF_FULL,
+  /* Reference a range on elements given by start, end and stride.  */
+  CAF_ARR_REF_RANGE,
+  /* Only a single item is referenced given in the start member.  */
+  CAF_ARR_REF_SINGLE,
+  /* An array ref of the kind (i:), where i is an arbitrary valid index in the
+     array.  The index i is given in the start member.  */
+  CAF_ARR_REF_OPEN_END,
+  /* An array ref of the kind (:i), where the lower bound of the array ref
+     is given by the remote side.  The index i is given in the end member.  */
+  CAF_ARR_REF_OPEN_START
+} caf_array_ref_t;
+@end verbatim
+
+@verbatim
+/* References to remote components of a derived type.  */
+typedef struct caf_reference_t {
+  /* A pointer to the next ref or NULL.  */
+  struct caf_reference_t *next;
+  /* The type of the reference.  */
+  /* caf_ref_type_t, replaced by int to allow specification in fortran FE.  */
+  int type;
+  /* The size of an item referenced in bytes.  I.e. in an array ref this is
+     the factor to advance the array pointer with to get to the next item.
+     For component refs this gives just the size of the element referenced.  */
+  size_t item_size;
+  union {
+    struct {
+      /* The offset (in bytes) of the component in the derived type.
+         Unused for allocatable or pointer components.  */
+      ptrdiff_t offset;
+      /* The offset (in bytes) to the caf_token associated with this
+         component.  NULL, when not allocatable/pointer ref.  */
+      ptrdiff_t caf_token_offset;
+    } c;
+    struct {
+      /* The mode of the array ref.  See CAF_ARR_REF_*.  */
+      /* caf_array_ref_t, replaced by unsigend char to allow specification in
+         fortran FE.  */
+     unsigned char mode[GFC_MAX_DIMENSIONS];
+      /* The type of a static array.  Unset for array's with descriptors.  */
+      int static_array_type;
+      /* Subscript refs (s) or vector refs (v).  */
+      union {
+        struct {
+          /* The start and end boundary of the ref and the stride.  */
+          index_type start, end, stride;
+        } s;
+        struct {
+          /* nvec entries of kind giving the elements to reference.  */
+          void *vector;
+          /* The number of entries in vector.  */
+          size_t nvec;
+          /* The integer kind used for the elements in vector.  */
+          int kind;
+        } v;
+      } dim[GFC_MAX_DIMENSIONS];
+    } a;
+  } u;
+} caf_reference_t;
+@end verbatim
+
+The references make up a single linked list of reference operations.  The
+@code{NEXT} member links to the next reference or NULL to indicate the end of
+the chain.  Component and array refs can be arbitrarly mixed as long as they
+comply to the Fortran standard.
+
+@emph{NOTES}
+The member @code{STATIC_ARRAY_TYPE} is used only when the @code{TYPE} is
+@code{CAF_REF_STATIC_ARRAY}.  The member gives the type of the data referenced.
+Because no array descriptor is available for a descriptor-less array and
+type conversion still needs to take place the type is transported here.
+
+At the moment @code{CAF_ARR_REF_VECTOR} is not implemented in the front end for
+descriptor-less arrays.  The library caf_single has untested support for it.
+
 
 @node Function ABI Documentation
 @section Function ABI Documentation
@@ -3611,6 +3720,9 @@ caf_register_t;
 * _gfortran_caf_send:: Sending data from a local image to a remote image
 * _gfortran_caf_get:: Getting data from a remote image
 * _gfortran_caf_sendget:: Sending data between remote images
+* _gfortran_caf_send_by_ref:: Sending data from a local image to a remote image using enhanced references
+* _gfortran_caf_get_by_ref:: Getting data from a remote image using enhanced references
+* _gfortran_caf_sendget_by_ref:: Sending data between remote images using enhanced references
 * _gfortran_caf_lock:: Locking a lock variable
 * _gfortran_caf_unlock:: Unlocking a lock variable
 * _gfortran_caf_event_post:: Post an event
@@ -3742,19 +3854,24 @@ the the compiler passes @code{distance=0} and @code{failed=-1} to the function.
 
 @node _gfortran_caf_register
 @subsection @code{_gfortran_caf_register} --- Registering coarrays
-@cindex Coarray, _gfortran_caf_deregister
+@cindex Coarray, _gfortran_caf_register
 
 @table @asis
 @item @emph{Description}:
-Allocates memory for a coarray and creates a token to identify the coarray. The
-function is called for both coarrays with @code{SAVE} attribute and using an
-explicit @code{ALLOCATE} statement. If an error occurs and @var{STAT} is a
+Registers memory for a coarray and creates a token to identify the coarray.  The
+routine is called for both coarrays with @code{SAVE} attribute and using an
+explicit @code{ALLOCATE} statement.  If an error occurs and @var{STAT} is a
 @code{NULL} pointer, the function shall abort with printing an error message
 and starting the error termination.  If no error occurs and @var{STAT} is
-present, it shall be set to zero. Otherwise, it shall be set to a positive
+present, it shall be set to zero.  Otherwise, it shall be set to a positive
 value and, if not-@code{NULL}, @var{ERRMSG} shall be set to a string describing
-the failure. The function shall return a pointer to the requested memory
-for the local image as a call to @code{malloc} would do.
+the failure.  The routine shall register the memory provided in the
+@code{DATA}-component of the array descriptor @var{DESC}, when that component
+is non-@code{NULL}, else it shall allocate sufficient memory and provide a
+pointer to it in the @code{DATA}-component of @var{DESC}.  The array descriptor
+has rank zero, when a scalar object is to be registered and the array
+descriptor may be invalid after the call to @code{_gfortran_caf_register}.
+When an array is to be allocated the descriptor persists.
 
 For @code{CAF_REGTYPE_COARRAY_STATIC} and @code{CAF_REGTYPE_COARRAY_ALLOC},
 the passed size is the byte size requested.  For @code{CAF_REGTYPE_LOCK_STATIC},
@@ -3763,8 +3880,8 @@ size or one for a scalar.
 
 
 @item @emph{Syntax}:
-@code{void *caf_register (size_t size, caf_register_t type, caf_token_t *token,
-int *stat, char *errmsg, int errmsg_len)}
+@code{void caf_register (size_t size, caf_register_t type, caf_token_t *token,
+gfc_descriptor_t *desc, int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3772,6 +3889,7 @@ int *stat, char *errmsg, int errmsg_len)}
 allocated; for lock types and event types, the number of elements.
 @item @var{type} @tab one of the caf_register_t types.
 @item @var{token} @tab intent(out) An opaque pointer identifying the coarray.
+@item @var{desc} @tab intent(inout) The (pseudo) array descriptor.
 @item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
 may be NULL
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
@@ -3787,19 +3905,18 @@ GCC does such that also nonallocatable coarrays the memory is allocated and no
 static memory is used.  The token permits to identify the coarray; to the
 processor, the token is a nonaliasing pointer. The library can, for instance,
 store the base address of the coarray in the token, some handle or a more
-complicated struct.
+complicated struct.  The library may also store the array descriptor
+@var{DESC} when its rank is non-zero.
 
-For normal coarrays, the returned pointer is used for accesses on the local
-image. For lock types, the value shall only used for checking the allocation
+For lock types, the value shall only used for checking the allocation
 status. Note that for critical blocks, the locking is only required on one
-image; in the locking statement, the processor shall always pass always an
+image; in the locking statement, the processor shall always pass an
 image index of one for critical-block lock variables
 (@code{CAF_REGTYPE_CRITICAL}). For lock types and critical-block variables,
 the initial value shall be unlocked (or, respecitively, not in critical
 section) such as the value false; for event types, the initial state should
 be no event, e.g. zero.
 @end table
-
 
 @node _gfortran_caf_deregister
 @subsection @code{_gfortran_caf_deregister} --- Deregistering coarrays
@@ -3809,14 +3926,17 @@ be no event, e.g. zero.
 @item @emph{Description}:
 Called to free the memory of a coarray; the processor calls this function for
 automatic and explicit deallocation.  In case of an error, this function shall
-fail with an error message, unless the @var{STAT} variable is not null.
+fail with an error message, unless the @var{STAT} variable is not null.  The
+library is only expected to free memory it allocated itself during a call to
+@code{_gfortran_caf_register}.
 
 @item @emph{Syntax}:
-@code{void caf_deregister (const caf_token_t *token, int *stat, char *errmsg,
+@code{void caf_deregister (caf_token_t *token, int *stat, char *errmsg,
 int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
+@item @var{token} @tab the token to free.
 @item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set
 to an error message; may be NULL
@@ -3995,6 +4115,186 @@ both arrays are contiguous and @code{memmove} takes care of overlap issues).
 Note that the assignment of a scalar to an array is permitted. In addition,
 the library has to handle numeric-type conversion and for strings, padding and
 different character kinds.
+@end table
+
+@node _gfortran_caf_send_by_ref
+@subsection @code{_gfortran_caf_send_by_ref} --- Sending data from a local image to a remote image with enhanced referencing options
+@cindex Coarray, _gfortran_caf_send_by_ref
+
+@table @asis
+@item @emph{Description}:
+Called to send a scalar, an array section or whole array from a local to a
+remote image identified by the image_index.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_send_by_ref (caf_token_t token, int image_index,
+gfc_descriptor_t *src, caf_reference_t *refs, int dst_kind, int src_kind,
+bool may_require_tmp, bool dst_reallocatable, int *stat)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{src} @tab intent(in) Array descriptor of the local array to be
+transferred to the remote image
+@item @var{refs} @tab intent(in) the references on the remote array to store
+the data given by src.  Guaranteed to have at least one entry.
+@item @var{dst_kind} @tab Kind of the destination argument
+@item @var{src_kind} @tab Kind of the source argument
+@item @var{may_require_tmp} @tab The variable is false it is known at compile
+time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
+or partially) such that walking @var{src} and @var{dest} in element wise
+element order (honoring the stride value) will not lead to wrong results.
+Otherwise, the value is true.
+@item @var{dst_reallocatable} @tab set when the destination is of allocatable
+or pointer type and the refs will allow reallocation, i.e., the ref is a full
+array or component ref.
+@item @var{stat} @tab intent(out) when non-@code{NULL} give the result of the
+operation, i.e., zero on success and non-zero on error.  When @code{NULL} and
+error occurs, then an error message is printed and the program is terminated.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have image_id equal the current image; the memory of the
+send-to and the send-from might (partially) overlap in that case.  The
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory.  If
+@var{may_require_tmp} is true, the library might additionally create a
+temporary variable, unless additional checks show that this is not required
+(e.g. because walking backward is possible or because both arrays are
+contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the assignment of a scalar to an array is permitted.  In addition,
+the library has to handle numeric-type conversion and for strings, padding
+and different character kinds.
+
+Because of the more complicated references possible some operations may be
+unsupported by certain libraries.  The library is expected to issue a precise
+error message why the operation is not permitted.
+@end table
+
+
+@node _gfortran_caf_get_by_ref
+@subsection @code{_gfortran_caf_get_by_ref} --- Getting data from a remote image using enhanced references
+@cindex Coarray, _gfortran_caf_get_by_ref
+
+@table @asis
+@item @emph{Description}:
+Called to get a scalar, an array section or whole array from a a remote image
+identified by the image_index.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_get_by_ref (caf_token_t token, int image_index,
+caf_reference_t *refs, gfc_descriptor_t *dst, int dst_kind, int src_kind,
+bool may_require_tmp, bool dst_reallocatable, int *stat)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{refs} @tab intent(in) the references to apply to the remote structure
+to get the data.
+@item @var{dst} @tab intent(in) Array descriptor of the local array to store
+the data transferred from the remote image.  May be reallocated where needed
+and when @var{DST_REALLOCATABLE} allows it.
+@item @var{dst_kind} @tab Kind of the destination argument
+@item @var{src_kind} @tab Kind of the source argument
+@item @var{may_require_tmp} @tab The variable is false it is known at compile
+time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
+or partially) such that walking @var{src} and @var{dest} in element wise
+element order (honoring the stride value) will not lead to wrong results.
+Otherwise, the value is true.
+@item @var{dst_reallocatable} @tab set when @var{DST} is of allocatable
+or pointer type and its refs allow reallocation, i.e., the full array or a
+component is referenced.
+@item @var{stat} @tab intent(out) when non-@code{NULL} give the result of the
+operation, i.e., zero on success and non-zero on error.  When @code{NULL} and
+error occurs, then an error message is printed and the program is terminated.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have image_id equal the current image; the memory of the
+send-to and the send-from might (partially) overlap in that case.  The
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory.  If
+@var{may_require_tmp} is true, the library might additionally create a
+temporary variable, unless additional checks show that this is not required
+(e.g. because walking backward is possible or because both arrays are
+contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the library has to handle numeric-type conversion and for strings,
+padding and different character kinds.
+
+Because of the more complicated references possible some operations may be
+unsupported by certain libraries.  The library is expected to issue a precise
+error message why the operation is not permitted.
+@end table
+
+
+@node _gfortran_caf_sendget_by_ref
+@subsection @code{_gfortran_caf_sendget_by_ref} --- Sending data between remote images using enhanced references on both sides
+@cindex Coarray, _gfortran_caf_sendget_by_ref
+
+@table @asis
+@item @emph{Description}:
+Called to send a scalar, an array section or whole array from a remote image
+identified by the src_image_index to a remote image identified by the
+dst_image_index.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_sendget_by_ref (caf_token_t dst_token,
+int dst_image_index, caf_reference_t *dst_refs,
+caf_token_t src_token, int src_image_index, caf_reference_t *src_refs,
+int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat, int *src_stat)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{dst_token} @tab intent(in)  An opaque pointer identifying the
+destination coarray.
+@item @var{dst_image_index} @tab The ID of the destination remote image; must
+be a positive number.
+@item @var{dst_refs} @tab intent(in) the references on the remote array to store
+the data given by src.  Guaranteed to have at least one entry.
+@item @var{src_token} @tab An opaque pointer identifying the source coarray.
+@item @var{src_image_index} @tab The ID of the source remote image; must be a
+positive number.
+@item @var{src_refs} @tab intent(in) the references to apply to the remote
+structure to get the data.
+@item @var{dst_kind} @tab Kind of the destination argument
+@item @var{src_kind} @tab Kind of the source argument
+@item @var{may_require_tmp} @tab The variable is false it is known at compile
+time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
+or partially) such that walking @var{src} and @var{dest} in element wise
+element order (honoring the stride value) will not lead to wrong results.
+Otherwise, the value is true.
+@item @var{dst_stat} @tab intent(out) when non-@code{NULL} give the result of
+the send-operation, i.e., zero on success and non-zero on error.  When
+@code{NULL} and an error occurs, then an error message is printed and the
+program is terminated.
+@item @var{src_stat} @tab intent(out) when non-@code{NULL} give the result of
+the get-operation, i.e., zero on success and non-zero on error.  When
+@code{NULL} and an error occurs, then an error message is printed and the
+program is terminated.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have image_ids equal; the memory of the send-to and the
+send-from might (partially) overlap in that case.  The implementation has to
+take care that it handles this case, e.g. using @code{memmove} which handles
+(partially) overlapping memory.  If @var{may_require_tmp} is true, the library
+might additionally create a temporary variable, unless additional checks show
+that this is not required (e.g. because walking backward is possible or because
+both arrays are contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the assignment of a scalar to an array is permitted.  In addition,
+the library has to handle numeric-type conversion and for strings, padding and
+different character kinds.
+
+Because of the more complicated references possible some operations may be
+unsupported by certain libraries.  The library is expected to issue a precise
+error message why the operation is not permitted.
 @end table
 
 
