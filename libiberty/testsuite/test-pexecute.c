@@ -285,6 +285,20 @@ main (int argc, char **argv)
     ERROR ("echo exit status failed");
   pex_free (pex1);
 
+  /* Check empty parameters don't get lost.  */
+  pex1 = TEST_PEX_INIT (PEX_USE_PIPES, "temp");
+  subargv[1] = "echo";
+  subargv[2] = "foo";
+  subargv[3] = "";
+  subargv[4] = "bar";
+  subargv[5] = NULL;
+  TEST_PEX_RUN (pex1, 0, "./test-pexecute", subargv, NULL, NULL);
+  e = TEST_PEX_READ_OUTPUT (pex1);
+  CHECK_LINE (e, "foo  bar");  /* Two spaces!  */
+  if (TEST_PEX_GET_STATUS_1 (pex1) != 0)
+    ERROR ("echo exit status failed");
+  pex_free (pex1);
+
   pex1 = TEST_PEX_INIT (PEX_USE_PIPES, "temp");
   subargv[1] = "echo";
   subargv[2] = "bar";

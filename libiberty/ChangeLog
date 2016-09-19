@@ -1,3 +1,8 @@
+2016-09-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* pex-win32.c (argv_to_cmdline): Quote zero-length parameters.
+	* testsuite/test-pexecute.c (main): Insert check for zero-length parameters.
+
 2016-09-10  Mark Wielaard  <mjw@redhat.com>
 
 	* cp-demangle.c (d_substitution): Change struct demangle_component

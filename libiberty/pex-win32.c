@@ -370,6 +370,8 @@ argv_to_cmdline (char *const *argv)
 	      cmdline_len++;
 	    }
 	}
+      if (j == 0)
+	needs_quotes = 1;
       /* Trailing backslashes also need to be escaped because they will be
          followed by the terminating quote.  */
       if (needs_quotes)
@@ -394,6 +396,8 @@ argv_to_cmdline (char *const *argv)
               break;
             }
         }
+      if (j == 0)
+	needs_quotes = 1;
 
       if (needs_quotes)
         {
