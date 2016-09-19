@@ -174,10 +174,10 @@ class DequeWorkerBase(gdb.xmethod.XMethodWorker):
         first = obj['_M_impl']['_M_finish']['_M_first']
         return (last_node - first_node) * self._bufsize + (cur - first)
 
-    def index(self, obj, index):
+    def index(self, obj, idx):
         first_node = obj['_M_impl']['_M_start']['_M_node']
-        index_node = first_node + index / self._bufsize
-        return index_node[0][index % self._bufsize]
+        index_node = first_node + idx / self._bufsize
+        return index_node[0][idx % self._bufsize]
 
 class DequeEmptyWorker(DequeWorkerBase):
     def get_arg_types(self):
@@ -328,6 +328,15 @@ class ListWorkerBase(gdb.xmethod.XMethodWorker):
     def get_arg_types(self):
         return None
 
+    def get_value_from_node(self, node):
+        node = node.dereference()
+        if node.type.fields()[1].name == '_M_data':
+            # C++03 implementation, node contains the value as a member
+            return node['_M_data']
+        # C++11 implementation, node stores value in __aligned_membuf
+        addr = node['_M_storage'].address
+        return addr.cast(self._val_type.pointer()).dereference()
+
 class ListEmptyWorker(ListWorkerBase):
     def get_result_type(self, obj):
         return get_bool_type()
@@ -358,7 +367,7 @@ class ListFrontWorker(ListWorkerBase):
 
     def __call__(self, obj):
         node = obj['_M_impl']['_M_node']['_M_next'].cast(self._node_type)
-        return node['_M_data']
+        return self.get_value_from_node(node)
 
 class ListBackWorker(ListWorkerBase):
     def get_result_type(self, obj):
@@ -366,7 +375,7 @@ class ListBackWorker(ListWorkerBase):
 
     def __call__(self, obj):
         prev_node = obj['_M_impl']['_M_node']['_M_prev'].cast(self._node_type)
-        return prev_node['_M_data']
+        return self.get_value_from_node(prev_node)
 
 class ListMethodsMatcher(gdb.xmethod.XMethodMatcher):
     def __init__(self):

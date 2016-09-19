@@ -1,3 +1,11 @@
+2016-09-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77645
+	* python/libstdcxx/v6/xmethods.py (DequeWorkerBase.index): Rename
+	argument.
+	(ListWorkerBase.get_value_from_node): Define new method.
+	(ListFrontWorker.__call__, ListBackWorker.__call__): Use it.
+
 2016-09-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (StdVariantPrinter): Define.
