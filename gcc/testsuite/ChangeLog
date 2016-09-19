@@ -1,3 +1,7 @@
+2016-09-19  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/vect/pr57558-1.c: Use unsigned int instead of unsigned long.
+
 2016-09-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/gtu_to_ltu_cmp_1.c: New test.

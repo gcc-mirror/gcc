@@ -1,10 +1,10 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
 
-typedef unsigned long ul;
-void foo (ul* __restrict x, ul* __restrict y, ul n)
+typedef unsigned int u_int;
+void foo (u_int* __restrict x, u_int* __restrict y, u_int n)
 {
-  ul i;
+  u_int i;
   for (i=1; i<=n; i++, x++, y++)
     *x += *y;
 }
