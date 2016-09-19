@@ -1,3 +1,10 @@
+2016-09-16  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/77639
+	* parser.c (cp_parser_class_head): When
+	processing_template_parmlist, don't assume that the
+	class-head may start an explicit specialization.
+
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77482

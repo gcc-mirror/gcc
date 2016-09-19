@@ -22025,6 +22025,7 @@ cp_parser_class_head (cp_parser* parser,
      it is not, try to recover gracefully.  */
   if (at_namespace_scope_p ()
       && parser->num_template_parameter_lists == 0
+      && !processing_template_parmlist
       && template_id_p)
     {
       /* Build a location of this form:
