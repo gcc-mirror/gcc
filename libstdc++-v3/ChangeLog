@@ -1,5 +1,14 @@
 2016-09-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (SingleObjContainerPrinter): Allow
+	display_hint to be set by subclasses.
+	(StdVariantPrinter): Use array for display_hint. Adjust output to be
+	more similar to std::any and std::optional output.
+	(register_type_printers): Add type printers for basic_string_view
+	typedefs and experimental::any. Adjust type printers for
+	fundamentals_v1 templates to match fundamentals_v2 and later.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: New.
+
 	PR libstdc++/77645
 	* python/libstdcxx/v6/xmethods.py (DequeWorkerBase.index): Rename
 	argument.
