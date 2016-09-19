@@ -1,5 +1,10 @@
 2016-09-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/77645
+	* python/libstdcxx/v6/xmethods.py (DequeWorkerBase.__init__)
+	(DequeWorkerBase.index, VectorWorkerBase.get): Cast results of
+	division to int to work with Python 3.
+
 	* testsuite/lib/gdb-test.exp (gdb-test): Fail if Python error occurs.
 
 	* python/libstdcxx/v6/printers.py (SingleObjContainerPrinter): Allow
