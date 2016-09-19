@@ -2051,9 +2051,9 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 	/* Make sure the offset has been computed and that we can encode it as
 	   an operand.  */
 	gcc_assert (die_offset > 0
-		    && die_offset <= (loc->dw_loc_opc == DW_OP_call2)
+		    && die_offset <= (loc->dw_loc_opc == DW_OP_call2
 				     ? 0xffff
-				     : 0xffffffff);
+				     : 0xffffffff));
 	dw2_asm_output_data ((loc->dw_loc_opc == DW_OP_call2) ? 2 : 4,
 			     die_offset, NULL);
       }
