@@ -1,6 +1,11 @@
 2016-09-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/77645
+	* python/libstdcxx/v6/xmethods.py (DequeWorkerBase.__init__)
+	(DequeWorkerBase.index, VectorWorkerBase.get): Cast results of
+	division to int to work with Python 3.
+
+	PR libstdc++/77645
 	* python/libstdcxx/v6/xmethods.py (DequeWorkerBase.index): Rename
 	argument.
 	(ListWorkerBase.get_value_from_node): Define new method.
