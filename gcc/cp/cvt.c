@@ -645,6 +645,7 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
 	{
 	  /* Avoid bogus -Wparentheses warnings.  */
 	  warning_sentinel w (warn_parentheses);
+	  warning_sentinel c (warn_int_in_bool_context);
 	  folded_result = cp_convert (type, folded, tf_none);
 	}
       folded_result = fold_simple (folded_result);

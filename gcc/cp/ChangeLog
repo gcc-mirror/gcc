@@ -1,3 +1,8 @@
+2016-09-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/77434
+	* cvt.c (cp_convert_and_check): Suppress Wint-in-bool-context here.
+
 2016-09-16  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/77639

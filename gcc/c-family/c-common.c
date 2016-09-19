@@ -4652,6 +4652,19 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 					       TREE_OPERAND (expr, 0));
 
     case COND_EXPR:
+      if (warn_int_in_bool_context)
+	{
+	  tree val1 = fold_for_warn (TREE_OPERAND (expr, 1));
+	  tree val2 = fold_for_warn (TREE_OPERAND (expr, 2));
+	  if (TREE_CODE (val1) == INTEGER_CST
+	      && TREE_CODE (val2) == INTEGER_CST
+	      && !integer_zerop (val1)
+	      && !integer_zerop (val2)
+	      && (!integer_onep (val1)
+		  || !integer_onep (val2)))
+	    warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
+		        "?: using integer constants in boolean context");
+	}
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       if (c_dialect_cxx ())
 	{

@@ -273,7 +273,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
--Winit-self  -Winline  -Wno-int-conversion @gol
+-Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast -Winvalid-memory-model -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len} @gol
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
@@ -3660,6 +3660,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
 -Wformat   @gol
+-Wint-in-bool-context  @gol
 -Wimplicit @r{(C and Objective-C only)} @gol
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
@@ -5836,6 +5837,14 @@ warning about it.
 
 The restrictions on @code{offsetof} may be relaxed in a future version
 of the C++ standard.
+
+@item -Wint-in-bool-context
+@opindex Wint-in-bool-context
+@opindex Wno-int-in-bool-context
+Warn for suspicious use of integer values where boolean values are expected,
+such as conditional expressions (?:) using non-boolean integer constants in
+boolean context, like @code{if (a <= b ? 2 : 3)}.
+This warning is enabled by @option{-Wall}.
 
 @item -Wno-int-to-pointer-cast
 @opindex Wno-int-to-pointer-cast
