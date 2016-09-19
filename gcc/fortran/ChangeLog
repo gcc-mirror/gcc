@@ -1,3 +1,9 @@
+2016-09-19  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/77584
+	* decl.c (match_record_decl, gfc_match_decl_type_spec): Fixes to
+	handling of structure/record from declaration-type-spec.
+
 2016_09_17  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/68078

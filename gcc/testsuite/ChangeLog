@@ -1,3 +1,8 @@
+2016-09-19  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/77584
+	* gfortran.dg/dec_structure_15.f90: New testcase.
+
 2016-09-19  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77605
