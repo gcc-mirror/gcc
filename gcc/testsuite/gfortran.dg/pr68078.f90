@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-xfail-run-if "malloc issuing error messages" { *-*-darwin*  } }
 ! { dg-additional-sources set_vm_limit.c }
 
 USE :: ISO_C_BINDING !, only: C_INT
