@@ -1955,14 +1955,17 @@ cgraph_node::rtl_info (tree decl)
   cgraph_node *node = get (decl);
   if (!node)
     return NULL;
-  node = node->ultimate_alias_target ();
-  if (node->decl != current_function_decl
-      && !TREE_ASM_WRITTEN (node->decl))
+  enum availability avail;
+  node = node->ultimate_alias_target (&avail);
+  if (decl != current_function_decl
+      && (avail < AVAIL_AVAILABLE
+	  || (node->decl != current_function_decl
+	      && !TREE_ASM_WRITTEN (node->decl))))
     return NULL;
-  /* Allocate if it doesnt exist.  */
-  if (node->ultimate_alias_target ()->rtl == NULL)
-    node->ultimate_alias_target ()->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
-  return node->ultimate_alias_target ()->rtl;
+  /* Allocate if it doesn't exist.  */
+  if (node->rtl == NULL)
+    node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
+  return node->rtl;
 }
 
 /* Return a string describing the failure REASON.  */
