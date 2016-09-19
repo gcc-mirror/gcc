@@ -1,3 +1,9 @@
+2016-09-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/77416
+	* lra-remat.c (operand_to_remat): Process hard coded insn
+	registers.
+
 2016-09-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* simplify-rtx.c (simplify_relational_operation_1): Add transformation
