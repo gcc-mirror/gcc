@@ -1,3 +1,26 @@
+2016-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/alloc_comp_4.f90: New test.
+	* gfortran.dg/coarray_38.f90:
+	* gfortran.dg/coarray_alloc_comp_1.f08: New test.
+	* gfortran.dg/coarray_alloc_comp_2.f08: New test.
+	* gfortran.dg/coarray_allocate_7.f08: New test.
+	* gfortran.dg/coarray_allocate_8.f08: New test.
+	* gfortran.dg/coarray_allocate_9.f08: New test.
+	* gfortran.dg/coarray_lib_alloc_1.f90: Adapted scan-tree-dumps to expect
+	new caf_register.
+	* gfortran.dg/coarray_lib_alloc_2.f90: Same.
+	* gfortran.dg/coarray_lib_alloc_3.f90: Same.
+	* gfortran.dg/coarray_lib_comm_1.f90: Adapted scan-tree-dumps to expect
+	get_by_refs.
+	* gfortran.dg/coarray_lib_token_3.f90: Same as for coarray_lib_alloc2.
+	* gfortran.dg/coarray_lock_7.f90: Same.
+	* gfortran.dg/coarray_poly_5.f90: Same.
+	* gfortran.dg/coarray_poly_6.f90: Same.
+	* gfortran.dg/coarray_poly_7.f90: Same.
+	* gfortran.dg/coarray_poly_8.f90: Same.
+	* gfortran.dg/coindexed_1.f90: Changed errors expected.
+
 2016-09-19  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/77584

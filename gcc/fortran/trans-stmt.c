@@ -725,7 +725,8 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
 	  return NULL_TREE;
 	}
 
-      gfc_get_caf_token_offset (&token, NULL, caf_decl, NULL_TREE, code->expr1);
+      gfc_get_caf_token_offset (&se, &token, NULL, caf_decl, NULL_TREE,
+				code->expr1);
 
       if (gfc_is_coindexed (code->expr1))
 	image_index = gfc_caf_get_image_index (&se.pre, code->expr1, caf_decl);
@@ -921,7 +922,10 @@ gfc_trans_event_post_wait (gfc_code *code, gfc_exec_op op)
       return NULL_TREE;
     }
 
-  gfc_get_caf_token_offset (&token, NULL, caf_decl, NULL_TREE, code->expr1);
+  gfc_init_se (&argse, NULL);
+  gfc_get_caf_token_offset (&argse, &token, NULL, caf_decl, NULL_TREE,
+			    code->expr1);
+  gfc_add_block_to_block (&se.pre, &argse.pre);
 
   if (gfc_is_coindexed (code->expr1))
     image_index = gfc_caf_get_image_index (&se.pre, code->expr1, caf_decl);
@@ -5876,11 +5880,30 @@ gfc_trans_allocate (gfc_code * code)
 	    /* Handle size computation of the type declared to alloc.  */
 	    memsz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
 
+	  if (gfc_caf_attr (expr).codimension
+	      && flag_coarray == GFC_FCOARRAY_LIB)
+	    {
+	      /* Scalar allocatable components in coarray'ed derived types make
+		 it here and are treated now.  */
+	      tree caf_decl, token;
+	      gfc_se caf_se;
+
+	      gfc_init_se (&caf_se, NULL);
+
+	      caf_decl = gfc_get_tree_for_caf_expr (expr);
+	      gfc_get_caf_token_offset (&caf_se, &token, NULL, caf_decl,
+					NULL_TREE, NULL);
+	      gfc_add_block_to_block (&se.pre, &caf_se.pre);
+	      gfc_allocate_allocatable (&se.pre, se.expr, memsz,
+					gfc_build_addr_expr (NULL_TREE, token),
+					NULL_TREE, NULL_TREE, NULL_TREE,
+					label_finish, expr, 1);
+	    }
 	  /* Allocate - for non-pointers with re-alloc checking.  */
-	  if (gfc_expr_attr (expr).allocatable)
-	    gfc_allocate_allocatable (&se.pre, se.expr, memsz, NULL_TREE,
-				      stat, errmsg, errlen, label_finish,
-				      expr);
+	  else if (gfc_expr_attr (expr).allocatable)
+	    gfc_allocate_allocatable (&se.pre, se.expr, memsz,
+				      NULL_TREE, stat, errmsg, errlen,
+				      label_finish, expr, 0);
 	  else
 	    gfc_allocate_using_malloc (&se.pre, se.expr, memsz, stat);
 
@@ -6147,10 +6170,12 @@ gfc_trans_allocate (gfc_code * code)
 	      /* Switch off automatic reallocation since we have just
 		 done the ALLOCATE.  */
 	      int realloc_lhs = flag_realloc_lhs;
+	      gfc_expr *init_expr = gfc_expr_to_initialize (expr);
 	      flag_realloc_lhs = 0;
-	      tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
-					  e3rhs, false, false);
+	      tmp = gfc_trans_assignment (init_expr, e3rhs, false, false);
 	      flag_realloc_lhs = realloc_lhs;
+	      /* Free the expression allocated for init_expr.  */
+	      gfc_free_expr (init_expr);
 	    }
 	  gfc_add_expr_to_block (&block, tmp);
 	}
@@ -6298,7 +6323,7 @@ gfc_trans_deallocate (gfc_code *code)
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
 
-      if (expr->rank || gfc_is_coarray (expr))
+      if (expr->rank || gfc_caf_attr (expr).codimension)
 	{
 	  gfc_ref *ref;
 

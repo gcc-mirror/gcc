@@ -3128,10 +3128,14 @@ gfc_check_conformance (gfc_expr *op1, gfc_expr *op2, const char *optype_msgid, .
 
 
 /* Given an assignable expression and an arbitrary expression, make
-   sure that the assignment can take place.  */
+   sure that the assignment can take place.  Only add a call to the intrinsic
+   conversion routines, when allow_convert is set.  When this assign is a
+   coarray call, then the convert is done by the coarray routine implictly and
+   adding the intrinsic conversion would do harm in most cases.  */
 
 bool
-gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
+gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
+		  bool allow_convert)
 {
   gfc_symbol *sym;
   gfc_ref *ref;
@@ -3309,11 +3313,14 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
      kind values can be converted into one another.  */
   if (lvalue->ts.type == BT_CHARACTER && rvalue->ts.type == BT_CHARACTER)
     {
-      if (lvalue->ts.kind != rvalue->ts.kind)
+      if (lvalue->ts.kind != rvalue->ts.kind && allow_convert)
 	gfc_convert_chartype (rvalue, &lvalue->ts);
 
       return true;
     }
+
+  if (!allow_convert)
+    return true;
 
   return gfc_convert_type (rvalue, &lvalue->ts, 1);
 }

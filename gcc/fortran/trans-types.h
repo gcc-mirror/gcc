@@ -70,7 +70,7 @@ tree gfc_get_character_type_len (int, tree);
 tree gfc_get_character_type_len_for_eltype (tree, tree);
 
 tree gfc_sym_type (gfc_symbol *);
-tree gfc_typenode_for_spec (gfc_typespec *);
+tree gfc_typenode_for_spec (gfc_typespec *, bool in_coarray = false);
 int gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
 
 tree gfc_get_function_type (gfc_symbol *);
@@ -81,7 +81,8 @@ tree gfc_build_uint_type (int);
 
 tree gfc_get_element_type (tree);
 tree gfc_get_array_type_bounds (tree, int, int, tree *, tree *, int,
-				enum gfc_array_kind, bool);
+				enum gfc_array_kind, bool,
+				bool in_coarray = false);
 tree gfc_get_nodesc_array_type (tree, gfc_array_spec *, gfc_packed, bool);
 
 /* Add a field of given name and type to a UNION_TYPE or RECORD_TYPE.  */
@@ -102,5 +103,6 @@ tree gfc_get_dtype (tree);
 
 tree gfc_get_ppc_type (gfc_component *);
 tree gfc_get_caf_vector_type (int dim);
+tree gfc_get_caf_reference_type ();
 
 #endif

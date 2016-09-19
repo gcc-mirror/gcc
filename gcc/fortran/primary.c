@@ -2376,6 +2376,163 @@ gfc_expr_attr (gfc_expr *e)
 }
 
 
+/* Given an expression, figure out what the ultimate expression
+   attribute is.  This routine is similar to gfc_variable_attr with
+   parts of gfc_expr_attr, but focuses more on the needs of
+   coarrays.  For coarrays a codimension attribute is kind of
+   "infectious" being propagated once set and never cleared.  */
+
+static symbol_attribute
+caf_variable_attr (gfc_expr *expr, bool in_allocate)
+{
+  int dimension, codimension, pointer, allocatable, target, coarray_comp,
+      alloc_comp;
+  symbol_attribute attr;
+  gfc_ref *ref;
+  gfc_symbol *sym;
+  gfc_component *comp;
+
+  if (expr->expr_type != EXPR_VARIABLE && expr->expr_type != EXPR_FUNCTION)
+    gfc_internal_error ("gfc_caf_attr(): Expression isn't a variable");
+
+  sym = expr->symtree->n.sym;
+  gfc_clear_attr (&attr);
+
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
+    {
+      dimension = CLASS_DATA (sym)->attr.dimension;
+      codimension = CLASS_DATA (sym)->attr.codimension;
+      pointer = CLASS_DATA (sym)->attr.class_pointer;
+      allocatable = CLASS_DATA (sym)->attr.allocatable;
+      coarray_comp = CLASS_DATA (sym)->attr.coarray_comp;
+      alloc_comp = CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp;
+    }
+  else
+    {
+      dimension = sym->attr.dimension;
+      codimension = sym->attr.codimension;
+      pointer = sym->attr.pointer;
+      allocatable = sym->attr.allocatable;
+      coarray_comp = sym->attr.coarray_comp;
+      alloc_comp = sym->ts.type == BT_DERIVED
+	  ? sym->ts.u.derived->attr.alloc_comp : 0;
+    }
+
+  target = attr.target;
+  if (pointer || attr.proc_pointer)
+    target = 1;
+
+  for (ref = expr->ref; ref; ref = ref->next)
+    switch (ref->type)
+      {
+      case REF_ARRAY:
+
+	switch (ref->u.ar.type)
+	  {
+	  case AR_FULL:
+	  case AR_SECTION:
+	    dimension = 1;
+	    break;
+
+	  case AR_ELEMENT:
+	    /* Handle coarrays.  */
+	    if (ref->u.ar.dimen > 0 && !in_allocate)
+	      allocatable = pointer = 0;
+	    break;
+
+	  case AR_UNKNOWN:
+	    /* If any of start, end or stride is not integer, there will
+	       already have been an error issued.  */
+	    int errors;
+	    gfc_get_errors (NULL, &errors);
+	    if (errors == 0)
+	      gfc_internal_error ("gfc_caf_attr(): Bad array reference");
+	  }
+
+	break;
+
+      case REF_COMPONENT:
+	comp = ref->u.c.component;
+
+	if (comp->ts.type == BT_CLASS)
+	  {
+	    codimension |= CLASS_DATA (comp)->attr.codimension;
+	    pointer = CLASS_DATA (comp)->attr.class_pointer;
+	    allocatable = CLASS_DATA (comp)->attr.allocatable;
+	    coarray_comp |= CLASS_DATA (comp)->attr.coarray_comp;
+	  }
+	else
+	  {
+	    codimension |= comp->attr.codimension;
+	    pointer = comp->attr.pointer;
+	    allocatable = comp->attr.allocatable;
+	    coarray_comp |= comp->attr.coarray_comp;
+	  }
+
+	if (pointer || attr.proc_pointer)
+	  target = 1;
+
+	break;
+
+      case REF_SUBSTRING:
+	allocatable = pointer = 0;
+	break;
+      }
+
+  attr.dimension = dimension;
+  attr.codimension = codimension;
+  attr.pointer = pointer;
+  attr.allocatable = allocatable;
+  attr.target = target;
+  attr.save = sym->attr.save;
+  attr.coarray_comp = coarray_comp;
+  attr.alloc_comp = alloc_comp;
+
+  return attr;
+}
+
+
+symbol_attribute
+gfc_caf_attr (gfc_expr *e, bool in_allocate)
+{
+  symbol_attribute attr;
+
+  switch (e->expr_type)
+    {
+    case EXPR_VARIABLE:
+      attr = caf_variable_attr (e, in_allocate);
+      break;
+
+    case EXPR_FUNCTION:
+      gfc_clear_attr (&attr);
+
+      if (e->value.function.esym && e->value.function.esym->result)
+	{
+	  gfc_symbol *sym = e->value.function.esym->result;
+	  attr = sym->attr;
+	  if (sym->ts.type == BT_CLASS)
+	    {
+	      attr.dimension = CLASS_DATA (sym)->attr.dimension;
+	      attr.pointer = CLASS_DATA (sym)->attr.class_pointer;
+	      attr.allocatable = CLASS_DATA (sym)->attr.allocatable;
+	      attr.alloc_comp = CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp;
+	    }
+	}
+      else if (e->symtree)
+	attr = caf_variable_attr (e, in_allocate);
+      else
+	gfc_clear_attr (&attr);
+      break;
+
+    default:
+      gfc_clear_attr (&attr);
+      break;
+    }
+
+  return attr;
+}
+
+
 /* Match a structure constructor.  The initial symbol has already been
    seen.  */
 

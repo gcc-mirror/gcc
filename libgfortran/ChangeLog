@@ -1,3 +1,37 @@
+2016-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add caf_reference_type.
+	* caf/mpi.c: Adapted signature of caf_register().
+	* caf/single.c (struct caf_single_token): Added to keep the pointer
+	to the memory registered and array descriptor.
+	(caf_internal_error): Added convenience interface.
+	(_gfortran_caf_register): Adapted to work with caf_single_token and
+	return memory in the array descriptor.
+	(_gfortran_caf_deregister): Same.
+	(assign_char1_from_char4): Fixed style.
+	(convert_type): Fixed incorrect conversion.
+	(_gfortran_caf_get): Adapted to work with caf_single_token.
+	(_gfortran_caf_send): Same.
+	(_gfortran_caf_sendget): Same.
+	(copy_data): Added to stop repeating it in all _by_ref functions.
+	(get_for_ref): Recursive getting of coarray data using a chain of
+	references.
+	(_gfortran_caf_get_by_ref): Driver for computing the memory needed for
+	the get and checking properties of the operation.
+	(send_by_ref): Same as get_for_ref but for sending data.
+	(_gfortran_caf_send_by_ref): Same like caf_get_by_ref but for sending.
+	(_gfortran_caf_sendget_by_ref): Uses get_by_ref and send_by_ref to
+	implement sendget for reference chains.
+	(_gfortran_caf_atomic_define): Adapted to work with caf_single_token.
+	(_gfortran_caf_atomic_ref): Likewise.
+	(_gfortran_caf_atomic_cas): Likewise.
+	(_gfortran_caf_atomic_op): Likewise.
+	(_gfortran_caf_event_post): Likewise.
+	(_gfortran_caf_event_wait): Likewise.
+	(_gfortran_caf_event_query): Likewise.
+	(_gfortran_caf_lock): Likewise.
+	(_gfortran_caf_unlock): Likewise.
+
 2016-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77507
