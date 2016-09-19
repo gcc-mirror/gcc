@@ -1,3 +1,7 @@
+2016-09-18  Louis Krupp  <louis.krupp@zoho.com>
+
+	* gfortran.dg/pr68078.f90: XFAIL run on Darwin
+
 2016-09-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/predict-loop-exit-1.C: Disable early jump threading.
