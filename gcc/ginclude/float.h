@@ -185,6 +185,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif /* C11 */
 
+#ifdef __STDC_WANT_IEC_60559_BFP_EXT__
+/* Number of decimal digits for which conversions between decimal
+   character strings and binary formats, in both directions, are
+   correctly rounded.  */
+#define CR_DECIMAL_DIG	__UINTMAX_MAX__
+#endif
+
 #ifdef __STDC_WANT_IEC_60559_TYPES_EXT__
 /* Constants for _FloatN and _FloatNx types from TS 18661-3.  See
    comments above for their semantics.  */
