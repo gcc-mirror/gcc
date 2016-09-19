@@ -2881,13 +2881,16 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
     }
   /* Likewise if we simplified to sth not queued for insertion.  */
   bool found = false;
-  gsi = gsi_start (forced_stmts);
-  for (; !gsi_end_p (gsi); gsi_next (&gsi))
+  gsi = gsi_last (forced_stmts);
+  for (; !gsi_end_p (gsi); gsi_prev (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
       tree forcedname = gimple_get_lhs (stmt);
       if (forcedname == folded)
-	found = true;
+	{
+	  found = true;
+	  break;
+	}
     }
   if (! found)
     {

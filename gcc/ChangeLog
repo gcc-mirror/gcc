@@ -1,3 +1,9 @@
+2016-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77514
+	* tree-ssa-pre.c (create_expression_by_pieces): Optimize
+	search for folded stmt.
+
 2016-09-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* passes.def (pass_early_thread_jumps): Schedule after forwprop.
