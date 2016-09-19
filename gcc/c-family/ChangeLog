@@ -1,3 +1,8 @@
+2016-09-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (max_align_t_align): Also consider alignment of
+	float128_type_node.
+
 2016-09-15  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (check_cxx_fundamental_alignment_constraints): Check

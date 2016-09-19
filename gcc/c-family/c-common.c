@@ -12850,8 +12850,11 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 unsigned
 max_align_t_align ()
 {
-  return MAX (TYPE_ALIGN (long_long_integer_type_node),
-	      TYPE_ALIGN (long_double_type_node));
+  unsigned int max_align = MAX (TYPE_ALIGN (long_long_integer_type_node),
+				TYPE_ALIGN (long_double_type_node));
+  if (float128_type_node != NULL_TREE)
+    max_align = MAX (max_align, TYPE_ALIGN (float128_type_node));
+  return max_align;
 }
 
 /* Return true iff ALIGN is an integral constant that is a fundamental
