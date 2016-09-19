@@ -1,5 +1,11 @@
 2016-09-19  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/77605
+	* tree-data-ref.c (analyze_subscript_affine_affine): Use the
+	proper niter to bound the loops.
+
+2016-09-19  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/77514
 	* tree-ssa-pre.c (create_expression_by_pieces): Optimize
 	search for folded stmt.

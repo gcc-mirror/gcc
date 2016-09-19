@@ -1,3 +1,8 @@
+2016-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77605
+	* gcc.dg/torture/pr77605.c: New testcase.
+
 2016-09-18  Louis Krupp  <louis.krupp@zoho.com>
 
 	* gfortran.dg/pr68078.f90: XFAIL run on Darwin
