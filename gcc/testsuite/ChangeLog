@@ -1,5 +1,9 @@
 2016-09-19  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/cr-decimal-dig-1.c: New test.
+
+2016-09-19  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/float128-align.c, gcc.dg/float128x-align.c,
 	gcc.dg/float16-align.c, gcc.dg/float32-align.c,
 	gcc.dg/float32x-align.c, gcc.dg/float64-align.c,

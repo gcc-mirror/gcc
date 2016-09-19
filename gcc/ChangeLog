@@ -1,5 +1,10 @@
 2016-09-19  Joseph Myers  <joseph@codesourcery.com>
 
+	* ginclude/float.h [__STDC_WANT_IEC_60559_BFP_EXT__]
+	(CR_DECIMAL_DIG): New macro.
+
+2016-09-19  Joseph Myers  <joseph@codesourcery.com>
+
 	* ginclude/stddef.h (max_align_t) [__i386__]: Add __float128
 	element.
 
