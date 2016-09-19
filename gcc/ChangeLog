@@ -1,5 +1,16 @@
 2016-09-19  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (early_dwarf_finished): New global.
+	(set_early_dwarf::set_early_dwarf): Assert early_dwarf_finished
+	is false.
+	(dwarf2out_early_finish): Set early_dwarf_finished at the end,
+	if called from LTO exit early.
+	(dwarf2out_late_global_decl): When being during the early
+	debug phase do not add locations but only const value attributes.
+	Adjust the way we generate early DIEs for LTO.
+
+2016-09-19  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/77605
 	* tree-data-ref.c (analyze_subscript_affine_affine): Use the
 	proper niter to bound the loops.

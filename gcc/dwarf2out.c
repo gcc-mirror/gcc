@@ -2711,9 +2711,14 @@ die_node;
 
 /* Set to TRUE while dwarf2out_early_global_decl is running.  */
 static bool early_dwarf;
+static bool early_dwarf_finished;
 struct set_early_dwarf {
   bool saved;
-  set_early_dwarf () : saved(early_dwarf) { early_dwarf = true; }
+  set_early_dwarf () : saved(early_dwarf)
+    {
+      gcc_assert (! early_dwarf_finished);
+      early_dwarf = true;
+    }
   ~set_early_dwarf () { early_dwarf = saved; }
 };
 
@@ -23878,18 +23883,31 @@ dwarf2out_early_global_decl (tree decl)
 static void
 dwarf2out_late_global_decl (tree decl)
 {
-  /* We have to generate early debug late for LTO.  */
-  if (in_lto_p)
-    dwarf2out_early_global_decl (decl);
-
-    /* Fill-in any location information we were unable to determine
-       on the first pass.  */
+  /* Fill-in any location information we were unable to determine
+     on the first pass.  */
   if (TREE_CODE (decl) == VAR_DECL
       && !POINTER_BOUNDS_P (decl))
     {
       dw_die_ref die = lookup_decl_die (decl);
+
+      /* We have to generate early debug late for LTO.  */
+      if (! die && in_lto_p)
+	{
+	  dwarf2out_decl (decl);
+	  die = lookup_decl_die (decl);
+	}
+
       if (die)
-	add_location_or_const_value_attribute (die, decl, false);
+	{
+	  /* We get called during the early debug phase via the symtab
+	     code invoking late_global_decl for symbols that are optimized
+	     out.  When the early phase is not finished, do not add
+	     locations.  */
+	  if (! early_dwarf_finished)
+	    tree_add_const_value_attribute_for_decl (die, decl);
+	  else
+	    add_location_or_const_value_attribute (die, decl, false);
+	}
     }
 }
 
@@ -28137,6 +28155,14 @@ dwarf2out_early_finish (void)
 {
   set_early_dwarf s;
 
+  /* With LTO early dwarf was really finished at compile-time, so make
+     sure to adjust the phase after annotating the LTRANS CU DIE.  */
+  if (in_lto_p)
+    {
+      early_dwarf_finished = true;
+      return;
+    }
+
   /* Walk through the list of incomplete types again, trying once more to
      emit full debugging info for them.  */
   retry_incomplete_types ();
@@ -28163,6 +28189,9 @@ dwarf2out_early_finish (void)
 	}
     }
   deferred_asm_name = NULL;
+
+  /* The early debug phase is now finished.  */
+  early_dwarf_finished = true;
 }
 
 /* Reset all state within dwarf2out.c so that we can rerun the compiler
