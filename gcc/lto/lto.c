@@ -3315,6 +3315,9 @@ lto_main (void)
 	  if (!flag_ltrans)
 	    lto_promote_statics_nonwpa ();
 
+	  /* Annotate the CU DIE and mark the early debug phase as finished.  */
+	  debug_hooks->early_finish ();
+
 	  /* Let the middle end know that we have read and merged all of
 	     the input files.  */ 
 	  symtab->compile ();
