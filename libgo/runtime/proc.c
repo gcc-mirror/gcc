@@ -2052,9 +2052,13 @@ doentersyscall()
 
 	// Leave SP around for GC and traceback.
 #ifdef USING_SPLIT_STACK
-	g->gcstack = __splitstack_find(nil, nil, &g->gcstacksize,
-				       &g->gcnextsegment, &g->gcnextsp,
-				       &g->gcinitialsp);
+	{
+	  size_t gcstacksize;
+	  g->gcstack = __splitstack_find(nil, nil, &gcstacksize,
+					 &g->gcnextsegment, &g->gcnextsp,
+					 &g->gcinitialsp);
+	  g->gcstacksize = (uintptr)gcstacksize;
+	}
 #else
 	{
 		void *v;
@@ -2099,9 +2103,13 @@ runtime_entersyscallblock(void)
 
 	// Leave SP around for GC and traceback.
 #ifdef USING_SPLIT_STACK
-	g->gcstack = __splitstack_find(nil, nil, &g->gcstacksize,
-				       &g->gcnextsegment, &g->gcnextsp,
-				       &g->gcinitialsp);
+	{
+	  size_t gcstacksize;
+	  g->gcstack = __splitstack_find(nil, nil, &gcstacksize,
+					 &g->gcnextsegment, &g->gcnextsp,
+					 &g->gcinitialsp);
+	  g->gcstacksize = (uintptr)gcstacksize;
+	}
 #else
 	g->gcnextsp = (byte *) &p;
 #endif
