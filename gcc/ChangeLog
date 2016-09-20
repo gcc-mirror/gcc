@@ -1,3 +1,8 @@
+2016-09-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/var/vax.h (ELIMINABLE_REGS): Define.
+	(INITIAL_ELIMINATION_OFFSET): Define.
+
 2016-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/77624
