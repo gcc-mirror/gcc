@@ -1,5 +1,8 @@
 2016-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77637
+	* g++.dg/cpp0x/gen-attrs-62.C: New test.
+
 	PR middle-end/77624
 	* c-c++-common/pr77624-1.c: New test.
 	* c-c++-common/pr77624-2.c: New test.
