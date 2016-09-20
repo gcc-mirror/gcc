@@ -3752,8 +3752,8 @@ conditional expression.
 @code{register}.
 
 @item
-(C++ only) A base class is not initialized in a derived class's copy
-constructor.
+(C++ only) A base class is not initialized in the copy constructor
+of a derived class.
 
 @end itemize
 
@@ -9128,9 +9128,9 @@ increasing the prologue size or complexity of function body to other
 optimizers.
 
 When profile feedback is available (see @option{-fprofile-generate}) the actual
-recursion depth can be guessed from probability that function recurses via a
-given call expression.  This parameter limits inlining only to call expressions
-whose probability exceeds the given threshold (in percents).
+recursion depth can be guessed from the probability that function recurses
+via a given call expression.  This parameter limits inlining only to call
+expressions whose probability exceeds the given threshold (in percents).
 The default value is 10.
 
 @item early-inlining-insns
