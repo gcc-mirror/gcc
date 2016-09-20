@@ -1,3 +1,9 @@
+2016-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77646
+	* tree-ssa-sccvn.c (visit_reference_op_call): Always value-number
+	a VDEF.
+
 2016-09-20  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/arm_neon.h: Add gnu_inline and artificial
