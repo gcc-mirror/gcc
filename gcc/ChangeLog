@@ -1,5 +1,10 @@
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	 * tree-vrp.c (get_value_range): Teach PARM_DECL to use ipa-vrp
+	 results.
+
+2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* common.opt: New option -fipa-vrp.
 	* ipa-cp.c (ipa_get_vr_lat): New.
 	(ipcp_vr_lattice::print): Likewise.

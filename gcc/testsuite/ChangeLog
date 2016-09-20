@@ -1,5 +1,11 @@
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* gcc.dg/guality/pr54519-1.c: Add -fno-ipa-vrp. Else constant
+	arguments/compare will be optimized away.
+	* gcc.dg/torture/ftrapv-1.c: Likewise.
+
+2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* g++.dg/ipa/pure-const-3.C: Add -fno-ipa-vrp. Else constant arguments
 	will be optimized away.
 	* gcc.dg/ipa/vrp1.c: New test.

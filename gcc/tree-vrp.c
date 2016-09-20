@@ -687,6 +687,18 @@ get_value_range (const_tree var)
 	  if (POINTER_TYPE_P (TREE_TYPE (sym))
 	      && nonnull_arg_p (sym))
 	    set_value_range_to_nonnull (vr, TREE_TYPE (sym));
+	  else if (INTEGRAL_TYPE_P (TREE_TYPE (sym)))
+	    {
+	      wide_int min, max;
+	      value_range_type rtype = get_range_info (var, &min, &max);
+	      if (rtype == VR_RANGE || rtype == VR_ANTI_RANGE)
+		set_value_range (vr, rtype,
+				 wide_int_to_tree (TREE_TYPE (var), min),
+				 wide_int_to_tree (TREE_TYPE (var), max),
+				 NULL);
+	      else
+		set_value_range_to_varying (vr);
+	    }
 	  else
 	    set_value_range_to_varying (vr);
 	}
