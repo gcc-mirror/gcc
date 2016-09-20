@@ -1,3 +1,13 @@
+2016-09-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): For V4SF
+	inits on power8 and above, use the VMRGEW instruction instead of a
+	permute.
+
+	* config/rs6000/altivec.md (UNSPEC_VMRGEW_DIRECT): New unspec.
+	(p8_vmrgew_v4sf_direct): New VMRGEW insn for V4SF floating
+	initialization.
+
 2016-09-20  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/arm_neon.h

@@ -141,6 +141,7 @@
    UNSPEC_VMRGH_DIRECT
    UNSPEC_VMRGL_DIRECT
    UNSPEC_VSPLT_DIRECT
+   UNSPEC_VMRGEW_DIRECT
    UNSPEC_VSUMSWS_DIRECT
    UNSPEC_VADDCUQ
    UNSPEC_VADDEUQM
@@ -1338,6 +1339,15 @@
   else
     return "vmrgew %0,%2,%1";
 }
+  [(set_attr "type" "vecperm")])
+
+(define_insn "p8_vmrgew_v4sf_direct"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")
+		      (match_operand:V4SF 2 "register_operand" "v")]
+		     UNSPEC_VMRGEW_DIRECT))]
+  "TARGET_P8_VECTOR"
+  "vmrgew %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
 (define_expand "vec_widen_umult_even_v16qi"
