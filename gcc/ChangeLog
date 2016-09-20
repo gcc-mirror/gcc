@@ -1,5 +1,45 @@
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* common.opt: New option -fipa-vrp.
+	* ipa-cp.c (ipa_get_vr_lat): New.
+	(ipcp_vr_lattice::print): Likewise.
+	(print_all_lattices): Call ipcp_vr_lattice::print.
+	(ipcp_vr_lattice::meet_with): New.
+	(ipcp_vr_lattice::meet_with_1): Likewise.
+	(ipcp_vr_lattice::top_p): Likewise.
+	(ipcp_vr_lattice::bottom_p): Likewsie.
+	(ipcp_vr_lattice::set_to_bottom): Likewise.
+	(set_all_contains_variable): Call VR set_to_bottom.
+	(initialize_node_lattices): Init VR lattices.
+	(propagate_vr_accross_jump_function): New.
+	(propagate_constants_accross_call): Call
+	propagate_vr_accross_jump_function.
+	(ipcp_store_vr_results): New.
+	(ipcp_driver): Handle VR.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Handle VR.
+	(ipa_set_jf_unknown): Likewise.
+	(ipa_compute_jump_functions_for_edge): Likewise.
+	(ipa_node_params_t::duplicate): Likewise.
+	(ipa_write_jump_function): Likewise.
+	(ipa_read_jump_function): Likewise.
+	(write_ipcp_transformation_info): Likewise.
+	(read_ipcp_transformation_info): Likewise.
+	(ipcp_update_vr): New.
+	(ipcp_transform_function): Handle VR.
+	* ipa-prop.h (struct ipa_vr): New.
+	* cgraph.c: Include tree-vrp.h.
+	* cgraphunit.c: Likewise.
+	* ipa-utils.c: Likewise.
+	* ipa.c: Likewise.
+	* opts.c: Likewise.
+	* toplev.c: Likewise.
+	* ipa-devirt.c: Likewise.
+	* ipa-inline-transform.c: Likewise.
+	* ipa-inline.c: Likewise.
+	* ipa-profile.c: Likewise.
+
+2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* doc/invoke.texi: Document -fdump-tree-evrp.
 	* passes.def: Define new pass_early_vrp.
 	* timevar.def: Define new TV_TREE_EARLY_VRP.

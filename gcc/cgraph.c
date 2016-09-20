@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "ipa-utils.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "cfgloop.h"

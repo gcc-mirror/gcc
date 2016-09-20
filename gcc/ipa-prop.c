@@ -311,6 +311,19 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	}
       else
 	fprintf (f, "         Unknown bits\n");
+
+      if (jump_func->vr_known)
+	{
+	  fprintf (f, "         VR  ");
+	  fprintf (f, "%s[",
+		   (jump_func->m_vr.type == VR_ANTI_RANGE) ? "~" : "");
+	  print_decs (jump_func->m_vr.min, f);
+	  fprintf (f, ", ");
+	  print_decs (jump_func->m_vr.max, f);
+	  fprintf (f, "]\n");
+	}
+      else
+	fprintf (f, "         Unknown VR\n");
     }
 }
 
@@ -391,6 +404,7 @@ ipa_set_jf_unknown (struct ipa_jump_func *jfunc)
   jfunc->type = IPA_JF_UNKNOWN;
   jfunc->alignment.known = false;
   jfunc->bits.known = false;
+  jfunc->vr_known = false;
 }
 
 /* Set JFUNC to be a copy of another jmp (to be used by jump function
@@ -1680,9 +1694,27 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    }
 	  else
 	    gcc_assert (!jfunc->alignment.known);
+	  gcc_assert (!jfunc->vr_known);
 	}
       else
-	gcc_assert (!jfunc->alignment.known);
+	{
+	  wide_int min, max;
+	  value_range_type type;
+	  if (TREE_CODE (arg) == SSA_NAME
+	      && param_type
+	      && (type = get_range_info (arg, &min, &max))
+	      && (type == VR_RANGE || type == VR_ANTI_RANGE)
+	      && (min.get_precision () <= TYPE_PRECISION (param_type)))
+	    {
+	      jfunc->vr_known = true;
+	      jfunc->m_vr.type = type;
+	      jfunc->m_vr.min = wide_int_to_tree (param_type, min);
+	      jfunc->m_vr.max = wide_int_to_tree (param_type, max);
+	    }
+	  else
+	    gcc_assert (!jfunc->vr_known);
+	  gcc_assert (!jfunc->alignment.known);
+	}
 
       if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
 	  && (TREE_CODE (arg) == SSA_NAME || TREE_CODE (arg) == INTEGER_CST))
@@ -3709,16 +3741,28 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
 
   ipcp_transformation_summary *src_trans = ipcp_get_transformation_summary (src);
 
-  if (src_trans && vec_safe_length (src_trans->alignments) > 0)
+  if (src_trans)
     {
       ipcp_grow_transformations_if_necessary ();
       src_trans = ipcp_get_transformation_summary (src);
       const vec<ipa_alignment, va_gc> *src_alignments = src_trans->alignments;
+      const vec<ipa_vr, va_gc> *src_vr = src_trans->m_vr;
       vec<ipa_alignment, va_gc> *&dst_alignments
 	= ipcp_get_transformation_summary (dst)->alignments;
-      vec_safe_reserve_exact (dst_alignments, src_alignments->length ());
-      for (unsigned i = 0; i < src_alignments->length (); ++i)
-	dst_alignments->quick_push ((*src_alignments)[i]);
+      vec<ipa_vr, va_gc> *&dst_vr
+	= ipcp_get_transformation_summary (dst)->m_vr;
+      if (vec_safe_length (src_trans->alignments) > 0)
+	{
+	  vec_safe_reserve_exact (dst_alignments, src_alignments->length ());
+	  for (unsigned i = 0; i < src_alignments->length (); ++i)
+	    dst_alignments->quick_push ((*src_alignments)[i]);
+	}
+      if (vec_safe_length (src_trans->m_vr) > 0)
+	{
+	  vec_safe_reserve_exact (dst_vr, src_vr->length ());
+	  for (unsigned i = 0; i < src_vr->length (); ++i)
+	    dst_vr->quick_push ((*src_vr)[i]);
+	}
     }
 
   if (src_trans && vec_safe_length (src_trans->bits) > 0)
@@ -4660,6 +4704,15 @@ ipa_write_jump_function (struct output_block *ob,
       streamer_write_widest_int (ob, jump_func->bits.value);
       streamer_write_widest_int (ob, jump_func->bits.mask);
     }   
+  bp_pack_value (&bp, jump_func->vr_known, 1);
+  streamer_write_bitpack (&bp);
+  if (jump_func->vr_known)
+    {
+      streamer_write_enum (ob->main_stream, value_rang_type,
+			   VR_LAST, jump_func->m_vr.type);
+      stream_write_tree (ob, jump_func->m_vr.min, true);
+      stream_write_tree (ob, jump_func->m_vr.max, true);
+    }
 }
 
 /* Read in jump function JUMP_FUNC from IB.  */
@@ -4747,6 +4800,20 @@ ipa_read_jump_function (struct lto_input_block *ib,
     }
   else
     jump_func->bits.known = false;
+
+  struct bitpack_d vr_bp = streamer_read_bitpack (ib);
+  bool vr_known = bp_unpack_value (&vr_bp, 1);
+  if (vr_known)
+    {
+      jump_func->vr_known = true;
+      jump_func->m_vr.type = streamer_read_enum (ib,
+						 value_range_type,
+						 VR_LAST);
+      jump_func->m_vr.min = stream_read_tree (ib, data_in);
+      jump_func->m_vr.max = stream_read_tree (ib, data_in);
+    }
+  else
+    jump_func->vr_known = false;
 }
 
 /* Stream out parts of cgraph_indirect_call_info corresponding to CS that are
@@ -5113,7 +5180,29 @@ write_ipcp_transformation_info (output_block *ob, cgraph_node *node)
   else
     streamer_write_uhwi (ob, 0);
 
-  ts = ipcp_get_transformation_summary (node);
+  if (ts && vec_safe_length (ts->m_vr) > 0)
+    {
+      count = ts->m_vr->length ();
+      streamer_write_uhwi (ob, count);
+      for (unsigned i = 0; i < count; ++i)
+	{
+	  struct bitpack_d bp;
+	  ipa_vr *parm_vr = &(*ts->m_vr)[i];
+	  bp = bitpack_create (ob->main_stream);
+	  bp_pack_value (&bp, parm_vr->known, 1);
+	  streamer_write_bitpack (&bp);
+	  if (parm_vr->known)
+	    {
+	      streamer_write_enum (ob->main_stream, value_rang_type,
+				   VR_LAST, parm_vr->type);
+	      streamer_write_wide_int (ob, parm_vr->min);
+	      streamer_write_wide_int (ob, parm_vr->max);
+	    }
+	}
+    }
+  else
+    streamer_write_uhwi (ob, 0);
+
   if (ts && vec_safe_length (ts->bits) > 0)
     {
       count = ts->bits->length ();
@@ -5191,6 +5280,30 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
   if (count > 0)
     {
       ipcp_grow_transformations_if_necessary ();
+
+      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      vec_safe_grow_cleared (ts->m_vr, count);
+      for (i = 0; i < count; i++)
+	{
+	  ipa_vr *parm_vr;
+	  parm_vr = &(*ts->m_vr)[i];
+	  struct bitpack_d bp;
+	  bp = streamer_read_bitpack (ib);
+	  parm_vr->known = bp_unpack_value (&bp, 1);
+	  if (parm_vr->known)
+	    {
+	      parm_vr->type = streamer_read_enum (ib, value_range_type,
+						  VR_LAST);
+	      parm_vr->min = streamer_read_wide_int (ib);
+	      parm_vr->max = streamer_read_wide_int (ib);
+	    }
+	}
+    }
+  count = streamer_read_uhwi (ib);
+  if (count > 0)
+    {
+      ipcp_grow_transformations_if_necessary ();
+
       ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
       vec_safe_grow_cleared (ts->bits, count);
 
@@ -5558,6 +5671,59 @@ ipcp_update_bits (struct cgraph_node *node)
     }
 }
 
+/* Update value range of formal parameters as described in
+   ipcp_transformation_summary.  */
+
+static void
+ipcp_update_vr (struct cgraph_node *node)
+{
+  tree fndecl = node->decl;
+  tree parm = DECL_ARGUMENTS (fndecl);
+  tree next_parm = parm;
+  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+  if (!ts || vec_safe_length (ts->m_vr) == 0)
+    return;
+  const vec<ipa_vr, va_gc> &vr = *ts->m_vr;
+  unsigned count = vr.length ();
+
+  for (unsigned i = 0; i < count; ++i, parm = next_parm)
+    {
+      if (node->clone.combined_args_to_skip
+	  && bitmap_bit_p (node->clone.combined_args_to_skip, i))
+	continue;
+      gcc_checking_assert (parm);
+      next_parm = DECL_CHAIN (parm);
+      tree ddef = ssa_default_def (DECL_STRUCT_FUNCTION (node->decl), parm);
+
+      if (!ddef || !is_gimple_reg (parm))
+	continue;
+
+      if (vr[i].known
+	  && INTEGRAL_TYPE_P (TREE_TYPE (ddef))
+	  && !POINTER_TYPE_P (TREE_TYPE (ddef))
+	  && (vr[i].type == VR_RANGE || vr[i].type == VR_ANTI_RANGE))
+	{
+	  tree type = TREE_TYPE (ddef);
+	  unsigned prec = TYPE_PRECISION (type);
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Setting value range of param %u ", i);
+	      fprintf (dump_file, "%s[",
+		       (vr[i].type == VR_ANTI_RANGE) ? "~" : "");
+	      print_decs (vr[i].min, dump_file);
+	      fprintf (dump_file, ", ");
+	      print_decs (vr[i].max, dump_file);
+	      fprintf (dump_file, "]\n");
+	    }
+	  set_range_info (ddef, vr[i].type,
+			  wide_int_storage::from (vr[i].min, prec,
+						  TYPE_SIGN (type)),
+			  wide_int_storage::from (vr[i].max, prec,
+						  TYPE_SIGN (type)));
+	}
+    }
+}
+
 /* IPCP transformation phase doing propagation of aggregate values.  */
 
 unsigned int
@@ -5578,6 +5744,7 @@ ipcp_transform_function (struct cgraph_node *node)
 
   ipcp_update_alignments (node);
   ipcp_update_bits (node);
+  ipcp_update_vr (node);
   aggval = ipa_get_agg_replacements_for_node (node);
   if (!aggval)
       return 0;

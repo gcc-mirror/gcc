@@ -1605,6 +1605,10 @@ fipa-struct-reorg
 Common Ignore
 Does nothing. Preserved for backward compatibility.
 
+fipa-vrp
+Common Report Var(flag_ipa_vrp) Optimization
+Perform IPA Value Range Propagation.
+
 fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
 -fira-algorithm=[CB|priority] Set the used IRA algorithm.

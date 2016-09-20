@@ -114,6 +114,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-fold.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "tree-pretty-print.h"
 #include "tree-inline.h"
@@ -321,6 +322,25 @@ private:
   void get_value_and_mask (tree, widest_int *, widest_int *);
 }; 
 
+/* Lattice of value ranges.  */
+
+class ipcp_vr_lattice
+{
+public:
+  value_range m_vr;
+
+  inline bool bottom_p () const;
+  inline bool top_p () const;
+  inline bool set_to_bottom ();
+  bool meet_with (const value_range *p_vr);
+  bool meet_with (const ipcp_vr_lattice &other);
+  void init () { m_vr.type = VR_UNDEFINED; }
+  void print (FILE * f);
+
+private:
+  bool meet_with_1 (const value_range *other_vr);
+};
+
 /* Structure containing lattices for a parameter itself and for pieces of
    aggregates that are passed in the parameter or by a reference in a parameter
    plus some other useful flags.  */
@@ -338,6 +358,8 @@ public:
   ipcp_alignment_lattice alignment;
   /* Lattice describing known bits.  */
   ipcp_bits_lattice bits_lattice;
+  /* Lattice describing value range.  */
+  ipcp_vr_lattice m_value_range;
   /* Number of aggregate lattices */
   int aggs_count;
   /* True if aggregate data were passed by reference (as opposed to by
@@ -403,6 +425,16 @@ ipa_get_poly_ctx_lat (struct ipa_node_params *info, int i)
 {
   struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
   return &plats->ctxlat;
+}
+
+/* Return the lattice corresponding to the value range of the Ith formal
+   parameter of the function described by INFO.  */
+
+static inline ipcp_vr_lattice *
+ipa_get_vr_lat (struct ipa_node_params *info, int i)
+{
+  struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+  return &plats->m_value_range;
 }
 
 /* Return whether LAT is a lattice with a single constant and without an
@@ -530,6 +562,14 @@ ipcp_bits_lattice::print (FILE *f)
     }
 }
 
+/* Print value range lattice to F.  */
+
+void
+ipcp_vr_lattice::print (FILE * f)
+{
+  dump_value_range (f, &m_vr);
+}
+
 /* Print all ipcp_lattices of all functions to F.  */
 
 static void
@@ -557,6 +597,9 @@ print_all_lattices (FILE * f, bool dump_sources, bool dump_benefits)
 	  plats->ctxlat.print (f, dump_sources, dump_benefits);
 	  plats->alignment.print (f);
 	  plats->bits_lattice.print (f);
+	  fprintf (f, "         ");
+	  plats->m_value_range.print (f);
+	  fprintf (f, "\n");
 	  if (plats->virt_call)
 	    fprintf (f, "        virt_call flag set\n");
 
@@ -908,6 +951,77 @@ ipcp_alignment_lattice::set_to_bottom ()
   return true;
 }
 
+/* Meet the current value of the lattice with described by OTHER
+   lattice.  */
+
+bool
+ipcp_vr_lattice::meet_with (const ipcp_vr_lattice &other)
+{
+  return meet_with_1 (&other.m_vr);
+}
+
+/* Meet the current value of the lattice with value ranfge described by VR
+   lattice.  */
+
+bool
+ipcp_vr_lattice::meet_with (const value_range *p_vr)
+{
+  return meet_with_1 (p_vr);
+}
+
+/* Meet the current value of the lattice with value ranfge described by
+   OTHER_VR lattice.  */
+
+bool
+ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
+{
+  tree min = m_vr.min, max = m_vr.max;
+  value_range_type type = m_vr.type;
+
+  if (bottom_p ())
+    return false;
+
+  if (other_vr->type == VR_VARYING)
+    return set_to_bottom ();
+
+  vrp_meet (&m_vr, other_vr);
+  if (type != m_vr.type
+      || min != m_vr.min
+      || max != m_vr.max)
+    return true;
+  else
+    return false;
+}
+
+/* Return true if value range information in the lattice is yet unknown.  */
+
+bool
+ipcp_vr_lattice::top_p () const
+{
+  return m_vr.type == VR_UNDEFINED;
+}
+
+/* Return true if value range information in the lattice is known to be
+   unusable.  */
+
+bool
+ipcp_vr_lattice::bottom_p () const
+{
+  return m_vr.type == VR_VARYING;
+}
+
+/* Set value range information in the lattice to bottom.  Return true if it
+   previously was in a different state.  */
+
+bool
+ipcp_vr_lattice::set_to_bottom ()
+{
+  if (m_vr.type == VR_VARYING)
+    return false;
+  m_vr.type = VR_VARYING;
+  return true;
+}
+
 /* Meet the current value of the lattice with alignment described by NEW_ALIGN
    and NEW_MISALIGN, assuming that we know the current value is neither TOP nor
    BOTTOM.  Return true if the value of lattice has changed.  */
@@ -1141,6 +1255,7 @@ set_all_contains_variable (struct ipcp_param_lattices *plats)
   ret |= set_agg_lats_contain_variable (plats);
   ret |= plats->alignment.set_to_bottom ();
   ret |= plats->bits_lattice.set_to_bottom ();
+  ret |= plats->m_value_range.set_to_bottom ();
   return ret;
 }
 
@@ -1211,6 +1326,12 @@ initialize_node_lattices (struct cgraph_node *node)
 	disable = true;
     }
 
+  for (i = 0; i < ipa_get_param_count (info) ; i++)
+    {
+      struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+      plats->m_value_range.init ();
+    }
+
   if (disable || variable)
     {
       for (i = 0; i < ipa_get_param_count (info) ; i++)
@@ -1223,6 +1344,7 @@ initialize_node_lattices (struct cgraph_node *node)
 	      set_agg_lats_to_bottom (plats);
 	      plats->alignment.set_to_bottom ();
 	      plats->bits_lattice.set_to_bottom ();
+	      plats->m_value_range.set_to_bottom ();
 	    }
 	  else
 	    set_all_contains_variable (plats);
@@ -1913,6 +2035,50 @@ propagate_bits_accross_jump_function (cgraph_edge *cs, int idx, ipa_jump_func *j
     return dest_lattice->set_to_bottom ();
 }
 
+/* Propagate value range across jump function JFUNC that is associated with
+   edge CS and update DEST_PLATS accordingly.  */
+
+static bool
+propagate_vr_accross_jump_function (cgraph_edge *cs,
+				    ipa_jump_func *jfunc,
+				    struct ipcp_param_lattices *dest_plats)
+{
+  struct ipcp_param_lattices *src_lats;
+  ipcp_vr_lattice *dest_lat = &dest_plats->m_value_range;
+
+  if (dest_lat->bottom_p ())
+    return false;
+
+  if (jfunc->type == IPA_JF_PASS_THROUGH)
+    {
+      struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
+      if (dest_lat->bottom_p ())
+	return false;
+      int src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
+      src_lats = ipa_get_parm_lattices (caller_info, src_idx);
+
+      if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
+	return dest_lat->meet_with (src_lats->m_value_range);
+    }
+  else if (jfunc->type == IPA_JF_CONST)
+    {
+      tree val = ipa_get_jf_constant (jfunc);
+      if (TREE_CODE (val) == INTEGER_CST)
+	{
+	  jfunc->vr_known = true;
+	  jfunc->m_vr.type = VR_RANGE;
+	  jfunc->m_vr.min = val;
+	  jfunc->m_vr.max = val;
+	  return dest_lat->meet_with (&jfunc->m_vr);
+	}
+    }
+
+  if (jfunc->vr_known)
+    return dest_lat->meet_with (&jfunc->m_vr);
+  else
+    return dest_lat->set_to_bottom ();
+}
+
 /* If DEST_PLATS already has aggregate items, check that aggs_by_ref matches
    NEW_AGGS_BY_REF and if not, mark all aggs as bottoms and return true (in all
    other cases, return false).  If there are no aggregate items, set
@@ -2264,6 +2430,11 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 						       &dest_plats->bits_lattice);
 	  ret |= propagate_aggs_accross_jump_function (cs, jump_func,
 						       dest_plats);
+	  if (opt_for_fn (callee->decl, flag_ipa_vrp))
+	    ret |= propagate_vr_accross_jump_function (cs,
+						       jump_func, dest_plats);
+	  else
+	    ret |= dest_plats->m_value_range.set_to_bottom ();
 	}
     }
   for (; i < parms_count; i++)
@@ -4974,6 +5145,76 @@ ipcp_store_bits_results (void)
       }
     }
 }
+
+/* Look up all VR information that we have discovered and copy it over
+   to the transformation summary.  */
+
+static void
+ipcp_store_vr_results (void)
+{
+  cgraph_node *node;
+
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+  {
+    ipa_node_params *info = IPA_NODE_REF (node);
+    bool found_useful_result = false;
+
+    if (!opt_for_fn (node->decl, flag_ipa_vrp))
+      {
+	if (dump_file)
+	  fprintf (dump_file, "Not considering %s for VR discovery "
+		   "and propagate; -fipa-ipa-vrp: disabled.\n",
+		   node->name ());
+	continue;
+      }
+
+   if (info->ipcp_orig_node)
+      info = IPA_NODE_REF (info->ipcp_orig_node);
+
+   unsigned count = ipa_get_param_count (info);
+   for (unsigned i = 0; i < count ; i++)
+     {
+       ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+       if (!plats->m_value_range.bottom_p ()
+	   && !plats->m_value_range.top_p ())
+	 {
+	   found_useful_result = true;
+	   break;
+	 }
+     }
+   if (!found_useful_result)
+     continue;
+
+   ipcp_grow_transformations_if_necessary ();
+   ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+   vec_safe_reserve_exact (ts->m_vr, count);
+
+   for (unsigned i = 0; i < count ; i++)
+     {
+       ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+       ipa_vr vr;
+
+       if (!plats->m_value_range.bottom_p ()
+	   && !plats->m_value_range.top_p ())
+	 {
+	   vr.known = true;
+	   vr.type = plats->m_value_range.m_vr.type;
+	   vr.min = plats->m_value_range.m_vr.min;
+	   vr.max = plats->m_value_range.m_vr.max;
+	 }
+       else
+	 {
+	   static wide_int zero = integer_zero_node;
+	   vr.known = false;
+	   vr.type = VR_VARYING;
+	   vr.min = zero;
+	   vr.max = zero;
+	 }
+       ts->m_vr->quick_push (vr);
+     }
+  }
+}
+
 /* The IPCP driver.  */
 
 static unsigned int
@@ -5009,6 +5250,8 @@ ipcp_driver (void)
   ipcp_store_alignment_results ();
   /* Store results of bits propagation.  */
   ipcp_store_bits_results ();
+  /* Store results of value range propagation.  */
+  ipcp_store_vr_results ();
 
   /* Free all IPCP structures.  */
   free_toporder_info (&topo);
