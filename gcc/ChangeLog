@@ -1,3 +1,11 @@
+2016-09-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77621
+	* config/i386/i386.c (ix86_preferred_simd_mode) <case DFmode>:
+	Don't return word_mode for !TARGET_VECTORIZE_DOUBLE.
+	(ix86_add_stmt_cost): Penalize DFmode vector operations
+	for !TARGET_VECTORIZE_DOUBLE.
+
 2016-09-20  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (Warning Options): Simplify language.

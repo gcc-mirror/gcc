@@ -1,3 +1,10 @@
+2016-09-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77621
+	* gcc.target/i386/pr77621.c: New test.
+	* gcc.target/i386/vect-double-2.c: Update scan-tree-dump-times
+	pattern, loop should vectorize with -mtune=atom.
+
 2016-09-20  Maxim Ostapenko  <m.ostapenko@samsung.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

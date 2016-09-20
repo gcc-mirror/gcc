@@ -49554,9 +49554,7 @@ ix86_preferred_simd_mode (machine_mode mode)
 	return V4SFmode;
 
     case DFmode:
-      if (!TARGET_VECTORIZE_DOUBLE)
-	return word_mode;
-      else if (TARGET_AVX512F)
+      if (TARGET_AVX512F)
 	return V8DFmode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V4DFmode;
@@ -49647,9 +49645,14 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
   tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
 
+  /* Penalize DFmode vector operations for !TARGET_VECTORIZE_DOUBLE.  */
+  if (kind == vector_stmt && !TARGET_VECTORIZE_DOUBLE
+      && vectype && GET_MODE_INNER (TYPE_MODE (vectype)) == DFmode)
+    stmt_cost *= 5;  /* FIXME: The value here is arbitrary.  */
+
   /* Statements in an inner loop relative to the loop being
      vectorized are weighted more heavily.  The value here is
-      arbitrary and could potentially be improved with analysis.  */
+     arbitrary and could potentially be improved with analysis.  */
   if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
     count *= 50;  /* FIXME.  */
 
