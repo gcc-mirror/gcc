@@ -333,6 +333,16 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
     }								\
   while (0)
 
+/* This macro specifies a table of register pairs used to eliminate
+   unneeded registers that point into the stack frame.  */
+#define ELIMINABLE_REGS {{FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+
+/* On the VAX, FRAME_POINTER_REQUIRED is always 1, so the definition of this
+   macro doesn't matter for register eliminations, but it should still
+   give realistic data for rtx_addr_can_trap_p.  */
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
+  ((OFFSET) = get_frame_size ())
+
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
