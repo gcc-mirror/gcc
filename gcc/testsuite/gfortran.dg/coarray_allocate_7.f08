@@ -22,6 +22,6 @@ program main
   if ( object%indices(1) /= 1 ) call abort()
 end program
 
-! { dg-final { scan-tree-dump-times "_gfortran_caf_register \\(D.\[0-9\]{4}, 1, &\\(\\(struct mytype\\) \\*object\\).indices.token, &\\(\\(struct mytype\\) \\*object\\).indices, 0B, 0B, 0\\);" 2 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_register \\(D.\[0-9\]+, 1, &\\(\\(struct mytype\\) \\*object\\).indices.token, &\\(\\(struct mytype\\) \\*object\\).indices, 0B, 0B, 0\\);" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister \\(&\\(\\(struct mytype\\) \\*object\\).indices.token, 0B, 0B, 0\\);" 1 "original" } }
 
