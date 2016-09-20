@@ -1,3 +1,14 @@
+2016-09-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2016-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+
+	* lra-constraints.c (match_reload): Pass information about other
+	output operands.  Create new unique register value if matching input
+	operand shares same register value as output operand being considered.
+	(curr_insn_transform): Record output operands already processed.
+
 2016-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi (Integer Overflow Builtins): Fix type of out
