@@ -1,5 +1,10 @@
 2016-09-20  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (mult->ashift peephole2s): Use pow2p_hwi
+	instead of exact_log2.
+
+2016-09-20  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/77621
 	* config/i386/i386.c (ix86_preferred_simd_mode) <case DFmode>:
 	Don't return word_mode for !TARGET_VECTORIZE_DOUBLE.
@@ -346,7 +351,8 @@
 
 2016-09-14  Pat Haugen  <pthaugen@us.ibm.com>
 
-	* loop-unroll.c (unroll_loop_runtime_iterations): Set probability of succ edge.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Set probability
+	of succ edge.
 
 2016-09-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -446,7 +452,7 @@
 
 2016-09-13  Tamar Christina  <tamar.christina@arm.com>
 
-	* config/aarch64/aarch64-builtins.c 
+	* config/aarch64/aarch64-builtins.c
 	(aarch64_init_simd_builtins): Fix builtin type signature printing.
 
 2016-09-13  Uros Bizjak  <ubizjak@gmail.com>
