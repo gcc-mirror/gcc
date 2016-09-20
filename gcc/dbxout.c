@@ -388,7 +388,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
 {
   dbxout_init,
   dbxout_finish,
-  debug_nothing_void,
+  debug_nothing_charstar,
   debug_nothing_void,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
