@@ -26102,6 +26102,7 @@ vst1q_lane_u64 (uint64_t *__a, uint64x2_t __b, const int __lane)
 /* vstn */
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_s64 (int64_t * __a, int64x1x2_t val)
 {
   __builtin_aarch64_simd_oi __o;
@@ -26114,6 +26115,7 @@ vst2_s64 (int64_t * __a, int64x1x2_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_u64 (uint64_t * __a, uint64x1x2_t val)
 {
   __builtin_aarch64_simd_oi __o;
@@ -26126,6 +26128,7 @@ vst2_u64 (uint64_t * __a, uint64x1x2_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_f64 (float64_t * __a, float64x1x2_t val)
 {
   __builtin_aarch64_simd_oi __o;
@@ -26138,6 +26141,7 @@ vst2_f64 (float64_t * __a, float64x1x2_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_s8 (int8_t * __a, int8x8x2_t val)
 {
   __builtin_aarch64_simd_oi __o;
@@ -26397,6 +26401,7 @@ vst2q_f64 (float64_t * __a, float64x2x2_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_s64 (int64_t * __a, int64x1x3_t val)
 {
   __builtin_aarch64_simd_ci __o;
@@ -26411,6 +26416,7 @@ vst3_s64 (int64_t * __a, int64x1x3_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_u64 (uint64_t * __a, uint64x1x3_t val)
 {
   __builtin_aarch64_simd_ci __o;
@@ -26425,6 +26431,7 @@ vst3_u64 (uint64_t * __a, uint64x1x3_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_f64 (float64_t * __a, float64x1x3_t val)
 {
   __builtin_aarch64_simd_ci __o;
@@ -26439,6 +26446,7 @@ vst3_f64 (float64_t * __a, float64x1x3_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_s8 (int8_t * __a, int8x8x3_t val)
 {
   __builtin_aarch64_simd_ci __o;
@@ -26731,6 +26739,7 @@ vst3q_f64 (float64_t * __a, float64x2x3_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_s64 (int64_t * __a, int64x1x4_t val)
 {
   __builtin_aarch64_simd_xi __o;
@@ -26747,6 +26756,7 @@ vst4_s64 (int64_t * __a, int64x1x4_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_u64 (uint64_t * __a, uint64x1x4_t val)
 {
   __builtin_aarch64_simd_xi __o;
@@ -26763,6 +26773,7 @@ vst4_u64 (uint64_t * __a, uint64x1x4_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_f64 (float64_t * __a, float64x1x4_t val)
 {
   __builtin_aarch64_simd_xi __o;
@@ -26779,6 +26790,7 @@ vst4_f64 (float64_t * __a, float64x1x4_t val)
 }
 
 __extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_s8 (int8_t * __a, int8x8x4_t val)
 {
   __builtin_aarch64_simd_xi __o;

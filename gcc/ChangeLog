@@ -1,3 +1,10 @@
+2016-09-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/arm_neon.h
+	(vst2_s64, vst2_u64, vst2_f64, vst2_s8): Add missing attributes.
+	(vst3_s64, vst3_u64, vst3_f64, vst3_s8): Likewise.
+	(vst4_s64, vst4_u64, vst4_f64, vst4_s8): Likewise.
+
 2016-09-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* config/var/vax.h (ELIMINABLE_REGS): Define.
