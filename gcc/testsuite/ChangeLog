@@ -1,3 +1,10 @@
+2016-09-20  Maxim Ostapenko  <m.ostapenko@samsung.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/63299
+	* g++.old-deja/g++.jason/init3.C (My_string::~My_string): Use delete[]
+	instead of delete.
+
 2016-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77626
