@@ -2561,7 +2561,7 @@ symbol_table::finalize_compilation_unit (void)
 
       /* Clean up anything that needs cleaning up after initial debug
 	 generation.  */
-      (*debug_hooks->early_finish) ();
+      (*debug_hooks->early_finish) (main_input_filename);
     }
 
   /* Finally drive the pass manager.  */

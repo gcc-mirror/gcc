@@ -1,3 +1,8 @@
+2016-09-20  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (lto_main): Call early_finish with "<artificial>" as
+	filename.
+
 2016-09-19  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (lto_main): Invoke early_finish debug hook.

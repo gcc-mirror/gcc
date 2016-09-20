@@ -1,3 +1,16 @@
+2016-09-20  Richard Biener  <rguenther@suse.de>
+
+	* debug.h (gcc_debug_hooks): Add filename parameter to early_finish
+	hook.
+	* debug.c (do_nothing_debug_hooks): Adjust.
+	* dbxout.c (dbx_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* dwarf2out.c (dwarf2_lineno_debug_hooks): Likewise.
+	(dwarf2out_finish): Move producer, filename and
+	path annotation ...
+	(dwarf2out_early_finish): ... here.  Remove in_lto_p special-casing.
+	* cgraphunit.c (symbol_table::finalize_compilation_unit): Adjust.
+
 2016-09-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/77434
