@@ -1,5 +1,8 @@
 2016-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77626
+	* g++.dg/other/pr77626.C: New test.
+
 	PR c++/77638
 	* g++.dg/cpp0x/udlit-tmpl-arg-neg2.C: New test.
 
