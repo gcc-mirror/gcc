@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-forwprop1" } */
+/* { dg-options "-O -fno-tree-vrp -fdump-tree-forwprop1" } */
 
 #include <new>
 

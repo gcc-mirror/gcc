@@ -863,7 +863,7 @@ static struct prop_stats_d prop_stats;
 /* Replace USE references in statement STMT with the values stored in
    PROP_VALUE. Return true if at least one reference was replaced.  */
 
-static bool
+bool
 replace_uses_in (gimple *stmt, ssa_prop_get_value_fn get_value)
 {
   bool replaced = false;

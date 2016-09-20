@@ -1,3 +1,27 @@
+2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* doc/invoke.texi: Document -fdump-tree-evrp.
+	* passes.def: Define new pass_early_vrp.
+	* timevar.def: Define new TV_TREE_EARLY_VRP.
+	* tree-pass.h (make_pass_early_vrp): New.
+	* tree-ssa-propagate.c: Make replace_uses_in non static.
+	* tree-ssa-propagate.h: Export replace_uses_in.
+	* tree-vrp.c (extract_range_for_var_from_comparison_expr): New.
+	(extract_range_from_assert): Factor out
+	extract_range_for_var_from_comparison_expr.
+	(vrp_initialize_lattice): New.
+	(vrp_initialize): Factor out vrp_initialize_lattice.
+	(vrp_valueize): Fix it to reject complex value ranges.
+	(vrp_free_lattice): New.
+	(evrp_dom_walker::before_dom_children): Likewise.
+	(evrp_dom_walker::after_dom_children): Likewise.
+	(evrp_dom_walker::push_value_range): Likewise.
+	(evrp_dom_walker::pop_value_range): Likewise.
+	(execute_early_vrp): Likewise.
+	(execute_vrp): Call vrp_initialize_lattice and
+	vrp_free_lattice.
+	(make_pass_early_vrp): New.
+
 2016-09-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (mult->ashift peephole2s): Use pow2p_hwi

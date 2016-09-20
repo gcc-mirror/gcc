@@ -84,5 +84,6 @@ extern void propagate_value (use_operand_p, tree);
 extern void replace_exp (use_operand_p, tree);
 extern void propagate_tree_value (tree *, tree);
 extern void propagate_tree_value_into_stmt (gimple_stmt_iterator *, tree);
+extern bool replace_uses_in (gimple *stmt, ssa_prop_get_value_fn get_value);
 
 #endif /* _TREE_SSA_PROPAGATE_H  */

@@ -441,6 +441,7 @@ extern gimple_opt_pass *make_pass_fre (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_check_data_deps (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_copy_prop (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_isolate_erroneous_paths (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_early_vrp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_vrp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_uncprop (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_return_slot (gcc::context *ctxt);

@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-evrp" } */
 
 int funsigned (unsigned a)
 {
@@ -13,6 +13,6 @@ int funsigned2 (unsigned a)
   return (-1 * 0x1ffffffffL) / a == 0;
 }
 
-/* { dg-final { scan-tree-dump ": \\\[2, 8589934591\\\]" "vrp1" } } */
-/* { dg-final { scan-tree-dump ": \\\[-8589934591, -2\\\]" "vrp1" } } */
+/* { dg-final { scan-tree-dump ": \\\[2, 8589934591\\\]" "evrp" } } */
+/* { dg-final { scan-tree-dump ": \\\[-8589934591, -2\\\]" "evrp" } } */
 
