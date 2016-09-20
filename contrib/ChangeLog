@@ -1,3 +1,8 @@
+2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* compare_tests: Take ERROR messages into account when
+          comparing.
+
 2016-08-17  Martin Liska  <mliska@suse.cz>
 
 	* mark_spam.py: Mark as spam all comments done by a creator.
