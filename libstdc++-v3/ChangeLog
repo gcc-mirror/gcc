@@ -1,3 +1,30 @@
+2016-09-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/77619
+	* include/bits/stl_construct.h: (_Construct_novalue): New.
+	(_Destroy_n_aux, _Destroy_n): New.
+	* include/bits/stl_uninitialized.h: (type_traits):
+	New include in C++11 mode.
+	(__uninitialized_default_novalue_1): New.
+	(__uninitialized_default_novalue_n_1): Likewise.
+	(__uninitialized_default_novalue): Likewise.
+	(__uninitialized_default_novalue_n): Likewise.
+	(__uninitialized_copy_n_pair): Likewise.
+	(uninitialized_default_construct):
+	Use __uninitialized_default_novalue.
+	(uninitialized_default_construct_n):
+	Use __uninitialized_default_novalue_n.
+	(uninitialized_value_construct): Use __uninitialized_default.
+	(uninitialized_value_construct_n): Use __uninitialized_default_n.
+	(uninitialized_move): Use uninitialized_copy.
+	(uninitialized_move_n): Use __uninitialized_copy_n_pair.
+	(destroy_at): Use _Destroy.
+	(destroy): Likewise.
+	(destroy_n): Likewise.
+	* testsuite/20_util/specialized_algorithms/
+	memory_management_tools/1.cc: Add tests for exceptions,
+	add tests for trivial cases for construct and move.
+
 2016-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/xmethods.py (DequeWorkerBase.__init__)
