@@ -31,7 +31,7 @@ struct gcc_debug_hooks
   void (* finish) (const char *main_filename);
 
   /* Run cleanups necessary after early debug generation.  */
-  void (* early_finish) (void);
+  void (* early_finish) (const char *main_filename);
 
   /* Called from cgraph_optimize before starting to assemble
      functions/variables/toplevel asms.  */

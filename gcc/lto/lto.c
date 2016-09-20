@@ -3316,7 +3316,7 @@ lto_main (void)
 	    lto_promote_statics_nonwpa ();
 
 	  /* Annotate the CU DIE and mark the early debug phase as finished.  */
-	  debug_hooks->early_finish ();
+	  debug_hooks->early_finish ("<artificial>");
 
 	  /* Let the middle end know that we have read and merged all of
 	     the input files.  */ 
