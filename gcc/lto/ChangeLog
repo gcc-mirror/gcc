@@ -1,3 +1,8 @@
+2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* lto-partition.c: Include tree-vrp.h.
+	* lto.c: Likewise.
+
 2016-09-20  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (lto_main): Call early_finish with "<artificial>" as

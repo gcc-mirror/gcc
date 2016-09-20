@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"
 #include "ipa-reference.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "gcse.h"
 #include "tree-chkp.h"

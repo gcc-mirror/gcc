@@ -167,6 +167,16 @@ struct GTY(()) ipa_bits
   bool known;
 };
 
+/* Info about value ranges.  */
+struct GTY(()) ipa_vr
+{
+  /* The data fields below are valid only if known is true.  */
+  bool known;
+  enum value_range_type type;
+  wide_int min;
+  wide_int max;
+};
+
 /* A jump function for a callsite represents the values passed as actual
    arguments of the callsite. See enum jump_func_type for the various
    types of jump functions supported.  */
@@ -181,6 +191,10 @@ struct GTY (()) ipa_jump_func
 
   /* Information about zero/non-zero bits.  */
   struct ipa_bits bits;
+
+  /* Information about value range.  */
+  bool vr_known;
+  value_range m_vr;
 
   enum jump_func_type type;
   /* Represents a value of a jump function.  pass_through is used only in jump
@@ -521,6 +535,8 @@ struct GTY(()) ipcp_transformation_summary
   vec<ipa_alignment, va_gc> *alignments;
   /* Known bits information.  */
   vec<ipa_bits, va_gc> *bits;
+  /* Value range information.  */
+  vec<ipa_vr, va_gc> *m_vr;
 };
 
 void ipa_set_node_agg_value_chain (struct cgraph_node *node,

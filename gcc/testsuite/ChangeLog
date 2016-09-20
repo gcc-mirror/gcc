@@ -1,5 +1,13 @@
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* g++.dg/ipa/pure-const-3.C: Add -fno-ipa-vrp. Else constant arguments
+	will be optimized away.
+	* gcc.dg/ipa/vrp1.c: New test.
+	* gcc.dg/ipa/vrp2.c: New test.
+	* gcc.dg/ipa/vrp3.c: New test.
+
+2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* g++.dg/tree-ssa/pr31146-2.C: Run with -fno-tree-evrp as evrp also
 	does the same transformation.
 	* g++.dg/warn/pr33738.C: XFAIL as optimization now happens in ccp.
