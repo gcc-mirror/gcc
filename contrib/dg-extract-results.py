@@ -134,6 +134,7 @@ class Prog:
         self.end_line = None
         # Known summary types.
         self.count_names = [
+            '# of DejaGnu errors\t\t',
             '# of expected passes\t\t',
             '# of unexpected failures\t',
             '# of unexpected successes\t',
@@ -245,6 +246,10 @@ class Prog:
             segment = Segment (filename, file.tell())
             variation.header = segment
 
+        # Parse the rest of the summary (the '# of ' lines).
+        if len (variation.counts) == 0:
+            variation.counts = self.zero_counts()
+
         # Parse up until the first line of the summary.
         if num_variations == 1:
             end = '\t\t=== ' + tool.name + ' Summary ===\n'
@@ -291,6 +296,11 @@ class Prog:
                 harness.results.append ((key, line))
                 if not first_key and sort_logs:
                     first_key = key
+                if line.startswith ('ERROR: (DejaGnu)'):
+                    for i in range (len (self.count_names)):
+                        if 'DejaGnu errors' in self.count_names[i]:
+                            variation.counts[i] += 1
+                            break
 
             # 'Using ...' lines are only interesting in a header.  Splitting
             # the test up into parallel runs leads to more 'Using ...' lines
@@ -309,9 +319,6 @@ class Prog:
             segment.lines -= final_using
             harness.add_segment (first_key, segment)
 
-        # Parse the rest of the summary (the '# of ' lines).
-        if len (variation.counts) == 0:
-            variation.counts = self.zero_counts()
         while True:
             before = file.tell()
             line = file.readline()

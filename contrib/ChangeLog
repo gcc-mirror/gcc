@@ -1,5 +1,11 @@
 2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* dg-extract-results.py: Report DejaGnu error in the final
+	summary.
+	* dg-extract-results.sh: Likewise.
+
+2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* compare_tests: Take ERROR messages into account when
           comparing.
 
