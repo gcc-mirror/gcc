@@ -1,3 +1,8 @@
+2016-09-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_allocate_7.f08: Using + instead of fixed number
+	of digits expected.
+
 2016-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77646
