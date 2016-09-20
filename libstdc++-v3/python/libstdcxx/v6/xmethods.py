@@ -165,7 +165,7 @@ class ArrayMethodsMatcher(gdb.xmethod.XMethodMatcher):
 class DequeWorkerBase(gdb.xmethod.XMethodWorker):
     def __init__(self, val_type):
         self._val_type = val_type
-        self._bufsize = int(512 / val_type.sizeof) or 1
+        self._bufsize = 512 // val_type.sizeof or 1
 
     def size(self, obj):
         first_node = obj['_M_impl']['_M_start']['_M_node']
@@ -176,7 +176,7 @@ class DequeWorkerBase(gdb.xmethod.XMethodWorker):
 
     def index(self, obj, idx):
         first_node = obj['_M_impl']['_M_start']['_M_node']
-        index_node = first_node + int(idx / self._bufsize)
+        index_node = first_node + int(idx) // self._bufsize
         return index_node[0][idx % self._bufsize]
 
 class DequeEmptyWorker(DequeWorkerBase):
@@ -419,7 +419,7 @@ class VectorWorkerBase(gdb.xmethod.XMethodWorker):
         if self._val_type.code == gdb.TYPE_CODE_BOOL:
             start = obj['_M_impl']['_M_start']['_M_p']
             bit_size = start.dereference().type.sizeof * 8
-            valp = start + int(index / bit_size)
+            valp = start + index // bit_size
             offset = index % bit_size
             return (valp.dereference() & (1 << offset)) > 0
         else:
