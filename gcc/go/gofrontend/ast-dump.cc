@@ -166,24 +166,24 @@ const char* kAstDumpFileExtension = ".dump.ast";
 void
 Ast_dump_context::dump(Gogo* gogo, const char* basename)
 {
-  std::ofstream* out = new std::ofstream();
+  std::ofstream out;
   std::string dumpname(basename);
   dumpname += ".dump.ast";
-  out->open(dumpname.c_str());
+  out.open(dumpname.c_str());
 
-  if (out->fail())
+  if (out.fail())
     {
       error("cannot open %s:%m, -fgo-dump-ast ignored", dumpname.c_str());
       return;
     }
 
   this->gogo_ = gogo;
-  this->ostream_ = out;
+  this->ostream_ = &out;
 
   Ast_dump_traverse_blocks_and_functions adtbf(this);
   gogo->traverse(&adtbf);
 
-  out->close();
+  out.close();
 }
 
 // Dump a textual representation of a type to the
