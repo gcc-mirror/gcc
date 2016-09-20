@@ -1,3 +1,8 @@
+2016-09-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/arm_neon.h: Add gnu_inline and artificial
+	attributes to all inlined functions and make them extern.
+
 2016-09-20  Richard Biener  <rguenther@suse.de>
 
 	* debug.h (gcc_debug_hooks): Add filename parameter to early_finish
