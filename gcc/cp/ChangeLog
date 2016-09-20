@@ -1,5 +1,10 @@
 2016-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77638
+	* parser.c (cp_parser_template_declaration_after_parameter): For 2
+	argument operator"" template set ok to false for
+	parm == error_mark_node.
+
 	PR c++/77637
 	* parser.c (cp_parser_std_attribute_list): Reject ... without
 	preceding attribute.
