@@ -1,3 +1,8 @@
+2016-09-20  Marek Polacek  <polacek@redhat.com>
+
+	* trans-intrinsic.c (conv_expr_ref_to_caf_ref): Adjust fall through
+	comment.
+
 2016-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/71952

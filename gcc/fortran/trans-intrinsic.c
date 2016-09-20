@@ -1365,7 +1365,7 @@ conv_expr_ref_to_caf_ref (stmtblock_t *block, gfc_expr *expr)
 		       handling easier.  */
 		    stride = gfc_index_one_node;
 
-		  /* Intentionally fall through.  */
+		  /* Fall through.  */
 		case DIMEN_ELEMENT:
 		  if (ref->u.ar.start[i])
 		    {
