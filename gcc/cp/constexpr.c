@@ -2894,13 +2894,11 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	  tree field = TYPE_FIELDS (optype);
 	  for (; field; field = DECL_CHAIN (field))
 	    if (TREE_CODE (field) == FIELD_DECL
+		&& TREE_TYPE (field) != error_mark_node
 		&& integer_zerop (byte_position (field))
 		&& (same_type_ignoring_top_level_qualifiers_p
 		    (TREE_TYPE (field), type)))
-	      {
-		return fold_build3 (COMPONENT_REF, type, op, field, NULL_TREE);
-		break;
-	      }
+	      return fold_build3 (COMPONENT_REF, type, op, field, NULL_TREE);
 	}
     }
   else if (TREE_CODE (sub) == POINTER_PLUS_EXPR
@@ -2972,14 +2970,12 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	      tree field = TYPE_FIELDS (op00type);
 	      for (; field; field = DECL_CHAIN (field))
 		if (TREE_CODE (field) == FIELD_DECL
+		    && TREE_TYPE (field) != error_mark_node
 		    && tree_int_cst_equal (byte_position (field), op01)
 		    && (same_type_ignoring_top_level_qualifiers_p
 			(TREE_TYPE (field), type)))
-		  {
-		    return fold_build3 (COMPONENT_REF, type, op00,
-					field, NULL_TREE);
-		    break;
-		  }
+		  return fold_build3 (COMPONENT_REF, type, op00,
+				      field, NULL_TREE);
 	    }
 	}
     }

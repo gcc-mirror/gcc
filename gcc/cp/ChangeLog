@@ -1,5 +1,10 @@
 2016-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77626
+	* constexpr.c (cxx_fold_indirect_ref): Don't call byte_position on
+	FIELD_DECLs with error_mark_node type.  Remove useless break; after
+	return.
+
 	PR c++/77638
 	* parser.c (cp_parser_template_declaration_after_parameter): For 2
 	argument operator"" template set ok to false for
