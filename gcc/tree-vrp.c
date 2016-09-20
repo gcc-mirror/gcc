@@ -60,6 +60,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "params.h"
 #include "alloc-pool.h"
+#include "domwalk.h"
+#include "tree-cfgcleanup.h"
 
 #define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
 
@@ -1461,44 +1463,17 @@ op_with_boolean_value_range_p (tree op)
 	  && integer_onep (vr->max));
 }
 
-/* Extract value range information from an ASSERT_EXPR EXPR and store
-   it in *VR_P.  */
+/* Extract value range information for VAR when (OP COND_CODE LIMIT) is
+   true and store it in *VR_P.  */
 
 static void
-extract_range_from_assert (value_range *vr_p, tree expr)
+extract_range_for_var_from_comparison_expr (tree var, enum tree_code cond_code,
+					    tree op, tree limit,
+					    value_range *vr_p)
 {
-  tree var, cond, limit, min, max, type;
+  tree  min, max, type;
   value_range *limit_vr;
-  enum tree_code cond_code;
-
-  var = ASSERT_EXPR_VAR (expr);
-  cond = ASSERT_EXPR_COND (expr);
-
-  gcc_assert (COMPARISON_CLASS_P (cond));
-
-  /* Find VAR in the ASSERT_EXPR conditional.  */
-  if (var == TREE_OPERAND (cond, 0)
-      || TREE_CODE (TREE_OPERAND (cond, 0)) == PLUS_EXPR
-      || TREE_CODE (TREE_OPERAND (cond, 0)) == NOP_EXPR)
-    {
-      /* If the predicate is of the form VAR COMP LIMIT, then we just
-	 take LIMIT from the RHS and use the same comparison code.  */
-      cond_code = TREE_CODE (cond);
-      limit = TREE_OPERAND (cond, 1);
-      cond = TREE_OPERAND (cond, 0);
-    }
-  else
-    {
-      /* If the predicate is of the form LIMIT COMP VAR, then we need
-	 to flip around the comparison code to create the proper range
-	 for VAR.  */
-      cond_code = swap_tree_comparison (TREE_CODE (cond));
-      limit = TREE_OPERAND (cond, 0);
-      cond = TREE_OPERAND (cond, 1);
-    }
-
   limit = avoid_overflow_infinity (limit);
-
   type = TREE_TYPE (var);
   gcc_assert (limit != var);
 
@@ -1544,15 +1519,15 @@ extract_range_from_assert (value_range *vr_p, tree expr)
      as well build the range [b_4, +INF] for it.
      One special case we handle is extracting a range from a
      range test encoded as (unsigned)var + CST <= limit.  */
-  if (TREE_CODE (cond) == NOP_EXPR
-      || TREE_CODE (cond) == PLUS_EXPR)
+  if (TREE_CODE (op) == NOP_EXPR
+      || TREE_CODE (op) == PLUS_EXPR)
     {
-      if (TREE_CODE (cond) == PLUS_EXPR)
+      if (TREE_CODE (op) == PLUS_EXPR)
         {
-          min = fold_build1 (NEGATE_EXPR, TREE_TYPE (TREE_OPERAND (cond, 1)),
-			     TREE_OPERAND (cond, 1));
+	  min = fold_build1 (NEGATE_EXPR, TREE_TYPE (TREE_OPERAND (op, 1)),
+			     TREE_OPERAND (op, 1));
           max = int_const_binop (PLUS_EXPR, limit, min);
-	  cond = TREE_OPERAND (cond, 0);
+	  op = TREE_OPERAND (op, 0);
 	}
       else
 	{
@@ -1736,6 +1711,41 @@ extract_range_from_assert (value_range *vr_p, tree expr)
   vrp_intersect_ranges (vr_p, get_value_range (var));
 }
 
+/* Extract value range information from an ASSERT_EXPR EXPR and store
+   it in *VR_P.  */
+
+static void
+extract_range_from_assert (value_range *vr_p, tree expr)
+{
+  tree var = ASSERT_EXPR_VAR (expr);
+  tree cond = ASSERT_EXPR_COND (expr);
+  tree limit, op;
+  enum tree_code cond_code;
+  gcc_assert (COMPARISON_CLASS_P (cond));
+
+  /* Find VAR in the ASSERT_EXPR conditional.  */
+  if (var == TREE_OPERAND (cond, 0)
+      || TREE_CODE (TREE_OPERAND (cond, 0)) == PLUS_EXPR
+      || TREE_CODE (TREE_OPERAND (cond, 0)) == NOP_EXPR)
+    {
+      /* If the predicate is of the form VAR COMP LIMIT, then we just
+	 take LIMIT from the RHS and use the same comparison code.  */
+      cond_code = TREE_CODE (cond);
+      limit = TREE_OPERAND (cond, 1);
+      op = TREE_OPERAND (cond, 0);
+    }
+  else
+    {
+      /* If the predicate is of the form LIMIT COMP VAR, then we need
+	 to flip around the comparison code to create the proper range
+	 for VAR.  */
+      cond_code = swap_tree_comparison (TREE_CODE (cond));
+      limit = TREE_OPERAND (cond, 0);
+      op = TREE_OPERAND (cond, 1);
+    }
+  extract_range_for_var_from_comparison_expr (var, cond_code, op,
+					      limit, vr_p);
+}
 
 /* Extract range information from SSA name VAR and store it in VR.  If
    VAR has an interesting range, use it.  Otherwise, create the
@@ -6953,19 +6963,24 @@ stmt_interesting_for_vrp (gimple *stmt)
   return false;
 }
 
-
-/* Initialize local data structures for VRP.  */
+/* Initialize VRP lattice.  */
 
 static void
-vrp_initialize (void)
+vrp_initialize_lattice ()
 {
-  basic_block bb;
-
   values_propagated = false;
   num_vr_values = num_ssa_names;
   vr_value = XCNEWVEC (value_range *, num_vr_values);
   vr_phi_edge_counts = XCNEWVEC (int, num_ssa_names);
   bitmap_obstack_initialize (&vrp_equiv_obstack);
+}
+
+/* Initialization required by ssa_propagate engine.  */
+
+static void
+vrp_initialize ()
+{
+  basic_block bb;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -7016,6 +7031,8 @@ vrp_valueize (tree name)
     {
       value_range *vr = get_value_range (name);
       if (vr->type == VR_RANGE
+	  && (TREE_CODE (vr->min) == SSA_NAME
+	      || is_gimple_min_invariant (vr->min))
 	  && vrp_operand_equal_p (vr->min, vr->max))
 	return vr->min;
     }
@@ -10506,6 +10523,22 @@ finalize_jump_threads (void)
   delete equiv_stack;
 }
 
+/* Free VRP lattice.  */
+
+static void
+vrp_free_lattice ()
+{
+  /* Free allocated memory.  */
+  free (vr_value);
+  free (vr_phi_edge_counts);
+  bitmap_obstack_release (&vrp_equiv_obstack);
+  vrp_value_range_pool.release ();
+
+  /* So that we can distinguish between VRP data being available
+     and not available.  */
+  vr_value = NULL;
+  vr_phi_edge_counts = NULL;
+}
 
 /* Traverse all the blocks folding conditionals with known ranges.  */
 
@@ -10552,17 +10585,302 @@ vrp_finalize (bool warn_array_bounds_p)
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */
   identify_jump_threads ();
+}
 
-  /* Free allocated memory.  */
-  free (vr_value);
-  free (vr_phi_edge_counts);
-  bitmap_obstack_release (&vrp_equiv_obstack);
-  vrp_value_range_pool.release ();
+/* evrp_dom_walker visits the basic blocks in the dominance order and set
+   the Value Ranges (VR) for SSA_NAMEs in the scope.  Use this VR to
+   discover more VRs.  */
 
-  /* So that we can distinguish between VRP data being available
-     and not available.  */
-  vr_value = NULL;
-  vr_phi_edge_counts = NULL;
+class evrp_dom_walker : public dom_walker
+{
+public:
+  evrp_dom_walker ()
+    : dom_walker (CDI_DOMINATORS), stack (10)
+    {
+      stmts_to_fixup.create (0);
+      need_eh_cleanup = BITMAP_ALLOC (NULL);
+    }
+  ~evrp_dom_walker ()
+    {
+      stmts_to_fixup.release ();
+      BITMAP_FREE (need_eh_cleanup);
+    }
+  virtual edge before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+  void push_value_range (const_tree var, value_range *vr);
+  value_range *pop_value_range (const_tree var);
+
+  /* Cond_stack holds the old VR.  */
+  auto_vec<std::pair <const_tree, value_range*> > stack;
+  bitmap need_eh_cleanup;
+  vec<gimple *> stmts_to_fixup;
+};
+
+/* See if there is any new scope is entered with new VR and set that VR to
+   ssa_name before visiting the statements in the scope.  */
+
+edge
+evrp_dom_walker::before_dom_children (basic_block bb)
+{
+  value_range *new_vr = NULL;
+  tree op0 = NULL_TREE;
+
+  push_value_range (NULL_TREE, NULL);
+  if (single_pred_p (bb))
+    {
+      edge e = single_pred_edge (bb);
+      value_range vr = VR_INITIALIZER;
+      gimple *stmt = last_stmt (e->src);
+      if (stmt
+	  && gimple_code (stmt) == GIMPLE_COND
+	  && (op0 = gimple_cond_lhs (stmt))
+	  && TREE_CODE (op0) == SSA_NAME
+	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt))))
+	{
+	  /* Entering a new scope.  Try to see if we can find a VR
+	     here.  */
+	  tree op1 = gimple_cond_rhs (stmt);
+	  tree_code code = gimple_cond_code (stmt);
+	  value_range *old_vr = get_value_range (op0);
+
+	  if (TREE_OVERFLOW_P (op1))
+	    op1 = drop_tree_overflow (op1);
+
+	  /* If condition is false, invert the cond.  */
+	  if (e->flags & EDGE_FALSE_VALUE)
+	    code = invert_tree_comparison (gimple_cond_code (stmt),
+					   HONOR_NANS (op0));
+	  /* Discover VR when condition is true.  */
+	  extract_range_for_var_from_comparison_expr (op0, code, op0, op1, &vr);
+	  if (old_vr->type == VR_RANGE || old_vr->type == VR_ANTI_RANGE)
+	    vrp_intersect_ranges (&vr, old_vr);
+
+	  /* If we found any usable VR, set the VR to ssa_name and create a
+	     PUSH old value in the stack with the old VR.  */
+	  if (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
+	    {
+	      new_vr = vrp_value_range_pool.allocate ();
+	      *new_vr = vr;
+	      push_value_range (op0, new_vr);
+	    }
+	}
+    }
+
+  /* Visit PHI stmts and discover any new VRs possible.  */
+  gimple_stmt_iterator gsi;
+  edge e;
+  edge_iterator ei;
+  bool has_unvisived_preds = false;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (!(e->src->flags & BB_VISITED))
+      {
+	has_unvisived_preds = true;
+	break;
+      }
+
+  for (gphi_iterator gpi = gsi_start_phis (bb);
+       !gsi_end_p (gpi); gsi_next (&gpi))
+    {
+      gphi *phi = gpi.phi ();
+      tree lhs = PHI_RESULT (phi);
+      value_range vr_result = VR_INITIALIZER;
+      if (!has_unvisived_preds
+	  && stmt_interesting_for_vrp (phi))
+	extract_range_from_phi_node (phi, &vr_result);
+      else
+	set_value_range_to_varying (&vr_result);
+      update_value_range (lhs, &vr_result);
+    }
+
+  /* Visit all other stmts and discover any new VRs possible.  */
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      edge taken_edge;
+      tree output = NULL_TREE;
+      gimple *old_stmt = stmt;
+      bool was_noreturn = (is_gimple_call (stmt)
+			   && gimple_call_noreturn_p (stmt));
+
+      /* TODO, if found taken_edge, we should visit (return it) and travel
+	 again to improve VR as done in DOM/SCCVN optimizations.  It should
+	 be done carefully as stmts might prematurely leave a BB like
+	 in EH.  */
+      if (stmt_interesting_for_vrp (stmt))
+	{
+	  value_range vr = VR_INITIALIZER;
+	  extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
+	  if (output
+	      && (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE))
+	    update_value_range (output, &vr);
+	  else
+	    {
+	      tree def;
+	      ssa_op_iter iter;
+	      FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
+		set_value_range_to_varying (get_value_range (def));
+	    }
+
+	  /* Try folding stmts with the VR discovered.  */
+	  bool did_replace
+	    = replace_uses_in (stmt,
+			       op_with_constant_singleton_value_range);
+	  if (fold_stmt (&gsi, follow_single_use_edges)
+	      || did_replace)
+	    update_stmt (gsi_stmt (gsi));
+
+	  if (did_replace)
+	    {
+	      /* If we cleaned up EH information from the statement,
+		 remove EH edges.  */
+	      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
+		bitmap_set_bit (need_eh_cleanup, bb->index);
+
+	      /* If we turned a not noreturn call into a noreturn one
+		 schedule it for fixup.  */
+	      if (!was_noreturn
+		  && is_gimple_call (stmt)
+		  && gimple_call_noreturn_p (stmt))
+		stmts_to_fixup.safe_push (stmt);
+
+	      if (gimple_assign_single_p (stmt))
+		{
+		  tree rhs = gimple_assign_rhs1 (stmt);
+		  if (TREE_CODE (rhs) == ADDR_EXPR)
+		    recompute_tree_invariant_for_addr_expr (rhs);
+		}
+	    }
+
+	  def_operand_p def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
+	  /* Set the SSA with the value range.  */
+	  if (def_p
+	      && TREE_CODE (DEF_FROM_PTR (def_p)) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (DEF_FROM_PTR (def_p))))
+	    {
+	      tree def = DEF_FROM_PTR (def_p);
+	      value_range *vr = get_value_range (def);
+
+	      if ((vr->type == VR_RANGE
+		   || vr->type == VR_ANTI_RANGE)
+		  && (TREE_CODE (vr->min) == INTEGER_CST)
+		  && (TREE_CODE (vr->max) == INTEGER_CST))
+		set_range_info (def, vr->type, vr->min, vr->max);
+	    }
+	}
+      else
+	{
+	  tree def;
+	  ssa_op_iter iter;
+	  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
+	    set_value_range_to_varying (get_value_range (def));
+	}
+    }
+  bb->flags |= BB_VISITED;
+  return NULL;
+}
+
+/* Restore/pop VRs valid only for BB when we leave BB.  */
+
+void
+evrp_dom_walker::after_dom_children (basic_block bb ATTRIBUTE_UNUSED)
+{
+  gcc_checking_assert (!stack.is_empty ());
+  while (stack.last ().first != NULL_TREE)
+    pop_value_range (stack.last ().first);
+  pop_value_range (stack.last ().first);
+}
+
+/* Push the Value Range of VAR to the stack and update it with new VR.  */
+
+void
+evrp_dom_walker::push_value_range (const_tree var, value_range *vr)
+{
+  if (vr != NULL)
+    {
+      unsigned ver = SSA_NAME_VERSION (var);
+      gcc_checking_assert (vr_value);
+      stack.safe_push (std::make_pair (var, vr_value[ver]));
+
+      if (ver < num_vr_values)
+	vr_value[ver] = vr;
+    }
+  else
+    stack.safe_push (std::make_pair (var, vr));
+}
+
+/* Pop the Value Range from the vrp_stack and update VAR with it.  */
+
+value_range *
+evrp_dom_walker::pop_value_range (const_tree var)
+{
+  value_range *vr = stack.last ().second;
+  if (vr != NULL)
+    {
+      unsigned ver = SSA_NAME_VERSION (var);
+      gcc_checking_assert (var == stack.last ().first);
+      gcc_checking_assert (vr_value);
+
+      if (ver < num_vr_values)
+	vr_value[ver] = vr;
+    }
+  stack.pop ();
+  return vr;
+}
+
+
+/* Main entry point for the early vrp pass which is a simplified non-iterative
+   version of vrp where basic blocks are visited in dominance order.  Value
+   ranges discovered in early vrp will also be used by ipa-vrp.  */
+
+static unsigned int
+execute_early_vrp ()
+{
+  edge e;
+  edge_iterator ei;
+  basic_block bb;
+
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+  scev_initialize ();
+  calculate_dominance_info (CDI_DOMINATORS);
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      bb->flags &= ~BB_VISITED;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	e->flags |= EDGE_EXECUTABLE;
+    }
+  vrp_initialize_lattice ();
+
+  /* Walk stmts in dominance order and propagate VRP.  */
+  evrp_dom_walker walker;
+  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+
+  if (!bitmap_empty_p (walker.need_eh_cleanup))
+    gimple_purge_all_dead_eh_edges (walker.need_eh_cleanup);
+
+  /* Fixup stmts that became noreturn calls.  This may require splitting
+     blocks and thus isn't possible during the dominator walk.  Do this
+     in reverse order so we don't inadvertedly remove a stmt we want to
+     fixup by visiting a dominating now noreturn call first.  */
+  while (!walker.stmts_to_fixup.is_empty ())
+    {
+      gimple *stmt = walker.stmts_to_fixup.pop ();
+      fixup_noreturn_call (stmt);
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
+      dump_all_value_ranges (dump_file);
+      fprintf (dump_file, "\n");
+    }
+  vrp_free_lattice ();
+  scev_finalize ();
+  loop_optimizer_finalize ();
+  FOR_EACH_BB_FN (bb, cfun)
+    bb->flags &= ~BB_VISITED;
+  return 0;
 }
 
 
@@ -10633,9 +10951,11 @@ execute_vrp (bool warn_array_bounds_p)
   /* For visiting PHI nodes we need EDGE_DFS_BACK computed.  */
   mark_dfs_back_edges ();
 
+  vrp_initialize_lattice ();
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
   vrp_finalize (warn_array_bounds_p);
+  vrp_free_lattice ();
 
   free_numbers_of_iterations_estimates (cfun);
 
@@ -10733,3 +11053,44 @@ make_pass_vrp (gcc::context *ctxt)
 {
   return new pass_vrp (ctxt);
 }
+
+namespace {
+
+const pass_data pass_data_early_vrp =
+{
+  GIMPLE_PASS, /* type */
+  "evrp", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_TREE_EARLY_VRP, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_update_ssa | TODO_verify_all ),
+};
+
+class pass_early_vrp : public gimple_opt_pass
+{
+public:
+  pass_early_vrp (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_early_vrp, ctxt)
+    {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_early_vrp (m_ctxt); }
+  virtual bool gate (function *)
+    {
+      return flag_tree_vrp != 0;
+    }
+  virtual unsigned int execute (function *)
+    { return execute_early_vrp (); }
+
+}; // class pass_vrp
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_early_vrp (gcc::context *ctxt)
+{
+  return new pass_early_vrp (ctxt);
+}
+

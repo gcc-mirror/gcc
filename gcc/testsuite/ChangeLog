@@ -1,3 +1,23 @@
+2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* g++.dg/tree-ssa/pr31146-2.C: Run with -fno-tree-evrp as evrp also
+	does the same transformation.
+	* g++.dg/warn/pr33738.C: XFAIL as optimization now happens in ccp.
+	* gcc.dg/tree-ssa/evrp1.c: New test.
+	* gcc.dg/tree-ssa/evrp2.c: New test.
+	* gcc.dg/tree-ssa/evrp3.c: New test.
+	* gcc.dg/tree-ssa/pr20657.c: Check for the pattern in evrp dump.
+	* gcc.dg/tree-ssa/pr22117.c: Likewise.
+	* gcc.dg/tree-ssa/pr61839_2.c: Likewise.
+	* gcc.dg/tree-ssa/pr64130.c: Likewise.
+	* gcc.dg/tree-ssa/pr37508.c: Change the pattern to be checked as
+	foling now happens early.
+	* gcc.dg/tree-ssa/vrp04.c: Likewise.
+	* gcc.dg/tree-ssa/vrp06.c: Likewise.
+	* gcc.dg/tree-ssa/vrp16.c: Likewise.
+	* gcc.dg/tree-ssa/vrp25.c: Likewise.
+	* gcc.dg/tree-ssa/vrp67.c: Likewise.
+
 2016-09-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77621

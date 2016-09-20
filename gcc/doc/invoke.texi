@@ -12523,6 +12523,11 @@ is made by appending @file{.slp} to the source file name.
 Dump each function after Value Range Propagation (VRP).  The file name
 is made by appending @file{.vrp} to the source file name.
 
+@item early vrp
+@opindex fdump-tree-evrp
+Dump each function after Early Value Range Propagation (EVRP).  The file name
+is made by appending @file{.evrp} to the source file name.
+
 @item oaccdevlow
 @opindex fdump-tree-oaccdevlow
 Dump each function after applying device-specific OpenACC transformations.
