@@ -1,3 +1,9 @@
+2016-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77624
+	* builtins.c (fold_builtin_atomic_always_lock_free): Only look through
+	cast to void * if the cast is from some other pointer type.
+
 2016-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77646

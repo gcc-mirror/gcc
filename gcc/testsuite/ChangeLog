@@ -1,3 +1,9 @@
+2016-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77624
+	* c-c++-common/pr77624-1.c: New test.
+	* c-c++-common/pr77624-2.c: New test.
+
 2016-09-20  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* gfortran.dg/coarray_allocate_7.f08: Using + instead of fixed number
