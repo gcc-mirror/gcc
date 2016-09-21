@@ -1,3 +1,7 @@
+2016-09-21  Louis Krupp  <louis.krupp@zoho.com>
+
+	* gfortran.dg/pr68078.f90: Run on x86_64_*_linux* only.
+
 2016-09-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77648
