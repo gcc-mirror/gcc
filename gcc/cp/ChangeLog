@@ -1,3 +1,8 @@
+2016-09-21  Jason Merrill  <jason@redhat.com>
+
+	Core 903
+	* call.c (null_ptr_cst_p): Check char_type_p.
+
 2016-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77651
