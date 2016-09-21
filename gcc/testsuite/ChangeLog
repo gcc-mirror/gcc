@@ -1,3 +1,8 @@
+2016-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77651
+	* g++.dg/cpp1z/aligned-new6.C: New test.
+
 2016-09-21  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/arm/fp16-aapcs-3.c: New.

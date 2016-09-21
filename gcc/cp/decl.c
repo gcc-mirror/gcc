@@ -4132,16 +4132,16 @@ cxx_init_decl_processing (void)
   /* Now, C++.  */
   current_lang_name = lang_name_cplusplus;
 
-  if (aligned_new_threshhold > 1
-      && !pow2p_hwi (aligned_new_threshhold))
+  if (aligned_new_threshold > 1
+      && !pow2p_hwi (aligned_new_threshold))
     {
-      error ("-faligned-new=%d is not a power of two", aligned_new_threshhold);
-      aligned_new_threshhold = 1;
+      error ("-faligned-new=%d is not a power of two", aligned_new_threshold);
+      aligned_new_threshold = 1;
     }
-  if (aligned_new_threshhold == -1)
-    aligned_new_threshhold = (cxx_dialect >= cxx1z) ? 1 : 0;
-  if (aligned_new_threshhold == 1)
-    aligned_new_threshhold = max_align_t_align () / BITS_PER_UNIT;
+  if (aligned_new_threshold == -1)
+    aligned_new_threshold = (cxx_dialect >= cxx1z) ? 1 : 0;
+  if (aligned_new_threshold == 1)
+    aligned_new_threshold = max_align_t_align () / BITS_PER_UNIT;
 
   {
     tree newattrs, extvisattr;
@@ -4210,7 +4210,7 @@ cxx_init_decl_processing (void)
 	push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
       }
 
-    if (aligned_new_threshhold)
+    if (aligned_new_threshold)
       {
 	push_namespace (std_identifier);
 	tree align_id = get_identifier ("align_val_t");

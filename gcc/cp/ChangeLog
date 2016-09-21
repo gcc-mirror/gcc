@@ -1,3 +1,14 @@
+2016-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77651
+	* init.c (build_new_1): Don't suggest to use -faligned-new if
+	aligned_new_threshold is non-zero.
+	(type_has_new_extended_alignment): Change aligned_new_threshhold
+	to aligned_new_threshold.
+	* call.c (second_parm_is_size_t, aligned_allocation_fn_p,
+	aligned_deallocation_fn_p, build_op_delete_call): Likewise.
+	* decl.c (cxx_init_decl_processing): Likewise.
+
 2016-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77626
