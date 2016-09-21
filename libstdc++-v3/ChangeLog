@@ -1,3 +1,26 @@
+2016-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/77537
+	Implement LWG 2729 for pair.
+	* include/bits/stl_pair.h (_PCC): New.
+	(_ConstructiblePair, _ImplicitlyConvertiblePair):
+	Turn into static member functions of _PCC.
+	(_MoveConstructiblePair, _ImplicitlyMoveConvertiblePair): Likewise.
+	(_PCCP): New.
+	(pair(const _T1&, const _T2&)): Adjust.
+	(_PCCFP): New.
+	(pair(const pair<_U1, _U2>&)): Adjust.
+	(pair(_U1&&, const _T2&)): Likewise.
+	(pair(const _T1&, _U2&&)): Likewise.
+	(pair(_U1&&, _U2&&)): Likewise.
+	(pair(pair<_U1, _U2>&&)): Likewise.
+	(operator=(const pair&)): Make conditionally deleted.
+	(operator=(pair&&)): Make conditionally suppressed.
+	(operator=(const pair<_U1, _U2>&)): Constrain.
+	(operator=(pair<_U1, _U2>&&): Likewise.
+	* include/std/type_traits (__nonesuch): New.
+	* testsuite/20_util/pair/traits.cc: New.
+
 2016-09-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/77619
