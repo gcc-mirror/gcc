@@ -1,3 +1,7 @@
+2016-09-21  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/pr64130.c: Use __UINT32_TYPE__ instead of int.
+
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR tree-optimization/72835
