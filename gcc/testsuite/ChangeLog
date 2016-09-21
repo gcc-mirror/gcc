@@ -1,3 +1,7 @@
+2016-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.c-torture/unsorted/dump-noaddr.x: Remove debug statements.
+
 2016-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77651
