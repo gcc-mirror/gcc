@@ -4652,7 +4652,8 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 					       TREE_OPERAND (expr, 0));
 
     case COND_EXPR:
-      if (warn_int_in_bool_context)
+      if (warn_int_in_bool_context
+	  && !from_macro_definition_at (EXPR_LOCATION (expr)))
 	{
 	  tree val1 = fold_for_warn (TREE_OPERAND (expr, 1));
 	  tree val2 = fold_for_warn (TREE_OPERAND (expr, 2));
@@ -4663,7 +4664,8 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	      && (!integer_onep (val1)
 		  || !integer_onep (val2)))
 	    warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
-		        "?: using integer constants in boolean context");
+			"?: using integer constants in boolean context, "
+			"the expression will always evaluate to %<true%>");
 	}
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       if (c_dialect_cxx ())
