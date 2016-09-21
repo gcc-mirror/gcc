@@ -288,7 +288,7 @@ C++ ObjC++ Alias(Waligned-new=,global,none)
 Warn about 'new' of type with extended alignment without -faligned-new.
 
 Waligned-new=
-C++ ObjC++ Var(warn_aligned_new) Enum(warn_aligned_new_level) Joined Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
+C++ ObjC++ Var(warn_aligned_new) Enum(warn_aligned_new_level) Joined RejectNegative Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
 -Waligned-new=all Warn even if 'new' uses a class member allocation function.
 
 Wall
@@ -1071,7 +1071,7 @@ C++ ObjC++ Alias(faligned-new=,1,0)
 Support C++17 allocation of over-aligned types.
 
 faligned-new=
-C++ ObjC++ Joined Var(aligned_new_threshhold) UInteger Init(-1)
+C++ ObjC++ Joined RejectNegative Var(aligned_new_threshold) UInteger Init(-1)
 -faligned-new=<N> Use C++17 over-aligned type allocation for alignments greater than N.
 
 fall-virtual

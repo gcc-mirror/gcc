@@ -5965,7 +5965,7 @@ second_parm_is_size_t (tree fn)
   t = TREE_CHAIN (t);
   if (t == void_list_node)
     return true;
-  if (aligned_new_threshhold && t
+  if (aligned_new_threshold && t
       && same_type_p (TREE_VALUE (t), align_type_node)
       && TREE_CHAIN (t) == void_list_node)
     return true;
@@ -5978,7 +5978,7 @@ second_parm_is_size_t (tree fn)
 bool
 aligned_allocation_fn_p (tree t)
 {
-  if (!aligned_new_threshhold)
+  if (!aligned_new_threshold)
     return false;
 
   tree a = FUNCTION_ARG_CHAIN (t);
@@ -5992,7 +5992,7 @@ aligned_allocation_fn_p (tree t)
 static bool
 aligned_deallocation_fn_p (tree t)
 {
-  if (!aligned_new_threshhold)
+  if (!aligned_new_threshold)
     return false;
 
   /* A template instance is never a usual deallocation function,
@@ -6202,7 +6202,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	       selection process terminates. If more than one preferred
 	       function is found, all non-preferred functions are eliminated
 	       from further consideration.  */
-	    if (aligned_new_threshhold)
+	    if (aligned_new_threshold)
 	      {
 		bool want_align = type_has_new_extended_alignment (type);
 		bool fn_align = aligned_deallocation_fn_p (fn);

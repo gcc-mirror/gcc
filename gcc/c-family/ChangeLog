@@ -1,3 +1,12 @@
+2016-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77651
+	* c.opt (Waligned-new=): Add RejectNegative.
+	(faligned-new=): Likewise.  Spelling fix - change
+	aligned_new_threshhold to aligned_new_threshold.
+	* c-cppbuiltin.c (c_cpp_builtins): Change aligned_new_threshhold
+	to aligned_new_threshold.
+
 2016-09-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/49905
