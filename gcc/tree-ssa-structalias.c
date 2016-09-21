@@ -3010,7 +3010,7 @@ process_constraint (constraint_t t)
       process_constraint (new_constraint (tmplhs, rhs));
       process_constraint (new_constraint (lhs, tmplhs));
     }
-  else if (rhs.type == ADDRESSOF && lhs.type == DEREF)
+  else if ((rhs.type != SCALAR || rhs.offset != 0) && lhs.type == DEREF)
     {
       /* Split into tmp = &rhs, *lhs = tmp */
       struct constraint_expr tmplhs;
@@ -3747,11 +3747,28 @@ make_transitive_closure_constraints (varinfo_t vi)
 {
   struct constraint_expr lhs, rhs;
 
-  /* VAR = *VAR;  */
+  /* VAR = *(VAR + UNKNOWN);  */
   lhs.type = SCALAR;
   lhs.var = vi->id;
   lhs.offset = 0;
   rhs.type = DEREF;
+  rhs.var = vi->id;
+  rhs.offset = UNKNOWN_OFFSET;
+  process_constraint (new_constraint (lhs, rhs));
+}
+
+/* Add constraints to that the solution of VI has all subvariables added.  */
+
+static void
+make_any_offset_constraints (varinfo_t vi)
+{
+  struct constraint_expr lhs, rhs;
+
+  /* VAR = VAR + UNKNOWN;  */
+  lhs.type = SCALAR;
+  lhs.var = vi->id;
+  lhs.offset = 0;
+  rhs.type = SCALAR;
   rhs.var = vi->id;
   rhs.offset = UNKNOWN_OFFSET;
   process_constraint (new_constraint (lhs, rhs));
@@ -3902,15 +3919,12 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	   && (flags & EAF_NOESCAPE))
 	{
 	  varinfo_t uses = get_call_use_vi (stmt);
+	  varinfo_t tem = new_var_info (NULL_TREE, "callarg", true);
+	  make_constraint_to (tem->id, arg);
+	  make_any_offset_constraints (tem);
 	  if (!(flags & EAF_DIRECT))
-	    {
-	      varinfo_t tem = new_var_info (NULL_TREE, "callarg", true);
-	      make_constraint_to (tem->id, arg);
-	      make_transitive_closure_constraints (tem);
-	      make_copy_constraint (uses, tem->id);
-	    }
-	  else
-	    make_constraint_to (uses->id, arg);
+	    make_transitive_closure_constraints (tem);
+	  make_copy_constraint (uses, tem->id);
 	  returns_uses = true;
 	}
       else if (flags & EAF_NOESCAPE)
@@ -3920,6 +3934,7 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  varinfo_t clobbers = get_call_clobber_vi (stmt);
 	  varinfo_t tem = new_var_info (NULL_TREE, "callarg", true);
 	  make_constraint_to (tem->id, arg);
+	  make_any_offset_constraints (tem);
 	  if (!(flags & EAF_DIRECT))
 	    make_transitive_closure_constraints (tem);
 	  make_copy_constraint (uses, tem->id);
@@ -3945,7 +3960,7 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
   if (returns_uses)
     {
       rhsc.var = get_call_use_vi (stmt)->id;
-      rhsc.offset = 0;
+      rhsc.offset = UNKNOWN_OFFSET;
       rhsc.type = SCALAR;
       results->safe_push (rhsc);
     }
@@ -4054,6 +4069,7 @@ handle_const_call (gcall *stmt, vec<ce_s> *results)
   if (gimple_call_chain (stmt))
     {
       varinfo_t uses = get_call_use_vi (stmt);
+      make_any_offset_constraints (uses);
       make_transitive_closure_constraints (uses);
       make_constraint_to (uses->id, gimple_call_chain (stmt));
       rhsc.var = uses->id;
@@ -4062,16 +4078,24 @@ handle_const_call (gcall *stmt, vec<ce_s> *results)
       results->safe_push (rhsc);
     }
 
-  /* May return arguments.  */
+  /* May return offsetted arguments.  */
+  varinfo_t tem = NULL;
+  if (gimple_call_num_args (stmt) != 0)
+    tem = new_var_info (NULL_TREE, "callarg", true);
   for (k = 0; k < gimple_call_num_args (stmt); ++k)
     {
       tree arg = gimple_call_arg (stmt, k);
       auto_vec<ce_s> argc;
-      unsigned i;
-      struct constraint_expr *argp;
       get_constraint_for_rhs (arg, &argc);
-      FOR_EACH_VEC_ELT (argc, i, argp)
-	results->safe_push (*argp);
+      make_constraints_to (tem->id, argc);
+    }
+  if (tem)
+    {
+      ce_s ce;
+      ce.type = SCALAR;
+      ce.var = tem->id;
+      ce.offset = UNKNOWN_OFFSET;
+      results->safe_push (ce);
     }
 
   /* May return addresses of globals.  */
@@ -4098,6 +4122,7 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
       if (!uses)
 	{
 	  uses = get_call_use_vi (stmt);
+	  make_any_offset_constraints (uses);
 	  make_transitive_closure_constraints (uses);
 	}
       make_constraint_to (uses->id, arg);
@@ -4109,6 +4134,7 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
       if (!uses)
 	{
 	  uses = get_call_use_vi (stmt);
+	  make_any_offset_constraints (uses);
 	  make_transitive_closure_constraints (uses);
 	}
       make_constraint_to (uses->id, gimple_call_chain (stmt));
