@@ -1,3 +1,14 @@
+2016-09-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/49905
+	* gcc.dg/builtin-stringop-chk-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-2.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-4.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: New test.
+
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.dg/guality/pr54519-1.c: Add -fno-ipa-vrp. Else constant

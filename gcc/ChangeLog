@@ -1,3 +1,30 @@
+2016-09-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/49905
+	* Makefile.in (OBJS): Add gimple-ssa-sprintf.o.
+	* config/linux.h (TARGET_PRINTF_POINTER_FORMAT): Redefine.
+	* config/linux.c (gnu_libc_printf_pointer_format): New function.
+	* config/sol2.h (TARGET_PRINTF_POINTER_FORMAT): Same.
+	* config/sol2.c (solaris_printf_pointer_format): New function.
+	* doc/invoke.texi (-Wformat-length, -fprintf-return-value): New
+	options.
+	* doc/tm.texi.in (TARGET_PRINTF_POINTER_FORMAT): Document.
+	* doc/tm.texi: Regenerate.
+	* gimple-fold.h (get_range_strlen): New function.
+	(get_maxval_strlen): Declare existing function.
+	* gimple-fold.c (get_range_strlen): Add arguments and compute both
+	maximum and minimum.
+	 (get_range_strlen): Define overload.
+	(get_maxval_strlen): Adjust.
+	* gimple-ssa-sprintf.c: New file and pass.
+	* passes.def (pass_sprintf_length): Add new pass.
+	* targhooks.h (default_printf_pointer_format): Declare new function.
+	(gnu_libc_printf_pointer_format): Same.
+	(solaris_libc_printf_pointer_format): Same.
+	* targhooks.c (default_printf_pointer_format): Define new function.
+	* tree-pass.h (make_pass_sprintf_length): Declare new function.
+	* print-tree.c: Increase buffer size.
+
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	 * tree-vrp.c (get_value_range): Teach PARM_DECL to use ipa-vrp

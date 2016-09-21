@@ -3353,6 +3353,12 @@ greater than 128 and a multiple of 32.",
  machine_mode, (int n, bool extended),
  default_floatn_mode)
 
+DEFHOOK
+(printf_pointer_format,
+ "Determine the target @code{printf} implementation format string that the most closely corresponds to the @code{%p} format directive.  The object pointed to by the @var{flags} is set to a string consisting of recognized format flags such as the @code{'#'} character.",
+ const char*, (tree, const char **flags),
+ default_printf_pointer_format)
+
 /* Compute cost of moving data from a register of class FROM to one of
    TO, using MODE.  */
 DEFHOOK

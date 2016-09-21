@@ -478,6 +478,11 @@ Wformat-extra-args
 C ObjC C++ ObjC++ Var(warn_format_extra_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
 Warn if passing too many arguments to a function for its format string.
 
+Wformat-length
+C ObjC C++ ObjC++ Warning Alias(Wformat-length=, 1, 0)
+Warn about function calls with format strings that write past the end
+of the destination region.  Same as -Wformat-length=1.
+
 Wformat-nonliteral
 C ObjC C++ ObjC++ Var(warn_format_nonliteral) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 2, 0)
 Warn about format strings that are not literals.
@@ -501,6 +506,11 @@ Warn about zero-length formats.
 Wformat=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0)
 Warn about printf/scanf/strftime/strfmon format string anomalies.
+
+Wformat-length=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format_length) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
+Warn about function calls with format strings that write past the end
+of the destination region.
 
 Wignored-qualifiers
 C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)
@@ -1486,6 +1496,10 @@ C ObjC C++ ObjC++ JoinedOrMissing RejectNegative UInteger
 fpretty-templates
 C++ ObjC++ Var(flag_pretty_templates) Init(1)
 -fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments.
+
+fprintf-return-value
+C ObjC C++ ObjC++ LTO Optimization Var(flag_printf_return_value) Init(1)
+Treat known sprintf return values as constants.
 
 freplace-objc-classes
 ObjC ObjC++ LTO Var(flag_replace_objc_classes)

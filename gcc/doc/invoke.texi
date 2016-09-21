@@ -268,7 +268,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-div-by-zero -Wdouble-promotion -Wduplicated-cond @gol
 -Wempty-body  -Wenum-compare -Wno-endif-labels @gol
 -Werror  -Werror=* -Wfatal-errors -Wfloat-equal  -Wformat  -Wformat=2 @gol
--Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
+-Wno-format-contains-nul -Wno-format-extra-args -Wformat-length=@var{n} @gol
+-Wformat-nonliteral @gol
 -Wformat-security  -Wformat-signedness  -Wformat-y2k -Wframe-address @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
@@ -379,7 +380,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-toplevel-reorder -fno-trapping-math -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer -foptimize-sibling-calls @gol
 -fpartial-inlining -fpeel-loops -fpredictive-commoning @gol
--fprefetch-loop-arrays @gol
+-fprefetch-loop-arrays -fprintf-return-value @gol
 -fprofile-correction @gol
 -fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
 -fprofile-reorder-functions @gol
@@ -3887,6 +3888,88 @@ type to pass to @code{va_arg} to skip the unused arguments.  However,
 in the case of @code{scanf} formats, this option suppresses the
 warning if the unused arguments are all pointers, since the Single
 Unix Specification says that such unused arguments are allowed.
+
+@item -Wformat-length
+@itemx -Wformat-length=@var{level}
+@opindex Wformat-length
+@opindex Wno-format-length
+Warn about calls to formatted input/output functions such as @code{sprintf}
+that might overflow the destination buffer, or about bounded functions such
+as @code{snprintf} that might result in output truncation.  When the exact
+number of bytes written by a format directive cannot be determined at
+compile-time it is estimated based on heuristics that depend on the
+@var{level} argument and on optimization.  While enabling optimization
+will in most cases improve the accuracy of the warning, it may also
+result in false positives.
+
+@table @gcctabopt
+@item -Wformat-length
+@item -Wformat-length=1
+@opindex Wformat-length
+@opindex Wno-format-length
+Level @var{1} of @option{-Wformat-length} enabled by @option{-Wformat}
+employs a conservative approach that warns only about calls that most
+likely overflow the buffer or result in output truncation.  At this
+level, numeric arguments to format directives with unknown values are
+assumed to have the value of one, and strings of unknown length to be
+empty.  Numeric arguments that are known to be bounded to a subrange
+of their type, or string arguments whose output is bounded either by
+their directive's precision or by a finite set of string literals, are
+assumed to take on the value within the range that results in the most
+bytes on output.  For example, the call to @code{sprintf} below is
+diagnosed because even with both @var{a} and @var{b} equal to zero,
+the terminating NUL character (@code{'\0'}) appended by the function
+to the destination buffer will be written past its end.  Increasing
+the size of the buffer by a single byte is sufficient to avoid the
+warning, though it may not be sufficient to avoid the overflow.
+
+@smallexample
+void f (int a, int b)
+@{
+  char buf [12];
+  sprintf (buf, "a = %i, b = %i\n", a, b);
+@}
+@end smallexample
+
+@item -Wformat-length=2
+Level @var{2} warns also about calls that might overflow the destination
+buffer or result in truncation given an argument of sufficient length
+or magnitude.  At level @var{2}, unknown numeric arguments are assumed
+to have the minimum representable value for signed types with a precision
+greater than 1, and the maximum representable value otherwise.  Unknown
+string arguments whose length cannot be assumed to be bounded either by
+the directive's precision, or by a finite set of string literals they
+may evaluate to, or the character array they may point to, are assumed
+to be 1 character long.
+
+At level @var{2}, the call in the example above is again diagnosed, but
+this time because with @var{a} equal to a 32-bit @code{INT_MIN} the first
+@code{%i} directive will write some of its digits beyond the end of
+the destination buffer.  To make the call safe regardless of the values
+of the two variables, the size of the destination buffer must be increased
+to at least 34 bytes.  GCC includes the minimum size of the buffer in
+an informational note following the warning.
+
+An alternative to increasing the size of the destination buffer is to
+constrain the range of formatted values.  The maximum length of string
+arguments can be bounded by specifying the precision in the format
+directive.  When numeric arguments of format directives can be assumed
+to be bounded by less than the precision of their type, choosing
+an appropriate length modifier to the format specifier will reduce
+the required buffer size.  For example, if @var{a} and @var{b} in the
+example above can be assumed to be within the precision of
+the @code{short int} type then using either the @code{%hi} format
+directive or casting the argument to @code{short} reduces the maximum
+required size of the buffer to 24 bytes.
+
+@smallexample
+void f (int a, int b)
+@{
+  char buf [23];
+  sprintf (buf, "a = %hi, b = %i\n", a, (short)b);
+@}
+@end smallexample
+@end table
 
 @item -Wno-format-zero-length
 @opindex Wno-format-zero-length
@@ -7854,6 +7937,30 @@ This option may generate better or worse code; results are highly
 dependent on the structure of loops within the source code.
 
 Disabled at level @option{-Os}.
+
+@item -fprintf-return-value
+@opindex fprintf-return-value
+Substitute constants for known return value of formatted output functions
+such as @code{sprintf}, @code{snprintf}, @code{vsprintf}, and @code{vsnprintf}
+(but not @code{printf} of @code{fprintf}).  This transformation allows GCC
+to optimize or even eliminate branches based on the known return value of
+these functions called with arguments that are either constant, or whose
+values are known to be in a range that makes determining the exact return
+value possible.  For example, both the branch and the body of the @code{if}
+statement (but not the call to @code{snprint}) can be optimized away when
+@code{i} is a 32-bit or smaller integer because the return value is guaranteed
+to be at most 8.
+
+@smallexample
+char buf[9];
+if (snprintf (buf, "%08x", i) >= sizeof buf)
+  @dots{}
+@end smallexample
+
+The @option{-fprintf-return-value} option relies on other optimizations
+and yields best results with @option{-O2}.  It works in tandem with the
+@option{-Wformat-length} option.  The @option{-fprintf-return-value}
+option is disabled by default.
 
 @item -fno-peephole
 @itemx -fno-peephole2

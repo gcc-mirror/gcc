@@ -208,3 +208,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define TARGET_LIBC_HAS_FUNCTION linux_libc_has_function
 
 #endif
+
+/* The format string to which "%p" corresponds.  */
+#undef TARGET_PRINTF_POINTER_FORMAT
+#define TARGET_PRINTF_POINTER_FORMAT gnu_libc_printf_pointer_format
