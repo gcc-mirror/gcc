@@ -1,3 +1,11 @@
+2016-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/77657
+
+	* interface.c (gfc_find_specific_dtio_proc): Borrow trick from
+	resolve_typebound_generic_call to find dtio procedures that
+	over-ride those in the declared type.
+
 2016-09-20  Marek Polacek  <polacek@redhat.com>
 
 	* trans-intrinsic.c (conv_expr_ref_to_caf_ref): Adjust fall through
@@ -96,7 +104,7 @@
 2016-09-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77612
-	* decl.c (char_len_param_value): Check parent namespace for 
+	* decl.c (char_len_param_value): Check parent namespace for
 	seen_implicit_none.
 
 2016-09-15  Louis Krupp  <louis.krupp@zoho.com>
@@ -144,7 +152,7 @@
 
 	PR fortran/69514
 	* array.c (gfc_match_array_constructor):  If type-spec is present,
-	walk the array constructor performing possible conversions for 
+	walk the array constructor performing possible conversions for
 	numeric types.
 
 2016-09-08  Jakub Jelinek  <jakub@redhat.com>
@@ -159,7 +167,7 @@
 	PR fortran/77391
 	* resolve.c (deferred_requirements): New function to check F2008:C402.
 	(resolve_fl_variable,resolve_fl_parameter): Use it.
- 
+
 2016-09-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77460
