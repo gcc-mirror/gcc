@@ -1148,6 +1148,52 @@ decrement_power (gimple *stmt)
     }
 }
 
+/* Replace SSA defined by STMT and replace all its uses with new
+   SSA.  Also return the new SSA.  */
+
+static tree
+make_new_ssa_for_def (gimple *stmt)
+{
+  gimple *use_stmt;
+  use_operand_p use;
+  imm_use_iterator iter;
+  tree new_lhs;
+  tree lhs = gimple_assign_lhs (stmt);
+
+  new_lhs = make_ssa_name (TREE_TYPE (lhs));
+  gimple_set_lhs (stmt, new_lhs);
+
+  /* Also need to update GIMPLE_DEBUGs.  */
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+    {
+      FOR_EACH_IMM_USE_ON_STMT (use, iter)
+	SET_USE (use, new_lhs);
+      update_stmt (use_stmt);
+    }
+  return new_lhs;
+}
+
+/* Replace all SSAs defined in STMTS_TO_FIX and replace its
+   uses with new SSAs.  Also do this for the stmt that defines DEF
+   if *DEF is not OP.  */
+
+static void
+make_new_ssa_for_all_defs (tree *def, tree op,
+			   vec<gimple *> &stmts_to_fix)
+{
+  unsigned i;
+  gimple *stmt;
+
+  if (*def != op
+      && TREE_CODE (*def) == SSA_NAME
+      && (stmt = SSA_NAME_DEF_STMT (*def))
+      && gimple_code (stmt) != GIMPLE_NOP)
+    *def = make_new_ssa_for_def (stmt);
+
+  FOR_EACH_VEC_ELT (stmts_to_fix, i, stmt)
+    make_new_ssa_for_def (stmt);
+}
+
 /* Find the single immediate use of STMT's LHS, and replace it
    with OP.  Remove STMT.  If STMT's LHS is the same as *DEF,
    replace *DEF with OP as well.  */
@@ -1186,6 +1232,9 @@ static void
 zero_one_operation (tree *def, enum tree_code opcode, tree op)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (*def);
+  /* PR72835 - Record the stmt chain that has to be updated such that
+     we dont use the same LHS when the values computed are different.  */
+  auto_vec<gimple *, 64> stmts_to_fix;
 
   do
     {
@@ -1196,23 +1245,29 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	  if (stmt_is_power_of_op (stmt, op))
 	    {
 	      if (decrement_power (stmt) == 1)
-		propagate_op_to_single_use (op, stmt, def);
-	      return;
+		{
+		  if (stmts_to_fix.length () > 0)
+		    stmts_to_fix.pop ();
+		  propagate_op_to_single_use (op, stmt, def);
+		}
+	      break;
 	    }
 	  else if (gimple_assign_rhs_code (stmt) == NEGATE_EXPR)
 	    {
 	      if (gimple_assign_rhs1 (stmt) == op)
 		{
 		  tree cst = build_minus_one_cst (TREE_TYPE (op));
+		  if (stmts_to_fix.length () > 0)
+		    stmts_to_fix.pop ();
 		  propagate_op_to_single_use (cst, stmt, def);
-		  return;
+		  break;
 		}
 	      else if (integer_minus_onep (op)
 		       || real_minus_onep (op))
 		{
 		  gimple_assign_set_rhs_code
 		    (stmt, TREE_CODE (gimple_assign_rhs1 (stmt)));
-		  return;
+		  break;
 		}
 	    }
 	}
@@ -1228,8 +1283,10 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	{
 	  if (name == op)
 	    name = gimple_assign_rhs2 (stmt);
+	  if (stmts_to_fix.length () > 0)
+	    stmts_to_fix.pop ();
 	  propagate_op_to_single_use (name, stmt, def);
-	  return;
+	  break;
 	}
 
       /* We might have a multiply of two __builtin_pow* calls, and
@@ -1245,7 +1302,9 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	    {
 	      if (decrement_power (stmt2) == 1)
 		propagate_op_to_single_use (op, stmt2, def);
-	      return;
+	      else
+		stmts_to_fix.safe_push (stmt2);
+	      break;
 	    }
 	  else if (is_gimple_assign (stmt2)
 		   && gimple_assign_rhs_code (stmt2) == NEGATE_EXPR)
@@ -1254,14 +1313,15 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 		{
 		  tree cst = build_minus_one_cst (TREE_TYPE (op));
 		  propagate_op_to_single_use (cst, stmt2, def);
-		  return;
+		  break;
 		}
 	      else if (integer_minus_onep (op)
 		       || real_minus_onep (op))
 		{
+		  stmts_to_fix.safe_push (stmt2);
 		  gimple_assign_set_rhs_code
 		    (stmt2, TREE_CODE (gimple_assign_rhs1 (stmt2)));
-		  return;
+		  break;
 		}
 	    }
 	}
@@ -1270,8 +1330,12 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
       gcc_assert (name != op
 		  && TREE_CODE (name) == SSA_NAME);
       stmt = SSA_NAME_DEF_STMT (name);
+      stmts_to_fix.safe_push (stmt);
     }
   while (1);
+
+  if (stmts_to_fix.length () > 0)
+    make_new_ssa_for_all_defs (def, op, stmts_to_fix);
 }
 
 /* Returns true if statement S1 dominates statement S2.  Like

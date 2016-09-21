@@ -1,3 +1,8 @@
+2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR tree-optimization/72835
+	* gcc.dg/tree-ssa/pr72835.c: New test.
+
 2016-09-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/49905

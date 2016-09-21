@@ -1,3 +1,10 @@
+2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR tree-optimization/72835
+	* tree-ssa-reassoc.c (make_new_ssa_for_def): New.
+	(make_new_ssa_for_all_defs): Likewise.
+	(zero_one_operation): Replace all SSA_NAMEs defined in the chain.
+
 2016-09-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/49905
