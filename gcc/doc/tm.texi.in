@@ -4065,6 +4065,8 @@ In either case, it remains possible to select code-generation for the alternate
 scheme, by means of compiler command line switches.
 @end defmac
 
+@hook TARGET_PRINTF_POINTER_FORMAT
+
 @node Addressing Modes
 @section Addressing Modes
 @cindex addressing modes

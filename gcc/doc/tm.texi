@@ -5332,6 +5332,10 @@ In either case, it remains possible to select code-generation for the alternate
 scheme, by means of compiler command line switches.
 @end defmac
 
+@deftypefn {Target Hook} {const char*} TARGET_PRINTF_POINTER_FORMAT (tree, const char **@var{flags})
+Determine the target @code{printf} implementation format string that the most closely corresponds to the @code{%p} format directive.  The object pointed to by the @var{flags} is set to a string consisting of recognized format flags such as the @code{'#'} character.
+@end deftypefn
+
 @node Addressing Modes
 @section Addressing Modes
 @cindex addressing modes

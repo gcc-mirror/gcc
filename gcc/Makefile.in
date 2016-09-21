@@ -1296,6 +1296,7 @@ OBJS = \
 	gimple-ssa-nonnull-compare.o \
 	gimple-ssa-split-paths.o \
 	gimple-ssa-strength-reduction.o \
+	gimple-ssa-sprintf.o \
 	gimple-streamer-in.o \
 	gimple-streamer-out.o \
 	gimple-walk.o \

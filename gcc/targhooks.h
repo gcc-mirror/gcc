@@ -191,6 +191,10 @@ extern bool default_libc_has_function (enum function_class);
 extern bool no_c99_libc_has_function (enum function_class);
 extern bool gnu_libc_has_function (enum function_class);
 
+extern const char* default_printf_pointer_format (tree, const char **);
+extern const char* gnu_libc_printf_pointer_format (tree, const char **);
+extern const char* solaris_printf_pointer_format (tree, const char **);
+
 extern tree default_builtin_tm_load_store (tree);
 
 extern int default_memory_move_cost (machine_mode, reg_class_t, bool);

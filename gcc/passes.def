@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_build_cgraph_edges);
+  NEXT_PASS (pass_sprintf_length, false);
   TERMINATE_PASS_LIST (all_lowering_passes)
 
   /* Interprocedural optimization passes.  */
@@ -306,6 +307,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_simduid_cleanup);
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_cse_reciprocals);
+      NEXT_PASS (pass_sprintf_length, true);
       NEXT_PASS (pass_reassoc, false /* insert_powi_p */);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_split_paths);
