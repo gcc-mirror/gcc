@@ -1223,9 +1223,8 @@ linemap_location_in_system_header_p (struct line_maps *set,
   return false;
 }
 
-/* Return TRUE if LOCATION is a source code location of a token coming
-   from a macro replacement-list at a macro expansion point, FALSE
-   otherwise.  */
+/* Return TRUE if LOCATION is a source code location of a token that is part of
+   a macro expansion, FALSE otherwise.  */
 
 bool
 linemap_location_from_macro_expansion_p (const struct line_maps *set,
@@ -1568,6 +1567,37 @@ linemap_resolve_location (struct line_maps *set,
       abort ();
     }
   return loc;
+}
+
+/* TRUE if LOCATION is a source code location of a token that is part of the
+   definition of a macro, FALSE otherwise.  */
+
+bool
+linemap_location_from_macro_definition_p (struct line_maps *set,
+					  source_location loc)
+{
+  if (IS_ADHOC_LOC (loc))
+    loc = get_location_from_adhoc_loc (set, loc);
+
+  if (!linemap_location_from_macro_expansion_p (set, loc))
+    return false;
+
+  while (true)
+    {
+      const struct line_map_macro *map
+	= linemap_check_macro (linemap_lookup (set, loc));
+
+      source_location s_loc
+	= linemap_macro_map_loc_unwind_toward_spelling (set, map, loc);
+      if (linemap_location_from_macro_expansion_p (set, s_loc))
+	loc = s_loc;
+      else
+	{
+	  source_location def_loc
+	    = linemap_macro_map_loc_to_def_point (map, loc);
+	  return s_loc == def_loc;
+	}
+    }
 }
 
 /* 

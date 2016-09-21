@@ -1,3 +1,7 @@
+2016-09-21  Jason Merrill  <jason@redhat.com>
+
+	* input.h (from_macro_definition_at): New.
+
 2016-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/rtl.texi (JUMP_LABEL): Document RETURN and SIMPLE_RETURN values.
