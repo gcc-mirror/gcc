@@ -1,3 +1,17 @@
+2016-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Do not create links, only substitute the filenames.
+	* configure: Regenerate.
+	* Makefile.in: Assign the substitution results to variables.
+	(LIBGCC_LINKS): Define.
+	(enable-execute-stack.c): New rule.
+	(unwind.h): Likewise.
+	(md-unwind-support.h): Likewise.
+	(sfp-machine.h): Likewise.
+	(gthr-default.h): Likewise.
+	Add $(LIBGCC_LINKS) to the prerequisites of all object files and
+	unwind.h as prerequisite of install-unwind_h-forbuild.
+
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/71744
