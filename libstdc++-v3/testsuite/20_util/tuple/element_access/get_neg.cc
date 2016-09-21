@@ -17,7 +17,7 @@
 
 // { dg-options "-fno-show-column" }
 // { dg-do compile { target c++14 } }
-// { dg-error "in range" "" { target *-*-* } 1280 }
+// { dg-error "in range" "" { target *-*-* } 1342 }
 
 #include <tuple>
 
