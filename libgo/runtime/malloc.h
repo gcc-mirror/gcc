@@ -391,7 +391,7 @@ struct MCentral
 	Lock;
 	int32 sizeclass;
 	MSpan nonempty;	// list of spans with a free object
-	MSpan empty;	// list of spans with no free objects (or cached in an MCache)
+	MSpan mempty;	// list of spans with no free objects (or cached in an MCache)
 	int32 nfree;	// # of objects available in nonempty spans
 };
 
@@ -478,8 +478,10 @@ extern	int32	runtime_checking;
 void	runtime_markspan(void *v, uintptr size, uintptr n, bool leftover);
 void	runtime_unmarkspan(void *v, uintptr size);
 void	runtime_purgecachedstats(MCache*);
-void*	runtime_cnew(const Type*);
-void*	runtime_cnewarray(const Type*, intgo);
+void*	runtime_cnew(const Type*)
+	  __asm__(GOSYM_PREFIX "runtime.newobject");
+void*	runtime_cnewarray(const Type*, intgo)
+	  __asm__(GOSYM_PREFIX "runtime.newarray");
 void	runtime_tracealloc(void*, uintptr, uintptr);
 void	runtime_tracefree(void*, uintptr);
 void	runtime_tracegc(void);

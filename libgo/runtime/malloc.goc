@@ -23,9 +23,6 @@ package runtime
 // Type aka __go_type_descriptor
 #define kind __code
 #define string __reflection
-#define KindPtr GO_PTR
-#define KindNoPointers GO_NO_POINTERS
-#define kindMask GO_CODE_MASK
 
 // GCCGO SPECIFIC CHANGE
 //
@@ -893,7 +890,7 @@ runtime_mal(uintptr n)
 }
 
 func new(typ *Type) (ret *uint8) {
-	ret = runtime_mallocgc(typ->__size, (uintptr)typ | TypeInfo_SingleObject, typ->kind&KindNoPointers ? FlagNoScan : 0);
+	ret = runtime_mallocgc(typ->__size, (uintptr)typ | TypeInfo_SingleObject, typ->kind&kindNoPointers ? FlagNoScan : 0);
 }
 
 static void*
@@ -903,7 +900,7 @@ cnew(const Type *typ, intgo n, int32 objtyp)
 		runtime_throw("runtime: invalid objtyp");
 	if(n < 0 || (typ->__size > 0 && (uintptr)n > (MaxMem/typ->__size)))
 		runtime_panicstring("runtime: allocation size out of range");
-	return runtime_mallocgc(typ->__size*n, (uintptr)typ | objtyp, typ->kind&KindNoPointers ? FlagNoScan : 0);
+	return runtime_mallocgc(typ->__size*n, (uintptr)typ | objtyp, typ->kind&kindNoPointers ? FlagNoScan : 0);
 }
 
 // same as runtime_new, but callable from C
@@ -955,7 +952,7 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	if(!runtime_mlookup(obj.__object, &base, &size, nil) || obj.__object != base) {
 		// As an implementation detail we allow to set finalizers for an inner byte
 		// of an object if it could come from tiny alloc (see mallocgc for details).
-		if(ot->__element_type == nil || (ot->__element_type->kind&KindNoPointers) == 0 || ot->__element_type->__size >= TinySize) {
+		if(ot->__element_type == nil || (ot->__element_type->kind&kindNoPointers) == 0 || ot->__element_type->__size >= TinySize) {
 			runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block (%p)\n", obj.__object);
 			goto throw;
 		}

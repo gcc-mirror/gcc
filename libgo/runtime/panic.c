@@ -194,6 +194,22 @@ runtime_throw(const char *s)
 	runtime_exit(1);	// even more not reached
 }
 
+void throw(String) __asm__ (GOSYM_PREFIX "runtime.throw");
+void
+throw(String s)
+{
+	M *mp;
+
+	mp = runtime_m();
+	if(mp->throwing == 0)
+		mp->throwing = 1;
+	runtime_startpanic();
+	runtime_printf("fatal error: %S\n", s);
+	runtime_dopanic(0);
+	*(int32*)0 = 0;	// not reached
+	runtime_exit(1);	// even more not reached
+}
+
 void
 runtime_panicstring(const char *s)
 {

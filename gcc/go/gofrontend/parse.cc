@@ -4039,11 +4039,6 @@ void
 Parse::inc_dec_stat(Expression* exp)
 {
   const Token* token = this->peek_token();
-
-  // Lvalue maps require special handling.
-  if (exp->index_expression() != NULL)
-    exp->index_expression()->set_is_lvalue();
-
   if (token->is_op(OPERATOR_PLUSPLUS))
     this->gogo_->add_statement(Statement::make_inc_statement(exp));
   else if (token->is_op(OPERATOR_MINUSMINUS))
@@ -4119,13 +4114,6 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
 
   if (lhs == NULL)
     return;
-
-  // Map expressions act differently when they are lvalues.
-  for (Expression_list::iterator plv = lhs->begin();
-       plv != lhs->end();
-       ++plv)
-    if ((*plv)->index_expression() != NULL)
-      (*plv)->index_expression()->set_is_lvalue();
 
   if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
     {
@@ -4207,18 +4195,6 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
       Expression* present = lhs->back();
       Statement* s = Statement::make_tuple_map_assignment(val, present,
 							  map_index, location);
-      this->gogo_->add_statement(s);
-    }
-  else if (lhs->size() == 1
-	   && vals->size() == 2
-	   && (map_index = lhs->front()->index_expression()) != NULL)
-    {
-      if (op != OPERATOR_EQ)
-	error_at(location, "assigning tuple to map index requires %<=%>");
-      Expression* val = vals->front();
-      Expression* should_set = vals->back();
-      Statement* s = Statement::make_map_assignment(map_index, val, should_set,
-						    location);
       this->gogo_->add_statement(s);
     }
   else if (lhs->size() == 2
@@ -4951,13 +4927,6 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
   bool is_default = false;
   bool got_case = this->comm_case(&is_send, &channel, &val, &closed,
 				  &varname, &closedname, &is_default);
-
-  if (!is_send
-      && varname.empty()
-      && closedname.empty()
-      && val != NULL
-      && val->index_expression() != NULL)
-    val->index_expression()->set_is_lvalue();
 
   if (this->peek_token()->is_op(OPERATOR_COLON))
     this->advance_token();

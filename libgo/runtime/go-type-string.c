@@ -11,7 +11,7 @@
 /* A string hash function for a map.  */
 
 uintptr_t
-__go_type_hash_string (const void *vkey,
+__go_type_hash_string (const void *vkey, uintptr_t seed,
 		       uintptr_t key_size __attribute__ ((unused)))
 {
   uintptr_t ret;
@@ -20,7 +20,7 @@ __go_type_hash_string (const void *vkey,
   intgo i;
   const byte *p;
 
-  ret = 5381;
+  ret = seed;
   key = (const String *) vkey;
   len = key->len;
   for (i = 0, p = key->str; i < len; i++, p++)

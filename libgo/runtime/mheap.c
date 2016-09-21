@@ -878,7 +878,7 @@ runtime_MHeap_SplitSpan(MHeap *h, MSpan *s)
 
 	// remove the span from whatever list it is in now
 	if(s->sizeclass > 0) {
-		// must be in h->central[x].empty
+		// must be in h->central[x].mempty
 		c = &h->central[s->sizeclass];
 		runtime_lock(c);
 		runtime_MSpanList_Remove(s);
@@ -937,7 +937,7 @@ runtime_MHeap_SplitSpan(MHeap *h, MSpan *s)
 		c = &h->central[s->sizeclass];
 		runtime_lock(c);
 		// swept spans are at the end of the list
-		runtime_MSpanList_InsertBack(&c->empty, s);
+		runtime_MSpanList_InsertBack(&c->mempty, s);
 		runtime_unlock(c);
 	} else {
 		// Swept spans are at the end of lists.

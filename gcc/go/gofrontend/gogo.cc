@@ -4614,7 +4614,6 @@ Gogo::convert_named_types()
   Array_type::make_array_type_descriptor_type();
   Array_type::make_slice_type_descriptor_type();
   Map_type::make_map_type_descriptor_type();
-  Map_type::make_map_descriptor_type();
   Channel_type::make_chan_type_descriptor_type();
   Interface_type::make_interface_type_descriptor_type();
   Expression::make_func_descriptor_type();
@@ -6547,7 +6546,9 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	  Btype* btype = type->get_backend(gogo);
 
 	  Bvariable* bvar;
-	  if (this->is_global_)
+	  if (Map_type::is_zero_value(this))
+	    bvar = Map_type::backend_zero_value(gogo);
+	  else if (this->is_global_)
 	    bvar = backend->global_variable((package == NULL
 					     ? gogo->package_name()
 					     : package->package_name()),

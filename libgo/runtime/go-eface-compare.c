@@ -26,6 +26,8 @@ __go_empty_interface_compare (struct __go_empty_interface left,
   if (!__go_type_descriptors_equal (left_descriptor,
 				    right.__type_descriptor))
     return 1;
+  if (left_descriptor->__equalfn == NULL)
+    runtime_panicstring ("comparing uncomparable types");
   if (__go_is_pointer_type (left_descriptor))
     return left.__object == right.__object ? 0 : 1;
   if (!__go_call_equalfn (left_descriptor->__equalfn, left.__object,

@@ -567,6 +567,12 @@ Type::are_compatible_for_comparison(bool is_equality_op, const Type *t1,
 	return t2->named_type()->named_type_is_comparable(reason);
       else if (t1->struct_type() != NULL)
 	{
+	  if (t1->struct_type()->is_struct_incomparable())
+	    {
+	      if (reason != NULL)
+		*reason = _("invalid comparison of generated struct");
+	      return false;
+	    }
 	  const Struct_field_list* fields = t1->struct_type()->fields();
 	  for (Struct_field_list::const_iterator p = fields->begin();
 	       p != fields->end();
@@ -582,6 +588,12 @@ Type::are_compatible_for_comparison(bool is_equality_op, const Type *t1,
 	}
       else if (t1->array_type() != NULL)
 	{
+	  if (t1->array_type()->is_array_incomparable())
+	    {
+	      if (reason != NULL)
+		*reason = _("invalid comparison of generated array");
+	      return false;
+	    }
 	  if (t1->array_type()->length()->is_nil_expression()
 	      || !t1->array_type()->element_type()->is_comparable())
 	    {
@@ -1478,6 +1490,7 @@ Type::make_type_descriptor_type()
 
       Typed_identifier_list *params = new Typed_identifier_list();
       params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
+      params->push_back(Typed_identifier("seed", uintptr_type, bloc));
       params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
       Typed_identifier_list* results = new Typed_identifier_list();
@@ -1579,6 +1592,13 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 		     Function_type* equal_fntype, Named_object** hash_fn,
 		     Named_object** equal_fn)
 {
+  if (!this->is_comparable())
+    {
+      *hash_fn = NULL;
+      *equal_fn = NULL;
+      return;
+    }
+
   if (hash_fntype == NULL || equal_fntype == NULL)
     {
       Location bloc = Linemap::predeclared_location();
@@ -1592,6 +1612,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	  Typed_identifier_list* params = new Typed_identifier_list();
 	  params->push_back(Typed_identifier("key", unsafe_pointer_type,
 					     bloc));
+	  params->push_back(Typed_identifier("seed", uintptr_type, bloc));
 	  params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
 	  Typed_identifier_list* results = new Typed_identifier_list();
@@ -1622,13 +1643,6 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
     {
       hash_fnname = "__go_type_hash_identity";
       equal_fnname = "__go_type_equal_identity";
-    }
-  else if (!this->is_comparable() ||
-	   (this->struct_type() != NULL
-	    && Thunk_statement::is_thunk_struct(this->struct_type())))
-    {
-      hash_fnname = "__go_type_hash_error";
-      equal_fnname = "__go_type_equal_error";
     }
   else
     {
@@ -1844,6 +1858,8 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
       return;
     }
 
+  go_assert(this->is_comparable());
+
   Named_object* hash_fn = gogo->start_function(hash_name, hash_fntype, false,
 					       bloc);
   hash_fn->func_value()->set_is_type_specific_function();
@@ -1909,6 +1925,10 @@ Type::write_named_hash(Gogo* gogo, Named_type* name,
   Named_object* key_arg = gogo->lookup("key", NULL);
   go_assert(key_arg != NULL);
 
+  // The seed argument to the hash function.
+  Named_object* seed_arg = gogo->lookup("seed", NULL);
+  go_assert(seed_arg != NULL);
+
   // The size of the type we are going to hash.
   Named_object* keysz_arg = gogo->lookup("key_size", NULL);
   go_assert(keysz_arg != NULL);
@@ -1920,9 +1940,11 @@ Type::write_named_hash(Gogo* gogo, Named_type* name,
 
   // Call the hash function for the base type.
   Expression* key_ref = Expression::make_var_reference(key_arg, bloc);
+  Expression* seed_ref = Expression::make_var_reference(seed_arg, bloc);
   Expression* keysz_ref = Expression::make_var_reference(keysz_arg, bloc);
   Expression_list* args = new Expression_list();
   args->push_back(key_ref);
+  args->push_back(seed_ref);
   args->push_back(keysz_ref);
   Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
   Expression* call = Expression::make_call(func, args, false, bloc);
@@ -2044,8 +2066,18 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   Named_object* equal_fn;
   this->type_functions(gogo, name, hash_fntype, equal_fntype, &hash_fn,
 		       &equal_fn);
-  vals->push_back(Expression::make_func_reference(hash_fn, NULL, bloc));
-  vals->push_back(Expression::make_func_reference(equal_fn, NULL, bloc));
+  if (hash_fn == NULL)
+    vals->push_back(Expression::make_cast(hash_fntype,
+					  Expression::make_nil(bloc),
+					  bloc));
+  else
+    vals->push_back(Expression::make_func_reference(hash_fn, NULL, bloc));
+  if (equal_fn == NULL)
+    vals->push_back(Expression::make_cast(equal_fntype,
+					  Expression::make_nil(bloc),
+					  bloc));
+  else
+    vals->push_back(Expression::make_func_reference(equal_fn, NULL, bloc));
 
   ++p;
   go_assert(p->is_field_name("gc"));
@@ -4842,6 +4874,44 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
   return true;
 }
 
+// Return whether this struct type is reflexive--whether a value of
+// this type is always equal to itself.
+
+bool
+Struct_type::do_is_reflexive()
+{
+  const Struct_field_list* fields = this->fields_;
+  if (fields == NULL)
+    return true;
+  for (Struct_field_list::const_iterator pf = fields->begin();
+       pf != fields->end();
+       ++pf)
+    {
+      if (!pf->type()->is_reflexive())
+	return false;
+    }
+  return true;
+}
+
+// Return whether this struct type needs a key update when used as a
+// map key.
+
+bool
+Struct_type::do_needs_key_update()
+{
+  const Struct_field_list* fields = this->fields_;
+  if (fields == NULL)
+    return false;
+  for (Struct_field_list::const_iterator pf = fields->begin();
+       pf != fields->end();
+       ++pf)
+    {
+      if (pf->type()->needs_key_update())
+	return true;
+    }
+  return false;
+}
+
 // Build identity and hash functions for this struct.
 
 // Hash code.
@@ -5310,18 +5380,20 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
   go_assert(key_arg != NULL);
   Type* key_arg_type = key_arg->var_value()->type();
 
+  // The seed argument to the hash function.
+  Named_object* seed_arg = gogo->lookup("seed", NULL);
+  go_assert(seed_arg != NULL);
+
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
-  // Get a 0.
-  Expression* zero = Expression::make_integer_ul(0, uintptr_type, bloc);
-
-  // Make a temporary to hold the return value, initialized to 0.
-  Temporary_statement* retval = Statement::make_temporary(uintptr_type, zero,
+  // Make a temporary to hold the return value, initialized to the seed.
+  Expression* ref = Expression::make_var_reference(seed_arg, bloc);
+  Temporary_statement* retval = Statement::make_temporary(uintptr_type, ref,
 							  bloc);
   gogo->add_statement(retval);
 
   // Make a temporary to hold the key as a uintptr.
-  Expression* ref = Expression::make_var_reference(key_arg, bloc);
+  ref = Expression::make_var_reference(key_arg, bloc);
   ref = Expression::make_cast(uintptr_type, ref, bloc);
   Temporary_statement* key = Statement::make_temporary(uintptr_type, ref,
 						       bloc);
@@ -5367,19 +5439,20 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
       pf->type()->type_functions(gogo, pf->type()->named_type(), hash_fntype,
 				 equal_fntype, &hash_fn, &equal_fn);
 
-      // Call the hash function for the field.
+      // Call the hash function for the field, passing retval as the seed.
+      ref = Expression::make_temporary_reference(retval, bloc);
       Expression_list* args = new Expression_list();
       args->push_back(subkey);
+      args->push_back(ref);
       args->push_back(size);
       Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
       Expression* call = Expression::make_call(func, args, false, bloc);
 
-      // Add the field's hash value to retval.
+      // Set retval to the result.
       Temporary_reference_expression* tref =
 	Expression::make_temporary_reference(retval, bloc);
       tref->set_is_lvalue();
-      Statement* s = Statement::make_assignment_operation(OPERATOR_PLUSEQ,
-							  tref, call, bloc);
+      Statement* s = Statement::make_assignment(tref, call, bloc);
       gogo->add_statement(s);
     }
 
@@ -5733,6 +5806,11 @@ Struct_type::can_write_type_to_c_header(
       return true;
 
     case TYPE_POINTER:
+      // Don't try to handle a pointer to an array.
+      if (t->points_to()->array_type() != NULL
+	  && !t->points_to()->is_slice_type())
+	return false;
+
       if (t->points_to()->named_type() != NULL
 	  && t->points_to()->struct_type() != NULL)
 	declare->push_back(t->points_to()->named_type()->named_object());
@@ -6157,18 +6235,20 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   go_assert(key_arg != NULL);
   Type* key_arg_type = key_arg->var_value()->type();
 
+  // The seed argument to the hash function.
+  Named_object* seed_arg = gogo->lookup("seed", NULL);
+  go_assert(seed_arg != NULL);
+
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
 
-  // Get a 0.
-  Expression* zero = Expression::make_integer_ul(0, uintptr_type, bloc);
-
-  // Make a temporary to hold the return value, initialized to 0.
-  Temporary_statement* retval = Statement::make_temporary(uintptr_type, zero,
+  // Make a temporary to hold the return value, initialized to the seed.
+  Expression* ref = Expression::make_var_reference(seed_arg, bloc);
+  Temporary_statement* retval = Statement::make_temporary(uintptr_type, ref,
 							  bloc);
   gogo->add_statement(retval);
 
   // Make a temporary to hold the key as a uintptr.
-  Expression* ref = Expression::make_var_reference(key_arg, bloc);
+  ref = Expression::make_var_reference(key_arg, bloc);
   ref = Expression::make_cast(uintptr_type, ref, bloc);
   Temporary_statement* key = Statement::make_temporary(uintptr_type, ref,
 						       bloc);
@@ -6216,18 +6296,20 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   Expression* ele_size = Expression::make_type_info(this->element_type_,
 						    Expression::TYPE_INFO_SIZE);
 
-  // Get the hash of this element.
+  // Get the hash of this element, passing retval as the seed.
+  ref = Expression::make_temporary_reference(retval, bloc);
   Expression_list* args = new Expression_list();
   args->push_back(subkey);
+  args->push_back(ref);
   args->push_back(ele_size);
   Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
   Expression* call = Expression::make_call(func, args, false, bloc);
 
-  // Add the element's hash value to retval.
+  // Set retval to the result.
   Temporary_reference_expression* tref =
     Expression::make_temporary_reference(retval, bloc);
   tref->set_is_lvalue();
-  s = Statement::make_assignment_operation(OPERATOR_PLUSEQ, tref, call, bloc);
+  s = Statement::make_assignment(tref, call, bloc);
   gogo->add_statement(s);
 
   // Increase the element pointer.
@@ -6846,6 +6928,100 @@ Type::make_array_type(Type* element_type, Expression* length)
 
 // Class Map_type.
 
+Named_object* Map_type::zero_value;
+int64_t Map_type::zero_value_size;
+int64_t Map_type::zero_value_align;
+
+// If this map requires the "fat" functions, return the pointer to
+// pass as the zero value to those functions.  Otherwise, in the
+// normal case, return NULL.  The map requires the "fat" functions if
+// the value size is larger than max_zero_size bytes.  max_zero_size
+// must match maxZero in libgo/go/runtime/hashmap.go.
+
+Expression*
+Map_type::fat_zero_value(Gogo* gogo)
+{
+  int64_t valsize;
+  if (!this->val_type_->backend_type_size(gogo, &valsize))
+    {
+      go_assert(saw_errors());
+      return NULL;
+    }
+  if (valsize <= Map_type::max_zero_size)
+    return NULL;
+
+  if (Map_type::zero_value_size < valsize)
+    Map_type::zero_value_size = valsize;
+
+  int64_t valalign;
+  if (!this->val_type_->backend_type_align(gogo, &valalign))
+    {
+      go_assert(saw_errors());
+      return NULL;
+    }
+
+  if (Map_type::zero_value_align < valalign)
+    Map_type::zero_value_align = valalign;
+
+  Location bloc = Linemap::predeclared_location();
+
+  if (Map_type::zero_value == NULL)
+    {
+      // The final type will be set in backend_zero_value.
+      Type* uint8_type = Type::lookup_integer_type("uint8");
+      Expression* size = Expression::make_integer_ul(0, NULL, bloc);
+      Type* array_type = Type::make_array_type(uint8_type, size);
+      Variable* var = new Variable(array_type, NULL, true, false, false, bloc);
+      Map_type::zero_value = Named_object::make_variable("go$zerovalue", NULL,
+							 var);
+    }
+
+  Expression* z = Expression::make_var_reference(Map_type::zero_value, bloc);
+  z = Expression::make_unary(OPERATOR_AND, z, bloc);
+  Type* unsafe_ptr_type = Type::make_pointer_type(Type::make_void_type());
+  z = Expression::make_cast(unsafe_ptr_type, z, bloc);
+  return z;
+}
+
+// Return whether VAR is the map zero value.
+
+bool
+Map_type::is_zero_value(Variable* var)
+{
+  return (Map_type::zero_value != NULL
+	  && Map_type::zero_value->var_value() == var);
+}
+
+// Return the backend representation for the zero value.
+
+Bvariable*
+Map_type::backend_zero_value(Gogo* gogo)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  go_assert(Map_type::zero_value != NULL);
+
+  Type* uint8_type = Type::lookup_integer_type("uint8");
+  Btype* buint8_type = uint8_type->get_backend(gogo);
+
+  Type* int_type = Type::lookup_integer_type("int");
+
+  Expression* e = Expression::make_integer_int64(Map_type::zero_value_size,
+						 int_type, bloc);
+  Translate_context context(gogo, NULL, NULL, NULL);
+  Bexpression* blength = e->get_backend(&context);
+
+  Btype* barray_type = gogo->backend()->array_type(buint8_type, blength);
+
+  std::string zname = Map_type::zero_value->name();
+  Bvariable* zvar =
+    gogo->backend()->implicit_variable(zname, barray_type, false, true, true,
+				       Map_type::zero_value_align);
+  gogo->backend()->implicit_variable_set_init(zvar, zname, barray_type,
+					      false, true, true, NULL);
+  return zvar;
+}
+
 // Traversal.
 
 int
@@ -6890,8 +7066,8 @@ Map_type::do_hash_for_method(Gogo* gogo) const
 }
 
 // Get the backend representation for a map type.  A map type is
-// represented as a pointer to a struct.  The struct is __go_map in
-// libgo/map.h.
+// represented as a pointer to a struct.  The struct is hmap in
+// runtime/hashmap.go.
 
 Btype*
 Map_type::do_get_backend(Gogo* gogo)
@@ -6899,33 +7075,50 @@ Map_type::do_get_backend(Gogo* gogo)
   static Btype* backend_map_type;
   if (backend_map_type == NULL)
     {
-      std::vector<Backend::Btyped_identifier> bfields(4);
+      std::vector<Backend::Btyped_identifier> bfields(8);
 
       Location bloc = Linemap::predeclared_location();
 
-      Type* pdt = Type::make_type_descriptor_ptr_type();
-      bfields[0].name = "__descriptor";
-      bfields[0].btype = pdt->get_backend(gogo);
+      Type* int_type = Type::lookup_integer_type("int");
+      bfields[0].name = "count";
+      bfields[0].btype = int_type->get_backend(gogo);
       bfields[0].location = bloc;
 
-      Type* uintptr_type = Type::lookup_integer_type("uintptr");
-      bfields[1].name = "__element_count";
-      bfields[1].btype = uintptr_type->get_backend(gogo);
+      Type* uint8_type = Type::lookup_integer_type("uint8");
+      bfields[1].name = "flags";
+      bfields[1].btype = uint8_type->get_backend(gogo);
       bfields[1].location = bloc;
 
-      bfields[2].name = "__bucket_count";
+      bfields[2].name = "B";
       bfields[2].btype = bfields[1].btype;
       bfields[2].location = bloc;
 
-      Btype* bvt = gogo->backend()->void_type();
-      Btype* bpvt = gogo->backend()->pointer_type(bvt);
-      Btype* bppvt = gogo->backend()->pointer_type(bpvt);
-      bfields[3].name = "__buckets";
-      bfields[3].btype = bppvt;
+      Type* uint32_type = Type::lookup_integer_type("uint32");
+      bfields[3].name = "hash0";
+      bfields[3].btype = uint32_type->get_backend(gogo);
       bfields[3].location = bloc;
 
+      Btype* bvt = gogo->backend()->void_type();
+      Btype* bpvt = gogo->backend()->pointer_type(bvt);
+      bfields[4].name = "buckets";
+      bfields[4].btype = bpvt;
+      bfields[4].location = bloc;
+
+      bfields[5].name = "oldbuckets";
+      bfields[5].btype = bpvt;
+      bfields[5].location = bloc;
+
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+      bfields[6].name = "nevacuate";
+      bfields[6].btype = uintptr_type->get_backend(gogo);
+      bfields[6].location = bloc;
+
+      bfields[7].name = "overflow";
+      bfields[7].btype = bpvt;
+      bfields[7].location = bloc;
+
       Btype *bt = gogo->backend()->struct_type(bfields);
-      bt = gogo->backend()->named_type("__go_map", bt, bloc);
+      bt = gogo->backend()->named_type("runtime.hmap", bt, bloc);
       backend_map_type = gogo->backend()->pointer_type(bt);
     }
   return backend_map_type;
@@ -6941,12 +7134,24 @@ Map_type::make_map_type_descriptor_type()
     {
       Type* tdt = Type::make_type_descriptor_type();
       Type* ptdt = Type::make_type_descriptor_ptr_type();
+      Type* uint8_type = Type::lookup_integer_type("uint8");
+      Type* uint16_type = Type::lookup_integer_type("uint16");
+      Type* bool_type = Type::lookup_bool_type();
 
       Struct_type* sf =
-	Type::make_builtin_struct_type(3,
+	Type::make_builtin_struct_type(12,
 				       "", tdt,
 				       "key", ptdt,
-				       "elem", ptdt);
+				       "elem", ptdt,
+				       "bucket", ptdt,
+				       "hmap", ptdt,
+				       "keysize", uint8_type,
+				       "indirectkey", bool_type,
+				       "valuesize", uint8_type,
+				       "indirectvalue", bool_type,
+				       "bucketsize", uint16_type,
+				       "reflexivekey", bool_type,
+				       "needkeyupdate", bool_type);
 
       ret = Type::make_builtin_named_type("MapType", sf);
     }
@@ -6962,11 +7167,48 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   Location bloc = Linemap::predeclared_location();
 
   Type* mtdt = Map_type::make_map_type_descriptor_type();
+  Type* uint8_type = Type::lookup_integer_type("uint8");
+  Type* uint16_type = Type::lookup_integer_type("uint16");
+
+  int64_t keysize;
+  if (!this->key_type_->backend_type_size(gogo, &keysize))
+    {
+      error_at(this->location_, "error determining map key type size");
+      return Expression::make_error(this->location_);
+    }
+
+  int64_t valsize;
+  if (!this->val_type_->backend_type_size(gogo, &valsize))
+    {
+      error_at(this->location_, "error determining map value type size");
+      return Expression::make_error(this->location_);
+    }
+
+  int64_t ptrsize;
+  if (!Type::make_pointer_type(uint8_type)->backend_type_size(gogo, &ptrsize))
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(this->location_);
+    }
+
+  Type* bucket_type = this->bucket_type(gogo, keysize, valsize);
+  if (bucket_type == NULL)
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(this->location_);
+    }
+
+  int64_t bucketsize;
+  if (!bucket_type->backend_type_size(gogo, &bucketsize))
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(this->location_);
+    }
 
   const Struct_field_list* fields = mtdt->struct_type()->fields();
 
   Expression_list* vals = new Expression_list();
-  vals->reserve(3);
+  vals->reserve(12);
 
   Struct_field_list::const_iterator p = fields->begin();
   go_assert(p->is_field_name("commonType"));
@@ -6983,130 +7225,270 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->push_back(Expression::make_type_descriptor(this->val_type_, bloc));
 
   ++p;
+  go_assert(p->is_field_name("bucket"));
+  vals->push_back(Expression::make_type_descriptor(bucket_type, bloc));
+
+  ++p;
+  go_assert(p->is_field_name("hmap"));
+  Type* hmap_type = this->hmap_type(bucket_type);
+  vals->push_back(Expression::make_type_descriptor(hmap_type, bloc));
+
+  ++p;
+  go_assert(p->is_field_name("keysize"));
+  if (keysize > Map_type::max_key_size)
+    vals->push_back(Expression::make_integer_int64(ptrsize, uint8_type, bloc));
+  else
+    vals->push_back(Expression::make_integer_int64(keysize, uint8_type, bloc));
+
+  ++p;
+  go_assert(p->is_field_name("indirectkey"));
+  vals->push_back(Expression::make_boolean(keysize > Map_type::max_key_size,
+					   bloc));
+
+  ++p;
+  go_assert(p->is_field_name("valuesize"));
+  if (valsize > Map_type::max_val_size)
+    vals->push_back(Expression::make_integer_int64(ptrsize, uint8_type, bloc));
+  else
+    vals->push_back(Expression::make_integer_int64(valsize, uint8_type, bloc));
+
+  ++p;
+  go_assert(p->is_field_name("indirectvalue"));
+  vals->push_back(Expression::make_boolean(valsize > Map_type::max_val_size,
+					   bloc));
+
+  ++p;
+  go_assert(p->is_field_name("bucketsize"));
+  vals->push_back(Expression::make_integer_int64(bucketsize, uint16_type,
+						 bloc));
+
+  ++p;
+  go_assert(p->is_field_name("reflexivekey"));
+  vals->push_back(Expression::make_boolean(this->key_type_->is_reflexive(),
+					   bloc));
+
+  ++p;
+  go_assert(p->is_field_name("needkeyupdate"));
+  vals->push_back(Expression::make_boolean(this->key_type_->needs_key_update(),
+					   bloc));
+
+  ++p;
   go_assert(p == fields->end());
 
   return Expression::make_struct_composite_literal(mtdt, vals, bloc);
 }
 
-// A mapping from map types to map descriptors.
-
-Map_type::Map_descriptors Map_type::map_descriptors;
-
-// Build a map descriptor for this type.  Return a pointer to it.
-
-Bexpression*
-Map_type::map_descriptor_pointer(Gogo* gogo, Location location)
-{
-  Bvariable* bvar = this->map_descriptor(gogo);
-  Bexpression* var_expr = gogo->backend()->var_expression(bvar, location);
-  return gogo->backend()->address_expression(var_expr, location);
-}
-
-// Build a map descriptor for this type.
-
-Bvariable*
-Map_type::map_descriptor(Gogo* gogo)
-{
-  std::pair<Map_type*, Bvariable*> val(this, NULL);
-  std::pair<Map_type::Map_descriptors::iterator, bool> ins =
-    Map_type::map_descriptors.insert(val);
-  if (!ins.second)
-    return ins.first->second;
-
-  Type* key_type = this->key_type_;
-  Type* val_type = this->val_type_;
-
-  // The map entry type is a struct with three fields.  Build that
-  // struct so that we can get the offsets of the key and value within
-  // a map entry.  The first field should technically be a pointer to
-  // this type itself, but since we only care about field offsets we
-  // just use pointer to bool.
-  Type* pbool = Type::make_pointer_type(Type::make_boolean_type());
-  Struct_type* map_entry_type =
-    Type::make_builtin_struct_type(3,
-				   "__next", pbool,
-				   "__key", key_type,
-				   "__val", val_type);
-
-  Type* map_descriptor_type = Map_type::make_map_descriptor_type();
-
-  const Struct_field_list* fields =
-    map_descriptor_type->struct_type()->fields();
-
-  Expression_list* vals = new Expression_list();
-  vals->reserve(4);
-
-  Location bloc = Linemap::predeclared_location();
-
-  Struct_field_list::const_iterator p = fields->begin();
-
-  go_assert(p->is_field_name("__map_descriptor"));
-  vals->push_back(Expression::make_type_descriptor(this, bloc));
-
-  ++p;
-  go_assert(p->is_field_name("__entry_size"));
-  Expression::Type_info type_info = Expression::TYPE_INFO_SIZE;
-  vals->push_back(Expression::make_type_info(map_entry_type, type_info));
-
-  Struct_field_list::const_iterator pf = map_entry_type->fields()->begin();
-  ++pf;
-  go_assert(pf->is_field_name("__key"));
-
-  ++p;
-  go_assert(p->is_field_name("__key_offset"));
-  vals->push_back(Expression::make_struct_field_offset(map_entry_type, &*pf));
-
-  ++pf;
-  go_assert(pf->is_field_name("__val"));
-
-  ++p;
-  go_assert(p->is_field_name("__val_offset"));
-  vals->push_back(Expression::make_struct_field_offset(map_entry_type, &*pf));
-
-  ++p;
-  go_assert(p == fields->end());
-
-  Expression* initializer =
-    Expression::make_struct_composite_literal(map_descriptor_type, vals, bloc);
-
-  std::string mangled_name = "__go_map_" + this->mangled_name(gogo);
-  Btype* map_descriptor_btype = map_descriptor_type->get_backend(gogo);
-  Bvariable* bvar = gogo->backend()->immutable_struct(mangled_name, false,
-						      true,
-						      map_descriptor_btype,
-						      bloc);
-
-  Translate_context context(gogo, NULL, NULL, NULL);
-  context.set_is_const();
-  Bexpression* binitializer = initializer->get_backend(&context);
-
-  gogo->backend()->immutable_struct_set_init(bvar, mangled_name, false, true,
-					     map_descriptor_btype, bloc,
-					     binitializer);
-
-  ins.first->second = bvar;
-  return bvar;
-}
-
-// Build the type of a map descriptor.  This must match the struct
-// __go_map_descriptor in libgo/runtime/map.h.
+// Return the bucket type to use for a map type.  This must correspond
+// to libgo/go/runtime/hashmap.go.
 
 Type*
-Map_type::make_map_descriptor_type()
+Map_type::bucket_type(Gogo* gogo, int64_t keysize, int64_t valsize)
 {
-  static Type* ret;
-  if (ret == NULL)
+  if (this->bucket_type_ != NULL)
+    return this->bucket_type_;
+
+  Type* key_type = this->key_type_;
+  if (keysize > Map_type::max_key_size)
+    key_type = Type::make_pointer_type(key_type);
+
+  Type* val_type = this->val_type_;
+  if (valsize > Map_type::max_val_size)
+    val_type = Type::make_pointer_type(val_type);
+
+  Expression* bucket_size = Expression::make_integer_ul(Map_type::bucket_size,
+							NULL, this->location_);
+
+  Type* uint8_type = Type::lookup_integer_type("uint8");
+  Array_type* topbits_type = Type::make_array_type(uint8_type, bucket_size);
+  topbits_type->set_is_array_incomparable();
+  Array_type* keys_type = Type::make_array_type(key_type, bucket_size);
+  keys_type->set_is_array_incomparable();
+  Array_type* values_type = Type::make_array_type(val_type, bucket_size);
+  values_type->set_is_array_incomparable();
+
+  // If keys and values have no pointers, the map implementation can
+  // keep a list of overflow pointers on the side so that buckets can
+  // be marked as having no pointers.  Arrange for the bucket to have
+  // no pointers by changing the type of the overflow field to uintptr
+  // in this case.  See comment on the hmap.overflow field in
+  // libgo/go/runtime/hashmap.go.
+  Type* overflow_type;
+  if (!key_type->has_pointer() && !val_type->has_pointer())
+    overflow_type = Type::lookup_integer_type("uintptr");
+  else
     {
-      Type* ptdt = Type::make_type_descriptor_ptr_type();
-      Type* uintptr_type = Type::lookup_integer_type("uintptr");
-      Struct_type* sf =
-	Type::make_builtin_struct_type(4,
-				       "__map_descriptor", ptdt,
-				       "__entry_size", uintptr_type,
-				       "__key_offset", uintptr_type,
-				       "__val_offset", uintptr_type);
-      ret = Type::make_builtin_named_type("__go_map_descriptor", sf);
+      // This should really be a pointer to the bucket type itself,
+      // but that would require us to construct a Named_type for it to
+      // give it a way to refer to itself.  Since nothing really cares
+      // (except perhaps for someone using a debugger) just use an
+      // unsafe pointer.
+      overflow_type = Type::make_pointer_type(Type::make_void_type());
     }
+
+  // Make sure the overflow pointer is the last memory in the struct,
+  // because the runtime assumes it can use size-ptrSize as the offset
+  // of the overflow pointer.  We double-check that property below
+  // once the offsets and size are computed.
+
+  int64_t topbits_field_size, topbits_field_align;
+  int64_t keys_field_size, keys_field_align;
+  int64_t values_field_size, values_field_align;
+  int64_t overflow_field_size, overflow_field_align;
+  if (!topbits_type->backend_type_size(gogo, &topbits_field_size)
+      || !topbits_type->backend_type_field_align(gogo, &topbits_field_align)
+      || !keys_type->backend_type_size(gogo, &keys_field_size)
+      || !keys_type->backend_type_field_align(gogo, &keys_field_align)
+      || !values_type->backend_type_size(gogo, &values_field_size)
+      || !values_type->backend_type_field_align(gogo, &values_field_align)
+      || !overflow_type->backend_type_size(gogo, &overflow_field_size)
+      || !overflow_type->backend_type_field_align(gogo, &overflow_field_align))
+    {
+      go_assert(saw_errors());
+      return NULL;
+    }
+
+  Struct_type* ret;
+  int64_t max_align = std::max(std::max(topbits_field_align, keys_field_align),
+			       values_field_align);
+  if (max_align <= overflow_field_align)
+    ret =  make_builtin_struct_type(4,
+				    "topbits", topbits_type,
+				    "keys", keys_type,
+				    "values", values_type,
+				    "overflow", overflow_type);
+  else
+    {
+      size_t off = topbits_field_size;
+      off = ((off + keys_field_align - 1)
+	     &~ static_cast<size_t>(keys_field_align - 1));
+      off += keys_field_size;
+      off = ((off + values_field_align - 1)
+	     &~ static_cast<size_t>(values_field_align - 1));
+      off += values_field_size;
+
+      int64_t padded_overflow_field_size =
+	((overflow_field_size + max_align - 1)
+	 &~ static_cast<size_t>(max_align - 1));
+
+      size_t ovoff = off;
+      ovoff = ((ovoff + max_align - 1)
+	       &~ static_cast<size_t>(max_align - 1));
+      size_t pad = (ovoff - off
+		    + padded_overflow_field_size - overflow_field_size);
+
+      Expression* pad_expr = Expression::make_integer_ul(pad, NULL,
+							 this->location_);
+      Type* pad_type = Type::make_array_type(uint8_type, pad_expr);
+
+      ret = make_builtin_struct_type(5,
+				     "topbits", topbits_type,
+				     "keys", keys_type,
+				     "values", values_type,
+				     "pad", pad_type,
+				     "overflow", overflow_type);
+    }
+
+  // Verify that the overflow field is just before the end of the
+  // bucket type.
+
+  Btype* btype = ret->get_backend(gogo);
+  int64_t offset = gogo->backend()->type_field_offset(btype,
+						      ret->field_count() - 1);
+  int64_t size;
+  if (!ret->backend_type_size(gogo, &size))
+    {
+      go_assert(saw_errors());
+      return NULL;
+    }
+
+  int64_t ptr_size;
+  if (!Type::make_pointer_type(uint8_type)->backend_type_size(gogo, &ptr_size))
+    {
+      go_assert(saw_errors());
+      return NULL;
+    }
+
+  go_assert(offset + ptr_size == size);
+
+  ret->set_is_struct_incomparable();
+
+  this->bucket_type_ = ret;
+  return ret;
+}
+
+// Return the hashmap type for a map type.
+
+Type*
+Map_type::hmap_type(Type* bucket_type)
+{
+  if (this->hmap_type_ != NULL)
+    return this->hmap_type_;
+
+  Type* int_type = Type::lookup_integer_type("int");
+  Type* uint8_type = Type::lookup_integer_type("uint8");
+  Type* uint32_type = Type::lookup_integer_type("uint32");
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  Type* void_ptr_type = Type::make_pointer_type(Type::make_void_type());
+
+  Type* ptr_bucket_type = Type::make_pointer_type(bucket_type);
+
+  Struct_type* ret = make_builtin_struct_type(8,
+					      "count", int_type,
+					      "flags", uint8_type,
+					      "B", uint8_type,
+					      "hash0", uint32_type,
+					      "buckets", ptr_bucket_type,
+					      "oldbuckets", ptr_bucket_type,
+					      "nevacuate", uintptr_type,
+					      "overflow", void_ptr_type);
+  ret->set_is_struct_incomparable();
+  this->hmap_type_ = ret;
+  return ret;
+}
+
+// Return the iterator type for a map type.  This is the type of the
+// value used when doing a range over a map.
+
+Type*
+Map_type::hiter_type(Gogo* gogo)
+{
+  if (this->hiter_type_ != NULL)
+    return this->hiter_type_;
+
+  int64_t keysize, valsize;
+  if (!this->key_type_->backend_type_size(gogo, &keysize)
+      || !this->val_type_->backend_type_size(gogo, &valsize))
+    {
+      go_assert(saw_errors());
+      return NULL;
+    }
+
+  Type* key_ptr_type = Type::make_pointer_type(this->key_type_);
+  Type* val_ptr_type = Type::make_pointer_type(this->val_type_);
+  Type* uint8_type = Type::lookup_integer_type("uint8");
+  Type* uint8_ptr_type = Type::make_pointer_type(uint8_type);
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  Type* bucket_type = this->bucket_type(gogo, keysize, valsize);
+  Type* bucket_ptr_type = Type::make_pointer_type(bucket_type);
+  Type* hmap_type = this->hmap_type(bucket_type);
+  Type* hmap_ptr_type = Type::make_pointer_type(hmap_type);
+  Type* void_ptr_type = Type::make_pointer_type(Type::make_void_type());
+
+  Struct_type* ret = make_builtin_struct_type(12,
+					      "key", key_ptr_type,
+					      "val", val_ptr_type,
+					      "t", uint8_ptr_type,
+					      "h", hmap_ptr_type,
+					      "buckets", bucket_ptr_type,
+					      "bptr", bucket_ptr_type,
+					      "overflow0", void_ptr_type,
+					      "overflow1", void_ptr_type,
+					      "startBucket", uintptr_type,
+					      "stuff", uintptr_type,
+					      "bucket", uintptr_type,
+					      "checkBucket", uintptr_type);
+  ret->set_is_struct_incomparable();
+  this->hiter_type_ = ret;
   return ret;
 }
 
@@ -9012,6 +9394,33 @@ Named_type::do_compare_is_identity(Gogo* gogo)
     return false;
   this->seen_in_compare_is_identity_ = true;
   bool ret = this->type_->compare_is_identity(gogo);
+  this->seen_in_compare_is_identity_ = false;
+  return ret;
+}
+
+// Return whether this type is reflexive--whether it is always equal
+// to itself.
+
+bool
+Named_type::do_is_reflexive()
+{
+  if (this->seen_in_compare_is_identity_)
+    return false;
+  this->seen_in_compare_is_identity_ = true;
+  bool ret = this->type_->is_reflexive();
+  this->seen_in_compare_is_identity_ = false;
+  return ret;
+}
+
+// Return whether this type needs a key update when used as a map key.
+
+bool
+Named_type::do_needs_key_update()
+{
+  if (this->seen_in_compare_is_identity_)
+    return true;
+  this->seen_in_compare_is_identity_ = true;
+  bool ret = this->type_->needs_key_update();
   this->seen_in_compare_is_identity_ = false;
   return ret;
 }

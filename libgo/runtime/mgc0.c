@@ -69,9 +69,6 @@
 typedef struct __go_map Hmap;
 // Type aka __go_type_descriptor
 #define string __reflection
-#define KindPtr GO_PTR
-#define KindNoPointers GO_NO_POINTERS
-#define kindMask GO_CODE_MASK
 // PtrType aka __go_ptr_type
 #define elem __element_type
 
@@ -216,7 +213,7 @@ static void	addstackroots(G *gp, Workbuf **wbufp);
 
 static struct {
 	uint64	full;  // lock-free list of full blocks
-	uint64	empty; // lock-free list of empty blocks
+	uint64	wempty; // lock-free list of empty blocks
 	byte	pad0[CacheLineSize]; // prevents false-sharing between full/empty and nproc/nwait
 	uint32	nproc;
 	int64	tstart;
@@ -943,16 +940,16 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			// eface->__object
 			if((byte*)eface->__object >= arena_start && (byte*)eface->__object < arena_used) {
 				if(__go_is_pointer_type(t)) {
-					if((t->__code & KindNoPointers))
+					if((t->__code & kindNoPointers))
 						continue;
 
 					obj = eface->__object;
-					if((t->__code & kindMask) == KindPtr) {
+					if((t->__code & kindMask) == kindPtr) {
 						// Only use type information if it is a pointer-containing type.
 						// This matches the GC programs written by cmd/gc/reflect.c's
 						// dgcsym1 in case TPTR32/case TPTR64. See rationale there.
 						et = ((const PtrType*)t)->elem;
-						if(!(et->__code & KindNoPointers))
+						if(!(et->__code & kindNoPointers))
 							objti = (uintptr)((const PtrType*)t)->elem->__gc;
 					}
 				} else {
@@ -981,16 +978,16 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			if((byte*)iface->__object >= arena_start && (byte*)iface->__object < arena_used) {
 				t = (const Type*)iface->tab[0];
 				if(__go_is_pointer_type(t)) {
-					if((t->__code & KindNoPointers))
+					if((t->__code & kindNoPointers))
 						continue;
 
 					obj = iface->__object;
-					if((t->__code & kindMask) == KindPtr) {
+					if((t->__code & kindMask) == kindPtr) {
 						// Only use type information if it is a pointer-containing type.
 						// This matches the GC programs written by cmd/gc/reflect.c's
 						// dgcsym1 in case TPTR32/case TPTR64. See rationale there.
 						et = ((const PtrType*)t)->elem;
-						if(!(et->__code & KindNoPointers))
+						if(!(et->__code & kindNoPointers))
 							objti = (uintptr)((const PtrType*)t)->elem->__gc;
 					}
 				} else {
@@ -1101,7 +1098,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			}
 			if(markonly(chan)) {
 				chantype = (ChanType*)pc[2];
-				if(!(chantype->elem->__code & KindNoPointers)) {
+				if(!(chantype->elem->__code & kindNoPointers)) {
 					// Start chanProg.
 					chan_ret = pc+3;
 					pc = chanProg+1;
@@ -1114,7 +1111,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 		case GC_CHAN:
 			// There are no heap pointers in struct Hchan,
 			// so we can ignore the leading sizeof(Hchan) bytes.
-			if(!(chantype->elem->__code & KindNoPointers)) {
+			if(!(chantype->elem->__code & kindNoPointers)) {
 				// Channel's buffer follows Hchan immediately in memory.
 				// Size of buffer (cap(c)) is second int in the chan struct.
 				chancap = ((uintgo*)chan)[1];
@@ -1377,7 +1374,7 @@ getempty(Workbuf *b)
 {
 	if(b != nil)
 		runtime_lfstackpush(&work.full, &b->node);
-	b = (Workbuf*)runtime_lfstackpop(&work.empty);
+	b = (Workbuf*)runtime_lfstackpop(&work.wempty);
 	if(b == nil) {
 		// Need to allocate.
 		runtime_lock(&work);
@@ -1402,7 +1399,7 @@ putempty(Workbuf *b)
 	if(CollectStats)
 		runtime_xadd64(&gcstats.putempty, 1);
 
-	runtime_lfstackpush(&work.empty, &b->node);
+	runtime_lfstackpush(&work.wempty, &b->node);
 }
 
 // Get a full work buffer off the work.full list, or return nil.
@@ -1416,7 +1413,7 @@ getfull(Workbuf *b)
 		runtime_xadd64(&gcstats.getfull, 1);
 
 	if(b != nil)
-		runtime_lfstackpush(&work.empty, &b->node);
+		runtime_lfstackpush(&work.wempty, &b->node);
 	b = (Workbuf*)runtime_lfstackpop(&work.full);
 	if(b != nil || work.nproc == 1)
 		return b;
@@ -2129,7 +2126,7 @@ runtime_gc(int32 force)
 	// The atomic operations are not atomic if the uint64s
 	// are not aligned on uint64 boundaries. This has been
 	// a problem in the past.
-	if((((uintptr)&work.empty) & 7) != 0)
+	if((((uintptr)&work.wempty) & 7) != 0)
 		runtime_throw("runtime: gc work buffer is misaligned");
 	if((((uintptr)&work.full) & 7) != 0)
 		runtime_throw("runtime: gc work buffer is misaligned");
@@ -2522,7 +2519,7 @@ runfinq(void* dummy __attribute__ ((unused)))
 
 				f = &fb->fin[i];
 				fint = ((const Type**)f->ft->__in.array)[0];
-				if((fint->__code & kindMask) == KindPtr) {
+				if((fint->__code & kindMask) == kindPtr) {
 					// direct use of pointer
 					param = &f->arg;
 				} else if(((const InterfaceType*)fint)->__methods.__count == 0) {
