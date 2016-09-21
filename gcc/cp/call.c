@@ -527,6 +527,7 @@ null_ptr_cst_p (tree t)
     {
       /* Core issue 903 says only literal 0 is a null pointer constant.  */
       if (TREE_CODE (type) == INTEGER_TYPE
+	  && !char_type_p (type)
 	  && TREE_CODE (t) == INTEGER_CST
 	  && integer_zerop (t)
 	  && !TREE_OVERFLOW (t))
