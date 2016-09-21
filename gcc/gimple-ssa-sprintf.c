@@ -2260,6 +2260,7 @@ pass_sprintf_length::compute_format_length (const call_info &info,
 	case '\0':
 	  --pf;
 	  res->bounded = false;
+	  /* FALLTHRU */
 	case '%':
 	  spec.fmtfunc = format_percent;
 	  break;

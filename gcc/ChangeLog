@@ -1,3 +1,8 @@
+2016-09-21  Marek Polacek  <polacek@redhat.com>
+
+	* gimple-ssa-sprintf.c (pass_sprintf_length::compute_format_length):
+	Add falls through comment.
+
 2016-09-21  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (remove_child_with_prev): Clear child->die_sib.
