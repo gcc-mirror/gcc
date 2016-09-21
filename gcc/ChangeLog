@@ -1,3 +1,10 @@
+2016-09-21  Richard Biener  <rguenther@suse.de>
+	Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77621
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Split
+	group at non-vectorizable stmts.
+
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR tree-optimization/72835

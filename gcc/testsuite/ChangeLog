@@ -1,3 +1,9 @@
+2016-09-21  Richard Biener  <rguenther@suse.de>
+	Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77621
+	* gcc.dg/pr77621.c: New testcase.
+
 2016-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77657

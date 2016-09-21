@@ -2711,10 +2711,17 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
       data_reference_p dra = datarefs_copy[i];
       stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
       stmt_vec_info lastinfo = NULL;
+      if (! STMT_VINFO_VECTORIZABLE (stmtinfo_a))
+	{
+	  ++i;
+	  continue;
+	}
       for (i = i + 1; i < datarefs_copy.length (); ++i)
 	{
 	  data_reference_p drb = datarefs_copy[i];
 	  stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
+	  if (! STMT_VINFO_VECTORIZABLE (stmtinfo_b))
+	    break;
 
 	  /* ???  Imperfect sorting (non-compatible types, non-modulo
 	     accesses, same accesses) can lead to a group to be artificially
