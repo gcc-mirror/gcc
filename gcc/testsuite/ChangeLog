@@ -1,3 +1,8 @@
+2016-09-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/77326
+	* gcc.target/avr/torture/pr77326.c: New test.
+
 2016-09-21  Louis Krupp  <louis.krupp@zoho.com>
 
 	* gfortran.dg/pr68078.f90: Run on x86_64_*_linux* only.

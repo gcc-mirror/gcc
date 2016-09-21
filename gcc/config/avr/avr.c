@@ -2511,8 +2511,44 @@ avr_notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx_insn *insn)
       break;
 
     case CC_NONE:
-      /* Insn does not affect CC at all.  */
-      break;
+      /* Insn does not affect CC at all, but it might set some registers
+         that are stored in cc_status.  If such a register is affected by
+         the current insn, for example by means of a SET or a CLOBBER,
+         then we must reset cc_status; cf. PR77326.
+
+         Unfortunately, set_of cannot be used as reg_overlap_mentioned_p
+         will abort on COMPARE (which might be found in cc_status.value1/2).
+         Thus work out the registers set by the insn and regs mentioned
+         in cc_status.value1/2.  */
+
+      if (cc_status.value1
+          || cc_status.value2)
+        {
+          HARD_REG_SET regs_used;
+          HARD_REG_SET regs_set;
+          CLEAR_HARD_REG_SET (regs_used);
+
+          if (cc_status.value1
+              && !CONSTANT_P (cc_status.value1))
+            {
+              find_all_hard_regs (cc_status.value1, &regs_used);
+            }
+
+          if (cc_status.value2
+              && !CONSTANT_P (cc_status.value2))
+            {
+              find_all_hard_regs (cc_status.value2, &regs_used);
+            }
+
+          find_all_hard_reg_sets (insn, &regs_set, false);
+
+          if (hard_reg_set_intersect_p (regs_used, regs_set))
+            {
+              CC_STATUS_INIT;
+            }
+        }
+
+      break; // CC_NONE
 
     case CC_SET_N:
       CC_STATUS_INIT;
