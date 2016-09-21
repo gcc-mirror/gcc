@@ -1086,11 +1086,15 @@ const char* linemap_map_get_macro_name (const line_map_macro *);
 int linemap_location_in_system_header_p (struct line_maps *,
 					 source_location);
 
-/* Return TRUE if LOCATION is a source code location of a token coming
-   from a macro replacement-list at a macro expansion point, FALSE
-   otherwise.  */
+/* Return TRUE if LOCATION is a source code location of a token that is part of
+   a macro expansion, FALSE otherwise.  */
 bool linemap_location_from_macro_expansion_p (const struct line_maps *,
 					      source_location);
+
+/* TRUE if LOCATION is a source code location of a token that is part of the
+   definition of a macro, FALSE otherwise.  */
+bool linemap_location_from_macro_definition_p (struct line_maps *,
+					       source_location);
 
 /* With the precondition that LOCATION is the locus of a token that is
    an argument of a function-like macro MACRO_MAP and appears in the
