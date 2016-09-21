@@ -2850,6 +2850,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              __call_is_nothrow<result_of<_Fn(_Args...)>, _Fn, _Args...>>::type
     { };
 
+  struct __nonesuch {
+    __nonesuch() = delete;
+    ~__nonesuch() = delete;
+    __nonesuch(__nonesuch const&) = delete;
+    void operator=(__nonesuch const&) = delete;
+  };
+
 #if __cplusplus > 201402L
 # define __cpp_lib_is_callable 201603
 
