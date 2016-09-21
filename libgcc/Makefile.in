@@ -43,6 +43,11 @@ enable_vtable_verify = @enable_vtable_verify@
 enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
 with_aix_soname = @with_aix_soname@
+enable_execute_stack = @enable_execute_stack@
+unwind_header = @unwind_header@
+md_unwind_header = @md_unwind_header@
+sfp_machine_header = @sfp_machine_header@
+thread_header = @thread_header@
 
 host_noncanonical = @host_noncanonical@
 real_host_noncanonical = @real_host_noncanonical@
@@ -344,6 +349,21 @@ SHLIBUNWIND_INSTALL =
 
 tmake_file = @tmake_file@
 include $(srcdir)/empty.mk $(tmake_file)
+
+# Create links to files specified in config.host.
+LIBGCC_LINKS = enable-execute-stack.c unwind.h md-unwind-support.h \
+               sfp-machine.h gthr-default.h
+
+enable-execute-stack.c: $(srcdir)/$(enable_execute_stack)
+	-$(LN_S) $< $@
+unwind.h: $(srcdir)/$(unwind_header)
+	-$(LN_S) $< $@
+md-unwind-support.h: $(srcdir)/config/$(md_unwind_header)
+	-$(LN_S) $< $@
+sfp-machine.h: $(srcdir)/config/$(sfp_machine_header)
+	-$(LN_S) $< $@
+gthr-default.h: $(srcdir)/$(thread_header)
+	-$(LN_S) $< $@
 
 # Collect target defines and headers from config.host.
 libgcc_tm_defines = @tm_defines@
@@ -1069,10 +1089,10 @@ all: $(extra-parts)
 $(libgcc-objects) $(libgcc-s-objects) $(libgcc-eh-objects) \
 	$(libgcov-objects) \
 	$(libunwind-objects) $(libunwind-s-objects) \
-	$(EXTRA_PARTS): libgcc_tm.h
+	$(EXTRA_PARTS): $(LIBGCC_LINKS) libgcc_tm.h
 
 # Copy unwind.h to the place where gcc will look for it at build-time
-install-unwind_h-forbuild:
+install-unwind_h-forbuild: unwind.h
 	dest=$(gcc_objdir)/include/tmp$$$$-unwind.h; \
 	cp unwind.h $$dest; \
 	chmod a+r $$dest; \
