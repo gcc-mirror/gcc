@@ -1,3 +1,8 @@
+2016-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77567
+	* asan/asan_new_delete.cc: Cherry-pick upstream r282019.
+
 2016-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/77396
