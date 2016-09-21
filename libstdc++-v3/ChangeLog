@@ -1,5 +1,22 @@
 2016-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	PR libstdc++/77288
+	* include/std/optional (__is_optional_impl, __is_optional): Remove.
+	(__converts_from_optional, __assigns_from_optional): New.
+	(optional(_Up&&)): Use is_same instead of __is_optional.
+	(optional(const optional<_Up>&)): Constrain with
+	__converts_from_optional.
+	(optional(optional<_Up>&&)): Likewise.
+	(operator=(_Up&&)): Use is_same instead of __is_optional, check
+	is_same and is_scalar.
+	(operator=(const optional<_Up>&)): Constrain with
+	__converts_from_optional and __assigns_from_optional.
+	(operator=(optional<_Up>&&)): Likewise.
+	* testsuite/20_util/optional/77288.cc: New.
+	* testsuite/20_util/optional/cons/value.cc: Adjust.
+
+2016-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement LWG 2729 for tuple.
 	* include/std/tuple (_Tuple_impl(_Tuple_impl&&)):
 	Suppress conditionally.
