@@ -1,3 +1,11 @@
+2016-09-21  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (remove_child_with_prev): Clear child->die_sib.
+	(replace_child): Likewise.
+	(remove_child_TAG): Adjust.
+	(move_marked_base_types): Likewise.
+	(prune_unused_types_prune): Clear die_sib of removed children.
+
 2016-09-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/77326

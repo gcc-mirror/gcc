@@ -4892,6 +4892,7 @@ remove_child_with_prev (dw_die_ref child, dw_die_ref prev)
     prev->die_sib = child->die_sib;
   if (child->die_parent->die_child == child)
     child->die_parent->die_child = prev;
+  child->die_sib = NULL;
 }
 
 /* Replace OLD_CHILD with NEW_CHILD.  PREV must have the property that
@@ -4918,6 +4919,7 @@ replace_child (dw_die_ref old_child, dw_die_ref new_child, dw_die_ref prev)
     }
   if (old_child->die_parent->die_child == old_child)
     old_child->die_parent->die_child = new_child;
+  old_child->die_sib = NULL;
 }
 
 /* Move all children from OLD_PARENT to NEW_PARENT.  */
@@ -4948,9 +4950,9 @@ remove_child_TAG (dw_die_ref die, enum dwarf_tag tag)
 	remove_child_with_prev (c, prev);
 	c->die_parent = NULL;
 	/* Might have removed every child.  */
-	if (c == c->die_sib)
+	if (die->die_child == NULL)
 	  return;
-	c = c->die_sib;
+	c = prev->die_sib;
       }
   } while (c != die->die_child);
 }
@@ -26208,8 +26210,8 @@ prune_unused_types_prune (dw_die_ref die)
 
   c = die->die_child;
   do {
-    dw_die_ref prev = c;
-    for (c = c->die_sib; ! c->die_mark; c = c->die_sib)
+    dw_die_ref prev = c, next;
+    for (c = c->die_sib; ! c->die_mark; c = next)
       if (c == die->die_child)
 	{
 	  /* No marked children between 'prev' and the end of the list.  */
@@ -26221,7 +26223,13 @@ prune_unused_types_prune (dw_die_ref die)
 	      prev->die_sib = c->die_sib;
 	      die->die_child = prev;
 	    }
+	  c->die_sib = NULL;
 	  return;
+	}
+      else
+	{
+	  next = c->die_sib;
+	  c->die_sib = NULL;
 	}
 
     if (c != prev->die_sib)
@@ -26467,8 +26475,8 @@ move_marked_base_types (void)
 	  remove_child_with_prev (c, prev);
 	  /* As base types got marked, there must be at least
 	     one node other than DW_TAG_base_type.  */
-	  gcc_assert (c != c->die_sib);
-	  c = c->die_sib;
+	  gcc_assert (die->die_child != NULL);
+	  c = prev->die_sib;
 	}
     }
   while (c != die->die_child);
