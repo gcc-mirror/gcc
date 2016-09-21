@@ -1,3 +1,11 @@
+2016-09-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/float128-tg-3.c, gcc.dg/torture/float128x-tg-3.c,
+	gcc.dg/torture/float16-tg-3.c, gcc.dg/torture/float32-tg-3.c,
+	gcc.dg/torture/float32x-tg-3.c, gcc.dg/torture/float64-tg-3.c,
+	gcc.dg/torture/float64x-tg-3.c, gcc.dg/torture/floatn-tg-3.h: New
+	tests.
+
 2016-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/unsorted/dump-noaddr.x: Remove debug statements.
