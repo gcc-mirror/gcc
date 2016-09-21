@@ -24,6 +24,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* For rand_s.  */
+#define _CRT_RAND_S
+
 #include "libgfortran.h"
 #include <gthr.h>
 #include <string.h>
@@ -43,6 +46,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef __MINGW32__
 #define HAVE_GETPID 1
 #include <process.h>
+#include <_mingw.h> /* For __MINGW64_VERSION_MAJOR  */
 #endif
 
 extern void random_r4 (GFC_REAL_4 *);
@@ -281,7 +285,7 @@ jump (xorshift1024star_state* rs)
 #define Q 127773 /* M / A (To avoid overflow on A * seed) */
 #define R 2836   /* M % A (To avoid overflow on A * seed) */
 
-static uint32_t
+__attribute__((unused)) static uint32_t
 lcg_parkmiller(uint32_t seed)
 {
     uint32_t hi = seed / Q;
@@ -297,14 +301,21 @@ lcg_parkmiller(uint32_t seed)
 #undef Q
 #undef R
 
+
 /* Get some random bytes from the operating system in order to seed
    the PRNG.  */
 
 static int
 getosrandom (void *buf, size_t buflen)
 {
-  /* TODO: On Windows one could use CryptGenRandom
-
+  /* rand_s is available in MinGW-w64 but not plain MinGW.  */
+#ifdef __MINGW64_VERSION_MAJOR
+  unsigned int* b = buf;
+  for (unsigned i = 0; i < buflen / sizeof (unsigned int); i++)
+    rand_s (&b[i]);
+  return buflen;
+#else
+  /*
      TODO: When glibc adds a wrapper for the getrandom() system call
      on Linux, one could use that.
 
@@ -333,12 +344,13 @@ getosrandom (void *buf, size_t buflen)
   seed ^= pid;
 #endif
   uint32_t* ub = buf;
-  for (size_t i = 0; i < buflen; i++)
+  for (size_t i = 0; i < buflen / sizeof (uint32_t); i++)
     {
       ub[i] = seed;
       seed = lcg_parkmiller (seed);
     }
   return buflen;
+#endif /* __MINGW64_VERSION_MAJOR  */
 }
 
 
