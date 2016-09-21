@@ -3525,8 +3525,8 @@ and @code{addr_diff_vec}, where @code{JUMP_LABEL} is @code{NULL_RTX}
 and the only way to find the labels is to scan the entire body of the
 insn.
 
-Return insns count as jumps, but since they do not refer to any
-labels, their @code{JUMP_LABEL} is @code{NULL_RTX}.
+Return insns count as jumps, but their @code{JUMP_LABEL} is @code{RETURN}
+or @code{SIMPLE_RETURN}.
 
 @findex call_insn
 @item call_insn
