@@ -1,3 +1,9 @@
+2016-09-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (c_common_truthvalue_conversion): Inhibit
+	Wint-in-bool-context warning with from_macro_definition_at.
+	Mention the expression will always evaluate to true.
+
 2016-09-21  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/77676
