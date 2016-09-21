@@ -256,17 +256,21 @@ int main()
     ox4 = oi;
   }
   {
+    std::optional<int> oi = std::optional<short>();
+    VERIFY(!bool(oi));
+    std::optional<std::string> os = std::optional<const char*>();
+    VERIFY(!bool(os));
     std::optional<std::optional<int>> ooi = std::optional<int>();
-    VERIFY(!bool(ooi));
+    VERIFY(bool(ooi));
     ooi = std::optional<int>();
-    VERIFY(!bool(ooi));
+    VERIFY(bool(ooi));
     ooi = std::optional<int>(42);
     VERIFY(bool(ooi));
     VERIFY(bool(*ooi));
     std::optional<std::optional<int>> ooi2 = std::optional<short>();
-    VERIFY(!bool(ooi2));
+    VERIFY(bool(ooi2));
     ooi2 = std::optional<short>();
-    VERIFY(!bool(ooi2));
+    VERIFY(bool(ooi2));
     ooi2 = std::optional<short>(6);
     VERIFY(bool(ooi2));
     VERIFY(bool(*ooi2));
