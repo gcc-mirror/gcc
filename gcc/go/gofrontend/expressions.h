@@ -133,7 +133,6 @@ class Expression
     EXPRESSION_INTERFACE_VALUE,
     EXPRESSION_INTERFACE_MTABLE,
     EXPRESSION_STRUCT_FIELD_OFFSET,
-    EXPRESSION_MAP_DESCRIPTOR,
     EXPRESSION_LABEL_ADDR,
     EXPRESSION_CONDITIONAL,
     EXPRESSION_COMPOUND
@@ -466,11 +465,6 @@ class Expression
   // location parameter.
   static Expression*
   make_struct_field_offset(Struct_type*, const Struct_field*);
-
-  // Make an expression which evaluates to the address of the map
-  // descriptor for TYPE.
-  static Expression*
-  make_map_descriptor(Map_type* type, Location);
 
   // Make an expression which evaluates to the address of an unnamed
   // label.
@@ -2449,13 +2443,8 @@ class Index_expression : public Parser_expression
   Index_expression(Expression* left, Expression* start, Expression* end,
                    Expression* cap, Location location)
     : Parser_expression(EXPRESSION_INDEX, location),
-      left_(left), start_(start), end_(end), cap_(cap), is_lvalue_(false)
+      left_(left), start_(start), end_(end), cap_(cap)
   { }
-
-  // Record that this expression is an lvalue.
-  void
-  set_is_lvalue()
-  { this->is_lvalue_ = true; }
 
   // Dump an index expression, i.e. an expression of the form
   // expr[expr], expr[expr:expr], or expr[expr:expr:expr] to a dump context.
@@ -2509,9 +2498,6 @@ class Index_expression : public Parser_expression
   // default capacity, non-NULL for indices and slices that specify the
   // capacity.
   Expression* cap_;
-  // Whether this is being used as an l-value.  We set this during the
-  // parse because map index expressions need to know.
-  bool is_lvalue_;
 };
 
 // An array index.  This is used for both indexing and slicing.
@@ -2677,8 +2663,7 @@ class Map_index_expression : public Expression
   Map_index_expression(Expression* map, Expression* index,
 		       Location location)
     : Expression(EXPRESSION_MAP_INDEX, location),
-      map_(map), index_(index), is_lvalue_(false),
-      is_in_tuple_assignment_(false), value_pointer_(NULL)
+      map_(map), index_(index), value_pointer_(NULL)
   { }
 
   // Return the map.
@@ -2703,31 +2688,12 @@ class Map_index_expression : public Expression
   Map_type*
   get_map_type() const;
 
-  // Record that this map expression is an lvalue.  The difference is
-  // that an lvalue always inserts the key.
-  void
-  set_is_lvalue()
-  { this->is_lvalue_ = true; }
-
-  // Return whether this map expression occurs in an assignment to a
-  // pair of values.
-  bool
-  is_in_tuple_assignment() const
-  { return this->is_in_tuple_assignment_; }
-
-  // Record that this map expression occurs in an assignment to a pair
-  // of values.
-  void
-  set_is_in_tuple_assignment()
-  { this->is_in_tuple_assignment_ = true; }
-
-  // Return an expression for the map index.  This returns an expression which
-  // evaluates to a pointer to a value in the map.  If INSERT is true,
-  // the key will be inserted if not present, and the value pointer
-  // will be zero initialized.  If INSERT is false, and the key is not
-  // present in the map, the pointer will be NULL.
+  // Return an expression for the map index.  This returns an
+  // expression that evaluates to a pointer to a value in the map.  If
+  // the key is not present in the map, this will return a pointer to
+  // the zero value.
   Expression*
-  get_value_pointer(bool insert);
+  get_value_pointer(Gogo*);
 
  protected:
   int
@@ -2773,10 +2739,6 @@ class Map_index_expression : public Expression
   Expression* map_;
   // The index.
   Expression* index_;
-  // Whether this is an lvalue.
-  bool is_lvalue_;
-  // Whether this is in a tuple assignment to a pair of values.
-  bool is_in_tuple_assignment_;
   // A pointer to the value at this index.
   Expression* value_pointer_;
 };

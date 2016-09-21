@@ -6998,13 +6998,14 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	      Statement::make_temporary(mt->key_type(), args->back(), loc);
 	    inserter->insert(key_temp);
 
-	    Expression* e1 = Expression::make_temporary_reference(map_temp,
+	    Expression* e1 = Expression::make_type_descriptor(mt, loc);
+	    Expression* e2 = Expression::make_temporary_reference(map_temp,
 								  loc);
-	    Expression* e2 = Expression::make_temporary_reference(key_temp,
+	    Expression* e3 = Expression::make_temporary_reference(key_temp,
 								  loc);
-	    e2 = Expression::make_unary(OPERATOR_AND, e2, loc);
+	    e3 = Expression::make_unary(OPERATOR_AND, e3, loc);
 	    return Runtime::make_call(Runtime::MAPDELETE, this->location(),
-				      2, e1, e2);
+				      3, e1, e2, e3);
 	  }
       }
       break;
@@ -7064,6 +7065,18 @@ Builtin_call_expression::do_flatten(Gogo*, Named_object*,
 	      inserter->insert(temp);
 	      *pa = Expression::make_temporary_reference(temp, loc);
 	    }
+	}
+
+    case BUILTIN_LEN:
+      Expression_list::iterator pa = this->args()->begin();
+      if (!(*pa)->is_variable()
+	  && ((*pa)->type()->map_type() != NULL
+	      || (*pa)->type()->channel_type() != NULL))
+	{
+	  Temporary_statement* temp =
+	    Statement::make_temporary(NULL, *pa, loc);
+	  inserter->insert(temp);
+	  *pa = Expression::make_temporary_reference(temp, loc);
 	}
     }
 
@@ -7174,13 +7187,7 @@ Builtin_call_expression::lower_make()
     }
 
   Location type_loc = first_arg->location();
-  Expression* type_arg;
-  if (is_slice || is_chan)
-    type_arg = Expression::make_type_descriptor(type, type_loc);
-  else if (is_map)
-    type_arg = Expression::make_map_descriptor(type->map_type(), type_loc);
-  else
-    go_unreachable();
+  Expression* type_arg = Expression::make_type_descriptor(type, type_loc);
 
   Expression* call;
   if (is_slice)
@@ -7197,10 +7204,9 @@ Builtin_call_expression::lower_make()
 				  loc, 3, type_arg, len_arg, cap_arg);
     }
   else if (is_map)
-    call = Runtime::make_call((have_big_args
-			       ? Runtime::MAKEMAPBIG
-			       : Runtime::MAKEMAP),
-			      loc, 2, type_arg, len_arg);
+    call = Runtime::make_call(Runtime::MAKEMAP, loc, 4, type_arg, len_arg,
+			      Expression::make_nil(loc),
+			      Expression::make_nil(loc));
   else if (is_chan)
     call = Runtime::make_call((have_big_args
 			       ? Runtime::MAKECHANBIG
@@ -8250,10 +8256,23 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 	        val = arg_type->array_type()->get_length(gogo, arg);
 		this->seen_ = false;
 	      }
-	    else if (arg_type->map_type() != NULL)
-              val = Runtime::make_call(Runtime::MAP_LEN, location, 1, arg);
-	    else if (arg_type->channel_type() != NULL)
-              val = Runtime::make_call(Runtime::CHAN_LEN, location, 1, arg);
+	    else if (arg_type->map_type() != NULL
+		     || arg_type->channel_type() != NULL)
+	      {
+		// The first field is the length.  If the pointer is
+		// nil, the length is zero.
+		Type* pint_type = Type::make_pointer_type(int_type);
+		arg = Expression::make_unsafe_cast(pint_type, arg, location);
+		Expression* nil = Expression::make_nil(location);
+		nil = Expression::make_cast(pint_type, nil, location);
+		Expression* cmp = Expression::make_binary(OPERATOR_EQEQ,
+							  arg, nil, location);
+		Expression* zero = Expression::make_integer_ul(0, int_type,
+							       location);
+		Expression* indir = Expression::make_unary(OPERATOR_MULT,
+							   arg, location);
+		val = Expression::make_conditional(cmp, zero, indir, location);
+	      }
 	    else
 	      go_unreachable();
 	  }
@@ -9866,11 +9885,7 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 	  error_at(location, "invalid slice of map");
 	  return Expression::make_error(location);
 	}
-      Map_index_expression* ret = Expression::make_map_index(left, start,
-							     location);
-      if (this->is_lvalue_)
-	ret->set_is_lvalue();
-      return ret;
+      return Expression::make_map_index(left, start, location);
     }
   else
     {
@@ -10666,7 +10681,7 @@ Expression::make_string_index(Expression* string, Expression* start,
 Map_type*
 Map_index_expression::get_map_type() const
 {
-  Map_type* mt = this->map_->type()->deref()->map_type();
+  Map_type* mt = this->map_->type()->map_type();
   if (mt == NULL)
     go_assert(saw_errors());
   return mt;
@@ -10724,7 +10739,7 @@ Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
     }
 
   if (this->value_pointer_ == NULL)
-    this->get_value_pointer(this->is_lvalue_);
+    this->get_value_pointer(gogo);
   if (this->value_pointer_->is_error_expression()
       || this->value_pointer_->type()->is_error_type())
     return Expression::make_error(loc);
@@ -10747,14 +10762,7 @@ Map_index_expression::do_type()
   Map_type* mt = this->get_map_type();
   if (mt == NULL)
     return Type::make_error_type();
-  Type* type = mt->val_type();
-  // If this map index is in a tuple assignment, we actually return a
-  // pointer to the value type.  Tuple_map_assignment_statement is
-  // responsible for handling this correctly.  We need to get the type
-  // right in case this gets assigned to a temporary variable.
-  if (this->is_in_tuple_assignment_)
-    type = Type::make_pointer_type(type);
-  return type;
+  return mt->val_type();
 }
 
 // Fix the type of a map index.
@@ -10806,47 +10814,17 @@ Map_index_expression::do_get_backend(Translate_context* context)
   go_assert(this->value_pointer_ != NULL
             && this->value_pointer_->is_variable());
 
-  Bexpression* ret;
-  if (this->is_lvalue_)
-    {
-      Expression* val =
-          Expression::make_unary(OPERATOR_MULT, this->value_pointer_,
-                                 this->location());
-      ret = val->get_backend(context);
-    }
-  else if (this->is_in_tuple_assignment_)
-    {
-      // Tuple_map_assignment_statement is responsible for using this
-      // appropriately.
-      ret = this->value_pointer_->get_backend(context);
-    }
-  else
-    {
-      Location loc = this->location();
-
-      Expression* nil_check =
-          Expression::make_binary(OPERATOR_EQEQ, this->value_pointer_,
-                                  Expression::make_nil(loc), loc);
-      Bexpression* bnil_check = nil_check->get_backend(context);
-      Expression* val =
-          Expression::make_unary(OPERATOR_MULT, this->value_pointer_, loc);
-      Bexpression* bval = val->get_backend(context);
-
-      Gogo* gogo = context->gogo();
-      Btype* val_btype = type->val_type()->get_backend(gogo);
-      Bexpression* val_zero = gogo->backend()->zero_expression(val_btype);
-      ret = gogo->backend()->conditional_expression(val_btype, bnil_check,
-                                                    val_zero, bval, loc);
-    }
-  return ret;
+  Expression* val = Expression::make_unary(OPERATOR_MULT, this->value_pointer_,
+					   this->location());
+  return val->get_backend(context);
 }
 
-// Get an expression for the map index.  This returns an expression which
-// evaluates to a pointer to a value.  The pointer will be NULL if the key is
-// not in the map.
+// Get an expression for the map index.  This returns an expression
+// that evaluates to a pointer to a value.  If the key is not in the
+// map, the pointer will point to a zero value.
 
 Expression*
-Map_index_expression::get_value_pointer(bool insert)
+Map_index_expression::get_value_pointer(Gogo* gogo)
 {
   if (this->value_pointer_ == NULL)
     {
@@ -10859,21 +10837,32 @@ Map_index_expression::get_value_pointer(bool insert)
 
       Location loc = this->location();
       Expression* map_ref = this->map_;
-      if (this->map_->type()->points_to() != NULL)
-        map_ref = Expression::make_unary(OPERATOR_MULT, map_ref, loc);
 
-      Expression* index_ptr = Expression::make_unary(OPERATOR_AND, this->index_,
+      Expression* index_ptr = Expression::make_unary(OPERATOR_AND,
+						     this->index_,
                                                      loc);
-      Expression* map_index =
-          Runtime::make_call(Runtime::MAP_INDEX, loc, 3,
-                             map_ref, index_ptr,
-                             Expression::make_boolean(insert, loc));
+
+      Expression* zero = type->fat_zero_value(gogo);
+
+      Expression* map_index;
+
+      if (zero == NULL)
+	map_index =
+          Runtime::make_call(Runtime::MAPACCESS1, loc, 3,
+			     Expression::make_type_descriptor(type, loc),
+                             map_ref, index_ptr);
+      else
+	map_index =
+	  Runtime::make_call(Runtime::MAPACCESS1_FAT, loc, 4,
+			     Expression::make_type_descriptor(type, loc),
+			     map_ref, index_ptr, zero);
 
       Type* val_type = type->val_type();
       this->value_pointer_ =
           Expression::make_unsafe_cast(Type::make_pointer_type(val_type),
                                        map_index, this->location());
     }
+
   return this->value_pointer_;
 }
 
@@ -12583,7 +12572,7 @@ Map_construction_expression::do_get_backend(Translate_context* context)
           Type::make_builtin_struct_type(2,
                                          "__key", mt->key_type(),
                                          "__val", mt->val_type());
-  Expression* descriptor = Expression::make_map_descriptor(mt, loc);
+  Expression* descriptor = Expression::make_type_descriptor(mt, loc);
 
   Type* uintptr_t = Type::lookup_integer_type("uintptr");
   Expression* count = Expression::make_integer_ul(i, uintptr_t, loc);
@@ -12596,12 +12585,10 @@ Map_construction_expression::do_get_backend(Translate_context* context)
       this->element_type_->find_local_field("__val", &field_index);
   Expression* val_offset =
       Expression::make_struct_field_offset(this->element_type_, valfield);
-  Expression* val_size =
-      Expression::make_type_info(mt->val_type(), TYPE_INFO_SIZE);
 
   Expression* map_ctor =
-      Runtime::make_call(Runtime::CONSTRUCT_MAP, loc, 6, descriptor, count,
-                         entry_size, val_offset, val_size, ventries);
+      Runtime::make_call(Runtime::CONSTRUCT_MAP, loc, 5, descriptor, count,
+                         entry_size, val_offset, ventries);
   return map_ctor->get_backend(context);
 }
 
@@ -14606,64 +14593,6 @@ Expression::make_struct_field_offset(Struct_type* type,
 				     const Struct_field* field)
 {
   return new Struct_field_offset_expression(type, field);
-}
-
-// An expression which evaluates to a pointer to the map descriptor of
-// a map type.
-
-class Map_descriptor_expression : public Expression
-{
- public:
-  Map_descriptor_expression(Map_type* type, Location location)
-    : Expression(EXPRESSION_MAP_DESCRIPTOR, location),
-      type_(type)
-  { }
-
- protected:
-  Type*
-  do_type()
-  { return Type::make_pointer_type(Map_type::make_map_descriptor_type()); }
-
-  void
-  do_determine_type(const Type_context*)
-  { }
-
-  Expression*
-  do_copy()
-  { return this; }
-
-  Bexpression*
-  do_get_backend(Translate_context* context)
-  {
-    return this->type_->map_descriptor_pointer(context->gogo(),
-					       this->location());
-  }
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
- 
- private:
-  // The type for which this is the descriptor.
-  Map_type* type_;
-};
-
-// Dump ast representation for a map descriptor expression.
-
-void
-Map_descriptor_expression::do_dump_expression(
-    Ast_dump_context* ast_dump_context) const
-{
-  ast_dump_context->ostream() << "map_descriptor(";
-  ast_dump_context->dump_type(this->type_);
-  ast_dump_context->ostream() << ")";
-}
-
-// Make a map descriptor expression.
-
-Expression*
-Expression::make_map_descriptor(Map_type* type, Location location)
-{
-  return new Map_descriptor_expression(type, location);
 }
 
 // An expression which evaluates to the address of an unnamed label.

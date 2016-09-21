@@ -39,10 +39,6 @@ class Runtime
   static void
   convert_types(Gogo*);
 
-  // Return the type used for iterations over maps.
-  static Type*
-  map_iteration_type();
-
   // Return the runtime code for a named builtin function.
   static Function
   name_to_code(const std::string&);

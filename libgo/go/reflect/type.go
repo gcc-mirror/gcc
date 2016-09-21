@@ -16,7 +16,6 @@
 package reflect
 
 import (
-	"runtime"
 	"strconv"
 	"sync"
 	"unsafe"
@@ -255,7 +254,7 @@ type rtype struct {
 	size       uintptr
 	hash       uint32 // hash of type; avoids computation in hash tables
 
-	hashfn  func(unsafe.Pointer, uintptr) uintptr              // hash function
+	hashfn  func(unsafe.Pointer, uintptr, uintptr) uintptr     // hash function
 	equalfn func(unsafe.Pointer, unsafe.Pointer, uintptr) bool // equality function
 
 	gc            unsafe.Pointer // garbage collection data
@@ -330,9 +329,18 @@ type interfaceType struct {
 
 // mapType represents a map type.
 type mapType struct {
-	rtype `reflect:"map"`
-	key   *rtype // map key type
-	elem  *rtype // map element (value) type
+	rtype         `reflect:"map"`
+	key           *rtype // map key type
+	elem          *rtype // map element (value) type
+	bucket        *rtype // internal bucket structure
+	hmap          *rtype // internal map header
+	keysize       uint8  // size of key slot
+	indirectkey   uint8  // store ptr to key instead of key itself
+	valuesize     uint8  // size of value slot
+	indirectvalue uint8  // store ptr to value instead of value itself
+	bucketsize    uint16 // size of bucket
+	reflexivekey  bool   // true if k==k for all keys
+	needkeyupdate bool   // true if we need to update key on an overwrite
 }
 
 // ptrType represents a pointer type.
@@ -1606,20 +1614,25 @@ func MapOf(key, elem Type) Type {
 	mt.elem = etyp
 	mt.uncommonType = nil
 	mt.ptrToThis = nil
-	// mt.gc = unsafe.Pointer(&ptrGC{
-	// 	width:  unsafe.Sizeof(uintptr(0)),
-	// 	op:     _GC_PTR,
-	// 	off:    0,
-	// 	elemgc: nil,
-	// 	end:    _GC_END,
-	// })
 
-	// TODO(cmang): Generate GC data for Map elements.
-	mt.gc = unsafe.Pointer(&ptrDataGCProg)
-
-	// INCORRECT. Uncomment to check that TestMapOfGC and TestMapOfGCValues
-	// fail when mt.gc is wrong.
-	//mt.gc = unsafe.Pointer(&badGC{width: mt.size, end: _GC_END})
+	mt.bucket = bucketOf(ktyp, etyp)
+	if ktyp.size > maxKeySize {
+		mt.keysize = uint8(ptrSize)
+		mt.indirectkey = 1
+	} else {
+		mt.keysize = uint8(ktyp.size)
+		mt.indirectkey = 0
+	}
+	if etyp.size > maxValSize {
+		mt.valuesize = uint8(ptrSize)
+		mt.indirectvalue = 1
+	} else {
+		mt.valuesize = uint8(etyp.size)
+		mt.indirectvalue = 0
+	}
+	mt.bucketsize = uint16(mt.bucket.size)
+	mt.reflexivekey = isReflexive(ktyp)
+	mt.needkeyupdate = needKeyUpdate(ktyp)
 
 	return cachePut(ckey, &mt.rtype)
 }
@@ -1824,72 +1837,60 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 	// Note that since the key and value are known to be <= 128 bytes,
 	// they're guaranteed to have bitmaps instead of GC programs.
 	// var gcdata *byte
-	var ptrdata uintptr
-	var overflowPad uintptr
+	// var ptrdata uintptr
 
-	// On NaCl, pad if needed to make overflow end at the proper struct alignment.
-	// On other systems, align > ptrSize is not possible.
-	if runtime.GOARCH == "amd64p32" && (ktyp.align > ptrSize || etyp.align > ptrSize) {
-		overflowPad = ptrSize
+	size := bucketSize
+	size = align(size, uintptr(ktyp.fieldAlign))
+	size += bucketSize * ktyp.size
+	size = align(size, uintptr(etyp.fieldAlign))
+	size += bucketSize * etyp.size
+
+	maxAlign := uintptr(ktyp.fieldAlign)
+	if maxAlign < uintptr(etyp.fieldAlign) {
+		maxAlign = uintptr(etyp.fieldAlign)
 	}
-	size := bucketSize*(1+ktyp.size+etyp.size) + overflowPad + ptrSize
-	if size&uintptr(ktyp.align-1) != 0 || size&uintptr(etyp.align-1) != 0 {
-		panic("reflect: bad size computation in MapOf")
+	if maxAlign > ptrSize {
+		size = align(size, maxAlign)
+		size += align(ptrSize, maxAlign) - ptrSize
 	}
 
+	ovoff := size
+	size += ptrSize
+	if maxAlign < ptrSize {
+		maxAlign = ptrSize
+	}
+
+	var gcPtr unsafe.Pointer
 	if kind != kindNoPointers {
-		nptr := (bucketSize*(1+ktyp.size+etyp.size) + ptrSize) / ptrSize
-		mask := make([]byte, (nptr+7)/8)
-		base := bucketSize / ptrSize
-
+		gc := []uintptr{size}
+		base := bucketSize
+		base = align(base, uintptr(ktyp.fieldAlign))
 		if ktyp.kind&kindNoPointers == 0 {
-			if ktyp.kind&kindGCProg != 0 {
-				panic("reflect: unexpected GC program in MapOf")
-			}
-			kmask := (*[16]byte)(unsafe.Pointer( /*ktyp.gcdata*/ nil))
-			for i := uintptr(0); i < ktyp.size/ptrSize; i++ {
-				if (kmask[i/8]>>(i%8))&1 != 0 {
-					for j := uintptr(0); j < bucketSize; j++ {
-						word := base + j*ktyp.size/ptrSize + i
-						mask[word/8] |= 1 << (word % 8)
-					}
-				}
-			}
+			gc = append(gc, _GC_ARRAY_START, base, bucketSize, ktyp.size)
+			gc = appendGCProgram(gc, ktyp, 0)
+			gc = append(gc, _GC_ARRAY_NEXT)
 		}
-		base += bucketSize * ktyp.size / ptrSize
-
+		base += ktyp.size * bucketSize
+		base = align(base, uintptr(etyp.fieldAlign))
 		if etyp.kind&kindNoPointers == 0 {
-			if etyp.kind&kindGCProg != 0 {
-				panic("reflect: unexpected GC program in MapOf")
-			}
-			emask := (*[16]byte)(unsafe.Pointer( /*etyp.gcdata*/ nil))
-			for i := uintptr(0); i < etyp.size/ptrSize; i++ {
-				if (emask[i/8]>>(i%8))&1 != 0 {
-					for j := uintptr(0); j < bucketSize; j++ {
-						word := base + j*etyp.size/ptrSize + i
-						mask[word/8] |= 1 << (word % 8)
-					}
-				}
-			}
+			gc = append(gc, _GC_ARRAY_START, base, bucketSize, etyp.size)
+			gc = appendGCProgram(gc, etyp, 0)
+			gc = append(gc, _GC_ARRAY_NEXT)
 		}
-		base += bucketSize * etyp.size / ptrSize
-		base += overflowPad / ptrSize
-
-		word := base
-		mask[word/8] |= 1 << (word % 8)
-		// gcdata = &mask[0]
-		ptrdata = (word + 1) * ptrSize
-
-		// overflow word must be last
-		if ptrdata != size {
-			panic("reflect: bad layout computation in MapOf")
-		}
+		gc = append(gc, _GC_APTR, ovoff, _GC_END)
+		gcPtr = unsafe.Pointer(&gc[0])
+	} else {
+		// No pointers in bucket.
+		gc := [...]uintptr{size, _GC_END}
+		gcPtr = unsafe.Pointer(&gc[0])
 	}
 
 	b := new(rtype)
-	// b.size = gc.size
-	// b.gc[0], _ = gc.finalize()
-	b.kind |= kindGCProg
+	b.align = int8(maxAlign)
+	b.fieldAlign = uint8(maxAlign)
+	b.size = size
+	b.kind = kind
+	b.gc = gcPtr
 	s := "bucket(" + *ktyp.string + "," + *etyp.string + ")"
 	b.string = &s
 	return b
@@ -2202,14 +2203,14 @@ func StructOf(fields []StructField) Type {
 		typ.gc = unsafe.Pointer(&gc[0])
 	}
 
-	typ.hashfn = func(p unsafe.Pointer, size uintptr) uintptr {
-		ret := uintptr(0)
+	typ.hashfn = func(p unsafe.Pointer, seed, size uintptr) uintptr {
+		ret := seed
 		for i, ft := range typ.fields {
 			if i > 0 {
 				ret *= 33
 			}
 			o := unsafe.Pointer(uintptr(p) + ft.offset)
-			ret += ft.typ.hashfn(o, ft.typ.size)
+			ret = ft.typ.hashfn(o, ret, ft.typ.size)
 		}
 		return ret
 	}
@@ -2347,11 +2348,11 @@ func ArrayOf(count int, elem Type) Type {
 
 	array.kind &^= kindDirectIface
 
-	array.hashfn = func(p unsafe.Pointer, size uintptr) uintptr {
-		ret := uintptr(0)
+	array.hashfn = func(p unsafe.Pointer, seed, size uintptr) uintptr {
+		ret := seed
 		for i := 0; i < count; i++ {
 			ret *= 33
-			ret += typ.hashfn(p, typ.size)
+			ret = typ.hashfn(p, ret, typ.size)
 			p = unsafe.Pointer(uintptr(p) + typ.size)
 		}
 		return ret

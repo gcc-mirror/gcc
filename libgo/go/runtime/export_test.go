@@ -90,7 +90,7 @@ func GCMask(x interface{}) (ret []byte) {
 //var IfaceHash = ifaceHash
 //var MemclrBytes = memclrBytes
 
-// var HashLoad = &hashLoad
+var HashLoad = &hashLoad
 
 // entry point for testing
 //func GostringW(w []uint16) (s string) {

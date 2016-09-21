@@ -8,7 +8,7 @@
 //
 // The MCentral doesn't actually contain the list of free objects; the MSpan does.
 // Each MCentral is two lists of MSpans: those with free objects (c->nonempty)
-// and those that are completely allocated (c->empty).
+// and those that are completely allocated (c->mempty).
 //
 // TODO(rsc): tcmalloc uses a "transfer cache" to split the list
 // into sections of class_to_transfercount[sizeclass] objects
@@ -28,7 +28,7 @@ runtime_MCentral_Init(MCentral *c, int32 sizeclass)
 {
 	c->sizeclass = sizeclass;
 	runtime_MSpanList_Init(&c->nonempty);
-	runtime_MSpanList_Init(&c->empty);
+	runtime_MSpanList_Init(&c->mempty);
 }
 
 // Allocate a span to use in an MCache.
@@ -58,13 +58,13 @@ retry:
 		goto havespan;
 	}
 
-	for(s = c->empty.next; s != &c->empty; s = s->next) {
+	for(s = c->mempty.next; s != &c->mempty; s = s->next) {
 		if(s->sweepgen == sg-2 && runtime_cas(&s->sweepgen, sg-2, sg-1)) {
 			// we have an empty span that requires sweeping,
 			// sweep it and see if we can free some space in it
 			runtime_MSpanList_Remove(s);
 			// swept spans are at the end of the list
-			runtime_MSpanList_InsertBack(&c->empty, s);
+			runtime_MSpanList_InsertBack(&c->mempty, s);
 			runtime_unlock(c);
 			runtime_MSpan_Sweep(s);
 			runtime_lock(c);
@@ -96,7 +96,7 @@ havespan:
 		runtime_throw("freelist empty");
 	c->nfree -= n;
 	runtime_MSpanList_Remove(s);
-	runtime_MSpanList_InsertBack(&c->empty, s);
+	runtime_MSpanList_InsertBack(&c->mempty, s);
 	s->incache = true;
 	runtime_unlock(c);
 	return s;

@@ -85,53 +85,50 @@ DEF_GO_RUNTIME(MAKESLICE2BIG, "__go_make_slice2_big", P3(TYPE, UINT64, UINT64),
 
 
 // Make a map.
-DEF_GO_RUNTIME(MAKEMAP, "__go_new_map", P2(MAPDESCRIPTOR, UINTPTR), R1(MAP))
-DEF_GO_RUNTIME(MAKEMAPBIG, "__go_new_map_big", P2(MAPDESCRIPTOR, UINT64),
+DEF_GO_RUNTIME(MAKEMAP, "runtime.makemap", P4(TYPE, INT64, POINTER, POINTER),
 	       R1(MAP))
 
 // Build a map from a composite literal.
 DEF_GO_RUNTIME(CONSTRUCT_MAP, "__go_construct_map",
-	       P6(POINTER, UINTPTR, UINTPTR, UINTPTR, UINTPTR, POINTER),
+	       P5(POINTER, UINTPTR, UINTPTR, UINTPTR, POINTER),
 	       R1(MAP))
 
-// Get the length of a map (the number of entries).
-DEF_GO_RUNTIME(MAP_LEN, "__go_map_len", P1(MAP), R1(INT))
-
 // Look up a key in a map.
-DEF_GO_RUNTIME(MAP_INDEX, "__go_map_index", P3(MAP, POINTER, BOOL),
+DEF_GO_RUNTIME(MAPACCESS1, "runtime.mapaccess1", P3(TYPE, MAP, POINTER),
 	       R1(POINTER))
 
-// Look up a key in a map returning whether it is present.
-DEF_GO_RUNTIME(MAPACCESS2, "runtime.mapaccess2",
-	       P4(TYPE, MAP, POINTER, POINTER), R1(BOOL))
+// Look up a key in a map when the value is large.
+DEF_GO_RUNTIME(MAPACCESS1_FAT, "runtime.mapaccess1_fat",
+	       P4(TYPE, MAP, POINTER, POINTER), R1(POINTER))
 
-// Tuple assignment to a map element.
-DEF_GO_RUNTIME(MAPASSIGN2, "runtime.mapassign2",
-	       P4(MAP, POINTER, POINTER, BOOL), R0())
+// Look up a key in a map returning the value and whether it is
+// present.
+DEF_GO_RUNTIME(MAPACCESS2, "runtime.mapaccess2", P3(TYPE, MAP, POINTER),
+	       R2(POINTER, BOOL))
+
+// Look up a key in a map, returning the value and whether it is
+// present, when the value is large.
+DEF_GO_RUNTIME(MAPACCESS2_FAT, "runtime.mapaccess2_fat",
+	       P4(TYPE, MAP, POINTER, POINTER), R2(POINTER, BOOL))
+
+// Assignment to a key in a map.
+DEF_GO_RUNTIME(MAPASSIGN, "runtime.mapassign1",
+	       P4(TYPE, MAP, POINTER, POINTER), R0())
 
 // Delete a key from a map.
-DEF_GO_RUNTIME(MAPDELETE, "runtime.mapdelete", P2(MAP, POINTER), R0())
+DEF_GO_RUNTIME(MAPDELETE, "runtime.mapdelete", P3(TYPE, MAP, POINTER), R0())
 
 // Begin a range over a map.
-DEF_GO_RUNTIME(MAPITERINIT, "runtime.mapiterinit", P2(MAP, MAPITER), R0())
-
-// Range over a map, returning the next key.
-DEF_GO_RUNTIME(MAPITER1, "runtime.mapiter1", P2(MAPITER, POINTER), R0())
-
-// Range over a map, returning the next key and value.
-DEF_GO_RUNTIME(MAPITER2, "runtime.mapiter2", P3(MAPITER, POINTER, POINTER),
+DEF_GO_RUNTIME(MAPITERINIT, "runtime.mapiterinit", P3(TYPE, MAP, POINTER),
 	       R0())
 
 // Range over a map, moving to the next map entry.
-DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(MAPITER), R0())
+DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(POINTER), R0())
 
 
 // Make a channel.
 DEF_GO_RUNTIME(MAKECHAN, "__go_new_channel", P2(TYPE, UINTPTR), R1(CHAN))
 DEF_GO_RUNTIME(MAKECHANBIG, "__go_new_channel_big", P2(TYPE, UINT64), R1(CHAN))
-
-// Get the length of a channel (the number of unread values).
-DEF_GO_RUNTIME(CHAN_LEN, "__go_chan_len", P1(CHAN), R1(INT))
 
 // Get the capacity of a channel (the size of the buffer).
 DEF_GO_RUNTIME(CHAN_CAP, "__go_chan_cap", P1(CHAN), R1(INT))

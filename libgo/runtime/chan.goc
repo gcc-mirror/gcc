@@ -1064,12 +1064,6 @@ func reflect.chanlen(c *Hchan) (len int) {
 		len = c->qcount;
 }
 
-intgo
-__go_chan_len(Hchan *c)
-{
-	return reflect_chanlen(c);
-}
-
 func reflect.chancap(c *Hchan) (cap int) {
 	if(c == nil)
 		cap = 0;

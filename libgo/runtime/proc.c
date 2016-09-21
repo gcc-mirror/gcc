@@ -546,9 +546,9 @@ static struct __go_channel_type chan_bool_type_descriptor =
       /* __hash */
       0, /* This value doesn't matter.  */
       /* __hashfn */
-      &__go_type_hash_error_descriptor,
+      NULL,
       /* __equalfn */
-      &__go_type_equal_error_descriptor,
+      NULL,
       /* __gc */
       NULL, /* This value doesn't matter */
       /* __reflection */
@@ -2753,7 +2753,7 @@ static void
 procresize(int32 new)
 {
 	int32 i, old;
-	bool empty;
+	bool pempty;
 	G *gp;
 	P *p;
 
@@ -2781,14 +2781,14 @@ procresize(int32 new)
 	// collect all runnable goroutines in global queue preserving FIFO order
 	// FIFO order is required to ensure fairness even during frequent GCs
 	// see http://golang.org/issue/7126
-	empty = false;
-	while(!empty) {
-		empty = true;
+	pempty = false;
+	while(!pempty) {
+		pempty = true;
 		for(i = 0; i < old; i++) {
 			p = runtime_allp[i];
 			if(p->runqhead == p->runqtail)
 				continue;
-			empty = false;
+			pempty = false;
 			// pop from tail of local queue
 			p->runqtail--;
 			gp = (G*)p->runq[p->runqtail%nelem(p->runq)];

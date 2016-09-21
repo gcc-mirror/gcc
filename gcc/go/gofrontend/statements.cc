@@ -544,6 +544,106 @@ Statement::make_temporary(Type* type, Expression* init,
   return new Temporary_statement(type, init, location);
 }
 
+// The Move_subexpressions class is used to move all top-level
+// subexpressions of an expression.  This is used for things like
+// index expressions in which we must evaluate the index value before
+// it can be changed by a multiple assignment.
+
+class Move_subexpressions : public Traverse
+{
+ public:
+  Move_subexpressions(int skip, Block* block)
+    : Traverse(traverse_expressions),
+      skip_(skip), block_(block)
+  { }
+
+ protected:
+  int
+  expression(Expression**);
+
+ private:
+  // The number of subexpressions to skip moving.  This is used to
+  // avoid moving the array itself, as we only need to move the index.
+  int skip_;
+  // The block where new temporary variables should be added.
+  Block* block_;
+};
+
+int
+Move_subexpressions::expression(Expression** pexpr)
+{
+  if (this->skip_ > 0)
+    --this->skip_;
+  else if ((*pexpr)->temporary_reference_expression() == NULL
+	   && !(*pexpr)->is_nil_expression()
+           && !(*pexpr)->is_constant())
+    {
+      Location loc = (*pexpr)->location();
+      Temporary_statement* temp = Statement::make_temporary(NULL, *pexpr, loc);
+      this->block_->add_statement(temp);
+      *pexpr = Expression::make_temporary_reference(temp, loc);
+    }
+  // We only need to move top-level subexpressions.
+  return TRAVERSE_SKIP_COMPONENTS;
+}
+
+// The Move_ordered_evals class is used to find any subexpressions of
+// an expression that have an evaluation order dependency.  It creates
+// temporary variables to hold them.
+
+class Move_ordered_evals : public Traverse
+{
+ public:
+  Move_ordered_evals(Block* block)
+    : Traverse(traverse_expressions),
+      block_(block)
+  { }
+
+ protected:
+  int
+  expression(Expression**);
+
+ private:
+  // The block where new temporary variables should be added.
+  Block* block_;
+};
+
+int
+Move_ordered_evals::expression(Expression** pexpr)
+{
+  // We have to look at subexpressions first.
+  if ((*pexpr)->traverse_subexpressions(this) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+
+  int i;
+  if ((*pexpr)->must_eval_subexpressions_in_order(&i))
+    {
+      Move_subexpressions ms(i, this->block_);
+      if ((*pexpr)->traverse_subexpressions(&ms) == TRAVERSE_EXIT)
+	return TRAVERSE_EXIT;
+    }
+
+  if ((*pexpr)->must_eval_in_order())
+    {
+      Call_expression* call = (*pexpr)->call_expression();
+      if (call != NULL && call->is_multi_value_arg())
+	{
+	  // A call expression which returns multiple results as an argument
+	  // to another call must be handled specially.  We can't create a
+	  // temporary because there is no type to give it.  Instead, group
+	  // the caller and this multi-valued call argument and use a temporary
+	  // variable to hold them.
+	  return TRAVERSE_SKIP_COMPONENTS;
+	}
+
+      Location loc = (*pexpr)->location();
+      Temporary_statement* temp = Statement::make_temporary(NULL, *pexpr, loc);
+      this->block_->add_statement(temp);
+      *pexpr = Expression::make_temporary_reference(temp, loc);
+    }
+  return TRAVERSE_SKIP_COMPONENTS;
+}
+
 // Class Assignment_statement.
 
 // Traversal.
@@ -561,6 +661,66 @@ Assignment_statement::do_traverse_assignments(Traverse_assignments* tassign)
 {
   tassign->assignment(&this->lhs_, &this->rhs_);
   return true;
+}
+
+// Lower an assignment to a map index expression to a runtime function
+// call.
+
+Statement*
+Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
+			       Statement_inserter*)
+{
+  Map_index_expression* mie = this->lhs_->map_index_expression();
+  if (mie != NULL)
+    {
+      Location loc = this->location();
+
+      Expression* map = mie->map();
+      Map_type* mt = map->type()->map_type();
+      if (mt == NULL)
+	{
+	  go_assert(saw_errors());
+	  return Statement::make_error_statement(loc);
+	}
+
+      Block* b = new Block(enclosing, loc);
+
+      // Move out any subexpressions on the left hand side to make
+      // sure that functions are called in the required order.
+      Move_ordered_evals moe(b);
+      mie->traverse_subexpressions(&moe);
+
+      // Copy key and value into temporaries so that we can take their
+      // address without pushing the value onto the heap.
+
+      // var key_temp KEY_TYPE = MAP_INDEX
+      Temporary_statement* key_temp = Statement::make_temporary(mt->key_type(),
+								mie->index(),
+								loc);
+      b->add_statement(key_temp);
+
+      // var val_temp VAL_TYPE = RHS
+      Temporary_statement* val_temp = Statement::make_temporary(mt->val_type(),
+								this->rhs_,
+								loc);
+      b->add_statement(val_temp);
+
+      // mapassign1(TYPE, MAP, &key_temp, &val_temp)
+      Expression* a1 = Expression::make_type_descriptor(mt, loc);
+      Expression* a2 = mie->map();
+      Temporary_reference_expression* ref =
+	Expression::make_temporary_reference(key_temp, loc);
+      Expression* a3 = Expression::make_unary(OPERATOR_AND, ref, loc);
+      ref = Expression::make_temporary_reference(val_temp, loc);
+      Expression* a4 = Expression::make_unary(OPERATOR_AND, ref, loc);
+      Expression* call = Runtime::make_call(Runtime::MAPASSIGN, loc, 4,
+					    a1, a2, a3, a4);
+      b->add_statement(Statement::make_statement(call, false));
+
+      return Statement::make_block_statement(b, loc);
+    }
+
+  return this;
 }
 
 // Set types for the assignment.
@@ -688,106 +848,6 @@ Statement::make_assignment(Expression* lhs, Expression* rhs,
 			   Location location)
 {
   return new Assignment_statement(lhs, rhs, location);
-}
-
-// The Move_subexpressions class is used to move all top-level
-// subexpressions of an expression.  This is used for things like
-// index expressions in which we must evaluate the index value before
-// it can be changed by a multiple assignment.
-
-class Move_subexpressions : public Traverse
-{
- public:
-  Move_subexpressions(int skip, Block* block)
-    : Traverse(traverse_expressions),
-      skip_(skip), block_(block)
-  { }
-
- protected:
-  int
-  expression(Expression**);
-
- private:
-  // The number of subexpressions to skip moving.  This is used to
-  // avoid moving the array itself, as we only need to move the index.
-  int skip_;
-  // The block where new temporary variables should be added.
-  Block* block_;
-};
-
-int
-Move_subexpressions::expression(Expression** pexpr)
-{
-  if (this->skip_ > 0)
-    --this->skip_;
-  else if ((*pexpr)->temporary_reference_expression() == NULL
-	   && !(*pexpr)->is_nil_expression()
-           && !(*pexpr)->is_constant())
-    {
-      Location loc = (*pexpr)->location();
-      Temporary_statement* temp = Statement::make_temporary(NULL, *pexpr, loc);
-      this->block_->add_statement(temp);
-      *pexpr = Expression::make_temporary_reference(temp, loc);
-    }
-  // We only need to move top-level subexpressions.
-  return TRAVERSE_SKIP_COMPONENTS;
-}
-
-// The Move_ordered_evals class is used to find any subexpressions of
-// an expression that have an evaluation order dependency.  It creates
-// temporary variables to hold them.
-
-class Move_ordered_evals : public Traverse
-{
- public:
-  Move_ordered_evals(Block* block)
-    : Traverse(traverse_expressions),
-      block_(block)
-  { }
-
- protected:
-  int
-  expression(Expression**);
-
- private:
-  // The block where new temporary variables should be added.
-  Block* block_;
-};
-
-int
-Move_ordered_evals::expression(Expression** pexpr)
-{
-  // We have to look at subexpressions first.
-  if ((*pexpr)->traverse_subexpressions(this) == TRAVERSE_EXIT)
-    return TRAVERSE_EXIT;
-
-  int i;
-  if ((*pexpr)->must_eval_subexpressions_in_order(&i))
-    {
-      Move_subexpressions ms(i, this->block_);
-      if ((*pexpr)->traverse_subexpressions(&ms) == TRAVERSE_EXIT)
-	return TRAVERSE_EXIT;
-    }
-
-  if ((*pexpr)->must_eval_in_order())
-    {
-      Call_expression* call = (*pexpr)->call_expression();
-      if (call != NULL && call->is_multi_value_arg())
-	{
-	  // A call expression which returns multiple results as an argument
-	  // to another call must be handled specially.  We can't create a
-	  // temporary because there is no type to give it.  Instead, group
-	  // the caller and this multi-valued call argument and use a temporary
-	  // variable to hold them.
-	  return TRAVERSE_SKIP_COMPONENTS;
-	}
-
-      Location loc = (*pexpr)->location();
-      Temporary_statement* temp = Statement::make_temporary(NULL, *pexpr, loc);
-      this->block_->add_statement(temp);
-      *pexpr = Expression::make_temporary_reference(temp, loc);
-    }
-  return TRAVERSE_SKIP_COMPONENTS;
 }
 
 // An assignment operation statement.
@@ -1131,7 +1191,7 @@ Tuple_map_assignment_statement::do_traverse(Traverse* traverse)
 // Lower a tuple map assignment.
 
 Statement*
-Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
+Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
 					 Block* enclosing, Statement_inserter*)
 {
   Location loc = this->location();
@@ -1162,10 +1222,11 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
     Statement::make_temporary(map_type->key_type(), map_index->index(), loc);
   b->add_statement(key_temp);
 
-  // var val_temp VAL_TYPE
-  Temporary_statement* val_temp =
-    Statement::make_temporary(map_type->val_type(), NULL, loc);
-  b->add_statement(val_temp);
+  // var val_ptr_temp *VAL_TYPE
+  Type* val_ptr_type = Type::make_pointer_type(map_type->val_type());
+  Temporary_statement* val_ptr_temp = Statement::make_temporary(val_ptr_type,
+								NULL, loc);
+  b->add_statement(val_ptr_temp);
 
   // var present_temp bool
   Temporary_statement* present_temp =
@@ -1175,24 +1236,34 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
 			      NULL, loc);
   b->add_statement(present_temp);
 
-  // present_temp = mapaccess2(DESCRIPTOR, MAP, &key_temp, &val_temp)
+  // val_ptr_temp, present_temp = mapaccess2(DESCRIPTOR, MAP, &key_temp)
   Expression* a1 = Expression::make_type_descriptor(map_type, loc);
   Expression* a2 = map_index->map();
   Temporary_reference_expression* ref =
     Expression::make_temporary_reference(key_temp, loc);
   Expression* a3 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  ref = Expression::make_temporary_reference(val_temp, loc);
-  Expression* a4 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  Expression* call = Runtime::make_call(Runtime::MAPACCESS2, loc, 4,
-					a1, a2, a3, a4);
+  Expression* a4 = map_type->fat_zero_value(gogo);
+  Call_expression* call;
+  if (a4 == NULL)
+    call = Runtime::make_call(Runtime::MAPACCESS2, loc, 3, a1, a2, a3);
+  else
+    call = Runtime::make_call(Runtime::MAPACCESS2_FAT, loc, 4, a1, a2, a3, a4);
+  ref = Expression::make_temporary_reference(val_ptr_temp, loc);
+  ref->set_is_lvalue();
+  Expression* res = Expression::make_call_result(call, 0);
+  res = Expression::make_unsafe_cast(val_ptr_type, res, loc);
+  Statement* s = Statement::make_assignment(ref, res, loc);
+  b->add_statement(s);
   ref = Expression::make_temporary_reference(present_temp, loc);
   ref->set_is_lvalue();
-  Statement* s = Statement::make_assignment(ref, call, loc);
+  res = Expression::make_call_result(call, 1);
+  s = Statement::make_assignment(ref, res, loc);
   b->add_statement(s);
 
-  // val = val_temp
-  ref = Expression::make_temporary_reference(val_temp, loc);
-  s = Statement::make_assignment(this->val_, ref, loc);
+  // val = *val__ptr_temp
+  ref = Expression::make_temporary_reference(val_ptr_temp, loc);
+  Expression* ind = Expression::make_unary(OPERATOR_MULT, ref, loc);
+  s = Statement::make_assignment(this->val_, ind, loc);
   b->add_statement(s);
 
   // present = present_temp
@@ -1226,140 +1297,6 @@ Statement::make_tuple_map_assignment(Expression* val, Expression* present,
 				     Location location)
 {
   return new Tuple_map_assignment_statement(val, present, map_index, location);
-}
-
-// Assign a pair of entries to a map.
-//   m[k] = v, p
-
-class Map_assignment_statement : public Statement
-{
- public:
-  Map_assignment_statement(Expression* map_index,
-			   Expression* val, Expression* should_set,
-			   Location location)
-    : Statement(STATEMENT_MAP_ASSIGNMENT, location),
-      map_index_(map_index), val_(val), should_set_(should_set)
-  { }
-
- protected:
-  int
-  do_traverse(Traverse* traverse);
-
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
-
-  Statement*
-  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
-
-  Bstatement*
-  do_get_backend(Translate_context*)
-  { go_unreachable(); }
-
-  void
-  do_dump_statement(Ast_dump_context*) const;
-
- private:
-  // A reference to the map index which should be set or deleted.
-  Expression* map_index_;
-  // The value to add to the map.
-  Expression* val_;
-  // Whether or not to add the value.
-  Expression* should_set_;
-};
-
-// Traverse a map assignment.
-
-int
-Map_assignment_statement::do_traverse(Traverse* traverse)
-{
-  if (this->traverse_expression(traverse, &this->map_index_) == TRAVERSE_EXIT
-      || this->traverse_expression(traverse, &this->val_) == TRAVERSE_EXIT)
-    return TRAVERSE_EXIT;
-  return this->traverse_expression(traverse, &this->should_set_);
-}
-
-// Lower a map assignment to a function call.
-
-Statement*
-Map_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
-				   Statement_inserter*)
-{
-  Location loc = this->location();
-
-  Map_index_expression* map_index = this->map_index_->map_index_expression();
-  if (map_index == NULL)
-    {
-      this->report_error(_("expected map index on left hand side"));
-      return Statement::make_error_statement(loc);
-    }
-  Map_type* map_type = map_index->get_map_type();
-  if (map_type == NULL)
-    return Statement::make_error_statement(loc);
-
-  Block* b = new Block(enclosing, loc);
-
-  // Evaluate the map first to get order of evaluation right.
-  // map_temp := m // we are evaluating m[k] = v, p
-  Temporary_statement* map_temp = Statement::make_temporary(map_type,
-							    map_index->map(),
-							    loc);
-  b->add_statement(map_temp);
-
-  // var key_temp MAP_KEY_TYPE = k
-  Temporary_statement* key_temp =
-    Statement::make_temporary(map_type->key_type(), map_index->index(), loc);
-  b->add_statement(key_temp);
-
-  // var val_temp MAP_VAL_TYPE = v
-  Temporary_statement* val_temp =
-    Statement::make_temporary(map_type->val_type(), this->val_, loc);
-  b->add_statement(val_temp);
-
-  // var insert_temp bool = p
-  Temporary_statement* insert_temp =
-    Statement::make_temporary(Type::lookup_bool_type(), this->should_set_,
-			      loc);
-  b->add_statement(insert_temp);
-
-  // mapassign2(map_temp, &key_temp, &val_temp, p)
-  Expression* p1 = Expression::make_temporary_reference(map_temp, loc);
-  Expression* ref = Expression::make_temporary_reference(key_temp, loc);
-  Expression* p2 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  ref = Expression::make_temporary_reference(val_temp, loc);
-  Expression* p3 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  Expression* p4 = Expression::make_temporary_reference(insert_temp, loc);
-  Expression* call = Runtime::make_call(Runtime::MAPASSIGN2, loc, 4,
-					p1, p2, p3, p4);
-  Statement* s = Statement::make_statement(call, true);
-  b->add_statement(s);
-
-  return Statement::make_block_statement(b, loc);
-}
-
-// Dump the AST representation for a map assignment statement.
-
-void
-Map_assignment_statement::do_dump_statement(
-    Ast_dump_context* ast_dump_context) const
-{
-  ast_dump_context->print_indent();
-  ast_dump_context->dump_expression(this->map_index_);
-  ast_dump_context->ostream() << " = ";
-  ast_dump_context->dump_expression(this->val_);
-  ast_dump_context->ostream() << ", ";
-  ast_dump_context->dump_expression(this->should_set_);
-  ast_dump_context->ostream() << std::endl;
-}
-
-// Make a statement which assigns a pair of entries to a map.
-
-Statement*
-Statement::make_map_assignment(Expression* map_index,
-			       Expression* val, Expression* should_set,
-			       Location location)
-{
-  return new Map_assignment_statement(map_index, val, should_set, location);
 }
 
 // A tuple assignment from a receive statement.
@@ -1894,8 +1831,6 @@ Statement::make_dec_statement(Expression* expr)
 // Class Thunk_statement.  This is the base class for go and defer
 // statements.
 
-Unordered_set(const Struct_type*) Thunk_statement::thunk_types;
-
 // Constructor.
 
 Thunk_statement::Thunk_statement(Statement_classification classification,
@@ -2278,19 +2213,8 @@ Thunk_statement::build_struct(Function_type* fntype)
     }
 
   Struct_type *st = Type::make_struct_type(fields, location);
-
-  Thunk_statement::thunk_types.insert(st);
-
+  st->set_is_struct_incomparable();
   return st;
-}
-
-// Return whether ST is a type created to hold thunk parameters.
-
-bool
-Thunk_statement::is_thunk_struct(const Struct_type* st)
-{
-  return (Thunk_statement::thunk_types.find(st)
-	  != Thunk_statement::thunk_types.end());
 }
 
 // Build the thunk we are going to call.  This is a brand new, albeit
@@ -5356,9 +5280,9 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
 			     index_temp, value_temp, &init, &cond, &iter_init,
 			     &post);
   else if (range_type->map_type() != NULL)
-    this->lower_range_map(gogo, temp_block, body, range_object, range_temp,
-			  index_temp, value_temp, &init, &cond, &iter_init,
-			  &post);
+    this->lower_range_map(gogo, range_type->map_type(), temp_block, body,
+			  range_object, range_temp, index_temp, value_temp,
+			  &init, &cond, &iter_init, &post);
   else if (range_type->channel_type() != NULL)
     this->lower_range_channel(gogo, temp_block, body, range_object, range_temp,
 			      index_temp, value_temp, &init, &cond, &iter_init,
@@ -5753,7 +5677,8 @@ For_range_statement::lower_range_string(Gogo*,
 // Lower a for range over a map.
 
 void
-For_range_statement::lower_range_map(Gogo*,
+For_range_statement::lower_range_map(Gogo* gogo,
+				     Map_type* map_type,
 				     Block* enclosing,
 				     Block* body_block,
 				     Named_object* range_object,
@@ -5768,13 +5693,13 @@ For_range_statement::lower_range_map(Gogo*,
   Location loc = this->location();
 
   // The runtime uses a struct to handle ranges over a map.  The
-  // struct is four pointers long.  The first pointer is NULL when we
-  // have completed the iteration.
+  // struct is built by Map_type::hiter_type for a specific map type.
 
   // The loop we generate:
   //   var hiter map_iteration_struct
-  //   for mapiterinit(range, &hiter); hiter[0] != nil; mapiternext(&hiter) {
-  //           mapiter2(hiter, &index_temp, &value_temp)
+  //   for mapiterinit(type, range, &hiter); hiter.key != nil; mapiternext(&hiter) {
+  //           index_temp = *hiter.key
+  //           value_temp = *hiter.val
   //           index = index_temp
   //           value = value_temp
   //           original body
@@ -5782,54 +5707,57 @@ For_range_statement::lower_range_map(Gogo*,
 
   // Set *PINIT to
   //   var hiter map_iteration_struct
-  //   runtime.mapiterinit(range, &hiter)
+  //   runtime.mapiterinit(type, range, &hiter)
 
   Block* init = new Block(enclosing, loc);
 
-  Type* map_iteration_type = Runtime::map_iteration_type();
+  Type* map_iteration_type = map_type->hiter_type(gogo);
   Temporary_statement* hiter = Statement::make_temporary(map_iteration_type,
 							 NULL, loc);
   init->add_statement(hiter);
 
-  Expression* p1 = this->make_range_ref(range_object, range_temp, loc);
+  Expression* p1 = Expression::make_type_descriptor(map_type, loc);
+  Expression* p2 = this->make_range_ref(range_object, range_temp, loc);
   Expression* ref = Expression::make_temporary_reference(hiter, loc);
-  Expression* p2 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  Expression* call = Runtime::make_call(Runtime::MAPITERINIT, loc, 2, p1, p2);
+  Expression* p3 = Expression::make_unary(OPERATOR_AND, ref, loc);
+  Expression* call = Runtime::make_call(Runtime::MAPITERINIT, loc, 3,
+					p1, p2, p3);
   init->add_statement(Statement::make_statement(call, true));
 
   *pinit = init;
 
   // Set *PCOND to
-  //   hiter[0] != nil
+  //   hiter.key != nil
 
   ref = Expression::make_temporary_reference(hiter, loc);
-  Expression* zexpr = Expression::make_integer_ul(0, NULL, loc);
-  Expression* index = Expression::make_index(ref, zexpr, NULL, NULL, loc);
-  Expression* ne = Expression::make_binary(OPERATOR_NOTEQ, index,
+  ref = Expression::make_field_reference(ref, 0, loc);
+  Expression* ne = Expression::make_binary(OPERATOR_NOTEQ, ref,
 					   Expression::make_nil(loc),
 					   loc);
   *pcond = ne;
 
   // Set *PITER_INIT to
-  //   mapiter1(hiter, &index_temp)
-  // or
-  //   mapiter2(hiter, &index_temp, &value_temp)
+  //   index_temp = *hiter.key
+  //   value_temp = *hiter.val
 
   Block* iter_init = new Block(body_block, loc);
 
-  ref = Expression::make_temporary_reference(hiter, loc);
-  p1 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  ref = Expression::make_temporary_reference(index_temp, loc);
-  p2 = Expression::make_unary(OPERATOR_AND, ref, loc);
-  if (value_temp == NULL)
-    call = Runtime::make_call(Runtime::MAPITER1, loc, 2, p1, p2);
-  else
+  Expression* lhs = Expression::make_temporary_reference(index_temp, loc);
+  Expression* rhs = Expression::make_temporary_reference(hiter, loc);
+  rhs = Expression::make_field_reference(ref, 0, loc);
+  rhs = Expression::make_unary(OPERATOR_MULT, ref, loc);
+  Statement* set = Statement::make_assignment(lhs, rhs, loc);
+  iter_init->add_statement(set);
+
+  if (value_temp != NULL)
     {
-      ref = Expression::make_temporary_reference(value_temp, loc);
-      Expression* p3 = Expression::make_unary(OPERATOR_AND, ref, loc);
-      call = Runtime::make_call(Runtime::MAPITER2, loc, 3, p1, p2, p3);
+      lhs = Expression::make_temporary_reference(value_temp, loc);
+      rhs = Expression::make_temporary_reference(hiter, loc);
+      rhs = Expression::make_field_reference(rhs, 1, loc);
+      rhs = Expression::make_unary(OPERATOR_MULT, rhs, loc);
+      set = Statement::make_assignment(lhs, rhs, loc);
+      iter_init->add_statement(set);
     }
-  iter_init->add_statement(Statement::make_statement(call, true));
 
   *piter_init = iter_init;
 

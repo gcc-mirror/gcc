@@ -14,6 +14,7 @@
 
 class Gogo;
 class Package;
+class Variable;
 class Traverse;
 class Typed_identifier;
 class Typed_identifier_list;
@@ -629,6 +630,18 @@ class Type
   compare_is_identity(Gogo* gogo)
   { return this->do_compare_is_identity(gogo); }
 
+  // Return whether values of this type are reflexive: if a comparison
+  // of a value with itself always returns true.
+  bool
+  is_reflexive()
+  { return this->do_is_reflexive(); }
+
+  // Return whether values of this, when used as a key in map,
+  // requires the key to be updated when an assignment is made.
+  bool
+  needs_key_update()
+  { return this->do_needs_key_update(); }
+
   // Return a hash code for this type for the method hash table.
   // Types which are equivalent according to are_identical will have
   // the same hash code.
@@ -1005,6 +1018,14 @@ class Type
 
   virtual bool
   do_compare_is_identity(Gogo*) = 0;
+
+  virtual bool
+  do_is_reflexive()
+  { return true; }
+
+  virtual bool
+  do_needs_key_update()
+  { return false; }
 
   virtual unsigned int
   do_hash_for_method(Gogo*) const;
@@ -1639,6 +1660,15 @@ class Float_type : public Type
   do_compare_is_identity(Gogo*)
   { return false; }
 
+  bool
+  do_is_reflexive()
+  { return false; }
+
+  // Distinction between +0 and -0 requires a key update.
+  bool
+  do_needs_key_update()
+  { return true; }
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -1712,6 +1742,15 @@ class Complex_type : public Type
   do_compare_is_identity(Gogo*)
   { return false; }
 
+  bool
+  do_is_reflexive()
+  { return false; }
+
+  // Distinction between +0 and -0 requires a key update.
+  bool
+  do_needs_key_update()
+  { return true; }
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -1767,6 +1806,11 @@ class String_type : public Type
   bool
   do_compare_is_identity(Gogo*)
   { return false; }
+
+  // New string might have a smaller backing store.
+  bool
+  do_needs_key_update()
+  { return true; }
 
   Btype*
   do_get_backend(Gogo*);
@@ -2218,7 +2262,8 @@ class Struct_type : public Type
  public:
   Struct_type(Struct_field_list* fields, Location location)
     : Type(TYPE_STRUCT),
-      fields_(fields), location_(location), all_methods_(NULL)
+      fields_(fields), location_(location), all_methods_(NULL),
+      is_struct_incomparable_(false)
   { }
 
   // Return the field NAME.  This only looks at local fields, not at
@@ -2323,6 +2368,16 @@ class Struct_type : public Type
   static Type*
   make_struct_type_descriptor_type();
 
+  // Return whether this is a generated struct that is not comparable.
+  bool
+  is_struct_incomparable() const
+  { return this->is_struct_incomparable_; }
+
+  // Record that this is a generated struct that is not comparable.
+  void
+  set_is_struct_incomparable()
+  { this->is_struct_incomparable_ = true; }
+
   // Write the hash function for this type.
   void
   write_hash_function(Gogo*, Named_type*, Function_type*, Function_type*);
@@ -2353,6 +2408,12 @@ class Struct_type : public Type
 
   bool
   do_compare_is_identity(Gogo*);
+
+  bool
+  do_is_reflexive();
+
+  bool
+  do_needs_key_update();
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2418,6 +2479,9 @@ class Struct_type : public Type
   Location location_;
   // If this struct is unnamed, a list of methods.
   Methods* all_methods_;
+  // True if this is a generated struct that is not considered to be
+  // comparable.
+  bool is_struct_incomparable_;
 };
 
 // The type of an array.
@@ -2428,7 +2492,7 @@ class Array_type : public Type
   Array_type(Type* element_type, Expression* length)
     : Type(TYPE_ARRAY),
       element_type_(element_type), length_(length), blength_(NULL),
-      issued_length_error_(false)
+      issued_length_error_(false), is_array_incomparable_(false)
   { }
 
   // Return the element type.
@@ -2479,6 +2543,16 @@ class Array_type : public Type
   static Type*
   make_slice_type_descriptor_type();
 
+  // Return whether this is a generated array that is not comparable.
+  bool
+  is_array_incomparable() const
+  { return this->is_array_incomparable_; }
+
+  // Record that this is a generated array that is not comparable.
+  void
+  set_is_array_incomparable()
+  { this->is_array_incomparable_ = true; }
+
   // Write the hash function for this type.
   void
   write_hash_function(Gogo*, Named_type*, Function_type*, Function_type*);
@@ -2502,6 +2576,16 @@ class Array_type : public Type
 
   bool
   do_compare_is_identity(Gogo*);
+
+  bool
+  do_is_reflexive()
+  {
+    return this->length_ != NULL && this->element_type_->is_reflexive();
+  }
+
+  bool
+  do_needs_key_update()
+  { return this->element_type_->needs_key_update(); }
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2550,6 +2634,9 @@ class Array_type : public Type
   // Whether or not an invalid length error has been issued for this type,
   // to avoid knock-on errors.
   mutable bool issued_length_error_;
+  // True if this is a generated array that is not considered to be
+  // comparable.
+  bool is_array_incomparable_;
 };
 
 // The type of a map.
@@ -2559,7 +2646,8 @@ class Map_type : public Type
  public:
   Map_type(Type* key_type, Type* val_type, Location location)
     : Type(TYPE_MAP),
-      key_type_(key_type), val_type_(val_type), location_(location)
+      key_type_(key_type), val_type_(val_type), hmap_type_(NULL),
+      bucket_type_(NULL), hiter_type_(NULL), location_(location)
   { }
 
   // Return the key type.
@@ -2572,6 +2660,24 @@ class Map_type : public Type
   val_type() const
   { return this->val_type_; }
 
+  // Return the type used for an iteration over this map.
+  Type*
+  hiter_type(Gogo*);
+
+  // If this map requires the "fat" functions, returns the pointer to
+  // pass as the zero value to those functions.  Otherwise, in the
+  // normal case, returns NULL.
+  Expression*
+  fat_zero_value(Gogo*);
+
+  // Return whether VAR is the map zero value.
+  static bool
+  is_zero_value(Variable* var);
+
+  // Return the backend representation of the map zero value.
+  static Bvariable*
+  backend_zero_value(Gogo*);
+
   // Whether this type is identical with T.
   bool
   is_identical(const Map_type* t, bool errors_are_identical) const;
@@ -2582,15 +2688,6 @@ class Map_type : public Type
 
   static Type*
   make_map_type_descriptor_type();
-
-  static Type*
-  make_map_descriptor_type();
-
-  // Build a map descriptor for this type.  Return a pointer to it.
-  // The location is the location which causes us to need the
-  // descriptor.
-  Bexpression*
-  map_descriptor_pointer(Gogo* gogo, Location);
 
  protected:
   int
@@ -2606,6 +2703,12 @@ class Map_type : public Type
   bool
   do_compare_is_identity(Gogo*)
   { return false; }
+
+  bool
+  do_is_reflexive()
+  {
+    return this->key_type_->is_reflexive() && this->val_type_->is_reflexive();
+  }
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2629,18 +2732,41 @@ class Map_type : public Type
   do_export(Export*) const;
 
  private:
-  // Mapping from map types to map descriptors.
-  typedef Unordered_map_hash(const Map_type*, Bvariable*, Type_hash_identical,
-			     Type_identical) Map_descriptors;
-  static Map_descriptors map_descriptors;
+  // These must be in sync with libgo/go/runtime/hashmap.go.
+  static const int bucket_size = 8;
+  static const int max_key_size = 128;
+  static const int max_val_size = 128;
+  static const int max_zero_size = 1024;
 
-  Bvariable*
-  map_descriptor(Gogo*);
+  // Maps with value types larger than max_zero_size require passing a
+  // zero value pointer to the map functions.
+
+  // The zero value variable.
+  static Named_object* zero_value;
+
+  // The current size of the zero value.
+  static int64_t zero_value_size;
+
+  // The current alignment of the zero value.
+  static int64_t zero_value_align;
+
+  Type*
+  bucket_type(Gogo*, int64_t, int64_t);
+
+  Type*
+  hmap_type(Type*);
 
   // The key type.
   Type* key_type_;
   // The value type.
   Type* val_type_;
+  // The hashmap type.  At run time a map is represented as a pointer
+  // to this type.
+  Type* hmap_type_;
+  // The bucket type, the type used to hold keys and values at run time.
+  Type* bucket_type_;
+  // The iterator type.
+  Type* hiter_type_;
   // Where the type was defined.
   Location location_;
 };
@@ -2831,6 +2957,17 @@ class Interface_type : public Type
   bool
   do_compare_is_identity(Gogo*)
   { return false; }
+
+  // Not reflexive if it contains a float.
+  bool
+  do_is_reflexive()
+  { return false; }
+
+  // Distinction between +0 and -0 requires a key update if it
+  // contains a float.
+  bool
+  do_needs_key_update()
+  { return true; }
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -3121,6 +3258,12 @@ class Named_type : public Type
   bool
   do_compare_is_identity(Gogo*);
 
+  bool
+  do_is_reflexive();
+
+  bool
+  do_needs_key_update();
+
   unsigned int
   do_hash_for_method(Gogo*) const;
 
@@ -3267,6 +3410,14 @@ class Forward_declaration_type : public Type
   bool
   do_compare_is_identity(Gogo* gogo)
   { return this->real_type()->compare_is_identity(gogo); }
+
+  bool
+  do_is_reflexive()
+  { return this->real_type()->is_reflexive(); }
+
+  bool
+  do_needs_key_update()
+  { return this->real_type()->needs_key_update(); }
 
   unsigned int
   do_hash_for_method(Gogo* gogo) const

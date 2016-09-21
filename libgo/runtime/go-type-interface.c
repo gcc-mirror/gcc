@@ -11,7 +11,7 @@
 /* A hash function for an interface.  */
 
 uintptr_t
-__go_type_hash_interface (const void *vval,
+__go_type_hash_interface (const void *vval, uintptr_t seed,
 			  uintptr_t key_size __attribute__ ((unused)))
 {
   const struct __go_interface *val;
@@ -22,11 +22,13 @@ __go_type_hash_interface (const void *vval,
   if (val->__methods == NULL)
     return 0;
   descriptor = (const struct __go_type_descriptor *) val->__methods[0];
+  if (descriptor->__hashfn == NULL)
+    runtime_panicstring ("hash of unhashable type");
   size = descriptor->__size;
   if (__go_is_pointer_type (descriptor))
-    return __go_call_hashfn (descriptor->__hashfn, &val->__object, size);
+    return __go_call_hashfn (descriptor->__hashfn, &val->__object, seed, size);
   else
-    return __go_call_hashfn (descriptor->__hashfn, val->__object, size);
+    return __go_call_hashfn (descriptor->__hashfn, val->__object, seed, size);
 }
 
 const FuncVal __go_type_hash_interface_descriptor =
@@ -51,6 +53,8 @@ __go_type_equal_interface (const void *vv1, const void *vv2,
   v2_descriptor = (const struct __go_type_descriptor *) v2->__methods[0];
   if (!__go_type_descriptors_equal (v1_descriptor, v2_descriptor))
     return 0;
+  if (v1_descriptor->__equalfn == NULL)
+    runtime_panicstring ("comparing uncomparable types");
   if (__go_is_pointer_type (v1_descriptor))
     return v1->__object == v2->__object;
   else

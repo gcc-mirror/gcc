@@ -376,7 +376,7 @@ void	runtime_mprofinit(void);
 int32	runtime_mcount(void);
 int32	runtime_gcount(void);
 void	runtime_mcall(void(*)(G*));
-uint32	runtime_fastrand1(void);
+uint32	runtime_fastrand1(void) __asm__ (GOSYM_PREFIX "runtime.fastrand1");
 int32	runtime_timediv(int64, int32, int32*);
 int32	runtime_round2(int32 x); // round x up to a power of 2.
 

@@ -120,7 +120,6 @@ class Statement
     STATEMENT_ASSIGNMENT_OPERATION,
     STATEMENT_TUPLE_ASSIGNMENT,
     STATEMENT_TUPLE_MAP_ASSIGNMENT,
-    STATEMENT_MAP_ASSIGNMENT,
     STATEMENT_TUPLE_RECEIVE_ASSIGNMENT,
     STATEMENT_TUPLE_TYPE_GUARD_ASSIGNMENT,
     STATEMENT_INCDEC,
@@ -165,11 +164,6 @@ class Statement
   static Statement*
   make_tuple_map_assignment(Expression* val, Expression* present,
 			    Expression*, Location);
-
-  // Make a statement which assigns a pair of values to a map.
-  static Statement*
-  make_map_assignment(Expression*, Expression* val,
-		      Expression* should_set, Location);
 
   // Make an assignment from a nonblocking receive to a pair of
   // variables.
@@ -585,6 +579,9 @@ class Assignment_statement : public Statement
 
   bool
   do_traverse_assignments(Traverse_assignments*);
+
+  virtual Statement*
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   void
   do_determine_types();
@@ -1144,10 +1141,6 @@ class Thunk_statement : public Statement
   bool
   simplify_statement(Gogo*, Named_object*, Block*);
 
-  // Return whether ST is a type created to hold thunk parameters.
-  static bool
-  is_thunk_struct(const Struct_type *st);
-
  protected:
   int
   do_traverse(Traverse* traverse);
@@ -1185,9 +1178,6 @@ class Thunk_statement : public Statement
   // Set the name to use for thunk field N.
   void
   thunk_field_param(int n, char* buf, size_t buflen);
-
-  // A list of all the struct types created for thunk statements.
-  static Unordered_set(const Struct_type*) thunk_types;
 
   // The function call to be executed in a separate thread (go) or
   // later (defer).
@@ -1529,9 +1519,10 @@ class For_range_statement : public Statement
 		     Block**, Expression**, Block**, Block**);
 
   void
-  lower_range_map(Gogo*, Block*, Block*, Named_object*, Temporary_statement*,
+  lower_range_map(Gogo*, Map_type*, Block*, Block*, Named_object*,
 		  Temporary_statement*, Temporary_statement*,
-		  Block**, Expression**, Block**, Block**);
+		  Temporary_statement*, Block**, Expression**, Block**,
+		  Block**);
 
   void
   lower_range_channel(Gogo*, Block*, Block*, Named_object*,
