@@ -1,4 +1,10 @@
 2016-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77648
+	* gcc.dg/torture/pr77648-1.c: New testcase.
+	* gcc.dg/torture/pr77648-2.c: Likewise.
+
+2016-09-21  Richard Biener  <rguenther@suse.de>
 	Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/77621
