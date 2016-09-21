@@ -1,3 +1,9 @@
+2016-09-21  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/77676
+	* c.opt (fprintf-return-value): Temporarily initialize to zero
+	to unblock bootstrap failures.
+
 2016-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77651

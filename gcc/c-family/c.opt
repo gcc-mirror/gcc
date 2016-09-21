@@ -1498,7 +1498,7 @@ C++ ObjC++ Var(flag_pretty_templates) Init(1)
 -fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments.
 
 fprintf-return-value
-C ObjC C++ ObjC++ LTO Optimization Var(flag_printf_return_value) Init(1)
+C ObjC C++ ObjC++ LTO Optimization Var(flag_printf_return_value) Init(0)
 Treat known sprintf return values as constants.
 
 freplace-objc-classes
