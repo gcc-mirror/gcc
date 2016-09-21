@@ -1,3 +1,8 @@
+2016-09-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR tree-optimization/77550
+	* g++.dg/pr77550.C: New test.
+
 2016-09-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/77326
