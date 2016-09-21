@@ -1,8 +1,15 @@
+2016-09-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2016-09-21 trunk r240306.
+
+	PR target/77326
+	* config/avr/avr.c (avr_notice_update_cc) [CC_NONE]: If insn
+	touches some regs mentioned in cc_status, do CC_STATUS_INIT.
+
 2016-09-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
 	2016-07-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
-
 
 	* lra-constraints.c (match_reload): Pass information about other
 	output operands.  Create new unique register value if matching input
