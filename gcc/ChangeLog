@@ -1,3 +1,9 @@
+2016-09-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/77326
+	* config/avr/avr.c (avr_notice_update_cc) [CC_NONE]: If insn
+	touches some regs mentioned in cc_status, do CC_STATUS_INIT.
+
 2016-09-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77648
