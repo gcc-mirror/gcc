@@ -1,3 +1,8 @@
+2016-09-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (getosrandom): Use rand_s() on
+	MinGW-w64. Fix bounds overflow in fallback code.
+
 2016-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* caf/libcaf.h: Add caf_reference_type.
