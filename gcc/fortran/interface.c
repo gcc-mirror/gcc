@@ -4792,6 +4792,9 @@ gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
 
   if (tb_io_st != NULL)
     {
+      const char *genname;
+      gfc_symtree *st;
+
       tb_io_proc = tb_io_st->n.tb;
       gcc_assert (tb_io_proc != NULL);
       gcc_assert (tb_io_proc->is_generic);
@@ -4800,7 +4803,16 @@ gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
       specific_proc = tb_io_proc->u.generic->specific;
       gcc_assert (!specific_proc->is_generic);
 
-      dtio_sub = specific_proc->u.specific->n.sym;
+      /* Go back and make sure that we have the right specific procedure.
+	 Here we most likely have a procedure from the parent type, which
+	 can be overridden in extensions.  */
+      genname = tb_io_proc->u.generic->specific_st->name;
+      st = gfc_find_typebound_proc (derived, NULL, genname,
+				    true, &tb_io_proc->where);
+      if (st)
+	dtio_sub = st->n.tb->u.specific->n.sym;
+      else
+	dtio_sub = specific_proc->u.specific->n.sym;
     }
 
   if (tb_io_st != NULL)
