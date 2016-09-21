@@ -2225,10 +2225,18 @@ process_define_subst (void)
     }
 }
 
-/* A read_md_files callback for reading an rtx.  */
+/* A subclass of rtx_reader which reads .md files and calls process_rtx on
+   the top-level elements.  */
 
-static void
-rtx_handle_directive (file_location loc, const char *rtx_name)
+class gen_reader : public rtx_reader
+{
+ public:
+  gen_reader () : rtx_reader () {}
+  void handle_unknown_directive (file_location, const char *);
+};
+
+void
+gen_reader::handle_unknown_directive (file_location loc, const char *rtx_name)
 {
   auto_vec<rtx, 32> subrtxs;
   if (!read_rtx (rtx_name, &subrtxs))
@@ -2499,7 +2507,7 @@ check_define_attr_duplicates ()
 
 /* The entry point for initializing the reader.  */
 
-bool
+rtx_reader *
 init_rtx_reader_args_cb (int argc, const char **argv,
 			 bool (*parse_opt) (const char *))
 {
@@ -2515,7 +2523,8 @@ init_rtx_reader_args_cb (int argc, const char **argv,
   split_sequence_num = 1;
   peephole2_sequence_num = 1;
 
-  read_md_files (argc, argv, parse_opt, rtx_handle_directive);
+  gen_reader *reader = new gen_reader ();
+  reader->read_md_files (argc, argv, parse_opt);
 
   if (define_attr_queue != NULL)
     check_define_attr_duplicates ();
@@ -2531,12 +2540,18 @@ init_rtx_reader_args_cb (int argc, const char **argv,
   if (define_attr_queue != NULL)
     gen_mnemonic_attr ();
 
-  return !have_error;
+  if (have_error)
+    {
+      delete reader;
+      return NULL;
+    }
+
+  return reader;
 }
 
 /* Programs that don't have their own options can use this entry point
    instead.  */
-bool
+rtx_reader *
 init_rtx_reader_args (int argc, const char **argv)
 {
   return init_rtx_reader_args_cb (argc, argv, 0);

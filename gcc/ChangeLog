@@ -1,3 +1,77 @@
+2016-09-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* genconstants.c (main): Introduce noop_reader and convert call
+	to read_md_files to a method call.
+	* genenums.c (main): Likewise.
+	* genmddeps.c (main): Likewise.
+	* genpreds.c (write_tm_constrs_h): Replace use of "in_fname" with
+	rtx_reader_ptr->get_top_level_filename ().
+	(write_tm_preds_h): Likewise.
+	(write_insn_preds_c): Likewise.
+	* gensupport.c (class gen_reader): New subclass of rtx_reader.
+	(rtx_handle_directive): Convert to...
+	(gen_reader::handle_unknown_directive): ...this.
+	(init_rtx_reader_args_cb): Convert return type from bool to
+	rtx_reader *.  Create a gen_reader instance, using it for the
+	call to read_md_files.  Return it if no errors occur.
+	(init_rtx_reader_args): Convert return type from bool to
+	rtx_reader *.
+	* gensupport.h (init_rtx_reader_args_cb): Likewise.
+	(init_rtx_reader_args_cb): Likewise.
+	* read-md.c (struct file_name_list): Move to class rtx_reader.
+	(read_md_file): Delete in favor of rtx_reader::m_read_md_file.
+	(read_md_filename): Delete in favor of
+	rtx_reader::m_read_md_filename.
+	(read_md_lineno): Delete in favor of rtx_reader::m_read_md_lineno.
+	(in_fname): Delete in favor of rtx_reader::m_toplevel_fname.
+	(base_dir): Delete in favor of rtx_reader::m_base_dir.
+	(first_dir_md_include): Delete in favor of
+	rtx_reader::m_first_dir_md_include.
+	(last_dir_md_include_ptr): Delete in favor of
+	rtx_reader::m_last_dir_md_include_ptr.
+	(max_include_len): Delete.
+	(rtx_reader_ptr): New.
+	(fatal_with_file_and_line): Use get_filename and get_lineno
+	accessors of rtx_reader_ptr.
+	(require_char_ws): Likewise.
+	(rtx_reader::read_char): New method, based on ::read_char.
+	(rtx_reader::unread_char): New method, based on ::unread_char.
+	(read_escape): Use get_filename and get_lineno accessors of
+	rtx_reader_ptr.
+	(read_braced_string): Use get_lineno accessor of rtx_reader_ptr.
+	(read_string): Use get_filename and get_lineno accessors of
+	rtx_reader_ptr.
+	(rtx_reader::rtx_reader): New ctor.
+	(rtx_reader::~rtx_reader): New dtor.
+	(handle_include): Convert from a function to...
+	(rtx_reader::handle_include): ...this method, converting
+	handle_directive from a callback to a virtual function.
+	(handle_file): Likewise, converting to...
+	(rtx_reader::handle_file): ...this method.
+	(handle_toplevel_file): Likewise, converting to...
+	(rtx_reader::handle_toplevel_file): ...this method.
+	(rtx_reader::get_current_location): New method.
+	(parse_include): Convert from a function to...
+	(rtx_reader::add_include_path): ...this method, dropping redundant
+	update to unused max_include_len.
+	(read_md_files): Convert from a function to...
+	(rtx_reader::read_md_files): ...this method, converting
+	handle_directive from a callback to a virtual function.
+	(noop_reader::handle_unknown_directive): New method.
+	* read-md.h (directive_handler_t): Delete this typedef.
+	(in_fname): Delete.
+	(read_md_file): Delete.
+	(read_md_lineno): Delete.
+	(read_md_filename): Delete.
+	(class rtx_reader): New class.
+	(rtx_reader_ptr): New decl.
+	(class noop_reader): New subclass of rtx_reader.
+	(read_char): Reimplement in terms of rtx_reader::read_char.
+	(unread_char): Reimplement in terms of rtx_reader::unread_char.
+	(read_md_files): Delete.
+	* read-rtl.c (read_rtx_code): Update for deletion of globals
+	read_md_filename and read_md_lineno.
+
 2016-09-21  Jason Merrill  <jason@redhat.com>
 
 	* input.h (from_macro_definition_at): New.

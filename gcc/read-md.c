@@ -31,12 +31,6 @@ struct ptr_loc {
   int lineno;
 };
 
-/* A singly-linked list of filenames.  */
-struct file_name_list {
-  struct file_name_list *next;
-  const char *fname;
-};
-
 /* Obstack used for allocating MD strings.  */
 struct obstack string_obstack;
 
@@ -56,34 +50,13 @@ static htab_t joined_conditions;
 /* An obstack for allocating joined_conditions entries.  */
 static struct obstack joined_conditions_obstack;
 
-/* The file we are reading.  */
-FILE *read_md_file;
-
-/* The filename of READ_MD_FILE.  */
-const char *read_md_filename;
-
-/* The current line number in READ_MD_FILE.  */
-int read_md_lineno;
-
-/* The name of the toplevel file that indirectly included READ_MD_FILE.  */
-const char *in_fname;
-
-/* The directory part of IN_FNAME.  NULL if IN_FNAME is a bare filename.  */
-static char *base_dir;
-
-/* The first directory to search.  */
-static struct file_name_list *first_dir_md_include;
-
-/* A pointer to the null terminator of the md include chain.  */
-static struct file_name_list **last_dir_md_include_ptr = &first_dir_md_include;
-
 /* This callback will be invoked whenever an md include directive is
    processed.  To be used for creation of the dependency file.  */
 void (*include_callback) (const char *);
 
-/* The current maximum length of directory names in the search path
-   for include files.  (Altered as we get more of them.)  */
-static size_t max_include_len;
+/* Global singleton.  */
+
+rtx_reader *rtx_reader_ptr;
 
 /* A table of md_constant structures, hashed by name.  Null if no
    constant expansion should occur.  */
@@ -91,8 +64,6 @@ static htab_t md_constants;
 
 /* A table of enum_type structures, hashed by name.  */
 static htab_t enum_types;
-
-static void handle_file (directive_handler_t);
 
 /* Given an object that starts with a char * name field, return a hash
    code for its name.  */
@@ -303,7 +274,8 @@ fatal_with_file_and_line (const char *msg, ...)
 
   va_start (ap, msg);
 
-  fprintf (stderr, "%s:%d: ", read_md_filename, read_md_lineno);
+  fprintf (stderr, "%s:%d: error: ", rtx_reader_ptr->get_filename (),
+	   rtx_reader_ptr->get_lineno ());
   vfprintf (stderr, msg, ap);
   putc ('\n', stderr);
 
@@ -322,8 +294,9 @@ fatal_with_file_and_line (const char *msg, ...)
     }
   context[i] = '\0';
 
-  fprintf (stderr, "%s:%d: following context is `%s'\n",
-	   read_md_filename, read_md_lineno, context);
+  fprintf (stderr, "%s:%d: note: following context is `%s'\n",
+	   rtx_reader_ptr->get_filename (), rtx_reader_ptr->get_lineno (),
+	   context);
 
   va_end (ap);
   exit (1);
@@ -400,6 +373,30 @@ require_char_ws (char expected)
   int ch = read_skip_spaces ();
   if (ch != expected)
     fatal_expected_char (expected, ch);
+}
+
+/* Read the next character from the file.  */
+
+int
+rtx_reader::read_char (void)
+{
+  int ch;
+
+  ch = getc (m_read_md_file);
+  if (ch == '\n')
+    m_read_md_lineno++;
+
+  return ch;
+}
+
+/* Put back CH, which was the last character read from the file.  */
+
+void
+rtx_reader::unread_char (int ch)
+{
+  if (ch == '\n')
+    m_read_md_lineno--;
+  ungetc (ch, m_read_md_file);
 }
 
 /* Read an rtx code name into NAME.  It is terminated by any of the
@@ -512,7 +509,8 @@ read_escape (void)
       /* pass anything else through, but issue a warning.  */
     default:
       fprintf (stderr, "%s:%d: warning: unrecognized escape \\%c\n",
-	       read_md_filename, read_md_lineno, c);
+	       rtx_reader_ptr->get_filename (), rtx_reader_ptr->get_lineno (),
+	       c);
       obstack_1grow (&string_obstack, '\\');
       break;
     }
@@ -555,7 +553,7 @@ read_braced_string (void)
 {
   int c;
   int brace_depth = 1;  /* caller-processed */
-  unsigned long starting_read_md_lineno = read_md_lineno;
+  unsigned long starting_read_md_lineno = rtx_reader_ptr->get_lineno ();
 
   obstack_1grow (&string_obstack, '{');
   while (brace_depth)
@@ -601,7 +599,7 @@ read_string (int star_if_braced)
       c = read_skip_spaces ();
     }
 
-  old_lineno = read_md_lineno;
+  old_lineno = rtx_reader_ptr->get_lineno ();
   if (c == '"')
     stringbuf = read_quoted_string ();
   else if (c == '{')
@@ -616,7 +614,7 @@ read_string (int star_if_braced)
   if (saw_paren)
     require_char_ws (')');
 
-  set_md_ptr_loc (stringbuf, read_md_filename, old_lineno);
+  set_md_ptr_loc (stringbuf, rtx_reader_ptr->get_filename (), old_lineno);
   return stringbuf;
 }
 
@@ -901,13 +899,37 @@ traverse_enum_types (htab_trav callback, void *info)
   htab_traverse (enum_types, callback, info);
 }
 
+
+/* Constructor for rtx_reader.  */
+
+rtx_reader::rtx_reader ()
+: m_toplevel_fname (NULL),
+  m_base_dir (NULL),
+  m_read_md_file (NULL),
+  m_read_md_filename (NULL),
+  m_read_md_lineno (0),
+  m_first_dir_md_include (NULL),
+  m_last_dir_md_include_ptr (&m_first_dir_md_include)
+{
+  /* Set the global singleton pointer.  */
+  rtx_reader_ptr = this;
+}
+
+/* rtx_reader's destructor.  */
+
+rtx_reader::~rtx_reader ()
+{
+  /* Clear the global singleton pointer.  */
+  rtx_reader_ptr = NULL;
+}
+
 /* Process an "include" directive, starting with the optional space
    after the "include".  Read in the file and use HANDLE_DIRECTIVE
    to process each unknown directive.  LINENO is the line number on
    which the "include" occurred.  */
 
-static void
-handle_include (file_location loc, directive_handler_t handle_directive)
+void
+rtx_reader::handle_include (file_location loc)
 {
   const char *filename;
   const char *old_filename;
@@ -924,7 +946,7 @@ handle_include (file_location loc, directive_handler_t handle_directive)
       struct file_name_list *stackp;
 
       /* Search the directory path, trying to open the file.  */
-      for (stackp = first_dir_md_include; stackp; stackp = stackp->next)
+      for (stackp = m_first_dir_md_include; stackp; stackp = stackp->next)
 	{
 	  static const char sep[2] = { DIR_SEPARATOR, '\0' };
 
@@ -940,8 +962,8 @@ handle_include (file_location loc, directive_handler_t handle_directive)
      filename with BASE_DIR.  */
   if (input_file == NULL)
     {
-      if (base_dir)
-	pathname = concat (base_dir, filename, NULL);
+      if (m_base_dir)
+	pathname = concat (m_base_dir, filename, NULL);
       else
 	pathname = xstrdup (filename);
       input_file = fopen (pathname, "r");
@@ -957,21 +979,22 @@ handle_include (file_location loc, directive_handler_t handle_directive)
   /* Save the old cursor.  Note that the LINENO argument to this
      function is the beginning of the include statement, while
      read_md_lineno has already been advanced.  */
-  old_file = read_md_file;
-  old_filename = read_md_filename;
-  old_lineno = read_md_lineno;
+  old_file = m_read_md_file;
+  old_filename = m_read_md_filename;
+  old_lineno = m_read_md_lineno;
 
   if (include_callback)
     include_callback (pathname);
 
-  read_md_file = input_file;
-  read_md_filename = pathname;
-  handle_file (handle_directive);
+  m_read_md_file = input_file;
+  m_read_md_filename = pathname;
+
+  handle_file ();
 
   /* Restore the old cursor.  */
-  read_md_file = old_file;
-  read_md_filename = old_filename;
-  read_md_lineno = old_lineno;
+  m_read_md_file = old_file;
+  m_read_md_filename = old_filename;
+  m_read_md_lineno = old_lineno;
 
   /* Do not free the pathname.  It is attached to the various rtx
      queue elements.  */
@@ -981,16 +1004,16 @@ handle_include (file_location loc, directive_handler_t handle_directive)
    read_md_filename are valid.  Use HANDLE_DIRECTIVE to handle
    unknown directives.  */
 
-static void
-handle_file (directive_handler_t handle_directive)
+void
+rtx_reader::handle_file ()
 {
   struct md_name directive;
   int c;
 
-  read_md_lineno = 1;
+  m_read_md_lineno = 1;
   while ((c = read_skip_spaces ()) != EOF)
     {
-      file_location loc (read_md_filename, read_md_lineno);
+      file_location loc = get_current_location ();
       if (c != '(')
 	fatal_expected_char ('(', c);
 
@@ -1002,49 +1025,51 @@ handle_file (directive_handler_t handle_directive)
       else if (strcmp (directive.string, "define_c_enum") == 0)
 	handle_enum (loc, false);
       else if (strcmp (directive.string, "include") == 0)
-	handle_include (loc, handle_directive);
-      else if (handle_directive)
-	handle_directive (loc, directive.string);
+	handle_include (loc);
       else
-	read_skip_construct (1, loc);
+	handle_unknown_directive (loc, directive.string);
 
       require_char_ws (')');
     }
-  fclose (read_md_file);
+  fclose (m_read_md_file);
 }
 
-/* Like handle_file, but for top-level files.  Set up in_fname and
-   base_dir accordingly.  */
+/* Like handle_file, but for top-level files.  Set up m_toplevel_fname
+   and m_base_dir accordingly.  */
 
-static void
-handle_toplevel_file (directive_handler_t handle_directive)
+void
+rtx_reader::handle_toplevel_file ()
 {
   const char *base;
 
-  in_fname = read_md_filename;
-  base = lbasename (in_fname);
-  if (base == in_fname)
-    base_dir = NULL;
+  m_toplevel_fname = m_read_md_filename;
+  base = lbasename (m_toplevel_fname);
+  if (base == m_toplevel_fname)
+    m_base_dir = NULL;
   else
-    base_dir = xstrndup (in_fname, base - in_fname);
+    m_base_dir = xstrndup (m_toplevel_fname, base - m_toplevel_fname);
 
-  handle_file (handle_directive);
+  handle_file ();
+}
+
+file_location
+rtx_reader::get_current_location () const
+{
+  return file_location (m_read_md_filename, m_read_md_lineno);
 }
 
 /* Parse a -I option with argument ARG.  */
 
-static void
-parse_include (const char *arg)
+void
+rtx_reader::add_include_path (const char *arg)
 {
   struct file_name_list *dirtmp;
 
   dirtmp = XNEW (struct file_name_list);
   dirtmp->next = 0;
   dirtmp->fname = arg;
-  *last_dir_md_include_ptr = dirtmp;
-  last_dir_md_include_ptr = &dirtmp->next;
-  if (strlen (dirtmp->fname) > max_include_len)
-    max_include_len = strlen (dirtmp->fname);
+  *m_last_dir_md_include_ptr = dirtmp;
+  m_last_dir_md_include_ptr = &dirtmp->next;
 }
 
 /* The main routine for reading .md files.  Try to process all the .md
@@ -1054,16 +1079,11 @@ parse_include (const char *arg)
 
    PARSE_OPT, if nonnull, is passed all unknown command-line arguments.
    It should return true if it recognizes the argument or false if a
-   generic error should be reported.
-
-   If HANDLE_DIRECTIVE is nonnull, the parser calls it for each
-   unknown directive, otherwise it just skips such directives.
-   See the comment above the directive_handler_t definition for
-   details about the callback's interface.  */
+   generic error should be reported.  */
 
 bool
-read_md_files (int argc, const char **argv, bool (*parse_opt) (const char *),
-	       directive_handler_t handle_directive)
+rtx_reader::read_md_files (int argc, const char **argv,
+			   bool (*parse_opt) (const char *))
 {
   int i;
   bool no_more_options;
@@ -1101,9 +1121,9 @@ read_md_files (int argc, const char **argv, bool (*parse_opt) (const char *),
 	if (argv[i][1] == 'I')
 	  {
 	    if (argv[i][2] != '\0')
-	      parse_include (argv[i] + 2);
+	      add_include_path (argv[i] + 2);
 	    else if (++i < argc)
-	      parse_include (argv[i]);
+	      add_include_path (argv[i]);
 	    else
 	      fatal ("directory name missing after -I option");
 	    continue;
@@ -1131,9 +1151,9 @@ read_md_files (int argc, const char **argv, bool (*parse_opt) (const char *),
 	      if (already_read_stdin)
 		fatal ("cannot read standard input twice");
 
-	      read_md_file = stdin;
-	      read_md_filename = "<stdin>";
-	      handle_toplevel_file (handle_directive);
+	      m_read_md_file = stdin;
+	      m_read_md_filename = "<stdin>";
+	      handle_toplevel_file ();
 	      already_read_stdin = true;
 	      continue;
 	    }
@@ -1149,14 +1169,14 @@ read_md_files (int argc, const char **argv, bool (*parse_opt) (const char *),
 
       /* If we get here we are looking at a non-option argument, i.e.
 	 a file to be processed.  */
-      read_md_filename = argv[i];
-      read_md_file = fopen (read_md_filename, "r");
-      if (read_md_file == 0)
+      m_read_md_filename = argv[i];
+      m_read_md_file = fopen (m_read_md_filename, "r");
+      if (m_read_md_file == 0)
 	{
-	  perror (read_md_filename);
+	  perror (m_read_md_filename);
 	  return false;
 	}
-      handle_toplevel_file (handle_directive);
+      handle_toplevel_file ();
       num_files++;
     }
 
@@ -1164,10 +1184,19 @@ read_md_files (int argc, const char **argv, bool (*parse_opt) (const char *),
      read the standard input now.  */
   if (num_files == 0 && !already_read_stdin)
     {
-      read_md_file = stdin;
-      read_md_filename = "<stdin>";
-      handle_toplevel_file (handle_directive);
+      m_read_md_file = stdin;
+      m_read_md_filename = "<stdin>";
+      handle_toplevel_file ();
     }
 
   return !have_error;
+}
+
+/* class noop_reader : public rtx_reader */
+
+/* A dummy implementation which skips unknown directives.  */
+void
+noop_reader::handle_unknown_directive (file_location loc, const char *)
+{
+  read_skip_construct (1, loc);
 }
