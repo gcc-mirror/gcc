@@ -79,7 +79,8 @@ main (int argc, const char **argv)
 {
   progname = "genconstants";
 
-  if (!read_md_files (argc, argv, NULL, NULL))
+  noop_reader reader;
+  if (!reader.read_md_files (argc, argv, NULL))
     return (FATAL_EXIT_CODE);
 
   /* Initializing the MD reader has the side effect of loading up

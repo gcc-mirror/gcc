@@ -49,7 +49,8 @@ main (int argc, const char **argv)
 {
   progname = "genenums";
 
-  if (!read_md_files (argc, argv, NULL, NULL))
+  noop_reader reader;
+  if (!reader.read_md_files (argc, argv, NULL))
     return (FATAL_EXIT_CODE);
 
   puts ("/* Generated automatically by the program `genenums'");

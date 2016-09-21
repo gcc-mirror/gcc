@@ -90,16 +90,81 @@ struct enum_type {
   unsigned int num_values;
 };
 
-/* A callback that handles a single .md-file directive, up to but not
-   including the closing ')'.  It takes two arguments: the file position
-   at which the directive started, and the name of the directive.  The next
-   unread character is the optional space after the directive name.  */
-typedef void (*directive_handler_t) (file_location, const char *);
+class rtx_reader
+{
+ public:
+  rtx_reader ();
+  virtual ~rtx_reader ();
 
-extern const char *in_fname;
-extern FILE *read_md_file;
-extern int read_md_lineno;
-extern const char *read_md_filename;
+  bool read_md_files (int, const char **, bool (*) (const char *));
+
+  /* A hook that handles a single .md-file directive, up to but not
+     including the closing ')'.  It takes two arguments: the file position
+     at which the directive started, and the name of the directive.  The next
+     unread character is the optional space after the directive name.  */
+  virtual void handle_unknown_directive (file_location, const char *) = 0;
+
+  file_location get_current_location () const;
+
+  int read_char (void);
+  void unread_char (int ch);
+
+  const char *get_top_level_filename () const { return m_toplevel_fname; }
+  const char *get_filename () const { return m_read_md_filename; }
+  int get_lineno () const { return m_read_md_lineno; }
+
+ private:
+  /* A singly-linked list of filenames.  */
+  struct file_name_list {
+    struct file_name_list *next;
+    const char *fname;
+  };
+
+ private:
+  void handle_file ();
+  void handle_toplevel_file ();
+  void handle_include (file_location loc);
+  void add_include_path (const char *arg);
+
+ private:
+  /* The name of the toplevel file that indirectly included
+     m_read_md_file.  */
+  const char *m_toplevel_fname;
+
+  /* The directory part of m_toplevel_fname
+     NULL if m_toplevel_fname is a bare filename.  */
+  char *m_base_dir;
+
+  /* The file we are reading.  */
+  FILE *m_read_md_file;
+
+  /* The filename of m_read_md_file.  */
+  const char *m_read_md_filename;
+
+  /* The current line number in m_read_md_file.  */
+  int m_read_md_lineno;
+
+  /* The first directory to search.  */
+  file_name_list *m_first_dir_md_include;
+
+  /* A pointer to the null terminator of the md include chain.  */
+  file_name_list **m_last_dir_md_include_ptr;
+};
+
+/* Global singleton.  */
+extern rtx_reader *rtx_reader_ptr;
+
+/* An rtx_reader subclass which skips unknown directives.  */
+
+class noop_reader : public rtx_reader
+{
+ public:
+  noop_reader () : rtx_reader () {}
+
+  /* A dummy implementation which skips unknown directives.  */
+  void handle_unknown_directive (file_location, const char *);
+};
+
 extern struct obstack string_obstack;
 extern void (*include_callback) (const char *);
 
@@ -108,12 +173,7 @@ extern void (*include_callback) (const char *);
 static inline int
 read_char (void)
 {
-  int ch;
-
-  ch = getc (read_md_file);
-  if (ch == '\n')
-    read_md_lineno++;
-  return ch;
+  return rtx_reader_ptr->read_char ();
 }
 
 /* Put back CH, which was the last character read from the MD file.  */
@@ -121,9 +181,7 @@ read_char (void)
 static inline void
 unread_char (int ch)
 {
-  if (ch == '\n')
-    read_md_lineno--;
-  ungetc (ch, read_md_file);
+  rtx_reader_ptr->unread_char (ch);
 }
 
 extern hashval_t leading_string_hash (const void *);
@@ -151,7 +209,5 @@ extern void upcase_string (char *);
 extern void traverse_md_constants (htab_trav, void *);
 extern void traverse_enum_types (htab_trav, void *);
 extern struct enum_type *lookup_enum_type (const char *);
-extern bool read_md_files (int, const char **, bool (*) (const char *),
-			   directive_handler_t);
 
 #endif /* GCC_READ_MD_H */

@@ -1234,6 +1234,7 @@ read_rtx_code (const char *code_name)
 		  || GET_CODE (return_rtx) == DEFINE_INSN_AND_SPLIT))
 	    {
 	      char line_name[20];
+	      const char *read_md_filename = rtx_reader_ptr->get_filename ();
 	      const char *fn = (read_md_filename ? read_md_filename : "rtx");
 	      const char *slash;
 	      for (slash = fn; *slash; slash ++)
@@ -1241,7 +1242,7 @@ read_rtx_code (const char *code_name)
 		  fn = slash + 1;
 	      obstack_1grow (&string_obstack, '*');
 	      obstack_grow (&string_obstack, fn, strlen (fn));
-	      sprintf (line_name, ":%d", read_md_lineno);
+	      sprintf (line_name, ":%d", rtx_reader_ptr->get_lineno ());
 	      obstack_grow (&string_obstack, line_name, strlen (line_name)+1);
 	      stringbuf = XOBFINISH (&string_obstack, char *);
 	    }
