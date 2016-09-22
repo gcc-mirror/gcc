@@ -783,7 +783,6 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  if (rtx_equal_p (r1 ? r1 : SET_DEST (set), r2 ? r2 : SET_SRC (set)))
 	    {
 	      bool last = insn == BB_END (bb);
-	      fprintf (stderr, "Bingo\n");
 	      delete_insn (insn);
 	      if (last)
 		break;
