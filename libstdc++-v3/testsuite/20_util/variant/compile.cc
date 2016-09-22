@@ -169,6 +169,12 @@ void copy_assign()
     variant<DefaultNoexcept> a;
     static_assert(!noexcept(a = a), "");
   }
+
+  {
+    float f1 = 1.0f, f2 = 2.0f;
+    std::variant<float&> v1(f1);
+    v1 = f2;
+  }
 }
 
 void move_assign()
