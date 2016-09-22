@@ -1806,8 +1806,10 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 	 in the same position in the instruction stream.  */
       else
 	{
-	  rtx_insn *xi = next_nonnote_nondebug_insn (LABEL_REF_LABEL (x));
-	  rtx_insn *yi = next_nonnote_nondebug_insn (LABEL_REF_LABEL (y));
+	  rtx_insn *xi = next_nonnote_nondebug_insn
+	    (as_a<rtx_insn *> (LABEL_REF_LABEL (x)));
+	  rtx_insn *yi = next_nonnote_nondebug_insn
+	    (as_a<rtx_insn *> (LABEL_REF_LABEL (y)));
 	  while (xi && LABEL_P (xi))
 	    xi = next_nonnote_nondebug_insn (xi);
 	  while (yi && LABEL_P (yi))
