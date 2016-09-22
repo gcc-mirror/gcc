@@ -219,12 +219,12 @@ static void steal_delay_list_from_fallthrough (rtx_insn *, rtx, rtx_sequence *,
 					       struct resources *,
 					       int, int *, int *);
 static void try_merge_delay_insns (rtx_insn *, rtx_insn *);
-static rtx redundant_insn (rtx, rtx_insn *, const vec<rtx_insn *> &);
+static rtx_insn *redundant_insn (rtx, rtx_insn *, const vec<rtx_insn *> &);
 static int own_thread_p (rtx, rtx, int);
 static void update_block (rtx_insn *, rtx);
 static int reorg_redirect_jump (rtx_jump_insn *, rtx);
 static void update_reg_dead_notes (rtx_insn *, rtx_insn *);
-static void fix_reg_dead_note (rtx, rtx);
+static void fix_reg_dead_note (rtx_insn *, rtx);
 static void update_reg_unused_notes (rtx, rtx);
 static void fill_simple_delay_slots (int);
 static void fill_slots_from_thread (rtx_jump_insn *, rtx, rtx, rtx,
@@ -1449,7 +1449,7 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
    redundant insn, but the cost of splitting seems greater than the possible
    gain in rare cases.  */
 
-static rtx
+static rtx_insn *
 redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
 {
   rtx target_main = target;
@@ -1606,7 +1606,7 @@ redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
 	     resource requirements as we go.  */
 	  for (i = seq->len () - 1; i > 0; i--)
 	    {
-	      rtx candidate = seq->element (i);
+	      rtx_insn *candidate = seq->insn (i);
 
 	      /* If an insn will be annulled if the branch is false, it isn't
 		 considered as a possible duplicate insn.  */
@@ -1773,7 +1773,7 @@ update_reg_dead_notes (rtx_insn *insn, rtx_insn *delayed_insn)
    confused into thinking the register is dead.  */
 
 static void
-fix_reg_dead_note (rtx start_insn, rtx stop_insn)
+fix_reg_dead_note (rtx_insn *start_insn, rtx stop_insn)
 {
   rtx link, next;
   rtx_insn *p;
@@ -2417,7 +2417,7 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 			      && (! own_thread || ! sets_cc0_p (pat)))))
 	  && ! can_throw_internal (trial))
 	{
-	  rtx prior_insn;
+	  rtx_insn *prior_insn;
 
 	  /* If TRIAL is redundant with some insn before INSN, we don't
 	     actually need to add it to the delay list; we can merely pretend
@@ -2904,16 +2904,16 @@ fill_eager_delay_slots (void)
     }
 }
 
-static void delete_computation (rtx insn);
+static void delete_computation (rtx_insn *insn);
 
 /* Recursively delete prior insns that compute the value (used only by INSN
    which the caller is deleting) stored in the register mentioned by NOTE
    which is a REG_DEAD note associated with INSN.  */
 
 static void
-delete_prior_computation (rtx note, rtx insn)
+delete_prior_computation (rtx note, rtx_insn *insn)
 {
-  rtx our_prev;
+  rtx_insn *our_prev;
   rtx reg = XEXP (note, 0);
 
   for (our_prev = prev_nonnote_insn (insn);
@@ -3025,7 +3025,7 @@ delete_prior_computation (rtx note, rtx insn)
    delete the insn that set it.  */
 
 static void
-delete_computation (rtx insn)
+delete_computation (rtx_insn *insn)
 {
   rtx note, next;
 
@@ -3367,7 +3367,7 @@ relax_delay_slots (rtx_insn *first)
       if (! INSN_ANNULLED_BRANCH_P (delay_jump_insn)
 	  && ! condjump_in_parallel_p (delay_jump_insn)
 	  && prev_active_insn (target_label) == insn
-	  && ! BARRIER_P (prev_nonnote_insn (target_label))
+	  && ! BARRIER_P (prev_nonnote_insn (as_a<rtx_insn *> (target_label)))
 	  /* If the last insn in the delay slot sets CC0 for some insn,
 	     various code assumes that it is in a delay slot.  We could
 	     put it back where it belonged and delete the register notes,
