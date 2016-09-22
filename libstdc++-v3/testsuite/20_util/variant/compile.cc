@@ -418,3 +418,50 @@ void test_pr77641()
 
   constexpr std::variant<X> v1 = X{};
 }
+
+namespace adl_trap
+{
+  struct X {
+    X() = default;
+    X(int) { }
+    X(std::initializer_list<int>, const X&) { }
+  };
+  template<typename T> void move(T&) { }
+  template<typename T> void forward(T&) { }
+
+  struct Visitor {
+    template<typename T> void operator()(T&&) { }
+  };
+}
+
+void test_adl()
+{
+   using adl_trap::X;
+   using std::allocator_arg;
+   X x;
+   std::allocator<int> a;
+   std::initializer_list<int> il;
+   adl_trap::Visitor vis;
+
+   std::variant<X> v0(x);
+   v0 = x;
+   v0.emplace<0>(x);
+   v0.emplace<0>(il, x);
+   visit(vis, v0);
+   variant<X> v1{in_place<0>, x};
+   variant<X> v2{in_place<X>, x};
+   variant<X> v3{in_place<0>, il, x};
+   variant<X> v4{in_place<X>, il, x};
+   variant<X> v5{allocator_arg, a, in_place<0>, x};
+   variant<X> v6{allocator_arg, a, in_place<X>, x};
+   variant<X> v7{allocator_arg, a, in_place<0>, il, x};
+   variant<X> v8{allocator_arg, a, in_place<X>, il, x};
+   variant<X> v9{allocator_arg, a, in_place<X>, 1};
+
+   std::variant<X&> vr0(x);
+   vr0 = x;
+   variant<X&> vr1{in_place<0>, x};
+   variant<X&> vr2{in_place<X&>, x};
+   variant<X&> vr3{allocator_arg, a, in_place<0>, x};
+   variant<X&> vr4{allocator_arg, a, in_place<X&>, x};
+}

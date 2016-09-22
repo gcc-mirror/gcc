@@ -1,8 +1,16 @@
+2016-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uses_allocator.h (__uses_allocator_construct): Qualify
+	std::forward and ::new. Cast pointer to void*.
+	* include/std/variant (_Variant_storage, _Union, _Variant_base)
+	(__access, __visit_invoke, variant, visit): Qualify std::forward.
+	* testsuite/20_util/variant/compile.cc: Test for ADL problems.
+
 2016-09-22  Tim Shen  <timshen@google.com>
 
-	* libstdc++-v3/include/std/variant (variant::operator=): Fix assignment
+	* include/std/variant (variant::operator=): Fix assignment
 	on references.
-	* libstdc++-v3/testsuite/20_util/variant/compile.cc: Add test.
+	* testsuite/20_util/variant/compile.cc: Add test.
 
 2016-09-22  Tim Shen  <timshen@google.com>
 
