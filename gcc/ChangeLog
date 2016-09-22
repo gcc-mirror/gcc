@@ -1,3 +1,9 @@
+2016-09-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gimple-ssa-sprintf.c (format_floating_max): Use GMP_RNDN instead
+	of MPFR_RNDN.
+	(format_floating): Likewise.
+
 2016-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/77665

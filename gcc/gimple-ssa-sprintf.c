@@ -1125,7 +1125,7 @@ format_floating_max (tree type, char spec)
      round-to-nearest mode.  */
   mpfr_t x;
   mpfr_init2 (x, rfmt->p);
-  mpfr_from_real (x, &rv, MPFR_RNDN);
+  mpfr_from_real (x, &rv, GMP_RNDN);
 
   const char fmt[] = { '%', 'R', spec, '\0' };
   int n = mpfr_snprintf (NULL, 0, fmt, x);
@@ -1325,7 +1325,7 @@ format_floating (const conversion_spec &spec, tree arg)
 	 round-to-nearest mode.  */
       mpfr_t mpfrval;
       mpfr_init2 (mpfrval, rfmt->p);
-      mpfr_from_real (mpfrval, rvp, MPFR_RNDN);
+      mpfr_from_real (mpfrval, rvp, GMP_RNDN);
 
       char fmtstr [40];
       char *pfmt = fmtstr;
