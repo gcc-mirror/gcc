@@ -70,7 +70,7 @@ along with GCC; see the file COPYING3.  If not see
    if it is not a decrement and branch jump insn.  */
 
 rtx
-doloop_condition_get (rtx doloop_pat)
+doloop_condition_get (rtx_insn *doloop_pat)
 {
   rtx cmp;
   rtx inc;

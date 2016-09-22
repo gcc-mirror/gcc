@@ -371,7 +371,7 @@ extern bool just_once_each_iteration_p (const struct loop *, const_basic_block);
 gcov_type expected_loop_iterations_unbounded (const struct loop *,
 					      bool *read_profile_p = NULL);
 extern unsigned expected_loop_iterations (struct loop *);
-extern rtx doloop_condition_get (rtx);
+extern rtx doloop_condition_get (rtx_insn *);
 
 void mark_loop_for_removal (loop_p);
 
