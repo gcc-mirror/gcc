@@ -1,3 +1,8 @@
+2016-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/debug/dwarf2/const-2b.c: Also compile for x86_64-*-*.
+	Remove SSE effective target requirement.
+
 2016-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71979
