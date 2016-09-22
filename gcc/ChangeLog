@@ -1,5 +1,12 @@
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* emit-rtl.c (prev_real_insn): Change argument type to rtx_insn *.
+	* rtl.h: Adjust prototype.
+	* config/sh/sh.md: Adjust.
+	* dwarf2out.c (add_var_loc_to_decl): Likewise.
+
+2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* emit-rtl.c (next_nondebug_insn): Change argument type to
 	rtx_insn *.
 	(prev_nondebug_insn): Likewise.

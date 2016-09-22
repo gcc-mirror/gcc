@@ -5415,7 +5415,7 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
       && NOTE_VAR_LOCATION_LOC (temp->first->loc)
       && GET_CODE (NOTE_VAR_LOCATION_LOC (temp->first->loc))
 	 == GET_CODE (DECL_INCOMING_RTL (decl))
-      && prev_real_insn (temp->first->loc) == NULL_RTX
+      && prev_real_insn (as_a<rtx_insn *> (temp->first->loc)) == NULL_RTX
       && (bitsize != -1
 	  || !rtx_equal_p (NOTE_VAR_LOCATION_LOC (temp->first->loc),
 			   NOTE_VAR_LOCATION_LOC (loc_note))

@@ -7178,7 +7178,8 @@
 		      (label_ref (match_operand 1 "" ""))))
    (use (label_ref (match_operand 2 "" "")))]
   "TARGET_SH2
-   && (! INSN_UID (operands[1]) || prev_real_insn (operands[1]) == insn)"
+   && (! INSN_UID (operands[1])
+       || prev_real_insn (as_a<rtx_insn *> (operands[1])) == insn)"
   "braf	%0%#"
   [(set_attr "needs_delay_slot" "yes")
    (set_attr "type" "jump_ind")])
