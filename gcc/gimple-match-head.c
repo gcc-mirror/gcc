@@ -89,6 +89,8 @@ gimple_resimplify1 (gimple_seq *seq,
       if (tem != NULL_TREE
 	  && CONSTANT_CLASS_P (tem))
 	{
+	  if (TREE_OVERFLOW_P (tem))
+	    tem = drop_tree_overflow (tem);
 	  res_ops[0] = tem;
 	  res_ops[1] = NULL_TREE;
 	  res_ops[2] = NULL_TREE;
@@ -134,6 +136,8 @@ gimple_resimplify2 (gimple_seq *seq,
       if (tem != NULL_TREE
 	  && CONSTANT_CLASS_P (tem))
 	{
+	  if (TREE_OVERFLOW_P (tem))
+	    tem = drop_tree_overflow (tem);
 	  res_ops[0] = tem;
 	  res_ops[1] = NULL_TREE;
 	  res_ops[2] = NULL_TREE;
@@ -194,6 +198,8 @@ gimple_resimplify3 (gimple_seq *seq,
       if (tem != NULL_TREE
 	  && CONSTANT_CLASS_P (tem))
 	{
+	  if (TREE_OVERFLOW_P (tem))
+	    tem = drop_tree_overflow (tem);
 	  res_ops[0] = tem;
 	  res_ops[1] = NULL_TREE;
 	  res_ops[2] = NULL_TREE;
