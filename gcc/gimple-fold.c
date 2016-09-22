@@ -5647,14 +5647,15 @@ fold_array_ctor_reference (tree type, tree ctor,
   if (domain_type && TYPE_MIN_VALUE (domain_type))
     {
       /* Static constructors for variably sized objects makes no sense.  */
-      gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
+      if (TREE_CODE (TYPE_MIN_VALUE (domain_type)) != INTEGER_CST)
+	return NULL_TREE;
       low_bound = wi::to_offset (TYPE_MIN_VALUE (domain_type));
     }
   else
     low_bound = 0;
   /* Static constructors for variably sized objects makes no sense.  */
-  gcc_assert (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))))
-	      == INTEGER_CST);
+  if (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor)))) != INTEGER_CST)
+    return NULL_TREE;
   elt_size = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
 
   /* We can handle only constantly sized accesses that are known to not
