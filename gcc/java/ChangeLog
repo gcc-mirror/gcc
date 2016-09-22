@@ -1,3 +1,8 @@
+2016-09-22  Richard Biener  <rguenther@suse.de>
+
+	java/
+	* class.c (push_super_field): Set DECL_CONTEXT.
+
 2016-09-01  Martin Sebor  <msebor@redhat.com>
 
 	* decl.c (give_name_to_locals): Increase buffer size to guarantee
