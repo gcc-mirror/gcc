@@ -1,5 +1,25 @@
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* emit-rtl.c (next_active_insn): Change argument type to
+	rtx_insn *.
+	(prev_active_insn): Likewise.
+	(active_insn_p): Likewise.
+	* rtl.h: Adjust prototypes.
+	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Adjust.
+	* config/arc/arc.md: Likewise.
+	* config/pa/pa.c (branch_to_delay_slot_p): Likewise.
+	(branch_needs_nop_p): Likewise.
+	(use_skip_p): Likewise.
+	* config/sh/sh.c (gen_block_redirect): Likewise.
+	(split_branches): Likewise.
+	* reorg.c (optimize_skip): Likewise.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(relax_delay_slots): Likewise.
+	* resource.c (mark_target_live_regs): Likewise.
+
+2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/cris/cris.c (cris_asm_output_case_end): Change argument
 	type to rtx_insn *.
 	* emit-rtl.c (next_nonnote_nondebug_insn): Likewise.
