@@ -1,3 +1,9 @@
+2016-09-22  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/77653
+	* ipa-icf.c (sem_variable::merge): Yield merge operation if
+	alias address matters, not necessarily address of original.
+
 2016-09-22  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77697
