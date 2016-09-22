@@ -1,5 +1,5 @@
-/* __builtin_ms_va_list is only supported for x86_64 -m64.  */
-/* { dg-do run { target { x86_64-*-* && { ! ilp32 } } } } */
+/* __builtin_ms_va_list is only supported for -m64.  */
+/* { dg-do run { target lp64 } } */
 /* { dg-require-effective-target lto } */
 /* { dg-options "-flto" } */
 

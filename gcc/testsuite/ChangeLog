@@ -1,3 +1,17 @@
+2016-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/ifcvt-1.c: Compile also for 64-bit i?86-*-* target.
+	* gcc.dg/ifcvt-2.c: Ditto.
+	* gcc.dg/zero_bits_compound-1.c: Ditto.
+	* gcc.dg/zero_bits_compound-1.c: Ditto.
+	* gcc.dg/pr40550.c: Simplify target selectors.
+	Use dg-additional-options.
+	* gcc.dg/pr47893.c: Ditto.
+	* gcc.dg/pr68435.c: Compile also for i?86-*-* target.  Add -march=i686
+	additional options for 32-bit x86 targets.
+	* gcc.dg/pr70955.c: Move to ...
+	* gcc.target/i386/pr70955.c: ... here.  Simplify target selector.
+
 2016-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61019
