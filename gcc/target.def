@@ -432,6 +432,22 @@ this section is associated.",
  void, (const char *name, unsigned int flags, tree decl),
  default_no_named_section)
 
+/* Tell assembler what section attributes to assign this elf section
+   declaration, using their numerical value.  */
+DEFHOOK
+(elf_flags_numeric,
+ "This hook can be used to encode ELF section flags for which no letter\n\
+code has been defined in the assembler.  It is called by\n\
+@code{default_asm_named_section} whenever the section flags need to be\n\
+emitted in the assembler output.  If the hook returns true, then the\n\
+numerical value for ELF section flags should be calculated from\n\
+@var{flags} and saved in @var{*num}; the value will be printed out\n\
+instead of the normal sequence of letter codes.  If the hook is not\n\
+defined, or if it returns false, then @var{num} will be ignored and the\n\
+traditional letter sequence will be emitted.",
+ bool, (unsigned int flags, unsigned int *num),
+ hook_uint_uintp_false)
+
 /* Return preferred text (sub)section for function DECL.
    Main purpose of this function is to separate cold, normal and hot
    functions. STARTUP is true when function is known to be used only 

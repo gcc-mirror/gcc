@@ -104,7 +104,8 @@
    the code more efficient, but for Thumb-1 it's better to put them out of
    band unless we are generating compressed tables.  */
 #define JUMP_TABLES_IN_TEXT_SECTION					\
-   (TARGET_32BIT || (TARGET_THUMB && (optimize_size || flag_pic)))
+   ((TARGET_32BIT || (TARGET_THUMB && (optimize_size || flag_pic))) \
+    && !target_pure_code)
 
 #ifndef LINK_SPEC
 #define LINK_SPEC "%{mbig-endian:-EB} %{mlittle-endian:-EL} -X"

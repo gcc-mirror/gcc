@@ -1,3 +1,10 @@
+2016-09-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/pure-code/ffunction-sections.c: New.
+	* gcc.target/arm/pure-code/no-literal-pool.c: New.
+	* gcc.target/arm/pure-code/pure-code.exp: New.
+
 2016-09-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/debug/dwarf2/const-2b.c: Also compile for x86_64-*-*.
