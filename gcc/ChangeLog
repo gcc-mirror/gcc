@@ -1,5 +1,10 @@
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* emit-rtl.c (next_cc0_user): Make argument type rtx_insn *.
+	* rtl.h: Adjust prototype.
+
+2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* emit-rtl.c (next_active_insn): Change argument type to
 	rtx_insn *.
 	(prev_active_insn): Likewise.
