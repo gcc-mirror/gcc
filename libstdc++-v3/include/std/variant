@@ -1147,8 +1147,7 @@ namespace __variant
 	{
 	  constexpr auto __index = __accepted_index<_Tp&&>;
 	  if (index() == __index)
-	    *static_cast<__storage<__to_type<__index>>*>(this->_M_storage())
-	      = forward<_Tp>(__rhs);
+	    std::get<__index>(*this) = std::forward<_Tp>(__rhs);
 	  else
 	    this->emplace<__index>(forward<_Tp>(__rhs));
 	  __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this));
