@@ -1,3 +1,7 @@
+2016-09-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* regcprop.c (copyprop_hardreg_forward_1): Remove noop moves.
+
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* emit-rtl.c (next_cc0_user): Make argument type rtx_insn *.
