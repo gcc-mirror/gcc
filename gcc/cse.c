@@ -3054,7 +3054,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	 with floating-point operands.  */
       if (reverse_code)
 	{
-	  enum rtx_code reversed = reversed_comparison_code (x, NULL_RTX);
+	  enum rtx_code reversed = reversed_comparison_code (x, NULL);
 	  if (reversed == UNKNOWN)
 	    break;
 	  else

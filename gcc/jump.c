@@ -62,7 +62,7 @@ static void mark_all_labels (rtx_insn *);
 static void mark_jump_label_1 (rtx, rtx_insn *, bool, bool);
 static void mark_jump_label_asm (rtx, rtx_insn *);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
-static int invert_exp_1 (rtx, rtx);
+static int invert_exp_1 (rtx, rtx_insn *);
 
 /* Worker for rebuild_jump_labels and rebuild_jump_labels_chain.  */
 static void
@@ -360,7 +360,7 @@ mark_all_labels (rtx_insn *f)
    to help this function avoid overhead in these cases.  */
 enum rtx_code
 reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
-				const_rtx arg1, const_rtx insn)
+				const_rtx arg1, const rtx_insn *insn)
 {
   machine_mode mode;
 
@@ -422,7 +422,7 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
       /* These CONST_CAST's are okay because prev_nonnote_insn just
 	 returns its argument and we assign it to a const_rtx
 	 variable.  */
-      for (rtx_insn *prev = prev_nonnote_insn (CONST_CAST_RTX (insn));
+      for (rtx_insn *prev = prev_nonnote_insn (const_cast<rtx_insn *> (insn));
 	   prev != 0 && !LABEL_P (prev);
 	   prev = prev_nonnote_insn (prev))
 	{
@@ -470,7 +470,7 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
 /* A wrapper around the previous function to take COMPARISON as rtx
    expression.  This simplifies many callers.  */
 enum rtx_code
-reversed_comparison_code (const_rtx comparison, const_rtx insn)
+reversed_comparison_code (const_rtx comparison, const rtx_insn *insn)
 {
   if (!COMPARISON_P (comparison))
     return UNKNOWN;
@@ -484,7 +484,7 @@ reversed_comparison_code (const_rtx comparison, const_rtx insn)
 rtx
 reversed_comparison (const_rtx exp, machine_mode mode)
 {
-  enum rtx_code reversed_code = reversed_comparison_code (exp, NULL_RTX);
+  enum rtx_code reversed_code = reversed_comparison_code (exp, NULL);
   if (reversed_code == UNKNOWN)
     return NULL_RTX;
   else
@@ -1623,7 +1623,7 @@ redirect_jump_2 (rtx_jump_insn *jump, rtx olabel, rtx nlabel, int delete_unused,
 /* Invert the jump condition X contained in jump insn INSN.  Accrue the
    modifications into the change group.  Return nonzero for success.  */
 static int
-invert_exp_1 (rtx x, rtx insn)
+invert_exp_1 (rtx x, rtx_insn *insn)
 {
   RTX_CODE code = GET_CODE (x);
 

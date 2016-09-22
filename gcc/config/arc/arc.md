@@ -3879,7 +3879,7 @@
   ""
   "*
 {
-  rtx diff_vec = PATTERN (next_nonnote_insn (operands[3]));
+  rtx diff_vec = PATTERN (next_nonnote_insn (as_a<rtx_insn *> (operands[3])));
 
   if (GET_CODE (diff_vec) != ADDR_DIFF_VEC)
     {
@@ -3907,10 +3907,12 @@
   [(set_attr "type" "load")
    (set_attr_alternative "iscompact"
      [(cond
-	[(ne (symbol_ref "GET_MODE (PATTERN (next_nonnote_insn (operands[3])))")
+	[(ne (symbol_ref "GET_MODE (PATTERN (next_nonnote_insn
+					       (as_a<rtx_insn *> (operands[3]))))")
 	     (symbol_ref "QImode"))
 	 (const_string "false")
-	 (match_test "!ADDR_DIFF_VEC_FLAGS (PATTERN (next_nonnote_insn (operands[3]))).offset_unsigned")
+	 (match_test "!ADDR_DIFF_VEC_FLAGS (PATTERN (next_nonnote_insn
+						       (as_a<rtx_insn *> (operands[3])))).offset_unsigned")
 	 (const_string "false")]
 	(const_string "true"))
       (const_string "false")
@@ -3946,7 +3948,7 @@
   "TARGET_COMPACT_CASESI"
   "*
 {
-  rtx diff_vec = PATTERN (next_nonnote_insn (operands[1]));
+  rtx diff_vec = PATTERN (next_nonnote_insn (as_a<rtx_insn *> (operands[1])));
   int unalign = arc_get_unalign ();
   rtx xop[3];
   const char *s;

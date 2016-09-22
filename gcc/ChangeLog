@@ -1,5 +1,25 @@
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* emit-rtl.c (next_nonnote_insn): Change argument type to
+	rtx_insn *.
+	(prev_nonnote_insn): Likewise.
+	* jump.c (reversed_comparison_code_parts): Likewise.
+	(reversed_comparison): Likewise.
+	* rtl.h: Adjust prototypes.
+	* config/arc/arc.md: Adjust.
+	* cse.c (find_comparison_args): Likewise.
+	* reorg.c (redundant_insn): Change return type to rtx_insn *.
+	(fix_reg_dead_note): Change argument type to rtx_insn *.
+	(delete_prior_computation): Likewise.
+	(delete_computation): Likewise.
+	(fill_slots_from_thread): Adjust.
+	(relax_delay_slots): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	(simplify_relational_operation_1): Likewise.
+	(simplify_ternary_operation): Likewise.
+
+2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/arc/arc-protos.h (arc_label_align): Change type of
 	variables from rtx to rtx_insn *.
 	* config/arc/arc.c (arc_label_align): Likewise.
