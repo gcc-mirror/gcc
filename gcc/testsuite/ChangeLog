@@ -1,3 +1,8 @@
+2016-09-22  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/77653
+	* gcc.dg/ipa/pr77653.c: New test.
+
 2016-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/77665

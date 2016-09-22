@@ -2179,7 +2179,6 @@ sem_variable::merge (sem_item *alias_item)
   varpool_node *alias = alias_var->get_node ();
   bool original_discardable = false;
 
-  bool original_address_matters = original->address_matters_p ();
   bool alias_address_matters = alias->address_matters_p ();
 
   /* See if original is in a section that can be discarded if the main
@@ -2222,13 +2221,11 @@ sem_variable::merge (sem_item *alias_item)
     }
 
   /* We can not merge if address comparsion metters.  */
-  if (original_address_matters && alias_address_matters
-      && flag_merge_constants < 2)
+  if (alias_address_matters && flag_merge_constants < 2)
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "Not unifying; "
-		 "adress of original and alias may be compared.\n\n");
+		 "Not unifying; adress of original may be compared.\n\n");
       return false;
     }
 
