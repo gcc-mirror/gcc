@@ -481,3 +481,13 @@ void
 hook_void_gcc_optionsp (struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
 }
+
+/* Generic hook that takes an unsigned int, an unsigned int pointer and
+   returns false.  */
+
+bool
+hook_uint_uintp_false (unsigned int, unsigned int *)
+{
+  return false;
+}
+

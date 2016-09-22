@@ -1,3 +1,24 @@
+2016-09-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Terry Guo  <terry.guo@arm.com>
+
+	* target.def (elf_flags_numeric): New target hook.
+	* targhooks.h (default_asm_elf_flags_numeric): New.
+	* varasm.c (default_asm_elf_flags_numeric): New.
+	(default_elf_asm_named_section): Use new target hook.
+	* config/arm/arm.opt (mpure-code): New.
+	* config/arm/arm.h (SECTION_ARM_PURECODE): New.
+	* config/arm/arm.c (arm_asm_init_sections): Add section
+	attribute to default text section if -mpure-code.
+	(arm_option_check_internal): Diagnose use of option with
+	non supported targets and/or options.
+	(arm_asm_elf_flags_numeric): New.
+	(arm_function_section): New.
+	(arm_elf_section_type_flags): New.
+	* config/arm/elf.h (JUMP_TABLES_IN_TEXT_SECTION): Disable
+	for -mpure-code.
+	* gcc/doc/texi (TARGET_ASM_ELF_FLAGS_NUMERIC): New.
+	* gcc/doc/texi.in (TARGET_ASM_ELF_FLAGS_NUMERIC): Likewise.
+
 2016-09-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* regcprop.c (copyprop_hardreg_forward_1): Remove noop moves.

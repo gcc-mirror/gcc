@@ -281,3 +281,7 @@ Assume loading data from flash is slower than fetching instructions.
 masm-syntax-unified
 Target Report Var(inline_asm_unified) Init(0) Save
 Assume unified syntax for inline assembly code.
+
+mpure-code
+Target Report Var(target_pure_code) Init(0)
+Do not allow constant data to be placed in code sections.

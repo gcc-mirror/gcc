@@ -7568,6 +7568,18 @@ is non-NULL, it is the @code{VAR_DECL} or @code{FUNCTION_DECL} with which
 this section is associated.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_ASM_ELF_FLAGS_NUMERIC (unsigned int @var{flags}, unsigned int *@var{num})
+This hook can be used to encode ELF section flags for which no letter
+code has been defined in the assembler.  It is called by
+@code{default_asm_named_section} whenever the section flags need to be
+emitted in the assembler output.  If the hook returns true, then the
+numerical value for ELF section flags should be calculated from
+@var{flags} and saved in @var{*num}; the value will be printed out
+instead of the normal sequence of letter codes.  If the hook is not
+defined, or if it returns false, then @var{num} will be ignored and the
+traditional letter sequence will be emitted.
+@end deftypefn
+
 @deftypefn {Target Hook} {section *} TARGET_ASM_FUNCTION_SECTION (tree @var{decl}, enum node_frequency @var{freq}, bool @var{startup}, bool @var{exit})
 Return preferred text (sub)section for function @var{decl}.
 Main purpose of this function is to separate cold, normal and hot

@@ -2276,4 +2276,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* For switching between functions with different target attributes.  */
 #define SWITCHABLE_TARGET 1
 
+/* Define SECTION_ARM_PURECODE as the ARM specific section attribute
+   representation for SHF_ARM_PURECODE in GCC.  */
+#define SECTION_ARM_PURECODE SECTION_MACH_DEP
+
 #endif /* ! GCC_ARM_H */
