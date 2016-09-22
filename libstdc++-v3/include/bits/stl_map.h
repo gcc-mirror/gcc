@@ -67,6 +67,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
+  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+    class multimap;
+
   /**
    *  @brief A standard container made up of (key,value) pairs, which can be
    *  retrieved based on a key, in logarithmic time.
@@ -152,6 +155,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Rep_type::difference_type        difference_type;
       typedef typename _Rep_type::reverse_iterator       reverse_iterator;
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
+
+#if __cplusplus > 201402L
+      using node_type = typename _Rep_type::node_type;
+      using insert_return_type = typename _Rep_type::insert_return_type;
+#endif
 
       // [23.3.1.1] construct/copy/destroy
       // (get_allocator() is also listed in this section)
@@ -592,6 +600,57 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 					     std::forward<_Args>(__args)...);
 	}
 #endif
+
+#if __cplusplus > 201402L
+      /// Extract a node.
+      node_type
+      extract(const_iterator __pos)
+      { return _M_t.extract(__pos); }
+
+      /// Extract a node.
+      node_type
+      extract(const key_type& __x)
+      { return _M_t.extract(__x); }
+
+      /// Re-insert an extracted node.
+      insert_return_type
+      insert(node_type&& __nh)
+      { return _M_t._M_reinsert_node_unique(std::move(__nh)); }
+
+      /// Re-insert an extracted node.
+      iterator
+      insert(const_iterator __hint, node_type&& __nh)
+      { return _M_t._M_reinsert_node_hint_unique(__hint, std::move(__nh)); }
+
+      template<typename, typename>
+	friend class _Rb_tree_merge_helper;
+
+      template<typename _C2>
+	void
+	merge(map<_Key, _Tp, _C2, _Alloc>& __source)
+	{
+	  using _Merge_helper = _Rb_tree_merge_helper<map, _C2>;
+	  _M_t._M_merge_unique(_Merge_helper::_S_get_tree(__source));
+	}
+
+      template<typename _C2>
+	void
+	merge(map<_Key, _Tp, _C2, _Alloc>&& __source)
+	{ merge(__source); }
+
+      template<typename _C2>
+	void
+	merge(multimap<_Key, _Tp, _C2, _Alloc>& __source)
+	{
+	  using _Merge_helper = _Rb_tree_merge_helper<map, _C2>;
+	  _M_t._M_merge_unique(_Merge_helper::_S_get_tree(__source));
+	}
+
+      template<typename _C2>
+	void
+	merge(multimap<_Key, _Tp, _C2, _Alloc>&& __source)
+	{ merge(__source); }
+#endif // C++17
 
 #if __cplusplus > 201402L
 #define __cpp_lib_map_try_emplace 201411
@@ -1365,6 +1424,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+
+#if __cplusplus > 201402L
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  // Allow std::map access to internals of compatible maps.
+  template<typename _Key, typename _Val, typename _Cmp1, typename _Alloc,
+	   typename _Cmp2>
+    struct
+    _Rb_tree_merge_helper<_GLIBCXX_STD_C::map<_Key, _Val, _Cmp1, _Alloc>,
+			  _Cmp2>
+    {
+    private:
+      friend class _GLIBCXX_STD_C::map<_Key, _Val, _Cmp1, _Alloc>;
+
+      static auto&
+      _S_get_tree(_GLIBCXX_STD_C::map<_Key, _Val, _Cmp2, _Alloc>& __map)
+      { return __map._M_t; }
+
+      static auto&
+      _S_get_tree(_GLIBCXX_STD_C::multimap<_Key, _Val, _Cmp2, _Alloc>& __map)
+      { return __map._M_t; }
+    };
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif // C++17
+
 } // namespace std
 
 #endif /* _STL_MAP_H */

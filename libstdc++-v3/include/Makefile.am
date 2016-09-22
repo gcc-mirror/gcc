@@ -129,7 +129,7 @@ bits_headers = \
 	${bits_srcdir}/specfun.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/move.h \
-	${bits_srcdir}/std_mutex.h \
+	${bits_srcdir}/node_handle.h \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \
 	${bits_srcdir}/parse_numbers.h \
@@ -159,6 +159,7 @@ bits_headers = \
 	${bits_srcdir}/shared_ptr_base.h \
 	${bits_srcdir}/slice_array.h \
 	${bits_srcdir}/sstream.tcc \
+	${bits_srcdir}/std_mutex.h \
 	${bits_srcdir}/stl_algo.h \
 	${bits_srcdir}/stl_algobase.h \
 	${bits_srcdir}/stl_bvector.h \

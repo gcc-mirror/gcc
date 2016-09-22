@@ -27,12 +27,15 @@
 #include <string_view>
 #include <string>
 #include <map>
+#include <unordered_set>
 #include <iostream>
 
 using std::any;
 using std::optional;
 using std::variant;
 using std::string_view;
+using std::map;
+using std::unordered_set;
 
 int
 main()
@@ -83,9 +86,20 @@ main()
 // { dg-final { note-test v3 {std::variant<float, int, std::string_view> [index 1] = {3}} } }
   variant<float, int, string_view> v4{ str };
 // { dg-final { note-test v4 {std::variant<float, int, std::string_view> [index 2] = {"string"}} } }
-
   variant<string_view&> vref{str};
 // { dg-final { note-test vref {std::variant<std::basic_string_view<char, std::char_traits<char> > &> [index 0] = {"string"}} } }
+
+  map<int, string_view> m{ {1, "one"} };
+  map<int, string_view>::node_type n0;
+// { dg-final { note-test n0 {empty node handle for map}}}
+  map<int, string_view>::node_type n1 = m.extract(1);
+// { dg-final { note-test n1 {node handle for map with element = {{first = 1, second = "two"}}}}}
+
+  unordered_set<int> s{ 3, 4 };
+  unordered_set<int>::node_type n2;
+// { dg-final { note-test n2 {empty node handle for unordered set}}}
+  unordered_set<int>::node_type n3 = s.extract(3);
+// { dg-final { note-test n1 {node handle for unordered set with element = {3}}}}
 
   std::cout << "\n";
   return 0;			// Mark SPOT

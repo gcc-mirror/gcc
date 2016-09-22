@@ -65,6 +65,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
+  template<typename _Key, typename _Compare, typename _Alloc>
+    class set;
+
   /**
    *  @brief A standard container made up of elements, which can be retrieved
    *  in logarithmic time.
@@ -132,6 +135,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
       typedef typename _Rep_type::size_type                 size_type;
       typedef typename _Rep_type::difference_type           difference_type;
+
+#if __cplusplus > 201402L
+      using node_type = typename _Rep_type::node_type;
+#endif
 
       // allocation/deallocation
       /**
@@ -538,6 +545,57 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { this->insert(__l.begin(), __l.end()); }
 #endif
 
+#if __cplusplus > 201402L
+      /// Extract a node.
+      node_type
+      extract(const_iterator __pos)
+      { return _M_t.extract(__pos); }
+
+      /// Extract a node.
+      node_type
+      extract(const key_type& __x)
+      { return _M_t.extract(__x); }
+
+      /// Re-insert an extracted node.
+      iterator
+      insert(node_type&& __nh)
+      { return _M_t._M_reinsert_node_equal(std::move(__nh)); }
+
+      /// Re-insert an extracted node.
+      iterator
+      insert(const_iterator __hint, node_type&& __nh)
+      { return _M_t._M_reinsert_node_hint_equal(__hint, std::move(__nh)); }
+
+      template<typename, typename>
+	friend class _Rb_tree_merge_helper;
+
+      template<typename _Compare1>
+	void
+	merge(multiset<_Key, _Compare1, _Alloc>& __source)
+	{
+	  using _Merge_helper = _Rb_tree_merge_helper<multiset, _Compare1>;
+	  _M_t._M_merge_equal(_Merge_helper::_S_get_tree(__source));
+	}
+
+      template<typename _Compare1>
+	void
+	merge(multiset<_Key, _Compare1, _Alloc>&& __source)
+	{ merge(__source); }
+
+      template<typename _Compare1>
+	void
+	merge(set<_Key, _Compare1, _Alloc>& __source)
+	{
+	  using _Merge_helper = _Rb_tree_merge_helper<multiset, _Compare1>;
+	  _M_t._M_merge_equal(_Merge_helper::_S_get_tree(__source));
+	}
+
+      template<typename _Compare1>
+	void
+	merge(set<_Key, _Compare1, _Alloc>&& __source)
+	{ merge(__source); }
+#endif // C++17
+
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 130. Associative erase should return an iterator.
@@ -881,6 +939,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+
+#if __cplusplus > 201402L
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  // Allow std::multiset access to internals of compatible sets.
+  template<typename _Val, typename _Cmp1, typename _Alloc, typename _Cmp2>
+    struct
+    _Rb_tree_merge_helper<_GLIBCXX_STD_C::multiset<_Val, _Cmp1, _Alloc>,
+			  _Cmp2>
+    {
+    private:
+      friend class _GLIBCXX_STD_C::multiset<_Val, _Cmp1, _Alloc>;
+
+      static auto&
+      _S_get_tree(_GLIBCXX_STD_C::set<_Val, _Cmp2, _Alloc>& __set)
+      { return __set._M_t; }
+
+      static auto&
+      _S_get_tree(_GLIBCXX_STD_C::multiset<_Val, _Cmp2, _Alloc>& __set)
+      { return __set._M_t; }
+    };
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif // C++17
+
 } // namespace std
 
 #endif /* _STL_MULTISET_H */

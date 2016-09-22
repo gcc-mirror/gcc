@@ -68,6 +68,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 					 __detail::_Default_ranged_hash,
 					 __detail::_Prime_rehash_policy, _Tr>;
 
+  template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc>
+    class unordered_multimap;
+
   /**
    *  @brief A standard container composed of unique keys (containing
    *  at most one of each key value) that associates values of another type
@@ -125,6 +128,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Hashtable::size_type		size_type;
       typedef typename _Hashtable::difference_type	difference_type;
       //@}
+
+#if __cplusplus > 201402L
+      using node_type = typename _Hashtable::node_type;
+      using insert_return_type = typename _Hashtable::insert_return_type;
+#endif
 
       //construct/destroy/copy
 
@@ -409,8 +417,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	emplace_hint(const_iterator __pos, _Args&&... __args)
 	{ return _M_h.emplace_hint(__pos, std::forward<_Args>(__args)...); }
 
-
 #if __cplusplus > 201402L
+      /// Extract a node.
+      node_type
+      extract(const_iterator __pos)
+      { return _M_h.extract(__pos); }
+
+      /// Extract a node.
+      node_type
+      extract(const key_type& __key)
+      { return _M_h.extract(__key); }
+
+      /// Re-insert an extracted node.
+      insert_return_type
+      insert(node_type&& __nh)
+      { return _M_h._M_reinsert_node(std::move(__nh)); }
+
+      /// Re-insert an extracted node.
+      iterator
+      insert(const_iterator, node_type&& __nh)
+      { return _M_h._M_reinsert_node(std::move(__nh)).position; }
+
 #define __cpp_lib_unordered_map_try_emplace 201411
       /**
        *  @brief Attempts to build and insert a std::pair into the
@@ -524,7 +551,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
                                  std::forward<_Args>(__args)...));
           return __i;
         }
-#endif
+#endif // C++17
 
       //@{
       /**
@@ -817,6 +844,37 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       noexcept( noexcept(_M_h.swap(__x._M_h)) )
       { _M_h.swap(__x._M_h); }
 
+#if __cplusplus > 201402L
+      template<typename, typename, typename>
+	friend class _Hash_merge_helper;
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_map<_Key, _Tp, _H2, _P2, _Alloc>& __source)
+	{
+	  using _Merge_helper = _Hash_merge_helper<unordered_map, _H2, _P2>;
+	  _M_h._M_merge_unique(_Merge_helper::_S_get_table(__source));
+	}
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_map<_Key, _Tp, _H2, _P2, _Alloc>&& __source)
+	{ merge(__source); }
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_multimap<_Key, _Tp, _H2, _P2, _Alloc>& __source)
+	{
+	  using _Merge_helper = _Hash_merge_helper<unordered_map, _H2, _P2>;
+	  _M_h._M_merge_unique(_Merge_helper::_S_get_table(__source));
+	}
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_multimap<_Key, _Tp, _H2, _P2, _Alloc>&& __source)
+	{ merge(__source); }
+#endif // C++17
+
       // observers.
 
       ///  Returns the hash functor object with which the %unordered_map was
@@ -1052,8 +1110,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Key1, typename _Tp1, typename _Hash1, typename _Pred1,
 	       typename _Alloc1>
         friend bool
-      operator==(const unordered_map<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>&,
-		 const unordered_map<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>&);
+	operator==(const unordered_map<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>&,
+		   const unordered_map<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>&);
     };
 
   /**
@@ -1113,6 +1171,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Hashtable::size_type		size_type;
       typedef typename _Hashtable::difference_type	difference_type;
       //@}
+
+#if __cplusplus > 201402L
+      using node_type = typename _Hashtable::node_type;
+#endif
 
       //construct/destroy/copy
 
@@ -1468,6 +1530,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert(initializer_list<value_type> __l)
       { _M_h.insert(__l); }
 
+#if __cplusplus > 201402L
+      /// Extract a node.
+      node_type
+      extract(const_iterator __pos)
+      { return _M_h.extract(__pos); }
+
+      /// Extract a node.
+      node_type
+      extract(const key_type& __key)
+      { return _M_h.extract(__key); }
+
+      /// Re-insert an extracted node.
+      iterator
+      insert(node_type&& __nh)
+      { return _M_h._M_reinsert_node_multi(cend(), std::move(__nh)); }
+
+      /// Re-insert an extracted node.
+      iterator
+      insert(const_iterator __hint, node_type&& __nh)
+      { return _M_h._M_reinsert_node_multi(__hint, std::move(__nh)); }
+#endif // C++17
+
       //@{
       /**
        *  @brief Erases an element from an %unordered_multimap.
@@ -1550,6 +1634,39 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       swap(unordered_multimap& __x)
       noexcept( noexcept(_M_h.swap(__x._M_h)) )
       { _M_h.swap(__x._M_h); }
+
+#if __cplusplus > 201402L
+      template<typename, typename, typename>
+	friend class _Hash_merge_helper;
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_multimap<_Key, _Tp, _H2, _P2, _Alloc>& __source)
+	{
+	  using _Merge_helper
+	    = _Hash_merge_helper<unordered_multimap, _H2, _P2>;
+	  _M_h._M_merge_multi(_Merge_helper::_S_get_table(__source));
+	}
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_multimap<_Key, _Tp, _H2, _P2, _Alloc>&& __source)
+	{ merge(__source); }
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_map<_Key, _Tp, _H2, _P2, _Alloc>& __source)
+	{
+	  using _Merge_helper
+	    = _Hash_merge_helper<unordered_multimap, _H2, _P2>;
+	  _M_h._M_merge_multi(_Merge_helper::_S_get_table(__source));
+	}
+
+      template<typename _H2, typename _P2>
+	void
+	merge(unordered_map<_Key, _Tp, _H2, _P2, _Alloc>&& __source)
+	{ merge(__source); }
+#endif // C++17
 
       // observers.
 
@@ -1786,6 +1903,59 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { return !(__x == __y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+
+#if __cplusplus > 201402L
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  // Allow std::unordered_map access to internals of compatible maps.
+  template<typename _Key, typename _Val, typename _Hash1, typename _Eq1,
+	   typename _Alloc, typename _Hash2, typename _Eq2>
+    struct _Hash_merge_helper<
+      _GLIBCXX_STD_C::unordered_map<_Key, _Val, _Hash1, _Eq1, _Alloc>,
+      _Hash2, _Eq2>
+    {
+    private:
+      template<typename... _Tp>
+	using unordered_map = _GLIBCXX_STD_C::unordered_map<_Tp...>;
+      template<typename... _Tp>
+	using unordered_multimap = _GLIBCXX_STD_C::unordered_multimap<_Tp...>;
+
+      friend unordered_map<_Key, _Val, _Hash1, _Eq1, _Alloc>;
+
+      static auto&
+      _S_get_table(unordered_map<_Key, _Val, _Hash2, _Eq2, _Alloc>& __map)
+      { return __map._M_h; }
+
+      static auto&
+      _S_get_table(unordered_multimap<_Key, _Val, _Hash2, _Eq2, _Alloc>& __map)
+      { return __map._M_h; }
+    };
+
+  // Allow std::unordered_multimap access to internals of compatible maps.
+  template<typename _Key, typename _Val, typename _Hash1, typename _Eq1,
+	   typename _Alloc, typename _Hash2, typename _Eq2>
+    struct _Hash_merge_helper<
+      _GLIBCXX_STD_C::unordered_multimap<_Key, _Val, _Hash1, _Eq1, _Alloc>,
+      _Hash2, _Eq2>
+    {
+    private:
+      template<typename... _Tp>
+	using unordered_map = _GLIBCXX_STD_C::unordered_map<_Tp...>;
+      template<typename... _Tp>
+	using unordered_multimap = _GLIBCXX_STD_C::unordered_multimap<_Tp...>;
+
+      friend unordered_multimap<_Key, _Val, _Hash1, _Eq1, _Alloc>;
+
+      static auto&
+      _S_get_table(unordered_map<_Key, _Val, _Hash2, _Eq2, _Alloc>& __map)
+      { return __map._M_h; }
+
+      static auto&
+      _S_get_table(unordered_multimap<_Key, _Val, _Hash2, _Eq2, _Alloc>& __map)
+      { return __map._M_h; }
+    };
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif // C++17
+
 } // namespace std
 
 #endif /* _UNORDERED_MAP_H */
