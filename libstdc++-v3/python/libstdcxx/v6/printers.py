@@ -994,7 +994,7 @@ class StdVariantPrinter(SingleObjContainerPrinter):
             visualizer = None
         else:
             self.contained_type = alternatives[int(self.index)]
-            addr = val['_M_first']['_M_storage'].address
+            addr = val['_M_union']['_M_first']['_M_storage'].address
             contained_value = addr.cast(self.contained_type.pointer()).dereference()
             visualizer = gdb.default_visualizer(contained_value)
         super (StdVariantPrinter, self).__init__(contained_value, visualizer, 'array')

@@ -84,6 +84,9 @@ main()
   variant<float, int, string_view> v4{ str };
 // { dg-final { note-test v4 {std::variant<float, int, std::string_view> [index 2] = {"string"}} } }
 
+  variant<string_view&> vref{str};
+// { dg-final { note-test vref {std::variant<std::basic_string_view<char, std::char_traits<char> > &> [index 0] = {"string"}} } }
+
   std::cout << "\n";
   return 0;			// Mark SPOT
 }
