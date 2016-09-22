@@ -2143,6 +2143,9 @@ class Call_expression : public Expression
   check_argument_type(int, const Type*, const Type*, Location, bool);
 
   Expression*
+  lower_to_builtin(Named_object**, const char*, int);
+
+  Expression*
   interface_method_function(Interface_field_reference_expression*,
 			    Expression**);
 

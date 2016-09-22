@@ -8897,6 +8897,45 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 						  bme->location());
     }
 
+  // Handle a couple of special runtime functions.  In the runtime
+  // package, getcallerpc returns the PC of the caller, and
+  // getcallersp returns the frame pointer of the caller.  Implement
+  // these by turning them into calls to GCC builtin functions.  We
+  // could implement them in normal code, but then we would have to
+  // explicitly unwind the stack.  These functions are intended to be
+  // efficient.  Note that this technique obviously only works for
+  // direct calls, but that is the only way they are used.  The actual
+  // argument to these functions is always the address of a parameter;
+  // we don't need that for the GCC builtin functions, so we just
+  // ignore it.
+  if (gogo->compiling_runtime()
+      && this->args_ != NULL
+      && this->args_->size() == 1
+      && gogo->package_name() == "runtime")
+    {
+      Func_expression* fe = this->fn_->func_expression();
+      if (fe != NULL
+	  && fe->named_object()->is_function_declaration()
+	  && fe->named_object()->package() == NULL)
+	{
+	  std::string n = Gogo::unpack_hidden_name(fe->named_object()->name());
+	  if (n == "getcallerpc")
+	    {
+	      static Named_object* builtin_return_address;
+	      return this->lower_to_builtin(&builtin_return_address,
+					    "__builtin_return_address",
+					    0);
+	    }
+	  else if (n == "getcallersp")
+	    {
+	      static Named_object* builtin_frame_address;
+	      return this->lower_to_builtin(&builtin_frame_address,
+					    "__builtin_frame_address",
+					    1);
+	    }
+	}
+    }
+
   return this;
 }
 
@@ -8995,6 +9034,28 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
   // Builtin_call_expression which refer to them.  FIXME.
   this->args_ = new_args;
   this->varargs_are_lowered_ = true;
+}
+
+// Return a call to __builtin_return_address or __builtin_frame_address.
+
+Expression*
+Call_expression::lower_to_builtin(Named_object** pno, const char* name,
+				  int arg)
+{
+  if (*pno == NULL)
+    *pno = Gogo::declare_builtin_rf_address(name);
+
+  Location loc = this->location();
+
+  Expression* fn = Expression::make_func_reference(*pno, NULL, loc);
+  Expression* a = Expression::make_integer_ul(arg, NULL, loc);
+  Expression_list *args = new Expression_list();
+  args->push_back(a);
+  Expression* call = Expression::make_call(fn, args, false, loc);
+
+  // The builtin functions return void*, but the Go functions return uintptr.
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  return Expression::make_cast(uintptr_type, call, loc);
 }
 
 // Flatten a call with multiple results into a temporary.

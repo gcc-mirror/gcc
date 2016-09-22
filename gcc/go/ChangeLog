@@ -1,3 +1,8 @@
+2016-09-22  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Declare
+	__builtin_frame_address.
+
 2016-09-11  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::Gcc_backend): Add builtin versions of
