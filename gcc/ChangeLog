@@ -1,5 +1,11 @@
 2016-09-22  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/77697
+	* gimple-fold.c (fold_array_ctor_reference): Turn asserts into
+	fold fails.
+
+2016-09-22  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/77677
 	* gimple-match-head.c (gimple_resimplify1): Drop TREE_OVERFLOW
 	from constant folding results.
