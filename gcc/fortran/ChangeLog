@@ -1,3 +1,10 @@
+2016-09-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	* interface.c (check_dtio_interface1): Introduce errors for
+	alternate returns and incorrect numbers of arguments.
+	(gfc_find_specific_dtio_proc): Return cleanly if the derived
+	type either doesn't exist or has no namespace.
+
 2016-09-21  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/66107

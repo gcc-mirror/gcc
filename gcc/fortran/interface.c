@@ -4629,7 +4629,7 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 
       for (intr = tb_io_st->n.sym->generic; intr; intr = intr->next)
 	{
-	  if (intr->sym && intr->sym->formal
+	  if (intr->sym && intr->sym->formal && intr->sym->formal->sym
 	      && ((intr->sym->formal->sym->ts.type == BT_CLASS
 	           && CLASS_DATA (intr->sym->formal->sym)->ts.u.derived
 							     == derived)
@@ -4639,6 +4639,12 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 	      dtio_sub = intr->sym;
 	      break;
 	    }
+	  else if (intr->sym && intr->sym->formal && !intr->sym->formal->sym)
+	    {
+	      gfc_error ("Alternate return at %L is not permitted in a DTIO "
+			 "procedure", &intr->sym->declared_at);
+	      return;
+	    }
 	}
 
       if (dtio_sub == NULL)
@@ -4647,8 +4653,27 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 
   gcc_assert (dtio_sub);
   if (!dtio_sub->attr.subroutine)
-    gfc_error ("DTIO procedure %s at %L must be a subroutine",
+    gfc_error ("DTIO procedure '%s' at %L must be a subroutine",
 	       dtio_sub->name, &dtio_sub->declared_at);
+
+  arg_num = 0;
+  for (formal = dtio_sub->formal; formal; formal = formal->next)
+    arg_num++;
+
+  if (arg_num < (formatted ? 6 : 4))
+    {
+      gfc_error ("Too few dummy arguments in DTIO procedure '%s' at %L",
+		 dtio_sub->name, &dtio_sub->declared_at);
+      return;
+    }
+
+  if (arg_num > (formatted ? 6 : 4))
+    {
+      gfc_error ("Too many dummy arguments in DTIO procedure '%s' at %L",
+		 dtio_sub->name, &dtio_sub->declared_at);
+      return;
+    }
+
 
   /* Now go through the formal arglist.  */
   arg_num = 1;
@@ -4657,6 +4682,14 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
       if (!formatted && arg_num == 3)
 	arg_num = 5;
       fsym = formal->sym;
+
+      if (fsym == NULL)
+	{
+	  gfc_error ("Alternate return at %L is not permitted in a DTIO "
+		     "procedure", &dtio_sub->declared_at);
+	  return;
+	}
+
       switch (arg_num)
 	{
 	case(1):			/* DTV  */
@@ -4823,6 +4856,9 @@ gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
   for (extended = derived; extended;
        extended = gfc_get_derived_super_type (extended))
     {
+      if (extended == NULL || extended->ns == NULL)
+	return NULL;
+
       if (formatted == true)
 	{
 	  if (write == true)
