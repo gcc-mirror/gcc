@@ -298,7 +298,7 @@ namespace __variant
 
       template<size_t _Np, typename... _Args>
 	constexpr _Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
-	: _M_union(in_place<_Np>, forward<_Args>(__args)...)
+	: _M_union(in_place<_Np>, std::forward<_Args>(__args)...)
 	{ }
 
       ~_Variant_storage() = default;
@@ -316,13 +316,13 @@ namespace __variant
 
 	template<typename... _Args>
 	  constexpr _Union(in_place_index_t<0>, _Args&&... __args)
-	  : _M_first(in_place<0>, forward<_Args>(__args)...)
+	  : _M_first(in_place<0>, std::forward<_Args>(__args)...)
 	  { }
 
 	template<size_t _Np, typename... _Args,
 		 typename = enable_if_t<0 < _Np && _Np < sizeof...(_Rest) + 1>>
 	  constexpr _Union(in_place_index_t<_Np>, _Args&&... __args)
-	  : _M_rest(in_place<_Np - 1>, forward<_Args>(__args)...)
+	  : _M_rest(in_place<_Np - 1>, std::forward<_Args>(__args)...)
 	  { }
 
 	_Uninitialized<__storage<_First>> _M_first;
@@ -386,7 +386,7 @@ namespace __variant
       template<size_t _Np, typename... _Args>
 	constexpr explicit
 	_Variant_base(in_place_index_t<_Np> __i, _Args&&... __args)
-	: _Storage(__i, forward<_Args>(__args)...), _M_index(_Np)
+	: _Storage(__i, std::forward<_Args>(__args)...), _M_index(_Np)
 	{ }
 
       template<typename _Alloc>
@@ -426,7 +426,7 @@ namespace __variant
 	  using _Storage =
 	    __storage<variant_alternative_t<_Np, variant<_Types...>>>;
 	  __uses_allocator_construct(__a, static_cast<_Storage*>(_M_storage()),
-				     forward<_Args>(__args)...);
+				     std::forward<_Args>(__args)...);
 	  __glibcxx_assert(_M_index == _Np);
 	}
 
@@ -581,7 +581,7 @@ namespace __variant
     decltype(auto) __access(_Variant&& __v)
     {
       return __get_alternative<__reserved_type_map<_Variant&&, __storage<_Tp>>>(
-	__get_storage(forward<_Variant>(__v)));
+	__get_storage(std::forward<_Variant>(__v)));
     }
 
   // A helper used to create variadic number of _To types.
@@ -591,10 +591,11 @@ namespace __variant
   // Call the actual visitor.
   // _Args are qualified storage types.
   template<typename _Visitor, typename... _Args>
-    decltype(auto) __visit_invoke(_Visitor&& __visitor,
-				  _To_type<_Args, void*>... __ptrs)
+    decltype(auto)
+    __visit_invoke(_Visitor&& __visitor, _To_type<_Args, void*>... __ptrs)
     {
-      return forward<_Visitor>(__visitor)(__get_alternative<_Args>(__ptrs)...);
+      return std::forward<_Visitor>(__visitor)(
+	  __get_alternative<_Args>(__ptrs)...);
     }
 
   // Used for storing multi-dimensional vtable.
@@ -1010,7 +1011,7 @@ namespace __variant
 	constexpr
 	variant(_Tp&& __t)
 	noexcept(is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp&&>)
-	: variant(in_place<__accepted_index<_Tp&&>>, forward<_Tp>(__t))
+	: variant(in_place<__accepted_index<_Tp&&>>, std::forward<_Tp>(__t))
 	{ __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this)); }
 
       template<typename _Tp, typename... _Args,
@@ -1018,7 +1019,7 @@ namespace __variant
 			  && is_constructible_v<_Tp, _Args&&...>>>
 	constexpr explicit
 	variant(in_place_type_t<_Tp>, _Args&&... __args)
-	: variant(in_place<__index_of<_Tp>>, forward<_Args>(__args)...)
+	: variant(in_place<__index_of<_Tp>>, std::forward<_Args>(__args)...)
 	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
 
       template<typename _Tp, typename _Up, typename... _Args,
@@ -1029,7 +1030,7 @@ namespace __variant
 	variant(in_place_type_t<_Tp>, initializer_list<_Up> __il,
 		_Args&&... __args)
 	: variant(in_place<__index_of<_Tp>>, __il,
-		  forward<_Args>(__args)...)
+		  std::forward<_Args>(__args)...)
 	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
 
       template<size_t _Np, typename... _Args,
@@ -1037,7 +1038,7 @@ namespace __variant
 		 is_constructible_v<__to_type<_Np>, _Args&&...>>>
 	constexpr explicit
 	variant(in_place_index_t<_Np>, _Args&&... __args)
-	: _Base(in_place<_Np>, forward<_Args>(__args)...),
+	: _Base(in_place<_Np>, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
 	{ __glibcxx_assert(index() == _Np); }
 
@@ -1047,7 +1048,7 @@ namespace __variant
 	constexpr explicit
 	variant(in_place_index_t<_Np>, initializer_list<_Up> __il,
 		_Args&&... __args)
-	: _Base(in_place<_Np>, __il, forward<_Args>(__args)...),
+	: _Base(in_place<_Np>, __il, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
 	{ __glibcxx_assert(index() == _Np); }
 
@@ -1084,7 +1085,7 @@ namespace __variant
 		 && !is_same_v<decay_t<_Tp>, variant>, variant&>>
 	variant(allocator_arg_t, const _Alloc& __a, _Tp&& __t)
 	: variant(allocator_arg, __a, in_place<__accepted_index<_Tp&&>>,
-		  forward<_Tp>(__t))
+		  std::forward<_Tp>(__t))
 	{ __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this)); }
 
       template<typename _Alloc, typename _Tp, typename... _Args,
@@ -1095,7 +1096,7 @@ namespace __variant
 	variant(allocator_arg_t, const _Alloc& __a, in_place_type_t<_Tp>,
 		_Args&&... __args)
 	: variant(allocator_arg, __a, in_place<__index_of<_Tp>>,
-		  forward<_Args>(__args)...)
+		  std::forward<_Args>(__args)...)
 	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
 
       template<typename _Alloc, typename _Tp, typename _Up, typename... _Args,
@@ -1106,7 +1107,7 @@ namespace __variant
 	variant(allocator_arg_t, const _Alloc& __a, in_place_type_t<_Tp>,
 		initializer_list<_Up> __il, _Args&&... __args)
 	: variant(allocator_arg, __a, in_place<__index_of<_Tp>>, __il,
-		  forward<_Args>(__args)...)
+		  std::forward<_Args>(__args)...)
 	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
 
       template<typename _Alloc, size_t _Np, typename... _Args,
@@ -1115,7 +1116,7 @@ namespace __variant
 		   __to_type<_Np>, _Alloc, _Args&&...>>>
 	variant(allocator_arg_t, const _Alloc& __a, in_place_index_t<_Np>,
 		_Args&&... __args)
-	: _Base(__a, in_place<_Np>, forward<_Args>(__args)...),
+	: _Base(__a, in_place<_Np>, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
 	{ __glibcxx_assert(index() == _Np); }
 
@@ -1125,7 +1126,7 @@ namespace __variant
 		   __to_type<_Np>, _Alloc, initializer_list<_Up>&, _Args&&...>>>
 	variant(allocator_arg_t, const _Alloc& __a, in_place_index_t<_Np>,
 		initializer_list<_Up> __il, _Args&&... __args)
-	: _Base(__a, in_place<_Np>, __il, forward<_Args>(__args)...),
+	: _Base(__a, in_place<_Np>, __il, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
 	{ __glibcxx_assert(index() == _Np); }
 
@@ -1149,7 +1150,7 @@ namespace __variant
 	  if (index() == __index)
 	    std::get<__index>(*this) = std::forward<_Tp>(__rhs);
 	  else
-	    this->emplace<__index>(forward<_Tp>(__rhs));
+	    this->emplace<__index>(std::forward<_Tp>(__rhs));
 	  __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this));
 	  return *this;
 	}
@@ -1159,7 +1160,7 @@ namespace __variant
 	{
 	  static_assert(__exactly_once<_Tp>,
 			"T should occur for exactly once in alternatives");
-	  this->emplace<__index_of<_Tp>>(forward<_Args>(__args)...);
+	  this->emplace<__index_of<_Tp>>(std::forward<_Args>(__args)...);
 	  __glibcxx_assert(holds_alternative<_Tp>(*this));
 	}
 
@@ -1168,7 +1169,7 @@ namespace __variant
 	{
 	  static_assert(__exactly_once<_Tp>,
 			"T should occur for exactly once in alternatives");
-	  this->emplace<__index_of<_Tp>>(__il, forward<_Args>(__args)...);
+	  this->emplace<__index_of<_Tp>>(__il, std::forward<_Args>(__args)...);
 	  __glibcxx_assert(holds_alternative<_Tp>(*this));
 	}
 
@@ -1181,7 +1182,7 @@ namespace __variant
 	  __try
 	    {
 	      ::new (this) variant(in_place<_Np>,
-				   forward<_Args>(__args)...);
+				   std::forward<_Args>(__args)...);
 	    }
 	  __catch (...)
 	    {
@@ -1200,7 +1201,7 @@ namespace __variant
 	  __try
 	    {
 	      ::new (this) variant(in_place<_Np>, __il,
-				   forward<_Args>(__args)...);
+				   std::forward<_Args>(__args)...);
 	    }
 	  __catch (...)
 	    {
@@ -1310,12 +1311,12 @@ namespace __variant
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
       using _Result_type =
-	decltype(forward<_Visitor>(__visitor)(get<0>(__variants)...));
+	decltype(std::forward<_Visitor>(__visitor)(get<0>(__variants)...));
       static constexpr auto _S_vtable =
 	__detail::__variant::__gen_vtable<
 	  _Result_type, _Visitor&&, _Variants&&...>::_S_apply();
       auto __func_ptr = _S_vtable._M_access(__variants.index()...);
-      return (*__func_ptr)(forward<_Visitor>(__visitor),
+      return (*__func_ptr)(std::forward<_Visitor>(__visitor),
 			   __detail::__variant::__get_storage(__variants)...);
     }
 
