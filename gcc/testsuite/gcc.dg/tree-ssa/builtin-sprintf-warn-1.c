@@ -32,6 +32,8 @@ typedef __SIZE_TYPE__ size_t;
 typedef __WCHAR_TYPE__ wchar_t;
 #endif
 
+typedef __WINT_TYPE__ wint_t;
+
 typedef unsigned char UChar;
 
 const char s0[] = "";
@@ -92,7 +94,7 @@ void test_sprintf_p_const (void)
      format null pointers as 0 or 0x0 and so the following will only be
      diagnosed on the former targets.  */
   T (5, "%p",     (void*)0);
-  /* { dg-warning "nul past the end" "(nil)" { target *-linux-gnu *-*-uclinux } 94 } */
+  /* { dg-warning "nul past the end" "(nil)" { target *-linux-gnu *-*-uclinux } 96 } */
 
   /* The exact output for %p is unspecified by C.  Two formats are known:
      same as %tx (for example AIX) and same as %#tx (for example Solaris).  */
@@ -104,8 +106,8 @@ void test_sprintf_p_const (void)
      as with signed integer conversions (i.e., it prepends a space).  Other
      known implementations ignore it.  */
   T (6, "% p",    (void*)0x234);  /* { dg-warning ". . flag used with .%p." } */
-  /* { dg-warning "nul past the end" "Glibc %p" { target *-linux-gnu } 106 } */
-  /* { dg-warning "nul past the end" "Generic %p" { target *-*-uclinux } 106 } */
+  /* { dg-warning "nul past the end" "Glibc %p" { target *-linux-gnu } 108 } */
+  /* { dg-warning "nul past the end" "Generic %p" { target *-*-uclinux } 108 } */
 }
 
 /* Verify that no warning is issued for calls that write into a flexible
@@ -215,16 +217,16 @@ void test_sprintf_chk_c_const (void)
   /* The following could result in as few as no bytes and in as many as
      MB_CUR_MAX, but since the MB_CUR_MAX value is a runtime property
      the write cannot be reliably diagnosed.  */
-  T (2, "%lc",  L'1');
-  T (2, "%1lc", L'1');
+  T (2, "%lc",  (wint_t)L'1');
+  T (2, "%1lc", (wint_t)L'1');
   /* Writing some unknown number of bytes into a field two characters wide.  */
-  T (2, "%2lc", L'1');          /* { dg-warning "nul past the end" } */
+  T (2, "%2lc", (wint_t)L'1');          /* { dg-warning "nul past the end" } */
 
-  T (3, "%lc%c",   L'1', '2');
+  T (3, "%lc%c",   (wint_t)L'1', '2');
   /* Here in the best case each argument will format as single character,
      causing the terminating NUL to be written past the end.  */
-  T (3, "%lc%c%c", L'1', '2', '3');   /* { dg-warning "nul past the end" } */
-  T (3, "%lc%lc%c", L'1', L'2', '3'); /* { dg-warning "nul past the end" } */
+  T (3, "%lc%c%c", (wint_t)L'1', '2', '3');   /* { dg-warning "nul past the end" } */
+  T (3, "%lc%lc%c", (wint_t)L'1', (wint_t)L'2', '3'); /* { dg-warning "nul past the end" } */
 }
 
 /* Exercise the "%s" and "%ls" directive with constant arguments.  */
@@ -1242,17 +1244,17 @@ void test_snprintf_c_const (void)
   /* The following could result in as few as a single byte and in as many
      as MB_CUR_MAX, but since the MB_CUR_MAX value is a runtime property
      the write cannot be reliably diagnosed.  */
-  T (2, "%lc",  L'1');
-  T (2, "%1lc", L'1');
+  T (2, "%lc",  (wint_t)L'1');
+  T (2, "%1lc", (wint_t)L'1');
   /* Writing at least 1 characted into a field two characters wide.  */
-  T (2, "%2lc", L'1');          /* { dg-warning "output truncated before the last format character" } */
+  T (2, "%2lc", (wint_t)L'1');          /* { dg-warning "output truncated before the last format character" } */
 
-  T (3, "%lc%c",   L'1', '2');
+  T (3, "%lc%c",   (wint_t)'1', '2');
   /* Here in the best case each argument will format as single character,
      causing the output to be truncated just before the terminating NUL
      (i.e., cutting off the '3').  */
-  T (3, "%lc%c%c", L'1', '2', '3');   /* { dg-warning "output truncated" } */
-  T (3, "%lc%lc%c", L'1', L'2', '3'); /* { dg-warning "output truncated" } */
+  T (3, "%lc%c%c", (wint_t)'1', '2', '3');   /* { dg-warning "output truncated" } */
+  T (3, "%lc%lc%c", (wint_t)'1', (wint_t)'2', '3'); /* { dg-warning "output truncated" } */
 }
 
 #undef T
@@ -1291,17 +1293,17 @@ void test_snprintf_chk_c_const (void)
   /* The following could result in as few as a single byte and in as many
      as MB_CUR_MAX, but since the MB_CUR_MAX value is a runtime property
      the write cannot be reliably diagnosed.  */
-  T (2, "%lc",  L'1');
-  T (2, "%1lc", L'1');
+  T (2, "%lc",  (wint_t)L'1');
+  T (2, "%1lc", (wint_t)L'1');
   /* Writing at least 1 characted into a field two characters wide.  */
-  T (2, "%2lc", L'1');          /* { dg-warning "output truncated before the last format character" } */
+  T (2, "%2lc", (wint_t)'1');          /* { dg-warning "output truncated before the last format character" } */
 
-  T (3, "%lc%c",   L'1', '2');
+  T (3, "%lc%c",   (wint_t)'1', '2');
   /* Here in the best case each argument will format as single character,
      causing the output to be truncated just before the terminating NUL
      (i.e., cutting off the '3').  */
-  T (3, "%lc%c%c", L'1', '2', '3');   /* { dg-warning "output truncated" } */
-  T (3, "%lc%lc%c", L'1', L'2', '3'); /* { dg-warning "output truncated" } */
+  T (3, "%lc%c%c", (wint_t)'1', '2', '3');   /* { dg-warning "output truncated" } */
+  T (3, "%lc%lc%c", (wint_t)'1', (wint_t)'2', '3'); /* { dg-warning "output truncated" } */
 }
 
 /* Macro to verify that calls to __builtin_vsprintf (i.e., with no size

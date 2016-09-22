@@ -1,3 +1,19 @@
+2016-09-22  Martin Sebor  <msebor@redhat.com>
+
+	PR target/77676
+	* gimple-ssa-sprintf.c (target_int_min, target_int_max): Use
+	HOST_BITS_PER_WIDE_INT, make a static local variable auto.
+	(target_int_min): Correct computation.
+	(format_integer): Use long long as the argument for the ll length
+	modifier.
+	(format_floating): Use target_int_max().
+	(get_string_length): Same.
+	(format_string): Avoid setting the bounded flag for strings
+	of unknown length.
+	(try_substitute_return_value): Avoid setting range info when
+	the result isn't bounded.
+	* varasm.c (assemble_name): Increase buffer size.
+
 2016-09-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Terry Guo  <terry.guo@arm.com>
 

@@ -210,9 +210,9 @@ struct format_result
 static HOST_WIDE_INT
 target_int_min ()
 {
-  static const unsigned HOST_WIDE_INT int_min
-    = 1LLU << (sizeof int_min * CHAR_BIT
-	       - TYPE_PRECISION (integer_type_node) + 1);
+  const unsigned HOST_WIDE_INT int_min
+    = HOST_WIDE_INT_M1U << (TYPE_PRECISION (integer_type_node) - 1);
+
   return int_min;
 }
 
@@ -221,8 +221,8 @@ target_int_min ()
 static unsigned HOST_WIDE_INT
 target_int_max ()
 {
-  static const unsigned HOST_WIDE_INT int_max
-    = HOST_WIDE_INT_M1U >> (sizeof int_max * CHAR_BIT
+  const unsigned HOST_WIDE_INT int_max
+    = HOST_WIDE_INT_M1U >> (HOST_BITS_PER_WIDE_INT
 			    - TYPE_PRECISION (integer_type_node) + 1);
   return int_max;
 }
@@ -851,7 +851,9 @@ format_integer (const conversion_spec &spec, tree arg)
 
     case FMT_LEN_L:
     case FMT_LEN_ll:
-      dirtype = sign ? long_integer_type_node : long_unsigned_type_node;
+      dirtype = (sign
+		 ? long_long_integer_type_node
+		 : long_long_unsigned_type_node);
       break;
 
     case FMT_LEN_z:
@@ -1366,7 +1368,7 @@ format_floating (const conversion_spec &spec, tree arg)
 	  *minmax[i] = mpfr_snprintf (NULL, 0, fmtstr, mpfrval);
 	}
 
-      res.bounded = res.range.min < HOST_WIDE_INT_MAX;
+      res.bounded = res.range.min < target_int_max ();
       return res;
     }
 
@@ -1420,7 +1422,7 @@ get_string_length (tree str)
       /* Set RES.BOUNDED to true if and only if all strings referenced
 	 by STR are known to be bounded (though not necessarily by their
 	 actual length but perhaps by their maximum possible length).  */
-      res.bounded = res.range.max < HOST_WIDE_INT_MAX;
+      res.bounded = res.range.max < target_int_max ();
 
       /* Set RES.CONSTANT to false even though that may be overly
 	 conservative in rare cases like: 'x ? a : b' where a and
@@ -1470,6 +1472,10 @@ format_string (const conversion_spec &spec, tree arg)
     = (1 == warn_format_length ? 0 <= prec ? prec : 0
        : 2 == warn_format_length ? 0 <= prec ? prec : 1
        : HOST_WIDE_INT_MAX);
+
+  /* The result is bounded unless overriddden for a non-constant string
+     of an unknown length.  */
+  bool bounded = true;
 
   if (spec.specifier == 'c')
     {
@@ -1550,16 +1556,17 @@ format_string (const conversion_spec &spec, tree arg)
 	  if (0 <= prec)
 	    {
 	      if ((unsigned)prec < slen.range.min
-		  || slen.range.min >= HOST_WIDE_INT_MAX)
+		  || slen.range.min >= target_int_max ())
 		slen.range.min = prec;
 	      if ((unsigned)prec < slen.range.max
-		  || slen.range.max >= HOST_WIDE_INT_MAX)
+		  || slen.range.max >= target_int_max ())
 		slen.range.max = prec;
 	    }
-	  else if (slen.range.min >= HOST_WIDE_INT_MAX)
+	  else if (slen.range.min >= target_int_max ())
 	    {
 	      slen.range.min = max_bytes_for_unknown_str;
 	      slen.range.max = max_bytes_for_unknown_str;
+	      bounded = false;
 	    }
 
 	  res.range = slen.range;
@@ -1580,7 +1587,8 @@ format_string (const conversion_spec &spec, tree arg)
     res.range.max = width;
 
   /* Adjust BOUNDED if width happens to make them equal.  */
-  if (res.range.min == res.range.max && res.range.min < HOST_WIDE_INT_MAX)
+  if (res.range.min == res.range.max && res.range.min < target_int_max ()
+      && bounded)
     res.bounded = true;
 
   return res;
@@ -2389,6 +2397,7 @@ try_substitute_return_value (gimple_stmt_iterator gsi,
       unsigned HOST_WIDE_INT maxbytes;
 
       if (lhs
+	  && res.bounded
 	  && ((maxbytes = res.number_chars - 1) <= target_int_max ()
 	      || (res.number_chars_min - 1 <= target_int_max ()
 		  && (maxbytes = res.number_chars_max - 1) <= target_int_max ()))

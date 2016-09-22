@@ -2545,7 +2545,7 @@ assemble_name (FILE *file, const char *name)
 rtx
 assemble_static_space (unsigned HOST_WIDE_INT size)
 {
-  char name[12];
+  char name[16];
   const char *namestring;
   rtx x;
 

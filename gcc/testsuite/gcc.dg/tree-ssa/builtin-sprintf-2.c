@@ -77,7 +77,7 @@ EQL (   4097, sizeof buf8k, "%.4095f",     1.0);
 enum { imax2 = (INT_MAX / 2) * 2 };
 EQL (imax2, -1, "%*c%*c", INT_MAX / 2, 'x', INT_MAX / 2, 'y');
 
-/* Verify that range inforation for calls that overflow the destination
+/* Verify that range information for calls that overflow the destination
    isn't available.  */
 RNG (0,  0,  0, "%hhi", i)
 RNG (0,  0,  1, "%hhi", i)
