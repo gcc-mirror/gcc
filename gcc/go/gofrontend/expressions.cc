@@ -7066,6 +7066,7 @@ Builtin_call_expression::do_flatten(Gogo*, Named_object*,
 	      *pa = Expression::make_temporary_reference(temp, loc);
 	    }
 	}
+      break;
 
     case BUILTIN_LEN:
       Expression_list::iterator pa = this->args()->begin();
