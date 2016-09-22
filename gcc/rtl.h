@@ -2844,9 +2844,9 @@ extern rtx_insn *prev_nonnote_nondebug_insn (rtx_insn *);
 extern rtx_insn *next_nonnote_nondebug_insn (rtx_insn *);
 extern rtx_insn *prev_real_insn (rtx_insn *);
 extern rtx_insn *next_real_insn (rtx);
-extern rtx_insn *prev_active_insn (rtx);
-extern rtx_insn *next_active_insn (rtx);
-extern int active_insn_p (const_rtx);
+extern rtx_insn *prev_active_insn (rtx_insn *);
+extern rtx_insn *next_active_insn (rtx_insn *);
+extern int active_insn_p (const rtx_insn *);
 extern rtx_insn *next_cc0_user (rtx);
 extern rtx_insn *prev_cc0_setter (rtx_insn *);
 

@@ -5122,16 +5122,29 @@
 		  scan = as_a <rtx_insn *> (XEXP (SET_SRC (PATTERN (scan)), 0));
 		  continue;
 		}
-	      if (JUMP_LABEL (scan)
-		  /* JUMP_LABEL might be simple_return instead if an insn.  */
-		  && (!INSN_P (JUMP_LABEL (scan))
-		      || (!next_active_insn (JUMP_LABEL (scan))
-			  || (recog_memoized (next_active_insn (JUMP_LABEL (scan)))
-			      != CODE_FOR_doloop_begin_i)))
-		  && (!next_active_insn (NEXT_INSN (PREV_INSN (scan)))
-		      || (recog_memoized
-			   (next_active_insn (NEXT_INSN (PREV_INSN (scan))))
-			  != CODE_FOR_doloop_begin_i)))
+
+	      rtx lab = JUMP_LABEL (scan);
+	      if (!lab)
+		break;
+
+	      rtx_insn *next_scan
+		= next_active_insn (NEXT_INSN (PREV_INSN (scan)));
+	      if (next_scan
+		  && recog_memoized (next_scan) != CODE_FOR_doloop_begin_i)
+		break;
+
+	      /* JUMP_LABEL might be simple_return instead if an insn.  */
+	      if (!INSN_P (lab))
+		{
+		  n_insns++;
+		  break;
+		}
+
+	      rtx_insn *next_lab = next_active_insn (as_a<rtx_insn *> (lab));
+	      if (next_lab
+		  && recog_memoized (next_lab) != CODE_FOR_doloop_begin_i)
+		break;
+
 		n_insns++;
 	    }
 	  break;

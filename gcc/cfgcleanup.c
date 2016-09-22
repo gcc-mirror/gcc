@@ -708,7 +708,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
   /* If there is a jump table following block B temporarily add the jump table
      to block B so that it will also be moved to the correct location.  */
   if (tablejump_p (BB_END (b), &label, &table)
-      && prev_active_insn (label) == BB_END (b))
+      && prev_active_insn (as_a<rtx_insn *> (label)) == BB_END (b))
     {
       BB_END (b) = table;
     }
