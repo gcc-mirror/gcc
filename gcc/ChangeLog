@@ -1,5 +1,15 @@
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config/cris/cris.c (cris_asm_output_case_end): Change argument
+	type to rtx_insn *.
+	* emit-rtl.c (next_nonnote_nondebug_insn): Likewise.
+	(prev_nonnote_nondebug_insn): Likewise.
+	* config/cris/cris-protos.h: Adjust prototype.
+	* rtl.h: Likewise.
+	* jump.c (rtx_renumbered_equal_p): Adjust.
+
+2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* emit-rtl.c (prev_real_insn): Change argument type to rtx_insn *.
 	* rtl.h: Adjust prototype.
 	* config/sh/sh.md: Adjust.
