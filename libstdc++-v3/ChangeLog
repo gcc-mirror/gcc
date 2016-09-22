@@ -1,3 +1,8 @@
+2016-09-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Fix tests on old arm platforms for optional.
+	* testsuite/20_util/optional/77288.cc: Don't use exception_ptr.
+
 2016-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (StdVariantPrinter): Adjust for

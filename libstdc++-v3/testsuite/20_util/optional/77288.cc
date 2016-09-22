@@ -18,7 +18,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <exception>
 #include <optional>
 #include <any>
 
@@ -28,8 +27,8 @@ using std::optional;
 
 void test01()
 {
-    optional<optional<std::exception_ptr>> nested_element;
-    optional<std::exception_ptr> element = {};
+    optional<optional<int>> nested_element;
+    optional<int> element = {};
     nested_element = element;
     VERIFY(nested_element);
 }
