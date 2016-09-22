@@ -1,5 +1,10 @@
 2016-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (StdVariantPrinter): Adjust for
+	recent change to _Variant_storage.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Test variant with
+	reference type.
+
 	* include/bits/uses_allocator.h (__uses_allocator_construct): Qualify
 	std::forward and ::new. Cast pointer to void*.
 	* include/std/variant (_Variant_storage, _Union, _Variant_base)
