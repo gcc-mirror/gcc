@@ -1,3 +1,11 @@
+2016-09-22  Martin Sebor  <msebor@redhat.com>
+
+	PR target/77676
+	* gcc.dg/tree-ssa/builtin-sprintf-1.c: Define and use wint_t.
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Fix typo.
+	* gcc.dg/tree-ssa/builtin-sprintf-3.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-5.c: New test.
+
 2016-09-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/ifcvt-1.c: Compile also for 64-bit i?86-*-* target.
