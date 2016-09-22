@@ -4452,7 +4452,7 @@ workaround_speculation (void)
 	      || cbranch_predicted_taken_p (insn)))
 	{
 	  rtx_insn *target = JUMP_LABEL_AS_INSN (insn);
-	  rtx label = target;
+	  rtx_insn *label = target;
 	  rtx_insn *next_tgt;
 
 	  cycles_since_jump = 0;

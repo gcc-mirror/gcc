@@ -1,3 +1,34 @@
+2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config/arc/arc-protos.h (arc_label_align): Change type of
+	variables from rtx to rtx_insn *.
+	* config/arc/arc.c (arc_label_align): Likewise.
+	* config/arm/arm.c (any_sibcall_could_use_r3): Likewise.
+	* config/bfin/bfin.c (workaround_speculation): Likewise.
+	* config/c6x/c6x.c (find_next_cycle_insn): Likewise.
+	(find_last_same_clock): Likewise.
+	(reorg_split_calls): Likewise.
+	* config/cris/cris-protos.h (cris_cc0_user_requires_cmp): Likewise.
+	* config/cris/cris.c (cris_cc0_user_requires_cmp): Likewise.
+	* config/h8300/h8300-protos.h (same_cmp_preceding_p): Likewise.
+	(same_cmp_following_p): Likewise.
+	* config/h8300/h8300.c (same_cmp_preceding_p): Likewise.
+	(same_cmp_following_p): Likwise.
+	* config/m32r/m32r.c (m32r_expand_epilogue): Likewise.
+	* config/nds32/nds32-protos.h (nds32_target_alignment): Likewise.
+	* config/nds32/nds32.c (nds32_target_alignment): Likewise.
+	* config/rl78/rl78.c (rl78_alloc_physical_registers_op2):
+	* Likewise.
+	(rl78_alloc_physical_registers_cmp): Likewise.
+	(rl78_alloc_physical_registers_umul): Likewise.
+	(rl78_calculate_death_notes): Likewise.
+	* config/s390/s390-protos.h (s390_label_align): Likewise.
+	* config/s390/s390.c (s390_label_align): Likewise.
+	* config/sh/sh.c (barrier_align): Likewise.
+	* config/sparc/sparc-protos.h (emit_cbcond_nop): Likewise.
+	* config/sparc/sparc.c (sparc_asm_function_epilogue): Likewise.
+	(emit_cbcond_nop): Likewise.
+
 2016-09-22  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/77653

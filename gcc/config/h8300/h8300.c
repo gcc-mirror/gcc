@@ -5730,7 +5730,7 @@ byte_accesses_mergeable_p (rtx addr1, rtx addr2)
    before I3.  I3 is assumed to be a comparison insn.  */
 
 int
-same_cmp_preceding_p (rtx i3)
+same_cmp_preceding_p (rtx_insn *i3)
 {
   rtx_insn *i1, *i2;
 
@@ -5750,7 +5750,7 @@ same_cmp_preceding_p (rtx i3)
    after I1.  I1 is assumed to be a comparison insn.  */
 
 int
-same_cmp_following_p (rtx i1)
+same_cmp_following_p (rtx_insn *i1)
 {
   rtx_insn *i2, *i3;
 

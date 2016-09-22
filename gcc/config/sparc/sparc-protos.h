@@ -84,7 +84,7 @@ extern int registers_ok_for_ldd_peep (rtx, rtx);
 extern int mems_ok_for_ldd_peep (rtx, rtx, rtx);
 extern rtx widen_mem_for_ldd_peep (rtx, rtx, machine_mode);
 extern int empty_delay_slot (rtx_insn *);
-extern int emit_cbcond_nop (rtx);
+extern int emit_cbcond_nop (rtx_insn *);
 extern int eligible_for_call_delay (rtx_insn *);
 extern int eligible_for_return_delay (rtx_insn *);
 extern int eligible_for_sibcall_delay (rtx_insn *);

@@ -3488,7 +3488,7 @@ empty_delay_slot (rtx_insn *insn)
    situation.  */
 
 int
-emit_cbcond_nop (rtx insn)
+emit_cbcond_nop (rtx_insn *insn)
 {
   rtx next = next_active_insn (insn);
 
@@ -5873,11 +5873,9 @@ sparc_asm_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
      backtraces in such cases.  This is pointless for sibling calls since
      the return address is explicitly adjusted.  */
 
-  rtx insn, last_real_insn;
+  rtx_insn *insn = get_last_insn ();
 
-  insn = get_last_insn ();
-
-  last_real_insn = prev_real_insn (insn);
+  rtx last_real_insn = prev_real_insn (insn);
   if (last_real_insn
       && NONJUMP_INSN_P (last_real_insn)
       && GET_CODE (PATTERN (last_real_insn)) == SEQUENCE)

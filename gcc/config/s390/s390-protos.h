@@ -133,7 +133,7 @@ extern void s390_split_access_reg (rtx, rtx *, rtx *);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void s390_output_pool_entry (rtx, machine_mode, unsigned int);
-extern int s390_label_align (rtx);
+extern int s390_label_align (rtx_insn *);
 extern int s390_agen_dep_p (rtx_insn *, rtx_insn *);
 extern rtx_insn *s390_load_got (void);
 extern rtx s390_get_thread_pointer (void);
