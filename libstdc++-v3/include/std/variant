@@ -296,15 +296,9 @@ namespace __variant
     {
       constexpr _Variant_storage() = default;
 
-      template<typename... _Args>
-	constexpr _Variant_storage(in_place_index_t<0>, _Args&&... __args)
-	: _M_first(in_place<0>, forward<_Args>(__args)...)
-	{ }
-
-      template<size_t _Np, typename... _Args,
-	       typename = enable_if_t<0 < _Np && _Np < sizeof...(_Rest) + 1>>
+      template<size_t _Np, typename... _Args>
 	constexpr _Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
-	: _M_rest(in_place<_Np - 1>, forward<_Args>(__args)...)
+	: _M_union(in_place<_Np>, forward<_Args>(__args)...)
 	{ }
 
       ~_Variant_storage() = default;
@@ -313,14 +307,27 @@ namespace __variant
       _M_storage() const
       {
 	return const_cast<void*>(
-	  static_cast<const void*>(std::addressof(_M_first._M_storage)));
+	  static_cast<const void*>(std::addressof(_M_union._M_first._M_storage)));
       }
 
-      union
+      union _Union
       {
+	constexpr _Union() {};
+
+	template<typename... _Args>
+	  constexpr _Union(in_place_index_t<0>, _Args&&... __args)
+	  : _M_first(in_place<0>, forward<_Args>(__args)...)
+	  { }
+
+	template<size_t _Np, typename... _Args,
+		 typename = enable_if_t<0 < _Np && _Np < sizeof...(_Rest) + 1>>
+	  constexpr _Union(in_place_index_t<_Np>, _Args&&... __args)
+	  : _M_rest(in_place<_Np - 1>, forward<_Args>(__args)...)
+	  { }
+
 	_Uninitialized<__storage<_First>> _M_first;
 	_Variant_storage<_Rest...> _M_rest;
-      };
+      } _M_union;
     };
 
   template<typename _Derived, bool __is_trivially_destructible>
