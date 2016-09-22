@@ -296,12 +296,13 @@ build_base_path (enum tree_code code,
       /* This can happen when adjust_result_of_qualified_name_lookup can't
 	 find a unique base binfo in a call to a member function.  We
 	 couldn't give the diagnostic then since we might have been calling
-	 a static member function, so we do it now.  */
+	 a static member function, so we do it now.  In other cases, eg.
+	 during error recovery (c++/71979), we may not have a base at all.  */
       if (complain & tf_error)
 	{
 	  tree base = lookup_base (probe, BINFO_TYPE (d_binfo),
 				   ba_unique, NULL, complain);
-	  gcc_assert (base == error_mark_node);
+	  gcc_assert (base == error_mark_node || !base);
 	}
       return error_mark_node;
     }
