@@ -1,3 +1,8 @@
+2016-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71979
+	* g++.dg/cpp0x/pr71979.C: New.
+
 2016-09-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* g++.dg/pr77550.C: Use __SIZE_TYPE__.
