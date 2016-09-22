@@ -1,3 +1,9 @@
+2016-09-21  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/66107
+	* decl.c (add_init_expr_to_sym): Catch variable character length
+	in parameter array.
+
 2016-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77657

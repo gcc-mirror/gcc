@@ -1672,7 +1672,18 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		  else if (init->expr_type == EXPR_ARRAY)
 		    {
 		      if (init->ts.u.cl)
-			clen = mpz_get_si (init->ts.u.cl->length->value.integer);
+			{
+			  const gfc_expr *length = init->ts.u.cl->length;
+			  if (length->expr_type != EXPR_CONSTANT)
+			    {
+			      gfc_error ("Cannot initialize parameter array "
+					 "at %L "
+					 "with variable length elements",
+					 &sym->declared_at);
+			      return false;
+			    }
+			  clen = mpz_get_si (length->value.integer);
+			}
 		      else if (init->value.constructor)
 			{
 			  gfc_constructor *c;
