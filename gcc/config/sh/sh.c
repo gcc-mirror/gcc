@@ -5694,7 +5694,7 @@ barrier_align (rtx_insn *barrier_or_label)
 	      ? 1 : align_jumps_log);
     }
 
-  rtx next = next_active_insn (barrier_or_label);
+  rtx_insn *next = next_active_insn (barrier_or_label);
 
   if (! next)
     return 0;

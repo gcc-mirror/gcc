@@ -1789,7 +1789,7 @@ m32r_expand_epilogue (void)
 
   if (total_size == 0)
     {
-      rtx insn = get_last_insn ();
+      rtx_insn *insn = get_last_insn ();
 
       /* If the last insn was a BARRIER, we don't have to write any code
 	 because a jump (aka return) was put there.  */

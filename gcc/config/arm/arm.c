@@ -20858,7 +20858,7 @@ any_sibcall_could_use_r3 (void)
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     if (e->flags & EDGE_SIBCALL)
       {
-	rtx call = BB_END (e->src);
+	rtx_insn *call = BB_END (e->src);
 	if (!CALL_P (call))
 	  call = prev_nonnote_nondebug_insn (call);
 	gcc_assert (CALL_P (call) && SIBLING_CALL_P (call));

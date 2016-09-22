@@ -9243,7 +9243,7 @@ arc_scheduling_not_expected (void)
    long.)  */
 
 int
-arc_label_align (rtx label)
+arc_label_align (rtx_insn *label)
 {
   int loop_align = LOOP_ALIGN (LABEL);
 

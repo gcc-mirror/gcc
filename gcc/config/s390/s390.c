@@ -1134,7 +1134,7 @@ static const struct attribute_spec s390_attribute_table[] = {
 /* Return the alignment for LABEL.  We default to the -falign-labels
    value except for the literal pool base label.  */
 int
-s390_label_align (rtx label)
+s390_label_align (rtx_insn *label)
 {
   rtx_insn *prev_insn = prev_active_insn (label);
   rtx set, src;

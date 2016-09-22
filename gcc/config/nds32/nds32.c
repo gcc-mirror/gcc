@@ -3489,7 +3489,7 @@ nds32_adjust_insn_length (rtx_insn *insn, int length)
 
 /* Return align 2 (log base 2) if the next instruction of LABEL is 4 byte.  */
 int
-nds32_target_alignment (rtx label)
+nds32_target_alignment (rtx_insn *label)
 {
   rtx_insn *insn;
 

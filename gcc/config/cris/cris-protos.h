@@ -27,7 +27,7 @@ extern void cris_notice_update_cc (rtx, rtx_insn *);
 extern bool cris_reload_address_legitimized (rtx, machine_mode, int, int, int);
 extern int cris_side_effect_mode_ok (enum rtx_code, rtx *, int, int,
                                      int, int, int);
-extern bool cris_cc0_user_requires_cmp (rtx);
+extern bool cris_cc0_user_requires_cmp (rtx_insn *);
 extern rtx cris_return_addr_rtx (int, rtx);
 extern rtx cris_split_movdx (rtx *);
 extern int cris_legitimate_pic_operand (rtx);
