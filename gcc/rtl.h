@@ -2842,7 +2842,7 @@ extern rtx_insn *prev_nondebug_insn (rtx_insn *);
 extern rtx_insn *next_nondebug_insn (rtx_insn *);
 extern rtx_insn *prev_nonnote_nondebug_insn (rtx);
 extern rtx_insn *next_nonnote_nondebug_insn (rtx);
-extern rtx_insn *prev_real_insn (rtx);
+extern rtx_insn *prev_real_insn (rtx_insn *);
 extern rtx_insn *next_real_insn (rtx);
 extern rtx_insn *prev_active_insn (rtx);
 extern rtx_insn *next_active_insn (rtx);
