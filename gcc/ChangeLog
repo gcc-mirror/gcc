@@ -1,5 +1,14 @@
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* emit-rtl.c (next_nondebug_insn): Change argument type to
+	rtx_insn *.
+	(prev_nondebug_insn): Likewise.
+	* loop-doloop.c (doloop_condition_get): Likewise.
+	* rtl.h: Adjust prototype.
+	* cfgloop.h: Likewise.
+
+2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* emit-rtl.c (next_nonnote_insn): Change argument type to
 	rtx_insn *.
 	(prev_nonnote_insn): Likewise.
