@@ -178,9 +178,10 @@ enum gfc_intrinsic_op
   INTRINSIC_EQ_OS, INTRINSIC_NE_OS, INTRINSIC_GT_OS, INTRINSIC_GE_OS,
   INTRINSIC_LT_OS, INTRINSIC_LE_OS,
   INTRINSIC_NOT, INTRINSIC_USER, INTRINSIC_ASSIGN, INTRINSIC_PARENTHESES,
-  /* User defined derived type pseudo operator.  */
-  INTRINSIC_FORMATTED, INTRINSIC_UNFORMATTED,
-  GFC_INTRINSIC_END /* Sentinel */
+  GFC_INTRINSIC_END, /* Sentinel */
+  /* User defined derived type pseudo operators. These are set beyond the
+     sentinel so that they are excluded from module_read and module_write.  */
+  INTRINSIC_FORMATTED, INTRINSIC_UNFORMATTED
 };
 
 /* This macro is the number of intrinsic operators that exist.
