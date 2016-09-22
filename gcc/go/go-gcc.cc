@@ -818,13 +818,14 @@ Gcc_backend::Gcc_backend()
 		       math_function_type_long, true, false);
 
   // We use __builtin_return_address in the thunk we build for
-  // functions which call recover.
+  // functions which call recover, and for runtime.getcallerpc.
+  t = build_function_type_list(ptr_type_node, unsigned_type_node, NULL_TREE);
   this->define_builtin(BUILT_IN_RETURN_ADDRESS, "__builtin_return_address",
-		       NULL,
-		       build_function_type_list(ptr_type_node,
-						unsigned_type_node,
-						NULL_TREE),
-		       false, false);
+		       NULL, t, false, false);
+
+  // The runtime calls __builtin_frame_address for runtime.getcallersp.
+  this->define_builtin(BUILT_IN_FRAME_ADDRESS, "__builtin_frame_address",
+		       NULL, t, false, false);
 
   // The compiler uses __builtin_trap for some exception handling
   // cases.
