@@ -115,7 +115,9 @@ fold_unary_intrinsic (gfc_intrinsic_op op)
 }
 
 
-/* Return the operator depending on the DTIO moded string.  */
+/* Return the operator depending on the DTIO moded string.  Note that
+   these are not operators in the normal sense and so have been placed
+   beyond GFC_INTRINSIC_END in gfortran.h:enum gfc_intrinsic_op.  */
 
 static gfc_intrinsic_op
 dtio_op (char* mode)
