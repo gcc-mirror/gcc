@@ -1,3 +1,9 @@
+2016-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77678
+	* expr.c (expand_expr_real_1): Guard array access against negative
+	offset.
+
 2016-09-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gimple-ssa-sprintf.c (format_floating_max): Use GMP_RNDN instead
