@@ -1,3 +1,8 @@
+2016-09-22  Richard Biener  <rguenther@suse.de>
+
+	* class.c (push_super_field): Set DECL_CONTEXT.
+	* mangle.c (java_mangle_decl): Re-sync with lhd_set_decl_assembler_name.
+
 2016-08-22  Release Manager
 
 	* GCC 6.2.0 released.

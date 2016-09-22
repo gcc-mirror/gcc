@@ -2365,6 +2365,7 @@ push_super_field (tree this_class, tree super_class)
   base_decl = build_decl (input_location,
 			  FIELD_DECL, NULL_TREE, super_class);
   DECL_IGNORED_P (base_decl) = 1;
+  DECL_CONTEXT (base_decl) = this_class;
   DECL_CHAIN (base_decl) = TYPE_FIELDS (this_class);
   TYPE_FIELDS (this_class) = base_decl;
   DECL_SIZE (base_decl) = TYPE_SIZE (super_class);
