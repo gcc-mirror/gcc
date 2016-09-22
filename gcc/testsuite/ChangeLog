@@ -1,3 +1,8 @@
+2016-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61019
+	* g++.dg/cpp0x/pr61019.C: New.
+
 2016-09-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Terry Guo  <terry.guo@arm.com>
 
