@@ -1,3 +1,10 @@
+2016-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/77665
+	* tree-inline.c (remap_gimple_stmt): Set has_simduid_loops
+	for all IFN_GOMP_SIMD_* internal fns, not just for
+	IFN_GOMP_SIMD_ORDERED_*.
+
 2016-09-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/77670
