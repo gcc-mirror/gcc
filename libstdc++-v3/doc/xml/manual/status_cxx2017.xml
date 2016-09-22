@@ -562,14 +562,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Splicing Maps and Sets </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf">
 	P0083R3
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> 7 </entry>
       <entry><code> __cpp_lib_node_extract >= 201606 </code></entry>
     </row>
 

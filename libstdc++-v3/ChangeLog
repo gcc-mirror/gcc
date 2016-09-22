@@ -1,3 +1,103 @@
+2016-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement C++17 node extraction and insertion (P0083R5)
+	* doc/xml/manual/status_cxx2017.xml: Document status.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am: Add bits/node_handle.h and reorder.
+	* include/Makefile.in: Regenerate.
+	* include/bits/hashtable.h (_Hashtable::node_type)
+	(_Hashtable::insert_return_type, _Hashtable::_M_reinsert_node)
+	(_Hashtable::_M_reinsert_node_multi, _Hashtable::extract)
+	(_Hashtable::_M_merge_unique, _Hashtable::_M_merge_multi): Define.
+	(_Hash_merge_helper): Define primary template.
+	* include/bits/node_handle.h: New header.
+	* include/bits/stl_map.h (map): Declare _Rb_tree_merge_helper as
+	friend.
+	(map::node_type, map::insert_return_type, map::extract, map::merge)
+	(map::insert(node_type&&), map::insert(const_iterator, node_type&&)):
+	Define new members.
+	(_Rb_tree_merge_helper): Specialize for map.
+	* include/bits/stl_multimap.h (multimap): Declare _Rb_tree_merge_helper
+	as friend.
+	(multimap::node_type, multimap::extract, multimap::merge)
+	(multimap::insert(node_type&&))
+	(multimap::insert(const_iterator, node_type&&)): Define.
+	(_Rb_tree_merge_helper): Specialize for multimap.
+	* include/bits/stl_multiset.h (multiset): Declare _Rb_tree_merge_helper
+	as friend.
+	(multiset::node_type, multiset::extract, multiset::merge)
+	(multiset::insert(node_type&&))
+	(multiset::insert(const_iterator, node_type&&)): Define.
+	* include/bits/stl_set.h (set): Declare _Rb_tree_merge_helper as
+	friend.
+	(set::node_type, set::insert_return_type, set::extract, set::merge)
+	(set::insert(node_type&&), set::insert(const_iterator, node_type&&)):
+	Define.
+	(_Rb_tree_merge_helper): Specialize for set.
+	* include/bits/stl_tree.h (_Rb_tree): Declare _Rb_tree<> as friend.
+	(_Rb_tree::node_type, _Rb_tree::insert_return_type)
+	(_Rb_tree::_M_reinsert_node_unique, _Rb_tree::_M_reinsert_node_equal)
+	(_Rb_tree::_M_reinsert_node_hint_unique)
+	(_Rb_tree::_M_reinsert_node_hint_equal, _Rb_tree::extract)
+	(_Rb_tree::_M_merge_unique, _Rb_tree::_M_merge_equal): Define.
+	(_Rb_tree_merge_helper): Specialize for multiset.
+	* include/bits/unordered_map.h (unordered_map): Declare
+	unordered_map<> and unordered_multimap<> as friends.
+	(unordered_map::node_type, unordered_map::insert_return_type)
+	(unordered_map::extract, unordered_map::merge)
+	(unordered_map::insert(node_type&&))
+	(unordered_map::insert(const_iterator, node_type&&))
+	(unordered_multimap): Declare _Hash_merge_helper as friend.
+	(unordered_multimap::node_type, unordered_multimap::extract)
+	(unordered_multimap::merge, unordered_multimap::insert(node_type&&))
+	(unordered_multimap::insert(const_iterator, node_type&&)): Define.
+	(_Hash_merge_helper): Specialize for unordered maps and multimaps.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Declare _Hash_merge_helper as friend.
+	(unordered_set::node_type, unordered_set::insert_return_type)
+	(unordered_set::extract, unordered_set::merge)
+	(unordered_set::insert(node_type&&))
+	(unordered_set::insert(const_iterator, node_type&&)): Define.
+	(unordered_multiset::node_type, unordered_multiset::extract)
+	(unordered_multiset::merge, unordered_multiset::insert(node_type&&))
+	(unordered_multiset::insert(const_iterator, node_type&&)): Define.
+	(_Hash_merge_helper): Specialize for unordered sets and multisets.
+	* include/debug/map.h (map): Add using declarations or forwarding
+	functions for new members.
+	* include/debug/map.h (multimap): Likewise.
+	* include/debug/map.h (multiset): Likewise.
+	* include/debug/map.h (set): Likewise.
+	* include/debug/unordered_map (unordered_map, unordered_multimap):
+	Likewise.
+	* include/debug/unordered_set( unordered_set, unordered_multiset):
+	Likewise.
+	* python/libstdcxx/v6/printers.py (get_value_from_aligned_membuf): New
+	helper function.
+	(get_value_from_list_node, get_value_from_Rb_tree_node): Use helper.
+	(StdNodeHandlePrinter): Define printer for node handles.
+	(build_libstdcxx_dictionary): Register StdNodeHandlePrinter.
+	* testsuite/23_containers/map/modifiers/extract.cc: New.
+	* testsuite/23_containers/map/modifiers/merge.cc: New.
+	* testsuite/23_containers/multimap/modifiers/extract.cc: New.
+	* testsuite/23_containers/multimap/modifiers/merge.cc: New.
+	* testsuite/23_containers/multiset/modifiers/extract.cc: New.
+	* testsuite/23_containers/multiset/modifiers/merge.cc: New.
+	* testsuite/23_containers/set/modifiers/extract.cc: New.
+	* testsuite/23_containers/set/modifiers/merge.cc: New.
+	* testsuite/23_containers/unordered_map/modifiers/extract.cc: New.
+	* testsuite/23_containers/unordered_map/modifiers/merge.cc: New.
+	* testsuite/23_containers/unordered_multimap/modifiers/extract.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/modifiers/merge.cc: New.
+	* testsuite/23_containers/unordered_multiset/modifiers/extract.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/modifiers/merge.cc: New.
+	* testsuite/23_containers/unordered_set/modifiers/extract.cc: New.
+	* testsuite/23_containers/unordered_set/modifiers/merge.cc: New.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Adjust
+	dg-error lineno.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Test node handles.
+
 2016-09-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fix tests on old arm platforms for optional.

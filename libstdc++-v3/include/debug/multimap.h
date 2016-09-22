@@ -296,6 +296,40 @@ namespace __debug
 	    _Base::insert(__first, __last);
 	}
 
+#if __cplusplus > 201402L
+      using node_type = typename _Base::node_type;
+
+      node_type
+      extract(const_iterator __position)
+      {
+	__glibcxx_check_erase(__position);
+	this->_M_invalidate_if(_Equal(__position.base()));
+	return _Base::extract(__position.base());
+      }
+
+      node_type
+      extract(const key_type& __key)
+      {
+	const auto __position = find(__key);
+	if (__position != end())
+	  return extract(__position);
+	return {};
+      }
+
+      iterator
+      insert(node_type&& __nh)
+      { return iterator(_Base::insert(std::move(__nh)), this); }
+
+      iterator
+      insert(const_iterator __hint, node_type&& __nh)
+      {
+	__glibcxx_check_insert(__hint);
+	return iterator(_Base::insert(__hint.base(), std::move(__nh)), this);
+      }
+
+      using _Base::merge;
+#endif // C++17
+
 #if __cplusplus >= 201103L
       iterator
       erase(const_iterator __position)

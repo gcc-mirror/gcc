@@ -66,7 +66,10 @@
 #include <bits/cpp_type_traits.h>
 #include <ext/alloc_traits.h>
 #if __cplusplus >= 201103L
-#include <ext/aligned_buffer.h>
+# include <ext/aligned_buffer.h>
+#endif
+#if __cplusplus > 201402L
+# include <bits/node_handle.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -354,6 +357,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __has_is_transparent<_Cmp, _SfinaeType,
 				__void_t<typename _Cmp::is_transparent>>
     { typedef void type; };
+#endif
+
+#if __cplusplus > 201402L
+  template<typename _Tree1, typename _Cmp2>
+    struct _Rb_tree_merge_helper { };
 #endif
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -734,6 +742,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typedef std::reverse_iterator<iterator>       reverse_iterator;
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
+#if __cplusplus > 201402L
+      using node_type = _Node_handle<_Key, _Val, _Node_allocator>;
+      using insert_return_type = _Node_insert_return<iterator, node_type>;
+#endif
 
       pair<_Base_ptr, _Base_ptr>
       _M_get_insert_unique_pos(const key_type& __k);
@@ -1274,6 +1287,172 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_move_assign(_Rb_tree&, std::false_type);
 #endif
+
+#if __cplusplus > 201402L
+    public:
+      /// Re-insert an extracted node.
+      insert_return_type
+      _M_reinsert_node_unique(node_type&& __nh)
+      {
+	insert_return_type __ret;
+	if (__nh.empty())
+	  __ret.position = end();
+	else
+	  {
+	    __glibcxx_assert(_M_get_Node_allocator() == *__nh._M_alloc);
+
+	    auto __res = _M_get_insert_unique_pos(__nh._M_key());
+	    if (__res.second)
+	      {
+		__ret.position
+		  = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
+		__nh._M_ptr = nullptr;
+		__ret.inserted = true;
+	      }
+	    else
+	      {
+		__ret.node = std::move(__nh);
+		__ret.position = iterator(__res.first);
+		__ret.inserted = false;
+	      }
+	  }
+	return __ret;
+      }
+
+      /// Re-insert an extracted node.
+      iterator
+      _M_reinsert_node_equal(node_type&& __nh)
+      {
+	iterator __ret;
+	if (__nh.empty())
+	  __ret = end();
+	else
+	  {
+	    __glibcxx_assert(_M_get_Node_allocator() == *__nh._M_alloc);
+	    auto __res = _M_get_insert_equal_pos(__nh._M_key());
+	    if (__res.second)
+	      __ret = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
+	    else
+	      __ret = _M_insert_equal_lower_node(__nh._M_ptr);
+	    __nh._M_ptr = nullptr;
+	  }
+	return __ret;
+      }
+
+      /// Re-insert an extracted node.
+      iterator
+      _M_reinsert_node_hint_unique(const_iterator __hint, node_type&& __nh)
+      {
+	iterator __ret;
+	if (__nh.empty())
+	  __ret = end();
+	else
+	  {
+	    __glibcxx_assert(_M_get_Node_allocator() == *__nh._M_alloc);
+	    auto __res = _M_get_insert_hint_unique_pos(__hint, __nh._M_key());
+	    if (__res.second)
+	      {
+		__ret = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
+		__nh._M_ptr = nullptr;
+	      }
+	    else
+	      __ret = iterator(__res.first);
+	  }
+	return __ret;
+      }
+
+      /// Re-insert an extracted node.
+      iterator
+      _M_reinsert_node_hint_equal(const_iterator __hint, node_type&& __nh)
+      {
+	iterator __ret;
+	if (__nh.empty())
+	  __ret = end();
+	else
+	  {
+	    __glibcxx_assert(_M_get_Node_allocator() == *__nh._M_alloc);
+	    auto __res = _M_get_insert_hint_equal_pos(__hint, __nh._M_key());
+	    if (__res.second)
+	      __ret = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
+	    else
+	      __ret = _M_insert_equal_lower_node(__nh._M_ptr);
+	    __nh._M_ptr = nullptr;
+	  }
+	return __ret;
+      }
+
+      /// Extract a node.
+      node_type
+      extract(const_iterator __pos)
+      {
+	auto __ptr = _Rb_tree_rebalance_for_erase(
+	    __pos._M_const_cast()._M_node, _M_impl._M_header);
+	--_M_impl._M_node_count;
+	return { static_cast<_Link_type>(__ptr), _M_get_Node_allocator() };
+      }
+
+      /// Extract a node.
+      node_type
+      extract(const key_type& __k)
+      {
+	node_type __nh;
+	auto __pos = find(__k);
+	if (__pos != end())
+	  __nh = extract(const_iterator(__pos));
+	return __nh;
+      }
+
+      template<typename _Compare2>
+	using _Compatible_tree
+	  = _Rb_tree<_Key, _Val, _KeyOfValue, _Compare2, _Alloc>;
+
+      template<typename, typename>
+	friend class _Rb_tree_merge_helper;
+
+      /// Merge from a compatible container into one with unique keys.
+      template<typename _Compare2>
+	void
+	_M_merge_unique(_Compatible_tree<_Compare2>& __src) noexcept
+	{
+	  using _Merge_helper = _Rb_tree_merge_helper<_Rb_tree, _Compare2>;
+	  for (auto __i = __src.begin(), __end = __src.end(); __i != __end;)
+	    {
+	      auto __pos = __i++;
+	      auto __res = _M_get_insert_unique_pos(_KeyOfValue()(*__pos));
+	      if (__res.second)
+		{
+		  auto& __src_impl = _Merge_helper::_S_get_impl(__src);
+		  auto __ptr = _Rb_tree_rebalance_for_erase(
+		      __pos._M_node, __src_impl._M_header);
+		  --__src_impl._M_node_count;
+		  _M_insert_node(__res.first, __res.second,
+				 static_cast<_Link_type>(__ptr));
+		}
+	    }
+	}
+
+      /// Merge from a compatible container into one with equivalent keys.
+      template<typename _Compare2>
+	void
+	_M_merge_equal(_Compatible_tree<_Compare2>& __src) noexcept
+	{
+	  using _Merge_helper = _Rb_tree_merge_helper<_Rb_tree, _Compare2>;
+	  for (auto __i = __src.begin(), __end = __src.end(); __i != __end;)
+	    {
+	      auto __pos = __i++;
+	      auto __res = _M_get_insert_equal_pos(_KeyOfValue()(*__pos));
+	      if (__res.second)
+		{
+		  auto& __src_impl = _Merge_helper::_S_get_impl(__src);
+		  auto __ptr = _Rb_tree_rebalance_for_erase(
+		      __pos._M_node, __src_impl._M_header);
+		  --__src_impl._M_node_count;
+		  _M_insert_node(__res.first, __res.second,
+				 static_cast<_Link_type>(__ptr));
+		}
+	    }
+	}
+#endif // C++17
     };
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -2389,6 +2568,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return false;
       return true;
     }
+
+#if __cplusplus > 201402L
+  // Allow access to internals of compatible _Rb_tree specializations.
+  template<typename _Key, typename _Val, typename _Sel, typename _Cmp1,
+	   typename _Alloc, typename _Cmp2>
+    struct _Rb_tree_merge_helper<_Rb_tree<_Key, _Val, _Sel, _Cmp1, _Alloc>,
+				 _Cmp2>
+    {
+    private:
+      friend class _Rb_tree<_Key, _Val, _Sel, _Cmp1, _Alloc>;
+
+      static auto&
+      _S_get_impl(_Rb_tree<_Key, _Val, _Sel, _Cmp2, _Alloc>& __tree)
+      { return __tree._M_impl; }
+    };
+#endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
