@@ -1,3 +1,10 @@
+2016-09-22  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/77641
+	* include/std/variant (_Variant_storage::_Variant_storage):
+	Change _Variant_storage's union to be default constructible.
+	* testsuite/20_util/variant/compile.cc: New test.
+
 2016-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/77288

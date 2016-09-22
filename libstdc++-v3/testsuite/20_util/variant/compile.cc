@@ -403,3 +403,12 @@ void test_void()
   v = 3;
   v = "asdf";
 }
+
+void test_pr77641()
+{
+  struct X {
+    constexpr X() { }
+  };
+
+  constexpr std::variant<X> v1 = X{};
+}
