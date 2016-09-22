@@ -36,7 +36,7 @@ struct B {
 template <typename, typename> using __ptr_rebind = B;
 template <typename _Tp> _Tp max(_Tp p1, _Tp) { return p1; }
 }
-void *operator new(unsigned long, void *p2) { return p2; }
+void *operator new(__SIZE_TYPE__, void *p2) { return p2; }
 template <typename _Tp> struct C {
   typedef _Tp *pointer;
   pointer allocate(int p1) {
@@ -47,7 +47,7 @@ template <typename _Tp> struct C {
 namespace std {
 template <typename _Tp> using __allocator_base = C<_Tp>;
 template <typename _Tp> struct allocator : __allocator_base<_Tp> {
-  typedef unsigned long size_type;
+  typedef __SIZE_TYPE__ size_type;
   template <typename _Tp1> struct rebind { typedef allocator<_Tp1> other; };
 };
 struct D {
