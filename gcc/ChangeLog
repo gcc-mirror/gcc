@@ -1,3 +1,30 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+	    Jiong Wang <jiong.wang@arm.com>
+
+	* config/arm/arm.c (coproc_secondary_reload_class): Make HFmode
+	available when FP16 instructions are available.
+	(output_move_vfp): Add support for 16-bit data moves.
+	(arm_validize_comparison): Fix some white-space.  Support HFmode
+	by conversion to SFmode.
+	* config/arm/arm.md (truncdfhf2): Fix a comment.
+	(extendhfdf2): Likewise.
+	(cstorehf4): New.
+	(movsicc): Fix some white-space.
+	(movhfcc): New.
+	(movsfcc): Fix some white-space.
+	(*cmovhf): New.
+	* config/arm/vfp.md (*arm_movhi_vfp): Disable when VFP FP16
+	instructions are available.
+	(*thumb2_movhi_vfp): Likewise.
+	(*arm_movhi_fp16): New.
+	(*thumb2_movhi_fp16): New.
+	(*movhf_vfp_fp16): New.
+	(*movhf_vfp_neon): Disable when VFP FP16 instructions are
+	available.
+	(*movhf_vfp): Likewise.
+	(extendhfsf2): Enable when VFP FP16 instructions are available.
+	(truncsfhf2):  Enable when VFP FP16 instructions are available.
+
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
 	* config/s390/vx-builtins.md: Replace 'adress' with 'address'.
