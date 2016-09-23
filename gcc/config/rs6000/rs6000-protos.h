@@ -77,6 +77,7 @@ extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
+extern bool expand_block_compare (rtx[]);
 extern const char * rs6000_output_load_multiple (rtx[]);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
 extern bool rs6000_is_valid_and_mask (rtx, machine_mode);

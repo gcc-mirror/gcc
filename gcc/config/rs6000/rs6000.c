@@ -18423,6 +18423,461 @@ expand_block_clear (rtx operands[])
   return 1;
 }
 
+/* Emit a potentially record-form instruction, setting DST from SRC.
+   If DOT is 0, that is all; otherwise, set CCREG to the result of the
+   signed comparison of DST with zero.  If DOT is 1, the generated RTL
+   doesn't care about the DST result; if DOT is 2, it does.  If CCREG
+   is CR0 do a single dot insn (as a PARALLEL); otherwise, do a SET and
+   a separate COMPARE.  */
+
+static void
+rs6000_emit_dot_insn (rtx dst, rtx src, int dot, rtx ccreg)
+{
+  if (dot == 0)
+    {
+      emit_move_insn (dst, src);
+      return;
+    }
+
+  if (cc_reg_not_cr0_operand (ccreg, CCmode))
+    {
+      emit_move_insn (dst, src);
+      emit_move_insn (ccreg, gen_rtx_COMPARE (CCmode, dst, const0_rtx));
+      return;
+    }
+
+  rtx ccset = gen_rtx_SET (ccreg, gen_rtx_COMPARE (CCmode, src, const0_rtx));
+  if (dot == 1)
+    {
+      rtx clobber = gen_rtx_CLOBBER (VOIDmode, dst);
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, ccset, clobber)));
+    }
+  else
+    {
+      rtx set = gen_rtx_SET (dst, src);
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, ccset, set)));
+    }
+}
+
+
+/* Figure out the correct instructions to generate to load data for
+   block compare.  MODE is used for the read from memory, and
+   data is zero extended if REG is wider than MODE.  If LE code
+   is being generated, bswap loads are used.
+
+   REG is the destination register to move the data into.
+   MEM is the memory block being read.
+   MODE is the mode of memory to use for the read.  */
+static void
+do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
+{
+  switch (GET_MODE (reg))
+    {
+    case DImode:
+      switch (mode)
+	{
+	case QImode:
+	  emit_insn (gen_zero_extendqidi2 (reg, mem));
+	  break;
+	case HImode:
+	  {
+	    rtx src = mem;
+	    if (TARGET_LITTLE_ENDIAN)
+	      {
+		src = gen_reg_rtx (HImode);
+		emit_insn (gen_bswaphi2 (src, mem));
+	      }
+	    emit_insn (gen_zero_extendhidi2 (reg, src));
+	    break;
+	  }
+	case SImode:
+	  {
+	    rtx src = mem;
+	    if (TARGET_LITTLE_ENDIAN)
+	      {
+		src = gen_reg_rtx (SImode);
+		emit_insn (gen_bswapsi2 (src, mem));
+	      }
+	    emit_insn (gen_zero_extendsidi2 (reg, src));
+	  }
+	  break;
+	case DImode:
+	  if (TARGET_LITTLE_ENDIAN)
+	    emit_insn (gen_bswapdi2 (reg, mem));
+	  else
+	    emit_insn (gen_movdi (reg, mem));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+
+    case SImode:
+      switch (mode)
+	{
+	case QImode:
+	  emit_insn (gen_zero_extendqisi2 (reg, mem));
+	  break;
+	case HImode:
+	  {
+	    rtx src = mem;
+	    if (TARGET_LITTLE_ENDIAN)
+	      {
+		src = gen_reg_rtx (HImode);
+		emit_insn (gen_bswaphi2 (src, mem));
+	      }
+	    emit_insn (gen_zero_extendhisi2 (reg, src));
+	    break;
+	  }
+	case SImode:
+	  if (TARGET_LITTLE_ENDIAN)
+	    emit_insn (gen_bswapsi2 (reg, mem));
+	  else
+	    emit_insn (gen_movsi (reg, mem));
+	  break;
+	case DImode:
+	  /* DImode is larger than the destination reg so is not expected.  */
+	  gcc_unreachable ();
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+}
+
+/* Select the mode to be used for reading the next chunk of bytes
+   in the compare.
+
+   OFFSET is the current read offset from the beginning of the block.
+   BYTES is the number of bytes remaining to be read.
+   ALIGN is the minimum alignment of the memory blocks being compared in bytes.
+   WORD_MODE_OK indicates using WORD_MODE is allowed, else SImode is
+   the largest allowable mode.  */
+static machine_mode
+select_block_compare_mode (HOST_WIDE_INT offset, HOST_WIDE_INT bytes,
+			   HOST_WIDE_INT align, bool word_mode_ok)
+{
+  /* First see if we can do a whole load unit
+     as that will be more efficient than a larger load + shift.  */
+
+  /* If big, use biggest chunk.
+     If exactly chunk size, use that size.
+     If remainder can be done in one piece with shifting, do that.
+     Do largest chunk possible without violating alignment rules.  */
+
+  /* The most we can read without potential page crossing.  */
+  HOST_WIDE_INT maxread = ROUND_UP (bytes, align);
+
+  if (word_mode_ok && bytes >= UNITS_PER_WORD)
+    return word_mode;
+  else if (bytes == GET_MODE_SIZE (SImode))
+    return SImode;
+  else if (bytes == GET_MODE_SIZE (HImode))
+    return HImode;
+  else if (bytes == GET_MODE_SIZE (QImode))
+    return QImode;
+  else if (bytes < GET_MODE_SIZE (SImode)
+	   && offset >= GET_MODE_SIZE (SImode) - bytes)
+    /* This matches the case were we have SImode and 3 bytes
+       and offset >= 1 and permits us to move back one and overlap
+       with the previous read, thus avoiding having to shift
+       unwanted bytes off of the input.  */
+    return SImode;
+  else if (word_mode_ok && bytes < UNITS_PER_WORD
+	   && offset >= UNITS_PER_WORD-bytes)
+    /* Similarly, if we can use DImode it will get matched here and
+       can do an overlapping read that ends at the end of the block.  */
+    return word_mode;
+  else if (word_mode_ok && maxread >= UNITS_PER_WORD)
+    /* It is safe to do all remaining in one load of largest size,
+       possibly with a shift to get rid of unwanted bytes.  */
+    return word_mode;
+  else if (maxread >= GET_MODE_SIZE (SImode))
+    /* It is safe to do all remaining in one SImode load,
+       possibly with a shift to get rid of unwanted bytes.  */
+    return SImode;
+  else if (bytes > GET_MODE_SIZE (SImode))
+    return SImode;
+  else if (bytes > GET_MODE_SIZE (HImode))
+    return HImode;
+
+  /* final fallback is do one byte */
+  return QImode;
+}
+
+/* Compute the alignment of pointer+OFFSET where the original alignment
+   of pointer was BASE_ALIGN.  */
+static HOST_WIDE_INT
+compute_current_alignment (HOST_WIDE_INT base_align, HOST_WIDE_INT offset)
+{
+  if (offset == 0)
+    return base_align;
+  return min (base_align, offset & -offset);
+}
+
+/* Expand a block compare operation, and return true if successful.
+   Return false if we should let the compiler generate normal code,
+   probably a memcmp call.
+
+   OPERANDS[0] is the target (result).
+   OPERANDS[1] is the first source.
+   OPERANDS[2] is the second source.
+   OPERANDS[3] is the length.
+   OPERANDS[4] is the alignment.  */
+bool
+expand_block_compare (rtx operands[])
+{
+  rtx target = operands[0];
+  rtx orig_src1 = operands[1];
+  rtx orig_src2 = operands[2];
+  rtx bytes_rtx = operands[3];
+  rtx align_rtx = operands[4];
+  HOST_WIDE_INT cmp_bytes = 0;
+  rtx src1 = orig_src1;
+  rtx src2 = orig_src2;
+
+  /* If this is not a fixed size compare, just call memcmp */
+  if (!CONST_INT_P (bytes_rtx))
+    return false;
+
+  /* This must be a fixed size alignment */
+  if (!CONST_INT_P (align_rtx))
+    return false;
+
+  int base_align = INTVAL (align_rtx) / BITS_PER_UNIT;
+
+  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff */
+  if (SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src1))
+      || SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src2)))
+    return false;
+
+  gcc_assert (GET_MODE (target) == SImode);
+
+  /* Anything to move? */
+  HOST_WIDE_INT bytes = INTVAL (bytes_rtx);
+  if (bytes <= 0)
+    return true;
+
+  rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
+  rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
+
+  /* If we have an LE target without ldbrx and word_mode is DImode,
+     then we must avoid using word_mode.  */
+  int word_mode_ok = !(TARGET_LITTLE_ENDIAN && !TARGET_LDBRX
+		       && word_mode == DImode);
+
+  /* Strategy phase.  How many ops will this take and should we expand it?  */
+
+  int offset = 0;
+  machine_mode load_mode =
+    select_block_compare_mode (offset, bytes, base_align, word_mode_ok);
+  int load_mode_size = GET_MODE_SIZE (load_mode);
+
+  /* We don't want to generate too much code.  */
+  if (ROUND_UP (bytes, load_mode_size) / load_mode_size
+      > rs6000_block_compare_inline_limit)
+    return false;
+
+  bool generate_6432_conversion = false;
+  rtx convert_label = NULL;
+  rtx final_label = NULL;
+
+  /* Example of generated code for 11 bytes aligned 1 byte:
+     .L10:
+             ldbrx 10,6,9
+             ldbrx 9,7,9
+             subf. 9,9,10
+             bne 0,.L8
+             addi 9,4,7
+             lwbrx 10,0,9
+             addi 9,5,7
+             lwbrx 9,0,9
+             subf 9,9,10
+             b .L9
+     .L8: # convert_label
+             cntlzd 9,9
+             addi 9,9,-1
+             xori 9,9,0x3f
+     .L9: # final_label
+
+     We start off with DImode and have a compare/branch to something
+     with a smaller mode then we will need a block with the DI->SI conversion
+     that may or may not be executed.  */
+
+  while (bytes > 0)
+    {
+      int align = compute_current_alignment (base_align, offset);
+      load_mode = select_block_compare_mode(offset, bytes, align, word_mode_ok);
+      load_mode_size = GET_MODE_SIZE (load_mode);
+      if (bytes >= load_mode_size)
+	cmp_bytes = load_mode_size;
+      else
+	{
+	  /* Move this load back so it doesn't go past the end.  */
+	  int extra_bytes = load_mode_size - bytes;
+	  cmp_bytes = bytes;
+	  if (extra_bytes < offset)
+	    {
+	      offset -= extra_bytes;
+	      cmp_bytes = load_mode_size;
+	      bytes = cmp_bytes;
+	    }
+	}
+
+      src1 = adjust_address (orig_src1, load_mode, offset);
+      src2 = adjust_address (orig_src2, load_mode, offset);
+
+      if (!REG_P (XEXP (src1, 0)))
+	{
+	  rtx src1_reg = copy_addr_to_reg (XEXP (src1, 0));
+	  src1 = replace_equiv_address (src1, src1_reg);
+	}
+      set_mem_size (src1, cmp_bytes);
+
+      if (!REG_P (XEXP (src2, 0)))
+	{
+	  rtx src2_reg = copy_addr_to_reg (XEXP (src2, 0));
+	  src2 = replace_equiv_address (src2, src2_reg);
+	}
+      set_mem_size (src2, cmp_bytes);
+
+      do_load_for_compare (tmp_reg_src1, src1, load_mode);
+      do_load_for_compare (tmp_reg_src2, src2, load_mode);
+
+      if (cmp_bytes < load_mode_size)
+	{
+	  /* Shift unneeded bytes off.  */
+	  rtx sh = GEN_INT (BITS_PER_UNIT * (load_mode_size - cmp_bytes));
+	  if (word_mode == DImode)
+	    {
+	      emit_insn (gen_lshrdi3 (tmp_reg_src1, tmp_reg_src1, sh));
+	      emit_insn (gen_lshrdi3 (tmp_reg_src2, tmp_reg_src2, sh));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lshrsi3 (tmp_reg_src1, tmp_reg_src1, sh));
+	      emit_insn (gen_lshrsi3 (tmp_reg_src2, tmp_reg_src2, sh));
+	    }
+	}
+
+      /* We previously did a block that need 64->32 conversion but
+	 the current block does not, so a label is needed to jump
+	 to the end.  */
+      if (generate_6432_conversion && !final_label
+	  && GET_MODE_SIZE (GET_MODE (target)) >= load_mode_size)
+	final_label = gen_label_rtx ();
+
+      /* Do we need a 64->32 conversion block?  */
+      int remain = bytes - cmp_bytes;
+      if (GET_MODE_SIZE (GET_MODE (target)) < GET_MODE_SIZE (load_mode))
+	{
+	  generate_6432_conversion = true;
+	  if (remain > 0 && !convert_label)
+	    convert_label = gen_label_rtx ();
+	}
+
+      if (GET_MODE_SIZE (GET_MODE (target)) >= GET_MODE_SIZE (load_mode))
+	{
+	  /* Target is larger than load size so we don't need to
+	     reduce result size.  */
+	  if (remain > 0)
+	    {
+	      /* This is not the last block, branch to the end if the result
+		 of this subtract is not zero.  */
+	      if (!final_label)
+		final_label = gen_label_rtx ();
+	      rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
+	      rtx cond = gen_reg_rtx (CCmode);
+	      rtx tmp = gen_rtx_MINUS (word_mode, tmp_reg_src1, tmp_reg_src2);
+	      rs6000_emit_dot_insn (tmp_reg_src2, tmp, 2, cond);
+	      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp_reg_src2)));
+	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
+						 fin_ref, pc_rtx);
+	      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      JUMP_LABEL (j) = final_label;
+	      LABEL_NUSES (final_label) += 1;
+	    }
+	  else
+	    {
+	      if (word_mode == DImode)
+		{
+		  emit_insn (gen_subdi3 (tmp_reg_src2, tmp_reg_src1,
+					 tmp_reg_src2));
+		  emit_insn (gen_movsi (target,
+					gen_lowpart (SImode, tmp_reg_src2)));
+		}
+	      else
+		emit_insn (gen_subsi3 (target, tmp_reg_src1, tmp_reg_src2));
+
+	      if (final_label)
+		{
+		  rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
+		  rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
+		  JUMP_LABEL(j) = final_label;
+		  LABEL_NUSES (final_label) += 1;
+		  emit_barrier ();
+		}
+	    }
+	}
+      else
+	{
+	  generate_6432_conversion = true;
+	  if (remain > 0)
+	    {
+	      if (!convert_label)
+		convert_label = gen_label_rtx ();
+
+	      /* Compare to zero and branch to convert_label if not zero.  */
+	      rtx cvt_ref = gen_rtx_LABEL_REF (VOIDmode, convert_label);
+	      rtx cond = gen_reg_rtx (CCmode);
+	      rtx tmp = gen_rtx_MINUS (DImode, tmp_reg_src1, tmp_reg_src2);
+	      rs6000_emit_dot_insn (tmp_reg_src2, tmp, 2, cond);
+	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
+						 cvt_ref, pc_rtx);
+	      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
+	      JUMP_LABEL(j) = convert_label;
+	      LABEL_NUSES (convert_label) += 1;
+	    }
+	  else
+	    {
+	      /* Just do the subtract.  Since this is the last block the
+		 convert code will be generated immediately following.  */
+	      emit_insn (gen_subdi3 (tmp_reg_src2, tmp_reg_src1,
+				     tmp_reg_src2));
+	    }
+	}
+
+      offset += cmp_bytes;
+      bytes -= cmp_bytes;
+    }
+
+  if (generate_6432_conversion)
+    {
+      if (convert_label)
+	emit_label (convert_label);
+
+      /* We need to produce DI result from sub, then convert to target SI
+	 while maintaining <0 / ==0 / >0 properties.
+	 Segher's sequence: cntlzd 3,3 ; addi 3,3,-1 ; xori 3,3,63 */
+      emit_insn (gen_clzdi2 (tmp_reg_src2, tmp_reg_src2));
+      emit_insn (gen_adddi3 (tmp_reg_src2, tmp_reg_src2, GEN_INT (-1)));
+      emit_insn (gen_xordi3 (tmp_reg_src2, tmp_reg_src2, GEN_INT (63)));
+      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp_reg_src2)));
+    }
+
+  if (final_label)
+    emit_label (final_label);
+
+  gcc_assert (bytes == 0);
+  return true;
+}
+
 
 /* Expand a block move operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.
@@ -19102,42 +19557,6 @@ rs6000_is_valid_2insn_and (rtx c, machine_mode mode)
   unsigned HOST_WIDE_INT val1 = (val + bit1) & val;
   unsigned HOST_WIDE_INT bit3 = val1 & -val1;
   return rs6000_is_valid_and_mask (GEN_INT (val + bit3 - bit2), mode);
-}
-
-/* Emit a potentially record-form instruction, setting DST from SRC.
-   If DOT is 0, that is all; otherwise, set CCREG to the result of the
-   signed comparison of DST with zero.  If DOT is 1, the generated RTL
-   doesn't care about the DST result; if DOT is 2, it does.  If CCREG
-   is CR0 do a single dot insn (as a PARALLEL); otherwise, do a SET and
-   a separate COMPARE.  */
-
-static void
-rs6000_emit_dot_insn (rtx dst, rtx src, int dot, rtx ccreg)
-{
-  if (dot == 0)
-    {
-      emit_move_insn (dst, src);
-      return;
-    }
-
-  if (cc_reg_not_cr0_operand (ccreg, CCmode))
-    {
-      emit_move_insn (dst, src);
-      emit_move_insn (ccreg, gen_rtx_COMPARE (CCmode, dst, const0_rtx));
-      return;
-    }
-
-  rtx ccset = gen_rtx_SET (ccreg, gen_rtx_COMPARE (CCmode, src, const0_rtx));
-  if (dot == 1)
-    {
-      rtx clobber = gen_rtx_CLOBBER (VOIDmode, dst);
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, ccset, clobber)));
-    }
-  else
-    {
-      rtx set = gen_rtx_SET (dst, src);
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, ccset, set)));
-    }
 }
 
 /* Emit the two insns to do an AND in mode MODE, with operands OPERANDS.
