@@ -80,8 +80,8 @@ struct Arrays {
 
 void test_s_nonconst (const char *s, const wchar_t *ws, struct Arrays *a)
 {
-  T (0, "%s",   s);             /* { dg-warning "into a region" "sprintf transformed into strcpy" { xfail *-*-*-* } } */
-  T (1, "%s",   s);             /* { dg-warning "nul past the end" "sprintf transformed into strcpy" { xfail *-*-*-* } } */
+  T (0, "%s",   s);             /* { dg-warning "into a region" "sprintf transformed into strcpy" { xfail *-*-* } } */
+  T (1, "%s",   s);             /* { dg-warning "nul past the end" "sprintf transformed into strcpy" { xfail *-*-* } } */
   T (1, "%1s",  s);             /* { dg-warning "nul past the end" } */
   T (1, "%.0s", s);
   T (1, "%.1s", s);             /* { dg-warning "writing a terminating nul" } */
