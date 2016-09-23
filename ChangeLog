@@ -1,3 +1,7 @@
+2016-09-23  Tamar Christina <tamar.christina@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2016-09-12  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* configure.ac: Check for the minimum in-tree MPFR version
