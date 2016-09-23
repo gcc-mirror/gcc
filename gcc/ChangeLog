@@ -1,3 +1,7 @@
+2016-09-23  Richard Biener  <rguenther@suse.de>
+
+	* hooks.h (hook_uint_uintp_false): Declare.
+
 2016-09-22  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* config/avr/avr.c (avr_rtx_costs_1): Handle DImode MULT.
