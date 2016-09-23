@@ -1,3 +1,9 @@
+2016-09-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/risbg-ll-1.c: Ported risbg tests from llvm.
+	* gcc.target/s390/risbg-ll-2.c: Ditto.
+	* gcc.target/s390/risbg-ll-3.c: Ditto.
+
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/arm/armv8_2-fp16-arith-1.c: New.
