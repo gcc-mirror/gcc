@@ -1,3 +1,20 @@
+2016-09-23  Fritz Reese  <fritzoreese@gmail.com>
+
+	* lang.opt, invoke.texi, gfortran.texi: New flag -fdec-static.
+	* options.c (set_dec_flags): Set -fdec-static with -fdec.
+	* gfortran.h (symbol_attribute): New attribute automatic.
+	* gfortran.h (gfc_add_automatic): New prototype.
+	* match.h (gfc_match_automatic, gfc_match_static): New functions.
+	* decl.c (gfc_match_automatic, gfc_match_static): Ditto.
+	* symbol.c (gfc_add_automatic): Ditto.
+	* decl.c (match_attr_spec): Match AUTOMATIC and STATIC decls.
+	* parse.c (decode_specification_statement, decode_statement): Ditto.
+	* resolve.c (apply_default_init_local, resolve_fl_variable_derived,
+	resolve_symbol): Support for automatic attribute.
+	* symbol.c (check_conflict, gfc_copy_attr, gfc_is_var_automatic):
+	Ditto.
+	* trans-decl.c (gfc_finish_var_decl): Ditto.
+
 2016-09-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/48298

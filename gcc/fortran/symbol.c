@@ -382,7 +382,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     *is_bind_c = "BIND(C)", *procedure = "PROCEDURE",
     *proc_pointer = "PROCEDURE POINTER", *abstract = "ABSTRACT",
     *asynchronous = "ASYNCHRONOUS", *codimension = "CODIMENSION",
-    *contiguous = "CONTIGUOUS", *generic = "GENERIC";
+    *contiguous = "CONTIGUOUS", *generic = "GENERIC", *automatic = "AUTOMATIC";
   static const char *threadprivate = "THREADPRIVATE";
   static const char *omp_declare_target = "OMP DECLARE TARGET";
   static const char *oacc_declare_copyin = "OACC DECLARE COPYIN";
@@ -447,6 +447,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf (dummy, save);
       conf (in_common, save);
       conf (result, save);
+      conf (automatic, save);
 
       switch (attr->flavor)
 	{
@@ -487,6 +488,12 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (pointer, elemental);
   conf (pointer, codimension);
   conf (allocatable, elemental);
+
+  conf (in_common, automatic);
+  conf (in_equivalence, automatic);
+  conf (result, automatic);
+  conf (use_assoc, automatic);
+  conf (dummy, automatic);
 
   conf (target, external);
   conf (target, intrinsic);
@@ -938,6 +945,21 @@ gfc_add_allocatable (symbol_attribute *attr, locus *where)
 
   attr->allocatable = 1;
   return check_conflict (attr, NULL, where);
+}
+
+
+bool
+gfc_add_automatic (symbol_attribute *attr, const char *name, locus *where)
+{
+  if (check_used (attr, name, where))
+    return false;
+
+  if (attr->automatic && !gfc_notify_std (GFC_STD_LEGACY,
+	"Duplicate AUTOMATIC attribute specified at %L", where))
+    return false;
+
+  attr->automatic = 1;
+  return check_conflict (attr, name, where);
 }
 
 
@@ -1889,6 +1911,8 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
   if (src->allocatable && !gfc_add_allocatable (dest, where))
     goto fail;
 
+  if (src->automatic && !gfc_add_automatic (dest, NULL, where))
+    goto fail;
   if (src->dimension && !gfc_add_dimension (dest, NULL, where))
     goto fail;
   if (src->codimension && !gfc_add_codimension (dest, NULL, where))
@@ -4000,6 +4024,10 @@ gfc_is_var_automatic (gfc_symbol *sym)
       && sym->ts.u.cl
       && !gfc_is_constant_expr (sym->ts.u.cl->length))
     return true;
+  /* Variables with explicit AUTOMATIC attribute.  */
+  if (sym->attr.automatic)
+      return true;
+
   return false;
 }
 

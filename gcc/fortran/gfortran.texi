@@ -1462,6 +1462,7 @@ without warning.
 * STRUCTURE and RECORD::
 * UNION and MAP::
 * Type variants for integer intrinsics::
+* AUTOMATIC and STATIC attributes::
 @end menu
 
 @node Old-style kind specifications
@@ -2421,6 +2422,56 @@ here:
   @tab @code{--} @tab @code{FLOATI} @tab @code{FLOATJ} @tab @code{FLOATK}
 @end multitable
 
+@node AUTOMATIC and STATIC attributes
+@subsection @code{AUTOMATIC} and @code{STATIC} attributes
+@cindex variable attributes
+@cindex @code{AUTOMATIC}
+@cindex @code{STATIC}
+
+With @option{-fdec-static} GNU Fortran supports the DEC extended attributes
+@code{STATIC} and @code{AUTOMATIC} to provide explicit specification of entity
+storage.  These follow the syntax of the Fortran standard @code{SAVE} attribute.
+
+@code{STATIC} is exactly equivalent to @code{SAVE}, and specifies that
+an entity should be allocated in static memory.  As an example, @code{STATIC}
+local variables will retain their values across multiple calls to a function.
+
+Entities marked @code{AUTOMATIC} will be stack automatic whenever possible.
+@code{AUTOMATIC} is the default for local variables smaller than
+@option{-fmax-stack-var-size}, unless @option{-fno-automatic} is given.  This
+attribute overrides @option{-fno-automatic}, @option{-fmax-stack-var-size}, and
+blanket @code{SAVE} statements.
+
+
+Examples:
+
+@example
+subroutine f
+  integer, automatic :: i  ! automatic variable
+  integer x, y             ! static variables
+  save
+  ...
+endsubroutine
+@end example
+@example
+subroutine f
+  integer a, b, c, x, y, z
+  static :: x
+  save y
+  automatic z, c
+  ! a, b, c, and z are automatic
+  ! x and y are static
+endsubroutine
+@end example
+@example
+! Compiled with -fno-automatic
+subroutine f
+  integer a, b, c, d
+  automatic :: a
+  ! a is automatic; b, c, and d are static
+endsubroutine
+@end example
+
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
@@ -2444,7 +2495,6 @@ code that uses them running with the GNU Fortran compiler.
 * ENCODE and DECODE statements::
 * Variable FORMAT expressions::
 @c * Q edit descriptor::
-@c * AUTOMATIC statement::
 @c * TYPE and ACCEPT I/O Statements::
 @c * .XOR. operator::
 @c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::

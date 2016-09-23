@@ -191,6 +191,7 @@ decode_specification_statement (void)
 	     ST_INTERFACE);
       match ("allocatable", gfc_match_allocatable, ST_ATTR_DECL);
       match ("asynchronous", gfc_match_asynchronous, ST_ATTR_DECL);
+      match ("automatic", gfc_match_automatic, ST_ATTR_DECL);
       break;
 
     case 'b':
@@ -256,6 +257,7 @@ decode_specification_statement (void)
 
     case 's':
       match ("save", gfc_match_save, ST_ATTR_DECL);
+      match ("static", gfc_match_static, ST_ATTR_DECL);
       match ("structure", gfc_match_structure_decl, ST_STRUCTURE_DECL);
       break;
 
@@ -436,6 +438,7 @@ decode_statement (void)
       match ("allocatable", gfc_match_allocatable, ST_ATTR_DECL);
       match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT);
       match ("asynchronous", gfc_match_asynchronous, ST_ATTR_DECL);
+      match ("automatic", gfc_match_automatic, ST_ATTR_DECL);
       break;
 
     case 'b':
@@ -548,6 +551,7 @@ decode_statement (void)
       match ("sequence", gfc_match_eos, ST_SEQUENCE);
       match ("stop", gfc_match_stop, ST_STOP);
       match ("save", gfc_match_save, ST_ATTR_DECL);
+      match ("static", gfc_match_static, ST_ATTR_DECL);
       match ("submodule", gfc_match_submodule, ST_SUBMODULE);
       match ("sync all", gfc_match_sync_all, ST_SYNC_ALL);
       match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
