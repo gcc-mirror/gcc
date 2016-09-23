@@ -1,3 +1,28 @@
+2016-09-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/predicates.md ("contiguous_bitmask_operand"): Adapt to new
+	interface of s390_contiguous_bitmask_p.
+	("contiguous_bitmask_nowrap_operand"): New predicate.
+	* ("*anddi3_cc", "*anddi3_cconly", "*anddi3"): Replace NxxDq with NxxDw.
+	* config/s390/constraints.md ("NxxDw", "NxxSq"): Adapt to new interface
+	of s390_contiguous_bitmask_p.
+	* ("NxxDw"): Rename NxxDq constraint to NxxDw.
+	("NxxSw"): New constraint.
+	* config/s390/s390.md ("*andsi3_zarch"): Enable bitmask wraparound.
+	* config/s390/s390-protos.h (s390_contiguous_bitmask_p): Updated
+	interface.
+	(s390_contiguous_bitmask_nowrap_p): Export.
+	* config/s390/s390.c (s390_contiguous_bitmask_nowrap_p): New name of
+	former s390_contiguous_bitmask_p.
+	(s390_contiguous_bitmask_p): Use s390_contiguous_bitmask_nowrap_p to
+	detect contiguous bit ranges with wraparound.  Change signature to
+	return START and END position instead of POS and LENGTH.
+	(s390_contiguous_bitmask_vector_p): Remove extra code for continous bit
+	ranges with wraparound.
+	(s390_extzv_shift_ok): Use s390_contiguous_bitmask_nowrap_p.
+	(s390_contiguous_bitmask_vector_p,s390_extzv_shift_ok,print_operand):
+	Adapt to new signature of s390_contiguous_bitmask_p.
+
 2016-09-23  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop-manip.c (create_intersect_range_checks_index): New.

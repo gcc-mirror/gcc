@@ -2260,67 +2260,107 @@ s390_single_part (rtx op,
 }
 
 /* Return true if IN contains a contiguous bitfield in the lower SIZE
-   bits and no other bits are set in IN.  POS and LENGTH can be used
-   to obtain the start position and the length of the bitfield.
+   bits and no other bits are set in (the lower SIZE bits of) IN.
 
-   POS gives the position of the first bit of the bitfield counting
-   from the lowest order bit starting with zero.  In order to use this
-   value for S/390 instructions this has to be converted to "bits big
-   endian" style.  */
+   PSTART and PEND can be used to obtain the start and end
+   position (inclusive) of the bitfield relative to 64
+   bits. *PSTART / *PEND gives the position of the first/last bit
+   of the bitfield counting from the highest order bit starting
+   with zero.  */
 
 bool
-s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, int size,
-			   int *pos, int *length)
+s390_contiguous_bitmask_nowrap_p (unsigned HOST_WIDE_INT in, int size,
+				  int *pstart, int *pend)
 {
-  int tmp_pos = 0;
-  int tmp_length = 0;
-  int i;
-  unsigned HOST_WIDE_INT mask = 1ULL;
-  bool contiguous = false;
+  int start;
+  int end = -1;
+  int lowbit = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT - 1;
+  int highbit = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT - size;
+  unsigned HOST_WIDE_INT bitmask = 1ULL;
 
-  for (i = 0; i < size; mask <<= 1, i++)
+  gcc_assert (!!pstart == !!pend);
+  for (start = lowbit; start >= highbit; bitmask <<= 1, start--)
+    if (end == -1)
+      {
+	/* Look for the rightmost bit of a contiguous range of ones.  */
+	if (bitmask & in)
+	  /* Found it.  */
+	  end = start;
+      }
+    else
+      {
+	/* Look for the firt zero bit after the range of ones.  */
+	if (! (bitmask & in))
+	  /* Found it.  */
+	  break;
+      }
+  /* We're one past the last one-bit.  */
+  start++;
+
+  if (end == -1)
+    /* No one bits found.  */
+    return false;
+
+  if (start > highbit)
     {
-      if (contiguous)
-	{
-	  if (mask & in)
-	    tmp_length++;
-	  else
-	    break;
-	}
-      else
-	{
-	  if (mask & in)
-	    {
-	      contiguous = true;
-	      tmp_length++;
-	    }
-	  else
-	    tmp_pos++;
-	}
+      unsigned HOST_WIDE_INT mask;
+
+      /* Calculate a mask for all bits beyond the contiguous bits.  */
+      mask = ((~(0ULL) >> highbit) & (~(0ULL) << (lowbit - start + 1)));
+      if (mask & in)
+	/* There are more bits set beyond the first range of one bits.  */
+	return false;
     }
 
-  if (!tmp_length)
-    return false;
-
-  /* Calculate a mask for all bits beyond the contiguous bits.  */
-  mask = (-1LL & ~(((1ULL << (tmp_length + tmp_pos - 1)) << 1) - 1));
-
-  if ((unsigned)size < sizeof (HOST_WIDE_INT) * BITS_PER_UNIT)
-    mask &= (HOST_WIDE_INT_1U << size) - 1;
-
-  if (mask & in)
-    return false;
-
-  if (tmp_length + tmp_pos - 1 > size)
-    return false;
-
-  if (length)
-    *length = tmp_length;
-
-  if (pos)
-    *pos = tmp_pos;
+  if (pstart)
+    {
+      *pstart = start;
+      *pend = end;
+    }
 
   return true;
+}
+
+/* Same as s390_contiguous_bitmask_nowrap_p but also returns true
+   if ~IN contains a contiguous bitfield.  In that case, *END is <
+   *START.
+
+   If WRAP_P is true, a bitmask that wraps around is also tested.
+   When a wraparoud occurs *START is greater than *END (in
+   non-null pointers), and the uppermost (64 - SIZE) bits are thus
+   part of the range.  If WRAP_P is false, no wraparound is
+   tested.  */
+
+bool
+s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, bool wrap_p,
+			   int size, int *start, int *end)
+{
+  int bs = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT;
+  bool b;
+
+  gcc_assert (!!start == !!end);
+  if ((in & ((~(0ULL)) >> (bs - size))) == 0)
+    /* This cannot be expressed as a contiguous bitmask.  Exit early because
+       the second call of s390_contiguous_bitmask_nowrap_p would accept this as
+       a valid bitmask.  */
+    return false;
+  b = s390_contiguous_bitmask_nowrap_p (in, size, start, end);
+  if (b)
+    return true;
+  if (! wrap_p)
+    return false;
+  b = s390_contiguous_bitmask_nowrap_p (~in, size, start, end);
+  if (b && start)
+    {
+      int s = *start;
+      int e = *end;
+
+      gcc_assert (s >= 1);
+      *start = ((e + 1) & (bs - 1));
+      *end = ((s - 1 + bs) & (bs - 1));
+    }
+
+  return b;
 }
 
 /* Return true if OP contains the same contiguous bitfield in *all*
@@ -2336,9 +2376,11 @@ bool
 s390_contiguous_bitmask_vector_p (rtx op, int *start, int *end)
 {
   unsigned HOST_WIDE_INT mask;
-  int length, size;
+  int size;
   rtx elt;
+  bool b;
 
+  gcc_assert (!!start == !!end);
   if (!const_vec_duplicate_p (op, &elt)
       || !CONST_INT_P (elt))
     return false;
@@ -2350,25 +2392,21 @@ s390_contiguous_bitmask_vector_p (rtx op, int *start, int *end)
     return false;
 
   mask = UINTVAL (elt);
-  if (s390_contiguous_bitmask_p (mask, size, start,
-				 end != NULL ? &length : NULL))
+
+  b = s390_contiguous_bitmask_p (mask, true, size, start, end);
+  if (b)
     {
-      if (end != NULL)
-	*end = *start + length - 1;
+      if (start)
+	{
+	  int bs = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT;
+
+	  *start -= (bs - size);
+	  *end -= (bs - size);
+	}
       return true;
     }
-  /* 0xff00000f style immediates can be covered by swapping start and
-     end indices in vgm.  */
-  if (s390_contiguous_bitmask_p (~mask, size, start,
-				 end != NULL ? &length : NULL))
-    {
-      if (end != NULL)
-	*end = *start - 1;
-      if (start != NULL)
-	*start = *start + length;
-      return true;
-    }
-  return false;
+  else
+    return false;
 }
 
 /* Return true if C consists only of byte chunks being either 0 or
@@ -2422,14 +2460,21 @@ s390_bytemask_vector_p (rtx op, unsigned *mask)
 bool
 s390_extzv_shift_ok (int bitsize, int rotl, unsigned HOST_WIDE_INT contig)
 {
-  int pos, len;
+  int start, end;
   bool ok;
 
-  ok = s390_contiguous_bitmask_p (contig, bitsize, &pos, &len);
+  ok = s390_contiguous_bitmask_nowrap_p (contig, bitsize, &start, &end);
   gcc_assert (ok);
 
-  return ((rotl >= 0 && rotl <= pos)
-	  || (rotl < 0 && -rotl <= bitsize - len - pos));
+  if (rotl >= 0)
+    return (64 - end >= rotl);
+  else
+    {
+      /* Translate "- rotate right" in BITSIZE mode to "rotate left" in
+	 DIMode.  */
+      rotl = -rotl + (64 - bitsize);
+      return (start >= rotl);
+    }
 }
 
 /* Check whether we can (and want to) split a double-word
@@ -7441,16 +7486,17 @@ print_operand (FILE *file, rtx x, int code)
 	case 'e': case 'f':
 	case 's': case 't':
 	  {
-	    int pos, len;
+	    int start, end;
+	    int len;
 	    bool ok;
 
 	    len = (code == 's' || code == 'e' ? 64 : 32);
-	    ok = s390_contiguous_bitmask_p (ival, len, &pos, &len);
+	    ok = s390_contiguous_bitmask_p (ival, true, len, &start, &end);
 	    gcc_assert (ok);
 	    if (code == 's' || code == 't')
-	      ival = 64 - pos - len;
+	      ival = start;
 	    else
-	      ival = 64 - 1 - pos;
+	      ival = end;
 	  }
 	  break;
 	default:
@@ -7490,16 +7536,12 @@ print_operand (FILE *file, rtx x, int code)
 	case 'e':
 	case 's':
 	  {
-	    int start, stop, inner_len;
+	    int start, end;
 	    bool ok;
 
-	    inner_len = GET_MODE_UNIT_BITSIZE (GET_MODE (x));
-	    ok = s390_contiguous_bitmask_vector_p (x, &start, &stop);
+	    ok = s390_contiguous_bitmask_vector_p (x, &start, &end);
 	    gcc_assert (ok);
-	    if (code == 's' || code == 't')
-	      ival = inner_len - stop - 1;
-	    else
-	      ival = inner_len - start - 1;
+	    ival = (code == 's') ? start : end;
 	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival);
 	  }
 	  break;

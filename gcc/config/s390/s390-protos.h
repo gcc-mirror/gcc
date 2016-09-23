@@ -73,7 +73,7 @@ extern int s390_const_ok_for_constraint_p (HOST_WIDE_INT, int, const char *);
 extern int s390_const_double_ok_for_constraint_p (rtx, int, const char *);
 extern int s390_single_part (rtx, machine_mode, machine_mode, int);
 extern unsigned HOST_WIDE_INT s390_extract_part (rtx, machine_mode, int);
-extern bool s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT, int, int *, int *);
+extern bool s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT, bool, int, int *, int *);
 extern bool s390_contiguous_bitmask_vector_p (rtx, int *, int *);
 extern bool s390_bytemask_vector_p (rtx, unsigned *);
 extern bool s390_split_ok_p (rtx, rtx, machine_mode, int);
