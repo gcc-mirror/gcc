@@ -1,3 +1,7 @@
+2016-09-23  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/vx-builtins.md: Replace 'adress' with 'address'.
+
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm.c (arm_evpc_neon_vuzp): Add support for V8HF and
