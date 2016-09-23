@@ -1,3 +1,81 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/iterators.md (Code iterators): Fix some white-space
+	in the comments.
+	(GLTE): New.
+	(ABSNEG): New
+	(FCVT): Moved from vfp.md.
+	(VCVT_HF_US_N): New.
+	(VCVT_SI_US_N): New.
+	(VCVT_HF_US): New.
+	(VCVTH_US): New.
+	(FP16_RND): New.
+	(absneg_str): New.
+	(FCVTI32typename): Moved from vfp.md.
+	(sup): Add UNSPEC_VCVTA_S, UNSPEC_VCVTA_U, UNSPEC_VCVTM_S,
+	UNSPEC_VCVTM_U, UNSPEC_VCVTN_S, UNSPEC_VCVTN_U, UNSPEC_VCVTP_S,
+	UNSPEC_VCVTP_U, UNSPEC_VCVT_HF_S_N, UNSPEC_VCVT_HF_U_N,
+	UNSPEC_VCVT_SI_S_N, UNSPEC_VCVT_SI_U_N,  UNSPEC_VCVTH_S_N,
+	UNSPEC_VCVTH_U_N, UNSPEC_VCVTH_S and UNSPEC_VCVTH_U.
+	(vcvth_op): New.
+	(fp16_rnd_str): New.
+	(fp16_rnd_insn): New.
+	* config/arm/unspecs.md (UNSPEC_VCVT_HF_S_N): New.
+	(UNSPEC_VCVT_HF_U_N): New.
+	(UNSPEC_VCVT_SI_S_N): New.
+	(UNSPEC_VCVT_SI_U_N): New.
+	(UNSPEC_VCVTH_S): New.
+	(UNSPEC_VCVTH_U): New.
+	(UNSPEC_VCVTA_S): New.
+	(UNSPEC_VCVTA_U): New.
+	(UNSPEC_VCVTM_S): New.
+	(UNSPEC_VCVTM_U): New.
+	(UNSPEC_VCVTN_S): New.
+	(UNSPEC_VCVTN_U): New.
+	(UNSPEC_VCVTP_S): New.
+	(UNSPEC_VCVTP_U): New.
+	(UNSPEC_VCVTP_S): New.
+	(UNSPEC_VCVTP_U): New.
+	(UNSPEC_VRND): New.
+	(UNSPEC_VRNDA): New.
+	(UNSPEC_VRNDI): New.
+	(UNSPEC_VRNDM): New.
+	(UNSPEC_VRNDN): New.
+	(UNSPEC_VRNDP): New.
+	(UNSPEC_VRNDX): New.
+	* config/arm/vfp.md (<absneg_str>hf2): New.
+	(neon_vabshf): New.
+	(neon_v<fp16_rnd_str>hf): New.
+	(neon_vrndihf): New.
+	(addhf3): New.
+	(subhf3): New.
+	(divhf3): New.
+	(mulhf3): New.
+	(*mulsf3neghf_vfp): New.
+	(*negmulhf3_vfp): New.
+	(*mulsf3addhf_vfp): New.
+	(*mulhf3subhf_vfp): New.
+	(*mulhf3neghfaddhf_vfp): New.
+	(*mulhf3neghfsubhf_vfp): New.
+	(fmahf4): New.
+	(neon_vfmahf): New.
+	(fmsubhf4_fp16): New.
+	(neon_vfmshf): New.
+	(*fnmsubhf4): New.
+	(*fnmaddhf4): New.
+	(neon_vsqrthf): New.
+	(neon_vrsqrtshf): New.
+	(FCVT): Move to iterators.md.
+	(FCVTI32typename): Likewise.
+	(neon_vcvth<sup>hf): New.
+	(neon_vcvth<sup>si): New.
+	(neon_vcvth<sup>_nhf_unspec): New.
+	(neon_vcvth<sup>_nhf): New.
+	(neon_vcvth<sup>_nsi_unspec): New.
+	(neon_vcvth<sup>_nsi): New.
+	(neon_vcvt<vcvth_op>h<sup>si): New.
+	(neon_<fmaxmin_op>hf): New.
+
 2016-09-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.md (bitoff, bitoff_plus): Neq mode attributes.

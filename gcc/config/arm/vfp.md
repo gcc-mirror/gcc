@@ -937,8 +937,62 @@
    (set_attr "type" "ffarithd")]
 )
 
+;; ABS and NEG for FP16.
+(define_insn "<absneg_str>hf2"
+  [(set (match_operand:HF 0 "s_register_operand" "=w")
+    (ABSNEG:HF (match_operand:HF 1 "s_register_operand" "w")))]
+ "TARGET_VFP_FP16INST"
+ "v<absneg_str>.f16\t%0, %1"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "ffariths")]
+)
+
+(define_expand "neon_vabshf"
+ [(set
+   (match_operand:HF 0 "s_register_operand")
+   (abs:HF (match_operand:HF 1 "s_register_operand")))]
+ "TARGET_VFP_FP16INST"
+{
+  emit_insn (gen_abshf2 (operands[0], operands[1]));
+  DONE;
+})
+
+;; VRND for FP16.
+(define_insn "neon_v<fp16_rnd_str>hf"
+  [(set (match_operand:HF 0 "s_register_operand" "=w")
+    (unspec:HF
+     [(match_operand:HF 1 "s_register_operand" "w")]
+     FP16_RND))]
+ "TARGET_VFP_FP16INST"
+ "<fp16_rnd_insn>.f16\t%0, %1"
+ [(set_attr "conds" "unconditional")
+  (set_attr "type" "neon_fp_round_s")]
+)
+
+(define_insn "neon_vrndihf"
+  [(set (match_operand:HF 0 "s_register_operand" "=w")
+    (unspec:HF
+     [(match_operand:HF 1 "s_register_operand" "w")]
+     UNSPEC_VRNDI))]
+  "TARGET_VFP_FP16INST"
+  "vrintr.f16\t%0, %1"
+ [(set_attr "conds" "unconditional")
+  (set_attr "type" "neon_fp_round_s")]
+)
 
 ;; Arithmetic insns
+
+(define_insn "addhf3"
+  [(set
+    (match_operand:HF 0 "s_register_operand" "=w")
+    (plus:HF
+     (match_operand:HF 1 "s_register_operand" "w")
+     (match_operand:HF 2 "s_register_operand" "w")))]
+ "TARGET_VFP_FP16INST"
+ "vadd.f16\t%0, %1, %2"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fadds")]
+)
 
 (define_insn "*addsf3_vfp"
   [(set (match_operand:SF	   0 "s_register_operand" "=t")
@@ -962,6 +1016,17 @@
    (set_attr "type" "faddd")]
 )
 
+(define_insn "subhf3"
+ [(set
+   (match_operand:HF 0 "s_register_operand" "=w")
+   (minus:HF
+    (match_operand:HF 1 "s_register_operand" "w")
+    (match_operand:HF 2 "s_register_operand" "w")))]
+ "TARGET_VFP_FP16INST"
+ "vsub.f16\t%0, %1, %2"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fadds")]
+)
 
 (define_insn "*subsf3_vfp"
   [(set (match_operand:SF	    0 "s_register_operand" "=t")
@@ -987,6 +1052,19 @@
 
 
 ;; Division insns
+
+;; FP16 Division.
+(define_insn "divhf3"
+  [(set
+    (match_operand:HF	   0 "s_register_operand" "=w")
+    (div:HF
+     (match_operand:HF 1 "s_register_operand" "w")
+     (match_operand:HF 2 "s_register_operand" "w")))]
+  "TARGET_VFP_FP16INST"
+  "vdiv.f16\t%0, %1, %2"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fdivs")]
+)
 
 ; VFP9 Erratum 760019: It's potentially unsafe to overwrite the input
 ; operands, so mark the output as early clobber for VFPv2 on ARMv5 or
@@ -1018,6 +1096,17 @@
 
 ;; Multiplication insns
 
+(define_insn "mulhf3"
+ [(set
+   (match_operand:HF 0 "s_register_operand" "=w")
+   (mult:HF (match_operand:HF 1 "s_register_operand" "w")
+	    (match_operand:HF 2 "s_register_operand" "w")))]
+  "TARGET_VFP_FP16INST"
+  "vmul.f16\t%0, %1, %2"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fmuls")]
+)
+
 (define_insn "*mulsf3_vfp"
   [(set (match_operand:SF	   0 "s_register_operand" "=t")
 	(mult:SF (match_operand:SF 1 "s_register_operand" "t")
@@ -1038,6 +1127,26 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "fmuld")]
+)
+
+(define_insn "*mulsf3neghf_vfp"
+  [(set (match_operand:HF		   0 "s_register_operand" "=t")
+	(mult:HF (neg:HF (match_operand:HF 1 "s_register_operand" "t"))
+		 (match_operand:HF	   2 "s_register_operand" "t")))]
+  "TARGET_VFP_FP16INST && !flag_rounding_math"
+  "vnmul.f16\\t%0, %1, %2"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fmuls")]
+)
+
+(define_insn "*negmulhf3_vfp"
+  [(set (match_operand:HF		   0 "s_register_operand" "=t")
+	(neg:HF (mult:HF (match_operand:HF 1 "s_register_operand" "t")
+		 (match_operand:HF	   2 "s_register_operand" "t"))))]
+  "TARGET_VFP_FP16INST"
+  "vnmul.f16\\t%0, %1, %2"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fmuls")]
 )
 
 (define_insn "*mulsf3negsf_vfp"
@@ -1089,6 +1198,18 @@
 ;; Multiply-accumulate insns
 
 ;; 0 = 1 * 2 + 0
+(define_insn "*mulsf3addhf_vfp"
+ [(set (match_operand:HF 0 "s_register_operand" "=t")
+       (plus:HF
+	(mult:HF (match_operand:HF 2 "s_register_operand" "t")
+		 (match_operand:HF 3 "s_register_operand" "t"))
+	(match_operand:HF 1 "s_register_operand" "0")))]
+  "TARGET_VFP_FP16INST"
+  "vmla.f16\\t%0, %2, %3"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fmacs")]
+)
+
 (define_insn "*mulsf3addsf_vfp"
   [(set (match_operand:SF		    0 "s_register_operand" "=t")
 	(plus:SF (mult:SF (match_operand:SF 2 "s_register_operand" "t")
@@ -1114,6 +1235,17 @@
 )
 
 ;; 0 = 1 * 2 - 0
+(define_insn "*mulhf3subhf_vfp"
+  [(set (match_operand:HF 0 "s_register_operand" "=t")
+	(minus:HF (mult:HF (match_operand:HF 2 "s_register_operand" "t")
+			   (match_operand:HF 3 "s_register_operand" "t"))
+		  (match_operand:HF 1 "s_register_operand" "0")))]
+  "TARGET_VFP_FP16INST"
+  "vnmls.f16\\t%0, %2, %3"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fmacs")]
+)
+
 (define_insn "*mulsf3subsf_vfp"
   [(set (match_operand:SF		     0 "s_register_operand" "=t")
 	(minus:SF (mult:SF (match_operand:SF 2 "s_register_operand" "t")
@@ -1139,6 +1271,17 @@
 )
 
 ;; 0 = -(1 * 2) + 0
+(define_insn "*mulhf3neghfaddhf_vfp"
+  [(set (match_operand:HF 0 "s_register_operand" "=t")
+	(minus:HF (match_operand:HF 1 "s_register_operand" "0")
+		  (mult:HF (match_operand:HF 2 "s_register_operand" "t")
+			   (match_operand:HF 3 "s_register_operand" "t"))))]
+  "TARGET_VFP_FP16INST"
+  "vmls.f16\\t%0, %2, %3"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fmacs")]
+)
+
 (define_insn "*mulsf3negsfaddsf_vfp"
   [(set (match_operand:SF		     0 "s_register_operand" "=t")
 	(minus:SF (match_operand:SF	     1 "s_register_operand" "0")
@@ -1165,6 +1308,18 @@
 
 
 ;; 0 = -(1 * 2) - 0
+(define_insn "*mulhf3neghfsubhf_vfp"
+  [(set (match_operand:HF 0 "s_register_operand" "=t")
+	(minus:HF (mult:HF
+		   (neg:HF (match_operand:HF 2 "s_register_operand" "t"))
+		   (match_operand:HF 3 "s_register_operand" "t"))
+		  (match_operand:HF 1 "s_register_operand" "0")))]
+  "TARGET_VFP_FP16INST"
+  "vnmla.f16\\t%0, %2, %3"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fmacs")]
+)
+
 (define_insn "*mulsf3negsfsubsf_vfp"
   [(set (match_operand:SF		      0 "s_register_operand" "=t")
 	(minus:SF (mult:SF
@@ -1193,6 +1348,30 @@
 
 ;; Fused-multiply-accumulate
 
+(define_insn "fmahf4"
+  [(set (match_operand:HF 0 "register_operand" "=w")
+    (fma:HF
+     (match_operand:HF 1 "register_operand" "w")
+     (match_operand:HF 2 "register_operand" "w")
+     (match_operand:HF 3 "register_operand" "0")))]
+ "TARGET_VFP_FP16INST"
+ "vfma.f16\\t%0, %1, %2"
+ [(set_attr "conds" "unconditional")
+  (set_attr "type" "ffmas")]
+)
+
+(define_expand "neon_vfmahf"
+  [(match_operand:HF 0 "s_register_operand")
+   (match_operand:HF 1 "s_register_operand")
+   (match_operand:HF 2 "s_register_operand")
+   (match_operand:HF 3 "s_register_operand")]
+  "TARGET_VFP_FP16INST"
+{
+  emit_insn (gen_fmahf4 (operands[0], operands[2], operands[3],
+			 operands[1]));
+  DONE;
+})
+
 (define_insn "fma<SDF:mode>4"
   [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
         (fma:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
@@ -1204,6 +1383,30 @@
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "ffma<vfp_type>")]
 )
+
+(define_insn "fmsubhf4_fp16"
+ [(set (match_operand:HF 0 "register_operand" "=w")
+   (fma:HF
+    (neg:HF (match_operand:HF 1 "register_operand" "w"))
+    (match_operand:HF 2 "register_operand" "w")
+    (match_operand:HF 3 "register_operand" "0")))]
+ "TARGET_VFP_FP16INST"
+ "vfms.f16\\t%0, %1, %2"
+ [(set_attr "conds" "unconditional")
+  (set_attr "type" "ffmas")]
+)
+
+(define_expand "neon_vfmshf"
+  [(match_operand:HF 0 "s_register_operand")
+   (match_operand:HF 1 "s_register_operand")
+   (match_operand:HF 2 "s_register_operand")
+   (match_operand:HF 3 "s_register_operand")]
+  "TARGET_VFP_FP16INST"
+{
+  emit_insn (gen_fmsubhf4_fp16 (operands[0], operands[2], operands[3],
+				operands[1]));
+  DONE;
+})
 
 (define_insn "*fmsub<SDF:mode>4"
   [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
@@ -1218,6 +1421,17 @@
    (set_attr "type" "ffma<vfp_type>")]
 )
 
+(define_insn "*fnmsubhf4"
+  [(set (match_operand:HF 0 "register_operand" "=w")
+	(fma:HF (match_operand:HF 1 "register_operand" "w")
+		 (match_operand:HF 2 "register_operand" "w")
+		 (neg:HF (match_operand:HF 3 "register_operand" "0"))))]
+  "TARGET_VFP_FP16INST"
+  "vfnms.f16\\t%0, %1, %2"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "ffmas")]
+)
+
 (define_insn "*fnmsub<SDF:mode>4"
   [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
 	(fma:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
@@ -1228,6 +1442,17 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "ffma<vfp_type>")]
+)
+
+(define_insn "*fnmaddhf4"
+  [(set (match_operand:HF 0 "register_operand" "=w")
+	(fma:HF (neg:HF (match_operand:HF 1 "register_operand" "w"))
+		 (match_operand:HF 2 "register_operand" "w")
+		 (neg:HF (match_operand:HF 3 "register_operand" "0"))))]
+  "TARGET_VFP_FP16INST"
+  "vfnma.f16\\t%0, %1, %2"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "ffmas")]
 )
 
 (define_insn "*fnmadd<SDF:mode>4"
@@ -1371,6 +1596,27 @@
 
 
 ;; Sqrt insns.
+
+(define_insn "neon_vsqrthf"
+  [(set (match_operand:HF 0 "s_register_operand" "=w")
+	(sqrt:HF (match_operand:HF 1 "s_register_operand" "w")))]
+  "TARGET_VFP_FP16INST"
+  "vsqrt.f16\t%0, %1"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "fsqrts")]
+)
+
+(define_insn "neon_vrsqrtshf"
+  [(set
+    (match_operand:HF 0 "s_register_operand" "=w")
+    (unspec:HF [(match_operand:HF 1 "s_register_operand" "w")
+		(match_operand:HF 2 "s_register_operand" "w")]
+     UNSPEC_VRSQRTS))]
+ "TARGET_VFP_FP16INST"
+ "vrsqrts.f16\t%0, %1, %2"
+ [(set_attr "conds" "unconditional")
+  (set_attr "type" "fsqrts")]
+)
 
 ; VFP9 Erratum 760019: It's potentially unsafe to overwrite the input
 ; operands, so mark the output as early clobber for VFPv2 on ARMv5 or
@@ -1528,9 +1774,6 @@
 )
 
 ;; Fixed point to floating point conversions.
-(define_code_iterator FCVT [unsigned_float float])
-(define_code_attr FCVTI32typename [(unsigned_float "u32") (float "s32")])
-
 (define_insn "*combine_vcvt_f32_<FCVTI32typename>"
   [(set (match_operand:SF 0 "s_register_operand" "=t")
 	(mult:SF (FCVT:SF (match_operand:SI 1 "s_register_operand" "0"))
@@ -1574,6 +1817,125 @@
    (set_attr "predicable_short_it" "no")
    (set_attr "type" "f_cvtf2i")]
  )
+
+;; FP16 conversions.
+(define_insn "neon_vcvth<sup>hf"
+ [(set (match_operand:HF 0 "s_register_operand" "=w")
+   (unspec:HF
+    [(match_operand:SI 1 "s_register_operand" "w")]
+    VCVTH_US))]
+ "TARGET_VFP_FP16INST"
+ "vcvt.f16.<sup>%#32\t%0, %1"
+ [(set_attr "conds" "unconditional")
+  (set_attr "type" "f_cvti2f")]
+)
+
+(define_insn "neon_vcvth<sup>si"
+ [(set (match_operand:SI 0 "s_register_operand" "=w")
+   (unspec:SI
+    [(match_operand:HF 1 "s_register_operand" "w")]
+    VCVTH_US))]
+ "TARGET_VFP_FP16INST"
+ "vcvt.<sup>%#32.f16\t%0, %1"
+ [(set_attr "conds" "unconditional")
+  (set_attr "type" "f_cvtf2i")]
+)
+
+;; The neon_vcvth<sup>_nhf patterns are used to generate the instruction for the
+;; vcvth_n_f16_<sup>32 arm_fp16 intrinsics.  They are complicated by the
+;; hardware requirement that the source and destination registers are the same
+;; despite having different machine modes.  The approach is to use a temporary
+;; register for the conversion and move that to the correct destination.
+
+;; Generate an unspec pattern for the intrinsic.
+(define_insn "neon_vcvth<sup>_nhf_unspec"
+ [(set
+   (match_operand:SI 0 "s_register_operand" "=w")
+   (unspec:SI
+    [(match_operand:SI 1 "s_register_operand" "0")
+     (match_operand:SI 2 "immediate_operand" "i")]
+    VCVT_HF_US_N))
+ (set
+  (match_operand:HF 3 "s_register_operand" "=w")
+  (float_truncate:HF (float:SF (match_dup 0))))]
+ "TARGET_VFP_FP16INST"
+{
+  neon_const_bounds (operands[2], 1, 33);
+  return "vcvt.f16.<sup>32\t%0, %0, %2\;vmov.f32\t%3, %0";
+}
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "f_cvti2f")]
+)
+
+;; Generate the instruction patterns needed for vcvth_n_f16_s32 neon intrinsics.
+(define_expand "neon_vcvth<sup>_nhf"
+ [(match_operand:HF 0 "s_register_operand")
+  (unspec:HF [(match_operand:SI 1 "s_register_operand")
+	      (match_operand:SI 2 "immediate_operand")]
+   VCVT_HF_US_N)]
+"TARGET_VFP_FP16INST"
+{
+  rtx op1 = gen_reg_rtx (SImode);
+
+  neon_const_bounds (operands[2], 1, 33);
+
+  emit_move_insn (op1, operands[1]);
+  emit_insn (gen_neon_vcvth<sup>_nhf_unspec (op1, op1, operands[2],
+					     operands[0]));
+  DONE;
+})
+
+;; The neon_vcvth<sup>_nsi patterns are used to generate the instruction for the
+;; vcvth_n_<sup>32_f16 arm_fp16 intrinsics.  They have the same restrictions and
+;; are implemented in the same way as the neon_vcvth<sup>_nhf patterns.
+
+;; Generate an unspec pattern, constraining the registers.
+(define_insn "neon_vcvth<sup>_nsi_unspec"
+ [(set (match_operand:SI 0 "s_register_operand" "=w")
+   (unspec:SI
+    [(fix:SI
+      (fix:SF
+       (float_extend:SF
+	(match_operand:HF 1 "s_register_operand" "w"))))
+     (match_operand:SI 2 "immediate_operand" "i")]
+    VCVT_SI_US_N))]
+ "TARGET_VFP_FP16INST"
+{
+  neon_const_bounds (operands[2], 1, 33);
+  return "vmov.f32\t%0, %1\;vcvt.<sup>%#32.f16\t%0, %0, %2";
+}
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "f_cvtf2i")]
+)
+
+;; Generate the instruction patterns needed for vcvth_n_f16_s32 neon intrinsics.
+(define_expand "neon_vcvth<sup>_nsi"
+ [(match_operand:SI 0 "s_register_operand")
+  (unspec:SI
+   [(match_operand:HF 1 "s_register_operand")
+    (match_operand:SI 2 "immediate_operand")]
+   VCVT_SI_US_N)]
+ "TARGET_VFP_FP16INST"
+{
+  rtx op1 = gen_reg_rtx (SImode);
+
+  neon_const_bounds (operands[2], 1, 33);
+  emit_insn (gen_neon_vcvth<sup>_nsi_unspec (op1, operands[1], operands[2]));
+  emit_move_insn (operands[0], op1);
+  DONE;
+})
+
+(define_insn "neon_vcvt<vcvth_op>h<sup>si"
+ [(set
+   (match_operand:SI 0 "s_register_operand" "=w")
+   (unspec:SI
+    [(match_operand:HF 1 "s_register_operand" "w")]
+    VCVT_HF_US))]
+ "TARGET_VFP_FP16INST"
+ "vcvt<vcvth_op>.<sup>%#32.f16\t%0, %1"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "f_cvtf2i")]
+)
 
 ;; Store multiple insn used in function prologue.
 (define_insn "*push_multi_vfp"
@@ -1644,6 +2006,20 @@
 )
 
 ;; Scalar forms for the IEEE-754 fmax()/fmin() functions
+
+(define_insn "neon_<fmaxmin_op>hf"
+ [(set
+   (match_operand:HF 0 "s_register_operand" "=w")
+   (unspec:HF
+    [(match_operand:HF 1 "s_register_operand" "w")
+     (match_operand:HF 2 "s_register_operand" "w")]
+    VMAXMINFNM))]
+ "TARGET_VFP_FP16INST"
+ "<fmaxmin_op>.f16\t%0, %1, %2"
+ [(set_attr "conds" "unconditional")
+  (set_attr "type" "f_minmaxs")]
+)
+
 (define_insn "<fmaxmin><mode>3"
   [(set (match_operand:SDF 0 "s_register_operand" "=<F_constraint>")
 	(unspec:SDF [(match_operand:SDF 1 "s_register_operand" "<F_constraint>")
