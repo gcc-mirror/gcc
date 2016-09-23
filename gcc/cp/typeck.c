@@ -8266,6 +8266,17 @@ convert_for_assignment (tree type, tree rhs,
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
 
+  /* Handle [dcl.init.list] direct-list-initialization from
+     single element of enumeration with a fixed underlying type.  */
+  if (is_direct_enum_init (type, rhs))
+    {
+      tree elt = CONSTRUCTOR_ELT (rhs, 0)->value;
+      if (check_narrowing (ENUM_UNDERLYING_TYPE (type), elt, complain))
+	rhs = cp_build_c_cast (type, elt, complain);
+      else
+	rhs = error_mark_node;
+    }
+
   rhstype = TREE_TYPE (rhs);
   coder = TREE_CODE (rhstype);
 
