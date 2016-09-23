@@ -16,6 +16,15 @@ extern void *memset(void *, int, size_t);
 extern void *memcpy(void *, const void *, size_t);
 extern size_t strlen(const char *);
 
+/* Helper macro to select FP16 tests.  */
+#if (!defined (__aarch64__)						\
+     && (defined (__ARM_FP16_FORMAT_IEEE)				\
+	 || defined (__ARM_FP16_FORMAT_ALTERNATIVE)))
+#define FP16_SUPPORTED (1)
+#else
+#undef FP16_SUPPORTED
+#endif
+
 /* Various string construction helpers.  */
 
 /*
@@ -511,7 +520,9 @@ static void clean_results (void)
 /* Helpers to initialize vectors.  */
 #define VDUP(VAR, Q, T1, T2, W, N, V)			\
   VECT_VAR(VAR, T1, W, N) = vdup##Q##_n_##T2##W(V)
-#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+#if (defined (__aarch64__)						\
+     && (defined (__ARM_FP16_FORMAT_IEEE)				\
+	 || defined (__ARM_FP16_FORMAT_ALTERNATIVE)))
 /* Work around that there is no vdup_n_f16 intrinsic.  */
 #define vdup_n_f16(VAL)		\
   __extension__			\

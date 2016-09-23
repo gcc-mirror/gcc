@@ -28576,6 +28576,8 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
     case V8QImode:  gen = gen_neon_vuzpv8qi_internal;  break;
     case V8HImode:  gen = gen_neon_vuzpv8hi_internal;  break;
     case V4HImode:  gen = gen_neon_vuzpv4hi_internal;  break;
+    case V8HFmode:  gen = gen_neon_vuzpv8hf_internal;  break;
+    case V4HFmode:  gen = gen_neon_vuzpv4hf_internal;  break;
     case V4SImode:  gen = gen_neon_vuzpv4si_internal;  break;
     case V2SImode:  gen = gen_neon_vuzpv2si_internal;  break;
     case V2SFmode:  gen = gen_neon_vuzpv2sf_internal;  break;
@@ -28649,6 +28651,8 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
     case V8QImode:  gen = gen_neon_vzipv8qi_internal;  break;
     case V8HImode:  gen = gen_neon_vzipv8hi_internal;  break;
     case V4HImode:  gen = gen_neon_vzipv4hi_internal;  break;
+    case V8HFmode:  gen = gen_neon_vzipv8hf_internal;  break;
+    case V4HFmode:  gen = gen_neon_vzipv4hf_internal;  break;
     case V4SImode:  gen = gen_neon_vzipv4si_internal;  break;
     case V2SImode:  gen = gen_neon_vzipv2si_internal;  break;
     case V2SFmode:  gen = gen_neon_vzipv2sf_internal;  break;
@@ -28701,6 +28705,8 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
 	case V8QImode:  gen = gen_neon_vrev32v8qi;  break;
 	case V8HImode:  gen = gen_neon_vrev64v8hi;  break;
 	case V4HImode:  gen = gen_neon_vrev64v4hi;  break;
+	case V8HFmode:  gen = gen_neon_vrev64v8hf;  break;
+	case V4HFmode:  gen = gen_neon_vrev64v4hf;  break;
 	default:
 	  return false;
 	}
@@ -28784,6 +28790,8 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
     case V8QImode:  gen = gen_neon_vtrnv8qi_internal;  break;
     case V8HImode:  gen = gen_neon_vtrnv8hi_internal;  break;
     case V4HImode:  gen = gen_neon_vtrnv4hi_internal;  break;
+    case V8HFmode:  gen = gen_neon_vtrnv8hf_internal;  break;
+    case V4HFmode:  gen = gen_neon_vtrnv4hf_internal;  break;
     case V4SImode:  gen = gen_neon_vtrnv4si_internal;  break;
     case V2SImode:  gen = gen_neon_vtrnv2si_internal;  break;
     case V2SFmode:  gen = gen_neon_vtrnv2sf_internal;  break;
@@ -28859,6 +28867,8 @@ arm_evpc_neon_vext (struct expand_vec_perm_d *d)
     case V8HImode: gen = gen_neon_vextv8hi; break;
     case V2SImode: gen = gen_neon_vextv2si; break;
     case V4SImode: gen = gen_neon_vextv4si; break;
+    case V4HFmode: gen = gen_neon_vextv4hf; break;
+    case V8HFmode: gen = gen_neon_vextv8hf; break;
     case V2SFmode: gen = gen_neon_vextv2sf; break;
     case V4SFmode: gen = gen_neon_vextv4sf; break;
     case V2DImode: gen = gen_neon_vextv2di; break;

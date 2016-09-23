@@ -1,5 +1,25 @@
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(FP16_SUPPORTED): New
+	(expected-hfloat-16x4): Make conditional on __fp16 support.
+	(expected-hfloat-16x8): Likewise.
+	(vdup_n_f16): Disable for non-AArch64 targets.
+	* gcc.target/aarch64/advsimd-intrinsics/vbsl.c: Add __fp16 tests,
+	conditional on FP16_SUPPORTED.
+	* gcc.target/aarch64/advsimd-intrinsics/vdup-vmov.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdup_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vext.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vrev.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vshuffle.inc: Add support
+	for testing __fp16.
+	* gcc.target/aarch64/advsimd-intrinsics/vtrn.c: Add __fp16 tests,
+	conditional on FP16_SUPPORTED.
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip.c: Likewise.
+
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* gcc.target/arm/short-vfp-1.c: New.
 
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>

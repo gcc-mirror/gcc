@@ -17,6 +17,10 @@ VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf7, 0xf7, 0xf7, 0xf7,
 					0xf7, 0xf7, 0xf7, 0xf7 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff3, 0xfff3, 0xfff3, 0xfff3 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1700000, 0xc1700000 };
+#if defined (FP16_SUPPORTED)
+VECT_VAR_DECL (expected, hfloat, 16, 4) [] = { 0xca80, 0xca80,
+					       0xca80, 0xca80 };
+#endif
 VECT_VAR_DECL(expected,int,8,16) [] = { 0xf2, 0xf2, 0xf2, 0xf2,
 					0xf2, 0xf2, 0xf2, 0xf2,
 					0xf2, 0xf2, 0xf2, 0xf2,
@@ -43,6 +47,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xf5, 0xf5, 0xf5, 0xf5,
 					 0xf5, 0xf5, 0xf5, 0xf5 };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff1, 0xfff1, 0xfff1, 0xfff1,
 					 0xfff1, 0xfff1, 0xfff1, 0xfff1 };
+#if defined (FP16_SUPPORTED)
+VECT_VAR_DECL (expected, hfloat, 16, 8) [] = { 0xca80, 0xca80,
+					       0xca80, 0xca80,
+					       0xca80, 0xca80,
+					       0xca80, 0xca80 };
+#endif
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xc1700000, 0xc1700000,
 					   0xc1700000, 0xc1700000 };
 
@@ -63,6 +73,9 @@ void exec_vdup_lane (void)
   clean_results ();
 
   TEST_MACRO_64BITS_VARIANTS_2_5(VLOAD, vector, buffer);
+#if defined (FP16_SUPPORTED)
+  VLOAD(vector, buffer, , float, f, 16, 4);
+#endif
   VLOAD(vector, buffer, , float, f, 32, 2);
 
   /* Choose lane arbitrarily.  */
@@ -76,6 +89,9 @@ void exec_vdup_lane (void)
   TEST_VDUP_LANE(, uint, u, 64, 1, 1, 0);
   TEST_VDUP_LANE(, poly, p, 8, 8, 8, 7);
   TEST_VDUP_LANE(, poly, p, 16, 4, 4, 3);
+#if defined (FP16_SUPPORTED)
+  TEST_VDUP_LANE(, float, f, 16, 4, 4, 3);
+#endif
   TEST_VDUP_LANE(, float, f, 32, 2, 2, 1);
 
   TEST_VDUP_LANE(q, int, s, 8, 16, 8, 2);
@@ -88,9 +104,16 @@ void exec_vdup_lane (void)
   TEST_VDUP_LANE(q, uint, u, 64, 2, 1, 0);
   TEST_VDUP_LANE(q, poly, p, 8, 16, 8, 5);
   TEST_VDUP_LANE(q, poly, p, 16, 8, 4, 1);
+#if defined (FP16_SUPPORTED)
+  TEST_VDUP_LANE(q, float, f, 16, 8, 4, 3);
+#endif
   TEST_VDUP_LANE(q, float, f, 32, 4, 2, 1);
 
+#if defined (FP16_SUPPORTED)
+  CHECK_RESULTS (TEST_MSG, "");
+#else
   CHECK_RESULTS_NO_FP16 (TEST_MSG, "");
+#endif
 }
 
 int main (void)

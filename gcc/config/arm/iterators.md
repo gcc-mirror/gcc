@@ -119,6 +119,10 @@
 ;; All supported vector modes (except those with 64-bit integer elements).
 (define_mode_iterator VDQW [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF])
 
+;; All supported vector modes including 16-bit float modes.
+(define_mode_iterator VDQWH [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF
+			     V8HF V4HF])
+
 ;; Supported integer vector modes (not 64 bit elements).
 (define_mode_iterator VDQIW [V8QI V16QI V4HI V8HI V2SI V4SI])
 
@@ -173,6 +177,9 @@
 
 ;; Modes with 8-bit, 16-bit and 32-bit elements.
 (define_mode_iterator VU [V16QI V8HI V4SI])
+
+;; Vector modes for 16-bit floating-point support.
+(define_mode_iterator VH [V8HF V4HF])
 
 ;; Iterators used for fixed-point support.
 (define_mode_iterator FIXED [QQ HQ SQ UQQ UHQ USQ HA SA UHA USA])
@@ -475,9 +482,10 @@
 ;; Used for neon_vdup_lane, where the second operand is double-sized
 ;; even when the first one is quad.
 (define_mode_attr V_double_vector_mode [(V16QI "V8QI") (V8HI "V4HI")
-                                        (V4SI "V2SI") (V4SF "V2SF")
-                                        (V8QI "V8QI") (V4HI "V4HI")
-                                        (V2SI "V2SI") (V2SF "V2SF")])
+					(V4SI "V2SI") (V4SF "V2SF")
+					(V8QI "V8QI") (V4HI "V4HI")
+					(V2SI "V2SI") (V2SF "V2SF")
+					(V8HF "V4HF") (V4HF "V4HF")])
 
 ;; Mode of result of comparison operations (and bit-select operand 1).
 (define_mode_attr V_cmp_result [(V8QI "V8QI") (V16QI "V16QI")
@@ -582,17 +590,17 @@
                  (DI "false") (V2DI "false")])
 
 (define_mode_attr Scalar_mul_8_16 [(V8QI "true") (V16QI "true")
-                   (V4HI "true") (V8HI "true")
-                   (V2SI "false") (V4SI "false")
-                   (V2SF "false") (V4SF "false")
-                   (DI "false") (V2DI "false")])
-
+				   (V4HI "true") (V8HI "true")
+				   (V2SI "false") (V4SI "false")
+				   (V2SF "false") (V4SF "false")
+				   (DI "false") (V2DI "false")])
 
 (define_mode_attr Is_d_reg [(V8QI "true") (V16QI "false")
                             (V4HI "true") (V8HI  "false")
                             (V2SI "true") (V4SI  "false")
                             (V2SF "true") (V4SF  "false")
-                            (DI   "true") (V2DI  "false")])
+                            (DI   "true") (V2DI  "false")
+			    (V4HF "true") (V8HF  "false")])
 
 (define_mode_attr V_mode_nunits [(V8QI "8") (V16QI "16")
 				 (V4HF "4") (V8HF "8")

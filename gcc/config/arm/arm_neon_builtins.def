@@ -166,8 +166,10 @@ VAR10 (SETLANE, vset_lane,
 VAR5 (UNOP, vcreate, v8qi, v4hi, v2si, v2sf, di)
 VAR10 (UNOP, vdup_n,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
+VAR2 (UNOP, vdup_n, v8hf, v4hf)
 VAR10 (GETLANE, vdup_lane,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
+VAR2 (GETLANE, vdup_lane, v8hf, v4hf)
 VAR6 (COMBINE, vcombine, v8qi, v4hi, v4hf, v2si, v2sf, di)
 VAR6 (UNOP, vget_high, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
 VAR6 (UNOP, vget_low, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
@@ -197,6 +199,7 @@ VAR2 (MAC_N, vmlslu_n, v4hi, v2si)
 VAR2 (MAC_N, vqdmlsl_n, v4hi, v2si)
 VAR10 (SETLANE, vext,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
+VAR2 (SETLANE, vext, v8hf, v4hf)
 VAR8 (UNOP, vrev64, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf)
 VAR4 (UNOP, vrev32, v8qi, v4hi, v16qi, v8hi)
 VAR2 (UNOP, vrev16, v8qi, v16qi)
@@ -208,6 +211,7 @@ VAR1 (UNOP, vcvtv4sf, v4hf)
 VAR1 (UNOP, vcvtv4hf, v4sf)
 VAR10 (TERNOP, vbsl,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
+VAR2 (TERNOP, vbsl, v8hf, v4hf)
 VAR2 (UNOP, copysignf, v2sf, v4sf)
 VAR2 (UNOP, vrintn, v2sf, v4sf)
 VAR2 (UNOP, vrinta, v2sf, v4sf)

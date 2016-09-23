@@ -14842,6 +14842,181 @@ vmull_high_p64 (poly64x2_t __a, poly64x2_t __b)
 
 #pragma GCC pop_options
 
+  /* Half-precision data processing intrinsics.  */
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vbsl_f16 (uint16x4_t __a, float16x4_t __b, float16x4_t __c)
+{
+  return __builtin_neon_vbslv4hf ((int16x4_t)__a, __b, __c);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vbslq_f16 (uint16x8_t __a, float16x8_t __b, float16x8_t __c)
+{
+  return __builtin_neon_vbslv8hf ((int16x8_t)__a, __b, __c);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vdup_n_f16 (float16_t __a)
+{
+  return __builtin_neon_vdup_nv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vdupq_n_f16 (float16_t __a)
+{
+  return __builtin_neon_vdup_nv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vdup_lane_f16 (float16x4_t __a, const int __b)
+{
+  return __builtin_neon_vdup_lanev4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vdupq_lane_f16 (float16x4_t __a, const int __b)
+{
+  return __builtin_neon_vdup_lanev8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vext_f16 (float16x4_t __a, float16x4_t __b, const int __c)
+{
+  return __builtin_neon_vextv4hf (__a, __b, __c);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vextq_f16 (float16x8_t __a, float16x8_t __b, const int __c)
+{
+  return __builtin_neon_vextv8hf (__a, __b, __c);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vmov_n_f16 (float16_t __a)
+{
+  return __builtin_neon_vdup_nv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vmovq_n_f16 (float16_t __a)
+{
+  return __builtin_neon_vdup_nv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrev64_f16 (float16x4_t __a)
+{
+  return (float16x4_t)__builtin_shuffle (__a, (uint16x4_t){ 3, 2, 1, 0 });
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrev64q_f16 (float16x8_t __a)
+{
+  return
+    (float16x8_t)__builtin_shuffle (__a,
+				    (uint16x8_t){ 3, 2, 1, 0, 7, 6, 5, 4 });
+}
+
+__extension__ static __inline float16x4x2_t __attribute__ ((__always_inline__))
+vtrn_f16 (float16x4_t __a, float16x4_t __b)
+{
+  float16x4x2_t __rv;
+#ifdef __ARM_BIG_ENDIAN
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x4_t){ 5, 1, 7, 3 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x4_t){ 4, 0, 6, 2 });
+#else
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x4_t){ 0, 4, 2, 6 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x4_t){ 1, 5, 3, 7 });
+#endif
+  return __rv;
+}
+
+__extension__ static __inline float16x8x2_t __attribute__ ((__always_inline__))
+vtrnq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  float16x8x2_t __rv;
+#ifdef __ARM_BIG_ENDIAN
+  __rv.val[0] = __builtin_shuffle (__a, __b,
+				   (uint16x8_t){ 9, 1, 11, 3, 13, 5, 15, 7 });
+  __rv.val[1] = __builtin_shuffle (__a, __b,
+				   (uint16x8_t){ 8, 0, 10, 2, 12, 4, 14, 6 });
+#else
+  __rv.val[0] = __builtin_shuffle (__a, __b,
+				   (uint16x8_t){ 0, 8, 2, 10, 4, 12, 6, 14 });
+  __rv.val[1] = __builtin_shuffle (__a, __b,
+				   (uint16x8_t){ 1, 9, 3, 11, 5, 13, 7, 15 });
+#endif
+  return __rv;
+}
+
+__extension__ static __inline float16x4x2_t __attribute__ ((__always_inline__))
+vuzp_f16 (float16x4_t __a, float16x4_t __b)
+{
+  float16x4x2_t __rv;
+#ifdef __ARM_BIG_ENDIAN
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x4_t){ 5, 7, 1, 3 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x4_t){ 4, 6, 0, 2 });
+#else
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x4_t){ 0, 2, 4, 6 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x4_t){ 1, 3, 5, 7 });
+#endif
+  return __rv;
+}
+
+__extension__ static __inline float16x8x2_t __attribute__ ((__always_inline__))
+vuzpq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  float16x8x2_t __rv;
+#ifdef __ARM_BIG_ENDIAN
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x8_t)
+				   { 5, 7, 1, 3, 13, 15, 9, 11 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x8_t)
+				   { 4, 6, 0, 2, 12, 14, 8, 10 });
+#else
+  __rv.val[0] = __builtin_shuffle (__a, __b,
+				   (uint16x8_t){ 0, 2, 4, 6, 8, 10, 12, 14 });
+  __rv.val[1] = __builtin_shuffle (__a, __b,
+				   (uint16x8_t){ 1, 3, 5, 7, 9, 11, 13, 15 });
+#endif
+  return __rv;
+}
+
+__extension__ static __inline float16x4x2_t __attribute__ ((__always_inline__))
+vzip_f16 (float16x4_t __a, float16x4_t __b)
+{
+  float16x4x2_t __rv;
+#ifdef __ARM_BIG_ENDIAN
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x4_t){ 6, 2, 7, 3 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x4_t){ 4, 0, 5, 1 });
+#else
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x4_t){ 0, 4, 1, 5 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x4_t){ 2, 6, 3, 7 });
+#endif
+  return __rv;
+}
+
+__extension__ static __inline float16x8x2_t __attribute__ ((__always_inline__))
+vzipq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  float16x8x2_t __rv;
+#ifdef __ARM_BIG_ENDIAN
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x8_t)
+				   { 10, 2, 11, 3, 8, 0, 9, 1 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x8_t)
+				   { 14, 6, 15, 7, 12, 4, 13, 5 });
+#else
+  __rv.val[0] = __builtin_shuffle (__a, __b,
+				   (uint16x8_t){ 0, 8, 1, 9, 2, 10, 3, 11 });
+  __rv.val[1] = __builtin_shuffle (__a, __b,
+				   (uint16x8_t){ 4, 12, 5, 13, 6, 14, 7, 15 });
+#endif
+  return __rv;
+}
+
+#endif
+
 #ifdef __cplusplus
 }
 #endif

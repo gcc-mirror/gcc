@@ -1,3 +1,47 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm.c (arm_evpc_neon_vuzp): Add support for V8HF and
+	V4HF modes.
+	(arm_evpc_neon_vtrn): Likewise.
+	(arm_evpc_neon_vrev): Likewise.
+	(arm_evpc_neon_vext): Likewise.
+	* config/arm/arm_neon.h (vbsl_f16): New.
+	(vbslq_f16): New.
+	(vdup_n_f16): New.
+	(vdupq_n_f16): New.
+	(vdup_lane_f16): New.
+	(vdupq_lane_f16): New.
+	(vext_f16): New.
+	(vextq_f16): New.
+	(vmov_n_f16): New.
+	(vmovq_n_f16): New.
+	(vrev64_f16): New.
+	(vrev64q_f16): New.
+	(vtrn_f16): New.
+	(vtrnq_f16): New.
+	(vuzp_f16): New.
+	(vuzpq_f16): New.
+	(vzip_f16): New.
+	(vzipq_f16): New.
+	* config/arm/arm_neon_buillins.def (vdup_n): New (v8hf, v4hf variants).
+	(vdup_lane): New (v8hf, v4hf variants).
+	(vext): New (v8hf, v4hf variants).
+	(vbsl): New (v8hf, v4hf variants).
+	* config/arm/iterators.md (VDQWH): New.
+	(VH): New.
+	(V_double_vector_mode): Add V8HF and V4HF.  Fix white-space.
+	(Scalar_mul_8_16): Fix white-space.
+	(Is_d_reg): Add V4HF and V8HF.
+	* config/arm/neon.md (neon_vdup_lane<mode>_internal): New.
+	(neon_vdup_lane<mode>): New.
+	(neon_vtrn<mode>_internal): Replace VDQW with VDQWH.
+	(*neon_vtrn<mode>_insn): Likewise.
+	(neon_vzip<mode>_internal): Likewise. Also fix white-space.
+	(*neon_vzip<mode>_insn): Likewise
+	(neon_vuzp<mode>_internal): Likewise.
+	(*neon_vuzp<mode>_insn): Likewise
+	* config/arm/vec-common.md (vec_perm_const<mode>): New.
+
 2016-09-23  Jiong Wang  <jiong.wang@arm.com>
 	    Matthew Wahab  <matthew.wahab@arm.com>
 
