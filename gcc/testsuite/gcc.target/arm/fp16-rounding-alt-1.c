@@ -3,6 +3,7 @@
    from double to __fp16.  */
 
 /* { dg-do run } */
+/* { dg-require-effective-target arm_fp16_alternative_ok } */
 /* { dg-options "-mfp16-format=alternative" } */
 
 #include <stdlib.h>

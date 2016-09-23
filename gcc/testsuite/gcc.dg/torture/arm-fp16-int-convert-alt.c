@@ -1,5 +1,6 @@
 /* Test floating-point conversions.  Standard types and __fp16.  */
 /* { dg-do run { target arm*-*-* } } */
+/* { dg-require-effective-target arm_fp16_alternative_ok }
 /* { dg-options "-mfp16-format=alternative" } */
 
 #include "fp-int-convert.h"

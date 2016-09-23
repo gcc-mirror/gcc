@@ -1598,6 +1598,13 @@ options, including @code{-mfp16-format=ieee} if necessary to obtain the
 Test system supports executing Neon half-precision float instructions.
 (Implies previous.)
 
+@item arm_fp16_alternative_ok
+ARM target supports the ARM FP16 alternative format.  Some multilibs
+may be incompatible with the options needed.
+
+@item arm_fp16_none_ok
+ARM target supports specifying none as the ARM FP16 format.
+
 @item arm_thumb1_ok
 ARM target generates Thumb-1 code for @code{-mthumb}.
 

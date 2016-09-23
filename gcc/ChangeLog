@@ -1,3 +1,8 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* doc/sourcebuild.texi (ARM-specific attributes): Add entries for
+	arm_fp16_alternative_ok and arm_fp16_none_ok.
+
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_variable::merge): Replace adress
