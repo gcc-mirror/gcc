@@ -1,3 +1,101 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* gcc.target/advsimd-intrinsics/advsimd-intrinsics.exp: Enable
+	-march=armv8.2-a+fp16 when supported by the hardware.
+	* gcc.target/aarch64/advsimd-intrinsics/binary_op_float.inc: New.
+	* gcc.target/aarch64/advsimd-intrinsics/binary_op_no64.inc:
+	Add F16 tests, enabled if macro HAS_FLOAT16_VARIANT is defined.  Add
+	semi-colons to a macro invocations.
+	* gcc.target/aarch64/advsimd-intrinsics/cmp_fp_op.inc: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.
+	* gcc.target/aarch64/advsimd-intrinsics/cmp_op.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/cmp_zero_op.inc: New.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vabd.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vabs.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vadd.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vcage.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vcagt.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vcale.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vcalt.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vceq.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vceqz_1.c: New.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vcge.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.
+	* gcc.target/aarch64/advsimd-intrinsics/vcgez_1.c: New.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vcgt.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.
+	* gcc.target/aarch64/advsimd-intrinsics/vcgtz_1.c: New.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vcle.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.
+	* gcc.target/aarch64/advsimd-intrinsics/vclez_1.c: New.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vclt.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.
+	* gcc.target/aarch64/advsimd-intrinsics/vcltz_1.c: New.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vcvt.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.  Also fix some white-space.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtX.inc: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvta_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtm_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtp_1.c: New.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vfma.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.  Also fix some long lines and white-space.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vfms.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.  Also fix some long lines and white-space.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vmax.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.
+	* gcc.target/aarch64/advsimd-intrinsics/vmaxnm_1.c: New.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vmin.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.
+	* gcc.target/aarch64/advsimd-intrinsics/vminnm_1.c: New.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vmul.c: Add F16
+	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
+	defined.
+	* gcc.target/aarch64/advsimd-intrinsics/vmul_lane.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vmul_n.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vneg.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vpXXX.inc: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vpadd.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vpmax.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vpmin.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrecpe.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrecps.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrnd.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndX.inc: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrnda.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndm.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndn.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndp.c:
+	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndx.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vrsqrte.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vrsqrts.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vsub.c:
+	Likewise.
+
 2016-09-23  Jiong Wang  <jiong.wang@arm.com>
 	    Matthew Wahab  <matthew.wahab@arm.com>
 
