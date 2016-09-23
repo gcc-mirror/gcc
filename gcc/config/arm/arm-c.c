@@ -142,6 +142,11 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   def_or_undef_macro (pfile, "__ARM_FP16_ARGS",
 		      arm_fp16_format != ARM_FP16_FORMAT_NONE);
 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_FP16_SCALAR_ARITHMETIC",
+		      TARGET_VFP_FP16INST);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_FP16_VECTOR_ARITHMETIC",
+		      TARGET_NEON_FP16INST);
+
   def_or_undef_macro (pfile, "__ARM_FEATURE_FMA", TARGET_FMA);
   def_or_undef_macro (pfile, "__ARM_NEON__", TARGET_NEON);
   def_or_undef_macro (pfile, "__ARM_NEON", TARGET_NEON);

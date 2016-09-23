@@ -1,5 +1,9 @@
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc.target/arm/attr-fp16-arith-1.c: New.
+
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* lib/target-supports.exp (add_options_for_arm_v8_2a_fp16_scalar):
 	New.
 	(add_options_for_arm_v8_2a_fp16_neon): New.
