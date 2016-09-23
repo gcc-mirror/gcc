@@ -1,3 +1,8 @@
+2016-09-22  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr.c (avr_rtx_costs_1): Handle DImode MULT.
+	(avr_address_cost): Replace 61 with MAX_LD_OFFSET(mode).
+
 2016-09-22  Martin Sebor  <msebor@redhat.com>
 
 	PR target/77676

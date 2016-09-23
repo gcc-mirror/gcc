@@ -10293,6 +10293,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
           break;
 
 	case SImode:
+	case DImode:
 	  if (AVR_HAVE_MUL)
             {
               if (!speed)
@@ -10318,7 +10319,10 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
                 *total = COSTS_N_INSNS (AVR_HAVE_JMP_CALL ? 5 : 4);
             }
 
-          return true;
+	   if (mode == DImode)
+	     *total *= 2;
+
+	   return true;
 
 	default:
 	  return false;
@@ -10899,7 +10903,7 @@ avr_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
       && (REG_P (XEXP (x, 0))
           || GET_CODE (XEXP (x, 0)) == SUBREG))
     {
-      if (INTVAL (XEXP (x, 1)) >= 61)
+      if (INTVAL (XEXP (x, 1)) > MAX_LD_OFFSET(mode))
         cost = 18;
     }
   else if (CONSTANT_ADDRESS_P (x))
