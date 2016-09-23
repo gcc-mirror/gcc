@@ -1,3 +1,18 @@
+2016-09-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/gomp/atomic-12.c: Skip for C++1z.
+	* c-c++-common/gomp/atomic-13.c: Likewise.
+	* c-c++-common/gomp/atomic-14.c: Likewise.
+	* c-c++-common/pr60439.c: Remove invalid code.
+	* g++.dg/expr/bitfield4.C: Robustify for C++1z.
+	* g++.dg/expr/bitfield5.C: Likewise.
+	* g++.dg/expr/bitfield6.C: Likewise.
+	* g++.dg/expr/bool1.C: Likewise.
+	* g++.dg/expr/bool3.C: Likewise.
+	* g++.dg/expr/lval3.C: Likewise.
+	* g++.dg/expr/lval4.C: Likewise.
+	* g++.old-deja/g++.jason/bool5.C: Likewise.
+
 2016-09-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/77672

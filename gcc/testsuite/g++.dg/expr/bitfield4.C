@@ -14,6 +14,8 @@ template <>
 void f(bool) {} 
 
 int main() {
-  f(s.x++); // { dg-warning "deprecated" }
-  f(++s.x); // { dg-warning "deprecated" }
+  f(s.x++); // { dg-warning "deprecated" "" { target { ! c++1z } } }
+  // { dg-error "forbidden" "" { target c++1z } 17 }
+  f(++s.x); // { dg-warning "deprecated" "" { target { ! c++1z } } }
+  // { dg-error "forbidden" "" { target c++1z } 19 }
 }

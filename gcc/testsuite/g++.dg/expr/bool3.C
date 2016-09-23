@@ -10,8 +10,10 @@ int main()
   my_bool b = false;
   int i;
 
-  b++; // { dg-warning "deprecated" }
-  b++; // { dg-warning "deprecated" }
+  b++; // { dg-warning "deprecated" "" { target { ! c++1z } } }
+  // { dg-error "forbidden" "" { target c++1z } 13 }
+  b++; // { dg-warning "deprecated" "" { target { ! c++1z } } }
+  // { dg-error "forbidden" "" { target c++1z } 15 }
   i = b;
   if (i != 1)
     abort ();
