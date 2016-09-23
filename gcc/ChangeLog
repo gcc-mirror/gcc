@@ -1,5 +1,10 @@
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
+	* config/i386/i386.c (ix86_valid_target_attribute_inner_p):
+	Handle crc32.
+
+2016-09-23  Martin Liska  <mliska@suse.cz>
+
 	PR target/71652
 	* config/i386/i386.c (ix86_option_override_internal): Change
 	signature and return false when there's an error related to
