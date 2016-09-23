@@ -131,12 +131,6 @@ f6 (bool b)
     case 3:
       break;
     }
-  switch (b++) /* { dg-warning "switch condition has" } */
-  /* { dg-warning "is deprecated" "" { target c++ } 134 } */
-    {
-    case 3:
-      break;
-    }
 }
 
 void
