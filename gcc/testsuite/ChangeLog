@@ -1,3 +1,33 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-3.C: Use
+	arm_fp16_alternative_ok.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-4.C: Likewise.
+	* gcc.dg/torture/arm-fp16-int-convert-alt.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/arm-fp16-ops-3.c: Likewise.
+	* gcc/testsuite/gcc.dg/torture/arm-fp16-ops-4.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-1.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-10.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-11.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-12.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-2.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-3.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-4.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-5.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-6.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-7.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-8.c: Likewise.
+	* gcc.target/arm/fp16-compile-alt-9.c: Likewise.
+	* gcc.target/arm/fp16-compile-none-1.c: Use arm_fp16_none_ok.
+	* gcc.target/arm/fp16-compile-none-2.c: Likewise.
+	* gcc.target/arm/fp16-rounding-alt-1.c: Use
+	arm_fp16_alternative_ok.
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16_alternative_ok_nocache): New.
+	(check_effective_target_arm_fp16_alternative_ok): New.
+	(check_effective_target_arm_fp16_none_ok_nocache): New.
+	(check_effective_target_arm_fp16_none_ok): New.
+
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/pr77653.c: Replace adress

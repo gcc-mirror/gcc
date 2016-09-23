@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_fp16_none_ok } */
 /* { dg-options "-mfp16-format=none" } */
 
 /* mode(HF) attributes are not recognized unless you explicitly enable
