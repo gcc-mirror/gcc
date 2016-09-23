@@ -1,3 +1,9 @@
+2016-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/gcc-dg.exp (process-message): Support relative line number
+	notation - .+4 or .-1 etc.
+	* gcc.dg/dg-test-1.c: New test.
+
 2016-09-22  Martin Sebor  <msebor@redhat.com>
 
 	PR target/77676
