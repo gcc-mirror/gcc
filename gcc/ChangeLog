@@ -1,5 +1,10 @@
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
+	* doc/extend.texi: Remove fused-madd from i386 target
+	options.
+
+2016-09-23  Martin Liska  <mliska@suse.cz>
+
 	* config/i386/i386.c (ix86_valid_target_attribute_inner_p):
 	Handle movbe.
 

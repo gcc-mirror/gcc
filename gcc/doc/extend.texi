@@ -5481,11 +5481,6 @@ Enable/disable the generation of the CLD before string moves.
 Enable/disable the generation of the @code{sin}, @code{cos}, and
 @code{sqrt} instructions on the 387 floating-point unit.
 
-@item fused-madd
-@itemx no-fused-madd
-@cindex @code{target("fused-madd")} function attribute, x86
-Enable/disable the generation of the fused multiply/add instructions.
-
 @item ieee-fp
 @itemx no-ieee-fp
 @cindex @code{target("ieee-fp")} function attribute, x86
