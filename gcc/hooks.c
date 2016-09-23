@@ -486,8 +486,7 @@ hook_void_gcc_optionsp (struct gcc_options *opts ATTRIBUTE_UNUSED)
    returns false.  */
 
 bool
-hook_uint_uintp_false (unsigned int, unsigned int *)
+hook_bool_uint_uintp_false (unsigned int, unsigned int *)
 {
   return false;
 }
-

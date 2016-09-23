@@ -446,7 +446,7 @@ instead of the normal sequence of letter codes.  If the hook is not\n\
 defined, or if it returns false, then @var{num} will be ignored and the\n\
 traditional letter sequence will be emitted.",
  bool, (unsigned int flags, unsigned int *num),
- hook_uint_uintp_false)
+ hook_bool_uint_uintp_false)
 
 /* Return preferred text (sub)section for function DECL.
    Main purpose of this function is to separate cold, normal and hot
