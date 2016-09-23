@@ -2954,8 +2954,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       case CONSTRUCTOR:
 	/* In GIMPLE empty constructors are allowed in initializers of
 	   aggregates.  */
-	return (!vec_safe_length (CONSTRUCTOR_ELTS (arg0))
-		&& !vec_safe_length (CONSTRUCTOR_ELTS (arg1)));
+	return !CONSTRUCTOR_NELTS (arg0) && !CONSTRUCTOR_NELTS (arg1);
       default:
 	break;
       }

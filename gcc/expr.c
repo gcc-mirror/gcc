@@ -6187,8 +6187,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	   register whose mode size isn't equal to SIZE since
 	   clear_storage can't handle this case.  */
 	else if (size > 0
-		 && (((int)vec_safe_length (CONSTRUCTOR_ELTS (exp))
-		      != fields_length (type))
+		 && (((int) CONSTRUCTOR_NELTS (exp) != fields_length (type))
 		     || mostly_zeros_p (exp))
 		 && (!REG_P (target)
 		     || ((HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (target))

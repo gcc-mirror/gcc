@@ -1339,7 +1339,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		      = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_alloc_type)));
 
 		    if (TREE_CODE (gnu_expr) == CONSTRUCTOR
-			&& vec_safe_length (CONSTRUCTOR_ELTS (gnu_expr)) == 1)
+			&& CONSTRUCTOR_NELTS (gnu_expr) == 1)
 		      gnu_expr = NULL_TREE;
 		    else
 		      gnu_expr

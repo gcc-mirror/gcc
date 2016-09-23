@@ -1,3 +1,9 @@
+2016-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use
+	CONSTRUCTOR_NELTS (...) instead of
+	vec_safe_length (CONSTRUCTOR_ELTS (...)).
+
 2016-07-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Type>: Also use

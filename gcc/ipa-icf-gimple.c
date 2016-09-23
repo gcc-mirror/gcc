@@ -406,8 +406,8 @@ func_checker::compare_operand (tree t1, tree t2)
     {
     case CONSTRUCTOR:
       {
-	unsigned length1 = vec_safe_length (CONSTRUCTOR_ELTS (t1));
-	unsigned length2 = vec_safe_length (CONSTRUCTOR_ELTS (t2));
+	unsigned length1 = CONSTRUCTOR_NELTS (t1);
+	unsigned length2 = CONSTRUCTOR_NELTS (t2);
 
 	if (length1 != length2)
 	  return return_false ();

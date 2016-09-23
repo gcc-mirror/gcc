@@ -1100,8 +1100,7 @@ hsa_op_immed::hsa_op_immed (tree tree_val, bool min32int)
 
   /* Verify that all elements of a constructor are constants.  */
   if (TREE_CODE (m_tree_value) == CONSTRUCTOR)
-    for (unsigned i = 0;
-	 i < vec_safe_length (CONSTRUCTOR_ELTS (m_tree_value)); i++)
+    for (unsigned i = 0; i < CONSTRUCTOR_NELTS (m_tree_value); i++)
       {
 	tree v = CONSTRUCTOR_ELT (m_tree_value, i)->value;
 	if (!CONSTANT_CLASS_P (v))
@@ -2845,7 +2844,7 @@ void
 gen_hsa_ctor_assignment (hsa_op_address *addr_lhs, tree rhs, hsa_bb *hbb,
 			 BrigAlignment8_t align)
 {
-  if (vec_safe_length (CONSTRUCTOR_ELTS (rhs)))
+  if (CONSTRUCTOR_NELTS (rhs))
     {
       HSA_SORRY_AT (EXPR_LOCATION (rhs),
 		    "support for HSA does not implement load from constructor");
