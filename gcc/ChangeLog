@@ -1,3 +1,9 @@
+2016-09-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR ipa/77677
+	* ipa-cp.c (propagate_vr_accross_jump_function): Drop TREE_OVERFLOW
+	from constant while creating value range.
+
 2016-09-23  Renlin Li  <renlin.li@arm.com>
 
 	* ira.c (ira): Move ira_use_lra_p initialization code to ...
