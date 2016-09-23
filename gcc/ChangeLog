@@ -1,5 +1,68 @@
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/arm_neon_builtins.def (vadd): New (v8hf, v4hf
+	variants).
+	(vmulf): New (v8hf, v4hf variants).
+	(vfma): New (v8hf, v4hf variants).
+	(vfms): New (v8hf, v4hf variants).
+	(vsub): New (v8hf, v4hf variants).
+	(vcage): New (v8hf, v4hf variants).
+	(vcagt): New (v8hf, v4hf variants).
+	(vcale): New (v8hf, v4hf variants).
+	(vcalt): New (v8hf, v4hf variants).
+	(vceq): New (v8hf, v4hf variants).
+	(vcgt): New (v8hf, v4hf variants).
+	(vcge): New (v8hf, v4hf variants).
+	(vcle): New (v8hf, v4hf variants).
+	(vclt): New (v8hf, v4hf variants).
+	(vceqz): New (v8hf, v4hf variants).
+	(vcgez): New (v8hf, v4hf variants).
+	(vcgtz): New (v8hf, v4hf variants).
+	(vcltz): New (v8hf, v4hf variants).
+	(vclez): New (v8hf, v4hf variants).
+	(vabd): New (v8hf, v4hf variants).
+	(vmaxf): New (v8hf, v4hf variants).
+	(vmaxnm): New (v8hf, v4hf variants).
+	(vminf): New (v8hf, v4hf variants).
+	(vminnm): New (v8hf, v4hf variants).
+	(vpmaxf): New (v4hf variant).
+	(vpminf): New (v4hf variant).
+	(vpadd): New (v4hf variant).
+	(vrecps): New (v8hf, v4hf variants).
+	(vrsqrts): New (v8hf, v4hf variants).
+	(vabs): New (v8hf, v4hf variants).
+	(vneg): New (v8hf, v4hf variants).
+	(vrecpe): New (v8hf, v4hf variants).
+	(vrnd): New (v8hf, v4hf variants).
+	(vrnda): New (v8hf, v4hf variants).
+	(vrndm): New (v8hf, v4hf variants).
+	(vrndn): New (v8hf, v4hf variants).
+	(vrndp): New (v8hf, v4hf variants).
+	(vrndx): New (v8hf, v4hf variants).
+	(vrsqrte): New (v8hf, v4hf variants).
+	(vmul_lane): Add v4hf and v8hf variants.
+	(vmul_n): Add v4hf and v8hf variants.
+	(vext): New (v8hf, v4hf variants).
+	(vcvts): New (v8hi, v4hi variants).
+	(vcvts): New (v8hf, v4hf variants).
+	(vcvtu): New (v8hi, v4hi variants).
+	(vcvtu): New (v8hf, v4hf variants).
+	(vcvts_n): New (v8hf, v4hf variants).
+	(vcvtu_n): New (v8hi, v4hi variants).
+	(vcvts_n): New (v8hi, v4hi variants).
+	(vcvtu_n): New (v8hf, v4hf variants).
+	(vbsl): New (v8hf, v4hf variants).
+	(vcvtas): New (v8hf, v4hf variants).
+	(vcvtau): New (v8hf, v4hf variants).
+	(vcvtms): New (v8hf, v4hf variants).
+	(vcvtmu): New (v8hf, v4hf variants).
+	(vcvtns): New (v8hf, v4hf variants).
+	(vcvtnu): New (v8hf, v4hf variants).
+	(vcvtps): New (v8hf, v4hf variants).
+	(vcvtpu): New (v8hf, v4hf variants).
+
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/arm-builtins.c (hf_UP): New.
 	(si_UP): New.
 	(vfp_builtin_data): New.  Update comment.
