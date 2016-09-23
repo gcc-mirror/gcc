@@ -420,7 +420,12 @@ test_e_long_double (void)
   EQL (12, 13, "%Le",  9.999e+99L);
   EQL (12, 13, "%Le",  9.9999e+99L);
   EQL (12, 13, "%Le",  9.99999e+99L);
+
+#if __DBL_DIG__ < __LDBL_DIG__
   EQL (12, 13, "%Le",  9.999999e+99L);
+#else
+  RNG (12, 13, 14, "%Le",  9.999999e+99L);
+#endif
 
   /* The actual output of the following directive depends on the rounding
      mode.  */
