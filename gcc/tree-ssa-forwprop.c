@@ -1458,6 +1458,7 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
   code1 = TREE_CODE (name);
   arg11 = name;
   arg21 = NULL_TREE;
+  arg31 = NULL_TREE;
   grhs_class = get_gimple_rhs_class (code1);
 
   if (code1 == SSA_NAME)
@@ -1470,20 +1471,18 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
 	  code1 = gimple_assign_rhs_code (def);
 	  arg11 = gimple_assign_rhs1 (def);
           arg21 = gimple_assign_rhs2 (def);
-          arg31 = gimple_assign_rhs2 (def);
+          arg31 = gimple_assign_rhs3 (def);
 	}
     }
-  else if (grhs_class == GIMPLE_TERNARY_RHS
-	   || GIMPLE_BINARY_RHS
-	   || GIMPLE_UNARY_RHS
-	   || GIMPLE_SINGLE_RHS)
-    extract_ops_from_tree (name, &code1, &arg11, &arg21, &arg31);
+  else if (grhs_class != GIMPLE_SINGLE_RHS)
+    code1 = ERROR_MARK;
 
   *code = code1;
   *arg1 = arg11;
   if (arg2)
     *arg2 = arg21;
-  /* Ignore arg3 currently. */
+  if (arg31)
+    *code = ERROR_MARK;
 }
 
 
