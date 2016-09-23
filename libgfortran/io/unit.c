@@ -72,7 +72,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Unit number to be assigned when NEWUNIT is used in an OPEN statement.  */
 #define GFC_FIRST_NEWUNIT -10
+#define NEWUNIT_STACK_SIZE 16
 static GFC_INTEGER_4 next_available_newunit = GFC_FIRST_NEWUNIT;
+
+/* A stack to save previously used newunit-assigned unit numbers to
+   allow them to be reused without reallocating the gfc_unit structure
+   which is still in the treap.  */
+static gfc_saved_unit newunit_stack[NEWUNIT_STACK_SIZE];
+static int newunit_tos = 0; /* Index to Top of Stack.  */
 
 #define CACHE_SIZE 3
 static gfc_unit *unit_cache[CACHE_SIZE];
@@ -294,12 +301,12 @@ delete_unit (gfc_unit * old)
 }
 
 
-/* get_external_unit()-- Given an integer, return a pointer to the unit
+/* get_gfc_unit()-- Given an integer, return a pointer to the unit
  * structure.  Returns NULL if the unit does not exist,
  * otherwise returns a locked unit. */
 
 static gfc_unit *
-get_external_unit (int n, int do_create)
+get_gfc_unit (int n, int do_create)
 {
   gfc_unit *p;
   int c, created = 0;
@@ -361,6 +368,7 @@ found:
       inc_waiting_locked (p);
     }
 
+
   __gthread_mutex_unlock (&unit_lock);
 
   if (p != NULL && (p->child_dtio == 0))
@@ -384,14 +392,14 @@ found:
 gfc_unit *
 find_unit (int n)
 {
-  return get_external_unit (n, 0);
+  return get_gfc_unit (n, 0);
 }
 
 
 gfc_unit *
 find_or_create_unit (int n)
 {
-  return get_external_unit (n, 1);
+  return get_gfc_unit (n, 1);
 }
 
 
@@ -426,31 +434,14 @@ is_trim_ok (st_parameter_dt *dtp)
 
 
 gfc_unit *
-get_internal_unit (st_parameter_dt *dtp)
+set_internal_unit (st_parameter_dt *dtp, gfc_unit *iunit, int kind)
 {
-  gfc_unit * iunit;
   gfc_offset start_record = 0;
 
-  /* Allocate memory for a unit structure.  */
-
-  iunit = xcalloc (1, sizeof (gfc_unit));
-
-#ifdef __GTHREAD_MUTEX_INIT
-  {
-    __gthread_mutex_t tmp = __GTHREAD_MUTEX_INIT;
-    iunit->lock = tmp;
-  }
-#else
-  __GTHREAD_MUTEX_INIT_FUNCTION (&iunit->lock);
-#endif
-  __gthread_mutex_lock (&iunit->lock);
-
   iunit->recl = dtp->internal_unit_len;
-
-  /* For internal units we set the unit number to -1.
-     Otherwise internal units can be mistaken for a pre-connected unit or
-     some other file I/O unit.  */
-  iunit->unit_number = -1;
+  iunit->internal_unit = dtp->internal_unit;
+  iunit->internal_unit_len = dtp->internal_unit_len;
+  iunit->internal_unit_kind = kind;
 
   /* As an optimization, adjust the unit record length to not
      include trailing blanks. This will not work under certain conditions
@@ -458,14 +449,14 @@ get_internal_unit (st_parameter_dt *dtp)
   if (dtp->u.p.mode == READING && is_trim_ok (dtp))
     {
       int len;
-      if (dtp->common.unit == 0)
-	  len = string_len_trim (dtp->internal_unit_len,
-						   dtp->internal_unit);
+      if (kind == 1)
+	  len = string_len_trim (iunit->internal_unit_len,
+						   iunit->internal_unit);
       else
-	  len = string_len_trim_char4 (dtp->internal_unit_len,
-			      (const gfc_char4_t*) dtp->internal_unit);
-      dtp->internal_unit_len = len;
-      iunit->recl = dtp->internal_unit_len;
+	  len = string_len_trim_char4 (iunit->internal_unit_len,
+			      (const gfc_char4_t*) iunit->internal_unit);
+      iunit->internal_unit_len = len;
+      iunit->recl = iunit->internal_unit_len;
     }
 
   /* Set up the looping specification from the array descriptor, if any.  */
@@ -475,22 +466,19 @@ get_internal_unit (st_parameter_dt *dtp)
       iunit->rank = GFC_DESCRIPTOR_RANK (dtp->internal_unit_desc);
       iunit->ls = (array_loop_spec *)
 	xmallocarray (iunit->rank, sizeof (array_loop_spec));
-      dtp->internal_unit_len *=
+      iunit->internal_unit_len *=
 	init_loop_spec (dtp->internal_unit_desc, iunit->ls, &start_record);
 
       start_record *= iunit->recl;
     }
 
   /* Set initial values for unit parameters.  */
-  if (dtp->common.unit)
-    {
-      iunit->s = open_internal4 (dtp->internal_unit - start_record,
-				 dtp->internal_unit_len, -start_record);
-      fbuf_init (iunit, 256);
-    }
+  if (kind == 4)
+    iunit->s = open_internal4 (iunit->internal_unit - start_record,
+				 iunit->internal_unit_len, -start_record);
   else
-    iunit->s = open_internal (dtp->internal_unit - start_record,
-			      dtp->internal_unit_len, -start_record);
+    iunit->s = open_internal (iunit->internal_unit - start_record,
+			      iunit->internal_unit_len, -start_record);
 
   iunit->bytes_left = iunit->recl;
   iunit->last_record=0;
@@ -522,33 +510,22 @@ get_internal_unit (st_parameter_dt *dtp)
   dtp->u.p.pending_spaces = 0;
   dtp->u.p.max_pos = 0;
   dtp->u.p.at_eof = 0;
-
-  /* This flag tells us the unit is assigned to internal I/O.  */
-
-  dtp->u.p.unit_is_internal = 1;
-
   return iunit;
 }
 
 
-/* free_internal_unit()-- Free memory allocated for internal units if any.  */
+/* stash_internal_unit()-- Push the internal unit number onto the
+   avaialble stack.  */
 void
-free_internal_unit (st_parameter_dt *dtp)
+stash_internal_unit (st_parameter_dt *dtp)
 {
-  if (!is_internal_unit (dtp))
-    return;
-
-  if (unlikely (is_char4_unit (dtp)))
-    fbuf_destroy (dtp->u.p.current_unit);
-
-  if (dtp->u.p.current_unit != NULL)
-    {
-      free (dtp->u.p.current_unit->ls);
-
-      free (dtp->u.p.current_unit->s);
-
-      destroy_unit_mutex (dtp->u.p.current_unit);
-    }
+  __gthread_mutex_lock (&unit_lock);
+  newunit_tos++;
+  if (newunit_tos >= NEWUNIT_STACK_SIZE)
+    internal_error (&dtp->common, "stash_internal_unit(): Stack Size Exceeded");
+  newunit_stack[newunit_tos].unit_number = dtp->common.unit;
+  newunit_stack[newunit_tos].unit = dtp->u.p.current_unit;
+  __gthread_mutex_unlock (&unit_lock);
 }
 
 
@@ -559,16 +536,51 @@ free_internal_unit (st_parameter_dt *dtp)
 gfc_unit *
 get_unit (st_parameter_dt *dtp, int do_create)
 {
+  gfc_unit * unit;
 
   if ((dtp->common.flags & IOPARM_DT_HAS_INTERNAL_UNIT) != 0)
-    return get_internal_unit (dtp);
+    {
+      int kind;
+      if (dtp->common.unit == GFC_INTERNAL_UNIT)
+        kind = 1;
+      else if (dtp->common.unit == GFC_INTERNAL_UNIT4)
+        kind = 4;
+      else
+	internal_error (&dtp->common, "get_unit(): Bad internal unit KIND");
 
+      if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) != 0)
+	{
+	  dtp->u.p.unit_is_internal = 1;
+	  dtp->common.unit = get_unique_unit_number (&dtp->common);
+	  unit = get_gfc_unit (dtp->common.unit, do_create);
+	  set_internal_unit (dtp, unit, kind);
+	  fbuf_init (unit, 128);
+	  return unit;
+	}
+      else
+	{
+	  if (newunit_tos)
+	    {
+	      dtp->common.unit = newunit_stack[newunit_tos].unit_number;
+	      unit = newunit_stack[newunit_tos--].unit;
+	      unit->fbuf->act = unit->fbuf->pos = 0;
+	    }
+	  else
+	    {
+	      dtp->common.unit = get_unique_unit_number (&dtp->common);
+	      unit = xcalloc (1, sizeof (gfc_unit));
+	      fbuf_init (unit, 128);
+	    }
+	  set_internal_unit (dtp, unit, kind);
+	  return unit;
+	}
+    }
   /* Has to be an external unit.  */
-
   dtp->u.p.unit_is_internal = 0;
+  dtp->internal_unit = NULL;
   dtp->internal_unit_desc = NULL;
-
-  return get_external_unit (dtp->common.unit, do_create);
+  unit = get_gfc_unit (dtp->common.unit, do_create);
+  return unit;
 }
 
 
@@ -687,6 +699,10 @@ init_units (void)
   max_offset = 0;
   for (i = 0; i < sizeof (max_offset) * 8 - 1; i++)
     max_offset = max_offset + ((gfc_offset) 1 << i);
+
+  /* Initialize the newunit stack.  */
+  memset (newunit_stack, 0, NEWUNIT_STACK_SIZE * sizeof(gfc_saved_unit));
+  newunit_tos = 0;
 }
 
 
@@ -765,6 +781,13 @@ close_units (void)
     close_unit_1 (unit_root, 1);
   __gthread_mutex_unlock (&unit_lock);
 
+  while (newunit_tos != 0)
+    if (newunit_stack[newunit_tos].unit)
+      {
+	fbuf_destroy (newunit_stack[newunit_tos].unit);
+	free (newunit_stack[newunit_tos].unit->s);
+	free (newunit_stack[newunit_tos--].unit);
+      }
 #ifdef HAVE_FREELOCALE
   freelocale (c_locale);
 #endif
@@ -862,9 +885,10 @@ finish_last_advance_record (gfc_unit *u)
   fbuf_flush (u, u->mode);
 }
 
-/* Assign a negative number for NEWUNIT in OPEN statements.  */
+/* Assign a negative number for NEWUNIT in OPEN statements or for
+   internal units.  */
 GFC_INTEGER_4
-get_unique_unit_number (st_parameter_open *opp)
+get_unique_unit_number (st_parameter_common *common)
 {
   GFC_INTEGER_4 num;
 
@@ -875,11 +899,10 @@ get_unique_unit_number (st_parameter_open *opp)
   num = next_available_newunit--;
   __gthread_mutex_unlock (&unit_lock);
 #endif
-
   /* Do not allow NEWUNIT numbers to wrap.  */
   if (num > GFC_FIRST_NEWUNIT)
     {
-      generate_error (&opp->common, LIBERROR_INTERNAL, "NEWUNIT exhausted");
+      generate_error (common, LIBERROR_INTERNAL, "NEWUNIT exhausted");
       return 0;
     }
   return num;

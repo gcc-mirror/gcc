@@ -1,3 +1,42 @@
+2016-09-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48298
+	* io/inquire.c (inquire_via_unit): Adjust error check for the
+	two possible internal unit KINDs.
+	* io/io.h: Adjust defines for is_internal_unit and
+	is_char4_unit. (gfc_unit): Add internal unit data to structure.
+	(get_internal_unit): Change declaration to set_internal_unit.
+	(free_internal_unit): Change name to stash_internal_unit_number.
+	(get_unique_unit_number): Adjust parameter argument.
+	Define IOPARM_DT_HAS_UDTIO. (gfc_saved_unit): New structure.
+	* io/list_read.c (next_char_internal): Use is_char4_unit.
+	* io/open.c (st_open): Adjust call to get_unique_unit_number.
+	* io/transfer.c (write_block): Use is_char4_unit.
+	(data_transfer_init): Update check for unit numbers.
+	(st_read_done): Free the various allocated memories used for the
+	internal units and stash the negative unit number and pointer to unit
+	structure to allow reuse. (st_write_done): Likewise stash the freed
+	unit.
+	* io/unit.c: Create a fixed size buffer of 16 gfc_saved_unit's to use
+	as a stack to save newunit unit numbers and unit structure for reuse.
+	(get_external_unit): Change name to get_gfc_unit to better
+	reflect what it does. (find_unit): Change call to get_gfc_unit.
+	(find_or_create_unit): Likewise. (get_internal_unit): Change
+	name to set_internal_unit. Move internal unit from the dtp
+	structure to the gfc_unit structure so that it can be passed to
+	child I/O statements through the UNIT.
+	(free_internal_unit): Change name to stash_internal_unit_number.
+	Push the common.unit number onto the newunit stack, saving it
+	for possible reuse later. (get_unit): Set the internal unit
+	KIND. Use get_unique_unit_number to get a negative unit number
+	for the internal unit. Use get_gfc_unit to get the unit structure
+	and use set_internal_unit to initialize it.
+	(init_units): Initialize the newunit stack.
+	(get_unique_unit_number): Check the stack for an available unit
+	number and use it. If none there get the next most negative
+	number. (close_units): Free any unit structures pointed to from the save
+	stack.
+
 2016-09-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/random.c (getosrandom): Use rand_s() on

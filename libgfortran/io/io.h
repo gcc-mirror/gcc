@@ -69,11 +69,11 @@ internal_proto(old_locale_lock);
 
 #define is_array_io(dtp) ((dtp)->internal_unit_desc)
 
-#define is_internal_unit(dtp) ((dtp)->u.p.unit_is_internal)
+#define is_internal_unit(dtp) ((dtp)->u.p.current_unit->internal_unit_kind)
 
 #define is_stream_io(dtp) ((dtp)->u.p.current_unit->flags.access == ACCESS_STREAM)
 
-#define is_char4_unit(dtp) ((dtp)->u.p.unit_is_internal && (dtp)->common.unit)
+#define is_char4_unit(dtp) ((dtp)->u.p.current_unit->internal_unit_kind == 4)
 
 /* The array_loop_spec contains the variables for the loops over index ranges
    that are encountered.  */
@@ -409,6 +409,7 @@ st_parameter_inquire;
 #define IOPARM_DT_HAS_ROUND			(1 << 23)
 #define IOPARM_DT_HAS_SIGN			(1 << 24)
 #define IOPARM_DT_HAS_F2003                     (1 << 25)
+#define IOPARM_DT_HAS_UDTIO                     (1 << 26)
 /* Internal use bit.  */
 #define IOPARM_DT_IONML_SET			(1u << 31)
 
@@ -640,12 +641,24 @@ typedef struct gfc_unit
   int (*next_char_fn_ptr) (st_parameter_dt *);
   void (*push_char_fn_ptr) (st_parameter_dt *, int);
 
+  /* Internal unit char string data.  */
+  char * internal_unit;
+  gfc_charlen_type internal_unit_len;
+  gfc_array_char *string_unit_desc;
+  int internal_unit_kind;
+
   /* DTIO Parent/Child procedure, 0 = parent, >0 = child level.  */
   int child_dtio;
   int last_char;
 }
 gfc_unit;
 
+typedef struct gfc_saved_unit
+{
+  GFC_INTEGER_4 unit_number;
+  gfc_unit *unit;
+}
+gfc_saved_unit;
 
 /* unit.c */
 
@@ -663,11 +676,11 @@ internal_proto(unit_lock);
 extern int close_unit (gfc_unit *);
 internal_proto(close_unit);
 
-extern gfc_unit *get_internal_unit (st_parameter_dt *);
-internal_proto(get_internal_unit);
+extern gfc_unit *set_internal_unit (st_parameter_dt *, gfc_unit *, int);
+internal_proto(set_internal_unit);
 
-extern void free_internal_unit (st_parameter_dt *);
-internal_proto(free_internal_unit);
+extern void stash_internal_unit (st_parameter_dt *);
+internal_proto(stash_internal_unit);
 
 extern gfc_unit *find_unit (int);
 internal_proto(find_unit);
@@ -687,7 +700,7 @@ internal_proto (finish_last_advance_record);
 extern int unit_truncate (gfc_unit *, gfc_offset, st_parameter_common *);
 internal_proto (unit_truncate);
 
-extern GFC_INTEGER_4 get_unique_unit_number (st_parameter_open *);
+extern GFC_INTEGER_4 get_unique_unit_number (st_parameter_common *);
 internal_proto(get_unique_unit_number);
 
 /* open.c */
