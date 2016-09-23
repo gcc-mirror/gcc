@@ -1,3 +1,13 @@
+2016-09-23  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* hooks.h (hook_uint_uintp_false): Rename to...
+	(hook_bool_uint_uintp_false): ... this.
+	* hooks.c (hook_uint_uintp_false): Rename to...
+	(hook_bool_uint_uintp_false): ... this.
+	* target.def (elf_flags_numeric): Use hook_bool_uint_uintp_false
+	instead of hook_uint_uintp_false.
+
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm-builtins.c (arm_init_neon_builtin): New.
