@@ -389,7 +389,7 @@
 
 ; vscef, vsceg
 
-; A 64 bit target adress generated from 32 bit elements
+; A 64 bit target address generated from 32 bit elements
 (define_insn "vec_scatter_elementv4si_DI"
   [(set (mem:SI
 	 (plus:DI (zero_extend:DI
@@ -417,7 +417,7 @@
   "vsce<V_HW_64:bhfgq>\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
 
-; Element size and target adress size is the same
+; Element size and target address size is the same
 (define_insn "vec_scatter_element<mode>_<non_vec_int>"
   [(set (mem:<non_vec>
 	 (plus:<non_vec_int> (unspec:<non_vec_int>
