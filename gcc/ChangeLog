@@ -1,5 +1,35 @@
 2016-09-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* hooks.c (hook_bool_bool_false, hook_bool_bool_gcc_optionsp_false,
+	hook_bool_mode_false, hook_bool_mode_true,
+	hook_bool_mode_const_rtx_false, hook_bool_mode_const_rtx_true,
+	hook_bool_mode_rtx_false, hook_bool_mode_rtx_true,
+	hook_bool_const_rtx_insn_const_rtx_insn_true,
+	hook_bool_mode_uhwi_false, hook_void_FILEptr_constcharptr,
+	hook_bool_FILEptr_rtx_false, hook_bool_gsiptr_false,
+	hook_bool_const_tree_hwi_hwi_const_tree_false,
+	hook_bool_const_tree_hwi_hwi_const_tree_true,
+	default_can_output_mi_thunk_no_vcall, hook_int_uint_mode_1,
+	hook_int_const_tree_0, hook_int_const_tree_const_tree_1,
+	hook_int_rtx_0, hook_int_rtx_bool_0, hook_void_tree,
+	hook_void_constcharptr, hook_void_tree_treeptr, hook_void_int_int,
+	hook_bool_tree_false, hook_bool_const_tree_false, hook_bool_tree_true,
+	hook_bool_const_tree_true, hook_bool_tree_tree_false,
+	hook_bool_tree_tree_true, hook_bool_tree_bool_false,
+	hook_bool_rtx_insn_true, hook_bool_rtx_false,
+	hook_bool_uintp_uintp_false,
+	hook_bool_rtx_mode_int_int_intp_bool_false, hook_rtx_rtx_null,
+	hook_rtx_tree_int_null, hook_uint_mode_0,
+	hook_constcharptr_const_tree_null, hook_tree_tree_int_treep_bool_null,
+	hook_tree_tree_tree_null, hook_tree_tree_tree_tree_null,
+	hook_constcharptr_const_rtx_insn_null,
+	hook_constcharptr_const_tree_const_tree_null,
+	hook_constcharptr_int_const_tree_null,
+	hook_constcharptr_int_const_tree_const_tree_null,
+	hook_tree_const_tree_null, hook_bool_rtx_insn_int_false,
+	hook_void_rtx_insn_int, hook_void_gcc_optionsp): For arguments with
+	ATTRIBUTE_UNUSED, remove parameter name as well as ATTRIBUTE_UNUSED.
+
 	* vec.h (vNULL): Extend comment to say = vNULL initialization
 	isn't needed for static vars.
 
