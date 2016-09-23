@@ -1,3 +1,12 @@
+2016-09-23  Martin Liska  <mliska@suse.cz>
+
+	PR target/71652
+	* config/i386/i386.c (ix86_option_override_internal): Change
+	signature and return false when there's an error related to
+	arch string.
+	(release_options_strings): New function.
+	(ix86_valid_target_attribute_tree): Call the function.
+
 2016-09-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* hsa-gen.c (hsa_op_immed::hsa_op_immed Use CONSTRUCTOR_NELTS (...)

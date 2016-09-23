@@ -4731,9 +4731,10 @@ ix86_override_options_after_change (void)
 
 /* Override various settings based on options.  If MAIN_ARGS_P, the
    options are from the command line, otherwise they are from
-   attributes.  */
+   attributes.  Return true if there's an error related to march
+   option.  */
 
-static void
+static bool
 ix86_option_override_internal (bool main_args_p,
 			       struct gcc_options *opts,
 			       struct gcc_options *opts_set)
@@ -5262,15 +5263,35 @@ ix86_option_override_internal (bool main_args_p,
   for (i = 0; i < pta_size; i++)
     if (! strcmp (opts->x_ix86_arch_string, processor_alias_table[i].name))
       {
+	if (!strcmp (opts->x_ix86_arch_string, "generic"))
+	  {
+	    error (main_args_p
+		  ? "%<generic%> CPU can be used only for %<-mtune=%> switch"
+		  : "%<generic%> CPU can be used only for "
+		    "%<target(\"tune=\")%> attribute");
+	    return false;
+	  }
+	else if (!strcmp (opts->x_ix86_arch_string, "intel"))
+	  {
+	    error (main_args_p
+		  ? "%<intel%> CPU can be used only for %<-mtune=%> switch"
+		  : "%<intel%> CPU can be used only for "
+		    "%<target(\"tune=\")%> attribute");
+	    return false;
+	  }
+
+	if (TARGET_64BIT_P (opts->x_ix86_isa_flags)
+	    && !(processor_alias_table[i].flags & PTA_64BIT))
+	  {
+	    error ("CPU you selected does not support x86-64 "
+		   "instruction set");
+	    return false;
+	  }
+
 	ix86_schedule = processor_alias_table[i].schedule;
 	ix86_arch = processor_alias_table[i].processor;
 	/* Default cpu tuning to the architecture.  */
 	ix86_tune = ix86_arch;
-
-	if (TARGET_64BIT_P (opts->x_ix86_isa_flags)
-	    && !(processor_alias_table[i].flags & PTA_64BIT))
-	  error ("CPU you selected does not support x86-64 "
-		 "instruction set");
 
 	if (processor_alias_table[i].flags & PTA_MMX
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MMX))
@@ -5469,17 +5490,7 @@ ix86_option_override_internal (bool main_args_p,
   if (TARGET_X32 && (ix86_isa_flags & OPTION_MASK_ISA_MPX))
     error ("Intel MPX does not support x32");
 
-  if (!strcmp (opts->x_ix86_arch_string, "generic"))
-    error (main_args_p
-	   ? "%<generic%> CPU can be used only for %<-mtune=%> switch"
-	   : "%<generic%> CPU can be used only for "
-	     "%<target(\"tune=\")%> attribute");
-  else if (!strcmp (opts->x_ix86_arch_string, "intel"))
-    error (main_args_p
-	   ? "%<intel%> CPU can be used only for %<-mtune=%> switch"
-	   : "%<intel%> CPU can be used only for "
-	     "%<target(\"tune=\")%> attribute");
-  else if (i == pta_size)
+  if (i == pta_size)
     {
       error (main_args_p
 	     ? "bad value (%qs) for %<-march=%> switch"
@@ -6134,6 +6145,8 @@ ix86_option_override_internal (bool main_args_p,
       ix86_parse_stringop_strategy_string (str, true);
       free (str);
     }
+
+  return true;
 }
 
 /* Implement the TARGET_OPTION_OVERRIDE hook.  */
@@ -6728,6 +6741,15 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
   return ret;
 }
 
+/* Release allocated strings.  */
+static void
+release_options_strings (char **option_strings)
+{
+  /* Free up memory allocated to hold the strings */
+  for (unsigned i = 0; i < IX86_FUNCTION_SPECIFIC_MAX; i++)
+    free (option_strings[i]);
+}
+
 /* Return a TARGET_OPTION_NODE tree of the target options listed or NULL.  */
 
 tree
@@ -6742,7 +6764,6 @@ ix86_valid_target_attribute_tree (tree args,
   int orig_arch_specified = ix86_arch_specified;
   char *option_strings[IX86_FUNCTION_SPECIFIC_MAX] = { NULL, NULL };
   tree t = NULL_TREE;
-  int i;
   struct cl_target_option *def
     = TREE_TARGET_OPTION (target_option_default_node);
   struct gcc_options enum_opts_set;
@@ -6803,7 +6824,12 @@ ix86_valid_target_attribute_tree (tree args,
 	}
 
       /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
-      ix86_option_override_internal (false, opts, opts_set);
+      bool r = ix86_option_override_internal (false, opts, opts_set);
+      if (!r)
+	{
+	  release_options_strings (option_strings);
+	  return error_mark_node;
+	}
 
       /* Add any builtin functions with the new isa if any.  */
       ix86_add_new_builtins (opts->x_ix86_isa_flags);
@@ -6816,9 +6842,7 @@ ix86_valid_target_attribute_tree (tree args,
       opts->x_ix86_tune_string = orig_tune_string;
       opts_set->x_ix86_fpmath = orig_fpmath_set;
 
-      /* Free up memory allocated to hold the strings */
-      for (i = 0; i < IX86_FUNCTION_SPECIFIC_MAX; i++)
-	free (option_strings[i]);
+      release_options_strings (option_strings);
     }
 
   return t;
