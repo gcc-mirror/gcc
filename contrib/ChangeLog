@@ -1,3 +1,7 @@
+2016-09-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Revert bogus change.
+
 2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* dg-extract-results.py: Report DejaGnu error in the final

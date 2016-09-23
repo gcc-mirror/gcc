@@ -434,7 +434,7 @@ BEGIN {
 /^# of unresolved testcases/	{ unrescnt += \$5 }
 /^# of unsupported tests/	{ unsupcnt += \$5 }
 END {
-  printf ("\n\t\t=== %s MySummary ===\n\n", tool)
+  printf ("\n\t\t=== %s Summary ===\n\n", tool)
   if (dgerrorcnt != 0) printf ("# of DejaGnu errors\t\t%d\n", dgerrorcnt)
   if (passcnt != 0) printf ("# of expected passes\t\t%d\n", passcnt)
   if (failcnt != 0) printf ("# of unexpected failures\t%d\n", failcnt)
