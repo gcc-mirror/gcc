@@ -1,5 +1,8 @@
 2016-09-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* constexpr.c (call_stack): Remove unnecessary
+	= vNULL initialization of file scope vec.
+
 	* name-lookup.c (store_bindings, store_class_bindings): Don't
 	initialize static local bindings_need_stored to vNULL.
 

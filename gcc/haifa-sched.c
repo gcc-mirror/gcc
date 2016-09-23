@@ -401,13 +401,13 @@ const struct common_sched_info_def haifa_common_sched_info =
   };
 
 /* Mapping from instruction UID to its Logical UID.  */
-vec<int> sched_luids = vNULL;
+vec<int> sched_luids;
 
 /* Next LUID to assign to an instruction.  */
 int sched_max_luid = 1;
 
 /* Haifa Instruction Data.  */
-vec<haifa_insn_data_def> h_i_d = vNULL;
+vec<haifa_insn_data_def> h_i_d;
 
 void (* sched_init_only_bb) (basic_block, basic_block);
 

@@ -84,7 +84,7 @@ static void chkp_collect_value (tree ssa_name, address_t &res);
 #define chkp_checku_fndecl \
   (targetm.builtin_chkp_function (BUILT_IN_CHKP_BNDCU))
 
-static vec<struct bb_checks, va_heap, vl_ptr> check_infos = vNULL;
+static vec<struct bb_checks, va_heap, vl_ptr> check_infos;
 
 /* Comparator for pol_item structures I1 and I2 to be used
    to find items with equal var.  Also used for polynomial
