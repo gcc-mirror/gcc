@@ -18722,6 +18722,7 @@ output_move_vfp (rtx *operands)
   gcc_assert ((mode == HFmode && TARGET_HARD_FLOAT && TARGET_VFP)
 	      || mode == SFmode
 	      || mode == DFmode
+	      || mode == HImode
 	      || mode == SImode
 	      || mode == DImode
               || (TARGET_NEON && VALID_NEON_DREG_MODE (mode)));
@@ -23513,6 +23514,10 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	return VFP_REGNO_OK_FOR_DOUBLE (regno);
 
       if (mode == HFmode)
+	return VFP_REGNO_OK_FOR_SINGLE (regno);
+
+      /* VFP registers can hold HImode values.  */
+      if (mode == HImode)
 	return VFP_REGNO_OK_FOR_SINGLE (regno);
 
       if (TARGET_NEON)

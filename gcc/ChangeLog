@@ -1,3 +1,14 @@
+2016-09-23  Jiong Wang  <jiong.wang@arm.com>
+	    Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm.c (output_move_vfp): Weaken assert to allow
+	HImode.
+	(arm_hard_regno_mode_ok): Allow HImode values in VFP registers.
+	* config/arm/arm.md (*movhi_bytes): Disable when VFP registers are
+	available.  Also fix some white-space.
+	* config/arm/vfp.md (*arm_movhi_vfp): New.
+	(*thumb2_movhi_vfp): New.
+
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm-c.c (arm_cpu_builtins): Define

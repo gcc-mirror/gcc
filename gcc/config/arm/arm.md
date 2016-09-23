@@ -6700,7 +6700,7 @@
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m,r")
 	(match_operand:HI 1 "general_operand"      "rIk,K,n,r,mi"))]
   "TARGET_ARM
-   && arm_arch4
+   && arm_arch4 && !(TARGET_HARD_FLOAT && TARGET_VFP)
    && (register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
   "@
@@ -6726,7 +6726,7 @@
 (define_insn "*movhi_bytes"
   [(set (match_operand:HI 0 "s_register_operand" "=r,r,r")
 	(match_operand:HI 1 "arm_rhs_operand"  "I,rk,K"))]
-  "TARGET_ARM"
+  "TARGET_ARM && !(TARGET_HARD_FLOAT && TARGET_VFP)"
   "@
    mov%?\\t%0, %1\\t%@ movhi
    mov%?\\t%0, %1\\t%@ movhi
@@ -6734,7 +6734,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "type" "mov_imm,mov_reg,mvn_imm")]
 )
-	
+
 ;; We use a DImode scratch because we may occasionally need an additional
 ;; temporary if the address isn't offsettable -- push_reload doesn't seem
 ;; to take any notice of the "o" constraints on reload_memory_operand operand.

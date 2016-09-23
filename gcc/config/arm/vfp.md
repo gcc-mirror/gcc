@@ -18,6 +18,99 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.  */
 
+;; Patterns for HI moves which provide more data transfer instructions when VFP
+;; support is enabled.
+(define_insn "*arm_movhi_vfp"
+ [(set
+   (match_operand:HI 0 "nonimmediate_operand"
+    "=rk,  r, r, m, r, *t,  r, *t")
+   (match_operand:HI 1 "general_operand"
+    "rIk, K, n, r, mi, r, *t, *t"))]
+ "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
+  && (register_operand (operands[0], HImode)
+       || register_operand (operands[1], HImode))"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "mov%?\t%0, %1\t%@ movhi";
+    case 1:
+      return "mvn%?\t%0, #%B1\t%@ movhi";
+    case 2:
+      return "movw%?\t%0, %L1\t%@ movhi";
+    case 3:
+      return "strh%?\t%1, %0\t%@ movhi";
+    case 4:
+      return "ldrh%?\t%0, %1\t%@ movhi";
+    case 5:
+    case 6:
+      return "vmov%?\t%0, %1\t%@ int";
+    case 7:
+      return "vmov%?.f32\t%0, %1\t%@ int";
+    default:
+      gcc_unreachable ();
+    }
+}
+ [(set_attr "predicable" "yes")
+  (set_attr_alternative "type"
+   [(if_then_else
+     (match_operand 1 "const_int_operand" "")
+     (const_string "mov_imm")
+     (const_string "mov_reg"))
+    (const_string "mvn_imm")
+    (const_string "mov_imm")
+    (const_string "store1")
+    (const_string "load1")
+    (const_string "f_mcr")
+    (const_string "f_mrc")
+    (const_string "fmov")])
+  (set_attr "pool_range" "*, *, *, *, 256, *, *, *")
+  (set_attr "neg_pool_range" "*, *, *, *, 244, *, *, *")
+  (set_attr "length" "4")]
+)
+
+(define_insn "*thumb2_movhi_vfp"
+ [(set
+   (match_operand:HI 0 "nonimmediate_operand"
+    "=rk, r, l, r, m, r, *t, r, *t")
+   (match_operand:HI 1 "general_operand"
+    "rk, I, Py, n, r, m, r, *t, *t"))]
+ "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP
+  && (register_operand (operands[0], HImode)
+       || register_operand (operands[1], HImode))"
+{
+  switch (which_alternative)
+    {
+    case 0:
+    case 1:
+    case 2:
+      return "mov%?\t%0, %1\t%@ movhi";
+    case 3:
+      return "movw%?\t%0, %L1\t%@ movhi";
+    case 4:
+      return "strh%?\t%1, %0\t%@ movhi";
+    case 5:
+      return "ldrh%?\t%0, %1\t%@ movhi";
+    case 6:
+    case 7:
+      return "vmov%?\t%0, %1\t%@ int";
+    case 8:
+      return "vmov%?.f32\t%0, %1\t%@ int";
+    default:
+      gcc_unreachable ();
+    }
+}
+ [(set_attr "predicable" "yes")
+  (set_attr "predicable_short_it"
+   "yes, no, yes, no, no, no, no, no, no")
+  (set_attr "type"
+   "mov_reg, mov_imm, mov_imm, mov_imm, store1, load1,\
+    f_mcr, f_mrc, fmov")
+  (set_attr "pool_range" "*, *, *, *, *, 4094, *, *, *")
+  (set_attr "neg_pool_range" "*, *, *, *, *, 250, *, *, *")
+  (set_attr "length" "2, 4, 2, 4, 4, 4, 4, 4, 4")]
+)
+
 ;; SImode moves
 ;; ??? For now do not allow loading constants into vfp regs.  This causes
 ;; problems because small constants get converted into adds.
