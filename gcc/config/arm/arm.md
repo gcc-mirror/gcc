@@ -5189,7 +5189,7 @@
   ""
 )
 
-/* DFmode -> HFmode conversions have to go through SFmode.  */
+;; DFmode to HFmode conversions have to go through SFmode.
 (define_expand "truncdfhf2"
   [(set (match_operand:HF  0 "general_operand" "")
 	(float_truncate:HF
@@ -5696,7 +5696,7 @@
   ""
 )
 
-/* HFmode -> DFmode conversions have to go through SFmode.  */
+;; HFmode -> DFmode conversions have to go through SFmode.
 (define_expand "extendhfdf2"
   [(set (match_operand:DF                  0 "general_operand" "")
 	(float_extend:DF (match_operand:HF 1 "general_operand"  "")))]
@@ -7704,6 +7704,24 @@
   DONE;
 }")
 
+(define_expand "cstorehf4"
+  [(set (match_operand:SI 0 "s_register_operand")
+	(match_operator:SI 1 "expandable_comparison_operator"
+	 [(match_operand:HF 2 "s_register_operand")
+	  (match_operand:HF 3 "arm_float_compare_operand")]))]
+  "TARGET_VFP_FP16INST"
+  {
+    if (!arm_validize_comparison (&operands[1],
+				  &operands[2],
+				  &operands[3]))
+       FAIL;
+
+    emit_insn (gen_cstore_cc (operands[0], operands[1],
+			      operands[2], operands[3]));
+    DONE;
+  }
+)
+
 (define_expand "cstoresf4"
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(match_operator:SI 1 "expandable_comparison_operator"
@@ -7756,9 +7774,31 @@
     rtx ccreg;
 
     if (!arm_validize_comparison (&operands[1], &XEXP (operands[1], 0), 
-       				  &XEXP (operands[1], 1)))
+				  &XEXP (operands[1], 1)))
       FAIL;
-    
+
+    code = GET_CODE (operands[1]);
+    ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
+				 XEXP (operands[1], 1), NULL_RTX);
+    operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
+  }"
+)
+
+(define_expand "movhfcc"
+  [(set (match_operand:HF 0 "s_register_operand")
+	(if_then_else:HF (match_operand 1 "arm_cond_move_operator")
+			 (match_operand:HF 2 "s_register_operand")
+			 (match_operand:HF 3 "s_register_operand")))]
+  "TARGET_VFP_FP16INST"
+  "
+  {
+    enum rtx_code code = GET_CODE (operands[1]);
+    rtx ccreg;
+
+    if (!arm_validize_comparison (&operands[1], &XEXP (operands[1], 0),
+				  &XEXP (operands[1], 1)))
+      FAIL;
+
     code = GET_CODE (operands[1]);
     ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
 				 XEXP (operands[1], 1), NULL_RTX);
@@ -7777,7 +7817,7 @@
     enum rtx_code code = GET_CODE (operands[1]);
     rtx ccreg;
 
-    if (!arm_validize_comparison (&operands[1], &XEXP (operands[1], 0), 
+    if (!arm_validize_comparison (&operands[1], &XEXP (operands[1], 0),
        				  &XEXP (operands[1], 1)))
        FAIL;
 
@@ -7835,6 +7875,37 @@
         return \"vsel%D1.<V_if_elem>\\t%<V_reg>0, %<V_reg>4, %<V_reg>3\";
       default:
         gcc_unreachable ();
+      }
+    return \"\";
+  }"
+  [(set_attr "conds" "use")
+   (set_attr "type" "fcsel")]
+)
+
+(define_insn "*cmovhf"
+    [(set (match_operand:HF 0 "s_register_operand" "=t")
+	(if_then_else:HF (match_operator 1 "arm_vsel_comparison_operator"
+			 [(match_operand 2 "cc_register" "") (const_int 0)])
+			  (match_operand:HF 3 "s_register_operand" "t")
+			  (match_operand:HF 4 "s_register_operand" "t")))]
+  "TARGET_VFP_FP16INST"
+  "*
+  {
+    enum arm_cond_code code = maybe_get_arm_condition_code (operands[1]);
+    switch (code)
+      {
+      case ARM_GE:
+      case ARM_GT:
+      case ARM_EQ:
+      case ARM_VS:
+	return \"vsel%d1.f16\\t%0, %3, %4\";
+      case ARM_LT:
+      case ARM_LE:
+      case ARM_NE:
+      case ARM_VC:
+	return \"vsel%D1.f16\\t%0, %4, %3\";
+      default:
+	gcc_unreachable ();
       }
     return \"\";
   }"

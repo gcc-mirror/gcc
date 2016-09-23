@@ -13256,7 +13256,7 @@ coproc_secondary_reload_class (machine_mode mode, rtx x, bool wb)
 {
   if (mode == HFmode)
     {
-      if (!TARGET_NEON_FP16)
+      if (!TARGET_NEON_FP16 && !TARGET_VFP_FP16INST)
 	return GENERAL_REGS;
       if (s_register_operand (x, mode) || neon_vector_mem_operand (x, 2, true))
 	return NO_REGS;
@@ -18707,6 +18707,8 @@ output_move_vfp (rtx *operands)
   rtx reg, mem, addr, ops[2];
   int load = REG_P (operands[0]);
   int dp = GET_MODE_SIZE (GET_MODE (operands[0])) == 8;
+  int sp = (!TARGET_VFP_FP16INST
+	    || GET_MODE_SIZE (GET_MODE (operands[0])) == 4);
   int integer_p = GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT;
   const char *templ;
   char buff[50];
@@ -18753,7 +18755,7 @@ output_move_vfp (rtx *operands)
 
   sprintf (buff, templ,
 	   load ? "ld" : "st",
-	   dp ? "64" : "32",
+	   dp ? "64" : sp ? "32" : "16",
 	   dp ? "P" : "",
 	   integer_p ? "\t%@ int" : "");
   output_asm_insn (buff, ops);
@@ -29394,7 +29396,7 @@ arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
 {
   enum rtx_code code = GET_CODE (*comparison);
   int code_int;
-  machine_mode mode = (GET_MODE (*op1) == VOIDmode) 
+  machine_mode mode = (GET_MODE (*op1) == VOIDmode)
     ? GET_MODE (*op2) : GET_MODE (*op1);
 
   gcc_assert (GET_MODE (*op1) != VOIDmode || GET_MODE (*op2) != VOIDmode);
@@ -29422,6 +29424,14 @@ arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
 	*op2 = force_reg (mode, *op2);
       return true;
 
+    case HFmode:
+      if (!TARGET_VFP_FP16INST)
+	break;
+      /* FP16 comparisons are done in SF mode.  */
+      mode = SFmode;
+      *op1 = convert_to_mode (mode, *op1, 1);
+      *op2 = convert_to_mode (mode, *op2, 1);
+      /* Fall through.  */
     case SFmode:
     case DFmode:
       if (!arm_float_compare_operand (*op1, mode))
