@@ -1,3 +1,13 @@
+2016-09-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/hotpatch-compile-1.c: Fixed dg-error test.
+	* gcc.target/s390/hotpatch-compile-2.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-3.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-4.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-5.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-6.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-14.c: Likewise.
+
 2016-09-23  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/77713
