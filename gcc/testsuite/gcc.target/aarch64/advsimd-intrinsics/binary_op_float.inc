@@ -1,5 +1,5 @@
-/* Can't use the standard binary_op.inc template because vmax has no
-   64 bits variant.  */
+/* Floating-point only version of binary_op_no64.inc template.  Currently only
+   float16_t is used.  */
 
 #include <math.h>
 
@@ -10,24 +10,39 @@ void FNNAME (INSN_NAME) (void)
 {
   int i;
 
-  /* Basic test: y=vmax(x,x), then store the result.  */
+  /* Basic test: z = INSN (x, y), then store the result.  */
 #define TEST_BINARY_OP1(INSN, Q, T1, T2, W, N)				\
-  VECT_VAR(vector_res, T1, W, N) =                                      \
-    INSN##Q##_##T2##W(VECT_VAR(vector, T1, W, N),                       \
-                      VECT_VAR(vector2, T1, W, N));                     \
+  VECT_VAR(vector_res, T1, W, N) =					\
+    INSN##Q##_##T2##W(VECT_VAR(vector, T1, W, N),			\
+		      VECT_VAR(vector2, T1, W, N));			\
   vst1##Q##_##T2##W(VECT_VAR(result, T1, W, N), VECT_VAR(vector_res, T1, W, N))
 
 #define TEST_BINARY_OP(INSN, Q, T1, T2, W, N)   \
-  TEST_BINARY_OP1(INSN, Q, T1, T2, W, N)        \
+  TEST_BINARY_OP1(INSN, Q, T1, T2, W, N)	\
 
-  DECL_VARIABLE_ALL_VARIANTS(vector);
-  DECL_VARIABLE_ALL_VARIANTS(vector2);
-  DECL_VARIABLE_ALL_VARIANTS(vector_res);
+#ifdef HAS_FLOAT16_VARIANT
+  DECL_VARIABLE(vector, float, 16, 4);
+  DECL_VARIABLE(vector2, float, 16, 4);
+  DECL_VARIABLE(vector_res, float, 16, 4);
+
+  DECL_VARIABLE(vector, float, 16, 8);
+  DECL_VARIABLE(vector2, float, 16, 8);
+  DECL_VARIABLE(vector_res, float, 16, 8);
+#endif
+
+#ifdef HAS_FLOAT_VARIANT
+  DECL_VARIABLE(vector, float, 32, 2);
+  DECL_VARIABLE(vector2, float, 32, 2);
+  DECL_VARIABLE(vector_res, float, 32, 2);
+
+  DECL_VARIABLE(vector, float, 32, 4);
+  DECL_VARIABLE(vector2, float, 32, 4);
+  DECL_VARIABLE(vector_res, float, 32, 4);
+#endif
 
   clean_results ();
 
   /* Initialize input "vector" from "buffer".  */
-  TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector, buffer);
 #ifdef HAS_FLOAT16_VARIANT
   VLOAD(vector, buffer, , float, f, 16, 4);
   VLOAD(vector, buffer, q, float, f, 16, 8);
@@ -38,18 +53,6 @@ void FNNAME (INSN_NAME) (void)
 #endif
 
   /* Choose init value arbitrarily, will be used as comparison value.  */
-  VDUP(vector2, , int, s, 8, 8, -13);
-  VDUP(vector2, , int, s, 16, 4, -14);
-  VDUP(vector2, , int, s, 32, 2, -16);
-  VDUP(vector2, , uint, u, 8, 8, 0xf3);
-  VDUP(vector2, , uint, u, 16, 4, 0xfff1);
-  VDUP(vector2, , uint, u, 32, 2, 0xfffffff0);
-  VDUP(vector2, q, int, s, 8, 16, -12);
-  VDUP(vector2, q, int, s, 16, 8, -13);
-  VDUP(vector2, q, int, s, 32, 4, -15);
-  VDUP(vector2, q, uint, u, 8, 16, 0xf9);
-  VDUP(vector2, q, uint, u, 16, 8, 0xfff2);
-  VDUP(vector2, q, uint, u, 32, 4, 0xfffffff1);
 #ifdef HAS_FLOAT16_VARIANT
   VDUP(vector2, , float, f, 16, 4, -15.5f);
   VDUP(vector2, q, float, f, 16, 8, -14.5f);
@@ -76,36 +79,10 @@ void FNNAME (INSN_NAME) (void)
 #endif
 
 #define TEST_MACRO_NO64BIT_VARIANT_1_5(MACRO, VAR)	\
-  MACRO(VAR, , int, s, 8, 8);				\
-  MACRO(VAR, , int, s, 16, 4);				\
-  MACRO(VAR, , int, s, 32, 2);				\
-  MACRO(VAR, , uint, u, 8, 8);				\
-  MACRO(VAR, , uint, u, 16, 4);				\
-  MACRO(VAR, , uint, u, 32, 2);				\
-  MACRO(VAR, q, int, s, 8, 16);				\
-  MACRO(VAR, q, int, s, 16, 8);				\
-  MACRO(VAR, q, int, s, 32, 4);				\
-  MACRO(VAR, q, uint, u, 8, 16);			\
-  MACRO(VAR, q, uint, u, 16, 8);			\
-  MACRO(VAR, q, uint, u, 32, 4);			\
-  FLOAT_VARIANT(MACRO, VAR);				\
-  FLOAT16_VARIANT(MACRO, VAR);
 
   /* Apply a binary operator named INSN_NAME.  */
-  TEST_MACRO_NO64BIT_VARIANT_1_5(TEST_BINARY_OP, INSN_NAME);
-
-  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
-  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
-  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
-  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
-  CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
-  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
-  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
-  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
-  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
-  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
+  FLOAT16_VARIANT(TEST_BINARY_OP, INSN_NAME);
+  FLOAT_VARIANT(TEST_BINARY_OP, INSN_NAME);
 
 #ifdef HAS_FLOAT16_VARIANT
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected, "");
@@ -115,32 +92,38 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector, q, float, f, 16, 8, 1.0f);
   VDUP(vector2, q, float, f, 16, 8, NAN);
   TEST_BINARY_OP(INSN_NAME, q, float, f, 16, 8);
-  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_nan, " FP special (NaN)");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_nan,
+	   " FP special (NaN)");
 
   VDUP(vector, q, float, f, 16, 8, -NAN);
   VDUP(vector2, q, float, f, 16, 8, 1.0f);
   TEST_BINARY_OP(INSN_NAME, q, float, f, 16, 8);
-  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_mnan, " FP special (-NaN)");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_mnan,
+	   " FP special (-NaN)");
 
   VDUP(vector, q, float, f, 16, 8, 1.0f);
   VDUP(vector2, q, float, f, 16, 8, HUGE_VALF);
   TEST_BINARY_OP(INSN_NAME, q, float, f, 16, 8);
-  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_inf, " FP special (inf)");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_inf,
+	   " FP special (inf)");
 
   VDUP(vector, q, float, f, 16, 8, -HUGE_VALF);
   VDUP(vector2, q, float, f, 16, 8, 1.0f);
   TEST_BINARY_OP(INSN_NAME, q, float, f, 16, 8);
-  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_minf, " FP special (-inf)");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_minf,
+	   " FP special (-inf)");
 
   VDUP(vector, q, float, f, 16, 8, 0.0f);
   VDUP(vector2, q, float, f, 16, 8, -0.0f);
   TEST_BINARY_OP(INSN_NAME, q, float, f, 16, 8);
-  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_zero1, " FP special (-0.0)");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_zero1,
+	   " FP special (-0.0)");
 
   VDUP(vector, q, float, f, 16, 8, -0.0f);
   VDUP(vector2, q, float, f, 16, 8, 0.0f);
   TEST_BINARY_OP(INSN_NAME, q, float, f, 16, 8);
-  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_zero2, " FP special (-0.0)");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_zero2,
+	   " FP special (-0.0)");
 #endif
 
 #ifdef HAS_FLOAT_VARIANT

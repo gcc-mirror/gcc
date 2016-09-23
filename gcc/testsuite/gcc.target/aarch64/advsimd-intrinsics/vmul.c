@@ -13,6 +13,10 @@ VECT_VAR_DECL(expected,uint,16,4) [] = { 0xfab0, 0xfb05, 0xfb5a, 0xfbaf };
 VECT_VAR_DECL(expected,uint,32,2) [] = { 0xfffff9a0, 0xfffffa06 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xc0, 0x84, 0x48, 0xc,
 					0xd0, 0x94, 0x58, 0x1c };
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+VECT_VAR_DECL(expected, hfloat, 16, 4) [] = { 0xe02a, 0xdfcf,
+					      0xdf4a, 0xdec4 };
+#endif
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc4053333, 0xc3f9c000 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0x90, 0x7, 0x7e, 0xf5,
 					0x6c, 0xe3, 0x5a, 0xd1,
@@ -34,6 +38,10 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0x60, 0xca, 0x34, 0x9e,
 					 0xc8, 0x62, 0x9c, 0x36,
 					 0x30, 0x9a, 0x64, 0xce,
 					 0x98, 0x32, 0xcc, 0x66 };
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+VECT_VAR_DECL(expected, hfloat, 16, 8) [] = { 0xe63a, 0xe5d6, 0xe573, 0xe50f,
+					      0xe4ac, 0xe448, 0xe3c8, 0xe301 };
+#endif
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xc4c73333, 0xc4bac000,
 					   0xc4ae4ccd, 0xc4a1d999 };
 
@@ -78,6 +86,17 @@ void FNNAME (INSN_NAME) (void)
   DECL_VMUL(poly, 8, 16);
   DECL_VMUL(float, 32, 4);
 
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  DECL_VARIABLE(vector1, float, 16, 4);
+  DECL_VARIABLE(vector1, float, 16, 8);
+
+  DECL_VARIABLE(vector2, float, 16, 4);
+  DECL_VARIABLE(vector2, float, 16, 8);
+
+  DECL_VARIABLE(vector_res, float, 16, 4);
+  DECL_VARIABLE(vector_res, float, 16, 8);
+#endif
+
   clean_results ();
 
   /* Initialize input "vector1" from "buffer".  */
@@ -97,6 +116,10 @@ void FNNAME (INSN_NAME) (void)
   VLOAD(vector1, buffer, q, uint, u, 32, 4);
   VLOAD(vector1, buffer, q, poly, p, 8, 16);
   VLOAD(vector1, buffer, q, float, f, 32, 4);
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  VLOAD(vector1, buffer, , float, f, 16, 4);
+  VLOAD(vector1, buffer, q, float, f, 16, 8);
+#endif
 
   /* Choose init value arbitrarily.  */
   VDUP(vector2, , int, s, 8, 8, 0x11);
@@ -115,6 +138,10 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector2, q, uint, u, 32, 4, 0xCC);
   VDUP(vector2, q, poly, p, 8, 16, 0xAA);
   VDUP(vector2, q, float, f, 32, 4, 99.6f);
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  VDUP(vector2, , float, f, 16, 4, 33.3f);
+  VDUP(vector2, q, float, f, 16, 8, 99.6f);
+#endif
 
   /* Execute the tests.  */
   TEST_VMUL(INSN_NAME, , int, s, 8, 8);
@@ -133,6 +160,10 @@ void FNNAME (INSN_NAME) (void)
   TEST_VMUL(INSN_NAME, q, uint, u, 32, 4);
   TEST_VMUL(INSN_NAME, q, poly, p, 8, 16);
   TEST_VMUL(INSN_NAME, q, float, f, 32, 4);
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  TEST_VMUL(INSN_NAME, , float, f, 16, 4);
+  TEST_VMUL(INSN_NAME, q, float, f, 16, 8);
+#endif
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
@@ -150,6 +181,10 @@ void FNNAME (INSN_NAME) (void)
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
   CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected, "");
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected, "");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected, "");
+#endif
 }
 
 int main (void)
