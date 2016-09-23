@@ -1,5 +1,9 @@
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
+	* gcc.target/i386/movbe-4.c: New test.
+
+2016-09-23  Martin Liska  <mliska@suse.cz>
+
 	* gcc.target/i386/crc32-5.c: New test.
 
 2016-09-23  Martin Liska  <mliska@suse.cz>
