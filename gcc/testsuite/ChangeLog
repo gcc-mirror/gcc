@@ -1,5 +1,20 @@
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* lib/target-supports.exp (add_options_for_arm_v8_2a_fp16_scalar):
+	New.
+	(add_options_for_arm_v8_2a_fp16_neon): New.
+	(check_effective_target_arm_arch_v8_2a_ok): Auto-generate.
+	(add_options_for_arm_arch_v8_2a): Auto-generate.
+	(check_effective_target_arm_arch_v8_2a_multilib): Auto-generate.
+	(check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache): New.
+	(check_effective_target_arm_v8_2a_fp16_scalar_ok): New.
+	(check_effective_target_arm_v8_2a_fp16_neon_ok_nocache): New.
+	(check_effective_target_arm_v8_2a_fp16_neon_ok): New.
+	(check_effective_target_arm_v8_2a_fp16_scalar_hw): New.
+	(check_effective_target_arm_v8_2a_fp16_neon_hw): New.
+
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* g++.dg/ext/arm-fp16/arm-fp16-ops-3.C: Use
 	arm_fp16_alternative_ok.
 	* g++.dg/ext/arm-fp16/arm-fp16-ops-4.C: Likewise.

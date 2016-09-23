@@ -1,5 +1,14 @@
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* doc/sourcebuild.texi (ARM-specific attributes): Add anchor for
+	arm_v8_1a_neon_ok.  Add entries for arm_v8_2a_fp16_scalar_ok,
+	arm_v8_2a_fp16_scalar_hw, arm_v8_2a_fp16_neon_ok and
+	arm_v8_2a_fp16_neon_hw.
+	(Add options): Add entries for arm_v8_1a_neon, arm_v8_2a_scalar,
+	arm_v8_2a_neon.
+
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* doc/sourcebuild.texi (ARM-specific attributes): Add entries for
 	arm_fp16_alternative_ok and arm_fp16_none_ok.
 
