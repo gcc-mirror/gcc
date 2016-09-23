@@ -1,3 +1,8 @@
+2016-09-23  Renlin Li  <renlin.li@arm.com>
+
+	* ira.c (ira): Move ira_use_lra_p initialization code to ...
+	(ira_init_once): Here.
+
 2016-09-23  Uros Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
