@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file.
 
 #include "go-system.h"
+#include "go-diagnostics.h"
 
 #include "lex.h"
 
@@ -477,7 +478,7 @@ Lex::get_line()
 	{
 	  size_t ns = 2 * size + 1;
 	  if (ns < size || static_cast<ssize_t>(ns) < 0)
-	    error_at(this->location(), "out of memory");
+	    go_error_at(this->location(), "out of memory");
 	  char* nb = new char[ns];
 	  memcpy(nb, buf, cur);
 	  delete[] buf;
@@ -743,9 +744,9 @@ Lex::next_token()
 		  return this->gather_identifier();
 
 		if (!issued_error)
-		  error_at(this->location(),
-			   "invalid character 0x%x in input file",
-			   ci);
+		  go_error_at(this->location(),
+			      "invalid character 0x%x in input file",
+			      ci);
 
 		p = pend;
 
@@ -834,7 +835,7 @@ Lex::advance_one_utf8_char(const char* p, unsigned int* value,
 
   if (*p == '\0')
     {
-      error_at(this->location(), "invalid NUL byte");
+      go_error_at(this->location(), "invalid NUL byte");
       *issued_error = true;
       *value = 0;
       return p + 1;
@@ -843,7 +844,7 @@ Lex::advance_one_utf8_char(const char* p, unsigned int* value,
   int adv = Lex::fetch_char(p, value);
   if (adv == 0)
     {
-      error_at(this->location(), "invalid UTF-8 encoding");
+      go_error_at(this->location(), "invalid UTF-8 encoding");
       *issued_error = true;
       return p + 1;
     }
@@ -851,7 +852,7 @@ Lex::advance_one_utf8_char(const char* p, unsigned int* value,
   // Warn about byte order mark, except at start of file.
   if (*value == 0xfeff && (this->lineno_ != 1 || this->lineoff_ != 0))
     {
-      error_at(this->location(), "Unicode (UTF-8) BOM in middle of file");
+      go_error_at(this->location(), "Unicode (UTF-8) BOM in middle of file");
       *issued_error = true;
     }
 
@@ -890,9 +891,9 @@ Lex::gather_identifier()
 		break;
 
 	      this->lineoff_ = p - this->linebuf_;
-	      error_at(this->location(),
-		       "invalid character 0x%x in identifier",
-		       cc);
+	      go_error_at(this->location(),
+			  "invalid character 0x%x in identifier",
+			  cc);
 	      if (!has_non_ascii_char)
 		{
 		  buf.assign(pstart, p - pstart);
@@ -925,9 +926,9 @@ Lex::gather_identifier()
 	      // handling behavior if we swallow this character after
 	      // giving an error.
 	      if (!issued_error)
-		error_at(this->location(),
-			 "invalid character 0x%x in identifier",
-			 ci);
+		go_error_at(this->location(),
+			    "invalid character 0x%x in identifier",
+			    ci);
 	      is_invalid = true;
 	    }
 	  if (is_first)
@@ -1109,9 +1110,9 @@ Lex::gather_number()
           if (r != 0)
             {
               if (base == 8)
-                error_at(this->location(), "invalid octal literal");
+                go_error_at(this->location(), "invalid octal literal");
               else
-                error_at(this->location(), "invalid hex literal");
+                go_error_at(this->location(), "invalid hex literal");
             }
 
 	  if (neg)
@@ -1225,7 +1226,7 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
       if (is_single_quote
 	  && (*value == '\'' || *value == '\n')
 	  && !issued_error)
-	error_at(this->location(), "invalid character literal");
+	go_error_at(this->location(), "invalid character literal");
       return ret;
     }
   else
@@ -1244,12 +1245,12 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
 			+ Lex::octal_value(p[2]));
 	      if (*value > 255)
 		{
-		  error_at(this->location(), "invalid octal constant");
+		  go_error_at(this->location(), "invalid octal constant");
 		  *value = 255;
 		}
 	      return p + 3;
 	    }
-	      error_at(this->location(), "invalid octal character");
+	      go_error_at(this->location(), "invalid octal character");
 	  return (p[1] >= '0' && p[1] <= '7'
 		  ? p + 2
 		  : p + 1);
@@ -1261,7 +1262,7 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
 	      *value = (Lex::hex_val(p[1]) << 4) + Lex::hex_val(p[2]);
 	      return p + 3;
 	    }
-	  error_at(this->location(), "invalid hex character");
+	  go_error_at(this->location(), "invalid hex character");
 	  return (Lex::is_hex_digit(p[1])
 		  ? p + 2
 		  : p + 1);
@@ -1292,12 +1293,12 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
 	  return p + 1;
 	case '\'':
 	  if (!is_single_quote)
-	    error_at(this->location(), "invalid quoted character");
+	    go_error_at(this->location(), "invalid quoted character");
 	  *value = '\'';
 	  return p + 1;
 	case '"':
 	  if (is_single_quote)
-	    error_at(this->location(), "invalid quoted character");
+	    go_error_at(this->location(), "invalid quoted character");
 	  *value = '"';
 	  return p + 1;
 
@@ -1311,15 +1312,15 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
 			+ Lex::hex_val(p[4]));
 	      if (*value >= 0xd800 && *value < 0xe000)
 		{
-		  error_at(this->location(),
-			   "invalid unicode code point 0x%x",
-			   *value);
+		  go_error_at(this->location(),
+			      "invalid unicode code point 0x%x",
+			      *value);
 		  // Use the replacement character.
 		  *value = 0xfffd;
 		}
 	      return p + 5;
 	    }
-	  error_at(this->location(), "invalid little unicode code point");
+	  go_error_at(this->location(), "invalid little unicode code point");
 	  return p + 1;
 
 	case 'U':
@@ -1339,18 +1340,19 @@ Lex::advance_one_char(const char* p, bool is_single_quote, unsigned int* value,
 	      if (*value > 0x10ffff
 		  || (*value >= 0xd800 && *value < 0xe000))
 		{
-		  error_at(this->location(), "invalid unicode code point 0x%x",
-			   *value);
+		  go_error_at(this->location(),
+			      "invalid unicode code point 0x%x",
+			      *value);
 		  // Use the replacement character.
 		  *value = 0xfffd;
 		}
 	      return p + 9;
 	    }
-	  error_at(this->location(), "invalid big unicode code point");
+	  go_error_at(this->location(), "invalid big unicode code point");
 	  return p + 1;
 
 	default:
-	  error_at(this->location(), "invalid character after %<\\%>");
+	  go_error_at(this->location(), "invalid character after %<\\%>");
 	  *value = *p;
 	  return p + 1;
 	}
@@ -1382,15 +1384,15 @@ Lex::append_char(unsigned int v, bool is_character, std::string* str,
     {
       if (v > 0x10ffff)
 	{
-	  warning_at(location, 0,
-		     "unicode code point 0x%x out of range in string", v);
+	  go_warning_at(location, 0,
+			"unicode code point 0x%x out of range in string", v);
 	  // Turn it into the "replacement character".
 	  v = 0xfffd;
 	}
       if (v >= 0xd800 && v < 0xe000)
 	{
-	  warning_at(location, 0,
-		     "unicode code point 0x%x is invalid surrogate pair", v);
+	  go_warning_at(location, 0,
+			"unicode code point 0x%x is invalid surrogate pair", v);
 	  v = 0xfffd;
 	}
       if (v <= 0xffff)
@@ -1427,7 +1429,7 @@ Lex::gather_character()
 
   if (*p != '\'')
     {
-      error_at(this->location(), "unterminated character constant");
+      go_error_at(this->location(), "unterminated character constant");
       this->lineoff_ = p - this->linebuf_;
       return this->make_invalid_token();
     }
@@ -1461,7 +1463,7 @@ Lex::gather_string()
       p = this->advance_one_char(p, false, &c, &is_character);
       if (p >= pend)
 	{
-	  error_at(this->location(), "unterminated string");
+	  go_error_at(this->location(), "unterminated string");
 	  --p;
 	  break;
 	}
@@ -1505,7 +1507,7 @@ Lex::gather_raw_string()
       this->lineoff_ = p - this->linebuf_;
       if (!this->require_line())
 	{
-	  error_at(location, "unterminated raw string");
+	  go_error_at(location, "unterminated raw string");
 	  return Token::make_string_token(value, location);
 	}
       p = this->linebuf_ + this->lineoff_;
@@ -1685,7 +1687,7 @@ Lex::skip_c_comment(bool* found_newline)
     {
       if (!this->require_line())
 	{
-	  error_at(this->location(), "unterminated comment");
+	  go_error_at(this->location(), "unterminated comment");
 	  return false;
 	}
 
@@ -1861,7 +1863,7 @@ Lex::skip_cpp_comment()
 	    }
 	}
       if (go_name.empty() || ext_name.empty())
-	error_at(loc, "usage: //go:linkname localname linkname");
+	go_error_at(loc, "usage: //go:linkname localname linkname");
       else
 	{
 	  if (this->linknames_ == NULL)

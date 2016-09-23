@@ -9,6 +9,7 @@
 #include "filenames.h"
 
 #include "go-c.h"
+#include "go-diagnostics.h"
 #include "gogo.h"
 #include "lex.h"
 #include "types.h"
@@ -132,7 +133,7 @@ Import::try_package_in_directory(const std::string& filename,
   if (fd < 0)
     {
       if (errno != ENOENT && errno != EISDIR)
-	warning_at(location, 0, "%s: %m", filename.c_str());
+	go_warning_at(location, 0, "%s: %m", filename.c_str());
 
       fd = Import::try_suffixes(&found_filename);
       if (fd < 0)
@@ -146,8 +147,8 @@ Import::try_package_in_directory(const std::string& filename,
 
   close(fd);
 
-  error_at(location, "%s exists but does not contain any Go export data",
-	   found_filename.c_str());
+  go_error_at(location, "%s exists but does not contain any Go export data",
+	      found_filename.c_str());
 
   return NULL;
 }
@@ -211,7 +212,7 @@ Import::find_export_data(const std::string& filename, int fd, Location location)
 
   if (lseek(fd, 0, SEEK_SET) < 0)
     {
-      error_at(location, "lseek %s failed: %m", filename.c_str());
+      go_error_at(location, "lseek %s failed: %m", filename.c_str());
       return NULL;
     }
 
@@ -247,10 +248,10 @@ Import::find_object_export_data(const std::string& filename,
   if (errmsg != NULL)
     {
       if (err == 0)
-	error_at(location, "%s: %s", filename.c_str(), errmsg);
+	go_error_at(location, "%s: %s", filename.c_str(), errmsg);
       else
-	error_at(location, "%s: %s: %s", filename.c_str(), errmsg,
-		 xstrerror(err));
+	go_error_at(location, "%s: %s: %s", filename.c_str(), errmsg,
+		    xstrerror(err));
       return NULL;
     }
 
@@ -307,9 +308,9 @@ Import::import(Gogo* gogo, const std::string& local_name,
 	}
       else
 	{
-	  error_at(this->location_,
-	           ("error in import data at %d: invalid magic string"),
-	           stream->pos());
+	  go_error_at(this->location_,
+		      ("error in import data at %d: invalid magic string"),
+		      stream->pos());
 	  return NULL;
 	}
 
@@ -382,11 +383,11 @@ Import::import(Gogo* gogo, const std::string& local_name,
 	    break;
 	  else
 	    {
-	      error_at(this->location_,
-		       ("error in import data at %d: "
-			"expected %<const%>, %<type%>, %<var%>, "
-			"%<func%>, or %<checksum%>"),
-		       stream->pos());
+	      go_error_at(this->location_,
+			  ("error in import data at %d: "
+			   "expected %<const%>, %<type%>, %<var%>, "
+			   "%<func%>, or %<checksum%>"),
+			  stream->pos());
 	      stream->set_saw_error();
 	      return NULL;
 	    }
@@ -664,9 +665,9 @@ Import::read_type()
 	  : (static_cast<size_t>(index) >= this->types_.size()
 	     || this->types_[index] == NULL))
 	{
-	  error_at(this->location_,
-		   "error in import data at %d: bad type index %d",
-		   stream->pos(), index);
+	  go_error_at(this->location_,
+		      "error in import data at %d: bad type index %d",
+		      stream->pos(), index);
 	  stream->set_saw_error();
 	  return Type::make_error_type();
 	}
@@ -677,9 +678,9 @@ Import::read_type()
   if (c != ' ')
     {
       if (!stream->saw_error())
-	error_at(this->location_,
-		 "error in import data at %d: expect %< %> or %<>%>'",
-		 stream->pos());
+	go_error_at(this->location_,
+		    "error in import data at %d: expect %< %> or %<>%>'",
+		    stream->pos());
       stream->set_saw_error();
       stream->advance(1);
       return Type::make_error_type();
@@ -689,9 +690,9 @@ Import::read_type()
       || (static_cast<size_t>(index) < this->types_.size()
 	  && this->types_[index] != NULL))
     {
-      error_at(this->location_,
-	       "error in import data at %d: type index already defined",
-	       stream->pos());
+      go_error_at(this->location_,
+		  "error in import data at %d: type index already defined",
+		  stream->pos());
       stream->set_saw_error();
       return Type::make_error_type();
     }
@@ -768,8 +769,8 @@ Import::read_type()
     no = package->add_type_declaration(type_name, this->location_);
   else if (!no->is_type_declaration() && !no->is_type())
     {
-      error_at(this->location_, "imported %<%s.%s%> both type and non-type",
-	       pkgpath.c_str(), Gogo::message_name(type_name).c_str());
+      go_error_at(this->location_, "imported %<%s.%s%> both type and non-type",
+		  pkgpath.c_str(), Gogo::message_name(type_name).c_str());
       stream->set_saw_error();
       return Type::make_error_type();
     }
@@ -866,9 +867,10 @@ Import::read_escape()
 
       if (c != '>')
 	{
-	  error_at(this->location(),
-		   "error in import data at %d: expect %< %> or %<>%>, got %c",
-		   stream->pos(), c);
+	  go_error_at(this->location(),
+		      ("error in import data at %d: "
+		       "expect %< %> or %<>%>, got %c"),
+		      stream->pos(), c);
 	  stream->set_saw_error();
 	  stream->advance(1);
 	  escape = Escape_note::make_tag(Node::ESCAPE_UNKNOWN);
@@ -961,8 +963,8 @@ Import::string_to_int(const std::string &s, bool is_neg_ok, int* ret)
   long prio = strtol(s.c_str(), &end, 10);
   if (*end != '\0' || prio > 0x7fffffff || (prio < 0 && !is_neg_ok))
     {
-      error_at(this->location_, "invalid integer in import data at %d",
-	       this->stream_->pos());
+      go_error_at(this->location_, "invalid integer in import data at %d",
+		  this->stream_->pos());
       this->stream_->set_saw_error();
       return false;
     }
@@ -1018,8 +1020,8 @@ Import::Stream::require_bytes(Location location, const char* bytes,
       || memcmp(bytes, read, length) != 0)
     {
       if (!this->saw_error_)
-	error_at(location, "import error at %d: expected %<%.*s%>",
-		 this->pos(), static_cast<int>(length), bytes);
+	go_error_at(location, "import error at %d: expected %<%.*s%>",
+		    this->pos(), static_cast<int>(length), bytes);
       this->saw_error_ = true;
       return;
     }
@@ -1033,7 +1035,7 @@ Stream_from_file::Stream_from_file(int fd)
 {
   if (lseek(fd, 0, SEEK_SET) != 0)
     {
-      error("lseek failed: %m");
+      go_fatal_error(Linemap::unknown_location(), "lseek failed: %m");
       this->set_saw_error();
     }
 }
@@ -1061,7 +1063,7 @@ Stream_from_file::do_peek(size_t length, const char** bytes)
   if (got < 0)
     {
       if (!this->saw_error())
-	error("read failed: %m");
+	go_fatal_error(Linemap::unknown_location(), "read failed: %m");
       this->set_saw_error();
       return false;
     }
@@ -1069,7 +1071,7 @@ Stream_from_file::do_peek(size_t length, const char** bytes)
   if (lseek(this->fd_, - got, SEEK_CUR) != 0)
     {
       if (!this->saw_error())
-	error("lseek failed: %m");
+	go_fatal_error(Linemap::unknown_location(), "lseek failed: %m");
       this->set_saw_error();
       return false;
     }
@@ -1091,7 +1093,7 @@ Stream_from_file::do_advance(size_t skip)
   if (lseek(this->fd_, skip, SEEK_CUR) != 0)
     {
       if (!this->saw_error())
-	error("lseek failed: %m");
+	go_fatal_error(Linemap::unknown_location(), "lseek failed: %m");
       this->set_saw_error();
     }
   if (!this->data_.empty())

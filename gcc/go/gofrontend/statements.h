@@ -1624,7 +1624,7 @@ class Case_clauses
    public:
     Case_clause()
       : cases_(NULL), statements_(NULL), is_default_(false),
-	is_fallthrough_(false), location_(UNKNOWN_LOCATION)
+	is_fallthrough_(false), location_(Linemap::unknown_location())
     { }
 
     Case_clause(Expression_list* cases, bool is_default, Block* statements,
@@ -1811,7 +1811,7 @@ class Type_case_clauses
    public:
     Type_case_clause()
       : type_(NULL), statements_(NULL), is_default_(false),
-	location_(UNKNOWN_LOCATION)
+	location_(Linemap::unknown_location())
     { }
 
     Type_case_clause(Type* type, bool is_fallthrough, bool is_default,

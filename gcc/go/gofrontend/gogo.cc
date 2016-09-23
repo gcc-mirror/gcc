@@ -11,6 +11,7 @@
 #include "filenames.h"
 
 #include "go-c.h"
+#include "go-diagnostics.h"
 #include "go-dump.h"
 #include "go-optimize.h"
 #include "lex.h"
@@ -333,8 +334,8 @@ Gogo::set_package_name(const std::string& package_name,
   if (this->package_ != NULL)
     {
       if (this->package_->package_name() != package_name)
-	error_at(location, "expected package %<%s%>",
-		 Gogo::message_name(this->package_->package_name()).c_str());
+	go_error_at(location, "expected package %<%s%>",
+		    Gogo::message_name(this->package_->package_name()).c_str());
       return;
     }
 
@@ -397,7 +398,7 @@ Gogo::import_package(const std::string& filename,
 {
   if (filename.empty())
     {
-      error_at(location, "import path is empty");
+      go_error_at(location, "import path is empty");
       return;
     }
 
@@ -409,32 +410,33 @@ Gogo::import_package(const std::string& filename,
       int adv = Lex::fetch_char(pf, &c);
       if (adv == 0)
 	{
-	  error_at(location, "import path contains invalid UTF-8 sequence");
+	  go_error_at(location, "import path contains invalid UTF-8 sequence");
 	  return;
 	}
       if (c == '\0')
 	{
-	  error_at(location, "import path contains NUL");
+	  go_error_at(location, "import path contains NUL");
 	  return;
 	}
       if (c < 0x20 || c == 0x7f)
 	{
-	  error_at(location, "import path contains control character");
+	  go_error_at(location, "import path contains control character");
 	  return;
 	}
       if (c == '\\')
 	{
-	  error_at(location, "import path contains backslash; use slash");
+	  go_error_at(location, "import path contains backslash; use slash");
 	  return;
 	}
       if (Lex::is_unicode_space(c))
 	{
-	  error_at(location, "import path contains space character");
+	  go_error_at(location, "import path contains space character");
 	  return;
 	}
       if (c < 0x7f && strchr("!\"#$%&'()*,:;<=>?[]^`{|}", c) != NULL)
 	{
-	  error_at(location, "import path contains invalid character '%c'", c);
+	  go_error_at(location,
+                      "import path contains invalid character '%c'", c);
 	  return;
 	}
       pf += adv;
@@ -442,12 +444,12 @@ Gogo::import_package(const std::string& filename,
 
   if (IS_ABSOLUTE_PATH(filename.c_str()))
     {
-      error_at(location, "import path cannot be absolute path");
+      go_error_at(location, "import path cannot be absolute path");
       return;
     }
 
   if (local_name == "init")
-    error_at(location, "cannot import package as init");
+    go_error_at(location, "cannot import package as init");
 
   if (filename == "unsafe")
     {
@@ -495,7 +497,7 @@ Gogo::import_package(const std::string& filename,
 						this->relative_import_path_);
   if (stream == NULL)
     {
-      error_at(location, "import file %qs not found", filename.c_str());
+      go_error_at(location, "import file %qs not found", filename.c_str());
       return;
     }
 
@@ -505,9 +507,9 @@ Gogo::import_package(const std::string& filename,
   if (package != NULL)
     {
       if (package->pkgpath() == this->pkgpath())
-	error_at(location,
-		 ("imported package uses same package path as package "
-		  "being compiled (see -fgo-pkgpath option)"));
+	go_error_at(location,
+		    ("imported package uses same package path as package "
+		     "being compiled (see -fgo-pkgpath option)"));
 
       this->imports_.insert(std::make_pair(filename, package));
     }
@@ -544,12 +546,13 @@ Gogo::add_import_init_fn(const std::string& package_name,
 	  // an error about it.
 	  if (ii->package_name() != package_name)
 	    {
-	      error("duplicate package initialization name %qs",
-		    Gogo::message_name(init_name).c_str());
-	      inform(UNKNOWN_LOCATION, "used by package %qs",
-		     Gogo::message_name(ii->package_name()).c_str());
-	      inform(UNKNOWN_LOCATION, " and by package %qs",
-		     Gogo::message_name(package_name).c_str());
+	      go_error_at(Linemap::unknown_location(),
+		       "duplicate package initialization name %qs",
+		       Gogo::message_name(init_name).c_str());
+	      go_inform(Linemap::unknown_location(), "used by package %qs",
+			Gogo::message_name(ii->package_name()).c_str());
+	      go_inform(Linemap::unknown_location(), " and by package %qs",
+			Gogo::message_name(package_name).c_str());
 	    }
           ii->set_priority(prio);
           return;
@@ -1126,13 +1129,13 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 				      var);
 	      if (ins.first->second)
 		{
-		  error_at(var->location(),
-			   ("initialization expressions for %qs and "
-			    "%qs depend upon each other"),
-			   var->message_name().c_str(),
-			   p2var->message_name().c_str());
-		  inform(p2->var()->location(), "%qs defined here",
-			 p2var->message_name().c_str());
+		  go_error_at(var->location(),
+			      ("initialization expressions for %qs and "
+			       "%qs depend upon each other"),
+			      var->message_name().c_str(),
+			      p2var->message_name().c_str());
+		  go_inform(p2->var()->location(), "%qs defined here",
+			    p2var->message_name().c_str());
 		  init_loop = true;
 		  break;
 		}
@@ -1192,9 +1195,9 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
       Named_object* dep = gogo->var_depends_on(var->var_value());
       if (init != NULL && dep == NULL
 	  && expression_requires(init, preinit, NULL, var))
-	error_at(var->location(),
-		 "initialization expression for %qs depends upon itself",
-		 var->message_name().c_str());
+	go_error_at(var->location(),
+		    "initialization expression for %qs depends upon itself",
+		    var->message_name().c_str());
     }
 }
 
@@ -1322,10 +1325,10 @@ Gogo::write_globals()
 		{
 		  if (expression_requires(var->init(), NULL,
 					  this->var_depends_on(var), no))
-		    error_at(no->location(),
-			     "initialization expression for %qs depends "
-			     "upon itself",
-			     no->message_name().c_str());
+		    go_error_at(no->location(),
+				"initialization expression for %qs depends "
+				"upon itself",
+				no->message_name().c_str());
 		  this->backend()->global_variable_set_init(bvar, var_binit);
 		}
 	      else if (is_sink)
@@ -1664,8 +1667,8 @@ Gogo::start_function(const std::string& name, Function_type* type,
     {
       if ((type->parameters() != NULL && !type->parameters()->empty())
 	  || (type->results() != NULL && !type->results()->empty()))
-	error_at(location,
-		 "func init must have no arguments and no return values");
+	go_error_at(location,
+		    "func init must have no arguments and no return values");
       // There can be multiple "init" functions, so give them each a
       // different name.
       static int init_count;
@@ -1761,8 +1764,9 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	    }
 	  else
             {
-              error_at(type->receiver()->location(),
-                       "invalid receiver type (receiver must be a named type)");
+	      go_error_at(type->receiver()->location(),
+			  ("invalid receiver type (receiver must "
+			   "be a named type)"));
               ret = Named_object::make_function(name, NULL, function);
             }
 	}
@@ -1874,8 +1878,8 @@ Gogo::declare_function(const std::string& name, Function_type* type,
 	}
       else
         {
-          error_at(type->receiver()->location(),
-                   "invalid receiver type (receiver must be a named type)");
+	  go_error_at(type->receiver()->location(),
+		      "invalid receiver type (receiver must be a named type)");
           return Named_object::make_erroneous_name(name);
         }
     }
@@ -2084,16 +2088,16 @@ Gogo::add_linkname(const std::string& go_name, bool is_exported,
     this->package_->bindings()->lookup(this->pack_hidden_name(go_name,
 							      is_exported));
   if (no == NULL)
-    error_at(loc, "%s is not defined", go_name.c_str());
+    go_error_at(loc, "%s is not defined", go_name.c_str());
   else if (no->is_function())
     no->func_value()->set_asm_name(ext_name);
   else if (no->is_function_declaration())
     no->func_declaration_value()->set_asm_name(ext_name);
   else
-    error_at(loc,
-	     ("%s is not a function; "
-	      "//go:linkname is only supported for functions"),
-	     go_name.c_str());
+    go_error_at(loc,
+		("%s is not a function; "
+		 "//go:linkname is only supported for functions"),
+		go_name.c_str());
 }
 
 // Mark all local variables used.  This is used when some types of
@@ -2185,13 +2189,13 @@ Gogo::define_global_names()
 	  if (global_no->is_type())
 	    {
 	      if (no->type_declaration_value()->has_methods())
-		error_at(no->location(),
-			 "may not define methods for global type");
+		go_error_at(no->location(),
+			    "may not define methods for global type");
 	      no->set_type_value(global_no->type_value());
 	    }
 	  else
 	    {
-	      error_at(no->location(), "expected type");
+	      go_error_at(no->location(), "expected type");
 	      Type* errtype = Type::make_error_type();
 	      Named_object* err =
                 Named_object::make_type("erroneous_type", NULL, errtype,
@@ -2223,18 +2227,18 @@ Gogo::define_global_names()
       if (pf != this->file_block_names_.end())
 	{
 	  std::string n = p->second->message_name();
-	  error_at(p->second->location(),
-		   "%qs defined as both imported name and global name",
-		   n.c_str());
-	  inform(pf->second, "%qs imported here", n.c_str());
+	  go_error_at(p->second->location(),
+		      "%qs defined as both imported name and global name",
+		      n.c_str());
+	  go_inform(pf->second, "%qs imported here", n.c_str());
 	}
 
       // No package scope identifier may be named "init".
       if (!p->second->is_function()
 	  && Gogo::unpack_hidden_name(p->second->name()) == "init")
 	{
-	  error_at(p->second->location(),
-	           "cannot declare init - must be func");
+	  go_error_at(p->second->location(),
+		      "cannot declare init - must be func");
 	}
     }
 }
@@ -2265,15 +2269,15 @@ Gogo::clear_file_scope()
                   std::string pkg_name = package->package_name();
                   if (p1->first != pkg_name && p1->first[0] != '.')
                     {
-                      error_at(p1->second->location(),
-                               "imported and not used: %s as %s",
-                               Gogo::message_name(pkg_name).c_str(),
-                               Gogo::message_name(p1->first).c_str());
+		      go_error_at(p1->second->location(),
+				  "imported and not used: %s as %s",
+				  Gogo::message_name(pkg_name).c_str(),
+				  Gogo::message_name(p1->first).c_str());
                     }
                   else
-                    error_at(p1->second->location(),
-                             "imported and not used: %s",
-                             Gogo::message_name(pkg_name).c_str());
+		    go_error_at(p1->second->location(),
+				"imported and not used: %s",
+				Gogo::message_name(pkg_name).c_str());
                 }
             }
         }
@@ -3078,11 +3082,11 @@ Check_types_traverse::variable(Named_object* named_object)
 	  && !Type::are_assignable(var->type(), init->type(), &reason))
 	{
 	  if (reason.empty())
-	    error_at(var->location(), "incompatible type in initialization");
+	    go_error_at(var->location(), "incompatible type in initialization");
 	  else
-	    error_at(var->location(),
-		     "incompatible type in initialization (%s)",
-		     reason.c_str());
+	    go_error_at(var->location(),
+			"incompatible type in initialization (%s)",
+			reason.c_str());
           init = Expression::make_error(named_object->location());
 	  var->clear_init();
 	}
@@ -3102,10 +3106,10 @@ Check_types_traverse::variable(Named_object* named_object)
           // initialization.
           if (fntype->is_builtin())
             {
-              error_at(init->location(),
-                       "invalid use of special builtin function %qs; "
-                       "must be called",
-                       no->message_name().c_str());
+	      go_error_at(init->location(),
+			  "invalid use of special builtin function %qs; "
+			  "must be called",
+			  no->message_name().c_str());
             }
         }
       if (!var->is_used()
@@ -3115,8 +3119,8 @@ Check_types_traverse::variable(Named_object* named_object)
           && !var->type()->is_error()
           && (init == NULL || !init->is_error_expression())
           && !Lex::is_invalid_identifier(named_object->name()))
-	error_at(var->location(), "%qs declared and not used",
-		 named_object->message_name().c_str());
+	go_error_at(var->location(), "%qs declared and not used",
+		    named_object->message_name().c_str());
     }
   return TRAVERSE_CONTINUE;
 }
@@ -3135,21 +3139,21 @@ Check_types_traverse::constant(Named_object* named_object, bool)
       && !ctype->is_string_type())
     {
       if (ctype->is_nil_type())
-	error_at(constant->location(), "const initializer cannot be nil");
+	go_error_at(constant->location(), "const initializer cannot be nil");
       else if (!ctype->is_error())
-	error_at(constant->location(), "invalid constant type");
+	go_error_at(constant->location(), "invalid constant type");
       constant->set_error();
     }
   else if (!constant->expr()->is_constant())
     {
-      error_at(constant->expr()->location(), "expression is not constant");
+      go_error_at(constant->expr()->location(), "expression is not constant");
       constant->set_error();
     }
   else if (!Type::are_assignable(constant->type(), constant->expr()->type(),
 				 NULL))
     {
-      error_at(constant->location(),
-	       "initialization expression has wrong type");
+      go_error_at(constant->location(),
+                  "initialization expression has wrong type");
       constant->set_error();
     }
   return TRAVERSE_CONTINUE;
@@ -4389,8 +4393,8 @@ Check_return_statements_traverse::function(Named_object* no)
     return TRAVERSE_CONTINUE;
 
   if (func->block()->may_fall_through())
-    error_at(func->block()->end_location(),
-	     "missing return at end of function");
+    go_error_at(func->block()->end_location(),
+		"missing return at end of function");
 
   return TRAVERSE_CONTINUE;
 }
@@ -4454,7 +4458,8 @@ Gogo::write_c_header()
   out.open(this->c_header_.c_str());
   if (out.fail())
     {
-      error("cannot open %s: %m", this->c_header_.c_str());
+      go_error_at(Linemap::unknown_location(),
+		  "cannot open %s: %m", this->c_header_.c_str());
       return;
     }
 
@@ -4562,7 +4567,8 @@ Gogo::write_c_header()
 
   out.close();
   if (out.fail())
-    error("error writing to %s: %m", this->c_header_.c_str());
+    go_error_at(Linemap::unknown_location(),
+		"error writing to %s: %m", this->c_header_.c_str());
 }
 
 // Find the blocks in order to convert named types defined in blocks.
@@ -4836,10 +4842,10 @@ Function::add_label_definition(Gogo* gogo, const std::string& label_name,
       label = ins.first->second;
       if (label->is_defined())
 	{
-	  error_at(location, "label %qs already defined",
-		   Gogo::message_name(label_name).c_str());
-	  inform(label->location(), "previous definition of %qs was here",
-		 Gogo::message_name(label_name).c_str());
+	  go_error_at(location, "label %qs already defined",
+		      Gogo::message_name(label_name).c_str());
+	  go_inform(label->location(), "previous definition of %qs was here",
+		    Gogo::message_name(label_name).c_str());
 	  return new Label(label_name);
 	}
     }
@@ -4905,8 +4911,8 @@ Function::check_labels() const
     {
       Label* label = p->second;
       if (!label->is_used())
-	error_at(label->location(), "label %qs defined and not used",
-		 Gogo::message_name(label->name()).c_str());
+	go_error_at(label->location(), "label %qs defined and not used",
+		    Gogo::message_name(label->name()).c_str());
     }
 }
 
@@ -5680,7 +5686,7 @@ Block::Block(Block* enclosing, Location location)
 			   ? NULL
 			   : enclosing->bindings())),
     start_location_(location),
-    end_location_(UNKNOWN_LOCATION)
+    end_location_(Linemap::unknown_location())
 {
 }
 
@@ -5966,8 +5972,8 @@ Bindings_snapshot::check_goto_block(Location loc, const Block* bfrom,
     {
       if (pb == NULL)
 	{
-	  error_at(loc, "goto jumps into block");
-	  inform(bto->start_location(), "goto target block starts here");
+	  go_error_at(loc, "goto jumps into block");
+	  go_inform(bto->start_location(), "goto target block starts here");
 	  return false;
 	}
     }
@@ -5995,8 +6001,8 @@ Bindings_snapshot::check_goto_defs(Location loc, const Block* block,
       go_assert(p != block->bindings()->end_definitions());
 
       std::string n = (*p)->message_name();
-      error_at(loc, "goto jumps over declaration of %qs", n.c_str());
-      inform((*p)->location(), "%qs defined here", n.c_str());
+      go_error_at(loc, "goto jumps over declaration of %qs", n.c_str());
+      go_inform((*p)->location(), "%qs defined here", n.c_str());
     }
 }
 
@@ -6206,7 +6212,7 @@ Variable::type_from_tuple(Expression* expr, bool report_error) const
   else
     {
       if (report_error)
-	error_at(this->location(), "invalid tuple definition");
+	go_error_at(this->location(), "invalid tuple definition");
       return Type::make_error_type();
     }
 }
@@ -6250,15 +6256,16 @@ Variable::type_from_range(Expression* expr, bool get_index_type,
       else
 	{
 	  if (report_error)
-	    error_at(this->location(),
-		     "invalid definition of value variable for channel range");
+	    go_error_at(this->location(),
+			("invalid definition of value variable "
+			 "for channel range"));
 	  return Type::make_error_type();
 	}
     }
   else
     {
       if (report_error)
-	error_at(this->location(), "invalid type for range clause");
+	go_error_at(this->location(), "invalid type for range clause");
       return Type::make_error_type();
     }
 }
@@ -6274,7 +6281,7 @@ Variable::type_from_chan_element(Expression* expr, bool report_error) const
   else
     {
       if (report_error)
-	error_at(this->location(), "expected channel");
+	go_error_at(this->location(), "expected channel");
       return Type::make_error_type();
     }
 }
@@ -6305,7 +6312,7 @@ Variable::type()
     {
       if (this->type_ == NULL || !this->type_->is_error_type())
 	{
-	  error_at(this->location_, "variable initializer refers to itself");
+	  go_error_at(this->location_, "variable initializer refers to itself");
 	  this->type_ = Type::make_error_type();
 	}
       return this->type_;
@@ -6413,17 +6420,17 @@ Variable::determine_type()
 
 	  if (type->is_void_type())
 	    {
-	      error_at(this->location_, "variable has no type");
+	      go_error_at(this->location_, "variable has no type");
 	      type = Type::make_error_type();
 	    }
 	  else if (type->is_nil_type())
 	    {
-	      error_at(this->location_, "variable defined to nil type");
+	      go_error_at(this->location_, "variable defined to nil type");
 	      type = Type::make_error_type();
 	    }
 	  else if (type->is_call_multiple_result_type())
 	    {
-	      error_at(this->location_,
+	      go_error_at(this->location_,
 		       "single variable set to multiple-value function call");
 	      type = Type::make_error_type();
 	    }
@@ -7070,9 +7077,9 @@ Named_object::export_named_object(Export* exp) const
       break;
 
     case NAMED_OBJECT_TYPE_DECLARATION:
-      error_at(this->type_declaration_value()->location(),
-	       "attempt to export %<%s%> which was declared but not defined",
-	       this->message_name().c_str());
+      go_error_at(this->type_declaration_value()->location(),
+		  "attempt to export %<%s%> which was declared but not defined",
+		  this->message_name().c_str());
       break;
 
     case NAMED_OBJECT_FUNC_DECLARATION:
@@ -7217,8 +7224,9 @@ Named_object::get_backend(Gogo* gogo, std::vector<Bexpression*>& const_decls,
       break;
 
     case NAMED_OBJECT_TYPE_DECLARATION:
-      error("reference to undefined type %qs",
-	    this->message_name().c_str());
+      go_error_at(Linemap::unknown_location(),
+		  "reference to undefined type %qs",
+		  this->message_name().c_str());
       return;
 
     case NAMED_OBJECT_VAR:
@@ -7450,7 +7458,9 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
       if (new_object->is_function_declaration())
 	{
 	  if (!new_object->func_declaration_value()->asm_name().empty())
-	    sorry("__asm__ for function definitions");
+	    go_error_at(Linemap::unknown_location(),
+			("sorry, not implemented: "
+			 "__asm__ for function definitions"));
 	  Function_type* old_type = old_object->func_value()->type();
 	  Function_type* new_type =
 	    new_object->func_declaration_value()->type();
@@ -7469,7 +7479,9 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
 	    if (old_type->is_valid_redeclaration(new_type, &reason))
 	      {
 		if (!old_object->func_declaration_value()->asm_name().empty())
-		  sorry("__asm__ for function definitions");
+		  go_error_at(Linemap::unknown_location(),
+			      ("sorry, not implemented: "
+			       "__asm__ for function definitions"));
 		old_object->set_function_value(new_object->func_value());
 		this->named_objects_.push_back(old_object);
 		return old_object;
@@ -7484,15 +7496,15 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
 
   std::string n = old_object->message_name();
   if (reason.empty())
-    error_at(new_object->location(), "redefinition of %qs", n.c_str());
+    go_error_at(new_object->location(), "redefinition of %qs", n.c_str());
   else
-    error_at(new_object->location(), "redefinition of %qs: %s", n.c_str(),
-	     reason.c_str());
+    go_error_at(new_object->location(), "redefinition of %qs: %s", n.c_str(),
+		reason.c_str());
   old_object->set_is_redefinition();
   new_object->set_is_redefinition();
 
-  inform(old_object->location(), "previous definition of %qs was here",
-	 n.c_str());
+  go_inform(old_object->location(), "previous definition of %qs was here",
+            n.c_str());
 
   return old_object;
 }
@@ -7798,10 +7810,11 @@ Package::set_package_name(const std::string& package_name, Location location)
   if (this->package_name_.empty())
     this->package_name_ = package_name;
   else if (this->package_name_ != package_name)
-    error_at(location,
-	     "saw two different packages with the same package path %s: %s, %s",
-	     this->pkgpath_.c_str(), this->package_name_.c_str(),
-	     package_name.c_str());
+    go_error_at(location,
+		("saw two different packages with "
+		 "the same package path %s: %s, %s"),
+		this->pkgpath_.c_str(), this->package_name_.c_str(),
+		package_name.c_str());
 }
 
 // Return the pkgpath symbol, which is a prefix for symbols defined in
@@ -7851,8 +7864,8 @@ Package::forget_usage(Expression* usage) const
   this->fake_uses_.erase(p);
 
   if (this->fake_uses_.empty())
-    error_at(this->location(), "imported and not used: %s",
-             Gogo::message_name(this->package_name()).c_str());
+    go_error_at(this->location(), "imported and not used: %s",
+		Gogo::message_name(this->package_name()).c_str());
 }
 
 // Clear the used field for the next file.  If the only usages of this package

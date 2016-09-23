@@ -7,6 +7,7 @@
 #include "go-system.h"
 
 #include "go-c.h"
+#include "go-diagnostics.h"
 #include "types.h"
 #include "expressions.h"
 #include "gogo.h"
@@ -163,7 +164,7 @@ Statement::set_is_error()
 void
 Statement::report_error(const char* msg)
 {
-  error_at(this->location_, "%s", msg);
+  go_error_at(this->location_, "%s", msg);
   this->set_is_error();
 }
 
@@ -428,9 +429,9 @@ Temporary_statement::do_check_types(Gogo*)
       if (!Type::are_assignable(this->type_, this->init_->type(), &reason))
 	{
 	  if (reason.empty())
-	    error_at(this->location(), "incompatible types in assignment");
+	    go_error_at(this->location(), "incompatible types in assignment");
 	  else
-	    error_at(this->location(), "incompatible types in assignment (%s)",
+	    go_error_at(this->location(), "incompatible types in assignment (%s)",
 		     reason.c_str());
 	  this->set_is_error();
 	}
@@ -767,10 +768,10 @@ Assignment_statement::do_check_types(Gogo*)
   if (!Type::are_assignable(lhs_type, rhs_type, &reason))
     {
       if (reason.empty())
-	error_at(this->location(), "incompatible types in assignment");
+	go_error_at(this->location(), "incompatible types in assignment");
       else
-	error_at(this->location(), "incompatible types in assignment (%s)",
-		 reason.c_str());
+	go_error_at(this->location(), "incompatible types in assignment (%s)",
+		    reason.c_str());
       this->set_is_error();
     }
 
@@ -2669,11 +2670,12 @@ Return_statement::do_lower(Gogo*, Named_object* function, Block* enclosing,
       else
 	{
 	  if (reason.empty())
-	    error_at(e->location(), "incompatible type for return value %d", i);
+	    go_error_at(e->location(),
+			"incompatible type for return value %d", i);
 	  else
-	    error_at(e->location(),
-		     "incompatible type for return value %d (%s)",
-		     i, reason.c_str());
+	    go_error_at(e->location(),
+			"incompatible type for return value %d (%s)",
+			i, reason.c_str());
 	}
     }
   go_assert(lhs->size() == rhs->size());
@@ -2850,8 +2852,8 @@ Goto_statement::do_check_types(Gogo*)
 {
   if (!this->label_->is_defined())
     {
-      error_at(this->location(), "reference to undefined label %qs",
-	       Gogo::message_name(this->label_->name()).c_str());
+      go_error_at(this->location(), "reference to undefined label %qs",
+		  Gogo::message_name(this->label_->name()).c_str());
       this->set_is_error();
     }
 }
@@ -3274,8 +3276,8 @@ Case_clauses::Case_clause::check_types(Type* type)
 	  if (!Type::are_assignable(type, (*p)->type(), NULL)
 	      && !Type::are_assignable((*p)->type(), type, NULL))
 	    {
-	      error_at((*p)->location(),
-		       "type mismatch between switch value and case clause");
+	      go_error_at((*p)->location(),
+			  "type mismatch between switch value and case clause");
 	      return false;
 	    }
 	}
@@ -3338,7 +3340,7 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
 	  if (!ins.second)
 	    {
 	      // Value was already present.
-	      error_at(this->location_, "duplicate case in switch");
+	      go_error_at(this->location_, "duplicate case in switch");
 	      e = Expression::make_error(this->location_);
 	    }
 	  cases->push_back(e->get_backend(context));
@@ -3722,8 +3724,8 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       && !Type::are_compatible_for_comparison(true, this->val_->type(),
 					      Type::make_nil_type(), NULL))
     {
-      error_at(this->val_->location(),
-	       "cannot switch on value whose type that may not be compared");
+      go_error_at(this->val_->location(),
+		  "cannot switch on value whose type that may not be compared");
       return Statement::make_error_statement(loc);
     }
 
@@ -3857,10 +3859,10 @@ Type_case_clauses::Type_case_clause::lower(Type* switch_val_type,
 								      &reason))
 	{
 	  if (reason.empty())
-	    error_at(this->location_, "impossible type switch case");
+	    go_error_at(this->location_, "impossible type switch case");
 	  else
-	    error_at(this->location_, "impossible type switch case (%s)",
-		     reason.c_str());
+	    go_error_at(this->location_, "impossible type switch case (%s)",
+			reason.c_str());
 	}
 
       Expression* ref = Expression::make_temporary_reference(descriptor_temp,
@@ -4025,7 +4027,7 @@ Type_case_clauses::check_duplicates() const
 	t = Type::make_nil_type();
       std::pair<Types_seen::iterator, bool> ins = types_seen.insert(t);
       if (!ins.second)
-	error_at(p->location(), "duplicate type in switch");
+	go_error_at(p->location(), "duplicate type in switch");
     }
 }
 
@@ -4255,7 +4257,7 @@ Send_statement::do_check_types(Gogo*)
   Channel_type* channel_type = type->channel_type();
   if (channel_type == NULL)
     {
-      error_at(this->location(), "left operand of %<<-%> must be channel");
+      go_error_at(this->location(), "left operand of %<<-%> must be channel");
       this->set_is_error();
       return;
     }
@@ -4656,14 +4658,14 @@ Select_clauses::Select_clause::check_types()
   Channel_type* ct = this->channel_->type()->channel_type();
   if (ct == NULL)
     {
-      error_at(this->channel_->location(), "expected channel");
+      go_error_at(this->channel_->location(), "expected channel");
       return;
     }
 
   if (this->is_send_ && !ct->may_send())
-    error_at(this->location(), "invalid send on receive-only channel");
+    go_error_at(this->location(), "invalid send on receive-only channel");
   else if (!this->is_send_ && !ct->may_receive())
-    error_at(this->location(), "invalid receive on send-only channel");
+    go_error_at(this->location(), "invalid receive on send-only channel");
 }
 
 // Whether this clause may fall through to the statement which follows
