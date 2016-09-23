@@ -1786,8 +1786,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
   gimple *def_stmt = SSA_NAME_DEF_STMT (vuse);
   tree base = ao_ref_base (ref);
   HOST_WIDE_INT offset, maxsize;
-  static vec<vn_reference_op_s>
-    lhs_ops = vNULL;
+  static vec<vn_reference_op_s> lhs_ops;
   ao_ref lhs_ref;
   bool lhs_ref_ok = false;
 

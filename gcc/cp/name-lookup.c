@@ -6197,7 +6197,7 @@ store_binding (tree id, vec<cxx_saved_binding, va_gc> **old_bindings)
 static void
 store_bindings (tree names, vec<cxx_saved_binding, va_gc> **old_bindings)
 {
-  static vec<tree> bindings_need_stored = vNULL;
+  static vec<tree> bindings_need_stored;
   tree t, id;
   size_t i;
 
@@ -6233,7 +6233,7 @@ static void
 store_class_bindings (vec<cp_class_binding, va_gc> *names,
 		      vec<cxx_saved_binding, va_gc> **old_bindings)
 {
-  static vec<tree> bindings_need_stored = vNULL;
+  static vec<tree> bindings_need_stored;
   size_t i;
   cp_class_binding *cb;
 

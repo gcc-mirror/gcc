@@ -5204,11 +5204,9 @@ ipcp_store_vr_results (void)
 	 }
        else
 	 {
-	   static wide_int zero = integer_zero_node;
 	   vr.known = false;
 	   vr.type = VR_VARYING;
-	   vr.min = zero;
-	   vr.max = zero;
+	   vr.min = vr.max = wi::zero (INT_TYPE_SIZE);
 	 }
        ts->m_vr->quick_push (vr);
      }
