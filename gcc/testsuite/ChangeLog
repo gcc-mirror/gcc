@@ -1,3 +1,11 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-neon-1.c: New.
+	* gcc.target/arm/armv8_2-fp16-scalar-1.c: New.
+	* gcc.target/arm/armv8_2-fp16-scalar-2.c: New.
+	* gcc.target/arm/attr-fp16-arith-1.c: Add a test of intrinsics
+	support.
+
 2016-09-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR ipa/77677

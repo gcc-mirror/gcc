@@ -28,6 +28,19 @@
 #error Invalid value for __ARM_FP
 #endif
 
+#include "arm_neon.h"
+
+float16_t
+foo (float16x4_t b)
+{
+  float16x4_t a = {2.0, 3.0, 4.0, 5.0};
+  float16x4_t res = vadd_f16 (a, b);
+
+  return res[0];
+}
+
+/* { dg-final { scan-assembler "vadd\\.f16\td\[0-9\]+, d\[0-9\]+" } } */
+
 #pragma GCC pop_options
 
 /* Check that the FP version is correctly reset to mfpu=fp-armv8.  */
