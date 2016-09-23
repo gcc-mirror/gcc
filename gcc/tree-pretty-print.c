@@ -1983,7 +1983,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
 		dump_decl_name (pp, val, flags);
 	    else
 		dump_generic_node (pp, val, spc, flags, false);
-	    if (ix != vec_safe_length (CONSTRUCTOR_ELTS (node)) - 1)
+	    if (ix != CONSTRUCTOR_NELTS (node) - 1)
 	      {
 		pp_comma (pp);
 		pp_space (pp);

@@ -5933,7 +5933,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	 element (as allowed by [dcl.init.string]).  */
       if (!first_initializer_p
 	  && TREE_CODE (str_init) == CONSTRUCTOR
-	  && vec_safe_length (CONSTRUCTOR_ELTS (str_init)) == 1)
+	  && CONSTRUCTOR_NELTS (str_init) == 1)
 	{
 	  str_init = (*CONSTRUCTOR_ELTS (str_init))[0].value;
 	}
@@ -6136,7 +6136,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init))
     {
-      int init_len = vec_safe_length (CONSTRUCTOR_ELTS (init));
+      int init_len = CONSTRUCTOR_NELTS (init);
       if (SCALAR_TYPE_P (type))
 	{
 	  if (init_len == 0)

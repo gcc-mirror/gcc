@@ -1,3 +1,17 @@
+2016-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* hsa-gen.c (hsa_op_immed::hsa_op_immed Use CONSTRUCTOR_NELTS (...)
+	instead of vec_safe_length (CONSTRUCTOR_ELTS (...)).
+	(gen_hsa_ctor_assignment): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-sra.c (sra_modify_constructor_assign): Likewise.
+	* expr.c (store_constructor): Likewise.
+	* fold-const.c (operand_equal_p): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* hsa-brig.c (hsa_op_immed::emit_to_buffer): Likewise.
+	* ipa-icf-gimple.c (func_checker::compare_operand): Likewise.
+
 2016-09-23  Richard Biener  <rguenther@suse.de>
 
 	* hooks.h (hook_uint_uintp_false): Declare.

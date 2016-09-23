@@ -646,7 +646,7 @@ dequeue_and_dump (dump_info_p di)
       {
 	unsigned HOST_WIDE_INT cnt;
 	tree index, value;
-	dump_int (di, "lngt", vec_safe_length (CONSTRUCTOR_ELTS (t)));
+	dump_int (di, "lngt", CONSTRUCTOR_NELTS (t));
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), cnt, index, value)
 	  {
 	    dump_child ("idx", index);
