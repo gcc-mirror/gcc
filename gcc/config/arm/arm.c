@@ -823,6 +823,13 @@ int arm_arch8 = 0;
 /* Nonzero if this chip supports the ARMv8.1 extensions.  */
 int arm_arch8_1 = 0;
 
+/* Nonzero if this chip supports the ARM Architecture 8.2 extensions.  */
+int arm_arch8_2 = 0;
+
+/* Nonzero if this chip supports the FP16 instructions extension of ARM
+   Architecture 8.2.  */
+int arm_fp16_inst = 0;
+
 /* Nonzero if this chip can benefit from load scheduling.  */
 int arm_ld_sched = 0;
 
@@ -3232,6 +3239,7 @@ arm_option_override (void)
   arm_arch7em = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH7EM);
   arm_arch8 = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH8);
   arm_arch8_1 = ARM_FSET_HAS_CPU2 (insn_flags, FL2_ARCH8_1);
+  arm_arch8_2 = ARM_FSET_HAS_CPU2 (insn_flags, FL2_ARCH8_2);
   arm_arch_thumb1 = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB);
   arm_arch_thumb2 = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB2);
   arm_arch_xscale = ARM_FSET_HAS_CPU1 (insn_flags, FL_XSCALE);
@@ -3248,6 +3256,13 @@ arm_option_override (void)
   arm_tune_cortex_a9 = (arm_tune == cortexa9) != 0;
   arm_arch_crc = ARM_FSET_HAS_CPU1 (insn_flags, FL_CRC32);
   arm_m_profile_small_mul = ARM_FSET_HAS_CPU1 (insn_flags, FL_SMALLMUL);
+  arm_fp16_inst = ARM_FSET_HAS_CPU2 (insn_flags, FL2_FP16INST);
+  if (arm_fp16_inst)
+    {
+      if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
+	error ("selected fp16 options are incompatible.");
+      arm_fp16_format = ARM_FP16_FORMAT_IEEE;
+    }
 
   /* V5 code we generate is completely interworking capable, so we turn off
      TARGET_INTERWORK here to avoid many tests later on.  */

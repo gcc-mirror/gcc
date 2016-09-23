@@ -217,6 +217,13 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* FPU supports ARMv8.1 Adv.SIMD extensions.  */
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
+/* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
+#define TARGET_VFP_FP16INST \
+  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 && arm_fp16_inst)
+
+/* FPU supports the AdvSIMD FP16 instructions for ARMv8.2 and later.  */
+#define TARGET_NEON_FP16INST (TARGET_VFP_FP16INST && TARGET_NEON_RDMA)
+
 /* Q-bit is present.  */
 #define TARGET_ARM_QBIT \
   (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7))
@@ -455,6 +462,13 @@ extern int arm_arch8;
 
 /* Nonzero if this chip supports the ARM Architecture 8.1 extensions.  */
 extern int arm_arch8_1;
+
+/* Nonzero if this chip supports the ARM Architecture 8.2 extensions.  */
+extern int arm_arch8_2;
+
+/* Nonzero if this chip supports the FP16 instructions extension of ARM
+   Architecture 8.2.  */
+extern int arm_fp16_inst;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 extern int arm_ld_sched;

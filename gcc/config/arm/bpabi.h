@@ -93,6 +93,8 @@
    |march=armv8-a+crc					\
    |march=armv8.1-a					\
    |march=armv8.1-a+crc					\
+   |march=armv8.2-a					\
+   |march=armv8.2-a+fp16				\
    |march=armv8-m.base					\
    |march=armv8-m.main					\
    |march=armv8-m.main+dsp				\
@@ -130,6 +132,8 @@
    |march=armv8-a+crc					\
    |march=armv8.1-a					\
    |march=armv8.1-a+crc					\
+   |march=armv8.2-a					\
+   |march=armv8.2-a+fp16				\
    |march=armv8-m.base					\
    |march=armv8-m.main					\
    |march=armv8-m.main+dsp				\
