@@ -1,3 +1,19 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm-builtins.c (hf_UP): New.
+	(si_UP): New.
+	(vfp_builtin_data): New.  Update comment.
+	(enum arm_builtins): Include "arm_vfp_builtins.def".
+	(ARM_BUILTIN_VFP_PATTERN_START): New.
+	(arm_init_vfp_builtins): New.
+	(arm_init_builtins): Add arm_init_vfp_builtins.
+	(arm_expand_vfp_builtin): New.
+	(arm_expand_builtins): Update for arm_expand_vfp_builtin.  Fix
+	long line.
+	* config/arm/arm_vfp_builtins.def: New file.
+	* config/arm/t-arm (arm.o): Add arm_vfp_builtins.def.
+	(arm-builtins.o): Likewise.
+
 2016-09-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR ipa/77677
