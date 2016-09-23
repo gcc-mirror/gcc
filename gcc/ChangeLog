@@ -1,5 +1,14 @@
 2016-09-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* sel-sched-ir.c (sel_global_bb_info, sel_region_bb_info,
+	loop_nests, s_i_d, last_added_blocks): Remove unnecessary
+	= vNULL initialization of file scope vec.
+	* passes.c (pass_tab, enabled_pass_uid_range_tab,
+	disabled_pass_uid_range_tab): Likewise.
+	* haifa-sched.c (sched_luids, h_i_d): Likewise.
+	* tree-chkp-opt.c (check_infos): Likewise.
+	* sel-sched.c (vec_av_set, vec_temp_moveop_nops): Likewise.
+
 	* vec.h (vnull::operator vec): Add constexpr keyword for
 	C++11 and later.
 

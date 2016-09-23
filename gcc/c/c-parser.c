@@ -67,7 +67,7 @@ along with GCC; see the file COPYING3.  If not see
    In c_parser_translation_unit(), we iterate over incomplete_record_decls
    and report error if any of the decls are still incomplete.  */ 
 
-vec<tree> incomplete_record_decls = vNULL;
+vec<tree> incomplete_record_decls;
 
 void
 set_c_expr_source_range (c_expr *expr,

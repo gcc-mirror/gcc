@@ -45,12 +45,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "sel-sched-dump.h"
 
 /* A vector holding bb info for whole scheduling pass.  */
-vec<sel_global_bb_info_def>
-    sel_global_bb_info = vNULL;
+vec<sel_global_bb_info_def> sel_global_bb_info;
 
 /* A vector holding bb info.  */
-vec<sel_region_bb_info_def>
-    sel_region_bb_info = vNULL;
+vec<sel_region_bb_info_def> sel_region_bb_info;
 
 /* A pool for allocating all lists.  */
 object_allocator<_list_node> sched_lists_pool ("sel-sched-lists");
@@ -66,7 +64,7 @@ struct loop *current_loop_nest;
 
 /* LOOP_NESTS is a vector containing the corresponding loop nest for
    each region.  */
-static vec<loop_p> loop_nests = vNULL;
+static vec<loop_p> loop_nests;
 
 /* Saves blocks already in loop regions, indexed by bb->index.  */
 static sbitmap bbs_in_loop_rgns = NULL;
@@ -4163,7 +4161,7 @@ finish_region_bb_info (void)
 
 
 /* Data for each insn in current region.  */
-vec<sel_insn_data_def> s_i_d = vNULL;
+vec<sel_insn_data_def> s_i_d;
 
 /* Extend data structures for insns from current region.  */
 static void
@@ -4499,8 +4497,7 @@ get_av_level (insn_t insn)
 
 /* The basic block that already has been processed by the sched_data_update (),
    but hasn't been in sel_add_bb () yet.  */
-static vec<basic_block>
-    last_added_blocks = vNULL;
+static vec<basic_block> last_added_blocks;
 
 /* A pool for allocating successor infos.  */
 static struct

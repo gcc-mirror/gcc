@@ -862,7 +862,7 @@ pass_manager::register_pass_name (opt_pass *pass, const char *name)
 /* Map from pass id to canonicalized pass name.  */
 
 typedef const char *char_ptr;
-static vec<char_ptr> pass_tab = vNULL;
+static vec<char_ptr> pass_tab;
 
 /* Callback function for traversing NAME_TO_PASS_MAP.  */
 
@@ -982,10 +982,8 @@ struct uid_range
 typedef struct uid_range *uid_range_p;
 
 
-static vec<uid_range_p>
-      enabled_pass_uid_range_tab = vNULL;
-static vec<uid_range_p>
-      disabled_pass_uid_range_tab = vNULL;
+static vec<uid_range_p> enabled_pass_uid_range_tab;
+static vec<uid_range_p> disabled_pass_uid_range_tab;
 
 
 /* Parse option string for -fdisable- and -fenable-
