@@ -2263,6 +2263,194 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
     *cond_expr = part_cond_expr;
 }
 
+/* Given two data references and segment lengths described by DR_A and DR_B,
+   create expression checking if the two addresses ranges intersect with
+   each other based on index of the two addresses.  This can only be done
+   if DR_A and DR_B referring to the same (array) object and the index is
+   the only difference.  For example:
+
+                       DR_A                           DR_B
+      data-ref         arr[i]                         arr[j]
+      base_object      arr                            arr
+      index            {i_0, +, 1}_loop               {j_0, +, 1}_loop
+
+   The addresses and their index are like:
+
+        |<- ADDR_A    ->|          |<- ADDR_B    ->|
+     ------------------------------------------------------->
+        |   |   |   |   |          |   |   |   |   |
+     ------------------------------------------------------->
+        i_0 ...         i_0+4      j_0 ...         j_0+4
+
+   We can create expression based on index rather than address:
+
+     (i_0 + 4 < j_0 || j_0 + 4 < i_0)
+
+   Note evolution step of index needs to be considered in comparison.  */
+
+static bool
+create_intersect_range_checks_index (loop_vec_info loop_vinfo, tree *cond_expr,
+				     const dr_with_seg_len& dr_a,
+				     const dr_with_seg_len& dr_b)
+{
+  if (integer_zerop (DR_STEP (dr_a.dr))
+      || integer_zerop (DR_STEP (dr_b.dr))
+      || DR_NUM_DIMENSIONS (dr_a.dr) != DR_NUM_DIMENSIONS (dr_b.dr))
+    return false;
+
+  if (!tree_fits_uhwi_p (dr_a.seg_len) || !tree_fits_uhwi_p (dr_b.seg_len))
+    return false;
+
+  if (!operand_equal_p (DR_BASE_OBJECT (dr_a.dr), DR_BASE_OBJECT (dr_b.dr), 0))
+    return false;
+
+  if (!operand_equal_p (DR_STEP (dr_a.dr), DR_STEP (dr_b.dr), 0))
+    return false;
+
+  gcc_assert (TREE_CODE (DR_STEP (dr_a.dr)) == INTEGER_CST);
+
+  bool neg_step = tree_int_cst_compare (DR_STEP (dr_a.dr), size_zero_node) < 0;
+  unsigned HOST_WIDE_INT abs_step = tree_to_uhwi (DR_STEP (dr_a.dr));
+  if (neg_step)
+    abs_step = -abs_step;
+
+  unsigned HOST_WIDE_INT seg_len1 = tree_to_uhwi (dr_a.seg_len);
+  unsigned HOST_WIDE_INT seg_len2 = tree_to_uhwi (dr_b.seg_len);
+  /* Infer the number of iterations with which the memory segment is accessed
+     by DR.  In other words, alias is checked if memory segment accessed by
+     DR_A in some iterations intersect with memory segment accessed by DR_B
+     in the same amount iterations.
+     Note segnment length is a linear function of number of iterations with
+     DR_STEP as the coefficient.  */
+  unsigned HOST_WIDE_INT niter_len1 = (seg_len1 + abs_step - 1) / abs_step;
+  unsigned HOST_WIDE_INT niter_len2 = (seg_len2 + abs_step - 1) / abs_step;
+
+  unsigned int i;
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  for (i = 0; i < DR_NUM_DIMENSIONS (dr_a.dr); i++)
+    {
+      tree access1 = DR_ACCESS_FN (dr_a.dr, i);
+      tree access2 = DR_ACCESS_FN (dr_b.dr, i);
+      /* Two index must be the same if they are not scev, or not scev wrto
+	 current loop being vecorized.  */
+      if (TREE_CODE (access1) != POLYNOMIAL_CHREC
+	  || TREE_CODE (access2) != POLYNOMIAL_CHREC
+	  || CHREC_VARIABLE (access1) != (unsigned)loop->num
+	  || CHREC_VARIABLE (access2) != (unsigned)loop->num)
+	{
+	  if (operand_equal_p (access1, access2, 0))
+	    continue;
+
+	  return false;
+	}
+      /* Two index must have the same step.  */
+      if (!operand_equal_p (CHREC_RIGHT (access1), CHREC_RIGHT (access2), 0))
+	return false;
+
+      tree idx_step = CHREC_RIGHT (access1);
+      /* Index must have const step, otherwise DR_STEP won't be constant.  */
+      gcc_assert (TREE_CODE (idx_step) == INTEGER_CST);
+      /* Index must evaluate in the same direction as DR.  */
+      gcc_assert (!neg_step
+		  || tree_int_cst_compare (idx_step, size_zero_node) < 0);
+
+      tree min1 = CHREC_LEFT (access1);
+      tree min2 = CHREC_LEFT (access2);
+      if (!types_compatible_p (TREE_TYPE (min1), TREE_TYPE (min2)))
+	return false;
+
+      /* Ideally, alias can be checked against loop's control IV, but we
+	 need to prove linear mapping between control IV and reference
+	 index.  Although that should be true, we check against (array)
+	 index of data reference.  Like segment length, index length is
+	 linear function of the number of iterations with index_step as
+	 the coefficient, i.e, niter_len * idx_step.  */
+      tree idx_len1 = fold_build2 (MULT_EXPR, TREE_TYPE (min1), idx_step,
+				   build_int_cst (TREE_TYPE (min1),
+						  niter_len1));
+      tree idx_len2 = fold_build2 (MULT_EXPR, TREE_TYPE (min2), idx_step,
+				   build_int_cst (TREE_TYPE (min2),
+						  niter_len2));
+      tree max1 = fold_build2 (PLUS_EXPR, TREE_TYPE (min1), min1, idx_len1);
+      tree max2 = fold_build2 (PLUS_EXPR, TREE_TYPE (min2), min2, idx_len2);
+      /* Adjust ranges for negative step.  */
+      if (neg_step)
+	{
+	  min1 = fold_build2 (MINUS_EXPR, TREE_TYPE (min1), max1, idx_step);
+	  max1 = fold_build2 (MINUS_EXPR, TREE_TYPE (min1),
+			      CHREC_LEFT (access1), idx_step);
+	  min2 = fold_build2 (MINUS_EXPR, TREE_TYPE (min2), max2, idx_step);
+	  max2 = fold_build2 (MINUS_EXPR, TREE_TYPE (min2),
+			      CHREC_LEFT (access2), idx_step);
+	}
+      tree part_cond_expr
+	= fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+	    fold_build2 (LE_EXPR, boolean_type_node, max1, min2),
+	    fold_build2 (LE_EXPR, boolean_type_node, max2, min1));
+      if (*cond_expr)
+	*cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+				  *cond_expr, part_cond_expr);
+      else
+	*cond_expr = part_cond_expr;
+    }
+  return true;
+}
+
+/* Given two data references and segment lengths described by DR_A and DR_B,
+   create expression checking if the two addresses ranges intersect with
+   each other:
+
+     ((DR_A_addr_0 + DR_A_segment_length_0) <= DR_B_addr_0)
+     || (DR_B_addr_0 + DER_B_segment_length_0) <= DR_A_addr_0))  */
+
+static void
+create_intersect_range_checks (loop_vec_info loop_vinfo, tree *cond_expr,
+			       const dr_with_seg_len& dr_a,
+			       const dr_with_seg_len& dr_b)
+{
+  *cond_expr = NULL_TREE;
+  if (create_intersect_range_checks_index (loop_vinfo, cond_expr, dr_a, dr_b))
+    return;
+
+  tree segment_length_a = dr_a.seg_len;
+  tree segment_length_b = dr_b.seg_len;
+  tree addr_base_a = DR_BASE_ADDRESS (dr_a.dr);
+  tree addr_base_b = DR_BASE_ADDRESS (dr_b.dr);
+  tree offset_a = DR_OFFSET (dr_a.dr), offset_b = DR_OFFSET (dr_b.dr);
+
+  offset_a = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_a),
+			  offset_a, DR_INIT (dr_a.dr));
+  offset_b = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_b),
+			  offset_b, DR_INIT (dr_b.dr));
+  addr_base_a = fold_build_pointer_plus (addr_base_a, offset_a);
+  addr_base_b = fold_build_pointer_plus (addr_base_b, offset_b);
+
+  tree seg_a_min = addr_base_a;
+  tree seg_a_max = fold_build_pointer_plus (addr_base_a, segment_length_a);
+  /* For negative step, we need to adjust address range by TYPE_SIZE_UNIT
+     bytes, e.g., int a[3] -> a[1] range is [a+4, a+16) instead of
+     [a, a+12) */
+  if (tree_int_cst_compare (DR_STEP (dr_a.dr), size_zero_node) < 0)
+    {
+      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a.dr)));
+      seg_a_min = fold_build_pointer_plus (seg_a_max, unit_size);
+      seg_a_max = fold_build_pointer_plus (addr_base_a, unit_size);
+    }
+
+  tree seg_b_min = addr_base_b;
+  tree seg_b_max = fold_build_pointer_plus (addr_base_b, segment_length_b);
+  if (tree_int_cst_compare (DR_STEP (dr_b.dr), size_zero_node) < 0)
+    {
+      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_b.dr)));
+      seg_b_min = fold_build_pointer_plus (seg_b_max, unit_size);
+      seg_b_max = fold_build_pointer_plus (addr_base_b, unit_size);
+    }
+  *cond_expr
+    = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+	fold_build2 (LE_EXPR, boolean_type_node, seg_a_max, seg_b_min),
+	fold_build2 (LE_EXPR, boolean_type_node, seg_b_max, seg_a_min));
+}
+
 /* Function vect_create_cond_for_alias_checks.
 
    Create a conditional expression that represents the run-time checks for
@@ -2290,15 +2478,6 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
     LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo);
   tree part_cond_expr;
 
-  /* Create expression
-     ((store_ptr_0 + store_segment_length_0) <= load_ptr_0)
-     || (load_ptr_0 + load_segment_length_0) <= store_ptr_0))
-     &&
-     ...
-     &&
-     ((store_ptr_n + store_segment_length_n) <= load_ptr_n)
-     || (load_ptr_n + load_segment_length_n) <= store_ptr_n))  */
-
   if (comp_alias_ddrs.is_empty ())
     return;
 
@@ -2306,18 +2485,6 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
     {
       const dr_with_seg_len& dr_a = comp_alias_ddrs[i].first;
       const dr_with_seg_len& dr_b = comp_alias_ddrs[i].second;
-      tree segment_length_a = dr_a.seg_len;
-      tree segment_length_b = dr_b.seg_len;
-      tree addr_base_a = DR_BASE_ADDRESS (dr_a.dr);
-      tree addr_base_b = DR_BASE_ADDRESS (dr_b.dr);
-      tree offset_a = DR_OFFSET (dr_a.dr), offset_b = DR_OFFSET (dr_b.dr);
-
-      offset_a = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_a),
-			      offset_a, DR_INIT (dr_a.dr));
-      offset_b = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_b),
-			      offset_b, DR_INIT (dr_b.dr));
-      addr_base_a = fold_build_pointer_plus (addr_base_a, offset_a);
-      addr_base_b = fold_build_pointer_plus (addr_base_b, offset_b);
 
       if (dump_enabled_p ())
 	{
@@ -2329,32 +2496,8 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 	  dump_printf (MSG_NOTE, "\n");
 	}
 
-      tree seg_a_min = addr_base_a;
-      tree seg_a_max = fold_build_pointer_plus (addr_base_a, segment_length_a);
-      /* For negative step, we need to adjust address range by TYPE_SIZE_UNIT
-	 bytes, e.g., int a[3] -> a[1] range is [a+4, a+16) instead of
-	 [a, a+12) */
-      if (tree_int_cst_compare (DR_STEP (dr_a.dr), size_zero_node) < 0)
-	{
-	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a.dr)));
-	  seg_a_min = fold_build_pointer_plus (seg_a_max, unit_size);
-	  seg_a_max = fold_build_pointer_plus (addr_base_a, unit_size);
-	}
-
-      tree seg_b_min = addr_base_b;
-      tree seg_b_max = fold_build_pointer_plus (addr_base_b, segment_length_b);
-      if (tree_int_cst_compare (DR_STEP (dr_b.dr), size_zero_node) < 0)
-	{
-	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_b.dr)));
-	  seg_b_min = fold_build_pointer_plus (seg_b_max, unit_size);
-	  seg_b_max = fold_build_pointer_plus (addr_base_b, unit_size);
-	}
-
-      part_cond_expr =
-      	fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-	  fold_build2 (LE_EXPR, boolean_type_node, seg_a_max, seg_b_min),
-	  fold_build2 (LE_EXPR, boolean_type_node, seg_b_max, seg_a_min));
-
+      /* Create condition expression for each pair data references.  */
+      create_intersect_range_checks (loop_vinfo, &part_cond_expr, dr_a, dr_b);
       if (*cond_expr)
 	*cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 				  *cond_expr, part_cond_expr);

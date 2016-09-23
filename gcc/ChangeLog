@@ -1,3 +1,9 @@
+2016-09-23  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop-manip.c (create_intersect_range_checks_index): New.
+	(create_intersect_range_checks): New.
+	(vect_create_cond_for_alias_checks): Call above function.
+
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/iterators.md (Code iterators): Fix some white-space
