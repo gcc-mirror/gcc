@@ -14843,6 +14843,680 @@ vmull_high_p64 (poly64x2_t __a, poly64x2_t __b)
 
 #pragma GCC pop_options
 
+  /* Intrinsics for FP16 instructions.  */
+#pragma GCC push_options
+#pragma GCC target ("fpu=neon-fp-armv8")
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vabd_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vabdv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vabdq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vabdv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vabs_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vabsv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vabsq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vabsv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vadd_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vaddv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vaddq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vaddv8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcage_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vcagev4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcageq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vcagev8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcagt_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vcagtv4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcagtq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vcagtv8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcale_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vcalev4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcaleq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vcalev8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcalt_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vcaltv4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcaltq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vcaltv8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vceq_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vceqv4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vceqq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vceqv8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vceqz_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vceqzv4hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vceqzq_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vceqzv8hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcge_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vcgev4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcgeq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vcgev8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcgez_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vcgezv4hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcgezq_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vcgezv8hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcgt_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vcgtv4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcgtq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vcgtv8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcgtz_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vcgtzv4hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcgtzq_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vcgtzv8hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcle_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vclev4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcleq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vclev8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vclez_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vclezv4hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vclezq_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vclezv8hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vclt_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return (uint16x4_t)__builtin_neon_vcltv4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcltq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return (uint16x8_t)__builtin_neon_vcltv8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcltz_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vcltzv4hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcltzq_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vcltzv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vcvt_f16_s16 (int16x4_t __a)
+{
+  return (float16x4_t)__builtin_neon_vcvtsv4hi (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vcvt_f16_u16 (uint16x4_t __a)
+{
+  return (float16x4_t)__builtin_neon_vcvtuv4hi ((int16x4_t)__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvt_s16_f16 (float16x4_t __a)
+{
+  return (int16x4_t)__builtin_neon_vcvtsv4hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvt_u16_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vcvtuv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vcvtq_f16_s16 (int16x8_t __a)
+{
+  return (float16x8_t)__builtin_neon_vcvtsv8hi (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vcvtq_f16_u16 (uint16x8_t __a)
+{
+  return (float16x8_t)__builtin_neon_vcvtuv8hi ((int16x8_t)__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtq_s16_f16 (float16x8_t __a)
+{
+  return (int16x8_t)__builtin_neon_vcvtsv8hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtq_u16_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vcvtuv8hf (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvta_s16_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vcvtasv4hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvta_u16_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vcvtauv4hf (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtaq_s16_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vcvtasv8hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtaq_u16_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vcvtauv8hf (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvtm_s16_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vcvtmsv4hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvtm_u16_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vcvtmuv4hf (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtmq_s16_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vcvtmsv8hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtmq_u16_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vcvtmuv8hf (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvtn_s16_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vcvtnsv4hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvtn_u16_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vcvtnuv4hf (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtnq_s16_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vcvtnsv8hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtnq_u16_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vcvtnuv8hf (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvtp_s16_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vcvtpsv4hf (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvtp_u16_f16 (float16x4_t __a)
+{
+  return (uint16x4_t)__builtin_neon_vcvtpuv4hf (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtpq_s16_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vcvtpsv8hf (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtpq_u16_f16 (float16x8_t __a)
+{
+  return (uint16x8_t)__builtin_neon_vcvtpuv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vcvt_n_f16_s16 (int16x4_t __a, const int __b)
+{
+  return __builtin_neon_vcvts_nv4hi (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vcvt_n_f16_u16 (uint16x4_t __a, const int __b)
+{
+  return __builtin_neon_vcvtu_nv4hi ((int16x4_t)__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vcvtq_n_f16_s16 (int16x8_t __a, const int __b)
+{
+  return __builtin_neon_vcvts_nv8hi (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vcvtq_n_f16_u16 (uint16x8_t __a, const int __b)
+{
+  return __builtin_neon_vcvtu_nv8hi ((int16x8_t)__a, __b);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vcvt_n_s16_f16 (float16x4_t __a, const int __b)
+{
+  return __builtin_neon_vcvts_nv4hf (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vcvt_n_u16_f16 (float16x4_t __a, const int __b)
+{
+  return (uint16x4_t)__builtin_neon_vcvtu_nv4hf (__a, __b);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vcvtq_n_s16_f16 (float16x8_t __a, const int __b)
+{
+  return __builtin_neon_vcvts_nv8hf (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vcvtq_n_u16_f16 (float16x8_t __a, const int __b)
+{
+  return (uint16x8_t)__builtin_neon_vcvtu_nv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vfma_f16 (float16x4_t __a, float16x4_t __b, float16x4_t __c)
+{
+  return __builtin_neon_vfmav4hf (__a, __b, __c);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vfmaq_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c)
+{
+  return __builtin_neon_vfmav8hf (__a, __b, __c);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vfms_f16 (float16x4_t __a, float16x4_t __b, float16x4_t __c)
+{
+  return __builtin_neon_vfmsv4hf (__a, __b, __c);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vfmsq_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c)
+{
+  return __builtin_neon_vfmsv8hf (__a, __b, __c);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vmax_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vmaxfv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vmaxq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vmaxfv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vmaxnm_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vmaxnmv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vmaxnmq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vmaxnmv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vmin_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vminfv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vminq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vminfv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vminnm_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vminnmv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vminnmq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vminnmv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vmul_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vmulfv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vmul_lane_f16 (float16x4_t __a, float16x4_t __b, const int __c)
+{
+  return __builtin_neon_vmul_lanev4hf (__a, __b, __c);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vmul_n_f16 (float16x4_t __a, float16_t __b)
+{
+  return __builtin_neon_vmul_nv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vmulq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vmulfv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vmulq_lane_f16 (float16x8_t __a, float16x4_t __b, const int __c)
+{
+  return __builtin_neon_vmul_lanev8hf (__a, __b, __c);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vmulq_n_f16 (float16x8_t __a, float16_t __b)
+{
+  return __builtin_neon_vmul_nv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vneg_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vnegv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vnegq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vnegv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vpadd_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vpaddv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vpmax_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vpmaxfv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vpmin_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vpminfv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrecpe_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vrecpev4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrecpeq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vrecpev8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrnd_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vrndv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vrndv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrnda_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vrndav4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndaq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vrndav8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrndm_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vrndmv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndmq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vrndmv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrndn_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vrndnv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndnq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vrndnv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrndp_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vrndpv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndpq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vrndpv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrndx_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vrndxv4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrndxq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vrndxv8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrsqrte_f16 (float16x4_t __a)
+{
+  return __builtin_neon_vrsqrtev4hf (__a);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrsqrteq_f16 (float16x8_t __a)
+{
+  return __builtin_neon_vrsqrtev8hf (__a);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrecps_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vrecpsv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrecpsq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vrecpsv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vrsqrts_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vrsqrtsv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vrsqrtsq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vrsqrtsv8hf (__a, __b);
+}
+
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vsub_f16 (float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vsubv4hf (__a, __b);
+}
+
+__extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
+vsubq_f16 (float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vsubv8hf (__a, __b);
+}
+
+#endif /* __ARM_FEATURE_VECTOR_FP16_ARITHMETIC.  */
+#pragma GCC pop_options
+
   /* Half-precision data processing intrinsics.  */
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 
