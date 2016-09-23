@@ -209,3 +209,17 @@ test_macro (void)
                                 ~~~
    { dg-end-multiline-output "" } */
 }
+
+/* Verify that the location of the closing quote is used
+   for the location of the null terminating character.  */
+
+void
+test_terminator_location (void)
+{
+  __emit_string_literal_range ("0123456789", /* { dg-warning "range" } */
+			       10, 10, 10);
+/* { dg-begin-multiline-output "" }
+   __emit_string_literal_range ("0123456789",
+                                           ^
+   { dg-end-multiline-output "" } */
+}

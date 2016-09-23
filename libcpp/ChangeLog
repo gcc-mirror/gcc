@@ -1,3 +1,10 @@
+2016-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/77672
+	* charset.c (cpp_interpret_string_1): Add a source_range for the
+	NUL-terminator, using the location of the trailing quote of the
+	final string.
+
 2016-09-21  Jason Merrill  <jason@redhat.com>
 
 	* line-map.c (linemap_location_from_macro_definition_p): New.

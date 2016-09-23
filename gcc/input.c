@@ -2239,12 +2239,12 @@ test_lexer_string_locations_simple (const line_table_case &case_)
   free (const_cast <unsigned char *> (dst_string.text));
 
   /* Verify ranges of individual characters.  This no longer includes the
-     quotes.  */
-  for (int i = 0; i <= 9; i++)
+     opening quote, but does include the closing quote.  */
+  for (int i = 0; i <= 10; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1,
 			  10 + i, 10 + i);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 10);
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 11);
 }
 
 /* As test_lexer_string_locations_simple, but use an EBCDIC execution
@@ -2339,14 +2339,14 @@ test_lexer_string_locations_hex (const line_table_case &case_)
   free (const_cast <unsigned char *> (dst_string.text));
 
   /* Verify ranges of individual characters.  This no longer includes the
-     quotes.  */
+     opening quote, but does include the closing quote.  */
   for (int i = 0; i <= 4; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
   ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 5, 1, 15, 18);
-  for (int i = 6; i <= 9; i++)
+  for (int i = 6; i <= 10; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 13 + i, 13 + i);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 10);
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 11);
 }
 
 /* Lex a string literal containing an octal-escaped character.
@@ -2380,14 +2380,14 @@ test_lexer_string_locations_oct (const line_table_case &case_)
   free (const_cast <unsigned char *> (dst_string.text));
 
   /* Verify ranges of individual characters.  This no longer includes the
-     quotes.  */
+     opening quote, but does include the closing quote.  */
   for (int i = 0; i < 5; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
   ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 5, 1, 15, 18);
-  for (int i = 6; i <= 9; i++)
+  for (int i = 6; i <= 10; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 13 + i, 13 + i);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 10);
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 11);
 }
 
 /* Test of string literal containing letter escapes.  */
@@ -2420,12 +2420,12 @@ test_lexer_string_locations_letter_escape_1 (const line_table_case &case_)
   ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
 			5, 1, 17, 18);
 
-  /* "bar".  */
-  for (int i = 6; i <= 8; i++)
+  /* "bar" and closing quote for nul-terminator.  */
+  for (int i = 6; i <= 9; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
 			  i, 1, 13 + i, 13 + i);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 9);
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 10);
 }
 
 /* Another test of a string literal containing a letter escape.
@@ -2455,7 +2455,11 @@ test_lexer_string_locations_letter_escape_2 (const line_table_case &case_)
   ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
 			3, 1, 13, 14);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 4);
+  /* Closing quote for nul-terminator.  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			4, 1, 15, 15);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 5);
 }
 
 /* Lex a string literal containing UCN 4 characters.
@@ -2498,6 +2502,7 @@ test_lexer_string_locations_ucn4 (const line_table_case &case_)
      11           0x37         '7'      27
      12           0x38         '8'      28
      13           0x39         '9'      29
+     14           0x00                  30 (closing quote)
      -----------  ----  -----  -------  ---------------.  */
 
   cpp_string dst_string;
@@ -2510,7 +2515,7 @@ test_lexer_string_locations_ucn4 (const line_table_case &case_)
   free (const_cast <unsigned char *> (dst_string.text));
 
   /* Verify ranges of individual characters.  This no longer includes the
-     quotes.
+     opening quote, but does include the closing quote.
      '01234'.  */
   for (int i = 0; i <= 4; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
@@ -2520,11 +2525,11 @@ test_lexer_string_locations_ucn4 (const line_table_case &case_)
   /* U+2175.  */
   for (int i = 8; i <= 10; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 21, 26);
-  /* '789'.  */
-  for (int i = 11; i <= 13; i++)
+  /* '789' and nul terminator  */
+  for (int i = 11; i <= 14; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 16 + i, 16 + i);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 14);
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 15);
 }
 
 /* Lex a string literal containing UCN 8 characters.
@@ -2561,7 +2566,7 @@ test_lexer_string_locations_ucn8 (const line_table_case &case_)
   free (const_cast <unsigned char *> (dst_string.text));
 
   /* Verify ranges of individual characters.  This no longer includes the
-     quotes.
+     opening quote, but does include the closing quote.
      '01234'.  */
   for (int i = 0; i <= 4; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
@@ -2574,8 +2579,10 @@ test_lexer_string_locations_ucn8 (const line_table_case &case_)
   /* '789' at columns 35-37  */
   for (int i = 11; i <= 13; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 24 + i, 24 + i);
+  /* Closing quote/nul-terminator at column 38.  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 14, 1, 38, 38);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 14);
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 15);
 }
 
 /* Fetch a big-endian 32-bit value and convert to host endianness.  */
@@ -2751,8 +2758,8 @@ test_lexer_string_locations_u8 (const line_table_case &case_)
   free (const_cast <unsigned char *> (dst_string.text));
 
   /* Verify ranges of individual characters.  This no longer includes the
-     quotes.  */
-  for (int i = 0; i <= 9; i++)
+     opening quote, but does include the closing quote.  */
+  for (int i = 0; i <= 10; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
 }
 
@@ -2829,13 +2836,15 @@ test_lexer_string_locations_utf8_source (const line_table_case &case_)
   free (const_cast <unsigned char *> (dst_string.text));
 
   /* Verify ranges of individual characters.  This no longer includes the
-     quotes.
+     opening quote, but does include the closing quote.
      Assuming that both source and execution encodings are UTF-8, we have
-     a run of 25 octets in each.  */
+     a run of 25 octets in each, plus the NUL terminator.  */
   for (int i = 0; i < 25; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  /* NUL-terminator should use the closing quote at column 35.  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 25, 1, 35, 35);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 25);
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 26);
 }
 
 /* Test of string literal concatenation.  */
@@ -2881,12 +2890,14 @@ test_lexer_string_locations_concatenation_1 (const line_table_case &case_)
 
   location_t initial_loc = input_locs[0];
 
+  /* "01234" on line 1.  */
   for (int i = 0; i <= 4; i++)
     ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 1, 10 + i, 10 + i);
-  for (int i = 5; i <= 9; i++)
+  /* "56789" in line 2, plus its closing quote for the nul terminator.  */
+  for (int i = 5; i <= 10; i++)
     ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 2, 5 + i, 5 + i);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 10);
+  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 11);
 }
 
 /* Another test of string literal concatenation.  */
@@ -2958,7 +2969,10 @@ test_lexer_string_locations_concatenation_2 (const line_table_case &case_)
       ASSERT_CHAR_AT_RANGE (test, initial_loc, type, (i * 2) + j,
 			    i + 1, 10 + j, 10 + j);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 10);
+  /* NUL-terminator should use the final closing quote at line 5 column 12.  */
+  ASSERT_CHAR_AT_RANGE (test, initial_loc, type, 10, 5, 12, 12);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 11);
 }
 
 /* Another test of string literal concatenation, this time combined with
@@ -3009,7 +3023,10 @@ test_lexer_string_locations_concatenation_3 (const line_table_case &case_)
   for (int i = 7; i <= 9; i++)
     ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 1, 28 + i, 28 + i);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 10);
+  /* NUL-terminator should use the location of the final closing quote.  */
+  ASSERT_CHAR_AT_RANGE (test, initial_loc, type, 10, 1, 38, 38);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 11);
 }
 
 /* Test of string literal in a macro.  */
@@ -3034,11 +3051,11 @@ test_lexer_string_locations_macro (const line_table_case &case_)
 
   /* Verify ranges of individual characters.  We ought to
      see columns within the macro definition.  */
-  for (int i = 0; i <= 9; i++)
+  for (int i = 0; i <= 10; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
 			  i, 1, 20 + i, 20 + i);
 
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 10);
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 11);
 
   tok = test.get_token ();
   ASSERT_EQ (tok->type, CPP_PADDING);
@@ -3132,8 +3149,8 @@ test_lexer_string_locations_long_line (const line_table_case &case_)
     return;
 
   /* Verify ranges of individual characters.  */
-  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 130);
-  for (int i = 0; i < 130; i++)
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 131);
+  for (int i = 0; i < 131; i++)
     ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
 			  i, 2, 7 + i, 7 + i);
 }

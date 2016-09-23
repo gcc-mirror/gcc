@@ -1,3 +1,23 @@
+2016-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/77672
+	* input.c (selftest::test_lexer_string_locations_simple): Update
+	test to expect location information of the terminator character
+	at the location of the final closing quote.
+	(selftest::test_lexer_string_locations_hex): Likewise.
+	(selftest::test_lexer_string_locations_oct): Likewise.
+	(selftest::test_lexer_string_locations_letter_escape_1): Likewise.
+	(selftest::test_lexer_string_locations_letter_escape_2): Likewise.
+	(selftest::test_lexer_string_locations_ucn4): Likewise.
+	(selftest::test_lexer_string_locations_ucn8): Likewise.
+	(selftest::test_lexer_string_locations_u8): Likewise.
+	(selftest::test_lexer_string_locations_utf8_source): Likewise.
+	(selftest::test_lexer_string_locations_concatenation_1): Likewise.
+	(selftest::test_lexer_string_locations_concatenation_2): Likewise.
+	(selftest::test_lexer_string_locations_concatenation_3): Likewise.
+	(selftest::test_lexer_string_locations_macro): Likewise.
+	(selftest::test_lexer_string_locations_long_line): Likewise.
+
 2016-09-23  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (visit_reference_op_call): Value number

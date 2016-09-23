@@ -1538,9 +1538,9 @@ cpp_interpret_string_1 (cpp_reader *pfile, const cpp_string *from, size_t count,
       tbuf.len = 0;
     }
 
+  cpp_string_location_reader *loc_reader = NULL;
   for (i = 0; i < count; i++)
     {
-      cpp_string_location_reader *loc_reader = NULL;
       if (loc_readers)
 	loc_reader = &loc_readers[i];
 
@@ -1651,6 +1651,13 @@ cpp_interpret_string_1 (cpp_reader *pfile, const cpp_string *from, size_t count,
       tbuf.text = XRESIZEVEC (uchar, tbuf.text, tbuf.len);
       to->text = tbuf.text;
       to->len = tbuf.len;
+    }
+  /* Use the location of the trailing quote as the location of the
+     NUL-terminator.  */
+  if (loc_reader)
+    {
+      source_range range = loc_reader->get_next ();
+      out->add_range (range);
     }
 
   return true;
