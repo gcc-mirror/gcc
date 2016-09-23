@@ -54,8 +54,10 @@ GO_OBJS = \
 	go/export.o \
 	go/expressions.o \
 	go/go-backend.o \
+	go/go-diagnostics.o \
 	go/go-dump.o \
 	go/go-gcc.o \
+	go/go-gcc-diagnostics.o \
 	go/go-lang.o \
 	go/go-linemap.o \
 	go/go-optimize.o \
@@ -227,6 +229,7 @@ GOINCLUDES = -I $(srcdir)/go -I $(srcdir)/go/gofrontend
 CFLAGS-go/go-gcc.o += $(GOINCLUDES)
 CFLAGS-go/go-linemap.o += $(GOINCLUDES)
 CFLAGS-go/go-sha1.o += $(GOINCLUDES)
+CFLAGS-go/go-gcc-diagnostics.o += $(GOINCLUDES)
 
 go/%.o: go/gofrontend/%.cc
 	$(COMPILE) $(GOINCLUDES) $<

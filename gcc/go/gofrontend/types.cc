@@ -10,6 +10,7 @@
 
 #include "go-c.h"
 #include "gogo.h"
+#include "go-diagnostics.h"
 #include "operator.h"
 #include "expressions.h"
 #include "statements.h"
@@ -2594,12 +2595,13 @@ Type::backend_type_size(Gogo* gogo, int64_t *psize)
   if (*psize == -1)
     {
       if (this->named_type() != NULL)
-        error_at(this->named_type()->location(),
-                 "type %s larger than address space",
-                 Gogo::message_name(this->named_type()->name()).c_str());
+	go_error_at(this->named_type()->location(),
+		 "type %s larger than address space",
+		 Gogo::message_name(this->named_type()->name()).c_str());
       else
-        error("type %s larger than address space",
-              this->reflection(gogo).c_str());
+	go_error_at(Linemap::unknown_location(),
+		    "type %s larger than address space",
+		    this->reflection(gogo).c_str());
 
       // Make this an error type to avoid knock-on errors.
       this->classification_ = TYPE_ERROR;
@@ -2663,7 +2665,7 @@ Type::import_type(Import* imp)
     return Interface_type::do_import(imp);
   else
     {
-      error_at(imp->location(), "import error: expected type");
+      go_error_at(imp->location(), "import error: expected type");
       return Type::make_error_type();
     }
 }
@@ -4751,13 +4753,13 @@ Struct_type::do_verify()
 	{
 	  if (t->named_type() != NULL && t->points_to() != NULL)
 	    {
-	      error_at(p->location(), "embedded type may not be a pointer");
+	      go_error_at(p->location(), "embedded type may not be a pointer");
 	      p->set_type(Type::make_error_type());
 	    }
 	  else if (t->points_to() != NULL
 		   && t->points_to()->interface_type() != NULL)
 	    {
-	      error_at(p->location(),
+	      go_error_at(p->location(),
 		       "embedded type may not be pointer to interface");
 	      p->set_type(Type::make_error_type());
 	    }
@@ -6116,7 +6118,7 @@ Array_type::verify_length()
 
   if (!this->length_->is_constant())
     {
-      error_at(this->length_->location(), "array bound is not constant");
+      go_error_at(this->length_->location(), "array bound is not constant");
       return false;
     }
 
@@ -6125,9 +6127,9 @@ Array_type::verify_length()
     {
       if (this->length_->type()->integer_type() != NULL
 	  || this->length_->type()->float_type() != NULL)
-	error_at(this->length_->location(), "array bound is not constant");
+	go_error_at(this->length_->location(), "array bound is not constant");
       else
-	error_at(this->length_->location(), "array bound is not numeric");
+	go_error_at(this->length_->location(), "array bound is not numeric");
       return false;
     }
 
@@ -6139,15 +6141,15 @@ Array_type::verify_length()
     case Numeric_constant::NC_UL_VALID:
       if (sizeof(val) >= tbits / 8 && val >> (tbits - 1) != 0)
 	{
-	  error_at(this->length_->location(), "array bound overflows");
+	  go_error_at(this->length_->location(), "array bound overflows");
 	  return false;
 	}
       break;
     case Numeric_constant::NC_UL_NOTINT:
-      error_at(this->length_->location(), "array bound truncated to integer");
+      go_error_at(this->length_->location(), "array bound truncated to integer");
       return false;
     case Numeric_constant::NC_UL_NEGATIVE:
-      error_at(this->length_->location(), "negative array bound");
+      go_error_at(this->length_->location(), "negative array bound");
       return false;
     case Numeric_constant::NC_UL_BIG:
       {
@@ -6158,7 +6160,7 @@ Array_type::verify_length()
 	mpz_clear(val);
 	if (bits >= tbits)
 	  {
-	    error_at(this->length_->location(), "array bound overflows");
+	    go_error_at(this->length_->location(), "array bound overflows");
 	    return false;
 	  }
       }
@@ -7040,7 +7042,7 @@ Map_type::do_verify()
 {
   // The runtime support uses "map[void]void".
   if (!this->key_type_->is_comparable() && !this->key_type_->is_void_type())
-    error_at(this->location_, "invalid map key type");
+    go_error_at(this->location_, "invalid map key type");
   return true;
 }
 
@@ -7173,14 +7175,14 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   int64_t keysize;
   if (!this->key_type_->backend_type_size(gogo, &keysize))
     {
-      error_at(this->location_, "error determining map key type size");
+      go_error_at(this->location_, "error determining map key type size");
       return Expression::make_error(this->location_);
     }
 
   int64_t valsize;
   if (!this->val_type_->backend_type_size(gogo, &valsize))
     {
-      error_at(this->location_, "error determining map value type size");
+      go_error_at(this->location_, "error determining map value type size");
       return Expression::make_error(this->location_);
     }
 
@@ -7835,7 +7837,7 @@ Interface_type::finalize_methods()
       else if (this->find_method(p->name()) == NULL)
 	this->all_methods_->push_back(*p);
       else
-	error_at(p->location(), "duplicate method %qs",
+	go_error_at(p->location(), "duplicate method %qs",
 		 Gogo::message_name(p->name()).c_str());
     }
 
@@ -7852,14 +7854,14 @@ Interface_type::finalize_methods()
       if (it == NULL)
 	{
 	  if (!t->is_error())
-	    error_at(tl, "interface contains embedded non-interface");
+	    go_error_at(tl, "interface contains embedded non-interface");
 	  continue;
 	}
       if (it == this)
 	{
 	  if (!issued_recursive_error)
 	    {
-	      error_at(tl, "invalid recursive interface");
+	      go_error_at(tl, "invalid recursive interface");
 	      issued_recursive_error = true;
 	    }
 	  continue;
@@ -7873,7 +7875,7 @@ Interface_type::finalize_methods()
 	    {
 	      if (*q == nt)
 		{
-		  error_at(tl, "inherited interface loop");
+		  go_error_at(tl, "inherited interface loop");
 		  break;
 		}
 	    }
@@ -7895,7 +7897,7 @@ Interface_type::finalize_methods()
 	    this->all_methods_->push_back(Typed_identifier(q->name(),
 							   q->type(), tl));
 	  else
-	    error_at(tl, "inherited method %qs is ambiguous",
+	    go_error_at(tl, "inherited method %qs is ambiguous",
 		     Gogo::message_name(q->name()).c_str());
 	}
     }
@@ -8045,8 +8047,8 @@ Interface_type::is_compatible_for_assign(const Interface_type* t,
 	      char buf[200];
 	      snprintf(buf, sizeof buf,
 		       _("need explicit conversion; missing method %s%s%s"),
-		       open_quote, Gogo::message_name(p->name()).c_str(),
-		       close_quote);
+		       go_open_quote(), Gogo::message_name(p->name()).c_str(),
+		       go_close_quote());
 	      reason->assign(buf);
 	    }
 	  return false;
@@ -8062,11 +8064,11 @@ Interface_type::is_compatible_for_assign(const Interface_type* t,
 	      char* buf = new char[len];
 	      if (subreason.empty())
 		snprintf(buf, len, _("incompatible type for method %s%s%s"),
-			 open_quote, n.c_str(), close_quote);
+			 go_open_quote(), n.c_str(), go_close_quote());
 	      else
 		snprintf(buf, len,
 			 _("incompatible type for method %s%s%s (%s)"),
-			 open_quote, n.c_str(), close_quote,
+			 go_open_quote(), n.c_str(), go_close_quote(),
 			 subreason.c_str());
 	      reason->assign(buf);
 	      delete[] buf;
@@ -8181,10 +8183,10 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
 	      char* buf = new char[len];
 	      if (is_ambiguous)
 		snprintf(buf, len, _("ambiguous method %s%s%s"),
-			 open_quote, n.c_str(), close_quote);
+			 go_open_quote(), n.c_str(), go_close_quote());
 	      else
 		snprintf(buf, len, _("missing method %s%s%s"),
-			 open_quote, n.c_str(), close_quote);
+			 go_open_quote(), n.c_str(), go_close_quote());
 	      reason->assign(buf);
 	      delete[] buf;
 	    }
@@ -8204,11 +8206,11 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
 	      char* buf = new char[len];
 	      if (subreason.empty())
 		snprintf(buf, len, _("incompatible type for method %s%s%s"),
-			 open_quote, n.c_str(), close_quote);
+			 go_open_quote(), n.c_str(), go_close_quote());
 	      else
 		snprintf(buf, len,
 			 _("incompatible type for method %s%s%s (%s)"),
-			 open_quote, n.c_str(), close_quote,
+			 go_open_quote(), n.c_str(), go_close_quote(),
 			 subreason.c_str());
 	      reason->assign(buf);
 	      delete[] buf;
@@ -8225,7 +8227,7 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
 	      char* buf = new char[len];
 	      snprintf(buf, len,
 		       _("method %s%s%s requires a pointer receiver"),
-		       open_quote, n.c_str(), close_quote);
+		       go_open_quote(), n.c_str(), go_close_quote());
 	      reason->assign(buf);
 	      delete[] buf;
 	    }
@@ -8243,7 +8245,7 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
 	      char* buf = new char[len];
 	      snprintf(buf, len,
 		       _("method %s%s%s is marked go:nointerface"),
-		       open_quote, n.c_str(), close_quote);
+		       go_open_quote(), n.c_str(), go_close_quote());
 	      reason->assign(buf);
 	      delete[] buf;
 	    }
@@ -9177,8 +9179,8 @@ Named_type::finalize_methods(Gogo* gogo)
       for (Bindings::const_declarations_iterator p = lm->begin_declarations();
 	   p != lm->end_declarations();
 	   ++p)
-	error_at(p->second->location(),
-		 "invalid pointer or interface receiver type");
+	go_error_at(p->second->location(),
+		    "invalid pointer or interface receiver type");
       delete this->local_methods_;
       this->local_methods_ = NULL;
       return;
@@ -9335,8 +9337,8 @@ Named_type::do_verify()
   Type::traverse(this->type_, &find);
   if (find.found())
     {
-      error_at(this->location_, "invalid recursive type %qs",
-	       this->message_name().c_str());
+      go_error_at(this->location_, "invalid recursive type %qs",
+		  this->message_name().c_str());
       this->is_error_ = true;
       return false;
     }
@@ -9358,9 +9360,9 @@ Named_type::do_verify()
 	      const std::string& name(p->first);
 	      if (st != NULL && st->find_local_field(name, NULL) != NULL)
 		{
-		  error_at(p->second->location(),
-			   "method %qs redeclares struct field name",
-			   Gogo::message_name(name).c_str());
+		  go_error_at(p->second->location(),
+			      "method %qs redeclares struct field name",
+			      Gogo::message_name(name).c_str());
 		}
 	    }
 	}
@@ -10547,9 +10549,9 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	  go_assert(m != NULL);
 	  if (dereferenced)
 	    {
-	      error_at(location,
-		       "calling method %qs requires explicit dereference",
-		       Gogo::message_name(name).c_str());
+	      go_error_at(location,
+			  "calling method %qs requires explicit dereference",
+			  Gogo::message_name(name).c_str());
 	      return Expression::make_error(location);
 	    }
 	  if (!m->is_value_method() && expr->type()->points_to() == NULL)
@@ -10566,16 +10568,16 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	  // An error was already reported.
 	}
       else if (!ambig1.empty())
-	error_at(location, "%qs is ambiguous via %qs and %qs",
-		 Gogo::message_name(name).c_str(), ambig1.c_str(),
-		 ambig2.c_str());
+	go_error_at(location, "%qs is ambiguous via %qs and %qs",
+		    Gogo::message_name(name).c_str(), ambig1.c_str(),
+		    ambig2.c_str());
       else if (found_pointer_method)
-	error_at(location, "method requires a pointer receiver");
+	go_error_at(location, "method requires a pointer receiver");
       else if (nt == NULL && st == NULL && it == NULL)
-	error_at(location,
-		 ("reference to field %qs in object which "
-		  "has no fields or methods"),
-		 Gogo::message_name(name).c_str());
+	go_error_at(location,
+		    ("reference to field %qs in object which "
+		     "has no fields or methods"),
+		    Gogo::message_name(name).c_str());
       else
 	{
 	  bool is_unexported;
@@ -10592,11 +10594,11 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 								  &seen);
 	    }
 	  if (is_unexported)
-	    error_at(location, "reference to unexported field or method %qs",
-		     Gogo::message_name(name).c_str());
+	    go_error_at(location, "reference to unexported field or method %qs",
+			Gogo::message_name(name).c_str());
 	  else
-	    error_at(location, "reference to undefined field or method %qs",
-		     Gogo::message_name(name).c_str());
+	    go_error_at(location, "reference to undefined field or method %qs",
+			Gogo::message_name(name).c_str());
 	}
       return Expression::make_error(location);
     }
@@ -10945,9 +10947,9 @@ Forward_declaration_type::warn() const
       // The name was not defined anywhere.
       if (!this->warned_)
 	{
-	  error_at(this->named_object_->location(),
-		   "use of undefined type %qs",
-		   no->message_name().c_str());
+	  go_error_at(this->named_object_->location(),
+		      "use of undefined type %qs",
+		      no->message_name().c_str());
 	  this->warned_ = true;
 	}
     }
@@ -10956,9 +10958,9 @@ Forward_declaration_type::warn() const
       // The name was seen as a type, but the type was never defined.
       if (no->type_declaration_value()->using_type())
 	{
-	  error_at(this->named_object_->location(),
-		   "use of undefined type %qs",
-		   no->message_name().c_str());
+	  go_error_at(this->named_object_->location(),
+		      "use of undefined type %qs",
+		      no->message_name().c_str());
 	  this->warned_ = true;
 	}
     }
@@ -10967,7 +10969,7 @@ Forward_declaration_type::warn() const
       // The name was defined, but not as a type.
       if (!this->warned_)
 	{
-	  error_at(this->named_object_->location(), "expected type");
+	  go_error_at(this->named_object_->location(), "expected type");
 	  this->warned_ = true;
 	}
     }

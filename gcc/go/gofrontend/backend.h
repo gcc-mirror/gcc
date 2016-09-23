@@ -55,7 +55,7 @@ class Backend
     Location location;
 
     Btyped_identifier()
-      : name(), btype(NULL), location(UNKNOWN_LOCATION)
+        : name(), btype(NULL), location(Linemap::unknown_location())
     { }
 
     Btyped_identifier(const std::string& a_name, Btype* a_btype,

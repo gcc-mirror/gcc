@@ -16,6 +16,7 @@
 #include "ast-dump.h"
 #include "go-c.h"
 #include "go-dump.h"
+#include "go-diagnostics.h"
 
 // The -fgo-dump-ast flag to activate AST dumps.
 
@@ -173,7 +174,8 @@ Ast_dump_context::dump(Gogo* gogo, const char* basename)
 
   if (out.fail())
     {
-      error("cannot open %s:%m, -fgo-dump-ast ignored", dumpname.c_str());
+      go_error_at(Linemap::unknown_location(),
+		  "cannot open %s:%m, -fgo-dump-ast ignored", dumpname.c_str());
       return;
     }
 

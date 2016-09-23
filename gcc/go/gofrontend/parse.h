@@ -81,7 +81,8 @@ class Parse
     Expression* expr;
 
     Type_switch()
-      : found(false), name(), location(UNKNOWN_LOCATION), expr(NULL)
+        : found(false), name(), location(Linemap::unknown_location()),
+          expr(NULL)
     { }
   };
 

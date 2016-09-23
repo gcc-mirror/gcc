@@ -10,6 +10,7 @@
 
 #include "go-c.h"
 #include "gogo.h"
+#include "go-diagnostics.h"
 #include "types.h"
 #include "export.h"
 #include "import.h"
@@ -107,7 +108,7 @@ Expression::set_is_error()
 void
 Expression::report_error(const char* msg)
 {
-  error_at(this->location_, "%s", msg);
+  go_error_at(this->location_, "%s", msg);
   this->set_is_error();
 }
 
@@ -1139,9 +1140,9 @@ Func_expression::get_code_pointer(Gogo* gogo, Named_object* no, Location loc)
   // can't take their address.
   if (fntype->is_builtin())
     {
-      error_at(loc,
-	       "invalid use of special builtin function %qs; must be called",
-	       no->message_name().c_str());
+      go_error_at(loc,
+		  "invalid use of special builtin function %qs; must be called",
+		  no->message_name().c_str());
       return gogo->backend()->error_expression();
     }
 
@@ -1178,10 +1179,10 @@ Func_expression::do_get_backend(Translate_context* context)
 	{
 	  if (no->func_declaration_value()->type()->is_builtin())
 	    {
-	      error_at(this->location(),
-		       ("invalid use of special builtin function %qs; "
-			"must be called"),
-		       no->message_name().c_str());
+	      go_error_at(this->location(),
+			  ("invalid use of special builtin function %qs; "
+			   "must be called"),
+			  no->message_name().c_str());
 	      return gogo->backend()->error_expression();
 	    }
 	  descriptor = no->func_declaration_value()->descriptor(gogo, no);
@@ -1447,8 +1448,8 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 	  if (this->is_composite_literal_key_)
 	    return this;
 	  if (!this->no_error_message_)
-	    error_at(location, "reference to undefined name %qs",
-		     this->named_object_->message_name().c_str());
+	    go_error_at(location, "reference to undefined name %qs",
+			this->named_object_->message_name().c_str());
 	  return Expression::make_error(location);
 	}
     }
@@ -1462,8 +1463,8 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
       if (this->is_composite_literal_key_)
 	return this;
       if (!this->no_error_message_)
-	error_at(location, "reference to undefined type %qs",
-		 real->message_name().c_str());
+	go_error_at(location, "reference to undefined type %qs",
+		    real->message_name().c_str());
       return Expression::make_error(location);
     case Named_object::NAMED_OBJECT_VAR:
       real->var_value()->set_is_used();
@@ -1475,7 +1476,7 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
       if (this->is_composite_literal_key_)
 	return this;
       if (!this->no_error_message_)
-	error_at(location, "unexpected reference to package");
+	go_error_at(location, "unexpected reference to package");
       return Expression::make_error(location);
     default:
       go_unreachable();
@@ -1726,7 +1727,7 @@ String_expression::do_import(Import* imp)
 	    }
 	  else
 	    {
-	      error_at(imp->location(), "bad string constant");
+	      go_error_at(imp->location(), "bad string constant");
 	      return Expression::make_error(imp->location());
 	    }
 	}
@@ -2036,8 +2037,8 @@ Integer_expression::do_get_backend(Translate_context* context)
       else
         {
           if (!saw_errors())
-            error_at(this->location(),
-                     "unknown type for large integer constant");
+            go_error_at(this->location(),
+                        "unknown type for large integer constant");
           return context->gogo()->backend()->error_expression();
         }
     }
@@ -2088,8 +2089,8 @@ Integer_expression::do_import(Import* imp)
 	pos = plus_pos;
       else
 	{
-	  error_at(imp->location(), "bad number in import data: %qs",
-		   num.c_str());
+	  go_error_at(imp->location(), "bad number in import data: %qs",
+		      num.c_str());
 	  return Expression::make_error(imp->location());
 	}
       if (pos == std::string::npos)
@@ -2099,8 +2100,8 @@ Integer_expression::do_import(Import* imp)
 	  std::string real_str = num.substr(0, pos);
 	  if (mpfr_init_set_str(real, real_str.c_str(), 10, GMP_RNDN) != 0)
 	    {
-	      error_at(imp->location(), "bad number in import data: %qs",
-		       real_str.c_str());
+	      go_error_at(imp->location(), "bad number in import data: %qs",
+			  real_str.c_str());
 	      return Expression::make_error(imp->location());
 	    }
 	}
@@ -2114,8 +2115,8 @@ Integer_expression::do_import(Import* imp)
       mpfr_t imag;
       if (mpfr_init_set_str(imag, imag_str.c_str(), 10, GMP_RNDN) != 0)
 	{
-	  error_at(imp->location(), "bad number in import data: %qs",
-		   imag_str.c_str());
+	  go_error_at(imp->location(), "bad number in import data: %qs",
+		      imag_str.c_str());
 	  return Expression::make_error(imp->location());
 	}
       mpc_t cval;
@@ -2137,8 +2138,8 @@ Integer_expression::do_import(Import* imp)
       mpz_t val;
       if (mpz_init_set_str(val, num.c_str(), 10) != 0)
 	{
-	  error_at(imp->location(), "bad number in import data: %qs",
-		   num.c_str());
+	  go_error_at(imp->location(), "bad number in import data: %qs",
+		      num.c_str());
 	  return Expression::make_error(imp->location());
 	}
       Expression* ret;
@@ -2154,8 +2155,8 @@ Integer_expression::do_import(Import* imp)
       mpfr_t val;
       if (mpfr_init_set_str(val, num.c_str(), 10, GMP_RNDN) != 0)
 	{
-	  error_at(imp->location(), "bad number in import data: %qs",
-		   num.c_str());
+	  go_error_at(imp->location(), "bad number in import data: %qs",
+		      num.c_str());
 	  return Expression::make_error(imp->location());
 	}
       Expression* ret = Expression::make_float(&val, NULL, imp->location());
@@ -2758,8 +2759,8 @@ Const_expression::do_lower(Gogo* gogo, Named_object*,
     {
       if (iota_value == -1)
 	{
-	  error_at(this->location(),
-		   "iota is only defined in const declarations");
+	  go_error_at(this->location(),
+		      "iota is only defined in const declarations");
 	  iota_value = 0;
 	}
       return Expression::make_integer_ul(iota_value, NULL, this->location());
@@ -3215,7 +3216,7 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 		      int adv = Lex::fetch_char(p, &c);
 		      if (adv == 0)
 			{
-			  warning_at(this->location(), 0,
+			  go_warning_at(this->location(), 0,
 				     "invalid UTF-8 encoding");
 			  adv = 1;
 			}
@@ -3374,7 +3375,7 @@ Type_conversion_expression::do_check_types(Gogo*)
   if (Type::are_convertible(type, expr_type, &reason))
     return;
 
-  error_at(this->location(), "%s", reason.c_str());
+  go_error_at(this->location(), "%s", reason.c_str());
   this->set_is_error();
 }
 
@@ -3691,8 +3692,8 @@ Unary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 		  // *&x == x.
 		  if (!ue->expr_->is_addressable() && !ue->create_temp_)
 		    {
-		      error_at(ue->location(),
-			       "invalid operand for unary %<&%>");
+		      go_error_at(ue->location(),
+				  "invalid operand for unary %<&%>");
 		      this->set_is_error();
 		    }
 		  return ue->expr_;
@@ -3706,7 +3707,7 @@ Unary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
   // having to deal with TYPE_VOID in other places.
   if (op == OPERATOR_MULT && expr->type()->is_unsafe_pointer_type())
     {
-      error_at(this->location(), "invalid indirect of %<unsafe.Pointer%>");
+      go_error_at(this->location(), "invalid indirect of %<unsafe.Pointer%>");
       return Expression::make_error(this->location());
     }
 
@@ -4116,7 +4117,7 @@ Unary_expression::do_check_types(Gogo*)
 	{
 	  if (!this->create_temp_)
 	    {
-	      error_at(this->location(), "invalid operand for unary %<&%>");
+	      go_error_at(this->location(), "invalid operand for unary %<&%>");
 	      this->set_is_error();
 	    }
 	}
@@ -4723,7 +4724,7 @@ Binary_expression::eval_integer(Operator op, const Numeric_constant* left_nc,
       mpz_add(val, left_val, right_val);
       if (mpz_sizeinbase(val, 2) > 0x100000)
 	{
-	  error_at(location, "constant addition overflow");
+	  go_error_at(location, "constant addition overflow");
           nc->set_invalid();
 	  mpz_set_ui(val, 1);
 	}
@@ -4732,7 +4733,7 @@ Binary_expression::eval_integer(Operator op, const Numeric_constant* left_nc,
       mpz_sub(val, left_val, right_val);
       if (mpz_sizeinbase(val, 2) > 0x100000)
 	{
-	  error_at(location, "constant subtraction overflow");
+	  go_error_at(location, "constant subtraction overflow");
           nc->set_invalid();
 	  mpz_set_ui(val, 1);
 	}
@@ -4747,7 +4748,7 @@ Binary_expression::eval_integer(Operator op, const Numeric_constant* left_nc,
       mpz_mul(val, left_val, right_val);
       if (mpz_sizeinbase(val, 2) > 0x100000)
 	{
-	  error_at(location, "constant multiplication overflow");
+	  go_error_at(location, "constant multiplication overflow");
           nc->set_invalid();
 	  mpz_set_ui(val, 1);
 	}
@@ -4757,7 +4758,7 @@ Binary_expression::eval_integer(Operator op, const Numeric_constant* left_nc,
 	mpz_tdiv_q(val, left_val, right_val);
       else
 	{
-	  error_at(location, "division by zero");
+	  go_error_at(location, "division by zero");
           nc->set_invalid();
 	  mpz_set_ui(val, 0);
 	}
@@ -4767,7 +4768,7 @@ Binary_expression::eval_integer(Operator op, const Numeric_constant* left_nc,
 	mpz_tdiv_r(val, left_val, right_val);
       else
 	{
-	  error_at(location, "division by zero");
+	  go_error_at(location, "division by zero");
           nc->set_invalid();
 	  mpz_set_ui(val, 0);
 	}
@@ -4779,7 +4780,7 @@ Binary_expression::eval_integer(Operator op, const Numeric_constant* left_nc,
 	  mpz_mul_2exp(val, left_val, shift);
 	else
 	  {
-	    error_at(location, "shift count overflow");
+	    go_error_at(location, "shift count overflow");
             nc->set_invalid();
 	    mpz_set_ui(val, 1);
 	  }
@@ -4791,7 +4792,7 @@ Binary_expression::eval_integer(Operator op, const Numeric_constant* left_nc,
 	unsigned long shift = mpz_get_ui(right_val);
 	if (mpz_cmp_ui(right_val, shift) != 0)
 	  {
-	    error_at(location, "shift count overflow");
+	    go_error_at(location, "shift count overflow");
             nc->set_invalid();
 	    mpz_set_ui(val, 1);
 	  }
@@ -4886,7 +4887,7 @@ Binary_expression::eval_float(Operator op, const Numeric_constant* left_nc,
 	mpfr_div(val, left_val, right_val, GMP_RNDN);
       else
 	{
-	  error_at(location, "division by zero");
+	  go_error_at(location, "division by zero");
           nc->set_invalid();
 	  mpfr_set_ui(val, 0, GMP_RNDN);
 	}
@@ -4951,7 +4952,7 @@ Binary_expression::eval_complex(Operator op, const Numeric_constant* left_nc,
     case OPERATOR_DIV:
       if (mpc_cmp_si(right_val, 0) == 0)
 	{
-	  error_at(location, "division by zero");
+	  go_error_at(location, "division by zero");
           nc->set_invalid();
 	  mpc_set_ui(val, 0, MPC_RNDNN);
 	  break;
@@ -5542,7 +5543,7 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
       if (!type->is_boolean_type()
           || !otype->is_boolean_type())
 	{
-	  error_at(location, "expected boolean type");
+	  go_error_at(location, "expected boolean type");
 	  return false;
 	}
       break;
@@ -5553,7 +5554,7 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
 	std::string reason;
 	if (!Type::are_compatible_for_comparison(true, type, otype, &reason))
 	  {
-	    error_at(location, "%s", reason.c_str());
+	    go_error_at(location, "%s", reason.c_str());
 	    return false;
 	  }
       }
@@ -5567,7 +5568,7 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
 	std::string reason;
 	if (!Type::are_compatible_for_comparison(false, type, otype, &reason))
 	  {
-	    error_at(location, "%s", reason.c_str());
+	    go_error_at(location, "%s", reason.c_str());
 	    return false;
 	  }
       }
@@ -5578,7 +5579,7 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
       if ((!type->is_numeric_type() && !type->is_string_type())
           || (!otype->is_numeric_type() && !otype->is_string_type()))
 	{
-	  error_at(location,
+	  go_error_at(location,
 		   "expected integer, floating, complex, or string type");
 	  return false;
 	}
@@ -5592,7 +5593,7 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
     case OPERATOR_DIVEQ:
       if (!type->is_numeric_type() || !otype->is_numeric_type())
 	{
-	  error_at(location, "expected integer, floating, or complex type");
+	  go_error_at(location, "expected integer, floating, or complex type");
 	  return false;
 	}
       break;
@@ -5609,7 +5610,7 @@ Binary_expression::check_operator_type(Operator op, Type* type, Type* otype,
     case OPERATOR_BITCLEAREQ:
       if (type->integer_type() == NULL || otype->integer_type() == NULL)
 	{
-	  error_at(location, "expected integer type");
+	  go_error_at(location, "expected integer type");
 	  return false;
 	}
       break;
@@ -6135,7 +6136,7 @@ Binary_expression::do_import(Import* imp)
     }
   else
     {
-      error_at(imp->location(), "unrecognized binary operator");
+      go_error_at(imp->location(), "unrecognized binary operator");
       return Expression::make_error(imp->location());
     }
 
@@ -6925,7 +6926,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	    Expression* arg = args->front();
 	    if (!arg->is_type_expression())
 	      {
-		error_at(arg->location(), "expected type");
+		go_error_at(arg->location(), "expected type");
 		this->set_is_error();
 	      }
 	    else
@@ -6959,10 +6960,10 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	if (!slice_type->is_slice_type())
 	  {
 	    if (slice_type->is_nil_type())
-	      error_at(args->front()->location(), "use of untyped nil");
+	      go_error_at(args->front()->location(), "use of untyped nil");
 	    else
-	      error_at(args->front()->location(),
-		       "argument 1 must be a slice");
+	      go_error_at(args->front()->location(),
+			  "argument 1 must be a slice");
 	    this->set_is_error();
 	    return this;
 	  }
@@ -7103,7 +7104,7 @@ Builtin_call_expression::lower_make()
   Expression* first_arg = *parg;
   if (!first_arg->is_type_expression())
     {
-      error_at(first_arg->location(), "expected type");
+      go_error_at(first_arg->location(), "expected type");
       this->set_is_error();
       return Expression::make_error(this->location());
     }
@@ -7235,12 +7236,12 @@ Builtin_call_expression::check_int_value(Expression* e, bool is_length)
 	case Numeric_constant::NC_UL_VALID:
 	  break;
 	case Numeric_constant::NC_UL_NOTINT:
-	  error_at(e->location(), "non-integer %s argument to make",
-		   is_length ? "len" : "cap");
+	  go_error_at(e->location(), "non-integer %s argument to make",
+		      is_length ? "len" : "cap");
 	  return false;
 	case Numeric_constant::NC_UL_NEGATIVE:
-	  error_at(e->location(), "negative %s argument to make",
-		   is_length ? "len" : "cap");
+	  go_error_at(e->location(), "negative %s argument to make",
+		      is_length ? "len" : "cap");
 	  return false;
 	case Numeric_constant::NC_UL_BIG:
 	  // We don't want to give a compile-time error for a 64-bit
@@ -7256,8 +7257,8 @@ Builtin_call_expression::check_int_value(Expression* e, bool is_length)
       Type* int_type = Type::lookup_integer_type("int");
       if (bits >= int_type->integer_type()->bits())
 	{
-	  error_at(e->location(), "%s argument too large for make",
-		   is_length ? "len" : "cap");
+	  go_error_at(e->location(), "%s argument too large for make",
+		      is_length ? "len" : "cap");
 	  return false;
 	}
 
@@ -7267,8 +7268,8 @@ Builtin_call_expression::check_int_value(Expression* e, bool is_length)
   if (e->type()->integer_type() != NULL)
     return true;
 
-  error_at(e->location(), "non-integer %s argument to make",
-	   is_length ? "len" : "cap");
+  go_error_at(e->location(), "non-integer %s argument to make",
+	      is_length ? "len" : "cap");
   return false;
 }
 
@@ -7976,7 +7977,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	if (args == NULL)
 	  {
 	    if (this->code_ == BUILTIN_PRINT)
-	      warning_at(this->location(), 0,
+	      go_warning_at(this->location(), 0,
 			 "no arguments for builtin function %<%s%>",
 			 (this->code_ == BUILTIN_PRINT
 			  ? "print"
@@ -8136,8 +8137,9 @@ Builtin_call_expression::do_check_types(Gogo*)
 	      this->report_error(_("argument 2 has invalid type"));
 	    else
 	      {
-		error_at(this->location(), "argument 2 has invalid type (%s)",
-			 reason.c_str());
+		go_error_at(this->location(),
+			    "argument 2 has invalid type (%s)",
+			    reason.c_str());
 		this->set_is_error();
 	      }
 	  }
@@ -8618,7 +8620,7 @@ Builtin_call_expression::do_export(Export* exp) const
   Numeric_constant nc;
   if (!this->numeric_constant_value(&nc))
     {
-      error_at(this->location(), "value is not constant");
+      go_error_at(this->location(), "value is not constant");
       return;
     }
 
@@ -8794,8 +8796,8 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	      // the ellipsis operator should be applied to.  If we unpack the
 	      // the call into its individual results here, the ellipsis will be
 	      // applied to the last result.
-	      error_at(call->location(),
-		       _("multiple-value argument in single-value context"));
+	      go_error_at(call->location(),
+			  _("multiple-value argument in single-value context"));
 	      return Expression::make_error(call->location());
 	    }
 
@@ -8998,8 +9000,8 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 	    this->report_error(_("too many arguments"));
 	  else
 	    {
-	      error_at(this->location(),
-		       _("invalid use of %<...%> with non-slice"));
+	      go_error_at(this->location(),
+			  _("invalid use of %<...%> with non-slice"));
 	      this->set_is_error();
 	    }
 	  return;
@@ -9365,11 +9367,11 @@ Call_expression::check_argument_type(int i, const Type* parameter_type,
       if (!issued_error)
 	{
 	  if (reason.empty())
-	    error_at(argument_location, "argument %d has incompatible type", i);
+	    go_error_at(argument_location, "argument %d has incompatible type", i);
 	  else
-	    error_at(argument_location,
-		     "argument %d has incompatible type (%s)",
-		     i, reason.c_str());
+	    go_error_at(argument_location,
+			"argument %d has incompatible type (%s)",
+			i, reason.c_str());
 	}
       this->set_is_error();
       return false;
@@ -9418,9 +9420,9 @@ Call_expression::do_check_types(Gogo*)
 	    this->report_error(_("incompatible type for receiver"));
 	  else
 	    {
-	      error_at(this->location(),
-		       "incompatible type for receiver (%s)",
-		       reason.c_str());
+	      go_error_at(this->location(),
+                          "incompatible type for receiver (%s)",
+                          reason.c_str());
 	      this->set_is_error();
 	    }
 	}
@@ -9432,8 +9434,8 @@ Call_expression::do_check_types(Gogo*)
     {
       if (!fntype->is_varargs())
 	{
-	  error_at(this->location(),
-		   _("invalid use of %<...%> calling non-variadic function"));
+	  go_error_at(this->location(),
+                      _("invalid use of %<...%> calling non-variadic function"));
 	  this->set_is_error();
 	  return;
 	}
@@ -9910,7 +9912,7 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     }
   else if (left->is_type_expression())
     {
-      error_at(location, "attempt to index type expression");
+      go_error_at(location, "attempt to index type expression");
       return Expression::make_error(location);
     }
   else if (type->array_type() != NULL)
@@ -9935,7 +9937,7 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     {
       if (cap != NULL)
         {
-          error_at(location, "invalid 3-index slice of string");
+          go_error_at(location, "invalid 3-index slice of string");
           return Expression::make_error(location);
         }
       return Expression::make_string_index(left, start, end, location);
@@ -9944,15 +9946,15 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     {
       if (end != NULL || cap != NULL)
 	{
-	  error_at(location, "invalid slice of map");
+	  go_error_at(location, "invalid slice of map");
 	  return Expression::make_error(location);
 	}
       return Expression::make_map_index(left, start, location);
     }
   else
     {
-      error_at(location,
-	       "attempt to index object which is not array, string, or map");
+      go_error_at(location,
+                  "attempt to index object which is not array, string, or map");
       return Expression::make_error(location);
     }
 }
@@ -10138,7 +10140,7 @@ Array_index_expression::do_check_types(Gogo*)
 		  ? mpz_cmp(ival, lval) >= 0
 		  : mpz_cmp(ival, lval) > 0)))
 	{
-	  error_at(this->start_->location(), "array index out of bounds");
+	  go_error_at(this->start_->location(), "array index out of bounds");
 	  this->set_is_error();
 	}
     }
@@ -10154,7 +10156,7 @@ Array_index_expression::do_check_types(Gogo*)
 	      || mpz_sizeinbase(eval, 2) >= int_bits
 	      || (lval_valid && mpz_cmp(eval, lval) > 0))
 	    {
-	      error_at(this->end_->location(), "array index out of bounds");
+	      go_error_at(this->end_->location(), "array index out of bounds");
 	      this->set_is_error();
 	    }
 	  else if (ival_valid && mpz_cmp(ival, eval) > 0)
@@ -10170,19 +10172,19 @@ Array_index_expression::do_check_types(Gogo*)
               || mpz_sizeinbase(cval, 2) >= int_bits
               || (lval_valid && mpz_cmp(cval, lval) > 0))
             {
-              error_at(this->cap_->location(), "array index out of bounds");
+              go_error_at(this->cap_->location(), "array index out of bounds");
               this->set_is_error();
             }
 	  else if (ival_valid && mpz_cmp(ival, cval) > 0)
 	    {
-	      error_at(this->cap_->location(),
-		       "invalid slice index: capacity less than start");
+	      go_error_at(this->cap_->location(),
+                          "invalid slice index: capacity less than start");
 	      this->set_is_error();
 	    }
           else if (eval_valid && mpz_cmp(eval, cval) > 0)
             {
-              error_at(this->cap_->location(),
-                       "invalid slice index: capacity less than length");
+              go_error_at(this->cap_->location(),
+                          "invalid slice index: capacity less than length");
               this->set_is_error();
             }
           mpz_clear(cval);
@@ -10611,7 +10613,7 @@ String_index_expression::do_check_types(Gogo*)
 		  ? mpz_cmp_ui(ival, sval.length()) >= 0
 		  : mpz_cmp_ui(ival, sval.length()) > 0)))
 	{
-	  error_at(this->start_->location(), "string index out of bounds");
+	  go_error_at(this->start_->location(), "string index out of bounds");
 	  this->set_is_error();
 	}
     }
@@ -10624,7 +10626,7 @@ String_index_expression::do_check_types(Gogo*)
 	  if (mpz_sgn(eval) < 0
 	      || (sval_valid && mpz_cmp_ui(eval, sval.length()) > 0))
 	    {
-	      error_at(this->end_->location(), "string index out of bounds");
+	      go_error_at(this->end_->location(), "string index out of bounds");
 	      this->set_is_error();
 	    }
 	  else if (ival_valid && mpz_cmp(ival, eval) > 0)
@@ -10854,8 +10856,8 @@ Map_index_expression::do_check_types(Gogo*)
 	this->report_error(_("incompatible type for map index"));
       else
 	{
-	  error_at(this->location(), "incompatible type for map index (%s)",
-		   reason.c_str());
+	  go_error_at(this->location(), "incompatible type for map index (%s)",
+                      reason.c_str());
 	  this->set_is_error();
 	}
     }
@@ -11226,8 +11228,8 @@ Interface_field_reference_expression::do_check_types(Gogo*)
 	interface_type->find_method(this->name_);
       if (method == NULL)
 	{
-	  error_at(this->location(), "method %qs not in interface",
-		   Gogo::message_name(this->name_).c_str());
+	  go_error_at(this->location(), "method %qs not in interface",
+                      Gogo::message_name(this->name_).c_str());
 	  this->set_is_error();
 	}
     }
@@ -11505,9 +11507,9 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   Named_type* nt = type->named_type();
   if (nt == NULL)
     {
-      error_at(location,
-	       ("method expression requires named type or "
-		"pointer to named type"));
+      go_error_at(location,
+                  ("method expression requires named type or "
+                   "pointer to named type"));
       return Expression::make_error(location);
     }
 
@@ -11525,23 +11527,23 @@ Selector_expression::lower_method_expression(Gogo* gogo)
       || (left_type->named_type() != NULL && left_type->points_to() != NULL))
     {
       if (!is_ambiguous)
-	error_at(location, "type %<%s%s%> has no method %<%s%>",
-		 is_pointer ? "*" : "",
-		 nt->message_name().c_str(),
-		 Gogo::message_name(name).c_str());
+	go_error_at(location, "type %<%s%s%> has no method %<%s%>",
+                    is_pointer ? "*" : "",
+                    nt->message_name().c_str(),
+                    Gogo::message_name(name).c_str());
       else
-	error_at(location, "method %<%s%s%> is ambiguous in type %<%s%>",
-		 Gogo::message_name(name).c_str(),
-		 is_pointer ? "*" : "",
-		 nt->message_name().c_str());
+	go_error_at(location, "method %<%s%s%> is ambiguous in type %<%s%>",
+                    Gogo::message_name(name).c_str(),
+                    is_pointer ? "*" : "",
+                    nt->message_name().c_str());
       return Expression::make_error(location);
     }
 
   if (method != NULL && !is_pointer && !method->is_value_method())
     {
-      error_at(location, "method requires pointer (use %<(*%s).%s%>)",
-	       nt->message_name().c_str(),
-	       Gogo::message_name(name).c_str());
+      go_error_at(location, "method requires pointer (use %<(*%s).%s%>)",
+                  nt->message_name().c_str(),
+                  Gogo::message_name(name).c_str());
       return Expression::make_error(location);
     }
 
@@ -11916,14 +11918,14 @@ Struct_construction_expression::do_check_types(Gogo*)
       if (!Type::are_assignable(pf->type(), (*pv)->type(), &reason))
 	{
 	  if (reason.empty())
-	    error_at((*pv)->location(),
-		     "incompatible type for field %d in struct construction",
-		     i + 1);
+	    go_error_at((*pv)->location(),
+                        "incompatible type for field %d in struct construction",
+                        i + 1);
 	  else
-	    error_at((*pv)->location(),
-		     ("incompatible type for field %d in "
-		      "struct construction (%s)"),
-		     i + 1, reason.c_str());
+	    go_error_at((*pv)->location(),
+                        ("incompatible type for field %d in "
+                         "struct construction (%s)"),
+                        i + 1, reason.c_str());
 	  this->set_is_error();
 	}
     }
@@ -12138,9 +12140,9 @@ Array_construction_expression::do_check_types(Gogo*)
       if (*pv != NULL
 	  && !Type::are_assignable(element_type, (*pv)->type(), NULL))
 	{
-	  error_at((*pv)->location(),
-		   "incompatible type for element %d in composite literal",
-		   i + 1);
+	  go_error_at((*pv)->location(),
+                      "incompatible type for element %d in composite literal",
+                      i + 1);
 	  this->set_is_error();
 	}
     }
@@ -12588,17 +12590,17 @@ Map_construction_expression::do_check_types(Gogo*)
     {
       if (!Type::are_assignable(key_type, (*pv)->type(), NULL))
 	{
-	  error_at((*pv)->location(),
-		   "incompatible type for element %d key in map construction",
-		   i + 1);
+	  go_error_at((*pv)->location(),
+                      "incompatible type for element %d key in map construction",
+                      i + 1);
 	  this->set_is_error();
 	}
       ++pv;
       if (!Type::are_assignable(val_type, (*pv)->type(), NULL))
 	{
-	  error_at((*pv)->location(),
-		   ("incompatible type for element %d value "
-		    "in map construction"),
+	  go_error_at((*pv)->location(),
+                      ("incompatible type for element %d value "
+                       "in map construction"),
 		   i + 1);
 	  this->set_is_error();
 	}
@@ -12779,9 +12781,9 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
       else
 	{
 	  if (!type->is_error())
-	    error_at(this->location(),
-		     ("may only omit types within composite literals "
-		      "of slice, array, or map type"));
+	    go_error_at(this->location(),
+                        ("may only omit types within composite literals "
+                         "of slice, array, or map type"));
 	  return Expression::make_error(this->location());
 	}
     }
@@ -12805,9 +12807,9 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
     ret = this->lower_map(gogo, function, inserter, type);
   else
     {
-      error_at(this->location(),
-	       ("expected struct, slice, array, or map type "
-		"for composite literal"));
+      go_error_at(this->location(),
+                  ("expected struct, slice, array, or map type "
+                   "for composite literal"));
       return Expression::make_error(this->location());
     }
 
@@ -12837,10 +12839,10 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 	    {
 	      if (Gogo::is_hidden_name(pf->field_name())
 		  || pf->is_embedded_builtin(gogo))
-		error_at(this->location(),
-			 "assignment of unexported field %qs in %qs literal",
-			 Gogo::message_name(pf->field_name()).c_str(),
-			 type->named_type()->message_name().c_str());
+		go_error_at(this->location(),
+                            "assignment of unexported field %qs in %qs literal",
+                            Gogo::message_name(pf->field_name()).c_str(),
+                            type->named_type()->message_name().c_str());
 	    }
 	}
 
@@ -12865,7 +12867,8 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 
       if (name_expr == NULL)
 	{
-	  error_at(val->location(), "mixture of field and value initializers");
+	  go_error_at(val->location(),
+                      "mixture of field and value initializers");
 	  return Expression::make_error(location);
 	}
 
@@ -12921,7 +12924,7 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 	}
       if (bad_key)
 	{
-	  error_at(name_expr->location(), "expected struct field name");
+	  go_error_at(name_expr->location(), "expected struct field name");
 	  return Expression::make_error(location);
 	}
 
@@ -12952,21 +12955,21 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
       const Struct_field* sf = st->find_local_field(name, &index);
       if (sf == NULL)
 	{
-	  error_at(name_expr->location(), "unknown field %qs in %qs",
-		   Gogo::message_name(name).c_str(),
-		   (type->named_type() != NULL
-		    ? type->named_type()->message_name().c_str()
-		    : "unnamed struct"));
+	  go_error_at(name_expr->location(), "unknown field %qs in %qs",
+                      Gogo::message_name(name).c_str(),
+                      (type->named_type() != NULL
+                       ? type->named_type()->message_name().c_str()
+                       : "unnamed struct"));
 	  return Expression::make_error(location);
 	}
       if (vals[index] != NULL)
 	{
-	  error_at(name_expr->location(),
-		   "duplicate value for field %qs in %qs",
-		   Gogo::message_name(name).c_str(),
-		   (type->named_type() != NULL
-		    ? type->named_type()->message_name().c_str()
-		    : "unnamed struct"));
+	  go_error_at(name_expr->location(),
+                      "duplicate value for field %qs in %qs",
+                      Gogo::message_name(name).c_str(),
+                      (type->named_type() != NULL
+                       ? type->named_type()->message_name().c_str()
+                       : "unnamed struct"));
 	  return Expression::make_error(location);
 	}
 
@@ -12974,10 +12977,10 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 	  && type->named_type()->named_object()->package() != NULL
 	  && (Gogo::is_hidden_name(sf->field_name())
 	      || sf->is_embedded_builtin(gogo)))
-	error_at(name_expr->location(),
-		 "assignment of unexported field %qs in %qs literal",
-		 Gogo::message_name(sf->field_name()).c_str(),
-		 type->named_type()->message_name().c_str());
+	go_error_at(name_expr->location(),
+                    "assignment of unexported field %qs in %qs literal",
+                    Gogo::message_name(sf->field_name()).c_str(),
+                    type->named_type()->message_name().c_str());
 
       vals[index] = val;
       traverse_order->push_back(index);
@@ -12987,16 +12990,16 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
     {
       // This is a weird case like bug462 in the testsuite.
       if (external_expr == NULL)
-	error_at(this->location(), "unknown field in %qs literal",
-		 (type->named_type() != NULL
-		  ? type->named_type()->message_name().c_str()
-		  : "unnamed struct"));
+	go_error_at(this->location(), "unknown field in %qs literal",
+                    (type->named_type() != NULL
+                     ? type->named_type()->message_name().c_str()
+                     : "unnamed struct"));
       else
-	error_at(external_expr->location(), "unknown field %qs in %qs",
-		 external_no->message_name().c_str(),
-		 (type->named_type() != NULL
-		  ? type->named_type()->message_name().c_str()
-		  : "unnamed struct"));
+	go_error_at(external_expr->location(), "unknown field %qs in %qs",
+                    external_no->message_name().c_str(),
+                    (type->named_type() != NULL
+                     ? type->named_type()->message_name().c_str()
+                     : "unnamed struct"));
       return Expression::make_error(location);
     }
 
@@ -13064,8 +13067,8 @@ Composite_literal_expression::lower_array(Type* type)
 	  Numeric_constant nc;
 	  if (!index_expr->numeric_constant_value(&nc))
 	    {
-	      error_at(index_expr->location(),
-		       "index expression is not integer constant");
+	      go_error_at(index_expr->location(),
+                          "index expression is not integer constant");
 	      return Expression::make_error(location);
 	    }
 
@@ -13074,14 +13077,15 @@ Composite_literal_expression::lower_array(Type* type)
 	    case Numeric_constant::NC_UL_VALID:
 	      break;
 	    case Numeric_constant::NC_UL_NOTINT:
-	      error_at(index_expr->location(),
-		       "index expression is not integer constant");
+	      go_error_at(index_expr->location(),
+                          "index expression is not integer constant");
 	      return Expression::make_error(location);
 	    case Numeric_constant::NC_UL_NEGATIVE:
-	      error_at(index_expr->location(), "index expression is negative");
+	      go_error_at(index_expr->location(),
+                          "index expression is negative");
 	      return Expression::make_error(location);
 	    case Numeric_constant::NC_UL_BIG:
-	      error_at(index_expr->location(), "index value overflow");
+	      go_error_at(index_expr->location(), "index value overflow");
 	      return Expression::make_error(location);
 	    default:
 	      go_unreachable();
@@ -13092,15 +13096,16 @@ Composite_literal_expression::lower_array(Type* type)
 	  if (sizeof(index) <= static_cast<size_t>(inttype->bits() * 8)
 	      && index >> (inttype->bits() - 1) != 0)
 	    {
-	      error_at(index_expr->location(), "index value overflow");
+	      go_error_at(index_expr->location(), "index value overflow");
 	      return Expression::make_error(location);
 	    }
 
 	  if (std::find(indexes->begin(), indexes->end(), index)
 	      != indexes->end())
 	    {
-	      error_at(index_expr->location(), "duplicate value for index %lu",
-		       index);
+	      go_error_at(index_expr->location(),
+                          "duplicate value for index %lu",
+                          index);
 	      return Expression::make_error(location);
 	    }
 
@@ -13178,7 +13183,7 @@ Composite_literal_expression::make_array(
 	  if (sizeof(size) <= static_cast<size_t>(it->bits() * 8)
 	      && size >> (it->bits() - 1) != 0)
 	    {
-	      error_at(location, "too many elements in composite literal");
+	      go_error_at(location, "too many elements in composite literal");
 	      return Expression::make_error(location);
 	    }
 	}
@@ -13200,7 +13205,8 @@ Composite_literal_expression::make_array(
 	    {
 	      if (this->vals_->size() > val)
 		{
-		  error_at(location, "too many elements in composite literal");
+		  go_error_at(location,
+                              "too many elements in composite literal");
 		  return Expression::make_error(location);
 		}
 	    }
@@ -13209,9 +13215,9 @@ Composite_literal_expression::make_array(
 	      unsigned long max = indexes->back();
 	      if (max >= val)
 		{
-		  error_at(location,
-			   ("some element keys in composite literal "
-			    "are out of range"));
+		  go_error_at(location,
+                              ("some element keys in composite literal "
+                               "are out of range"));
 		  return Expression::make_error(location);
 		}
 	    }
@@ -13237,7 +13243,7 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
     {
       if (!this->has_keys_)
 	{
-	  error_at(location, "map composite literal must have keys");
+	  go_error_at(location, "map composite literal must have keys");
 	  return Expression::make_error(location);
 	}
 
@@ -13248,8 +13254,9 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	  if (*p == NULL)
 	    {
 	      ++p;
-	      error_at((*p)->location(),
-		       "map composite literal must have keys for every value");
+	      go_error_at((*p)->location(),
+                          ("map composite literal must "
+                           "have keys for every value"));
 	      return Expression::make_error(location);
 	    }
 	  // Make sure we have lowered the key; it may not have been
@@ -13434,10 +13441,10 @@ Type_guard_expression::do_check_types(Gogo*)
 		this->report_error(_("impossible type assertion: "
 				     "type does not implement interface"));
 	      else
-		error_at(this->location(),
-			 ("impossible type assertion: "
-			  "type does not implement interface (%s)"),
-			 reason.c_str());
+		go_error_at(this->location(),
+                            ("impossible type assertion: "
+                             "type does not implement interface (%s)"),
+                            reason.c_str());
 	    }
 	  this->set_is_error();
 	}
@@ -14873,7 +14880,7 @@ Expression::import_expression(Import* imp)
     return Type_conversion_expression::do_import(imp);
   else
     {
-      error_at(imp->location(), "import error: expected expression");
+      go_error_at(imp->location(), "import error: expected expression");
       return Expression::make_error(imp->location());
     }
 }
@@ -15313,8 +15320,8 @@ Numeric_constant::check_int_type(Integer_type* type, bool issue_error,
 	{
 	  if (issue_error)
             {
-              error_at(location,
-                       "floating point constant truncated to integer");
+              go_error_at(location,
+                          "floating point constant truncated to integer");
               this->set_invalid();
             }
 	  return false;
@@ -15329,7 +15336,7 @@ Numeric_constant::check_int_type(Integer_type* type, bool issue_error,
 	{
 	  if (issue_error)
             {
-              error_at(location, "complex constant truncated to integer");
+              go_error_at(location, "complex constant truncated to integer");
               this->set_invalid();
             }
 	  return false;
@@ -15370,7 +15377,7 @@ Numeric_constant::check_int_type(Integer_type* type, bool issue_error,
 
   if (!ret && issue_error)
     {
-      error_at(location, "integer constant overflow");
+      go_error_at(location, "integer constant overflow");
       this->set_invalid();
     }
 
@@ -15402,7 +15409,7 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
 	  if (issue_error)
             {
               this->set_invalid();
-              error_at(location, "complex constant truncated to float");
+              go_error_at(location, "complex constant truncated to float");
             }
 	  return false;
 	}
@@ -15467,7 +15474,7 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
 
   if (!ret && issue_error)
     {
-      error_at(location, "floating point constant overflow");
+      go_error_at(location, "floating point constant overflow");
       this->set_invalid();
     }
 
@@ -15525,7 +15532,7 @@ Numeric_constant::check_complex_type(Complex_type* type, bool issue_error,
     {
       if (issue_error)
         {
-          error_at(location, "complex real part overflow");
+          go_error_at(location, "complex real part overflow");
           this->set_invalid();
         }
       ret = false;
@@ -15538,7 +15545,7 @@ Numeric_constant::check_complex_type(Complex_type* type, bool issue_error,
     {
       if (issue_error)
         {
-          error_at(location, "complex imaginary part overflow");
+          go_error_at(location, "complex imaginary part overflow");
           this->set_invalid();
         }
       ret = false;
