@@ -1,7 +1,7 @@
 2016-09-23  Doug Gilmore  <doug.gilmore@imgtec.com>
 
 	PR tree-optimization/77654
-	* tree-ssa-alias.c (issue_prefetch_ref): Add call
+	* tree-ssa-loop-prefetch.c (issue_prefetch_ref): Add call
 	to duplicate_ssa_name_ptr_info.
 
 2016-09-23  David Malcolm  <dmalcolm@redhat.com>
