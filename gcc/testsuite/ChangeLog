@@ -1,3 +1,7 @@
+2016-09-23  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-56.c: New testcase.
+
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/advsimd-intrinsics/advsimd-intrinsics.exp: Enable

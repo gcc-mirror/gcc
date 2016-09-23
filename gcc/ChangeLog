@@ -1,5 +1,13 @@
 2016-09-23  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (visit_reference_op_call): Value number
+	virtual definition to virtual use if the call devirtualizes
+	to a const or pure function.
+	(visit_use): Also visit calls we can devirtualize to a
+	const or pure function.
+
+2016-09-23  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/77697
 	* tree-ssa-forwprop.c (defcodefor_name): Remove bogus code,
 	signal error if we have sth ternary or unhandled.
