@@ -3215,6 +3215,28 @@ proc add_options_for_arm_v8_1a_neon { flags } {
     return "$flags $et_arm_v8_1a_neon_flags -march=armv8.1-a"
 }
 
+# Add the options needed for ARMv8.2 with the scalar FP16 extension.
+# Also adds the ARMv8 FP options for ARM.
+
+proc add_options_for_arm_v8_2a_fp16_scalar { flags } {
+    if { ! [check_effective_target_arm_v8_2a_fp16_scalar_ok] } {
+	return "$flags"
+    }
+    global et_arm_v8_2a_fp16_scalar_flags
+    return "$flags $et_arm_v8_2a_fp16_scalar_flags"
+}
+
+# Add the options needed for ARMv8.2 with the FP16 extension.  Also adds
+# the ARMv8 NEON options for ARM.
+
+proc add_options_for_arm_v8_2a_fp16_neon { flags } {
+    if { ! [check_effective_target_arm_v8_2a_fp16_neon_ok] } {
+	return "$flags"
+    }
+    global et_arm_v8_2a_fp16_neon_flags
+    return "$flags $et_arm_v8_2a_fp16_neon_flags"
+}
+
 proc add_options_for_arm_crc { flags } {
     if { ! [check_effective_target_arm_crc_ok] } {
         return "$flags"
@@ -3615,6 +3637,7 @@ foreach { armfunc armflag armdef } { v4 "-march=armv4 -marm" __ARM_ARCH_4__
 				     v7em "-march=armv7e-m -mthumb" __ARM_ARCH_7EM__
 				     v8a "-march=armv8-a" __ARM_ARCH_8A__
 				     v8_1a "-march=armv8.1a" __ARM_ARCH_8A__
+				     v8_2a "-march=armv8.2a" __ARM_ARCH_8A__
 				     v8m_base "-march=armv8-m.base -mthumb" __ARM_ARCH_8M_BASE__
 				     v8m_main "-march=armv8-m.main -mthumb" __ARM_ARCH_8M_MAIN__ } {
     eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
@@ -3860,6 +3883,76 @@ proc check_effective_target_arm_v8_1a_neon_ok { } {
 		check_effective_target_arm_v8_1a_neon_ok_nocache]
 }
 
+# Return 1 if the target supports ARMv8.2 scalar FP16 arithmetic
+# instructions, 0 otherwise.  The test is valid for ARM.  Record the
+# command line options needed.
+
+proc check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache { } {
+    global et_arm_v8_2a_fp16_scalar_flags
+    set et_arm_v8_2a_fp16_scalar_flags ""
+
+    if { ![istarget arm*-*-*] } {
+	return 0;
+    }
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.
+    foreach flags {"" "-mfpu=fp-armv8" "-mfloat-abi=softfp" \
+		       "-mfpu=fp-armv8 -mfloat-abi=softfp"} {
+	if { [check_no_compiler_messages_nocache \
+		  arm_v8_2a_fp16_scalar_ok object {
+	    #if !defined (__ARM_FEATURE_FP16_SCALAR_ARITHMETIC)
+	    #error "__ARM_FEATURE_FP16_SCALAR_ARITHMETIC not defined"
+	    #endif
+	} "$flags -march=armv8.2-a+fp16"] } {
+	    set et_arm_v8_2a_fp16_scalar_flags "$flags -march=armv8.2-a+fp16"
+	    return 1
+	}
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_2a_fp16_scalar_ok { } {
+    return [check_cached_effective_target arm_v8_2a_fp16_scalar_ok \
+		check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache]
+}
+
+# Return 1 if the target supports ARMv8.2 Adv.SIMD FP16 arithmetic
+# instructions, 0 otherwise.  The test is valid for ARM.  Record the
+# command line options needed.
+
+proc check_effective_target_arm_v8_2a_fp16_neon_ok_nocache { } {
+    global et_arm_v8_2a_fp16_neon_flags
+    set et_arm_v8_2a_fp16_neon_flags ""
+
+    if { ![istarget arm*-*-*] } {
+	return 0;
+    }
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.
+    foreach flags {"" "-mfpu=neon-fp-armv8" "-mfloat-abi=softfp" \
+		       "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"} {
+	if { [check_no_compiler_messages_nocache \
+		  arm_v8_2a_fp16_neon_ok object {
+	    #if !defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+	    #error "__ARM_FEATURE_FP16_VECTOR_ARITHMETIC not defined"
+	    #endif
+	} "$flags -march=armv8.2-a+fp16"] } {
+	    set et_arm_v8_2a_fp16_neon_flags "$flags -march=armv8.2-a+fp16"
+	    return 1
+	}
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_2a_fp16_neon_ok { } {
+    return [check_cached_effective_target arm_v8_2a_fp16_neon_ok \
+		check_effective_target_arm_v8_2a_fp16_neon_ok_nocache]
+}
+
 # Return 1 if the target supports executing ARMv8 NEON instructions, 0
 # otherwise.
 
@@ -3920,6 +4013,56 @@ proc check_effective_target_arm_v8_1a_neon_hw { } {
 	  return result[0];
 	}
     } [add_options_for_arm_v8_1a_neon ""]]
+}
+
+# Return 1 if the target supports executing instructions floating point
+# instructions from ARMv8.2 with the FP16 extension, 0 otherwise.  The
+# test is valid for ARM.
+
+proc check_effective_target_arm_v8_2a_fp16_scalar_hw { } {
+    if { ![check_effective_target_arm_v8_2a_fp16_scalar_ok] } {
+	return 0;
+    }
+    return [check_runtime arm_v8_2a_fp16_scalar_hw_available {
+	int
+	main (void)
+	{
+	  __fp16 a = 1.0;
+	  __fp16 result;
+
+	  asm ("vabs.f16 %0, %1"
+	       : "=w"(result)
+	       : "w"(a)
+	       : /* No clobbers.  */);
+
+	  return (result == 1.0) ? 0 : 1;
+	}
+    } [add_options_for_arm_v8_2a_fp16_scalar ""]]
+}
+
+# Return 1 if the target supports executing instructions Adv.SIMD
+# instructions from ARMv8.2 with the FP16 extension, 0 otherwise.  The
+# test is valid for ARM.
+
+proc check_effective_target_arm_v8_2a_fp16_neon_hw { } {
+    if { ![check_effective_target_arm_v8_2a_fp16_neon_ok] } {
+	return 0;
+    }
+    return [check_runtime arm_v8_2a_fp16_neon_hw_available {
+	int
+	main (void)
+	{
+	  __simd64_float16_t a = {1.0, -1.0, 1.0, -1.0};
+	  __simd64_float16_t result;
+
+	  asm ("vabs.f16 %P0, %P1"
+	       : "=w"(result)
+	       : "w"(a)
+	       : /* No clobbers.  */);
+
+	  return (result[0] == 1.0) ? 0 : 1;
+	}
+    } [add_options_for_arm_v8_2a_fp16_neon ""]]
 }
 
 # Return 1 if this is a ARM target with NEON enabled.
