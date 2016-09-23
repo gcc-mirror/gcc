@@ -1,3 +1,8 @@
+2016-09-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get): Use the old caf-
+	interface where possible.
+
 2016-09-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	* interface.c (check_dtio_interface1): Introduce errors for

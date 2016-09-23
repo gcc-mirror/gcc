@@ -1,3 +1,8 @@
+2016-09-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_comm_1.f90: Using the old caf-interface
+	here now.
+
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/arm/armv8_2-fp16-arith-1.c: Use arm_v8_2a_fp16_neon
