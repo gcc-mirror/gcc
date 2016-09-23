@@ -1,5 +1,9 @@
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc.target/arm/short-vfp-1.c: New.
+
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* gcc.target/arm/attr-fp16-arith-1.c: New.
 
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
