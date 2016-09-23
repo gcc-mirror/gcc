@@ -8739,6 +8739,7 @@ resolve_transfer (gfc_code *code)
 
       if (dtio_sub != NULL && exp->expr_type == EXPR_VARIABLE)
 	{
+	  dt->udtio = exp;
 	  sym = exp->symtree->n.sym->ns->proc_name;
 	  /* Check to see if this is a nested DTIO call, with the
 	     dummy as the io-list object.  */

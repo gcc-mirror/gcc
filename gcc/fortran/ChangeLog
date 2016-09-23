@@ -1,3 +1,17 @@
+2016-09-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/48298
+	* gfortran.h (gfc_dt): Add *udtio.
+	* ioparm.def: Add bit IOPARM_dt_f2003 to align with library use of bit
+	25. Add IOPARM_dt_dtio bit to common flags.
+	* resolve.c (resolve_transfer): Set dt->udtio to expression.
+	* io.c (gfc_match_inquire): Adjust error message for internal
+	unit KIND.
+	* libgfortran.h: Adjust defines for GFC_INTERNAL_UNIT4,
+	GFC_INTERNAL_UNIT, and GFC_INVALID_UNIT.
+	* trans-io.c (build_dt): Set common_unit to reflect the KIND of
+	the internal unit. Set mask bit for presence of dt->udtio.
+
 2016-09-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get): Use the old caf-

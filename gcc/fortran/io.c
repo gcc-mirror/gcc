@@ -4256,9 +4256,11 @@ gfc_match_inquire (void)
 
   if (inquire->unit != NULL && inquire->unit->expr_type == EXPR_CONSTANT
       && inquire->unit->ts.type == BT_INTEGER
-      && mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT)
+      && ((mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT4)
+      || (mpz_get_si (inquire->unit->value.integer) == GFC_INTERNAL_UNIT)))
     {
-      gfc_error ("UNIT number in INQUIRE statement at %L can not be -1", &loc);
+      gfc_error ("UNIT number in INQUIRE statement at %L can not "
+		 "be %d", &loc, (int) mpz_get_si (inquire->unit->value.integer));
       goto cleanup;
     }
 
