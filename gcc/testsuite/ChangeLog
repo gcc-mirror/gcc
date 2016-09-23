@@ -1,5 +1,10 @@
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
+	* gcc.dg/ipa/pr77653.c: Replace adress
+	with address.
+
+2016-09-23  Martin Liska  <mliska@suse.cz>
+
 	* gcc.target/i386/movbe-4.c: New test.
 
 2016-09-23  Martin Liska  <mliska@suse.cz>

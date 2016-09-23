@@ -21,4 +21,4 @@ int main ()
 }
 
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Not unifying; adress of original may be compared." "icf"  } } */
+/* { dg-final { scan-ipa-dump "Not unifying; address of original may be compared." "icf"  } } */
