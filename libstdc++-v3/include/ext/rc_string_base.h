@@ -354,7 +354,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       _M_clear()
-      { _M_erase(size_type(0), _M_length()); }
+      {
+	_M_dispose();
+	_M_data(_S_empty_rep._M_refcopy());
+      }
 
       bool
       _M_compare(const __rc_string_base&) const

@@ -1,5 +1,14 @@
 2016-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/56166
+	PR libstdc++/77582
+	* include/bits/basic_string.h (basic_string::clear()): Drop reference
+	and use empty rep.
+	* include/ext/rc_string_base.h (__rc_string_base::_M_clear()):
+	Likewise.
+	* testsuite/21_strings/basic_string/56166.cc: New.
+	* testsuite/ext/vstring/modifiers/clear/56166.cc: New.
+
 	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
 	(basic_string::erase(size_type, size_type)): Add fast path for
 	truncating the string, by calling _M_set_length directly.

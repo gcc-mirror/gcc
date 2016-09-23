@@ -3690,10 +3690,24 @@ _GLIBCXX_END_NAMESPACE_CXX11
       /**
        *  Erases the string, making it empty.
        */
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+      void
+      clear() _GLIBCXX_NOEXCEPT
+      {
+	if (_M_rep()->_M_is_shared())
+	  {
+	    _M_rep()->_M_dispose(this->get_allocator());
+	    _M_data(_S_empty_rep()._M_refdata());
+	  }
+	else
+	  _M_rep()->_M_set_length_and_sharable(0);
+      }
+#else
       // PR 56166: this should not throw.
       void
       clear()
       { _M_mutate(0, this->size(), 0); }
+#endif
 
       /**
        *  Returns true if the %string is empty.  Equivalent to 
