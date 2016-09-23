@@ -53,9 +53,17 @@ void FNNAME (INSN_NAME) (void)
   DECL_VSHUFFLE(float, 32, 4)
 
   DECL_ALL_VSHUFFLE();
+#if defined (FP16_SUPPORTED)
+  DECL_VSHUFFLE (float, 16, 4);
+  DECL_VSHUFFLE (float, 16, 8);
+#endif
 
   /* Initialize input "vector" from "buffer".  */
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector1, buffer);
+#if defined (FP16_SUPPORTED)
+  VLOAD (vector1, buffer, , float, f, 16, 4);
+  VLOAD (vector1, buffer, q, float, f, 16, 8);
+#endif
   VLOAD(vector1, buffer, , float, f, 32, 2);
   VLOAD(vector1, buffer, q, float, f, 32, 4);
 
@@ -68,6 +76,9 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector2, , uint, u, 32, 2, 0x77);
   VDUP(vector2, , poly, p, 8, 8, 0x55);
   VDUP(vector2, , poly, p, 16, 4, 0x66);
+#if defined (FP16_SUPPORTED)
+  VDUP (vector2, , float, f, 16, 4, 14.6f);   /* 14.6f is 0x4b4d.  */
+#endif
   VDUP(vector2, , float, f, 32, 2, 33.6f);
 
   VDUP(vector2, q, int, s, 8, 16, 0x11);
@@ -78,8 +89,11 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector2, q, uint, u, 32, 4, 0x77);
   VDUP(vector2, q, poly, p, 8, 16, 0x55);
   VDUP(vector2, q, poly, p, 16, 8, 0x66);
+#if defined (FP16_SUPPORTED)
+  VDUP (vector2, q, float, f, 16, 8, 14.6f);
+#endif
   VDUP(vector2, q, float, f, 32, 4, 33.8f);
-  
+
 #define TEST_ALL_VSHUFFLE(INSN)				\
   TEST_VSHUFFLE(INSN, , int, s, 8, 8);			\
   TEST_VSHUFFLE(INSN, , int, s, 16, 4);			\
@@ -99,6 +113,10 @@ void FNNAME (INSN_NAME) (void)
   TEST_VSHUFFLE(INSN, q, poly, p, 8, 16);		\
   TEST_VSHUFFLE(INSN, q, poly, p, 16, 8);		\
   TEST_VSHUFFLE(INSN, q, float, f, 32, 4)
+
+#define TEST_VSHUFFLE_FP16(INSN)		\
+  TEST_VSHUFFLE(INSN, , float, f, 16, 4);	\
+  TEST_VSHUFFLE(INSN, q, float, f, 16, 8);
 
 #define TEST_ALL_EXTRA_CHUNKS()			\
   TEST_EXTRA_CHUNK(int, 8, 8, 1);		\
@@ -143,17 +161,37 @@ void FNNAME (INSN_NAME) (void)
     CHECK(test_name, poly, 8, 16, PRIx8, EXPECTED, comment);		\
     CHECK(test_name, poly, 16, 8, PRIx16, EXPECTED, comment);		\
     CHECK_FP(test_name, float, 32, 4, PRIx32, EXPECTED, comment);	\
-  }									\
+  }
+
+#define CHECK_RESULTS_VSHUFFLE_FP16(test_name,EXPECTED,comment)		\
+  {									\
+    CHECK_FP (test_name, float, 16, 4, PRIx16, EXPECTED, comment);	\
+    CHECK_FP (test_name, float, 16, 8, PRIx16, EXPECTED, comment);	\
+  }
 
   clean_results ();
 
   /* Execute the tests.  */
   TEST_ALL_VSHUFFLE(INSN_NAME);
+#if defined (FP16_SUPPORTED)
+  TEST_VSHUFFLE_FP16 (INSN_NAME);
+#endif
 
   CHECK_RESULTS_VSHUFFLE (TEST_MSG, expected0, "(chunk 0)");
+#if defined (FP16_SUPPORTED)
+  CHECK_RESULTS_VSHUFFLE_FP16 (TEST_MSG, expected0, "(chunk 0)");
+#endif
 
   TEST_ALL_EXTRA_CHUNKS();
+#if defined (FP16_SUPPORTED)
+  TEST_EXTRA_CHUNK (float, 16, 4, 1);
+  TEST_EXTRA_CHUNK (float, 16, 8, 1);
+#endif
+
   CHECK_RESULTS_VSHUFFLE (TEST_MSG, expected1, "(chunk 1)");
+#if defined (FP16_SUPPORTED)
+  CHECK_RESULTS_VSHUFFLE_FP16 (TEST_MSG, expected1, "(chunk 1)");
+#endif
 }
 
 int main (void)

@@ -3045,6 +3045,28 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_dup<q>")]
 )
 
+(define_insn "neon_vdup_lane<mode>_internal"
+ [(set (match_operand:VH 0 "s_register_operand" "=w")
+   (vec_duplicate:VH
+    (vec_select:<V_elem>
+     (match_operand:<V_double_vector_mode> 1 "s_register_operand" "w")
+     (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
+ "TARGET_NEON && TARGET_FP16"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      int elt = INTVAL (operands[2]);
+      elt = GET_MODE_NUNITS (<V_double_vector_mode>mode) - 1 - elt;
+      operands[2] = GEN_INT (elt);
+    }
+  if (<Is_d_reg>)
+    return "vdup.<V_sz_elem>\t%P0, %P1[%c2]";
+  else
+    return "vdup.<V_sz_elem>\t%q0, %P1[%c2]";
+}
+  [(set_attr "type" "neon_dup<q>")]
+)
+
 (define_expand "neon_vdup_lane<mode>"
   [(match_operand:VDQW 0 "s_register_operand" "=w")
    (match_operand:<V_double_vector_mode> 1 "s_register_operand" "w")
@@ -3062,6 +3084,25 @@ if (BYTES_BIG_ENDIAN)
     emit_insn (gen_neon_vdup_lane<mode>_internal (operands[0], operands[1],
                                                   operands[2]));
     DONE;
+})
+
+(define_expand "neon_vdup_lane<mode>"
+  [(match_operand:VH 0 "s_register_operand")
+   (match_operand:<V_double_vector_mode> 1 "s_register_operand")
+   (match_operand:SI 2 "immediate_operand")]
+  "TARGET_NEON && TARGET_FP16"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      unsigned int elt = INTVAL (operands[2]);
+      unsigned int reg_nelts
+	= 64 / GET_MODE_UNIT_BITSIZE (<V_double_vector_mode>mode);
+      elt ^= reg_nelts - 1;
+      operands[2] = GEN_INT (elt);
+    }
+  emit_insn (gen_neon_vdup_lane<mode>_internal (operands[0], operands[1],
+						operands[2]));
+  DONE;
 })
 
 ; Scalar index is ignored, since only zero is valid here.
@@ -4281,25 +4322,25 @@ if (BYTES_BIG_ENDIAN)
 
 (define_expand "neon_vtrn<mode>_internal"
   [(parallel
-    [(set (match_operand:VDQW 0 "s_register_operand" "")
-	  (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "")
-			(match_operand:VDQW 2 "s_register_operand" "")]
+    [(set (match_operand:VDQWH 0 "s_register_operand")
+	  (unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand")
+			 (match_operand:VDQWH 2 "s_register_operand")]
 	   UNSPEC_VTRN1))
-     (set (match_operand:VDQW 3 "s_register_operand" "")
-          (unspec:VDQW [(match_dup 1) (match_dup 2)] UNSPEC_VTRN2))])]
+     (set (match_operand:VDQWH 3 "s_register_operand")
+	  (unspec:VDQWH [(match_dup 1) (match_dup 2)] UNSPEC_VTRN2))])]
   "TARGET_NEON"
   ""
 )
 
 ;; Note: Different operand numbering to handle tied registers correctly.
 (define_insn "*neon_vtrn<mode>_insn"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=&w")
-        (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
-                      (match_operand:VDQW 3 "s_register_operand" "2")]
-                     UNSPEC_VTRN1))
-   (set (match_operand:VDQW 2 "s_register_operand" "=&w")
-         (unspec:VDQW [(match_dup 1) (match_dup 3)]
-                     UNSPEC_VTRN2))]
+  [(set (match_operand:VDQWH 0 "s_register_operand" "=&w")
+	(unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand" "0")
+		       (match_operand:VDQWH 3 "s_register_operand" "2")]
+	 UNSPEC_VTRN1))
+   (set (match_operand:VDQWH 2 "s_register_operand" "=&w")
+	(unspec:VDQWH [(match_dup 1) (match_dup 3)]
+	 UNSPEC_VTRN2))]
   "TARGET_NEON"
   "vtrn.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
   [(set_attr "type" "neon_permute<q>")]
@@ -4307,25 +4348,25 @@ if (BYTES_BIG_ENDIAN)
 
 (define_expand "neon_vzip<mode>_internal"
   [(parallel
-    [(set (match_operand:VDQW 0 "s_register_operand" "")
-	  (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "")
-	  	        (match_operand:VDQW 2 "s_register_operand" "")]
-		       UNSPEC_VZIP1))
-    (set (match_operand:VDQW 3 "s_register_operand" "")
-	 (unspec:VDQW [(match_dup 1) (match_dup 2)] UNSPEC_VZIP2))])]
+    [(set (match_operand:VDQWH 0 "s_register_operand")
+	  (unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand")
+			 (match_operand:VDQWH 2 "s_register_operand")]
+	   UNSPEC_VZIP1))
+    (set (match_operand:VDQWH 3 "s_register_operand")
+	 (unspec:VDQWH [(match_dup 1) (match_dup 2)] UNSPEC_VZIP2))])]
   "TARGET_NEON"
   ""
 )
 
 ;; Note: Different operand numbering to handle tied registers correctly.
 (define_insn "*neon_vzip<mode>_insn"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=&w")
-        (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
-                      (match_operand:VDQW 3 "s_register_operand" "2")]
-                     UNSPEC_VZIP1))
-   (set (match_operand:VDQW 2 "s_register_operand" "=&w")
-        (unspec:VDQW [(match_dup 1) (match_dup 3)]
-                     UNSPEC_VZIP2))]
+  [(set (match_operand:VDQWH 0 "s_register_operand" "=&w")
+	(unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand" "0")
+		       (match_operand:VDQWH 3 "s_register_operand" "2")]
+	 UNSPEC_VZIP1))
+   (set (match_operand:VDQWH 2 "s_register_operand" "=&w")
+	(unspec:VDQWH [(match_dup 1) (match_dup 3)]
+	 UNSPEC_VZIP2))]
   "TARGET_NEON"
   "vzip.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
   [(set_attr "type" "neon_zip<q>")]
@@ -4333,25 +4374,25 @@ if (BYTES_BIG_ENDIAN)
 
 (define_expand "neon_vuzp<mode>_internal"
   [(parallel
-    [(set (match_operand:VDQW 0 "s_register_operand" "")
-	  (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "")
-			(match_operand:VDQW 2 "s_register_operand" "")]
+    [(set (match_operand:VDQWH 0 "s_register_operand")
+	  (unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand")
+			(match_operand:VDQWH 2 "s_register_operand")]
 	   UNSPEC_VUZP1))
-     (set (match_operand:VDQW 3 "s_register_operand" "")
-	  (unspec:VDQW [(match_dup 1) (match_dup 2)] UNSPEC_VUZP2))])]
+     (set (match_operand:VDQWH 3 "s_register_operand" "")
+	  (unspec:VDQWH [(match_dup 1) (match_dup 2)] UNSPEC_VUZP2))])]
   "TARGET_NEON"
   ""
 )
 
 ;; Note: Different operand numbering to handle tied registers correctly.
 (define_insn "*neon_vuzp<mode>_insn"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=&w")
-        (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
-                      (match_operand:VDQW 3 "s_register_operand" "2")]
-                     UNSPEC_VUZP1))
-   (set (match_operand:VDQW 2 "s_register_operand" "=&w")
-        (unspec:VDQW [(match_dup 1) (match_dup 3)]
-                     UNSPEC_VUZP2))]
+  [(set (match_operand:VDQWH 0 "s_register_operand" "=&w")
+	(unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand" "0")
+		       (match_operand:VDQWH 3 "s_register_operand" "2")]
+	 UNSPEC_VUZP1))
+   (set (match_operand:VDQWH 2 "s_register_operand" "=&w")
+	(unspec:VDQWH [(match_dup 1) (match_dup 3)]
+	 UNSPEC_VUZP2))]
   "TARGET_NEON"
   "vuzp.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
   [(set_attr "type" "neon_zip<q>")]
