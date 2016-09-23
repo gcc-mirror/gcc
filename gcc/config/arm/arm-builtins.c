@@ -190,6 +190,8 @@ arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define ti_UP	 TImode
 #define ei_UP	 EImode
 #define oi_UP	 OImode
+#define hf_UP	 HFmode
+#define si_UP	 SImode
 
 #define UP(X) X##_UP
 
@@ -239,12 +241,22 @@ typedef struct {
   VAR11 (T, N, A, B, C, D, E, F, G, H, I, J, K) \
   VAR1 (T, N, L)
 
-/* The NEON builtin data can be found in arm_neon_builtins.def.
-   The mode entries in the following table correspond to the "key" type of the
-   instruction variant, i.e. equivalent to that which would be specified after
-   the assembler mnemonic, which usually refers to the last vector operand.
-   The modes listed per instruction should be the same as those defined for
-   that instruction's pattern in neon.md.  */
+/* The NEON builtin data can be found in arm_neon_builtins.def and
+   arm_vfp_builtins.def.  The entries in arm_neon_builtins.def require
+   TARGET_NEON to be true.  The entries in arm_vfp_builtins.def require
+   TARGET_VFP to be true.  The feature tests are checked when the builtins are
+   expanded.
+
+   The mode entries in the following table correspond to
+   the "key" type of the instruction variant, i.e. equivalent to that which
+   would be specified after the assembler mnemonic, which usually refers to the
+   last vector operand.  The modes listed per instruction should be the same as
+   those defined for that instruction's pattern in neon.md.  */
+
+static neon_builtin_datum vfp_builtin_data[] =
+{
+#include "arm_vfp_builtins.def"
+};
 
 static neon_builtin_datum neon_builtin_data[] =
 {
@@ -534,6 +546,10 @@ enum arm_builtins
 #undef CRYPTO2
 #undef CRYPTO3
 
+  ARM_BUILTIN_VFP_BASE,
+
+#include "arm_vfp_builtins.def"
+
   ARM_BUILTIN_NEON_BASE,
   ARM_BUILTIN_NEON_LANE_CHECK = ARM_BUILTIN_NEON_BASE,
 
@@ -541,6 +557,9 @@ enum arm_builtins
 
   ARM_BUILTIN_MAX
 };
+
+#define ARM_BUILTIN_VFP_PATTERN_START \
+  (ARM_BUILTIN_VFP_BASE + 1)
 
 #define ARM_BUILTIN_NEON_PATTERN_START \
   (ARM_BUILTIN_NEON_BASE + 1)
@@ -1029,6 +1048,20 @@ arm_init_neon_builtins (void)
   for (i = 0; i < ARRAY_SIZE (neon_builtin_data); i++, fcode++)
     {
       neon_builtin_datum *d = &neon_builtin_data[i];
+      arm_init_neon_builtin (fcode, d);
+    }
+}
+
+/* Set up all the scalar floating point builtins.  */
+
+static void
+arm_init_vfp_builtins (void)
+{
+  unsigned int i, fcode = ARM_BUILTIN_VFP_PATTERN_START;
+
+  for (i = 0; i < ARRAY_SIZE (vfp_builtin_data); i++, fcode++)
+    {
+      neon_builtin_datum *d = &vfp_builtin_data[i];
       arm_init_neon_builtin (fcode, d);
     }
 }
@@ -1777,7 +1810,7 @@ arm_init_builtins (void)
   if (TARGET_HARD_FLOAT)
     {
       arm_init_neon_builtins ();
-
+      arm_init_vfp_builtins ();
       arm_init_crypto_builtins ();
     }
 
@@ -2324,6 +2357,27 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
   return arm_expand_neon_builtin_1 (fcode, exp, target, d);
 }
 
+/* Expand a VFP builtin, if TARGET_VFP is true.  These builtins are treated like
+   neon builtins except that the data is looked up in table
+   VFP_BUILTIN_DATA.  */
+
+static rtx
+arm_expand_vfp_builtin (int fcode, tree exp, rtx target)
+{
+  if (fcode >= ARM_BUILTIN_VFP_BASE && ! TARGET_VFP)
+    {
+      fatal_error (input_location,
+		   "You must enable VFP instructions"
+		   " to use these intrinsics.");
+      return const0_rtx;
+    }
+
+  neon_builtin_datum *d
+    = &vfp_builtin_data[fcode - ARM_BUILTIN_VFP_PATTERN_START];
+
+  return arm_expand_neon_builtin_1 (fcode, exp, target, d);
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -2361,13 +2415,18 @@ arm_expand_builtin (tree exp,
   if (fcode >= ARM_BUILTIN_NEON_BASE)
     return arm_expand_neon_builtin (fcode, exp, target);
 
+  if (fcode >= ARM_BUILTIN_VFP_BASE)
+    return arm_expand_vfp_builtin (fcode, exp, target);
+
   /* Check in the context of the function making the call whether the
      builtin is supported.  */
   if (fcode >= ARM_BUILTIN_CRYPTO_BASE
       && (!TARGET_CRYPTO || !TARGET_HARD_FLOAT))
     {
       fatal_error (input_location,
-		   "You must enable crypto intrinsics (e.g. include -mfloat-abi=softfp -mfpu=crypto-neon...) to use these intrinsics.");
+		   "You must enable crypto instructions"
+		   " (e.g. include -mfloat-abi=softfp -mfpu=crypto-neon...)"
+		   " to use these intrinsics.");
       return const0_rtx;
     }
 
