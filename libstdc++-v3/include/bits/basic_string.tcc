@@ -351,7 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__size < __n)
 	this->append(__n - __size, __c);
       else if (__n < __size)
-	this->_M_erase(__n, __size - __n);
+	this->_M_set_length(__n);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>

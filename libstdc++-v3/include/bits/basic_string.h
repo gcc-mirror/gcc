@@ -1709,8 +1709,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       erase(size_type __pos = 0, size_type __n = npos)
       {
-	this->_M_erase(_M_check(__pos, "basic_string::erase"),
-		       _M_limit(__pos, __n));
+	_M_check(__pos, "basic_string::erase");
+	if (__n == npos)
+	  this->_M_set_length(__pos);
+	else if (__n != 0)
+	  this->_M_erase(__pos, _M_limit(__pos, __n));
 	return *this;
       }
 
@@ -1747,7 +1750,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	_GLIBCXX_DEBUG_PEDASSERT(__first >= begin() && __first <= __last
 				 && __last <= end());
         const size_type __pos = __first - begin();
-	this->_M_erase(__pos, __last - __first);
+	if (__last == end())
+	  this->_M_set_length(__pos);
+	else
+	  this->_M_erase(__pos, __last - __first);
 	return iterator(this->_M_data() + __pos);
       }
 
