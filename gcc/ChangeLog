@@ -1,3 +1,8 @@
+2016-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* vec.h (vnull::operator vec): Add constexpr keyword for
+	C++11 and later.
+
 2016-09-23  Doug Gilmore  <doug.gilmore@imgtec.com>
 
 	PR tree-optimization/77654
