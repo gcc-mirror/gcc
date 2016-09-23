@@ -1,3 +1,69 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/iterators.md (VCVTHI): New.
+	(NEON_VCMP): Add UNSPEC_VCLT and UNSPEC_VCLE.  Fix a long line.
+	(NEON_VAGLTE): New.
+	(VFM_LANE_AS): New.
+	(VH_CVTTO): New.
+	(V_reg): Add HF, V4HF and V8HF.  Fix white-space.
+	(V_HALF): Add V4HF.  Fix white-space.
+	(V_if_elem): Add HF, V4HF and V8HF.  Fix white-space.
+	(V_s_elem): Likewise.
+	(V_sz_elem): Fix white-space.
+	(V_elem_ch): Likewise.
+	(VH_elem_ch): New.
+	(scalar_mul_constraint): Add V8HF and V4HF.
+	(Is_float_mode): Fix white-space.
+	(Is_d_reg): Add V4HF and V8HF.  Fix white-space.
+	(q): Add HF.  Fix white-space.
+	(float_sup): New.
+	(float_SUP): New.
+	(cmp_op_unsp): Add UNSPEC_VCALE and UNSPEC_VCALT.
+	(neon_vfm_lane_as): New.
+	* config/arm/neon.md (add<mode>3_fp16): New.
+	(sub<mode>3_fp16): New.
+	(mul<mode>3add<mode>_neon): New.
+	(fma<VH:mode>4_intrinsic): New.
+	(fmsub<VCVTF:mode>4_intrinsic): Fix white-space.
+	(fmsub<VH:mode>4_intrinsic): New.
+	(<absneg_str><mode>2): New.
+	(neon_v<absneg_str><mode>): New.
+	(neon_v<fp16_rnd_str><mode>): New.
+	(neon_vrsqrte<mode>): New.
+	(neon_vpaddv4hf): New.
+	(neon_vadd<mode>): New.
+	(neon_vsub<mode>): New.
+	(neon_vmulf<mode>): New.
+	(neon_vfma<VH:mode>): New.
+	(neon_vfms<VH:mode>): New.
+	(neon_vc<cmp_op><mode>): New.
+	(neon_vc<cmp_op><mode>_fp16insn): New
+	(neon_vc<cmp_op_unsp><mode>_fp16insn_unspec): New.
+	(neon_vca<cmp_op><mode>): New.
+	(neon_vca<cmp_op><mode>_fp16insn): New.
+	(neon_vca<cmp_op_unsp><mode>_fp16insn_unspec): New.
+	(neon_vc<cmp_op>z<mode>): New.
+	(neon_vabd<mode>): New.
+	(neon_v<maxmin>f<mode>): New.
+	(neon_vp<maxmin>fv4hf: New.
+	(neon_<fmaxmin_op><mode>): New.
+	(neon_vrecps<mode>): New.
+	(neon_vrsqrts<mode>): New.
+	(neon_vrecpe<mode>): New (VH variant).
+	(neon_vdup_lane<mode>_internal): New.
+	(neon_vdup_lane<mode>): New.
+	(neon_vcvt<sup><mode>): New (VCVTHI variant).
+	(neon_vcvt<sup><mode>): New (VH variant).
+	(neon_vcvt<sup>_n<mode>): New (VH variant).
+	(neon_vcvt<sup>_n<mode>): New (VCVTHI variant).
+	(neon_vcvt<vcvth_op><sup><mode>): New.
+	(neon_vmul_lane<mode>): New.
+	(neon_vmul_n<mode>): New.
+	* config/arm/unspecs.md (UNSPEC_VCALE): New
+	(UNSPEC_VCALT): New.
+	(UNSPEC_VFMA_LANE): New.
+	(UNSPECS_VFMS_LANE): New.
+
 2016-09-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.md ("*extzv<mode>_zEC12", "*extzv<mode>_z10")
