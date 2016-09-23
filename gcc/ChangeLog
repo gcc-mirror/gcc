@@ -1,5 +1,11 @@
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config.gcc (extra_headers): Add arm_fp16.h
+	* config/arm/arm_fp16.h: New.
+	* config/arm/arm_neon.h: Include "arm_fp16.h".
+
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/arm_neon_builtins.def (vadd): New (v8hf, v4hf
 	variants).
 	(vmulf): New (v8hf, v4hf variants).

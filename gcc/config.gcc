@@ -320,7 +320,7 @@ arc*-*-*)
 arm*-*-*)
 	cpu_type=arm
 	extra_objs="arm-builtins.o aarch-common.o"
-	extra_headers="mmintrin.h arm_neon.h arm_acle.h"
+	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
