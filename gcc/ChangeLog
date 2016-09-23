@@ -1,5 +1,38 @@
 2016-09-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("*extzv<mode>_zEC12", "*extzv<mode>_z10")
+	("*extzv<mode><clobbercc_or_nocc>"):
+	Correct a typo in a comment.
+	Merged patterns.
+	("*insv<mode>_zEC12", "*insv<mode>_z10")
+	("*insv<mode><clobbercc_or_nocc>"): Ditto.
+	("*insv<mode>_zEC12_appendbitsleft")
+	("*insv<mode><clobbercc_or_nocc>_appendbitsleft")
+	("*insv<mode>_z10_appendbitsleft"): Ditto.
+	("*insv<mode>_zEC12_noshift", "*insv<mode>_z10_noshift")
+	("*insv<mode><clobbercc_or_nocc>_noshift"): Ditto.
+	Provide pattern with operands switched.
+	("*pre_z10_extv<mode>"):
+	Use new subst patterns.
+	("*extzvdi<clobbercc_or_nocc>_lshiftrt", "*<risbg_n>_ior_and_sr_ze")
+	("*extvsidi<clobbercc_or_nocc>", "*<risbg_n>_and_subregdi_rotr")
+	("*<risbg_n>_and_subregdi_rotl", "*<risbg_n>_di_and_rot")
+	("*insv_z10_noshift_cc", "*insv_z10_noshift_cconly")
+	("*<risbg_n>_<mode>_ior_and_lshiftrt")
+	("*<risbg_n>_sidi_ior_and_lshiftrt")
+	("*trunc_sidi_and_subreg_lshrt<clobbercc_or_nocc>"):
+	New patterns.
+	("*extzv_<mode>_sll", "*extzv_<mode>_srl")
+	("*extzv_<mode>_srl<clobbercc_or_nocc>")
+	("*extzv_<mode>_sll<clobbercc_or_nocc>"): Renamed patterns, use risbgn
+	on zEC12.
+	("SINT"): New mode_iterator with SI, HI, QI.
+	* config/s390/subst.md ("clobbercc_or_nocc_subst", "z10_or_zEC12_cond")
+	("clobbercc_or_nocc", "risbg_n"): New constructs for risbg pattern
+	duplication.
+
+2016-09-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* config/s390/predicates.md ("contiguous_bitmask_operand"): Adapt to new
 	interface of s390_contiguous_bitmask_p.
 	("contiguous_bitmask_nowrap_operand"): New predicate.
