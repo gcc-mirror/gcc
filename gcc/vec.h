@@ -410,7 +410,9 @@ struct GTY((user)) vec
 /* Type to provide NULL values for vec<T, A, L>.  This is used to
    provide nil initializers for vec instances.  Since vec must be
    a POD, we cannot have proper ctor/dtor for it.  To initialize
-   a vec instance, you can assign it the value vNULL.  */
+   a vec instance, you can assign it the value vNULL.  This isn't
+   needed for file-scope and function-local static vectors, which
+   are zero-initialized by default.  */
 struct vnull
 {
   template <typename T, typename A, typename L>

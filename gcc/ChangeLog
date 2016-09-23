@@ -1,5 +1,8 @@
 2016-09-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* vec.h (vNULL): Extend comment to say = vNULL initialization
+	isn't needed for static vars.
+
 	* sel-sched-ir.c (sel_global_bb_info, sel_region_bb_info,
 	loop_nests, s_i_d, last_added_blocks): Remove unnecessary
 	= vNULL initialization of file scope vec.
