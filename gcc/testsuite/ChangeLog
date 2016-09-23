@@ -1,3 +1,7 @@
+2016-09-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-2.c: Fix xfail pattern.
+
 2016-09-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Tom de Vries  <tom@codesourcery.com>
 
