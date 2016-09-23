@@ -393,6 +393,9 @@ extern bool arm_is_constant_pool_ref (rtx);
 #define FL_ARCH6KZ    (1 << 31)       /* ARMv6KZ architecture.  */
 
 #define FL2_ARCH8_1   (1 << 0)	      /* Architecture 8.1.  */
+#define FL2_ARCH8_2   (1 << 1)	      /* Architecture 8.2.  */
+#define FL2_FP16INST  (1 << 2)	      /* FP16 Instructions for ARMv8.2 and
+					 later.  */
 
 /* Flags that only effect tuning, not available instructions.  */
 #define FL_TUNE		(FL_WBUF | FL_VFPV2 | FL_STRONG | FL_LDSCHED \
@@ -424,6 +427,7 @@ extern bool arm_is_constant_pool_ref (rtx);
 #define FL_FOR_ARCH7EM		(FL_FOR_ARCH7M | FL_ARCH7EM)
 #define FL_FOR_ARCH8A		(FL_FOR_ARCH7VE | FL_ARCH8)
 #define FL2_FOR_ARCH8_1A	FL2_ARCH8_1
+#define FL2_FOR_ARCH8_2A	(FL2_FOR_ARCH8_1A | FL2_ARCH8_2)
 #define FL_FOR_ARCH8M_BASE	(FL_FOR_ARCH6M | FL_ARCH8 | FL_THUMB_DIV)
 #define FL_FOR_ARCH8M_MAIN	(FL_FOR_ARCH7M | FL_ARCH8)
 

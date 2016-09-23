@@ -1,3 +1,27 @@
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm-arches.def ("armv8.1-a"): Add FL_CRC32.
+	("armv8.2-a"): New.
+	("armv8.2-a+fp16"): New.
+	* config/arm/arm-protos.h (FL2_ARCH8_2): New.
+	(FL2_FP16INST): New.
+	(FL2_FOR_ARCH8_2A): New.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm.c (arm_arch8_2): New.
+	(arm_fp16_inst): New.
+	(arm_option_override): Set arm_arch8_2 and arm_fp16_inst.  Check
+	for incompatible fp16-format settings.
+	* config/arm/arm.h (TARGET_VFP_FP16INST): New.
+	(TARGET_NEON_FP16INST): New.
+	(arm_arch8_2): Declare.
+	(arm_fp16_inst): Declare.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add entries for
+	march=armv8.2-a and march=armv8.2-a+fp16.
+	* config/arm/t-aprofile (Arch Matches): Add entries for armv8.2-a
+	and armv8.2-a+fp16.
+	* doc/invoke.texi (ARM Options): Add "-march=armv8.1-a",
+	"-march=armv8.2-a" and "-march=armv8.2-a+fp16".
+
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
 	* doc/extend.texi: Remove fused-madd from i386 target

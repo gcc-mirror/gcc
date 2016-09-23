@@ -99,6 +99,8 @@ MULTILIB_MATCHES       += march?armv8-a=mcpu?xgene1
 MULTILIB_MATCHES       += march?armv8-a=march?armv8-a+crc
 MULTILIB_MATCHES       += march?armv8-a=march?armv8.1-a
 MULTILIB_MATCHES       += march?armv8-a=march?armv8.1-a+crc
+MULTILIB_MATCHES       += march?armv8-a=march?armv8.2-a
+MULTILIB_MATCHES       += march?armv8-a=march?armv8.2-a+fp16
 
 # FPU matches
 MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3

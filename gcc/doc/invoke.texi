@@ -14503,6 +14503,19 @@ extensions.
 @option{-march=armv8-a+crc} enables code generation for the ARMv8-A
 architecture together with the optional CRC32 extensions.
 
+@option{-march=armv8.1-a} enables compiler support for the ARMv8.1-A
+architecture.  This also enables the features provided by
+@option{-march=armv8-a+crc}.
+
+@option{-march=armv8.2-a} enables compiler support for the ARMv8.2-A
+architecture.  This also enables the features provided by
+@option{-march=armv8.1-a}.
+
+@option{-march=armv8.2-a+fp16} enables compiler support for the
+ARMv8.2-A architecture with the optional FP16 instructions extension.
+This also enables the features provided by @option{-march=armv8.1-a}
+and implies @option{-mfp16-format=ieee}.
+
 @option{-march=native} causes the compiler to auto-detect the architecture
 of the build computer.  At present, this feature is only supported on
 GNU/Linux, and not all architectures are recognized.  If the auto-detect
