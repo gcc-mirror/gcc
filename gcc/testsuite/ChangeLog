@@ -1,3 +1,9 @@
+2016-09-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/77411
+	* c-c++-common/ubsan/object-size-9.c: Call __builtin_exit in C++.
+
 2016-09-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/gomp/atomic-12.c: Skip for C++1z.
