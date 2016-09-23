@@ -1,3 +1,7 @@
+2016-09-22  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Define HAVE_MEMALIGN for newlib.
+
 2015-09-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/cpu/m68k/atomicity.h: Adjust comment.
