@@ -38,6 +38,7 @@
 extern "C" {
 #endif
 
+#include <arm_fp16.h>
 #include <stdint.h>
 
 typedef __simd64_int8_t int8x8_t;
