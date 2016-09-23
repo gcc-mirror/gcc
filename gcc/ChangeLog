@@ -1,3 +1,10 @@
+2016-09-22  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	Backport from 2016-09-22 trunk r240388.
+
+	* config/avr/avr.c (avr_rtx_costs_1): Handle DImode MULT.
+	(avr_address_cost): Replace 61 with MAX_LD_OFFSET(mode).
+
 2016-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/rtl.texi (JUMP_LABEL): Document RETURN and SIMPLE_RETURN values.
