@@ -1,3 +1,44 @@
+2016-09-23  Jiong Wang  <jiong.wang@arm.com>
+	    Matthew Wahab  <matthew.wahab@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/binary_scalar_op.inc: New.
+	* gcc.target/aarch64/advsimd-intrinsics/unary_scalar_op.inc: New.
+	* gcc.target/aarch64/advsimd-intrinsics/ternary_scalar_op.inc: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vabsh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtah_s32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtah_u32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_f16_s32_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_f16_u32_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_f16_s32_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_f16_u32_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_s32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_u32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_s32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_u32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtmh_s32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtmh_u32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtnh_s32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtnh_u32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtph_s32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtph_u32_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vdivh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vfmah_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vfmsh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmaxnmh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vminnmh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vnegh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndah_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndih_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndmh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndnh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndph_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndxh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vsqrth_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vsubh_f16_1.c: New.
+
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/arm/armv8_2-fp16-neon-1.c: New.
