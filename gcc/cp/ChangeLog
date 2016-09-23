@@ -1,5 +1,11 @@
 2016-09-23  Jakub Jelinek  <jakub@redhat.com>
 
+	Implement P0138R2, C++17 construction rules for enum class values
+	* cp-tree.h (is_direct_enum_init): Declare.
+	* decl.c (is_direct_enum_init): New function.
+	(reshape_init): Use it.
+	* typeck.c (convert_for_assignment): Likewise.
+
 	* Make-lang.in (check-c++1z): Pass RUNTESTFLAGS down to
 	make check-g++.
 

@@ -1,3 +1,8 @@
+2016-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement P0138R2, C++17 construction rules for enum class values
+	* g++.dg/cpp1z/direct-enum-init1.C: New test.
+
 2016-09-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/77672

@@ -5581,6 +5581,22 @@ next_initializable_field (tree field)
   return field;
 }
 
+/* Return true for [dcl.init.list] direct-list-initialization from
+   single element of enumeration with a fixed underlying type.  */
+
+bool
+is_direct_enum_init (tree type, tree init)
+{
+  if (cxx_dialect >= cxx1z
+      && TREE_CODE (type) == ENUMERAL_TYPE
+      && ENUM_FIXED_UNDERLYING_TYPE_P (type)
+      && TREE_CODE (init) == CONSTRUCTOR
+      && CONSTRUCTOR_IS_DIRECT_INIT (init)
+      && CONSTRUCTOR_NELTS (init) == 1)
+    return true;
+  return false;
+}
+
 /* Subroutine of reshape_init_array and reshape_init_vector, which does
    the actual work. ELT_TYPE is the element type of the array. MAX_INDEX is an
    INTEGER_CST representing the size of the array minus one (the maximum index),
@@ -6025,6 +6041,17 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
      initializer.  */
   if (vec_safe_is_empty (v))
     return init;
+
+  /* Handle [dcl.init.list] direct-list-initialization from
+     single element of enumeration with a fixed underlying type.  */
+  if (is_direct_enum_init (type, init))
+    {
+      tree elt = CONSTRUCTOR_ELT (init, 0)->value;
+      if (check_narrowing (ENUM_UNDERLYING_TYPE (type), elt, complain))
+	return cp_build_c_cast (type, elt, tf_warning_or_error);
+      else
+	return error_mark_node;
+    }
 
   /* Recurse on this CONSTRUCTOR.  */
   d.cur = &(*v)[0];
