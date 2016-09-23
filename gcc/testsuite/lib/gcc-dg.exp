@@ -986,6 +986,13 @@ if { [info procs saved-dg-error] == [list] \
 proc process-message { msgproc msgprefix dgargs } {
     upvar dg-messages dg-messages
 
+    # Handle relative line specification, .+1 or .-1 etc.
+    if { [llength $dgargs] == 5
+	 && [regsub "^\.\[+-\](\[0-9\])$" [lindex $dgargs 4] "\\1" num] } {
+	set num [expr [lindex $dgargs 0] [string index [lindex $dgargs 4] 1] $num]
+	set dgargs [lreplace $dgargs 4 4 $num]
+    }
+
     # Process the dg- directive, including adding the regular expression
     # to the new message entry in dg-messages.
     set msgcnt [llength ${dg-messages}]
