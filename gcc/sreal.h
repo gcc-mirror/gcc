@@ -104,14 +104,20 @@ public:
   /* Global minimum sreal can hold.  */
   inline static sreal min ()
   {
-    static sreal min = sreal (-SREAL_MAX_SIG, SREAL_MAX_EXP);
+    sreal min;
+    /* This never needs normalization.  */
+    min.m_sig = -SREAL_MAX_SIG;
+    min.m_exp = SREAL_MAX_EXP;
     return min;
   }
 
   /* Global minimum sreal can hold.  */
   inline static sreal max ()
   {
-    static sreal max = sreal (SREAL_MAX_SIG, SREAL_MAX_EXP);
+    sreal max;
+    /* This never needs normalization.  */
+    max.m_sig = SREAL_MAX_SIG;
+    max.m_exp = SREAL_MAX_EXP;
     return max;
   }
 
