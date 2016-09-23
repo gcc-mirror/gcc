@@ -1,5 +1,15 @@
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/arm-builtins.c (arm_init_neon_builtin): New.
+	(arm_init_builtins): Move body of a loop to the standalone
+	function arm_init_neon_builtin.
+	(arm_expand_neon_builtin_1): New.  Update comment.  Function body
+	moved from arm_neon_builtin with some white-space fixes.
+	(arm_expand_neon_builtin): Move code into the standalone function
+	arm_expand_neon_builtin_1.
+
+2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/iterators.md (VCVTHI): New.
 	(NEON_VCMP): Add UNSPEC_VCLT and UNSPEC_VCLE.  Fix a long line.
 	(NEON_VAGLTE): New.

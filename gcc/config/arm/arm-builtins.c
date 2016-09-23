@@ -543,7 +543,7 @@ enum arm_builtins
 };
 
 #define ARM_BUILTIN_NEON_PATTERN_START \
-    (ARM_BUILTIN_MAX - ARRAY_SIZE (neon_builtin_data))
+  (ARM_BUILTIN_NEON_BASE + 1)
 
 #undef CF
 #undef VAR1
@@ -895,6 +895,110 @@ arm_init_simd_builtin_scalar_types (void)
 					     "__builtin_neon_uti");
 }
 
+/* Set up a NEON builtin.  */
+
+static void
+arm_init_neon_builtin (unsigned int fcode,
+		       neon_builtin_datum *d)
+{
+  bool print_type_signature_p = false;
+  char type_signature[SIMD_MAX_BUILTIN_ARGS] = { 0 };
+  char namebuf[60];
+  tree ftype = NULL;
+  tree fndecl = NULL;
+
+  d->fcode = fcode;
+
+  /* We must track two variables here.  op_num is
+     the operand number as in the RTL pattern.  This is
+     required to access the mode (e.g. V4SF mode) of the
+     argument, from which the base type can be derived.
+     arg_num is an index in to the qualifiers data, which
+     gives qualifiers to the type (e.g. const unsigned).
+     The reason these two variables may differ by one is the
+     void return type.  While all return types take the 0th entry
+     in the qualifiers array, there is no operand for them in the
+     RTL pattern.  */
+  int op_num = insn_data[d->code].n_operands - 1;
+  int arg_num = d->qualifiers[0] & qualifier_void
+    ? op_num + 1
+    : op_num;
+  tree return_type = void_type_node, args = void_list_node;
+  tree eltype;
+
+  /* Build a function type directly from the insn_data for this
+     builtin.  The build_function_type () function takes care of
+     removing duplicates for us.  */
+  for (; op_num >= 0; arg_num--, op_num--)
+    {
+      machine_mode op_mode = insn_data[d->code].operand[op_num].mode;
+      enum arm_type_qualifiers qualifiers = d->qualifiers[arg_num];
+
+      if (qualifiers & qualifier_unsigned)
+	{
+	  type_signature[arg_num] = 'u';
+	  print_type_signature_p = true;
+	}
+      else if (qualifiers & qualifier_poly)
+	{
+	  type_signature[arg_num] = 'p';
+	  print_type_signature_p = true;
+	}
+      else
+	type_signature[arg_num] = 's';
+
+      /* Skip an internal operand for vget_{low, high}.  */
+      if (qualifiers & qualifier_internal)
+	continue;
+
+      /* Some builtins have different user-facing types
+	 for certain arguments, encoded in d->mode.  */
+      if (qualifiers & qualifier_map_mode)
+	op_mode = d->mode;
+
+      /* For pointers, we want a pointer to the basic type
+	 of the vector.  */
+      if (qualifiers & qualifier_pointer && VECTOR_MODE_P (op_mode))
+	op_mode = GET_MODE_INNER (op_mode);
+
+      eltype = arm_simd_builtin_type
+	(op_mode,
+	 (qualifiers & qualifier_unsigned) != 0,
+	 (qualifiers & qualifier_poly) != 0);
+      gcc_assert (eltype != NULL);
+
+      /* Add qualifiers.  */
+      if (qualifiers & qualifier_const)
+	eltype = build_qualified_type (eltype, TYPE_QUAL_CONST);
+
+      if (qualifiers & qualifier_pointer)
+	eltype = build_pointer_type (eltype);
+
+      /* If we have reached arg_num == 0, we are at a non-void
+	 return type.  Otherwise, we are still processing
+	 arguments.  */
+      if (arg_num == 0)
+	return_type = eltype;
+      else
+	args = tree_cons (NULL_TREE, eltype, args);
+    }
+
+  ftype = build_function_type (return_type, args);
+
+  gcc_assert (ftype != NULL);
+
+  if (print_type_signature_p)
+    snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s_%s",
+	      d->name, type_signature);
+  else
+    snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s",
+	      d->name);
+
+  fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
+				 NULL, NULL_TREE);
+  arm_builtin_decls[fcode] = fndecl;
+}
+
 /* Set up all the NEON builtins, even builtins for instructions that are not
    in the current target ISA to allow the user to compile particular modules
    with different target specific options that differ from the command line
@@ -924,103 +1028,8 @@ arm_init_neon_builtins (void)
 
   for (i = 0; i < ARRAY_SIZE (neon_builtin_data); i++, fcode++)
     {
-      bool print_type_signature_p = false;
-      char type_signature[SIMD_MAX_BUILTIN_ARGS] = { 0 };
       neon_builtin_datum *d = &neon_builtin_data[i];
-      char namebuf[60];
-      tree ftype = NULL;
-      tree fndecl = NULL;
-
-      d->fcode = fcode;
-
-      /* We must track two variables here.  op_num is
-	 the operand number as in the RTL pattern.  This is
-	 required to access the mode (e.g. V4SF mode) of the
-	 argument, from which the base type can be derived.
-	 arg_num is an index in to the qualifiers data, which
-	 gives qualifiers to the type (e.g. const unsigned).
-	 The reason these two variables may differ by one is the
-	 void return type.  While all return types take the 0th entry
-	 in the qualifiers array, there is no operand for them in the
-	 RTL pattern.  */
-      int op_num = insn_data[d->code].n_operands - 1;
-      int arg_num = d->qualifiers[0] & qualifier_void
-		      ? op_num + 1
-		      : op_num;
-      tree return_type = void_type_node, args = void_list_node;
-      tree eltype;
-
-      /* Build a function type directly from the insn_data for this
-	 builtin.  The build_function_type () function takes care of
-	 removing duplicates for us.  */
-      for (; op_num >= 0; arg_num--, op_num--)
-	{
-	  machine_mode op_mode = insn_data[d->code].operand[op_num].mode;
-	  enum arm_type_qualifiers qualifiers = d->qualifiers[arg_num];
-
-	  if (qualifiers & qualifier_unsigned)
-	    {
-	      type_signature[arg_num] = 'u';
-	      print_type_signature_p = true;
-	    }
-	  else if (qualifiers & qualifier_poly)
-	    {
-	      type_signature[arg_num] = 'p';
-	      print_type_signature_p = true;
-	    }
-	  else
-	    type_signature[arg_num] = 's';
-
-	  /* Skip an internal operand for vget_{low, high}.  */
-	  if (qualifiers & qualifier_internal)
-	    continue;
-
-	  /* Some builtins have different user-facing types
-	     for certain arguments, encoded in d->mode.  */
-	  if (qualifiers & qualifier_map_mode)
-	      op_mode = d->mode;
-
-	  /* For pointers, we want a pointer to the basic type
-	     of the vector.  */
-	  if (qualifiers & qualifier_pointer && VECTOR_MODE_P (op_mode))
-	    op_mode = GET_MODE_INNER (op_mode);
-
-	  eltype = arm_simd_builtin_type
-		     (op_mode,
-		      (qualifiers & qualifier_unsigned) != 0,
-		      (qualifiers & qualifier_poly) != 0);
-	  gcc_assert (eltype != NULL);
-
-	  /* Add qualifiers.  */
-	  if (qualifiers & qualifier_const)
-	    eltype = build_qualified_type (eltype, TYPE_QUAL_CONST);
-
-	  if (qualifiers & qualifier_pointer)
-	      eltype = build_pointer_type (eltype);
-
-	  /* If we have reached arg_num == 0, we are at a non-void
-	     return type.  Otherwise, we are still processing
-	     arguments.  */
-	  if (arg_num == 0)
-	    return_type = eltype;
-	  else
-	    args = tree_cons (NULL_TREE, eltype, args);
-	}
-
-      ftype = build_function_type (return_type, args);
-
-      gcc_assert (ftype != NULL);
-
-      if (print_type_signature_p)
-	snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s_%s",
-		  d->name, type_signature);
-      else
-	snprintf (namebuf, sizeof (namebuf), "__builtin_neon_%s",
-		  d->name);
-
-      fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
-				     NULL, NULL_TREE);
-      arm_builtin_decls[fcode] = fndecl;
+      arm_init_neon_builtin (fcode, d);
     }
 }
 
@@ -2211,40 +2220,16 @@ constant_arg:
   return target;
 }
 
-/* Expand a Neon builtin, i.e. those registered only if TARGET_NEON holds.
-   Most of these are "special" because they don't have symbolic
-   constants defined per-instruction or per instruction-variant. Instead, the
-   required info is looked up in the table neon_builtin_data.  */
+/* Expand a neon builtin.  This is also used for vfp builtins, which behave in
+   the same way.  These builtins are "special" because they don't have symbolic
+   constants defined per-instruction or per instruction-variant.  Instead, the
+   required info is looked up in the NEON_BUILTIN_DATA record that is passed
+   into the function.  */
+
 static rtx
-arm_expand_neon_builtin (int fcode, tree exp, rtx target)
+arm_expand_neon_builtin_1 (int fcode, tree exp, rtx target,
+			   neon_builtin_datum *d)
 {
-  /* Check in the context of the function making the call whether the
-     builtin is supported.  */
-  if (! TARGET_NEON)
-    {
-      fatal_error (input_location,
-		   "You must enable NEON instructions (e.g. -mfloat-abi=softfp -mfpu=neon) to use these intrinsics.");
-      return const0_rtx;
-    }
-
-  if (fcode == ARM_BUILTIN_NEON_LANE_CHECK)
-    {
-      /* Builtin is only to check bounds of the lane passed to some intrinsics
-	 that are implemented with gcc vector extensions in arm_neon.h.  */
-
-      tree nlanes = CALL_EXPR_ARG (exp, 0);
-      gcc_assert (TREE_CODE (nlanes) == INTEGER_CST);
-      rtx lane_idx = expand_normal (CALL_EXPR_ARG (exp, 1));
-      if (CONST_INT_P (lane_idx))
-	neon_lane_bounds (lane_idx, 0, TREE_INT_CST_LOW (nlanes), exp);
-      else
-	error ("%Klane index must be a constant immediate", exp);
-      /* Don't generate any RTL.  */
-      return const0_rtx;
-    }
-
-  neon_builtin_datum *d =
-		&neon_builtin_data[fcode - ARM_BUILTIN_NEON_PATTERN_START];
   enum insn_code icode = d->code;
   builtin_arg args[SIMD_MAX_BUILTIN_ARGS + 1];
   int num_args = insn_data[d->code].n_operands;
@@ -2260,8 +2245,8 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
       /* We have four arrays of data, each indexed in a different fashion.
 	 qualifiers - element 0 always describes the function return type.
 	 operands - element 0 is either the operand for return value (if
-	   the function has a non-void return type) or the operand for the
-	   first argument.
+	 the function has a non-void return type) or the operand for the
+	 first argument.
 	 expr_args - element 0 always holds the first argument.
 	 args - element 0 is always used for the return type.  */
       int qualifiers_k = k;
@@ -2283,7 +2268,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
 	  bool op_const_int_p =
 	    (CONST_INT_P (arg)
 	     && (*insn_data[icode].operand[operands_k].predicate)
-		(arg, insn_data[icode].operand[operands_k].mode));
+	     (arg, insn_data[icode].operand[operands_k].mode));
 	  args[k] = op_const_int_p ? NEON_ARG_CONSTANT : NEON_ARG_COPY_TO_REG;
 	}
       else if (d->qualifiers[qualifiers_k] & qualifier_pointer)
@@ -2296,8 +2281,47 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
   /* The interface to arm_expand_neon_args expects a 0 if
      the function is void, and a 1 if it is not.  */
   return arm_expand_neon_args
-	  (target, d->mode, fcode, icode, !is_void, exp,
-	   &args[1]);
+    (target, d->mode, fcode, icode, !is_void, exp,
+     &args[1]);
+}
+
+/* Expand a Neon builtin, i.e. those registered only if TARGET_NEON holds.
+   Most of these are "special" because they don't have symbolic
+   constants defined per-instruction or per instruction-variant.  Instead, the
+   required info is looked up in the table neon_builtin_data.  */
+
+static rtx
+arm_expand_neon_builtin (int fcode, tree exp, rtx target)
+{
+  if (fcode >= ARM_BUILTIN_NEON_BASE && ! TARGET_NEON)
+    {
+      fatal_error (input_location,
+		   "You must enable NEON instructions"
+		   " (e.g. -mfloat-abi=softfp -mfpu=neon)"
+		   " to use these intrinsics.");
+      return const0_rtx;
+    }
+
+  if (fcode == ARM_BUILTIN_NEON_LANE_CHECK)
+    {
+      /* Builtin is only to check bounds of the lane passed to some intrinsics
+	 that are implemented with gcc vector extensions in arm_neon.h.  */
+
+      tree nlanes = CALL_EXPR_ARG (exp, 0);
+      gcc_assert (TREE_CODE (nlanes) == INTEGER_CST);
+      rtx lane_idx = expand_normal (CALL_EXPR_ARG (exp, 1));
+      if (CONST_INT_P (lane_idx))
+	neon_lane_bounds (lane_idx, 0, TREE_INT_CST_LOW (nlanes), exp);
+      else
+	error ("%Klane index must be a constant immediate", exp);
+      /* Don't generate any RTL.  */
+      return const0_rtx;
+    }
+
+  neon_builtin_datum *d
+    = &neon_builtin_data[fcode - ARM_BUILTIN_NEON_PATTERN_START];
+
+  return arm_expand_neon_builtin_1 (fcode, exp, target, d);
 }
 
 /* Expand an expression EXP that calls a built-in function,
