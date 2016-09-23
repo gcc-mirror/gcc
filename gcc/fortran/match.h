@@ -223,6 +223,7 @@ void gfc_set_constant_character_len (int, gfc_expr *, int);
 /* Matchers for attribute declarations.  */
 match gfc_match_allocatable (void);
 match gfc_match_asynchronous (void);
+match gfc_match_automatic (void);
 match gfc_match_codimension (void);
 match gfc_match_contiguous (void);
 match gfc_match_dimension (void);
@@ -238,6 +239,7 @@ match gfc_match_protected (void);
 match gfc_match_private (gfc_statement *);
 match gfc_match_public (gfc_statement *);
 match gfc_match_save (void);
+match gfc_match_static (void);
 match gfc_match_modproc (void);
 match gfc_match_target (void);
 match gfc_match_value (void);

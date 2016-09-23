@@ -11348,10 +11348,11 @@ apply_default_init_local (gfc_symbol *sym)
      entry, so we just add a static initializer. Note that automatic variables
      are stack allocated even with -fno-automatic; we have also to exclude
      result variable, which are also nonstatic.  */
-  if (sym->attr.save || sym->ns->save_all
-      || (flag_max_stack_var_size == 0 && !sym->attr.result
-	  && (sym->ns->proc_name && !sym->ns->proc_name->attr.recursive)
-	  && (!sym->attr.dimension || !is_non_constant_shape_array (sym))))
+  if (!sym->attr.automatic
+      && (sym->attr.save || sym->ns->save_all
+	  || (flag_max_stack_var_size == 0 && !sym->attr.result
+	      && (sym->ns->proc_name && !sym->ns->proc_name->attr.recursive)
+	      && (!sym->attr.dimension || !is_non_constant_shape_array (sym)))))
     {
       /* Don't clobber an existing initializer!  */
       gcc_assert (sym->value == NULL);
@@ -11496,7 +11497,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
      a hidden default for allocatable components.  */
   if (!(sym->value || no_init_flag) && sym->ns->proc_name
       && sym->ns->proc_name->attr.flavor == FL_MODULE
-      && !sym->ns->save_all && !sym->attr.save
+      && !(sym->ns->save_all && !sym->attr.automatic) && !sym->attr.save
       && !sym->attr.pointer && !sym->attr.allocatable
       && gfc_has_default_initializer (sym->ts.u.derived)
       && !gfc_notify_std (GFC_STD_F2008, "Implied SAVE for module variable "
@@ -14319,7 +14320,7 @@ resolve_symbol (gfc_symbol *sym)
   if (class_attr.codimension
       && !(class_attr.allocatable || sym->attr.dummy || sym->attr.save
 	   || sym->attr.select_type_temporary
-	   || sym->ns->save_all
+	   || (sym->ns->save_all && !sym->attr.automatic)
 	   || sym->ns->proc_name->attr.flavor == FL_MODULE
 	   || sym->ns->proc_name->attr.is_main_program
 	   || sym->attr.function || sym->attr.result || sym->attr.use_assoc))
@@ -14471,7 +14472,8 @@ resolve_symbol (gfc_symbol *sym)
     }
 
   /* Check threadprivate restrictions.  */
-  if (sym->attr.threadprivate && !sym->attr.save && !sym->ns->save_all
+  if (sym->attr.threadprivate && !sym->attr.save
+      && !(sym->ns->save_all && !sym->attr.automatic)
       && (!sym->attr.in_common
 	  && sym->module == NULL
 	  && (sym->ns->proc_name == NULL
@@ -14482,7 +14484,7 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.omp_declare_target
       && sym->attr.flavor == FL_VARIABLE
       && !sym->attr.save
-      && !sym->ns->save_all
+      && !(sym->ns->save_all && !sym->attr.automatic)
       && (!sym->attr.in_common
 	  && sym->module == NULL
 	  && (sym->ns->proc_name == NULL

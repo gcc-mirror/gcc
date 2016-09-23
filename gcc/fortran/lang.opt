@@ -432,6 +432,10 @@ fdec-structure
 Fortran
 Enable support for DEC STRUCTURE/RECORD.
 
+fdec-static
+Fortran Var(flag_dec_static)
+Enable DEC-style STATIC and AUTOMATIC attributes.
+
 fdefault-double-8
 Fortran Var(flag_default_double)
 Set the default double precision kind to an 8 byte wide type.
