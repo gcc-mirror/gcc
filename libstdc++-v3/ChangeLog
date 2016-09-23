@@ -1,3 +1,11 @@
+2015-09-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/cpu/m68k/atomicity.h: Adjust comment.
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Honor
+	explicit atomicity_dir setup via configure.host.
+	* configure.host (rtems-*): Set atomicity_dir.
+	* configure: Regenerate.
+
 2016-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	Implement C++17 node extraction and insertion (P0083R5)
