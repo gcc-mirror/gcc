@@ -15538,10 +15538,12 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-  # Set atomicity_dir to builtins if all but the long long test above passes.
-  if test "$glibcxx_cv_atomic_bool" = yes \
+  # Set atomicity_dir to builtins if all but the long long test above passes,
+  # or if the builtins were already chosen (e.g. by configure.host).
+  if { test "$glibcxx_cv_atomic_bool" = yes \
      && test "$glibcxx_cv_atomic_short" = yes \
-     && test "$glibcxx_cv_atomic_int" = yes; then
+     && test "$glibcxx_cv_atomic_int" = yes; } \
+     || test "$atomicity_dir" = "cpu/generic/atomicity_builtins"; then
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS 1" >>confdefs.h
 
@@ -15573,7 +15575,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15576 "configure"
+#line 15578 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15615,7 +15617,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15618 "configure"
+#line 15620 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15649,7 +15651,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15652 "configure"
+#line 15654 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
