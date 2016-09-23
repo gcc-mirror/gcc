@@ -12,7 +12,7 @@ void test (void)
      { dg-message "format output 2 bytes into a destination of size 1" "" { target *-*-*-* } 10 }
      { dg-begin-multiline-output "" }
    sprintf (dst + 7, "%-s", "1");
-                     ^~~~~
+                      ~~^~
      { dg-end-multiline-output "" }
      { dg-begin-multiline-output "" }
    sprintf (dst + 7, "%-s", "1");

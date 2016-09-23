@@ -1,3 +1,10 @@
+2016-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/77672
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-4.c (test): Update
+	expected multiline output from first warning to reflect change
+	in r240434.
+
 2016-09-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-2.c: Fix xfail pattern.
