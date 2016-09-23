@@ -1,3 +1,8 @@
+2016-09-23  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_variable::merge): Replace adress
+	with address.
+
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm-arches.def ("armv8.1-a"): Add FL_CRC32.

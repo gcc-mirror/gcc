@@ -2225,7 +2225,7 @@ sem_variable::merge (sem_item *alias_item)
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "Not unifying; adress of original may be compared.\n\n");
+		 "Not unifying; address of original may be compared.\n\n");
       return false;
     }
 
