@@ -333,6 +333,10 @@ mblock-move-inline-limit=
 Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined UInteger Save
 Specify how many bytes should be moved inline before calling out to memcpy/memmove.
 
+mblock-compare-inline-limit=
+Target Report Var(rs6000_block_compare_inline_limit) Init(5) RejectNegative Joined UInteger Save
+Specify the maximum number pairs of load instructions that should be generated inline for the compare.  If the number needed exceeds the limit, a call to memcmp will be generated instead.
+
 misel
 Target Report Mask(ISEL) Var(rs6000_isa_flags)
 Generate isel instructions.
