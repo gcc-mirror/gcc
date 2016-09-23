@@ -1,3 +1,9 @@
+2016-09-23  Chris Manghane  <cmang@google.com>
+
+	PR go/77701
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Fix calls to integer_type
+	to pass arguments in the correct order.
+
 2016-09-22  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::Gcc_backend): Declare

@@ -651,25 +651,25 @@ Gcc_backend::Gcc_backend()
 {
   /* We need to define the fetch_and_add functions, since we use them
      for ++ and --.  */
-  tree t = this->integer_type(BITS_PER_UNIT, 1)->get_tree();
+  tree t = this->integer_type(true, BITS_PER_UNIT)->get_tree();
   tree p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
   this->define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_1, "__sync_fetch_and_add_1",
 		       NULL, build_function_type_list(t, p, t, NULL_TREE),
 		       false, false);
 
-  t = this->integer_type(BITS_PER_UNIT * 2, 1)->get_tree();
+  t = this->integer_type(true, BITS_PER_UNIT * 2)->get_tree();
   p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
   this->define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_2, "__sync_fetch_and_add_2",
 		       NULL, build_function_type_list(t, p, t, NULL_TREE),
 		       false, false);
 
-  t = this->integer_type(BITS_PER_UNIT * 4, 1)->get_tree();
+  t = this->integer_type(true, BITS_PER_UNIT * 4)->get_tree();
   p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
   this->define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_4, "__sync_fetch_and_add_4",
 		       NULL, build_function_type_list(t, p, t, NULL_TREE),
 		       false, false);
 
-  t = this->integer_type(BITS_PER_UNIT * 8, 1)->get_tree();
+  t = this->integer_type(true, BITS_PER_UNIT * 8)->get_tree();
   p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
   this->define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_8, "__sync_fetch_and_add_8",
 		       NULL, build_function_type_list(t, p, t, NULL_TREE),
