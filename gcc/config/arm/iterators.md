@@ -199,13 +199,16 @@
 ;; Code iterators
 ;;----------------------------------------------------------------------------
 
-;; A list of condition codes used in compare instructions where 
-;; the carry flag from the addition is used instead of doing the 
+;; A list of condition codes used in compare instructions where
+;; the carry flag from the addition is used instead of doing the
 ;; compare a second time.
 (define_code_iterator LTUGEU [ltu geu])
 
 ;; The signed gt, ge comparisons
 (define_code_iterator GTGE [gt ge])
+
+;; The signed gt, ge, lt, le comparisons
+(define_code_iterator GLTE [gt ge lt le])
 
 ;; The unsigned gt, ge comparisons
 (define_code_iterator GTUGEU [gtu geu])
@@ -234,6 +237,12 @@
 
 ;; Binary operators whose second operand can be shifted.
 (define_code_iterator SHIFTABLE_OPS [plus minus ior xor and])
+
+;; Operations on the sign of a number.
+(define_code_iterator ABSNEG [abs neg])
+
+;; Conversions.
+(define_code_iterator FCVT [unsigned_float float])
 
 ;; plus and minus are the only SHIFTABLE_OPS for which Thumb2 allows
 ;; a stack pointer opoerand.  The minus operation is a candidate for an rsub
@@ -329,6 +338,22 @@
 (define_int_iterator VCVT_US [UNSPEC_VCVT_S UNSPEC_VCVT_U])
 
 (define_int_iterator VCVT_US_N [UNSPEC_VCVT_S_N UNSPEC_VCVT_U_N])
+
+(define_int_iterator VCVT_HF_US_N [UNSPEC_VCVT_HF_S_N UNSPEC_VCVT_HF_U_N])
+
+(define_int_iterator VCVT_SI_US_N [UNSPEC_VCVT_SI_S_N UNSPEC_VCVT_SI_U_N])
+
+(define_int_iterator VCVT_HF_US [UNSPEC_VCVTA_S UNSPEC_VCVTA_U
+				 UNSPEC_VCVTM_S UNSPEC_VCVTM_U
+				 UNSPEC_VCVTN_S UNSPEC_VCVTN_U
+				 UNSPEC_VCVTP_S UNSPEC_VCVTP_U])
+
+(define_int_iterator VCVTH_US [UNSPEC_VCVTH_S UNSPEC_VCVTH_U])
+
+;; Operators for FP16 instructions.
+(define_int_iterator FP16_RND [UNSPEC_VRND UNSPEC_VRNDA
+			       UNSPEC_VRNDM UNSPEC_VRNDN
+			       UNSPEC_VRNDP UNSPEC_VRNDX])
 
 (define_int_iterator VQMOVN [UNSPEC_VQMOVN_S UNSPEC_VQMOVN_U])
 
@@ -687,6 +712,12 @@
 (define_code_attr shift [(ashiftrt "ashr") (lshiftrt "lshr")])
 (define_code_attr shifttype [(ashiftrt "signed") (lshiftrt "unsigned")])
 
+;; String reprentations of operations on the sign of a number.
+(define_code_attr absneg_str [(abs "abs") (neg "neg")])
+
+;; Conversions.
+(define_code_attr FCVTI32typename [(unsigned_float "u32") (float "s32")])
+
 ;;----------------------------------------------------------------------------
 ;; Int attributes
 ;;----------------------------------------------------------------------------
@@ -718,7 +749,13 @@
   (UNSPEC_VPMAX "s") (UNSPEC_VPMAX_U "u")
   (UNSPEC_VPMIN "s") (UNSPEC_VPMIN_U "u")
   (UNSPEC_VCVT_S "s") (UNSPEC_VCVT_U "u")
+  (UNSPEC_VCVTA_S "s") (UNSPEC_VCVTA_U "u")
+  (UNSPEC_VCVTM_S "s") (UNSPEC_VCVTM_U "u")
+  (UNSPEC_VCVTN_S "s") (UNSPEC_VCVTN_U "u")
+  (UNSPEC_VCVTP_S "s") (UNSPEC_VCVTP_U "u")
   (UNSPEC_VCVT_S_N "s") (UNSPEC_VCVT_U_N "u")
+  (UNSPEC_VCVT_HF_S_N "s") (UNSPEC_VCVT_HF_U_N "u")
+  (UNSPEC_VCVT_SI_S_N "s") (UNSPEC_VCVT_SI_U_N "u")
   (UNSPEC_VQMOVN_S "s") (UNSPEC_VQMOVN_U "u")
   (UNSPEC_VMOVL_S "s") (UNSPEC_VMOVL_U "u")
   (UNSPEC_VSHL_S "s") (UNSPEC_VSHL_U "u")
@@ -733,8 +770,24 @@
   (UNSPEC_VSHLL_S_N "s") (UNSPEC_VSHLL_U_N "u")
   (UNSPEC_VSRA_S_N "s") (UNSPEC_VSRA_U_N "u")
   (UNSPEC_VRSRA_S_N "s") (UNSPEC_VRSRA_U_N "u")
-
+  (UNSPEC_VCVTH_S "s") (UNSPEC_VCVTH_U "u")
 ])
+
+(define_int_attr vcvth_op
+ [(UNSPEC_VCVTA_S "a") (UNSPEC_VCVTA_U "a")
+  (UNSPEC_VCVTM_S "m") (UNSPEC_VCVTM_U "m")
+  (UNSPEC_VCVTN_S "n") (UNSPEC_VCVTN_U "n")
+  (UNSPEC_VCVTP_S "p") (UNSPEC_VCVTP_U "p")])
+
+(define_int_attr fp16_rnd_str
+  [(UNSPEC_VRND "rnd") (UNSPEC_VRNDA "rnda")
+   (UNSPEC_VRNDM "rndm") (UNSPEC_VRNDN "rndn")
+   (UNSPEC_VRNDP "rndp") (UNSPEC_VRNDX "rndx")])
+
+(define_int_attr fp16_rnd_insn
+  [(UNSPEC_VRND "vrintz") (UNSPEC_VRNDA "vrinta")
+   (UNSPEC_VRNDM "vrintm") (UNSPEC_VRNDN "vrintn")
+   (UNSPEC_VRNDP "vrintp") (UNSPEC_VRNDX "vrintx")])
 
 (define_int_attr cmp_op_unsp [(UNSPEC_VCEQ "eq") (UNSPEC_VCGT "gt")
                               (UNSPEC_VCGE "ge") (UNSPEC_VCLE "le")
