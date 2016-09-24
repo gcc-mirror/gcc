@@ -26874,7 +26874,7 @@ fi
   elif test x$gcc_cv_as != x; then
     $as_echo '	.dwsect 0xA0000
 	Lframe..0:
-		.vbyte 4,Lframe..0:
+		.vbyte 4,Lframe..0
 	  ' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5

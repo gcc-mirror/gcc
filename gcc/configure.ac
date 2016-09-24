@@ -4517,7 +4517,7 @@ LCF0:
 	  gcc_cv_as_aix_dwloc, [2,21,0],,
 	  [	.dwsect 0xA0000
 	Lframe..0:
-		.vbyte 4,Lframe..0:
+		.vbyte 4,Lframe..0
 	  ],,
 	  [AC_DEFINE(HAVE_XCOFF_DWARF_EXTRAS, 1,
 	    [Define if your assembler supports AIX debug frame section label reference.])])
