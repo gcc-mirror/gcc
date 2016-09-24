@@ -1,3 +1,9 @@
+2016-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/77490
+	* c-c++-common/Wbool-operation-1.c: New test.
+	* gcc.dg/Wbool-operation-1.c: New test.
+
 2016-09-23  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_static_1.f90: New.
@@ -10,7 +16,7 @@
 	PR fortran/48298
 	* gfortran.dg/negative_unit_check.f90: Update test.
 	* gfortran.dg/dtio_14.f90: New test.
-  
+
 2016-09-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/hotpatch-compile-1.c: Fixed dg-error test.

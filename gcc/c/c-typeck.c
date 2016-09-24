@@ -4196,6 +4196,22 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	  || (typecode == VECTOR_TYPE
 	      && !VECTOR_FLOAT_TYPE_P (TREE_TYPE (arg))))
 	{
+	  tree e = arg;
+
+	  /* Warn if the expression has boolean value.  */
+	  while (TREE_CODE (e) == COMPOUND_EXPR)
+	    e = TREE_OPERAND (e, 1);
+
+	  if ((TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
+	       || truth_value_p (TREE_CODE (e)))
+	      && warning_at (location, OPT_Wbool_operation,
+			     "%<~%> on a boolean expression"))
+	    {
+	      gcc_rich_location richloc (location);
+	      richloc.add_fixit_insert_before (location, "!");
+	      inform_at_rich_loc (&richloc, "did you mean to use logical "
+				  "not?");
+	    }
 	  if (!noconvert)
 	    arg = default_conversion (arg);
 	}
@@ -4304,6 +4320,16 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	  else
 	    warning_at (location, OPT_Wc___compat,
 			"decrement of enumeration value is invalid in C++");
+	}
+
+      if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
+	{
+	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
+	    warning_at (location, OPT_Wbool_operation,
+			"increment of a boolean expression");
+	  else
+	    warning_at (location, OPT_Wbool_operation,
+			"decrement of a boolean expression");
 	}
 
       /* Ensure the argument is fully folded inside any SAVE_EXPR.  */

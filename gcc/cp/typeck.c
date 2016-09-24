@@ -5792,6 +5792,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 {
   /* No default_conversion here.  It causes trouble for ADDR_EXPR.  */
   tree arg = xarg;
+  location_t location = EXPR_LOC_OR_LOC (arg, input_location);
   tree argtype = 0;
   const char *errstring = NULL;
   tree val;
@@ -5853,7 +5854,14 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 						   arg, true)))
 	errstring = _("wrong type argument to bit-complement");
       else if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
-	arg = cp_perform_integral_promotions (arg, complain);
+	{
+	  /* Warn if the expression has boolean value.  */
+	  if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
+	      && warning_at (location, OPT_Wbool_operation,
+			     "%<~%> on an expression of type bool"))
+	    inform (location, "did you mean to use logical not (%<!%>)?");
+	  arg = cp_perform_integral_promotions (arg, complain);
+	}
       break;
 
     case ABS_EXPR:
