@@ -315,6 +315,10 @@ Wbool-compare
 C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about boolean expression compared with an integer value different from true/false.
 
+Wbool-operation
+C ObjC C++ ObjC++ Var(warn_bool_op) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about certain operations on boolean expressions.
+
 Wframe-address
 C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when __builtin_frame_address or __builtin_return_address is used unsafely.

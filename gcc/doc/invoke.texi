@@ -256,8 +256,8 @@ Objective-C and Objective-C++ Dialects}.
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
 -Wno-aggressive-loop-optimizations -Warray-bounds -Warray-bounds=@var{n} @gol
--Wno-attributes -Wbool-compare -Wno-builtin-macro-redefined @gol
--Wc90-c99-compat -Wc99-c11-compat @gol
+-Wno-attributes -Wbool-compare -Wbool-operation @gol
+-Wno-builtin-macro-redefined -Wc90-c99-compat -Wc99-c11-compat @gol
 -Wc++-compat -Wc++11-compat -Wc++14-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
 -Wconversion -Wcoverage-mismatch -Wno-cpp -Wdangling-else -Wdate-time @gol
@@ -3656,6 +3656,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 @gccoptlist{-Waddress   @gol
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
 -Wbool-compare  @gol
+-Wbool-operation  @gol
 -Wc++11-compat  -Wc++14-compat@gol
 -Wchar-subscripts  @gol
 -Wcomment  @gol
@@ -4844,6 +4845,17 @@ int n = 5;
 @dots{}
 if ((n > 1) == 2) @{ @dots{} @}
 @end smallexample
+This warning is enabled by @option{-Wall}.
+
+@item -Wbool-operation
+@opindex Wno-bool-operation
+@opindex Wbool-operation
+Warn about suspicious operations on expressions of a boolean type.  For
+instance, bitwise negation of a boolean is very likely a bug in the program.
+For C, this warning also warns about incrementing or decrementing a boolean,
+which rarely makes sense.  (In C++, decrementing a boolean is always invalid.
+Incrementing a boolean is invalid in C++1z, and deprecated otherwise.)
+
 This warning is enabled by @option{-Wall}.
 
 @item -Wduplicated-cond
