@@ -18482,7 +18482,7 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	case HImode:
 	  {
 	    rtx src = mem;
-	    if (TARGET_LITTLE_ENDIAN)
+	    if (!BYTES_BIG_ENDIAN)
 	      {
 		src = gen_reg_rtx (HImode);
 		emit_insn (gen_bswaphi2 (src, mem));
@@ -18493,7 +18493,7 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	case SImode:
 	  {
 	    rtx src = mem;
-	    if (TARGET_LITTLE_ENDIAN)
+	    if (!BYTES_BIG_ENDIAN)
 	      {
 		src = gen_reg_rtx (SImode);
 		emit_insn (gen_bswapsi2 (src, mem));
@@ -18502,7 +18502,7 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	  }
 	  break;
 	case DImode:
-	  if (TARGET_LITTLE_ENDIAN)
+	  if (!BYTES_BIG_ENDIAN)
 	    emit_insn (gen_bswapdi2 (reg, mem));
 	  else
 	    emit_insn (gen_movdi (reg, mem));
@@ -18521,7 +18521,7 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	case HImode:
 	  {
 	    rtx src = mem;
-	    if (TARGET_LITTLE_ENDIAN)
+	    if (!BYTES_BIG_ENDIAN)
 	      {
 		src = gen_reg_rtx (HImode);
 		emit_insn (gen_bswaphi2 (src, mem));
@@ -18530,7 +18530,7 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	    break;
 	  }
 	case SImode:
-	  if (TARGET_LITTLE_ENDIAN)
+	  if (!BYTES_BIG_ENDIAN)
 	    emit_insn (gen_bswapsi2 (reg, mem));
 	  else
 	    emit_insn (gen_movsi (reg, mem));
@@ -18667,7 +18667,7 @@ expand_block_compare (rtx operands[])
 
   /* If we have an LE target without ldbrx and word_mode is DImode,
      then we must avoid using word_mode.  */
-  int word_mode_ok = !(TARGET_LITTLE_ENDIAN && !TARGET_LDBRX
+  int word_mode_ok = !(!BYTES_BIG_ENDIAN && !TARGET_LDBRX
 		       && word_mode == DImode);
 
   /* Strategy phase.  How many ops will this take and should we expand it?  */
