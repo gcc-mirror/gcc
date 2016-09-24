@@ -1,5 +1,10 @@
 2016-09-24  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
+	* gfortran.dg/coarray_lib_comm_1.f90: Really fix test
+	for 32-bit mode.
+
+2016-09-24  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
 	* gfortran.dg/coarray_lib_comm_1.f90: Fix test
 	for 32-bit mode.
 
