@@ -3,6 +3,25 @@
 	PR c/77490
 	* doc/invoke.texi: Document -Wbool-operation.
 
+2016-09-23  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (cmpmemsi): New define_expand.
+	* config/rs6000/rs6000.c (expand_block_compare): New function used by
+	cmpmemsi pattern to do builtin expansion of memcmp ().
+	(compute_current_alignment): Add helper function for
+	expand_block_compare used to compute alignment as the compare proceeds.
+	(select_block_compare_mode): Used by expand_block_compare to select
+	the mode used for reading the next chunk of bytes in the compare.
+	(do_load_for_compare): Used by expand_block_compare to emit the load
+	insns for the compare.
+	(rs6000_emit_dot_insn): Moved this function to avoid a forward
+	reference from expand_block_compare ().
+	* config/rs6000/rs6000-protos.h (expand_block_compare): Add a
+	prototype for this function.
+	* config/rs6000/rs6000.opt (mblock-compare-inline-limit): Add a new
+	target option for controlling how much code inline expansion of
+	memcmp() will be allowed to generate.
+
 2016-09-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* hooks.c (hook_bool_bool_false, hook_bool_bool_gcc_optionsp_false,
