@@ -1,5 +1,11 @@
 2016-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/77429 
+	* dependency.c (gfc_check_dependency):  Convert gcc_assert() to
+	a conditional and possible call to  gfc_internal_error().
+
+2016-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/77694
 	* frontend-passes.c (optimize_binop_array_assignment): Check pointer
 	for NULL.
