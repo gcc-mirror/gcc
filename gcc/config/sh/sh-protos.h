@@ -235,7 +235,9 @@ extern void sh_split_tst_subregs (rtx_insn* curr_insn,
 
 extern bool sh_is_nott_insn (const rtx_insn* i);
 extern rtx sh_movt_set_dest (const rtx_insn* i);
+extern rtx sh_movt_set_dest (const_rtx i);
 extern rtx sh_movrt_set_dest (const rtx_insn* i);
+extern rtx sh_movrt_set_dest (const_rtx i);
 
 inline bool sh_is_movt_insn (const rtx_insn* i)
 {

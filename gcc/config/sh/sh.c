@@ -3208,6 +3208,10 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 				  / mov_insn_size (mode, TARGET_SH2A));
 	  return true;
         }
+
+      if (sh_movt_set_dest (x) != NULL || sh_movrt_set_dest (x) != NULL)
+	return COSTS_N_INSNS (1);
+
       return false;
 
     /* The cost of a mem access is mainly the cost of the address mode.  */
@@ -11703,13 +11707,15 @@ sh_is_nott_insn (const rtx_insn* i)
 rtx
 sh_movt_set_dest (const rtx_insn* i)
 {
-  if (i == NULL)
-    return NULL;
+  return i == NULL ? NULL : sh_movt_set_dest (PATTERN (i));
+}
 
-  const_rtx p = PATTERN (i);
-  return GET_CODE (p) == SET
-	 && arith_reg_dest (XEXP (p, 0), SImode)
-	 && t_reg_operand (XEXP (p, 1), VOIDmode) ? XEXP (p, 0) : NULL;
+rtx
+sh_movt_set_dest (const_rtx pat)
+{
+  return GET_CODE (pat) == SET
+	 && arith_reg_dest (XEXP (pat, 0), SImode)
+	 && t_reg_operand (XEXP (pat, 1), VOIDmode) ? XEXP (pat, 0) : NULL;
 }
 
 /* Given an insn, check whether it's a 'movrt' kind of insn, i.e. an insn
@@ -11718,18 +11724,20 @@ sh_movt_set_dest (const rtx_insn* i)
 rtx
 sh_movrt_set_dest (const rtx_insn* i)
 {
-  if (i == NULL)
-    return NULL;
+  return i == NULL ? NULL : sh_movrt_set_dest (PATTERN (i));
+}
 
-  const_rtx p = PATTERN (i);
-
+rtx
+sh_movrt_set_dest (const_rtx pat)
+{
   /* The negc movrt replacement is inside a parallel.  */
-  if (GET_CODE (p) == PARALLEL)
-    p = XVECEXP (p, 0, 0);
+  if (GET_CODE (pat) == PARALLEL)
+    pat = XVECEXP (pat, 0, 0);
 
-  return GET_CODE (p) == SET
-	 && arith_reg_dest (XEXP (p, 0), SImode)
-	 && negt_reg_operand (XEXP (p, 1), VOIDmode) ? XEXP (p, 0) : NULL;
+  return GET_CODE (pat) == SET
+	 && arith_reg_dest (XEXP (pat, 0), SImode)
+	 && negt_reg_operand (XEXP (pat, 1), VOIDmode) ? XEXP (pat, 0) : NULL;
+
 }
 
 /* Given an insn and a reg number, tell whether the reg dies or is unused
