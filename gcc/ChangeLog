@@ -1,3 +1,22 @@
+2016-09-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2016-09-21  Richard Biener  <rguenther@suse.de>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77621
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Split
+	group at non-vectorizable stmts.
+
+	Backport from mainline
+	2016-09-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77621
+	* config/i386/i386.c (ix86_preferred_simd_mode) <case DFmode>:
+	Don't return word_mode for !TARGET_VECTORIZE_DOUBLE.
+	(ix86_add_stmt_cost): Penalize DFmode vector operations
+	for !TARGET_VECTORIZE_DOUBLE.
+
 2016-09-22  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	Backport from 2016-09-22 trunk r240388.
