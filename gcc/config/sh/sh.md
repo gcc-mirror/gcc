@@ -8524,6 +8524,24 @@
   [(set_attr "type" "arith") ;; poor approximation
    (set_attr "length" "4")])
 
+(define_insn_and_split "*cset_zero"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(if_then_else:SI (match_operand 1 "treg_set_expr_not_const01")
+			 (match_dup 0) (const_int 0)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && TARGET_ZDCBRANCH && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(if_then_else:SI (match_dup 1) (match_dup 0) (const_int 0)))]
+{
+  sh_treg_insns ti = sh_split_treg_set_expr (operands[1], curr_insn);
+  if (ti.remove_trailing_nott ())
+    operands[1] = gen_rtx_EQ (SImode, get_t_reg_rtx (), const0_rtx);
+  else
+    operands[1] = gen_rtx_EQ (SImode, get_t_reg_rtx (), const1_rtx);
+})
+
 (define_expand "cstoresf4"
   [(set (match_operand:SI 0 "register_operand")
 	(match_operator:SI 1 "ordered_comparison_operator"

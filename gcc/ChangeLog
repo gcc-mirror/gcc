@@ -1,3 +1,13 @@
+2016-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.c (sh_movt_set_dest, sh_movrt_set_dest): Add overloads.
+	(sh_rtx_costs): Handle SET of movt and movrt patterns.
+	* cnofig/sh/sh-protos.h (sh_movt_set_dest, sh_movrt_set_dest): Forward
+	declare new overloads.
+	* config/sh/sh.md (*cset_zero): Add variant that takes a treg_set_expr
+	operand.
+
 2016-09-24  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (expand_block_compare, do_load_for_compare):
