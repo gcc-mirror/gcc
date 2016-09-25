@@ -1,3 +1,9 @@
+2016-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77694
+	* frontend-passes.c (optimize_binop_array_assignment): Check pointer
+	for NULL.
+
 2016-09-23  Fritz Reese  <fritzoreese@gmail.com>
 
 	* lang.opt, invoke.texi, gfortran.texi: New flag -fdec-static.
