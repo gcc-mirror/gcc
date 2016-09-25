@@ -49,6 +49,8 @@ namespace __gnu_debug
    */
   class _Safe_iterator_base
   {
+    friend class _Safe_sequence_base;
+
   public:
     /** The sequence this iterator references; may be NULL to indicate
 	a singular iterator. */
@@ -101,7 +103,6 @@ namespace __gnu_debug
     __gnu_cxx::__mutex&
     _M_get_mutex() throw ();
 
-  public:
     /** Attaches this iterator to the given sequence, detaching it
      *	from whatever sequence it was attached to originally. If the
      *	new sequence is the NULL pointer, the iterator is left
@@ -124,6 +125,7 @@ namespace __gnu_debug
     void
     _M_detach_single() throw ();
 
+  public:
     /** Determines if we are attached to the given sequence. */
     bool
     _M_attached_to(const _Safe_sequence_base* __seq) const
@@ -185,6 +187,8 @@ namespace __gnu_debug
    */
   class _Safe_sequence_base
   {
+    friend class _Safe_iterator_base;
+
   public:
     /// The list of mutable iterators that reference this container
     _Safe_iterator_base* _M_iterators;
@@ -204,6 +208,11 @@ namespace __gnu_debug
 #if __cplusplus >= 201103L
     _Safe_sequence_base(const _Safe_sequence_base&) noexcept
     : _Safe_sequence_base() { }
+
+    // Move constructor swap iterators.
+    _Safe_sequence_base(_Safe_sequence_base&& __seq) noexcept
+    : _Safe_sequence_base()
+    { _M_swap(__seq); }
 #endif
 
     /** Notify all iterators that reference this sequence that the
@@ -242,12 +251,12 @@ namespace __gnu_debug
     __gnu_cxx::__mutex&
     _M_get_mutex() throw ();
 
-  public:
     /** Invalidates all iterators. */
     void
     _M_invalidate_all() const
     { if (++_M_version == 0) _M_version = 1; }
 
+  private:
     /** Attach an iterator to this sequence. */
     void
     _M_attach(_Safe_iterator_base* __it, bool __constant);
