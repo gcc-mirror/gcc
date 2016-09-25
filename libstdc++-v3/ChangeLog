@@ -1,3 +1,8 @@
+2016-09-25  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/parallel/algo.h: Generalize usage of std::__iterator_category.
+	Adjust whitespaces.
+
 2016-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/56166
