@@ -55,12 +55,9 @@ namespace __gnu_debug
 #if __cplusplus >= 201103L
       _Safe_container() = default;
       _Safe_container(const _Safe_container&) = default;
-      _Safe_container(_Safe_container&& __x) noexcept
-      : _Safe_container()
-      { _Base::_M_swap(__x); }
+      _Safe_container(_Safe_container&&) = default;
 
-      _Safe_container(_Safe_container&& __x,
-		      const _Alloc& __a)
+      _Safe_container(_Safe_container&& __x, const _Alloc& __a)
       : _Safe_container()
       {
 	if (__x._M_cont().get_allocator() == __a)

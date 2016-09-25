@@ -1,5 +1,36 @@
 2016-09-25  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/debug/bitset (bitset::reference::reference(const _Base_ref&,
+	bitset*)): Remove __unused__ attribute.
+	* include/debug/safe_base.h (_Safe_iterator_base): Make
+	_Safe_sequence_base a friend.
+	(_Safe_iterator_base::_M_attach): Make protected.
+	(_Safe_iterator_base::_M_attach_single): Likewise.
+	(_Safe_iterator_base::_M_detach): Likewise.
+	(_Safe_iterator_base::_M_detach_single): Likewise.
+	(_Safe_sequence_base): Make _Safe_iterator_base a friend.
+	(_Safe_sequence_base::_Safe_sequence_base(_Safe_sequence_base&&)): New.
+	(_Safe_sequence_base::_M_swap): Make protected.
+	(_Safe_sequence_base::_M_attach): Make private.
+	(_Safe_sequence_base::_M_attach_single): Likewise.
+	(_Safe_sequence_base::_M_detach): Likewise.
+	(_Safe_sequence_base::_M_detach_single): Likewise.
+	* include/debug/safe_container.h
+	(_Safe_container::_Safe_container(_Safe_container&&)): Make default.
+	* include/debug/safe_iterator.h
+	(_Safe_iterator::operator++()): Name __scoped_lock instance.
+	* include/debug/safe_iterator.tcc: Remove trailing line.
+	* include/debug/safe_unordered_base.h
+	(_Safe_local_iterator_base::_M_attach): Make protected.
+	(_Safe_local_iterator_base::_M_attach_single): Likewise.
+	(_Safe_local_iterator_base::_M_detach): Likewise.
+	(_Safe_local_iterator_base::_M_detach_single): Likewise.
+	(_Safe_unordered_container_base): Make _Safe_local_iterator_base friend.
+	(_Safe_unordered_container_base::_M_attach_local): Make private.
+	(_Safe_unordered_container_base::_M_attach_local_single): Likewise.
+	(_Safe_unordered_container_base::_M_detach_local): Likewise.
+	(_Safe_unordered_container_base::_M_detach_local_single): Likewise.
+
 	* include/parallel/algo.h: Generalize usage of std::__iterator_category.
 	Adjust whitespaces.
 
