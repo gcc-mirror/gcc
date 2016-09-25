@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mtune=atom -msse2 -fdump-tree-vect-stats" } */
+/* { dg-options "-O3 -mtune=atom -msse2 -mno-avx -fdump-tree-vect-stats" } */
 
 void
 foo (double *x, int *y)
