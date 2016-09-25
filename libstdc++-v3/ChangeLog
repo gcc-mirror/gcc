@@ -1,5 +1,10 @@
 2016-09-25  François Dumont  <fdumont@gcc.gnu.org>
 
+	* src/c++11/debug.cc: Include debug/vector. Include cctype. Remove
+	functional.
+	(get_safe_base_mutex): Get mutex based on address lowest non nil bits.
+	* testsuite/23_containers/vector/debug/mutex_association.cc: New.
+
 	* include/debug/bitset (bitset::reference::reference(const _Base_ref&,
 	bitset*)): Remove __unused__ attribute.
 	* include/debug/safe_base.h (_Safe_iterator_base): Make

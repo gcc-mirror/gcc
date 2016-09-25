@@ -30,12 +30,13 @@
 #include <debug/safe_unordered_base.h>
 #include <debug/safe_iterator.h>
 #include <debug/safe_local_iterator.h>
+#include <debug/vector>
 
 #include <cassert>
 #include <cstdio>
+#include <cctype> // for std::isspace
 
 #include <algorithm> // for std::min
-#include <functional> // for _Hash_impl
 
 #include <cxxabi.h> // for __cxa_demangle
 
@@ -47,11 +48,16 @@ namespace
    *  in order to limit contention without breaking current library binary
    *  compatibility. */
   __gnu_cxx::__mutex&
-  get_safe_base_mutex(void* __address)
+  get_safe_base_mutex(void* address)
   {
     const size_t mask = 0xf;
     static __gnu_cxx::__mutex safe_base_mutex[mask + 1];
-    const size_t index = _Hash_impl::hash(__address) & mask;
+
+    // Use arbitrarily __gnu_debug::vector<int> as the container giving
+    // alignment of debug containers.
+    const auto alignbits = __builtin_ctz(alignof(__gnu_debug::vector<int>));
+    const size_t index
+      = (reinterpret_cast<std::size_t>(address) >> alignbits) & mask;
     return safe_base_mutex[index];
   }
 
@@ -70,8 +76,8 @@ namespace
   }
 
   void
-  swap_seq(__gnu_debug::_Safe_sequence_base& __lhs,
-	   __gnu_debug::_Safe_sequence_base& __rhs)
+  swap_seq_single(__gnu_debug::_Safe_sequence_base& __lhs,
+		  __gnu_debug::_Safe_sequence_base& __rhs)
   {
     swap(__lhs._M_version, __rhs._M_version);
     swap_its(__lhs, __lhs._M_iterators,
@@ -80,15 +86,56 @@ namespace
 	     __rhs, __rhs._M_const_iterators);
   }
 
+  template<typename _Action>
+    void
+    lock_and_run(__gnu_cxx::__mutex& lhs_mutex, __gnu_cxx::__mutex& rhs_mutex,
+		 _Action action)
+    {
+      // We need to lock both sequences to run action.
+      if (&lhs_mutex == &rhs_mutex)
+	{
+	  __gnu_cxx::__scoped_lock sentry(lhs_mutex);
+	  action();
+	}
+      else
+	{
+	  __gnu_cxx::__scoped_lock sentry1(&lhs_mutex < &rhs_mutex
+					   ? lhs_mutex : rhs_mutex);
+	  __gnu_cxx::__scoped_lock sentry2(&lhs_mutex < &rhs_mutex
+					   ? rhs_mutex : lhs_mutex);
+	  action();
+	}
+    }
+
   void
-  swap_ucont(__gnu_debug::_Safe_unordered_container_base& __lhs,
-	    __gnu_debug::_Safe_unordered_container_base& __rhs)
+  swap_seq(__gnu_cxx::__mutex& lhs_mutex,
+	   __gnu_debug::_Safe_sequence_base& lhs,
+	   __gnu_cxx::__mutex& rhs_mutex,
+	   __gnu_debug::_Safe_sequence_base& rhs)
   {
-    swap_seq(__lhs, __rhs);
+    lock_and_run(lhs_mutex, rhs_mutex,
+		 [&lhs, &rhs]() { swap_seq_single(lhs, rhs); });
+  }
+
+  void
+  swap_ucont_single(__gnu_debug::_Safe_unordered_container_base& __lhs,
+		    __gnu_debug::_Safe_unordered_container_base& __rhs)
+  {
+    swap_seq_single(__lhs, __rhs);
     swap_its(__lhs, __lhs._M_local_iterators,
 	     __rhs, __rhs._M_local_iterators);
     swap_its(__lhs, __lhs._M_const_local_iterators,
 	     __rhs, __rhs._M_const_local_iterators);
+  }
+
+  void
+  swap_ucont(__gnu_cxx::__mutex& lhs_mutex,
+	     __gnu_debug::_Safe_unordered_container_base& lhs,
+	     __gnu_cxx::__mutex& rhs_mutex,
+	     __gnu_debug::_Safe_unordered_container_base& rhs)
+  {
+    lock_and_run(lhs_mutex, rhs_mutex,
+		 [&lhs, &rhs]() { swap_ucont_single(lhs, rhs); });
   }
 
   void
@@ -242,25 +289,7 @@ namespace __gnu_debug
   void
   _Safe_sequence_base::
   _M_swap(_Safe_sequence_base& __x) noexcept
-  {
-    // We need to lock both sequences to swap
-    using namespace __gnu_cxx;
-    __mutex *__this_mutex = &_M_get_mutex();
-    __mutex *__x_mutex = &__x._M_get_mutex();
-    if (__this_mutex == __x_mutex)
-      {
-	__scoped_lock __lock(*__this_mutex);
-	swap_seq(*this, __x);
-      }
-    else
-      {
-	__scoped_lock __l1(__this_mutex < __x_mutex
-			     ? *__this_mutex : *__x_mutex);
-	__scoped_lock __l2(__this_mutex < __x_mutex
-			     ? *__x_mutex : *__this_mutex);
-	swap_seq(*this, __x);
-      }
-  }
+  { swap_seq(_M_get_mutex(), *this, __x._M_get_mutex(), __x); }
 
   __gnu_cxx::__mutex&
   _Safe_sequence_base::
@@ -384,7 +413,7 @@ namespace __gnu_debug
   __gnu_cxx::__mutex&
   _Safe_iterator_base::
   _M_get_mutex() throw ()
-  { return get_safe_base_mutex(_M_sequence); }
+  { return _M_sequence->_M_get_mutex(); }
 
   _Safe_unordered_container_base*
   _Safe_local_iterator_base::
@@ -462,25 +491,7 @@ namespace __gnu_debug
   void
   _Safe_unordered_container_base::
   _M_swap(_Safe_unordered_container_base& __x) noexcept
-  {
-    // We need to lock both containers to swap
-    using namespace __gnu_cxx;
-    __mutex *__this_mutex = &_M_get_mutex();
-    __mutex *__x_mutex = &__x._M_get_mutex();
-    if (__this_mutex == __x_mutex)
-      {
-	__scoped_lock __lock(*__this_mutex);
-	swap_ucont(*this, __x);
-      }
-    else
-      {
-	__scoped_lock __l1(__this_mutex < __x_mutex
-			     ? *__this_mutex : *__x_mutex);
-	__scoped_lock __l2(__this_mutex < __x_mutex
-			     ? *__x_mutex : *__this_mutex);
-	swap_ucont(*this, __x);
-      }
-  }
+  { swap_ucont(_M_get_mutex(), *this, __x._M_get_mutex(), __x); }
 
   void
   _Safe_unordered_container_base::
