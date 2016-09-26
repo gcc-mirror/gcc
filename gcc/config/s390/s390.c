@@ -3467,6 +3467,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (2);
 	  return true;
 	}
+      /* fallthrough */
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
@@ -13855,6 +13856,7 @@ s390_sched_score (rtx_insn *insn)
 	score += 5;
       if ((mask & S390_SCHED_ATTR_MASK_GROUPALONE) != 0)
 	score += 10;
+      /* fallthrough */
     case 1:
       /* Prefer not cracked insns while trying to put together a
 	 group.  */
