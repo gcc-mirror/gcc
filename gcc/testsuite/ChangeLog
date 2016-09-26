@@ -1,3 +1,8 @@
+2016-09-26  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/77719
+	* gfortran.dg/pr77719.f90: New test.
+
 2016-09-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust regex to accept
