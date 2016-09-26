@@ -2208,6 +2208,7 @@ flatten_array_ctors_without_strlen (gfc_expr* e)
 	}
 
       /* Otherwise, fall through to handle constructor elements.  */
+      gcc_fallthrough ();
     case EXPR_STRUCTURE:
       for (c = gfc_constructor_first (e->value.constructor);
 	   c; c = gfc_constructor_next (c))

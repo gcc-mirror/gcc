@@ -774,6 +774,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    computed gotos.  */
 #define FORCED_LABEL(NODE) (LABEL_DECL_CHECK (NODE)->base.side_effects_flag)
 
+/* Whether a case or a user-defined label is allowed to fall through to.
+   This is used to implement -Wimplicit-fallthrough.  */
+#define FALLTHROUGH_LABEL_P(NODE) \
+  (LABEL_DECL_CHECK (NODE)->base.public_flag)
+
 /* Nonzero means this expression is volatile in the C sense:
    its address should be of type `volatile WHATEVER *'.
    In other words, the declared item is volatile qualified.

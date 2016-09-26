@@ -1,3 +1,59 @@
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* Makefile.in (insn-attrtab.o-warn, insn-dfatab.o-warn,
+	insn-latencytab.o-warn, insn-output.o-warn, insn-emit.o-warn): Add
+	-Wno-switch-fallthrough.
+	* builtins.c (expand_builtin_int_roundingfn_2): Add gcc_fallthrough.
+	(expand_builtin): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorized_libmass): Likewise.
+	* convert.c (convert_to_real_1): Likewise.
+	(convert_to_integer_1): Likewise.
+	* final.c (output_alternate_entry_point): Likewise.
+	* genattrtab.c (make_canonical): Likewise.
+	(write_test_expr): Likewise.
+	* genpreds.c (validate_exp): Likewise.
+	* gimple-ssa-strength-reduction.c
+	(find_candidates_dom_walker::before_dom_children): Likewise.
+	* godump.c (go_format_type): Likewise.
+	* reload1.c (elimination_effects): Likewise.
+	* resource.c (mark_referenced_resources): Likewise.
+	(mark_set_resources): Likewise.
+	* tree-ssa-loop-ivopts.c (find_deriving_biv_for_expr): Likewise.
+	* varasm.c (output_addressed_constants): Likewise.
+
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* common.opt (Wimplicit-fallthrough): New option.
+	* doc/extend.texi: Document statement attributes and the fallthrough
+	attribute.
+	* doc/invoke.texi: Document -Wimplicit-fallthrough.
+	* gimple.h (gimple_call_internal_p): New function.
+	* gimplify.c (struct gimplify_ctx): Add in_switch_expr.
+	(struct label_entry): New struct.
+	(find_label_entry): New function.
+	(case_label_p): New function.
+	(collect_fallthrough_labels): New function.
+	(last_stmt_in_scope): New function.
+	(should_warn_for_implicit_fallthrough): New function.
+	(warn_implicit_fallthrough_r): New function.
+	(maybe_warn_implicit_fallthrough): New function.
+	(expand_FALLTHROUGH_r): New function.
+	(expand_FALLTHROUGH): New function.
+	(gimplify_switch_expr): Call maybe_warn_implicit_fallthrough and
+	expand_FALLTHROUGH for the innermost GIMPLE_SWITCH.
+	(gimplify_label_expr): New function.
+	(gimplify_case_label_expr): Set location.
+	(gimplify_expr): Call gimplify_label_expr.
+	* internal-fn.c (expand_FALLTHROUGH): New function.
+	* internal-fn.def (FALLTHROUGH): New internal function.
+	* langhooks.c (lang_GNU_OBJC): New function.
+	* langhooks.h (lang_GNU_OBJC): Declare.
+	* system.h (gcc_fallthrough): Define.
+	* tree-core.h: Add FALLTHROUGH_LABEL_P comment.
+	* tree.h (FALLTHROUGH_LABEL_P): Define.
+
 2016-09-26  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (stripattributes): Remove unused function.

@@ -2384,6 +2384,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 	    }
 	  /* If a CLASS object gets through to here, fall through and ICE.  */
 	}
+      gcc_fallthrough ();
     default:
       gfc_internal_error ("Bad IO basetype (%d)", ts->type);
     }

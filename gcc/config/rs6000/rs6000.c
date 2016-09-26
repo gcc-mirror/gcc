@@ -5489,7 +5489,7 @@ rs6000_builtin_vectorized_libmass (combined_fn fn, tree type_out,
     CASE_CFN_HYPOT:
     CASE_CFN_POW:
       n_args = 2;
-      /* fall through */
+      gcc_fallthrough ();
 
     CASE_CFN_ACOS:
     CASE_CFN_ACOSH:

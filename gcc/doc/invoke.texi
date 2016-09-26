@@ -273,7 +273,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-signedness  -Wformat-y2k -Wframe-address @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
--Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
+-Wimplicit  -Wimplicit-fallthrough  -Wimplicit-function-declaration @gol
+-Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast -Winvalid-memory-model -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len} @gol
@@ -3719,6 +3720,7 @@ name is still supported, but the newer name is more descriptive.)
 @gccoptlist{-Wclobbered  @gol
 -Wempty-body  @gol
 -Wignored-qualifiers @gol
+-Wimplicit-fallthrough @gol
 -Wmissing-field-initializers  @gol
 -Wmissing-parameter-type @r{(C only)}  @gol
 -Wold-style-declaration @r{(C only)}  @gol
@@ -4086,6 +4088,93 @@ enabled by default and it is made into an error by
 @opindex Wno-implicit
 Same as @option{-Wimplicit-int} and @option{-Wimplicit-function-declaration}.
 This warning is enabled by @option{-Wall}.
+
+@item -Wimplicit-fallthrough
+@opindex Wimplicit-fallthrough
+@opindex Wno-implicit-fallthrough
+Warn when a switch case falls through.  For example:
+
+@smallexample
+@group
+switch (cond)
+  @{
+  case 1:
+    a = 1;
+    break;
+  case 2:
+    a = 2;
+  case 3:
+    a = 3;
+    break;
+  @}
+@end group
+@end smallexample
+
+This warning does not warn when the last statement of a case cannot
+fall through, e.g. when there is a return statement or a call to function
+declared with the noreturn attribute.  @option{-Wimplicit-fallthrough}
+also takes into account control flow statements, such as ifs, and only
+warns when appropriate.  E.g.@:
+
+@smallexample
+@group
+switch (cond)
+  @{
+  case 1:
+    if (i > 3) @{
+      bar (5);
+      break;
+    @} else if (i < 1) @{
+      bar (0);
+    @} else
+      return;
+  default:
+    @dots{}
+  @}
+@end group
+@end smallexample
+
+Since there are occasions where a switch case fall through is desirable,
+GCC provides an attribute, @code{__attribute__ ((fallthrough))}, that is
+to be used along with a null statement to suppress this warning that
+would normally occur:
+
+@smallexample
+@group
+switch (cond)
+  @{
+  case 1:
+    bar (0);
+    __attribute__ ((fallthrough));
+  default:
+    @dots{}
+  @}
+@end group
+@end smallexample
+
+C++17 provides a standard way to suppress the @option{-Wimplicit-fallthrough}
+warning using @code{[[fallthrough]];} instead of the GNU attribute.  In C++11
+or C++14 users can use @code{[[gnu::fallthrough]];}, which is a GNU extension.
+Instead of the these attributes, it is also possible to add a "falls through"
+comment to silence the warning.  GCC accepts a wide range of such comments,
+for example all of "Falls through.", "fallthru", "FALLS-THROUGH" work.  This
+comment needs to consist of two words merely, optionally followed by periods
+or whitespaces.
+
+@smallexample
+@group
+switch (cond)
+  @{
+  case 1:
+    bar (0);
+    /* FALLTHRU */
+  default:
+    @dots{}
+  @}
+@end group
+@end smallexample
+
+This warning is enabled by @option{-Wextra}.
 
 @item -Wignored-qualifiers @r{(C and C++ only)}
 @opindex Wignored-qualifiers

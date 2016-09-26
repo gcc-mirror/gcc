@@ -193,6 +193,8 @@ struct GTY (()) c_token {
   location_t location;
   /* The value associated with this token, if any.  */
   tree value;
+  /* Token flags.  */
+  unsigned char flags;
 
   source_range get_range () const
   {
@@ -270,7 +272,8 @@ c_lex_one_token (c_parser *parser, c_token *token)
 {
   timevar_push (TV_LEX);
 
-  token->type = c_lex_with_flags (&token->value, &token->location, NULL,
+  token->type = c_lex_with_flags (&token->value, &token->location,
+				  &token->flags,
 				  (parser->lex_untranslated_string
 				   ? C_LEX_STRING_NO_TRANSLATE : 0));
   token->id_kind = C_ID_NONE;
@@ -1288,7 +1291,8 @@ static void c_parser_external_declaration (c_parser *);
 static void c_parser_asm_definition (c_parser *);
 static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
 					   bool, bool, tree *, vec<c_token>,
-					   struct oacc_routine_data * = NULL);
+					   struct oacc_routine_data * = NULL,
+					   bool * = NULL);
 static void c_parser_static_assert_declaration_no_semi (c_parser *);
 static void c_parser_static_assert_declaration (c_parser *);
 static void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
@@ -1591,6 +1595,8 @@ static void c_finish_oacc_routine (struct oacc_routine_data *, tree, bool);
    attributes; otherwise they may not.
    OBJC_FOREACH_OBJECT_DECLARATION can be used to get back the parsed
    declaration when parsing an Objective-C foreach statement.
+   FALLTHRU_ATTR_P is used to signal whether this function parsed
+   "__attribute__((fallthrough));".
 
    declaration:
      declaration-specifiers init-declarator-list[opt] ;
@@ -1617,6 +1623,8 @@ static void c_finish_oacc_routine (struct oacc_routine_data *, tree, bool);
    nested-function-definition:
      declaration-specifiers declarator declaration-list[opt]
        compound-statement
+
+   attribute ;
 
    Objective-C:
      attributes objc-class-definition
@@ -1652,7 +1660,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			       bool nested, bool start_attr_ok,
 			       tree *objc_foreach_object_declaration,
 			       vec<c_token> omp_declare_simd_clauses,
-			       struct oacc_routine_data *oacc_routine_data)
+			       struct oacc_routine_data *oacc_routine_data,
+			       bool *fallthru_attr_p)
 {
   struct c_declspecs *specs;
   tree prefix_attrs;
@@ -1749,6 +1758,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
     {
       if (auto_type_p)
 	error_at (here, "%<__auto_type%> in empty declaration");
+      else if (specs->typespec_kind == ctsk_none
+	       && attribute_fallthrough_p (specs->attrs))
+	{
+	  if (fallthru_attr_p != NULL)
+	    *fallthru_attr_p = true;
+	  tree fn = build_call_expr_internal_loc (here, IFN_FALLTHROUGH,
+						  void_type_node, 0);
+	  add_stmt (fn);
+	}
       else if (empty_ok)
 	shadow_tag (specs);
       else
@@ -1851,7 +1869,10 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  break;
 	}
     }
-  
+  else if (attribute_fallthrough_p (specs->attrs))
+    warning_at (here, OPT_Wattributes,
+		"%<fallthrough%> attribute not followed by %<;%>");
+
   pending_xref_error ();
   prefix_attrs = specs->attrs;
   all_prefix_attrs = prefix_attrs;
@@ -4841,12 +4862,14 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	{
 	  last_label = false;
 	  mark_valid_location_for_stdc_pragma (false);
+	  bool fallthru_attr_p = false;
 	  c_parser_declaration_or_fndef (parser, true, true, true, true,
-					 true, NULL, vNULL);
-	  if (last_stmt)
+					 true, NULL, vNULL, NULL,
+					 &fallthru_attr_p);
+	  if (last_stmt && !fallthru_attr_p)
 	    pedwarn_c90 (loc, OPT_Wdeclaration_after_statement,
 			 "ISO C90 forbids mixed declarations and code");
-	  last_stmt = false;
+	  last_stmt = fallthru_attr_p;
 	}
       else if (!last_label
 	       && c_parser_next_token_is_keyword (parser, RID_EXTENSION))
@@ -4963,6 +4986,11 @@ c_parser_label (c_parser *parser)
 {
   location_t loc1 = c_parser_peek_token (parser)->location;
   tree label = NULL_TREE;
+
+  /* Remember whether this case or a user-defined label is allowed to fall
+     through to.  */
+  bool fallthrough_p = c_parser_peek_token (parser)->flags & PREV_FALLTHROUGH;
+
   if (c_parser_next_token_is_keyword (parser, RID_CASE))
     {
       tree exp1, exp2;
@@ -5009,6 +5037,33 @@ c_parser_label (c_parser *parser)
     }
   if (label)
     {
+      if (TREE_CODE (label) == LABEL_EXPR)
+	FALLTHROUGH_LABEL_P (LABEL_EXPR_LABEL (label)) = fallthrough_p;
+      else
+	FALLTHROUGH_LABEL_P (CASE_LABEL (label)) = fallthrough_p;
+
+      /* Allow '__attribute__((fallthrough));'.  */
+      if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
+	{
+	  location_t loc = c_parser_peek_token (parser)->location;
+	  tree attrs = c_parser_attributes (parser);
+	  if (attribute_fallthrough_p (attrs))
+	    {
+	      if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+		{
+		  tree fn = build_call_expr_internal_loc (loc,
+							  IFN_FALLTHROUGH,
+							  void_type_node, 0);
+		  add_stmt (fn);
+		}
+	      else
+		warning_at (loc, OPT_Wattributes, "%<fallthrough%> attribute "
+			    "not followed by %<;%>");
+	    }
+	  else if (attrs != NULL_TREE)
+	    warning_at (loc, OPT_Wattributes, "only attribute %<fallthrough%>"
+			" can be applied to a null statement");
+	}
       if (c_parser_next_tokens_start_declaration (parser))
 	{
 	  error_at (c_parser_peek_token (parser)->location,
@@ -5061,6 +5116,9 @@ c_parser_label (c_parser *parser)
 
    jump-statement:
      goto * expression ;
+
+   expression-statement:
+     attributes ;
 
    Objective-C:
 
@@ -5323,6 +5381,31 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_objc_synchronized_statement (parser);
 	  break;
+	case RID_ATTRIBUTE:
+	  {
+	    /* Allow '__attribute__((fallthrough));'.  */
+	    tree attrs = c_parser_attributes (parser);
+	    if (attribute_fallthrough_p (attrs))
+	      {
+		if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+		  {
+		    tree fn = build_call_expr_internal_loc (loc,
+							    IFN_FALLTHROUGH,
+							    void_type_node, 0);
+		    add_stmt (fn);
+		    /* Eat the ';'.  */
+		    c_parser_consume_token (parser);
+		  }
+		else
+		  warning_at (loc, OPT_Wattributes,
+			      "%<fallthrough%> attribute not followed "
+			      "by %<;%>");
+	      }
+	    else if (attrs != NULL_TREE)
+	      warning_at (loc, OPT_Wattributes, "only attribute %<fallthrough%>"
+			  " can be applied to a null statement");
+	    break;
+	  }
 	default:
 	  goto expr_stmt;
 	}

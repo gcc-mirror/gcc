@@ -4032,6 +4032,7 @@ done:
 		    continue;
 		  }
 		  /* Otherwise fall through GFC_SS_FUNCTION.  */
+		  gcc_fallthrough ();
 	      }
 	    case GFC_ISYM_LCOBOUND:
 	    case GFC_ISYM_UCOBOUND:

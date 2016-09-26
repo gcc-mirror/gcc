@@ -1,3 +1,19 @@
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* c-decl.c (pop_scope): Add gcc_fallthrough.
+
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* c-parser.c (struct c_token): Add flags field.
+	(c_lex_one_token): Pass it to c_lex_with_flags.
+	(c_parser_declaration_or_fndef): Turn __attribute__((fallthrough));
+	into IFN_FALLTHROUGH.
+	(c_parser_label): Set FALLTHROUGH_LABEL_P on labels.  Handle
+	attribute fallthrough after a case label or default label.
+	(c_parser_statement_after_labels): Handle RID_ATTRIBUTE.
+
 2016-09-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/77490

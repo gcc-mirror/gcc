@@ -21,7 +21,7 @@ void
 f3()
 {
   // The next line would be OK in C but is a syntax error in C++.
- l2: __attribute__ ((unused)) f9();	// { dg-error "expected" }
+ l2: __attribute__ ((unused)) f9();	// { dg-warning "ignored" }
 		// We still get an unused label warning--this is
 		// optional and can be removed if it ever changes.
 		// { dg-warning "not used" "expected" { target *-*-* } 24 }

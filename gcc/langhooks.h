@@ -546,5 +546,6 @@ extern tree add_builtin_type (const char *name, tree type);
 extern bool lang_GNU_C (void);
 extern bool lang_GNU_CXX (void);
 extern bool lang_GNU_Fortran (void);
- 
+extern bool lang_GNU_OBJC (void);
+
 #endif /* GCC_LANG_HOOKS_H */

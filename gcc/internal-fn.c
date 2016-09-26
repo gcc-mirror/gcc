@@ -244,6 +244,15 @@ expand_TSAN_FUNC_EXIT (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* This should get expanded in the lower pass.  */
+
+static void
+expand_FALLTHROUGH (internal_fn, gcall *call)
+{
+  error_at (gimple_location (call),
+	    "invalid use of attribute %<fallthrough%>");
+}
+
 /* Helper function for expand_addsub_overflow.  Return 1
    if ARG interpreted as signed in its precision is known to be always
    positive or 2 if ARG is known to be always negative, or 3 if ARG may

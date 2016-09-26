@@ -3572,6 +3572,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 	break;
 
       /* Fall through to error */
+      gcc_fallthrough ();
 
     default:
       gfc_error ("%qs at %C is not a variable", sym->name);

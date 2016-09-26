@@ -16556,7 +16556,16 @@ tsubst_copy_and_build (tree t,
 	tree ret;
 
 	function = CALL_EXPR_FN (t);
-	/* When we parsed the expression,  we determined whether or
+	if (function == NULL_TREE)
+	  {
+	    /* If you hit this assert, it means that you're trying to tsubst
+	       an internal function with arguments.  This isn't yet supported,
+	       so you need to build another internal call with the tsubsted
+	       arguments after the arguments have been tsubsted down below.  */
+	    gcc_assert (call_expr_nargs (t) == 0);
+	    RETURN (t);
+	  }
+	/* When we parsed the expression, we determined whether or
 	   not Koenig lookup should be performed.  */
 	koenig_p = KOENIG_LOOKUP_P (t);
 	if (TREE_CODE (function) == SCOPE_REF)
@@ -22787,7 +22796,7 @@ instantiation_dependent_scope_ref_p (tree t)
 bool
 value_dependent_expression_p (tree expression)
 {
-  if (!processing_template_decl)
+  if (!processing_template_decl || expression == NULL_TREE)
     return false;
 
   /* A name declared with a dependent type.  */

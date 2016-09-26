@@ -2921,6 +2921,16 @@ gimple_call_internal_unique_p (const gimple *gs)
   return gimple_call_internal_unique_p (gc);
 }
 
+/* Return true if GS is an internal function FN.  */
+
+static inline bool
+gimple_call_internal_p (const gimple *gs, internal_fn fn)
+{
+  return (is_gimple_call (gs)
+	  && gimple_call_internal_p (gs)
+	  && gimple_call_internal_fn (gs) == fn);
+}
+
 /* If CTRL_ALTERING_P is true, mark GIMPLE_CALL S to be a stmt
    that could alter control flow.  */
 

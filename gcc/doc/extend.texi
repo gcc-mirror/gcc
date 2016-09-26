@@ -60,6 +60,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Type Attributes::     Specifying attributes of types.
 * Label Attributes::    Specifying attributes on labels.
 * Enumerator Attributes:: Specifying attributes on enumerators.
+* Statement Attributes:: Specifying attributes on statements.
 * Attribute Syntax::    Formal syntax for attributes.
 * Function Prototypes:: Prototype declarations and old-style definitions.
 * C++ Comments::        C++ comments are recognized.
@@ -2261,6 +2262,7 @@ GCC also supports attributes on
 variable declarations (@pxref{Variable Attributes}),
 labels (@pxref{Label Attributes}),
 enumerators (@pxref{Enumerator Attributes}),
+statements (@pxref{Statement Attributes}),
 and types (@pxref{Type Attributes}).
 
 There is some overlap between the purposes of attributes and pragmas
@@ -5558,8 +5560,8 @@ attributes are currently defined generically for variables.
 Other attributes are defined for variables on particular target
 systems.  Other attributes are available for functions
 (@pxref{Function Attributes}), labels (@pxref{Label Attributes}),
-enumerators (@pxref{Enumerator Attributes}), and for types
-(@pxref{Type Attributes}).
+enumerators (@pxref{Enumerator Attributes}), statements
+(@pxref{Statement Attributes}), and for types (@pxref{Type Attributes}).
 Other front ends might define more attributes
 (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
@@ -6340,7 +6342,8 @@ attributes of types.  Some type attributes apply only to @code{struct}
 and @code{union} types, while others can apply to any type defined
 via a @code{typedef} declaration.  Other attributes are defined for
 functions (@pxref{Function Attributes}), labels (@pxref{Label 
-Attributes}), enumerators (@pxref{Enumerator Attributes}), and for
+Attributes}), enumerators (@pxref{Enumerator Attributes}), 
+statements (@pxref{Statement Attributes}), and for
 variables (@pxref{Variable Attributes}).
 
 The @code{__attribute__} keyword is followed by an attribute specification
@@ -6850,7 +6853,8 @@ GCC allows attributes to be set on C labels.  @xref{Attribute Syntax}, for
 details of the exact syntax for using attributes.  Other attributes are 
 available for functions (@pxref{Function Attributes}), variables 
 (@pxref{Variable Attributes}), enumerators (@pxref{Enumerator Attributes}),
-and for types (@pxref{Type Attributes}).
+statements (@pxref{Statement Attributes}), and for types
+(@pxref{Type Attributes}).
 
 This example uses the @code{cold} label attribute to indicate the 
 @code{ErrorHandling} branch is unlikely to be taken and that the
@@ -6903,8 +6907,8 @@ with computed goto or @code{asm goto}.
 GCC allows attributes to be set on enumerators.  @xref{Attribute Syntax}, for
 details of the exact syntax for using attributes.  Other attributes are
 available for functions (@pxref{Function Attributes}), variables
-(@pxref{Variable Attributes}), labels (@pxref{Label Attributes}),
-and for types (@pxref{Type Attributes}).
+(@pxref{Variable Attributes}), labels (@pxref{Label Attributes}), statements
+(@pxref{Statement Attributes}), and for types (@pxref{Type Attributes}).
 
 This example uses the @code{deprecated} enumerator attribute to indicate the
 @code{oldval} enumerator is deprecated:
@@ -6935,6 +6939,46 @@ do instead.  Note that the warnings only occurs for uses.
 
 @end table
 
+@node Statement Attributes
+@section Statement Attributes
+@cindex Statement Attributes
+
+GCC allows attributes to be set on null statements.  @xref{Attribute Syntax},
+for details of the exact syntax for using attributes.  Other attributes are
+available for functions (@pxref{Function Attributes}), variables
+(@pxref{Variable Attributes}), labels (@pxref{Label Attributes}), enumerators
+(@pxref{Enumerator Attributes}), and for types (@pxref{Type Attributes}).
+
+This example uses the @code{fallthrough} statement attribute to indicate that
+the @option{-Wimplicit-fallthrough} warning should not be emitted:
+
+@smallexample
+switch (cond)
+  @{
+  case 1:
+    bar (1);
+    __attribute__((fallthrough));
+  case 2:
+    @dots{}
+  @}
+@end smallexample
+
+@table @code
+@item fallthrough
+@cindex @code{fallthrough} statement attribute
+The @code{fallthrough} attribute with a null statement serves as a
+fallthrough statement.  It hints to the compiler that a statement
+that falls through to another case label, or user-defined label
+in a switch statement is intentional and thus the
+@option{-Wimplicit-fallthrough} warning must not trigger.  The
+fallthrough attribute may appear at most once in each attribute
+list, and may not be mixed with other attributes.  It can only
+be used in a switch statement (the compiler will issue an error
+otherwise), after a preceding statement and before a logically
+succeeding case label, or user-defined label.
+
+@end table
+
 @node Attribute Syntax
 @section Attribute Syntax
 @cindex attribute syntax
@@ -6962,6 +7006,8 @@ and enumerated types.
 applying to labels.
 @xref{Enumerator Attributes}, for details of the semantics of attributes
 applying to enumerators.
+@xref{Statement Attributes}, for details of the semantics of attributes
+applying to statements.
 
 An @dfn{attribute specifier} is of the form
 @code{__attribute__ ((@var{attribute-list}))}.  An @dfn{attribute list}
@@ -7026,6 +7072,10 @@ The attribute goes after the enumeration constant, before @code{=}, if
 present.  The optional attribute in the enumerator appertains to the
 enumeration constant.  It is not possible to place the attribute after
 the constant expression, if present.
+
+@subsubheading Statement Attributes
+In GNU C, an attribute specifier list may appear as part of a null
+statement.  The attribute goes before the semicolon.
 
 @subsubheading Type Attributes
 

@@ -1,3 +1,13 @@
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/7652
+	* include/cpplib.h (PREV_FALLTHROUGH): Define.
+	* internal.h (CPP_FALLTHRU): Define.
+	* lex.c (fallthrough_comment_p): New function.
+	(_cpp_lex_direct): Set PREV_FALLTHROUGH on tokens succeeding a falls
+	through comment.
+
 2016-09-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/77672

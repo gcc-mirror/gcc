@@ -1521,7 +1521,7 @@ eval_intrinsic (gfc_intrinsic_op op,
 	  break;
 	}
 
-    /* Fall through  */
+    gcc_fallthrough ();
     /* Numeric binary  */
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
