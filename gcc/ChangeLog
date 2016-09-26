@@ -1,3 +1,18 @@
+2016-09-26  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Exclude SANITIZE_UNREACHABLE and SANITIZE_RETURN
+	from default sanitize recover values.
+	* doc/invoke.texi: Fix documentation related to -fsanitize=leak,
+	-fsanitize=address, -fsanitize=thread and -fsanitize-recover.
+	* flag-types.h: Replace couple of 1 << x to 1UL << x, make it
+	consistent.
+	* opts.c (finish_options): Do a generic loop over options
+	that can be recovered.
+	(parse_sanitizer_options): Exclude SANITIZE_UNREACHABLE and
+	SANITIZE_RETURN.
+	(common_handle_option): Likewise.
+	* opts.h: Declare can_recover to sanitizer_opts_s.
+
 2016-09-26  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* target.def(elf_flags_numeric): Change documentation to

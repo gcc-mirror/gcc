@@ -10255,6 +10255,7 @@ more details.  The run-time behavior can be influenced using the
 the available options are shown at startup of the instrumented program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
+The option can't be combined with @option{-fsanitize=thread}.
 
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
@@ -10270,17 +10271,19 @@ details. The run-time behavior can be influenced using the @env{TSAN_OPTIONS}
 environment variable; see
 @url{https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags} for a list of
 supported options.
+The option can't be combined with @option{-fsanitize=address}
+and/or @option{-fsanitize=leak}.
 
 @item -fsanitize=leak
 @opindex fsanitize=leak
 Enable LeakSanitizer, a memory leak detector.
-This option only matters for linking of executables and if neither
-@option{-fsanitize=address} nor @option{-fsanitize=thread} is used.  In that
-case the executable is linked against a library that overrides @code{malloc}
+This option only matters for linking of executables and
+the executable is linked against a library that overrides @code{malloc}
 and other allocator functions.  See
 @uref{https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer} for more
 details.  The run-time behavior can be influenced using the
 @env{LSAN_OPTIONS} environment variable.
+The option can't be combined with @option{-fsanitize=thread}.
 
 @item -fsanitize=undefined
 @opindex fsanitize=undefined
@@ -10454,6 +10457,7 @@ and program then exits with a non-zero exit code.
 Currently this feature only works for @option{-fsanitize=undefined} (and its suboptions
 except for @option{-fsanitize=unreachable} and @option{-fsanitize=return}),
 @option{-fsanitize=float-cast-overflow}, @option{-fsanitize=float-divide-by-zero},
+@option{-fsanitize=bounds-strict},
 @option{-fsanitize=kernel-address} and @option{-fsanitize=address}.
 For these sanitizers error recovery is turned on by default, except @option{-fsanitize=address},
 for which this feature is experimental.
@@ -10470,12 +10474,12 @@ setting the @code{halt_on_error} flag in the corresponding environment variable.
 
 Syntax without explicit @var{opts} parameter is deprecated.  It is equivalent to
 @smallexample
--fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero
+-fsanitize-recover=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict
 @end smallexample
 @noindent
 Similarly @option{-fno-sanitize-recover} is equivalent to
 @smallexample
--fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero
+-fno-sanitize-recover=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict
 @end smallexample
 
 @item -fsanitize-undefined-trap-on-error
