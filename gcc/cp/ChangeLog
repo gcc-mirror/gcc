@@ -1,3 +1,10 @@
+2016-09-26  Nathan Sidwell  <nathan@acm.org>
+
+	* init.c (expand_default_init): Fix } indentation.
+	* method.c (process_subob_fn): Simplify control structure to
+	remove gotos.
+	(implicitly_declare_fn): Remove duplicated lambda ctor check.
+
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
