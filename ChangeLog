@@ -1,3 +1,8 @@
+2016-09-26  Anton Kolesov  <Anton.Kolesov@synopsys.com>
+
+	* configure.ac: Disable "sim" directory for arc*-*-*.
+	* configure: Regenerated.
+
 2016-09-23  Tamar Christina <tamar.christina@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
