@@ -1,3 +1,9 @@
+2016-09-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/77717
+	* testsuite/21_strings/basic_string_view/operations/compare/char/1.cc:
+	Fix an out-of-bounds access.
+
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652
