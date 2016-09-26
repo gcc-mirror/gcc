@@ -1,5 +1,10 @@
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
+	* system.h: Use __has_attribute to check whether the fallthrough
+	attribute is supported.
+
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
 	* ipa-inline-analysis.c (find_foldable_builtin_expect): Use
 	gimple_call_internal_p.
 	* ipa-split.c (find_return_bb): Likewise.

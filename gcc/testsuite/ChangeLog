@@ -1,3 +1,7 @@
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp1z/feat-cxx1z.C: Test attribute fallthrough.
+
 2016-09-26  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/ubsan/sanitize-recover-1.c: New test.

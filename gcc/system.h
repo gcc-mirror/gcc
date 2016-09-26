@@ -746,8 +746,12 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define gcc_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
 #endif
 
-#if GCC_VERSION >= 7000
-# define gcc_fallthrough() __attribute__((fallthrough))
+#if GCC_VERSION >= 7000 && defined(__has_attribute)
+# if __has_attribute(fallthrough)
+#  define gcc_fallthrough() __attribute__((fallthrough))
+# else
+#  define gcc_fallthrough()
+# endif
 #else
 # define gcc_fallthrough()
 #endif
