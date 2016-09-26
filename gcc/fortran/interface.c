@@ -4793,6 +4793,9 @@ gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
   gfc_typebound_proc *tb_io_proc, *specific_proc;
   bool t = false;
 
+  if (!derived || derived->attr.flavor != FL_DERIVED)
+    return NULL;
+
   /* Try to find a typebound DTIO binding.  */
   if (formatted == true)
     {
