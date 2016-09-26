@@ -1,3 +1,8 @@
+2016-09-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust regex to accept
+	singular form of byte when quantity is unknown. 
+
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp1z/feat-cxx1z.C: Test attribute fallthrough.
