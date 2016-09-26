@@ -1,3 +1,9 @@
+2016-09-26  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* target.def(elf_flags_numeric): Change documentation to
+	present tense.
+	* doc/tm.texi: Regenerate.
+
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652

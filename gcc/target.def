@@ -441,10 +441,10 @@ code has been defined in the assembler.  It is called by\n\
 @code{default_asm_named_section} whenever the section flags need to be\n\
 emitted in the assembler output.  If the hook returns true, then the\n\
 numerical value for ELF section flags should be calculated from\n\
-@var{flags} and saved in @var{*num}; the value will be printed out\n\
-instead of the normal sequence of letter codes.  If the hook is not\n\
-defined, or if it returns false, then @var{num} will be ignored and the\n\
-traditional letter sequence will be emitted.",
+@var{flags} and saved in @var{*num}; the value is printed out instead of the\n\
+normal sequence of letter codes.  If the hook is not defined, or if it\n\
+returns false, then @var{num} is ignored and the traditional letter sequence\n\
+is emitted.",
  bool, (unsigned int flags, unsigned int *num),
  hook_bool_uint_uintp_false)
 
