@@ -111,7 +111,7 @@ along with GCC; see the file COPYING3.  If not see
 	assemble_name (FILE, LABEL);				\
 	if ((OFFSET) != 0)					\
 	  fprintf (FILE, "+" HOST_WIDE_INT_PRINT_DEC,		\
-		   (HOST_WIDE_INT) (OFFSET))			\
+		   (HOST_WIDE_INT) (OFFSET));			\
 	break;							\
       case 8:							\
 	/* This is a hack.  There is no 64-bit section relative	\
@@ -123,7 +123,7 @@ along with GCC; see the file COPYING3.  If not see
 	assemble_name (FILE, LABEL);				\
 	if ((OFFSET) != 0)					\
 	  fprintf (FILE, "+" HOST_WIDE_INT_PRINT_DEC,		\
-		   (HOST_WIDE_INT) (OFFSET))			\
+		   (HOST_WIDE_INT) (OFFSET));			\
 	fputs ("\n\t.long\t0", FILE);				\
 	break;							\
       default:							\
