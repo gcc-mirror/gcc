@@ -1,3 +1,11 @@
+2016-09-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/77727
+	* include/std/optional (optional(const optional<_Up>&)):
+	Default-initialize the base and use emplace.
+	(optional(optional<_Up>&&)): Likewise.
+	* testsuite/20_util/optional/cons/77727.cc: New.
+
 2016-09-26  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_base.h
