@@ -502,7 +502,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    __not_<__converts_from_optional<_Tp, _Up>>
 			    >::value, bool> = true>
       constexpr optional(const optional<_Up>& __t)
-        : _Base(__t ? _Base(std::in_place, *__t) : _Base()) { }
+      {
+	if (__t)
+	  emplace(*__t);
+      }
 
       template <typename _Up,
                  enable_if_t<__and_<
@@ -512,7 +515,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       __not_<__converts_from_optional<_Tp, _Up>>
 			       >::value, bool> = false>
       explicit constexpr optional(const optional<_Up>& __t)
-        : _Base(__t ? _Base(std::in_place, *__t) : _Base()) { }
+      {
+	if (__t)
+	  emplace(*__t);
+      }
 
       template <typename _Up,
                 enable_if_t<__and_<
@@ -522,7 +528,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      __not_<__converts_from_optional<_Tp, _Up>>
 			      >::value, bool> = true>
       constexpr optional(optional<_Up>&& __t)
-        : _Base(__t ? _Base(std::in_place, std::move(*__t)) : _Base()) { }
+      {
+	if (__t)
+	  emplace(std::move(*__t));
+      }
 
       template <typename _Up,
                 enable_if_t<__and_<
@@ -532,7 +541,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    __not_<__converts_from_optional<_Tp, _Up>>
 			    >::value, bool> = false>
       explicit constexpr optional(optional<_Up>&& __t)
-        : _Base(__t ? _Base(std::in_place, std::move(*__t)) : _Base()) { }
+      {
+	if (__t)
+	  emplace(std::move(*__t));
+      }
 
       template<typename... _Args>
       explicit constexpr optional(in_place_t, _Args&&... __args)
