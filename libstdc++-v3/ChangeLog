@@ -1,3 +1,17 @@
+2016-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h (map::extract(const_iterator)): Assert that
+	iterator is not past-the-end.
+	* include/bits/stl_multimap.h (multimap::extract(const_iterator)):
+	Likewise.
+	* include/bits/stl_multiset.h (multiset::extract(const_iterator)):
+	Likewise.
+	* include/bits/stl_set.h (set::extract(const_iterator)): Likewise.
+	* include/bits/unordered_map.h (unordered_map::extract(const_iterator))
+	(unordered_multimap::extract(const_iterator)): Likewise.
+	* include/bits/unordered_set.h (unordered_set::extract(const_iterator))
+	(unordered_multiset::extract(const_iterator)): Likewise.
+
 2016-09-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/77717
