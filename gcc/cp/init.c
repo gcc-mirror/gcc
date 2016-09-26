@@ -1747,7 +1747,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	ctor_name = base_ctor_identifier;
       rval = build_special_member_call (exp, ctor_name, &parms, binfo, flags,
 					complain);
-  }
+    }
 
   if (parms != NULL)
     release_tree_vector (parms);

@@ -1129,7 +1129,11 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
 		  bool diag, tree arg, bool dtor_from_ctor = false)
 {
   if (!fn || fn == error_mark_node)
-    goto bad;
+    {
+      if (deleted_p)
+	*deleted_p = true;
+      return;
+    }
 
   if (spec_p)
     {
@@ -1162,12 +1166,6 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
 	  explain_invalid_constexpr_fn (fn);
 	}
     }
-
-  return;
-
- bad:
-  if (deleted_p)
-    *deleted_p = true;
 }
 
 /* Subroutine of synthesized_method_walk to allow recursion into anonymous
@@ -1931,12 +1929,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   DECL_DEFAULTED_FN (fn) = 1;
   if (cxx_dialect >= cxx11)
     {
-      /* "The closure type associated with a lambda-expression has a deleted
-	 default constructor and a deleted copy assignment operator."  */
-      if ((kind == sfk_constructor
-	   || kind == sfk_copy_assignment)
-	  && LAMBDA_TYPE_P (type))
-	deleted_p = true;
       DECL_DELETED_FN (fn) = deleted_p;
       DECL_DECLARED_CONSTEXPR_P (fn) = constexpr_p;
     }
