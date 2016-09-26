@@ -596,7 +596,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	gnu_expr
 	  = gnat_to_gnu_external (Expression (Declaration_Node (gnat_entity)));
 
-      /* ... fall through ... */
+      /* fall through */
 
     case E_Exception:
     case E_Loop_Parameter:
@@ -3369,7 +3369,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  break;
 	}
 
-      /* ... fall through ... */
+      /* fall through */
 
     case E_Record_Subtype:
       /* If Cloned_Subtype is Present it means this record subtype has
@@ -3804,7 +3804,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    break;
 	}
 
-      /* ... fall through ... */
+      /* fall through */
 
     case E_Allocator_Type:
     case E_Access_Type:
@@ -6882,7 +6882,7 @@ choices_to_gnu (tree operand, Node_Id choices)
 	      break;
 	    }
 
-	  /* ... fall through ... */
+	  /* fall through */
 
 	case N_Character_Literal:
 	case N_Integer_Literal:
@@ -8089,7 +8089,7 @@ annotate_value (tree gnu_size)
       else
 	return Uint_Minus_1;
 
-      /* Fall through... */
+      /* fall through */
 
     default:
       return No_Uint;

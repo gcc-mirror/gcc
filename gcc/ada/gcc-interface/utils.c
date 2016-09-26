@@ -3166,7 +3166,7 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 				    NULL_TREE, NULL_TREE),
 			 ATTR_FLAG_TYPE_IN_PLACE);
 
-      /* ... fall through ... */
+      /* fall through */
 
     case is_enabled:
       DECL_DECLARED_INLINE_P (subprog_decl) = 1;
@@ -4271,6 +4271,8 @@ convert (tree type, tree expr)
 	  return expr;
 	}
 
+      /* fall through */
+
     case CONSTRUCTOR:
       /* If we are converting a CONSTRUCTOR to a mere type variant, or to
 	 another padding type around the same type, just make a new one in
@@ -4508,7 +4510,7 @@ convert (tree type, tree expr)
 					  convert (TREE_TYPE (type),
 						   TYPE_MIN_VALUE (type))));
 
-      /* ... fall through ... */
+      /* fall through */
 
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
@@ -4585,7 +4587,7 @@ convert (tree type, tree expr)
 	  return gnat_build_constructor (type, v);
 	}
 
-      /* ... fall through ... */
+      /* fall through */
 
     case ARRAY_TYPE:
       /* In these cases, assume the front-end has validated the conversion.
@@ -4701,7 +4703,7 @@ convert_to_index_type (tree expr)
 	  break;
       }
 
-      /* ... fall through ... */
+      /* fall through */
 
     case NON_LVALUE_EXPR:
       return fold_build1 (code, sizetype,

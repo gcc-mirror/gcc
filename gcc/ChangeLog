@@ -1,3 +1,10 @@
+2016-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/i386.c (ix86_print_operand)
+	[HAVE_AS_IX86_CMOV_SUN_SYNTAX]: Add gcc_fallthrough.
+	* config/sparc/sparc.c (check_pic): Add fallthrough comment.
+	(epilogue_renumber): Likewise.
+
 2016-09-26  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/77719
