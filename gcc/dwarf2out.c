@@ -159,6 +159,7 @@ static GTY(()) section *debug_skeleton_abbrev_section;
 static GTY(()) section *debug_aranges_section;
 static GTY(()) section *debug_addr_section;
 static GTY(()) section *debug_macinfo_section;
+static const char *debug_macinfo_section_name;
 static GTY(()) section *debug_line_section;
 static GTY(()) section *debug_skeleton_line_section;
 static GTY(()) section *debug_loc_section;
@@ -265,7 +266,6 @@ static GTY(()) dw_die_ref decltype_auto_die;
 
 /* Forward declarations for functions defined in this file.  */
 
-static char *stripattributes (const char *);
 static void output_call_frame_info (int);
 static void dwarf2out_note_section_used (void);
 
@@ -410,24 +410,6 @@ should_emit_struct_debug (tree type, enum debug_info_usage usage)
   return DUMP_GSTRUCT (type, usage, criterion, generic, false, false);
 }
 
-/* Return a pointer to a copy of the section string name S with all
-   attributes stripped off, and an asterisk prepended (for assemble_name).  */
-
-static inline char *
-stripattributes (const char *s)
-{
-  char *stripped = XNEWVEC (char, strlen (s) + 2);
-  char *p = stripped;
-
-  *p++ = '*';
-
-  while (*s && *s != ',')
-    *p++ = *s++;
-
-  *p = '\0';
-  return stripped;
-}
-
 /* Switch [BACK] to eh_frame_section.  If we don't have an eh_frame_section,
    switch to the data section instead, and write out a synthetic start label
    for collect2 the first time around.  */
@@ -3514,27 +3496,17 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 #ifndef DEBUG_ADDR_SECTION
 #define DEBUG_ADDR_SECTION     ".debug_addr"
 #endif
-#ifndef DEBUG_NORM_MACINFO_SECTION
-#define DEBUG_NORM_MACINFO_SECTION     ".debug_macinfo"
+#ifndef DEBUG_MACINFO_SECTION
+#define DEBUG_MACINFO_SECTION     ".debug_macinfo"
 #endif
 #ifndef DEBUG_DWO_MACINFO_SECTION
 #define DEBUG_DWO_MACINFO_SECTION      ".debug_macinfo.dwo"
-#endif
-#ifndef DEBUG_MACINFO_SECTION
-#define DEBUG_MACINFO_SECTION                                           \
-  (!dwarf_split_debug_info                                              \
-   ? (DEBUG_NORM_MACINFO_SECTION) : (DEBUG_DWO_MACINFO_SECTION))
-#endif
-#ifndef DEBUG_NORM_MACRO_SECTION
-#define DEBUG_NORM_MACRO_SECTION ".debug_macro"
 #endif
 #ifndef DEBUG_DWO_MACRO_SECTION
 #define DEBUG_DWO_MACRO_SECTION        ".debug_macro.dwo"
 #endif
 #ifndef DEBUG_MACRO_SECTION
-#define DEBUG_MACRO_SECTION                                             \
-  (!dwarf_split_debug_info                                              \
-   ? (DEBUG_NORM_MACRO_SECTION) : (DEBUG_DWO_MACRO_SECTION))
+#define DEBUG_MACRO_SECTION	".debug_macro"
 #endif
 #ifndef DEBUG_LINE_SECTION
 #define DEBUG_LINE_SECTION	".debug_line"
@@ -3579,10 +3551,6 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 #ifndef TEXT_SECTION_NAME
 #define TEXT_SECTION_NAME	".text"
 #endif
-
-/* Section flags for .debug_macinfo/.debug_macro section.  */
-#define DEBUG_MACRO_SECTION_FLAGS                                       \
-  (dwarf_split_debug_info ? SECTION_DEBUG | SECTION_EXCLUDE : SECTION_DEBUG)
 
 /* Section flags for .debug_str section.  */
 #define DEBUG_STR_SECTION_FLAGS                                 \
@@ -25522,7 +25490,7 @@ output_macinfo (void)
 	  tree comdat_key = get_identifier (ref->info);
 	  /* Terminate the previous .debug_macinfo section.  */
 	  dw2_asm_output_data (1, 0, "End compilation unit");
-	  targetm.asm_out.named_section (DEBUG_MACRO_SECTION,
+	  targetm.asm_out.named_section (debug_macinfo_section_name,
 					 SECTION_DEBUG
 					 | SECTION_LINKONCE,
 					 comdat_key);
@@ -25548,6 +25516,94 @@ output_macinfo (void)
       default:
 	gcc_unreachable ();
       }
+}
+
+/* Initialize the various sections and labels for dwarf output.  */
+
+static void
+init_sections_and_labels (void)
+{
+  if (!dwarf_split_debug_info)
+    {
+      debug_info_section = get_section (DEBUG_INFO_SECTION,
+                                        SECTION_DEBUG, NULL);
+      debug_abbrev_section = get_section (DEBUG_ABBREV_SECTION,
+                                          SECTION_DEBUG, NULL);
+      debug_loc_section = get_section (DEBUG_LOC_SECTION,
+                                       SECTION_DEBUG, NULL);
+      debug_macinfo_section_name
+	= dwarf_strict ? DEBUG_MACINFO_SECTION : DEBUG_MACRO_SECTION;
+      debug_macinfo_section = get_section (debug_macinfo_section_name,
+					   SECTION_DEBUG, NULL);
+    }
+  else
+    {
+      debug_info_section = get_section (DEBUG_DWO_INFO_SECTION,
+                                        SECTION_DEBUG | SECTION_EXCLUDE, NULL);
+      debug_abbrev_section = get_section (DEBUG_DWO_ABBREV_SECTION,
+                                          SECTION_DEBUG | SECTION_EXCLUDE,
+                                          NULL);
+      debug_addr_section = get_section (DEBUG_ADDR_SECTION,
+                                        SECTION_DEBUG, NULL);
+      debug_skeleton_info_section = get_section (DEBUG_INFO_SECTION,
+                                                 SECTION_DEBUG, NULL);
+      debug_skeleton_abbrev_section = get_section (DEBUG_ABBREV_SECTION,
+                                                   SECTION_DEBUG, NULL);
+      ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_abbrev_section_label,
+                                  DEBUG_SKELETON_ABBREV_SECTION_LABEL, 0);
+
+      /* Somewhat confusing detail: The skeleton_[abbrev|info] sections stay in
+         the main .o, but the skeleton_line goes into the split off dwo.  */
+      debug_skeleton_line_section
+        = get_section (DEBUG_DWO_LINE_SECTION,
+		       SECTION_DEBUG | SECTION_EXCLUDE, NULL);
+      ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_line_section_label,
+                                   DEBUG_SKELETON_LINE_SECTION_LABEL, 0);
+      debug_str_offsets_section = get_section (DEBUG_STR_OFFSETS_SECTION,
+                                               SECTION_DEBUG | SECTION_EXCLUDE,
+                                               NULL);
+      ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_info_section_label,
+                                   DEBUG_SKELETON_INFO_SECTION_LABEL, 0);
+      debug_loc_section = get_section (DEBUG_DWO_LOC_SECTION,
+                                       SECTION_DEBUG | SECTION_EXCLUDE, NULL);
+      debug_str_dwo_section = get_section (DEBUG_STR_DWO_SECTION,
+                                           DEBUG_STR_DWO_SECTION_FLAGS, NULL);
+      debug_macinfo_section_name
+	= dwarf_strict ? DEBUG_DWO_MACINFO_SECTION : DEBUG_DWO_MACRO_SECTION;
+      debug_macinfo_section = get_section (debug_macinfo_section_name,
+					   SECTION_DEBUG | SECTION_EXCLUDE,
+					   NULL);
+    }
+  debug_aranges_section = get_section (DEBUG_ARANGES_SECTION,
+				       SECTION_DEBUG, NULL);
+  debug_line_section = get_section (DEBUG_LINE_SECTION,
+				    SECTION_DEBUG, NULL);
+  debug_pubnames_section = get_section (DEBUG_PUBNAMES_SECTION,
+					SECTION_DEBUG, NULL);
+  debug_pubtypes_section = get_section (DEBUG_PUBTYPES_SECTION,
+					SECTION_DEBUG, NULL);
+  debug_str_section = get_section (DEBUG_STR_SECTION,
+				   DEBUG_STR_SECTION_FLAGS, NULL);
+  debug_ranges_section = get_section (DEBUG_RANGES_SECTION,
+				      SECTION_DEBUG, NULL);
+  debug_frame_section = get_section (DEBUG_FRAME_SECTION,
+				     SECTION_DEBUG, NULL);
+
+  ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label,
+			       DEBUG_ABBREV_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (debug_info_section_label,
+			       DEBUG_INFO_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
+			       DEBUG_LINE_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
+			       DEBUG_RANGES_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (debug_addr_section_label,
+                               DEBUG_ADDR_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
+			       dwarf_strict
+			       ? DEBUG_MACINFO_SECTION_LABEL
+			       : DEBUG_MACRO_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (loc_section_label, DEBUG_LOC_SECTION_LABEL, 0);
 }
 
 /* Set up for Dwarf output at the start of compilation.  */
@@ -25597,94 +25653,8 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 
   vec_alloc (used_rtx_array, 32);
 
-  if (!dwarf_split_debug_info)
-    {
-      debug_info_section = get_section (DEBUG_INFO_SECTION,
-                                        SECTION_DEBUG, NULL);
-      debug_abbrev_section = get_section (DEBUG_ABBREV_SECTION,
-                                          SECTION_DEBUG, NULL);
-      debug_loc_section = get_section (DEBUG_LOC_SECTION,
-                                       SECTION_DEBUG, NULL);
-    }
-  else
-    {
-      debug_info_section = get_section (DEBUG_DWO_INFO_SECTION,
-                                        SECTION_DEBUG | SECTION_EXCLUDE, NULL);
-      debug_abbrev_section = get_section (DEBUG_DWO_ABBREV_SECTION,
-                                          SECTION_DEBUG | SECTION_EXCLUDE,
-                                          NULL);
-      debug_addr_section = get_section (DEBUG_ADDR_SECTION,
-                                        SECTION_DEBUG, NULL);
-      debug_skeleton_info_section = get_section (DEBUG_INFO_SECTION,
-                                                 SECTION_DEBUG, NULL);
-      debug_skeleton_abbrev_section = get_section (DEBUG_ABBREV_SECTION,
-                                                   SECTION_DEBUG, NULL);
-      ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_abbrev_section_label,
-                                  DEBUG_SKELETON_ABBREV_SECTION_LABEL, 0);
-
-      /* Somewhat confusing detail: The skeleton_[abbrev|info] sections stay in
-         the main .o, but the skeleton_line goes into the split off dwo.  */
-      debug_skeleton_line_section
-          = get_section (DEBUG_DWO_LINE_SECTION,
-                         SECTION_DEBUG | SECTION_EXCLUDE, NULL);
-      ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_line_section_label,
-                                   DEBUG_SKELETON_LINE_SECTION_LABEL, 0);
-      debug_str_offsets_section = get_section (DEBUG_STR_OFFSETS_SECTION,
-                                               SECTION_DEBUG | SECTION_EXCLUDE,
-                                               NULL);
-      ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_info_section_label,
-                                   DEBUG_SKELETON_INFO_SECTION_LABEL, 0);
-      debug_loc_section = get_section (DEBUG_DWO_LOC_SECTION,
-                                       SECTION_DEBUG | SECTION_EXCLUDE, NULL);
-      debug_str_dwo_section = get_section (DEBUG_STR_DWO_SECTION,
-                                           DEBUG_STR_DWO_SECTION_FLAGS, NULL);
-    }
-  debug_aranges_section = get_section (DEBUG_ARANGES_SECTION,
-				       SECTION_DEBUG, NULL);
-  debug_macinfo_section = get_section (dwarf_strict
-				       ? DEBUG_MACINFO_SECTION
-				       : DEBUG_MACRO_SECTION,
-                                       DEBUG_MACRO_SECTION_FLAGS, NULL);
-  debug_line_section = get_section (DEBUG_LINE_SECTION,
-				    SECTION_DEBUG, NULL);
-  debug_pubnames_section = get_section (DEBUG_PUBNAMES_SECTION,
-					SECTION_DEBUG, NULL);
-  debug_pubtypes_section = get_section (DEBUG_PUBTYPES_SECTION,
-					SECTION_DEBUG, NULL);
-  debug_str_section = get_section (DEBUG_STR_SECTION,
-				   DEBUG_STR_SECTION_FLAGS, NULL);
-  debug_ranges_section = get_section (DEBUG_RANGES_SECTION,
-				      SECTION_DEBUG, NULL);
-  debug_frame_section = get_section (DEBUG_FRAME_SECTION,
-				     SECTION_DEBUG, NULL);
-
-  ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label,
-			       DEBUG_ABBREV_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (cold_text_section_label,
-			       COLD_TEXT_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (cold_end_label, COLD_END_LABEL, 0);
-
-  ASM_GENERATE_INTERNAL_LABEL (debug_info_section_label,
-			       DEBUG_INFO_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
-			       DEBUG_LINE_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
-			       DEBUG_RANGES_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (debug_addr_section_label,
-                               DEBUG_ADDR_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
-			       dwarf_strict
-			       ? DEBUG_MACINFO_SECTION_LABEL
-			       : DEBUG_MACRO_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (loc_section_label, DEBUG_LOC_SECTION_LABEL, 0);
-
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     vec_alloc (macinfo_table, 64);
-
-  switch_to_section (text_section);
-  ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
 #endif
 
   /* Make sure the line number table for .text always exists.  */
@@ -25707,6 +25677,17 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 static void
 dwarf2out_assembly_start (void)
 {
+#ifndef DWARF2_LINENO_DEBUGGING_INFO
+  ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (cold_text_section_label,
+			       COLD_TEXT_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (cold_end_label, COLD_END_LABEL, 0);
+
+  switch_to_section (text_section);
+  ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
+#endif
+
   if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE
       && dwarf2out_do_cfi_asm ()
       && (!(flag_unwind_tables || flag_exceptions)
@@ -27865,6 +27846,9 @@ dwarf2out_finish (const char *)
      They will go into limbo_die_list.  */
   if (flag_eliminate_dwarf2_dups)
     break_out_includes (comp_unit_die ());
+
+  /* Initialize sections and labels used for actual assembler output.  */
+  init_sections_and_labels ();
 
   /* Traverse the DIE's and add sibling attributes to those DIE's that
      have children.  */
