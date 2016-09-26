@@ -1,3 +1,7 @@
+2016-09-26  LH Mouse  <lh_mouse@126.com>
+
+	* config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Fix typo.
+
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
 	* system.h: Use __has_attribute to check whether the fallthrough
