@@ -38,10 +38,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#if __cplusplus >= 201402L
-# define __cpp_lib_array_constexpr 201603L
-#endif
-
   /**
    *  @brief  Return an iterator pointing to the first element of
    *          the container.

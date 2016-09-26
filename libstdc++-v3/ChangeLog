@@ -1,5 +1,8 @@
 2016-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/range_access.h (__cpp_lib_array_constexpr): Do not
+	redefine macro defined in <bits/stl_iterator.h>.
+
 	* include/bits/stl_map.h (map::extract(const_iterator)): Assert that
 	iterator is not past-the-end.
 	* include/bits/stl_multimap.h (multimap::extract(const_iterator)):
