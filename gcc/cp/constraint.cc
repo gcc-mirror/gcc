@@ -116,7 +116,8 @@ function_concept_check_p (tree t)
 {
   gcc_assert (TREE_CODE (t) == CALL_EXPR);
   tree fn = CALL_EXPR_FN (t);
-  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR
+  if (fn != NULL_TREE
+      && TREE_CODE (fn) == TEMPLATE_ID_EXPR
       && TREE_CODE (TREE_OPERAND (fn, 0)) == OVERLOAD)
     {
       tree f1 = get_first_fn (fn);

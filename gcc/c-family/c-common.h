@@ -805,6 +805,7 @@ extern void check_function_arguments_recurse (void (*)
 extern bool check_builtin_function_arguments (location_t, vec<location_t>,
 					      tree, int, tree *);
 extern void check_function_format (tree, int, tree *);
+extern bool attribute_fallthrough_p (tree);
 extern tree handle_unused_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);

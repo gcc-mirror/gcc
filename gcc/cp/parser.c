@@ -10585,14 +10585,31 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	}
       /* Look for an expression-statement instead.  */
       statement = cp_parser_expression_statement (parser, in_statement_expr);
+
+      /* Handle [[fallthrough]];.  */
+      if (attribute_fallthrough_p (std_attrs))
+	{
+	  /* The next token after the fallthrough attribute is ';'.  */
+	  if (statement == NULL_TREE)
+	    {
+	      /* Turn [[fallthrough]]; into FALLTHROUGH ();.  */
+	      statement = build_call_expr_internal_loc (statement_location,
+							IFN_FALLTHROUGH,
+							void_type_node, 0);
+	      finish_expr_stmt (statement);
+	    }
+	  else
+	    warning_at (statement_location, OPT_Wattributes,
+			"%<fallthrough%> attribute not followed by %<;%>");
+	  std_attrs = NULL_TREE;
+	}
     }
 
   /* Set the line number for the statement.  */
   if (statement && STATEMENT_CODE_P (TREE_CODE (statement)))
     SET_EXPR_LOCATION (statement, statement_location);
 
-  /* Note that for now, we don't do anything with c++11 statements
-     parsed at this level.  */
+  /* Allow "[[fallthrough]];", but warn otherwise.  */
   if (std_attrs != NULL_TREE)
     warning_at (attrs_location,
 		OPT_Wattributes,
@@ -10628,6 +10645,10 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
       return;
     }
 
+  /* Remember whether this case or a user-defined label is allowed to fall
+     through to.  */
+  bool fallthrough_p = token->flags & PREV_FALLTHROUGH;
+
   parser->colon_corrects_to_scope_p = false;
   switch (token->keyword)
     {
@@ -10659,7 +10680,11 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
 	  expr_hi = NULL_TREE;
 
 	if (parser->in_switch_statement_p)
-	  finish_case_label (token->location, expr, expr_hi);
+	  {
+	    tree l = finish_case_label (token->location, expr, expr_hi);
+	    if (l && TREE_CODE (l) == CASE_LABEL_EXPR)
+	      FALLTHROUGH_LABEL_P (CASE_LABEL (l)) = fallthrough_p;
+	  }
 	else
 	  error_at (token->location,
 		    "case label %qE not within a switch statement",
@@ -10672,7 +10697,11 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
       cp_lexer_consume_token (parser->lexer);
 
       if (parser->in_switch_statement_p)
-	finish_case_label (token->location, NULL_TREE, NULL_TREE);
+	{
+	  tree l = finish_case_label (token->location, NULL_TREE, NULL_TREE);
+	  if (l && TREE_CODE (l) == CASE_LABEL_EXPR)
+	    FALLTHROUGH_LABEL_P (CASE_LABEL (l)) = fallthrough_p;
+	}
       else
 	error_at (token->location, "case label not within a switch statement");
       break;
@@ -10680,6 +10709,8 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
     default:
       /* Anything else must be an ordinary label.  */
       label = finish_label_stmt (cp_parser_identifier (parser));
+      if (label && TREE_CODE (label) == LABEL_DECL)
+	FALLTHROUGH_LABEL_P (label) = fallthrough_p;
       break;
     }
 
@@ -10728,6 +10759,10 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
 {
   tree statement = NULL_TREE;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
+  location_t loc = token->location;
+
+  /* There might be attribute fallthrough.  */
+  tree attr = cp_parser_gnu_attributes_opt (parser);
 
   /* If the next token is a ';', then there is no expression
      statement.  */
@@ -10741,6 +10776,25 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
 	  return error_mark_node;
 	}
     }
+
+  /* Handle [[fallthrough]];.  */
+  if (attribute_fallthrough_p (attr))
+    {
+      /* The next token after the fallthrough attribute is ';'.  */
+      if (statement == NULL_TREE)
+	/* Turn [[fallthrough]]; into FALLTHROUGH ();.  */
+	statement = build_call_expr_internal_loc (loc, IFN_FALLTHROUGH,
+						  void_type_node, 0);
+      else
+	warning_at (loc, OPT_Wattributes,
+		    "%<fallthrough%> attribute not followed by %<;%>");
+      attr = NULL_TREE;
+    }
+
+  /* Allow "[[fallthrough]];", but warn otherwise.  */
+  if (attr != NULL_TREE)
+    warning_at (loc, OPT_Wattributes,
+		"attributes at the beginning of statement are ignored");
 
   /* Give a helpful message for "A<T>::type t;" and the like.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON)
@@ -12980,6 +13034,7 @@ cp_parser_storage_class_specifier_opt (cp_parser* parser)
       if (cxx_dialect != cxx98)
         return NULL_TREE;
       /* Fall through for C++98.  */
+      gcc_fallthrough ();
 
     case RID_REGISTER:
     case RID_STATIC:
@@ -24116,12 +24171,21 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       if (is_attribute_p ("noreturn", attr_id))
 	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
       /* C++14 deprecated attribute is equivalent to GNU's.  */
-      else if (cxx_dialect >= cxx11 && is_attribute_p ("deprecated", attr_id))
+      else if (is_attribute_p ("deprecated", attr_id))
 	{
 	  if (cxx_dialect == cxx11)
 	    pedwarn (token->location, OPT_Wpedantic,
 		     "%<deprecated%> is a C++14 feature;"
 		     " use %<gnu::deprecated%>");
+	  TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	}
+      /* C++17 fallthrough attribute is equivalent to GNU's.  */
+      else if (is_attribute_p ("fallthrough", attr_id))
+	{
+	  if (cxx_dialect < cxx1z)
+	    pedwarn (token->location, OPT_Wpedantic,
+		     "%<fallthrough%> is a C++17 feature;"
+		     " use %<gnu::fallthrough%>");
 	  TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
 	}
       /* Transactional Memory TS optimize_for_synchronized attribute is
@@ -24182,11 +24246,11 @@ cp_parser_check_std_attribute (tree attributes, tree attribute)
       tree name = get_attribute_name (attribute);
       if (is_attribute_p ("noreturn", name)
 	  && lookup_attribute ("noreturn", attributes))
-	error ("attribute noreturn can appear at most once "
+	error ("attribute %<noreturn%> can appear at most once "
 	       "in an attribute-list");
       else if (is_attribute_p ("deprecated", name)
 	       && lookup_attribute ("deprecated", attributes))
-	error ("attribute deprecated can appear at most once "
+	error ("attribute %<deprecated%> can appear at most once "
 	       "in an attribute-list");
     }
 }
@@ -27303,6 +27367,7 @@ cp_parser_skip_to_end_of_template_parameter_list (cp_parser* parser)
 	    }
           /* Fall through for C++0x, so we handle the second `>' in
              the `>>'.  */
+	  gcc_fallthrough ();
 
 	case CPP_GREATER:
 	  if (!nesting_depth && level-- == 0)
@@ -27760,6 +27825,7 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 	  /* Fall through for C++0x, which treats the `>>'
 	     operator like two `>' tokens in certain
 	     cases.  */
+	  gcc_fallthrough ();
 
 	case CPP_GREATER:
 	  if (depth == 0)
@@ -33402,6 +33468,7 @@ cp_parser_omp_for_cond (cp_parser *parser, tree decl, enum tree_code code)
       if (code == CILK_SIMD || code == CILK_FOR)
 	break;
       /* Fall through: OpenMP disallows NE_EXPR.  */
+      gcc_fallthrough ();
     default:
       return error_mark_node;
     }

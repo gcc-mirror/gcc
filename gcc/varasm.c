@@ -4173,7 +4173,7 @@ output_addressed_constants (tree exp)
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       output_addressed_constants (TREE_OPERAND (exp, 1));
-      /* Fall through.  */
+      gcc_fallthrough ();
 
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:

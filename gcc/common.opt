@@ -601,6 +601,10 @@ Whsa
 Common Var(warn_hsa) Init(1) Warning
 Warn when a function cannot be expanded to HSAIL.
 
+Wimplicit-fallthrough
+Common Var(warn_implicit_fallthrough) Warning EnabledBy(Wextra)
+Warn when a switch case falls through.
+
 Winline
 Common Var(warn_inline) Warning
 Warn when an inlined function cannot be inlined.

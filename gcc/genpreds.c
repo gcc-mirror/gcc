@@ -74,7 +74,7 @@ validate_exp (rtx exp, const char *name, file_location loc)
 	      }
 	  }
       }
-      /* fall through */
+      gcc_fallthrough ();
 
       /* These need no special checking.  */
     case MATCH_OPERAND:

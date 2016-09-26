@@ -1,3 +1,37 @@
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* c-c++-common/Wimplicit-fallthrough-1.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-10.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-11.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-12.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-13.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-14.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-15.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-16.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-17.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-18.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-19.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-20.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-21.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-2.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-3.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-4.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-5.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-6.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-7.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-8.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-9.c: New test.
+	* c-c++-common/attr-fallthrough-1.c: New test.
+	* c-c++-common/attr-fallthrough-2.c: New test.
+	* g++.dg/cpp0x/fallthrough1.C: New test.
+	* g++.dg/cpp0x/fallthrough2.C: New test.
+	* g++.dg/cpp1z/fallthrough1.C: New test.
+	* g++.dg/warn/Wunused-label-1.C: Turn dg-error into dg-warning.
+	* gcc.dg/Wimplicit-fallthrough-1.c: New test.
+	* obj-c++.dg/Wimplicit-fallthrough-1.mm: New test.
+	* objc.dg/Wimplicit-fallthrough-1.m: New test.
+
 2016-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77429 

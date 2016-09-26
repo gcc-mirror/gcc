@@ -1303,6 +1303,7 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
     case IFN_UBSAN_NULL:
     case IFN_UBSAN_BOUNDS:
     case IFN_UBSAN_VPTR:
+    case IFN_FALLTHROUGH:
       return void_node;
 
     case IFN_ADD_OVERFLOW:
@@ -4826,6 +4827,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 		case IFN_UBSAN_NULL:
 		case IFN_UBSAN_BOUNDS:
 		case IFN_UBSAN_VPTR:
+		case IFN_FALLTHROUGH:
 		  return true;
 
 		case IFN_ADD_OVERFLOW:

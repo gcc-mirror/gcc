@@ -1306,6 +1306,7 @@ structural_comptypes (tree t1, tree t2, int strict)
       if (TYPE_REF_IS_RVALUE (t1) != TYPE_REF_IS_RVALUE (t2))
 	return false;
       /* fall through to checks for pointer types */
+      gcc_fallthrough ();
 
     case POINTER_TYPE:
       if (TYPE_MODE (t1) != TYPE_MODE (t2)
@@ -4265,6 +4266,7 @@ cp_build_binary_op (location_t location,
 	}
       /* The pointer - int case is just like pointer + int; fall
 	 through.  */
+      gcc_fallthrough ();
     case PLUS_EXPR:
       if ((code0 == POINTER_TYPE || code1 == POINTER_TYPE)
 	  && (code0 == INTEGER_TYPE || code1 == INTEGER_TYPE))
@@ -7554,7 +7556,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 			    TREE_OPERAND (lhs, 1)),
 		    TREE_OPERAND (lhs, 0),
 		    TREE_OPERAND (lhs, 1));
-      /* Fall through.  */
+      gcc_fallthrough ();
 
       /* Handle (a ? b : c) used as an "lvalue".  */
     case COND_EXPR:

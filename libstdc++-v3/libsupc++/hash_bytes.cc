@@ -95,8 +95,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
       case 3:
 	hash ^= static_cast<unsigned char>(buf[2]) << 16;
+	[[gnu::fallthrough]];
       case 2:
 	hash ^= static_cast<unsigned char>(buf[1]) << 8;
+	[[gnu::fallthrough]];
       case 1:
 	hash ^= static_cast<unsigned char>(buf[0]);
 	hash *= m;

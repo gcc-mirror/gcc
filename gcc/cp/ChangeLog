@@ -1,3 +1,33 @@
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* parser.c (cp_parser_storage_class_specifier_opt): Add
+	gcc_fallthrough.
+	(cp_parser_skip_to_end_of_template_parameter_list): Likewise.
+	(cp_parser_cache_defarg): Likewise.
+	(cp_parser_omp_for_cond): Likewise.
+	* semantics.c (finish_decltype_type): Likewise.
+	* typeck.c (structural_comptypes): Likewise.
+	(cp_build_binary_op): Likewise.
+	(cp_build_modify_expr): Likewise.
+
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* constexpr.c (cxx_eval_internal_function): Handle IFN_FALLTHROUGH.
+	(potential_constant_expression_1): Likewise.
+	* constraint.cc (function_concept_check_p): Check fn for null.
+	* parser.c (cp_parser_expression_statement): Handle attribute
+	fallthrough.
+	(cp_parser_statement): Likewise.
+	(cp_parser_label_for_labeled_statement): Set FALLTHROUGH_LABEL_P on
+	labels.
+	(cp_parser_std_attribute): Handle fallthrough attribute.
+	(cp_parser_check_std_attribute): Add %< %> quotes.
+	* pt.c (tsubst_copy_and_build): Handle internal functions.
+	(instantiation_dependent_scope_ref_p): Return if the expression is
+	null.
+
 2016-09-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/77490

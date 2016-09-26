@@ -1,3 +1,8 @@
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* libsupc++/hash_bytes.cc: Add [[gnu::fallthrough]].
+
 2016-09-25  François Dumont  <fdumont@gcc.gnu.org>
 
 	* src/c++11/debug.cc: Include debug/vector. Include cctype. Remove

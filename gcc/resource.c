@@ -364,6 +364,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 	}
 
       /* ... fall through to other INSN processing ...  */
+      gcc_fallthrough ();
 
     case INSN:
     case JUMP_INSN:
@@ -674,6 +675,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	}
 
       /* ... and also what its RTL says it modifies, if anything.  */
+      gcc_fallthrough ();
 
     case JUMP_INSN:
     case INSN:

@@ -893,6 +893,7 @@ go_format_type (struct godump_container *container, tree type,
     case UNION_TYPE:
       is_union = true;
       /* Fall through to RECORD_TYPE case.  */
+      gcc_fallthrough ();
     case RECORD_TYPE:
       {
 	unsigned int prev_field_end;

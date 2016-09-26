@@ -396,6 +396,7 @@ static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
 static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *);
 static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
 static tree handle_bnd_instrument (tree *, tree, tree, int, bool *);
+static tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);
 
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
 static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
@@ -847,6 +848,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_bnd_legacy, false },
   { "bnd_instrument",         0, 0, true, false, false,
 			      handle_bnd_instrument, false },
+  { "fallthrough",	      0, 0, false, false, false,
+			      handle_fallthrough_attribute, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -9853,6 +9856,45 @@ handle_designated_init_attribute (tree *node, tree name, tree, int,
       *no_add_attrs = true;
     }
   return NULL_TREE;
+}
+
+
+/* Handle a "fallthrough" attribute; arguments as in struct
+   attribute_spec.handler.  */
+
+static tree
+handle_fallthrough_attribute (tree *, tree name, tree, int,
+			      bool *no_add_attrs)
+{
+  warning (OPT_Wattributes, "%qE attribute ignored", name);
+  *no_add_attrs = true;
+  return NULL_TREE;
+}
+
+/* Check whether ATTR is a valid attribute fallthrough.  */
+
+bool
+attribute_fallthrough_p (tree attr)
+{
+  tree t = lookup_attribute ("fallthrough", attr);
+  if (t == NULL_TREE)
+    return false;
+  /* This attribute shall appear at most once in each attribute-list.  */
+  if (lookup_attribute ("fallthrough", TREE_CHAIN (t)))
+    warning (OPT_Wattributes, "%<fallthrough%> attribute specified multiple "
+	     "times");
+  /* No attribute-argument-clause shall be present.  */
+  else if (TREE_VALUE (t) != NULL_TREE)
+    warning (OPT_Wattributes, "%<fallthrough%> attribute specified with "
+	     "a parameter");
+  /* Warn if other attributes are found.  */
+  for (t = attr; t != NULL_TREE; t = TREE_CHAIN (t))
+    {
+      tree name = get_attribute_name (t);
+      if (!is_attribute_p ("fallthrough", name))
+	warning (OPT_Wattributes, "%qE attribute ignored", name);
+    }
+  return true;
 }
 
 

@@ -1690,7 +1690,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
 	    case POINTER_PLUS_EXPR:
 	    case MINUS_EXPR:
 	      rhs2 = gimple_assign_rhs2 (gs);
-	      /* Fall-through.  */
+	      gcc_fallthrough ();
 
 	    CASE_CONVERT:
 	    case MODIFY_EXPR:

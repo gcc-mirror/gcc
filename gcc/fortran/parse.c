@@ -1261,7 +1261,7 @@ next_fixed (void)
 		  return decode_oacc_directive ();
 		}
 	    }
-	  /* FALLTHROUGH */
+	  gcc_fallthrough ();
 
 	  /* Comments have already been skipped by the time we get
 	     here so don't bother checking for them.  */

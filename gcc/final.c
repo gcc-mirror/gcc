@@ -2096,9 +2096,11 @@ output_alternate_entry_point (FILE *file, rtx_insn *insn)
     case LABEL_WEAK_ENTRY:
 #ifdef ASM_WEAKEN_LABEL
       ASM_WEAKEN_LABEL (file, name);
+      gcc_fallthrough ();
 #endif
     case LABEL_GLOBAL_ENTRY:
       targetm.asm_out.globalize_label (file, name);
+      gcc_fallthrough ();
     case LABEL_STATIC_ENTRY:
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
       ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");

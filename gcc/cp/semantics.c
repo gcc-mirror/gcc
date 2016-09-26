@@ -8894,6 +8894,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
               break;
             }
           /* Fall through for fields that aren't bitfields.  */
+	  gcc_fallthrough ();
 
         case FUNCTION_DECL:
         case VAR_DECL:

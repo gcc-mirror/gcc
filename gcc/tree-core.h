@@ -1077,6 +1077,9 @@ struct GTY(()) tree_base {
        TRANSACTION_EXPR_RELAXED in
 	   TRANSACTION_EXPR
 
+       FALLTHROUGH_LABEL_P in
+	   LABEL_DECL
+
    private_flag:
 
        TREE_PRIVATE in

@@ -1481,7 +1481,7 @@ optimize_op (gfc_expr *e)
     case INTRINSIC_LT:
       changed = optimize_comparison (e, op);
 
-      /* Fall through */
+      gcc_fallthrough ();
       /* Look at array constructors.  */
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
@@ -3349,6 +3349,7 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 
 	    /* Fall through to the variable case in order to walk the
 	       reference.  */
+	    gcc_fallthrough ();
 
 	  case EXPR_SUBSTRING:
 	  case EXPR_VARIABLE:

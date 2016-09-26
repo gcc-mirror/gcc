@@ -1885,8 +1885,8 @@ find_deriving_biv_for_expr (struct ivopts_data *data, tree expr)
       iv = find_deriving_biv_for_expr (data, e2);
       if (iv)
 	return iv;
+      gcc_fallthrough ();
 
-      /* Fallthru.  */
     CASE_CONVERT:
       /* Casts are simple.  */
       return find_deriving_biv_for_expr (data, e1);

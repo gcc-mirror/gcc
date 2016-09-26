@@ -185,7 +185,8 @@ struct GTY(()) cpp_string {
 #define STRINGIFY_ARG	(1 << 2) /* If macro argument to be stringified.  */
 #define PASTE_LEFT	(1 << 3) /* If on LHS of a ## operator.  */
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
-#define NO_EXPAND	(1 << 5) /* Do not macro-expand this token.  */
+#define PREV_FALLTHROUGH (1 << 5) /* On a token preceeded by FALLTHROUGH
+				     comment.  */
 #define BOL		(1 << 6) /* Token at beginning of line.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.c.  */
@@ -193,6 +194,7 @@ struct GTY(()) cpp_string {
 #define SP_PREV_WHITE	(1 << 9) /* If whitespace before a ##
 				    operator, or before this token
 				    after a # operator.  */
+#define NO_EXPAND	(1 << 10) /* Do not macro-expand this token.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 

@@ -725,3 +725,12 @@ lang_GNU_Fortran (void)
 {
   return strncmp (lang_hooks.name, "GNU Fortran", 11) == 0;
 }
+
+/* Returns true if the current lang_hooks represents the GNU Objective-C
+   frontend.  */
+
+bool
+lang_GNU_OBJC (void)
+{
+  return strncmp (lang_hooks.name, "GNU Objective-C", 15) == 0;
+}

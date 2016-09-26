@@ -2032,6 +2032,94 @@ save_comment (cpp_reader *pfile, cpp_token *token, const unsigned char *from,
   store_comment (pfile, token);
 }
 
+/* Returns true if comment at COMMENT_START is a recognized FALLTHROUGH
+   comment.  */
+
+static bool
+fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
+{
+  const unsigned char *from = comment_start + 1;
+  /* Whole comment contents:
+     -fallthrough
+     @fallthrough@
+   */
+  if (*from == '-' || *from == '@')
+    {
+      size_t len = sizeof "fallthrough" - 1;
+      if ((size_t) (pfile->buffer->cur - from - 1) < len)
+	return false;
+      if (memcmp (from + 1, "fallthrough", len))
+	return false;
+      if (*from == '@')
+	{
+	  if (from[len + 1] != '@')
+	    return false;
+	  len++;
+	}
+      from += 1 + len;
+    }
+  /* Whole comment contents (regex):
+     [ \t]*FALL(S | |-)?THR(OUGH|U)\.?[ \t]*
+     [ \t]*Fall(s | |-)?[Tt]hr(ough|u)\.?[ \t]*
+     [ \t]*fall(s | |-)?thr(ough|u)\.?[ \t]*
+   */
+  else
+    {
+      while (*from == ' ' || *from == '\t')
+	from++;
+      unsigned char f = *from;
+      if (f != 'F' && f != 'f')
+	return false;
+      if ((size_t) (pfile->buffer->cur - from) < sizeof "fallthrough")
+	return false;
+      bool all_upper = false;
+      if (f == 'F' && memcmp (from + 1, "ALL", sizeof "ALL" - 1) == 0)
+	all_upper = true;
+      else if (memcmp (from + 1, "all", sizeof "all" - 1))
+	return false;
+      if (from[sizeof "fall" - 1] == (all_upper ? 'S' : 's')
+	  && from[sizeof "falls" - 1] == ' ')
+	from += sizeof "falls " - 1;
+      else if (from[sizeof "fall" - 1] == ' '
+	       || from[sizeof "fall" - 1] == '-')
+	from += sizeof "fall " - 1;
+      else if (from[sizeof "fall" - 1] != (all_upper ? 'T' : 't'))
+	return false;
+      else
+	from += sizeof "fall" - 1;
+      if ((f == 'f' || *from != 'T') && (all_upper || *from != 't'))
+	return false;
+      if ((size_t) (pfile->buffer->cur - from) < sizeof "thru")
+	return false;
+      if (memcmp (from + 1, all_upper ? "HRU" : "hru", sizeof "hru" - 1))
+	{
+	  if ((size_t) (pfile->buffer->cur - from) < sizeof "through")
+	    return false;
+	  if (memcmp (from + 1, all_upper ? "HROUGH" : "hrough",
+		      sizeof "hrough" - 1))
+	    return false;
+	  from += sizeof "through" - 1;
+	}
+      else
+	from += sizeof "thru" - 1;
+      if (*from == '.')
+	from++;
+      while (*from == ' ' || *from == '\t')
+	from++;
+    }
+  /* C block comment.  */
+  if (*comment_start == '*')
+    {
+      if (*from != '*' || from[1] != '/')
+	return false;
+    }
+  /* C++ line comment.  */
+  else if (*from != '\n')
+    return false;
+
+  return true;
+}
+
 /* Allocate COUNT tokens for RUN.  */
 void
 _cpp_init_tokenrun (tokenrun *run, unsigned int count)
@@ -2310,7 +2398,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 {
   cppchar_t c;
   cpp_buffer *buffer;
-  const unsigned char *comment_start;
+  const unsigned char *comment_start = NULL;
   cpp_token *result = pfile->cur_token++;
 
  fresh_line:
@@ -2337,6 +2425,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 	    }
 	  return result;
 	}
+      if (buffer != pfile->buffer)
+	comment_start = NULL;
       if (!pfile->keep_tokens)
 	{
 	  pfile->cur_run = &pfile->base_run;
@@ -2443,6 +2533,11 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  result->flags |= NAMED_OP;
 	  result->type = (enum cpp_ttype) result->val.node.node->directive_index;
 	}
+
+      /* Signal FALLTHROUGH comment followed by another token.  */
+      if (comment_start
+	  && fallthrough_comment_p (pfile, comment_start))
+	result->flags |= PREV_FALLTHROUGH;
       break;
 
     case '\'':
@@ -2533,6 +2628,9 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  result->flags |= PREV_WHITE;
 	  goto update_tokens_line;
 	}
+
+      if (fallthrough_comment_p (pfile, comment_start))
+	result->flags |= PREV_FALLTHROUGH;
 
       /* Save the comment as a token in its own right.  */
       save_comment (pfile, result, comment_start, c);

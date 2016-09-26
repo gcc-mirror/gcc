@@ -1328,7 +1328,7 @@ pop_scope (void)
 		set_type_context (TREE_TYPE (p), context);
 	    }
 
-	  /* Fall through.  */
+	  gcc_fallthrough ();
 	  /* Parameters go in DECL_ARGUMENTS, not BLOCK_VARS, and have
 	     already been put there by store_parm_decls.  Unused-
 	     parameter warnings are handled by function.c.

@@ -1,3 +1,15 @@
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* arith.c (eval_intrinsic): Add gcc_fallthrough.
+	* frontend-passes.c (optimize_op): Likewise.
+	(gfc_expr_walker): Likewise.
+	* parse.c (next_fixed): Likewise.
+	* primary.c (match_variable): Likewise.
+	* trans-array.c: Likewise.
+	* trans-expr.c (flatten_array_ctors_without_strlen): Likewise.
+	* trans-io.c (transfer_expr): Likewise.
+
 2016-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77429 
