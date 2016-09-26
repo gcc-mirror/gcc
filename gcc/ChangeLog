@@ -144,7 +144,7 @@
 	* config/rs6000/rs6000.c (expand_block_compare, do_load_for_compare):
 	Change TARGET_LITTLE_ENDIAN to !BYTES_BIG_ENDIAN.
 
-2016-09-42  David Edelsohn  <dje.gcc@gmail.com>
+2016-09-24  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure.ac (gcc_cv_as_aix_dwloc): Fix typo in assembly fragment.
 	* configure: Regenerate.
