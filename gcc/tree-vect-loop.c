@@ -424,9 +424,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	  else
 	    {
 	      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
-	      if (is_gimple_call (stmt)
-		  && gimple_call_internal_p (stmt)
-		  && gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
+	      if (gimple_call_internal_p (stmt, IFN_MASK_STORE))
 		scalar_type = TREE_TYPE (gimple_call_arg (stmt, 3));
 	      else
 		scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
@@ -7180,9 +7178,7 @@ optimize_mask_stores (struct loop *loop)
 	   gsi_next (&gsi))
 	{
 	  stmt = gsi_stmt (gsi);
-	  if (is_gimple_call (stmt)
-	      && gimple_call_internal_p (stmt)
-	      && gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
+	  if (gimple_call_internal_p (stmt, IFN_MASK_STORE))
 	    worklist.safe_push (stmt);
 	}
     }

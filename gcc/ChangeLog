@@ -1,3 +1,25 @@
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
+	* ipa-inline-analysis.c (find_foldable_builtin_expect): Use
+	gimple_call_internal_p.
+	* ipa-split.c (find_return_bb): Likewise.
+	(execute_split_functions): Likewise.
+	* omp-low.c (dump_oacc_loop_part): Likewise.
+	(oacc_loop_xform_head_tail): Likewise.
+	* predict.c (predict_loops): Likewise.
+	* sanopt.c (pass_sanopt::execute): Likewise.
+	* tree-cfg.c (get_abnormal_succ_dispatcher): Likewise.
+	* tree-parloops.c (oacc_entry_exit_ok_1): Likewise.
+	* tree-stdarg.c (gimple_call_ifn_va_arg_p): Remove function.
+	(expand_ifn_va_arg_1): Use gimple_call_internal_p.
+	(expand_ifn_va_arg): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Likewise.
+	(optimize_mask_stores): Likewise.
+	* tree-vect-stmts.c (vect_simd_lane_linear): Likewise.
+	(vect_transform_stmt): Likewise.
+	* tree-vectorizer.c (vect_loop_vectorized_call): Likewise.
+	* tsan.c (instrument_memory_accesses): Likewise.
+
 2016-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             Alexander Monakov  <amonakov@ispras.ru>
 

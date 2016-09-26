@@ -621,10 +621,7 @@ get_abnormal_succ_dispatcher (basic_block bb)
 	gimple_stmt_iterator gsi
 	  = gsi_start_nondebug_after_labels_bb (e->dest);
 	gimple *g = gsi_stmt (gsi);
-	if (g
-	    && is_gimple_call (g)
-	    && gimple_call_internal_p (g)
-	    && gimple_call_internal_fn (g) == IFN_ABNORMAL_DISPATCHER)
+	if (g && gimple_call_internal_p (g, IFN_ABNORMAL_DISPATCHER))
 	  return e->dest;
       }
   return NULL;
