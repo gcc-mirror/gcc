@@ -98,9 +98,9 @@ void test_sprintf_p_const (void)
 
   /* The exact output for %p is unspecified by C.  Two formats are known:
      same as %tx (for example AIX) and same as %#tx (for example Solaris).  */
-  T (0, "%p",     (void*)0x1);    /* { dg-warning ".%p. directive writing . bytes into a region of size 0" } */
-  T (1, "%p",     (void*)0x12);   /* { dg-warning ".%p. directive writing . bytes into a region of size 1" } */
-  T (2, "%p",     (void*)0x123);  /* { dg-warning ".%p. directive writing . bytes into a region of size 2" } */
+  T (0, "%p",     (void*)0x1);    /* { dg-warning ".%p. directive writing . bytes? into a region of size 0" } */
+  T (1, "%p",     (void*)0x12);   /* { dg-warning ".%p. directive writing . bytes? into a region of size 1" } */
+  T (2, "%p",     (void*)0x123);  /* { dg-warning ".%p. directive writing . bytes? into a region of size 2" } */
 
   /* GLIBC and uClibc treat the ' ' flag with the "%p" directive the same
      as with signed integer conversions (i.e., it prepends a space).  Other
