@@ -421,7 +421,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Extract a node.
       node_type
       extract(const_iterator __pos)
-      { return _M_h.extract(__pos); }
+      {
+	__glibcxx_assert(__pos != end());
+	return _M_h.extract(__pos);
+      }
 
       /// Extract a node.
       node_type
@@ -1534,7 +1537,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Extract a node.
       node_type
       extract(const_iterator __pos)
-      { return _M_h.extract(__pos); }
+      {
+	__glibcxx_assert(__pos != end());
+	return _M_h.extract(__pos);
+      }
 
       /// Extract a node.
       node_type
