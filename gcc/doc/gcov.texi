@@ -367,8 +367,9 @@ is what you see when you use the basic @command{gcov} facility:
 $ gcc -fprofile-arcs -ftest-coverage tmp.c
 $ a.out
 $ gcov tmp.c
-90.00% of 10 source lines executed in file tmp.c
-Creating tmp.c.gcov.
+File 'tmp.c'
+Lines executed:90.00% of 10
+Creating 'tmp.c.gcov'
 @end smallexample
 
 The file @file{tmp.c.gcov} contains output from @command{gcov}.
@@ -452,11 +453,12 @@ When you use the @option{-b} option, your output looks like this:
 
 @smallexample
 $ gcov -b tmp.c
-90.00% of 10 source lines executed in file tmp.c
-80.00% of 5 branches executed in file tmp.c
-80.00% of 5 branches taken at least once in file tmp.c
-50.00% of 2 calls executed in file tmp.c
-Creating tmp.c.gcov.
+File 'tmp.c'
+Lines executed:90.00% of 10
+Branches executed:80.00% of 5
+Taken at least once:80.00% of 5
+Calls executed:50.00% of 2
+Creating 'tmp.c.gcov'
 @end smallexample
 
 Here is a sample of a resulting @file{tmp.c.gcov} file:
