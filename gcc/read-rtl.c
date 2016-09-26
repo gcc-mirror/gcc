@@ -107,6 +107,7 @@ const char *current_iterator_name;
 
 static void validate_const_int (const char *);
 static rtx read_rtx_code (const char *);
+static void read_rtx_operand (rtx, int);
 static rtx read_nested_rtx (void);
 static rtx read_rtx_variadic (rtx);
 
@@ -1089,17 +1090,12 @@ read_rtx (const char *rtx_name, vec<rtx> *rtxen)
 static rtx
 read_rtx_code (const char *code_name)
 {
-  int i;
   RTX_CODE code;
-  struct mapping *iterator, *m;
+  struct mapping *iterator;
   const char *format_ptr;
   struct md_name name;
   rtx return_rtx;
   int c;
-  HOST_WIDE_INT tmp_wide;
-  char *str;
-  char *start, *end, *ptr;
-  char tmpstr[256];
 
   /* Linked list structure for making RTXs: */
   struct rtx_list
@@ -1128,199 +1124,17 @@ read_rtx_code (const char *code_name)
   /* If what follows is `: mode ', read it and
      store the mode in the rtx.  */
 
-  i = read_skip_spaces ();
-  if (i == ':')
+  c = read_skip_spaces ();
+  if (c == ':')
     {
       read_name (&name);
       record_potential_iterator_use (&modes, return_rtx, name.string);
     }
   else
-    unread_char (i);
+    unread_char (c);
 
-  for (i = 0; format_ptr[i] != 0; i++)
-    switch (format_ptr[i])
-      {
-	/* 0 means a field for internal use only.
-	   Don't expect it to be present in the input.  */
-      case '0':
-	if (code == REG)
-	  ORIGINAL_REGNO (return_rtx) = REGNO (return_rtx);
-	break;
-
-      case 'e':
-      case 'u':
-	XEXP (return_rtx, i) = read_nested_rtx ();
-	break;
-
-      case 'V':
-	/* 'V' is an optional vector: if a closeparen follows,
-	   just store NULL for this element.  */
-	c = read_skip_spaces ();
-	unread_char (c);
-	if (c == ')')
-	  {
-	    XVEC (return_rtx, i) = 0;
-	    break;
-	  }
-	/* Now process the vector.  */
-	/* FALLTHRU */
-
-      case 'E':
-	{
-	  /* Obstack to store scratch vector in.  */
-	  struct obstack vector_stack;
-	  int list_counter = 0;
-	  rtvec return_vec = NULL_RTVEC;
-
-	  require_char_ws ('[');
-
-	  /* Add expressions to a list, while keeping a count.  */
-	  obstack_init (&vector_stack);
-	  while ((c = read_skip_spaces ()) && c != ']')
-	    {
-	      if (c == EOF)
-		fatal_expected_char (']', c);
-	      unread_char (c);
-	      list_counter++;
-	      obstack_ptr_grow (&vector_stack, read_nested_rtx ());
-	    }
-	  if (list_counter > 0)
-	    {
-	      return_vec = rtvec_alloc (list_counter);
-	      memcpy (&return_vec->elem[0], obstack_finish (&vector_stack),
-		      list_counter * sizeof (rtx));
-	    }
-	  else if (format_ptr[i] == 'E')
-	    fatal_with_file_and_line ("vector must have at least one element");
-	  XVEC (return_rtx, i) = return_vec;
-	  obstack_free (&vector_stack, NULL);
-	  /* close bracket gotten */
-	}
-	break;
-
-      case 'S':
-      case 'T':
-      case 's':
-	{
-	  char *stringbuf;
-	  int star_if_braced;
-
-	  c = read_skip_spaces ();
-	  unread_char (c);
-	  if (c == ')')
-	    {
-	      /* 'S' fields are optional and should be NULL if no string
-		 was given.  Also allow normal 's' and 'T' strings to be
-		 omitted, treating them in the same way as empty strings.  */
-	      XSTR (return_rtx, i) = (format_ptr[i] == 'S' ? NULL : "");
-	      break;
-	    }
-
-	  /* The output template slot of a DEFINE_INSN,
-	     DEFINE_INSN_AND_SPLIT, or DEFINE_PEEPHOLE automatically
-	     gets a star inserted as its first character, if it is
-	     written with a brace block instead of a string constant.  */
-	  star_if_braced = (format_ptr[i] == 'T');
-
-	  stringbuf = read_string (star_if_braced);
-
-	  /* For insn patterns, we want to provide a default name
-	     based on the file and line, like "*foo.md:12", if the
-	     given name is blank.  These are only for define_insn and
-	     define_insn_and_split, to aid debugging.  */
-	  if (*stringbuf == '\0'
-	      && i == 0
-	      && (GET_CODE (return_rtx) == DEFINE_INSN
-		  || GET_CODE (return_rtx) == DEFINE_INSN_AND_SPLIT))
-	    {
-	      char line_name[20];
-	      const char *read_md_filename = rtx_reader_ptr->get_filename ();
-	      const char *fn = (read_md_filename ? read_md_filename : "rtx");
-	      const char *slash;
-	      for (slash = fn; *slash; slash ++)
-		if (*slash == '/' || *slash == '\\' || *slash == ':')
-		  fn = slash + 1;
-	      obstack_1grow (&string_obstack, '*');
-	      obstack_grow (&string_obstack, fn, strlen (fn));
-	      sprintf (line_name, ":%d", rtx_reader_ptr->get_lineno ());
-	      obstack_grow (&string_obstack, line_name, strlen (line_name)+1);
-	      stringbuf = XOBFINISH (&string_obstack, char *);
-	    }
-
-	  /* Find attr-names in the string.  */
-	  ptr = &tmpstr[0];
-	  end = stringbuf;
-	  while ((start = strchr (end, '<')) && (end  = strchr (start, '>')))
-	    {
-	      if ((end - start - 1 > 0)
-		  && (end - start - 1 < (int)sizeof (tmpstr)))
-		{
-		  strncpy (tmpstr, start+1, end-start-1);
-		  tmpstr[end-start-1] = 0;
-		  end++;
-		}
-	      else
-		break;
-	      m = (struct mapping *) htab_find (substs.attrs, &ptr);
-	      if (m != 0)
-		{
-		  /* Here we should find linked subst-iter.  */
-		  str = find_subst_iter_by_attr (ptr);
-		  if (str)
-		    m = (struct mapping *) htab_find (substs.iterators, &str);
-		  else
-		    m = 0;
-		}
-	      if (m != 0)
-		record_iterator_use (m, return_rtx);
-	    }
-
-	  if (star_if_braced)
-	    XTMPL (return_rtx, i) = stringbuf;
-	  else
-	    XSTR (return_rtx, i) = stringbuf;
-	}
-	break;
-
-      case 'w':
-	read_name (&name);
-	validate_const_int (name.string);
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-	tmp_wide = atoi (name.string);
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-	tmp_wide = atol (name.string);
-#else
-	/* Prefer atoll over atoq, since the former is in the ISO C99 standard.
-	   But prefer not to use our hand-rolled function above either.  */
-#if HAVE_DECL_ATOLL || !defined(HAVE_ATOQ)
-	tmp_wide = atoll (name.string);
-#else
-	tmp_wide = atoq (name.string);
-#endif
-#endif
-#endif
-	XWINT (return_rtx, i) = tmp_wide;
-	break;
-
-      case 'i':
-      case 'n':
-	/* Can be an iterator or an integer constant.  */
-	read_name (&name);
-	record_potential_iterator_use (&ints, &XINT (return_rtx, i),
-				       name.string);
-	break;
-
-      case 'r':
-	read_name (&name);
-	validate_const_int (name.string);
-	set_regno_raw (return_rtx, atoi (name.string), 1);
-	REG_ATTRS (return_rtx) = NULL;
-	break;
-
-      default:
-	gcc_unreachable ();
-      }
+  for (int idx = 0; format_ptr[idx] != 0; idx++)
+    read_rtx_operand (return_rtx, idx);
 
   if (CONST_WIDE_INT_P (return_rtx))
     {
@@ -1380,6 +1194,210 @@ read_rtx_code (const char *code_name)
 
   unread_char (c);
   return return_rtx;
+}
+
+/* Subroutine of read_rtx_code.  Parse operand IDX within RETURN_RTX,
+   based on the corresponding format character within GET_RTX_FORMAT
+   for the GET_CODE (RETURN_RTX).  */
+
+static void
+read_rtx_operand (rtx return_rtx, int idx)
+{
+  RTX_CODE code = GET_CODE (return_rtx);
+  const char *format_ptr = GET_RTX_FORMAT (code);
+  int c;
+  struct md_name name;
+
+  switch (format_ptr[idx])
+    {
+      /* 0 means a field for internal use only.
+	 Don't expect it to be present in the input.  */
+    case '0':
+      if (code == REG)
+	ORIGINAL_REGNO (return_rtx) = REGNO (return_rtx);
+      break;
+
+    case 'e':
+    case 'u':
+      XEXP (return_rtx, idx) = read_nested_rtx ();
+      break;
+
+    case 'V':
+      /* 'V' is an optional vector: if a closeparen follows,
+	 just store NULL for this element.  */
+      c = read_skip_spaces ();
+      unread_char (c);
+      if (c == ')')
+	{
+	  XVEC (return_rtx, idx) = 0;
+	  break;
+	}
+      /* Now process the vector.  */
+      /* FALLTHRU */
+
+    case 'E':
+      {
+	/* Obstack to store scratch vector in.  */
+	struct obstack vector_stack;
+	int list_counter = 0;
+	rtvec return_vec = NULL_RTVEC;
+
+	require_char_ws ('[');
+
+	/* Add expressions to a list, while keeping a count.  */
+	obstack_init (&vector_stack);
+	while ((c = read_skip_spaces ()) && c != ']')
+	  {
+	    if (c == EOF)
+	      fatal_expected_char (']', c);
+	    unread_char (c);
+	    list_counter++;
+	    obstack_ptr_grow (&vector_stack, read_nested_rtx ());
+	  }
+	if (list_counter > 0)
+	  {
+	    return_vec = rtvec_alloc (list_counter);
+	    memcpy (&return_vec->elem[0], obstack_finish (&vector_stack),
+		    list_counter * sizeof (rtx));
+	  }
+	else if (format_ptr[idx] == 'E')
+	  fatal_with_file_and_line ("vector must have at least one element");
+	XVEC (return_rtx, idx) = return_vec;
+	obstack_free (&vector_stack, NULL);
+	/* close bracket gotten */
+      }
+      break;
+
+    case 'S':
+    case 'T':
+    case 's':
+      {
+	char *stringbuf;
+	int star_if_braced;
+
+	c = read_skip_spaces ();
+	unread_char (c);
+	if (c == ')')
+	  {
+	    /* 'S' fields are optional and should be NULL if no string
+	       was given.  Also allow normal 's' and 'T' strings to be
+	       omitted, treating them in the same way as empty strings.  */
+	    XSTR (return_rtx, idx) = (format_ptr[idx] == 'S' ? NULL : "");
+	    break;
+	  }
+
+	/* The output template slot of a DEFINE_INSN,
+	   DEFINE_INSN_AND_SPLIT, or DEFINE_PEEPHOLE automatically
+	   gets a star inserted as its first character, if it is
+	   written with a brace block instead of a string constant.  */
+	star_if_braced = (format_ptr[idx] == 'T');
+
+	stringbuf = read_string (star_if_braced);
+
+	/* For insn patterns, we want to provide a default name
+	   based on the file and line, like "*foo.md:12", if the
+	   given name is blank.  These are only for define_insn and
+	   define_insn_and_split, to aid debugging.  */
+	if (*stringbuf == '\0'
+	    && idx == 0
+	    && (GET_CODE (return_rtx) == DEFINE_INSN
+		|| GET_CODE (return_rtx) == DEFINE_INSN_AND_SPLIT))
+	  {
+	    char line_name[20];
+	    const char *read_md_filename = rtx_reader_ptr->get_filename ();
+	    const char *fn = (read_md_filename ? read_md_filename : "rtx");
+	    const char *slash;
+	    for (slash = fn; *slash; slash ++)
+	      if (*slash == '/' || *slash == '\\' || *slash == ':')
+		fn = slash + 1;
+	    obstack_1grow (&string_obstack, '*');
+	    obstack_grow (&string_obstack, fn, strlen (fn));
+	    sprintf (line_name, ":%d", rtx_reader_ptr->get_lineno ());
+	    obstack_grow (&string_obstack, line_name, strlen (line_name)+1);
+	    stringbuf = XOBFINISH (&string_obstack, char *);
+	  }
+
+	/* Find attr-names in the string.  */
+	char *str;
+	char *start, *end, *ptr;
+	char tmpstr[256];
+	ptr = &tmpstr[0];
+	end = stringbuf;
+	while ((start = strchr (end, '<')) && (end  = strchr (start, '>')))
+	  {
+	    if ((end - start - 1 > 0)
+		&& (end - start - 1 < (int)sizeof (tmpstr)))
+	      {
+		strncpy (tmpstr, start+1, end-start-1);
+		tmpstr[end-start-1] = 0;
+		end++;
+	      }
+	    else
+	      break;
+	    struct mapping *m
+	      = (struct mapping *) htab_find (substs.attrs, &ptr);
+	    if (m != 0)
+	      {
+		/* Here we should find linked subst-iter.  */
+		str = find_subst_iter_by_attr (ptr);
+		if (str)
+		  m = (struct mapping *) htab_find (substs.iterators, &str);
+		else
+		  m = 0;
+	      }
+	    if (m != 0)
+	      record_iterator_use (m, return_rtx);
+	  }
+
+	if (star_if_braced)
+	  XTMPL (return_rtx, idx) = stringbuf;
+	else
+	  XSTR (return_rtx, idx) = stringbuf;
+      }
+      break;
+
+    case 'w':
+      {
+	HOST_WIDE_INT tmp_wide;
+	read_name (&name);
+	validate_const_int (name.string);
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+	tmp_wide = atoi (name.string);
+#else
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+	tmp_wide = atol (name.string);
+#else
+	/* Prefer atoll over atoq, since the former is in the ISO C99 standard.
+	   But prefer not to use our hand-rolled function above either.  */
+#if HAVE_DECL_ATOLL || !defined(HAVE_ATOQ)
+	tmp_wide = atoll (name.string);
+#else
+	tmp_wide = atoq (name.string);
+#endif
+#endif
+#endif
+	XWINT (return_rtx, idx) = tmp_wide;
+      }
+      break;
+
+    case 'i':
+    case 'n':
+      /* Can be an iterator or an integer constant.  */
+      read_name (&name);
+      record_potential_iterator_use (&ints, &XINT (return_rtx, idx),
+				     name.string);
+      break;
+
+    case 'r':
+      read_name (&name);
+      validate_const_int (name.string);
+      set_regno_raw (return_rtx, atoi (name.string), 1);
+      REG_ATTRS (return_rtx) = NULL;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Read a nested rtx construct from the MD file and return it.  */

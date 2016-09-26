@@ -1,3 +1,10 @@
+2016-09-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* read-rtl.c (read_rtx_code): Rename local "i" to "idx", and use
+	"c" instead when parsing characters.  Move operand parsing into...
+	(read_rtx_operand): ...this new function, renaming "i" to "idx",
+	and tightening the scope of various locals.
+
 2016-09-26  LH Mouse  <lh_mouse@126.com>
 
 	* config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Fix typo.
