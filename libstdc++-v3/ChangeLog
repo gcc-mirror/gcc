@@ -1,3 +1,8 @@
+2016-09-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_base.h
+	(_Safe_iterator_base::_M_detach_single): Make public.
+
 2016-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/range_access.h (__cpp_lib_array_constexpr): Do not
