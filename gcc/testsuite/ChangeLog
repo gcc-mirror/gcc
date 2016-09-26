@@ -1,3 +1,15 @@
+2016-09-26  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/sanitize-recover-1.c: New test.
+	* c-c++-common/ubsan/sanitize-recover-2.c: New test.
+	* c-c++-common/ubsan/sanitize-recover-3.c: New test.
+	* c-c++-common/ubsan/sanitize-recover-4.c: New test.
+	* c-c++-common/ubsan/sanitize-recover-5.c: New test.
+	* c-c++-common/ubsan/sanitize-recover-6.c: New test.
+	* c-c++-common/ubsan/sanitize-recover-7.c: New test.
+	* c-c++-common/ubsan/sanitize-recover-8.c: New test.
+	* c-c++-common/ubsan/sanitize-recover-9.c: New test.
+
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652

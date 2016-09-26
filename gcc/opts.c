@@ -941,7 +941,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     opts->x_debug_generate_pub_sections = 2;
 
   /* Userspace and kernel ASan conflict with each other.  */
-
   if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS))
     error_at (loc,
@@ -949,20 +948,23 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	      "-fsanitize=kernel-address");
 
   /* And with TSan.  */
-
   if ((opts->x_flag_sanitize & SANITIZE_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_THREAD))
     error_at (loc,
 	      "-fsanitize=address and -fsanitize=kernel-address "
 	      "are incompatible with -fsanitize=thread");
 
-  /* Error recovery is not allowed for LSan and TSan.  */
+  if ((opts->x_flag_sanitize & SANITIZE_LEAK)
+      && (opts->x_flag_sanitize & SANITIZE_THREAD))
+    error_at (loc,
+	      "-fsanitize=leak is incompatible with -fsanitize=thread");
 
-  if (opts->x_flag_sanitize_recover & SANITIZE_THREAD)
-    error_at (loc, "-fsanitize-recover=thread is not supported");
-
-  if (opts->x_flag_sanitize_recover & SANITIZE_LEAK)
-    error_at (loc, "-fsanitize-recover=leak is not supported");
+  /* Check error recovery for -fsanitize-recover option.  */
+  for (int i = 0; sanitizer_opts[i].name != NULL; ++i)
+    if ((opts->x_flag_sanitize_recover & sanitizer_opts[i].flag)
+	&& !sanitizer_opts[i].can_recover)
+      error_at (loc, "-fsanitize-recover=%s is not supported",
+		sanitizer_opts[i].name);
 
   /* When instrumenting the pointers, we don't want to remove
      the null pointer checks.  */
@@ -1448,33 +1450,36 @@ enable_fdo_optimizations (struct gcc_options *opts,
 /* -f{,no-}sanitize{,-recover}= suboptions.  */
 const struct sanitizer_opts_s sanitizer_opts[] =
 {
-#define SANITIZER_OPT(name, flags) { #name, flags, sizeof #name - 1 }
-  SANITIZER_OPT (address, SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS),
-  SANITIZER_OPT (kernel-address, SANITIZE_ADDRESS | SANITIZE_KERNEL_ADDRESS),
-  SANITIZER_OPT (thread, SANITIZE_THREAD),
-  SANITIZER_OPT (leak, SANITIZE_LEAK),
-  SANITIZER_OPT (shift, SANITIZE_SHIFT),
-  SANITIZER_OPT (integer-divide-by-zero, SANITIZE_DIVIDE),
-  SANITIZER_OPT (undefined, SANITIZE_UNDEFINED),
-  SANITIZER_OPT (unreachable, SANITIZE_UNREACHABLE),
-  SANITIZER_OPT (vla-bound, SANITIZE_VLA),
-  SANITIZER_OPT (return, SANITIZE_RETURN),
-  SANITIZER_OPT (null, SANITIZE_NULL),
-  SANITIZER_OPT (signed-integer-overflow, SANITIZE_SI_OVERFLOW),
-  SANITIZER_OPT (bool, SANITIZE_BOOL),
-  SANITIZER_OPT (enum, SANITIZE_ENUM),
-  SANITIZER_OPT (float-divide-by-zero, SANITIZE_FLOAT_DIVIDE),
-  SANITIZER_OPT (float-cast-overflow, SANITIZE_FLOAT_CAST),
-  SANITIZER_OPT (bounds, SANITIZE_BOUNDS),
-  SANITIZER_OPT (bounds-strict, SANITIZE_BOUNDS | SANITIZE_BOUNDS_STRICT),
-  SANITIZER_OPT (alignment, SANITIZE_ALIGNMENT),
-  SANITIZER_OPT (nonnull-attribute, SANITIZE_NONNULL_ATTRIBUTE),
-  SANITIZER_OPT (returns-nonnull-attribute, SANITIZE_RETURNS_NONNULL_ATTRIBUTE),
-  SANITIZER_OPT (object-size, SANITIZE_OBJECT_SIZE),
-  SANITIZER_OPT (vptr, SANITIZE_VPTR),
-  SANITIZER_OPT (all, ~0U),
+#define SANITIZER_OPT(name, flags, recover) \
+    { #name, flags, sizeof #name - 1, recover }
+  SANITIZER_OPT (address, SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS, true),
+  SANITIZER_OPT (kernel-address, SANITIZE_ADDRESS | SANITIZE_KERNEL_ADDRESS,
+		 true),
+  SANITIZER_OPT (thread, SANITIZE_THREAD, false),
+  SANITIZER_OPT (leak, SANITIZE_LEAK, false),
+  SANITIZER_OPT (shift, SANITIZE_SHIFT, true),
+  SANITIZER_OPT (integer-divide-by-zero, SANITIZE_DIVIDE, true),
+  SANITIZER_OPT (undefined, SANITIZE_UNDEFINED, true),
+  SANITIZER_OPT (unreachable, SANITIZE_UNREACHABLE, false),
+  SANITIZER_OPT (vla-bound, SANITIZE_VLA, true),
+  SANITIZER_OPT (return, SANITIZE_RETURN, false),
+  SANITIZER_OPT (null, SANITIZE_NULL, true),
+  SANITIZER_OPT (signed-integer-overflow, SANITIZE_SI_OVERFLOW, true),
+  SANITIZER_OPT (bool, SANITIZE_BOOL, true),
+  SANITIZER_OPT (enum, SANITIZE_ENUM, true),
+  SANITIZER_OPT (float-divide-by-zero, SANITIZE_FLOAT_DIVIDE, true),
+  SANITIZER_OPT (float-cast-overflow, SANITIZE_FLOAT_CAST, true),
+  SANITIZER_OPT (bounds, SANITIZE_BOUNDS, true),
+  SANITIZER_OPT (bounds-strict, SANITIZE_BOUNDS | SANITIZE_BOUNDS_STRICT, true),
+  SANITIZER_OPT (alignment, SANITIZE_ALIGNMENT, true),
+  SANITIZER_OPT (nonnull-attribute, SANITIZE_NONNULL_ATTRIBUTE, true),
+  SANITIZER_OPT (returns-nonnull-attribute, SANITIZE_RETURNS_NONNULL_ATTRIBUTE,
+		 true),
+  SANITIZER_OPT (object-size, SANITIZE_OBJECT_SIZE, true),
+  SANITIZER_OPT (vptr, SANITIZE_VPTR, true),
+  SANITIZER_OPT (all, ~0U, true),
 #undef SANITIZER_OPT
-  { NULL, 0U, 0UL }
+  { NULL, 0U, 0UL, false }
 };
 
 /* Parse comma separated sanitizer suboptions from P for option SCODE,
@@ -1516,11 +1521,20 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		      error_at (loc, "-fsanitize=all option is not valid");
 		  }
 		else
-		  flags |= ~(SANITIZE_USER_ADDRESS | SANITIZE_THREAD
-			     | SANITIZE_LEAK);
+		  flags |= ~(SANITIZE_THREAD | SANITIZE_LEAK
+			     | SANITIZE_UNREACHABLE | SANITIZE_RETURN);
 	      }
 	    else if (value)
-	      flags |= sanitizer_opts[i].flag;
+	      {
+		/* Do not enable -fsanitize-recover=unreachable and
+		   -fsanitize-recover=return if -fsanitize-recover=undefined
+		   is selected.  */
+		if (sanitizer_opts[i].flag == SANITIZE_UNDEFINED)
+		  flags |= (SANITIZE_UNDEFINED
+			    & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN));
+		else
+		  flags |= sanitizer_opts[i].flag;
+	      }
 	    else
 	      flags &= ~sanitizer_opts[i].flag;
 	    found = true;
@@ -1770,7 +1784,8 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fsanitize_recover:
       if (value)
 	opts->x_flag_sanitize_recover
-	  |= SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT;
+	  |= (SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT)
+	     & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN);
       else
 	opts->x_flag_sanitize_recover
 	  &= ~(SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT);
