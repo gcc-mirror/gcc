@@ -7574,10 +7574,10 @@ code has been defined in the assembler.  It is called by
 @code{default_asm_named_section} whenever the section flags need to be
 emitted in the assembler output.  If the hook returns true, then the
 numerical value for ELF section flags should be calculated from
-@var{flags} and saved in @var{*num}; the value will be printed out
-instead of the normal sequence of letter codes.  If the hook is not
-defined, or if it returns false, then @var{num} will be ignored and the
-traditional letter sequence will be emitted.
+@var{flags} and saved in @var{*num}; the value is printed out instead of the
+normal sequence of letter codes.  If the hook is not defined, or if it
+returns false, then @var{num} is ignored and the traditional letter sequence
+is emitted.
 @end deftypefn
 
 @deftypefn {Target Hook} {section *} TARGET_ASM_FUNCTION_SECTION (tree @var{decl}, enum node_frequency @var{freq}, bool @var{startup}, bool @var{exit})
