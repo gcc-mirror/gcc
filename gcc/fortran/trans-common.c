@@ -805,13 +805,21 @@ element_number (gfc_array_ref *ar)
       if (ar->dimen_type[i] != DIMEN_ELEMENT)
         gfc_internal_error ("element_number(): Bad dimension type");
 
-      mpz_sub (n, *get_mpz (ar->start[i]), *get_mpz (as->lower[i]));
+      if (as && as->lower[i])
+	mpz_sub (n, *get_mpz (ar->start[i]), *get_mpz (as->lower[i]));
+      else
+	mpz_sub_ui (n, *get_mpz (ar->start[i]), 1);
  
       mpz_mul (n, n, multiplier);
       mpz_add (offset, offset, n);
  
-      mpz_sub (extent, *get_mpz (as->upper[i]), *get_mpz (as->lower[i]));
-      mpz_add_ui (extent, extent, 1);
+      if (as && as->upper[i] && as->lower[i])
+	{
+	  mpz_sub (extent, *get_mpz (as->upper[i]), *get_mpz (as->lower[i]));
+	  mpz_add_ui (extent, extent, 1);
+	}
+      else
+	mpz_set_ui (extent, 0);
  
       if (mpz_sgn (extent) < 0)
         mpz_set_ui (extent, 0);
