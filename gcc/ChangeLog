@@ -1,3 +1,11 @@
+2016-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Alexander Monakov  <amonakov@ispras.ru>
+
+	* regrename.c (rename_chains): Check
+	HARD_FRAME_POINTER_IS_FRAME_POINTER rather than
+	HARD_FRAME_POINTER_REGNUM when picking unavailable registers.
+	* sel-sched.c (mark_unavailable_hard_regs): Likewise.
+
 2016-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_rtx_costs): Add /* fallthrough */.
