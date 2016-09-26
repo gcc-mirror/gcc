@@ -1185,7 +1185,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
       || global_regs[regno]
       || (!HARD_FRAME_POINTER_IS_FRAME_POINTER && frame_pointer_needed
 	  && regno == HARD_FRAME_POINTER_REGNUM)
-      || (HARD_FRAME_POINTER_REGNUM && frame_pointer_needed
+      || (HARD_FRAME_POINTER_IS_FRAME_POINTER && frame_pointer_needed
 	  && regno == FRAME_POINTER_REGNUM)
       || (reload_completed && cl == NO_REGS))
     {

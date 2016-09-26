@@ -481,7 +481,7 @@ rename_chains (void)
       if (fixed_regs[reg] || global_regs[reg]
 	  || (!HARD_FRAME_POINTER_IS_FRAME_POINTER && frame_pointer_needed
 	      && reg == HARD_FRAME_POINTER_REGNUM)
-	  || (HARD_FRAME_POINTER_REGNUM && frame_pointer_needed
+	  || (HARD_FRAME_POINTER_IS_FRAME_POINTER && frame_pointer_needed
 	      && reg == FRAME_POINTER_REGNUM))
 	continue;
 
