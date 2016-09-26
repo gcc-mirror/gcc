@@ -121,11 +121,11 @@ namespace __gnu_debug
     void
     _M_detach();
 
+  public:
     /** Likewise, but not thread-safe. */
     void
     _M_detach_single() throw ();
 
-  public:
     /** Determines if we are attached to the given sequence. */
     bool
     _M_attached_to(const _Safe_sequence_base* __seq) const
