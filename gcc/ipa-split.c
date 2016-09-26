@@ -788,9 +788,7 @@ find_return_bb (void)
       /* For -fsanitize=thread, allow also TSAN_FUNC_EXIT () in the return
 	 bb.  */
       else if ((flag_sanitize & SANITIZE_THREAD)
-	       && is_gimple_call (stmt)
-	       && gimple_call_internal_p (stmt)
-	       && gimple_call_internal_fn (stmt) == IFN_TSAN_FUNC_EXIT)
+	       && gimple_call_internal_p (stmt, IFN_TSAN_FUNC_EXIT))
 	;
       else
 	break;
@@ -1840,9 +1838,7 @@ execute_split_functions (void)
 	    }
 
 	  if ((flag_sanitize & SANITIZE_THREAD)
-	      && is_gimple_call (stmt)
-	      && gimple_call_internal_p (stmt)
-	      && gimple_call_internal_fn (stmt) == IFN_TSAN_FUNC_EXIT)
+	      && gimple_call_internal_p (stmt, IFN_TSAN_FUNC_EXIT))
 	    {
 	      /* We handle TSAN_FUNC_EXIT for splitting either in the
 		 return_bb, or in its immediate predecessors.  */

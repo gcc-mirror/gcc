@@ -436,9 +436,7 @@ vect_loop_vectorized_call (struct loop *loop)
       if (!gsi_end_p (gsi))
 	{
 	  g = gsi_stmt (gsi);
-	  if (is_gimple_call (g)
-	      && gimple_call_internal_p (g)
-	      && gimple_call_internal_fn (g) == IFN_LOOP_VECTORIZED
+	  if (gimple_call_internal_p (g, IFN_LOOP_VECTORIZED)
 	      && (tree_to_shwi (gimple_call_arg (g, 0)) == loop->num
 		  || tree_to_shwi (gimple_call_arg (g, 1)) == loop->num))
 	    return g;

@@ -3003,9 +3003,7 @@ vect_simd_lane_linear (tree op, struct loop *loop,
 	  default:
 	    return;
 	  }
-      else if (is_gimple_call (def_stmt)
-	       && gimple_call_internal_p (def_stmt)
-	       && gimple_call_internal_fn (def_stmt) == IFN_GOMP_SIMD_LANE
+      else if (gimple_call_internal_p (def_stmt, IFN_GOMP_SIMD_LANE)
 	       && loop->simduid
 	       && TREE_CODE (gimple_call_arg (def_stmt, 0)) == SSA_NAME
 	       && (SSA_NAME_VAR (gimple_call_arg (def_stmt, 0))
@@ -8446,9 +8444,7 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
     case call_vec_info_type:
       done = vectorizable_call (stmt, gsi, &vec_stmt, slp_node);
       stmt = gsi_stmt (*gsi);
-      if (is_gimple_call (stmt)
-	  && gimple_call_internal_p (stmt)
-	  && gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
+      if (gimple_call_internal_p (stmt, IFN_MASK_STORE))
 	is_store = true;
       break;
 

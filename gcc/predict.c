@@ -2024,9 +2024,7 @@ predict_loops (void)
 		   && gimple_expr_code (call_stmt) == NOP_EXPR
 		   && TREE_CODE (gimple_assign_rhs1 (call_stmt)) == SSA_NAME)
 		 call_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (call_stmt));
-	       if (gimple_code (call_stmt) == GIMPLE_CALL
-		   && gimple_call_internal_p (call_stmt)
-		   && gimple_call_internal_fn (call_stmt) == IFN_BUILTIN_EXPECT
+	       if (gimple_call_internal_p (call_stmt, IFN_BUILTIN_EXPECT)
 		   && TREE_CODE (gimple_call_arg (call_stmt, 2)) == INTEGER_CST
 		   && tree_fits_uhwi_p (gimple_call_arg (call_stmt, 2))
 		   && tree_to_uhwi (gimple_call_arg (call_stmt, 2))

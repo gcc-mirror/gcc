@@ -686,8 +686,7 @@ pass_sanopt::execute (function *fun)
 	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	  {
 	    gimple *stmt = gsi_stmt (gsi);
-	    if (is_gimple_call (stmt) && gimple_call_internal_p (stmt)
-		&& gimple_call_internal_fn (stmt) == IFN_ASAN_CHECK)
+	    if (gimple_call_internal_p (stmt, IFN_ASAN_CHECK))
 	      ++asan_num_accesses;
 	  }
     }

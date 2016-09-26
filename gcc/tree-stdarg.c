@@ -991,16 +991,6 @@ finish:
     }
 }
 
-/* Return true if STMT is IFN_VA_ARG.  */
-
-static bool
-gimple_call_ifn_va_arg_p (gimple *stmt)
-{
-  return (is_gimple_call (stmt)
-	  && gimple_call_internal_p (stmt)
-	  && gimple_call_internal_fn (stmt) == IFN_VA_ARG);
-}
-
 /* Expand IFN_VA_ARGs in FUN.  */
 
 static void
@@ -1018,7 +1008,7 @@ expand_ifn_va_arg_1 (function *fun)
 	tree ap, aptype, expr, lhs, type;
 	gimple_seq pre = NULL, post = NULL;
 
-	if (!gimple_call_ifn_va_arg_p (stmt))
+	if (!gimple_call_internal_p (stmt, IFN_VA_ARG))
 	  continue;
 
 	modified = true;
@@ -1116,7 +1106,7 @@ expand_ifn_va_arg (function *fun)
       gimple_stmt_iterator i;
       FOR_EACH_BB_FN (bb, fun)
 	for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
-	  gcc_assert (!gimple_call_ifn_va_arg_p (gsi_stmt (i)));
+	  gcc_assert (!gimple_call_internal_p (gsi_stmt (i), IFN_VA_ARG));
     }
 }
 
