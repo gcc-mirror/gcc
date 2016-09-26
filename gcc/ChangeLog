@@ -1,3 +1,27 @@
+2016-09-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* tree.h (memmodel_from_int, memmodel_base, is_mm_relaxed,
+	is_mm_consume, is_mm_acquire, is_mm_release, is_mm_acq_rel,
+	is_mm_seq_cst, is_mm_sync): Move to ...
+	* memmodel.h: This.  New file.
+	* builtins.c: Include memmodel.h.
+	* optabs.c: Likewise.
+	* tsan.c: Likewise.
+	* config/aarch64/aarch64.c: Likewise.
+	* config/alpha/alpha.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* genconditions.c: Include memmodel.h in generated file.
+	* genemit.c: Likewise.
+	* genoutput.c: Likewise.
+	* genpeep.c: Likewise.
+	* genpreds.c: Likewise.
+	* genrecog.c: Likewise.
+
 2016-09-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* read-rtl.c (read_rtx_code): Rename local "i" to "idx", and use

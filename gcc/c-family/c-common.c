@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "function.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "c-common.h"
 #include "gimple-expr.h"
 #include "tm_p.h"
