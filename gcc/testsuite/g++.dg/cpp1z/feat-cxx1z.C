@@ -370,6 +370,12 @@
 #    error "__has_cpp_attribute(nodiscard) != 201603"
 #  endif
 
+#  if ! __has_cpp_attribute(fallthrough)
+#    error "__has_cpp_attribute(fallthrough)"
+#  elif __has_cpp_attribute(fallthrough) != 201603
+#    error "__has_cpp_attribute(fallthrough) != 201603"
+#  endif
+
 #else
 #  error "__has_cpp_attribute"
 #endif

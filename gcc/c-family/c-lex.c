@@ -350,7 +350,8 @@ c_common_has_attribute (cpp_reader *pfile)
 	      else if (is_attribute_p ("deprecated", attr_name))
 		result = 201309;
 	      else if (is_attribute_p ("maybe_unused", attr_name)
-		       || is_attribute_p ("nodiscard", attr_name))
+		       || is_attribute_p ("nodiscard", attr_name)
+		       || is_attribute_p ("fallthrough", attr_name))
 		result = 201603;
 	      if (result)
 		attr_name = NULL_TREE;

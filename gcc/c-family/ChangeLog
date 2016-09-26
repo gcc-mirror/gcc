@@ -1,5 +1,9 @@
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
+	* c-lex.c (c_common_has_attribute): Handle attribute fallthrough.
+
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+
 	PR c/7652
 	* c-common.c (c_common_attribute_table): Add fallthrough attribute.
 	(handle_fallthrough_attribute): New function.
