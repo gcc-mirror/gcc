@@ -1,5 +1,9 @@
 2016-09-26  Martin Liska  <mliska@suse.cz>
 
+	* doc/gcov.texi: Update program output of gcov tool.
+
+2016-09-26  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/23332
 	* profile.c (instrument_values): Do not handle
 	HIST_TYPE_CONST_DELTA.
