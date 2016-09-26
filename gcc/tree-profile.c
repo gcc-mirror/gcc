@@ -471,22 +471,6 @@ gimple_gen_time_profiler (unsigned tag, unsigned base,
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
-/* Output instructions as GIMPLE trees for code to find the most common value
-   of a difference between two evaluations of an expression.
-   VALUE is the expression whose value is profiled.  TAG is the tag of the
-   section for counters, BASE is offset of the counter position.  */
-
-void
-gimple_gen_const_delta_profiler (histogram_value value ATTRIBUTE_UNUSED,
-			       unsigned tag ATTRIBUTE_UNUSED,
-			       unsigned base ATTRIBUTE_UNUSED)
-{
-  /* FIXME implement this.  */
-  if (flag_checking)
-    internal_error ("unimplemented functionality");
-  gcc_unreachable ();
-}
-
 /* Output instructions as GIMPLE trees to increment the average histogram
    counter.  VALUE is the expression whose value is profiled.  TAG is the
    tag of the section for counters, BASE is offset of the counter position.  */

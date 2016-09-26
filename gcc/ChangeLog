@@ -1,5 +1,18 @@
 2016-09-26  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/23332
+	* profile.c (instrument_values): Do not handle
+	HIST_TYPE_CONST_DELTA.
+	* tree-profile.c (gimple_gen_const_delta_profiler):
+	Remove.
+	* value-prof.c (dump_histogram_value): Do not handle
+	HIST_TYPE_CONST_DELTA.
+	(stream_in_histogram_value): Likewise.
+	(gimple_find_values_to_profile): Likewise.
+	* value-prof.h (enum hist_type): Likewise.
+
+2016-09-26  Martin Liska  <mliska@suse.cz>
+
 	* common.opt: Exclude SANITIZE_UNREACHABLE and SANITIZE_RETURN
 	from default sanitize recover values.
 	* doc/invoke.texi: Fix documentation related to -fsanitize=leak,
