@@ -1,5 +1,22 @@
 2016-09-26  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (stripattributes): Remove unused function.
+	(DEBUG_NORM_MACINFO_SECTION): Rename to DEBUG_MACINFO_SECTION.
+	Push dwarf_split_debug_info handling into init_sections_and_labels.
+	(DEBUG_NORM_MACRO_SECTION): Likewise to DEBUG_MACRO_SECTION.
+	(DEBUG_MACRO_SECTION_FLAGS): Remove.
+	(debug_macinfo_section_name): New global.
+	(output_macinfo): Use debug_macinfo_section_name.
+	(init_sections_and_labels): Split out section and label generation
+	from dwarf2out_init.  Set debug_macinfo_section_name.
+	(dwarf2out_init): Move text section label generation and emission
+	to ...
+	(dwarf2out_assembly_start): ... here.
+	(dwarf2out_finish): Call init_sections_and_labels before DWARF
+	output starts.
+
+2016-09-26  Richard Biener  <rguenther@suse.de>
+
 	PR debug/77692
 	* cgraphunit.c (analyze_functions): Before early removing
 	global vars calls the late_global_decl debug handler mark
