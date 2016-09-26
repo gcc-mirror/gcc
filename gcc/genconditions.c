@@ -94,6 +94,7 @@ write_header (void)
 #include \"resource.h\"\n\
 #include \"diagnostic-core.h\"\n\
 #include \"reload.h\"\n\
+#include \"memmodel.h\"\n\
 #include \"tm-constrs.h\"\n");
 
   if (saw_eh_return)
