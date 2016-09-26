@@ -1,3 +1,8 @@
+2016-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_rtx_costs): Add /* fallthrough */.
+	(s390_sched_score): Likewise.
+
 2016-09-26  Martin Liska  <mliska@suse.cz>
 
 	* doc/gcov.texi: Update program output of gcov tool.
