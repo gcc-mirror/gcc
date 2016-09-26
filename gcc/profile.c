@@ -179,10 +179,6 @@ instrument_values (histogram_values values)
 	  gimple_gen_one_value_profiler (hist, t, 0);
 	  break;
 
-	case HIST_TYPE_CONST_DELTA:
-	  gimple_gen_const_delta_profiler (hist, t, 0);
-	  break;
-
  	case HIST_TYPE_INDIR_CALL:
  	case HIST_TYPE_INDIR_CALL_TOPN:
  	  gimple_gen_ic_profiler (hist, t, 0);
