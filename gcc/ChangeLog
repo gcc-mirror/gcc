@@ -1,3 +1,9 @@
+2016-09-26  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/77719
+	* tree-ssa-reassoc.c (make_new_ssa_for_def): Use gimple_get_lhs to get lhs
+	instead of gimple_assign_lhs as stmt can be builtins too.
+
 2016-09-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* tree.h (memmodel_from_int, memmodel_base, is_mm_relaxed,

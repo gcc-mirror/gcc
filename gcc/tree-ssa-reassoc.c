@@ -1158,7 +1158,7 @@ make_new_ssa_for_def (gimple *stmt)
   use_operand_p use;
   imm_use_iterator iter;
   tree new_lhs;
-  tree lhs = gimple_assign_lhs (stmt);
+  tree lhs = gimple_get_lhs (stmt);
 
   new_lhs = make_ssa_name (TREE_TYPE (lhs));
   gimple_set_lhs (stmt, new_lhs);
