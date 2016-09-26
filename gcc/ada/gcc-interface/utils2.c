@@ -180,7 +180,7 @@ known_alignment (tree exp)
 	  return known_alignment (t);
       }
 
-      /* ... fall through ... */
+      /* fall through */
 
     default:
       /* For other pointer expressions, we assume that the pointed-to object
@@ -1011,7 +1011,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
       if (!operation_type)
 	operation_type = TREE_TYPE (left_type);
 
-      /* ... fall through ... */
+      /* fall through */
 
     case ARRAY_RANGE_REF:
       /* First look through conversion between type variants.  Note that
@@ -1230,7 +1230,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	op_code = MINUS_EXPR;
       modulus = NULL_TREE;
 
-      /* ... fall through ... */
+      /* fall through */
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -1244,7 +1244,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  = gnat_type_for_mode (TYPE_MODE (operation_type),
 				TYPE_UNSIGNED (operation_type));
 
-      /* ... fall through ... */
+      /* fall through */
 
     default:
     common:
@@ -1466,7 +1466,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	    return build_unary_op (ADDR_EXPR, result_type,
 				   TREE_OPERAND (operand, 0));
 
-	  /* ... fallthru ... */
+	  /* fallthru */
 
 	case VIEW_CONVERT_EXPR:
 	  /* If this just a variant conversion or if the conversion doesn't
@@ -1487,7 +1487,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	case CONST_DECL:
 	  operand = DECL_CONST_CORRESPONDING_VAR (operand);
 
-	  /* ... fall through ... */
+	  /* fall through */
 
 	default:
 	common:
@@ -1648,7 +1648,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	  }
       }
 
-      /* ... fall through ... */
+      /* fall through */
 
     default:
       gcc_assert (operation_type == base_type);

@@ -17918,6 +17918,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 #ifdef HAVE_AS_IX86_CMOV_SUN_SYNTAX
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('.', file);
+	  gcc_fallthrough ();
 #endif
 
 	case 'C':

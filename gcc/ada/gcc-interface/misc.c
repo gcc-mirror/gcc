@@ -157,7 +157,7 @@ gnat_handle_option (size_t scode, const char *arg, int value, int kind,
     case OPT_gant:
       warning (0, "%<-gnat%> misspelled as %<-gant%>");
 
-      /* ... fall through ... */
+      /* fall through */
 
     case OPT_gnat:
     case OPT_gnatO:
@@ -486,13 +486,13 @@ gnat_print_type (FILE *file, tree node, int indent)
       else
 	print_node (file, "index type", TYPE_INDEX_TYPE (node), indent + 4);
 
-      /* ... fall through ... */
+      /* fall through */
 
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
       print_node_brief (file, "RM size", TYPE_RM_SIZE (node), indent + 4);
 
-      /* ... fall through ... */
+      /* fall through */
 
     case REAL_TYPE:
       print_node_brief (file, "RM min", TYPE_RM_MIN_VALUE (node), indent + 4);
