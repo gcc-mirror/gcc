@@ -2153,9 +2153,9 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 		  enum machine_mode vmode = mode[argc - 1];
 		  neon_lane_bounds (op[argc], 0, GET_MODE_NUNITS (vmode), exp);
 		}
-	      /* Fall through - if the lane index isn't a constant then
-		 the next case will error.  */
-
+	      /* If the lane index isn't a constant then the next
+		 case will error.  */
+	      /* Fall through.  */
 	    case NEON_ARG_CONSTANT:
 constant_arg:
 	      if (!(*insn_data[icode].operand[opno].predicate)
