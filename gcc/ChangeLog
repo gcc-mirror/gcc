@@ -1,3 +1,8 @@
+2016-09-27  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/77749
+	* gcov-counter.def: Remove GCOV_COUNTER_V_DELTA.
+
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* combine.c (simplify_comparison): Add canonical FALLTHROUGH comments.
