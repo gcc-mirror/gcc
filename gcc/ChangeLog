@@ -1,3 +1,41 @@
+2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77436
+	* tree-chrec.c (tree_fold_binomial): Use widest_int, properly
+	check whether the result fits the desired result type.
+
+	2016-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77514
+	* tree-ssa-pre.c (create_expression_by_pieces): Optimize
+	search for folded stmt.
+
+	2016-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77514
+	* tree-ssa-pre.c (create_expression_by_pieces): Handle garbage
+	only forced_stmts sequence.
+
+	2016-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77544
+	* fold-const.c (split_tree): Do not split constant ~X.
+
+	2016-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77605
+	* tree-data-ref.c (analyze_subscript_affine_affine): Use the
+	proper niter to bound the loops.
+
+	2016-09-22  Richard Biener  <rguenther@suse.de>
+ 
+	PR middle-end/77679
+	* gimple-fold.c (fold_array_ctor_reference): Turn asserts into
+	fold fails.
+
 2016-09-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

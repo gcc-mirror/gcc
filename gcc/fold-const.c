@@ -837,15 +837,16 @@ split_tree (location_t loc, tree in, tree type, enum tree_code code,
 	  var = negate_expr (var);
 	}
     }
+  else if (TREE_CONSTANT (in))
+    *conp = in;
   else if (TREE_CODE (in) == BIT_NOT_EXPR
 	   && code == PLUS_EXPR)
     {
-      /* -X - 1 is folded to ~X, undo that here.  */
+      /* -X - 1 is folded to ~X, undo that here.  Do _not_ do this
+         when IN is constant.  */
       *minus_litp = build_one_cst (TREE_TYPE (in));
       var = negate_expr (TREE_OPERAND (in, 0));
     }
-  else if (TREE_CONSTANT (in))
-    *conp = in;
   else
     var = in;
 

@@ -1,3 +1,31 @@
+2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77436
+	* gcc.dg/torture/pr77436.c: New testcase.
+
+	2016-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR c/77450
+	* gcc.dg/pr77450.c: New testcase.
+
+	2016-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77514
+	* gcc.dg/torture/pr77514.c: New testcase.
+
+	2016-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77544
+	* c-c++-common/torture/pr77544.c: New testcase.
+
+	2016-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77605
+	* gcc.dg/torture/pr77605.c: New testcase.
+
 2016-09-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
