@@ -1,3 +1,9 @@
+2016-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* include/c_global/cmath (hypot): Add three-dimensional overloads.
+	* testsuite/26_numerics/headers/cmath/hypot.cc: New.
+
 2016-09-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/77727
