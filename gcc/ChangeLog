@@ -1,3 +1,9 @@
+2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77478
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop):
+	Fix alignment of SSA var used before the alignment prologue.
+
 2016-09-27  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	Backport from trunk r227496

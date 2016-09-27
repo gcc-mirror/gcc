@@ -1886,7 +1886,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters, int
       gimple_seq new_stmts = NULL;
       bool negative = tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0;
       tree offset = negative
-	  ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : NULL_TREE;
+	  ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : size_zero_node;
       tree start_addr = vect_create_addr_base_for_vector_ref (dr_stmt,
 						&new_stmts, offset, loop);
       tree type = unsigned_type_for (TREE_TYPE (start_addr));
