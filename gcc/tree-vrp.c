@@ -3281,10 +3281,10 @@ extract_range_from_binary_expr (value_range *vr,
    the range of its operand *VR0 with type OP0_TYPE with resulting type TYPE.
    The resulting range is stored in *VR.  */
 
-static void
-extract_range_from_unary_expr_1 (value_range *vr,
-				 enum tree_code code, tree type,
-				 value_range *vr0_, tree op0_type)
+void
+extract_range_from_unary_expr (value_range *vr,
+			       enum tree_code code, tree type,
+			       value_range *vr0_, tree op0_type)
 {
   value_range vr0 = *vr0_, vrtem0 = VR_INITIALIZER, vrtem1 = VR_INITIALIZER;
 
@@ -3337,12 +3337,12 @@ extract_range_from_unary_expr_1 (value_range *vr,
   if (vr0.type == VR_ANTI_RANGE
       && ranges_from_anti_range (&vr0, &vrtem0, &vrtem1))
     {
-      extract_range_from_unary_expr_1 (vr, code, type, &vrtem0, op0_type);
+      extract_range_from_unary_expr (vr, code, type, &vrtem0, op0_type);
       if (vrtem1.type != VR_UNDEFINED)
 	{
 	  value_range vrres = VR_INITIALIZER;
-	  extract_range_from_unary_expr_1 (&vrres, code, type,
-					   &vrtem1, op0_type);
+	  extract_range_from_unary_expr (&vrres, code, type,
+					 &vrtem1, op0_type);
 	  vrp_meet (vr, &vrres);
 	}
       return;
@@ -3597,7 +3597,7 @@ extract_range_from_unary_expr (value_range *vr, enum tree_code code,
   else
     set_value_range_to_varying (&vr0);
 
-  extract_range_from_unary_expr_1 (vr, code, type, &vr0, TREE_TYPE (op0));
+  extract_range_from_unary_expr (vr, code, type, &vr0, TREE_TYPE (op0));
 }
 
 

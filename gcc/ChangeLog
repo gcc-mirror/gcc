@@ -1,3 +1,12 @@
+2016-09-27  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR ipa/77677
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Use
+	extract_range_from_unary_expr to convert value_range.
+	* tree-vrp.c (extract_range_from_unary_expr_1): Rename to.
+	(extract_range_from_unary_expr): This.
+	* tree-vrp.h (extract_range_from_unary_expr): Declare.
+
 2016-09-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (movcc_internal1): Disparage using CTR or LR.
