@@ -6551,7 +6551,7 @@ final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 		    (asm_out_file, "L", CODE_LABEL_NUMBER (XEXP (note, 0)));
 		  break;
 		}
-	      /* else FALLTHROUGH */
+	      /* FALLTHROUGH */
 	    case CALL:
 	      asm_fprintf (asm_out_file, "\t.uses %LL%d\n",
 			   CODE_LABEL_NUMBER (XEXP (note, 0)));

@@ -2222,7 +2222,7 @@ visium_expand_int_cstore (rtx *operands, enum machine_mode mode)
       code = reverse_condition (code);
       reverse = true;
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case LTU:
     case GTU:
@@ -2270,7 +2270,7 @@ visium_expand_fp_cstore (rtx *operands,
       code = reverse_condition_maybe_unordered (code);
       reverse = true;
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case LT:
     case GT:
