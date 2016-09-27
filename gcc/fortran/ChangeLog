@@ -1,3 +1,9 @@
+2016-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/77666
+	* trans-openmp.c (gfc_omp_private_outer_ref): Return true even for
+	references to allocatable arrays.
+
 2016-09-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77420
