@@ -141,6 +141,7 @@ RTEMS Ports		Sebastian Huber		<sebastian.huber@embedded-brains.de>
 VMS			Douglas Rupp		<douglas.b.rupp@gmail.com>
 VMS			Tristan Gingold		<tgingold@free.fr>
 VxWorks ports		Nathan Sidwell		<nathan@codesourcery.com>
+VxWorks ports		Olivier Hainque		<hainque@adacore.com>
 windows, cygwin, mingw	Kai Tietz		<ktietz70@googlemail.com>
 windows, cygwin, mingw	Dave Korn		<dave.korn.cygwin@gmail.com>
 cygwin, mingw-w64	Jonathan Yong		<10walls@gmail.com>
@@ -422,7 +423,7 @@ Laurent Guerby					<laurent@guerby.net>
 Xuepeng Guo					<terry.guo@arm.com>
 Wei Guozhi					<carrot@google.com>
 Mostafa Hagog					<hagog@gcc.gnu.org>
-Olivier Hainque					<hainque@act-europe.fr>
+Olivier Hainque					<hainque@adacore.com>
 Stuart Hastings					<stuart@apple.com>
 Michael Haubenwallner				<michael.haubenwallner@ssi-schaefer.com>
 Pat Haugen					<pthaugen@us.ibm.com>
