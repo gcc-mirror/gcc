@@ -1,3 +1,7 @@
+2016-09-27  Than McIntosh  <thanm@google.com>
+
+	* go-linemap.cc (Gcc_linemap::to_string): New method.
+
 2016-09-23  Than McIntosh  <thanm@google.com>
 
 	* go-gcc-diagnostics.cc: New file.

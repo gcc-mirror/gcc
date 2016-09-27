@@ -29,6 +29,9 @@ class Gcc_linemap : public Linemap
   void
   stop();
 
+  std::string
+  to_string(Location);
+
  protected:
   Location
   get_predeclared_location();
@@ -58,6 +61,31 @@ Gcc_linemap::start_file(const char *file_name, unsigned line_begin)
     linemap_add(line_table, LC_LEAVE, 0, NULL, 0);
   linemap_add(line_table, LC_ENTER, 0, file_name, line_begin);
   this->in_file_ = true;
+}
+
+// Stringify a location
+
+std::string
+Gcc_linemap::to_string(Location location)
+{
+  const line_map_ordinary *lmo;
+  source_location resolved_location;
+
+  // Screen out unknown and predeclared locations; produce output
+  // only for simple file:line locations.
+  resolved_location =
+      linemap_resolve_location (line_table, location.gcc_location(),
+                                LRK_SPELLING_LOCATION, &lmo);
+  if (lmo == NULL || resolved_location < RESERVED_LOCATION_COUNT)
+    return "";
+  const char *path = LINEMAP_FILE (lmo);
+  if (!path)
+    return "";
+
+  // Strip the source file down to the base file, to reduce clutter.
+  std::stringstream ss;
+  ss << lbasename(path) << ":" << SOURCE_LINE (lmo, location.gcc_location());
+  return ss.str();
 }
 
 // Stop getting locations.
