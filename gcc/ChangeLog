@@ -1,3 +1,8 @@
+2016-09-27  Marek Polacek  <polacek@redhat.com>
+
+	* config/ia64/ia64.c (ia64_print_operand): Adjust fall through
+	comment.
+
 2016-09-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (const_ok_for_op): Use "Fall through" comment form
