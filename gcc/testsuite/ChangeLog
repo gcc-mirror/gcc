@@ -1,3 +1,9 @@
+2016-09-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/46266
+	* lib/gcov.exp: Verify that <built-in>.gcov file is not
+	considered.
+
 2016-09-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77745

@@ -61,6 +61,8 @@ extern location_t input_location;
 #define LOCATION_BLOCK(LOC) \
   ((tree) ((IS_ADHOC_LOC (LOC)) ? get_data_from_adhoc_loc (line_table, (LOC)) \
    : NULL))
+#define RESERVED_LOCATION_P(LOC) \
+  (LOCATION_LOCUS (LOC) < RESERVED_LOCATION_COUNT)
 
 /* Return a positive value if LOCATION is the locus of a token that is
    located in a system header, O otherwise. It returns 1 if LOCATION
