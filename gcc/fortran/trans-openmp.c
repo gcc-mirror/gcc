@@ -207,15 +207,15 @@ gfc_omp_private_outer_ref (tree decl)
 {
   tree type = TREE_TYPE (decl);
 
+  if (gfc_omp_privatize_by_reference (decl))
+    type = TREE_TYPE (type);
+
   if (GFC_DESCRIPTOR_TYPE_P (type)
       && GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
     return true;
 
   if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl))
     return true;
-
-  if (gfc_omp_privatize_by_reference (decl))
-    type = TREE_TYPE (type);
 
   if (gfc_has_alloc_comps (type, decl))
     return true;
