@@ -11923,11 +11923,11 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	     we can treat the SUBREG as if it were a ZERO_EXTEND.  */
 	  if (subreg_lowpart_p (op0)
 	      && GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op0))) < mode_width)
-	    /* Fall through */ ;
+	    ;
 	  else
 	    break;
 
-	  /* ... fall through ...  */
+	  /* FALLTHROUGH */
 
 	case ZERO_EXTEND:
 	  mode = GET_MODE (XEXP (op0, 0));
@@ -12339,7 +12339,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      continue;
 	    }
 
-	  /* ... fall through ...  */
+	  /* FALLTHROUGH */
 	case LSHIFTRT:
 	  /* If we have (compare (xshiftrt FOO N) (const_int C)) and
 	     the low order N bits of FOO are known to be zero, we can do this

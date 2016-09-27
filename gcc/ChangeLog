@@ -1,3 +1,11 @@
+2016-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (simplify_comparison): Add canonical FALLTHROUGH comments.
+	* config/i386/i386.c (ix86_dep_by_shift_count_body): Add FALLTHROUGH
+	comments.  Remove break after return.
+	(ix86_fp_compare_code_to_integer, has_dispatch,
+	ix86_simd_clone_usable): Remove break after return.
+
 2016-09-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR rlt-optimization/77714

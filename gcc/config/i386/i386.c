@@ -21238,9 +21238,9 @@ ix86_dep_by_shift_count_body (const_rtx set_body, const_rtx use_body)
 	if (ix86_dep_by_shift_count_body (XVECEXP (set_body, 0, i),
 					  use_body))
 	  return true;
+      /* FALLTHROUGH */
     default:
       return false;
-      break;
     }
 
   /* Retrieve shift count of USE_BODY.  */
@@ -21254,9 +21254,9 @@ ix86_dep_by_shift_count_body (const_rtx set_body, const_rtx use_body)
 	if (ix86_dep_by_shift_count_body (set_body,
 					  XVECEXP (use_body, 0, i)))
 	  return true;
+      /* FALLTHROUGH */
     default:
       return false;
-      break;
     }
 
   if (shift_rtx
@@ -22370,19 +22370,14 @@ ix86_fp_compare_code_to_integer (enum rtx_code code)
     case ORDERED:
     case UNORDERED:
       return code;
-      break;
     case UNEQ:
       return EQ;
-      break;
     case UNLT:
       return LTU;
-      break;
     case UNLE:
       return LEU;
-      break;
     case LTGT:
       return NE;
-      break;
     default:
       return UNKNOWN;
     }
@@ -49501,7 +49496,6 @@ has_dispatch (rtx_insn *insn, int action)
 
       case IS_DISPATCH_ON:
 	return true;
-	break;
 
       case IS_CMP:
 	return is_cmp (insn);
@@ -49959,7 +49953,6 @@ ix86_simd_clone_usable (struct cgraph_node *node)
       if (!TARGET_AVX)
 	return -1;
       return TARGET_AVX2 ? 1 : 0;
-      break;
     case 'd':
       if (!TARGET_AVX2)
 	return -1;
