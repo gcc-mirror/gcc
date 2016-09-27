@@ -92,14 +92,14 @@ extern c6x_cpu_t c6x_arch;
 						\
 	case C6X_CPU_C64XP:			\
 	  builtin_define ("_TMS320C6400_PLUS");	\
-	  /* ... fall through ... */		\
+	  /* fall through */			\
 	case C6X_CPU_C64X:			\
 	  builtin_define ("_TMS320C6400");	\
 	  break;				\
 						\
 	case C6X_CPU_C67XP:			\
 	  builtin_define ("_TMS320C6700_PLUS");	\
-	  /* ... fall through ... */		\
+	  /* fall through */			\
 	case C6X_CPU_C67X:			\
 	  builtin_define ("_TMS320C6700");	\
 	  break;				\

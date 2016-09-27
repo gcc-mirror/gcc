@@ -3,6 +3,11 @@
 	* config/ia64/ia64.c (ia64_print_operand): Adjust fall through
 	comment.
 
+	* config/c6x/c6x.h: Adjust fall through comment.
+	* config/sh/sh.c (final_prescan_insn): Likewise.
+	* config/visium/visium.c (visium_expand_int_cstore): Likewise.
+	(visium_expand_fp_cstore): Likewise.
+
 2016-09-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (const_ok_for_op): Use "Fall through" comment form
