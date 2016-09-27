@@ -1,3 +1,15 @@
+2016-09-27  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm.md (*arm_movsi_insn): Add "arch" attribute.
+	* config/arm/vfp.md (*arm_movhi_vfp): Likewise.
+	(*thumb2_movhi_vfp): Likewise.
+	(*arm_movhi_fp16): Remove predication operand from VMOV.F16
+	template.  Expand predicable attribute to mark VMOV.F16 as not
+	predicable.  Add "arch" attribute.
+	(*thumb2_movhi_fp16): Likewise.
+	(*arm_movsi_vfp): Break a long line.  Add "arch" attribute.
+	(*thumb2_movsi_vfp): Add "arch" attribute.
+
 2016-09-27  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_symbol): Don't modify
