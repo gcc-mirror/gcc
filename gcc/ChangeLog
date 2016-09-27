@@ -1,3 +1,11 @@
+2016-09-27  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	Backport from trunk r227496
+
+	PR target/65210
+	* config/avr/avr.c (avr_eval_addr_attrib): Look for io_low
+	attribute as well.
+
 2016-09-22  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	Backport from 2016-09-22 trunk r240388.

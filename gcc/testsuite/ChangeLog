@@ -1,3 +1,10 @@
+2016-09-27  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	Backport from trunk r227496
+
+	PR target/65210
+	* gcc.target/avr/pr65210.c: New test.
+
 2016-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/unsorted/dump-noaddr.x: Remove debug statements.
