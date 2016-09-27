@@ -3599,13 +3599,21 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
      Otherwise, the vdefs for the store are used when inserting into
      the table, since the store generates a new memory state.  */
 
-  result = vn_reference_lookup (lhs, vuse, VN_NOWALK, NULL, false);
-
+  result = vn_reference_lookup (lhs, vuse, VN_NOWALK, &vnresult, false);
   if (result)
     {
       if (TREE_CODE (result) == SSA_NAME)
 	result = SSA_VAL (result);
       resultsame = expressions_equal_p (result, op);
+      if (resultsame)
+	{
+	  /* If the TBAA state isn't compatible for downstream reads
+	     we cannot value-number the VDEFs the same.  */
+	  alias_set_type set = get_alias_set (lhs);
+	  if (vnresult->set != set
+	      && ! alias_set_subset_of (set, vnresult->set))
+	    resultsame = false;
+	}
     }
 
   if ((!result || !resultsame)
