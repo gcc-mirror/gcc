@@ -1,3 +1,7 @@
+2016-09-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (movcc_internal1): Disparage using CTR or LR.
+
 2016-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/i386.c (ix86_print_operand)
