@@ -380,6 +380,13 @@ build_capture_proxy (tree member)
 
   type = lambda_proxy_type (object);
 
+  if (name == this_identifier && !POINTER_TYPE_P (type))
+    {
+      type = build_pointer_type (type);
+      type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
+      object = build_fold_addr_expr_with_type (object, type);
+    }
+
   if (DECL_VLA_CAPTURE_P (member))
     {
       /* Rebuild the VLA type from the pointer and maxindex.  */
@@ -440,7 +447,8 @@ vla_capture_type (tree array_type)
 
 /* From an ID and INITIALIZER, create a capture (by reference if
    BY_REFERENCE_P is true), add it to the capture-list for LAMBDA,
-   and return it.  */
+   and return it.  If ID is `this', BY_REFERENCE_P says whether
+   `*this' is captured by reference.  */
 
 tree
 add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
@@ -499,7 +507,14 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
       type = lambda_capture_field_type (initializer, explicit_init_p);
       if (type == error_mark_node)
 	return error_mark_node;
-      if (by_reference_p)
+      if (id == this_identifier && !by_reference_p)
+	{
+	  gcc_assert (POINTER_TYPE_P (type));
+	  type = TREE_TYPE (type);
+	  initializer = cp_build_indirect_ref (initializer, RO_NULL,
+					       tf_warning_or_error);
+	}
+      if (id != this_identifier && by_reference_p)
 	{
 	  type = build_reference_type (type);
 	  if (!dependent_type_p (type) && !lvalue_p (initializer))
@@ -628,8 +643,8 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
                             id,
                             initializer,
                             /*by_reference_p=*/
-			    (!this_capture_p
-			     && (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda)
+			    (this_capture_p
+			     || (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda)
 				 == CPLD_REFERENCE)),
 			    /*explicit_init_p=*/false);
       initializer = convert_from_reference (var);

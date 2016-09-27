@@ -1,5 +1,16 @@
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
+	Implement P0018R3, C++17 lambda capture of *this by value as [=,*this]
+	* parser.c (cp_parser_lambda_introducer): Formatting fix.  Pass
+	true instead of false as by_reference_p to add_capture for 'this'.
+	Parse '*this' simple-capture.
+	* lambda.c (build_capture_proxy): Handle '*this' capture by value.
+	(add_capture): Adjust function comment.  For id == this_identifier,
+	treat by_reference_p as capturing '*this' by reference, i.e. 'this'
+	by value, and !by_reference_p as capturing '*this' by value.
+	(add_default_capture): For implicit 'this' capture, always pass
+	by_reference_p true rather than false.
+
 	PR c++/77722
 	* cp-gimplify.c (cp_ubsan_maybe_instrument_return): Instrument also
 	functions that have just a STATEMENT_LIST instead of BIND_EXPR, or
