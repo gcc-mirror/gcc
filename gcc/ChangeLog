@@ -1,3 +1,8 @@
+2016-09-27  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* config/mips/constraints.md (d): Fix documentation.
+	* doc/md.texi (Machine Constraints): Update accordingly.
+
 2016-09-27  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (dwarf2out_init): Move text_section_line_info,
