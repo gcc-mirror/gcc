@@ -364,13 +364,20 @@ proc run-gcov { args } {
 	return
     }
 
+    set builtin_index [string first "File '<built-in>'" $result]
+    if { $builtin_index != -1 } {
+        fail "$testname gcov failed: <built-in>.gcov should not be created"
+        clean-gcov $testcase
+        return
+    }
+
     # Get the gcov output file after making sure it exists.
     set files [glob -nocomplain $testcase.gcov]
     if { $files == "" } {
 	if { $xfailed } {
 	    setup_xfail "*-*-*"
 	}
-        fail "$testname gcov failed: $testcase.gov does not exist"
+        fail "$testname gcov failed: $testcase.gcov does not exist"
         clean-gcov $testcase
         return
     }

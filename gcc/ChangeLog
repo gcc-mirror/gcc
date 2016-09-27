@@ -1,3 +1,10 @@
+2016-09-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/46266
+	* input.h (RESERVED_LOCATION_P): New macro.
+	* profile.c (branch_prob): Use RESERVED_LOCATION_P and
+	instread of comparison with UNKNOWN_LOCATION.
+
 2016-09-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77745

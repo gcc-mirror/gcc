@@ -1042,7 +1042,7 @@ branch_prob (void)
 	       gsi_prev_nondebug (&gsi))
 	    {
 	      last = gsi_stmt (gsi);
-	      if (gimple_has_location (last))
+	      if (!RESERVED_LOCATION_P (gimple_location (last)))
 		break;
 	    }
 
@@ -1053,7 +1053,7 @@ branch_prob (void)
 	     is not computed twice.  */
 	  if (last
 	      && gimple_has_location (last)
-	      && LOCATION_LOCUS (e->goto_locus) != UNKNOWN_LOCATION
+	      && !RESERVED_LOCATION_P (e->goto_locus)
 	      && !single_succ_p (bb)
 	      && (LOCATION_FILE (e->goto_locus)
 	          != LOCATION_FILE (gimple_location (last))
@@ -1262,15 +1262,14 @@ branch_prob (void)
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
-	      if (gimple_has_location (stmt))
+	      if (!RESERVED_LOCATION_P (gimple_location (stmt)))
 		output_location (gimple_filename (stmt), gimple_lineno (stmt),
 				 &offset, bb);
 	    }
 
 	  /* Notice GOTO expressions eliminated while constructing the CFG.  */
 	  if (single_succ_p (bb)
-	      && LOCATION_LOCUS (single_succ_edge (bb)->goto_locus)
-		 != UNKNOWN_LOCATION)
+	      && !RESERVED_LOCATION_P (single_succ_edge (bb)->goto_locus))
 	    {
 	      expanded_location curr_location
 		= expand_location (single_succ_edge (bb)->goto_locus);
