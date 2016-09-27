@@ -4306,16 +4306,13 @@ gfc_current_interface_head (void)
     {
       case INTERFACE_INTRINSIC_OP:
 	return current_interface.ns->op[current_interface.op];
-	break;
 
       case INTERFACE_GENERIC:
       case INTERFACE_DTIO:
 	return current_interface.sym->generic;
-	break;
 
       case INTERFACE_USER_OP:
 	return current_interface.uop->op;
-	break;
 
       default:
 	gcc_unreachable ();

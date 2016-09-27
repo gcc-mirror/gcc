@@ -1491,7 +1491,6 @@ optimize_op (gfc_expr *e)
 
     case INTRINSIC_POWER:
       return optimize_power (e);
-      break;
 
     default:
       break;

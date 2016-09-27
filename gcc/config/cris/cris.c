@@ -544,11 +544,9 @@ cris_op_str (rtx x)
     {
     case PLUS:
       return "add";
-      break;
 
     case MINUS:
       return "sub";
-      break;
 
     case MULT:
       /* This function is for retrieving a part of an instruction name for
@@ -560,46 +558,36 @@ cris_op_str (rtx x)
 
     case DIV:
       return "div";
-      break;
 
     case AND:
       return "and";
-      break;
 
     case IOR:
       return "or";
-      break;
 
     case XOR:
       return "xor";
-      break;
 
     case NOT:
       return "not";
-      break;
 
     case ASHIFT:
       return "lsl";
-      break;
 
     case LSHIFTRT:
       return "lsr";
-      break;
 
     case ASHIFTRT:
       return "asr";
-      break;
 
     case UMIN:
       /* Used to control the sign/zero-extend character for the 'E' modifier.
 	 BOUND has none.  */
       cris_output_insn_is_bound = 1;
       return "bound";
-      break;
 
     default:
       return "Unknown operator";
-      break;
   }
 }
 

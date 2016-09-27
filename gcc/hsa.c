@@ -947,7 +947,6 @@ hsa_internal_fn::get_arity ()
     case IFN_SCALB:
     case IFN_LDEXP:
       return 2;
-      break;
     case IFN_CLRSB:
     case IFN_CLZ:
     case IFN_CTZ:

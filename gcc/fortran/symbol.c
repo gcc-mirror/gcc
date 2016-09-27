@@ -464,7 +464,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	    gfc_error ("Namelist group name at %L cannot have the "
 		       "SAVE attribute", where);
 	    return false; 
-	    break;
 	  case FL_PROCEDURE:
 	    /* Conflicts between SAVE and PROCEDURE will be checked at
 	       resolution stage, see "resolve_fl_procedure".  */

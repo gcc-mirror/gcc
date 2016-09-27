@@ -2137,13 +2137,11 @@ tilepro_emit_setcc_internal_di (rtx res, enum rtx_code code, rtx op0, rtx op1)
       emit_insn (gen_insn_seq (tmp1, hi_half[0], hi_half[1]));
       emit_insn (gen_andsi3 (res, tmp0, tmp1));
       return true;
-      break;
     case NE:
       emit_insn (gen_insn_sne (tmp0, lo_half[0], lo_half[1]));
       emit_insn (gen_insn_sne (tmp1, hi_half[0], hi_half[1]));
       emit_insn (gen_iorsi3 (res, tmp0, tmp1));
       return true;
-      break;
     case LE:
       emit_insn (gen_insn_slte (tmp0, hi_half[0], hi_half[1]));
       emit_insn (gen_insn_seq (tmp1, hi_half[0], hi_half[1]));

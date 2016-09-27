@@ -1,3 +1,7 @@
+2016-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ada-spec.c (print_ada_declaration): Remove break after return.
+
 2016-09-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* c-common.c: Include memmodel.h.

@@ -1050,7 +1050,6 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
       return false;
-      break;
     }
 
   return true;

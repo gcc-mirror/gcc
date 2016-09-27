@@ -4433,7 +4433,6 @@ aarch64_get_condition_code_1 (enum machine_mode mode, enum rtx_code comp_code)
 
     default:
       return -1;
-      break;
     }
 
   return -1;

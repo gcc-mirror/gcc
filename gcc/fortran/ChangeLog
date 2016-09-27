@@ -1,5 +1,11 @@
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* dependency.c (gfc_dep_compare_expr): Remove break after return.
+	* frontend-passes.c (optimize_op): Likewise.
+	* interface.c (gfc_current_interface_head): Likewise.
+	* symbol.c (check_conflict): Likewise.
+	* trans-intrinsic.c (build_fix_expr): Likewise.
+
 	PR fortran/77666
 	* trans-openmp.c (gfc_omp_private_outer_ref): Return true even for
 	references to allocatable arrays.

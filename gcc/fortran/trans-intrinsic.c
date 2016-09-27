@@ -410,19 +410,15 @@ build_fix_expr (stmtblock_t * pblock, tree arg, tree type,
     {
     case RND_FLOOR:
       return build_fixbound_expr (pblock, arg, type, 0);
-      break;
 
     case RND_CEIL:
       return build_fixbound_expr (pblock, arg, type, 1);
-      break;
 
     case RND_ROUND:
       return build_round_expr (arg, type);
-      break;
 
     case RND_TRUNC:
       return fold_build1_loc (input_location, FIX_TRUNC_EXPR, type, arg);
-      break;
 
     default:
       gcc_unreachable ();
