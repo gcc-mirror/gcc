@@ -1,5 +1,15 @@
 2016-09-27  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/7970
+	PR gcov-profile/16855
+	PR gcov-profile/44779
+	* libgcov-driver.c (__gcov_init): Do not register a atexit
+	handler.
+	(__gcov_exit): Rename from gcov_exit.
+	* libgcov.h (__gcov_exit): Declare.
+
+2016-09-27  Martin Liska  <mliska@suse.cz>
+
 	PR bootstrap/77749
 	* Makefile.in: Remove _gcov_merge_delta.
 	* libgcov-merge.c (void __gcov_merge_delta): Remove.

@@ -234,6 +234,9 @@ extern void __gcov_dump_one (struct gcov_root *) ATTRIBUTE_HIDDEN;
 /* Register a new object file module.  */
 extern void __gcov_init (struct gcov_info *) ATTRIBUTE_HIDDEN;
 
+/* GCOV exit function registered via a static destructor.  */
+extern void __gcov_exit (void) ATTRIBUTE_HIDDEN;
+
 /* Called before fork, to avoid double counting.  */
 extern void __gcov_flush (void) ATTRIBUTE_HIDDEN;
 
