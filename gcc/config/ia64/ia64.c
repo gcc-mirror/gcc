@@ -5550,7 +5550,7 @@ ia64_print_operand (FILE * file, rtx x, int code)
     case POST_DEC:
     case POST_MODIFY:
       x = XEXP (x, 0);
-      /* ... fall through ...  */
+      /* fall through */
 
     case REG:
       fputs (reg_names [REGNO (x)], file);
