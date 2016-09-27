@@ -1,3 +1,12 @@
+2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77745
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	When removing redundant stores make sure to check compatibility
+	of the TBAA state for downstream accesses.
+	* tree-ssa-sccvn.c (visit_reference_op_store): Likewise for when
+	value-numbering virtual operands for store matches.
+
 2016-09-27  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
