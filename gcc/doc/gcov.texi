@@ -600,6 +600,10 @@ facilities to restrict profile collection to the program region of
 interest. Calling @code{__gcov_reset(void)} will clear all profile counters
 to zero, and calling @code{__gcov_dump(void)} will cause the profile information
 collected at that point to be dumped to @file{.gcda} output files.
+Instrumented applications use a static destructor with priority 99
+to invoke the @code{__gcov_dump} function. Thus @code{__gcov_dump}
+is executed after all user defined static destructors,
+as well as handlers registered with @code{atexit}.
 
 @c man end
 

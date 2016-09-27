@@ -1,3 +1,13 @@
+2016-09-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/7970
+	PR gcov-profile/16855
+	PR gcov-profile/44779
+	* coverage.c (build_gcov_exit_decl): New function.
+	(coverage_obj_init): Call the function and generate __gcov_exit
+	destructor.
+	* doc/gcov.texi: Document when __gcov_exit function is called.
+
 2016-09-27  Marek Polacek  <polacek@redhat.com>
 
 	PR bootstrap/77751
