@@ -4001,8 +4001,7 @@ const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
 	  && ((i & 0xfffff000) == 0
 	      || ((-i) & 0xfffff000) == 0))
 	return 1;
-      /* else fall through.  */
-
+      /* Fall through.  */
     case COMPARE:
     case EQ:
     case NE:
@@ -9129,7 +9128,7 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 	  || (GET_CODE (XEXP (x, 1)) == MULT
 	      && power_of_two_operand (XEXP (XEXP (x, 1), 1), SImode)))
 	return COSTS_N_INSNS (2);
-      /* On purpose fall through for normal RTX.  */
+      /* Fall through.  */
     case COMPARE:
     case NEG:
     case NOT:
@@ -13371,6 +13370,7 @@ tls_mentioned_p (rtx x)
       if (XINT (x, 1) == UNSPEC_TLS)
 	return 1;
 
+    /* Fall through.  */
     default:
       return 0;
     }
@@ -17568,7 +17568,7 @@ thumb2_reorg (void)
 			 test the global flag here.  */
 		      if (!optimize_size)
 			break;
-		      /* else fall through.  */
+		      /* Fall through.  */
 		    case AND:
 		    case IOR:
 		    case XOR:

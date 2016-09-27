@@ -1,3 +1,14 @@
+2016-09-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (const_ok_for_op): Use "Fall through" comment form
+	expected by -Wimplicit-fallthrough.
+	(thumb1_size_rtx_costs): Likewise.
+	(thumb2_reorg): Likewise.
+	(tls_mentioned_p): Add "Fall through" comment.
+	(thumb2_reorg): Likewise.
+	* config/arm/arm-builtins.c (arm_expand_neon_args): Use "Fall through"
+	comment form expected by -Wimplicit-fallthrough.
+
 2016-09-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/46266
