@@ -2206,6 +2206,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     }
 
   // Searchers
+#define __cpp_lib_boyer_moore_searcher 201603
 
   template<typename _ForwardIterator1, typename _BinaryPredicate = equal_to<>>
     class default_searcher
