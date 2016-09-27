@@ -1,3 +1,9 @@
+2016-09-27  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.c (sh_rtx_costs): Fix return value of SET of movt and
+	movrt patterns.  Match them before anything else in the SET case.
+
 2016-09-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/7970
