@@ -6065,6 +6065,7 @@
   [(set_attr "type" "mov_reg,mov_imm,mvn_imm,mov_imm,load1,store1")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,*,*,*,4096,*")
+   (set_attr "arch" "*,*,*,t2,*,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,*")]
 )
 
