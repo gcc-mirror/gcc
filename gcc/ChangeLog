@@ -1,3 +1,9 @@
+2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (dwarf2out_init): Move text_section_line_info,
+	cur_line_info_table initialization ...
+	(dwarf2out_assembly_start): ... here.
+
 2016-09-27  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm.md (*arm_movsi_insn): Add "arch" attribute.
