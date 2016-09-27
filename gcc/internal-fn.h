@@ -20,26 +20,28 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_INTERNAL_FN_H
 #define GCC_INTERNAL_FN_H
 
-/* INTEGER_CST values for IFN_UNIQUE function arg-0.  */
+/* INTEGER_CST values for IFN_UNIQUE function arg-0.
+
+   UNSPEC: Undifferentiated UNIQUE.
+
+   FORK and JOIN mark the points at which OpenACC partitioned
+   execution is entered or exited.
+      DEP_VAR = UNIQUE ({FORK,JOIN}, DEP_VAR, AXIS)
+
+   HEAD_MARK and TAIL_MARK are used to demark the sequence entering
+   or leaving partitioned execution.
+      DEP_VAR = UNIQUE ({HEAD,TAIL}_MARK, REMAINING_MARKS, ...PRIMARY_FLAGS)
+
+   The PRIMARY_FLAGS only occur on the first HEAD_MARK of a sequence.  */
+#define IFN_UNIQUE_CODES				  \
+  DEF(UNSPEC),	\
+    DEF(OACC_FORK), DEF(OACC_JOIN),		\
+    DEF(OACC_HEAD_MARK), DEF(OACC_TAIL_MARK)
+
 enum ifn_unique_kind {
-  IFN_UNIQUE_UNSPEC,  /* Undifferentiated UNIQUE.  */
-
-  /* FORK and JOIN mark the points at which OpenACC partitioned
-     execution is entered or exited.
-     return: data dependency value
-     arg-1: data dependency var
-     arg-2: INTEGER_CST argument, indicating the axis.  */
-  IFN_UNIQUE_OACC_FORK,
-  IFN_UNIQUE_OACC_JOIN,
-
-  /* HEAD_MARK and TAIL_MARK are used to demark the sequence entering
-     or leaving partitioned execution.
-     return: data dependency value
-     arg-1: data dependency var
-     arg-2: INTEGER_CST argument, remaining markers in this sequence
-     arg-3...: varargs on primary header  */
-  IFN_UNIQUE_OACC_HEAD_MARK,
-  IFN_UNIQUE_OACC_TAIL_MARK
+#define DEF(X) IFN_UNIQUE_##X
+  IFN_UNIQUE_CODES
+#undef DEF
 };
 
 /* INTEGER_CST values for IFN_GOACC_LOOP arg-0.  Allows the precise
@@ -59,11 +61,12 @@ enum ifn_unique_kind {
      CHUNK_NO - chunk number
      MASK - partitioning mask.  */
 
+#define IFN_GOACC_LOOP_CODES \
+  DEF(CHUNKS), DEF(STEP), DEF(OFFSET), DEF(BOUND)
 enum ifn_goacc_loop_kind {
-  IFN_GOACC_LOOP_CHUNKS,  /* Number of chunks.  */
-  IFN_GOACC_LOOP_STEP,    /* Size of each thread's step.  */
-  IFN_GOACC_LOOP_OFFSET,  /* Initial iteration value.  */
-  IFN_GOACC_LOOP_BOUND    /* Limit of iteration value.  */
+#define DEF(X) IFN_GOACC_LOOP_##X
+  IFN_GOACC_LOOP_CODES
+#undef DEF
 };
 
 /* The GOACC_REDUCTION function defines a generic interface to support
@@ -81,11 +84,12 @@ enum ifn_goacc_loop_kind {
    In general the return value is LOCAL_VAR, which creates a data
    dependency between calls operating on the same reduction.  */
 
+#define IFN_GOACC_REDUCTION_CODES \
+  DEF(SETUP), DEF(INIT), DEF(FINI), DEF(TEARDOWN)
 enum ifn_goacc_reduction_kind {
-  IFN_GOACC_REDUCTION_SETUP,
-  IFN_GOACC_REDUCTION_INIT,
-  IFN_GOACC_REDUCTION_FINI,
-  IFN_GOACC_REDUCTION_TEARDOWN
+#define DEF(X) IFN_GOACC_REDUCTION_##X
+  IFN_GOACC_REDUCTION_CODES
+#undef DEF
 };
 
 /* Initialize internal function tables.  */

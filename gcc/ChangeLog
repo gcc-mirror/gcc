@@ -1,3 +1,12 @@
+2016-09-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* internal-fn.h (IFN_UNIQUE_CODES, IFN_GOACC_LOOP_CODES,
+	IFN_GOACC_REDUCTION_CODES): New.
+	(enum ifn_unique_kind, enum ifn_goacc_loop_kind, enum
+	ifn_goacc_reduction_kind): Use them.
+	* gimple-pretty-print.c (dump_gimple_call_args): Decode first arg
+	of internal functions, when applicable.
+
 2016-09-27  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* config/mips/constraints.md (d): Fix documentation.

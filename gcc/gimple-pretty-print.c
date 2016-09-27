@@ -599,9 +599,63 @@ dump_gimple_return (pretty_printer *buffer, greturn *gs, int spc, int flags)
 static void
 dump_gimple_call_args (pretty_printer *buffer, gcall *gs, int flags)
 {
-  size_t i;
+  size_t i = 0;
 
-  for (i = 0; i < gimple_call_num_args (gs); i++)
+  /* Pretty print first arg to certain internal fns.  */
+  if (gimple_call_internal_p (gs))
+    {
+      const char *const *enums = NULL;
+      unsigned limit = 0;
+
+      switch (gimple_call_internal_fn (gs))
+	{
+	case IFN_UNIQUE:
+#define DEF(X) #X
+	  static const char *const unique_args[] = {IFN_UNIQUE_CODES};
+#undef DEF
+	  enums = unique_args;
+	  
+	  limit = ARRAY_SIZE (unique_args);
+	  break;
+	  
+	case IFN_GOACC_LOOP:
+#define DEF(X) #X
+	  static const char *const loop_args[] = {IFN_GOACC_LOOP_CODES};
+#undef DEF
+	  enums = loop_args;
+	  limit = ARRAY_SIZE (loop_args);
+	  break;
+
+	case IFN_GOACC_REDUCTION:
+#define DEF(X) #X
+	  static const char *const reduction_args[]
+	    = {IFN_GOACC_REDUCTION_CODES};
+#undef DEF
+	  enums = reduction_args;
+	  limit = ARRAY_SIZE (reduction_args);
+	  break;
+
+	default:
+	  break;
+	}
+      if (limit)
+	{
+	  tree arg0 = gimple_call_arg (gs, 0);
+	  HOST_WIDE_INT v;
+
+	  if (TREE_CODE (arg0) == INTEGER_CST
+	      && tree_fits_shwi_p (arg0)
+	      && (v = tree_to_shwi (arg0)) >= 0 && v < limit)
+	    {
+	      i++;
+	      pp_string (buffer, enums[v]);
+	      if (i < gimple_call_num_args (gs))
+		pp_string (buffer, ", ");
+	    }
+	}
+    }
+
+  for (; i < gimple_call_num_args (gs); i++)
     {
       dump_generic_node (buffer, gimple_call_arg (gs, i), 0, flags, false);
       if (i < gimple_call_num_args (gs) - 1)
