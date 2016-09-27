@@ -1,3 +1,8 @@
+2016-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/safe_iterator.h (_Safe_iterator::operator++()): Fix
+	lifetime of lock.
+
 2015-09-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
