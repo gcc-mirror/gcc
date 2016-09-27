@@ -356,6 +356,12 @@
 #  error "__cpp_aligned_new != 201606"
 #endif
 
+#ifndef __cpp_capture_star_this
+#  error "__cpp_capture_star_this"
+#elif __cpp_capture_star_this != 201603
+#  error "__cpp_capture_star_this != 201603"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)
