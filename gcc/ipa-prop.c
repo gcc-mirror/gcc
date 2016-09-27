@@ -1703,13 +1703,23 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
 	      && (type = get_range_info (arg, &min, &max))
-	      && (type == VR_RANGE || type == VR_ANTI_RANGE)
-	      && (min.get_precision () <= TYPE_PRECISION (param_type)))
+	      && (type == VR_RANGE || type == VR_ANTI_RANGE))
 	    {
-	      jfunc->vr_known = true;
-	      jfunc->m_vr.type = type;
-	      jfunc->m_vr.min = wide_int_to_tree (param_type, min);
-	      jfunc->m_vr.max = wide_int_to_tree (param_type, max);
+	      value_range vr;
+
+	      vr.type = type;
+	      vr.min = wide_int_to_tree (TREE_TYPE (arg), min);
+	      vr.max = wide_int_to_tree (TREE_TYPE (arg), max);
+	      vr.equiv = NULL;
+	      extract_range_from_unary_expr (&jfunc->m_vr,
+					     NOP_EXPR,
+					     param_type,
+					     &vr, TREE_TYPE (arg));
+	      if (jfunc->m_vr.type == VR_RANGE
+		  || jfunc->m_vr.type == VR_ANTI_RANGE)
+		jfunc->vr_known = true;
+	      else
+		jfunc->vr_known = false;
 	    }
 	  else
 	    gcc_assert (!jfunc->vr_known);

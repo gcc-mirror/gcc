@@ -1,3 +1,8 @@
+2016-09-27  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR ipa/77677
+	* gcc.dg/torture/pr77677-2.c: New test.
+
 2016-09-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77420

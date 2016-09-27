@@ -51,4 +51,9 @@ struct GTY(()) value_range
 extern void vrp_intersect_ranges (value_range *vr0, value_range *vr1);
 extern void vrp_meet (value_range *vr0, const value_range *vr1);
 extern void dump_value_range (FILE *, const value_range *);
+extern void extract_range_from_unary_expr (value_range *vr,
+					   enum tree_code code,
+					   tree type,
+					   value_range *vr0_,
+					   tree op0_type);
 
