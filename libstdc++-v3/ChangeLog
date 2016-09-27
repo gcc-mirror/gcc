@@ -1,6 +1,11 @@
 2016-09-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* doc/html/*: Regenerate.
+	* include/std/functional (__cpp_lib_boyer_moore_searcher): Define.
+	* testsuite/20_util/function_objects/searchers.cc: Test feature macro.
+
+	* doc/xml/manual/status_cxx2017.xml: Update status.
 	* include/c_global/cmath (hypot): Add three-dimensional overloads.
 	* testsuite/26_numerics/headers/cmath/hypot.cc: New.
 

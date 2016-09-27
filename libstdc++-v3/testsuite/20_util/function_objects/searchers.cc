@@ -25,6 +25,12 @@
 #include <algorithm>
 #include <testsuite_hooks.h>
 
+#ifndef __cpp_lib_boyer_moore_searcher
+# error "Feature-test macro for searchers missing"
+#elif __cpp_lib_boyer_moore_searcher < 201603
+# error "Feature-test macro for searchers has wrong value"
+#endif
+
 using std::make_default_searcher;
 using std::make_boyer_moore_searcher;
 using std::make_boyer_moore_horspool_searcher;
