@@ -1,3 +1,7 @@
+2016-09-27  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Require int32plus.
+
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/77666

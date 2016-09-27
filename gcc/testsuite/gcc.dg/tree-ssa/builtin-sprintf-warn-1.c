@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-std=c99 -Wformat -Wformat-length=1 -ftrack-macro-expansion=0" } */
+/* { dg-require-effective-target int32plus } */
 
 /* When debugging, define LINE to the line number of the test case to exercise
    and avoid exercising any of the others.  The buffer and objsize macros
