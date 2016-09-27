@@ -25657,14 +25657,6 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
     vec_alloc (macinfo_table, 64);
 #endif
 
-  /* Make sure the line number table for .text always exists.  */
-  text_section_line_info = new_line_info_table ();
-  text_section_line_info->end_label = text_end_label;
-
-#ifdef DWARF2_LINENO_DEBUGGING_INFO
-  cur_line_info_table = text_section_line_info;
-#endif
-
   /* If front-ends already registered a main translation unit but we were not
      ready to perform the association, do this now.  */
   if (main_translation_unit != NULL_TREE)
@@ -25686,6 +25678,14 @@ dwarf2out_assembly_start (void)
 
   switch_to_section (text_section);
   ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
+#endif
+
+  /* Make sure the line number table for .text always exists.  */
+  text_section_line_info = new_line_info_table ();
+  text_section_line_info->end_label = text_end_label;
+
+#ifdef DWARF2_LINENO_DEBUGGING_INFO
+  cur_line_info_table = text_section_line_info;
 #endif
 
   if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE
