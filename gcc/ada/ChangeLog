@@ -1,3 +1,7 @@
+2016-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* terminals.c (is_gui_app): Remove break after return.
+
 2016-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/decl.c: Fix fall through comment formatting.

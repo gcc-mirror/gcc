@@ -1120,10 +1120,8 @@ legitimate_pic_operand_p (rtx x)
     {
     case SYMBOL_REF:
       return 0;
-      break;
     case LABEL_REF:
       return 0;
-      break;
     case CONST:
       /* REVISIT: Use something like symbol_referenced_p.  */
       if (GET_CODE (XEXP (x, 0)) == PLUS
@@ -1134,7 +1132,6 @@ legitimate_pic_operand_p (rtx x)
       break;
     case MEM:
       return legitimate_pic_operand_p (XEXP (x, 0));
-      break;
     default:
       break;
     }

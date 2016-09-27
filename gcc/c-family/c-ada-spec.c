@@ -2902,7 +2902,6 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	    pp_string (buffer, "--  skipped function type ");
 	    dump_generic_ada_node (buffer, t, type, spc, false, true);
 	    return 1;
-	    break;
 
 	  case ENUMERAL_TYPE:
 	    if ((orig && TYPE_NAME (orig) && orig != TREE_TYPE (t))

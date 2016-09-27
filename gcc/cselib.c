@@ -805,7 +805,6 @@ autoinc_split (rtx x, rtx *off, machine_mode memmode)
 
       *off = GEN_INT (-GET_MODE_SIZE (memmode));
       return XEXP (x, 0);
-      break;
 
     case PRE_INC:
       if (memmode == VOIDmode)

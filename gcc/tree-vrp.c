@@ -10215,7 +10215,6 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	case MIN_EXPR:
 	case MAX_EXPR:
 	  return simplify_min_or_max_using_ranges (stmt);
-	  break;
 
 	default:
 	  break;

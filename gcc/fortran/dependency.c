@@ -486,7 +486,6 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 
     case EXPR_FUNCTION:
       return gfc_dep_compare_functions (e1, e2, false);
-      break;
 
     default:
       return -2;

@@ -1,3 +1,22 @@
+2016-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* auto-inc-dec.c (try_merge): Remove break after return.
+	* cselib.c (autoinc_split): Likewise.
+	* explow.c (promote_mode): Likewise.
+	* fixed-value.c (fixed_arithmetic): Likewise.
+	* hsa.c (hsa_internal_fn::get_arity): Likewise.
+	* rtlanal.c (modified_between_p, modified_in_p): Likewise.
+	* trans-mem.c (get_attrs_for): Likewise.
+	* tree-if-conv.c (if_convertible_stmt_p): Likewise.
+	* tree-vrp.c (simplify_stmt_using_ranges): Likewise.
+	* config/aarch64/aarch64-builtins.c (aarch64_fold_builtin): Likewise.
+	* config/aarch64/aarch64.c (aarch64_get_condition_code_1): Likewise.
+	* config/c6x/c6x.c (c6x_get_unit_specifier): Likewise.
+	* config/cr16/cr16.c (legitimate_pic_operand_p): Likewise.
+	* config/cris/cris.c (cris_op_str): Likewise.
+	* config/mn10300/mn10300.c (cc_flags_for_code): Likewise.
+	* config/tilepro/tilepro.c (tilepro_emit_setcc_internal_di): Likewise.
+
 2016-09-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* internal-fn.h (IFN_UNIQUE_CODES, IFN_GOACC_LOOP_CODES,

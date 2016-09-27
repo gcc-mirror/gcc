@@ -165,7 +165,6 @@ get_attrs_for (const_tree x)
     {
     case FUNCTION_DECL:
       return TYPE_ATTRIBUTES (TREE_TYPE (x));
-      break;
 
     default:
       if (TYPE_P (x))

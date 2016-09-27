@@ -802,7 +802,6 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
       PROMOTE_MODE (mode, unsignedp, type);
       *punsignedp = unsignedp;
       return mode;
-      break;
 
 #ifdef POINTERS_EXTEND_UNSIGNED
     case REFERENCE_TYPE:
@@ -810,7 +809,6 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
       *punsignedp = POINTERS_EXTEND_UNSIGNED;
       return targetm.addr_space.address_mode
 	       (TYPE_ADDR_SPACE (TREE_TYPE (type)));
-      break;
 #endif
 
     default:

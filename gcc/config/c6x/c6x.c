@@ -1987,17 +1987,13 @@ c6x_get_unit_specifier (rtx_insn *insn)
     case UNITS_DLS:
     case UNITS_D_ADDR:
       return 'd';
-      break;
     case UNITS_L:
     case UNITS_LS:
       return 'l';
-      break;
     case UNITS_S:
       return 's';
-      break;
     case UNITS_M:
       return 'm';
-      break;
     default:
       gcc_unreachable ();
     }
