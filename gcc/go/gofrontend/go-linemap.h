@@ -17,7 +17,6 @@
 // The type is normally passed by value rather than by reference, and
 // it should support that efficiently.  The type should be defined in
 // "go-location.h".
-
 #include "go-location.h"
 
 // The Linemap class is a pure abstract interface, plus some static
@@ -57,6 +56,12 @@ class Linemap
   // input files have been read, in case any cleanup is required.
   virtual void
   stop() = 0;
+
+  // Produce a human-readable description of a Location, e.g.
+  // "foo.go:10". Returns an empty string for predeclared, builtin or
+  // unknown locations.
+  virtual std::string
+  to_string(Location) = 0;
 
  protected:
   // Return a special Location used for predeclared identifiers.  This
@@ -121,6 +126,14 @@ class Linemap
   {
     go_assert(Linemap::instance_ != NULL);
     return Linemap::instance_->is_unknown(loc);
+  }
+
+  // Produce a human-readable description of a Location.
+  static std::string
+  location_to_string(Location loc)
+  {
+    go_assert(Linemap::instance_ != NULL);
+    return Linemap::instance_->to_string(loc);
   }
 };
 
