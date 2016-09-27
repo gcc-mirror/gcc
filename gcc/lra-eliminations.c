@@ -981,7 +981,7 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
 		      }
 		    lra_update_insn_recog_data (insn);
 		    /* Add offset note for future updates.  */
-		    add_reg_note (insn, REG_EQUAL, src);
+		    add_reg_note (insn, REG_EQUAL, copy_rtx (src));
 		    return;
 		  }
 	      }
