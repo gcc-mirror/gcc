@@ -691,9 +691,26 @@ s-syscall_arch: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh syscall_arch.go.tmp syscall_arch.go
 	$(STAMP) $@
 
+SYSINFO_FLAGS = \
+	$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(OSCFLAGS) -O
+
+gen-sysinfo.go: s-gen-sysinfo; @true
+s-gen-sysinfo: $(srcdir)/sysinfo.c config.h
+	$(CC) $(SYSINFO_FLAGS) -fdump-go-spec=tmp-gen-sysinfo.go -std=gnu99 -S -o sysinfo.s $(srcdir)/sysinfo.c
+	rm -f sysinfo.s
+	$(SHELL) $(srcdir)/mvifdiff.sh tmp-gen-sysinfo.go gen-sysinfo.go
+	$(STAMP) $@
+
+errno.i: s-errno; @true
+s-errno:
+	echo '#include <errno.h>' | $(CC) $(SYSINFO_FLAGS) -x c - -E -dM > tmp-errno.i
+	$(SHELL) $(srcdir)/mvifdiff.sh tmp-errno.i errno.i
+	$(STAMP) $@
+
 sysinfo.go: s-sysinfo; @true
-s-sysinfo: $(srcdir)/mksysinfo.sh config.h
-	CC="$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(OSCFLAGS) -O" $(SHELL) $(srcdir)/mksysinfo.sh
+s-sysinfo: $(srcdir)/mksysinfo.sh gen-sysinfo.go errno.i
+	$(SHELL) $(srcdir)/mksysinfo.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-sysinfo.go sysinfo.go
 	$(STAMP) $@
 
