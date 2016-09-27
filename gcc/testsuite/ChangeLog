@@ -1,3 +1,8 @@
+2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77478
+	* gcc.dg/torture/pr77478.c: New testcase.
+
 2016-09-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/7970
