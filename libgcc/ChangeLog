@@ -1,3 +1,11 @@
+2016-09-27  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/77749
+	* Makefile.in: Remove _gcov_merge_delta.
+	* libgcov-merge.c (void __gcov_merge_delta): Remove.
+	* libgcov-util.c (__gcov_delta_counter_op): Remove.
+	* libgcov.h: Remove declaration of __gcov_merge_delta.
+
 2016-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Do not create links, only substitute the filenames.

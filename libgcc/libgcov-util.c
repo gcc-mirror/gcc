@@ -720,23 +720,6 @@ __gcov_time_profile_counter_op (gcov_type *counters ATTRIBUTE_UNUSED,
   /* Do nothing.  */
 }
 
-/* Performaing FN upon delta counters.  */
-
-static void
-__gcov_delta_counter_op (gcov_type *counters, unsigned n_counters,
-                         counter_op_fn fn, void *data1, void *data2)
-{
-  unsigned i, n_measures;
-
-  gcc_assert (!(n_counters % 4));
-  n_measures = n_counters / 4;
-  for (i = 0; i < n_measures; i++, counters += 4)
-    {
-      counters[2] = fn (counters[2], data1, data2);
-      counters[3] = fn (counters[3], data1, data2);
-    }
-}
-
 /* Performing FN upon single counters.  */
 
 static void

@@ -126,7 +126,6 @@ typedef unsigned gcov_position_t;
 #define L_gcov 1
 #define L_gcov_merge_add 1
 #define L_gcov_merge_single 1
-#define L_gcov_merge_delta 1
 #define L_gcov_merge_ior 1
 #define L_gcov_merge_time_profile 1
 #define L_gcov_merge_icall_topn 1
@@ -255,10 +254,6 @@ extern void __gcov_merge_time_profile (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
 /* The merge function to choose the most common value.  */
 extern void __gcov_merge_single (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
-
-/* The merge function to choose the most common difference between
-   consecutive values.  */
-extern void __gcov_merge_delta (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
 /* The merge function that just ors the counters together.  */
 extern void __gcov_merge_ior (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
