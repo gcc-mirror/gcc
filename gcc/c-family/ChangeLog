@@ -1,5 +1,8 @@
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_capture_star_this for
+	-std=c++1z.
+
 	* c-ada-spec.c (print_ada_declaration): Remove break after return.
 
 2016-09-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>

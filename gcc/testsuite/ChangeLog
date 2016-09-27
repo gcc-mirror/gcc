@@ -1,5 +1,7 @@
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp1z/feat-cxx1z.C: Add __cpp_capture_star_this test.
+
 	* g++.dg/cpp1z/lambda-this1.C: New test.
 	* g++.dg/cpp1z/lambda-this2.C: New test.
 
