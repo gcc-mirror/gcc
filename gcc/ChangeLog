@@ -1,3 +1,8 @@
+2016-09-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_symbol): Don't modify
+	VAR_DECL string.
+
 2016-09-27  Marek Polacek  <polacek@redhat.com>
 
 	* config/ia64/ia64.c (ia64_print_operand): Adjust fall through

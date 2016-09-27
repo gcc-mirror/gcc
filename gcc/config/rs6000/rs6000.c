@@ -30309,7 +30309,10 @@ rs6000_output_symbol_ref (FILE *file, rtx x)
 		     (TREE_CODE (decl) == FUNCTION_DECL
 		      ? "[DS]" : "[UA]"),
 		     NULL);
-      XSTR (x, 0) = name;
+
+      /* Don't modify name in extern VAR_DECL to include mapping class.  */
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	XSTR (x, 0) = name;
     }
 
   if (VTABLE_NAME_P (name))
