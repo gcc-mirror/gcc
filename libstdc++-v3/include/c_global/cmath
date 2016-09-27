@@ -1455,6 +1455,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return hypot(__type(__x), __type(__y));
     }
 
+#if __cplusplus > 201402L
+#define __cpp_lib_hypot 201603
+  // [c.math.hypot3], three-dimensional hypotenuse
+
+  template<typename _Tp>
+    inline _Tp
+    __hypot3(_Tp __x, _Tp __y, _Tp __z)
+    {
+      __x = std::abs(__x);
+      __y = std::abs(__y);
+      __z = std::abs(__z);
+      if (_Tp __a = __x < __y ? __y < __z ? __z : __y : __x < __z ? __z : __x)
+	return __a * std::sqrt((__x / __a) * (__x / __a)
+			       + (__y / __a) * (__y / __a)
+			       + (__z / __a) * (__z / __a));
+      else
+	return {};
+    }
+
+  inline float
+  hypot(float __x, float __y, float __z)
+  { return std::__hypot3<float>(__x, __y, __z); }
+
+  inline double
+  hypot(double __x, double __y, double __z)
+  { return std::__hypot3<double>(__x, __y, __z); }
+
+  inline long double
+  hypot(long double __x, long double __y, long double __z)
+  { return std::__hypot3<long double>(__x, __y, __z); }
+
+  template<typename _Tp, typename _Up, typename _Vp>
+    typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type
+    hypot(_Tp __x, _Up __y, _Vp __z)
+    {
+      using __type = typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type;
+      return std::__hypot3<__type>(__x, __y, __z);
+    }
+#endif // C++17
+
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr int
   ilogb(float __x)
