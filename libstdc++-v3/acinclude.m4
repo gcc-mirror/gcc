@@ -3489,10 +3489,12 @@ EOF
   CXXFLAGS="$old_CXXFLAGS"
   AC_LANG_RESTORE
 
-  # Set atomicity_dir to builtins if all but the long long test above passes.
-  if test "$glibcxx_cv_atomic_bool" = yes \
+  # Set atomicity_dir to builtins if all but the long long test above passes,
+  # or if the builtins were already chosen (e.g. by configure.host).
+  if { test "$glibcxx_cv_atomic_bool" = yes \
      && test "$glibcxx_cv_atomic_short" = yes \
-     && test "$glibcxx_cv_atomic_int" = yes; then
+     && test "$glibcxx_cv_atomic_int" = yes; } \
+     || test "$atomicity_dir" = "cpu/generic/atomicity_builtins"; then
     AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS, 1,
     [Define if the compiler supports C++11 atomics.])
     atomicity_dir=cpu/generic/atomicity_builtins
