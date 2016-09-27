@@ -1,3 +1,10 @@
+2016-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77722
+	* g++.dg/ubsan/return-4.C: New test.
+	* g++.dg/ubsan/return-5.C: New test.
+	* g++.dg/ubsan/return-6.C: New test.
+
 2016-09-27  Jiong Wang  <jiong.wang@arm.com>
 
 	* lib/target-supports.exp
