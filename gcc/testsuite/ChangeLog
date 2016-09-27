@@ -1,3 +1,9 @@
+2016-09-27  Jiong Wang  <jiong.wang@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_2a_fp16_scalar_hw): Delete redundant word
+	in function comment.
+
 2016-09-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/46266

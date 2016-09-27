@@ -4015,9 +4015,8 @@ proc check_effective_target_arm_v8_1a_neon_hw { } {
     } [add_options_for_arm_v8_1a_neon ""]]
 }
 
-# Return 1 if the target supports executing instructions floating point
-# instructions from ARMv8.2 with the FP16 extension, 0 otherwise.  The
-# test is valid for ARM.
+# Return 1 if the target supports executing floating point instructions from
+# ARMv8.2 with the FP16 extension, 0 otherwise.  The test is valid for ARM.
 
 proc check_effective_target_arm_v8_2a_fp16_scalar_hw { } {
     if { ![check_effective_target_arm_v8_2a_fp16_scalar_ok] } {
