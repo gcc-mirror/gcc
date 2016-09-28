@@ -645,6 +645,7 @@ baseline_dir
 HWCAP_FLAGS
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
+LONG_DOUBLE_COMPAT_FLAGS
 ENABLE_CXX11_ABI_FALSE
 ENABLE_CXX11_ABI_TRUE
 glibcxx_cxx98_abi
@@ -11596,7 +11597,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11599 "configure"
+#line 11600 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11702,7 +11703,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11705 "configure"
+#line 11706 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15388,7 +15389,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15391 "configure"
+#line 15392 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15423,7 +15424,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15426 "configure"
+#line 15427 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15458,7 +15459,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15461 "configure"
+#line 15462 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15494,7 +15495,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15497 "configure"
+#line 15498 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15575,7 +15576,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15578 "configure"
+#line 15579 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15617,7 +15618,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15620 "configure"
+#line 15621 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15651,7 +15652,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15654 "configure"
+#line 15655 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -79344,6 +79345,7 @@ $as_echo "${default_libstdcxx_abi}" >&6; }
 
 
 ac_ldbl_compat=no
+LONG_DOUBLE_COMPAT_FLAGS="-mlong-double-64"
 case "$target" in
   powerpc*-*-linux* | \
   sparc*-*-linux* | \
@@ -79375,8 +79377,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 $as_echo "#define _GLIBCXX_LONG_DOUBLE_COMPAT 1" >>confdefs.h
 
     port_specific_symbol_files="\$(top_srcdir)/config/os/gnu-linux/ldbl-extra.ver"
+    case "$target" in
+      powerpc*-*-linux*)
+	LONG_DOUBLE_COMPAT_FLAGS="$LONG_DOUBLE_COMPAT_FLAGS -mno-gnu-attribute" ;;
+    esac
   fi
 esac
+
 
 
 # Check if assembler supports disabling hardware capability support.
