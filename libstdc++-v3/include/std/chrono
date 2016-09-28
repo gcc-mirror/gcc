@@ -784,7 +784,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
     // Clocks.
 
     // Why nanosecond resolution as the default?
-    // Why have std::system_clock always count in the higest
+    // Why have std::system_clock always count in the highest
     // resolution (ie nanoseconds), even if on some OSes the low 3
     // or 9 decimal digits will be always zero? This allows later
     // implementations to change the system_clock::now()
