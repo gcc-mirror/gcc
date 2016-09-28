@@ -1,3 +1,103 @@
+2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/41922
+	* target-memory.c (expr_to_char): Pass in locus and use it in error
+	messages.
+	(gfc_merge_initializers): Ditto.
+	* target-memory.h: Update prototype for gfc_merge_initializers ().
+	* trans-common.c (get_init_field): Use the correct locus.
+
+	PR fortran/60774
+	* parse.c (next_free,next_fixed): Issue error for statement label
+	without a statement.
+
+	PR fortran/61318
+	* interface.c (compare_parameter): Use better locus for error message.
+
+	PR fortran/68566
+	* check.c (gfc_check_reshape): Check for constant expression.
+
+	PR fortran/69514
+	* array.c (gfc_match_array_constructor):  If type-spec is present,
+	walk the array constructor performing possible conversions for 
+	numeric types.
+
+	PR fortran/69867
+	* decl.c (build_struct): Ensure that pointers point to something.
+
+	PR fortran/69962
+	* decl.c (gfc_set_constant_character_len):  if expr is not
+	constant issue an error instead of an ICE.
+
+	PR fortran/70006
+	* io.c (gfc_resolve_dt): Use correct locus.
+	* resolve.c (resolve_branch): Ditto.
+
+	PR fortran/71067
+	* decl.c (match_data_constant): On error, set 'result' to NULL.
+
+	PR fortran/71730
+	* decl.c (char_len_param_value): Check return value of
+	gfc_reduce_init_expr().
+
+	PR fortran/71799
+	* resolve.c(gfc_resolve_iterator): Failure of type conversion need
+	not ICE.
+
+	PR fortran/71859
+	* check.c(numeric_check): Prevent ICE.  Issue error for invalid
+	subroutine as an actual argument when numeric argument is expected.
+
+	PR fortran/71862
+	* class.c: Remove assert.  Iterate over component only if non-null.
+
+	PR fortran/77260
+	* gcc/fortran/trans-decl.c (generate_local_decl): Suppress warning
+	for unused variable if symbol is entry point.
+
+	PR fortran/77351
+	* frontend-passes.c (remove_trim,combine_array_constructor): Check for
+	NULL pointer.
+
+	PR fortran/77372
+	simplify.c (simplify_ieee_selected_real_kind): Check for NULL pointers.
+
+	PR fortran/77380
+	* dependency.c (gfc_check_dependency): Do not assert with
+	-fcoarray=lib.
+
+	PR fortran/77391
+	* resolve.c (deferred_requirements): New function to check F2008:C402.
+	(resolve_fl_variable,resolve_fl_parameter): Use it.
+
+	PR fortran/77420
+	* trans-common.c:  Handle array elements in equivalence when
+	the lower and upper bounds of array spec are NULL.
+
+	PR fortran/77429 
+	* dependency.c (gfc_check_dependency):  Convert gcc_assert() to
+	a conditional and possible call to  gfc_internal_error().
+
+	PR fortran/77460
+	* simplify.c (simplify_transformation_to_scalar):  On error, result
+	may be NULL, simply return.
+
+	PR fortran/77506
+	* array.c (gfc_match_array_constructor): CHARACTER(len=*) cannot
+	appear in an array constructor.
+
+	PR fortran/77507
+	* intrinsic.c (add_functions):  Use correct keyword.
+
+	PR fortran/77612
+	* decl.c (char_len_param_value): Check parent namespace for 
+	seen_implicit_none.
+
+	PR fortran/77694
+	* frontend-passes.c (optimize_binop_array_assignment): Check pointer
+	for NULL.
+
 2016-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
