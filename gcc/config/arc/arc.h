@@ -64,61 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef CC1_SPEC
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define TARGET_CPU_CPP_BUILTINS()	\
- do {					\
-    builtin_define ("__arc__");		\
-    if (TARGET_ARC600)			\
-      {					\
-	builtin_define ("__A6__");	\
-	builtin_define ("__ARC600__");	\
-      }					\
-    else if (TARGET_ARC601)			\
-      {					\
-	builtin_define ("__ARC601__");	\
-      }					\
-    else if (TARGET_ARC700)			\
-      {					\
-	builtin_define ("__A7__");	\
-	builtin_define ("__ARC700__");	\
-      }					\
-    else if (TARGET_EM)			\
-      {					\
-	builtin_define ("__EM__");	\
-      }					\
-    else if (TARGET_HS)			\
-      {					\
-	builtin_define ("__HS__");	\
-      }					\
-    if (TARGET_ATOMIC)			\
-      {					\
-	builtin_define ("__ARC_ATOMIC__");	\
-      }					\
-    if (TARGET_NORM)			\
-      {					\
-	builtin_define ("__ARC_NORM__");\
-	builtin_define ("__Xnorm");	\
-      }					\
-    if (TARGET_LL64)			\
-      {					\
-	builtin_define ("__ARC_LL64__");\
-      }					\
-    if (TARGET_MUL64_SET)		\
-      builtin_define ("__ARC_MUL64__");\
-    if (TARGET_MULMAC_32BY16_SET)	\
-      builtin_define ("__ARC_MUL32BY16__");\
-    if (TARGET_SIMD_SET)        	\
-      builtin_define ("__ARC_SIMD__");	\
-    if (TARGET_BARREL_SHIFTER)		\
-      builtin_define ("__Xbarrel_shifter");\
-    builtin_define_with_int_value ("__ARC_TLS_REGNO__", \
-				   arc_tp_regno);	\
-    builtin_assert ("cpu=arc");		\
-    builtin_assert ("machine=arc");	\
-    builtin_define (TARGET_BIG_ENDIAN	\
-		    ? "__BIG_ENDIAN__" : "__LITTLE_ENDIAN__"); \
-    if (TARGET_BIG_ENDIAN)		\
-      builtin_define ("__big_endian__"); \
-} while(0)
+#define TARGET_CPU_CPP_BUILTINS() arc_cpu_cpp_builtins (pfile)
 
 #if DEFAULT_LIBC == LIBC_UCLIBC
 

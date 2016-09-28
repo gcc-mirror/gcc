@@ -123,3 +123,4 @@ extern int arc_return_slot_offset (void);
 extern bool arc_legitimize_reload_address (rtx *, machine_mode, int, int);
 extern void arc_secondary_reload_conv (rtx, rtx, rtx, bool);
 extern bool insn_is_tls_gd_dispatch (rtx_insn *);
+extern void arc_cpu_cpp_builtins (cpp_reader *);

@@ -1,0 +1,68 @@
+/* Copyright (C) 2016 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.
+*/
+
+ARC_C_DEF ("__ARC600__",	TARGET_ARC600)
+ARC_C_DEF ("__ARC601__",	TARGET_ARC601)
+ARC_C_DEF ("__ARC700__",	TARGET_ARC700)
+ARC_C_DEF ("__ARCEM__",		TARGET_EM)
+ARC_C_DEF ("__ARCHS__",		TARGET_HS)
+ARC_C_DEF ("__ARC_ATOMIC__",	TARGET_ATOMIC)
+ARC_C_DEF ("__ARC_NORM__",	TARGET_NORM)
+ARC_C_DEF ("__ARC_MUL64__",	TARGET_MUL64_SET)
+ARC_C_DEF ("__ARC_MUL32BY16__", TARGET_MULMAC_32BY16_SET)
+ARC_C_DEF ("__ARC_SIMD__",	TARGET_SIMD_SET)
+
+ARC_C_DEF ("__ARC_BARREL_SHIFTER__", TARGET_BARREL_SHIFTER)
+
+ARC_C_DEF ("__ARC_LL64__",   TARGET_LL64)
+ARC_C_DEF ("__ARC_MPY__",    TARGET_MPY)
+ARC_C_DEF ("__ARC_SWAP__",   TARGET_SWAP)
+ARC_C_DEF ("__ARC_EA__",     TARGET_EA_SET)
+ARC_C_DEF ("__ARC_FPX_SP__", (TARGET_SPFP_FAST_SET || TARGET_SPFP_COMPACT_SET))
+ARC_C_DEF ("__ARC_FPX_DP__", (TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET))
+ARC_C_DEF ("__ARC_MULT32__", TARGET_MUL64_SET)
+ARC_C_DEF ("__ARC_DIVREM__", TARGET_DIVREM)
+
+ARC_C_DEF ("__ARC_CODE_DENSITY__", TARGET_CODE_DENSITY)
+
+ARC_C_DEF ("__ARC_MPY_WLHX__",   (arc_mpy_option >= 2))
+ARC_C_DEF ("__ARC_MPY_WLH1__",   (arc_mpy_option == 2))
+ARC_C_DEF ("__ARC_MPY_WLH2__",   (arc_mpy_option == 3))
+ARC_C_DEF ("__ARC_MPY_WLH3__",   (arc_mpy_option == 4))
+ARC_C_DEF ("__ARC_MPY_WLH4__",   (arc_mpy_option == 5))
+ARC_C_DEF ("__ARC_MPY_WLH5__",   (arc_mpy_option == 6))
+ARC_C_DEF ("__ARC_MPY_DMPY__",   (arc_mpy_option == 7))
+ARC_C_DEF ("__ARC_MPY_MACD__",   (arc_mpy_option == 8))
+ARC_C_DEF ("__ARC_MPY_QMACW__",  (arc_mpy_option == 9))
+
+ARC_C_DEF ("__ARC_FPU_SP__",     TARGET_FP_SP_BASE)
+ARC_C_DEF ("__ARC_FPU_DP__",     TARGET_FP_DP_BASE)
+ARC_C_DEF ("__ARC_FPU_SP_DIV__", TARGET_FP_SP_SQRT)
+ARC_C_DEF ("__ARC_FPU_DP_DIV__", TARGET_FP_DP_SQRT)
+ARC_C_DEF ("__ARC_FPU_SP_FMA__", TARGET_FP_SP_FUSED)
+ARC_C_DEF ("__ARC_FPU_DP_FMA__", TARGET_FP_DP_FUSED)
+ARC_C_DEF ("__ARC_FPU_ASSIST__", TARGET_FP_DP_AX)
+
+/* To be deprecated.  */
+ARC_C_DEF ("__A6__",     TARGET_ARC600)
+ARC_C_DEF ("__A7__",     TARGET_ARC700)
+ARC_C_DEF ("__EM__",     TARGET_EM)
+ARC_C_DEF ("__HS__",     TARGET_HS)
+ARC_C_DEF ("__Xnorm",    TARGET_NORM)
+ARC_C_DEF ("__Xbarrel_shifter", TARGET_BARREL_SHIFTER)
