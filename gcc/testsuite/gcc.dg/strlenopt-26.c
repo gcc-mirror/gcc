@@ -21,4 +21,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 1 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 2 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
