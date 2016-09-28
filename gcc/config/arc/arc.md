@@ -6190,6 +6190,46 @@
 		   (zero_extract:SI (match_dup 1) (match_dup 5) (match_dup 7)))])
    (match_dup 1)])
 
+(define_insn "*rotrsi3_cnt1"
+  [(set (match_operand:SI 0 "dest_reg_operand"             "=w")
+	(rotatert:SI (match_operand:SI 1 "register_operand" "c")
+		     (const_int 1)))]
+  ""
+  "ror %0,%1%&"
+  [(set_attr "type" "shift")
+   (set_attr "predicable" "no")
+   (set_attr "length" "4")])
+
+(define_insn "*ashlsi2_cnt1"
+  [(set (match_operand:SI 0 "dest_reg_operand"           "=Rcqq,w")
+	(ashift:SI (match_operand:SI 1 "register_operand" "Rcqq,c")
+		   (const_int 1)))]
+  ""
+  "asl%? %0,%1%&"
+  [(set_attr "type" "shift")
+   (set_attr "iscompact" "maybe,false")
+   (set_attr "predicable" "no,no")])
+
+(define_insn "*lshrsi3_cnt1"
+  [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcqq,w")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand" "Rcqq,c")
+		     (const_int 1)))]
+  ""
+  "lsr%? %0,%1%&"
+  [(set_attr "type" "shift")
+   (set_attr "iscompact" "maybe,false")
+   (set_attr "predicable" "no,no")])
+
+(define_insn "*ashrsi3_cnt1"
+  [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcqq,w")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand" "Rcqq,c")
+		     (const_int 1)))]
+  ""
+  "asr%? %0,%1%&"
+  [(set_attr "type" "shift")
+   (set_attr "iscompact" "maybe,false")
+   (set_attr "predicable" "no,no")])
+
 ;; include the arc-FPX instructions
 (include "fpx.md")
 

@@ -1,3 +1,8 @@
+2016-09-29  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (*rotrsi3_cnt1): New pattern.
+	(*ashlsi2_cnt1, *lshrsi3_cnt1, *ashrsi3_cnt1): Likewise.
+
 2016-09-28  Nathan Sidwell  <nathan@acm.org>
 
 	* gimple-pretty-print.c (dump_gimple_call_args): Simplify "' "
