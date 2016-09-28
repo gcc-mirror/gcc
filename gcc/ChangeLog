@@ -1,5 +1,15 @@
 2016-09-29  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc-c.c: New file.
+	* config/arc/arc-c.def: Likewise.
+	* config/arc/t-arc: Likewise.
+	* config.gcc: Include arc-c.o as c and cpp object.
+	* config/arc/arc-protos.h (arc_cpu_cpp_builtins): Add prototype.
+	* config/arc/arc.h (TARGET_CPU_CPP_BUILTINS): Use
+	arc_cpu_cpp_builtins.
+
+2016-09-29  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (*rotrsi3_cnt1): New pattern.
 	(*ashlsi2_cnt1, *lshrsi3_cnt1, *ashrsi3_cnt1): Likewise.
 

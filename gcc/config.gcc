@@ -316,6 +316,8 @@ am33_2.0-*-linux*)
 	;;
 arc*-*-*)
 	cpu_type=arc
+	c_target_objs="arc-c.o"
+	cxx_target_objs="arc-c.o"
 	;;
 arm*-*-*)
 	cpu_type=arm
