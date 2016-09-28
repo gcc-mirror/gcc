@@ -866,6 +866,8 @@ void test_sprintf_chk_z_const (void)
 void test_sprintf_chk_e_const (void)
 {
   T (-1, "%E",   0.0);
+  T (-1, "%lE",  0.0);
+
   T ( 0, "%E",   0.0);          /* { dg-warning "into a region" } */
   T ( 0, "%e",   0.0);          /* { dg-warning "into a region" } */
   T ( 1, "%E",   1.0);          /* { dg-warning "into a region" } */
@@ -1076,6 +1078,8 @@ void test_sprintf_chk_int_nonconst (int a)
 void test_sprintf_chk_e_nonconst (double d)
 {
   T (-1, "%E",          d);
+  T (-1, "%lE",         d);
+
   T ( 0, "%E",          d);           /* { dg-warning "writing between 12 and 14 bytes into a region of size 0" } */
   T ( 0, "%e",          d);           /* { dg-warning "into a region" } */
   T ( 1, "%E",          d);           /* { dg-warning "into a region" } */
@@ -1107,6 +1111,8 @@ void test_sprintf_chk_e_nonconst (double d)
 void test_sprintf_chk_f_nonconst (double d)
 {
   T (-1, "%F",          d);
+  T (-1, "%lF",         d);
+
   T ( 0, "%F",          d);           /* { dg-warning "into a region" } */
   T ( 0, "%f",          d);           /* { dg-warning "into a region" } */
   T ( 1, "%F",          d);           /* { dg-warning "into a region" } */

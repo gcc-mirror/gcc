@@ -1,3 +1,8 @@
+2016-09-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77683
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Add test cases.
+
 2016-09-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/77748
