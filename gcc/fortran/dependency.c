@@ -1252,7 +1252,14 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
   gfc_constructor *c;
   int n;
 
-  gcc_assert (expr1->expr_type == EXPR_VARIABLE);
+  /* -fcoarray=lib can end up here with expr1->expr_type set to EXPR_FUNCTION
+     and a reference to _F.caf_get, so skip the assert.  */
+  if (expr1->expr_type == EXPR_FUNCTION
+      && strcmp (expr1->value.function.name, "_F.caf_get") == 0)
+    return 0;
+
+  if (expr1->expr_type != EXPR_VARIABLE)
+    gfc_internal_error ("gfc_check_dependency: expecting an EXPR_VARIABLE");
 
   switch (expr2->expr_type)
     {

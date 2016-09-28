@@ -19,13 +19,13 @@
   END TYPE T2
   TYPE T3
     sequence
-    integer :: i=2 ! { dg-error "Overlapping unequal initializers" }
+    integer :: i=2
   END TYPE T3
   TYPE(T1) :: a1
   TYPE(T2) :: a2
   TYPE(T3) :: a3
   EQUIVALENCE (a1, a2)
-  EQUIVALENCE (a1, a3)
+  EQUIVALENCE (a1, a3) ! { dg-error "Overlapping unequal initializers" }
   write(6, *) a1, a2, a3
 END
 

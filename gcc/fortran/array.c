@@ -1072,6 +1072,7 @@ match_array_cons_element (gfc_constructor_base *result)
 match
 gfc_match_array_constructor (gfc_expr **result)
 {
+  gfc_constructor *c;
   gfc_constructor_base head, new_cons;
   gfc_undo_change_set changed_syms;
   gfc_expr *expr;
@@ -1120,6 +1121,15 @@ gfc_match_array_constructor (gfc_expr **result)
 	  if (ts.deferred)
 	    {
 	      gfc_error ("Type-spec at %L cannot contain a deferred "
+			 "type parameter", &where);
+	      gfc_restore_last_undo_checkpoint ();
+	      goto cleanup;
+	    }
+
+	  if (ts.type == BT_CHARACTER
+	      && ts.u.cl && !ts.u.cl->length && !ts.u.cl->length_from_typespec)
+	    {
+	      gfc_error ("Type-spec at %L cannot contain an asterisk for a "
 			 "type parameter", &where);
 	      gfc_restore_last_undo_checkpoint ();
 	      goto cleanup;
@@ -1177,8 +1187,6 @@ done:
 	 be converted.  See PR fortran/67803.  */
       if (ts.type == BT_CHARACTER)
 	{
-	  gfc_constructor *c;
-
 	  c = gfc_constructor_first (head);
 	  for (; c; c = gfc_constructor_next (c))
 	    {
@@ -1200,6 +1208,14 @@ done:
 		  return MATCH_ERROR;
 		}
 	    }
+	}
+
+      /* Walk the constructor and ensure type conversion for numeric types.  */
+      if (gfc_numeric_ts (&ts))
+	{
+	  c = gfc_constructor_first (head);
+	  for (; c; c = gfc_constructor_next (c))
+	    gfc_convert_type (c->expr, &ts, 1);
 	}
     }
   else

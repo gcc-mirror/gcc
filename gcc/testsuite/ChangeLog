@@ -1,3 +1,98 @@
+2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/41922
+	* gfortran.dg/equiv_constraint_5.f90: Adjust the error message.
+	* gfortran.dg/equiv_constraint_7.f90: Ditto.
+	* gfortran.dg/pr41922.f90: New test.
+
+	PR fortran/60774
+	* gfortran.dg/empty_label.f: Adjust test for new error message.
+	* gfortran.dg/empty_label.f90: Ditto.
+	* gfortran.dg/empty_label_typedecl.f90: Ditto.
+	* gfortran.dg/label_3.f90: Deleted (redundant with empty_label.f90).
+	* gfortran.dg/warnings_are_errors_1.f90: Remove invalid statement label.
+
+	PR fortran/61318
+	* gfortran.dg/pr61318.f90: New test.
+
+	PR fortran/68566
+	* gfortran.dg/pr68566.f90: new test.
+
+	PR fortran/69514
+	* gfortran.dg/pr69514_1.f90: New test.
+	* gfortran.dg/pr69514_2.f90: New test.
+
+	PR fortran/69867
+	* gfortran.dg/pr69867.f90: New test.
+
+	PR fortran/69962
+	* gfortran.dg/pr69962.f90: New test.
+
+	PR fortran/70006
+	* gfortran.dg/pr70006.f90: New test.
+
+	PR fortran/71067
+	* gfortran.dg/pr71067_1.f90: New test.
+	* gfortran.dg/pr71067_2.f90: Ditto.
+
+	PR fortran/71730
+	* gfortran.dg/pr71730.f90: New test.
+	* gfortran.dg/bounds_check_strlen_2.f90: Fix invalid code.
+	* gfortran.dg/array_constructor_27.f03: Update dg-error message.
+	* gfortran.dg/array_constructor_26.f03: Ditto.
+
+	PR fortran/71799
+	* gfortran.dg/pr71799.f90: New test.
+
+	PR fortran/71859
+	* gfortran.dg/pr71859.f90: New test.
+	* gfortran.dg/intrinsic_numeric_arg.f: Update error message.
+	* gfortran.dg/coarray_collectives_1.f90: Ditto.
+
+	PR fortran/71862
+	* gfortran.dg/pr71862.f90: New test.
+
+	PR fortran/77260
+	* gfortran.dg/pr77260_1.f90: New test.
+	* gfortran.dg/pr77260_2.f90: Ditto.
+
+	PR fortran/77351
+	* gfortran.dg/pr77351.f90: New test.
+
+	PR fortran/77372
+	gfortran.dg/pr77372.f90: New test.
+
+	PR fortran/77380
+	* gfortran.dg/pr77380.f90: New test.
+
+	PR fortran/77391
+	* gfortran.dg/pr77391.f90: New test.
+
+	PR fortran/77420
+	* gfortran.dg/pr77420_1.f90: New test.
+	* gfortran.dg/pr77420_2.f90: Ditto.
+	* gfortran.dg/pr77420_3.f90: New test. Requires ...
+	* gfortran.dg/pr77420_4.f90: this file.
+
+	PR fortran/77429 
+	* gfortran.dg/pr77429.f90: New test.
+
+	PR fortran/77460
+	* gfortran.dg/pr77460.f90: New test.
+
+	PR fortran/77506
+	* gfortran.dg/pr77506.f90: New test.
+
+	PR fortran/77507
+	* gfortran.dg/ieee/pr77507.f90: New test.
+
+	PR fortran/77612
+	* gfortran.dg/pr77612.f90: New test.
+
+	PR fortran/77694
+	* gfortran.dg/pr77694.f90: New test.
+
 2016-09-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77478
