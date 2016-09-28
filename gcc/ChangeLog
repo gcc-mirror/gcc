@@ -1,3 +1,8 @@
+2016-09-28  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/77753
+	* varasm.c (assemble_addr_to_section): Increase local buffer size.
+
 2016-09-27  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (cu_die_list): New global.
