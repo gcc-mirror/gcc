@@ -1,5 +1,11 @@
 2016-09-28  Martin Sebor  <msebor@redhat.com>
 
+	PR c/77762
+	* gimple-ssa-sprintf.c (pass_sprintf_length::handle_gimple_call):
+	Fix typos.
+
+2016-09-28  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/77683
 	* gimple-ssa-sprintf.c (format_integer): Fail gracefully when
 	length modifier is not expected.
