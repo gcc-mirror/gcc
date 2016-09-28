@@ -276,6 +276,7 @@ check in changes outside of the parts of the compiler they maintain.
 			Reviewers
 
 aarch64 port		James Greenhalgh	<james.greenhalgh@arm.com>
+arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 arm port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
 C front end		Marek Polacek		<polacek@redhat.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
