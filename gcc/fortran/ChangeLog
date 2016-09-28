@@ -1,3 +1,10 @@
+2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	backport from trunk
+	PR fortran/77694
+	* frontend-passes.c (optimize_binop_array_assignment): Check pointer
+	for NULL.
+
 2016-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

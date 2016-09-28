@@ -1,3 +1,9 @@
+2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	backport from trunk
+	PR fortran/77694
+	* gfortran.dg/pr77694.f90: New test.
+
 2016-09-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	backport from mainline
