@@ -253,7 +253,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   operator^=(directory_options& __x, directory_options __y) noexcept
   { return __x = __x ^ __y; }
 
-  typedef chrono::time_point<chrono::system_clock> file_time_type;
+  using file_time_type = std::chrono::system_clock::time_point;
 
   // operational functions
 

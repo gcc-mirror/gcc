@@ -23,7 +23,7 @@
 #define _TESTSUITE_FS_H 1
 
 #include <experimental/filesystem>
-#include <iostream>
+#include <fstream>
 #include <string>
 #include <cstdio>
 #include <stdlib.h>
@@ -40,7 +40,6 @@ namespace __gnu_test
   compare_paths(const std::experimental::filesystem::path& p1,
 		const std::experimental::filesystem::path& p2)
   {
-    // std::cout << "Comparing " << p1 << " and " << p2 << std::endl;
     PATH_CHK( p1, p2, string );
     PATH_CHK( p1, p2, empty );
     PATH_CHK( p1, p2, has_root_path );
@@ -94,6 +93,24 @@ namespace __gnu_test
 #endif
     return p;
   }
+
+  // RAII helper to remove a file on scope exit.
+  struct scoped_file
+  {
+    using path_type = std::experimental::filesystem::path;
+
+    enum adopt_file_t { adopt_file };
+
+    explicit
+    scoped_file(const path_type& p = nonexistent_path()) : path(p)
+    { std::ofstream{p.native()}; }
+
+    scoped_file(path_type p, adopt_file_t) : path(p) { }
+
+    ~scoped_file() { remove(path); }
+
+    path_type path;
+  };
 
 } // namespace __gnu_test
 #endif
