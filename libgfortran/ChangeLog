@@ -1,3 +1,9 @@
+2016-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/77707
+	io/transfer.c (next_record): Flush before calculating next_record.
+	Correctly calculate.
+
 2016-09-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/48298
