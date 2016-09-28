@@ -1,3 +1,11 @@
+2016-09-28  Joseph Myers  <joseph@codesourcery.com>
+
+	Backport from mainline
+	2016-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	PR libgcc/77519
+	* libgcc2.c (NOTRUNC): Invert settings.
+
 2016-08-31  Jakub Sejdak  <jakub.sejdak@phoesys.com>
 
 	* config.host: Add support for arm*-*-phoenix* targets.
