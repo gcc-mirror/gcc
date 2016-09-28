@@ -1,5 +1,8 @@
 2016-09-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	PR c++/77748
+	* g++.dg/pr77550.C: Avoid undefined behavior.
+
 	* gcc.dg/tree-ssa/pr68198.c: Fix dg-final.
 
 2016-09-28  Wilco Dijkstra  <wdijkstr@arm.com>
