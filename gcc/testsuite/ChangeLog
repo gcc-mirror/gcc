@@ -1,3 +1,8 @@
+2016-09-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77756
+	* gcc.target/i386/pr77756.c: New test.
+
 2016-09-28  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/77721
@@ -115,7 +120,7 @@
 2016-09-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust regex to accept
-	singular form of byte when quantity is unknown. 
+	singular form of byte when quantity is unknown.
 
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
@@ -169,7 +174,7 @@
 
 2016-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	PR fortran/77429 
+	PR fortran/77429
 	* gfortran.dg/pr77429.f90: New test.
 
 2016-09-25  Steven G. Kargl  <kargl@gcc.gnu.org>
@@ -339,38 +344,24 @@
 	tests, enabled if macro __ARM_FEATURE_FP16_VECTOR_ARITHMETIC is
 	defined.
 	* gcc.target/aarch64/advsimd-intrinsics/vmul_lane.c: Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vmul_n.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vneg.c:
-	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vmul_n.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vneg.c: Likewise.
 	* gcc.target/aarch64/advsimd-intrinsics/vpXXX.inc: Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vpadd.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vpmax.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vpmin.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrecpe.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrecps.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrnd.c:
-	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vpadd.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vpmax.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vpmin.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrecpe.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrecps.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrnd.c: Likewise.
 	* gcc.target/aarch64/advsimd-intrinsics/vrndX.inc: Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrnda.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndm.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndn.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndp.c:
-	Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndx.c:
-	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrnda.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndm.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndn.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndp.c: Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vrndx.c: Likewise.
 	* gcc.target/aarch64/advsimd-intrinsics/vrsqrte.c: Likewise.
 	* gcc.target/aarch64/advsimd-intrinsics/vrsqrts.c: Likewise.
-	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vsub.c:
-	Likewise.
+	* gcc.target/gcc.target/aarch64/advsimd-intrinsics/vsub.c: Likewise.
 
 2016-09-23  Jiong Wang  <jiong.wang@arm.com>
 	    Matthew Wahab  <matthew.wahab@arm.com>

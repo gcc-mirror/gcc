@@ -1,3 +1,8 @@
+2016-09-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77756
+	* config/i386/cpuid.h (__get_cpuid): Handle CPUID level >= 7.
+
 2016-09-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-ssa-sprintf.c: Fix comment formatting.
@@ -248,8 +253,8 @@
 2016-09-26  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/77719
-	* tree-ssa-reassoc.c (make_new_ssa_for_def): Use gimple_get_lhs to get lhs
-	instead of gimple_assign_lhs as stmt can be builtins too.
+	* tree-ssa-reassoc.c (make_new_ssa_for_def): Use gimple_get_lhs
+	to get lhs instead of gimple_assign_lhs as stmt can be builtins too.
 
 2016-09-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
@@ -314,7 +319,7 @@
 	* tsan.c (instrument_memory_accesses): Likewise.
 
 2016-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            Alexander Monakov  <amonakov@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
 
 	* regrename.c (rename_chains): Check
 	HARD_FRAME_POINTER_IS_FRAME_POINTER rather than
@@ -333,10 +338,8 @@
 2016-09-26  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/23332
-	* profile.c (instrument_values): Do not handle
-	HIST_TYPE_CONST_DELTA.
-	* tree-profile.c (gimple_gen_const_delta_profiler):
-	Remove.
+	* profile.c (instrument_values): Do not handle HIST_TYPE_CONST_DELTA.
+	* tree-profile.c (gimple_gen_const_delta_profiler): Remove.
 	* value-prof.c (dump_histogram_value): Do not handle
 	HIST_TYPE_CONST_DELTA.
 	(stream_in_histogram_value): Likewise.
@@ -360,8 +363,7 @@
 
 2016-09-26  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
-	* target.def(elf_flags_numeric): Change documentation to
-	present tense.
+	* target.def(elf_flags_numeric): Change documentation to present tense.
 	* doc/tm.texi: Regenerate.
 
 2016-09-26  Marek Polacek  <polacek@redhat.com>
@@ -906,13 +908,13 @@
 
 2016-09-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
-	* config/s390/predicates.md ("contiguous_bitmask_operand"): Adapt to new
-	interface of s390_contiguous_bitmask_p.
+	* config/s390/predicates.md ("contiguous_bitmask_operand"): Adapt to
+	new interface of s390_contiguous_bitmask_p.
 	("contiguous_bitmask_nowrap_operand"): New predicate.
-	* ("*anddi3_cc", "*anddi3_cconly", "*anddi3"): Replace NxxDq with NxxDw.
+	("*anddi3_cc", "*anddi3_cconly", "*anddi3"): Replace NxxDq with NxxDw.
 	* config/s390/constraints.md ("NxxDw", "NxxSq"): Adapt to new interface
 	of s390_contiguous_bitmask_p.
-	* ("NxxDw"): Rename NxxDq constraint to NxxDw.
+	("NxxDw"): Rename NxxDq constraint to NxxDw.
 	("NxxSw"): New constraint.
 	* config/s390/s390.md ("*andsi3_zarch"): Enable bitmask wraparound.
 	* config/s390/s390-protos.h (s390_contiguous_bitmask_p): Updated
@@ -1023,8 +1025,7 @@
 
 2016-09-23  Jakub Jelinek  <jakub@redhat.com>
 
-	* ipa-cp.c (ipcp_store_vr_results): Avoid static local
-	var zero.
+	* ipa-cp.c (ipcp_store_vr_results): Avoid static local var zero.
 	* sreal.h (sreal::min, sreal::max): Avoid static local vars,
 	construct values without normalization.
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Don't initialize
@@ -1051,8 +1052,7 @@
 	(*arm_movhi_fp16): New.
 	(*thumb2_movhi_fp16): New.
 	(*movhf_vfp_fp16): New.
-	(*movhf_vfp_neon): Disable when VFP FP16 instructions are
-	available.
+	(*movhf_vfp_neon): Disable when VFP FP16 instructions are available.
 	(*movhf_vfp): Likewise.
 	(extendhfsf2): Enable when VFP FP16 instructions are available.
 	(truncsfhf2):  Enable when VFP FP16 instructions are available.
@@ -1108,8 +1108,7 @@
 2016-09-23  Jiong Wang  <jiong.wang@arm.com>
 	    Matthew Wahab  <matthew.wahab@arm.com>
 
-	* config/arm/arm.c (output_move_vfp): Weaken assert to allow
-	HImode.
+	* config/arm/arm.c (output_move_vfp): Weaken assert to allow HImode.
 	(arm_hard_regno_mode_ok): Allow HImode values in VFP registers.
 	* config/arm/arm.md (*movhi_bytes): Disable when VFP registers are
 	available.  Also fix some white-space.
@@ -1138,8 +1137,7 @@
 
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
-	* ipa-icf.c (sem_variable::merge): Replace adress
-	with address.
+	* ipa-icf.c (sem_variable::merge): Replace adress with address.
 
 2016-09-23  Matthew Wahab  <matthew.wahab@arm.com>
 
@@ -1167,8 +1165,7 @@
 
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
-	* doc/extend.texi: Remove fused-madd from i386 target
-	options.
+	* doc/extend.texi: Remove fused-madd from i386 target options.
 
 2016-09-23  Martin Liska  <mliska@suse.cz>
 
@@ -1260,8 +1257,7 @@
 
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
-	* emit-rtl.c (next_active_insn): Change argument type to
-	rtx_insn *.
+	* emit-rtl.c (next_active_insn): Change argument type to rtx_insn *.
 	(prev_active_insn): Likewise.
 	(active_insn_p): Likewise.
 	* rtl.h: Adjust prototypes.
@@ -1297,8 +1293,7 @@
 
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
-	* emit-rtl.c (next_nondebug_insn): Change argument type to
-	rtx_insn *.
+	* emit-rtl.c (next_nondebug_insn): Change argument type to rtx_insn *.
 	(prev_nondebug_insn): Likewise.
 	* loop-doloop.c (doloop_condition_get): Likewise.
 	* rtl.h: Adjust prototype.
@@ -1306,8 +1301,7 @@
 
 2016-09-22  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
-	* emit-rtl.c (next_nonnote_insn): Change argument type to
-	rtx_insn *.
+	* emit-rtl.c (next_nonnote_insn): Change argument type to rtx_insn *.
 	(prev_nonnote_insn): Likewise.
 	* jump.c (reversed_comparison_code_parts): Likewise.
 	(reversed_comparison): Likewise.
@@ -1343,8 +1337,7 @@
 	* config/m32r/m32r.c (m32r_expand_epilogue): Likewise.
 	* config/nds32/nds32-protos.h (nds32_target_alignment): Likewise.
 	* config/nds32/nds32.c (nds32_target_alignment): Likewise.
-	* config/rl78/rl78.c (rl78_alloc_physical_registers_op2):
-	* Likewise.
+	* config/rl78/rl78.c (rl78_alloc_physical_registers_op2): Likewise.
 	(rl78_alloc_physical_registers_cmp): Likewise.
 	(rl78_alloc_physical_registers_umul): Likewise.
 	(rl78_calculate_death_notes): Likewise.
@@ -1527,7 +1520,7 @@
 	(handle_pure_call): Likewise.
 
 2016-09-21  Richard Biener  <rguenther@suse.de>
-	Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/77621
 	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Split
@@ -1569,8 +1562,7 @@
 
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
-	 * tree-vrp.c (get_value_range): Teach PARM_DECL to use ipa-vrp
-	 results.
+	* tree-vrp.c (get_value_range): Teach PARM_DECL to use ipa-vrp results.
 
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
@@ -1632,8 +1624,7 @@
 	(evrp_dom_walker::push_value_range): Likewise.
 	(evrp_dom_walker::pop_value_range): Likewise.
 	(execute_early_vrp): Likewise.
-	(execute_vrp): Call vrp_initialize_lattice and
-	vrp_free_lattice.
+	(execute_vrp): Call vrp_initialize_lattice and vrp_free_lattice.
 	(make_pass_early_vrp): New.
 
 2016-09-20  Uros Bizjak  <ubizjak@gmail.com>
