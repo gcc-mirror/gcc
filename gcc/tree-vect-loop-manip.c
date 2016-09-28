@@ -2301,6 +2301,9 @@ create_intersect_range_checks_index (loop_vec_info loop_vinfo, tree *cond_expr,
   if (!tree_fits_uhwi_p (dr_a.seg_len) || !tree_fits_uhwi_p (dr_b.seg_len))
     return false;
 
+  if (!tree_fits_shwi_p (DR_STEP (dr_a.dr)))
+    return false;
+
   if (!operand_equal_p (DR_BASE_OBJECT (dr_a.dr), DR_BASE_OBJECT (dr_b.dr), 0))
     return false;
 
@@ -2310,9 +2313,8 @@ create_intersect_range_checks_index (loop_vec_info loop_vinfo, tree *cond_expr,
   gcc_assert (TREE_CODE (DR_STEP (dr_a.dr)) == INTEGER_CST);
 
   bool neg_step = tree_int_cst_compare (DR_STEP (dr_a.dr), size_zero_node) < 0;
-  unsigned HOST_WIDE_INT abs_step = tree_to_uhwi (DR_STEP (dr_a.dr));
-  if (neg_step)
-    abs_step = -abs_step;
+  unsigned HOST_WIDE_INT abs_step
+    = absu_hwi (tree_to_shwi (DR_STEP (dr_a.dr)));
 
   unsigned HOST_WIDE_INT seg_len1 = tree_to_uhwi (dr_a.seg_len);
   unsigned HOST_WIDE_INT seg_len2 = tree_to_uhwi (dr_b.seg_len);
@@ -2331,7 +2333,7 @@ create_intersect_range_checks_index (loop_vec_info loop_vinfo, tree *cond_expr,
     {
       tree access1 = DR_ACCESS_FN (dr_a.dr, i);
       tree access2 = DR_ACCESS_FN (dr_b.dr, i);
-      /* Two index must be the same if they are not scev, or not scev wrto
+      /* Two indices must be the same if they are not scev, or not scev wrto
 	 current loop being vecorized.  */
       if (TREE_CODE (access1) != POLYNOMIAL_CHREC
 	  || TREE_CODE (access2) != POLYNOMIAL_CHREC
@@ -2343,7 +2345,7 @@ create_intersect_range_checks_index (loop_vec_info loop_vinfo, tree *cond_expr,
 
 	  return false;
 	}
-      /* Two index must have the same step.  */
+      /* The two indices must have the same step.  */
       if (!operand_equal_p (CHREC_RIGHT (access1), CHREC_RIGHT (access2), 0))
 	return false;
 
