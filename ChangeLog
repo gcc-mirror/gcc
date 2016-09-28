@@ -1,3 +1,7 @@
+2016-09-28  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* MAINTAINERS (Reviewers): Add myself.
+
 2016-09-26  Anton Kolesov  <Anton.Kolesov@synopsys.com>
 
 	* configure.ac: Disable "sim" directory for arc*-*-*.
