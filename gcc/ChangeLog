@@ -1,3 +1,12 @@
+2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (cu_die_list): New global.
+	(dwarf2out_finish): Walk cu_die_list instead of limbo DIEs.  Add
+	main_comp_unit_die to cu_die_list if we created it.
+	Move break_out_includes ...
+	(dwarf2out_early_finish): ... here.  Push created CU DIEs onto
+	the cu_die_list.
+
 2016-09-28  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (struct die_struct): Add removed flag.
