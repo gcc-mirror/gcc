@@ -244,6 +244,16 @@ __get_cpuid (unsigned int __level,
   if (__get_cpuid_max (__ext, 0) < __level)
     return 0;
 
-  __cpuid (__level, *__eax, *__ebx, *__ecx, *__edx);
+  if (__ext)
+    __cpuid (__level, *__eax, *__ebx, *__ecx, *__edx);
+  else
+    {
+      if (__level >= 13)
+	__cpuid_count (__level, 1, *__eax, *__ebx, *__ecx, *__edx);
+      else if (__level >= 7)
+	__cpuid_count (__level, 0, *__eax, *__ebx, *__ecx, *__edx);
+      else
+	__cpuid (__level, *__eax, *__ebx, *__ecx, *__edx);
+    }
   return 1;
 }
