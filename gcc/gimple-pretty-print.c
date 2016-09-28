@@ -649,26 +649,21 @@ dump_gimple_call_args (pretty_printer *buffer, gcall *gs, int flags)
 	    {
 	      i++;
 	      pp_string (buffer, enums[v]);
-	      if (i < gimple_call_num_args (gs))
-		pp_string (buffer, ", ");
 	    }
 	}
     }
 
   for (; i < gimple_call_num_args (gs); i++)
     {
-      dump_generic_node (buffer, gimple_call_arg (gs, i), 0, flags, false);
-      if (i < gimple_call_num_args (gs) - 1)
+      if (i)
 	pp_string (buffer, ", ");
+      dump_generic_node (buffer, gimple_call_arg (gs, i), 0, flags, false);
     }
 
   if (gimple_call_va_arg_pack_p (gs))
     {
-      if (gimple_call_num_args (gs) > 0)
-        {
-          pp_comma (buffer);
-          pp_space (buffer);
-        }
+      if (i)
+	pp_string (buffer, ", ");
 
       pp_string (buffer, "__builtin_va_arg_pack ()");
     }
