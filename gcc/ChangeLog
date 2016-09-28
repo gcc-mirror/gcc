@@ -1,3 +1,9 @@
+2016-09-27  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	PR tree-optimization/77724
+	* tree-vect-loop-manip.c (create_intersect_range_checks_index):
+	Add tree_fits_shwi_p check.
+
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* auto-inc-dec.c (try_merge): Remove break after return.
