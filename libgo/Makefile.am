@@ -1291,6 +1291,7 @@ runtime.inc: s-runtime-inc; @true
 s-runtime-inc: runtime-go.lo
 	$(SHELL) $(srcdir)/mvifdiff.sh runtime.inc.tmp runtime.inc
 	$(STAMP) $@
+runtime_check_GOCFLAGS = -fgo-compiling-runtime
 runtime/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: runtime/check
