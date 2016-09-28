@@ -1249,6 +1249,7 @@ CHECK_DEPS = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
 @LIBGO_IS_SOLARIS_FALSE@matchargs_os = 
 extra_go_files_runtime = runtime_sysinfo.go
 runtime_go_lo_GOCFLAGS = -fgo-c-header=runtime.inc.tmp -fgo-compiling-runtime
+runtime_check_GOCFLAGS = -fgo-compiling-runtime
 @LIBGO_IS_BSD_TRUE@golang_org_x_net_route_lo = \
 @LIBGO_IS_BSD_TRUE@	golang_org/x/net/route/route.lo
 
