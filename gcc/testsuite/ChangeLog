@@ -1,3 +1,12 @@
+2016-09-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	backport from mainline
+	2016-09-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+		    Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/77411
+	* c-c++-common/ubsan/object-size-9.c: Call __builtin_exit in C++.
+
 2016-09-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77478

@@ -93,5 +93,9 @@ main (void)
 #endif
   f4 (12);
   f5 (12);
+#ifdef __cplusplus
+  /* Stack may be smashed by f2/f3 above.  */
+  __builtin_exit (0);
+#endif
   return 0;
 }
