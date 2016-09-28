@@ -1556,7 +1556,9 @@ assemble_addr_to_section (rtx symbol, section *sec)
 section *
 get_cdtor_priority_section (int priority, bool constructor_p)
 {
-  char buf[16];
+  /* Buffer conservatively large enough for the full range of a 32-bit
+     int plus the text below.  */
+  char buf[18];
 
   /* ??? This only works reliably with the GNU linker.  */
   sprintf (buf, "%s.%.5u",
