@@ -1866,25 +1866,25 @@ NAME (TYPE x, int m)
 # define CTYPE	SCtype
 # define MODE	sc
 # define CEXT	__LIBGCC_SF_FUNC_EXT__
-# define NOTRUNC __LIBGCC_SF_EXCESS_PRECISION__
+# define NOTRUNC (!__LIBGCC_SF_EXCESS_PRECISION__)
 #elif defined(L_muldc3) || defined(L_divdc3)
 # define MTYPE	DFtype
 # define CTYPE	DCtype
 # define MODE	dc
 # define CEXT	__LIBGCC_DF_FUNC_EXT__
-# define NOTRUNC __LIBGCC_DF_EXCESS_PRECISION__
+# define NOTRUNC (!__LIBGCC_DF_EXCESS_PRECISION__)
 #elif defined(L_mulxc3) || defined(L_divxc3)
 # define MTYPE	XFtype
 # define CTYPE	XCtype
 # define MODE	xc
 # define CEXT	__LIBGCC_XF_FUNC_EXT__
-# define NOTRUNC __LIBGCC_XF_EXCESS_PRECISION__
+# define NOTRUNC (!__LIBGCC_XF_EXCESS_PRECISION__)
 #elif defined(L_multc3) || defined(L_divtc3)
 # define MTYPE	TFtype
 # define CTYPE	TCtype
 # define MODE	tc
 # define CEXT	__LIBGCC_TF_FUNC_EXT__
-# define NOTRUNC __LIBGCC_TF_EXCESS_PRECISION__
+# define NOTRUNC (!__LIBGCC_TF_EXCESS_PRECISION__)
 #else
 # error
 #endif
