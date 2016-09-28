@@ -2558,8 +2558,8 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
       // Signature:
       //   __builtin___vsnprintf_chk (dst, size, ost, objsize, format, va)
       idx_dstsize = 1;
-      idx_objsize = 2;
-      idx_format = 3;
+      idx_objsize = 3;
+      idx_format = 4;
       info.argidx = -1;
       info.bounded = true;
       break;

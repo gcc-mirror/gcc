@@ -1,5 +1,13 @@
 2016-09-28  Martin Sebor  <msebor@redhat.com>
 
+	PR c/77762
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c (test_vsnprintf_chk_s):
+	Call __builtin___vsnprintf_chk, not __builtin___snprintf_chk.
+	(test_sprintf_p_const): Adjust line numbers to avoid failures
+	introduced in r240503.
+
+2016-09-28  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/77683
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Add test cases.
 
