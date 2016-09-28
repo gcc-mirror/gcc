@@ -1,3 +1,8 @@
+2016-09-28  Nathan Sidwell  <nathan@acm.org>
+
+	* gimple-pretty-print.c (dump_gimple_call_args): Simplify "' "
+	printing.
+
 2016-09-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR tree-optimization/61056
