@@ -1,3 +1,20 @@
+2016-09-28  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (struct die_struct): Add removed flag.
+	(lookup_type_die): If the DIE is marked as removed, clear
+	TYPE_SYMTAB_DIE and return NULL.
+	(lookup_decl_die): If the DIE is marked as removed, remove it
+	from the hash and return NULL.
+	(mark_removed): New helper.
+	(prune_unused_types_prune): Call it for removed DIEs.
+	(gen_subprogram_die): Move the premark_used_types call to after
+	DIEs for the functions scopes are generated.
+	(process_scope_var): Do not re-create pruned types or type decls.
+	Make sure to also re-parent type decls.
+	(dwarf2out_finish): Move unused type pruning and debug_types
+	handling ...
+	(dwarf2out_early_finish): ... here.
+
 2016-09-29  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-c.c: New file.
