@@ -1,5 +1,7 @@
 2016-09-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/chrono (system_clock): Fix typo in comment.
+
 	* include/experimental/bits/fs_fwd.h (file_time_type): Simplify
 	definition.
 	* src/filesystem/ops.cc (file_time): Take error_code parameter and
