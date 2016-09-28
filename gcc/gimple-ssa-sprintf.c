@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The pass handles all forms standard sprintf format directives,
    including character, integer, floating point, pointer, and strings,
-   with  the standard C flags, widths, and precisions.  For integers
+   with the standard C flags, widths, and precisions.  For integers
    and strings it computes the length of output itself.  For floating
    point it uses MPFR to fornmat known constants with up and down
    rounding and uses the resulting range of output lengths.  For
@@ -464,7 +464,7 @@ struct conversion_spec
 
   /* Format conversion function that given a conversion specification
      and an argument returns the formatting result.  */
-  fmtresult  (*fmtfunc) (const conversion_spec &, tree);
+  fmtresult (*fmtfunc) (const conversion_spec &, tree);
 
   /* Return True when a the format flag CHR has been used.  */
   bool get_flag (char chr) const
@@ -1041,10 +1041,10 @@ format_integer (const conversion_spec &spec, tree arg)
 	{
 	  /* The argument here may be the result of promoting the actual
 	     argument to int.  Try to determine the type of the actual
-	     argument before promotion and  narrow down its range that
+	     argument before promotion and narrow down its range that
 	     way.  */
 	  gimple *def = SSA_NAME_DEF_STMT (arg);
-	  if (gimple_code (def) == GIMPLE_ASSIGN)
+	  if (is_gimple_assign (def))
 	    {
 	      tree_code code = gimple_assign_rhs_code (def);
 	      if (code == NOP_EXPR)
@@ -2480,18 +2480,10 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
   call_info info = call_info ();
 
   info.callstmt = gsi_stmt (gsi);
-  info.func = gimple_call_fn (info.callstmt);
-  if (!info.func)
+  if (!gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
     return;
 
-  if (TREE_CODE (info.func) == ADDR_EXPR)
-    info.func = TREE_OPERAND (info.func, 0);
-
-  if (TREE_CODE (info.func) != FUNCTION_DECL
-      || !DECL_BUILT_IN(info.func)
-      || DECL_BUILT_IN_CLASS (info.func) != BUILT_IN_NORMAL)
-    return;
-
+  info.func = gimple_call_fndecl (info.callstmt);
   info.fncode = DECL_FUNCTION_CODE (info.func);
 
   /* The size of the destination as in snprintf(dest, size, ...).  */
@@ -2518,6 +2510,14 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
       info.argidx = 2;
       break;
 
+    case BUILT_IN_SPRINTF_CHK:
+      // Signature:
+      //   __builtin___sprintf_chk (dst, ost, objsize, format, ...)
+      idx_objsize = 2;
+      idx_format = 3;
+      info.argidx = 4;
+      break;
+
     case BUILT_IN_SNPRINTF:
       // Signature:
       //   __builtin_snprintf (dst, size, format, ...)
@@ -2529,20 +2529,12 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
 
     case BUILT_IN_SNPRINTF_CHK:
       // Signature:
-      //   __builtin___sprintf_chk (dst, size, ost, objsize, format, ...)
+      //   __builtin___snprintf_chk (dst, size, ost, objsize, format, ...)
       idx_dstsize = 1;
       idx_objsize = 3;
       idx_format = 4;
       info.argidx = 5;
       info.bounded = true;
-      break;
-
-    case BUILT_IN_SPRINTF_CHK:
-      // Signature:
-      //   __builtin___sprintf_chk (dst, ost, objsize, format, ...)
-      idx_objsize = 2;
-      idx_format = 3;
-      info.argidx = 4;
       break;
 
     case BUILT_IN_VSNPRINTF:
@@ -2587,7 +2579,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
 
   if (idx_dstsize == HOST_WIDE_INT_M1U)
     {
-      // For non-bounded functions like sprintf, to to determine
+      // For non-bounded functions like sprintf, to determine
       // the size of the destination from the object or pointer
       // passed to it as the first argument.
       dstsize = get_destination_size (gimple_call_arg (info.callstmt, 0));
@@ -2698,7 +2690,7 @@ pass_sprintf_length::execute (function *fun)
 	  /* Iterate over statements, looking for function calls.  */
 	  gimple *stmt = gsi_stmt (si);
 
-	  if (gimple_code (stmt) == GIMPLE_CALL)
+	  if (is_gimple_call (stmt))
 	    handle_gimple_call (si);
 	}
     }

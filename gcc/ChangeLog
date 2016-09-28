@@ -1,3 +1,12 @@
+2016-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-sprintf.c: Fix comment formatting.
+	(format_integer): Use is_gimple_assign.
+	(pass_sprintf_length::handle_gimple_call): Use gimple_call_builtin_p
+	and gimple_call_fndecl.  Reorder case BUILT_IN_SPRINTF_CHK.  Fix up
+	BUILT_IN_SNPRINTF_CHK comment.  Replace "to to" with "to" in comment.
+	(pass_sprintf_length::execute): Use is_gimple_call.
+
 2016-09-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gimple-fold.c (gimple_fold_builtin): After failing to fold
