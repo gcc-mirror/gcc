@@ -1538,6 +1538,12 @@
 #endif
 
 
+/* Define if your PowerPC linker has .gnu.attributes long double support. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE
+#endif
+
+
 /* Define if your linker supports --push-state/--pop-state */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_PUSHPOPSTATE_SUPPORT

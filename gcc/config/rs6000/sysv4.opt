@@ -155,3 +155,7 @@ Generate code to use a non-exec PLT and GOT.
 mbss-plt
 Target Report RejectNegative Var(secure_plt, 0) Save
 Generate code for old exec BSS PLT.
+
+mgnu-attribute
+Target Report Var(rs6000_gnu_attr) Init(1) Save
+Emit .gnu_attribute tags.

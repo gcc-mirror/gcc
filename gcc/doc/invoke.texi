@@ -1017,6 +1017,7 @@ See RS/6000 and PowerPC Options.
 -mupper-regs-di -mno-upper-regs-di @gol
 -mupper-regs -mno-upper-regs @gol
 -mfloat128 -mno-float128 -mfloat128-hardware -mno-float128-hardware @gol
+-mgnu-attribute -mno-gnu-attribute @gol
 -mlra -mno-lra}
 
 @emph{RX Options}
@@ -21298,6 +21299,14 @@ Change the current ABI to use the ELFv2 ABI.
 This is the default ABI for little-endian PowerPC 64-bit Linux.
 Overriding the default ABI requires special system support and is
 likely to fail in spectacular ways.
+
+@item -mgnu-attribute
+@itemx -mno-gnu-attribute
+@opindex mgnu-attribute
+@opindex mno-gnu-attribute
+Emit .gnu_attribute assembly directives to set tag/value pairs in a
+.gnu.attributes section that specify ABI variations in function
+parameters or return values.
 
 @item -mprototype
 @itemx -mno-prototype

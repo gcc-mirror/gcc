@@ -1,3 +1,23 @@
+2016-09-29  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/sysv4.opt (mgnu-attribute): New option.
+	* doc/invoke.texi: Document it.
+	* config/rs6000/rs6000.c (HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE): Define.
+	(rs6000_passes_float): Comment.
+	(rs6000_passes_long_double): New static var.
+	(call_ABI_of_interest): Return false unless rs6000_gnu_attr is set.
+	(init_cumulative_args): Set up to emit fp .gnu_attribute for
+	ELF 64-bit ABIs as well as 32-bit ELF.  Correct rs6000_passes_float
+	to include fp values returned in vectors.
+	Set rs6000_passes_long_double.
+	(rs6000_function_arg_advance_1): Likewise for function args.
+	(rs6000_elf_file_end): Emit fp .gnu_attribute for ELF 64-bit ABIs,
+	and SPE.  Emit long double tag value too.
+	(rs6000_opt_vars): Add gnu-attr.
+	* configure.ac (HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE): New ppc32 test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2016-09-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-ssa-sprintf.c (pass_sprintf_length::gate): Use x > 0 instead
