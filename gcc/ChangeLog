@@ -1,3 +1,13 @@
+2016-09-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Alan Modra  <amodra@gmail.com>
+
+	Backport from mainline
+	2016-07-01  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/71709
+	* ira-lives.c (find_call_crossed_cheap_reg): Exit loop on arg reg
+	being set, not referenced.
+
 2016-09-27  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backport from mainline
