@@ -1,3 +1,10 @@
+2016-09-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/61056
+	* gimple-fold.c (gimple_fold_builtin_strchr):
+	New function to optimize strchr (s, 0) to strlen.
+	(gimple_fold_builtin): Add BUILT_IN_STRCHR case.
+
 2016-09-27  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
 	PR tree-optimization/77724

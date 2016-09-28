@@ -1,3 +1,14 @@
+2016-09-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/strlenopt-20.c: Update test.
+	* gcc.dg/strlenopt-21.c: Likewise.
+	* gcc.dg/strlenopt-22.c: Likewise.
+	* gcc.dg/strlenopt-22g.c: Likewise.
+	* gcc.dg/strlenopt-26.c: Likewise.
+	* gcc.dg/strlenopt-5.c: Likewise.
+	* gcc.dg/strlenopt-7.c: Likewise.
+	* gcc.dg/strlenopt-9.c: Likewise.
+
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/feat-cxx1z.C: Add __cpp_capture_star_this test.

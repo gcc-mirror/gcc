@@ -1457,6 +1457,55 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* Simplify strchr (str, 0) into str + strlen (str).
+   In general strlen is significantly faster than strchr
+   due to being a simpler operation.  */
+static bool
+gimple_fold_builtin_strchr (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree str = gimple_call_arg (stmt, 0);
+  tree c = gimple_call_arg (stmt, 1);
+  location_t loc = gimple_location (stmt);
+
+  if (optimize_function_for_size_p (cfun))
+    return false;
+
+  if (!integer_zerop (c) || !gimple_call_lhs (stmt))
+    return false;
+
+  tree len;
+  tree strlen_fn = builtin_decl_implicit (BUILT_IN_STRLEN);
+
+  if (!strlen_fn)
+    return false;
+
+  /* Create newstr = strlen (str).  */
+  gimple_seq stmts = NULL;
+  gimple *new_stmt = gimple_build_call (strlen_fn, 1, str);
+  gimple_set_location (new_stmt, loc);
+  if (gimple_in_ssa_p (cfun))
+    len = make_ssa_name (size_type_node);
+  else
+    len = create_tmp_reg (size_type_node);
+  gimple_call_set_lhs (new_stmt, len);
+  gimple_seq_add_stmt_without_update (&stmts, new_stmt);
+
+  /* Create (str p+ strlen (str)).  */
+  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				  POINTER_PLUS_EXPR, str, len);
+  gimple_seq_add_stmt_without_update (&stmts, new_stmt);
+  gsi_replace_with_seq_vops (gsi, stmts);
+  /* gsi now points at the assignment to the lhs, get a
+     stmt iterator to the strlen.
+     ???  We can't use gsi_for_stmt as that doesn't work when the
+     CFG isn't built yet.  */
+  gimple_stmt_iterator gsi2 = *gsi;
+  gsi_prev (&gsi2);
+  fold_stmt (&gsi2);
+  return true;
+}
+
 /* Simplify a call to the strcat builtin.  DST and SRC are the arguments
    to the call.
 
@@ -2898,6 +2947,8 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					 gimple_call_arg (stmt, 1));
     case BUILT_IN_STRNCAT:
       return gimple_fold_builtin_strncat (gsi);
+    case BUILT_IN_STRCHR:
+      return gimple_fold_builtin_strchr (gsi);
     case BUILT_IN_FPUTS:
       return gimple_fold_builtin_fputs (gsi, gimple_call_arg (stmt, 0),
 					gimple_call_arg (stmt, 1), false);
