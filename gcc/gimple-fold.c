@@ -2948,7 +2948,10 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_STRNCAT:
       return gimple_fold_builtin_strncat (gsi);
     case BUILT_IN_STRCHR:
-      return gimple_fold_builtin_strchr (gsi);
+      if (gimple_fold_builtin_strchr (gsi))
+	return true;
+      /* Perform additional folding in builtin.c.  */
+      break;
     case BUILT_IN_FPUTS:
       return gimple_fold_builtin_fputs (gsi, gimple_call_arg (stmt, 0),
 					gimple_call_arg (stmt, 1), false);
