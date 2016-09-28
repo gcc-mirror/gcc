@@ -1,6 +1,7 @@
 // { dg-do run }
 // { dg-options "-std=c++14 -O3" }
 
+#define enum enum __attribute((mode(SI)))
 namespace std {
 typedef int size_t;
 inline namespace __cxx11 {}
@@ -229,15 +230,17 @@ template <typename, typename, typename> struct basic_string {
   struct _Alloc_hider {
     _Alloc_hider(pointer, allocator<char> && = allocator<char>());
   } _M_dataplus;
-  size_type _M_string_length;
+  size_type _M_string_length = 0;
   enum { _S_local_capacity = 15 } _M_local_buf[_S_local_capacity];
-  pointer _M_local_data();
-  void _M_set_length(size_type);
-  basic_string() : _M_dataplus(_M_local_data()) { _M_set_length(0); }
+  basic_string() : _M_dataplus(0) {}
   basic_string(const basic_string &) : _M_dataplus(0) {}
   size_type size() { return _M_string_length; }
   char *data() const {}
 };
+//template<> basic_string<char, std::char_traits<char>, std::allocator<char>>::
+//_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&) {}
+extern "C" void
+_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC1EPcOS3_ (...) {}
 }
 template <typename _CharT>
 int operator==(basic_string<_CharT> &p1, const basic_string<_CharT> &p2) {
