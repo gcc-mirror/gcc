@@ -130,8 +130,8 @@ pass_sprintf_length::gate (function *)
      not optimizing and the pass is being invoked early, or when
      optimizing and the pass is being invoked during optimization
      (i.e., "late").  */
-  return ((0 < warn_format_length || flag_printf_return_value)
-	  && (0 < optimize) == fold_return_value);
+  return ((warn_format_length > 0 || flag_printf_return_value)
+	  && (optimize > 0) == fold_return_value);
 }
 
 /* The result of a call to a formatted function.  */
@@ -1205,7 +1205,7 @@ format_floating (const conversion_spec &spec, int width, int prec)
     case 'a':
       {
 	/* The minimum output is "0x.p+0".  */
-	res.range.min = 6 + (0 < prec ? prec : 0);
+	res.range.min = 6 + (prec > 0 ? prec : 0);
 
 	/* Compute the maximum just once.  */
 	static const int a_max[] = {
@@ -1273,7 +1273,7 @@ format_floating (const conversion_spec &spec, int width, int prec)
       }
     }
 
-  if (0 < width)
+  if (width > 0)
     {
       if (res.range.min < (unsigned)width)
 	res.range.min = width;
@@ -1464,7 +1464,7 @@ get_string_length (tree str)
 static fmtresult
 format_string (const conversion_spec &spec, tree arg)
 {
-  unsigned width = spec.have_width && 0 < spec.width ? spec.width : 0;
+  unsigned width = spec.have_width && spec.width > 0 ? spec.width : 0;
   int prec = spec.have_precision ? spec.precision : -1;
 
   if (spec.star_width)
@@ -1786,7 +1786,7 @@ format_directive (const pass_sprintf_length::call_info &info,
     }
   else
     {
-      if (!res->warned && 0 < fmtres.range.min && navail < fmtres.range.min)
+      if (!res->warned && fmtres.range.min > 0 && navail < fmtres.range.min)
 	{
 	  const char* fmtstr
 	    = (info.bounded
@@ -2362,7 +2362,7 @@ get_destination_size (tree dest)
      a member array as opposed to the whole enclosing object), otherwise
      use type-zero object size to determine the size of the enclosing
      object (the function fails without optimization in this type).  */
-  int ost = 0 < optimize;
+  int ost = optimize > 0;
   unsigned HOST_WIDE_INT size;
   if (compute_builtin_object_size (dest, ost, &size))
     return size;
@@ -2671,7 +2671,8 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
      attempt to substitute the computed result for the return value of
      the call.  Avoid this optimization when -frounding-math is in effect
      and the format string contains a floating point directive.  */
-  if (0 < optimize && flag_printf_return_value
+  if (optimize > 0
+      && flag_printf_return_value
       && (!flag_rounding_math || !res.floating))
     try_substitute_return_value (gsi, info, res);
 }
