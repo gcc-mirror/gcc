@@ -288,16 +288,24 @@ namespace
   }
 
   inline fs::file_time_type
-  file_time(const stat_type& st) noexcept
+  file_time(const stat_type& st, std::error_code& ec) noexcept
   {
     using namespace std::chrono;
-    return fs::file_time_type{
 #ifdef _GLIBCXX_USE_ST_MTIM
-	seconds{st.st_mtim.tv_sec} + nanoseconds{st.st_mtim.tv_nsec}
+    time_t s = st.st_mtim.tv_sec;
+    nanoseconds ns{st.st_mtim.tv_nsec};
 #else
-	seconds{st.st_mtime}
+    time_t s = st.st_mtime;
+    nanoseconds ns{};
 #endif
-    };
+
+    if (s >= (nanoseconds::max().count() / 1e9))
+      {
+	ec = std::make_error_code(std::errc::value_too_large); // EOVERFLOW
+	return fs::file_time_type::min();
+      }
+    ec.clear();
+    return fs::file_time_type{seconds{s} + ns};
   }
 
   // Returns true if the file descriptor was successfully closed,
@@ -373,11 +381,11 @@ namespace
 	  }
 	else if (is_set(option, opts::update_existing))
 	  {
-	    if (file_time(*from_st) <= file_time(*to_st))
-	      {
-		ec.clear();
-		return false;
-	      }
+	    const auto from_mtime = file_time(*from_st, ec);
+	    if (ec)
+	      return false;
+	    if ((from_mtime <= file_time(*to_st, ec)) || ec)
+	      return false;
 	  }
 	else if (!is_set(option, opts::overwrite_existing))
 	  {
@@ -1036,7 +1044,7 @@ fs::last_write_time(const path& p)
 fs::file_time_type
 fs::last_write_time(const path& p, error_code& ec) noexcept
 {
-  return do_stat(p, ec, [](const auto& st) { return file_time(st); },
+  return do_stat(p, ec, [&ec](const auto& st) { return file_time(st, ec); },
 		 file_time_type::min());
 }
 

@@ -1,5 +1,14 @@
 2016-09-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_fwd.h (file_time_type): Simplify
+	definition.
+	* src/filesystem/ops.cc (file_time): Take error_code parameter and
+	check for overflow.
+	(do_copy_file, last_write_time): Pass error_code in file_time calls.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	New.
+	* testsuite/util/testsuite_fs.h (scoped_file): Define RAII helper.
+
 	PR libstdc++/77686
 	* include/std/functional (_Any_data): Add may_alias attribute.
 
