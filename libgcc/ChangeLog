@@ -1,3 +1,8 @@
+2015-09-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cpuinfo.c (__get_cpuid_output): Remove.
+	(__cpu_indicator_init): Call __get_cpuid, not __get_cpuid_output.
+
 2016-09-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/7970
