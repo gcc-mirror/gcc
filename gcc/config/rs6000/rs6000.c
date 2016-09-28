@@ -183,8 +183,16 @@ unsigned rs6000_pmode;
 unsigned rs6000_pointer_size;
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
-/* Flag whether floating point values have been passed/returned.  */
+# ifndef HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE
+# define HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE 0
+# endif
+/* Flag whether floating point values have been passed/returned.
+   Note that this doesn't say whether fprs are used, since the
+   Tag_GNU_Power_ABI_FP .gnu.attributes value this flag controls
+   should be set for soft-float values passed in gprs and ieee128
+   values passed in vsx registers.  */
 static bool rs6000_passes_float;
+static bool rs6000_passes_long_double;
 /* Flag whether vector values have been passed/returned.  */
 static bool rs6000_passes_vector;
 /* Flag whether small (<= 8 byte) structures have been returned.  */
@@ -10920,7 +10928,7 @@ rs6000_return_in_msb (const_tree valtype)
 static bool
 call_ABI_of_interest (tree fndecl)
 {
-  if (symtab->state == EXPANSION)
+  if (rs6000_gnu_attr && symtab->state == EXPANSION)
     {
       struct cgraph_node *c_node;
 
@@ -10997,7 +11005,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
     }
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
-  if (DEFAULT_ABI == ABI_V4)
+  if (TARGET_ELF && (TARGET_64BIT || DEFAULT_ABI == ABI_V4))
     {
       cum->escapes = call_ABI_of_interest (fndecl);
       if (cum->escapes)
@@ -11025,10 +11033,19 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 		      <= 8))
 		rs6000_returns_struct = true;
 	    }
-	  if (SCALAR_FLOAT_MODE_NOT_VECTOR_P (return_mode))
-	    rs6000_passes_float = true;
-	  else if (ALTIVEC_OR_VSX_VECTOR_MODE (return_mode)
-		   || SPE_VECTOR_MODE (return_mode))
+	  if (SCALAR_FLOAT_MODE_P (return_mode))
+	    {
+	      rs6000_passes_float = true;
+	      if ((HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE || TARGET_64BIT)
+		  && (FLOAT128_IBM_P (return_mode)
+		      || FLOAT128_IEEE_P (return_mode)
+		      || (return_type != NULL
+			  && (TYPE_MAIN_VARIANT (return_type)
+			      == long_double_type_node))))
+		rs6000_passes_long_double = true;
+	    }
+	  if (ALTIVEC_OR_VSX_VECTOR_MODE (return_mode)
+	      || SPE_VECTOR_MODE (return_mode))
 	    rs6000_passes_vector = true;
 	}
     }
@@ -11475,16 +11492,23 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
     cum->nargs_prototype--;
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
-  if (DEFAULT_ABI == ABI_V4
+  if (TARGET_ELF && (TARGET_64BIT || DEFAULT_ABI == ABI_V4)
       && cum->escapes)
     {
-      if (SCALAR_FLOAT_MODE_NOT_VECTOR_P (mode))
-	rs6000_passes_float = true;
-      else if (named && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
-	rs6000_passes_vector = true;
-      else if (SPE_VECTOR_MODE (mode)
-	       && !cum->stdarg
-	       && cum->sysv_gregno <= GP_ARG_MAX_REG)
+      if (SCALAR_FLOAT_MODE_P (mode))
+	{
+	  rs6000_passes_float = true;
+	  if ((HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE || TARGET_64BIT)
+	      && (FLOAT128_IBM_P (mode)
+		  || FLOAT128_IEEE_P (mode)
+		  || (type != NULL
+		      && TYPE_MAIN_VARIANT (type) == long_double_type_node)))
+	    rs6000_passes_long_double = true;
+	}
+      if ((named && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
+	  || (SPE_VECTOR_MODE (mode)
+	      && !cum->stdarg
+	      && cum->sysv_gregno <= GP_ARG_MAX_REG))
 	rs6000_passes_vector = true;
     }
 #endif
@@ -34292,13 +34316,33 @@ static void
 rs6000_elf_file_end (void)
 {
 #ifdef HAVE_AS_GNU_ATTRIBUTE
+  /* ??? The value emitted depends on options active at file end.
+     Assume anyone using #pragma or attributes that might change
+     options knows what they are doing.  */
+  if ((TARGET_64BIT || DEFAULT_ABI == ABI_V4)
+      && rs6000_passes_float)
+    {
+      int fp;
+
+      if (TARGET_DF_FPR | TARGET_DF_SPE)
+	fp = 1;
+      else if (TARGET_SF_FPR | TARGET_SF_SPE)
+	fp = 3;
+      else
+	fp = 2;
+      if (rs6000_passes_long_double)
+	{
+	  if (!TARGET_LONG_DOUBLE_128)
+	    fp |= 2 * 4;
+	  else if (TARGET_IEEEQUAD)
+	    fp |= 3 * 4;
+	  else
+	    fp |= 1 * 4;
+	}
+      fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n", fp);
+    }
   if (TARGET_32BIT && DEFAULT_ABI == ABI_V4)
     {
-      if (rs6000_passes_float)
-	fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n",
-		 ((TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT) ? 1 
-		  : (TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_SINGLE_FLOAT) ? 3 
-		  : 2));
       if (rs6000_passes_vector)
 	fprintf (asm_out_file, "\t.gnu_attribute 8, %d\n",
 		 (TARGET_ALTIVEC_ABI ? 2
@@ -37085,6 +37129,9 @@ static struct rs6000_opt_var const rs6000_opt_vars[] =
   { "warn-cell-microcode",
     offsetof (struct gcc_options, x_rs6000_warn_cell_microcode),
     offsetof (struct cl_target_option, x_rs6000_warn_cell_microcode), },
+  { "gnu-attr",
+    offsetof (struct gcc_options, x_rs6000_gnu_attr),
+    offsetof (struct cl_target_option, x_rs6000_gnu_attr), },
 };
 
 /* Inner function to handle attribute((target("..."))) and #pragma GCC target
