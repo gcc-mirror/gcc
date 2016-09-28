@@ -869,7 +869,14 @@ format_integer (const conversion_spec &spec, tree arg)
       break;
 
     default:
-      gcc_unreachable ();
+      {
+	fmtresult res = fmtresult ();
+	res.range.min = HOST_WIDE_INT_MAX;
+	res.range.max = HOST_WIDE_INT_MAX;
+	res.bounded = false;
+	res.constant = false;
+	return res;
+      }
     }
 
   /* The type of the argument to the directive, either deduced from
@@ -1147,6 +1154,7 @@ format_floating (const conversion_spec &spec, int width, int prec)
 
   switch (spec.modifier)
     {
+    case FMT_LEN_l:
     case FMT_LEN_none:
       type = double_type_node;
       break;
@@ -1162,7 +1170,14 @@ format_floating (const conversion_spec &spec, int width, int prec)
       break;
 
     default:
-      gcc_unreachable ();
+      {
+	fmtresult res = fmtresult ();
+	res.range.min = HOST_WIDE_INT_MAX;
+	res.range.max = HOST_WIDE_INT_MAX;
+	res.bounded = false;
+	res.constant = false;
+	return res;
+      }
     }
 
   /* The minimum and maximum number of bytes produced by the directive.  */
@@ -1248,7 +1263,14 @@ format_floating (const conversion_spec &spec, int width, int prec)
       }
 
     default:
-      gcc_unreachable ();
+      {
+	fmtresult res = fmtresult ();
+	res.range.min = HOST_WIDE_INT_MAX;
+	res.range.max = HOST_WIDE_INT_MAX;
+	res.bounded = false;
+	res.constant = false;
+	return res;
+      }
     }
 
   if (0 < width)
