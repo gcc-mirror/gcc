@@ -190,7 +190,7 @@
 	(read_rtx_operand): ...this new function, renaming "i" to "idx",
 	and tightening the scope of various locals.
 
-2016-09-26  LH Mouse  <lh_mouse@126.com>
+2016-09-26  Liu Hao  <lh_mouse@126.com>
 
 	* config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Fix typo.
 
