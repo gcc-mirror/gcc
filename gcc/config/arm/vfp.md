@@ -65,7 +65,7 @@
     (const_string "f_mcr")
     (const_string "f_mrc")
     (const_string "fmov")])
-  (set_attr "arch" "*, *, t2, *, *, *, *, *")
+  (set_attr "arch" "*, *, v6t2, *, *, *, *, *")
   (set_attr "pool_range" "*, *, *, *, 256, *, *, *")
   (set_attr "neg_pool_range" "*, *, *, *, 244, *, *, *")
   (set_attr "length" "4")]
@@ -109,7 +109,7 @@
   (set_attr "type"
    "mov_reg, mov_imm, mov_imm, mov_imm, store1, load1,\
     f_mcr, f_mrc, fmov")
-  (set_attr "arch" "*, *, *, t2, *, *, *, *, *")
+  (set_attr "arch" "*, *, *, v6t2, *, *, *, *, *")
   (set_attr "pool_range" "*, *, *, *, *, 4094, *, *, *")
   (set_attr "neg_pool_range" "*, *, *, *, *, 250, *, *, *")
   (set_attr "length" "2, 4, 2, 4, 4, 4, 4, 4, 4")]
@@ -161,7 +161,7 @@
     (const_string "f_mcr")
     (const_string "f_mrc")
     (const_string "fmov")])
-  (set_attr "arch" "*, *, t2, *, *, *, *, *")
+  (set_attr "arch" "*, *, v6t2, *, *, *, *, *")
   (set_attr "pool_range" "*, *, *, *, 256, *, *, *")
   (set_attr "neg_pool_range" "*, *, *, *, 244, *, *, *")
   (set_attr "length" "4")]
@@ -205,7 +205,7 @@
   (set_attr "type"
    "mov_reg, mov_imm, mov_imm, mov_imm, store1, load1,\
     f_mcr, f_mrc, fmov")
-  (set_attr "arch" "*, *, *, t2, *, *, *, *, *")
+  (set_attr "arch" "*, *, *, v6t2, *, *, *, *, *")
   (set_attr "pool_range" "*, *, *, *, *, 4094, *, *, *")
   (set_attr "neg_pool_range" "*, *, *, *, *, 250, *, *, *")
   (set_attr "length" "2, 4, 2, 4, 4, 4, 4, 4, 4")]
@@ -248,7 +248,6 @@
   [(set_attr "predicable" "yes")
    (set_attr "type" "mov_reg,mov_reg,mvn_imm,mov_imm,load1,store1,
 		     f_mcr,f_mrc,fmov,f_loads,f_stores")
-   (set_attr "arch" "*,*,*,t2,*,*,*,*,*,*,*")
    (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,*,*,*,*,1008,*")]
 )
@@ -297,7 +296,6 @@
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no,no,no,no,no,no")
    (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_imm,load1,load1,store1,store1,f_mcr,f_mrc,fmov,f_loads,f_stores")
    (set_attr "length" "2,4,2,4,4,4,4,4,4,4,4,4,4,4")
-   (set_attr "arch" "*,*,*,*,t2,*,*,*,*,*,*,*,*,*")
    (set_attr "pool_range"     "*,*,*,*,*,1018,4094,*,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
 )
