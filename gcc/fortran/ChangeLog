@@ -1,3 +1,8 @@
+2016-09-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* options.c (gfc_post_options): Remove special case for
+	TARGET_FLT_EVAL_METHOD_NON_DEFAULT with -fexcess-precision=standard.
+
 2016-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* dependency.c (gfc_dep_compare_expr): Remove break after return.

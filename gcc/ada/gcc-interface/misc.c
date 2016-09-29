@@ -255,8 +255,7 @@ static bool
 gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
   /* Excess precision other than "fast" requires front-end support.  */
-  if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
-      && TARGET_FLT_EVAL_METHOD_NON_DEFAULT)
+  if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD)
     sorry ("-fexcess-precision=standard for Ada");
   flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
 

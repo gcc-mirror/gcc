@@ -770,8 +770,7 @@ c_common_post_options (const char **pfilename)
      support.  */
   if (c_dialect_cxx ())
     {
-      if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
-	  && TARGET_FLT_EVAL_METHOD_NON_DEFAULT)
+      if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD)
 	sorry ("-fexcess-precision=standard for C++");
       flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
     }
