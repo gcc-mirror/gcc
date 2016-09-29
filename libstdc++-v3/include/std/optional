@@ -378,7 +378,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool _M_is_engaged() const noexcept
       { return this->_M_engaged; }
 
-      _Tp&
+      constexpr _Tp&
       _M_get() noexcept
       { return _M_payload; }
 
@@ -777,7 +777,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    ? std::move(this->_M_get())
 	    : static_cast<_Tp>(std::forward<_Up>(__u));
 	}
-      void reset() { this->_M_reset(); }
+      void reset() noexcept { this->_M_reset(); }
     };
 
   template<typename _Tp>

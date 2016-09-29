@@ -1,3 +1,12 @@
+2016-09-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make optional::reset noexcept, make optional::value
+	work in constant expressions.
+	* include/std/optional (_M_get): Make constexpr.
+	(reset): Make noexcept.
+	* testsuite/20_util/optional/assignment/7.cc: New.
+	* testsuite/20_util/optional/observers/6.cc: New.
+
 2016-09-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/c_global/cmath (hypot, __hypot3): Move C++17 overloads
