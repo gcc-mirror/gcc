@@ -3575,7 +3575,7 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
 {
   bool changed = false;
   vn_reference_t vnresult = NULL;
-  tree result, assign;
+  tree assign;
   bool resultsame = false;
   tree vuse = gimple_vuse (stmt);
   tree vdef = gimple_vdef (stmt);
@@ -3599,9 +3599,11 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
      Otherwise, the vdefs for the store are used when inserting into
      the table, since the store generates a new memory state.  */
 
-  result = vn_reference_lookup (lhs, vuse, VN_NOWALK, &vnresult, false);
-  if (result)
+  vn_reference_lookup (lhs, vuse, VN_NOWALK, &vnresult, false);
+  if (vnresult
+      && vnresult->result)
     {
+      tree result = vnresult->result;
       if (TREE_CODE (result) == SSA_NAME)
 	result = SSA_VAL (result);
       resultsame = expressions_equal_p (result, op);
@@ -3616,22 +3618,21 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
 	}
     }
 
-  if ((!result || !resultsame)
+  if (!resultsame)
+    {
       /* Only perform the following when being called from PRE
 	 which embeds tail merging.  */
-      && default_vn_walk_kind == VN_WALK)
-    {
-      assign = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, op);
-      vn_reference_lookup (assign, vuse, VN_NOWALK, &vnresult, false);
-      if (vnresult)
+      if (default_vn_walk_kind == VN_WALK)
 	{
-	  VN_INFO (vdef)->use_processed = true;
-	  return set_ssa_val_to (vdef, vnresult->result_vdef);
+	  assign = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, op);
+	  vn_reference_lookup (assign, vuse, VN_NOWALK, &vnresult, false);
+	  if (vnresult)
+	    {
+	      VN_INFO (vdef)->use_processed = true;
+	      return set_ssa_val_to (vdef, vnresult->result_vdef);
+	    }
 	}
-    }
 
-  if (!result || !resultsame)
-    {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "No store match\n");
@@ -3644,9 +3645,7 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
       /* Have to set value numbers before insert, since insert is
 	 going to valueize the references in-place.  */
       if (vdef)
-	{
-	  changed |= set_ssa_val_to (vdef, vdef);
-	}
+	changed |= set_ssa_val_to (vdef, vdef);
 
       /* Do not insert structure copies into the tables.  */
       if (is_gimple_min_invariant (op)
