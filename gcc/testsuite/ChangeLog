@@ -1,5 +1,9 @@
 2016-09-29  Marek Polacek  <polacek@redhat.com>
 
+	* g++.dg/cpp0x/fallthrough2.C: Use the c++14_down target.
+
+2016-09-29  Marek Polacek  <polacek@redhat.com>
+
 	* g++.dg/cpp0x/fallthrough2.C: Only expect the warning in C++11 and
 	C++14.
 

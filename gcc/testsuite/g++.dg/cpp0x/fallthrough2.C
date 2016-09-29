@@ -11,7 +11,7 @@ f (int i)
     {
     case 1:
       bar (1);
-      [[fallthrough]]; // { dg-warning ".fallthrough. is a C\\+\\+17 feature" "" { target { ! c++1z } }  }
+      [[fallthrough]]; // { dg-warning ".fallthrough. is a C\\+\\+17 feature" "" { target { c++14_down } }  }
     case 3:
       bar (1);
       [[gnu::fallthrough, gnu::fallthrough]]; // { dg-warning ".fallthrough. attribute specified multiple times" }
