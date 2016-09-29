@@ -37129,9 +37129,6 @@ static struct rs6000_opt_var const rs6000_opt_vars[] =
   { "warn-cell-microcode",
     offsetof (struct gcc_options, x_rs6000_warn_cell_microcode),
     offsetof (struct cl_target_option, x_rs6000_warn_cell_microcode), },
-  { "gnu-attr",
-    offsetof (struct gcc_options, x_rs6000_gnu_attr),
-    offsetof (struct cl_target_option, x_rs6000_gnu_attr), },
 };
 
 /* Inner function to handle attribute((target("..."))) and #pragma GCC target
