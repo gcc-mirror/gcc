@@ -1,3 +1,10 @@
+2016-09-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/77707
+	io/transfer.c (next_record): Flush before calculating next_record.
+	Correctly calculate.
+
 2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
