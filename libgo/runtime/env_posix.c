@@ -9,7 +9,7 @@
 #include "arch.h"
 #include "malloc.h"
 
-extern Slice envs;
+extern Slice runtime_get_envs(void);
 
 String
 runtime_getenv(const char *s)
@@ -17,12 +17,14 @@ runtime_getenv(const char *s)
 	int32 i, j;
 	intgo len;
 	const byte *v, *bs;
+	Slice envs;
 	String* envv;
 	int32 envc;
 	String ret;
 
 	bs = (const byte*)s;
 	len = runtime_findnull(bs);
+	envs = runtime_get_envs();
 	envv = (String*)envs.__values;
 	envc = envs.__count;
 	for(i=0; i<envc; i++){
