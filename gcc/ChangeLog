@@ -1,3 +1,15 @@
+2016-09-29  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm.md (*arm_movsi_insn): Replace "t2" arch attribute
+	with "v6t2".  Move "arch" attribute above "pool_range".
+	* config/arm/vfp.md (*arm_movhi_vfp): Replace "t2" arch attribute
+	with "v6t2".
+	(*thumb2_movhi_vfp): Likewise.
+	(*arm_movhi_fp16): Likewise.
+	(*thumb2_movhi_fp16): Likewise.
+	(*arm_movsi_vfp): Remove "arch" attribute.
+	(*thumb2_movsi_vfp): Likewise.
+
 2016-09-29  Martin Liska  <mliska@suse.cz>
 
 	* doc/extend.texi: Remove limitation of Objective C for
