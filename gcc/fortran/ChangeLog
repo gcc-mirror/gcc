@@ -1,6 +1,18 @@
 2016-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
+
+	PR fortran/77420
+	* trans-common.c:  Handle array elements in equivalence when
+	the lower and upper bounds of array spec are NULL.
+
+	PR fortran/77460
+	* simplify.c (simplify_transformation_to_scalar):  On error, result
+	may be NULL, simply return.
+
+2016-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/77506
 	* array.c (gfc_match_array_constructor): CHARACTER(len=*) cannot
 	appear in an array constructor.
