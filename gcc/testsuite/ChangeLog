@@ -1,3 +1,7 @@
+2016-09-29  Martin Liska  <mliska@suse.cz>
+
+	* objc/execute/construct1.m: New test.
+
 2016-09-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77768

@@ -2508,8 +2508,6 @@ same priority.  The priorities for constructor and destructor
 functions are the same as those specified for namespace-scope C++
 objects (@pxref{C++ Attributes}).
 
-These attributes are not currently implemented for Objective-C@.
-
 @item deprecated
 @itemx deprecated (@var{msg})
 @cindex @code{deprecated} function attribute

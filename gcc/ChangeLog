@@ -1,3 +1,8 @@
+2016-09-29  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Remove limitation of Objective C for
+	__attribute__((constructor)) and __attribute__((destructor)).
+
 2016-09-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77768
