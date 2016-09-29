@@ -3707,11 +3707,13 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
 
   by_pieces_constfn constfn = NULL;
 
-  const char *src_str = c_getstr (arg1);
-  if (src_str == NULL)
-    src_str = c_getstr (arg2);
-  else
-    std::swap (arg1_rtx, arg2_rtx);
+  const char *src_str = c_getstr (arg2);
+  if (result_eq && src_str == NULL)
+    {
+      src_str = c_getstr (arg1);
+      if (src_str != NULL)
+       std::swap (arg1_rtx, arg2_rtx);
+    }
 
   /* If SRC is a string constant and block move would be done
      by pieces, we can avoid loading the string from memory

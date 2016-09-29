@@ -1,3 +1,8 @@
+2016-09-29  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* builtins.c (expand_builtin_memcmp): don't swap args unless
+	result is only being compared with zero.
+
 2016-09-29  Marek Polacek  <polacek@redhat.com>
 
 	* dwarf2out.c (loc_descriptor): Add fall through comment.
