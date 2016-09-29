@@ -1,3 +1,9 @@
+2016-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77768
+	* tree-ssa-sccvn.c (visit_reference_op_store): Properly deal
+	with stores to a place we know has a constant value.
+
 2016-09-29  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/sysv4.opt (mgnu-attribute): New option.
