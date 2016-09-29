@@ -1,5 +1,11 @@
 2016-09-29  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/77768
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Handle stores to readonly memory when removing redundant stores.
+
+2016-09-29  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/77407
 	* match.pd: Add X / abs (X) -> X < 0 ? -1 : 1 and
 	X / -X -> -1 simplifications.

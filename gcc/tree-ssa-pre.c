@@ -4443,9 +4443,11 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      && operand_equal_p (val, rhs, 0))
 	    {
 	      /* We can only remove the later store if the former aliases
-		 at least all accesses the later one does.  */
+		 at least all accesses the later one does or if the store
+		 was to readonly memory storing the same value.  */
 	      alias_set_type set = get_alias_set (lhs);
-	      if (vnresult->set == set
+	      if (! vnresult
+		  || vnresult->set == set
 		  || alias_set_subset_of (set, vnresult->set))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
