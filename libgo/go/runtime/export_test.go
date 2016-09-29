@@ -6,10 +6,6 @@
 
 package runtime
 
-import (
-	"unsafe"
-)
-
 //var Fadd64 = fadd64
 //var Fsub64 = fsub64
 //var Fmul64 = fmul64
@@ -102,20 +98,6 @@ var HashLoad = &hashLoad
 //var Maxstring = &maxstring
 
 //type Uintreg uintreg
-
-//extern __go_open
-func open(path *byte, mode int32, perm int32) int32
-
-func Open(path *byte, mode int32, perm int32) int32 {
-	return open(path, mode, perm)
-}
-
-//extern close
-func close(int32) int32
-
-func Close(fd int32) int32 {
-	return close(fd)
-}
 
 /*
 func RunSchedLocalQueueTest() {
@@ -224,25 +206,13 @@ var IfaceHash = ifaceHash
 var MemclrBytes = memclrBytes
 */
 
-//extern read
-func read(fd int32, buf unsafe.Pointer, size int32) int32
+var Open = open
+var Close = closefd
+var Read = read
+var Write = write
 
-func Read(fd int32, buf unsafe.Pointer, size int32) int32 {
-	return read(fd, buf, size)
-}
-
-//extern write
-func write(fd int32, buf unsafe.Pointer, size int32) int32
-
-func Write(fd uintptr, buf unsafe.Pointer, size int32) int32 {
-	return write(int32(fd), buf, size)
-}
-
-func envs() []string
-func setenvs([]string)
-
-var Envs = envs
-var SetEnvs = setenvs
+func Envs() []string     { return envs }
+func SetEnvs(e []string) { envs = e }
 
 //var BigEndian = sys.BigEndian
 
@@ -287,7 +257,10 @@ var ForceGCPeriod = &forcegcperiod
 // SetTracebackEnv is like runtime/debug.SetTraceback, but it raises
 // the "environment" traceback level, so later calls to
 // debug.SetTraceback (e.g., from testing timeouts) can't lower it.
-func SetTracebackEnv(level string)
+func SetTracebackEnv(level string) {
+	setTraceback(level)
+	traceback_env = traceback_cache
+}
 
 /*
 var ReadUnaligned32 = readUnaligned32

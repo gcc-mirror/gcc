@@ -76,6 +76,10 @@ static void *back_state;
 
 static Lock back_state_lock;
 
+/* The program arguments.  */
+
+extern Slice runtime_get_args(void);
+
 /* Fetch back_state, creating it if necessary.  */
 
 struct backtrace_state *
@@ -84,15 +88,19 @@ __go_get_backtrace_state ()
   runtime_lock (&back_state_lock);
   if (back_state == NULL)
     {
+      Slice args;
       const char *filename;
       struct stat s;
 
-      filename = (const char *) runtime_progname ();
+      args = runtime_get_args();
+      filename = NULL;
+      if (args.__count > 0)
+	filename = (const char*)((String*)args.__values)[0].str;
 
       /* If there is no '/' in FILENAME, it was found on PATH, and
 	 might not be the same as the file with the same name in the
 	 current directory.  */
-      if (__builtin_strchr (filename, '/') == NULL)
+      if (filename != NULL && __builtin_strchr (filename, '/') == NULL)
 	filename = NULL;
 
       /* If the file is small, then it's not the real executable.

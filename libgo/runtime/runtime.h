@@ -75,7 +75,6 @@ typedef	struct	ParFor		ParFor;
 typedef	struct	ParForThread	ParForThread;
 typedef	struct	cgoMal		CgoMal;
 typedef	struct	PollDesc	PollDesc;
-typedef	struct	DebugVars	DebugVars;
 
 typedef	struct	__go_open_array		Slice;
 typedef struct	__go_interface		Iface;
@@ -115,7 +114,8 @@ struct FuncVal
  * Per-CPU declaration.
  */
 extern M*	runtime_m(void);
-extern G*	runtime_g(void);
+extern G*	runtime_g(void)
+  __asm__(GOSYM_PREFIX "runtime.getg");
 
 extern M	runtime_m0;
 extern G	runtime_g0;
@@ -240,28 +240,6 @@ struct ParFor
 	uint64 nsleep;
 };
 
-// Holds variables parsed from GODEBUG env var.
-struct DebugVars
-{
-	int32	allocfreetrace;
-	int32   cgocheck;
-	int32	efence;
-	int32   gccheckmark;
-	int32   gcpacertrace;
-	int32   gcshrinkstackoff;
-	int32   gcstackbarrieroff;
-	int32   gcstackbarrierall;
-	int32   gcstoptheworld;
-	int32	gctrace;
-	int32	gcdead;
-	int32   invalidptr;
-	int32   sbrk;
-	int32   scavenge;
-	int32	scheddetail;
-	int32	schedtrace;
-	int32   wbshadow;
-};
-
 extern bool runtime_precisestack;
 extern bool runtime_copystack;
 
@@ -309,7 +287,7 @@ extern	int8*	runtime_goos;
 extern	int32	runtime_ncpu;
 extern 	void	(*runtime_sysargs)(int32, uint8**);
 extern	uint32	runtime_Hchansize;
-extern	DebugVars	runtime_debug;
+extern	struct debugVars runtime_debug;
 extern	uintptr	runtime_maxstacksize;
 
 extern	bool	runtime_isstarted;
@@ -327,11 +305,14 @@ void	runtime_dump(byte*, int32);
 
 void	runtime_gogo(G*);
 struct __go_func_type;
-void	runtime_args(int32, byte**);
+void	runtime_args(int32, byte**)
+  __asm__ (GOSYM_PREFIX "runtime.args");
 void	runtime_osinit();
-void	runtime_goargs(void);
+void	runtime_goargs(void)
+  __asm__ (GOSYM_PREFIX "runtime.goargs");
 void	runtime_goenvs(void);
-void	runtime_goenvs_unix(void);
+void	runtime_goenvs_unix(void)
+  __asm__ (GOSYM_PREFIX "runtime.goenvs_unix");
 void	runtime_throw(const char*) __attribute__ ((noreturn));
 void	runtime_panicstring(const char*) __attribute__ ((noreturn));
 bool	runtime_canpanic(G*);
@@ -377,7 +358,8 @@ int32	runtime_mcount(void);
 int32	runtime_gcount(void);
 void	runtime_mcall(void(*)(G*));
 uint32	runtime_fastrand1(void) __asm__ (GOSYM_PREFIX "runtime.fastrand1");
-int32	runtime_timediv(int64, int32, int32*);
+int32	runtime_timediv(int64, int32, int32*)
+  __asm__ (GOSYM_PREFIX "runtime.timediv");
 int32	runtime_round2(int32 x); // round x up to a power of 2.
 
 // atomic operations
@@ -417,7 +399,8 @@ G*	__go_go(void (*pfn)(void*), void*);
 void	siginit(void);
 bool	__go_sigsend(int32 sig);
 int32	runtime_callers(int32, Location*, int32, bool keep_callers);
-int64	runtime_nanotime(void);	// monotonic time
+int64	runtime_nanotime(void)	// monotonic time
+  __asm__(GOSYM_PREFIX "runtime.nanotime");
 int64	runtime_unixnanotime(void); // real time, can skip
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void);
@@ -426,9 +409,12 @@ void	runtime_unwindstack(G*, byte*);
 void	runtime_sigprof();
 void	runtime_resetcpuprofiler(int32);
 void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
-void	runtime_usleep(uint32);
-int64	runtime_cputicks(void);
-int64	runtime_tickspersecond(void);
+void	runtime_usleep(uint32)
+     __asm__ (GOSYM_PREFIX "runtime.usleep");
+int64	runtime_cputicks(void)
+     __asm__ (GOSYM_PREFIX "runtime.cputicks");
+int64	runtime_tickspersecond(void)
+     __asm__ (GOSYM_PREFIX "runtime.tickspersecond");
 void	runtime_blockevent(int64, int32);
 extern int64 runtime_blockprofilerate;
 void	runtime_addtimer(Timer*);
@@ -445,7 +431,8 @@ bool	runtime_netpollclosing(PollDesc*);
 void	runtime_netpolllock(PollDesc*);
 void	runtime_netpollunlock(PollDesc*);
 void	runtime_crash(void);
-void	runtime_parsedebugvars(void);
+void	runtime_parsedebugvars(void)
+  __asm__(GOSYM_PREFIX "runtime.parsedebugvars");
 void	_rt0_go(void);
 void*	runtime_funcdata(Func*, int32);
 int32	runtime_setmaxthreads(int32);
@@ -462,8 +449,10 @@ extern uint32 runtime_worldsema;
  * but on the contention path they sleep in the kernel.
  * a zeroed Lock is unlocked (no need to initialize each lock).
  */
-void	runtime_lock(Lock*);
-void	runtime_unlock(Lock*);
+void	runtime_lock(Lock*)
+  __asm__(GOSYM_PREFIX "runtime.lock");
+void	runtime_unlock(Lock*)
+  __asm__(GOSYM_PREFIX "runtime.unlock");
 
 /*
  * sleep and wakeup on one-time events.
@@ -609,7 +598,8 @@ enum
 
 #define runtime_setitimer setitimer
 
-void	runtime_check(void);
+void	runtime_check(void)
+  __asm__ (GOSYM_PREFIX "runtime.check");
 
 // A list of global variables that the garbage collector must scan.
 struct root_list {
@@ -630,7 +620,6 @@ extern uintptr runtime_stacks_sys;
 struct backtrace_state;
 extern struct backtrace_state *__go_get_backtrace_state(void);
 extern _Bool __go_file_line(uintptr, int, String*, String*, intgo *);
-extern byte* runtime_progname();
 extern void runtime_main(void*);
 extern uint32 runtime_in_callers;
 

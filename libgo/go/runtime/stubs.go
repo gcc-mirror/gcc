@@ -5,6 +5,7 @@
 package runtime
 
 import (
+	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
 )
@@ -209,10 +210,10 @@ func round(n, a uintptr) uintptr {
 	return (n + a - 1) &^ (a - 1)
 }
 
-/*
 // checkASM returns whether assembly runtime checks have passed.
-func checkASM() bool
-*/
+func checkASM() bool {
+	return true
+}
 
 // throw crashes the program.
 // For gccgo unless and until we port panic.go.
@@ -251,3 +252,119 @@ type stringStruct struct {
 func stringStructOf(sp *string) *stringStruct {
 	return (*stringStruct)(unsafe.Pointer(sp))
 }
+
+// Here for gccgo unless and until we port slice.go.
+type slice struct {
+	array unsafe.Pointer
+	len   int
+	cap   int
+}
+
+// Here for gccgo until we port malloc.go.
+const (
+	_64bit              = 1 << (^uintptr(0) >> 63) / 2
+	_MHeapMap_TotalBits = (_64bit*sys.GoosWindows)*35 + (_64bit*(1-sys.GoosWindows)*(1-sys.GoosDarwin*sys.GoarchArm64))*39 + sys.GoosDarwin*sys.GoarchArm64*31 + (1-_64bit)*32
+	_MaxMem             = uintptr(1<<_MHeapMap_TotalBits - 1)
+)
+
+// Here for gccgo until we port malloc.go.
+//extern runtime_mallocgc
+func c_mallocgc(size uintptr, typ uintptr, flag uint32) unsafe.Pointer
+func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
+	flag := uint32(0)
+	if !needzero {
+		flag = 1 << 3
+	}
+	return c_mallocgc(size, uintptr(unsafe.Pointer(typ)), flag)
+}
+
+// Here for gccgo unless and until we port string.go.
+func rawstring(size int) (p unsafe.Pointer, s string) {
+	p = mallocgc(uintptr(size), nil, false)
+
+	(*(*stringStruct)(unsafe.Pointer(&s))).str = p
+	(*(*stringStruct)(unsafe.Pointer(&s))).len = size
+
+	return
+}
+
+// Here for gccgo unless and until we port string.go.
+func gostring(p *byte) string {
+	l := findnull(p)
+	if l == 0 {
+		return ""
+	}
+	m, s := rawstring(l)
+	memmove(m, unsafe.Pointer(p), uintptr(l))
+	return s
+}
+
+// Here for gccgo unless and until we port string.go.
+func index(s, t string) int {
+	if len(t) == 0 {
+		return 0
+	}
+	for i := 0; i < len(s); i++ {
+		if s[i] == t[0] && hasprefix(s[i:], t) {
+			return i
+		}
+	}
+	return -1
+}
+
+// Here for gccgo unless and until we port string.go.
+func hasprefix(s, t string) bool {
+	return len(s) >= len(t) && s[:len(t)] == t
+}
+
+// Here for gccgo unless and until we port string.go.
+//go:nosplit
+func findnull(s *byte) int {
+	if s == nil {
+		return 0
+	}
+	p := (*[_MaxMem/2 - 1]byte)(unsafe.Pointer(s))
+	l := 0
+	for p[l] != 0 {
+		l++
+	}
+	return l
+}
+
+// Here for gccgo unless and until we port string.go.
+//go:nosplit
+func gostringnocopy(str *byte) string {
+	ss := stringStruct{str: unsafe.Pointer(str), len: findnull(str)}
+	return *(*string)(unsafe.Pointer(&ss))
+}
+
+// Here for gccgo unless and until we port string.go.
+func atoi(s string) int {
+	n := 0
+	for len(s) > 0 && '0' <= s[0] && s[0] <= '9' {
+		n = n*10 + int(s[0]) - '0'
+		s = s[1:]
+	}
+	return n
+}
+
+// Here for gccgo until we port mgc.go.
+var writeBarrier struct {
+	enabled bool   // compiler emits a check of this before calling write barrier
+	needed  bool   // whether we need a write barrier for current GC phase
+	cgo     bool   // whether we need a write barrier for a cgo check
+	alignme uint64 // guarantee alignment so that compiler can use a 32 or 64-bit load
+}
+
+// Here for gccgo until we port atomic_pointer.go and mgc.go.
+//go:nosplit
+func casp(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
+	if !atomic.Casp1((*unsafe.Pointer)(noescape(unsafe.Pointer(ptr))), noescape(old), new) {
+		return false
+	}
+	return true
+}
+
+// Here for gccgo until we port lock_*.go.
+func lock(l *mutex)
+func unlock(l *mutex)
