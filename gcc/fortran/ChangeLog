@@ -1,6 +1,17 @@
 2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	backport from trunk
+	PR fortran/71730
+	* decl.c (char_len_param_value): Check return value of
+	gfc_reduce_init_expr().
+
+	PR fortran/77612
+	* decl.c (char_len_param_value): Check parent namespace for 
+	seen_implicit_none.
+
+2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	backport from trunk
 	PR fortran/77694
 	* frontend-passes.c (optimize_binop_array_assignment): Check pointer
 	for NULL.
