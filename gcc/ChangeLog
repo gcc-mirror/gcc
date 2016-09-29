@@ -1,5 +1,10 @@
 2016-09-29  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (vectorizable_load): Avoid emitting vector
+	constructors with vector elements.
+
+2016-09-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/77768
 	* tree-ssa-sccvn.c (visit_reference_op_store): Properly deal
 	with stores to a place we know has a constant value.

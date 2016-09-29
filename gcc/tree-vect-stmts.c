@@ -6862,17 +6862,40 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       int nloads = nunits;
       int lnel = 1;
       tree ltype = TREE_TYPE (vectype);
+      tree lvectype = vectype;
       auto_vec<tree> dr_chain;
       if (memory_access_type == VMAT_STRIDED_SLP)
 	{
-	  nloads = nunits / group_size;
 	  if (group_size < nunits)
 	    {
-	      lnel = group_size;
-	      ltype = build_vector_type (TREE_TYPE (vectype), group_size);
+	      /* Avoid emitting a constructor of vector elements by performing
+		 the loads using an integer type of the same size,
+		 constructing a vector of those and then re-interpreting it
+		 as the original vector type.  This works around the fact
+		 that the vec_init optab was only designed for scalar
+		 element modes and thus expansion goes through memory.
+		 This avoids a huge runtime penalty due to the general
+		 inability to perform store forwarding from smaller stores
+		 to a larger load.  */
+	      unsigned lsize
+		= group_size * TYPE_PRECISION (TREE_TYPE (vectype));
+	      enum machine_mode elmode = mode_for_size (lsize, MODE_INT, 0);
+	      enum machine_mode vmode = mode_for_vector (elmode,
+							 nunits / group_size);
+	      /* If we can't construct such a vector fall back to
+		 element loads of the original vector type.  */
+	      if (VECTOR_MODE_P (vmode)
+		  && optab_handler (vec_init_optab, vmode) != CODE_FOR_nothing)
+		{
+		  nloads = nunits / group_size;
+		  lnel = group_size;
+		  ltype = build_nonstandard_integer_type (lsize, 1);
+		  lvectype = build_vector_type (ltype, nloads);
+		}
 	    }
 	  else
 	    {
+	      nloads = 1;
 	      lnel = nunits;
 	      ltype = vectype;
 	    }
@@ -6925,9 +6948,17 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    }
 	  if (nloads > 1)
 	    {
-	      tree vec_inv = build_constructor (vectype, v);
-	      new_temp = vect_init_vector (stmt, vec_inv, vectype, gsi);
+	      tree vec_inv = build_constructor (lvectype, v);
+	      new_temp = vect_init_vector (stmt, vec_inv, lvectype, gsi);
 	      new_stmt = SSA_NAME_DEF_STMT (new_temp);
+	      if (lvectype != vectype)
+		{
+		  new_stmt = gimple_build_assign (make_ssa_name (vectype),
+						  VIEW_CONVERT_EXPR,
+						  build1 (VIEW_CONVERT_EXPR,
+							  vectype, new_temp));
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		}
 	    }
 
 	  if (slp)
