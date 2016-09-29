@@ -1,3 +1,9 @@
+2016-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Check maximum
+	ext_level before calling CPUID with 0x80000008.
+	Simplify xgetbv checks.
+
 2016-09-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add print-rtl-function.o.

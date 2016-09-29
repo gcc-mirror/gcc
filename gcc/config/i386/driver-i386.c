@@ -517,7 +517,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   /* Check cpuid level of extended features.  */
   __cpuid (0x80000000, ext_level, ebx, ecx, edx);
 
-  if (ext_level > 0x80000000)
+  if (ext_level >= 0x80000001)
     {
       __cpuid (0x80000001, eax, ebx, ecx, edx);
 
@@ -535,7 +535,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_3dnowp = edx & bit_3DNOWP;
       has_3dnow = edx & bit_3DNOW;
       has_mwaitx = ecx & bit_MWAITX;
+    }
 
+  if (ext_level >= 0x80000008)
+    {
       __cpuid (0x80000008, eax, ebx, ecx, edx);
       has_clzero = ebx & bit_CLZERO;
     }
@@ -548,14 +551,21 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 #define XSTATE_OPMASK			0x20
 #define XSTATE_ZMM			0x40
 #define XSTATE_HI_ZMM			0x80
+
+#define XCR_AVX_ENABLED_MASK \
+  (XSTATE_SSE | XSTATE_YMM)
+#define XCR_AVX512F_ENABLED_MASK \
+  (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM)
+
   if (has_osxsave)
     asm (".byte 0x0f; .byte 0x01; .byte 0xd0"
 	 : "=a" (eax), "=d" (edx)
 	 : "c" (XCR_XFEATURE_ENABLED_MASK));
+  else
+    eax = 0;
 
-  /* Check if SSE and YMM states are supported.  */
-  if (!has_osxsave
-      || (eax & (XSTATE_SSE | XSTATE_YMM)) != (XSTATE_SSE | XSTATE_YMM))
+  /* Check if AVX registers are supported.  */
+  if ((eax & XCR_AVX_ENABLED_MASK) != XCR_AVX_ENABLED_MASK)
     {
       has_avx = 0;
       has_avx2 = 0;
@@ -569,10 +579,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_xsavec = 0;
     }
 
-  if (!has_osxsave
-      || (eax &
-	  (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM))
-	  != (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM))
+  /* Check if AVX512F registers are supported.  */
+  if ((eax & XCR_AVX512F_ENABLED_MASK) != XCR_AVX512F_ENABLED_MASK)
     {
       has_avx512f = 0;
       has_avx512er = 0;
@@ -603,7 +611,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       unsigned int name;
 
       /* Detect geode processor by its processor signature.  */
-      if (ext_level > 0x80000001)
+      if (ext_level >= 0x80000002)
 	__cpuid (0x80000002, name, ebx, ecx, edx);
       else
 	name = 0;
