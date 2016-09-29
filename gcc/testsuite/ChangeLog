@@ -1,3 +1,27 @@
+2016-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement P0001R1 - C++17 removal of register storage class specifier
+	* c-c++-common/Wvarargs-2.c (foo1): Except new warning for C++17.
+	* c-c++-common/vector-subscript-2.c (vf): Expect new error for
+	C++17.
+	* c-c++-common/vector-subscript-5.c (foo): Don't use register
+	keyword if not __SSE2__.
+	* c-c++-common/Wvarargs.c (foo1, foo3): Expect new warnings for
+	C++17.
+	* g++.dg/compat/struct-layout-1_generate.c (iterative_hash): Remove
+	register keywords.
+	* g++.dg/eh/pr29166.C: Add -Wno-register option.
+	* g++.dg/warn/register-parm-1.C (erroneous_warning,
+	no_erroneous_warning): Expect new warnings for C++17.
+	* g++.dg/warn/register-var-2.C (f): Likewise.
+	* g++.dg/parse/register1.C (f): Expect new error for C++17.
+	* g++.dg/parse/linkage2.C (foo): Likewise.
+	* g++.dg/torture/pr36826.C (CoinMin, CoinMax): Avoid register
+	keyword on parameters for C++17.
+	* g++.dg/cpp1z/register1.C: New test.
+	* g++.dg/cpp1z/register2.C: New test.
+	* g++.dg/cpp1z/register3.C: New test.
+
 2016-09-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/adx-check.h (main): Simplify feature bit tests.

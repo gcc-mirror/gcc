@@ -1,3 +1,13 @@
+2016-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement P0001R1 - C++17 removal of register storage class specifier
+	* decl.c (cp_finish_decl): Diagnose register storage class
+	on vars except when used in GNU global or local register variable
+	extension.
+	(grokdeclarator): Diagnose register storage class on parameters.
+	* except.c (expand_start_catch_block): Set DECL_REGISTER only
+	after cp_finish_decl call.
+
 2016-09-29  Marek Polacek  <polacek@redhat.com>
 
 	* rtti.c (involves_incomplete_p): Add fall through comment.

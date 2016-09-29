@@ -870,6 +870,10 @@ c_common_post_options (const char **pfilename)
     warn_shift_negative_value = (extra_warnings
 				 && (cxx_dialect >= cxx11 || flag_isoc99));
 
+  /* -Wregister is enabled by default in C++17.  */
+  if (!global_options_set.x_warn_register)
+    warn_register = cxx_dialect >= cxx1z;
+
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;
