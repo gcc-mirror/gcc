@@ -1,3 +1,8 @@
+2016-09-29  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/fallthrough2.C: Only expect the warning in C++11 and
+	C++14.
+
 2016-09-29  Martin Liska  <mliska@suse.cz>
 
 	* objc/execute/construct1.m: New test.
