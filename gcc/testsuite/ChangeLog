@@ -1,3 +1,8 @@
+2016-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77407
+	* gcc.dg/pr77407.c: New testcase.
+
 2016-09-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55152

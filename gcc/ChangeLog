@@ -1,5 +1,11 @@
 2016-09-29  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/77407
+	* match.pd: Add X / abs (X) -> X < 0 ? -1 : 1 and
+	X / -X -> -1 simplifications.
+
+2016-09-29  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/55152
 	* match.pd: Add max(a,-a) -> abs(a) pattern.
 	* tree-ssa-phiopt.c (minmax_replacement): Disable for
