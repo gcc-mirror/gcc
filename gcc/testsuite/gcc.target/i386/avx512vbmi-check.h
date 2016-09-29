@@ -18,14 +18,14 @@ main ()
   if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
     return 0;
 
-  if ((ecx & bit_OSXSAVE) == (bit_OSXSAVE))
+  if (ecx & bit_OSXSAVE)
     {
       if (__get_cpuid_max (0, NULL) < 7)
 	return 0;
 
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
 
-      if ((avx512f_os_support ()) && ((ecx & bit_AVX512VBMI) == bit_AVX512VBMI))
+      if ((ecx & bit_AVX512VBMI) && avx512f_os_support ())
 	{
 	  do_test ();
 #ifdef DEBUG
