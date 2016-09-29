@@ -1,3 +1,8 @@
+2016-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cmath (hypot, __hypot3): Move C++17 overloads
+	outside _GLIBCXX_USE_C99_MATH_TR1 condition.
+
 2016-09-29  Alan Modra  <amodra@gmail.com>
 
 	* configure.ac (LONG_DOUBLE_COMPAT_FLAGS): New ACSUBST.
