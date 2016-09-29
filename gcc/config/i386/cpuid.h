@@ -229,31 +229,37 @@ __get_cpuid_max (unsigned int __ext, unsigned int *__sig)
   return __eax;
 }
 
-/* Return cpuid data for requested cpuid level, as found in returned
+/* Return cpuid data for requested cpuid leaf, as found in returned
    eax, ebx, ecx and edx registers.  The function checks if cpuid is
    supported and returns 1 for valid cpuid information or 0 for
-   unsupported cpuid level.  All pointers are required to be non-null.  */
+   unsupported cpuid leaf.  All pointers are required to be non-null.  */
 
 static __inline int
-__get_cpuid (unsigned int __level,
+__get_cpuid (unsigned int __leaf,
 	     unsigned int *__eax, unsigned int *__ebx,
 	     unsigned int *__ecx, unsigned int *__edx)
 {
-  unsigned int __ext = __level & 0x80000000;
+  unsigned int __ext = __leaf & 0x80000000;
 
-  if (__get_cpuid_max (__ext, 0) < __level)
+  if (__get_cpuid_max (__ext, 0) < __leaf)
     return 0;
 
-  if (__ext)
-    __cpuid (__level, *__eax, *__ebx, *__ecx, *__edx);
-  else
-    {
-      if (__level >= 13)
-	__cpuid_count (__level, 1, *__eax, *__ebx, *__ecx, *__edx);
-      else if (__level >= 7)
-	__cpuid_count (__level, 0, *__eax, *__ebx, *__ecx, *__edx);
-      else
-	__cpuid (__level, *__eax, *__ebx, *__ecx, *__edx);
-    }
+  __cpuid (__leaf, *__eax, *__ebx, *__ecx, *__edx);
+  return 1;
+}
+
+/* Same as above, but sub-leaf can be specified.  */
+
+static __inline int
+__get_cpuid_count (unsigned int __leaf, unsigned int __subleaf,
+		   unsigned int *__eax, unsigned int *__ebx,
+		   unsigned int *__ecx, unsigned int *__edx)
+{
+  unsigned int __ext = __leaf & 0x80000000;
+
+  if (__get_cpuid_max (__ext, 0) < __leaf)
+    return 0;
+
+  __cpuid_count (__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
   return 1;
 }

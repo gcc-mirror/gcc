@@ -11,7 +11,7 @@ main ()
     {
       unsigned int eax, ebx, ecx, edx;
 
-      if (!__get_cpuid (7, &eax, &ebx, &ecx, &edx))
+      if (!__get_cpuid_count (7, 0, &eax, &ebx, &ecx, &edx))
 	__builtin_abort ();
 
       if (!(ebx & bit_AVX2))

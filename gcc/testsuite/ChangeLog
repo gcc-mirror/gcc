@@ -1,3 +1,8 @@
+2016-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77756
+	* gcc.target/i386/pr77756.c: New test.
+
 2016-09-29  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp0x/fallthrough2.C: Use the c++14_down target.
@@ -31,11 +36,6 @@
 
 	* gcc.dg/profile-update-warning.c: Restrict to ia32.
 	(dg-options): Remove -m32.
-
-2016-09-28  Uros Bizjak  <ubizjak@gmail.com>
-
-	PR target/77756
-	* gcc.target/i386/pr77756.c: New test.
 
 2016-09-28  Martin Sebor  <msebor@redhat.com>
 
