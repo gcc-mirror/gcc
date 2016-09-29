@@ -1,3 +1,10 @@
+2016-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement P0001R1 - C++17 removal of register storage class specifier
+	* c.opt (Wregister): New warning.
+	* c-opts.c (c_common_post_options): Enable -Wregister by
+	default for C++17.
+
 2016-09-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* c-opts.c (c_common_post_options): Remove special case for

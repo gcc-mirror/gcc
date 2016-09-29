@@ -540,9 +540,9 @@ expand_start_catch_block (tree decl)
       if (init_type != TREE_TYPE (init))
 	init = build1 (NOP_EXPR, init_type, init);
       exp = create_temporary_var (init_type);
-      DECL_REGISTER (exp) = 1;
       cp_finish_decl (exp, init, /*init_const_expr=*/false,
 		      NULL_TREE, LOOKUP_ONLYCONVERTING);
+      DECL_REGISTER (exp) = 1;
       initialize_handler_parm (decl, exp);
     }
 

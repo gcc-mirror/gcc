@@ -1028,12 +1028,12 @@ acceptable.  Do NOT use for cryptographic purposes.
 
 static hashval_t
 iterative_hash (const void *k_in /* the key */,
-		register size_t  length /* the length of the key */,
-		register hashval_t initval /* the previous hash, or
-					      an arbitrary value */)
+		size_t  length /* the length of the key */,
+		hashval_t initval /* the previous hash, or
+				     an arbitrary value */)
 {
-  register const unsigned char *k = (const unsigned char *)k_in;
-  register hashval_t a,b,c,len;
+  const unsigned char *k = (const unsigned char *)k_in;
+  hashval_t a,b,c,len;
 
   /* Set up the internal state */
   len = length;
