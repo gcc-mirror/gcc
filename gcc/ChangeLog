@@ -1,3 +1,9 @@
+2016-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77756
+	* config/i386/cpuid.h (__get_cpuid_count): New.
+	(__get_cpuid): Rename __level to __leaf.
+
 2016-09-29  Marek Polacek  <polacek@redhat.com>
 
 	* genattrtab.c (write_attr_case): Also emit FALLTHRU marker.
@@ -99,11 +105,6 @@
 	(format_floating, format_string, format_directive,
 	get_destination_size, pass_sprintf_length::handle_gimple_call):
 	Likewise.
-
-2016-09-28  Uros Bizjak  <ubizjak@gmail.com>
-
-	PR target/77756
-	* config/i386/cpuid.h (__get_cpuid): Handle CPUID level >= 7.
 
 2016-09-28  Jakub Jelinek  <jakub@redhat.com>
 
