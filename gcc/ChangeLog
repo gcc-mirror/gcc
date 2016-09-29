@@ -1,3 +1,7 @@
+2016-09-29  Marek Polacek  <polacek@redhat.com>
+
+	* genattrtab.c (write_attr_case): Also emit FALLTHRU marker.
+
 2016-09-29  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* builtins.c (expand_builtin_memcmp): don't swap args unless
