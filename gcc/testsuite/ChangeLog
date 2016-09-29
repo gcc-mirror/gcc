@@ -1,5 +1,18 @@
 2016-09-29  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/adx-check.h (main): Simplify feature bit tests.
+	* gcc.target/i386/avx2-check.h (main): Ditto.
+	* gcc.target/i386/avx512bw-check.h (main): Ditto.
+	* gcc.target/i386/avx512cd-check.h (main): Ditto.
+	* gcc.target/i386/avx512dq-check.h (main): Ditto.
+	* gcc.target/i386/avx512er-check.h (main): Ditto.
+	* gcc.target/i386/avx512f-check.h (main): Ditto.
+	* gcc.target/i386/avx512ifma-check.h (main): Ditto.
+	* gcc.target/i386/avx512vbmi-check.h (main): Ditto.
+	* gcc.target/i386/avx512vl-check.h (main): Ditto.
+
+2016-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/77756
 	* gcc.target/i386/pr77756.c: New test.
 
