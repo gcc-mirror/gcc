@@ -1,3 +1,9 @@
+2016-09-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add print-rtl-function.o.
+	* print-rtl-function.c: New file.
+	* print-rtl.h (print_rtx_function): New decl.
+
 2016-09-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77756

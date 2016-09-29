@@ -36,4 +36,6 @@ extern void print_insn (pretty_printer *pp, const rtx_insn *x, int verbose);
 extern void rtl_dump_bb_for_graph (pretty_printer *, basic_block);
 extern const char *str_pattern_slim (const_rtx);
 
+extern void print_rtx_function (FILE *file, function *fn);
+
 #endif  // GCC_PRINT_RTL_H

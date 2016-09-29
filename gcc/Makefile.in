@@ -1405,6 +1405,7 @@ OBJS = \
 	postreload.o \
 	predict.o \
 	print-rtl.o \
+	print-rtl-function.o \
 	print-tree.o \
 	profile.o \
 	real.o \
