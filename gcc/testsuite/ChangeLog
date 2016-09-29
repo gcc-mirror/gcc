@@ -1,3 +1,9 @@
+2016-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55152
+	* gcc.dg/pr55152.c: New testcase.
+	* gcc.dg/tree-ssa/phi-opt-5.c: Adjust.
+
 2016-09-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/profile-update-warning.c: Restrict to ia32.
