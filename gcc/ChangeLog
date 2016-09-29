@@ -1,3 +1,8 @@
+2016-09-29  Marek Polacek  <polacek@redhat.com>
+
+	* dwarf2out.c (loc_descriptor): Add fall through comment.
+	(add_const_value_attribute): Likewise.
+
 2016-09-29  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm.md (*arm_movsi_insn): Replace "t2" arch attribute

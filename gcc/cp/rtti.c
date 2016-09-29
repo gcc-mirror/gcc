@@ -855,7 +855,7 @@ involves_incomplete_p (tree type)
     case UNION_TYPE:
       if (!COMPLETE_TYPE_P (type))
 	return true;
-
+      /* Fall through.  */
     default:
       /* All other types do not involve incomplete class types.  */
       return false;

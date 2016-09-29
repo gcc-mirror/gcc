@@ -14554,6 +14554,7 @@ loc_descriptor (rtx rtl, machine_mode mode,
     case SYMBOL_REF:
       if (!const_ok_for_output (rtl))
 	break;
+      /* FALLTHROUGH */
     case LABEL_REF:
       if (mode != VOIDmode && GET_MODE_SIZE (mode) == DWARF2_ADDR_SIZE
 	  && (dwarf_version >= 4 || !dwarf_strict))
@@ -17201,6 +17202,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
     case SYMBOL_REF:
       if (!const_ok_for_output (rtl))
 	return false;
+      /* FALLTHROUGH */
     case LABEL_REF:
       if (dwarf_version >= 4 || !dwarf_strict)
 	goto rtl_addr;
