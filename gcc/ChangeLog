@@ -1,3 +1,8 @@
+2016-09-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* defaults.h (TARGET_FLT_EVAL_METHOD_NON_DEFAULT): Remove.
+	* system.h (TARGET_FLT_EVAL_METHOD_NON_DEFAULT): Poison.
+
 2016-09-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (set_defs_to_varying): New helper avoiding
