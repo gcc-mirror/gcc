@@ -1,3 +1,10 @@
+2016-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55152
+	* match.pd: Add max(a,-a) -> abs(a) pattern.
+	* tree-ssa-phiopt.c (minmax_replacement): Disable for
+	HONOR_SIGNED_ZEROS types.
+
 2016-09-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* defaults.h (TARGET_FLT_EVAL_METHOD_NON_DEFAULT): Remove.
