@@ -1,6 +1,16 @@
 2016-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/71067
+	* decl.c (match_data_constant): On error, set 'result' to NULL.
+
+	PR fortran/77260
+	* gcc/fortran/trans-decl.c (generate_local_decl): Suppress warning
+	for unused variable if symbol is entry point.
+
+2016-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/69514
 	* array.c (gfc_match_array_constructor):  If type-spec is present,
 	walk the array constructor performing possible conversions for 
