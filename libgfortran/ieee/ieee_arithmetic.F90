@@ -500,12 +500,12 @@ contains
 
   ! IEEE_VALUE
 
-  elemental real(kind=4) function IEEE_VALUE_4(X, C) result(res)
-    implicit none
-    real(kind=4), intent(in) :: X
-    type(IEEE_CLASS_TYPE), intent(in) :: C
+  elemental real(kind=4) function IEEE_VALUE_4(X, CLASS) result(res)
 
-    select case (C%hidden)
+    real(kind=4), intent(in) :: X
+    type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+
+    select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
         res = -1
         res = sqrt(res)
@@ -538,12 +538,12 @@ contains
      end select
   end function
 
-  elemental real(kind=8) function IEEE_VALUE_8(X, C) result(res)
-    implicit none
-    real(kind=8), intent(in) :: X
-    type(IEEE_CLASS_TYPE), intent(in) :: C
+  elemental real(kind=8) function IEEE_VALUE_8(X, CLASS) result(res)
 
-    select case (C%hidden)
+    real(kind=8), intent(in) :: X
+    type(IEEE_CLASS_TYPE), intent(in) :: CLASS
+
+    select case (CLASS%hidden)
       case (1)     ! IEEE_SIGNALING_NAN
         res = -1
         res = sqrt(res)

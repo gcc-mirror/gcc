@@ -1,6 +1,16 @@
 2016-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/77506
+	* array.c (gfc_match_array_constructor): CHARACTER(len=*) cannot
+	appear in an array constructor.
+
+	PR fortran/77507
+	* intrinsic.c (add_functions):  Use correct keyword.
+
+2016-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/71067
 	* decl.c (match_data_constant): On error, set 'result' to NULL.
 

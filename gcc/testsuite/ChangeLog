@@ -1,6 +1,15 @@
 2016-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/77506
+	* gfortran.dg/pr77506.f90: New test.
+
+	PR fortran/77507
+	* gfortran.dg/pr77507.f90: New test.
+
+2016-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/71067
 	* gfortran.dg/pr71067_1.f90: New test.
 	* gfortran.dg/pr71067_2.f90: Ditto.
