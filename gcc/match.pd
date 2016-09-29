@@ -147,12 +147,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (op @0 integer_onep)
     (non_lvalue @0)))
 
-/* X / -1 is -X.  */
 (for div (trunc_div ceil_div floor_div round_div exact_div)
+  /* X / -1 is -X.  */
  (simplify
    (div @0 integer_minus_onep@1)
    (if (!TYPE_UNSIGNED (type))
-    (negate @0))))
+    (negate @0)))
+ /* X / abs (X) is X < 0 ? -1 : 1.  */ 
+ (simplify
+   (div @0 (abs @0))
+   (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+	&& TYPE_OVERFLOW_UNDEFINED (type))
+    (cond (lt @0 { build_zero_cst (type); })
+          { build_minus_one_cst (type); } { build_one_cst (type); })))
+ /* X / -X is -1.  */
+ (simplify
+   (div @0 (negate @0))
+   (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+	&& TYPE_OVERFLOW_UNDEFINED (type))
+    { build_minus_one_cst (type); })))
 
 /* For unsigned integral types, FLOOR_DIV_EXPR is the same as
    TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  */
