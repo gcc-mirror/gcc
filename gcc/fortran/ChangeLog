@@ -1,5 +1,10 @@
 2016-09-30  Fritz Reese  <fritzoreese@gmail.com>
 
+	PR fortran/77764
+	* interface.c (gfc_compare_union_types): Null-guard map components.
+
+2016-09-30  Fritz Reese  <fritzoreese@gmail.com>
+
 	PR fortran/77782
 	* interface.c (gfc_compare_derived_types): Use gfc_compare_union_types
 	to compare union types.
