@@ -1,3 +1,11 @@
+2016-09-30  Matthew Wawhab  <matthew.wahab@arm.com>
+
+	* gcc.target/arm/fp16-aapcs-3.c: Replace arm_fp16_ok with
+	arm_fp16_alternative_ok as the required effective target.
+	* gcc.target/arm/fp16-aapcs-4.c: Likewise.  Also add
+	-mfp16-format=alternative to the dg-options directive and remove
+	the dg-add-options directive.
+
 2016-09-30  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/77764

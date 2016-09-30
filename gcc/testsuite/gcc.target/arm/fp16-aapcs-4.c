@@ -1,7 +1,6 @@
 /* { dg-do compile }  */
-/* { dg-require-effective-target arm_fp16_ok } */
-/* { dg-options "-mfloat-abi=softfp -O2" }  */
-/* { dg-add-options arm_fp16_alternative } */
+/* { dg-require-effective-target arm_fp16_alternative_ok } */
+/* { dg-options "-mfloat-abi=softfp -O2 -mfp16-format=alternative" }  */
 /* { dg-skip-if "incompatible float-abi" { arm*-*-* } { "-mfloat-abi=hard" } } */
 
 /* Test __fp16 arguments and return value in registers (softfp).  */
