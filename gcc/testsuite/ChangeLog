@@ -1,3 +1,13 @@
+2016-09-29  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/pr27336.c: Make dependency on 
+	-fdelete-null-pointer-checks explicit.
+	* g++.dg/cpp0x/constexpr-array-ptr10.C: Likewise.
+	* g++.dg/cpp0x/constexpr-nullptr-1.C: Likewise.
+	* g++.dg/lto/pr69589_0.C: Add nios2-*-elf to unsupported targets.
+	* gcc.dg/pic-1.c: Require fpic target support.
+	* gcc.dg/pic-2.c: Likewise.
+
 2016-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Implement P0001R1 - C++17 removal of register storage class specifier

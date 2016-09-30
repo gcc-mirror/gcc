@@ -8,7 +8,7 @@
 // that and involves all constexpr object pointers.
 
 // { dg-do compile { target c++11 } }
-// { dg-additional-options "-Wall -Wextra" }
+// { dg-additional-options "-Wall -Wextra -fdelete-null-pointer-checks" }
 
 namespace A {
 

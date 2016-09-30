@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdelete-null-pointer-checks -fdump-tree-vrp1" } */
 
 struct B { int x; };
 extern void g3(struct B *that)  __attribute__((nonnull));
