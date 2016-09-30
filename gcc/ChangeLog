@@ -1,5 +1,10 @@
 2016-09-30  Richard Biener  <rguenther@suse.de>
 
+	* tree-vrp.c (intersect_ranges): If we failed to handle
+	the intersection choose a constant singleton range if available.
+
+2016-09-30  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/77399
 	* tree-ssa-forwprop.c (simplify_vector_constructor): Handle
 	float <-> int conversions.
