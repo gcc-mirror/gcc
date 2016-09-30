@@ -10034,6 +10034,10 @@ is enabled by default when using @option{-fsanitize=address} option.
 To disable use-after-return detection use 
 @option{--param asan-use-after-return=0}.
 
+Note: The check is disabled by default at runtime.  To enable the check,
+you should set environment variable @env{ASAN_OPTIONS} to
+@code{detect_stack_use_after_return=1}.
+
 @item asan-instrumentation-with-call-threshold
 If number of memory accesses in function being instrumented
 is greater or equal to this number, use callbacks instead of inline checks.
