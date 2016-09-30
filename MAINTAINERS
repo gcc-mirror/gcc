@@ -155,9 +155,6 @@ Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
 c++			Jason Merrill		<jason@redhat.com>
 c++			Nathan Sidwell		<nathan@codesourcery.com>
 go			Ian Lance Taylor	<ian@airs.com>
-java			Per Bothner		<per@bothner.com>
-java			Andrew Haley		<aph@redhat.com>
-java			Tom Tromey		<tromey@redhat.com>
 objective-c/c++		Mike Stump		<mikestump@comcast.net>
 objective-c/c++		Iain Sandoe		<iain@codesourcery.com>
 
@@ -352,6 +349,7 @@ Ian Bolton					<ian.bolton@arm.com>
 Andrea Bona					<andrea.bona@st.com>
 Paolo Bonzini					<bonzini@gnu.org>
 Neil Booth					<neil@daikokuya.co.uk>
+Per Bothner                                     <per@bothner.com>
 Robert Bowdidge					<bowdidge@apple.com>
 Joel Brobecker					<brobecker@gnat.com>
 Dave Brolley					<brolley@redhat.com>
@@ -425,6 +423,7 @@ Xuepeng Guo					<terry.guo@arm.com>
 Wei Guozhi					<carrot@google.com>
 Mostafa Hagog					<hagog@gcc.gnu.org>
 Olivier Hainque					<hainque@adacore.com>
+Andrew Haley		                        <aph@redhat.com>
 Stuart Hastings					<stuart@apple.com>
 Michael Haubenwallner				<michael.haubenwallner@ssi-schaefer.com>
 Pat Haugen					<pthaugen@us.ibm.com>
@@ -608,6 +607,7 @@ Ilya Tocar					<tocarip@gmail.com>
 Philipp Tomsich					<philipp.tomsich@theobroma-systems.com>
 Konrad Trifunovic				<konrad.trifunovic@inria.fr>
 Markus Trippelsdorf				<markus@trippelsdorf.de>
+Tom Tromey                                      <tromey@redhat.com>
 Martin Uecker					<uecker@eecs.berkeley.edu>
 David Ung					<davidu@mips.com>
 Neil Vachharajani				<nvachhar@gmail.com>
