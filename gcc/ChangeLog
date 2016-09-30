@@ -1,6 +1,7 @@
 2016-09-30  Marek Polacek  <polacek@redhat.com>
 
 	* config/aarch64/aarch64-simd.md: Adjust fall through comments.
+	* config/alpha/predicates.md: Likewise.
 
 2016-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
