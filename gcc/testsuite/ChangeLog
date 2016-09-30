@@ -1,3 +1,7 @@
+2016-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ifcvt_avoid_const_materialization_1.c: New test.
+
 2016-09-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77399
