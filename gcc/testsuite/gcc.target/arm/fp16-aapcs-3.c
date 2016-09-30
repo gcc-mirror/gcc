@@ -1,6 +1,6 @@
 /* { dg-do compile }  */
 /* { dg-require-effective-target arm_hard_vfp_ok }  */
-/* { dg-require-effective-target arm_fp16_ok } */
+/* { dg-require-effective-target arm_fp16_alternative_ok } */
 /* { dg-options "-O2" }  */
 /* { dg-add-options arm_fp16_alternative } */
 
