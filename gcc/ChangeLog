@@ -1,3 +1,8 @@
+2016-09-30  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document asan-use-after-return that
+	it's disabled by default in runtime.
+
 2016-09-30  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (intersect_ranges): If we failed to handle
