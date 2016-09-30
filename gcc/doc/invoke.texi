@@ -213,7 +213,7 @@ in the following sections.
 -Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor -Wliteral-suffix -Wmultiple-inheritance @gol
 -Wnamespaces -Wnarrowing @gol
--Wnoexcept -Wnon-virtual-dtor  -Wreorder @gol
+-Wnoexcept -Wnon-virtual-dtor  -Wreorder -Wregister @gol
 -Weffc++  -Wstrict-null-sentinel -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
@@ -2839,6 +2839,15 @@ destructor itself or in an accessible polymorphic base class, in which
 case it is possible but unsafe to delete an instance of a derived
 class through a pointer to the class itself or base class.  This
 warning is automatically enabled if @option{-Weffc++} is specified.
+
+@item -Wregister @r{(C++ and Objective-C++ only)}
+@opindex Wregister
+@opindex Wno-register
+Warn on uses of the @code{register} storage class specifier, except
+when it is part of the GNU @ref{Explicit Register Variables} extension.
+The use of the @code{register} keyword as storage class specifier has
+been deprecated in C++11 and removed in C++17.
+Enabled by default with @option{-std=c++1z}.
 
 @item -Wreorder @r{(C++ and Objective-C++ only)}
 @opindex Wreorder
