@@ -325,8 +325,6 @@ HOST_ISLVER = @islver@
 HOST_LIBELFLIBS = @libelflibs@
 HOST_LIBELFINC = @libelfinc@
 
-EXTRA_CONFIGARGS_LIBJAVA = @EXTRA_CONFIGARGS_LIBJAVA@
-
 # ----------------------------------------------
 # Programs producing files for the BUILD machine
 # ----------------------------------------------
