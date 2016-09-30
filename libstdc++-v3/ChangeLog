@@ -1,5 +1,15 @@
 2016-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/77795
+	* acinclude.m4 (GLIBCXX_CHECK_STDIO_PROTO): Use -std=gnu++11 to check
+	for gets.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_global/cstdio [!_GLIBCXX_HAVE_GETS] (gets): Only declare
+	for C++98 and C++11.
+	* include/c_std/cstdio [!_GLIBCXX_HAVE_GETS] (gets): Likewise.
+	* testsuite/27_io/headers/cstdio/functions_neg.cc: New test.
+
 	* doc/xml/manual/intro.xml: Document LWG 2192 changes.
 	* doc/html/*: Regenerate.
 	* include/Makefile.am: Add bits/std_abs.h.

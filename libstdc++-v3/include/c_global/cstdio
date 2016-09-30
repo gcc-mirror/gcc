@@ -44,7 +44,7 @@
 #ifndef _GLIBCXX_CSTDIO
 #define _GLIBCXX_CSTDIO 1
 
-#ifndef _GLIBCXX_HAVE_GETS
+#if __cplusplus <= 201103L && !defined(_GLIBCXX_HAVE_GETS)
 extern "C" char* gets (char* __s) __attribute__((__deprecated__));
 #endif
 
