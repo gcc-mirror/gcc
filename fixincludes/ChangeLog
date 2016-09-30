@@ -1,3 +1,11 @@
+2016-09-30  Tadek Kijkowski  <tkijkowski@gmail.com>
+
+	* check.tpl: Convert line endings to unix on test outputs
+	* fixfixes.c: Fixed passing file name to apply_fix when
+	SEPARATE_FIX_PROC is defined
+	* fixincl.c: Use system_with_shell, fixes for MinGW and DJGPP
+	* fixlib.c, fixlib.h: Added system_with_shell and fix_path_separators
+
 2016-09-04  John David Anglin  <danglin@gcc.gnu.org>
 
 	* inclhack.def (hpux_longjmp): Adjust select regular expression.
