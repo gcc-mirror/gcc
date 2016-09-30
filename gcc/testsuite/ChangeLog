@@ -2,6 +2,13 @@
 
 	Backport from trunk
 
+	PR fortran/61318
+	* gfortran.dg/pr61318.f90: New test.
+
+2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
+
 	PR fortran/71859
 	* check.c(numeric_check): Prevent ICE.  Issue error for invalid
 	subroutine as an actual argument when numeric argument is expected.

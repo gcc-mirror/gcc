@@ -2026,7 +2026,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     {
       if (where)
 	gfc_error ("Type mismatch in argument %qs at %L; passed %s to %s",
-		   formal->name, &actual->where, gfc_typename (&actual->ts),
+		   formal->name, where, gfc_typename (&actual->ts),
 		   gfc_typename (&formal->ts));
       return 0;
     }
