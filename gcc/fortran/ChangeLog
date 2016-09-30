@@ -1,4 +1,12 @@
 2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
+
+	PR fortran/71799
+	* resolve.c(gfc_resolve_iterator): Failure of type conversion need
+	not ICE.
+
+2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
  
 	Backport from trunk
 
