@@ -2748,6 +2748,7 @@ target_libraries="target-libgcc \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
+		target-libffi \
 		target-libobjc \
 		target-libada \
 		target-libgo"
@@ -3348,6 +3349,101 @@ case "${target}" in
   mmix-*-*)
     # See <http://gcc.gnu.org/ml/gcc-patches/2004-11/msg00572.html>.
     unsupported_languages="$unsupported_languages fortran"
+    ;;
+esac
+
+# Disable libffi for some systems.
+case "${target}" in
+  powerpc-*-darwin*)
+    ;;
+  i[3456789]86-*-darwin*)
+    ;;
+  x86_64-*-darwin[912]*)
+    ;;
+  *-*-darwin*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-netware*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-phoenix*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-rtems*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-tpf*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-uclinux*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-vxworks*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  alpha*-*-*vms*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  arm*-*-freebsd*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  arm-wince-pe)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  arm*-*-symbianelf*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  cris-*-* | crisv32-*-*)
+    case "${target}" in
+      *-*-linux*)
+	;;
+      *) # See PR46792 regarding target-libffi.
+	noconfigdirs="$noconfigdirs target-libffi";;
+    esac
+    ;;
+  hppa*64*-*-hpux*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  hppa*-hp-hpux11*)
+    ;;
+  hppa*-*-hpux*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  ia64*-*-*vms*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  i[3456789]86-w64-mingw*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  i[3456789]86-*-mingw*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  x86_64-*-mingw*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  mmix-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  powerpc-*-aix*)
+    # copied from rs6000-*-* entry
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  rs6000-*-aix*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  ft32-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-lynxos*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+esac
+
+# Disable the go frontend on systems where it is known to not work. Please keep
+# this in sync with contrib/config-list.mk.
+case "${target}" in
+*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)
+    unsupported_languages="$unsupported_languages go"
     ;;
 esac
 
@@ -13974,51 +14070,6 @@ $as_echo "pre-installed in $ac_dir" >&6; }
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     GCC_FOR_TARGET='$()'
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
-$as_echo "host tool" >&6; }
-  else
-    # We need a cross tool
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
-$as_echo "pre-installed" >&6; }
-  fi
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target gcj" >&5
-$as_echo_n "checking where to find the target gcj... " >&6; }
-if test "x${build}" != "x${host}" ; then
-  if expr "x$GCJ_FOR_TARGET" : "x/" > /dev/null; then
-    # We already found the complete path
-    ac_dir=`dirname $GCJ_FOR_TARGET`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
-$as_echo "pre-installed in $ac_dir" >&6; }
-  else
-    # Canadian cross, just use what we found
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
-$as_echo "pre-installed" >&6; }
-  fi
-else
-  ok=yes
-  case " ${configdirs} " in
-    *" gcc "*) ;;
-    *) ok=no ;;
-  esac
-  case ,${enable_languages}, in
-    *,java,*) ;;
-    *) ok=no ;;
-  esac
-  if test $ok = yes; then
-    # An in-tree tool is available and we can use it
-    GCJ_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/gcj -B$$r/$(HOST_SUBDIR)/gcc/'
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
-$as_echo "just compiled" >&6; }
-  elif expr "x$GCJ_FOR_TARGET" : "x/" > /dev/null; then
-    # We already found the complete path
-    ac_dir=`dirname $GCJ_FOR_TARGET`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
-$as_echo "pre-installed in $ac_dir" >&6; }
-  elif test "x$target" = "x$host"; then
-    # We can use an host tool
-    GCJ_FOR_TARGET='$(GCJ)'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
 $as_echo "host tool" >&6; }
   else

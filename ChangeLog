@@ -1,3 +1,10 @@
+2016-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Add target-libffi to target_libraries.
+	Readd libgcj target disablings, modified to only target-libffi.
+	Readd target addition of go to unsupported languages.
+	* configure: Regenerated.
+
 2016-09-30  Steve Ellcey  <sellcey@caviumnetworks.com>
 
 	* MAINTAINERS: Update email address.
