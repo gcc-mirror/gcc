@@ -1,3 +1,9 @@
+2016-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/77490
+	* c-c++-common/Wbool-operation-1.c: Add -Wno-psabi to dg-options.
+	Add dg-prune-output directive.
+
 2016-09-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/66643

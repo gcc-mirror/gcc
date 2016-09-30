@@ -1,6 +1,6 @@
 /* PR c/77490 */
 /* { dg-do compile } */
-/* { dg-options "-Wall" } */
+/* { dg-options "-Wall -Wno-psabi" } */
 
 #ifndef __cplusplus
 # define bool _Bool
@@ -34,3 +34,5 @@ fn (bool b, bool b2, T b3, int n, v4si v)
 
   return r;
 }
+
+/* { dg-prune-output ".*GCC vector passed by reference.*" } */
