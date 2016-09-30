@@ -396,7 +396,7 @@ type g struct {
 	gcnextsegment unsafe.Pointer
 	gcnextsp      unsafe.Pointer
 	gcinitialsp   unsafe.Pointer
-	gcregs        _ucontext_t
+	gcregs        g_ucontext_t
 
 	entry    unsafe.Pointer // goroutine entry point
 	fromgogo bool           // whether entered from gogo function
@@ -406,7 +406,7 @@ type g struct {
 
 	traceback *traceback // stack traceback buffer
 
-	context      _ucontext_t        // saved context for setcontext
+	context      g_ucontext_t       // saved context for setcontext
 	stackcontext [10]unsafe.Pointer // split-stack context
 }
 
@@ -474,7 +474,7 @@ type m struct {
 	// Not for gccgo: libcallg  guintptr
 	// Not for gccgo: syscall   libcall // stores syscall parameters on windows
 
-	// Not for gccgo: mOS
+	mos mOS
 
 	// Remaining fields are specific to gccgo.
 
@@ -484,8 +484,6 @@ type m struct {
 	dropextram bool // drop after call is done
 
 	gcing int32
-
-	waitsema uintptr // semaphore on systems that don't use futexes
 
 	cgomal *cgoMal // allocations via _cgo_allocate
 }
@@ -771,13 +769,15 @@ const (
 const _TracebackMaxFrames = 100
 
 var (
-//	emptystring string
-//	allglen     uintptr
-//	allm        *m
-//	allp        [_MaxGomaxprocs + 1]*p
-//	gomaxprocs  int32
-//	panicking   uint32
-//	ncpu        int32
+	//	emptystring string
+	//	allglen     uintptr
+	//	allm        *m
+	//	allp        [_MaxGomaxprocs + 1]*p
+	//	gomaxprocs  int32
+	//	panicking   uint32
+
+	ncpu int32
+
 //	forcegc     forcegcstate
 //	sched       schedt
 //	newprocs    int32
@@ -803,13 +803,13 @@ var (
 
 // Types that are only used by gccgo.
 
-// _ucontext_t is a Go version of the C ucontext_t type, used by getcontext.
-// _sizeof_ucontext_t is defined by the Makefile from <ucontext.h>.
+// g_ucontext_t is a Go version of the C ucontext_t type, used by getcontext.
+// _sizeof_ucontext_t is defined by mkrsysinfo.sh from <ucontext.h>.
 // On some systems getcontext and friends require a value that is
 // aligned to a 16-byte boundary.  We implement this by increasing the
 // required size and picking an appropriate offset when we use the
 // array.
-type _ucontext_t [(_sizeof_ucontext_t + 15) / unsafe.Sizeof(unsafe.Pointer(nil))]unsafe.Pointer
+type g_ucontext_t [(_sizeof_ucontext_t + 15) / unsafe.Sizeof(unsafe.Pointer(nil))]unsafe.Pointer
 
 // traceback is used to collect stack traces from other goroutines.
 type traceback struct {

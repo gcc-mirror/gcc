@@ -45,7 +45,7 @@ syscall_cgocall ()
   m = runtime_m ();
   ++m->ncgocall;
   ++m->ncgo;
-  runtime_entersyscall ();
+  runtime_entersyscall (0);
 }
 
 /* Prepare to return to Go code from C/C++ code.  */
@@ -69,7 +69,7 @@ syscall_cgocalldone ()
   /* If we are invoked because the C function called _cgo_panic, then
      _cgo_panic will already have exited syscall mode.  */
   if (g->atomicstatus == _Gsyscall)
-    runtime_exitsyscall ();
+    runtime_exitsyscall (0);
 
   runtime_unlockOSThread();
 }
@@ -89,7 +89,7 @@ syscall_cgocallback ()
       mp->dropextram = true;
     }
 
-  runtime_exitsyscall ();
+  runtime_exitsyscall (0);
 
   if (runtime_m ()->ncgo == 0)
     {
@@ -115,7 +115,7 @@ syscall_cgocallbackdone ()
 {
   M *mp;
 
-  runtime_entersyscall ();
+  runtime_entersyscall (0);
   mp = runtime_m ();
   if (mp->dropextram && mp->ncgo == 0)
     {
@@ -154,9 +154,9 @@ _cgo_allocate (size_t n)
 {
   void *ret;
 
-  runtime_exitsyscall ();
+  runtime_exitsyscall (0);
   ret = alloc_saved (n);
-  runtime_entersyscall ();
+  runtime_entersyscall (0);
   return ret;
 }
 
@@ -171,7 +171,7 @@ _cgo_panic (const char *p)
   String *ps;
   struct __go_empty_interface e;
 
-  runtime_exitsyscall ();
+  runtime_exitsyscall (0);
   len = __builtin_strlen (p);
   data = alloc_saved (len);
   __builtin_memcpy (data, p, len);

@@ -17,8 +17,6 @@ package runtime
 //var F64toint = f64toint
 //var Sqrt = sqrt
 
-func entersyscall(int32)
-func exitsyscall(int32)
 func golockedOSThread() bool
 
 var Entersyscall = entersyscall

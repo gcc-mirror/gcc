@@ -223,13 +223,13 @@ am__DEPENDENCIES_3 = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_2)
 libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_3)
-@LIBGO_IS_LINUX_FALSE@am__objects_1 = lock_sema.lo thread-sema.lo
-@LIBGO_IS_LINUX_TRUE@am__objects_1 = lock_futex.lo thread-linux.lo
-@HAVE_SYS_MMAN_H_FALSE@am__objects_2 = mem_posix_memalign.lo
-@HAVE_SYS_MMAN_H_TRUE@am__objects_2 = mem.lo
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_3 = netpoll_kqueue.lo
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@am__objects_3 = netpoll_select.lo
-@LIBGO_IS_LINUX_TRUE@am__objects_3 = netpoll_epoll.lo
+@HAVE_SYS_MMAN_H_FALSE@am__objects_1 = mem_posix_memalign.lo
+@HAVE_SYS_MMAN_H_TRUE@am__objects_1 = mem.lo
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = netpoll_kqueue.lo
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@am__objects_2 = netpoll_select.lo
+@LIBGO_IS_LINUX_TRUE@am__objects_2 = netpoll_epoll.lo
+@LIBGO_IS_LINUX_FALSE@am__objects_3 = thread-sema.lo
+@LIBGO_IS_LINUX_TRUE@am__objects_3 = thread-linux.lo
 @LIBGO_IS_RTEMS_TRUE@am__objects_4 = rtems-task-variable-add.lo
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_5 = getncpu-none.lo
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@am__objects_5 = getncpu-bsd.lo
@@ -259,13 +259,13 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-type-identity.lo go-type-interface.lo go-type-string.lo \
 	go-typedesc-equal.lo go-unsafe-new.lo go-unsafe-newarray.lo \
 	go-unsafe-pointer.lo go-unsetenv.lo go-unwind.lo go-varargs.lo \
-	env_posix.lo heapdump.lo $(am__objects_1) mcache.lo \
-	mcentral.lo $(am__objects_2) mfixalloc.lo mgc0.lo mheap.lo \
-	msize.lo $(am__objects_3) panic.lo parfor.lo print.lo proc.lo \
-	runtime.lo signal_unix.lo thread.lo yield.lo $(am__objects_4) \
-	chan.lo cpuprof.lo go-iface.lo lfstack.lo malloc.lo mprof.lo \
-	netpoll.lo rdebug.lo reflect.lo runtime1.lo sema.lo \
-	sigqueue.lo string.lo time.lo $(am__objects_5)
+	env_posix.lo heapdump.lo mcache.lo mcentral.lo \
+	$(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
+	$(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
+	runtime.lo signal_unix.lo thread.lo $(am__objects_3) yield.lo \
+	$(am__objects_4) chan.lo cpuprof.lo go-iface.lo lfstack.lo \
+	malloc.lo mprof.lo netpoll.lo rdebug.lo reflect.lo runtime1.lo \
+	sema.lo sigqueue.lo string.lo time.lo $(am__objects_5)
 am_libgo_llgo_la_OBJECTS = $(am__objects_6)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -826,8 +826,8 @@ toolexeclibgounicode_DATA = \
 @HAVE_SYS_MMAN_H_TRUE@runtime_mem_file = runtime/mem.c
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
-@LIBGO_IS_LINUX_FALSE@runtime_lock_files = runtime/lock_sema.c runtime/thread-sema.c
-@LIBGO_IS_LINUX_TRUE@runtime_lock_files = runtime/lock_futex.c runtime/thread-linux.c
+@LIBGO_IS_LINUX_FALSE@runtime_thread_files = runtime/thread-sema.c
+@LIBGO_IS_LINUX_TRUE@runtime_thread_files = runtime/thread-linux.c
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-none.c
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-bsd.c
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-bsd.c
@@ -903,7 +903,6 @@ runtime_files = \
 	runtime/go-varargs.c \
 	runtime/env_posix.c \
 	runtime/heapdump.c \
-	$(runtime_lock_files) \
 	runtime/mcache.c \
 	runtime/mcentral.c \
 	$(runtime_mem_file) \
@@ -919,6 +918,7 @@ runtime_files = \
 	runtime/runtime.c \
 	runtime/signal_unix.c \
 	runtime/thread.c \
+	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	chan.c \
@@ -1633,8 +1633,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgobegin_a-go-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgobegin_llgo_a-go-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgolibbegin_a-go-libmain.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock_futex.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock_sema.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/malloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcache.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcentral.Plo@am__quote@
@@ -2179,34 +2177,6 @@ heapdump.lo: runtime/heapdump.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o heapdump.lo `test -f 'runtime/heapdump.c' || echo '$(srcdir)/'`runtime/heapdump.c
 
-lock_sema.lo: runtime/lock_sema.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT lock_sema.lo -MD -MP -MF $(DEPDIR)/lock_sema.Tpo -c -o lock_sema.lo `test -f 'runtime/lock_sema.c' || echo '$(srcdir)/'`runtime/lock_sema.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/lock_sema.Tpo $(DEPDIR)/lock_sema.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/lock_sema.c' object='lock_sema.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o lock_sema.lo `test -f 'runtime/lock_sema.c' || echo '$(srcdir)/'`runtime/lock_sema.c
-
-thread-sema.lo: runtime/thread-sema.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT thread-sema.lo -MD -MP -MF $(DEPDIR)/thread-sema.Tpo -c -o thread-sema.lo `test -f 'runtime/thread-sema.c' || echo '$(srcdir)/'`runtime/thread-sema.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/thread-sema.Tpo $(DEPDIR)/thread-sema.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/thread-sema.c' object='thread-sema.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o thread-sema.lo `test -f 'runtime/thread-sema.c' || echo '$(srcdir)/'`runtime/thread-sema.c
-
-lock_futex.lo: runtime/lock_futex.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT lock_futex.lo -MD -MP -MF $(DEPDIR)/lock_futex.Tpo -c -o lock_futex.lo `test -f 'runtime/lock_futex.c' || echo '$(srcdir)/'`runtime/lock_futex.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/lock_futex.Tpo $(DEPDIR)/lock_futex.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/lock_futex.c' object='lock_futex.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o lock_futex.lo `test -f 'runtime/lock_futex.c' || echo '$(srcdir)/'`runtime/lock_futex.c
-
-thread-linux.lo: runtime/thread-linux.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT thread-linux.lo -MD -MP -MF $(DEPDIR)/thread-linux.Tpo -c -o thread-linux.lo `test -f 'runtime/thread-linux.c' || echo '$(srcdir)/'`runtime/thread-linux.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/thread-linux.Tpo $(DEPDIR)/thread-linux.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/thread-linux.c' object='thread-linux.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o thread-linux.lo `test -f 'runtime/thread-linux.c' || echo '$(srcdir)/'`runtime/thread-linux.c
-
 mcache.lo: runtime/mcache.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mcache.lo -MD -MP -MF $(DEPDIR)/mcache.Tpo -c -o mcache.lo `test -f 'runtime/mcache.c' || echo '$(srcdir)/'`runtime/mcache.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/mcache.Tpo $(DEPDIR)/mcache.Plo
@@ -2332,6 +2302,20 @@ thread.lo: runtime/thread.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/thread.c' object='thread.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o thread.lo `test -f 'runtime/thread.c' || echo '$(srcdir)/'`runtime/thread.c
+
+thread-sema.lo: runtime/thread-sema.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT thread-sema.lo -MD -MP -MF $(DEPDIR)/thread-sema.Tpo -c -o thread-sema.lo `test -f 'runtime/thread-sema.c' || echo '$(srcdir)/'`runtime/thread-sema.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/thread-sema.Tpo $(DEPDIR)/thread-sema.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/thread-sema.c' object='thread-sema.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o thread-sema.lo `test -f 'runtime/thread-sema.c' || echo '$(srcdir)/'`runtime/thread-sema.c
+
+thread-linux.lo: runtime/thread-linux.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT thread-linux.lo -MD -MP -MF $(DEPDIR)/thread-linux.Tpo -c -o thread-linux.lo `test -f 'runtime/thread-linux.c' || echo '$(srcdir)/'`runtime/thread-linux.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/thread-linux.Tpo $(DEPDIR)/thread-linux.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/thread-linux.c' object='thread-linux.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o thread-linux.lo `test -f 'runtime/thread-linux.c' || echo '$(srcdir)/'`runtime/thread-linux.c
 
 yield.lo: runtime/yield.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT yield.lo -MD -MP -MF $(DEPDIR)/yield.Tpo -c -o yield.lo `test -f 'runtime/yield.c' || echo '$(srcdir)/'`runtime/yield.c
@@ -3599,12 +3583,8 @@ s-version: Makefile
 	$(STAMP) $@
 
 runtime_sysinfo.go: s-runtime_sysinfo; @true
-s-runtime_sysinfo: sysinfo.go
-	rm -f tmp-runtime_sysinfo.go
-	echo 'package runtime' > tmp-runtime_sysinfo.go
-	echo >> tmp-runtime_sysinfo.go
-	grep 'const _sizeof_ucontext_t ' sysinfo.go >> tmp-runtime_sysinfo.go
-	grep 'type _sigset_t ' sysinfo.go >> tmp-runtime_sysinfo.go
+s-runtime_sysinfo: $(srcdir)/mkrsysinfo.sh gen-sysinfo.go
+	$(SHELL) $(srcdir)/mkrsysinfo.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-runtime_sysinfo.go runtime_sysinfo.go
 	$(STAMP) $@
 

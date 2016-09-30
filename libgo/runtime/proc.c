@@ -2021,11 +2021,11 @@ goexit0(G *gp)
 // make g->sched refer to the caller's stack segment, because
 // entersyscall is going to return immediately after.
 
-void runtime_entersyscall(void) __attribute__ ((no_split_stack));
+void runtime_entersyscall(int32) __attribute__ ((no_split_stack));
 static void doentersyscall(void) __attribute__ ((no_split_stack, noinline));
 
 void
-runtime_entersyscall()
+runtime_entersyscall(int32 dummy __attribute__ ((unused)))
 {
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
@@ -2095,7 +2095,7 @@ doentersyscall()
 
 // The same as runtime_entersyscall(), but with a hint that the syscall is blocking.
 void
-runtime_entersyscallblock(void)
+runtime_entersyscallblock(int32 dummy __attribute__ ((unused)))
 {
 	P *p;
 
@@ -2133,7 +2133,7 @@ runtime_entersyscallblock(void)
 // This is called only from the go syscall library, not
 // from the low-level system calls used by the runtime.
 void
-runtime_exitsyscall(void)
+runtime_exitsyscall(int32 dummy __attribute__ ((unused)))
 {
 	G *gp;
 
@@ -2254,6 +2254,28 @@ exitsyscall0(G *gp)
 	schedule();  // Never returns.
 }
 
+void syscall_entersyscall(void)
+  __asm__(GOSYM_PREFIX "syscall.Entersyscall");
+
+void syscall_entersyscall(void) __attribute__ ((no_split_stack));
+
+void
+syscall_entersyscall()
+{
+  runtime_entersyscall(0);
+}
+
+void syscall_exitsyscall(void)
+  __asm__(GOSYM_PREFIX "syscall.Exitsyscall");
+
+void syscall_exitsyscall(void) __attribute__ ((no_split_stack));
+
+void
+syscall_exitsyscall()
+{
+  runtime_exitsyscall(0);
+}
+
 // Called from syscall package before fork.
 void syscall_runtime_BeforeFork(void)
   __asm__(GOSYM_PREFIX "syscall.runtime_BeforeFork");
@@ -2321,33 +2343,6 @@ runtime_malg(int32 stacksize, byte** ret_stack, uintptr* ret_stacksize)
 #endif
 	}
 	return newg;
-}
-
-/* For runtime package testing.  */
-
-
-// Create a new g running fn with siz bytes of arguments.
-// Put it on the queue of g's waiting to run.
-// The compiler turns a go statement into a call to this.
-// Cannot split the stack because it assumes that the arguments
-// are available sequentially after &fn; they would not be
-// copied if a stack split occurred.  It's OK for this to call
-// functions that split the stack.
-void runtime_testing_entersyscall(int32)
-  __asm__ (GOSYM_PREFIX "runtime.entersyscall");
-void
-runtime_testing_entersyscall(int32 dummy __attribute__ ((unused)))
-{
-	runtime_entersyscall();
-}
-
-void runtime_testing_exitsyscall(int32)
-  __asm__ (GOSYM_PREFIX "runtime.exitsyscall");
-
-void
-runtime_testing_exitsyscall(int32 dummy __attribute__ ((unused)))
-{
-	runtime_exitsyscall();
 }
 
 G*
