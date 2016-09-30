@@ -1,3 +1,13 @@
+2016-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77801
+	* include/experimental/numeric: Include <numeric>.
+	(__abs): Define.
+	(gcd, lcm): Use __abs instead of std::abs.
+	* testsuite/experimental/numeric/77801.cc: New test.
+	* testsuite/experimental/numeric/gcd.cc: Test unsigned inputs.
+	* testsuite/experimental/numeric/lcm.cc: Likewise.
+
 2016-09-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Make optional::reset noexcept, make optional::value
