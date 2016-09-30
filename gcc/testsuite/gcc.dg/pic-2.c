@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-fPIC" } */
 
 #if __PIC__ != 2
