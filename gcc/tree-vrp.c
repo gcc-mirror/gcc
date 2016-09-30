@@ -8555,7 +8555,16 @@ intersect_ranges (enum value_range_type *vr0type,
 
   /* As a fallback simply use { *VRTYPE, *VR0MIN, *VR0MAX } as
      result for the intersection.  That's always a conservative
-     correct estimate.  */
+     correct estimate unless VR1 is a constant singleton range
+     in which case we choose that.  */
+  if (vr1type == VR_RANGE
+      && is_gimple_min_invariant (vr1min)
+      && vrp_operand_equal_p (vr1min, vr1max))
+    {
+      *vr0type = vr1type;
+      *vr0min = vr1min;
+      *vr0max = vr1max;
+    }
 
   return;
 }
