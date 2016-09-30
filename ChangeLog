@@ -1,5 +1,11 @@
 2016-09-30  Andrew Haley  <aph@redhat.com>
 
+	* MAINTAINERS: Remove Per Bothner, Andrew Haley, and Tom Tromey rom
+	write-after approval.  Remove Tom Tromey and Bryce McKinlay from
+	libgcj.
+
+2016-09-30  Andrew Haley  <aph@redhat.com>
+
 	* MAINTAINERS: Move Per Bothner, Andrew Haley, and Tom Tromey to
 	write-after approval after GCJ deletion.
 
