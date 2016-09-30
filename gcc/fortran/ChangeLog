@@ -1,3 +1,11 @@
+2016-09-30  Steven g. Kargl  <kargl@gcc.gnu.org>
+
+	Backport of trunk
+
+	PR fortran/77351
+	* frontend-passes.c (remove_trim,combine_array_constructor): Check for
+	NULL pointer.
+
 2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
