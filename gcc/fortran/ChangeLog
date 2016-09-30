@@ -1,3 +1,9 @@
+2016-09-30  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/77782
+	* interface.c (gfc_compare_derived_types): Use gfc_compare_union_types
+	to compare union types.
+
 2016-09-30  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* trans-array.c (gfc_array_allocate): Use the token from coarray's

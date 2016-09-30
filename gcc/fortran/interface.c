@@ -589,6 +589,10 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
 
   gcc_assert (derived1 && derived2);
 
+  /* Compare UNION types specially.  */
+  if (derived1->attr.flavor == FL_UNION || derived2->attr.flavor == FL_UNION)
+    return gfc_compare_union_types (derived1, derived2);
+
   /* Special case for comparing derived types across namespaces.  If the
      true names and module names are the same and the module name is
      nonnull, then they are equal.  */
