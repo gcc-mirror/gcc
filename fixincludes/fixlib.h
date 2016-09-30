@@ -269,4 +269,19 @@ char*  make_raw_shell_str ( char* pz_d, tCC* pz_s, size_t smax );
 t_bool mn_get_regexps ( regex_t** label_re, regex_t** name_re, tCC *who );
 
 void   initialize_opts ( void );
+
+#if defined(__MINGW32__)
+
+void   fix_path_separators ( char* p );
+
+/* prepend shell name to command passed to system call */
+int    system_with_shell ( char* s );
+
+#else
+
+/* normal call */
+#define system_with_shell system
+
+#endif /* defined(__MINGW32__) */
+
 #endif /* ! GCC_FIXLIB_H */
