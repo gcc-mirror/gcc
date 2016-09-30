@@ -1,3 +1,8 @@
+2016-09-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/66643
+	* io.c (match_dt_unit): Peek check for missing format.
+
 2016-09-30  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/77764

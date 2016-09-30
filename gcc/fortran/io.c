@@ -2688,6 +2688,7 @@ static match
 match_dt_unit (io_kind k, gfc_dt *dt)
 {
   gfc_expr *e;
+  char c;
 
   if (gfc_match_char ('*') == MATCH_YES)
     {
@@ -2695,6 +2696,11 @@ match_dt_unit (io_kind k, gfc_dt *dt)
 	goto conflict;
 
       dt->io_unit = default_unit (k);
+
+      c = gfc_peek_ascii_char ();
+      if (c == ')')
+	gfc_error_now ("Missing format with default unit at %C");
+
       return MATCH_YES;
     }
 

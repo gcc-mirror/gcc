@@ -8,5 +8,5 @@ program arrayio
       a(:, j) = (/ (i + (j - 1) * 5, i=1,5) /)
    end do
 
-   write (*) a
+   write (*,*) a
 end program
