@@ -1953,7 +1953,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   gimple *def_stmt;
   tree op, op2, orig, type, elem_type;
   unsigned elem_size, nelts, i;
-  enum tree_code code;
+  enum tree_code code, conv_code;
   constructor_elt *elt;
   unsigned char *sel;
   bool maybe_ident;
@@ -1970,6 +1970,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 
   sel = XALLOCAVEC (unsigned char, nelts);
   orig = NULL;
+  conv_code = ERROR_MARK;
   maybe_ident = true;
   FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (op), i, elt)
     {
@@ -1984,6 +1985,26 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       if (!def_stmt)
 	return false;
       code = gimple_assign_rhs_code (def_stmt);
+      if (code == FLOAT_EXPR
+	  || code == FIX_TRUNC_EXPR)
+	{
+	  op1 = gimple_assign_rhs1 (def_stmt);
+	  if (conv_code == ERROR_MARK)
+	    {
+	      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (elt->value)))
+		  != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1))))
+		return false;
+	      conv_code = code;
+	    }
+	  else if (conv_code != code)
+	    return false;
+	  if (TREE_CODE (op1) != SSA_NAME)
+	    return false;
+	  def_stmt = SSA_NAME_DEF_STMT (op1);
+	  if (! is_gimple_assign (def_stmt))
+	    return false;
+	  code = gimple_assign_rhs_code (def_stmt);
+	}
       if (code != BIT_FIELD_REF)
 	return false;
       op1 = gimple_assign_rhs1 (def_stmt);
@@ -1997,7 +2018,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	{
 	  if (TREE_CODE (ref) != SSA_NAME)
 	    return false;
-	  if (!useless_type_conversion_p (type, TREE_TYPE (ref)))
+	  if (! VECTOR_TYPE_P (TREE_TYPE (ref))
+	      || ! useless_type_conversion_p (TREE_TYPE (op1),
+					      TREE_TYPE (TREE_TYPE (ref))))
 	    return false;
 	  orig = ref;
 	}
@@ -2009,8 +2032,19 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   if (i < nelts)
     return false;
 
+  if (! VECTOR_TYPE_P (TREE_TYPE (orig))
+      || (TYPE_VECTOR_SUBPARTS (type)
+	  != TYPE_VECTOR_SUBPARTS (TREE_TYPE (orig))))
+    return false;
+
   if (maybe_ident)
-    gimple_assign_set_rhs_from_tree (gsi, orig);
+    {
+      if (conv_code == ERROR_MARK)
+	gimple_assign_set_rhs_from_tree (gsi, orig);
+      else
+	gimple_assign_set_rhs_with_ops (gsi, conv_code, orig,
+					NULL_TREE, NULL_TREE);
+    }
   else
     {
       tree mask_type, *mask_elts;
@@ -2028,7 +2062,18 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       for (i = 0; i < nelts; i++)
 	mask_elts[i] = build_int_cst (TREE_TYPE (mask_type), sel[i]);
       op2 = build_vector (mask_type, mask_elts);
-      gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig, orig, op2);
+      if (conv_code == ERROR_MARK)
+	gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig, orig, op2);
+      else
+	{
+	  gimple *perm
+	    = gimple_build_assign (make_ssa_name (TREE_TYPE (orig)),
+				   VEC_PERM_EXPR, orig, orig, op2);
+	  orig = gimple_assign_lhs (perm);
+	  gsi_insert_before (gsi, perm, GSI_SAME_STMT);
+	  gimple_assign_set_rhs_with_ops (gsi, conv_code, orig,
+					  NULL_TREE, NULL_TREE);
+	}
     }
   update_stmt (gsi_stmt (*gsi));
   return true;
