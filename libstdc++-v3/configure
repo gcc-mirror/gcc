@@ -18176,6 +18176,10 @@ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
+  # Use C++11 because a conforming <stdio.h> won't define gets for C++14,
+  # and we don't need a declaration for C++14 anyway.
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=gnu++11"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gets declaration" >&5
 $as_echo_n "checking for gets declaration... " >&6; }
@@ -18210,6 +18214,7 @@ $as_echo "#define HAVE_GETS 1" >>confdefs.h
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_gets" >&5
 $as_echo "$glibcxx_cv_gets" >&6; }
 
+  CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'

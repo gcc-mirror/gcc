@@ -2153,6 +2153,10 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
 
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
+  # Use C++11 because a conforming <stdio.h> won't define gets for C++14,
+  # and we don't need a declaration for C++14 anyway.
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=gnu++11"
 
   AC_MSG_CHECKING([for gets declaration])
   AC_CACHE_VAL(glibcxx_cv_gets, [
@@ -2168,10 +2172,11 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
       )])
 
   if test $glibcxx_cv_gets = yes; then
-    AC_DEFINE(HAVE_GETS, 1, [Define if gets is available in <stdio.h>.])
+    AC_DEFINE(HAVE_GETS, 1, [Define if gets is available in <stdio.h> before C++14.])
   fi
   AC_MSG_RESULT($glibcxx_cv_gets)
 
+  CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
 

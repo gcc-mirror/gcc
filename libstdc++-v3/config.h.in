@@ -183,7 +183,7 @@
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
 
-/* Define if gets is available in <stdio.h>. */
+/* Define if gets is available in <stdio.h> before C++14. */
 #undef HAVE_GETS
 
 /* Define to 1 if you have the `hypot' function. */
