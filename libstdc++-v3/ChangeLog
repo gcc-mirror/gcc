@@ -1,5 +1,21 @@
 2016-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 2192 changes.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am: Add bits/std_abs.h.
+	* include/Makefile.in: Regenerate.
+	* include/bits/std_abs.h: New header defining all required overloads
+	of std::abs in one place (LWG 2294).
+	* include/c_global/cmath (abs(double), abs(float), abs(long double)):
+	Move to bits/std_abs.h.
+	(abs<_Tp>(_Tp)): Remove.
+	* include/c_global/cstdlib (abs(long), abs(long long), abs(__int<N>)):
+	Move to bits/std_abs.h.
+	* testsuite/26_numerics/headers/cmath/dr2192.cc: New test.
+	* testsuite/26_numerics/headers/cmath/dr2192_neg.cc: New test.
+	* testsuite/26_numerics/headers/cstdlib/dr2192.cc: New test.
+	* testsuite/26_numerics/headers/cstdlib/dr2192_neg.cc: New test.
+
 	PR libstdc++/77801
 	* include/experimental/numeric: Include <numeric>.
 	(__abs): Define.

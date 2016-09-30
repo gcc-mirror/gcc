@@ -940,6 +940,13 @@ requirements of the license of GCC.
     <listitem><para>Add <code>emplace</code> and <code>emplace_back</code> member functions.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2192">2192</link>:
+	<emphasis>Validity and return type of <code>std::abs(0u)</code> is unclear</emphasis>
+    </term>
+    <listitem><para>Move all declarations to a common header and remove the
+    generic <code>abs</code> which accepted unsigned arguments.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2196">2196</link>:
 	<emphasis>Specification of <code>is_*[copy/move]_[constructible/assignable]</code> unclear for non-referencable types</emphasis>
     </term>
