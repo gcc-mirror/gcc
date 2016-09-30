@@ -1,5 +1,10 @@
 2016-09-30  Andrew Haley  <aph@redhat.com>
 
+	* MAINTAINERS: Move Per Bothner, Andrew Haley, and Tom Tromey to
+	write-after approval after GCJ deletion.
+
+2016-09-30  Andrew Haley  <aph@redhat.com>
+
 	* Makefile.def: Remove libjava.
 	* Makefile.tpl: Likewise.
 	* Makefile.in: Regenerate.
