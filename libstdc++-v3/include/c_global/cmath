@@ -44,12 +44,12 @@
 #define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
 #include_next <math.h>
 #undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+#include <bits/std_abs.h>
 
 #ifndef _GLIBCXX_CMATH
 #define _GLIBCXX_CMATH 1
 
 // Get rid of those macros defined in <math.h> in lieu of real functions.
-#undef abs
 #undef div
 #undef acos
 #undef asin
@@ -79,29 +79,6 @@ extern "C++"
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#ifndef __CORRECT_ISO_CPP_MATH_H_PROTO
-  inline _GLIBCXX_CONSTEXPR double
-  abs(double __x)
-  { return __builtin_fabs(__x); }
-#endif
-
-#ifndef __CORRECT_ISO_CPP_MATH_H_PROTO
-  inline _GLIBCXX_CONSTEXPR float
-  abs(float __x)
-  { return __builtin_fabsf(__x); }
-
-  inline _GLIBCXX_CONSTEXPR long double
-  abs(long double __x)
-  { return __builtin_fabsl(__x); }
-#endif
-
-  template<typename _Tp>
-    inline _GLIBCXX_CONSTEXPR
-    typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
-                                    double>::__type
-    abs(_Tp __x)
-    { return __builtin_fabs(__x); }
 
   using ::acos;
 
