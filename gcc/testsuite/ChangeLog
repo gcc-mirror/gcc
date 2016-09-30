@@ -1,5 +1,10 @@
 2016-09-30  Fritz Reese  <fritzoreese@gmail.com>
 
+	PR fortran/77764
+	* gfortran.dg/dec_union_8.f90: New testcase.
+
+2016-09-30  Fritz Reese  <fritzoreese@gmail.com>
+
 	PR fortran/77782
 	* gfortran.dg/dec_structure_16.f90: New testcase.
 
