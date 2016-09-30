@@ -1,3 +1,12 @@
+2016-09-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-array.c (gfc_array_allocate): Use the token from coarray's
+	.token member.
+	* trans-intrinsic.c (conv_expr_ref_to_caf_ref): Only generate
+	caf-reference chains from the first coarray references on.
+	* trans-types.c (gfc_get_derived_type): Switch on mandatory .token
+	member generation for allocatable arrays in coarrays in derived types.
+
 2016-09-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* options.c (gfc_post_options): Remove special case for

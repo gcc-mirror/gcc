@@ -1,3 +1,8 @@
+2016-09-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_allocate_10.f08: New test.
+	* gfortran.dg/coindexed_1.f90: Above fixes allow execution.
+
 2016-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/ifcvt_avoid_const_materialization_1.c: New test.

@@ -5406,7 +5406,6 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   gfc_expr **lower;
   gfc_expr **upper;
   gfc_ref *ref, *prev_ref = NULL, *coref;
-  gfc_se caf_se;
   bool allocatable, coarray, dimension, alloc_w_e3_arr_spec = false;
 
   ref = expr->ref;
@@ -5531,7 +5530,6 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 	}
     }
 
-  gfc_init_se (&caf_se, NULL);
   gfc_start_block (&elseblock);
 
   /* Allocate memory to store the data.  */
@@ -5543,9 +5541,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   if (coarray && flag_coarray == GFC_FCOARRAY_LIB)
     {
-      tmp = gfc_get_tree_for_caf_expr (expr);
-      gfc_get_caf_token_offset (&caf_se, &token, NULL, tmp, NULL_TREE, expr);
-      gfc_add_block_to_block (&elseblock, &caf_se.pre);
+      token = gfc_conv_descriptor_token (se->expr);
       token = gfc_build_addr_expr (NULL_TREE, token);
     }
 
@@ -5557,7 +5553,6 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   else
     gfc_allocate_using_malloc (&elseblock, pointer, size, status);
 
-  gfc_add_block_to_block (&elseblock, &caf_se.post);
   if (dimension)
     {
       cond = gfc_unlikely (fold_build2_loc (input_location, NE_EXPR,
