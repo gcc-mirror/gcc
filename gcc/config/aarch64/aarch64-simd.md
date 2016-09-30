@@ -2443,7 +2443,7 @@
 	  comparison = gen_aarch64_cmlt<mode>;
 	  break;
 	}
-      /* Else, fall through.  */
+      /* Fall through.  */
     case UNGE:
       std::swap (operands[2], operands[3]);
       /* Fall through.  */
@@ -2457,7 +2457,7 @@
 	  comparison = gen_aarch64_cmle<mode>;
 	  break;
 	}
-      /* Else, fall through.  */
+      /* Fall through.  */
     case UNGT:
       std::swap (operands[2], operands[3]);
       /* Fall through.  */
