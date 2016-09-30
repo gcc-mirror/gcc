@@ -1318,10 +1318,14 @@ gfc_set_constant_character_len (int len, gfc_expr *expr, int check_len)
   gfc_char_t *s;
   int slen;
 
-  gcc_assert (expr->expr_type == EXPR_CONSTANT);
-
   if (expr->ts.type != BT_CHARACTER)
     return;
+ 
+  if (expr->expr_type != EXPR_CONSTANT)
+    {
+      gfc_error_now ("CHARACTER length must be a constant at %L", &expr->where);
+      return;
+    }
 
   slen = expr->value.character.length;
   if (len != slen)
@@ -1715,8 +1719,10 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 
       if (c->initializer->expr_type == EXPR_CONSTANT)
 	gfc_set_constant_character_len (len, c->initializer, -1);
-      else if (mpz_cmp (c->ts.u.cl->length->value.integer,
-			c->initializer->ts.u.cl->length->value.integer))
+      else if (c->initializer
+		&& c->initializer->ts.u.cl
+		&& mpz_cmp (c->ts.u.cl->length->value.integer,
+			    c->initializer->ts.u.cl->length->value.integer))
 	{
 	  gfc_constructor *ctor;
 	  ctor = gfc_constructor_first (c->initializer->value.constructor);

@@ -1,3 +1,14 @@
+2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+ 
+	Backport of trunk
+
+	PR fortran/69867
+	* decl.c (build_struct): Ensure that pointers point to something.
+
+	PR fortran/69962
+	* decl.c (gfc_set_constant_character_len):  if expr is not
+	constant issue an error instead of an ICE.
+
 2016-09-30  Steven g. Kargl  <kargl@gcc.gnu.org>
 
 	Backport of trunk
