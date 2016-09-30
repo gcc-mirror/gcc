@@ -1,5 +1,5 @@
-! { dg-do compile }
-! { dg-options "-fcoarray=lib" }
+! { dg-do run }
+! { dg-options "-fcoarray=lib -lcaf_single" }
 !
 ! Contributed by Reinhold Bader
 !
@@ -14,7 +14,7 @@ program pmup
   integer :: ii
 
   !! --- ONE --- 
-  allocate(real :: a(3)[*]) ! { dg-error "Sorry, coindexed access to an unlimited polymorphic object at" }
+  allocate(real :: a(3)[*])
   IF (this_image() == num_images()) THEN
     SELECT TYPE (a)
       TYPE IS (real)
@@ -43,7 +43,7 @@ program pmup
 
   !! --- TWO --- 
   deallocate(a)
-  allocate(t :: a(3)[*]) ! { dg-error "Sorry, coindexed access to an unlimited polymorphic object at" }
+  allocate(t :: a(3)[*])
   IF (this_image() == num_images()) THEN
     SELECT TYPE (a)
       TYPE IS (t)

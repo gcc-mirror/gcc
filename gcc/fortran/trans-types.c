@@ -2565,7 +2565,8 @@ gfc_get_derived_type (gfc_symbol * derived, bool in_coarray)
       if ((!c->attr.pointer && !c->attr.proc_pointer)
 	  || c->ts.u.derived->backend_decl == NULL)
 	c->ts.u.derived->backend_decl = gfc_get_derived_type (c->ts.u.derived,
-							      in_coarray);
+							      in_coarray
+							|| c->attr.codimension);
 
       if (c->ts.u.derived->attr.is_iso_c)
         {
