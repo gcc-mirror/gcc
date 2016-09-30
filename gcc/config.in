@@ -30,11 +30,17 @@
 #endif
 
 
-/* Define to 1 if you want more run-time sanity checks. This one gets a grab
-   bag of miscellaneous but relatively cheap checks. Define to 2 if you want
-   also extra run-time checking that might affect code generation. */
+/* Define to 0/1 if you want more run-time sanity checks. This one gets a grab
+   bag of miscellaneous but relatively cheap checks. */
 #ifndef USED_FOR_TARGET
 #undef CHECKING_P
+#endif
+
+
+/* Define to 0/1 if you want also extra run-time checking that might affect
+   code generation. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_EXTRA_CHECKING
 #endif
 
 

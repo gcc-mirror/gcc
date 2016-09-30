@@ -1038,7 +1038,7 @@ Common Var(flag_check_new)
 Check the return value of new in C++.
 
 fchecking
-Common Var(flag_checking) Init(CHECKING_P)
+Common Var(flag_checking) Init(CHECKING_P ? ENABLE_EXTRA_CHECKING ? 2 : 1 : 0)
 Perform internal consistency checkings.
 
 fchecking=
