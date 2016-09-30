@@ -1,4 +1,0 @@
-README for java.lang.reflect:
-
-java.lang.reflect is now mostly empty.  We've carved out the classes that have
-to do with the VM and put them into the VM interface.
