@@ -161,6 +161,7 @@ target_libraries="target-libgcc \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
+		target-libffi \
 		target-libobjc \
 		target-libada \
 		target-libgo"
@@ -693,6 +694,101 @@ case "${target}" in
   mmix-*-*)
     # See <http://gcc.gnu.org/ml/gcc-patches/2004-11/msg00572.html>.
     unsupported_languages="$unsupported_languages fortran"
+    ;;
+esac
+
+# Disable libffi for some systems.
+case "${target}" in
+  powerpc-*-darwin*)
+    ;;
+  i[[3456789]]86-*-darwin*)
+    ;;
+  x86_64-*-darwin[[912]]*)
+    ;;
+  *-*-darwin*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-netware*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-phoenix*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-rtems*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-tpf*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-uclinux*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-vxworks*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  alpha*-*-*vms*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  arm*-*-freebsd*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  arm-wince-pe)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  arm*-*-symbianelf*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  cris-*-* | crisv32-*-*)
+    case "${target}" in
+      *-*-linux*)
+	;;
+      *) # See PR46792 regarding target-libffi.
+	noconfigdirs="$noconfigdirs target-libffi";;
+    esac
+    ;;
+  hppa*64*-*-hpux*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  hppa*-hp-hpux11*)
+    ;;
+  hppa*-*-hpux*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  ia64*-*-*vms*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  i[[3456789]]86-w64-mingw*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  i[[3456789]]86-*-mingw*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  x86_64-*-mingw*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  mmix-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  powerpc-*-aix*)
+    # copied from rs6000-*-* entry
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  rs6000-*-aix*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  ft32-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  *-*-lynxos*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+esac
+
+# Disable the go frontend on systems where it is known to not work. Please keep
+# this in sync with contrib/config-list.mk.
+case "${target}" in
+*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)
+    unsupported_languages="$unsupported_languages go"
     ;;
 esac
 
