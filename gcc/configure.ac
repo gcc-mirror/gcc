@@ -579,18 +579,21 @@ IFS="$ac_save_IFS"
 
 nocommon_flag=""
 if test x$ac_checking != x ; then
-  if test x$ac_extra_checking != x ; then
-    ac_checking=2
-  fi
-  AC_DEFINE_UNQUOTED(CHECKING_P, $ac_checking,
-[Define to 1 if you want more run-time sanity checks.  This one gets a grab
-   bag of miscellaneous but relatively cheap checks.  Define to 2 if you want
-   also extra run-time checking that might affect code generation.])
+  AC_DEFINE(CHECKING_P, 1,
+[Define to 0/1 if you want more run-time sanity checks.  This one gets a grab
+bag of miscellaneous but relatively cheap checks.])
   nocommon_flag=-fno-common
 else
   AC_DEFINE(CHECKING_P, 0)
 fi
 AC_SUBST(nocommon_flag)
+if test x$ac_extra_checking != x ; then
+  AC_DEFINE(ENABLE_EXTRA_CHECKING, 1,
+[Define to 0/1 if you want extra run-time checking that might affect code
+generation.])
+else
+  AC_DEFINE(ENABLE_EXTRA_CHECKING, 0)
+fi
 if test x$ac_df_checking != x ; then
   AC_DEFINE(ENABLE_DF_CHECKING, 1,
 [Define if you want more run-time sanity checks for dataflow.])

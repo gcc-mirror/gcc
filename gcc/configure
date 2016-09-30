@@ -7135,13 +7135,8 @@ IFS="$ac_save_IFS"
 
 nocommon_flag=""
 if test x$ac_checking != x ; then
-  if test x$ac_extra_checking != x ; then
-    ac_checking=2
-  fi
 
-cat >>confdefs.h <<_ACEOF
-#define CHECKING_P $ac_checking
-_ACEOF
+$as_echo "#define CHECKING_P 1" >>confdefs.h
 
   nocommon_flag=-fno-common
 else
@@ -7149,6 +7144,14 @@ else
 
 fi
 
+if test x$ac_extra_checking != x ; then
+
+$as_echo "#define ENABLE_EXTRA_CHECKING 1" >>confdefs.h
+
+else
+  $as_echo "#define ENABLE_EXTRA_CHECKING 0" >>confdefs.h
+
+fi
 if test x$ac_df_checking != x ; then
 
 $as_echo "#define ENABLE_DF_CHECKING 1" >>confdefs.h
@@ -18476,7 +18479,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18479 "configure"
+#line 18482 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18582,7 +18585,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18585 "configure"
+#line 18588 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
