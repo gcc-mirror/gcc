@@ -167,8 +167,6 @@ libcpp			David Malcolm		<dmalcolm@redhat.com>
 fp-bit			Ian Lance Taylor	<ian@airs.com>
 libdecnumber		Ben Elliston		<bje@gnu.org>
 libgcc			Ian Lance Taylor	<ian@airs.com>
-libgcj			Tom Tromey		<tromey@redhat.com>
-libgcj			Bryce McKinlay		<mckinlay@redhat.com>
 libgo			Ian Lance Taylor	<ian@airs.com>
 libgomp			Richard Henderson	<rth@redhat.com>
 libgomp			Jakub Jelinek		<jakub@redhat.com>
@@ -349,7 +347,6 @@ Ian Bolton					<ian.bolton@arm.com>
 Andrea Bona					<andrea.bona@st.com>
 Paolo Bonzini					<bonzini@gnu.org>
 Neil Booth					<neil@daikokuya.co.uk>
-Per Bothner                                     <per@bothner.com>
 Robert Bowdidge					<bowdidge@apple.com>
 Joel Brobecker					<brobecker@gnat.com>
 Dave Brolley					<brolley@redhat.com>
@@ -607,7 +604,6 @@ Ilya Tocar					<tocarip@gmail.com>
 Philipp Tomsich					<philipp.tomsich@theobroma-systems.com>
 Konrad Trifunovic				<konrad.trifunovic@inria.fr>
 Markus Trippelsdorf				<markus@trippelsdorf.de>
-Tom Tromey                                      <tromey@redhat.com>
 Martin Uecker					<uecker@eecs.berkeley.edu>
 David Ung					<davidu@mips.com>
 Neil Vachharajani				<nvachhar@gmail.com>
