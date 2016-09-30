@@ -1,14 +1,0 @@
-2014-09-24  David Malcolm  <dmalcolm@redhat.com>
-
-	* ChangeLog.jit: Add copyright footer.
-
-2013-10-11  David Malcolm  <dmalcolm@redhat.com>
-
-	* lang.c (java_handle_option): Update for introduction of
-	gcc::dump_manager.
-
-Copyright (C) 2013-2014 Free Software Foundation, Inc.
-
-Copying and distribution of this file, with or without modification,
-are permitted in any medium without royalty provided the copyright
-notice and this notice are preserved.

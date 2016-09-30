@@ -1,3 +1,13 @@
+2016-09-30  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.def: Remove libjava.
+	* Makefile.tpl: Likewise.
+	* Makefile.in: Regenerate.
+	* configure.ac: Likewise.
+	* configure: Likewise.
+	* gcc/java: Remove.
+	* libjava: Likewise.
+
 2016-09-28  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* MAINTAINERS (Reviewers): Add myself.
