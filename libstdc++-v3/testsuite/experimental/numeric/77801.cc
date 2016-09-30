@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,15 +17,6 @@
 
 // { dg-do compile { target c++14 } }
 
+#include <cstdlib>
 #include <experimental/numeric>
-
-using std::experimental::fundamentals_v2::lcm;
-
-static_assert(lcm(21, 6) == 42, "");
-static_assert(lcm(41, 0) == 0, "LCD with zero is zero");
-static_assert(lcm(0, 7) == 0, "LCD with zero is zero");
-static_assert(lcm(0, 0) == 0, "no division by zero");
-
-static_assert(lcm(1u, 2) == 2, "unsigned and signed");
-static_assert(lcm(3, 4u) == 12, "signed and unsigned");
-static_assert(lcm(5u, 6u) == 30, "unsigned and unsigned");
+constexpr int i = std::experimental::gcd(4L, 5L); // PR libstdc++/77801

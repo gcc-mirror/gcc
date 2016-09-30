@@ -29,3 +29,6 @@ static_assert( gcd(0, 13) == 13, "GCD of any number and 0 is that number" );
 static_assert( gcd(29, 0) == 29, "GCD of any number and 0 is that number" );
 static_assert( gcd(0, 0) == 0, "" );
 
+static_assert(gcd(1u, 2) == 1, "unsigned and signed");
+static_assert(gcd(3, 4u) == 1, "signed and unsigned");
+static_assert(gcd(5u, 6u) == 1, "unsigned and unsigned");
