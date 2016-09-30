@@ -396,9 +396,9 @@ rtems_task_variable_add_file =
 endif
 
 if LIBGO_IS_LINUX
-runtime_lock_files = runtime/lock_futex.c runtime/thread-linux.c
+runtime_thread_files = runtime/thread-linux.c
 else
-runtime_lock_files = runtime/lock_sema.c runtime/thread-sema.c
+runtime_thread_files = runtime/thread-sema.c
 endif
 
 if LIBGO_IS_LINUX
@@ -502,7 +502,6 @@ runtime_files = \
 	runtime/go-varargs.c \
 	runtime/env_posix.c \
 	runtime/heapdump.c \
-	$(runtime_lock_files) \
 	runtime/mcache.c \
 	runtime/mcentral.c \
 	$(runtime_mem_file) \
@@ -518,6 +517,7 @@ runtime_files = \
 	runtime/runtime.c \
 	runtime/signal_unix.c \
 	runtime/thread.c \
+	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	chan.c \
@@ -633,12 +633,8 @@ s-version: Makefile
 	$(STAMP) $@
 
 runtime_sysinfo.go: s-runtime_sysinfo; @true
-s-runtime_sysinfo: sysinfo.go
-	rm -f tmp-runtime_sysinfo.go
-	echo 'package runtime' > tmp-runtime_sysinfo.go
-	echo >> tmp-runtime_sysinfo.go
-	grep 'const _sizeof_ucontext_t ' sysinfo.go >> tmp-runtime_sysinfo.go
-	grep 'type _sigset_t ' sysinfo.go >> tmp-runtime_sysinfo.go
+s-runtime_sysinfo: $(srcdir)/mkrsysinfo.sh gen-sysinfo.go
+	$(SHELL) $(srcdir)/mkrsysinfo.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-runtime_sysinfo.go runtime_sysinfo.go
 	$(STAMP) $@
 

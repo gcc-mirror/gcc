@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#include <errno.h>
 #include <signal.h>
 #include <unistd.h>
 
@@ -209,4 +210,13 @@ int32
 go_closefd(int32 fd)
 {
   return runtime_close(fd);
+}
+
+intgo go_errno(void)
+  __asm__ (GOSYM_PREFIX "runtime.errno");
+
+intgo
+go_errno()
+{
+  return (intgo)errno;
 }

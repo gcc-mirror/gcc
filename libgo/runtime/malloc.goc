@@ -99,7 +99,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		// returns a non-pointer, so memory allocation occurs
 		// after syscall.Cgocall but before syscall.CgocallDone.
 		// We treat it as a callback.
-		runtime_exitsyscall();
+		runtime_exitsyscall(0);
 		m = runtime_m();
 		incallback = true;
 		flag |= FlagNoInvokeGC;
@@ -171,7 +171,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 					m->mallocing = 0;
 					m->locks--;
 					if(incallback)
-						runtime_entersyscall();
+						runtime_entersyscall(0);
 					return v;
 				}
 			}
@@ -256,7 +256,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		runtime_gc(0);
 
 	if(incallback)
-		runtime_entersyscall();
+		runtime_entersyscall(0);
 
 	return v;
 }

@@ -38,12 +38,7 @@ func getg() *g
 func mcall(fn func(*g))
 
 // systemstack runs fn on a system stack.
-// If systemstack is called from the per-OS-thread (g0) stack, or
-// if systemstack is called from the signal handling (gsignal) stack,
-// systemstack calls fn directly and returns.
-// Otherwise, systemstack is being called from the limited stack
-// of an ordinary goroutine. In this case, systemstack switches
-// to the per-OS-thread stack, calls fn, and switches back.
+//
 // It is common to use a func literal as the argument, in order
 // to share inputs and outputs with the code around the call
 // to system stack:
@@ -54,8 +49,14 @@ func mcall(fn func(*g))
 //	})
 //	... use x ...
 //
-//go:noescape
-func systemstack(fn func())
+// For the gc toolchain this permits running a function that requires
+// additional stack space in a context where the stack can not be
+// split.  For gccgo, however, stack splitting is not managed by the
+// Go runtime. In effect, all stacks are system stacks. So this gccgo
+// version just runs the function.
+func systemstack(fn func()) {
+	fn()
+}
 
 func badsystemstack() {
 	throw("systemstack called from unexpected goroutine")
@@ -215,6 +216,13 @@ func checkASM() bool {
 	return true
 }
 
+// For gccgo this is in the C code.
+func osyield()
+
+// For gccgo this can be called directly.
+//extern syscall
+func syscall(trap uintptr, a1, a2, a3, a4, a5, a6 uintptr) uintptr
+
 // throw crashes the program.
 // For gccgo unless and until we port panic.go.
 func throw(string)
@@ -368,3 +376,11 @@ func casp(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
 // Here for gccgo until we port lock_*.go.
 func lock(l *mutex)
 func unlock(l *mutex)
+
+// Here for gccgo for Solaris.
+func errno() int
+
+// Temporary for gccgo until we port proc.go.
+func entersyscall(int32)
+func entersyscallblock(int32)
+func exitsyscall(int32)

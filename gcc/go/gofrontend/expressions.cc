@@ -3787,6 +3787,13 @@ Unary_expression::do_flatten(Gogo* gogo, Named_object*,
       if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
 	this->escapes_ = false;
 
+      // When compiling the runtime, the address operator does not
+      // cause local variables to escapes.  When escape analysis
+      // becomes the default, this should be changed to make it an
+      // error if we have an address operator that escapes.
+      if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
+	this->escapes_ = false;
+
       Named_object* var = NULL;
       if (this->expr_->var_expression() != NULL)
 	var = this->expr_->var_expression()->named_object();

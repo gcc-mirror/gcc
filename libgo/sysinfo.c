@@ -152,6 +152,9 @@
 #if defined(HAVE_SCHED_H)
 #include <sched.h>
 #endif
+#if defined(HAVE_SEMAPHORE_H)
+#include <semaphore.h>
+#endif
 
 /* Constants that may only be defined as expressions on some systems,
    expressions too complex for -fdump-go-spec to handle.  These are
