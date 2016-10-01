@@ -11393,41 +11393,40 @@
     {
     case MODE_XI:
       gcc_assert (TARGET_AVX512F);
+      /* FALLTHRU */
     case MODE_OI:
-      gcc_assert (TARGET_AVX2 || TARGET_AVX512VL);
+      gcc_assert (TARGET_AVX2);
+      /* FALLTHRU */
     case MODE_TI:
-      gcc_assert (TARGET_SSE2 || TARGET_AVX512VL);
+      gcc_assert (TARGET_SSE2);
       switch (<MODE>mode)
-      {
-        case V16SImode:
-        case V8DImode:
-          if (TARGET_AVX512F)
-          {
-            tmp = "p<logic><ssemodesuffix>";
-            break;
-          }
-        case V8SImode:
-        case V4DImode:
-        case V4SImode:
-        case V2DImode:
-          tmp = TARGET_AVX512VL ? "p<logic><ssemodesuffix>" : "p<logic>";
-          break;
-        default:
-          gcc_unreachable ();
-      }
+	{
+	case V16SImode:
+	case V8DImode:
+	  tmp = "p<logic><ssemodesuffix>";
+	  break;
+	case V8SImode:
+	case V4DImode:
+	case V4SImode:
+	case V2DImode:
+	  tmp = TARGET_AVX512VL ? "p<logic><ssemodesuffix>" : "p<logic>";
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
       break;
 
-   case MODE_V8SF:
+    case MODE_V8SF:
       gcc_assert (TARGET_AVX);
-   case MODE_V4SF:
+    case MODE_V4SF:
       gcc_assert (TARGET_SSE);
       gcc_assert (!<mask_applied>);
       tmp = "<logic>ps";
       break;
 
-   default:
+    default:
       gcc_unreachable ();
-   }
+    }
 
   switch (which_alternative)
     {
@@ -11489,46 +11488,42 @@
     {
     case MODE_XI:
       gcc_assert (TARGET_AVX512F);
+      /* FALLTHRU */
     case MODE_OI:
-      gcc_assert (TARGET_AVX2 || TARGET_AVX512VL);
+      gcc_assert (TARGET_AVX2);
+      /* FALLTHRU */
     case MODE_TI:
-      gcc_assert (TARGET_SSE2 || TARGET_AVX512VL);
+      gcc_assert (TARGET_SSE2);
       switch (<MODE>mode)
-        {
-        case V64QImode:
-        case V32HImode:
-          if (TARGET_AVX512F)
-          {
-            tmp = "p<logic>";
-            ssesuffix = "q";
-            break;
-          }
-        case V32QImode:
-        case V16HImode:
-        case V16QImode:
-        case V8HImode:
-          if (TARGET_AVX512VL || TARGET_AVX2 || TARGET_SSE2)
-          {
-            tmp = "p<logic>";
-            ssesuffix = TARGET_AVX512VL ? "q" : "";
-            break;
-          }
-        default:
-          gcc_unreachable ();
-      }
+	{
+	case V64QImode:
+	case V32HImode:
+	  tmp = "p<logic>";
+	  ssesuffix = "q";
+	  break;
+	case V32QImode:
+	case V16HImode:
+	case V16QImode:
+	case V8HImode:
+	  tmp = "p<logic>";
+	  ssesuffix = TARGET_AVX512VL ? "q" : "";
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
       break;
 
-   case MODE_V8SF:
+    case MODE_V8SF:
       gcc_assert (TARGET_AVX);
-   case MODE_V4SF:
+    case MODE_V4SF:
       gcc_assert (TARGET_SSE);
       tmp = "<logic>ps";
       ssesuffix = "";
       break;
 
-   default:
+    default:
       gcc_unreachable ();
-   }
+    }
 
   switch (which_alternative)
     {
