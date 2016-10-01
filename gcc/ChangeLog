@@ -1,3 +1,11 @@
+2016-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77798
+	* genmatch.c (get_operand_type): Add operand position arg
+	and handle COND_EXPR comparison operand with fixed boolean_type_node.
+	(expr::gen_transform): Adjust.
+	(dt_simplify::gen_1): Likewise.
+
 2016-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (<mask_codefor><code><mode>): Add FALLTHRU
