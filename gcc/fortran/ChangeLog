@@ -2,6 +2,14 @@
 
 	Backport from trunk
 
+	PR fortran/77380
+	* dependency.c (gfc_check_dependency): Do not assert with
+	-fcoarray=lib.
+
+2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
+
 	PR fortran/61318
 	* interface.c (compare_parameter): Use better locus for error message.
 
