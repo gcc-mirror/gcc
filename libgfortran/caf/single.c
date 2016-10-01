@@ -87,6 +87,7 @@ caf_internal_error (const char *msg, int *stat, char *errmsg,
 	  if ((size_t)errmsg_len > len)
 	    memset (&errmsg[len], ' ', errmsg_len - len);
 	}
+      va_end (args);
       return;
     }
   else
@@ -149,6 +150,13 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 
   if (unlikely (local == NULL || *token == NULL))
     {
+      /* Freeing the memory conditionally seems pointless, but
+	 caf_internal_error () may return, when a stat is given and then the
+	 memory may be lost.  */
+      if (local)
+	free (local);
+      if (*token)
+	free (*token);
       caf_internal_error (alloc_fail_msg, stat, errmsg, errmsg_len);
       return;
     }
@@ -1465,7 +1473,7 @@ _gfortran_caf_get_by_ref (caf_token_t token,
   bool array_extent_fixed = false;
   realloc_needed = realloc_required = GFC_DESCRIPTOR_DATA (dst) == NULL;
 
-  assert (!realloc_needed || (realloc_needed && dst_reallocatable));
+  assert (!realloc_needed || dst_reallocatable);
 
   if (stat)
     *stat = 0;
@@ -1909,14 +1917,14 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 		  GFC_DESCRIPTOR_DATA (&static_dst) = NULL;
 		  GFC_DESCRIPTOR_DTYPE (&static_dst)
 		      = GFC_DESCRIPTOR_DTYPE (src);
-		  /* The component may be allocated now, because it is a
+		  /* The component can be allocated now, because it is a
 		     scalar.  */
-		  single_token = *(caf_single_token_t*)
-					       (ds + ref->u.c.caf_token_offset);
 		  _gfortran_caf_register (ref->item_size,
 					  CAF_REGTYPE_COARRAY_ALLOC,
-					  (caf_token_t *)&single_token,
+					  ds + ref->u.c.caf_token_offset,
 					  &static_dst, stat, NULL, 0);
+		  single_token = *(caf_single_token_t *)
+					       (ds + ref->u.c.caf_token_offset);
 		  /* In case of an error in allocation return.  When stat is
 		     NULL, then register_component() terminates on error.  */
 		  if (stat != NULL && *stat)
@@ -2005,15 +2013,12 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      /* The size of the array is given by size.  */
 	      _gfortran_caf_register (size * ref->item_size,
 				      CAF_REGTYPE_COARRAY_ALLOC,
-				      (void **)&single_token,
+				      ds + ref->u.c.caf_token_offset,
 				      dst, stat, NULL, 0);
 	      /* In case of an error in allocation return.  When stat is
 		 NULL, then register_component() terminates on error.  */
 	      if (stat != NULL && *stat)
 		return;
-	      /* The memptr, descriptor and the token are set below.  */
-	      *(caf_single_token_t *)(ds + ref->u.c.caf_token_offset)
-		  = single_token;
 	    }
 	  single_token = *(caf_single_token_t*)(ds + ref->u.c.caf_token_offset);
 	  send_by_ref (ref->next, i, src_index, single_token,

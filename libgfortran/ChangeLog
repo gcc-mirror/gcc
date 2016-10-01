@@ -1,3 +1,12 @@
+2016-10-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77663
+	* caf/single.c (caf_internal_error): Fix not terminating va-list.
+	(_gfortran_caf_register): Free memory also when other allocs failed.
+	(_gfortran_caf_get_by_ref): Fixed style.
+	(send_by_ref): Token is now stored at the correct position preventing
+	inaccessible tokens, memory loss and possibly crashes.
+
 2016-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/77707

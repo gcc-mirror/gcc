@@ -1,3 +1,8 @@
+2016-10-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77663
+	* gfortran.dg/coarray_send_by_ref_1.f08: New test.
+
 2016-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/77490
