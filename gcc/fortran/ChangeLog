@@ -2,6 +2,14 @@
 
 	Backport from trunk
 
+	PR fortran/77391
+	* resolve.c (deferred_requirements): New function to check F2008:C402.
+	(resolve_fl_variable,resolve_fl_parameter): Use it.
+ 
+2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
+
 	PR fortran/77380
 	* dependency.c (gfc_check_dependency): Do not assert with
 	-fcoarray=lib.
