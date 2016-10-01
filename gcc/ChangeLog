@@ -1,3 +1,10 @@
+2016-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (<mask_codefor><code><mode>): Add FALLTHRU
+	comments.  Simplify asserts, remove unnecessary conditions.
+	Formatting fixes.
+	(*<code><mode>3): Likewise.
+
 2016-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/invoke.texi (-Wregister): Document.
