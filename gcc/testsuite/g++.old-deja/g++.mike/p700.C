@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-Wno-deprecated" }
+// { dg-options "-Wno-deprecated -Wno-register" }
 // { dg-error "limited range of data type" "16-bit target" { target xstormy16-*-* } 0 }
 // prms-id: 700
 

@@ -7,6 +7,6 @@
 
 float vf(int i)
 {
-  register vector float a;	// { dg-error "ISO C++1z does not allow 'register' storage class specifier" "" { target c++1z } }
+  register vector float a;	// { dg-warning "ISO C\\+\\+1z does not allow 'register' storage class specifier" "" { target c++1z } }
   return a[0];
 }
