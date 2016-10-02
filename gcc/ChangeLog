@@ -1,3 +1,11 @@
+2016-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (output_fde, output_call_frame_info,
+	dwarf2out_do_cfi_startproc, set_indirect_string,
+	gen_internal_sym, output_die, output_line_info): Use
+	MAX_ARTIFICIAL_LABEL_BYTES as char array sizes for
+	ASM_GENERATE_INTERNAL_LABEL output.
+
 2016-10-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77798
