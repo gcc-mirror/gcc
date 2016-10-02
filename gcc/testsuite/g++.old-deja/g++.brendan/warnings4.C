@@ -1,4 +1,4 @@
-// { dg-do assemble  }
+// { dg-do assemble { target c++14_down } }
 // GROUPS passed warnings
 int
 main ()

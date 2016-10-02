@@ -12,7 +12,7 @@ void foo()
   auto __thread int l2;		/* { dg-error "multiple storage classes|data types" } */
   __thread extern int l3;	/* { dg-error "'__thread' before 'extern'" } */
   register __thread int l4;	/* { dg-error "multiple storage classes" } */
-}
+}				/* { dg-error "ISO C\\+\\+1z does not allow 'register' storage class specifier" "" { target c++1z } .-1 } */
 
 __thread void f1 ();		/* { dg-error "invalid for function" } */
 extern __thread void f2 ();	/* { dg-error "invalid for function" } */
