@@ -1,5 +1,17 @@
 2016-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Update gcd/lcm status.
+	* doc/html/*: Regenerate.
+	* include/experimental/numeric (__abs): Move to <numeric>.
+	(gcd, lcm): Use __detail::gcd and __detail::lcm.
+	* include/std/numeric (__detail::__abs_integral)
+	(__detail::__gcd, __detail::__lcm): Define.
+	(gcd, lcm): Define for C++17.
+	* testsuite/26_numerics/gcd/1.cc: New test.
+	* testsuite/26_numerics/lcm/1.cc: New test.
+	* testsuite/experimental/numeric/gcd.cc: Swap contents with ...
+	* testsuite/experimental/numeric/lcd.cc: ... this.
+
 	PR libstdc++/68323
 	PR libstdc++/77794
 	* config/abi/pre/gnu-versioned-namespace.ver: Add exports for

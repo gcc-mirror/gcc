@@ -74,4 +74,83 @@
  * math functions.
  */
 
+#if __cplusplus >= 201402L
+#include <type_traits>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+namespace __detail
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  // std::abs is not constexpr and doesn't support unsigned integers.
+  template<typename _Tp>
+    constexpr
+    enable_if_t<__and_<is_integral<_Tp>, is_signed<_Tp>>::value, _Tp>
+    __abs_integral(_Tp __val)
+    { return __val < 0 ? -__val : __val; }
+
+  template<typename _Tp>
+    constexpr
+    enable_if_t<__and_<is_integral<_Tp>, is_unsigned<_Tp>>::value, _Tp>
+    __abs_integral(_Tp __val)
+    { return __val; }
+
+  template<typename _Mn, typename _Nn>
+    constexpr common_type_t<_Mn, _Nn>
+    __gcd(_Mn __m, _Nn __n)
+    {
+      return __m == 0 ? __detail::__abs_integral(__n)
+	: __n == 0 ? __detail::__abs_integral(__m)
+	: __detail::__gcd(__n, __m % __n);
+    }
+
+  /// Least common multiple
+  template<typename _Mn, typename _Nn>
+    constexpr common_type_t<_Mn, _Nn>
+    __lcm(_Mn __m, _Nn __n)
+    {
+      return (__m != 0 && __n != 0)
+	? (__detail::__abs_integral(__m) / __detail::__gcd(__m, __n))
+	  * __detail::__abs_integral(__n)
+	: 0;
+    }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+}
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#if __cplusplus > 201402L
+
+#define __cpp_lib_gcd 201606
+  /// Greatest common divisor
+  template<typename _Mn, typename _Nn>
+    constexpr common_type_t<_Mn, _Nn>
+    gcd(_Mn __m, _Nn __n)
+    {
+      static_assert(is_integral<_Mn>::value, "arguments to gcd are integers");
+      static_assert(is_integral<_Nn>::value, "arguments to gcd are integers");
+      return __detail::__gcd(__m, __n);
+    }
+
+#define __cpp_lib_lcm 201606
+  /// Least common multiple
+  template<typename _Mn, typename _Nn>
+    constexpr common_type_t<_Mn, _Nn>
+    lcm(_Mn __m, _Nn __n)
+    {
+      static_assert(is_integral<_Mn>::value, "arguments to lcm are integers");
+      static_assert(is_integral<_Nn>::value, "arguments to lcm are integers");
+      return __detail::__lcm(__m, __n);
+    }
+
+#endif // C++17
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#endif // C++14
+
+
 #endif /* _GLIBCXX_NUMERIC */

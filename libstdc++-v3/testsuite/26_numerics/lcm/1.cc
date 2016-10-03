@@ -15,11 +15,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++14 } }
+// { dg-options "-std=gnu++1z" }
+// { dg-do compile { target c++1z } }
 
-#include <experimental/numeric>
+#include <numeric>
 
-using std::experimental::fundamentals_v2::lcm;
+#ifndef __cpp_lib_lcm
+# error "Feature-test macro for lcm missing"
+#elif __cpp_lib_lcm != 201606
+# error "Feature-test macro for lcm has wrong value"
+#endif
+
+using std::lcm;
 
 static_assert(lcm(21, 6) == 42, "");
 static_assert(lcm(41, 0) == 0, "LCD with zero is zero");
@@ -29,3 +36,6 @@ static_assert(lcm(0, 0) == 0, "no division by zero");
 static_assert(lcm(1u, 2) == 2, "unsigned and signed");
 static_assert(lcm(3, 4u) == 12, "signed and unsigned");
 static_assert(lcm(5u, 6u) == 30, "unsigned and unsigned");
+
+static_assert( std::is_same_v<decltype(lcm(1l, 1)), long> );
+static_assert( std::is_same_v<decltype(lcm(1ul, 1ull)), unsigned long long> );
