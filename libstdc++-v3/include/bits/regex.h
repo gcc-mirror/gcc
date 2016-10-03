@@ -769,10 +769,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
-	friend bool
-	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
-				    const basic_regex<_Cp, _Rp>&,
-				    regex_constants::match_flag_type);
+	friend bool __detail::
+#if _GLIBCXX_INLINE_VERSION
+        __7:: // Required due to PR c++/59256
+#endif
+	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
+                          const basic_regex<_Cp, _Rp>&,
+                          regex_constants::match_flag_type);
 
       template<typename, typename, typename, bool>
 	friend class __detail::_Executor;
@@ -1860,10 +1863,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
-	friend bool
-	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
-				    const basic_regex<_Cp, _Rp>&,
-				    regex_constants::match_flag_type);
+	friend bool __detail::
+#if _GLIBCXX_INLINE_VERSION
+        __7:: // Required due to PR c++/59256
+#endif
+	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
+                          const basic_regex<_Cp, _Rp>&,
+                          regex_constants::match_flag_type);
 
       void
       _M_resize(unsigned int __size)

@@ -53,6 +53,7 @@
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
 #include <bits/enable_special_members.h>
+#include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

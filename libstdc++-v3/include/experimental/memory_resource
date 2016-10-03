@@ -34,6 +34,7 @@
 #include <atomic>
 #include <cstddef>
 #include <bits/alloc_traits.h>
+#include <experimental/bits/lfts_config.h>
 
 namespace std {
 namespace experimental {

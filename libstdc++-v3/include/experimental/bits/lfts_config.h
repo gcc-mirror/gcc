@@ -1,6 +1,6 @@
-// <experimental/bits/erase_if.h> -*- C++ -*-
+// Namespace declarations for Library Fundamentals TS -*- C++ -*-
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,50 +22,39 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file experimental/bits/erase_if.h
+/** @file experimental/bits/lfts_config.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly.
  */
 
-#ifndef _GLIBCXX_EXPERIMENTAL_ERASE_IF_H
-#define _GLIBCXX_EXPERIMENTAL_ERASE_IF_H 1
-
-#pragma GCC system_header
-
 #if __cplusplus <= 201103L
 # include <bits/c++14_warning.h>
 #else
-#include <experimental/bits/lfts_config.h>
+#include <bits/c++config.h>
 
-namespace std
+#if _GLIBCXX_INLINE_VERSION
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+namespace chrono
 {
 namespace experimental
 {
-inline namespace fundamentals_v2
+inline namespace fundamentals_v1 { inline namespace __7 { } }
+inline namespace fundamentals_v2 { inline namespace __7 { } }
+} // namespace experimental
+} // namespace chrono
+
+namespace experimental
 {
-
-  namespace __detail
-  {
-    template<typename _Container, typename _Predicate>
-      void
-      __erase_nodes_if(_Container& __cont, _Predicate __pred)
-      {
-	for (auto __iter = __cont.begin(), __last = __cont.end();
-	     __iter != __last;)
-	{
-	  if (__pred(*__iter))
-	    __iter = __cont.erase(__iter);
-	  else
-	    ++__iter;
-	}
-      }
-  }
-
-
-} // inline namespace fundamentals_v2
+inline namespace fundamentals_v1 { inline namespace __7 { } }
+inline namespace fundamentals_v2 {
+  inline namespace __7 { }
+  namespace pmr { inline namespace __7 { } }
+} // namespace fundamentals_v2
+inline namespace literals { inline namespace string_view_literals {
+  inline namespace __7 { }
+} } // namespace literals::string_view_literals
 } // namespace experimental
 } // namespace std
-
-#endif // C++14
-
-#endif // _GLIBCXX_EXPERIMENTAL_ERASE_IF_H
+#endif
+#endif
