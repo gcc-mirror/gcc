@@ -1,3 +1,8 @@
+2015-10-03  Jeff Law  <law@redhat.com>
+
+	* MAINTAINERS: Move several inactive maintainers to the
+	write-after-approval section.
+
 2016-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Add target-libffi to target_libraries.
