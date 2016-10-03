@@ -1284,8 +1284,13 @@ runtime_go_lo_GOCFLAGS = -fgo-c-header=runtime.inc.tmp -fgo-compiling-runtime
 runtime-go.lo:
 	$(BUILDPACKAGE)
 runtime.inc: s-runtime-inc; @true
-s-runtime-inc: runtime-go.lo
-	$(SHELL) $(srcdir)/mvifdiff.sh runtime.inc.tmp runtime.inc
+s-runtime-inc: runtime-go.lo Makefile
+	rm -f runtime.inc.tmp2
+	grep -v "#define _" runtime.inc.tmp > runtime.inc.tmp2
+	for pattern in '_G[a-z]' '_P[a-z]' _Max _Lock _Sig _Trace _MHeap _Num; do \
+	  grep "#define $$pattern" runtime.inc.tmp >> runtime.inc.tmp2; \
+	done
+	$(SHELL) $(srcdir)/mvifdiff.sh runtime.inc.tmp2 runtime.inc
 	$(STAMP) $@
 runtime_check_GOCFLAGS = -fgo-compiling-runtime
 runtime/check: $(CHECK_DEPS)
