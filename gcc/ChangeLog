@@ -1,3 +1,9 @@
+2016-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (strict_warn): Merge -Wmissing-format-attribute and
+	-Woverloaded-virtual checks for warning options.
+	* configure: Regenerate.
+
 2016-10-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR preprocessor/77699
