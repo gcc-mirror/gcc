@@ -432,7 +432,7 @@ maybe_grow (fcache *c)
     return;
 
   size_t size = c->size == 0 ? fcache_buffer_size : c->size * 2;
-  c->data = XRESIZEVEC (char, c->data, size + 1);
+  c->data = XRESIZEVEC (char, c->data, size);
   c->size = size;
 }
 
@@ -472,14 +472,13 @@ maybe_read_data (fcache *c)
 
 /* Read a new line from file FP, using C as a cache for the data
    coming from the file.  Upon successful completion, *LINE is set to
-   the beginning of the line found.  Space for that line has been
-   allocated in the cache thus *LINE has the same life time as C.
+   the beginning of the line found.  *LINE points directly in the
+   line cache and is only valid until the next call of get_next_line.
    *LINE_LEN is set to the length of the line.  Note that the line
    does not contain any terminal delimiter.  This function returns
    true if some data was read or process from the cache, false
-   otherwise.  Note that subsequent calls to get_next_line return the
-   next lines of the file and might overwrite the content of
-   *LINE.  */
+   otherwise.  Note that subsequent calls to get_next_line might
+   make the content of *LINE invalid.  */
 
 static bool
 get_next_line (fcache *c, char **line, ssize_t *line_len)
@@ -534,7 +533,7 @@ get_next_line (fcache *c, char **line, ssize_t *line_len)
     }
 
   if (ferror (c->fp))
-    return -1;
+    return false;
 
   /* At this point, we've found the end of the of line.  It either
      points to the '\n' or to one byte after the last byte of the
@@ -597,36 +596,6 @@ get_next_line (fcache *c, char **line, ssize_t *line_len)
   return true;
 }
 
-/* Reads the next line from FILE into *LINE.  If *LINE is too small
-   (or NULL) it is allocated (or extended) to have enough space to
-   containe the line.  *LINE_LENGTH must contain the size of the
-   initial*LINE buffer.  It's then updated by this function to the
-   actual length of the returned line.  Note that the returned line
-   can contain several zero bytes.  Also note that the returned string
-   is allocated in static storage that is going to be re-used by
-   subsequent invocations of read_line.  */
-
-static bool
-read_next_line (fcache *cache, char ** line, ssize_t *line_len)
-{
-  char *l = NULL;
-  ssize_t len = 0;
-
-  if (!get_next_line (cache, &l, &len))
-    return false;
-
-  if (*line == NULL)
-    *line = XNEWVEC (char, len);
-  else
-    if (*line_len < len)
-	*line = XRESIZEVEC (char, *line, len);
-
-  memcpy (*line, l, len);
-  *line_len = len;
-
-  return true;
-}
-
 /* Consume the next bytes coming from the cache (or from its
    underlying file if there are remaining unread bytes in the file)
    until we reach the next end-of-line (or end-of-file).  There is no
@@ -643,15 +612,15 @@ goto_next_line (fcache *cache)
 }
 
 /* Read an arbitrary line number LINE_NUM from the file cached in C.
-   The line is copied into *LINE.  *LINE_LEN must have been set to the
-   length of *LINE.  If *LINE is too small (or NULL) it's extended (or
-   allocated) and *LINE_LEN is adjusted accordingly.  *LINE ends up
-   with a terminal zero byte and can contain additional zero bytes.
+   If the line was read successfully, *LINE points to the beginning
+   of the line in the file cache and *LINE_LEN is the length of the
+   line.  *LINE is not nul-terminated, but may contain zero bytes.
+   *LINE is only valid until the next call of read_line_num.
    This function returns bool if a line was read.  */
 
 static bool
 read_line_num (fcache *c, size_t line_num,
-	       char ** line, ssize_t *line_len)
+	       char **line, ssize_t *line_len)
 {
   gcc_assert (line_num > 0);
 
@@ -703,14 +672,9 @@ read_line_num (fcache *c, size_t line_num,
 
 	  if (i && i->line_num == line_num)
 	    {
-	      /* We have the start/end of the line.  Let's just copy
-		 it again and we are done.  */
-	      ssize_t len = i->end_pos - i->start_pos + 1;
-	      if (*line_len < len)
-		*line = XRESIZEVEC (char, *line, len);
-	      memmove (*line, c->data + i->start_pos, len);
-	      (*line)[len - 1] = '\0';
-	      *line_len = --len;
+	      /* We have the start/end of the line.  */
+	      *line = c->data + i->start_pos;
+	      *line_len = i->end_pos - i->start_pos;
 	      return true;
 	    }
 
@@ -735,21 +699,22 @@ read_line_num (fcache *c, size_t line_num,
 
   /* The line we want is the next one.  Let's read and copy it back to
      the caller.  */
-  return read_next_line (c, line, line_len);
+  return get_next_line (c, line, line_len);
 }
 
-/* Return the physical source line that corresponds to FILE_PATH/LINE in a
-   buffer that is statically allocated.  The newline is replaced by
-   the null character.  Note that the line can contain several null
-   characters, so LINE_LEN, if non-null, points to the actual length
-   of the line.  */
+/* Return the physical source line that corresponds to FILE_PATH/LINE.
+   The line is not nul-terminated.  The returned pointer is only
+   valid until the next call of location_get_source_line.
+   Note that the line can contain several null characters,
+   so LINE_LEN, if non-null, points to the actual length of the line.
+   If the function fails, NULL is returned.  */
 
 const char *
 location_get_source_line (const char *file_path, int line,
 			  int *line_len)
 {
-  static char *buffer;
-  static ssize_t len;
+  char *buffer;
+  ssize_t len;
 
   if (line == 0)
     return NULL;
@@ -1818,22 +1783,27 @@ test_reading_source_line ()
   temp_source_file tmp (SELFTEST_LOCATION, ".txt",
 			"01234567890123456789\n"
 			"This is the test text\n"
-			"This is the 3rd line\n");
+			"This is the 3rd line");
 
   /* Read back a specific line from the tempfile.  */
   int line_size;
   const char *source_line = location_get_source_line (tmp.get_filename (),
-						      2, &line_size);
+						      3, &line_size);
+  ASSERT_TRUE (source_line != NULL);
+  ASSERT_EQ (20, line_size);
+  ASSERT_TRUE (!strncmp ("This is the 3rd line",
+			 source_line, line_size));
+
+  source_line = location_get_source_line (tmp.get_filename (),
+					  2, &line_size);
   ASSERT_TRUE (source_line != NULL);
   ASSERT_EQ (21, line_size);
-  if (!strncmp ("This is the test text",
-		source_line, line_size))
-    ::selftest::pass (SELFTEST_LOCATION,
-		      "source_line matched expected value");
-  else
-    ::selftest::fail (SELFTEST_LOCATION,
-		      "source_line did not match expected value");
+  ASSERT_TRUE (!strncmp ("This is the test text",
+			 source_line, line_size));
 
+  source_line = location_get_source_line (tmp.get_filename (),
+					  4, &line_size);
+  ASSERT_TRUE (source_line == NULL);
 }
 
 /* Tests of lexing.  */

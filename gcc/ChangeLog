@@ -1,3 +1,13 @@
+2016-10-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR preprocessor/77699
+	* input.c (maybe_grow): Don't allocate one byte extra headroom.
+	(get_next_line): Return false on error.
+	(read_next_line): Removed, use get_next_line instead.
+	(read_line_num): Don't copy the line.
+	(location_get_source_line): Don't use static data.
+	(selftest::test_reading_source_line): Add more test cases.
+
 2016-10-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Revert
