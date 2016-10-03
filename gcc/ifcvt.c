@@ -1313,84 +1313,6 @@ noce_try_inverse_constants (struct noce_if_info *if_info)
   return false;
 }
 
-/* Try to avoid materializing a constant if we know it's in one of the
-   registers.  For example:
-   (X == CST) ? -CST : Y --> (X == CST) ? -X : Y.
-   Do this only if conditional negation is available.
-   Similar for bitwise NOT.  */
-
-static bool
-noce_try_avoid_const_materialization (struct noce_if_info *if_info)
-{
-  if (!noce_simple_bbs (if_info))
-    return false;
-
-  rtx cond = if_info->cond;
-  rtx a = if_info->a;
-  rtx b = if_info->b;
-  rtx_code code = GET_CODE (cond);
-  machine_mode mode = GET_MODE (if_info->x);
-
-  if (!(code == EQ || code == NE)
-      || !REG_P (XEXP (cond, 0))
-      || !REG_P (if_info->x)
-      || GET_MODE (XEXP (cond, 0)) != mode
-      || !CONST_INT_P (XEXP (cond, 1)))
-    return false;
-
-  rtx cst = XEXP (cond, 1);
-  if (cst == CONST0_RTX (mode))
-    return false;
-
-  rtx non_cst = XEXP (cond, 0);
-  rtx eq_side = code == EQ ? b : a;
-  if (!CONST_INT_P (eq_side))
-    return false;
-
-  HOST_WIDE_INT cstval = INTVAL (cst);
-  HOST_WIDE_INT eq_side_val = INTVAL (eq_side);
-
-  rtx_code op_code;
-  if (eq_side_val == ~cstval)
-    op_code = NOT;
-  else if (eq_side_val != HOST_WIDE_INT_MIN && (cstval == -eq_side_val))
-    op_code = NEG;
-  else
-    return false;
-
-  /* By the rules of the negcc/notcc optabs must happen when the COND is true,
-     in this case when register in COND is equal to CST so always set the
-     comparison to EQ.  */
-  if (code == NE)
-    {
-      a = non_cst;
-      cond = gen_rtx_fmt_ee (EQ, GET_MODE (cond), non_cst, cst);
-    }
-  else
-    b = non_cst;
-
-  start_sequence ();
-  rtx target
-    = emit_conditional_neg_or_complement (if_info->x, op_code, mode,
-					   cond, a, b);
-  if (!target)
-    {
-      end_sequence ();
-      return false;
-    }
-
-  if (target != if_info->x)
-    noce_emit_move_insn (if_info->x, target);
-
-  rtx_insn *seq = end_ifcvt_sequence (if_info);
-  if (!seq)
-    return false;
-
-   emit_insn_before_setloc (seq, if_info->jump,
-			     INSN_LOCATION (if_info->insn_a));
-  if_info->transform_name = "noce_try_avoid_const_materialization";
-  return true;
-}
 
 /* Convert "if (test) x = a; else x = b", for A and B constant.
    Also allow A = y + c1, B = y + c2, with a common y between A
@@ -3683,8 +3605,6 @@ noce_process_if_block (struct noce_if_info *if_info)
   if (noce_try_abs (if_info))
     goto success;
   if (noce_try_inverse_constants (if_info))
-    goto success;
-  if (noce_try_avoid_const_materialization (if_info))
     goto success;
   if (!targetm.have_conditional_execution ()
       && noce_try_store_flag_constants (if_info))

@@ -1,3 +1,10 @@
+2016-10-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Revert
+	2016-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ifcvt_avoid_const_materialization_1.c: New test.
+
 2016-10-03  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp0x/nullptr37.C: New test.
