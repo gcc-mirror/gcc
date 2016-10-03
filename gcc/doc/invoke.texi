@@ -6038,7 +6038,8 @@ of the C++ standard.
 @opindex Wno-int-in-bool-context
 Warn for suspicious use of integer values where boolean values are expected,
 such as conditional expressions (?:) using non-boolean integer constants in
-boolean context, like @code{if (a <= b ? 2 : 3)}.
+boolean context, like @code{if (a <= b ? 2 : 3)}.  Or left shifting in
+boolean context, like @code{for (a = 0; 1 << a; a++);}.
 This warning is enabled by @option{-Wall}.
 
 @item -Wno-int-to-pointer-cast

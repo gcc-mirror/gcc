@@ -25,5 +25,7 @@ int foo (int a, int b)
   if (b ? 1+1 : 1) /* { dg-warning "boolean context" } */
     return 7;
 
+  for (a = 0; 1 << a; a++); /* { dg-warning "boolean context" } */
+
   return 0;
 }
