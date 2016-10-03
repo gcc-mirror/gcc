@@ -982,6 +982,7 @@ experimental_bits_srcdir = ${glibcxx_srcdir}/include/experimental/bits
 experimental_bits_builddir = ./experimental/bits
 experimental_bits_headers = \
 	${experimental_bits_srcdir}/erase_if.h \
+	${experimental_bits_srcdir}/lfts_config.h \
 	${experimental_bits_srcdir}/shared_ptr.h \
 	${experimental_bits_srcdir}/string_view.tcc \
 	${experimental_bits_filesystem_headers}

@@ -85,10 +85,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr size_t variant_npos = -1;
 
+_GLIBCXX_END_NAMESPACE_VERSION
+
 namespace __detail
 {
 namespace __variant
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Returns the first apparence of _Tp in _Types.
   // Returns sizeof...(_Types) if _Tp is not in _Types.
   template<typename _Tp, typename... _Types>
@@ -725,8 +728,11 @@ namespace __variant
       }
     };
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __variant
 } // namespace __detail
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename... _Types>
     inline constexpr bool holds_alternative(const variant<_Types...>& __v)
@@ -1250,7 +1256,11 @@ namespace __variant
       }
 
       template<typename _Vp>
-	friend void* __detail::__variant::__get_storage(_Vp&& __v);
+	friend void* __detail::__variant::
+#if _GLIBCXX_INLINE_VERSION
+        __7:: // Required due to PR c++/59256
+#endif
+        __get_storage(_Vp&& __v);
     };
 
   // To honor algebraic data type, variant<> should be a bottom type, which

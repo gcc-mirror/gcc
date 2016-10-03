@@ -45,6 +45,7 @@
 #ifdef _GLIBCXX_PARALLEL
 # include <parallel/algorithm> // For std::__parallel::search
 #endif
+#include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -187,6 +187,7 @@ CXXABI_2.0 {
     __cxa_guard_release;
     __cxa_pure_virtual;
     __cxa_rethrow;
+    __cxa_thread_atexit;
     __cxa_throw;
     __cxa_type_match;
     __cxa_vec_cctor;
@@ -344,6 +345,9 @@ CXXABI_2.0 {
     _ZdlPv[jmy];
     # operator delete[](void*, std::size_t)
     _ZdaPv[jmy];
+
+    # __gnu_cxx::__freeres()
+    _ZN9__gnu_cxx9__freeresEv;
 };
 
 # Symbols in the support library (libsupc++) supporting trans-mem.
