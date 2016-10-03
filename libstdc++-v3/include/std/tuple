@@ -220,11 +220,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Tuple_impl(const _Tuple_impl&) = default;
 
       constexpr
-      _Tuple_impl(typename conditional<
-		  __and_<is_move_constructible<_Head>,
-		         is_move_constructible<_Inherited>>::value,
-		  _Tuple_impl&&, __nonesuch&&>::type __in)
-	noexcept(__and_<is_nothrow_move_constructible<_Head>,
+      _Tuple_impl(_Tuple_impl&& __in)
+      noexcept(__and_<is_nothrow_move_constructible<_Head>,
 	              is_nothrow_move_constructible<_Inherited>>::value)
       : _Inherited(std::move(_M_tail(__in))),
 	_Base(std::forward<_Head>(_M_head(__in))) { }
@@ -235,11 +232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Base(_Tuple_impl<_Idx, _UElements...>::_M_head(__in)) { }
 
       template<typename _UHead, typename... _UTails>
-        constexpr _Tuple_impl(typename conditional<
-			      __and_<is_move_constructible<_Head>,
-			      is_move_constructible<_Inherited>>::value,
-			      _Tuple_impl<_Idx, _UHead, _UTails...>&&,
-			      __nonesuch&&>::type __in)
+        constexpr _Tuple_impl(_Tuple_impl<_Idx, _UHead, _UTails...>&& __in)
 	: _Inherited(std::move
 		     (_Tuple_impl<_Idx, _UHead, _UTails...>::_M_tail(__in))),
 	  _Base(std::forward<_UHead>
@@ -345,18 +338,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  template<typename...>
-    struct __is_tuple_impl_trait_impl : false_type
-    { };
-
-  template<std::size_t _Idx, typename... _Tp>
-    struct __is_tuple_impl_trait_impl<_Tuple_impl<_Idx, _Tp...>> : true_type
-    { };
-
-  template<typename _Tp>
-    struct __is_tuple_impl_trait : public __is_tuple_impl_trait_impl<_Tp>
-    { };
-
   // Basis case of inheritance recursion.
   template<std::size_t _Idx, typename _Head>
     struct _Tuple_impl<_Idx, _Head>
@@ -375,20 +356,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Tuple_impl()
       : _Base() { }
 
-      template<typename _Dummy=void,
-	       typename enable_if<is_constructible<_Base, const _Head&>::value,
-				  bool>::type=true>
       explicit
       constexpr _Tuple_impl(const _Head& __head)
       : _Base(__head) { }
 
-      template<typename _UHead,
-	       typename enable_if<__and_<is_constructible<_Base, _UHead&&>,
-					 __not_<__is_tuple_impl_trait<
-					   typename
-					     remove_reference<_UHead>::type>>
-					 >::value,
-				  bool>::type = true>
+      template<typename _UHead>
         explicit
         constexpr _Tuple_impl(_UHead&& __head)
 	: _Base(std::forward<_UHead>(__head)) { }
@@ -396,21 +368,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Tuple_impl(const _Tuple_impl&) = default;
 
       constexpr
-      _Tuple_impl(typename conditional<
-		  is_move_constructible<_Head>::value,
-		  _Tuple_impl&&, __nonesuch&&>::type __in)
+      _Tuple_impl(_Tuple_impl&& __in)
       noexcept(is_nothrow_move_constructible<_Head>::value)
       : _Base(std::forward<_Head>(_M_head(__in))) { }
 
-      template<typename _UHead,
-	       typename enable_if<!is_same<_Head, _UHead>::value,
-				  bool>::type = true>
+      template<typename _UHead>
         constexpr _Tuple_impl(const _Tuple_impl<_Idx, _UHead>& __in)
 	: _Base(_Tuple_impl<_Idx, _UHead>::_M_head(__in)) { }
 
-      template<typename _UHead,
-	       typename enable_if<!is_same<_Head, _UHead>::value,
-				  bool>::type = true>
+      template<typename _UHead>
         constexpr _Tuple_impl(_Tuple_impl<_Idx, _UHead>&& __in)
 	: _Base(std::forward<_UHead>(_Tuple_impl<_Idx, _UHead>::_M_head(__in)))
 	{ }
@@ -866,18 +832,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       tuple&
-      operator=(typename
-		conditional<__and_<is_copy_assignable<_Elements>...>::value,
-		const tuple&, const __nonesuch&>::type __in)
+      operator=(const tuple& __in)
       {
 	static_cast<_Inherited&>(*this) = __in;
 	return *this;
       }
 
       tuple&
-      operator=(typename
-		conditional<__and_<is_move_assignable<_Elements>...>::value,
-		tuple&&, __nonesuch&&>::type __in)
+      operator=(tuple&& __in)
       noexcept(is_nothrow_move_assignable<_Inherited>::value)
       {
 	static_cast<_Inherited&>(*this) = std::move(__in);
@@ -886,10 +848,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename... _UElements, typename = typename
 	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)
-	       &&
-	       __and_<is_assignable<_Elements&,
-				    const _UElements&>...>::value>::type>
+			 == sizeof...(_Elements)>::type>
         tuple&
         operator=(const tuple<_UElements...>& __in)
         {
@@ -899,10 +858,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename... _UElements, typename = typename
 	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)
-	       &&
-	       __and_<is_assignable<_Elements&,
-				    _UElements&&>...>::value>::type>
+			 == sizeof...(_Elements)>::type>
         tuple&
         operator=(tuple<_UElements...>&& __in)
         {
@@ -1233,20 +1189,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     std::forward<_U2>(__in.second)) { }
 
       tuple&
-      operator=(typename
-		conditional<__and_<is_copy_assignable<_T1>,
-		                   is_copy_assignable<_T2>>::value,
-		const tuple&, const __nonesuch&>::type __in)
+      operator=(const tuple& __in)
       {
 	static_cast<_Inherited&>(*this) = __in;
 	return *this;
       }
 
       tuple&
-      operator=(typename
-		conditional<__and_<is_move_assignable<_T1>,
-		                   is_move_assignable<_T2>>::value,
-		tuple&&, __nonesuch&&>::type __in)
+      operator=(tuple&& __in)
       noexcept(is_nothrow_move_assignable<_Inherited>::value)
       {
 	static_cast<_Inherited&>(*this) = std::move(__in);
@@ -1254,10 +1204,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _U1, typename _U2>
-        typename
-          enable_if<__and_<is_assignable<_T1&, const _U1&>,
-			   is_assignable<_T2&, const _U2&>>::value,
-			   tuple&>::type
+        tuple&
         operator=(const tuple<_U1, _U2>& __in)
         {
 	  static_cast<_Inherited&>(*this) = __in;
@@ -1265,10 +1212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _U1, typename _U2>
-        typename
-          enable_if<__and_<is_assignable<_T1&, _U1&&>,
-			   is_assignable<_T2&, _U2&&>>::value,
-			   tuple&>::type
+        tuple&
         operator=(tuple<_U1, _U2>&& __in)
         {
 	  static_cast<_Inherited&>(*this) = std::move(__in);
@@ -1276,10 +1220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _U1, typename _U2>
-        typename
-          enable_if<__and_<is_assignable<_T1&, const _U1&>,
-			   is_assignable<_T2&, const _U2&>>::value,
-			   tuple&>::type
+        tuple&
         operator=(const pair<_U1, _U2>& __in)
         {
 	  this->_M_head(*this) = __in.first;
@@ -1288,10 +1229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _U1, typename _U2>
-        typename
-          enable_if<__and_<is_assignable<_T1&, _U1&&>,
-			   is_assignable<_T2&, _U2&&>>::value,
-			   tuple&>::type
+        tuple&
         operator=(pair<_U1, _U2>&& __in)
         {
 	  this->_M_head(*this) = std::forward<_U1>(__in.first);

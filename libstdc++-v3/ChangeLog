@@ -1,3 +1,33 @@
+2016-10-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/77802
+	* testsuite/20_util/tuple/77802.cc: New.
+
+	Revert:
+	2016-09-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	Implement LWG 2729 for tuple.
+	* include/std/tuple (_Tuple_impl(_Tuple_impl&&)):
+	Suppress conditionally.
+	(_Tuple_impl(_Tuple_impl<_Idx, _UHead, _UTails...>&&)): Likewise.
+	(__is_tuple_impl_trait_impl, __is_tuple_impl_trait): New.
+	(_Tuple_impl(const _Head&)): Constrain.
+	(_Tuple_impl(_UHead&&)): Likewise.
+	(_Tuple_impl(_Tuple_impl&&)): Suppress conditionally.
+	(_Tuple_impl(const _Tuple_impl<_Idx, _UHead>&)): Constrain.
+	(_Tuple_impl(_Tuple_impl<_Idx, _UHead>&&)): Likewise.
+	(operator=(const tuple&)): Enable conditionally.
+	(operator=(tuple&&)): Suppress conditionally.
+	(operator=(const tuple<_UElements...>&)): Constrain.
+	(operator=(tuple<_UElements...>&&)): Likewise.
+	(operator=(const tuple&)): Enable conditionally (2-param tuple).
+	(operator=(tuple&&)): Suppress conditionally (2-param tuple).
+	(operator=(const tuple<_U1, _U2>&)): Constrain.
+	(operator=(tuple<_U1, _U2>&&)): Likewise.
+	(operator=(const pair<_U1, _U2>&)): Likewise.
+	(operator=(pair<_U1, _U2>&&)): Likewise.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust.
+	* testsuite/20_util/tuple/tuple_traits.cc: New.
+
 2016-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/77795
