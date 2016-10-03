@@ -1,3 +1,15 @@
+2016-10-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71550
+	PR tree-optimization/71403
+	* tree-ssa-threadbackward.c: Include tree-vectorizer.h
+	(profitable_jump_thread_path): Also return boolean indicating if
+	the realized path will create an irreducible loop.
+	Remove loop depth tests from 71403.
+	(fsm_find_control_statement_thread_paths): Remove loop depth tests
+	from 71403.  If threading will create an irreducible loop, then
+	throw away loop iteration and related information.
+
 2016-10-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (strict_warn): Merge -Wmissing-format-attribute and

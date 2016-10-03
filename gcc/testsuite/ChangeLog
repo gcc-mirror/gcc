@@ -1,3 +1,9 @@
+2016-09-26  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71550
+	PR tree-optimization/71403
+	* gcc.c-torture/execute/pr71550.c: New test.
+
 2016-10-03  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.target/avr/torture/builtins-error.c: Add -ffat-lto-objects

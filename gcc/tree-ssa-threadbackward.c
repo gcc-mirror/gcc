@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "tree-inline.h"
+#include "tree-vectorizer.h"
 
 static int max_threaded_paths;
 
@@ -110,7 +111,8 @@ fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
 
 static edge
 profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
-			     basic_block bbi, tree name, tree arg, bool speed_p)
+			     basic_block bbi, tree name, tree arg, bool speed_p,
+			     bool *creates_irreducible_loop)
 {
   /* Note BBI is not in the path yet, hence the +1 in the test below
      to make sure BBI is accounted for in the path length test.  */
@@ -296,12 +298,12 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
       return NULL;
     }
 
-  bool creates_irreducible_loop = false;
+  *creates_irreducible_loop = false;
   if (threaded_through_latch
       && loop == taken_edge->dest->loop_father
       && (determine_bb_domination_status (loop, taken_edge->dest)
 	  == DOMST_NONDOMINATING))
-    creates_irreducible_loop = true;
+    *creates_irreducible_loop = true;
 
   if (path_crosses_loops)
     {
@@ -343,7 +345,7 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
      the path -- in that case there's little the traditional loop
      optimizer would have done anyway, so an irreducible loop is not
      so bad.  */
-  if (!threaded_multiway_branch && creates_irreducible_loop
+  if (!threaded_multiway_branch && *creates_irreducible_loop
       && (n_insns * PARAM_VALUE (PARAM_FSM_SCALE_PATH_STMTS)
 	  > path_length * PARAM_VALUE (PARAM_FSM_SCALE_PATH_BLOCKS)))
 
@@ -479,9 +481,6 @@ fsm_find_control_statement_thread_paths (tree name,
       seen_loop_phi = true;
     }
 
-  if (bb_loop_depth (last_bb_in_path) > bb_loop_depth (var_bb))
-    return;
-
   /* Following the chain of SSA_NAME definitions, we jumped from a definition in
      LAST_BB_IN_PATH to a definition in VAR_BB.  When these basic blocks are
      different, append to PATH the blocks from LAST_BB_IN_PATH to VAR_BB.  */
@@ -528,9 +527,7 @@ fsm_find_control_statement_thread_paths (tree name,
 	 NEXT_PATH.  Don't add them here to avoid pollution.  */
       for (unsigned int i = 0; i < next_path->length () - 1; i++)
 	{
-	  if (visited_bbs->contains ((*next_path)[i])
-	      || (bb_loop_depth (last_bb_in_path)
-		  > bb_loop_depth ((*next_path)[i])))
+	  if (visited_bbs->contains ((*next_path)[i]))
 	    {
 	      vec_free (next_path);
 	      return;
@@ -580,14 +577,16 @@ fsm_find_control_statement_thread_paths (tree name,
 
 	  /* If this is a profitable jump thread path, then convert it
 	     into the canonical form and register it.  */
+	  bool irreducible = false;
 	  edge taken_edge = profitable_jump_thread_path (path, bbi, name, arg,
-							 speed_p);
+							 speed_p, &irreducible);
 	  if (taken_edge)
 	    {
-	      if (bb_loop_depth (taken_edge->src)
-		  >= bb_loop_depth (taken_edge->dest))
-		convert_and_register_jump_thread_path (path, taken_edge);
+	      convert_and_register_jump_thread_path (path, taken_edge);
 	      path->pop ();
+
+	      if (irreducible)
+		vect_free_loop_info_assumptions ((*path)[0]->loop_father);
 	    }
 	}
     }
@@ -606,14 +605,17 @@ fsm_find_control_statement_thread_paths (tree name,
 	     block at this point.  So we can just pop it.  */
 	  path->pop ();
 
+	  bool irreducible = false;
 	  edge taken_edge = profitable_jump_thread_path (path, var_bb,
-						         name, arg, speed_p);
+						         name, arg, speed_p,
+							 &irreducible);
 	  if (taken_edge)
 	    {
-	      if (bb_loop_depth (taken_edge->src)
-		  >= bb_loop_depth (taken_edge->dest))
-		convert_and_register_jump_thread_path (path, taken_edge);
+	      convert_and_register_jump_thread_path (path, taken_edge);
 	      path->pop ();
+
+	      if (irreducible)
+		vect_free_loop_info_assumptions ((*path)[0]->loop_father);
 	    }
 
 	  /* And put the current block back onto the path so that the
