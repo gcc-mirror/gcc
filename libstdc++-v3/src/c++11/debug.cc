@@ -40,6 +40,8 @@
 
 #include <cxxabi.h> // for __cxa_demangle
 
+#include "mutex_pool.h"
+
 using namespace std;
 
 namespace
@@ -50,15 +52,13 @@ namespace
   __gnu_cxx::__mutex&
   get_safe_base_mutex(void* address)
   {
-    const size_t mask = 0xf;
-    static __gnu_cxx::__mutex safe_base_mutex[mask + 1];
-
     // Use arbitrarily __gnu_debug::vector<int> as the container giving
     // alignment of debug containers.
     const auto alignbits = __builtin_ctz(alignof(__gnu_debug::vector<int>));
-    const size_t index
-      = (reinterpret_cast<std::size_t>(address) >> alignbits) & mask;
-    return safe_base_mutex[index];
+    const unsigned char index
+      = (reinterpret_cast<std::size_t>(address) >> alignbits)
+      & __gnu_internal::mask;
+    return __gnu_internal::get_mutex(index);
   }
 
   void
