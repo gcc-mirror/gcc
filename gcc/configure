@@ -6758,63 +6758,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 strict_warn=
 save_CXXFLAGS="$CXXFLAGS"
-for real_option in -Wmissing-format-attribute; do
-  # Do the check with the no- prefix removed since gcc silently
-  # accepts any -Wno-* option on purpose
-  case $real_option in
-    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
-    *) option=$real_option ;;
-  esac
-  as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CXX supports $option" >&5
-$as_echo_n "checking whether $CXX supports $option... " >&6; }
-if { as_var=$as_acx_Woption; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  CXXFLAGS="$option"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  eval "$as_acx_Woption=yes"
-else
-  eval "$as_acx_Woption=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-fi
-eval ac_res=\$$as_acx_Woption
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
-  strict_warn="$strict_warn${strict_warn:+ }$real_option"
-fi
-  done
-CXXFLAGS="$save_CXXFLAGS"
-ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-
-ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-save_CXXFLAGS="$CXXFLAGS"
-for real_option in -Woverloaded-virtual; do
+for real_option in -Wmissing-format-attribute -Woverloaded-virtual; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -18479,7 +18423,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18482 "configure"
+#line 18426 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18585,7 +18529,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18588 "configure"
+#line 18532 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
