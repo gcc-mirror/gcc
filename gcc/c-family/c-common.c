@@ -4655,6 +4655,11 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	return c_common_truthvalue_conversion (location,
 					       TREE_OPERAND (expr, 0));
 
+    case LSHIFT_EXPR:
+      warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
+		  "<< in boolean context, did you mean '<' ?");
+      break;
+
     case COND_EXPR:
       if (warn_int_in_bool_context
 	  && !from_macro_definition_at (EXPR_LOCATION (expr)))
@@ -4676,6 +4681,8 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	{
 	  tree op1 = TREE_OPERAND (expr, 1);
 	  tree op2 = TREE_OPERAND (expr, 2);
+	  int w = warn_int_in_bool_context;
+	  warn_int_in_bool_context = 0;
 	  /* In C++ one of the arms might have void type if it is throw.  */
 	  if (!VOID_TYPE_P (TREE_TYPE (op1)))
 	    op1 = c_common_truthvalue_conversion (location, op1);
@@ -4683,10 +4690,13 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	    op2 = c_common_truthvalue_conversion (location, op2);
 	  expr = fold_build3_loc (location, COND_EXPR, truthvalue_type_node,
 				  TREE_OPERAND (expr, 0), op1, op2);
+	  warn_int_in_bool_context = w;
 	  goto ret;
 	}
       else
 	{
+	  int w = warn_int_in_bool_context;
+	  warn_int_in_bool_context = 0;
 	  /* Folding will happen later for C.  */
 	  expr = build3 (COND_EXPR, truthvalue_type_node,
 			 TREE_OPERAND (expr, 0),
@@ -4694,6 +4704,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 							 TREE_OPERAND (expr, 1)),
 			 c_common_truthvalue_conversion (location,
 							 TREE_OPERAND (expr, 2)));
+	  warn_int_in_bool_context = w;
 	  goto ret;
 	}
 

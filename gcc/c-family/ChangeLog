@@ -1,3 +1,8 @@
+2016-10-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (c_common_truthvalue_conversion): Warn for suspicious
+	left shift in boolean context.
+
 2016-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Implement P0001R1 - C++17 removal of register storage class specifier
