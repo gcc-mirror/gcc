@@ -30,6 +30,7 @@
 #define _GLIBCXX_EXPERIMENTAL_RANDOM 1
 
 #include <random>
+#include <experimental/bits/lfts_config.h>
 
 namespace std {
 namespace experimental {
