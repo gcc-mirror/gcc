@@ -43,6 +43,8 @@
 
 #undef abs
 
+extern "C++"
+{
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -103,5 +105,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+}
 
 #endif // _GLIBCXX_BITS_STD_ABS_H

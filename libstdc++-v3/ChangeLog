@@ -1,3 +1,10 @@
+2016-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77814
+	* include/bits/std_abs.h: Use "C++" language linkage.
+	* testsuite/17_intro/headers/c++2011/linkage.cc: Move <complex.h> to
+	the end. Add <stdalign.h>.
+
 2016-10-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/77802

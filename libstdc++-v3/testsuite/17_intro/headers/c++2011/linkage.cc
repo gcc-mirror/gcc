@@ -25,9 +25,7 @@
 extern "C"
 {
 #include <assert.h>
-#ifdef _GLIBCXX_HAVE_COMPLEX_H
-#include <complex.h>
-#endif
+// See below for <complex.h>
 #include <ctype.h>
 #include <errno.h>
 #ifdef _GLIBCXX_HAVE_FENV_H
@@ -43,6 +41,9 @@ extern "C"
 #include <math.h>
 #include <setjmp.h>
 #include <signal.h>
+#if _GLIBCXX_HAVE_STDALIGN_H
+#include <stdalign.h>
+#endif
 #include <stdarg.h>
 #ifdef _GLIBCXX_HAVE_STDBOOL_H
 #include <stdbool.h>
@@ -66,5 +67,11 @@ extern "C"
 #endif
 #ifdef _GLIBCXX_HAVE_WCTYPE_H
 #include <wctype.h>
+#endif
+
+// Include this last, because it adds extern "C++" and so hides problems in
+// other headers if included first (e.g. PR libstdc++/77814).
+#ifdef _GLIBCXX_HAVE_COMPLEX_H
+#include <complex.h>
 #endif
 }
