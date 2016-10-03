@@ -352,7 +352,7 @@ WARN_CXXFLAGS = \
 
 
 # -I/-D flags to pass when compiling.
-AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
+AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 toolexeclib_LTLIBRARIES = libstdc++fs.la
 headers = 
 @ENABLE_DUAL_ABI_FALSE@cxx11_abi_sources = 

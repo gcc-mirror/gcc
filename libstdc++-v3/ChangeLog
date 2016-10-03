@@ -1,3 +1,40 @@
+2016-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/68323
+	PR libstdc++/77794
+	* config/abi/pre/gnu-versioned-namespace.ver: Add export for
+	__cxa_thread_atexit.
+	* include/Makefile.am: Add <experimental/lfts_config.h>
+	* include/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Likewise.
+	* include.bits/basic_string.h: Fix nesting of versioned namespaces.
+	* include/bits/c++config: Declare versioned namespaces for literals.
+	* include/bits/regex.h (basic_regex, match_results): Add workarounds
+	for PR c++/59256.
+	* include/bits/uniform_int_dist.h: Fix nesting of versioned namespace.
+	* include/std/chrono: Likewise.
+	* include/std/complex: Likewise.
+	* include/experimental/fs_fwd.h: Declare versioned namespace.
+	* include/experimental/lfts_config.h: Declare versioned namespaces.
+	* include/experimental/algorithm: Include
+	<experimental/lfts_config.h>.
+	* include/experimental/any: Likewise.
+	* include/experimental/chrono: Likewise.
+	* include/experimental/functional: Likewise.
+	* include/experimental/optional: Likewise.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* include/experimental/string_view: Likewise. Fix nesting of
+	versioned namespaces.
+	* include/experimental/string_view.tcc: Reopen inline namespace for
+	non-inline function definitions.
+	* testsuite/17_intro/using_namespace_std_exp_neg.cc: New test.
+	* testsuite/20_util/duration/literals/range.cc: Adjust dg-error line.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Likewise.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Likewise.
+
 2016-09-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/77686

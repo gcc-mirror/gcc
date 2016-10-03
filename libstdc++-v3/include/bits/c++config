@@ -177,8 +177,11 @@
     namespace placeholders { }
     namespace regex_constants { }
     namespace this_thread { }
-
-    namespace experimental { }
+    inline namespace literals {
+      inline namespace chrono_literals { }
+      inline namespace complex_literals { }
+      inline namespace string_literals { }
+    }
   }
 
   namespace abi { }
@@ -263,7 +266,11 @@ namespace std
   namespace regex_constants { inline namespace __7 { } }
   namespace this_thread { inline namespace __7 { } }
 
-  namespace experimental { inline namespace __7 { } }
+  inline namespace literals {
+    inline namespace chrono_literals { inline namespace __7 { } }
+    inline namespace complex_literals { inline namespace __7 { } }
+    inline namespace string_literals { inline namespace __7 { } }
+  }
 
   namespace __detail { inline namespace __7 { } }
 }

@@ -36,6 +36,7 @@
 #else
 
 #include <tuple>
+#include <experimental/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

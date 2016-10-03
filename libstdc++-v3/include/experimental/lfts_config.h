@@ -1,6 +1,6 @@
-// Variable Templates For chrono -*- C++ -*-
+// Namespace declarations for Library Fundamentals TS -*- C++ -*-
 
-// Copyright (C) 2014-2015 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,44 +22,36 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file experimental/chrono
- *  This is a TS C++ Library header.
+/** @file experimental/lfts_config.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly.
  */
-
-//
-// N3932 Variable Templates For Type Traits (Revision 1)
-//
-
-#ifndef _GLIBCXX_EXPERIMENTAL_CHRONO
-#define _GLIBCXX_EXPERIMENTAL_CHRONO 1
-
-#pragma GCC system_header
 
 #if __cplusplus <= 201103L
 # include <bits/c++14_warning.h>
 #else
+#include <bits/c++config.h>
 
-#include <chrono>
-#include <experimental/lfts_config.h>
-
+#if _GLIBCXX_INLINE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace chrono {
+namespace chrono
+{
 namespace experimental
 {
-inline namespace fundamentals_v1
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-// See C++14 §20.12.4, customization traits
-template <typename _Rep>
-   constexpr bool treat_as_floating_point_v =
-     treat_as_floating_point<_Rep>::value;
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace fundamentals_v1
+inline namespace fundamentals_v1 { inline namespace __7 { } }
+inline namespace fundamentals_v2 { inline namespace __7 { } }
 } // namespace experimental
 } // namespace chrono
+
+namespace experimental
+{
+inline namespace fundamentals_v1 { inline namespace __7 { } }
+inline namespace fundamentals_v2 { inline namespace __7 { } }
+inline namespace literals { inline namespace string_view_literals {
+  inline namespace __7 { }
+} } // namespace literals::string_view_literals
+} // namespace experimental
 } // namespace std
-
-#endif // __cplusplus <= 201103L
-
-#endif // _GLIBCXX_EXPERIMENTAL_CHRONO
+#endif
+#endif

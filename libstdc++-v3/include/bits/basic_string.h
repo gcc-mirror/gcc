@@ -5626,6 +5626,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 #endif
 
+_GLIBCXX_END_NAMESPACE_VERSION
+
 #if __cplusplus > 201103L
 
 #define __cpp_lib_string_udls 201304
@@ -5634,6 +5636,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   inline namespace string_literals
   {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char>
@@ -5659,12 +5662,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<char32_t>{__str, __len}; }
 #endif
 
+_GLIBCXX_END_NAMESPACE_VERSION
   } // inline namespace string_literals
   } // inline namespace literals
 
 #endif // __cplusplus > 201103L
 
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

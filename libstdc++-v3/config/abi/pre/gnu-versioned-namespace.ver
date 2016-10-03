@@ -186,6 +186,7 @@ CXXABI_2.0 {
     __cxa_guard_release;
     __cxa_pure_virtual;
     __cxa_rethrow;
+    __cxa_thread_atexit;
     __cxa_throw;
     __cxa_type_match;
     __cxa_vec_cctor;
