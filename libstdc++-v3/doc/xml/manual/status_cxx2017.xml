@@ -615,14 +615,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Adopt Selected Library Fundamentals V2 Components for C++17 </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0295r0.pdf">
 	P0295R0
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> 7 </entry>
       <entry><code> __cpp_lib_gcd >= 201606 </code>,
 	     <code> __cpp_lib_lcm >= 201606 </code>
       </entry>

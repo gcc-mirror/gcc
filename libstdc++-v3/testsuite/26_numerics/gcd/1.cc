@@ -15,11 +15,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++14 } }
+// { dg-options "-std=gnu++1z" }
+// { dg-do compile { target c++1z } }
 
-#include <experimental/numeric>
+#include <numeric>
 
-using std::experimental::fundamentals_v2::gcd;
+#ifndef __cpp_lib_gcd
+# error "Feature-test macro for gcd missing"
+#elif __cpp_lib_gcd != 201606
+# error "Feature-test macro for gcd has wrong value"
+#endif
+
+using std::gcd;
 
 static_assert( gcd(1071, 462) == 21, "" );
 static_assert( gcd(2000, 20) == 20, "" );
@@ -32,3 +39,6 @@ static_assert( gcd(0, 0) == 0, "" );
 static_assert(gcd(1u, 2) == 1, "unsigned and signed");
 static_assert(gcd(3, 4u) == 1, "signed and unsigned");
 static_assert(gcd(5u, 6u) == 1, "unsigned and unsigned");
+
+static_assert( std::is_same_v<decltype(gcd(1l, 1)), long> );
+static_assert( std::is_same_v<decltype(gcd(1ul, 1ull)), unsigned long long> );

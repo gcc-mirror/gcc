@@ -52,44 +52,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_experimental_gcd_lcm 201411
 
-  // std::abs is not constexpr and doesn't support unsigned integers.
-  template<typename _Tp>
-    constexpr
-    enable_if_t<__and_<is_integral<_Tp>, is_signed<_Tp>>::value, _Tp>
-    __abs(_Tp __val)
-    { return __val < 0 ? -__val : __val; }
-
-  template<typename _Tp>
-    constexpr
-    enable_if_t<__and_<is_integral<_Tp>, is_unsigned<_Tp>>::value, _Tp>
-    __abs(_Tp __val)
-    { return __val; }
-
-  // Greatest common divisor
+  /// Greatest common divisor
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>
     gcd(_Mn __m, _Nn __n)
     {
       static_assert(is_integral<_Mn>::value, "arguments to gcd are integers");
       static_assert(is_integral<_Nn>::value, "arguments to gcd are integers");
-
-      return __m == 0 ? fundamentals_v2::__abs(__n)
-	: __n == 0 ? fundamentals_v2::__abs(__m)
-	: fundamentals_v2::gcd(__n, __m % __n);
+      return std::__detail::__gcd(__m, __n);
     }
 
-  // Least common multiple
+  /// Least common multiple
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>
     lcm(_Mn __m, _Nn __n)
     {
       static_assert(is_integral<_Mn>::value, "arguments to lcm are integers");
       static_assert(is_integral<_Nn>::value, "arguments to lcm are integers");
-
-      return (__m != 0 && __n != 0)
-	? (fundamentals_v2::__abs(__m) / fundamentals_v2::gcd(__m, __n))
-	  * fundamentals_v2::__abs(__n)
-	: 0;
+      return std::__detail::__lcm(__m, __n);
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
