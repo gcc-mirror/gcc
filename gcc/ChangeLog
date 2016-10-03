@@ -1,7 +1,7 @@
 2016-10-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* ipa-cp.c (propagate_bits_accross_jump_function): Introduce space
-	between callee name and param in dump message in call to fprintf.
+	between "because" and "param" in dump message in call to fprintf.
 
 2016-10-03  Jeff Law  <law@redhat.com>
 
