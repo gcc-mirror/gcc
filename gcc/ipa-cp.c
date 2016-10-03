@@ -1984,7 +1984,7 @@ propagate_bits_accross_jump_function (cgraph_edge *cs, int idx, ipa_jump_func *j
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Setting dest_lattice to bottom, because"
-			    "param %i type is NULL for %s\n", idx,
+			    " param %i type is NULL for %s\n", idx,
 			    cs->callee->name ());
 
       return dest_lattice->set_to_bottom ();
