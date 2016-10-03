@@ -770,7 +770,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
 	friend bool __detail::
-#ifdef _GLIBCXX_INLINE_VERSION
+#if _GLIBCXX_INLINE_VERSION
         __7:: // Required due to PR c++/59256
 #endif
 	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
@@ -1864,7 +1864,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
 	friend bool __detail::
-#ifdef _GLIBCXX_INLINE_VERSION
+#if _GLIBCXX_INLINE_VERSION
         __7:: // Required due to PR c++/59256
 #endif
 	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
