@@ -5140,7 +5140,7 @@ start_decl_1 (tree decl, bool initialized)
   else if (aggregate_definition_p && !complete_p)
     {
       if (type_uses_auto (type))
-	error ("declaration of %q#D has no initializer", decl);
+	gcc_unreachable ();
       else
 	error ("aggregate %q#D has incomplete type and cannot be defined",
 	       decl);
@@ -6695,12 +6695,11 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      return;
 	    }
 
-	  error ("declaration of %q#D has no initializer", decl);
-	  TREE_TYPE (decl) = error_mark_node;
-	  return;
+	  gcc_unreachable ();
 	}
       d_init = init;
-      if (TREE_CODE (d_init) == TREE_LIST)
+      if (TREE_CODE (d_init) == TREE_LIST
+	  && !CLASS_PLACEHOLDER_TEMPLATE (auto_node))
 	d_init = build_x_compound_expr_from_list (d_init, ELK_INIT,
 						  tf_warning_or_error);
       d_init = resolve_nondeduced_context (d_init, tf_warning_or_error);
@@ -8182,7 +8181,27 @@ grokfndecl (tree ctype,
 	}
     }
 
-  if (IDENTIFIER_OPNAME_P (DECL_NAME (decl))
+  if (deduction_guide_p (decl))
+    {
+      if (!DECL_NAMESPACE_SCOPE_P (decl))
+	{
+	  error_at (location, "deduction guide %qD must be declared at "
+		    "namespace scope", decl);
+	  return NULL_TREE;
+	}
+      tree type = TREE_TYPE (DECL_NAME (decl));
+      if (CP_DECL_CONTEXT (decl) != CP_TYPE_CONTEXT (type))
+	{
+	  error_at (location, "deduction guide %qD must be declared in the "
+		    "same scope as %qT", decl, type);
+	  inform (location_of (type), "  declared here");
+	  return NULL_TREE;
+	}
+      if (funcdef_flag)
+	error_at (location,
+		  "deduction guide %qD must not have a function body", decl);
+    }
+  else if (IDENTIFIER_OPNAME_P (DECL_NAME (decl))
       && !grok_op_properties (decl, /*complain=*/true))
     return NULL_TREE;
   else if (UDLIT_OPER_P (DECL_NAME (decl)))
@@ -11063,12 +11082,19 @@ grokdeclarator (const cp_declarator *declarator,
       }
     else if (decl_context == FIELD)
       {
-	if (!staticp && !friendp && TREE_CODE (type) != METHOD_TYPE
-	    && type_uses_auto (type))
-	  {
-	    error ("non-static data member declared %<auto%>");
-	    type = error_mark_node;
-	  }
+	if (!staticp && !friendp && TREE_CODE (type) != METHOD_TYPE)
+	  if (tree auto_node = type_uses_auto (type))
+	    {
+	      location_t loc = declspecs->locations[ds_type_spec];
+	      if (CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+		error_at (loc, "invalid use of template-name %qE without an "
+			  "argument list",
+			  CLASS_PLACEHOLDER_TEMPLATE (auto_node));
+	      else
+		error_at (loc, "non-static data member declared with "
+			  "placeholder %qT", auto_node);
+	      type = error_mark_node;
+	    }
 
 	/* The C99 flexible array extension.  */
 	if (!staticp && TREE_CODE (type) == ARRAY_TYPE
@@ -11542,6 +11568,22 @@ grokdeclarator (const cp_declarator *declarator,
 	    constexpr_p = false;
 	  }
       }
+
+    if (VAR_P (decl) && !initialized)
+      if (tree auto_node = type_uses_auto (type))
+	{
+	  location_t loc = declspecs->locations[ds_type_spec];
+	  if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+	    {
+	      error_at (loc, "invalid use of template-name %qE without an "
+			"argument list", tmpl);
+	      inform (loc, "class template argument deduction "
+		      "requires an initializer");
+	    }
+	  else
+	    error_at (loc, "declaration of %q#D has no initializer", decl);
+	  TREE_TYPE (decl) = error_mark_node;
+	}
 
     if (storage_class == sc_extern && initialized && !funcdef_flag)
       {

@@ -8,4 +8,4 @@ template<int> struct A
 };
 
 // Instead of the bogus error we get a different error.
-// { dg-error "template-name" "" { target *-*-* } 7 }
+// { dg-error "template-name|expected" "" { target *-*-* } 7 }

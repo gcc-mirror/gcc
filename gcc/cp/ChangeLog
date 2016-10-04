@@ -1,3 +1,28 @@
+2016-10-04  Jason Merrill  <jason@redhat.com>
+
+	Implement P0091R2, Template argument deduction for class templates.
+	* parser.c (cp_parser_simple_type_specifier): Parse class placeholder.
+	Use the location of the beginning of the type-specifier.
+	(cp_parser_init_declarator): Parse deduction guide.
+	(cp_parser_diagnose_invalid_type_name): Mention class deduction.
+	(cp_parser_type_id_1): Don't accept class placeholder as template arg.
+	* cp-tree.h (CLASS_PLACEHOLDER_TEMPLATE): New.
+	* decl.c (grokdeclarator): Check for uninitialized auto here.
+	(start_decl_1): Not here.
+	(cp_finish_decl): Or here.  Don't collapse a list when doing
+	class deduction.
+	(grokfndecl): Check deduction guide scope and body.
+	* error.c (dump_decl, dump_function_decl, dump_function_name):
+	Handle deduction guides.
+	* pt.c (make_template_placeholder, do_class_deduction): New.
+	(build_deduction_guide, rewrite_template_parm): New.
+	(dguide_name, dguide_name_p, deduction_guide_p): New.
+	(do_auto_deduction): Call do_class_deduction.
+	(splice_late_return_type, is_auto): Handle class placeholders.
+	(template_parms_level_to_args): Split from template_parms_to_args.
+	(tsubst_template_parms_level): Split from tsubst_template_parms.
+	* typeck2.c (build_functional_cast): Handle class placeholder.
+
 2016-10-04  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/77804

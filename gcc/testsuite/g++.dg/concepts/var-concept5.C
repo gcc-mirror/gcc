@@ -10,5 +10,5 @@ concept bool C2 = true;
 template<C1 T> // { dg-error "not a type" }
 constexpr bool f1( )  { return true; }
 
-template<C2<int> T> // { dg-error "expected" }
+template<C2<int> T> // { dg-error "expected|not a type" }
 constexpr bool f2( )  { return true; }
