@@ -1,5 +1,8 @@
 2016-10-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77791
+	* g++.dg/cpp0x/lambda/lambda-77791.C: New test.
+
 	* g++.dg/other/java3.C: Remove.
 	* g++.dg/other/java1.C: Remove.
 	* g++.dg/other/error12.C: Remove.
