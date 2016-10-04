@@ -517,7 +517,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   /* Check cpuid level of extended features.  */
   __cpuid (0x80000000, ext_level, ebx, ecx, edx);
 
-  if (ext_level > 0x80000000)
+  if (ext_level >= 0x80000001)
     {
       __cpuid (0x80000001, eax, ebx, ecx, edx);
 
@@ -535,7 +535,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_3dnowp = edx & bit_3DNOWP;
       has_3dnow = edx & bit_3DNOW;
       has_mwaitx = ecx & bit_MWAITX;
+    }
 
+  if (ext_level >= 0x80000008)
+    {
       __cpuid (0x80000008, eax, ebx, ecx, edx);
       has_clzero = ebx & bit_CLZERO;
     }
@@ -603,7 +606,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       unsigned int name;
 
       /* Detect geode processor by its processor signature.  */
-      if (ext_level > 0x80000001)
+      if (ext_level >= 0x80000002)
 	__cpuid (0x80000002, name, ebx, ecx, edx);
       else
 	name = 0;

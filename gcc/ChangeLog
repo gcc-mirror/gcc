@@ -1,3 +1,17 @@
+2016-10-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2016-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Check maximum
+	ext_level before calling CPUID with 0x80000008.
+
+	2016-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77756
+	* config/i386/cpuid.h (__get_cpuid_count): New.
+	(__get_cpuid): Rename __level to __leaf.
+
 2016-09-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk
@@ -69,7 +83,7 @@
 	proper niter to bound the loops.
 
 	2016-09-22  Richard Biener  <rguenther@suse.de>
- 
+
 	PR middle-end/77679
 	* gimple-fold.c (fold_array_ctor_reference): Turn asserts into
 	fold fails.
