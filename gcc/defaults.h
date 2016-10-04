@@ -392,27 +392,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MASK_RETURN_ADDR NULL_RTX
 #endif
 
-/* If we have named section and we support weak symbols, then use the
-   .jcr section for recording java classes which need to be registered
-   at program start-up time.  */
-#if defined (TARGET_ASM_NAMED_SECTION) && SUPPORTS_WEAK
-#ifndef JCR_SECTION_NAME
-#define JCR_SECTION_NAME ".jcr"
-#endif
-#endif
-
-/* This decision to use a .jcr section can be overridden by defining
-   USE_JCR_SECTION to 0 in target file.  This is necessary if target
-   can define JCR_SECTION_NAME but does not have crtstuff or
-   linker support for .jcr section.  */
-#ifndef TARGET_USE_JCR_SECTION
-#ifdef JCR_SECTION_NAME
-#define TARGET_USE_JCR_SECTION 1
-#else
-#define TARGET_USE_JCR_SECTION 0
-#endif
-#endif
-
 /* Number of hardware registers that go into the DWARF-2 unwind info.
    If not defined, equals FIRST_PSEUDO_REGISTER  */
 

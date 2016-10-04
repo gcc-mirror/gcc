@@ -1,3 +1,17 @@
+2016-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/cygming-crtbegin.c (_Jv_RegisterClasses): Remove.
+	(__JCR_LIST__): Remove.
+	(__gcc_register_frame): Don't attempt to _Jv_RegisterClasses.
+	* config/i386/cygming-crtend.c (__JCR_END__): Remove.
+	* config/ia64/crtbegin.S (__JCR_LIST__): Remove.
+	* config/ia64/crtend.S (__JCR_END__): Remove.
+	* crtstuff.c: Remove __LIBGCC_JCR_SECTION_NAME__ from preprocessor
+	conditionals.
+	(__JCR_LIST__, __JCR_END__): Remove.
+	(frame_dummy): Don't attempt to _Jv_RegisterClasses.
+	(__do_global_ctors_1): Likewise.
+
 2015-09-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/cpuinfo.c (__get_cpuid_output): Remove.

@@ -266,15 +266,6 @@ STATIC EH_FRAME_SECTION_CONST char __EH_FRAME_BEGIN__[]
      = { };
 #endif /* USE_EH_FRAME_REGISTRY */
 
-#ifdef __LIBGCC_JCR_SECTION_NAME__
-/* Stick a label at the beginning of the java class registration info
-   so we can register them properly.  */
-STATIC void *__JCR_LIST__[]
-  __attribute__ ((used, section(__LIBGCC_JCR_SECTION_NAME__),
-		  aligned(sizeof(void*))))
-  = { };
-#endif /* __LIBGCC_JCR_SECTION_NAME__ */
-
 #if USE_TM_CLONE_REGISTRY
 STATIC func_ptr __TMC_LIST__[]
   __attribute__((used, section(".tm_clone_table"), aligned(sizeof(void*))))
@@ -449,7 +440,6 @@ CRT_CALL_STATIC_FUNCTION (__LIBGCC_INIT_SECTION_ASM_OP__,
 #endif
 
 #if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(__LIBGCC_JCR_SECTION_NAME__) \
     || defined(USE_TM_CLONE_REGISTRY)
 /* Stick a call to __register_frame_info into the .init section.  For some
    reason calls with no arguments work more reliably in .init, so stick the
@@ -472,18 +462,6 @@ frame_dummy (void)
 #endif /* CRT_GET_RFIB_DATA */
 #endif /* USE_EH_FRAME_REGISTRY */
 
-#ifdef __LIBGCC_JCR_SECTION_NAME__
-  void **jcr_list;
-  __asm ("" : "=g" (jcr_list) : "0" (__JCR_LIST__));
-  if (__builtin_expect (*jcr_list != NULL, 0))
-    {
-      void (*register_classes) (void *) = _Jv_RegisterClasses;
-      __asm ("" : "+r" (register_classes));
-      if (register_classes)
-	register_classes (jcr_list);
-    }
-#endif /* __LIBGCC_JCR_SECTION_NAME__ */
-
 #if USE_TM_CLONE_REGISTRY
   register_tm_clones ();
 #endif /* USE_TM_CLONE_REGISTRY */
@@ -496,7 +474,7 @@ static func_ptr __frame_dummy_init_array_entry[]
   __attribute__ ((__used__, section(".init_array"), aligned(sizeof(func_ptr))))
   = { frame_dummy };
 #endif /* !defined(__LIBGCC_INIT_SECTION_ASM_OP__) */
-#endif /* USE_EH_FRAME_REGISTRY || __LIBGCC_JCR_SECTION_NAME__ || USE_TM_CLONE_REGISTRY */
+#endif /* USE_EH_FRAME_REGISTRY || USE_TM_CLONE_REGISTRY */
 
 #else  /* OBJECT_FORMAT_ELF */
 
@@ -564,7 +542,6 @@ __do_global_dtors (void)
 }
 
 #if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(__LIBGCC_JCR_SECTION_NAME__) \
     || defined(USE_TM_CLONE_REGISTRY)
 /* A helper function for __do_global_ctors, which is in crtend.o.  Here
    in crtbegin.o, we can reference a couple of symbols not visible there.
@@ -579,23 +556,11 @@ __do_global_ctors_1(void)
     __register_frame_info (__EH_FRAME_BEGIN__, &object);
 #endif
 
-#ifdef __LIBGCC_JCR_SECTION_NAME__
-  void **jcr_list;
-  __asm ("" : "=g" (jcr_list) : "0" (__JCR_LIST__));
-  if (__builtin_expect (*jcr_list != NULL, 0))
-    {
-      void (*register_classes) (void *) = _Jv_RegisterClasses;
-      __asm ("" : "+r" (register_classes));
-      if (register_classes)
-	register_classes (jcr_list);
-    }
-#endif
-
 #if USE_TM_CLONE_REGISTRY
   register_tm_clones ();
 #endif /* USE_TM_CLONE_REGISTRY */
 }
-#endif /* USE_EH_FRAME_REGISTRY || __LIBGCC_JCR_SECTION_NAME__ || USE_TM_CLONE_REGISTRY */
+#endif /* USE_EH_FRAME_REGISTRY || USE_TM_CLONE_REGISTRY */
 
 #else /* ! __LIBGCC_INIT_SECTION_ASM_OP__ && ! HAS_INIT_SECTION */
 #error "What are you doing with crtstuff.c, then?"
@@ -670,14 +635,6 @@ STATIC EH_FRAME_SECTION_CONST int32 __FRAME_END__[]
 		     aligned(sizeof(int32))))
      = { 0 };
 #endif /* __LIBGCC_EH_FRAME_SECTION_NAME__ */
-
-#ifdef __LIBGCC_JCR_SECTION_NAME__
-/* Null terminate the .jcr section array.  */
-STATIC void *__JCR_END__[1]
-   __attribute__ ((used, section(__LIBGCC_JCR_SECTION_NAME__),
-		   aligned(sizeof(void *))))
-   = { 0 };
-#endif /* __LIBGCC_JCR_SECTION_NAME__ */
 
 #if USE_TM_CLONE_REGISTRY
 # ifndef HAVE_GAS_HIDDEN
@@ -757,7 +714,6 @@ __do_global_ctors (void)
 {
   func_ptr *p;
 #if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(__LIBGCC_JCR_SECTION_NAME__) \
     || defined(USE_TM_CLONE_REGISTRY)
   __do_global_ctors_1();
 #endif

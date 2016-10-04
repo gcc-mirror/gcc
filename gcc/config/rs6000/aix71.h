@@ -210,8 +210,6 @@ extern long long int    atoll(const char *);
 /* This target defines SUPPORTS_WEAK and TARGET_ASM_NAMED_SECTION,
    but does not have crtbegin/end.  */
 
-#define TARGET_USE_JCR_SECTION 0
-
 #define TARGET_AIX_VERSION 71
 
 /* AIX 7.1 supports DWARF3 debugging, but XCOFF remains the default.  */

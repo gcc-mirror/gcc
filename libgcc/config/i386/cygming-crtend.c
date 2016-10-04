@@ -53,14 +53,6 @@ static EH_FRAME_SECTION_CONST int __FRAME_END__[]
   = { 0 };
 #endif
 
-#if TARGET_USE_JCR_SECTION
-/* Null terminate the .jcr section array.  */
-static void *__JCR_END__[1] 
-   __attribute__ ((used, section(__LIBGCC_JCR_SECTION_NAME__),
-		   aligned(sizeof(void *))))
-   = { 0 };
-#endif
-
 extern void __gcc_register_frame (void); 
 extern void __gcc_deregister_frame (void);
 

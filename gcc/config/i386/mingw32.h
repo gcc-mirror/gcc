@@ -239,9 +239,6 @@ do {						         \
 #undef TARGET_N_FORMAT_TYPES
 #define TARGET_N_FORMAT_TYPES 3
 
-/* Let defaults.h definition of TARGET_USE_JCR_SECTION apply. */
-#undef TARGET_USE_JCR_SECTION
-
 #define HAVE_ENABLE_EXECUTE_STACK
 #undef  CHECK_EXECUTE_STACK_ENABLED
 #define CHECK_EXECUTE_STACK_ENABLED flag_setstackexecutable

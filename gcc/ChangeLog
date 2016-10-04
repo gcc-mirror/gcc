@@ -1,3 +1,19 @@
+2016-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* defaults.h (JCR_SECTION_NAME, TARGET_USE_JCR_SECTION): Remove.
+	* system.h (JCR_SECTION_NAME, TARGET_USE_JCR_SECTION): Poison.
+	* doc/tm.texi.in (TARGET_USE_JCR_SECTION): Remove.
+	* doc/tm.texi: Regenerated.
+	* config/i386/mingw32.h (TARGET_USE_JCR_SECTION): Remove.
+	* config/i386/cygming.h (TARGET_USE_JCR_SECTION): Remove.
+	* config/darwin.h (JCR_SECTION_NAME): Remove.
+	* config/pa/pa64-hpux.h (JCR_SECTION_NAME): Remove.
+	* config/rs6000/aix71.h (TARGET_USE_JCR_SECTION): Remove.
+	* config/rs6000/aix51.h (TARGET_USE_JCR_SECTION): Remove.
+	* config/rs6000/aix52.h (TARGET_USE_JCR_SECTION): Remove.
+	* config/rs6000/aix53.h (TARGET_USE_JCR_SECTION): Remove.
+	* config/rs6000/aix61.h (TARGET_USE_JCR_SECTION): Remove.
+
 2016-10-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* ipa-cp.c (propagate_bits_accross_jump_function): Introduce space
