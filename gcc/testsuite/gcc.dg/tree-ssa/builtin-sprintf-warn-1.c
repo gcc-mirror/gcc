@@ -209,11 +209,11 @@ void test_sprintf_chk_c_const (void)
   T (3, "%c%c", '1', '2');
 
   /* Wide characters.  */
-  T (0, "%lc",     0);           /* { dg-warning "nul past the end" } */
-  T (1, "%lc",     0);
-  T (1, "%lc%lc",  0, 0);
-  T (2, "%lc",     0);
-  T (2, "%lc%lc",  0, 0);
+  T (0, "%lc",     (wint_t)0);   /* { dg-warning "nul past the end" } */
+  T (1, "%lc",     (wint_t)0);
+  T (1, "%lc%lc",  (wint_t)0, (wint_t)0);
+  T (2, "%lc",     (wint_t)0);
+  T (2, "%lc%lc",  (wint_t)0, (wint_t)0);
 
   /* The following could result in as few as no bytes and in as many as
      MB_CUR_MAX, but since the MB_CUR_MAX value is a runtime property
@@ -1244,9 +1244,9 @@ void test_snprintf_c_const (void)
   T (3, "%c%c", '1', '2');
 
   /* Wide characters.  */
-  T (0, "%lc",  0);
-  T (1, "%lc",  0);
-  T (2, "%lc",  0);
+  T (0, "%lc",  (wint_t)0);
+  T (1, "%lc",  (wint_t)0);
+  T (2, "%lc",  (wint_t)0);
 
   /* The following could result in as few as a single byte and in as many
      as MB_CUR_MAX, but since the MB_CUR_MAX value is a runtime property
