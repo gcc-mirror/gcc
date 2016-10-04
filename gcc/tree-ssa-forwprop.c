@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-cfgcleanup.h"
 #include "cfganal.h"
+#include "optabs-tree.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -2035,6 +2036,13 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   if (! VECTOR_TYPE_P (TREE_TYPE (orig))
       || (TYPE_VECTOR_SUBPARTS (type)
 	  != TYPE_VECTOR_SUBPARTS (TREE_TYPE (orig))))
+    return false;
+
+  tree tem;
+  if (conv_code != ERROR_MARK
+      && (! supportable_convert_operation (conv_code, type, TREE_TYPE (orig),
+					   &tem, &conv_code)
+	  || conv_code == CALL_EXPR))
     return false;
 
   if (maybe_ident)

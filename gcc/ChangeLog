@@ -1,5 +1,11 @@
 2016-10-04  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/77399
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Properly
+	verify the target can convert.
+
+2016-10-04  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/77833
 	* explow.c (plus_constant): Verify the mode of the constant
 	pool offset before calling plus_constant.
