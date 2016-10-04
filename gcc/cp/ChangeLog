@@ -1,5 +1,10 @@
 2016-10-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77791
+	* parser.c (cp_parser_lambda_declarator_opt): Only pedwarn
+	for C++11 on decls in the param_list.  Test cxx_dialect < cxx14 before
+	the loop just once.
+
 	* cp-tree.h (enum cp_tree_index): Remove CPTI_JAVA_*,
 	CPTI_LANG_NAME_JAVA and CPTI_JCLASS.
 	(java_byte_type_node, java_short_type_node, java_int_type_node,
