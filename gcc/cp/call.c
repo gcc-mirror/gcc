@@ -146,7 +146,6 @@ static int joust (struct z_candidate *, struct z_candidate *, bool,
 		  tsubst_flags_t);
 static int compare_ics (conversion *, conversion *);
 static tree build_over_call (struct z_candidate *, int, tsubst_flags_t);
-static tree build_java_interface_fn_ref (tree, tree);
 #define convert_like(CONV, EXPR, COMPLAIN)			\
   convert_like_real ((CONV), (EXPR), NULL_TREE, 0, 0,		\
 		     /*issue_conversion_warnings=*/true,	\
@@ -7935,10 +7934,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (TREE_SIDE_EFFECTS (argarray[0]))
 	argarray[0] = save_expr (argarray[0]);
       t = build_pointer_type (TREE_TYPE (fn));
-      if (DECL_CONTEXT (fn) && TYPE_JAVA_INTERFACE (DECL_CONTEXT (fn)))
-	fn = build_java_interface_fn_ref (fn, argarray[0]);
-      else
-	fn = build_vfn_ref (argarray[0], DECL_VINDEX (fn));
+      fn = build_vfn_ref (argarray[0], DECL_VINDEX (fn));
       TREE_TYPE (fn) = t;
     }
   else
@@ -8043,67 +8039,6 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 	fn = build_cplus_new (TREE_TYPE (fn), fn, complain);
     }
   return convert_from_reference (fn);
-}
-
-static GTY(()) tree java_iface_lookup_fn;
-
-/* Make an expression which yields the address of the Java interface
-   method FN.  This is achieved by generating a call to libjava's
-   _Jv_LookupInterfaceMethodIdx().  */
-
-static tree
-build_java_interface_fn_ref (tree fn, tree instance)
-{
-  tree lookup_fn, method, idx;
-  tree klass_ref, iface, iface_ref;
-  int i;
-
-  if (!java_iface_lookup_fn)
-    {
-      tree ftype = build_function_type_list (ptr_type_node,
-					     ptr_type_node, ptr_type_node,
-					     java_int_type_node, NULL_TREE);
-      java_iface_lookup_fn
-	= add_builtin_function ("_Jv_LookupInterfaceMethodIdx", ftype,
-				0, NOT_BUILT_IN, NULL, NULL_TREE);
-    }
-
-  /* Look up the pointer to the runtime java.lang.Class object for `instance'.
-     This is the first entry in the vtable.  */
-  klass_ref = build_vtbl_ref (cp_build_indirect_ref (instance, RO_NULL, 
-                                                     tf_warning_or_error),
-			      integer_zero_node);
-
-  /* Get the java.lang.Class pointer for the interface being called.  */
-  iface = DECL_CONTEXT (fn);
-  iface_ref = lookup_field (iface, get_identifier ("class$"), 0, false);
-  if (!iface_ref || !VAR_P (iface_ref)
-      || DECL_CONTEXT (iface_ref) != iface)
-    {
-      error ("could not find class$ field in java interface type %qT",
-		iface);
-      return error_mark_node;
-    }
-  iface_ref = build_address (iface_ref);
-  iface_ref = convert (build_pointer_type (iface), iface_ref);
-
-  /* Determine the itable index of FN.  */
-  i = 1;
-  for (method = TYPE_METHODS (iface); method; method = DECL_CHAIN (method))
-    {
-      if (!DECL_VIRTUAL_P (method))
-	continue;
-      if (fn == method)
-	break;
-      i++;
-    }
-  idx = build_int_cst (NULL_TREE, i);
-
-  lookup_fn = build1 (ADDR_EXPR,
-		      build_pointer_type (TREE_TYPE (java_iface_lookup_fn)),
-		      java_iface_lookup_fn);
-  return build_call_nary (ptr_type_node, lookup_fn,
-			  3, klass_ref, iface_ref, idx);
 }
 
 /* Returns the value to use for the in-charge parameter when making a

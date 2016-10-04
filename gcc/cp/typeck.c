@@ -1226,8 +1226,6 @@ structural_comptypes (tree t1, tree t2, int strict)
        || TREE_CODE (t1) == METHOD_TYPE)
       && type_memfn_rqual (t1) != type_memfn_rqual (t2))
     return false;
-  if (TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
-    return false;
 
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type

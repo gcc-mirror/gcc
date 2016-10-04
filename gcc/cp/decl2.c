@@ -63,7 +63,6 @@ typedef struct priority_info_s {
 
 static void mark_vtable_entries (tree);
 static bool maybe_emit_vtables (tree);
-static bool acceptable_java_type (tree);
 static tree start_objects (int, int);
 static void finish_objects (int, int, tree);
 static tree start_static_storage_duration_function (unsigned);
@@ -539,80 +538,6 @@ check_member_template (tree tmpl)
     /* OK */;
   else
     error ("template declaration of %q#D", decl);
-}
-
-/* Return true iff TYPE is a valid Java parameter or return type.  */
-
-static bool
-acceptable_java_type (tree type)
-{
-  if (type == error_mark_node)
-    return false;
-
-  if (VOID_TYPE_P (type) || TYPE_FOR_JAVA (type))
-    return true;
-  if (TYPE_PTR_P (type) || TREE_CODE (type) == REFERENCE_TYPE)
-    {
-      type = TREE_TYPE (type);
-      if (TREE_CODE (type) == RECORD_TYPE)
-	{
-	  tree args;  int i;
-	  if (! TYPE_FOR_JAVA (type))
-	    return false;
-	  if (! CLASSTYPE_TEMPLATE_INFO (type))
-	    return true;
-	  args = CLASSTYPE_TI_ARGS (type);
-	  i = TREE_VEC_LENGTH (args);
-	  while (--i >= 0)
-	    {
-	      type = TREE_VEC_ELT (args, i);
-	      if (TYPE_PTR_P (type))
-		type = TREE_TYPE (type);
-	      if (! TYPE_FOR_JAVA (type))
-		return false;
-	    }
-	  return true;
-	}
-    }
-  return false;
-}
-
-/* For a METHOD in a Java class CTYPE, return true if
-   the parameter and return types are valid Java types.
-   Otherwise, print appropriate error messages, and return false.  */
-
-bool
-check_java_method (tree method)
-{
-  bool jerr = false;
-  tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (method));
-  tree ret_type = TREE_TYPE (TREE_TYPE (method));
-
-  if (!acceptable_java_type (ret_type))
-    {
-      error ("Java method %qD has non-Java return type %qT",
-	     method, ret_type);
-      jerr = true;
-    }
-
-  arg_types = TREE_CHAIN (arg_types);
-  if (DECL_HAS_IN_CHARGE_PARM_P (method))
-    arg_types = TREE_CHAIN (arg_types);
-  if (DECL_HAS_VTT_PARM_P (method))
-    arg_types = TREE_CHAIN (arg_types);
-
-  for (; arg_types != NULL_TREE; arg_types = TREE_CHAIN (arg_types))
-    {
-      tree type = TREE_VALUE (arg_types);
-      if (!acceptable_java_type (type))
-	{
-          if (type != error_mark_node)
-	    error ("Java method %qD has non-Java parameter type %qT",
-		   method, type);
-	  jerr = true;
-	}
-    }
-  return !jerr;
 }
 
 /* Sanity check: report error if this function FUNCTION is not
@@ -2873,10 +2798,8 @@ import_export_decl (tree decl)
     {
       class_type = DECL_CONTEXT (decl);
       import_export_class (class_type);
-      if (TYPE_FOR_JAVA (class_type))
-	import_p = true;
-      else if (CLASSTYPE_INTERFACE_KNOWN (class_type)
-	       && CLASSTYPE_INTERFACE_ONLY (class_type))
+      if (CLASSTYPE_INTERFACE_KNOWN (class_type)
+	  && CLASSTYPE_INTERFACE_ONLY (class_type))
 	import_p = true;
       else if ((!flag_weak || TARGET_WEAK_NOT_IN_ARCHIVE_TOC)
 	       && !CLASSTYPE_USE_TEMPLATE (class_type)
@@ -4080,42 +4003,6 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
   return 0;
 }
 
-/* Java requires that we be able to reference a local address for a
-   method, and not be confused by PLT entries.  If supported, create a
-   hidden alias for all such methods.  */
-
-static void
-build_java_method_aliases (void)
-{
-#ifndef HAVE_GAS_HIDDEN
-  return;
-#endif
-
-  struct cgraph_node *node;
-  FOR_EACH_FUNCTION (node)
-    {
-      tree fndecl = node->decl;
-
-      if (DECL_CLASS_SCOPE_P (fndecl)
-	  && TYPE_FOR_JAVA (DECL_CONTEXT (fndecl))
-	  && TARGET_USE_LOCAL_THUNK_ALIAS_P (fndecl))
-	{
-	  /* Mangle the name in a predictable way; we need to reference
-	     this from a java compiled object file.  */
-	  tree oid = DECL_ASSEMBLER_NAME (fndecl);
-	  const char *oname = IDENTIFIER_POINTER (oid);
-	  gcc_assert (oname[0] == '_' && oname[1] == 'Z');
-	  char *nname = ACONCAT (("_ZGA", oname + 2, NULL));
-
-	  tree alias = make_alias_for (fndecl, get_identifier (nname));
-	  TREE_PUBLIC (alias) = 1;
-	  DECL_VISIBILITY (alias) = VISIBILITY_HIDDEN;
-
-	  cgraph_node::create_same_body_alias (alias, fndecl);
-	}
-    }
-}
-
 /* Return C++ property of T, based on given operation OP.  */
 
 static int
@@ -4908,9 +4795,6 @@ c_parse_final_cleanups (void)
      linkage now.  */
   pop_lang_context ();
 
-  /* Generate Java hidden aliases.  */
-  build_java_method_aliases ();
-
   if (flag_vtable_verify)
     {
       vtv_recover_class_info ();
@@ -5066,7 +4950,7 @@ possibly_inlined_p (tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   if (DECL_UNINLINABLE (decl))
     return false;
-  if (!optimize || pragma_java_exceptions)
+  if (!optimize)
     return DECL_DECLARED_INLINE_P (decl);
   /* When optimizing, we might inline everything when flatten
      attribute or heuristics inlining for size or autoinlining
