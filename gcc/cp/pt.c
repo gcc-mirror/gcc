@@ -4272,6 +4272,23 @@ template_parm_to_arg (tree t)
   return t;
 }
 
+/* Given a single level of template parameters (a TREE_VEC), return it
+   as a set of template arguments.  */
+
+static tree
+template_parms_level_to_args (tree parms)
+{
+  tree a = copy_node (parms);
+  TREE_TYPE (a) = NULL_TREE;
+  for (int i = TREE_VEC_LENGTH (a) - 1; i >= 0; --i)
+    TREE_VEC_ELT (a, i) = template_parm_to_arg (TREE_VEC_ELT (a, i));
+
+  if (CHECKING_P)
+    SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (a, TREE_VEC_LENGTH (a));
+
+  return a;
+}
+
 /* Given a set of template parameters, return them as a set of template
    arguments.  The template parameters are represented as a TREE_VEC, in
    the form documented in cp-tree.h for template arguments.  */
@@ -4292,15 +4309,7 @@ template_parms_to_args (tree parms)
 
   for (header = parms; header; header = TREE_CHAIN (header))
     {
-      tree a = copy_node (TREE_VALUE (header));
-      int i;
-
-      TREE_TYPE (a) = NULL_TREE;
-      for (i = TREE_VEC_LENGTH (a) - 1; i >= 0; --i)
-	TREE_VEC_ELT (a, i) = template_parm_to_arg (TREE_VEC_ELT (a, i));
-
-      if (CHECKING_P)
-	SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (a, TREE_VEC_LENGTH (a));
+      tree a = template_parms_level_to_args (TREE_VALUE (header));
 
       if (length > 1)
 	TREE_VEC_ELT (args, --l) = a;
@@ -11357,6 +11366,30 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   return t;
 }
 
+/* Substitute ARGS into one level PARMS of template parameters.  */
+
+static tree
+tsubst_template_parms_level (tree parms, tree args, tsubst_flags_t complain)
+{
+  if (parms == error_mark_node)
+    return error_mark_node;
+
+  tree new_vec = make_tree_vec (TREE_VEC_LENGTH (parms));
+
+  for (int i = 0; i < TREE_VEC_LENGTH (new_vec); ++i)
+    {
+      tree tuple = TREE_VEC_ELT (parms, i);
+
+      if (tuple == error_mark_node)
+	continue;
+
+      TREE_VEC_ELT (new_vec, i) =
+	tsubst_template_parm (tuple, args, complain);
+    }
+
+  return new_vec;
+}
+
 /* Return the result of substituting ARGS into the template parameters
    given by PARMS.  If there are m levels of ARGS and m + n levels of
    PARMS, then the result will contain n levels of PARMS.  For
@@ -11381,26 +11414,8 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
        new_parms = &(TREE_CHAIN (*new_parms)),
 	 parms = TREE_CHAIN (parms))
     {
-      tree new_vec =
-	make_tree_vec (TREE_VEC_LENGTH (TREE_VALUE (parms)));
-      int i;
-
-      for (i = 0; i < TREE_VEC_LENGTH (new_vec); ++i)
-	{
-          tree tuple;
-
-          if (parms == error_mark_node)
-            continue;
-
-          tuple = TREE_VEC_ELT (TREE_VALUE (parms), i);
-
-          if (tuple == error_mark_node)
-            continue;
-
-	  TREE_VEC_ELT (new_vec, i) =
-	    tsubst_template_parm (tuple, args, complain);
-	}
-
+      tree new_vec = tsubst_template_parms_level (TREE_VALUE (parms),
+						  args, complain);
       *new_parms =
 	tree_cons (size_int (TMPL_PARMS_DEPTH (parms)
 			     - TMPL_ARGS_DEPTH (args)),
@@ -23940,6 +23955,16 @@ make_auto (void)
   return make_auto_1 (get_identifier ("auto"), true);
 }
 
+/* Return a C++17 deduction placeholder for class template TMPL.  */
+
+tree
+make_template_placeholder (tree tmpl)
+{
+  tree t = make_auto_1 (DECL_NAME (tmpl), true);
+  CLASS_PLACEHOLDER_TEMPLATE (t) = tmpl;
+  return t;
+}
+
 /* Make a "constrained auto" type-specifier. This is an
    auto type with constraints that must be associated after
    deduction.  The constraint is formed from the given
@@ -24097,6 +24122,316 @@ extract_autos (tree type)
   return tree_vec;
 }
 
+/* The stem for deduction guide names.  */
+const char *const dguide_base = "__dguide_";
+
+/* Return the name for a deduction guide for class template TMPL.  */
+
+tree
+dguide_name (tree tmpl)
+{
+  tree type = (TYPE_P (tmpl) ? tmpl : TREE_TYPE (tmpl));
+  tree tname = TYPE_IDENTIFIER (type);
+  char *buf = (char *) alloca (1 + strlen (dguide_base)
+			       + IDENTIFIER_LENGTH (tname));
+  memcpy (buf, dguide_base, strlen (dguide_base));
+  memcpy (buf + strlen (dguide_base), IDENTIFIER_POINTER (tname),
+	  IDENTIFIER_LENGTH (tname) + 1);
+  tree dname = get_identifier (buf);
+  TREE_TYPE (dname) = type;
+  return dname;
+}
+
+/* True if NAME is the name of a deduction guide.  */
+
+bool
+dguide_name_p (tree name)
+{
+  return (TREE_TYPE (name)
+	  && !strncmp (IDENTIFIER_POINTER (name), dguide_base,
+		       strlen (dguide_base)));
+}
+
+/* True if FN is a deduction guide.  */
+
+bool
+deduction_guide_p (tree fn)
+{
+  if (tree name = DECL_NAME (fn))
+    return dguide_name_p (name);
+  return false;
+}
+
+/* OLDDECL is a _DECL for a template parameter.  Return a similar parameter at
+   LEVEL:INDEX, using tsubst_args and complain for substitution into non-type
+   template parameter types.  Note that the handling of template template
+   parameters relies on current_template_parms being set appropriately for the
+   new template.  */
+
+static tree
+rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
+		       tree tsubst_args, tsubst_flags_t complain)
+{
+  tree oldidx = get_template_parm_index (olddecl);
+
+  tree newtype;
+  if (TREE_CODE (olddecl) == TYPE_DECL
+      || TREE_CODE (olddecl) == TEMPLATE_DECL)
+    {
+      newtype = copy_type (TREE_TYPE (olddecl));
+      TYPE_MAIN_VARIANT (newtype) = newtype;
+    }
+  else
+    newtype = tsubst (TREE_TYPE (olddecl), tsubst_args,
+		      complain, NULL_TREE);
+
+  tree newdecl
+    = build_decl (DECL_SOURCE_LOCATION (olddecl), TREE_CODE (olddecl),
+		  DECL_NAME (olddecl), newtype);
+  SET_DECL_TEMPLATE_PARM_P (newdecl);
+
+  tree newidx;
+  if (TREE_CODE (olddecl) == TYPE_DECL
+      || TREE_CODE (olddecl) == TEMPLATE_DECL)
+    {
+      newidx = TEMPLATE_TYPE_PARM_INDEX (newtype)
+	= build_template_parm_index (index, level, level,
+				     newdecl, newtype);
+      TYPE_STUB_DECL (newtype) = TYPE_NAME (newtype) = newdecl;
+      TYPE_CANONICAL (newtype) = canonical_type_parameter (newtype);
+
+      if (TREE_CODE (olddecl) == TEMPLATE_DECL)
+	{
+	  DECL_TEMPLATE_RESULT (newdecl)
+	    = build_decl (DECL_SOURCE_LOCATION (olddecl), TYPE_DECL,
+			  DECL_NAME (olddecl), newtype);
+	  DECL_ARTIFICIAL (DECL_TEMPLATE_RESULT (newdecl)) = true;
+	  // First create a copy (ttargs) of tsubst_args with an
+	  // additional level for the template template parameter's own
+	  // template parameters (ttparms).
+	  tree ttparms = (INNERMOST_TEMPLATE_PARMS
+			  (DECL_TEMPLATE_PARMS (olddecl)));
+	  const int depth = TMPL_ARGS_DEPTH (tsubst_args);
+	  tree ttargs = make_tree_vec (depth + 1);
+	  for (int i = 0; i < depth; ++i)
+	    TREE_VEC_ELT (ttargs, i) = TREE_VEC_ELT (tsubst_args, i);
+	  TREE_VEC_ELT (ttargs, depth)
+	    = template_parms_level_to_args (ttparms);
+	  // Substitute ttargs into ttparms to fix references to
+	  // other template parameters.
+	  ttparms = tsubst_template_parms_level (ttparms, ttargs,
+						 complain);
+	  // Now substitute again with args based on tparms, to reduce
+	  // the level of the ttparms.
+	  ttargs = current_template_args ();
+	  ttparms = tsubst_template_parms_level (ttparms, ttargs,
+						 complain);
+	  // Finally, tack the adjusted parms onto tparms.
+	  ttparms = tree_cons (size_int (depth), ttparms,
+			       current_template_parms);
+	  DECL_TEMPLATE_PARMS (newdecl) = ttparms;
+	}
+    }
+  else
+    {
+      tree oldconst = TEMPLATE_PARM_DECL (oldidx);
+      tree newconst
+	= build_decl (DECL_SOURCE_LOCATION (oldconst),
+		      TREE_CODE (oldconst),
+		      DECL_NAME (oldconst), newtype);
+      TREE_CONSTANT (newconst) = TREE_CONSTANT (newdecl)
+	= TREE_READONLY (newconst) = TREE_READONLY (newdecl) = true;
+      SET_DECL_TEMPLATE_PARM_P (newconst);
+      newidx = build_template_parm_index (index, level, level,
+					  newconst, newtype);
+      DECL_INITIAL (newdecl) = DECL_INITIAL (newconst) = newidx;
+    }
+
+  TEMPLATE_PARM_PARAMETER_PACK (newidx)
+    = TEMPLATE_PARM_PARAMETER_PACK (oldidx);
+  return newdecl;
+}
+
+/* Returns a C++17 class deduction guide template based on the constructor
+   CTOR.  */
+
+static tree
+build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
+{
+  if (outer_args)
+    ctor = tsubst (ctor, outer_args, complain, ctor);
+  tree type = DECL_CONTEXT (ctor);
+  tree fn_tmpl;
+  if (TREE_CODE (ctor) == TEMPLATE_DECL)
+    {
+      fn_tmpl = ctor;
+      ctor = DECL_TEMPLATE_RESULT (fn_tmpl);
+    }
+  else
+    fn_tmpl = DECL_TI_TEMPLATE (ctor);
+
+  tree tparms = DECL_TEMPLATE_PARMS (fn_tmpl);
+  /* If type is a member class template, DECL_TI_ARGS (ctor) will have fully
+     specialized args for the enclosing class.  Strip those off, as the
+     deduction guide won't have those template parameters.  */
+  tree targs = get_innermost_template_args (DECL_TI_ARGS (ctor),
+					    TMPL_PARMS_DEPTH (tparms));
+  /* Discard the 'this' parameter.  */
+  tree fparms = FUNCTION_ARG_CHAIN (ctor);
+  tree fargs = TREE_CHAIN (DECL_ARGUMENTS (ctor));
+  tree ci = get_constraints (ctor);
+
+  if (PRIMARY_TEMPLATE_P (fn_tmpl))
+    {
+      /* For a member template constructor, we need to flatten the two template
+	 parameter lists into one, and then adjust the function signature
+	 accordingly.  This gets...complicated.  */
+      ++processing_template_decl;
+      tree save_parms = current_template_parms;
+
+      /* For a member template we should have two levels of parms/args, one for
+	 the class and one for the constructor.  We stripped specialized args
+	 for further enclosing classes above.  */
+      const int depth = 2;
+      gcc_assert (TMPL_ARGS_DEPTH (targs) == depth);
+
+      /* Template args for translating references to the two-level template
+	 parameters into references to the one-level template parameters we are
+	 creating.  */
+      tree tsubst_args = copy_node (targs);
+      TMPL_ARGS_LEVEL (tsubst_args, depth)
+	= copy_node (TMPL_ARGS_LEVEL (tsubst_args, depth));
+
+      /* Template parms for the constructor template.  */
+      tree ftparms = TREE_VALUE (tparms);
+      unsigned flen = TREE_VEC_LENGTH (ftparms);
+      /* Template parms for the class template.  */
+      tparms = TREE_CHAIN (tparms);
+      tree ctparms = TREE_VALUE (tparms);
+      unsigned clen = TREE_VEC_LENGTH (ctparms);
+      /* Template parms for the deduction guide start as a copy of the template
+	 parms for the class.  We set current_template_parms for
+	 lookup_template_class_1.  */
+      current_template_parms = tparms = copy_node (tparms);
+      tree new_vec = TREE_VALUE (tparms) = make_tree_vec (flen + clen);
+      for (unsigned i = 0; i < clen; ++i)
+	TREE_VEC_ELT (new_vec, i) = TREE_VEC_ELT (ctparms, i);
+
+      /* Now we need to rewrite the constructor parms to append them to the
+	 class parms.  */
+      for (unsigned i = 0; i < flen; ++i)
+	{
+	  unsigned index = i + clen;
+	  unsigned level = 1;
+	  tree oldelt = TREE_VEC_ELT (ftparms, i);
+	  tree olddecl = TREE_VALUE (oldelt);
+	  tree newdecl = rewrite_template_parm (olddecl, index, level,
+						tsubst_args, complain);
+	  tree newdef = tsubst_template_arg (TREE_PURPOSE (oldelt),
+					     tsubst_args, complain, ctor);
+	  tree list = build_tree_list (newdef, newdecl);
+	  TEMPLATE_PARM_CONSTRAINTS (list)
+	    = tsubst_constraint_info (TEMPLATE_PARM_CONSTRAINTS (oldelt),
+				      tsubst_args, complain, ctor);
+	  TREE_VEC_ELT (new_vec, index) = list;
+	  TMPL_ARG (tsubst_args, depth, i) = template_parm_to_arg (list);
+	}
+
+      /* Now we have a final set of template parms to substitute into the
+	 function signature.  */
+      targs = template_parms_to_args (tparms);
+      fparms = tsubst (fparms, tsubst_args, complain, ctor);
+      fargs = tsubst (fargs, tsubst_args, complain, ctor);
+      if (ci)
+	ci = tsubst_constraint_info (ci, tsubst_args, complain, ctor);
+
+      current_template_parms = save_parms;
+      --processing_template_decl;
+    }
+
+  tree fntype = build_function_type (type, fparms);
+  tree ded_fn = build_lang_decl_loc (DECL_SOURCE_LOCATION (ctor),
+				     FUNCTION_DECL,
+				     dguide_name (type), fntype);
+  DECL_ARGUMENTS (ded_fn) = fargs;
+  tree ded_tmpl = build_template_decl (ded_fn, tparms, /*member*/false);
+  DECL_TEMPLATE_RESULT (ded_tmpl) = ded_fn;
+  TREE_TYPE (ded_tmpl) = TREE_TYPE (ded_fn);
+  DECL_TEMPLATE_INFO (ded_fn) = build_template_info (ded_tmpl, targs);
+  if (ci)
+    set_constraints (ded_tmpl, ci);
+
+  return ded_tmpl;
+}
+
+/* Deduce template arguments for the class template TMPL based on the
+   initializer INIT, and return the resulting type.  */
+
+tree
+do_class_deduction (tree tmpl, tree init, tsubst_flags_t complain)
+{
+  gcc_assert (DECL_CLASS_TEMPLATE_P (tmpl));
+  tree type = TREE_TYPE (tmpl);
+
+  vec<tree,va_gc> *args;
+  if (TREE_CODE (init) == TREE_LIST)
+    args = make_tree_vector_from_list (init);
+  else
+    args = make_tree_vector_single (init);
+
+  if (args->length() == 1)
+    {
+      /* First try to deduce directly, since we don't have implicitly-declared
+	 constructors yet.  */
+      tree parms = build_tree_list (NULL_TREE, type);
+      tree tparms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
+      tree targs = make_tree_vec (TREE_VEC_LENGTH (tparms));
+      int err = type_unification_real (tparms, targs, parms, &(*args)[0],
+				       1, /*subr*/false, DEDUCE_CALL,
+				       LOOKUP_NORMAL, NULL, /*explain*/false);
+      if (err == 0)
+	return tsubst (type, targs, complain, tmpl);
+    }
+
+  tree dname = dguide_name (tmpl);
+  tree cands = lookup_qualified_name (CP_DECL_CONTEXT (tmpl), dname,
+				      /*type*/false, /*complain*/false,
+				      /*hidden*/false);
+  if (cands == error_mark_node)
+    cands = NULL_TREE;
+
+  tree outer_args = NULL_TREE;
+  if (DECL_CLASS_SCOPE_P (tmpl)
+      && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (tmpl)))
+    {
+      outer_args = CLASSTYPE_TI_ARGS (DECL_CONTEXT (tmpl));
+      type = TREE_TYPE (most_general_template (tmpl));
+    }
+
+  if (CLASSTYPE_METHOD_VEC (type))
+    // FIXME cache artificial deduction guides
+    for (tree fns = CLASSTYPE_CONSTRUCTORS (type); fns; fns = OVL_NEXT (fns))
+      {
+	tree fn = OVL_CURRENT (fns);
+	tree guide = build_deduction_guide (fn, outer_args, complain);
+	cands = ovl_cons (guide, cands);
+      }
+
+  if (cands == NULL_TREE)
+    {
+      error ("cannot deduce template arguments for %qT, as it has "
+	     "no deduction guides or user-declared constructors", type);
+      return error_mark_node;
+    }
+
+  tree t = build_new_function_call (cands, &args, /*koenig*/false,
+				    complain|tf_decltype);
+
+  release_tree_vector (args);
+
+  return TREE_TYPE (t);
+}
+
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
    from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.  */
 
@@ -24175,6 +24510,9 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	  return error_mark_node;
 	}
     }
+  else if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+    /* C++17 class template argument deduction.  */
+    return do_class_deduction (tmpl, init, complain);
   else
     {
       tree parms = build_tree_list (NULL_TREE, type);
@@ -24274,6 +24612,20 @@ splice_late_return_type (tree type, tree late_return_type)
 {
   if (is_auto (type))
     {
+      if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (type))
+	{
+	  if (!late_return_type)
+	    error ("deduction guide must have trailing return type");
+	  else if (CLASS_TYPE_P (late_return_type)
+		   && CLASSTYPE_TEMPLATE_INFO (late_return_type)
+		   && CLASSTYPE_TI_TEMPLATE (late_return_type) == tmpl)
+	    /* OK */;
+	  else
+	    error ("trailing return type %qT of deduction guide is not "
+		   "a specialization of %qT",
+		   late_return_type, TREE_TYPE (tmpl));
+	}
+
       if (late_return_type)
 	return late_return_type;
 
@@ -24288,14 +24640,15 @@ splice_late_return_type (tree type, tree late_return_type)
 }
 
 /* Returns true iff TYPE is a TEMPLATE_TYPE_PARM representing 'auto' or
-   'decltype(auto)'.  */
+   'decltype(auto)' or a deduced class template.  */
 
 bool
 is_auto (const_tree type)
 {
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
       && (TYPE_IDENTIFIER (type) == get_identifier ("auto")
-	  || TYPE_IDENTIFIER (type) == get_identifier ("decltype(auto)")))
+	  || TYPE_IDENTIFIER (type) == get_identifier ("decltype(auto)")
+	  || CLASS_PLACEHOLDER_TEMPLATE (type)))
     return true;
   else
     return false;

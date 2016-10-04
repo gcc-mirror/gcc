@@ -1159,6 +1159,9 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	  dump_type (pp, TREE_TYPE (t), flags);
 	  break;
 	}
+      else if (dguide_name_p (t))
+	dump_decl (pp, CLASSTYPE_TI_TEMPLATE (TREE_TYPE (t)),
+		   TFF_PLAIN_IDENTIFIER);
       else
 	pp_cxx_tree_identifier (pp, t);
       break;
@@ -1552,8 +1555,8 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 
   /* Print the return type?  */
   if (show_return)
-    show_return = !DECL_CONV_FN_P (t)  && !DECL_CONSTRUCTOR_P (t)
-		  && !DECL_DESTRUCTOR_P (t);
+    show_return = (!DECL_CONV_FN_P (t)  && !DECL_CONSTRUCTOR_P (t)
+		   && !DECL_DESTRUCTOR_P (t) && !deduction_guide_p (t));
   if (show_return)
     {
       tree ret = fndecl_declared_return_type (t);
@@ -1598,6 +1601,11 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 
       if (show_return)
 	dump_type_suffix (pp, TREE_TYPE (fntype), flags);
+      else if (deduction_guide_p (t))
+	{
+	  pp_cxx_ws_string (pp, "->");
+	  dump_type (pp, TREE_TYPE (TREE_TYPE (t)), flags);
+	}
 
       if (flag_concepts)
         if (tree ci = get_constraints (t))
@@ -1767,10 +1775,6 @@ dump_function_name (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_ws_string (pp, "operator");
       dump_type (pp, TREE_TYPE (TREE_TYPE (t)), flags);
     }
-  else if (name && IDENTIFIER_OPNAME_P (name))
-    pp_cxx_tree_identifier (pp, name);
-  else if (name && UDLIT_OPER_P (name))
-    pp_cxx_tree_identifier (pp, name);
   else
     dump_decl (pp, name, flags);
 
