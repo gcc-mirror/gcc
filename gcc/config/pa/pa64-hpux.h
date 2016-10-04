@@ -170,8 +170,6 @@ along with GCC; see the file COPYING3.  If not see
 #define DATA_SECTION_ASM_OP	"\t.data"
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 
-#define JCR_SECTION_NAME	".jcr"
-
 #define HP_INIT_ARRAY_SECTION_ASM_OP	"\t.section\t.init"
 #define GNU_INIT_ARRAY_SECTION_ASM_OP	"\t.section\t.init_array"
 #define HP_FINI_ARRAY_SECTION_ASM_OP	"\t.section\t.fini"
@@ -382,8 +380,8 @@ do {								\
    initializers specified here.  */
 
 /* We need to add frame_dummy to the initializer list if EH_FRAME_SECTION_NAME
-   or JCR_SECTION_NAME is defined.  */
-#if defined(EH_FRAME_SECTION_NAME) || defined(JCR_SECTION_NAME)
+   is defined.  */
+#if defined(EH_FRAME_SECTION_NAME)
 #define PA_INIT_FRAME_DUMMY_ASM_OP ".dword P%frame_dummy"
 #else
 #define PA_INIT_FRAME_DUMMY_ASM_OP ""

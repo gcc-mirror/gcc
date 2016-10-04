@@ -1213,10 +1213,6 @@ c_cpp_builtins (cpp_reader *pfile)
       builtin_define_with_value ("__LIBGCC_EH_FRAME_SECTION_NAME__",
 				 EH_FRAME_SECTION_NAME, 1);
 #endif
-#ifdef JCR_SECTION_NAME
-      builtin_define_with_value ("__LIBGCC_JCR_SECTION_NAME__",
-				 JCR_SECTION_NAME, 1);
-#endif
 #ifdef CTORS_SECTION_ASM_OP
       builtin_define_with_value ("__LIBGCC_CTORS_SECTION_ASM_OP__",
 				 CTORS_SECTION_ASM_OP, 1);

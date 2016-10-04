@@ -825,9 +825,6 @@ enum machopic_addr_class {
 #define EH_FRAME_SECTION_NAME   "__TEXT"
 #define EH_FRAME_SECTION_ATTR ",coalesced,no_toc+strip_static_syms+live_support"
 
-/* Java runtime class list.  */
-#define JCR_SECTION_NAME "__DATA,jcr,regular,no_dead_strip"
-
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \
   (((CODE) == 2 && (GLOBAL) == 1) \

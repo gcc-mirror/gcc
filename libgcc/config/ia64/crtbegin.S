@@ -34,10 +34,6 @@ __CTOR_LIST__:
 __DTOR_LIST__:
 	data8	-1
 
-.section .jcr,"aw","progbits"
-	.align	8
-__JCR_LIST__:
-
 .section .sdata
 	.type dtor_ptr,@object
 	.size dtor_ptr,8

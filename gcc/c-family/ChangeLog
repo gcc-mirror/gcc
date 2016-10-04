@@ -1,3 +1,8 @@
+2016-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Don't define
+	__LIBGCC_JCR_SECTION_NAME__.
+
 2016-10-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-common.c (c_common_truthvalue_conversion): Warn for suspicious
