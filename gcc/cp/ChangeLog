@@ -1,3 +1,9 @@
+2016-10-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/77804
+	* init.c (warn_placement_new_too_small): Avoid assuming an array type
+	has a constant size.
+
 2016-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77791
