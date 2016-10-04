@@ -322,10 +322,6 @@ DEF_TUNE (X86_TUNE_EXT_80387_CONSTANTS, "ext_80387_constants",
 /* SSE instruction selection tuning                                          */
 /*****************************************************************************/
 
-/* X86_TUNE_VECTORIZE_DOUBLE: Enable double precision vector
-   instructions.  */
-DEF_TUNE (X86_TUNE_VECTORIZE_DOUBLE, "vectorize_double", ~m_BONNELL)
-
 /* X86_TUNE_GENERAL_REGS_SSE_SPILL: Try to spill general regs to SSE
    regs instead of memory.  */
 DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
