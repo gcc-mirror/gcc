@@ -161,6 +161,7 @@ target_libraries="target-libgcc \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
+		target-boehm-gc \
 		target-libffi \
 		target-libobjc \
 		target-libada \
@@ -2053,6 +2054,28 @@ for dir in $configdirs $build_configdirs $target_configdirs ; do
     noconfigdirs="$noconfigdirs $dir"
   fi
 done
+
+# Check for Boehm's garbage collector
+AC_ARG_ENABLE(objc-gc,
+[AS_HELP_STRING([--enable-objc-gc],
+		[enable use of Boehm's garbage collector with the
+		 GNU Objective-C runtime])],
+[case ,${enable_languages},:${enable_objc_gc}:${noconfigdirs} in
+  *,objc,*:*:yes:*target-boehm-gc*)
+    AC_MSG_ERROR([Boehm's garbage collector was requested yet not supported in this configuration])
+    ;;
+esac])
+
+# Make sure we only build Boehm's garbage collector if required.
+case ,${enable_languages},:${enable_objc_gc} in
+  *,objc,*:yes)
+    # Keep target-boehm-gc if requested for Objective-C.
+    ;;
+  *)
+    # Otherwise remove target-boehm-gc.
+    noconfigdirs="$noconfigdirs target-boehm-gc"
+    ;;
+esac
 
 # Disable libcilkrts, libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++
 case ,${enable_languages}, in

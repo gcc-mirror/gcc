@@ -1,3 +1,9 @@
+2016-10-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (target_libraries): Readd target-boehm-gc.
+	Restore --enable-objc-gc handling.
+	* configure: Regenerate.
+
 2015-10-03  Jeff Law  <law@redhat.com>
 
 	* MAINTAINERS: Move several inactive maintainers to the

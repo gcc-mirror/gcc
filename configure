@@ -784,6 +784,7 @@ enable_lto
 enable_linker_plugin_configure_flags
 enable_linker_plugin_flags
 enable_stage1_languages
+enable_objc_gc
 with_build_sysroot
 with_debug_prefix_map
 with_build_config
@@ -1499,6 +1500,8 @@ Optional Features:
   --enable-stage1-languages[=all]
                           choose additional languages to build during stage1.
                           Mostly useful for compiler development
+  --enable-objc-gc        enable use of Boehm's garbage collector with the GNU
+                          Objective-C runtime
   --enable-vtable-verify  Enable vtable verification feature
   --enable-serial-[{host,target,build}-]configure
                           force sequential configuration of sub-packages for
@@ -2748,6 +2751,7 @@ target_libraries="target-libgcc \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
+		target-boehm-gc \
 		target-libffi \
 		target-libobjc \
 		target-libada \
@@ -6388,6 +6392,28 @@ for dir in $configdirs $build_configdirs $target_configdirs ; do
     noconfigdirs="$noconfigdirs $dir"
   fi
 done
+
+# Check for Boehm's garbage collector
+# Check whether --enable-objc-gc was given.
+if test "${enable_objc_gc+set}" = set; then :
+  enableval=$enable_objc_gc; case ,${enable_languages},:${enable_objc_gc}:${noconfigdirs} in
+  *,objc,*:*:yes:*target-boehm-gc*)
+    as_fn_error "Boehm's garbage collector was requested yet not supported in this configuration" "$LINENO" 5
+    ;;
+esac
+fi
+
+
+# Make sure we only build Boehm's garbage collector if required.
+case ,${enable_languages},:${enable_objc_gc} in
+  *,objc,*:yes)
+    # Keep target-boehm-gc if requested for Objective-C.
+    ;;
+  *)
+    # Otherwise remove target-boehm-gc.
+    noconfigdirs="$noconfigdirs target-boehm-gc"
+    ;;
+esac
 
 # Disable libcilkrts, libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++
 case ,${enable_languages}, in
