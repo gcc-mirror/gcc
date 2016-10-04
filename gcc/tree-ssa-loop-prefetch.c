@@ -1162,7 +1162,8 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
 					   NULL, true, GSI_SAME_STMT);
       }
 
-      if (TREE_CODE (addr_base) == SSA_NAME
+      if (addr_base != addr
+	  && TREE_CODE (addr_base) == SSA_NAME
 	  && TREE_CODE (addr) == SSA_NAME)
 	{
 	  duplicate_ssa_name_ptr_info (addr, SSA_NAME_PTR_INFO (addr_base));
