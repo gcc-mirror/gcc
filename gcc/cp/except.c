@@ -35,7 +35,6 @@ static tree prepare_eh_type (tree);
 static tree do_begin_catch (void);
 static int dtor_nothrow (tree);
 static tree do_end_catch (tree);
-static bool decl_is_java_type (tree decl, int err);
 static void initialize_handler_parm (tree, tree);
 static tree do_allocate_exception (tree);
 static tree wrap_cleanups_r (tree *, int *, void *);
@@ -103,17 +102,10 @@ prepare_eh_type (tree type)
 tree
 eh_type_info (tree type)
 {
-  tree exp;
-
   if (type == NULL_TREE || type == error_mark_node)
     return type;
 
-  if (decl_is_java_type (type, 0))
-    exp = build_java_class_ref (TREE_TYPE (type));
-  else
-    exp = get_tinfo_decl (type);
-
-  return exp;
+  return get_tinfo_decl (type);
 }
 
 /* Build the address of a typeinfo decl for use in the runtime
@@ -262,107 +254,6 @@ push_eh_cleanup (tree type)
   finish_decl_cleanup (NULL_TREE, do_end_catch (type));
 }
 
-/* Return nonzero value if DECL is a Java type suitable for catch or
-   throw.  */
-
-static bool
-decl_is_java_type (tree decl, int err)
-{
-  bool r = (TYPE_PTR_P (decl)
-	    && TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	    && TYPE_FOR_JAVA (TREE_TYPE (decl)));
-
-  if (err)
-    {
-      if (TREE_CODE (decl) == REFERENCE_TYPE
-	  && TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	  && TYPE_FOR_JAVA (TREE_TYPE (decl)))
-	{
-	  /* Can't throw a reference.  */
-	  error ("type %qT is disallowed in Java %<throw%> or %<catch%>",
-		 decl);
-	}
-
-      if (r)
-	{
-	  tree jthrow_node
-	    = IDENTIFIER_GLOBAL_VALUE (get_identifier ("jthrowable"));
-
-	  if (jthrow_node == NULL_TREE)
-	    fatal_error
-	      (input_location,
-	       "call to Java %<catch%> or %<throw%> with %<jthrowable%> undefined");
-
-	  jthrow_node = TREE_TYPE (TREE_TYPE (jthrow_node));
-
-	  if (! DERIVED_FROM_P (jthrow_node, TREE_TYPE (decl)))
-	    {
-	      /* Thrown object must be a Throwable.  */
-	      error ("type %qT is not derived from %<java::lang::Throwable%>",
-		     TREE_TYPE (decl));
-	    }
-	}
-    }
-
-  return r;
-}
-
-/* Select the personality routine to be used for exception handling,
-   or issue an error if we need two different ones in the same
-   translation unit.
-   ??? At present DECL_FUNCTION_PERSONALITY is set via
-   LANG_HOOKS_EH_PERSONALITY.  Should it be done here instead?  */
-void
-choose_personality_routine (enum languages lang)
-{
-  static enum {
-    chose_none,
-    chose_cpp,
-    chose_java,
-    gave_error
-  } state;
-
-  switch (state)
-    {
-    case gave_error:
-      return;
-
-    case chose_cpp:
-      if (lang != lang_cplusplus)
-	goto give_error;
-      return;
-
-    case chose_java:
-      if (lang != lang_java)
-	goto give_error;
-      return;
-
-    case chose_none:
-      ; /* Proceed to language selection.  */
-    }
-
-  switch (lang)
-    {
-    case lang_cplusplus:
-      state = chose_cpp;
-      break;
-
-    case lang_java:
-      state = chose_java;
-      terminate_node = builtin_decl_explicit (BUILT_IN_ABORT);
-      pragma_java_exceptions = true;
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-  return;
-
- give_error:
-  error ("mixing C++ and Java catches in a single translation unit");
-  state = gave_error;
-}
-
 /* Wrap EXPR in a MUST_NOT_THROW_EXPR expressing that EXPR must
    not throw any exceptions if COND is true.  A condition of
    NULL_TREE is treated as 'true'.  */
@@ -407,9 +298,6 @@ initialize_handler_parm (tree decl, tree exp)
   init_type = TREE_TYPE (decl);
   if (!POINTER_TYPE_P (init_type))
     init_type = build_reference_type (init_type);
-
-  choose_personality_routine (decl_is_java_type (init_type, 0)
-			      ? lang_java : lang_cplusplus);
 
   /* Since pointers are passed by value, initialize a reference to
      pointer catch parm with the address of the temporary.  */
@@ -489,22 +377,6 @@ expand_start_catch_block (tree decl)
     }
   else
     type = NULL_TREE;
-
-  if (decl && decl_is_java_type (type, 1))
-    {
-      /* Java only passes object via pointer and doesn't require
-	 adjusting.  The java object is immediately before the
-	 generic exception header.  */
-      exp = build_exc_ptr ();
-      exp = build1 (NOP_EXPR, build_pointer_type (type), exp);
-      exp = fold_build_pointer_plus (exp,
-		    fold_build1_loc (input_location,
-				     NEGATE_EXPR, sizetype,
-				     TYPE_SIZE_UNIT (TREE_TYPE (exp))));
-      exp = cp_build_indirect_ref (exp, RO_NULL, tf_warning_or_error);
-      initialize_handler_parm (decl, exp);
-      return type;
-    }
 
   /* Call __cxa_end_catch at the end of processing the exception.  */
   push_eh_cleanup (type);
@@ -738,27 +610,7 @@ build_throw (tree exp)
   if (! doing_eh ())
     return error_mark_node;
 
-  if (exp && decl_is_java_type (TREE_TYPE (exp), 1))
-    {
-      tree fn = get_identifier ("_Jv_Throw");
-      if (!get_global_value_if_present (fn, &fn))
-	{
-	  /* Declare void _Jv_Throw (void *).  */
-	  tree tmp;
-	  tmp = build_function_type_list (ptr_type_node,
-					  ptr_type_node, NULL_TREE);
-	  fn = push_throw_library_fn (fn, tmp);
-	}
-      else if (really_overloaded_fn (fn))
-	{
-	  error ("%qD should never be overloaded", fn);
-	  return error_mark_node;
-	}
-      fn = OVL_CURRENT (fn);
-      exp = cp_build_function_call_nary (fn, tf_warning_or_error,
-					 exp, NULL_TREE);
-    }
-  else if (exp)
+  if (exp)
     {
       tree throw_type;
       tree temp_type;

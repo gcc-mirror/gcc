@@ -1,3 +1,65 @@
+2016-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (enum cp_tree_index): Remove CPTI_JAVA_*,
+	CPTI_LANG_NAME_JAVA and CPTI_JCLASS.
+	(java_byte_type_node, java_short_type_node, java_int_type_node,
+	java_long_type_node, java_float_type_node, java_double_type_node,
+	java_char_type_node, java_boolean_type_node, lang_name_java,
+	jclass_node): Remove.
+	(enum languages): Remove lang_java.
+	(TYPE_FOR_JAVA): Remove.
+	(struct lang_type_class): Remove java_interface bit-field.
+	(TYPE_JAVA_INTERFACE): Remove.
+	(pragma_java_exceptions): Remove.
+	(check_java_method, build_java_class_ref): Remove prototypes.
+	* name-lookup.c (pushtag_1): Don't set TYPE_FOR_JAVA.
+	* decl2.c (acceptable_java_type, check_java_method): Remove.
+	(import_export_decl): Remove TYPE_FOR_JAVA handling.
+	(build_java_method_aliases): Remove.
+	(c_parse_final_cleanups): Don't call build_java_method_aliases.
+	(possibly_inlined_p): Don't test pragma_java_exceptions.
+	* init.c (build_new_1): Remove TYPE_FOR_JAVA handling.
+	(build_java_class_ref): Remove.
+	* pt.c (maybe_new_partial_specialization, lookup_template_class_1,
+	instantiate_class_template_1): Don't copy TYPE_FOR_JAVA.
+	* except.c (eh_type_info): Remove java type handling.
+	(decl_is_java_type, choose_personality_routine): Remove.
+	(initialize_handler_parm): Don't call choose_personality_routine.
+	(expand_start_catch_block): Don't handle java types.
+	(build_throw): Likewise.
+	* cp-lang.c (cp_eh_personality): Don't handle pragma_java_exceptions.
+	* typeck.c (structural_comptypes): Don't compare TYPE_FOR_JAVA.
+	* call.c (build_over_call): Don't handle TYPE_JAVA_INTERFACE.
+	(java_iface_lookup_fn): Remove.
+	(build_java_interface_fn_ref): Remove.
+	* tree.c (cxx_attribute_table): Remove java_interface.
+	(handle_java_interface_attribute): Remove.
+	* lex.c (pragma_java_exceptions): Remove.
+	(init_cp_pragma): Don't register GCC java_exceptions pragma.
+	(handle_pragma_java_exceptions): Remove.
+	(retrofit_lang_decl): Don't handle lang_name_java.
+	* method.c (implicitly_declare_fn): Don't handle TYPE_FOR_JAVA.
+	* error.c (language_to_string): Don't handle lang_java.
+	* decl.c (record_builtin_java_type): Remove.
+	(initialize_predefined_identifiers): Remove Java.
+	(cxx_init_decl_processing): Remove java_*_type_node.
+	(cp_finish_decl): Don't handle TYPE_FOR_JAVA.
+	(grokfndecl): Likewise.
+	(check_special_function_return_type): Likewise.
+	(grokdeclarator): Don't set TYPE_FOR_JAVA.
+	(grokparms): Don't handle TYPE_FOR_JAVA.
+	(xref_basetypes): Likewise.
+	(check_function_type): Likewise.
+	(finish_constructor_body): Likewise.
+	* mangle.c (write_builtin_type): Don't handle TYPE_FOR_JAVA
+	and java_*_type_node.
+	(write_bare_function_type): Don't handle TYPE_FOR_JAVA.
+	(write_java_integer_type_codes): Remove.
+	* class.c (add_method): Don't handle TYPE_FOR_JAVA.
+	(add_implicitly_declared_members, determine_key_method,
+	finish_struct_1): Likewise.
+	(push_lang_context): Don't handle lang_name_java.
+
 2016-10-03  Marek Polacek  <polacek@redhat.com>
 
 	Core 903

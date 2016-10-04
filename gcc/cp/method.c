@@ -1765,7 +1765,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 
   type = TYPE_MAIN_VARIANT (type);
 
-  if (targetm.cxx.cdtor_returns_this () && !TYPE_FOR_JAVA (type))
+  if (targetm.cxx.cdtor_returns_this ())
     {
       if (kind == sfk_destructor)
 	/* See comment in check_special_function_return_type.  */

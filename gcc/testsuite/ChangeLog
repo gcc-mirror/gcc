@@ -1,3 +1,18 @@
+2016-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/other/java3.C: Remove.
+	* g++.dg/other/java1.C: Remove.
+	* g++.dg/other/error12.C: Remove.
+	* g++.dg/other/java2.C: Remove.
+	* g++.dg/warn/Wnvdtor.C: Remove.
+	* g++.dg/lookup/java1.C: Remove.
+	* g++.dg/lookup/java2.C: Remove.
+	* g++.dg/ext/pr34829.C: Remove.
+	* g++.dg/ext/java-3.C: Remove.
+	* g++.dg/ext/java-1.C: Remove.
+	* g++.dg/ext/java-2.C: Remove.
+	* g++.old-deja/g++.oliva/dwarf2.C: Remove.
+
 2016-10-04  Doug Gilmore  <doug.gilmore@imgtec.com>
 
 	PR tree-optimization/77808
