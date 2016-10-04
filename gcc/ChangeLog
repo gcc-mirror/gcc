@@ -1,3 +1,9 @@
+2016-10-04  Doug Gilmore  <doug.gilmore@imgtec.com>
+
+	PR tree-optimization/77808
+	* tree-ssa-loop-prefetch.c (issue_prefetch_ref): Check base_addr
+	and addr are different before copying points-to information.
+
 2016-10-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/x86-tune.def (X86_TUNE_VECTORIZE_DOUBLE): Remove.

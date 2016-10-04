@@ -1,3 +1,8 @@
+2016-10-04  Doug Gilmore  <doug.gilmore@imgtec.com>
+
+	PR tree-optimization/77808
+	* gcc.dg/tree-ssa/pr77808.c: New testcase.
+
 2016-10-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77399
