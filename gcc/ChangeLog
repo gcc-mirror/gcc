@@ -1,5 +1,11 @@
 2016-10-04  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/77833
+	* explow.c (plus_constant): Verify the mode of the constant
+	pool offset before calling plus_constant.
+
+2016-10-04  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/77407
 	* match.pd (X / abs (X) -> X < 0 ? -1 : 1): Drop vector
 	type support, mark with :C.
