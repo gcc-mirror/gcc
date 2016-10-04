@@ -1,5 +1,11 @@
 2016-10-04  Martin Sebor  <msebor@redhat.com>
 
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Cast int argument to
+	%lc directive to wint_t to silence -Wformat warnings on targets
+	where the latter is a distinct type such as long.
+
+2016-10-04  Martin Sebor  <msebor@redhat.com>
+
 	PR c++/77804
 	* g++.dg/warn/Wplacement-new-size-4.C: New test.
 
