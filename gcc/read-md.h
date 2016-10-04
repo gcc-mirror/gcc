@@ -25,14 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 /* Records a position in the file.  */
 struct file_location {
   file_location () {}
-  file_location (const char *, int);
+  file_location (const char *, int, int);
 
   const char *filename;
   int lineno;
+  int colno;
 };
 
-inline file_location::file_location (const char *filename_in, int lineno_in)
-  : filename (filename_in), lineno (lineno_in) {}
+inline file_location::file_location (const char *filename_in, int lineno_in, int colno_in)
+: filename (filename_in), lineno (lineno_in), colno (colno_in) {}
 
 /* Holds one symbol or number in the .md file.  */
 struct md_name {
@@ -112,6 +113,7 @@ class rtx_reader
   const char *get_top_level_filename () const { return m_toplevel_fname; }
   const char *get_filename () const { return m_read_md_filename; }
   int get_lineno () const { return m_read_md_lineno; }
+  int get_colno () const { return m_read_md_colno; }
 
  private:
   /* A singly-linked list of filenames.  */
@@ -143,6 +145,14 @@ class rtx_reader
 
   /* The current line number in m_read_md_file.  */
   int m_read_md_lineno;
+
+  /* The current column number in m_read_md_file.  */
+  int m_read_md_colno;
+
+  /* The column number before the last newline, so that
+     we can handle unread_char ('\n') at least once whilst
+     retaining column information.  */
+  int m_last_line_colno;
 
   /* The first directory to search.  */
   file_name_list *m_first_dir_md_include;

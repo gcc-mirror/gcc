@@ -218,7 +218,7 @@ print_c_condition (const char *cond)
 static void ATTRIBUTE_PRINTF(2,0)
 message_at_1 (file_location loc, const char *msg, va_list ap)
 {
-  fprintf (stderr, "%s:%d: ", loc.filename, loc.lineno);
+  fprintf (stderr, "%s:%d:%d: ", loc.filename, loc.lineno, loc.colno);
   vfprintf (stderr, msg, ap);
   fputc ('\n', stderr);
 }
@@ -274,8 +274,8 @@ fatal_with_file_and_line (const char *msg, ...)
 
   va_start (ap, msg);
 
-  fprintf (stderr, "%s:%d: error: ", rtx_reader_ptr->get_filename (),
-	   rtx_reader_ptr->get_lineno ());
+  fprintf (stderr, "%s:%d:%d: error: ", rtx_reader_ptr->get_filename (),
+	   rtx_reader_ptr->get_lineno (), rtx_reader_ptr->get_colno ());
   vfprintf (stderr, msg, ap);
   putc ('\n', stderr);
 
@@ -294,9 +294,9 @@ fatal_with_file_and_line (const char *msg, ...)
     }
   context[i] = '\0';
 
-  fprintf (stderr, "%s:%d: note: following context is `%s'\n",
+  fprintf (stderr, "%s:%d:%d: note: following context is `%s'\n",
 	   rtx_reader_ptr->get_filename (), rtx_reader_ptr->get_lineno (),
-	   context);
+	   rtx_reader_ptr->get_colno (), context);
 
   va_end (ap);
   exit (1);
@@ -384,7 +384,13 @@ rtx_reader::read_char (void)
 
   ch = getc (m_read_md_file);
   if (ch == '\n')
-    m_read_md_lineno++;
+    {
+      m_read_md_lineno++;
+      m_last_line_colno = m_read_md_colno;
+      m_read_md_colno = 0;
+    }
+  else
+    m_read_md_colno++;
 
   return ch;
 }
@@ -395,7 +401,12 @@ void
 rtx_reader::unread_char (int ch)
 {
   if (ch == '\n')
-    m_read_md_lineno--;
+    {
+      m_read_md_lineno--;
+      m_read_md_colno = m_last_line_colno;
+    }
+  else
+    m_read_md_colno--;
   ungetc (ch, m_read_md_file);
 }
 
@@ -908,6 +919,7 @@ rtx_reader::rtx_reader ()
   m_read_md_file (NULL),
   m_read_md_filename (NULL),
   m_read_md_lineno (0),
+  m_read_md_colno (0),
   m_first_dir_md_include (NULL),
   m_last_dir_md_include_ptr (&m_first_dir_md_include)
 {
@@ -933,7 +945,7 @@ rtx_reader::handle_include (file_location loc)
 {
   const char *filename;
   const char *old_filename;
-  int old_lineno;
+  int old_lineno, old_colno;
   char *pathname;
   FILE *input_file, *old_file;
 
@@ -982,6 +994,7 @@ rtx_reader::handle_include (file_location loc)
   old_file = m_read_md_file;
   old_filename = m_read_md_filename;
   old_lineno = m_read_md_lineno;
+  old_colno = m_read_md_colno;
 
   if (include_callback)
     include_callback (pathname);
@@ -995,6 +1008,7 @@ rtx_reader::handle_include (file_location loc)
   m_read_md_file = old_file;
   m_read_md_filename = old_filename;
   m_read_md_lineno = old_lineno;
+  m_read_md_colno = old_colno;
 
   /* Do not free the pathname.  It is attached to the various rtx
      queue elements.  */
@@ -1011,6 +1025,7 @@ rtx_reader::handle_file ()
   int c;
 
   m_read_md_lineno = 1;
+  m_read_md_colno = 0;
   while ((c = read_skip_spaces ()) != EOF)
     {
       file_location loc = get_current_location ();
@@ -1055,7 +1070,7 @@ rtx_reader::handle_toplevel_file ()
 file_location
 rtx_reader::get_current_location () const
 {
-  return file_location (m_read_md_filename, m_read_md_lineno);
+  return file_location (m_read_md_filename, m_read_md_lineno, m_read_md_colno);
 }
 
 /* Parse a -I option with argument ARG.  */

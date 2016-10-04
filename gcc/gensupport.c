@@ -446,7 +446,7 @@ add_define_attr (const char *name)
   XEXP (t1, 2) = rtx_alloc (CONST_STRING);
   XSTR (XEXP (t1, 2), 0) = "yes";
   e->data = t1;
-  e->loc = file_location ("built-in", -1);
+  e->loc = file_location ("built-in", -1, -1);
   e->next = define_attr_queue;
   define_attr_queue = e;
 

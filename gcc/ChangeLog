@@ -1,3 +1,25 @@
+2016-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* genattrtab.c (make_internal_attr): Supply dummy column number to
+	file_location ctor.
+	(main): Likewise.
+	* genoutput.c (init_insn_for_nothing): Likewise.
+	* gensupport.c (add_define_attr): Likewise.
+	* read-md.c (message_at_1): Print column number.
+	(fatal_with_file_and_line): Likewise.
+	(rtx_reader::read_char): Track column numbers.
+	(rtx_reader::unread_char): Likewise.
+	(rtx_reader::rtx_reader): Initialize m_read_md_colno.
+	(rtx_reader::handle_include): Stash and restore m_read_md_colno.
+	(rtx_reader::handle_file): Initialize m_read_md_colno.
+	(rtx_reader::get_current_location): Supply column number to
+	file_location ctor.
+	* read-md.h (struct file_location): Add field "colno".
+	(file_location::file_location): Likewise.
+	(rtx_reader::get_colno): New accessor.
+	(rtx_reader::m_read_md_colno): New field.
+	(rtx_reader::m_last_line_colno): New field.
+
 2016-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/extend.texi (Java Exceptions): Remove.
