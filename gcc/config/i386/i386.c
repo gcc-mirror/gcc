@@ -49667,8 +49667,8 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
   tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
 
-  /* Penalize DFmode vector operations for !TARGET_VECTORIZE_DOUBLE.  */
-  if (kind == vector_stmt && !TARGET_VECTORIZE_DOUBLE
+  /* Penalize DFmode vector operations for Bonnell.  */
+  if (TARGET_BONNELL && kind == vector_stmt
       && vectype && GET_MODE_INNER (TYPE_MODE (vectype)) == DFmode)
     stmt_cost *= 5;  /* FIXME: The value here is arbitrary.  */
 
