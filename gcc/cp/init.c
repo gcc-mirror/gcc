@@ -2503,7 +2503,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	      && warn_placement_new < 2)
 	    return;
 	}
-	  
+
       /* The size of the buffer can only be adjusted down but not up.  */
       gcc_checking_assert (0 <= adjust);
 
@@ -2525,8 +2525,13 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
       else if (nelts && CONSTANT_CLASS_P (nelts))
 	  bytes_need = tree_to_uhwi (nelts)
 	    * tree_to_uhwi (TYPE_SIZE_UNIT (type));
-      else
+      else if (tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
 	bytes_need = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+      else
+	{
+	  /* The type is a VLA.  */
+	  return;
+	}
 
       if (bytes_avail < bytes_need)
 	{
