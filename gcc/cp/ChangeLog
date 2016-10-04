@@ -1,3 +1,9 @@
+2016-09-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77775
+	* constexpr.c (cxx_eval_component_reference): Use name matching
+	for PMFs.
+
 2016-10-04  Jason Merrill  <jason@redhat.com>
 
 	Implement P0091R2, Template argument deduction for class templates.
