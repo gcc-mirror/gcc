@@ -114,12 +114,15 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
 	      cst = gen_lowpart (mode, cst);
 	      gcc_assert (cst);
 	    }
-	  tem = plus_constant (mode, cst, c);
-	  tem = force_const_mem (GET_MODE (x), tem);
-	  /* Targets may disallow some constants in the constant pool, thus
-	     force_const_mem may return NULL_RTX.  */
-	  if (tem && memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
-	    return tem;
+	  if (GET_MODE (cst) == VOIDmode || GET_MODE (cst) == mode)
+	    {
+	      tem = plus_constant (mode, cst, c);
+	      tem = force_const_mem (GET_MODE (x), tem);
+	      /* Targets may disallow some constants in the constant pool, thus
+		 force_const_mem may return NULL_RTX.  */
+	      if (tem && memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
+		return tem;
+	    }
 	}
       break;
 

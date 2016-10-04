@@ -1,3 +1,8 @@
+2016-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77833
+	* gcc.target/i386/pr77833.c: New testcase.
+
 2016-09-26  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71550
