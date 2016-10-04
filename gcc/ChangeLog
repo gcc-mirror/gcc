@@ -1,3 +1,10 @@
+2016-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77407
+	* match.pd (X / abs (X) -> X < 0 ? -1 : 1): Drop vector
+	type support, mark with :C.
+	(X / -X -> -1): Mark with :C.
+
 2016-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* defaults.h (JCR_SECTION_NAME, TARGET_USE_JCR_SECTION): Remove.

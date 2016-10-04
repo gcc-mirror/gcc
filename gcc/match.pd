@@ -155,14 +155,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (negate @0)))
  /* X / abs (X) is X < 0 ? -1 : 1.  */ 
  (simplify
-   (div @0 (abs @0))
-   (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+   (div:C @0 (abs @0))
+   (if (INTEGRAL_TYPE_P (type)
 	&& TYPE_OVERFLOW_UNDEFINED (type))
     (cond (lt @0 { build_zero_cst (type); })
           { build_minus_one_cst (type); } { build_one_cst (type); })))
  /* X / -X is -1.  */
  (simplify
-   (div @0 (negate @0))
+   (div:C @0 (negate @0))
    (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
 	&& TYPE_OVERFLOW_UNDEFINED (type))
     { build_minus_one_cst (type); })))
