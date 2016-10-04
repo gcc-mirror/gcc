@@ -4659,7 +4659,7 @@ make_internal_attr (const char *name, rtx value, int special)
   attr->is_numeric = 1;
   attr->is_const = 0;
   attr->is_special = (special & ATTR_SPECIAL) != 0;
-  attr->default_val = get_attr_value (file_location ("<internal>", 0),
+  attr->default_val = get_attr_value (file_location ("<internal>", 0, 0),
 				      value, attr, -2);
 }
 
@@ -5281,7 +5281,7 @@ main (int argc, const char **argv)
       md_rtx_info info;
       info.def = rtx_alloc (DEFINE_ASM_ATTRIBUTES);
       XVEC (info.def, 0) = rtvec_alloc (0);
-      info.loc = file_location ("<internal>", 0);
+      info.loc = file_location ("<internal>", 0, 0);
       info.index = -1;
       gen_insn (&info);
     }

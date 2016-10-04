@@ -980,7 +980,7 @@ init_insn_for_nothing (void)
   idata = XCNEW (struct data);
   new (idata) data ();
   idata->name = "*placeholder_for_nothing";
-  idata->loc = file_location ("<internal>", 0);
+  idata->loc = file_location ("<internal>", 0, 0);
   idata_end = &idata->next;
 }
 
