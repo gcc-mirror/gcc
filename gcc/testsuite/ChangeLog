@@ -1,3 +1,14 @@
+2016-10-05  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp1z/init-statement1.C: New test.
+	* g++.dg/cpp1z/init-statement2.C: New test.
+	* g++.dg/cpp1z/init-statement3.C: New test.
+	* g++.dg/cpp1z/init-statement4.C: New test.
+	* g++.dg/cpp1z/init-statement5.C: New test.
+	* g++.dg/cpp1z/init-statement6.C: New test.
+	* g++.dg/cpp1z/init-statement7.C: New test.
+	* g++.dg/cpp1z/init-statement8.C: New test.
+
 2016-10-05  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/67524
