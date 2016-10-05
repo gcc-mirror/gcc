@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-O -mavx512f" } */
 
 typedef unsigned long V __attribute__((vector_size(64)));
