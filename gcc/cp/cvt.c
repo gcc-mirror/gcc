@@ -693,8 +693,11 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
   if (error_operand_p (e))
     return error_mark_node;
 
-  if (MAYBE_CLASS_TYPE_P (type) && (convtype & CONV_FORCE_TEMP))
-    /* We need a new temporary; don't take this shortcut.  */;
+  if (MAYBE_CLASS_TYPE_P (type) && (convtype & CONV_FORCE_TEMP)
+      && !(cxx_dialect >= cxx1z
+	   && TREE_CODE (e) == TARGET_EXPR))
+    /* We need a new temporary; don't take this shortcut.  But in C++17, don't
+       force a temporary if we already have one.  */;
   else if (same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (e)))
     {
       if (same_type_p (type, TREE_TYPE (e)))
