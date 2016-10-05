@@ -1,3 +1,9 @@
+2016-10-05  Steven G. Kargl  <kargls@gcc.gnu.org>
+
+	PR fortran/58991
+	PR fortran/58992
+	* gfortran.dg/associate_22.f90: New test.
+
 2016-10-05  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_union_9.f90: New testcase.

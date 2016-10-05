@@ -1,3 +1,11 @@
+2016-10-05  Steven G. Kargl  <kargls@gcc.gnu.org>
+
+	PR fortran/58991
+	PR fortran/58992
+	* resolve.c (resolve_assoc_var):  Fix CHARACTER type-spec for a
+	selector in ASSOCIATE.
+	(resolve_fl_variable): Skip checks for an ASSOCIATE variable.
+
 2016-10-05  Fritz Reese  <fritzoreese@gmail.com>
 
 	* interface.c (gfc_compare_types): Don't compare BT_UNION components
