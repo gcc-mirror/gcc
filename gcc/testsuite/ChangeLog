@@ -1,3 +1,11 @@
+2016-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/66343
+	* gcc.dg/pch/pr66343-1.c: New test.
+	* gcc.dg/pch/pr66343-1.hs: New file.
+	* gcc.dg/pch/pr66343-2.c: New test.
+	* gcc.dg/pch/pr66343-2.hs: New file.
+
 2016-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-c++-common/Wint-in-bool-context.c: Update test.
