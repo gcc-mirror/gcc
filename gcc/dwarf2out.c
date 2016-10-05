@@ -24045,13 +24045,15 @@ dwarf2out_imported_module_or_decl (tree decl, tree name, tree context,
       && !should_emit_struct_debug (context, DINFO_USAGE_DIR_USE))
     return;
 
-  if (!(dwarf_version >= 3 || !dwarf_strict))
-    return;
-
   scope_die = get_context_die (context);
 
   if (child)
     {
+      /* DW_TAG_imported_module was introduced in the DWARFv3 specification, so
+	 there is nothing we can do, here.  */
+      if (dwarf_version < 3 && dwarf_strict)
+	return;
+
       gcc_assert (scope_die->die_child);
       gcc_assert (scope_die->die_child->die_tag == DW_TAG_imported_module);
       gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);

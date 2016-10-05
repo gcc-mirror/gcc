@@ -1,3 +1,8 @@
+2016-10-05  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (dwarf2out_imported_module_or_decl): Move DWARF
+	version check to protect only DW_TAG_imported_module generation.
+
 2016-10-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55152
