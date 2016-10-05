@@ -10,7 +10,7 @@ int foo (int a, int b)
   if (a > 0 && a <= (b == 2) ? 1 : 1) /* { dg-bogus "boolean context" } */
     return 2;
 
-  if (a > 0 && a <= (b == 3) ? 0 : 2) /* { dg-bogus "boolean context" } */
+  if (a > 0 && a <= (b == 3) ? 0 : 2) /* { dg-warning "boolean context" } */
     return 3;
 
   if (a == b ? 0 : 0) /* { dg-bogus "boolean context" } */
