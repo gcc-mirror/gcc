@@ -413,8 +413,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_clflushopt = 0, has_xsavec = 0, has_xsaves = 0;
   unsigned int has_avx512dq = 0, has_avx512bw = 0, has_avx512vl = 0;
   unsigned int has_avx512vbmi = 0, has_avx512ifma = 0, has_clwb = 0;
-  unsigned int has_pcommit = 0, has_mwaitx = 0;
-  unsigned int has_clzero = 0, has_pku = 0;
+  unsigned int has_mwaitx = 0, has_clzero = 0, has_pku = 0;
 
   bool arch;
 
@@ -492,7 +491,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512pf = ebx & bit_AVX512PF;
       has_avx512cd = ebx & bit_AVX512CD;
       has_sha = ebx & bit_SHA;
-      has_pcommit = ebx & bit_PCOMMIT;
       has_clflushopt = ebx & bit_CLFLUSHOPT;
       has_clwb = ebx & bit_CLWB;
       has_avx512dq = ebx & bit_AVX512DQ;
@@ -1024,7 +1022,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *avx512ifma = has_avx512ifma ? " -mavx512ifma" : " -mno-avx512ifma";
       const char *avx512vbmi = has_avx512vbmi ? " -mavx512vbmi" : " -mno-avx512vbmi";
       const char *clwb = has_clwb ? " -mclwb" : " -mno-clwb";
-      const char *pcommit = has_pcommit ? " -mpcommit" : " -mno-pcommit";
       const char *mwaitx  = has_mwaitx  ? " -mmwaitx"  : " -mno-mwaitx"; 
       const char *clzero  = has_clzero  ? " -mclzero"  : " -mno-clzero";
       const char *pku = has_pku ? " -mpku" : " -mno-pku";
@@ -1036,7 +1033,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			fxsr, xsave, xsaveopt, avx512f, avx512er,
 			avx512cd, avx512pf, prefetchwt1, clflushopt,
 			xsavec, xsaves, avx512dq, avx512bw, avx512vl,
-			avx512ifma, avx512vbmi, clwb, pcommit, mwaitx,
+			avx512ifma, avx512vbmi, clwb, mwaitx,
 			clzero, pku, NULL);
     }
 

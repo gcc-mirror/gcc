@@ -1,3 +1,13 @@
+2016-10-05  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/pcommit-1.c: Deleted.
+	* gcc.target/i386/sse-12.c: Deleted -pcommit option.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+
 2016-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr77833.c: Require int128 effective target.
