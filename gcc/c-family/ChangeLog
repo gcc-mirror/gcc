@@ -1,3 +1,7 @@
+2016-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (c_common_reswords): Update comment for C++11.
+
 2016-10-04  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (make_tree_vector_from_ctor): New.
