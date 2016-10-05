@@ -1,3 +1,7 @@
+2016-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr77833.c: Require int128 effective target.
+
 2016-10-05  Steven G. Kargl  <kargls@gcc.gnu.org>
 
 	PR fortran/58991
