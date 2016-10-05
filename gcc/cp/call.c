@@ -10172,27 +10172,30 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups)
     return init;
   if (TREE_CODE (type) == REFERENCE_TYPE)
     init = extend_ref_init_temps_1 (decl, init, cleanups);
-  else if (is_std_init_list (type))
+  else
     {
-      /* The temporary array underlying a std::initializer_list
-	 is handled like a reference temporary.  */
       tree ctor = init;
       if (TREE_CODE (ctor) == TARGET_EXPR)
 	ctor = TARGET_EXPR_INITIAL (ctor);
       if (TREE_CODE (ctor) == CONSTRUCTOR)
 	{
-	  tree array = CONSTRUCTOR_ELT (ctor, 0)->value;
-	  array = extend_ref_init_temps_1 (decl, array, cleanups);
-	  CONSTRUCTOR_ELT (ctor, 0)->value = array;
+	  if (is_std_init_list (type))
+	    {
+	      /* The temporary array underlying a std::initializer_list
+		 is handled like a reference temporary.  */
+	      tree array = CONSTRUCTOR_ELT (ctor, 0)->value;
+	      array = extend_ref_init_temps_1 (decl, array, cleanups);
+	      CONSTRUCTOR_ELT (ctor, 0)->value = array;
+	    }
+	  else
+	    {
+	      unsigned i;
+	      constructor_elt *p;
+	      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (ctor);
+	      FOR_EACH_VEC_SAFE_ELT (elts, i, p)
+		p->value = extend_ref_init_temps (decl, p->value, cleanups);
+	    }
 	}
-    }
-  else if (TREE_CODE (init) == CONSTRUCTOR)
-    {
-      unsigned i;
-      constructor_elt *p;
-      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (init);
-      FOR_EACH_VEC_SAFE_ELT (elts, i, p)
-	p->value = extend_ref_init_temps (decl, p->value, cleanups);
     }
 
   return init;
