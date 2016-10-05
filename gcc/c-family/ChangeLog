@@ -1,3 +1,9 @@
+2016-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/66343
+	* c-ubsan.c (ubsan_instrument_return): Don't call
+	initialize_sanitizer_builtins here.
+
 2016-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-common.c (c_common_truthvalue_conversion): Warn also for suspicious

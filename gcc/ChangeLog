@@ -1,6 +1,10 @@
 2016-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/66343
+	* ubsan.c (ubsan_create_data): Call initialize_sanitizer_builtins here.
+	(ubsan_instrument_float_cast): And not here.
+
+	PR sanitizer/66343
 	* ubsan.c (ubsan_ids): New GTY(()) array.
 	(ubsan_type_descriptor, ubsan_create_data): Use ubsan_ids
 	instead of static local counters.

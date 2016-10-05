@@ -511,6 +511,10 @@ ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
   size_t i = 0;
   int j;
 
+  /* It is possible that PCH zapped table with definitions of sanitizer
+     builtins.  Reinitialize them if needed.  */
+  initialize_sanitizer_builtins ();
+
   /* Firstly, create a pointer to type descriptor type.  */
   tree td_type = ubsan_get_type_descriptor_type ();
   td_type = build_pointer_type (td_type);
@@ -1589,7 +1593,6 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
     {
       location_t *loc_ptr = NULL;
       unsigned num_locations = 0;
-      initialize_sanitizer_builtins ();
       /* Figure out if we can propagate location to ubsan_data and use new
          style handlers in libubsan.  */
       if (ubsan_use_new_style_p (loc))
