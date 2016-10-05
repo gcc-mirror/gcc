@@ -1,3 +1,7 @@
+2016-10-04  Ian Lance Taylor  <iant@golang.org>
+
+	* gcc.dg/split-7.c: New test.
+
 2016-10-04  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Cast int argument to

@@ -1,3 +1,8 @@
+2016-10-04  Ian Lance Taylor  <iant@golang.org>
+
+	* explow.c (allocate_dynamic_stack_space): Call
+	do_pending_stack_adjust before handling flag_split_stack.
+
 2016-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* genattrtab.c (make_internal_attr): Supply dummy column number to

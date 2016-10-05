@@ -1357,6 +1357,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	current_function_has_unbounded_dynamic_stack_size = 1;
     }
 
+  do_pending_stack_adjust ();
+
   final_label = NULL;
   final_target = NULL_RTX;
 
@@ -1413,8 +1415,6 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
       emit_label (available_label);
     }
-
-  do_pending_stack_adjust ();
 
  /* We ought to be called always on the toplevel and stack ought to be aligned
     properly.  */
