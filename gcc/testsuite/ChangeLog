@@ -1,3 +1,7 @@
+2016-10-05  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/pr49847-2.C: Remove.
+
 2016-10-05  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat.dg/debug7.adb, gnat.dg/debug7.ads: New testcase.
