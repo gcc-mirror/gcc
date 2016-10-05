@@ -531,6 +531,12 @@ gfc_compare_union_types (gfc_symbol *un1, gfc_symbol *un2)
   if (un1->attr.flavor != FL_UNION || un2->attr.flavor != FL_UNION)
     return 0;
 
+  if (un1->attr.zero_comp != un2->attr.zero_comp)
+    return 0;
+
+  if (un1->attr.zero_comp)
+    return 1;
+
   map1 = un1->components;
   map2 = un2->components;
 
@@ -694,13 +700,14 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
       && (ts1->u.derived->attr.sequence || ts1->u.derived->attr.is_bind_c))
     return 1;
 
-  if (ts1->type == BT_UNION && ts2->type == BT_UNION)
+  if (ts1->type != ts2->type
+      && ((ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
+	  || (ts2->type != BT_DERIVED && ts2->type != BT_CLASS)))
+    return 0;
+
+  if (ts1->type == BT_UNION)
     return gfc_compare_union_types (ts1->u.derived, ts2->u.derived);
 
-  if (ts1->type != ts2->type
-      && ((!gfc_bt_struct (ts1->type) && ts1->type != BT_CLASS)
-	  || (!gfc_bt_struct (ts2->type) && ts2->type != BT_CLASS)))
-    return 0;
   if (ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
     return (ts1->kind == ts2->kind);
 

@@ -1,3 +1,10 @@
+2016-10-05  Fritz Reese  <fritzoreese@gmail.com>
+
+	* interface.c (gfc_compare_types): Don't compare BT_UNION components
+	until we know they're both UNIONs.
+	* interface.c (gfc_compare_union_types): Guard against empty
+	components.
+
 2016-10-05  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/67524
