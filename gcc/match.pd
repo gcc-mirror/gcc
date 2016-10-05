@@ -452,6 +452,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (hypots @0 (copysigns @1 @2))
   (hypots @0 @1)))
 
+/* copysign(x, CST) -> [-]abs (x).  */
+(for copysigns (COPYSIGN)
+ (simplify
+  (copysigns @0 REAL_CST@1)
+  (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
+   (negate (abs @0))
+   (abs @0))))
+
 /* copysign(copysign(x, y), z) -> copysign(x, z).  */
 (for copysigns (COPYSIGN)
  (simplify

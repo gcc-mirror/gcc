@@ -1,3 +1,7 @@
+2016-10-05  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/fold-copysign-1.c: New testcase.
+
 2016-10-05  Andreas Schwab  <schwab@suse.de>
 
 	* g++.dg/pr49847-2.C: Remove.

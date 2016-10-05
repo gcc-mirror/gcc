@@ -1,5 +1,9 @@
 2016-10-05  Richard Biener  <rguenther@suse.de>
 
+	* match.pd (copysign(x, CST) -> [-]abs (x)): New pattern.
+
+2016-10-05  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/77842
 	* genmatch.c (parser::parse_c_expr): Handle premature EOF.
 
