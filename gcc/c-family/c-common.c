@@ -411,8 +411,8 @@ static int resort_field_decl_cmp (const void *, const void *);
    C --std=c89: D_C99 | D_CXXONLY | D_OBJC | D_CXX_OBJC
    C --std=c99: D_CXXONLY | D_OBJC
    ObjC is like C except that D_OBJC and D_CXX_OBJC are not set
-   C++ --std=c98: D_CONLY | D_CXXOX | D_OBJC
-   C++ --std=c0x: D_CONLY | D_OBJC
+   C++ --std=c++98: D_CONLY | D_CXX11 | D_OBJC
+   C++ --std=c++11: D_CONLY | D_OBJC
    ObjC++ is like C++ except that D_OBJC is not set
 
    If -fno-asm is used, D_ASM is added to the mask.  If
