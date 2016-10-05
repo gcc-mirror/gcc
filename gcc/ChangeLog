@@ -1,3 +1,12 @@
+2016-10-05  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* builtins.c (fold_builtin_strchr): Remove function.
+	(fold_builtin_strrchr): Likewise.
+	(fold_builtin2): Remove strchr, index, strrchr, rindex cases.
+	* gimple-fold.c (target_char_cst_p): New function.
+	(gimple_fold_builtin_strchr) Add more foldings.
+	(gimple_fold_builtin): Add index, strrchr, rindex cases.
+
 2016-10-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77863
