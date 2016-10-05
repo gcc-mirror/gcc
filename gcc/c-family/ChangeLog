@@ -1,3 +1,8 @@
+2016-10-04  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (make_tree_vector_from_ctor): New.
+	* c-common.h: Declare it.
+
 2016-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Don't define

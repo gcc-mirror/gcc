@@ -12612,6 +12612,18 @@ make_tree_vector_from_list (tree list)
   return ret;
 }
 
+/* Get a new tree vector of the values of a CONSTRUCTOR.  */
+
+vec<tree, va_gc> *
+make_tree_vector_from_ctor (tree ctor)
+{
+  vec<tree,va_gc> *ret = make_tree_vector ();
+  vec_safe_reserve (ret, CONSTRUCTOR_NELTS (ctor));
+  for (unsigned i = 0; i < CONSTRUCTOR_NELTS (ctor); ++i)
+    ret->quick_push (CONSTRUCTOR_ELT (ctor, i)->value);
+  return ret;
+}
+
 /* Get a new tree vector which is a copy of an existing one.  */
 
 vec<tree, va_gc> *

@@ -24178,7 +24178,7 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
   if (TREE_CODE (olddecl) == TYPE_DECL
       || TREE_CODE (olddecl) == TEMPLATE_DECL)
     {
-      newtype = copy_type (TREE_TYPE (olddecl));
+      newtype = cxx_make_type (TREE_CODE (TREE_TYPE (olddecl)));
       TYPE_MAIN_VARIANT (newtype) = newtype;
     }
   else
@@ -24340,7 +24340,8 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
       /* Now we have a final set of template parms to substitute into the
 	 function signature.  */
       targs = template_parms_to_args (tparms);
-      fparms = tsubst (fparms, tsubst_args, complain, ctor);
+      fparms = tsubst_arg_types (fparms, tsubst_args, NULL_TREE,
+				 complain, ctor);
       fargs = tsubst (fargs, tsubst_args, complain, ctor);
       if (ci)
 	ci = tsubst_constraint_info (ci, tsubst_args, complain, ctor);
@@ -24376,6 +24377,8 @@ do_class_deduction (tree tmpl, tree init, tsubst_flags_t complain)
   vec<tree,va_gc> *args;
   if (TREE_CODE (init) == TREE_LIST)
     args = make_tree_vector_from_list (init);
+  else if (BRACE_ENCLOSED_INITIALIZER_P (init))
+    args = make_tree_vector_from_ctor (init);
   else
     args = make_tree_vector_single (init);
 
@@ -24465,6 +24468,10 @@ do_auto_deduction (tree type, tree init, tree auto_node,
        from ahead of time isn't worth the trouble.  */
     return type;
 
+  if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+    /* C++17 class template argument deduction.  */
+    return do_class_deduction (tmpl, init, complain);
+
   /* [dcl.spec.auto]: Obtain P from T by replacing the occurrences of auto
      with either a new invented type template parameter U or, if the
      initializer is a braced-init-list (8.5.4), with
@@ -24510,9 +24517,6 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	  return error_mark_node;
 	}
     }
-  else if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
-    /* C++17 class template argument deduction.  */
-    return do_class_deduction (tmpl, init, complain);
   else
     {
       tree parms = build_tree_list (NULL_TREE, type);

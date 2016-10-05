@@ -1,10 +1,14 @@
-2016-09-30  Jason Merrill  <jason@redhat.com>
+2016-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77852
+	* pt.c (do_class_deduction): Handle list-initialization.
+	(do_auto_deduction): Call it sooner.
+	(build_deduction_guide): Use tsubst_arg_types.
+	(rewrite_template_parm): Don't copy_type.
 
 	PR c++/77775
 	* constexpr.c (cxx_eval_component_reference): Use name matching
 	for PMFs.
-
-2016-10-04  Jason Merrill  <jason@redhat.com>
 
 	Implement P0091R2, Template argument deduction for class templates.
 	* parser.c (cp_parser_simple_type_specifier): Parse class placeholder.
