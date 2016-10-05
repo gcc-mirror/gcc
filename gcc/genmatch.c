@@ -1562,7 +1562,7 @@ struct dt_operand : public dt_node
 
   void gen (FILE *, int, bool);
   unsigned gen_predicate (FILE *, int, const char *, bool);
-  unsigned gen_match_op (FILE *, int, const char *);
+  unsigned gen_match_op (FILE *, int, const char *, bool);
 
   unsigned gen_gimple_expr (FILE *, int);
   unsigned gen_generic_expr (FILE *, int, const char *);
@@ -2589,12 +2589,18 @@ dt_operand::gen_predicate (FILE *f, int indent, const char *opname, bool gimple)
    a capture-match.  */
 
 unsigned
-dt_operand::gen_match_op (FILE *f, int indent, const char *opname)
+dt_operand::gen_match_op (FILE *f, int indent, const char *opname, bool gimple)
 {
   char match_opname[20];
   match_dop->get_name (match_opname);
-  fprintf_indent (f, indent, "if (%s == %s || operand_equal_p (%s, %s, 0))\n",
-		  opname, match_opname, opname, match_opname);
+  if (gimple)
+    fprintf_indent (f, indent, "if (%s == %s || (operand_equal_p (%s, %s, 0) "
+		    "&& types_match (%s, %s)))\n",
+		    opname, match_opname, opname, match_opname,
+		    opname, match_opname);
+  else
+    fprintf_indent (f, indent, "if (%s == %s || operand_equal_p (%s, %s, 0))\n",
+		    opname, match_opname, opname, match_opname);
   fprintf_indent (f, indent + 2, "{\n");
   return 1;
 }
@@ -2991,7 +2997,7 @@ dt_operand::gen (FILE *f, int indent, bool gimple)
   else if (type == DT_TRUE)
     ;
   else if (type == DT_MATCH)
-    n_braces = gen_match_op (f, indent, opname);
+    n_braces = gen_match_op (f, indent, opname, gimple);
   else
     gcc_unreachable ();
 

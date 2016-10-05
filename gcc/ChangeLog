@@ -1,5 +1,15 @@
 2016-10-05  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/77826
+	* genmatch.c (dt_operand::gen_match_op): Amend operand_equal_p
+	with types_match for GIMPLE code gen to handle type mismatched
+	constants properly.
+	(dt_operand::gen): Adjust.
+	* match.pd ((X /[ex] A) * A -> X): Properly handle converted
+	and constant A.
+
+2016-10-05  Richard Biener  <rguenther@suse.de>
+
 	* match.pd (copysign(x, CST) -> [-]abs (x)): New pattern.
 
 2016-10-05  Richard Biener  <rguenther@suse.de>
