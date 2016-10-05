@@ -953,11 +953,11 @@ begin_for_stmt (tree scope, tree init)
   return r;
 }
 
-/* Finish the for-init-statement of a for-statement, which may be
+/* Finish the init-statement of a for-statement, which may be
    given by FOR_STMT.  */
 
 void
-finish_for_init_stmt (tree for_stmt)
+finish_init_stmt (tree for_stmt)
 {
   if (processing_template_decl)
     FOR_INIT_STMT (for_stmt) = pop_stmt_list (FOR_INIT_STMT (for_stmt));

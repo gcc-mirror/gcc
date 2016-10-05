@@ -639,9 +639,8 @@ poplevel (int keep, int reverse, int functionbody)
       BLOCK_SUPERCONTEXT (link) = block;
 
   /* We still support the old for-scope rules, whereby the variables
-     in a for-init statement were in scope after the for-statement
-     ended.  We only use the new rules if flag_new_for_scope is
-     nonzero.  */
+     in a init statement were in scope after the for-statement ended.
+     We only use the new rules if flag_new_for_scope is nonzero.  */
   leaving_for_scope
     = current_binding_level->kind == sk_for && flag_new_for_scope == 1;
 

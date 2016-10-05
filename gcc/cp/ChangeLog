@@ -1,3 +1,28 @@
+2016-10-05  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0305R1, Selection statements with initializer.
+	* cp-array-notation.c (create_an_loop): Call finish_init_stmt
+	instead of finish_for_init_stmt.
+	* cp-tree.h (finish_for_init_stmt): Rename to finish_init_stmt.
+	* decl.c (poplevel): Adjust a comment.
+	* init.c (build_vec_init): Call finish_init_stmt instead of
+	finish_for_init_stmt.
+	* name-lookup.c (pushdecl_maybe_friend_1): Adjust a comment.
+	* name-lookup.h (enum scope_kind): Likewise.
+	* parser.c (cp_parser_statement): Update commentary.
+	(cp_parser_init_statement_p): New function.
+	(cp_parser_selection_statement): Parse the optional init-statement.
+	(cp_parser_for): Call finish_init_stmt instead of finish_for_init_stmt.
+	(cp_parser_c_for): Likewise.
+	(cp_convert_range_for): Call finish_init_stmt instead of finish_for_init_stmt.
+	(cp_parser_range_for_member_function): Update commentary.
+	(cp_parser_iteration_statement):
+	(cp_parser_for_init_statement): Rename to cp_parser_init_statement.
+	* pt.c (tsubst_omp_for_iterator): Update commentary.
+	(tsubst_expr): Call finish_init_stmt instead of finish_for_init_stmt.
+	* semantics.c (finish_for_init_stmt): Rename to finish_init_stmt.
+	Update commentary.
+
 2016-10-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/77852

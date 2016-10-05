@@ -66,7 +66,7 @@ create_an_loop (tree init, tree cond, tree incr, tree body)
 
   finish_expr_stmt (init);
   for_stmt = begin_for_stmt (NULL_TREE, NULL_TREE);
-  finish_for_init_stmt (for_stmt);
+  finish_init_stmt (for_stmt);
   finish_for_cond (cond, for_stmt, false);
   finish_for_expr (incr, for_stmt);
   finish_expr_stmt (body);

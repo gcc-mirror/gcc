@@ -4052,7 +4052,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       tree to;
 
       for_stmt = begin_for_stmt (NULL_TREE, NULL_TREE);
-      finish_for_init_stmt (for_stmt);
+      finish_init_stmt (for_stmt);
       finish_for_cond (build2 (GT_EXPR, boolean_type_node, iterator,
 			       build_int_cst (TREE_TYPE (iterator), -1)),
 		       for_stmt, false);

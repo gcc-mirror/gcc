@@ -14974,7 +14974,7 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree orig_declv,
   if (init && TREE_CODE (init) == DECL_EXPR)
     {
       /* We need to jump through some hoops to handle declarations in the
-	 for-init-statement, since we might need to handle auto deduction,
+	 init-statement, since we might need to handle auto deduction,
 	 but we need to keep control of initialization.  */
       decl_expr = init;
       init = DECL_INITIAL (DECL_EXPR_DECL (init));
@@ -15359,7 +15359,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case FOR_STMT:
       stmt = begin_for_stmt (NULL_TREE, NULL_TREE);
       RECUR (FOR_INIT_STMT (t));
-      finish_for_init_stmt (stmt);
+      finish_init_stmt (stmt);
       tmp = RECUR (FOR_COND (t));
       finish_for_cond (tmp, stmt, false);
       tmp = RECUR (FOR_EXPR (t));
