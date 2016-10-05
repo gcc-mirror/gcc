@@ -1,3 +1,11 @@
+2016-10-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/dtio_15.f90: Fix spaces in dg-do.
+	* gfortran.dg/class_array_20.f03: Likewise.
+	* gfortran.dg/class_array_21.f03: Likewise.
+	* gfortran.dg/finalize_29.f08: Likewise.
+	* gfortran.dg/unlimited_polymorphic_23.f90: Likewise.
+
 2016-10-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77826
