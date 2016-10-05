@@ -733,6 +733,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 	if (l != 0)
 	  break;
 	s += sizeof(unsigned long);
+	/* FALLTHROUGH */
       case 2:
 	l = u.l[i++];
 	if (l != 0)
