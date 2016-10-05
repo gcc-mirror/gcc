@@ -1,4 +1,4 @@
-! {dg-do run}
+! { dg-do run }
 !
 ! Test contributed by Thomas L. Clune via pr60322
 !                  and Antony Lewis via pr64692

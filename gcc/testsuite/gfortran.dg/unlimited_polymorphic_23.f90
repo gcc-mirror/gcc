@@ -1,4 +1,4 @@
-! {dg-do run }
+! { dg-do run }
 !
 ! Test the fix for PR65024, in which the structure for the 'info'
 ! component of type 'T' was not being converted into TREE_SSA and

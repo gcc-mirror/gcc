@@ -1,4 +1,4 @@
-! {dg-do run }
+! { dg-do run }
 ! Test that inquire of string internal unit in child process errors.
 module string_m
   implicit none

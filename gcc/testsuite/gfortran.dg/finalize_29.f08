@@ -1,4 +1,4 @@
-! {dg-do run}
+! { dg-do run }
 !
 ! Testcase contributed by Andre Vehreschild  <vehre@gcc.gnu.org>
 
