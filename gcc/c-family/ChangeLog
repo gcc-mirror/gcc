@@ -1,5 +1,9 @@
 2016-10-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/77823
+	* c-ubsan.c (ubsan_instrument_shift): Return NULL_TREE if type0
+	is not integral.
+
 	* c-common.c (c_common_reswords): Update comment for C++11.
 
 2016-10-04  Jason Merrill  <jason@redhat.com>
