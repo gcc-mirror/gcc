@@ -161,7 +161,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       map()
 #if __cplusplus >= 201103L
-      noexcept(is_nothrow_default_constructible<allocator_type>::value)
+      noexcept(is_nothrow_default_constructible<allocator_type>::value
+               && is_nothrow_default_constructible<key_compare>::value)
 #endif
       : _M_t() { }
 
