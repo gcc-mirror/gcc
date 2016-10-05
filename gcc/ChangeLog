@@ -1,3 +1,8 @@
+2016-10-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55152
+	* match.pd (min(a,-a) -> -abs(a)): New pattern.
+
 2016-10-04  Ian Lance Taylor  <iant@golang.org>
 
 	* explow.c (allocate_dynamic_stack_space): Call

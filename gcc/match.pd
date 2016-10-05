@@ -1291,6 +1291,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && (! ANY_INTEGRAL_TYPE_P (type)
 	  || TYPE_OVERFLOW_UNDEFINED (type)))
   (abs @0)))
+/* min(a,-a) -> -abs(a).  */
+(simplify
+ (min:c @0 (negate @0))
+ (if (TREE_CODE (type) != COMPLEX_TYPE
+      && (! ANY_INTEGRAL_TYPE_P (type)
+	  || TYPE_OVERFLOW_UNDEFINED (type)))
+  (negate (abs @0))))
 (simplify
  (min @0 @1)
  (switch
