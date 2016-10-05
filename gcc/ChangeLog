@@ -1,3 +1,11 @@
+2016-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77874
+	* config/i386/sse.md (<mask_codefor><code><mode>3<mask_name>):
+	Remove wrong assert.
+	(<floatsuffix>float<sseintvecmodelower><mode>2<mask_name><round_name>:
+	Use <round_constraint> as operand 1 constraint.
+
 2016-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/66343
