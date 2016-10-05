@@ -1,5 +1,10 @@
 2016-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/70101
+	* include/bits/stl_queue.h (priority_queue): Fix allocator-extended
+	constructors.
+	* testsuite/23_containers/priority_queue/allocator.cc: New test.
+
 	PR libstdc++/77864
 	* include/bits/stl_map.h (map::map()): Use nothrow constructibility
 	of comparison function in conditional noexcept.
