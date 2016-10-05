@@ -378,64 +378,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_experimental_not_fn 201406
 
-  /// Generalized negator.
-  template<typename _Fn>
-    class _Not_fn
-    {
-      _Fn _M_fn;
-
-    public:
-      template<typename _Fn2>
-	explicit
-	_Not_fn(_Fn2&& __fn)
-	: _M_fn(std::forward<_Fn2>(__fn)) { }
-
-      _Not_fn(const _Not_fn& __fn) = default;
-      _Not_fn(_Not_fn&& __fn) = default;
-      ~_Not_fn() = default;
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) &
-	noexcept(__is_nothrow_callable<_Fn&(_Args&&...)>::value)
-	-> decltype(!std::declval<result_of_t<_Fn&(_Args&&...)>>())
-	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) const &
-	noexcept(__is_nothrow_callable<const _Fn&(_Args&&...)>::value)
-	-> decltype(!std::declval<result_of_t<const _Fn&(_Args&&...)>>())
-	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) &&
-	noexcept(__is_nothrow_callable<_Fn&&(_Args&&...)>::value)
-	-> decltype(!std::declval<result_of_t<_Fn&&(_Args&&...)>>())
-	{
-	  return !std::__invoke(std::move(_M_fn),
-				std::forward<_Args>(__args)...);
-	}
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) const &&
-	noexcept(__is_nothrow_callable<const _Fn&&(_Args&&...)>::value)
-	-> decltype(!std::declval<result_of_t<const _Fn&&(_Args&&...)>>())
-	{
-	  return !std::__invoke(std::move(_M_fn),
-				std::forward<_Args>(__args)...);
-	}
-    };
-
   /// [func.not_fn] Function template not_fn
   template<typename _Fn>
     inline auto
     not_fn(_Fn&& __fn)
     noexcept(std::is_nothrow_constructible<std::decay_t<_Fn>, _Fn&&>::value)
     {
-      return _Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn)};
+      return std::_Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn), 0};
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

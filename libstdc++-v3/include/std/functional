@@ -2139,19 +2139,14 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     swap(function<_Res(_Args...)>& __x, function<_Res(_Args...)>& __y) noexcept
     { __x.swap(__y); }
 
-
-#if __cplusplus > 201402L
-
-#define __cpp_lib_not_fn 201603
-
-    /// Generalized negator.
+#if __cplusplus >= 201402L
+  /// Generalized negator.
   template<typename _Fn>
     class _Not_fn
     {
     public:
       template<typename _Fn2>
-	explicit
-	_Not_fn(_Fn2&& __fn)
+	_Not_fn(_Fn2&& __fn, int)
 	: _M_fn(std::forward<_Fn2>(__fn)) { }
 
       _Not_fn(const _Not_fn& __fn) = default;
@@ -2161,21 +2156,21 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) &
-	noexcept(is_nothrow_callable_v<_Fn&(_Args&&...)>)
+	noexcept(__is_nothrow_callable<_Fn&(_Args&&...)>::value)
 	-> decltype(!std::declval<result_of_t<_Fn&(_Args&&...)>>())
 	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) const &
-	noexcept(is_nothrow_callable_v<const _Fn&(_Args&&...)>)
+	noexcept(__is_nothrow_callable<const _Fn&(_Args&&...)>::value)
 	-> decltype(!std::declval<result_of_t<const _Fn&(_Args&&...)>>())
 	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) &&
-	noexcept(is_nothrow_callable_v<_Fn&&(_Args&&...)>)
+	noexcept(__is_nothrow_callable<_Fn&&(_Args&&...)>::value)
 	-> decltype(!std::declval<result_of_t<_Fn&&(_Args&&...)>>())
 	{
 	  return !std::__invoke(std::move(_M_fn),
@@ -2185,7 +2180,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) const &&
-	noexcept(is_nothrow_callable_v<const _Fn&&(_Args&&...)>)
+	noexcept(__is_nothrow_callable<const _Fn&&(_Args&&...)>::value)
 	-> decltype(!std::declval<result_of_t<const _Fn&&(_Args&&...)>>())
 	{
 	  return !std::__invoke(std::move(_M_fn),
@@ -2195,6 +2190,11 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     private:
       _Fn _M_fn;
     };
+#endif // C++14
+
+#if __cplusplus > 201402L
+
+#define __cpp_lib_not_fn 201603
 
   /// [func.not_fn] Function template not_fn
   template<typename _Fn>
@@ -2202,7 +2202,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     not_fn(_Fn&& __fn)
     noexcept(std::is_nothrow_constructible<std::decay_t<_Fn>, _Fn&&>::value)
     {
-      return _Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn)};
+      return _Not_fn<std::decay_t<_Fn>>{std::forward<_Fn>(__fn), 0};
     }
 
   // Searchers
@@ -2515,7 +2515,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       return std::make_pair(__last, __last);
     }
 
-#endif
+#endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
