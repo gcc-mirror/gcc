@@ -1523,6 +1523,22 @@ default_printf_pointer_format (tree, const char **flags)
   return "%zx";
 }
 
+/* For Glibc and uClibc targets also define the hook here because
+   otherwise it would have to be duplicated in each target's .c file
+   (such as in bfin/bfin.c and c6x/c6x.c, etc.)
+   Glibc and uClibc format pointers as if by "%zx" except for the null
+   pointer which outputs "(nil)".  It ignores the pound ('#') format
+   flag but interprets the space and plus flags the same as in the integer
+   directive.  */
+
+const char*
+linux_printf_pointer_format (tree arg, const char **flags)
+{
+  *flags = " +";
+
+  return arg && integer_zerop (arg) ? "(nil)" : "%#zx";
+}
+
 tree
 default_builtin_tm_load_store (tree ARG_UNUSED (type))
 {
