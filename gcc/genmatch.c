@@ -2194,8 +2194,10 @@ capture_info::walk_c_expr (c_expr *e)
 	    id = (const char *)n->val.str.text;
 	  else
 	    id = (const char *)CPP_HASHNODE (n->val.node.node)->ident.str;
-	  unsigned where = *e->capture_ids->get(id);
-	  info[info[where].same_as].force_no_side_effects_p = true;
+	  unsigned *where = e->capture_ids->get(id);
+	  if (! where)
+	    fatal_at (n, "unknown capture id '%s'", id);
+	  info[info[*where].same_as].force_no_side_effects_p = true;
 	  if (verbose >= 1
 	      && !gimple)
 	    warning_at (t, "capture escapes");

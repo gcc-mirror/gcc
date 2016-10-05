@@ -1,5 +1,11 @@
 2016-10-05  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/77863
+	* genmatch.c (capture_info::walk_c_expr): Diagnose unknown
+	capture ids in c-exprs.
+
+2016-10-05  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/77826
 	* genmatch.c (dt_operand::gen_match_op): Amend operand_equal_p
 	with types_match for GIMPLE code gen to handle type mismatched
