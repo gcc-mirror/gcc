@@ -10,5 +10,5 @@ int main()
     char buf[256];
     unsigned n = 10;
     int* p = new (buf) (int[n]);  // { dg-warning "non-constant array new length must be specified without parentheses around the type-id" }
-    //  { dg-warning "ISO C\\+\\+ forbids variable length array" "vla warning" { target *-*-* } 12 }
+    //  { dg-warning "ISO C\\+\\+ forbids variable length array" "vla warning" { target *-*-* } .-1 }
 }

@@ -1,5 +1,10 @@
 2016-10-04  Martin Sebor  <msebor@redhat.com>
 
+	* g++.dg/warn/Wplacement-new-size-4.C: Use relative line number
+	references.
+
+2016-10-04  Martin Sebor  <msebor@redhat.com>
+
 	Backport from trunk.
 	* lib/gcc-dg.exp (process-message): Support relative line number
 	notation - .+4 or .-1 etc.
