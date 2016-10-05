@@ -1,3 +1,9 @@
+2016-10-05  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/crtbegin.S (__do_jv_register_classes): Remove.
+	(.section .init_array): Don't call __do_jv_register_classes.
+	(.section .init): Likewise.
+
 2016-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/cygming-crtbegin.c (_Jv_RegisterClasses): Remove.
