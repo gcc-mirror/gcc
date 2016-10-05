@@ -87,7 +87,8 @@ test04()
 void
 test05()
 {
-  auto nf{ std::not_fn([] { return false; }) };
+  auto nf = std::not_fn([] { return false; });
+  auto copy(nf); // PR libstdc++/70564
 }
 
 int

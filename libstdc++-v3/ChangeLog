@@ -1,5 +1,9 @@
 2016-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/70564
+	* testsuite/20_util/not_fn/1.cc: Fix test.
+	* testsuite/experimental/functional/not_fn.cc: Likewise.
+
 	PR libstdc++/70101
 	* include/bits/stl_queue.h (priority_queue): Fix allocator-extended
 	constructors.
