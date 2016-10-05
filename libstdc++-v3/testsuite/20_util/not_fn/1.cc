@@ -84,6 +84,12 @@ test04()
   VERIFY( not_fn(f)(d) );
 }
 
+void
+test05()
+{
+  auto nf{ std::not_fn([] { return false; }) };
+}
+
 int
 main()
 {
@@ -91,4 +97,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }
