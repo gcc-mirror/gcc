@@ -1,3 +1,7 @@
+2016-10-05  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (finish_compound_literal): Handle class placeholder.
+
 2016-10-05  Marek Polacek  <polacek@redhat.com>
 
 	Implement P0305R1, Selection statements with initializer.
