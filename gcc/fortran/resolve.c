@@ -8304,6 +8304,18 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   /* Mark this as an associate variable.  */
   sym->attr.associate_var = 1;
 
+  /* Fix up the type-spec for CHARACTER types.  */
+  if (sym->ts.type == BT_CHARACTER && !sym->attr.select_type_temporary)
+    {
+      if (!sym->ts.u.cl)
+	sym->ts.u.cl = target->ts.u.cl;
+
+      if (!sym->ts.u.cl->length)
+	sym->ts.u.cl->length
+	  = gfc_get_int_expr (gfc_default_integer_kind,
+			      NULL, target->value.character.length);
+    }
+
   /* If the target is a good class object, so is the associate variable.  */
   if (sym->ts.type == BT_CLASS && gfc_expr_attr (target).class_ok)
     sym->attr.class_ok = 1;
@@ -11577,7 +11589,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   if (!deferred_requirements (sym))
     return false;
 
-  if (sym->ts.type == BT_CHARACTER)
+  if (sym->ts.type == BT_CHARACTER && !sym->attr.associate_var)
     {
       /* Make sure that character string variables with assumed length are
 	 dummy arguments.  */
