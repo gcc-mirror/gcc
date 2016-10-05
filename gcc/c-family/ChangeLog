@@ -1,3 +1,9 @@
+2016-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (c_common_truthvalue_conversion): Warn also for suspicious
+	conditional expression in boolean context when only one arm is
+	non-boolean.
+
 2016-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/77823
