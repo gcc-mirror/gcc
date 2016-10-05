@@ -7142,7 +7142,16 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len, int off)
 	    offset += byte % UNITS_PER_WORD;
 	}
       else
-	offset = BYTES_BIG_ENDIAN ? 3 - byte : byte;
+	{
+	  offset = byte;
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      /* Reverse bytes within each long, or within the entire float
+		 if it's smaller than a long (for HFmode).  */
+	      offset = MIN (3, total_bytes - 1) - offset;
+	      gcc_assert (offset >= 0);
+	    }
+	}
       offset = offset + ((bitpos / BITS_PER_UNIT) & ~3);
       if (offset >= off
 	  && offset - off < len)

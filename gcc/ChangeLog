@@ -1,3 +1,8 @@
+2016-10-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* fold-const.c (native_encode_real): Fix logic for selecting offset
+	to write to when BYTES_BIG_ENDIAN.
+
 2016-10-05  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* builtins.c (fold_builtin_strchr): Remove function.
