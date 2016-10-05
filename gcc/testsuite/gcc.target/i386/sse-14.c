@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512dq -mavx512bw -mavx512vl -mavx512ifma -mavx512vbmi -mclwb -mpcommit -mmwaitx -mclzero" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512dq -mavx512bw -mavx512vl -mavx512ifma -mavx512vbmi -mclwb -mmwaitx -mclzero" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>

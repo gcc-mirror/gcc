@@ -4212,7 +4212,6 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, int ix86_flags,
     { "-mxsaves",	OPTION_MASK_ISA_XSAVES },
     { "-mmpx",          OPTION_MASK_ISA_MPX },
     { "-mclwb",		OPTION_MASK_ISA_CLWB },
-    { "-mpcommit",	OPTION_MASK_ISA_PCOMMIT },
     { "-mmwaitx",	OPTION_MASK_ISA_MWAITX  },
     { "-mclzero",	OPTION_MASK_ISA_CLZERO  },
     { "-mpku",		OPTION_MASK_ISA_PKU  },
@@ -4800,11 +4799,10 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX512IFMA		(HOST_WIDE_INT_1 << 53)
 #define PTA_AVX512VBMI		(HOST_WIDE_INT_1 << 54)
 #define PTA_CLWB		(HOST_WIDE_INT_1 << 55)
-#define PTA_PCOMMIT		(HOST_WIDE_INT_1 << 56)
-#define PTA_MWAITX		(HOST_WIDE_INT_1 << 57)
-#define PTA_CLZERO		(HOST_WIDE_INT_1 << 58)
-#define PTA_NO_80387		(HOST_WIDE_INT_1 << 59)
-#define PTA_PKU		(HOST_WIDE_INT_1 << 60)
+#define PTA_MWAITX		(HOST_WIDE_INT_1 << 56)
+#define PTA_CLZERO		(HOST_WIDE_INT_1 << 57)
+#define PTA_NO_80387		(HOST_WIDE_INT_1 << 58)
+#define PTA_PKU		(HOST_WIDE_INT_1 << 59)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -5427,9 +5425,6 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & PTA_PREFETCHWT1
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PREFETCHWT1))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PREFETCHWT1;
-	if (processor_alias_table[i].flags & PTA_PCOMMIT
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PCOMMIT))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PCOMMIT;
 	if (processor_alias_table[i].flags & PTA_CLWB
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLWB))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLWB;
@@ -6559,7 +6554,6 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("avx512vbmi",	OPT_mavx512vbmi),
     IX86_ATTR_ISA ("avx512ifma",	OPT_mavx512ifma),
     IX86_ATTR_ISA ("clwb",	OPT_mclwb),
-    IX86_ATTR_ISA ("pcommit",	OPT_mpcommit),
     IX86_ATTR_ISA ("mwaitx",	OPT_mmwaitx),
     IX86_ATTR_ISA ("clzero",    OPT_mclzero),
     IX86_ATTR_ISA ("pku",	OPT_mpku),
