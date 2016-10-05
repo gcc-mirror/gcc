@@ -1,3 +1,8 @@
+2016-10-05  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/torture/pr69941.c: Use __INT32_TYPE__ instead
+	of int if __SIZEOF_INT__ is less than 4 bytes.
+
 2016-10-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/dtio_15.f90: Fix spaces in dg-do.
