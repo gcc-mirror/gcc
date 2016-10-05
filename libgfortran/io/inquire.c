@@ -41,7 +41,9 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
   const char *p;
   GFC_INTEGER_4 cf = iqp->common.flags;
 
-  if (iqp->common.unit == GFC_INTERNAL_UNIT || iqp->common.unit == GFC_INTERNAL_UNIT4)
+  if (iqp->common.unit == GFC_INTERNAL_UNIT ||
+	iqp->common.unit == GFC_INTERNAL_UNIT4 ||
+	u->internal_unit_kind != 0)
     generate_error (&iqp->common, LIBERROR_INQUIRE_INTERNAL_UNIT, NULL);
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)

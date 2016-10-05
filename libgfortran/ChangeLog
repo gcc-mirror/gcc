@@ -1,3 +1,8 @@
+2016-10-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	io/inquire.c (inquire_via_unit): Add check for internal unit
+	passed into child IO procedure.
+
 2016-10-01  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/77663
