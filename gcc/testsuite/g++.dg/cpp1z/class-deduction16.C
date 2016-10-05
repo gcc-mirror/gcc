@@ -1,9 +1,8 @@
 // { dg-options -std=c++1z }
 
-template <class... T>
-struct A
-{
-  template <class...Us> A(Us&&...);
-};
+#include <tuple>
 
-A a(1,2);
+int main()
+{
+  std::tuple y{1,2,3};
+}
