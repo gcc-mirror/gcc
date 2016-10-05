@@ -1,5 +1,7 @@
 2016-10-05  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_skip_to_end_of_statement): Add missing break.
+
 	* semantics.c (finish_compound_literal): Handle class placeholder.
 
 2016-10-05  Marek Polacek  <polacek@redhat.com>
