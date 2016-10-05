@@ -1,3 +1,7 @@
+2016-10-05  Steve Ellcey  <sellcey@caviumnetworks.com>
+
+	* MAINTAINERS: Update email address after it got reverted.
+
 2016-10-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (target_libraries): Readd target-boehm-gc.
