@@ -235,9 +235,6 @@ ubsan_instrument_return (location_t loc)
 {
   if (flag_sanitize_undefined_trap_on_error)
     return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
-  /* It is possible that PCH zapped table with definitions of sanitizer
-     builtins.  Reinitialize them if needed.  */
-  initialize_sanitizer_builtins ();
 
   tree data = ubsan_create_data ("__ubsan_missing_return_data", 1, &loc,
 				 NULL_TREE, NULL_TREE);
