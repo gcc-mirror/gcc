@@ -11,7 +11,11 @@ struct A
 
 int main()
 {
-  const int &r = A().i;
+  {
+    const int &r = A().i;
+    if (d != 0)
+      return 1;
+  }
   if (d != 1)
     return 1;
 }
