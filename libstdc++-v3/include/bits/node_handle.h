@@ -182,10 +182,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       using _AllocTraits = allocator_traits<_NodeAlloc>;
 
-      using _PtrTraits = pointer_traits<typename _NodeAlloc::pointer>;
-
       _Node_handle(typename _AllocTraits::pointer __ptr,
-			   const _NodeAlloc& __alloc)
+		   const _NodeAlloc& __alloc)
       : _Node_handle_common<_Value, _NodeAlloc>(__ptr, __alloc)
       {
 	if (__ptr)
@@ -261,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _AllocTraits = allocator_traits<_NodeAlloc>;
 
       _Node_handle(typename _AllocTraits::pointer __ptr,
-			   const _NodeAlloc& __alloc)
+		   const _NodeAlloc& __alloc)
       : _Node_handle_common<_Value, _NodeAlloc>(__ptr, __alloc) { }
 
       const value_type&
