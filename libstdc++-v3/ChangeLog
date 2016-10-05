@@ -1,5 +1,12 @@
 2016-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/70564
+	* include/experimental/functional (_Not_fn): Add second parameter to
+	disambiguate copying from initialization by not_fn.
+	(not_fn): Add second argument to initialization.
+	* testsuite/experimental/functional/not_fn.cc: Copy call wrapper using
+	direct-initialization. Test abstract class.
+
 	PR libstdc++/77864
 	* include/bits/stl_map.h (map::map()): Use nothrow constructibility
 	of comparison function in conditional noexcept.
