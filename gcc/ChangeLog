@@ -1,3 +1,8 @@
+2016-10-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77842
+	* genmatch.c (parser::parse_c_expr): Handle premature EOF.
+
 2016-10-05  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (dwarf2out_imported_module_or_decl): Move DWARF
