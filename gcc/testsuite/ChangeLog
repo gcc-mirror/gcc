@@ -1,3 +1,9 @@
+2016-10-05  Steven G. Kargl  <kargls@gcc.gnu.org>
+
+	PR fortran/58991
+	PR fortran/58992
+	* gfortran.dg/associate_22.f90: New test.
+
 2016-10-04  Martin Sebor  <msebor@redhat.com>
 
 	* g++.dg/warn/Wplacement-new-size-4.C: Use relative line number
