@@ -145,9 +145,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  Default constructor creates no elements.
        */
       multiset()
-#if __cplusplus >= 201103L
-      noexcept(is_nothrow_default_constructible<allocator_type>::value)
-#endif
+      _GLIBCXX_NOEXCEPT_IF(
+	  is_nothrow_default_constructible<allocator_type>::value
+	  && is_nothrow_default_constructible<key_compare>::value)
       : _M_t() { }
 
       /**

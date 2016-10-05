@@ -1,5 +1,20 @@
 2016-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/77864
+	* include/bits/stl_map.h (map::map()): Use nothrow constructibility
+	of comparison function in conditional noexcept.
+	* include/bits/stl_multimap.h (multimap::multimap()): Likewise.
+	* include/bits/stl_multiset.h (multiset::multiset()): Likewise.
+	* include/bits/stl_set.h (set::set()): Likewise.
+	* testsuite/23_containers/map/cons/noexcept_default_construct.cc:
+	New test.
+	* testsuite/23_containers/multimap/cons/noexcept_default_construct.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/cons/noexcept_default_construct.cc:
+	Likewise.
+	* testsuite/23_containers/set/cons/noexcept_default_construct.cc:
+	Likewise.
+
 	* include/bits/node_handle.h (_Node_handle): Remove invalid and unused
 	alias declaration.
 
