@@ -13886,7 +13886,10 @@ resolve_symbol (gfc_symbol *sym)
 	  /* The specific case of an external procedure should emit an error
 	     in the case that there is no implicit type.  */
 	  if (!mp_flag)
-	    gfc_set_default_type (sym, sym->attr.external, NULL);
+	    {
+	      if (!sym->attr.mixed_entry_master)
+		gfc_set_default_type (sym, sym->attr.external, NULL);
+	    }
 	  else
 	    {
 	      /* Result may be in another namespace.  */
