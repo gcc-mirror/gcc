@@ -1,3 +1,11 @@
+2016-10-04  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/77847
+	* lex.c (search_line_fast): Add a FALLTHROUGH comment to correct
+	compiler error in the version of this function that is
+	conditionally compiled when GCC_VERSION >= 4005 and both
+	__ALTIVEC__ and __BIG_ENDIAN__ symbols are defined.
+
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
