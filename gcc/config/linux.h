@@ -209,6 +209,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif
 
-/* The format string to which "%p" corresponds.  */
+/* The format string to which "%p" corresponds (same in Glibc and
+   uClibc.  */
 #undef TARGET_PRINTF_POINTER_FORMAT
-#define TARGET_PRINTF_POINTER_FORMAT gnu_libc_printf_pointer_format
+#define TARGET_PRINTF_POINTER_FORMAT linux_printf_pointer_format

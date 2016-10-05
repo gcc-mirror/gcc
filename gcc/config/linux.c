@@ -24,9 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "linux-protos.h"
 
-#undef TARGET_PRINTF_POINTER_FORMAT
-#define TARGET_PRINTF_POINTER_FORMAT gnu_libc_printf_pointer_format
-
 bool
 linux_libc_has_function (enum function_class fn_class)
 {
@@ -39,17 +36,4 @@ linux_libc_has_function (enum function_class fn_class)
 	return true;
 
   return false;
-}
-
-/* Glibc formats pointers as if by "%zx" except for the null pointer
-   which outputs "(nil)".  It ignores the pound ('#') format flag but
-   interprets the space and plus flags the same as in the integer
-   directive.  */
-
-const char*
-gnu_libc_printf_pointer_format (tree arg, const char **flags)
-{
-  *flags = " +";
-
-  return arg && integer_zerop (arg) ? "(nil)" : "%#zx";
 }

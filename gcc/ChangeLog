@@ -1,3 +1,14 @@
+2016-10-05  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/77819
+	* config/linux.h (TARGET_PRINTF_POINTER_FORMAT): Define macro.
+	* config/linux.c (gnu_libc_printf_pointer_format): Remove.
+	* targhooks.c [DEFAULT_LIBC == LIBC_UCLIBC) && SINGLE_LIBC]
+	(default_printf_pointer_format): Define function.
+	* targhooks.c (linux_printf_pointer_format): Define new function.
+	* targhooks.h (linux_printf_pointer_format): Declare.
+	(gnu_libc_printf_pointer_format): Remove declaration.
+
 2016-10-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* fold-const.c (native_encode_real): Fix logic for selecting offset
