@@ -1,5 +1,8 @@
 2016-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/node_handle.h (_Node_handle): Remove invalid and unused
+	alias declaration.
+
 	PR libstdc++/70564
 	* include/experimental/functional (_Not_fn): Remove.
 	(not_fn): Use std::_Not_fn.
