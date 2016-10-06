@@ -6365,6 +6365,22 @@ build_temp (tree expr, tree type, int flags,
   int savew, savee;
   vec<tree, va_gc> *args;
 
+  *diagnostic_kind = DK_UNSPECIFIED;
+
+  if (TREE_CODE (expr) == CONSTRUCTOR)
+    expr = get_target_expr_sfinae (expr, complain);
+  if (early_elide_copy (type, expr))
+    return expr;
+
+  /* If the source is a packed field, calling the copy constructor will require
+     binding the field to the reference parameter to the copy constructor, and
+     we'll end up with an infinite loop.  If we can use a bitwise copy, then
+     do that now.  */
+  if ((lvalue_kind (expr) & clk_packed)
+      && CLASS_TYPE_P (TREE_TYPE (expr))
+      && !type_has_nontrivial_copy_init (TREE_TYPE (expr)))
+    return get_target_expr_sfinae (expr, complain);
+
   savew = warningcount + werrorcount, savee = errorcount;
   args = make_tree_vector_single (expr);
   expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
@@ -6374,8 +6390,6 @@ build_temp (tree expr, tree type, int flags,
     *diagnostic_kind = DK_WARNING;
   else if (errorcount > savee)
     *diagnostic_kind = DK_ERROR;
-  else
-    *diagnostic_kind = DK_UNSPECIFIED;
   return expr;
 }
 
@@ -6778,10 +6792,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	flags |= LOOKUP_ONLYCONVERTING;
       if (convs->rvaluedness_matches_p)
 	flags |= LOOKUP_PREFER_RVALUE;
-      if (TREE_CODE (expr) == TARGET_EXPR
-	  && TARGET_EXPR_LIST_INIT_P (expr))
-	/* Copy-list-initialization doesn't actually involve a copy.  */
-	return expr;
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
       if (diag_kind && complain)
 	{
@@ -7068,7 +7078,12 @@ build_x_va_arg (source_location loc, tree expr, tree type)
       return convert_from_reference (expr);
     }
 
-  return build_va_arg (loc, expr, type);
+  tree ret = build_va_arg (loc, expr, type);
+  if (CLASS_TYPE_P (type))
+    /* Wrap the VA_ARG_EXPR in a TARGET_EXPR now so other code doesn't need to
+       know how to handle it.  */
+    ret = get_target_expr (ret);
+  return ret;
 }
 
 /* TYPE has been given to va_arg.  Apply the default conversions which
@@ -7805,6 +7820,15 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	arg = targ;
       else
 	arg = cp_build_indirect_ref (arg, RO_NULL, complain);
+
+      /* In C++17 we shouldn't be copying a TARGET_EXPR except into a base
+	 subobject.  */
+      if (CHECKING_P && cxx_dialect >= cxx1z)
+	gcc_assert (TREE_CODE (arg) != TARGET_EXPR
+		    // FIXME we shouldn't copy for direct-init either
+		    || !(flags & LOOKUP_ONLYCONVERTING)
+		    /* See unsafe_copy_elision_p.  */
+		    || DECL_BASE_CONSTRUCTOR_P (fn));
 
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */

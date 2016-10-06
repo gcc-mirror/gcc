@@ -14,3 +14,12 @@ A a2 = (42, A());
 A f();
 A a3 = f();
 A a4 = b ? A() : f();
+
+void g(A);
+A f() {
+  g(A());
+  if (b)
+    throw A();
+  else
+    return A();
+}

@@ -1,3 +1,16 @@
+2016-10-06  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_temp, convert_like_real): Don't re-copy
+	TARGET_EXPR.  Handle packed fields.
+	(build_x_va_arg): Wrap it in a TARGET_EXPR.
+	(build_over_call): Add sanity check.
+	* cvt.c (early_elide_copy): New.
+	(ocp_convert): Use it.
+	* except.c (build_throw): Use it.
+	* init.c (get_nsdmi): Put back the TARGET_EXPR.
+	(expand_default_init): Call early_elide_copy.
+	* typeck.c (cp_build_modify_expr): Call early_elide_copy.
+
 2016-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Implement P0258R2 - helper for C++17

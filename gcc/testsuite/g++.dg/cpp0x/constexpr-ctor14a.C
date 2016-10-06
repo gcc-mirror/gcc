@@ -8,7 +8,7 @@ struct A
 };
 
 constexpr A a;
-constexpr A b = A();		// { dg-error "" }
+constexpr A b = A();		// { dg-error "" "" { target c++14_down } }
 
 #define SA(X) static_assert ((X), #X)
 SA(a.p == &a);

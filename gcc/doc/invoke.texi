@@ -2325,7 +2325,11 @@ release of G++.
 The C++ standard allows an implementation to omit creating a temporary
 that is only used to initialize another object of the same type.
 Specifying this option disables that optimization, and forces G++ to
-call the copy constructor in all cases.
+call the copy constructor in all cases.  This option also causes G++
+to call trivial member functions which otherwise would be expanded inline.
+
+In C++17, the compiler is required to omit these temporaries, but this
+option still affects trivial member functions.
 
 @item -fno-enforce-eh-specs
 @opindex fno-enforce-eh-specs

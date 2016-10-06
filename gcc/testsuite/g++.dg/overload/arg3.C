@@ -11,12 +11,12 @@ struct A {};
 struct B : A
 {
   B(int);
-  B(B&);  // { dg-message "note" "" }
+  B(B&);  // { dg-message "note" "" { target c++14_down } }
 };
 
-void foo(B);			// { dg-message "initializing" }
+void foo(B);			// { dg-message "initializing" "" { target c++14_down } }
 
 void bar()
 {
-  foo(0); // { dg-error "" }
+  foo(0); // { dg-error "" "" { target c++14_down } }
 }
