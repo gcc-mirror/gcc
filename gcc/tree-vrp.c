@@ -10666,7 +10666,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  && gimple_code (stmt) == GIMPLE_COND
 	  && (op0 = gimple_cond_lhs (stmt))
 	  && TREE_CODE (op0) == SSA_NAME
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt))))
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)))
+	      || POINTER_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)))))
 	{
 	  /* Entering a new scope.  Try to see if we can find a VR
 	     here.  */

@@ -1,3 +1,8 @@
+2016-10-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* tree-vrp.c (evrp_dom_walker::before_dom_children): Handle
+	  POINTER_TYPE_P.
+
 2016-10-05  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71661
