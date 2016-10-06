@@ -840,6 +840,11 @@ remove_forwarder_block_with_phi (basic_block bb)
   if (dest == bb)
     return false;
 
+  /* Removal of forwarders may expose new natural loops and thus
+     a block may turn into a loop header.  */
+  if (current_loops && bb_loop_header_p (bb))
+    return false;
+
   /* If the destination block consists of a nonlocal label, do not
      merge it.  */
   label = first_stmt (dest);
