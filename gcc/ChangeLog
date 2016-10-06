@@ -1,3 +1,10 @@
+2016-10-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (andnot<mode>3): Add FALLTHRU comments.
+	Introduce ssesuffix variable.
+	(<mask_codefor><code><mode>3<mask_name>): Ditto.
+	(*<code><mode>3): Ditto.
+
 2016-10-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* postreload.c (reload_cse_simplify): Skip also USE when detecting
