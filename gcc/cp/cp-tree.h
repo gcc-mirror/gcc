@@ -723,6 +723,7 @@ enum cp_trait_kind
   CPTK_HAS_TRIVIAL_CONSTRUCTOR,
   CPTK_HAS_TRIVIAL_COPY,
   CPTK_HAS_TRIVIAL_DESTRUCTOR,
+  CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS,
   CPTK_HAS_VIRTUAL_DESTRUCTOR,
   CPTK_IS_ABSTRACT,
   CPTK_IS_BASE_OF,
@@ -1713,6 +1714,8 @@ struct GTY(()) lang_type_class {
   unsigned has_complex_move_ctor : 1;
   unsigned has_complex_move_assign : 1;
   unsigned has_constexpr_ctor : 1;
+  unsigned unique_obj_representations : 1;
+  unsigned unique_obj_representations_set : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1721,7 +1724,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 4;
+  unsigned dummy : 2;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -2009,6 +2012,16 @@ struct GTY(()) lang_type {
 /* Nonzero means that this class type is a non-standard-layout class.  */
 #define CLASSTYPE_NON_STD_LAYOUT(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->non_std_layout)
+
+/* Nonzero means that this class type does have unique object
+   representations.  */
+#define CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->unique_obj_representations)
+
+/* Nonzero means that this class type has
+   CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS computed.  */
+#define CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS_SET(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->unique_obj_representations_set)
 
 /* Nonzero means that this class contains pod types whose default
    initialization is not a zero initialization (namely, pointers to
@@ -6480,6 +6493,7 @@ extern bool layout_pod_type_p			(const_tree);
 extern bool std_layout_type_p			(const_tree);
 extern bool trivial_type_p			(const_tree);
 extern bool trivially_copyable_p		(const_tree);
+extern bool type_has_unique_obj_representations (const_tree);
 extern bool scalarish_type_p			(const_tree);
 extern bool type_has_nontrivial_default_init	(const_tree);
 extern bool type_has_nontrivial_copy_init	(const_tree);

@@ -2561,6 +2561,9 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
       pp_cxx_ws_string (pp, "__has_trivial_destructor");
       break;
+    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
+      pp_cxx_ws_string (pp, "__has_unique_object_representations");
+      break;
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
       pp_cxx_ws_string (pp, "__has_virtual_destructor");
       break;
