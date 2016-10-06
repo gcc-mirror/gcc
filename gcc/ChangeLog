@@ -1,3 +1,13 @@
+2016-10-06  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/77788
+	* expmed.h (mul_highpart_cost_ptr): Add an gcc_assert.
+	* gimple-ssa-strength-reduction.c (slsr_process_cast):
+	Initialize a pointer to NULL.
+	(slsr_process_copy): Likewise.
+	* input.c (location_get_source_line): Likewise.
+	* tree-ssa-ccp.c (optimize_atomic_bit_test_and): Likewise.
+
 2016-10-05  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PCOMMIT_UNSET,

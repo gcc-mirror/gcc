@@ -2817,7 +2817,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
   FOR_EACH_IMM_USE_STMT (g, iter, use_lhs)
     {
       enum tree_code code = ERROR_MARK;
-      tree op0, op1;
+      tree op0 = NULL_TREE, op1 = NULL_TREE;
       if (is_gimple_debug (g))
 	{
 	  has_debug_uses = true;
