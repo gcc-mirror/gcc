@@ -2048,6 +2048,9 @@ Gcc_backend::stack_allocation_expression(int64_t size, Location location)
   tree alloca = builtin_decl_explicit(BUILT_IN_ALLOCA);
   tree size_tree = build_int_cst(integer_type_node, size);
   tree ret = build_call_expr_loc(location.gcc_location(), alloca, 1, size_tree);
+  tree memset = builtin_decl_explicit(BUILT_IN_MEMSET);
+  ret = build_call_expr_loc(location.gcc_location(), memset, 3,
+                            ret, integer_zero_node, size_tree);
   return this->make_expression(ret);
 }
 
