@@ -1529,7 +1529,7 @@ static void
 slsr_process_cast (gimple *gs, tree rhs1, bool speed)
 {
   tree lhs, ctype;
-  slsr_cand_t base_cand, c, c2;
+  slsr_cand_t base_cand, c = NULL, c2;
   unsigned savings = 0;
 
   if (!legal_cast_p (gs, rhs1))
@@ -1593,7 +1593,7 @@ slsr_process_cast (gimple *gs, tree rhs1, bool speed)
 static void
 slsr_process_copy (gimple *gs, tree rhs1, bool speed)
 {
-  slsr_cand_t base_cand, c, c2;
+  slsr_cand_t base_cand, c = NULL, c2;
   unsigned savings = 0;
 
   base_cand = base_cand_from_table (rhs1);

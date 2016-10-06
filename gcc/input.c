@@ -713,7 +713,7 @@ const char *
 location_get_source_line (const char *file_path, int line,
 			  int *line_len)
 {
-  char *buffer;
+  char *buffer = NULL;
   ssize_t len;
 
   if (line == 0)
