@@ -7616,6 +7616,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	}
       else if (! MAYBE_CLASS_TYPE_P (lhstype))
 	/* Do the default thing.  */;
+      else if (early_elide_copy (lhstype, rhs))
+	/* Do the default thing.  */;
       else
 	{
 	  vec<tree, va_gc> *rhs_vec = make_tree_vector_single (rhs);

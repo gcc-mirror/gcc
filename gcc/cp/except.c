@@ -683,7 +683,7 @@ build_throw (tree exp)
       object = cp_build_indirect_ref (object, RO_NULL, tf_warning_or_error);
 
       /* And initialize the exception object.  */
-      if (CLASS_TYPE_P (temp_type))
+      if (CLASS_TYPE_P (temp_type) && !early_elide_copy (temp_type, exp))
 	{
 	  int flags = LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING;
 	  vec<tree, va_gc> *exp_vec;

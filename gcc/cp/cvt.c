@@ -658,6 +658,27 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
   return result;
 }
 
+/* Returns true if we should avoid even doing overload resolution for copying
+   EXPR to initialize a TYPE.  */
+
+bool
+early_elide_copy (tree type, tree expr)
+{
+  if (TREE_CODE (expr) != TARGET_EXPR)
+    return false;
+  /* List-initialization and direct-initialization don't involve a copy.  */
+  if (TARGET_EXPR_LIST_INIT_P (expr)
+      || TARGET_EXPR_DIRECT_INIT_P (expr))
+    return true;
+  /* In C++17, "If the initializer expression is a prvalue and the
+     cv-unqualified version of the source type is the same class as the class
+     of the destination, the initializer expression is used to initialize the
+     destination object."  */
+  return (cxx_dialect >= cxx1z
+	  && (same_type_ignoring_top_level_qualifiers_p
+	      (type, TREE_TYPE (expr))));
+}
+
 /* Conversion...
 
    FLAGS indicates how we should behave.  */
@@ -694,10 +715,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
     return error_mark_node;
 
   if (MAYBE_CLASS_TYPE_P (type) && (convtype & CONV_FORCE_TEMP)
-      && !(cxx_dialect >= cxx1z
-	   && TREE_CODE (e) == TARGET_EXPR))
-    /* We need a new temporary; don't take this shortcut.  But in C++17, don't
-       force a temporary if we already have one.  */;
+      && !early_elide_copy (type, e))
+    /* We need a new temporary; don't take this shortcut.  */;
   else if (same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (e)))
     {
       if (same_type_p (type, TREE_TYPE (e)))
