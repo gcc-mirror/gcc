@@ -40,18 +40,28 @@
 
 /* V8 Architecture Processors.  */
 
+/* ARM ('A') cores. */
 AARCH64_CORE("cortex-a35",  cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa35, "0x41", "0xd04")
 AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa53, "0x41", "0xd03")
 AARCH64_CORE("cortex-a57",  cortexa57, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, "0x41", "0xd07")
 AARCH64_CORE("cortex-a72",  cortexa72, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, "0x41", "0xd08")
 AARCH64_CORE("cortex-a73",  cortexa73, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, "0x41", "0xd09")
+
+/* Samsung ('S') cores. */
 AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, exynosm1,  "0x53", "0x001")
+
+/* Qualcomm ('Q') cores. */
 AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   "0x51", "0x800")
+
+/* Cavium ('C') cores. */
 AARCH64_CORE("thunderx",    thunderx,  thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  "0x43", "0x0a1")
+
+/* APM ('P') cores. */
 AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xgene1, "0x50", "0x000")
 
 /* V8.1 Architecture Processors.  */
 
+/* Broadcom ('B') cores. */
 AARCH64_CORE("vulcan",  vulcan, cortexa57, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, vulcan, "0x42", "0x516")
 
 /* V8 big.LITTLE implementations.  */

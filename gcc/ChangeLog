@@ -1,3 +1,8 @@
+2016-10-06  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-cores.def: Add a comment before each
+	set of cores.
+
 2016-10-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR tree-optimization/77862
