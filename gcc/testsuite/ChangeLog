@@ -1,3 +1,8 @@
+2016-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77839
+	* gcc.dg/torture/pr77839.c: New testcase.
+
 2016-10-06  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp1z/init-statement9.C: New test.
