@@ -1,3 +1,9 @@
+2016-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77839
+	* tree-ssa-sccvn.c (set_ssa_val_to): Forbid value -> constant value
+	lattice transition.
+
 2016-10-06  Martin Liska  <mliska@suse.cz>
 
 	* gcc.c: Set -fprofile-update=atomic when profiling is
