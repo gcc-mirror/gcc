@@ -9092,6 +9092,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
       return type_has_virtual_destructor (type1);
 
+    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
+      return type_has_unique_obj_representations (type1);
+
     case CPTK_IS_ABSTRACT:
       return (ABSTRACT_CLASS_TYPE_P (type1));
 
@@ -9199,6 +9202,7 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_HAS_NOTHROW_COPY:
     case CPTK_HAS_TRIVIAL_COPY:
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
+    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
     case CPTK_IS_ABSTRACT:
     case CPTK_IS_EMPTY:

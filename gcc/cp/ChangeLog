@@ -1,3 +1,24 @@
+2016-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement P0258R2 - helper for C++17
+	std::has_unique_object_representations trait
+	* cp-tree.h (enum cp_trait_kind): Add
+	CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS.
+	(struct lang_type_class): Add unique_obj_representations
+	and unique_obj_representations_set bitfields.
+	(CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS,
+	CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS_SET): Define.
+	(type_has_unique_obj_representations): Declare.
+	* parser.c (cp_parser_primary_expression): Handle
+	RID_HAS_UNIQUE_OBJ_REPRESENTATIONS.
+	(cp_parser_trait_expr): Likewise.  Formatting fix.
+	* semantics.c (trait_expr_value, finish_trait_expr): Handle
+	CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS.
+	* tree.c (type_has_unique_obj_representations): New function.
+	(record_has_unique_obj_representations): New function.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Handle
+	CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS.
+
 2016-10-05  Jason Merrill  <jason@redhat.com>
 
 	Implement P0135R1, Guaranteed copy elision.
