@@ -1,3 +1,8 @@
+2016-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77855
+	* gcc.dg/torture/pr77855.c: New testcase.
+
 2016-10-06  James Clarke  <jrtc27@jrtc27.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 

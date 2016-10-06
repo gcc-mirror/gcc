@@ -1,3 +1,10 @@
+2016-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77855
+	* tree-ssa-pre.c (prune_clobbered_mems): Queue exprs to remove
+	instead of removing the current item while iterating over the set
+	which is not safe.
+
 2016-10-06  James Clarke  <jrtc27@jrtc27.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
