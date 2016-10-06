@@ -1,5 +1,12 @@
 2016-10-06  Martin Liska  <mliska@suse.cz>
 
+	* gcc.c: Set -fprofile-update=atomic when profiling is
+	enabled and -pthread is set.  Warn when one combines
+	-pthread and -fprofile-update=single for an app using
+	profiling code.
+
+2016-10-06  Martin Liska  <mliska@suse.cz>
+
 	PR bootstrap/77788
 	* expmed.h (mul_highpart_cost_ptr): Add an gcc_assert.
 	* gimple-ssa-strength-reduction.c (slsr_process_cast):
