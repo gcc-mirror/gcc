@@ -1,3 +1,8 @@
+2016-10-06  James Clarke  <jrtc27@jrtc27.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/pr77759.C: New test.
+
 2016-10-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77839

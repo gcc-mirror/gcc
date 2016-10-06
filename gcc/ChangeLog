@@ -1,3 +1,11 @@
+2016-10-06  James Clarke  <jrtc27@jrtc27.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/77759
+	* config/sparc/sparc.c (classify_data_t): Remove int_regs field.
+	(classify_registers): Don't set it
+	(function_arg_slotno): Don't initialize and test it.  Tidy up.
+
 2016-10-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77839
