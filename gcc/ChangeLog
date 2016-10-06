@@ -1,3 +1,8 @@
+2016-10-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* postreload.c (reload_cse_simplify): Skip also USE when detecting
+	noop move.
+
 2016-10-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77855
