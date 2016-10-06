@@ -1,3 +1,9 @@
+2016-10-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71661
+	* tree-cfgcleanup.c (remove_forwarder_block_with_phi): Handle case when
+	removal of a forwarder exposes a new natural loop.
+
 2016-10-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (andnot<mode>3): Add FALLTHRU comments.
