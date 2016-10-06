@@ -153,7 +153,8 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
 		  value = SET_DEST (part);
 		}
 	    }
-	  else if (GET_CODE (part) != CLOBBER)
+	  else if (GET_CODE (part) != CLOBBER
+		   && GET_CODE (part) != USE)
 	    break;
 	}
 
