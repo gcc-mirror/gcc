@@ -1,5 +1,10 @@
 2016-10-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	PR tree-optimization/77862
+	* gcc.dg/pr77862.c: New test.
+
+2016-10-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* gcc.dg/tree-ssa/evrp4.c: New test.
 
 2016-10-06  Jeff Law  <law@redhat.com>
