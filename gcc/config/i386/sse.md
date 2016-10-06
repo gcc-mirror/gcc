@@ -4889,7 +4889,7 @@
 (define_insn "<floatsuffix>float<sseintvecmodelower><mode>2<mask_name><round_name>"
   [(set (match_operand:VF2_AVX512VL 0 "register_operand" "=v")
 	(any_float:VF2_AVX512VL
-	  (match_operand:<sseintvecmode> 1 "nonimmediate_operand" "vm")))]
+	  (match_operand:<sseintvecmode> 1 "nonimmediate_operand" "<round_constraint>")))]
   "TARGET_AVX512DQ"
   "vcvt<floatsuffix>qq2pd\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
   [(set_attr "type" "ssecvt")
@@ -11529,7 +11529,6 @@
       gcc_assert (TARGET_AVX);
    case MODE_V4SF:
       gcc_assert (TARGET_SSE);
-      gcc_assert (!<mask_applied>);
       tmp = "<logic>ps";
       break;
 
