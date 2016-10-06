@@ -1,5 +1,11 @@
 2016-10-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	PR tree-optimization/77862
+	* tree-vrp.c (add_equivalence): Use get_value_range so that
+	num_vr_values is checked before accessing vr_values.
+
+2016-10-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* tree-vrp.c (evrp_dom_walker::before_dom_children): Handle
 	  POINTER_TYPE_P.
 
