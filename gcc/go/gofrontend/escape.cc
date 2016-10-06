@@ -1215,7 +1215,7 @@ Escape_analysis_assign::expression(Expression** pexpr)
 			     "special treatment of append(slice1, slice2...)");
 
 		  // The content of the original slice leaks as well.
-		  Node* appendee = Node::make_node(call->args()->back());
+		  Node* appendee = Node::make_node(call->args()->front());
 		  this->assign_deref(this->context_->sink(), appendee);
 		}
 		break;
@@ -2086,6 +2086,36 @@ Escape_analysis_assign::assign_deref(Node* dst, Node* src)
 	case Expression::EXPRESSION_IOTA:
 	  // No need to try indirections on literal values
 	  // or numeric constants.
+	  return;
+
+	case Expression::EXPRESSION_FIXED_ARRAY_CONSTRUCTION:
+	case Expression::EXPRESSION_SLICE_CONSTRUCTION:
+	case Expression::EXPRESSION_STRUCT_CONSTRUCTION:
+	  {
+	    // Dereferencing an array, slice, or struct is like accessing each
+	    // of its values.  In this situation, we model the flow from src to
+	    // dst where src is one of the above as a flow from each of src's
+	    // values to dst.
+	    Expression* e = src->expr();
+	    Expression_list* vals = NULL;
+	    if (e->slice_literal() != NULL)
+	      vals = e->slice_literal()->vals();
+	    else if (e->array_literal() != NULL)
+	      vals = e->array_literal()->vals();
+	    else
+	      vals = e->struct_literal()->vals();
+
+	    if (vals != NULL)
+	      {
+		for (Expression_list::const_iterator p = vals->begin();
+		     p != vals->end();
+		     ++p)
+		  {
+		    if ((*p) != NULL)
+		      this->assign(dst, Node::make_node(*p));
+		  }
+	      }
+	  }
 	  return;
 
 	default:
