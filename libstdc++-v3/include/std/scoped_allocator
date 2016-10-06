@@ -49,21 +49,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   template<typename _Alloc>
-    inline auto
-    __do_outermost(_Alloc& __a, int) -> decltype(__a.outer_allocator())
-    { return __a.outer_allocator(); }
+    using __outer_allocator_t
+      = decltype(std::declval<_Alloc>().outer_allocator());
+
+  template<typename _Alloc, typename = void>
+    struct __outermost_type
+    {
+      using type = _Alloc;
+      static type& _S_outermost(_Alloc& __a) { return __a; }
+    };
 
   template<typename _Alloc>
-    inline _Alloc&
-    __do_outermost(_Alloc& __a, ...)
-    { return __a; }
+    struct __outermost_type<_Alloc, __void_t<__outer_allocator_t<_Alloc>>>
+    : __outermost_type<
+      typename remove_reference<__outer_allocator_t<_Alloc>>::type
+    >
+    {
+      using __base = __outermost_type<
+        typename remove_reference<__outer_allocator_t<_Alloc>>::type
+      >;
 
-  // TODO: make recursive (see note in 20.12.4/1)
+      static typename __base::type&
+      _S_outermost(_Alloc& __a)
+      { return __base::_S_outermost(__a.outer_allocator()); }
+    };
+
   template<typename _Alloc>
-    inline auto
+    inline typename __outermost_type<_Alloc>::type&
     __outermost(_Alloc& __a)
-    -> decltype(__do_outermost(__a, 0))
-    { return __do_outermost(__a, 0); }
+    { return __outermost_type<_Alloc>::_S_outermost(__a); }
 
   template<typename _OuterAlloc, typename... _InnerAllocs>
     class scoped_allocator_adaptor;
@@ -170,12 +184,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::tuple_cat(std::tie(outer_allocator()), _M_inner._M_tie()); }
 
       template<typename _Alloc>
-	using __outermost_type = typename
-	  std::decay<decltype(__outermost(std::declval<_Alloc&>()))>::type;
-
-      template<typename _Alloc>
 	using __outermost_alloc_traits
-	  = allocator_traits<__outermost_type<_Alloc>>;
+	  = allocator_traits<typename __outermost_type<_Alloc>::type>;
 
       template<typename _Tp, typename... _Args>
         void
@@ -225,6 +235,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           _M_inner(_S_select_on_copy(std::get<_Indices+1>(__refs))...)
         { }
 
+      // Used to constrain constructors to disallow invalid conversions.
+      template<typename _Alloc>
+        using _Constructible = typename enable_if<
+            is_constructible<_OuterAlloc, _Alloc>::value
+          >::type;
+
     public:
       typedef _OuterAlloc                       outer_allocator_type;
       typedef typename __inner_type::__type     inner_allocator_type;
@@ -270,7 +286,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       scoped_allocator_adaptor() : _OuterAlloc(), _M_inner() { }
 
-      template<typename _Outer2>
+      template<typename _Outer2, typename = _Constructible<_Outer2>>
         scoped_allocator_adaptor(_Outer2&& __outer,
                                  const _InnerAllocs&... __inner)
         : _OuterAlloc(std::forward<_Outer2>(__outer)),
@@ -287,14 +303,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_inner(std::move(__other._M_inner))
       { }
 
-      template<typename _Outer2>
+      template<typename _Outer2, typename = _Constructible<const _Outer2&>>
         scoped_allocator_adaptor(
             const scoped_allocator_adaptor<_Outer2, _InnerAllocs...>& __other)
         : _OuterAlloc(__other.outer_allocator()),
           _M_inner(__other._M_inner)
         { }
 
-      template<typename _Outer2>
+      template<typename _Outer2, typename = _Constructible<_Outer2>>
         scoped_allocator_adaptor(
             scoped_allocator_adaptor<_Outer2, _InnerAllocs...>&& __other)
         : _OuterAlloc(std::move(__other.outer_allocator())),
