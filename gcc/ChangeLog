@@ -1,3 +1,77 @@
+2016-10-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Split
+	-mfloat128 into -mfloat128-type that enables the IEEE 128-bit
+	floating point type infrastructre, and -mfloat128 that enables the
+	keyword.  Define __FLOAT128__ if -mfloat128, and __FLOAT128_TYPE__
+	if -mfloat128-type.  Define __ibm128 to be long double by default.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print whether
+	the IEEE 128-bit floating point type infrastructure should
+	automatically be enabled.
+	(rs6000_init_hard_regno_mode_ok): Switch to use -mfloat128-type
+	instead of -mfloat128 to enable KFmode.
+	(rs6000_option_override_internal): Split the option -mfloat128
+	into -mfloat128-type and -mfloat128.  On Linux PowerPC 64-bit
+	systems, automatically set -mfloat128-type, but don't enable it on
+	other operating systems.  Move setting the long double size and
+	IEEE quad support before the IEEE 128-bit floating point changes.
+	(rs6000_init_builtins): Do not create a unique type for __ibm128
+	if long double is IBM extended double, instead rely on __ibm128
+	being defined as 'long double'.  If -mfloat128-type and not
+	-mfloat128, create the KFmode type with an undocumented __ieee128
+	keyword.
+	(rs6000_init_libfuncs): Use -mfloat128-type instead of
+	-mfloat128 for tests about the types, but keep tests for
+	-mfloat128 to enable the keyword support.
+	(rs6000_complex_function_value): Likewise.
+	(rs6000_scalar_mode_supported_p): Likewise.
+	(rs6000_floatn_mode): Likewise.
+	(rs6000_c_mode_for_suffix): Likewise.
+	(rs6000_opt_masks): Add -mfloat128-type.
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add support for
+	-mfloat128-type being split from -mfloat128.  Add
+	-mfloat128-hardware, which was missing.
+	* config/rs6000/rs6000.opt (-mfloat128): Split -mfloat128 into
+	-mfloat128 and -mfloat128-type:
+	(-mfloat128-type): Likewise.
+	* config/rs6000/linux64.h (TARGET_FLOAT128_ENABLE_TYPE): Define so
+	that 64-bit Linux systems with enable -mfloat128-type by default
+	on VSX systems.
+	* config/rs6000/rs6000.h (TARGET_FLOAT128_ENABLE_TYPE): Likewise.
+	(FLOAT128_VECTOR_P): Switch IEEE 128-bit floating points to use
+	-mfloat128-type instead of -mfloat128.
+	(FLOAT128_2REG_P): Likewise.
+	(MASK_FLOAT128_TYPE): Likewise.
+	(ALTIVEC_ARG_MAX_RETURN): Likewise.
+	(RS6000_BTM_FLOAT128): Likewise.
+	(TARGET_FLOAT128): Poison old identifiers.
+	(OPTION_MASK_FLOAT128): Likewise.
+	(MASK_FLOAT128): Likewise.
+	* config/rs6000/rs6000.md (FP): Likewise.
+	(FLOAT128): Likewise.
+	(fix_trunc<mode>di2): Likewise.
+	(fixuns_trunc<IEEE128:mode><SDI:mode>2): Likewise.
+	(floatdi<mode>2): Likewise.
+	(floatuns<SDI:mode><IEEE128:mode>2): Likewise.
+	(neg<mode>2, FLOAT128 iterator): Likewise.
+	(abs<mode>2, FLOAT128 iterator): Likewise.
+	(ieee_128bit_negative_zero): Likewise.
+	(ieee_128bit_vsx_neg<mode>2): Likewise.
+	(ieee_128bit_vsx_neg<mode>2_internal): Likewise.
+	(ieee_128bit_vsx_abs<mode>2): Likewise.
+	(ieee_128bit_vsx_abs<mode>2_internal): Likewise.
+	(ieee_128bit_vsx_nabs<mode>2): Likewise.
+	(ieee_128bit_vsx_nabs<mode>2_internal): Likewise.
+	(extendiftf2): Likewise.
+	(extendifkf2): Likewise.
+	(extendtfkf2): Likewise.
+	(trunciftf2): Likewise.
+	(truncifkf2): Likewise.
+	(trunckftf2): Likewise.
+	(trunctfif2): Likewise.
+	(extendkftf2): Likewise.
+	(trunctfkf2): Likewise.
+
 2016-10-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* simplify-rtx.c (simplify_immed_subreg): Zero-initialize tmp array
