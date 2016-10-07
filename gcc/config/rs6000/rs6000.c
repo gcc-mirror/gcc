@@ -34166,7 +34166,7 @@ static void
 rs6000_elf_asm_out_constructor (rtx symbol, int priority)
 {
   const char *section = ".ctors";
-  char buf[16];
+  char buf[18];
 
   if (priority != DEFAULT_INIT_PRIORITY)
     {
@@ -34197,7 +34197,7 @@ static void
 rs6000_elf_asm_out_destructor (rtx symbol, int priority)
 {
   const char *section = ".dtors";
-  char buf[16];
+  char buf[18];
 
   if (priority != DEFAULT_INIT_PRIORITY)
     {
