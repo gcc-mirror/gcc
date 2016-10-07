@@ -1,3 +1,8 @@
+2016_10-06  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/57910
+	* gfortran.dg/pr57910.f90: New test.
+
 2016-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/has-unique-obj-representations1.C: New test.

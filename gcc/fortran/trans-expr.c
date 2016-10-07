@@ -4009,6 +4009,10 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   if (sym->attr.flavor == FL_PROCEDURE)
     value = se->expr;
 
+  /* If the argument is a pass-by-value scalar, use the value as is.  */
+  else if (!sym->attr.dimension && sym->attr.value)
+    value = se->expr;
+
   /* If the argument is either a string or a pointer to a string,
      convert it to a boundless character type.  */
   else if (!sym->attr.dimension && sym->ts.type == BT_CHARACTER)
