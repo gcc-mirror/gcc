@@ -1,3 +1,12 @@
+2016-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/66443
+	* g++.dg/cpp0x/pr66443-cxx11.C: New.
+	* g++.dg/cpp0x/pr66443-cxx11-2.C: New.
+	* g++.dg/cpp1y/pr66443-cxx14.C: New
+	* g++.dg/cpp1y/pr66443-cxx14-2.C: New.
+	* g++.dg/cpp1y/pr66443-cxx14-3.C: New.
+
 2016-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp0x/addressof1.C: New test.
