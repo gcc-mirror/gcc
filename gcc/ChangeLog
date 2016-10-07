@@ -1,3 +1,8 @@
+2016-10-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* simplify-rtx.c (simplify_immed_subreg): Zero-initialize tmp array
+	before merging in bytes to pass down to real_from_target.
+
 2016-10-07  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-propagate.c (replace_phi_args_in): Remove no longer

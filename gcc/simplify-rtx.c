@@ -5893,14 +5893,12 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
 	case MODE_DECIMAL_FLOAT:
 	  {
 	    REAL_VALUE_TYPE r;
-	    long tmp[MAX_BITSIZE_MODE_ANY_MODE / 32];
+	    long tmp[MAX_BITSIZE_MODE_ANY_MODE / 32] = { 0 };
 
 	    /* real_from_target wants its input in words affected by
 	       FLOAT_WORDS_BIG_ENDIAN.  However, we ignore this,
 	       and use WORDS_BIG_ENDIAN instead; see the documentation
 	       of SUBREG in rtl.texi.  */
-	    for (i = 0; i < max_bitsize / 32; i++)
-	      tmp[i] = 0;
 	    for (i = 0; i < elem_bitsize; i += value_bit)
 	      {
 		int ibase;
