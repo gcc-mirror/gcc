@@ -1,5 +1,10 @@
 2016-10-07  Richard Biener  <rguenther@suse.de>
 
+	* gimple-low.c (lower_gimple_bind): Clear DECL_CHAIN of
+	vars in gimple_bind_vars but not in BLOCK_VARS.
+
+2016-10-07  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/77879
 	* tree-ssa-structalias.c (handle_const_call): Properly handle
 	NRV return slots.
