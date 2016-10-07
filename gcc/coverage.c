@@ -1078,7 +1078,7 @@ build_gcov_exit_decl (void)
   append_to_statement_list (stmt, &dtor);
 
   /* Generate a destructor to run it (with priority 99).  */
-  cgraph_build_static_cdtor ('D', dtor, DEFAULT_INIT_PRIORITY - 1);
+  cgraph_build_static_cdtor ('D', dtor, MAX_RESERVED_INIT_PRIORITY - 1);
 }
 
 /* Create the gcov_info types and object.  Generate the constructor
