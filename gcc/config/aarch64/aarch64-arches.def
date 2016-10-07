@@ -34,3 +34,4 @@ AARCH64_ARCH("armv8-a",	      generic,	     8A,	8,  AARCH64_FL_FOR_ARCH8)
 AARCH64_ARCH("armv8.1-a",     generic,	     8_1A,	8,  AARCH64_FL_FOR_ARCH8_1)
 AARCH64_ARCH("armv8.2-a",     generic,	     8_2A,	8,  AARCH64_FL_FOR_ARCH8_2)
 
+#undef AARCH64_ARCH

@@ -493,7 +493,6 @@ enum target_cpus
 #define AARCH64_CORE(NAME, INTERNAL_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
   TARGET_CPU_##INTERNAL_IDENT,
 #include "aarch64-cores.def"
-#undef AARCH64_CORE
   TARGET_CPU_generic
 };
 

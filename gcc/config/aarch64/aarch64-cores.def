@@ -70,3 +70,5 @@ AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8A,  AARCH
 AARCH64_CORE("cortex-a72.cortex-a53",  cortexa72cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, "0x41", "0xd08.0xd03")
 AARCH64_CORE("cortex-a73.cortex-a35",  cortexa73cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, "0x41", "0xd09.0xd04")
 AARCH64_CORE("cortex-a73.cortex-a53",  cortexa73cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, "0x41", "0xd09.0xd03")
+
+#undef AARCH64_CORE
