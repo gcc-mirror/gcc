@@ -6977,7 +6977,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	Type* element_type = slice_type->array_type()->element_type();
 	this->lower_varargs(gogo, function, inserter,
 			    Type::make_array_type(element_type, NULL),
-			    2);
+			    2, SLICE_STORAGE_DOES_NOT_ESCAPE);
       }
       break;
 
@@ -8853,7 +8853,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
       go_assert(parameters != NULL && !parameters->empty());
       Type* varargs_type = parameters->back().type();
       this->lower_varargs(gogo, function, inserter, varargs_type,
-			  parameters->size());
+			  parameters->size(), SLICE_STORAGE_MAY_ESCAPE);
     }
 
   // If this is call to a method, call the method directly passing the
@@ -8958,7 +8958,8 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 void
 Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 			       Statement_inserter* inserter,
-			       Type* varargs_type, size_t param_count)
+			       Type* varargs_type, size_t param_count,
+                               Slice_storage_escape_disp escape_disp)
 {
   if (this->varargs_are_lowered_)
     return;
@@ -9027,8 +9028,11 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 		continue;
 	      vals->push_back(*pa);
 	    }
-	  Expression* val =
+	  Slice_construction_expression* sce =
 	    Expression::make_slice_composite_literal(varargs_type, vals, loc);
+	  if (escape_disp == SLICE_STORAGE_DOES_NOT_ESCAPE)
+	      sce->set_storage_does_not_escape();
+          Expression* val = sce;
 	  gogo->lower_expression(function, inserter, &val);
 	  new_args->push_back(val);
 	}
@@ -12280,7 +12284,7 @@ Array_construction_expression::do_export(Export* exp) const
   exp->write_c_string(")");
 }
 
-// Dump ast representation of an array construction expressin.
+// Dump ast representation of an array construction expression.
 
 void
 Array_construction_expression::do_dump_expression(
@@ -12295,6 +12299,7 @@ Array_construction_expression::do_dump_expression(
     }
   ast_dump_context->ostream() << "]" ;
   ast_dump_context->dump_type(this->type_);
+  this->dump_slice_storage_expression(ast_dump_context);
   ast_dump_context->ostream() << "{" ;
   if (this->indexes_ == NULL)
     ast_dump_context->dump_expression_list(this->vals_);
@@ -12350,7 +12355,8 @@ Slice_construction_expression::Slice_construction_expression(
   Expression_list* vals, Location location)
   : Array_construction_expression(EXPRESSION_SLICE_CONSTRUCTION,
 				  type, indexes, vals, location),
-    valtype_(NULL)
+    valtype_(NULL), array_val_(NULL), slice_storage_(NULL),
+    storage_escapes_(true)
 {
   go_assert(type->is_slice_type());
 
@@ -12371,7 +12377,6 @@ Slice_construction_expression::Slice_construction_expression(
   this->valtype_ = Type::make_array_type(element_type, length);
 }
 
-
 // Traversal.
 
 int
@@ -12382,23 +12387,29 @@ Slice_construction_expression::do_traverse(Traverse* traverse)
     return TRAVERSE_EXIT;
   if (Type::traverse(this->valtype_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
+  if (this->array_val_ != NULL
+      && Expression::traverse(&this->array_val_, traverse) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+  if (this->slice_storage_ != NULL
+      && Expression::traverse(&this->slice_storage_, traverse) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
 }
 
-// Return the backend representation for constructing a slice.
+// Helper routine to create fixed array value underlying the slice literal.
+// May be called during flattening, or later during do_get_backend().
 
-Bexpression*
-Slice_construction_expression::do_get_backend(Translate_context* context)
+Expression*
+Slice_construction_expression::create_array_val()
 {
   Array_type* array_type = this->type()->array_type();
   if (array_type == NULL)
     {
       go_assert(this->type()->is_error());
-      return context->backend()->error_expression();
+      return NULL;
     }
 
   Location loc = this->location();
-  Type* element_type = array_type->element_type();
   go_assert(this->valtype_ != NULL);
 
   Expression_list* vals = this->vals();
@@ -12408,11 +12419,71 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
       vals = new Expression_list;
       vals->push_back(NULL);
     }
-  Expression* array_val =
-    new Fixed_array_construction_expression(this->valtype_, this->indexes(),
-					    vals, loc);
+  return new Fixed_array_construction_expression(
+      this->valtype_, this->indexes(), vals, loc);
+}
 
-  bool is_constant_initializer = array_val->is_immutable();
+// If we're previous established that the slice storage does not
+// escape, then create a separate array temp val here for it. We
+// need to do this as part of flattening so as to be able to insert
+// the new temp statement.
+
+Expression*
+Slice_construction_expression::do_flatten(Gogo* gogo, Named_object* no,
+                                          Statement_inserter* inserter)
+{
+  if (this->type()->array_type() == NULL)
+    return NULL;
+
+  // Base class flattening first
+  this->Array_construction_expression::do_flatten(gogo, no, inserter);
+
+  // Create an stack-allocated storage temp if storage won't escape
+  if (!this->storage_escapes_)
+    {
+      Location loc = this->location();
+      this->array_val_ = create_array_val();
+      go_assert(this->array_val_);
+      Temporary_statement* temp =
+          Statement::make_temporary(this->valtype_, this->array_val_, loc);
+      inserter->insert(temp);
+      this->slice_storage_ = Expression::make_temporary_reference(temp, loc);
+    }
+  return this;
+}
+
+// When dumping a slice construction expression that has an explicit
+// storeage temp, emit the temp here (if we don't do this the storage
+// temp appears unused in the AST dump).
+
+void
+Slice_construction_expression::
+dump_slice_storage_expression(Ast_dump_context* ast_dump_context) const
+{
+  if (this->slice_storage_ == NULL)
+    return;
+  ast_dump_context->ostream() << "storage=" ;
+  ast_dump_context->dump_expression(this->slice_storage_);
+}
+
+// Return the backend representation for constructing a slice.
+
+Bexpression*
+Slice_construction_expression::do_get_backend(Translate_context* context)
+{
+  if (this->array_val_ == NULL)
+    this->array_val_ = create_array_val();
+  if (this->array_val_ == NULL)
+    {
+      go_assert(this->type()->is_error());
+      return context->backend()->error_expression();
+    }
+
+  Location loc = this->location();
+  Array_type* array_type = this->type()->array_type();
+  Type* element_type = array_type->element_type();
+
+  bool is_constant_initializer = this->array_val_->is_immutable();
 
   // We have to copy the initial values into heap memory if we are in
   // a function or if the values are not constants.  We also have to
@@ -12424,15 +12495,21 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
 			   && !context->is_const()));
 
   Expression* space;
-  if (!copy_to_heap)
+
+  if (this->slice_storage_ != NULL)
+    {
+      go_assert(!this->storage_escapes_);
+      space = Expression::make_unary(OPERATOR_AND, this->slice_storage_, loc);
+    }
+  else if (!copy_to_heap)
     {
       // The initializer will only run once.
-      space = Expression::make_unary(OPERATOR_AND, array_val, loc);
+      space = Expression::make_unary(OPERATOR_AND, this->array_val_, loc);
       space->unary_expression()->set_is_slice_init();
     }
   else
     {
-      space = Expression::make_heap_expression(array_val, loc);
+      space = Expression::make_heap_expression(this->array_val_, loc);
       Node* n = Node::make_node(this);
       if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
 	{
@@ -12442,7 +12519,6 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
     }
 
   // Build a constructor for the slice.
-
   Expression* len = this->valtype_->array_type()->length();
   Expression* slice_val =
     Expression::make_slice_value(this->type(), space, len, len, loc);
@@ -12452,7 +12528,7 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
 // Make a slice composite literal.  This is used by the type
 // descriptor code.
 
-Expression*
+Slice_construction_expression*
 Expression::make_slice_composite_literal(Type* type, Expression_list* vals,
 					 Location location)
 {

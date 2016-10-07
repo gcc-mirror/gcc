@@ -374,7 +374,7 @@ class Expression
   make_array_composite_literal(Type*, Expression_list*, Location);
 
   // Make a slice composite literal.
-  static Expression*
+  static Slice_construction_expression*
   make_slice_composite_literal(Type*, Expression_list*, Location);
 
   // Take an expression and allocate it on the heap.
@@ -1066,6 +1066,18 @@ class Expression
   // Child class implements dumping to a dump context.
   virtual void
   do_dump_expression(Ast_dump_context*) const = 0;
+
+  // Varargs lowering creates a slice object (unnamed compiler temp)
+  // to contain the variable length collection of values. The enum
+  // below tells the lowering routine whether it can mark that temp
+  // as non-escaping or not. For general varargs calls it is not always
+  // safe to stack-allocated the storage, but for specific cases (ex:
+  // call to append()) it is legal.
+  enum Slice_storage_escape_disp
+  {
+    SLICE_STORAGE_MAY_ESCAPE,
+    SLICE_STORAGE_DOES_NOT_ESCAPE
+  };
 
  private:
   // Convert to the desired statement classification, or return NULL.
@@ -2128,7 +2140,8 @@ class Call_expression : public Expression
   // Let a builtin expression lower varargs.
   void
   lower_varargs(Gogo*, Named_object* function, Statement_inserter* inserter,
-		Type* varargs_type, size_t param_count);
+		Type* varargs_type, size_t param_count,
+		Slice_storage_escape_disp escape_disp);
 
   // Let a builtin expression check whether types have been
   // determined.
@@ -3282,6 +3295,9 @@ protected:
   void
   do_dump_expression(Ast_dump_context*) const;
 
+  virtual void
+  dump_slice_storage_expression(Ast_dump_context*) const { }
+
  private:
   // The type of the array to construct.
   Type* type_;
@@ -3326,6 +3342,18 @@ class Slice_construction_expression : public Array_construction_expression
   Slice_construction_expression(Type* type,
 				const std::vector<unsigned long>* indexes,
 				Expression_list* vals, Location location);
+
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
+  // Record that the storage for this slice (e.g. vals) cannot escape,
+  // hence it can be stack-allocated.
+  void
+  set_storage_does_not_escape()
+  {
+    this->storage_escapes_ = false;
+  }
+
  protected:
   // Note that taking the address of a slice literal is invalid.
 
@@ -3345,9 +3373,25 @@ class Slice_construction_expression : public Array_construction_expression
   Bexpression*
   do_get_backend(Translate_context*);
 
+  void
+  dump_slice_storage_expression(Ast_dump_context* ast_dump_context) const;
+
+  // Create an array value for the constructed slice. Invoked during
+  // flattening if slice storage does not escape, otherwise invoked
+  // later on during do_get_backend().
+  Expression*
+  create_array_val();
+
  private:
   // The type of the values in this slice.
   Type* valtype_;
+  // Array value expression, optionally filled in during flattening.
+  Expression* array_val_;
+  // Slice storage expression, optionally filled in during flattening.
+  Expression* slice_storage_;
+  // Normally true. Can be set to false if we know that the resulting
+  // storage for the slice cannot escape.
+  bool storage_escapes_;
 };
 
 // Construct a map.
