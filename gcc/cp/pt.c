@@ -17204,6 +17204,10 @@ tsubst_copy_and_build (tree t,
       RETURN (finish_offsetof (RECUR (TREE_OPERAND (t, 0)),
 			       EXPR_LOCATION (t)));
 
+    case ADDRESSOF_EXPR:
+      RETURN (cp_build_addressof (EXPR_LOCATION (t),
+				  RECUR (TREE_OPERAND (t, 0)), complain));
+
     case TRAIT_EXPR:
       {
 	tree type1 = tsubst (TRAIT_EXPR_TYPE1 (t), args,

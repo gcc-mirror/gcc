@@ -5025,6 +5025,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
         return (RECUR (from, TREE_CODE (t) != VIEW_CONVERT_EXPR));
       }
 
+    case ADDRESSOF_EXPR:
+      /* This is like ADDR_EXPR, except it won't form pointer-to-member.  */
+      t = TREE_OPERAND (t, 0);
+      goto handle_addr_expr;
+
     case ADDR_EXPR:
       /* -- a unary operator & that is applied to an lvalue that
             designates an object with thread or automatic storage
@@ -5035,6 +5040,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	/* A pointer-to-member constant.  */
 	return true;
 
+    handle_addr_expr:
 #if 0
       /* FIXME adjust when issue 1197 is fully resolved.  For now don't do
          any checking here, as we might dereference the pointer later.  If
