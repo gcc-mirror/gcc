@@ -1,3 +1,9 @@
+2016-10-05  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/57910
+	* trans-expr.c (gfc_add_interface_mapping): Don't try to
+	dereference call-by-value scalar argument
+
 2016-10-05  Steven G. Kargl  <kargls@gcc.gnu.org>
 
 	PR fortran/58991
