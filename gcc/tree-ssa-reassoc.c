@@ -2428,6 +2428,8 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
       else
 	oe->op = error_mark_node;
       range->exp = NULL_TREE;
+      range->low = NULL_TREE;
+      range->high = NULL_TREE;
     }
   return true;
 }
@@ -2485,10 +2487,10 @@ optimize_range_tests_xor (enum tree_code opcode, tree type,
    ((X - 43U) & ~(75U - 43U)) <= 3U.  */
 static bool
 optimize_range_tests_diff (enum tree_code opcode, tree type,
-			    tree lowi, tree lowj, tree highi, tree highj,
-			    vec<operand_entry *> *ops,
-			    struct range_entry *rangei,
-			    struct range_entry *rangej)
+			   tree lowi, tree lowj, tree highi, tree highj,
+			   vec<operand_entry *> *ops,
+			   struct range_entry *rangei,
+			   struct range_entry *rangej)
 {
   tree tem1, tem2, mask;
   /* Check highi - lowi == highj - lowj.  */
@@ -2829,6 +2831,197 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
   return any_changes;
 }
 
+/* Attempt to optimize for signed a and b where b is known to be >= 0:
+   a >= 0 && a < b into (unsigned) a < (unsigned) b
+   a >= 0 && a <= b into (unsigned) a <= (unsigned) b  */
+
+static bool
+optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
+				vec<operand_entry *> *ops,
+				struct range_entry *ranges)
+{
+  int i;
+  bool any_changes = false;
+  hash_map<tree, int> *map = NULL;
+
+  for (i = first; i < length; i++)
+    {
+      if (ranges[i].exp == NULL_TREE || !ranges[i].in_p)
+	continue;
+
+      tree type = TREE_TYPE (ranges[i].exp);
+      if (!INTEGRAL_TYPE_P (type)
+	  || TYPE_UNSIGNED (type)
+	  || ranges[i].low == NULL_TREE
+	  || !integer_zerop (ranges[i].low)
+	  || ranges[i].high != NULL_TREE)
+	continue;
+      /* EXP >= 0 here.  */
+      if (map == NULL)
+	map = new hash_map <tree, int>;
+      map->put (ranges[i].exp, i);
+    }
+
+  if (map == NULL)
+    return false;
+
+  for (i = 0; i < length; i++)
+    {
+      if (ranges[i].low == NULL_TREE
+	  || ranges[i].high == NULL_TREE
+	  || !integer_zerop (ranges[i].low)
+	  || !integer_zerop (ranges[i].high))
+	continue;
+
+      gimple *stmt;
+      tree_code ccode;
+      tree rhs1, rhs2;
+      if (ranges[i].exp)
+	{
+	  stmt = SSA_NAME_DEF_STMT (ranges[i].exp);
+	  if (!is_gimple_assign (stmt))
+	    continue;
+	  ccode = gimple_assign_rhs_code (stmt);
+	  rhs1 = gimple_assign_rhs1 (stmt);
+	  rhs2 = gimple_assign_rhs2 (stmt);
+	}
+      else
+	{
+	  operand_entry *oe = (*ops)[ranges[i].idx];
+	  stmt = last_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id));
+	  if (gimple_code (stmt) != GIMPLE_COND)
+	    continue;
+	  ccode = gimple_cond_code (stmt);
+	  rhs1 = gimple_cond_lhs (stmt);
+	  rhs2 = gimple_cond_rhs (stmt);
+	}
+
+      if (TREE_CODE (rhs1) != SSA_NAME
+	  || rhs2 == NULL_TREE
+	  || TREE_CODE (rhs2) != SSA_NAME)
+	continue;
+
+      switch (ccode)
+	{
+	case GT_EXPR:
+	case GE_EXPR:
+	  if (!ranges[i].in_p)
+	    std::swap (rhs1, rhs2);
+	  ccode = swap_tree_comparison (ccode);
+	  break;
+	case LT_EXPR:
+	case LE_EXPR:
+	  if (ranges[i].in_p)
+	    std::swap (rhs1, rhs2);
+	  break;
+	default:
+	  continue;
+	}
+
+      int *idx = map->get (rhs1);
+      if (idx == NULL)
+	continue;
+
+      wide_int nz = get_nonzero_bits (rhs2);
+      if (wi::neg_p (nz))
+	continue;
+
+      /* We have EXP < RHS2 or EXP <= RHS2 where EXP >= 0
+	 and RHS2 is known to be RHS2 >= 0.  */
+      tree utype = unsigned_type_for (TREE_TYPE (rhs1));
+
+      enum warn_strict_overflow_code wc = WARN_STRICT_OVERFLOW_COMPARISON;
+      if ((ranges[*idx].strict_overflow_p
+	   || ranges[i].strict_overflow_p)
+	  && issue_strict_overflow_warning (wc))
+	warning_at (gimple_location (stmt), OPT_Wstrict_overflow,
+		    "assuming signed overflow does not occur "
+		    "when simplifying range test");
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  struct range_entry *r = &ranges[*idx];
+	  fprintf (dump_file, "Optimizing range test ");
+	  print_generic_expr (dump_file, r->exp, 0);
+	  fprintf (dump_file, " +[");
+	  print_generic_expr (dump_file, r->low, 0);
+	  fprintf (dump_file, ", ");
+	  print_generic_expr (dump_file, r->high, 0);
+	  fprintf (dump_file, "] and comparison ");
+	  print_generic_expr (dump_file, rhs1, 0);
+	  fprintf (dump_file, " %s ", op_symbol_code (ccode));
+	  print_generic_expr (dump_file, rhs2, 0);
+	  fprintf (dump_file, "\n into (");
+	  print_generic_expr (dump_file, utype, 0);
+	  fprintf (dump_file, ") ");
+	  print_generic_expr (dump_file, rhs1, 0);
+	  fprintf (dump_file, " %s (", op_symbol_code (ccode));
+	  print_generic_expr (dump_file, utype, 0);
+	  fprintf (dump_file, ") ");
+	  print_generic_expr (dump_file, rhs2, 0);
+	  fprintf (dump_file, "\n");
+	}
+
+      if (ranges[i].in_p)
+	std::swap (rhs1, rhs2);
+
+      unsigned int uid = gimple_uid (stmt);
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gimple *g = gimple_build_assign (make_ssa_name (utype), NOP_EXPR, rhs1);
+      gimple_set_uid (g, uid);
+      rhs1 = gimple_assign_lhs (g);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (make_ssa_name (utype), NOP_EXPR, rhs2);
+      gimple_set_uid (g, uid);
+      rhs2 = gimple_assign_lhs (g);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      if (tree_swap_operands_p (rhs1, rhs2, false))
+	{
+	  std::swap (rhs1, rhs2);
+	  ccode = swap_tree_comparison (ccode);
+	}
+      if (gimple_code (stmt) == GIMPLE_COND)
+	{
+	  gcond *c = as_a <gcond *> (stmt);
+	  gimple_cond_set_code (c, ccode);
+	  gimple_cond_set_lhs (c, rhs1);
+	  gimple_cond_set_rhs (c, rhs2);
+	  update_stmt (stmt);
+	}
+      else
+	{
+	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (ranges[i].exp)),
+				   ccode, rhs1, rhs2);
+	  gimple_set_uid (g, uid);
+	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	  ranges[i].exp = gimple_assign_lhs (g);
+	  (*ops)[ranges[i].idx]->op = ranges[i].exp;
+	}
+      ranges[i].strict_overflow_p = false;
+      operand_entry *oe = (*ops)[ranges[*idx].idx];
+      /* Now change all the other range test immediate uses, so that
+	 those tests will be optimized away.  */
+      if (opcode == ERROR_MARK)
+	{
+	  if (oe->op)
+	    oe->op = build_int_cst (TREE_TYPE (oe->op),
+				    oe->rank == BIT_IOR_EXPR ? 0 : 1);
+	  else
+	    oe->op = (oe->rank == BIT_IOR_EXPR
+		      ? boolean_false_node : boolean_true_node);
+	}
+      else
+	oe->op = error_mark_node;
+      ranges[*idx].exp = NULL_TREE;
+      ranges[*idx].low = NULL_TREE;
+      ranges[*idx].high = NULL_TREE;
+      any_changes = true;
+    }
+
+  delete map;
+  return any_changes;
+}
+
 /* Optimize range tests, similarly how fold_range_test optimizes
    it on trees.  The tree code for the binary
    operation between all the operands is OPCODE.
@@ -2917,6 +3110,8 @@ optimize_range_tests (enum tree_code opcode,
   if (lshift_cheap_p (optimize_function_for_speed_p (cfun)))
     any_changes |= optimize_range_tests_to_bit_test (opcode, first, length,
 						     ops, ranges);
+  any_changes |= optimize_range_tests_var_bound (opcode, first, length, ops,
+						 ranges);
 
   if (any_changes && opcode != ERROR_MARK)
     {

@@ -1,3 +1,12 @@
+2016-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77664
+	* tree-ssa-reassoc.c (update_range_test): Also clear low and high
+	for the other ranges.
+	(optimize_range_tests_diff): Fix up formatting.
+	(optimize_range_tests_var_bound): New function.
+	(optimize_range_tests): Use it.
+
 2016-10-07  Martin Liska  <mliska@suse.cz>
 
 	* coverage.c (build_gcov_exit_decl): Fix priority what
