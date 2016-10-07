@@ -495,6 +495,17 @@ compare_components (gfc_component *cmp1, gfc_component *cmp2,
   if (cmp1->attr.dimension && gfc_compare_array_spec (cmp1->as, cmp2->as) == 0)
     return 0;
 
+  if (cmp1->ts.type == BT_CHARACTER && cmp2->ts.type == BT_CHARACTER)
+    {
+      gfc_charlen *l1 = cmp1->ts.u.cl;
+      gfc_charlen *l2 = cmp2->ts.u.cl;
+      if (l1 && l2 && l1->length && l2->length
+          && l1->length->expr_type == EXPR_CONSTANT
+          && l2->length->expr_type == EXPR_CONSTANT
+          && gfc_dep_compare_expr (l1->length, l2->length) != 0)
+        return 0;
+    }
+
   /* Make sure that link lists do not put this function into an
      endless recursive loop!  */
   if (!(cmp1->ts.type == BT_DERIVED && derived1 == cmp1->ts.u.derived)
