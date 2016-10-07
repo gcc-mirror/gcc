@@ -6963,6 +6963,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       /* TODO: Optimize passing function return values.  */
       gfc_se lse;
       gfc_se rse;
+      bool deep_copy;
 
       /* Start the copying loops.  */
       gfc_mark_ss_chain_used (loop.temp_ss, 1);
@@ -6993,9 +6994,12 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       gfc_add_block_to_block (&block, &lse.pre);
 
       lse.string_length = rse.string_length;
+
+      deep_copy = !se->data_not_needed
+		  && (expr->expr_type == EXPR_VARIABLE
+		      || expr->expr_type == EXPR_ARRAY);
       tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts,
-				     expr->expr_type == EXPR_VARIABLE
-				     || expr->expr_type == EXPR_ARRAY, false);
+				     deep_copy, false);
       gfc_add_expr_to_block (&block, tmp);
 
       /* Finish the copying loops.  */

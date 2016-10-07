@@ -1,8 +1,14 @@
+2016-10-06  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/69955
+	* trans-array.c (gfc_conv_expr_descriptor): Don't allocate
+	components if it's not necessary.
+
 2016-10-05  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/57910
 	* trans-expr.c (gfc_add_interface_mapping): Don't try to
-	dereference call-by-value scalar argument
+	dereference call-by-value scalar argument.
 
 2016-10-05  Steven G. Kargl  <kargls@gcc.gnu.org>
 
