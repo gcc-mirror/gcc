@@ -4590,6 +4590,11 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       return expr;
 
     case INTEGER_CST:
+      if (TREE_CODE (TREE_TYPE (expr)) == ENUMERAL_TYPE
+	  && !integer_zerop (expr)
+	  && !integer_onep (expr))
+	warning_at (location, OPT_Wint_in_bool_context,
+		    "enum constant in boolean context");
       return integer_zerop (expr) ? truthvalue_false_node
 				  : truthvalue_true_node;
 

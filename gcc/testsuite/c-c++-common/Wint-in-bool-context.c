@@ -2,6 +2,8 @@
 /* { dg-options "-Wint-in-bool-context" } */
 /* { dg-do compile } */
 
+enum truth { yes, no, maybe };
+
 int foo (int a, int b)
 {
   if (a > 0 && a <= (b == 1) ? 1 : 2) /* { dg-warning "boolean context" } */
@@ -26,6 +28,12 @@ int foo (int a, int b)
     return 7;
 
   for (a = 0; 1 << a; a++); /* { dg-warning "boolean context" } */
+
+  if (yes || no || maybe) /* { dg-warning "boolean context" "" { target c++ } } */
+    return 8;
+
+  if (yes || no) /* { dg-bogus "boolean context" } */
+    return 9;
 
   return 0;
 }

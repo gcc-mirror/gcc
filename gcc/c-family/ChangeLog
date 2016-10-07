@@ -1,3 +1,9 @@
+2016-10-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/77700
+	* c-common.c (c_common_truthvalue_conversion): Warn also for
+	suspicious enum values in boolean context.
+
 2016-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Implement P0258R2 - helper for C++17
