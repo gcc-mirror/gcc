@@ -1819,6 +1819,10 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
 {
   gimple_stmt_iterator gsi = *gsi_p;
 
+  /* Don't warn if the label is marked with a "falls through" comment.  */
+  if (FALLTHROUGH_LABEL_P (label))
+    return false;
+
   /* Don't warn for a non-case label followed by a statement:
        case 0:
 	 foo ();
@@ -1905,7 +1909,6 @@ warn_implicit_fallthrough_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	if (gimple_code (next) == GIMPLE_LABEL
 	    && gimple_has_location (next)
 	    && (label = gimple_label_label (as_a <glabel *> (next)))
-	    && !FALLTHROUGH_LABEL_P (label)
 	    && prev != NULL)
 	  {
 	    struct label_entry *l;

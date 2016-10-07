@@ -1,3 +1,7 @@
+2016-10-07  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/Wimplicit-fallthrough-22.c: New test.
+
 2016-10-07  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR c++/69733
