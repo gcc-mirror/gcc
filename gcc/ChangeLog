@@ -1,3 +1,26 @@
+2016-10-07  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-arches.def (AARCH64_ARCH): #undef at the end.
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Likewise.
+	* config/aarch64/aarch64-fusion-pairs.def (AARCH64_FUSION_PAIR): Likewise.
+	* config/aarch64/aarch64-option-extensions.def (AARCH64_OPT_EXTENSION): Likewise.
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNING_OPTION): Likewise.
+	* config/aarch64/aarch64-opts.h (AARCH64_CORE): Don't #undef here.
+	(AARCH64_ARCH): Likewise.
+	* common/config/aarch64/aarch64-common.c (AARCH64_OPT_EXTENSION): Likewise.
+	(AARCH64_CORE): Likewise.
+	(AARCH64_ARCH): Likewise.
+	* config/aarch64/aarch64-protos.h (AARCH64_FUSION_PAIR): Likewise.
+	(AARCH64_EXTRA_TUNING_OPTION): Likewise.
+	* config/aarch64/aarch64.c (AARCH64_FUION_PAIR): Likewise.
+	(AARCH64_EXTRA_TUNING_OPTION): Likewise.
+	(AARCH64_ARCH): Likewise.
+	(AARCH64_CORE): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_CORE): Likewise.
+	* config/aarch64/driver-aarch64.c (AARCH64_OPT_EXTENSION): Likewise.
+	(AARCH64_CORE): Likewise.
+	(AARCH64_ARCH): Likewise.
+
 2016-10-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Split

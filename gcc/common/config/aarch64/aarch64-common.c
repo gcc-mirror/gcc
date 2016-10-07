@@ -123,7 +123,6 @@ static const struct aarch64_option_extension all_extensions[] =
 #define AARCH64_OPT_EXTENSION(NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, Z) \
   {NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF},
 #include "config/aarch64/aarch64-option-extensions.def"
-#undef AARCH64_OPT_EXTENSION
   {NULL, 0, 0, 0}
 };
 
@@ -148,7 +147,6 @@ static const struct processor_name_to_arch all_cores[] =
 #define AARCH64_CORE(NAME, X, IDENT, ARCH_IDENT, FLAGS, COSTS, IMP, PART) \
   {NAME, AARCH64_ARCH_##ARCH_IDENT, FLAGS},
 #include "config/aarch64/aarch64-cores.def"
-#undef AARCH64_CORE
   {"generic", AARCH64_ARCH_8A, AARCH64_FL_FOR_ARCH8},
   {"", aarch64_no_arch, 0}
 };
@@ -159,7 +157,6 @@ static const struct arch_to_arch_name all_architectures[] =
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH, FLAGS) \
   {AARCH64_ARCH_##ARCH_IDENT, NAME, FLAGS},
 #include "config/aarch64/aarch64-arches.def"
-#undef AARCH64_ARCH
   {aarch64_no_arch, "", 0}
 };
 

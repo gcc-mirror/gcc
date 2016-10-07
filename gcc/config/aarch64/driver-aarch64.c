@@ -40,7 +40,6 @@ static struct aarch64_arch_extension aarch64_extensions[] =
 {
 #include "aarch64-option-extensions.def"
 };
-#undef AARCH64_OPT_EXTENSION
 
 
 struct aarch64_core_data
@@ -61,7 +60,6 @@ static struct aarch64_core_data aarch64_cpu_data[] =
   { NULL, NULL, NULL, NULL, 0 }
 };
 
-#undef AARCH64_CORE
 
 struct aarch64_arch_driver_info
 {
@@ -79,7 +77,6 @@ static struct aarch64_arch_driver_info aarch64_arches[] =
   {NULL, NULL, 0}
 };
 
-#undef AARCH64_ARCH
 
 /* Return an aarch64_arch_driver_info for the architecture described
    by ID, or NULL if ID describes something we don't know about.  */
