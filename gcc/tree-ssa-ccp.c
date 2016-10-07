@@ -591,7 +591,15 @@ get_value_for_expr (tree expr, bool for_bits_p)
 
   if (TREE_CODE (expr) == SSA_NAME)
     {
-      val = *get_value (expr);
+      ccp_prop_value_t *val_ = get_value (expr);
+      if (val_)
+	val = *val_;
+      else
+	{
+	  val.lattice_val = VARYING;
+	  val.value = NULL_TREE;
+	  val.mask = -1;
+	}
       if (for_bits_p
 	  && val.lattice_val == CONSTANT
 	  && TREE_CODE (val.value) == ADDR_EXPR)
@@ -673,12 +681,12 @@ likely_value (gimple *stmt)
     {
       ccp_prop_value_t *val = get_value (use);
 
-      if (val->lattice_val == UNDEFINED)
+      if (val && val->lattice_val == UNDEFINED)
 	has_undefined_operand = true;
       else
 	all_undefined_operands = false;
 
-      if (val->lattice_val == CONSTANT)
+      if (val && val->lattice_val == CONSTANT)
 	has_constant_operand = true;
 
       if (SSA_NAME_IS_DEFAULT_DEF (use)
@@ -1739,11 +1747,11 @@ evaluate_stmt (gimple *stmt)
       simplified = ccp_fold (stmt);
       if (simplified && TREE_CODE (simplified) == SSA_NAME)
 	{
-	  val = *get_value (simplified);
-	  if (val.lattice_val != VARYING)
+	  ccp_prop_value_t *val = get_value (simplified);
+	  if (val && val->lattice_val != VARYING)
 	    {
 	      fold_undefer_overflow_warnings (true, stmt, 0);
-	      return val;
+	      return *val;
 	    }
 	}
       is_constant = simplified && is_gimple_min_invariant (simplified);

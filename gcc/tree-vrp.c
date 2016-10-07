@@ -9055,6 +9055,7 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   else
     gimple_assign_set_rhs_with_ops (gsi, BIT_XOR_EXPR, op0, op1);
   update_stmt (gsi_stmt (*gsi));
+  fold_stmt (gsi, follow_single_use_edges);
 
   return true;
 }
@@ -9156,6 +9157,7 @@ simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 	}
 
       update_stmt (stmt);
+      fold_stmt (gsi, follow_single_use_edges);
       return true;
     }
 
@@ -9204,6 +9206,7 @@ simplify_min_or_max_using_ranges (gimple *stmt)
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
       gimple_assign_set_rhs_from_tree (&gsi, res);
       update_stmt (stmt);
+      fold_stmt (&gsi, follow_single_use_edges);
       return true;
     }
 
@@ -9256,6 +9259,8 @@ simplify_abs_using_ranges (gimple *stmt)
 	  else
 	    gimple_assign_set_rhs_code (stmt, NEGATE_EXPR);
 	  update_stmt (stmt);
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  fold_stmt (&gsi, follow_single_use_edges);
 	  return true;
 	}
     }
@@ -9906,7 +9911,8 @@ simplify_conversion_using_ranges (gimple *stmt)
     return false;
 
   gimple_assign_set_rhs1 (stmt, innerop);
-  update_stmt (stmt);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  fold_stmt (&gsi, follow_single_use_edges);
   return true;
 }
 
@@ -9971,7 +9977,7 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
   conv = gimple_build_assign (tem, NOP_EXPR, rhs1);
   gsi_insert_before (gsi, conv, GSI_SAME_STMT);
   gimple_assign_set_rhs1 (stmt, tem);
-  update_stmt (stmt);
+  fold_stmt (gsi, follow_single_use_edges);
 
   return true;
 }
@@ -10176,6 +10182,7 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 					      new_rhs1,
 					      new_rhs2);
 	      update_stmt (gsi_stmt (*gsi));
+	      fold_stmt (gsi, follow_single_use_edges);
 	      return true;
 	    }
 	}

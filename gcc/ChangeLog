@@ -1,3 +1,23 @@
+2016-10-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-propagate.c (replace_phi_args_in): Remove no longer
+	required hack.
+	(substitute_and_fold_dom_walker::before_dom_children):
+	Substitute and fold before pass specific folding to avoid
+	feeding that with SSA names that will be later released.
+	* tree-ssa-ccp.c (get_value_for_expr): Guard for new SSA names
+	introduced by folding and visited by evaluate_stmt called during
+	ccp_fold_stmt.
+	(likely_value): Likewise.
+	(evaluate_stmt): Likewise.
+	* tree-vrp.c (simplify_truth_ops_using_ranges): Fold modified stmt.
+	(simplify_div_or_mod_using_ranges): Likewise.
+	(simplify_min_or_max_using_ranges): Likewise.
+	(simplify_abs_using_ranges): Likewise.
+	(simplify_conversion_using_ranges): Likewise.
+	(simplify_float_conversion_using_ranges): Likewise.
+	(simplify_stmt_using_ranges): Likewise.
+
 2016-10-07  Marek Polacek  <polacek@redhat.com>
 
 	* gimplify.c (should_warn_for_implicit_fallthrough): Check for

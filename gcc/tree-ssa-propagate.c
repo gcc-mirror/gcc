@@ -914,7 +914,6 @@ replace_phi_args_in (gphi *phi, ssa_prop_get_value_fn get_value)
       print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
     }
 
-  basic_block bb = gimple_bb (phi);
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
@@ -926,19 +925,6 @@ replace_phi_args_in (gphi *phi, ssa_prop_get_value_fn get_value)
 	  if (val && val != arg && may_propagate_copy (arg, val))
 	    {
 	      edge e = gimple_phi_arg_edge (phi, i);
-
-	      /* Avoid propagating constants into loop latch edge
-	         PHI arguments as this makes coalescing the copy
-		 across this edge impossible.  If the argument is
-		 defined by an assert - otherwise the stmt will
-		 get removed without replacing its uses.  */
-	      if (TREE_CODE (val) != SSA_NAME
-		  && bb->loop_father->header == bb
-		  && dominated_by_p (CDI_DOMINATORS, e->src, bb)
-		  && is_gimple_assign (SSA_NAME_DEF_STMT (arg))
-		  && (gimple_assign_rhs_code (SSA_NAME_DEF_STMT (arg))
-		      == ASSERT_EXPR))
-		continue;
 
 	      if (TREE_CODE (val) != SSA_NAME)
 		prop_stats.num_const_prop++;
@@ -1090,18 +1076,6 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       bool was_noreturn = (is_gimple_call (stmt)
 			   && gimple_call_noreturn_p (stmt));
 
-      /* Some statements may be simplified using propagator
-	 specific information.  Do this before propagating
-	 into the stmt to not disturb pass specific information.  */
-      if (fold_fn
-	  && (*fold_fn)(&i))
-	{
-	  did_replace = true;
-	  prop_stats.num_stmts_folded++;
-	  stmt = gsi_stmt (i);
-	  update_stmt (stmt);
-	}
-
       /* Replace real uses in the statement.  */
       did_replace |= replace_uses_in (stmt, get_value_fn);
 
@@ -1110,6 +1084,22 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	{
 	  fold_stmt (&i, follow_single_use_edges);
 	  stmt = gsi_stmt (i);
+	  gimple_set_modified (stmt, true);
+	}
+
+      /* Some statements may be simplified using propagator
+	 specific information.  Do this before propagating
+	 into the stmt to not disturb pass specific information.  */
+      if (fold_fn)
+	{
+	  update_stmt_if_modified (stmt);
+	  if ((*fold_fn)(&i))
+	    {
+	      did_replace = true;
+	      prop_stats.num_stmts_folded++;
+	      stmt = gsi_stmt (i);
+	      gimple_set_modified (stmt, true);
+	    }
 	}
 
       /* If this is a control statement the propagator left edges
@@ -1127,6 +1117,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 		gimple_cond_make_true (as_a <gcond *> (stmt));
 	      else
 		gimple_cond_make_false (as_a <gcond *> (stmt));
+	      gimple_set_modified (stmt, true);
 	      did_replace = true;
 	    }
 	}
@@ -1155,7 +1146,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	    }
 
 	  /* Determine what needs to be done to update the SSA form.  */
-	  update_stmt (stmt);
+	  update_stmt_if_modified (stmt);
 	  if (!is_gimple_debug (stmt))
 	    something_changed = true;
 	}

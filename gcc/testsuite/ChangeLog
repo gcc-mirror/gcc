@@ -1,3 +1,8 @@
+2016-10-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp01.c: Adjust.
+	* gcc.dg/tree-ssa/vrp34.c: Likewise.
+
 2016-10-07  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/Wimplicit-fallthrough-22.c: New test.
