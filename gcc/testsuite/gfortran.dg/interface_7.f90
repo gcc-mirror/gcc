@@ -11,20 +11,20 @@ module xx
     SUBROUTINE S9A(X)
       REAL :: X
     END SUBROUTINE S9A
-    SUBROUTINE S9B(X)
+    SUBROUTINE S9B(X)     ! { dg-error "Ambiguous interfaces" }
       INTERFACE
         FUNCTION X(A)
           REAL :: X,A
         END FUNCTION X
       END INTERFACE
     END SUBROUTINE S9B
-    SUBROUTINE S9C(X)
+    SUBROUTINE S9C(X)     ! { dg-error "Ambiguous interfaces" }
       INTERFACE
         FUNCTION X(A)
           REAL :: X
           INTEGER :: A
         END FUNCTION X
       END INTERFACE
-    END SUBROUTINE S9C  ! { dg-error "Ambiguous interfaces" }
+    END SUBROUTINE S9C
   END INTERFACE BAD9
 end module xx

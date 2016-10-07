@@ -7,15 +7,15 @@
 MODULE global
 INTERFACE iface
   MODULE PROCEDURE sub_a
-  MODULE PROCEDURE sub_b ! { dg-error "Ambiguous interfaces" }
+  MODULE PROCEDURE sub_b
   MODULE PROCEDURE sub_c
 END INTERFACE
 CONTAINS
-  SUBROUTINE sub_a(x)
+  SUBROUTINE sub_a(x) ! { dg-error "Ambiguous interfaces" }
     INTEGER, INTENT(in) :: x
     WRITE (*,*) 'A: ', x
   END SUBROUTINE
-  SUBROUTINE sub_b(y)
+  SUBROUTINE sub_b(y) ! { dg-error "Ambiguous interfaces" }
     INTEGER, INTENT(in) :: y
     WRITE (*,*) 'B: ', y
   END SUBROUTINE
