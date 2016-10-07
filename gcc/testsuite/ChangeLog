@@ -1,4 +1,10 @@
-2016-10-06  Louis Krupp <louis.krupp@zoho.com>
+2016-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77664
+	* gcc.dg/tree-ssa/pr77664.c: New test.
+	* gcc.dg/pr77664.c: New test.
+
+2016-10-06  Louis Krupp  <louis.krupp@zoho.com>
 
 	* gfortran.dg/pr69955.f90: New test.
 
