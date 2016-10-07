@@ -55,23 +55,23 @@ subroutine nine()
     end subroutine okay
   end interface
   interface two
-    subroutine ambig1(x)
+    subroutine ambig1(x)  ! { dg-error "Ambiguous interfaces" }
 !GCC$ attributes NO_ARG_CHECK :: x
       integer :: x
     end subroutine ambig1
-    subroutine ambig2(x)
+    subroutine ambig2(x)  ! { dg-error "Ambiguous interfaces" }
 !GCC$ attributes NO_ARG_CHECK :: x
       integer :: x(*)
-    end subroutine ambig2 ! { dg-error "Ambiguous interfaces 'ambig2' and 'ambig1' in generic interface 'two'" }
+    end subroutine ambig2
   end interface
   interface three
-    subroutine ambig3(x)
+    subroutine ambig3(x)   ! { dg-error "Ambiguous interfaces" }
 !GCC$ attributes NO_ARG_CHECK :: x
       integer :: x
     end subroutine ambig3
-    subroutine ambig4(x)
+    subroutine ambig4(x)   ! { dg-error "Ambiguous interfaces" }
       integer :: x
-    end subroutine ambig4 ! { dg-error "Ambiguous interfaces 'ambig4' and 'ambig3' in generic interface 'three'" }
+    end subroutine ambig4
   end interface
 end subroutine nine
 
