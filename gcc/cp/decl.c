@@ -10154,8 +10154,15 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (type_quals != TYPE_UNQUALIFIED)
 	      {
 		if (SCALAR_TYPE_P (type) || VOID_TYPE_P (type))
-		  warning (OPT_Wignored_qualifiers,
-			   "type qualifiers ignored on function return type");
+		  {
+		    location_t loc;
+		    loc = smallest_type_quals_location (type_quals,
+							declspecs->locations);
+		    if (loc == UNKNOWN_LOCATION)
+		      loc = declspecs->locations[ds_type_spec];
+		    warning_at (loc, OPT_Wignored_qualifiers, "type "
+				"qualifiers ignored on function return type");
+		  }
 		/* We now know that the TYPE_QUALS don't apply to the
 		   decl, but to its return type.  */
 		type_quals = TYPE_UNQUALIFIED;
