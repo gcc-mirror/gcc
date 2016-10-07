@@ -90,6 +90,7 @@ void pp_cxx_canonical_template_parameter (cxx_pretty_printer *, tree);
 void pp_cxx_trait_expression (cxx_pretty_printer *, tree);
 void pp_cxx_va_arg_expression (cxx_pretty_printer *, tree);
 void pp_cxx_offsetof_expression (cxx_pretty_printer *, tree);
+void pp_cxx_addressof_expression (cxx_pretty_printer *, tree);
 void pp_cxx_userdef_literal (cxx_pretty_printer *, tree);
 void pp_cxx_requires_clause (cxx_pretty_printer *, tree);
 void pp_cxx_requires_expr (cxx_pretty_printer *, tree);

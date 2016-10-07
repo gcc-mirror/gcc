@@ -334,6 +334,11 @@ DEFTREECODE (TAG_DEFN, "tag_defn", tcc_expression, 0)
 /* Represents an 'offsetof' expression during template expansion.  */
 DEFTREECODE (OFFSETOF_EXPR, "offsetof_expr", tcc_expression, 1)
 
+/* Represents an '__builtin_addressof' expression during template
+   expansion.  This is similar to ADDR_EXPR, but it doesn't invoke
+   overloaded & operators.  */
+DEFTREECODE (ADDRESSOF_EXPR, "addressof_expr", tcc_expression, 1)
+
 /* Represents the -> operator during template expansion.  */
 DEFTREECODE (ARROW_EXPR, "arrow_expr", tcc_expression, 1)
 

@@ -380,6 +380,7 @@ pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
    GNU Extensions:
      __builtin_va_arg ( assignment-expression , type-id )
      __builtin_offsetof ( type-id, offsetof-expression )
+     __builtin_addressof ( expression )
 
      __has_nothrow_assign ( type-id )   
      __has_nothrow_constructor ( type-id )
@@ -387,6 +388,7 @@ pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
      __has_trivial_assign ( type-id )   
      __has_trivial_constructor ( type-id )
      __has_trivial_copy ( type-id )
+     __has_unique_object_representations ( type-id )
      __has_trivial_destructor ( type-id )
      __has_virtual_destructor ( type-id )     
      __is_abstract ( type-id )
@@ -454,6 +456,10 @@ cxx_pretty_printer::primary_expression (tree t)
 
     case OFFSETOF_EXPR:
       pp_cxx_offsetof_expression (this, t);
+      break;
+
+    case ADDRESSOF_EXPR:
+      pp_cxx_addressof_expression (this, t);
       break;
 
     case REQUIRES_EXPR:
@@ -2434,6 +2440,15 @@ pp_cxx_offsetof_expression (cxx_pretty_printer *pp, tree t)
   pp_cxx_left_paren (pp);
   if (!pp_cxx_offsetof_expression_1 (pp, TREE_OPERAND (t, 0)))
     pp->expression (TREE_OPERAND (t, 0));
+  pp_cxx_right_paren (pp);
+}
+
+void
+pp_cxx_addressof_expression (cxx_pretty_printer *pp, tree t)
+{
+  pp_cxx_ws_string (pp, "__builtin_addressof");
+  pp_cxx_left_paren (pp);
+  pp->expression (TREE_OPERAND (t, 0));
   pp_cxx_right_paren (pp);
 }
 

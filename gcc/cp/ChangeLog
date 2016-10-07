@@ -1,3 +1,20 @@
+2016-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Implement LWG2296 helper intrinsic
+	* parser.c (cp_parser_postfix_expression): Handle RID_ADDRESSOF.
+	* cp-objcp-common.c (cp_common_init_ts): Handle ADDRESSOF_EXPR.
+	* constexpr.c (potential_constant_expression_1): Likewise.
+	* error.c (dump_expr): Likewise.
+	* typeck.c (cp_build_addressof): New function.
+	* cp-tree.h (cp_build_addressof): Declare.
+	* cxx-pretty-print.h (pp_cxx_addressof_expression): Declare.
+	* cp-tree.def (ADDRESSOF_EXPR): New tree code.
+	* cxx-pretty-print.c (cxx_pretty_printer::primary_expression): Handle
+	ADDRESSOF_EXPR.  Add __builtin_addressof and
+	__has_unique_object_representations into syntax in function comment.
+	(pp_cxx_addressof_expression): New function.
+	* pt.c (tsubst_copy_and_build): Handle ADDRESSOF_EXPR.
+
 2016-10-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/77700

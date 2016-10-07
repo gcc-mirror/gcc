@@ -2678,6 +2678,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_offsetof_expression (pp, t);
       break;
 
+    case ADDRESSOF_EXPR:
+      pp_cxx_addressof_expression (pp, t);
+      break;
+
     case SCOPE_REF:
       dump_decl (pp, t, flags);
       break;

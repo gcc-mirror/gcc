@@ -5456,6 +5456,29 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
   return exp;
 }
 
+/* Construct and perhaps optimize a tree representation
+   for __builtin_addressof operation.  ARG specifies the operand.  */
+
+tree
+cp_build_addressof (location_t loc, tree arg, tsubst_flags_t complain)
+{
+  tree orig_expr = arg;
+
+  if (processing_template_decl)
+    {
+      if (type_dependent_expression_p (arg))
+	return build_min_nt_loc (loc, ADDRESSOF_EXPR, arg, NULL_TREE);
+
+      arg = build_non_dependent_expr (arg);
+    }
+
+  tree exp = cp_build_addr_expr_strict (arg, complain);
+
+  if (processing_template_decl && exp != error_mark_node)
+    exp = build_min_non_dep (ADDRESSOF_EXPR, exp, orig_expr, NULL_TREE);
+  return exp;
+}
+
 /* Like c_common_truthvalue_conversion, but handle pointer-to-member
    constants, where a null value is represented by an INTEGER_CST of
    -1.  */

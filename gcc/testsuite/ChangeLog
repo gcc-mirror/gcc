@@ -1,3 +1,8 @@
+2016-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp0x/addressof1.C: New test.
+	* g++.dg/cpp0x/addressof2.C: New test.
+
 2016-10-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/float128-type-1.c: New test to check that

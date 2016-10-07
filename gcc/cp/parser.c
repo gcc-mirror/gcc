@@ -6602,6 +6602,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	break;
       }
 
+    case RID_ADDRESSOF:
     case RID_BUILTIN_SHUFFLE:
       {
 	vec<tree, va_gc> *vec;
@@ -6618,19 +6619,29 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	FOR_EACH_VEC_ELT (*vec, i, p)
 	  mark_exp_read (p);
 
-	if (vec->length () == 2)
-	  return build_x_vec_perm_expr (loc, (*vec)[0], NULL_TREE, (*vec)[1],
-					 tf_warning_or_error);
-	else if (vec->length () == 3)
-	  return build_x_vec_perm_expr (loc, (*vec)[0], (*vec)[1], (*vec)[2],
-					 tf_warning_or_error);
-	else
-	{
-	  error_at (loc, "wrong number of arguments to "
-	      "%<__builtin_shuffle%>");
-	  return error_mark_node;
-	}
-	break;
+	switch (keyword)
+	  {
+	  case RID_ADDRESSOF:
+	    if (vec->length () == 1)
+	      return cp_build_addressof (loc, (*vec)[0], tf_warning_or_error);
+	    error_at (loc, "wrong number of arguments to "
+			   "%<__builtin_addressof%>");
+	    return error_mark_node;
+
+	  case RID_BUILTIN_SHUFFLE:
+	    if (vec->length () == 2)
+	      return build_x_vec_perm_expr (loc, (*vec)[0], NULL_TREE,
+					    (*vec)[1], tf_warning_or_error);
+	    else if (vec->length () == 3)
+	      return build_x_vec_perm_expr (loc, (*vec)[0], (*vec)[1],
+					    (*vec)[2], tf_warning_or_error);
+	    error_at (loc, "wrong number of arguments to "
+			   "%<__builtin_shuffle%>");
+	    return error_mark_node;
+
+	  default:
+	    gcc_unreachable ();
+	  }
       }
 
     default:

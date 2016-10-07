@@ -6658,6 +6658,8 @@ extern tree build_x_array_ref			(location_t, tree, tree,
 extern tree build_x_unary_op			(location_t,
 						 enum tree_code, cp_expr,
                                                  tsubst_flags_t);
+extern tree cp_build_addressof			(location_t, tree,
+						 tsubst_flags_t);
 extern tree cp_build_addr_expr			(tree, tsubst_flags_t);
 extern tree cp_build_unary_op                   (enum tree_code, tree, bool,
                                                  tsubst_flags_t);
