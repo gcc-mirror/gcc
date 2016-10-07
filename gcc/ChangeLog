@@ -1,3 +1,8 @@
+2016-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77803
+	* gimplify.c (last_stmt_in_scope): Add check for FALLTHROUGH ().
+
 2016-10-07  Richard Biener  <rguenther@suse.de>
 
 	* bitmap.h: Document constraints on bitmap modification while

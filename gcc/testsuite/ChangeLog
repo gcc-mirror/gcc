@@ -1,3 +1,8 @@
+2016-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77803
+	* g++.dg/warn/Wimplicit-fallthrough-1.C: New test.
+
 2016-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/77664
