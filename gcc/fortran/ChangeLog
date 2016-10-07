@@ -1,3 +1,7 @@
+2016-10-07  Fritz Reese  <fritzoreese@gmail.com>
+
+	* interface.c (compare_components): Check charlen for BT_CHAR.
+
 2016-10-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77406
