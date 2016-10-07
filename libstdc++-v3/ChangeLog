@@ -1,3 +1,13 @@
+2016-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* include/std/type_traits (has_unique_object_representations): Define.
+	* testsuite/20_util/has_unique_object_representations/value.cc: New.
+	* testsuite/20_util/has_unique_object_representations/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/has_unique_object_representations/requirements/
+	typedefs.cc: New.
+
 2016-10-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Update status.
