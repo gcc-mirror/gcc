@@ -3040,6 +3040,16 @@ template <typename _Base, typename _Derived>
   constexpr bool is_base_of_v = is_base_of<_Base, _Derived>::value;
 template <typename _From, typename _To>
   constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
+
+# define __cpp_lib_has_unique_object_representations 201606
+  /// has_unique_object_representations
+  template<typename _Tp>
+    struct has_unique_object_representations
+    : bool_constant<__has_unique_object_representations(
+      remove_cv_t<remove_all_extents_t<_Tp>>
+      )>
+    { };
+
 #endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
