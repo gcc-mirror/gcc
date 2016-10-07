@@ -1,3 +1,9 @@
+2016-10-07  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR tree-optimization/77880
+	* expr.c (by_pieces_ninsns): Use unsigned HOST_WIDE_INT where
+	necessary.
+
 2016-10-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/77803
