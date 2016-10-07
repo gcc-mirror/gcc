@@ -755,6 +755,18 @@ bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
     }
 }
 
+/* If you are modifying a bitmap you are currently iterating over you
+   have to ensure to
+     - never remove the current bit;
+     - if you set or clear a bit before the current bit this operation
+       will not affect the set of bits you are visiting during the iteration;
+     - if you set or clear a bit after the current bit it is unspecified
+       whether that affects the set of bits you are visiting during the
+       iteration.
+   If you want to remove the current bit you can delay this to the next
+   iteration (and after the iteration in case the last iteration is
+   affected).  */
+
 /* Loop over all bits set in BITMAP, starting with MIN and setting
    BITNUM to the bit number.  ITER is a bitmap iterator.  BITNUM
    should be treated as a read-only variable as it contains loop
