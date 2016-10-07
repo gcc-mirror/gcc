@@ -416,6 +416,23 @@ lower_gimple_bind (gimple_stmt_iterator *gsi, struct lower_data *data)
     }
 
   record_vars (gimple_bind_vars (stmt));
+
+  /* Scrap DECL_CHAIN up to BLOCK_VARS to ease GC after we no longer
+     need gimple_bind_vars.  */
+  tree next;
+  tree end = NULL_TREE;
+  if (gimple_bind_block (stmt))
+    end = BLOCK_VARS (gimple_bind_block (stmt));
+  for (tree var = gimple_bind_vars (stmt); var != end; var = next)
+    {
+      /* Ugh, something is violating the constraint that BLOCK_VARS
+         is a sub-chain of gimple_bind_vars.  */
+      if (! var)
+	break;
+      next = DECL_CHAIN (var);
+      DECL_CHAIN (var) = NULL_TREE;
+    }
+
   lower_sequence (gimple_bind_body_ptr (stmt), data);
 
   if (new_block)
