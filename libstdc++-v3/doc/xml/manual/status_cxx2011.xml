@@ -2572,15 +2572,59 @@ particular release.
    </para>
 
    <para>
+      <emphasis>17.6.5.12 [res.on.exception.handling]</emphasis>
+      There are no implementation-defined exception classes, only standard
+      exception classes (or classes derived from them) will be thrown.
+   </para>
+
+   <para>
+      <emphasis>17.6.5.14 [value.error.codes]</emphasis>
+      The <classname>error_category</classname> for errors originating outside
+      the OS, and the possible error code values for each error category,
+      should be documented here.
+   </para>
+
+   <para>
+      <emphasis>18.6.2.2 [new.badlength]</emphasis>
+      <function>what()</function> returns
+      <literal>"std::bad_array_new_length"</literal>.
+   </para>
+
+   <para>
+      <emphasis>20.6.9.1 [allocator.member]/5</emphasis>
+      Over-aligned types are not supported by
+      <classname>std::allocator</classname>.
+   </para>
+
+   <para>
       <emphasis>20.7.2.2.1 [util.smartptr.shared.const]</emphasis>
-      Only <classname>bad_alloc</classname> (or types derived from it) will
-      be thrown.
+      When a <classname>shared_ptr</classname> constructor fails
+      <classname>bad_alloc</classname> (or types derived from it) will
+      be thrown, or when an allocator is passed to the constructor then any
+      exceptions thrown by the allocator.
+   </para>
+
+   <para>
+      <emphasis>20.7.2.0 [util.smartptr.weakptr]</emphasis>
+      <code>what()</code> returns <literal>"bad_weak_ptr"</literal>.
    </para>
 
    <para>
       <emphasis>20.8.9.1.3 [func.bind.place]/1</emphasis> There are 29
       placeholders defined and the placeholder types are
       <literal>CopyAssignable</literal>.
+   </para>
+
+   <para>
+      <emphasis>20.11.7.1 [time.clock.system]/3, /4</emphasis>
+      Time point values are truncated to <code>time_t</code> values.
+      There is no loss of precision for conversions in the other direction.
+   </para>
+
+   <para>
+      <emphasis>20.15.7 [meta.trans]/2</emphasis>
+      <classname>aligned_storage</classname> does not support extended
+      alignment.
    </para>
 
    <para>
@@ -2593,6 +2637,11 @@ particular release.
    </para>
 
    <para>
+      <emphasis>22.3.1 [locale]</emphasis>
+      There is one global locale for the whole program, not per-thread.
+   </para>
+
+   <para>
       <emphasis>22.4.5.1.2 [locale.time.get.virtuals]</emphasis>,
       <emphasis>22.4.5.3.2 [locale.time.put.virtuals]</emphasis>
       Additional supported formats should be documented here.
@@ -2601,6 +2650,13 @@ particular release.
    <para>
       <emphasis> 22.4.7.1.2 [locale.messages.virtuals]</emphasis>
       The mapping should be documented here.
+   </para>
+
+   <para>
+      <emphasis>23.3.2.1 [array.overview]</emphasis>
+      <classname>array&lt;T, N&gt;::iterator</classname> is <code>T*</code> and
+      <classname>array&lt;T, N&gt;::const_iterator</classname> is
+      <code>const T*</code>.
    </para>
 
    <para>
@@ -2652,6 +2708,20 @@ particular release.
    </para>
 
    <para>
+      <emphasis>27.8.2.1 [stringbuf.cons]</emphasis>
+      Whether the sequence pointers are copied by the
+      <classname>basic_stringbuf</classname> move constructor should be
+      documented here.
+   </para>
+
+   <para>
+      <emphasis>27.9.1.2 [filebuf.cons]</emphasis>
+      Whether the sequence pointers are copied by the
+      <classname>basic_filebuf</classname> move constructor should be
+      documented here.
+   </para>
+
+   <para>
       <emphasis>28.5.1 [re.synopt]</emphasis>,
       <emphasis> 28.5.2 [re.matchflag] </emphasis>,
       <emphasis> 28.5.3 [re.err] </emphasis>
@@ -2663,6 +2733,12 @@ particular release.
       <emphasis>28.7 [re.traits]</emphasis>
       The <literal>blank</literal> character class corresponds to the
       <code>ctype_base::blank</code> mask.
+   </para>
+
+   <para>
+      <emphasis>29.4 [atomics.lockfree]</emphasis>
+      The values of the <code>ATOMIC_xxx_LOCK_FREE</code> macros depend on
+      the target and cannot be listed here.
    </para>
 
    <para>
