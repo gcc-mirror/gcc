@@ -1319,12 +1319,12 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
     }
 }
 
-/* The caller wants to generate an implicit declaration of SFK for CTYPE
-   which is const if relevant and CONST_P is set.  If spec_p, trivial_p and
-   deleted_p are non-null, set their referent appropriately.  If diag is
-   true, we're either being called from maybe_explain_implicit_delete to
-   give errors, or if constexpr_p is non-null, from
-   explain_invalid_constexpr_fn.  */
+/* The caller wants to generate an implicit declaration of SFK for
+   CTYPE which is const if relevant and CONST_P is set.  If SPEC_P,
+   TRIVIAL_P, DELETED_P or CONSTEXPR_P are non-null, set their
+   referent appropriately.  If DIAG is true, we're either being called
+   from maybe_explain_implicit_delete to give errors, or if
+   CONSTEXPR_P is non-null, from explain_invalid_constexpr_fn.  */
 
 static void
 synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
@@ -1534,9 +1534,13 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     }
 
   vbases = CLASSTYPE_VBASECLASSES (ctype);
-  if (vec_safe_is_empty (vbases))
+  if (assign_p)
+    /* No need to examine vbases here.  */;
+  else if (vec_safe_is_empty (vbases))
     /* No virtual bases to worry about.  */;
-  else if (!assign_p)
+  else if (ABSTRACT_CLASS_TYPE_P (ctype) && cxx_dialect >= cxx14)
+    /* Vbase cdtors are not relevant.  */;
+  else
     {
       if (constexpr_p)
 	*constexpr_p = false;

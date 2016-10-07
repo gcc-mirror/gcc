@@ -1,3 +1,14 @@
+2016-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/64433
+	DR1658, DR1611
+	* init.c (emit_mem_initializers): Don't construct vbases of
+	abstract classes.
+	(push_base_cleanups): Don't push vbase cleanups for abstract class
+	when in C++14 mode.
+	* method.c (synthethesized_method_walk): Don't walk vbases of
+	abstract classes when in C++14 mode.
+
 2016-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Implement LWG2296 helper intrinsic

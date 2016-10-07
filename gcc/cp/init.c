@@ -1154,9 +1154,7 @@ emit_mem_initializers (tree mem_inits)
 	}
 
       /* Initialize the base.  */
-      if (BINFO_VIRTUAL_P (subobject))
-	construct_virtual_base (subobject, arguments);
-      else
+      if (!BINFO_VIRTUAL_P (subobject))
 	{
 	  tree base_addr;
 
@@ -1170,6 +1168,10 @@ emit_mem_initializers (tree mem_inits)
                               tf_warning_or_error);
 	  expand_cleanup_for_base (subobject, NULL_TREE);
 	}
+      else if (!ABSTRACT_CLASS_TYPE_P (current_class_type))
+	/* C++14 DR1658 Means we do not have to construct vbases of
+	   abstract classes.  */
+	construct_virtual_base (subobject, arguments);
     }
   in_base_initializer = 0;
 
@@ -4536,7 +4538,8 @@ push_base_cleanups (void)
   vec<tree, va_gc> *vbases;
 
   /* Run destructors for all virtual baseclasses.  */
-  if (CLASSTYPE_VBASECLASSES (current_class_type))
+  if (!ABSTRACT_CLASS_TYPE_P (current_class_type)
+      && CLASSTYPE_VBASECLASSES (current_class_type))
     {
       tree cond = (condition_conversion
 		   (build2 (BIT_AND_EXPR, integer_type_node,
