@@ -1,3 +1,15 @@
+2016-10-07  Richard Biener  <rguenther@suse.de>
+
+	* bitmap.c (bitmap_elem_to_freelist): Set indx to -1.
+	* bitmap.h (bmp_iter_set): When advancing to the next element
+	check that we didn't remove the current one.
+	(bmp_iter_and): Likewise.
+	(bmp_iter_and_compl): Likewise.
+	* tree-ssa.c (release_defs_bitset): Do not remove worklist bit
+	we currently iterate on but keep a one-level queue.
+	* sched-deps.c (remove_from_deps): Do not clear current bit
+	but keep a one-level queue.
+
 2016-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/77664
