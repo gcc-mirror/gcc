@@ -1,3 +1,10 @@
+2016-10-07  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c++/69733
+	* c-decl.c (smallest_type_quals_location): New static function.
+	(grokdeclarator): Try to find the correct location for an ignored
+	qualifier.
+
 2016-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/7652

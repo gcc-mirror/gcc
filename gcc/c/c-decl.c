@@ -5448,6 +5448,27 @@ warn_defaults_to (location_t location, int opt, const char *gmsgid, ...)
   va_end (ap);
 }
 
+/* Returns the smallest location != UNKNOWN_LOCATION in LOCATIONS,
+   considering only those c_declspec_words found in LIST, which
+   must be terminated by cdw_number_of_elements.  */
+
+static location_t
+smallest_type_quals_location (const location_t *locations,
+			      const c_declspec_word *list)
+{
+  location_t loc = UNKNOWN_LOCATION;
+  while (*list != cdw_number_of_elements)
+    {
+      location_t newloc = locations[*list];
+      if (loc == UNKNOWN_LOCATION
+	  || (newloc != UNKNOWN_LOCATION && newloc < loc))
+	loc = newloc;
+      list++;
+    }
+
+  return loc;
+}
+
 /* Given declspecs and a declarator,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
@@ -6262,7 +6283,19 @@ grokdeclarator (const struct c_declarator *declarator,
 	       qualify the return type, not the function type.  */
 	    if (type_quals)
 	      {
-		int quals_used = type_quals;
+		const enum c_declspec_word ignored_quals_list[] =
+		  {
+		    cdw_const, cdw_volatile, cdw_restrict, cdw_address_space,
+		    cdw_atomic, cdw_number_of_elements
+		  };
+		location_t specs_loc
+		  = smallest_type_quals_location (declspecs->locations,
+						  ignored_quals_list);
+		if (specs_loc == UNKNOWN_LOCATION)
+		  specs_loc = declspecs->locations[cdw_typedef];
+		if (specs_loc == UNKNOWN_LOCATION)
+		  specs_loc = loc;
+
 		/* Type qualifiers on a function return type are
 		   normally permitted by the standard but have no
 		   effect, so give a warning at -Wreturn-type.
@@ -6272,13 +6305,14 @@ grokdeclarator (const struct c_declarator *declarator,
 		   DR#423 means qualifiers (other than _Atomic) are
 		   actually removed from the return type when
 		   determining the function type.  */
+		int quals_used = type_quals;
 		if (flag_isoc11)
 		  quals_used &= TYPE_QUAL_ATOMIC;
 		if (quals_used && VOID_TYPE_P (type) && really_funcdef)
-		  pedwarn (loc, 0,
+		  pedwarn (specs_loc, 0,
 			   "function definition has qualified void return type");
 		else
-		  warning_at (loc, OPT_Wignored_qualifiers,
+		  warning_at (specs_loc, OPT_Wignored_qualifiers,
 			   "type qualifiers ignored on function return type");
 
 		/* Ensure an error for restrict on invalid types; the

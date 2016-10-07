@@ -1,3 +1,10 @@
+2016-10-07  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c++/69733
+	* c-c++-common/pr69733.c: New test.
+	* gcc.dg/pr69733.c: New test.
+	* gcc.target/i386/pr69733.c: New test.
+
 2016-10-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/77803
