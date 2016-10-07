@@ -4063,15 +4063,34 @@ handle_const_call (gcall *stmt, vec<ce_s> *results)
 {
   struct constraint_expr rhsc;
   unsigned int k;
+  bool need_uses = false;
 
   /* Treat nested const functions the same as pure functions as far
      as the static chain is concerned.  */
   if (gimple_call_chain (stmt))
     {
       varinfo_t uses = get_call_use_vi (stmt);
+      make_constraint_to (uses->id, gimple_call_chain (stmt));
+      need_uses = true;
+    }
+
+  /* And if we applied NRV the address of the return slot escapes as well.  */
+  if (gimple_call_return_slot_opt_p (stmt)
+      && gimple_call_lhs (stmt) != NULL_TREE
+      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
+    {
+      varinfo_t uses = get_call_use_vi (stmt);
+      auto_vec<ce_s> tmpc;
+      get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
+      make_constraints_to (uses->id, tmpc);
+      need_uses = true;
+    }
+
+  if (need_uses)
+    {
+      varinfo_t uses = get_call_use_vi (stmt);
       make_any_offset_constraints (uses);
       make_transitive_closure_constraints (uses);
-      make_constraint_to (uses->id, gimple_call_chain (stmt));
       rhsc.var = uses->id;
       rhsc.offset = 0;
       rhsc.type = SCALAR;
@@ -4138,6 +4157,22 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
 	  make_transitive_closure_constraints (uses);
 	}
       make_constraint_to (uses->id, gimple_call_chain (stmt));
+    }
+
+  /* And if we applied NRV the address of the return slot.  */
+  if (gimple_call_return_slot_opt_p (stmt)
+      && gimple_call_lhs (stmt) != NULL_TREE
+      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
+    {
+      if (!uses)
+	{
+	  uses = get_call_use_vi (stmt);
+	  make_any_offset_constraints (uses);
+	  make_transitive_closure_constraints (uses);
+	}
+      auto_vec<ce_s> tmpc;
+      get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
+      make_constraints_to (uses->id, tmpc);
     }
 
   /* Pure functions may return call-used and nonlocal memory.  */
