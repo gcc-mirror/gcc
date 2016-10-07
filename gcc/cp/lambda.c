@@ -967,7 +967,7 @@ maybe_add_lambda_conv_op (tree type)
   {
     int ix = 0;
     tree src = DECL_CHAIN (DECL_ARGUMENTS (callop));
-    tree tgt;
+    tree tgt = NULL;
 
     while (src)
       {
