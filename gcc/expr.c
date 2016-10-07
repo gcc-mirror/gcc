@@ -785,7 +785,7 @@ by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 	    case COMPARE_BY_PIECES:
 	      int batch = targetm.compare_by_pieces_branch_ratio (mode);
 	      int batch_ops = 4 * batch - 1;
-	      int full = n_pieces / batch;
+	      unsigned HOST_WIDE_INT full = n_pieces / batch;
 	      n_insns += full * batch_ops;
 	      if (n_pieces % batch != 0)
 		n_insns++;
