@@ -1687,6 +1687,8 @@ last_stmt_in_scope (gimple *stmt)
 	stmt = gimple_seq_last_stmt (gimple_try_eval (try_stmt));
 	gimple *last_eval = last_stmt_in_scope (stmt);
 	if (gimple_stmt_may_fallthru (last_eval)
+	    && (last_eval == NULL
+		|| !gimple_call_internal_p (last_eval, IFN_FALLTHROUGH))
 	    && gimple_try_kind (try_stmt) == GIMPLE_TRY_FINALLY)
 	  {
 	    stmt = gimple_seq_last_stmt (gimple_try_cleanup (try_stmt));
