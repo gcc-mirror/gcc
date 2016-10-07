@@ -1,5 +1,10 @@
 2016-10-07  Richard Biener  <rguenther@suse.de>
 
+	* bitmap.h: Document constraints on bitmap modification while
+	iterating over it.
+
+2016-10-07  Richard Biener  <rguenther@suse.de>
+
 	* bitmap.c (bitmap_elem_to_freelist): Set indx to -1.
 	* bitmap.h (bmp_iter_set): When advancing to the next element
 	check that we didn't remove the current one.
