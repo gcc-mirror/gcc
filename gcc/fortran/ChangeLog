@@ -1,3 +1,10 @@
+2016-10-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77406
+	* interface.c (gfc_compare_interfaces): Fix detection of ambiguous
+	interface involving alternate return.
+	(check_interface1): Improve error message and loci.
+
 2016-10-06  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/69955

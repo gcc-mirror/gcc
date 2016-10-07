@@ -1,3 +1,22 @@
+2016-10-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77406
+	* gfortran.dg/pr77406.f90: New test.
+	* gfortran.dg/assumed_type_3.f90: Update error messages.
+	* gfortran.dg/defined_operators_1.f90: Ditto.
+	* gfortran.dg/generic_26.f90: Ditto.
+	* gfortran.dg/generic_7.f90: Ditto.
+	* gfortran.dg/gomp/udr5.f90: Ditto.
+	* gfortran.dg/gomp/udr7.f90: Ditto.
+	* gfortran.dg/interface_1.f90: Ditto.
+	* gfortran.dg/interface_37.f90: Ditto.
+	* gfortran.dg/interface_5.f90: Ditto.
+	* gfortran.dg/interface_6.f90: Ditto.
+	* gfortran.dg/interface_7.f90
+	* gfortran.dg/no_arg_check_3.f90
+	* gfortran.dg/operator_5.f90
+	* gfortran.dg/proc_ptr_comp_20.f90: Ditto.
+
 2016-10-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/77700

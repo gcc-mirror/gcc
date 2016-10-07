@@ -66,12 +66,12 @@ subroutine nine()
     end subroutine okok2
   end interface
   interface three
-    subroutine ambig1(x)
+    subroutine ambig1(x) ! { dg-error "Ambiguous interfaces" }
       type(*) :: x
     end subroutine ambig1
-    subroutine ambig2(x)
+    subroutine ambig2(x) ! { dg-error "Ambiguous interfaces" }
       integer :: x
-    end subroutine ambig2 ! { dg-error "Ambiguous interfaces 'ambig2' and 'ambig1' in generic interface 'three'" }
+    end subroutine ambig2
   end interface
 end subroutine nine
 
