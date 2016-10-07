@@ -1,3 +1,9 @@
+2016-10-07  Marek Polacek  <polacek@redhat.com>
+
+	* gimplify.c (should_warn_for_implicit_fallthrough): Check for
+	FALLTHROUGH_LABEL_P here...
+	(warn_implicit_fallthrough_r): ...not here.
+
 2016-10-07  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR tree-optimization/77880
