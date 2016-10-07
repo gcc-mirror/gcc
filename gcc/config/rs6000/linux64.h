@@ -634,3 +634,9 @@ extern int dot_symbols;
   || (TARGET_GLIBC_MAJOR == 2 && TARGET_GLIBC_MINOR >= 19)
 #define RS6000_GLIBC_ATOMIC_FENV 1
 #endif
+
+/* The IEEE 128-bit emulator is only built on Linux systems.  Flag that we
+   should enable the type handling for KFmode on VSX systems even if we are not
+   enabling the __float128 keyword.  */
+#undef	TARGET_FLOAT128_ENABLE_TYPE
+#define TARGET_FLOAT128_ENABLE_TYPE 1

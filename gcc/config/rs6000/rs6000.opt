@@ -645,8 +645,16 @@ mmodulo
 Target Undocumented Report Mask(MODULO) Var(rs6000_isa_flags)
 Generate the integer modulo instructions.
 
+; We want to enable the internal support for the IEEE 128-bit floating point
+; type without necessarily enabling the __float128 keyword.  This is to allow
+; Boost and other libraries that know about __float128 to work until the
+; official library support is finished.
+mfloat128-type
+Target Undocumented Mask(FLOAT128_TYPE) Var(rs6000_isa_flags)
+Allow the IEEE 128-bit types without requiring the __float128 keyword.
+
 mfloat128
-Target Report Mask(FLOAT128) Var(rs6000_isa_flags)
+Target Report Mask(FLOAT128_KEYWORD) Var(rs6000_isa_flags)
 Enable IEEE 128-bit floating point via the __float128 keyword.
 
 mfloat128-hardware

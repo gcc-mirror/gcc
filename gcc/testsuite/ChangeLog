@@ -1,3 +1,11 @@
+2016-10-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-type-1.c: New test to check that
+	PowerPC 64-bit Linux enables -mfloat128-type by default.
+	* gcc.target/powerpc/float128-type-2.c: Likewise.
+	* gcc.target/powerpc/float128-mix.c: Change error message to
+	reflect that __ibm128 is now #define'ed to be long double.
+
 2016-10-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77406
