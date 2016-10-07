@@ -3992,8 +3992,14 @@ remove_from_deps (struct deps_desc *deps, rtx_insn *insn)
   removed = remove_from_dependence_list (insn, &deps->last_pending_memory_flush);
   deps->pending_flush_length -= removed;
 
+  unsigned to_clear = -1U;
   EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i, rsi)
     {
+      if (to_clear != -1U)
+	{
+	  CLEAR_REGNO_REG_SET (&deps->reg_last_in_use, to_clear);
+	  to_clear = -1U;
+	}
       struct deps_reg *reg_last = &deps->reg_last[i];
       if (reg_last->uses)
 	remove_from_dependence_list (insn, &reg_last->uses);
@@ -4005,8 +4011,10 @@ remove_from_deps (struct deps_desc *deps, rtx_insn *insn)
 	remove_from_dependence_list (insn, &reg_last->clobbers);
       if (!reg_last->uses && !reg_last->sets && !reg_last->implicit_sets
 	  && !reg_last->clobbers)
-        CLEAR_REGNO_REG_SET (&deps->reg_last_in_use, i);
+	to_clear = i;
     }
+  if (to_clear != -1U)
+    CLEAR_REGNO_REG_SET (&deps->reg_last_in_use, to_clear);
 
   if (CALL_P (insn))
     {

@@ -551,58 +551,70 @@ release_defs_bitset (bitmap toremove)
      most likely run in slightly superlinear time, rather than the
      pathological quadratic worst case.  */
   while (!bitmap_empty_p (toremove))
-    EXECUTE_IF_SET_IN_BITMAP (toremove, 0, j, bi)
-      {
-	bool remove_now = true;
-	tree var = ssa_name (j);
-	gimple *stmt;
-	imm_use_iterator uit;
+    {
+      unsigned to_remove_bit = -1U;
+      EXECUTE_IF_SET_IN_BITMAP (toremove, 0, j, bi)
+	{
+	  if (to_remove_bit != -1U)
+	    {
+	      bitmap_clear_bit (toremove, to_remove_bit);
+	      to_remove_bit = -1U;
+	    }
 
-	FOR_EACH_IMM_USE_STMT (stmt, uit, var)
-	  {
-	    ssa_op_iter dit;
-	    def_operand_p def_p;
+	  bool remove_now = true;
+	  tree var = ssa_name (j);
+	  gimple *stmt;
+	  imm_use_iterator uit;
 
-	    /* We can't propagate PHI nodes into debug stmts.  */
-	    if (gimple_code (stmt) == GIMPLE_PHI
-		|| is_gimple_debug (stmt))
-	      continue;
+	  FOR_EACH_IMM_USE_STMT (stmt, uit, var)
+	    {
+	      ssa_op_iter dit;
+	      def_operand_p def_p;
 
-	    /* If we find another definition to remove that uses
-	       the one we're looking at, defer the removal of this
-	       one, so that it can be propagated into debug stmts
-	       after the other is.  */
-	    FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, dit, SSA_OP_DEF)
-	      {
-		tree odef = DEF_FROM_PTR (def_p);
+	      /* We can't propagate PHI nodes into debug stmts.  */
+	      if (gimple_code (stmt) == GIMPLE_PHI
+		  || is_gimple_debug (stmt))
+		continue;
 
-		if (bitmap_bit_p (toremove, SSA_NAME_VERSION (odef)))
-		  {
-		    remove_now = false;
-		    break;
-		  }
-	      }
+	      /* If we find another definition to remove that uses
+		 the one we're looking at, defer the removal of this
+		 one, so that it can be propagated into debug stmts
+		 after the other is.  */
+	      FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, dit, SSA_OP_DEF)
+		{
+		  tree odef = DEF_FROM_PTR (def_p);
 
-	    if (!remove_now)
-	      BREAK_FROM_IMM_USE_STMT (uit);
-	  }
+		  if (bitmap_bit_p (toremove, SSA_NAME_VERSION (odef)))
+		    {
+		      remove_now = false;
+		      break;
+		    }
+		}
 
-	if (remove_now)
-	  {
-	    gimple *def = SSA_NAME_DEF_STMT (var);
-	    gimple_stmt_iterator gsi = gsi_for_stmt (def);
+	      if (!remove_now)
+		BREAK_FROM_IMM_USE_STMT (uit);
+	    }
 
-	    if (gimple_code (def) == GIMPLE_PHI)
-	      remove_phi_node (&gsi, true);
-	    else
-	      {
-		gsi_remove (&gsi, true);
-		release_defs (def);
-	      }
+	  if (remove_now)
+	    {
+	      gimple *def = SSA_NAME_DEF_STMT (var);
+	      gimple_stmt_iterator gsi = gsi_for_stmt (def);
 
-	    bitmap_clear_bit (toremove, j);
-	  }
-      }
+	      if (gimple_code (def) == GIMPLE_PHI)
+		remove_phi_node (&gsi, true);
+	      else
+		{
+		  gsi_remove (&gsi, true);
+		  release_defs (def);
+		}
+
+	      to_remove_bit = j;
+	    }
+	}
+      if (to_remove_bit != -1U)
+	bitmap_clear_bit (toremove, to_remove_bit);
+    }
+
 }
 
 /* Verify virtual SSA form.  */
