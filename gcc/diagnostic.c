@@ -53,6 +53,10 @@ static bool diagnostic_impl (rich_location *, int, const char *,
 static bool diagnostic_n_impl (location_t, int, int, const char *,
 			       const char *, va_list *,
 			       diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
+static bool diagnostic_n_impl_richloc (rich_location *, int, int, const char *,
+				       const char *, va_list *,
+				       diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
+
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 static void real_abort (void) ATTRIBUTE_NORETURN;
 
@@ -1064,6 +1068,22 @@ diagnostic_impl (rich_location *richloc, int opt,
   return report_diagnostic (&diagnostic);
 }
 
+/* Same as diagonostic_n_impl taking rich_location instead of location_t.  */
+static bool
+diagnostic_n_impl_richloc (rich_location *richloc, int opt, int n,
+			   const char *singular_gmsgid,
+			   const char *plural_gmsgid,
+			   va_list *ap, diagnostic_t kind)
+{
+  diagnostic_info diagnostic;
+  diagnostic_set_info_translated (&diagnostic,
+                                  ngettext (singular_gmsgid, plural_gmsgid, n),
+                                  ap, richloc, kind);
+  if (kind == DK_WARNING)
+    diagnostic.option_index = opt;
+  return report_diagnostic (&diagnostic);
+} 
+
 /* Implement inform_n, warning_n, and error_n, as documented and
    defined below.  */
 static bool
@@ -1072,14 +1092,9 @@ diagnostic_n_impl (location_t location, int opt, int n,
 		   const char *plural_gmsgid,
 		   va_list *ap, diagnostic_t kind)
 {
-  diagnostic_info diagnostic;
   rich_location richloc (line_table, location);
-  diagnostic_set_info_translated (&diagnostic,
-                                  ngettext (singular_gmsgid, plural_gmsgid, n),
-                                  ap, &richloc, kind);
-  if (kind == DK_WARNING)
-    diagnostic.option_index = opt;
-  return report_diagnostic (&diagnostic);
+  return diagnostic_n_impl_richloc (&richloc, opt, n,
+				    singular_gmsgid, plural_gmsgid, ap, kind);
 }
 
 bool
@@ -1166,6 +1181,21 @@ warning_at_rich_loc (rich_location *richloc, int opt, const char *gmsgid, ...)
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, DK_WARNING);
+  va_end (ap);
+  return ret;
+}
+
+/* Same as warning_at_rich_loc but for plural variant.  */
+
+bool
+warning_at_rich_loc_n (rich_location *richloc, int opt, int n,
+		       const char *singular_gmsgid, const char *plural_gmsgid, ...)
+{
+  va_list ap;
+  va_start (ap, plural_gmsgid);
+  bool ret = diagnostic_n_impl_richloc (richloc, opt, n,
+					singular_gmsgid, plural_gmsgid,
+					&ap, DK_WARNING);
   va_end (ap);
   return ret;
 }

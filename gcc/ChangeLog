@@ -1,3 +1,11 @@
+2016-10-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* diagnostic-core.h (warning_at_rich_loc_n): Declare.
+	* diagnostic.c (warning_at_rich_loc_n): New function.
+	(diagnostic_n_impl_richloc): Likewise.
+	(diagnostic_n_impl): Move most of the function to
+	diagnostic_n_impl_richloc and call it.
+
 2016-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gen-pass-instances.awk: Rewritten.
