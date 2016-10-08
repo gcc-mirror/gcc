@@ -1,5 +1,7 @@
 2016-10-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/Wimplicit-fallthrough-23.c (foo): Add further tests.
+
 	* c-c++-common/Wimplicit-fallthrough-23.c: New test.
 	* c-c++-common/Wimplicit-fallthrough-24.c: New test.
 

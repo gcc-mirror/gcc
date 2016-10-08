@@ -2060,22 +2060,86 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
       from += 1 + len;
     }
   /* Whole comment contents (regex):
-     [ \t]*FALL(S | |-)?THR(OUGH|U)\.?[ \t]*
-     [ \t]*Fall((s | |-)[Tt]|t)hr(ough|u)\.?[ \t]*
-     [ \t]*fall(s | |-)?thr(ough|u)\.?[ \t]*
+     lint -fallthrough ?
+   */
+  else if (*from == 'l')
+    {
+      size_t len = sizeof "int -fallthrough" - 1;
+      if ((size_t) (pfile->buffer->cur - from - 1) < len)
+	return false;
+      if (memcmp (from + 1, "int -fallthrough", len))
+        return false;
+      from += 1 + len;
+      if (*from == ' ')
+        from++;
+    }
+  /* Whole comment contents (regex):
+     [ \t.!]*(ELSE |INTENTIONAL(LY)? )?FALL(S | |-)?THR(OUGH|U)[ \t.!]*(-[^\n\r]*)?
+     [ \t.!]*(Else |Intentional(ly)? )?Fall((s | |-)[Tt]|t)hr(ough|u)[ \t.!]*(-[^\n\r]*)?
+     [ \t.!]*([Ee]lse |[Ii]ntentional(ly)? )?fall(s | |-)?thr(ough|u)[ \t.!]*(-[^\n\r]*)?
    */
   else
     {
-      while (*from == ' ' || *from == '\t')
+      while (*from == ' ' || *from == '\t' || *from == '.' || *from == '!')
 	from++;
       unsigned char f = *from;
+      bool all_upper = false;
+      if (f == 'E' || f == 'e')
+        {
+          if ((size_t) (pfile->buffer->cur - from)
+	      < sizeof "else fallthru" - 1)
+	    return false;
+	  if (f == 'E' && memcmp (from + 1, "LSE F", sizeof "LSE F" - 1) == 0)
+	    all_upper = true;
+	  else if (memcmp (from + 1, "lse ", sizeof "lse " - 1))
+	    return false;
+	  from += sizeof "else " - 1;
+	  if (f == 'e' && *from == 'F')
+	    return false;
+	  f = *from;
+        }
+      else if (f == 'I' || f == 'i')
+        {
+          if ((size_t) (pfile->buffer->cur - from)
+	      < sizeof "intentional fallthru" - 1)
+	    return false;
+	  if (f == 'I' && memcmp (from + 1, "NTENTIONAL",
+				  sizeof "NTENTIONAL" - 1) == 0)
+	    all_upper = true;
+	  else if (memcmp (from + 1, "ntentional",
+			   sizeof "ntentional" - 1))
+	    return false;
+	  from += sizeof "intentional" - 1;
+	  if (*from == ' ')
+	    {
+	      from++;
+	      if (all_upper && *from == 'f')
+		return false;
+	    }
+	  else if (all_upper)
+	    {
+	      if (memcmp (from, "LY F", sizeof "LY F" - 1))
+		return false;
+	      from += sizeof "LY " - 1;
+	    }
+	  else
+	    {
+	      if (memcmp (from, "ly ", sizeof "ly " - 1))
+		return false;
+	      from += sizeof "ly " - 1;
+	    }
+	  if (f == 'i' && *from == 'F')
+	    return false;
+	  f = *from;
+        }
       if (f != 'F' && f != 'f')
 	return false;
       if ((size_t) (pfile->buffer->cur - from) < sizeof "fallthru" - 1)
 	return false;
-      bool all_upper = false;
       if (f == 'F' && memcmp (from + 1, "ALL", sizeof "ALL" - 1) == 0)
 	all_upper = true;
+      else if (all_upper)
+	return false;
       else if (memcmp (from + 1, "all", sizeof "all" - 1))
 	return false;
       from += sizeof "fall" - 1;
@@ -2100,10 +2164,28 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
 	}
       else
 	from += sizeof "thru" - 1;
-      if (*from == '.')
+      while (*from == ' ' || *from == '\t' || *from == '.' || *from == '!')
 	from++;
-      while (*from == ' ' || *from == '\t')
-	from++;
+      if (*from == '-')
+	{
+	  from++;
+	  if (*comment_start == '*')
+	    {
+	      do
+		{
+		  while (*from && *from != '*'
+			 && *from != '\n' && *from != '\r')
+		    from++;
+		  if (*from != '*' || from[1] == '/')
+		    break;
+		  from++;
+		}
+	      while (1);
+	    }
+	  else
+	    while (*from && *from != '\n' && *from != '\r')
+	      from++;
+	}
     }
   /* C block comment.  */
   if (*comment_start == '*')
