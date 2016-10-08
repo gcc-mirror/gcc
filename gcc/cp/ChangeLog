@@ -1,3 +1,8 @@
+2016-10-08  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.c (cp_fold): Distribute cp_truthvalue_conversion
+	into COND_EXPR.
+
 2016-10-07  Jason Merrill  <jason@redhat.com>
 
 	Further P0135 refinement.
