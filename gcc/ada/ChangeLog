@@ -1,3 +1,16 @@
+2016-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (convert) <VECTOR_CST>: Add missing break.
+
+	Revert
+	2016-09-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/decl.c: Fix fall through comment formatting.
+	* gcc-interface/misc.c: Likewise.
+	* gcc-interface/trans.c: Likewise.
+	* gcc-interface/utils.c: Likewise.
+	* gcc-interface/utils2.c: Likewise.
+
 2016-09-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc-interface/misc.c (gnat_post_options): Remove special case for
