@@ -1,5 +1,8 @@
 2016-10-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* lex.c (fallthrough_comment_p): Extend to handle more common FALLTHRU
+	comment styles.
+
 	* lex.c (fallthrough_comment_p): Fix off-by-one size comparison
 	errors, cleanup.
 	(_cpp_lex_direct): Allow arbitrary comments in between
