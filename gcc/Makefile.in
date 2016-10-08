@@ -2158,9 +2158,10 @@ s-bversion: BASE-VER
 
 CFLAGS-toplev.o += -DTARGET_NAME=\"$(target_noncanonical)\"
 
-pass-instances.def: $(srcdir)/passes.def $(srcdir)/gen-pass-instances.awk
+pass-instances.def: $(srcdir)/passes.def $(PASSES_EXTRA) \
+		    $(srcdir)/gen-pass-instances.awk
 	$(AWK) -f $(srcdir)/gen-pass-instances.awk \
-	  $(srcdir)/passes.def > pass-instances.def
+	  $(srcdir)/passes.def $(PASSES_EXTRA) > pass-instances.def
 
 $(out_object_file): $(out_file)
 	$(COMPILE) $<

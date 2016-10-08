@@ -338,3 +338,9 @@ struct ix86_first_cycle_multipass_data_
 
 const addr_space_t ADDR_SPACE_SEG_FS = 1;
 const addr_space_t ADDR_SPACE_SEG_GS = 2;
+
+namespace gcc { class context; }
+class rtl_opt_pass;
+
+extern rtl_opt_pass *make_pass_insert_vzeroupper (gcc::context *);
+extern rtl_opt_pass *make_pass_stv (gcc::context *);

@@ -1,5 +1,20 @@
 2016-10-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* gen-pass-instances.awk: Rewritten.
+	* Makefile.in (pass-instances.def): Depend on $(PASSES_EXTRA), pass
+	$(PASSES_EXTRA) after passes.def to the script.
+	* config/i386/t-i386 (PASSES_EXTRA): Add i386-passes.def.
+	* config/i386/i386-passes.def: New file.
+	* config/i386/i386-protos.h (make_pass_insert_vzeroupper,
+	make_pass_stv): Declare.
+	* config/i386/i386.c (pass_stv::pass_stv): Initialize timode_p to
+	false.
+	(pass_stv::gate): Depending on timode_p member require TARGET_64BIT
+	or !TARGET_64BIT.
+	(pass_stv::clone, pass_stv::set_pass_param): New methods.
+	(pass_stv::timode_p): New non-static data member.
+	(ix86_option_override): Don't register passes here.
+
 	* doc/invoke.texi: Document accepting Else, fallthrough.
 
 	* doc/invoke.texi (-Wimplicit-fallthrough): Document FALLTHRU comment
