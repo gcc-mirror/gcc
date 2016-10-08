@@ -114,6 +114,12 @@ foo (int i)
     case 34:
       bar (34);
       break;
+    case 35:
+      bar (35);			/* { dg-bogus "this statement may \[laf]* through" } */
+      /* Else, fall-through. */
+    case 36:
+      bar (36);
+      break;
     default:
       break;
     }
@@ -224,6 +230,12 @@ foo (int i)
       //Fall-through
     case 34:
       bar (34);
+      break;
+    case 35:
+      bar (35);			/* { dg-bogus "this statement may \[laf]* through" } */
+      // Else, fall-through
+    case 36:
+      bar (36);
       break;
     default:
       break;

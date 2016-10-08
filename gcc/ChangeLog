@@ -1,5 +1,7 @@
 2016-10-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* doc/invoke.texi: Document accepting Else, fallthrough.
+
 	* doc/invoke.texi (-Wimplicit-fallthrough): Document FALLTHRU comment
 	style changes.
 
