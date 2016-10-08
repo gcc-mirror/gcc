@@ -1,3 +1,20 @@
+2016-10-07  Jason Merrill  <jason@redhat.com>
+
+	Further P0135 refinement.
+	* call.c (build_user_type_conversion_1): Consider conversions from
+	a single element in an initializer-list.
+	(build_temp): Undo early_elide_copy change.
+	(build_over_call): Check that we don't try to copy a TARGET_EXPR
+	in C++17 mode.  Set user_conv_p here.
+	(convert_like_real): Not here.
+	(check_self_delegation): Split out from...
+	(build_special_member_call): ...here.  Handle C++17 copy elision.
+	* cvt.c (early_elide_copy): Remove.
+	(ocp_convert): Undo early_elide_copy change.
+	* except.c (build_throw): Likewise.
+	* init.c (expand_default_init): Likewise.
+	* typeck.c (cp_build_modify_expr): Likewise.
+
 2016-10-07  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/64433

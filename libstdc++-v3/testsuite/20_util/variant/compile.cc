@@ -91,8 +91,8 @@ void move_ctor()
 {
   static_assert(is_move_constructible_v<variant<int, string>>, "");
   static_assert(!is_move_constructible_v<variant<AllDeleted, string>>, "");
-  static_assert(!noexcept(variant<int, Empty>(variant<int, Empty>())), "");
-  static_assert(noexcept(variant<int, DefaultNoexcept>(variant<int, DefaultNoexcept>())), "");
+  static_assert(!noexcept(variant<int, Empty>(declval<variant<int, Empty>>())), "");
+  static_assert(noexcept(variant<int, DefaultNoexcept>(declval<variant<int, DefaultNoexcept>>())), "");
 }
 
 void arbitrary_ctor()
