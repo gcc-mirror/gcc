@@ -603,7 +603,8 @@ extern enum cmodel sparc_cmodel;
    (e.g.: in CLASS_MAX_NREGS).  There are also 4 fp condition code registers, so
    32+32+32+4 == 100.
    Register 100 is used as the integer condition code register.
-   Register 101 is used as the soft frame pointer register.  */
+   Register 101 is used as the soft frame pointer register.
+   Register 102 is used as the general status register by VIS instructions.  */
 
 #define FIRST_PSEUDO_REGISTER 103
 
@@ -678,7 +679,7 @@ extern enum cmodel sparc_cmodel;
   0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
 				\
-  0, 0, 0, 0, 0, 1, 1}
+  0, 0, 0, 0, 1, 1, 1}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -885,12 +886,7 @@ extern int sparc_mode_class[];
    have a class that is the union of FPCC_REGS with either of the others,
    it is important that it appear first.  Otherwise the compiler will die
    trying to compile _fixunsdfsi because fix_truncdfsi2 won't match its
-   constraints.
-
-   It is important that SPARC_ICC_REG have class NO_REGS.  Otherwise combine
-   may try to use it to hold an SImode value.  See register_operand.
-   ??? Should %fcc[0123] be handled similarly?
-*/
+   constraints.  */
 
 enum reg_class { NO_REGS, FPCC_REGS, I64_REGS, GENERAL_REGS, FP_REGS,
 		 EXTRA_FP_REGS, GENERAL_OR_FP_REGS, GENERAL_OR_EXTRA_FP_REGS,
