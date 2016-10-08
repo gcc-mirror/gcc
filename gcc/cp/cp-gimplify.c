@@ -2253,6 +2253,15 @@ cp_fold (tree x)
       op1 = cp_fold (TREE_OPERAND (x, 1));
       op2 = cp_fold (TREE_OPERAND (x, 2));
 
+      if (TREE_CODE (TREE_TYPE (x)) == BOOLEAN_TYPE)
+	{
+	  warning_sentinel (warn_int_in_bool_context);
+	  if (!VOID_TYPE_P (TREE_TYPE (op1)))
+	    op1 = cp_truthvalue_conversion (op1);
+	  if (!VOID_TYPE_P (TREE_TYPE (op2)))
+	    op2 = cp_truthvalue_conversion (op2);
+	}
+
       if (op0 != TREE_OPERAND (x, 0)
 	  || op1 != TREE_OPERAND (x, 1)
 	  || op2 != TREE_OPERAND (x, 2))
