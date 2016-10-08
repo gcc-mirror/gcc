@@ -1644,13 +1644,6 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	init = reshape_init (type, init, complain);
     }
 
-  /* Also pull out a TARGET_EXPR that we want to avoid copying.  */
-  if (init && true_exp == exp
-      && TREE_CODE (init) == TREE_LIST
-      && list_length (init) == 1
-      && early_elide_copy (type, TREE_VALUE (init)))
-    init = TREE_VALUE (init);
-
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CP_AGGREGATE_TYPE_P (type))
     /* A brace-enclosed initializer for an aggregate.  In C++0x this can
@@ -1661,12 +1654,14 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
      initializer, whether that happened just above or in
      cp_parser_late_parsing_nsdmi.
 
-     A TARGET_EXPR for which early_elide_copy is true represents the whole
-     initialization, so we shouldn't build up another ctor call.  */
-
+     A TARGET_EXPR with TARGET_EXPR_DIRECT_INIT_P or TARGET_EXPR_LIST_INIT_P
+     set represents the whole initialization, so we shouldn't build up
+     another ctor call.  */
   if (init
       && (TREE_CODE (init) == CONSTRUCTOR
-	  || early_elide_copy (type, init))
+	  || (TREE_CODE (init) == TARGET_EXPR
+	      && (TARGET_EXPR_DIRECT_INIT_P (init)
+		  || TARGET_EXPR_LIST_INIT_P (init))))
       && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (init), type))
     {
       /* Early initialization via a TARGET_EXPR only works for

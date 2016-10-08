@@ -23,3 +23,10 @@ A f() {
   else
     return A();
 }
+
+A* ap = new A(f());
+
+struct B {
+  A a;
+  B(): a(A()) {}
+};
