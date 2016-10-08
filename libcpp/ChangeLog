@@ -1,5 +1,7 @@
 2016-10-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* lex.c (fallthrough_comment_p): Accept Else, fallthrough.
+
 	* lex.c (fallthrough_comment_p): Extend to handle more common FALLTHRU
 	comment styles.
 

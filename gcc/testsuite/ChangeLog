@@ -2,6 +2,8 @@
 
 	* c-c++-common/Wimplicit-fallthrough-23.c (foo): Add further tests.
 
+	* c-c++-common/Wimplicit-fallthrough-23.c (foo): Add further tests.
+
 	* c-c++-common/Wimplicit-fallthrough-23.c: New test.
 	* c-c++-common/Wimplicit-fallthrough-24.c: New test.
 

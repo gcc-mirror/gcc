@@ -2074,9 +2074,9 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
         from++;
     }
   /* Whole comment contents (regex):
-     [ \t.!]*(ELSE |INTENTIONAL(LY)? )?FALL(S | |-)?THR(OUGH|U)[ \t.!]*(-[^\n\r]*)?
-     [ \t.!]*(Else |Intentional(ly)? )?Fall((s | |-)[Tt]|t)hr(ough|u)[ \t.!]*(-[^\n\r]*)?
-     [ \t.!]*([Ee]lse |[Ii]ntentional(ly)? )?fall(s | |-)?thr(ough|u)[ \t.!]*(-[^\n\r]*)?
+     [ \t.!]*(ELSE,? |INTENTIONAL(LY)? )?FALL(S | |-)?THR(OUGH|U)[ \t.!]*(-[^\n\r]*)?
+     [ \t.!]*(Else,? |Intentional(ly)? )?Fall((s | |-)[Tt]|t)hr(ough|u)[ \t.!]*(-[^\n\r]*)?
+     [ \t.!]*([Ee]lse,? |[Ii]ntentional(ly)? )?fall(s | |-)?thr(ough|u)[ \t.!]*(-[^\n\r]*)?
    */
   else
     {
@@ -2089,11 +2089,18 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
           if ((size_t) (pfile->buffer->cur - from)
 	      < sizeof "else fallthru" - 1)
 	    return false;
-	  if (f == 'E' && memcmp (from + 1, "LSE F", sizeof "LSE F" - 1) == 0)
+	  if (f == 'E' && memcmp (from + 1, "LSE", sizeof "LSE" - 1) == 0)
 	    all_upper = true;
-	  else if (memcmp (from + 1, "lse ", sizeof "lse " - 1))
+	  else if (memcmp (from + 1, "lse", sizeof "lse" - 1))
 	    return false;
-	  from += sizeof "else " - 1;
+	  from += sizeof "else" - 1;
+	  if (*from == ',')
+	    from++;
+          if (*from != ' ')
+	    return false;
+	  from++;
+	  if (all_upper && *from == 'f')
+	    return false;
 	  if (f == 'e' && *from == 'F')
 	    return false;
 	  f = *from;
