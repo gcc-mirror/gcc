@@ -1,3 +1,11 @@
+2016-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.h (FIXED_REGISTERS): Add %icc.
+
+	* config/visium/visium.c (visium_expand_int_cstore): Revert latest
+	change.
+	(visium_expand_fp_cstore): Likewise.
+
 2016-10-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* diagnostic-core.h (warning_at_rich_loc_n): Declare.
