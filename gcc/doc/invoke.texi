@@ -4170,10 +4170,26 @@ C++17 provides a standard way to suppress the @option{-Wimplicit-fallthrough}
 warning using @code{[[fallthrough]];} instead of the GNU attribute.  In C++11
 or C++14 users can use @code{[[gnu::fallthrough]];}, which is a GNU extension.
 Instead of the these attributes, it is also possible to add a "falls through"
-comment to silence the warning.  GCC accepts a wide range of such comments,
-for example all of "Falls through.", "fallthru", "FALLS-THROUGH" work.  This
-comment needs to consist of two words merely, optionally followed by periods
-or whitespaces.
+comment to silence the warning.  The whole body of the C or C++ style comment
+should match one of the following regular expressions:
+
+@itemize @bullet
+
+@item @code{-fallthrough}
+
+@item @code{@@fallthrough@@}
+
+@item @code{[ \t]*FALL(S | |-)?THR(OUGH|U)\.?[ \t]*}
+
+@item @code{[ \t]*Fall((s | |-)[Tt]|t)hr(ough|u)\.?[ \t]*}
+
+@item @code{[ \t]*fall(s | |-)?thr(ough|u)\.?[ \t]*}
+
+@end itemize
+
+and the comment needs to be followed after optional whitespace and other comments
+by @code{case} or @code{default} keywords or by a user label that preceeds some
+@code{case} or @code{default} label.
 
 @smallexample
 @group

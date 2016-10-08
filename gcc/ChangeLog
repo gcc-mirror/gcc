@@ -1,3 +1,8 @@
+2016-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-Wimplicit-fallthrough): Document the accepted
+	FALLTHRU comment styles.
+
 2016-10-07  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-arches.def (AARCH64_ARCH): #undef at the end.

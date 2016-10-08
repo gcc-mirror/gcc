@@ -1,3 +1,9 @@
+2016-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.c (c_lex_with_flags) <case CPP_COMMENT>: For CPP_COMMENT
+	token with PREV_FALLTHROUGH, skip all following CPP_PADDING and
+	CPP_COMMENT tokens and set add_flags to PREV_FALLTHROUGH afterwards.
+
 2016-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Implement LWG2296 helper intrinsic

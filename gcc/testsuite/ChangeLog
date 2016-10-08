@@ -1,3 +1,8 @@
+2016-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/Wimplicit-fallthrough-23.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-24.c: New test.
+
 2016-10-07  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_union_11.f90: New testcase.
