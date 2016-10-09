@@ -20,4 +20,4 @@ main()
   test (&bb);
   return 0;
 }
-/* { dg-final { scan-ipa-dump "Alignment 2"  "cp"  } } */
+/* { dg-final { scan-ipa-dump "align: 2"  "cp"  } } */

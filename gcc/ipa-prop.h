@@ -143,17 +143,6 @@ struct GTY(()) ipa_agg_jump_function
 
 typedef struct ipa_agg_jump_function *ipa_agg_jump_function_p;
 
-/* Info about pointer alignments. */
-struct GTY(()) ipa_alignment
-{
-  /* The data fields below are valid only if known is true.  */
-  bool known;
-  /* See ptr_info_def and get_pointer_alignment_1 for description of these
-     two.  */
-  unsigned align;
-  unsigned misalign;
-};
-
 /* Information about zero/non-zero bits.  */
 struct GTY(()) ipa_bits
 {
@@ -185,9 +174,6 @@ struct GTY (()) ipa_jump_func
   /* Aggregate contants description.  See struct ipa_agg_jump_function and its
      description.  */
   struct ipa_agg_jump_function agg;
-
-  /* Information about alignment of pointers. */
-  struct ipa_alignment alignment;
 
   /* Information about zero/non-zero bits.  */
   struct ipa_bits bits;
@@ -531,8 +517,6 @@ struct GTY(()) ipcp_transformation_summary
 {
   /* Linked list of known aggregate values.  */
   ipa_agg_replacement_value *agg_values;
-  /* Alignment information for pointers.  */
-  vec<ipa_alignment, va_gc> *alignments;
   /* Known bits information.  */
   vec<ipa_bits, va_gc> *bits;
   /* Value range information.  */
