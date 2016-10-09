@@ -877,9 +877,9 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	  if (TREE_CODE (ref1->referred->decl)
 	      != TREE_CODE (ref2->referred->decl))
 	    {
-	      if (TREE_CODE (ref1->referred->decl) == VAR_DECL)
+	      if (VAR_P (ref1->referred->decl))
 		end1 = true;
-	      else if (TREE_CODE (ref2->referred->decl) == VAR_DECL)
+	      else if (VAR_P (ref2->referred->decl))
 		end2 = true;
 	    }
 	}
@@ -2342,7 +2342,7 @@ referenced_from_vtable_p (struct cgraph_node *node)
     if ((ref->use == IPA_REF_ALIAS
 	 && referenced_from_vtable_p (dyn_cast<cgraph_node *> (ref->referring)))
 	|| (ref->use == IPA_REF_ADDR
-	    && TREE_CODE (ref->referring->decl) == VAR_DECL
+	    && VAR_P (ref->referring->decl)
 	    && DECL_VIRTUAL_P (ref->referring->decl)))
       {
 	found = true;

@@ -273,7 +273,7 @@ find_va_list_reference (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
       if (bitmap_bit_p (va_list_vars, SSA_NAME_VERSION (var)))
 	return var;
     }
-  else if (TREE_CODE (var) == VAR_DECL)
+  else if (VAR_P (var))
     {
       if (bitmap_bit_p (va_list_vars, DECL_UID (var) + num_ssa_names))
 	return var;
@@ -358,7 +358,7 @@ va_list_counter_struct_op (struct stdarg_info *si, tree ap, tree var,
     return false;
 
   base = get_base_address (ap);
-  if (TREE_CODE (base) != VAR_DECL
+  if (!VAR_P (base)
       || !bitmap_bit_p (si->va_list_vars, DECL_UID (base) + num_ssa_names))
     return false;
 
@@ -377,7 +377,7 @@ va_list_counter_struct_op (struct stdarg_info *si, tree ap, tree var,
 static bool
 va_list_ptr_read (struct stdarg_info *si, tree ap, tree tem)
 {
-  if (TREE_CODE (ap) != VAR_DECL
+  if (!VAR_P (ap)
       || !bitmap_bit_p (si->va_list_vars, DECL_UID (ap) + num_ssa_names))
     return false;
 
@@ -427,7 +427,7 @@ va_list_ptr_write (struct stdarg_info *si, tree ap, tree tem2)
 {
   unsigned HOST_WIDE_INT increment;
 
-  if (TREE_CODE (ap) != VAR_DECL
+  if (!VAR_P (ap)
       || !bitmap_bit_p (si->va_list_vars, DECL_UID (ap) + num_ssa_names))
     return false;
 
@@ -622,7 +622,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
 					   SSA_NAME_VERSION (lhs)))
 			continue;
 
-		      if (TREE_CODE (lhs) == VAR_DECL
+		      if (VAR_P (lhs)
 			  && bitmap_bit_p (si->va_list_vars,
 					   DECL_UID (lhs) + num_ssa_names))
 			continue;
@@ -731,7 +731,7 @@ optimize_va_list_gpr_fpr_size (function *fun)
 	    }
 	  if (TYPE_MAIN_VARIANT (TREE_TYPE (ap))
 	      != TYPE_MAIN_VARIANT (targetm.fn_abi_va_list (fun->decl))
-	      || TREE_CODE (ap) != VAR_DECL)
+	      || !VAR_P (ap))
 	    {
 	      va_list_escapes = true;
 	      break;

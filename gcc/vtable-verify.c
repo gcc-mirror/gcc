@@ -718,7 +718,7 @@ verify_bb_vtables (basic_block bb)
                   vtable_map_node->is_used = true;
                   vtbl_var_decl = vtable_map_node->vtbl_map_decl;
 
-                  if (TREE_CODE (vtbl_decl) == VAR_DECL)
+                  if (VAR_P (vtbl_decl))
                     vtable_name = IDENTIFIER_POINTER (DECL_NAME (vtbl_decl));
 
                   /* Call different routines if we are interested in

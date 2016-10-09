@@ -1369,7 +1369,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
 				   &unsignedp, &reversep, &volatilep);
   tree utype = build_nonstandard_integer_type (modebitsize, 1);
 
-  if ((TREE_CODE (base) == VAR_DECL && DECL_HARD_REGISTER (base))
+  if ((VAR_P (base) && DECL_HARD_REGISTER (base))
       || (bitpos % modebitsize) != 0
       || bitsize != modebitsize
       || GET_MODE_BITSIZE (TYPE_MODE (utype)) != modebitsize

@@ -105,7 +105,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 
   /* We are concerned only about static/external vars and functions.  */
   if ((!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
-      || (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL))
+      || !VAR_OR_FUNCTION_DECL_P (decl))
     return true;
 
   /* Static objects can be referred only if they was not optimized out yet.  */
@@ -126,7 +126,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
      So we are concerned only when DECL comes from initializer of
      external var or var that has been optimized out.  */
   if (!from_decl
-      || TREE_CODE (from_decl) != VAR_DECL
+      || !VAR_P (from_decl)
       || (!DECL_EXTERNAL (from_decl)
 	  && (vnode = varpool_node::get (from_decl)) != NULL
 	  && vnode->definition)
@@ -206,13 +206,12 @@ canonicalize_constructor_val (tree cval, tree from_decl)
       if (!base)
 	return NULL_TREE;
 
-      if ((TREE_CODE (base) == VAR_DECL
-	   || TREE_CODE (base) == FUNCTION_DECL)
+      if (VAR_OR_FUNCTION_DECL_P (base)
 	  && !can_refer_decl_in_current_unit_p (base, from_decl))
 	return NULL_TREE;
       if (TREE_TYPE (base) == error_mark_node)
 	return NULL_TREE;
-      if (TREE_CODE (base) == VAR_DECL)
+      if (VAR_P (base))
 	TREE_ADDRESSABLE (base) = 1;
       else if (TREE_CODE (base) == FUNCTION_DECL)
 	{
@@ -6057,8 +6056,7 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
     *can_refer = true;
 
   /* First of all double check we have virtual table.  */
-  if (TREE_CODE (v) != VAR_DECL
-      || !DECL_VIRTUAL_P (v))
+  if (!VAR_P (v) || !DECL_VIRTUAL_P (v))
     {
       /* Pass down that we lost track of the target.  */
       if (can_refer)

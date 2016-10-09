@@ -142,7 +142,7 @@ varpool_node *
 varpool_node::get_create (tree decl)
 {
   varpool_node *node = varpool_node::get (decl);
-  gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_checking_assert (VAR_P (decl));
   if (node)
     return node;
 
@@ -395,8 +395,7 @@ ctor_for_folding (tree decl)
   varpool_node *node, *real_node;
   tree real_decl;
 
-  if (TREE_CODE (decl) != VAR_DECL
-      && TREE_CODE (decl) != CONST_DECL)
+  if (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
     return error_mark_node;
 
   /* Static constant bounds are created to be
@@ -420,7 +419,7 @@ ctor_for_folding (tree decl)
       return error_mark_node;
     }
 
-  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_P (decl));
 
   real_node = node = varpool_node::get (decl);
   if (node)
@@ -579,7 +578,7 @@ varpool_node::assemble_decl (void)
     return false;
 
   gcc_checking_assert (!TREE_ASM_WRITTEN (decl)
-		       && TREE_CODE (decl) == VAR_DECL
+		       && VAR_P (decl)
 		       && !DECL_HAS_VALUE_EXPR_P (decl));
 
   if (!in_other_partition
@@ -713,7 +712,7 @@ varpool_node::finalize_named_section_flags (void)
       && !alias
       && !in_other_partition
       && !DECL_EXTERNAL (decl)
-      && TREE_CODE (decl) == VAR_DECL
+      && VAR_P (decl)
       && !DECL_HAS_VALUE_EXPR_P (decl)
       && get_section ())
     get_variable_section (decl, false);
@@ -768,8 +767,8 @@ varpool_node::create_alias (tree alias, tree decl)
 {
   varpool_node *alias_node;
 
-  gcc_assert (TREE_CODE (decl) == VAR_DECL);
-  gcc_assert (TREE_CODE (alias) == VAR_DECL);
+  gcc_assert (VAR_P (decl));
+  gcc_assert (VAR_P (alias));
   alias_node = varpool_node::get_create (alias);
   alias_node->alias = true;
   alias_node->definition = true;

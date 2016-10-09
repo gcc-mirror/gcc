@@ -2786,7 +2786,7 @@ verify_address (tree t, tree base)
       return t;
     }
 
-  if (!(TREE_CODE (base) == VAR_DECL
+  if (!(VAR_P (base)
 	|| TREE_CODE (base) == PARM_DECL
 	|| TREE_CODE (base) == RESULT_DECL))
     return NULL_TREE;
@@ -2902,7 +2902,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	if ((tem = verify_address (t, x)))
 	  return tem;
 
-	if (!(TREE_CODE (x) == VAR_DECL
+	if (!(VAR_P (x)
 	      || TREE_CODE (x) == PARM_DECL
 	      || TREE_CODE (x) == RESULT_DECL))
 	  return NULL;
@@ -4982,15 +4982,14 @@ verify_expr_location_1 (tree *tp, int *walk_subtrees, void *data)
 {
   hash_set<tree> *blocks = (hash_set<tree> *) data;
 
-  if (TREE_CODE (*tp) == VAR_DECL
-      && DECL_HAS_DEBUG_EXPR_P (*tp))
+  if (VAR_P (*tp) && DECL_HAS_DEBUG_EXPR_P (*tp))
     {
       tree t = DECL_DEBUG_EXPR (*tp);
       tree addr = walk_tree (&t, verify_expr_no_block, NULL, NULL);
       if (addr)
 	return addr;
     }
-  if ((TREE_CODE (*tp) == VAR_DECL
+  if ((VAR_P (*tp)
        || TREE_CODE (*tp) == PARM_DECL
        || TREE_CODE (*tp) == RESULT_DECL)
       && DECL_HAS_VALUE_EXPR_P (*tp))
@@ -5989,13 +5988,11 @@ gimple_duplicate_bb (basic_block bb)
 	{
 	  tree base = get_base_address (lhs);
 	  if (base
-	      && (TREE_CODE (base) == VAR_DECL
-		  || TREE_CODE (base) == RESULT_DECL)
+	      && (VAR_P (base) || TREE_CODE (base) == RESULT_DECL)
 	      && DECL_IGNORED_P (base)
 	      && !TREE_STATIC (base)
 	      && !DECL_EXTERNAL (base)
-	      && (TREE_CODE (base) != VAR_DECL
-		  || !DECL_HAS_VALUE_EXPR_P (base)))
+	      && (!VAR_P (base) || !DECL_HAS_VALUE_EXPR_P (base)))
 	    DECL_NONSHAREABLE (base) = 1;
 	}
 
@@ -6621,8 +6618,7 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 	     statements, and in alias lists of other variables.  It would be
 	     quite difficult to expunge it from all those places.  ??? It might
 	     suffice to do this for addressable variables.  */
-	  if ((TREE_CODE (t) == VAR_DECL
-	       && !is_global_var (t))
+	  if ((VAR_P (t) && !is_global_var (t))
 	      || TREE_CODE (t) == CONST_DECL)
 	    replace_by_duplicate_decl (tp, p->vars_map, p->to_context);
 	}
@@ -7008,12 +7004,12 @@ replace_block_vars_by_duplicates (tree block, hash_map<tree, tree> *vars_map,
   for (tp = &BLOCK_VARS (block); *tp; tp = &DECL_CHAIN (*tp))
     {
       t = *tp;
-      if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != CONST_DECL)
+      if (!VAR_P (t) && TREE_CODE (t) != CONST_DECL)
 	continue;
       replace_by_duplicate_decl (&t, vars_map, to_context);
       if (t != *tp)
 	{
-	  if (TREE_CODE (*tp) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (*tp))
+	  if (VAR_P (*tp) && DECL_HAS_VALUE_EXPR_P (*tp))
 	    {
 	      tree x = DECL_VALUE_EXPR (*tp);
 	      struct replace_decls_d rd = { vars_map, to_context };
@@ -9035,7 +9031,7 @@ execute_fixup_cfg (void)
 	    {
 	      tree lhs = get_base_address (gimple_get_lhs (stmt));
 
-	      if (TREE_CODE (lhs) == VAR_DECL
+	      if (VAR_P (lhs)
 		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
 		  && varpool_node::get (lhs)->writeonly)
 		{
@@ -9053,7 +9049,7 @@ execute_fixup_cfg (void)
 	    {
 	      tree lhs = get_base_address (gimple_get_lhs (stmt));
 
-	      if (TREE_CODE (lhs) == VAR_DECL
+	      if (VAR_P (lhs)
 		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
 		  && varpool_node::get (lhs)->writeonly)
 		{

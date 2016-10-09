@@ -888,7 +888,7 @@ mark_addressable (tree x)
   if (TREE_CODE (x) == MEM_REF
       && TREE_CODE (TREE_OPERAND (x, 0)) == ADDR_EXPR)
     x = TREE_OPERAND (TREE_OPERAND (x, 0), 0);
-  if (TREE_CODE (x) != VAR_DECL
+  if (!VAR_P (x)
       && TREE_CODE (x) != PARM_DECL
       && TREE_CODE (x) != RESULT_DECL)
     return;

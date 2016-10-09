@@ -716,7 +716,7 @@ set_decl_section_name (tree node, const char *value)
       if (!snode)
 	return;
     }
-  else if (TREE_CODE (node) == VAR_DECL)
+  else if (VAR_P (node))
     snode = varpool_node::get_create (node);
   else
     snode = cgraph_node::get_create (node);
@@ -1156,19 +1156,19 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	  if (DECL_PT_UID_SET_P (node))
 	    SET_DECL_PT_UID (t, DECL_PT_UID (node));
 	}
-      if ((TREE_CODE (node) == PARM_DECL || TREE_CODE (node) == VAR_DECL)
+      if ((TREE_CODE (node) == PARM_DECL || VAR_P (node))
 	  && DECL_HAS_VALUE_EXPR_P (node))
 	{
 	  SET_DECL_VALUE_EXPR (t, DECL_VALUE_EXPR (node));
 	  DECL_HAS_VALUE_EXPR_P (t) = 1;
 	}
       /* DECL_DEBUG_EXPR is copied explicitely by callers.  */
-      if (TREE_CODE (node) == VAR_DECL)
+      if (VAR_P (node))
 	{
 	  DECL_HAS_DEBUG_EXPR_P (t) = 0;
 	  t->decl_with_vis.symtab_node = NULL;
 	}
-      if (TREE_CODE (node) == VAR_DECL && DECL_HAS_INIT_PRIORITY_P (node))
+      if (VAR_P (node) && DECL_HAS_INIT_PRIORITY_P (node))
 	{
 	  SET_DECL_INIT_PRIORITY (t, DECL_INIT_PRIORITY (node));
 	  DECL_HAS_INIT_PRIORITY_P (t) = 1;
@@ -5330,8 +5330,7 @@ need_assembler_name_p (tree decl)
       && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
     return !DECL_ASSEMBLER_NAME_SET_P (decl);
   /* Only FUNCTION_DECLs and VAR_DECLs are considered.  */
-  if (TREE_CODE (decl) != FUNCTION_DECL
-      && TREE_CODE (decl) != VAR_DECL)
+  if (!VAR_OR_FUNCTION_DECL_P (decl))
     return false;
 
   /* If DECL already has its assembler name set, it does not need a
@@ -5346,7 +5345,7 @@ need_assembler_name_p (tree decl)
 
   /* For VAR_DECLs, only static, public and external symbols need an
      assembler name.  */
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && !TREE_STATIC (decl)
       && !TREE_PUBLIC (decl)
       && !DECL_EXTERNAL (decl))
@@ -5460,7 +5459,7 @@ free_lang_data_in_decl (tree decl)
       if (DECL_VINDEX (decl) && !tree_fits_shwi_p (DECL_VINDEX (decl)))
 	DECL_VINDEX (decl) = NULL_TREE;
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       if ((DECL_EXTERNAL (decl)
 	   && (!TREE_STATIC (decl) || !TREE_READONLY (decl)))
@@ -5632,7 +5631,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  fld_worklist_push (DECL_FCONTEXT (t), fld);
 	}
 
-      if ((TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL)
+      if ((VAR_P (t) || TREE_CODE (t) == PARM_DECL)
 	  && DECL_HAS_VALUE_EXPR_P (t))
 	fld_worklist_push (DECL_VALUE_EXPR (t), fld);
 
@@ -6329,14 +6328,13 @@ merge_dllimport_decl_attributes (tree old, tree new_tree)
 	      decl may already have had TREE_CONSTANT computed.
 	      We still remove the attribute so that assembler code refers
 	      to '&foo rather than '_imp__foo'.  */
-	  if (TREE_CODE (old) == VAR_DECL && TREE_ADDRESSABLE (old))
+	  if (VAR_P (old) && TREE_ADDRESSABLE (old))
 	    DECL_DLLIMPORT_P (new_tree) = 1;
 	}
 
       /* Let an inline definition silently override the external reference,
 	 but otherwise warn about attribute inconsistency.  */
-      else if (TREE_CODE (new_tree) == VAR_DECL
-	       || !DECL_DECLARED_INLINE_P (new_tree))
+      else if (VAR_P (new_tree) || !DECL_DECLARED_INLINE_P (new_tree))
 	warning (OPT_Wattributes, "%q+D redeclared without dllimport attribute: "
 		  "previous dllimport ignored", new_tree);
     }
@@ -6387,9 +6385,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	}
     }
 
-  if (TREE_CODE (node) != FUNCTION_DECL
-      && TREE_CODE (node) != VAR_DECL
-      && TREE_CODE (node) != TYPE_DECL)
+  if (!VAR_OR_FUNCTION_DECL_P (node) && TREE_CODE (node) != TYPE_DECL)
     {
       *no_add_attrs = true;
       warning (OPT_Wattributes, "%qE attribute ignored",
@@ -6432,7 +6428,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	  *no_add_attrs = true;
 	}
 
-     else if (TREE_CODE (node) == VAR_DECL)
+     else if (VAR_P (node))
 	{
 	  if (DECL_INITIAL (node))
 	    {
@@ -6460,9 +6456,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
     DECL_EXTERNAL (node) = 0;
 
   /*  Report error if symbol is not accessible at global scope.  */
-  if (!TREE_PUBLIC (node)
-      && (TREE_CODE (node) == VAR_DECL
-	  || TREE_CODE (node) == FUNCTION_DECL))
+  if (!TREE_PUBLIC (node) && VAR_OR_FUNCTION_DECL_P (node))
     {
       error ("external linkage required for symbol %q+D because of "
 	     "%qE attribute", node, name);
@@ -6822,7 +6816,7 @@ decl_init_priority_insert (tree decl, priority_type priority)
       if (!snode)
 	return;
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     snode = varpool_node::get_create (decl);
   else
     snode = cgraph_node::get_create (decl);
@@ -9196,7 +9190,7 @@ bool
 auto_var_in_fn_p (const_tree var, const_tree fn)
 {
   return (DECL_P (var) && DECL_CONTEXT (var) == fn
-	  && ((((TREE_CODE (var) == VAR_DECL && ! DECL_EXTERNAL (var))
+	  && ((((VAR_P (var) && ! DECL_EXTERNAL (var))
 		|| TREE_CODE (var) == PARM_DECL)
 	       && ! TREE_STATIC (var))
 	      || TREE_CODE (var) == LABEL_DECL
@@ -13139,7 +13133,7 @@ array_at_struct_end_p (tree ref)
       && (!size || (DECL_SIZE (ref) != NULL
 		    && operand_equal_p (DECL_SIZE (ref), size, 0)))
       && !(flag_unconstrained_commons
-	   && TREE_CODE (ref) == VAR_DECL && DECL_COMMON (ref)))
+	   && VAR_P (ref) && DECL_COMMON (ref)))
     return false;
 
   return true;
@@ -13971,7 +13965,7 @@ verify_type (const_tree t)
 	    ;
 	  else if (TREE_CODE (fld) == CONST_DECL)
 	    ;
-	  else if (TREE_CODE (fld) == VAR_DECL)
+	  else if (VAR_P (fld))
 	    ;
 	  else if (TREE_CODE (fld) == TEMPLATE_DECL)
 	    ;

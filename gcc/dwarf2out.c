@@ -5359,8 +5359,7 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
   struct var_loc_node *loc = NULL;
   HOST_WIDE_INT bitsize = -1, bitpos = -1;
 
-  if (TREE_CODE (decl) == VAR_DECL
-      && DECL_HAS_DEBUG_EXPR_P (decl))
+  if (VAR_P (decl) && DECL_HAS_DEBUG_EXPR_P (decl))
     {
       tree realdecl = DECL_DEBUG_EXPR (decl);
       if (handled_component_p (realdecl)
@@ -12385,7 +12384,7 @@ tls_mem_loc_descriptor (rtx mem)
 
   base = get_base_address (MEM_EXPR (mem));
   if (base == NULL
-      || TREE_CODE (base) != VAR_DECL
+      || !VAR_P (base)
       || !DECL_THREAD_LOCAL_P (base))
     return NULL;
 
@@ -14632,7 +14631,7 @@ static bool
 decl_by_reference_p (tree decl)
 {
   return ((TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == RESULT_DECL
-  	   || TREE_CODE (decl) == VAR_DECL)
+  	   || VAR_P (decl))
 	  && DECL_BY_REFERENCE (decl));
 }
 
@@ -17261,10 +17260,9 @@ reference_to_unused (tree * tp, int * walk_subtrees,
   /* ???  The C++ FE emits debug information for using decls, so
      putting gcc_unreachable here falls over.  See PR31899.  For now
      be conservative.  */
-  else if (!symtab->global_info_ready
-	   && (TREE_CODE (*tp) == VAR_DECL || TREE_CODE (*tp) == FUNCTION_DECL))
+  else if (!symtab->global_info_ready && VAR_OR_FUNCTION_DECL_P (*tp))
     return *tp;
-  else if (TREE_CODE (*tp) == VAR_DECL)
+  else if (VAR_P (*tp))
     {
       varpool_node *node = varpool_node::get (*tp);
       if (!node || !node->definition)
@@ -17472,7 +17470,7 @@ rtl_for_decl_location (tree decl)
 	      || (MEM_P (rtl)
 	          && CONSTANT_P (XEXP (rtl, 0)))
 	      || (REG_P (rtl)
-	          && TREE_CODE (decl) == VAR_DECL
+	          && VAR_P (decl)
 		  && TREE_STATIC (decl))))
 	{
 	  rtl = targetm.delegitimize_address (rtl);
@@ -17554,7 +17552,7 @@ rtl_for_decl_location (tree decl)
 			     plus_constant (addr_mode, XEXP (rtl, 0), offset));
 	}
     }
-  else if (TREE_CODE (decl) == VAR_DECL
+  else if (VAR_P (decl)
 	   && rtl
 	   && MEM_P (rtl)
 	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl))
@@ -17579,7 +17577,7 @@ rtl_for_decl_location (tree decl)
   /* A variable with no DECL_RTL but a DECL_INITIAL is a compile-time constant,
      and will have been substituted directly into all expressions that use it.
      C does not have such a concept, but C++ and other languages do.  */
-  if (!rtl && TREE_CODE (decl) == VAR_DECL && DECL_INITIAL (decl))
+  if (!rtl && VAR_P (decl) && DECL_INITIAL (decl))
     rtl = rtl_for_decl_init (DECL_INITIAL (decl), TREE_TYPE (decl));
 
   if (rtl)
@@ -17595,7 +17593,7 @@ rtl_for_decl_location (tree decl)
      in the current CU, resolve_addr will remove the expression referencing
      it.  */
   if (rtl == NULL_RTX
-      && TREE_CODE (decl) == VAR_DECL
+      && VAR_P (decl)
       && !DECL_EXTERNAL (decl)
       && TREE_STATIC (decl)
       && DECL_NAME (decl)
@@ -17629,7 +17627,7 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
      it does not have a value (the offset into the common area), or if it
      is thread local (as opposed to global) then it isn't common, and shouldn't
      be handled as such.  */
-  if (TREE_CODE (decl) != VAR_DECL
+  if (!VAR_P (decl)
       || !TREE_STATIC (decl)
       || !DECL_HAS_VALUE_EXPR_P (decl)
       || !is_fortran ())
@@ -17643,7 +17641,7 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
 			      &unsignedp, &reversep, &volatilep);
 
   if (cvar == NULL_TREE
-      || TREE_CODE (cvar) != VAR_DECL
+      || !VAR_P (cvar)
       || DECL_ARTIFICIAL (cvar)
       || !TREE_PUBLIC (cvar))
     return NULL_TREE;
@@ -17695,7 +17693,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
       || get_AT (die, DW_AT_const_value))
     return true;
 
-  gcc_assert (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL
+  gcc_assert (VAR_P (decl) || TREE_CODE (decl) == PARM_DECL
 	      || TREE_CODE (decl) == RESULT_DECL);
 
   /* Try to get some constant RTL for this decl, and use that as the value of
@@ -17958,10 +17956,8 @@ tree_add_const_value_attribute_for_decl (dw_die_ref var_die, tree decl)
 {
 
   if (!decl
-      || (TREE_CODE (decl) != VAR_DECL
-	  && TREE_CODE (decl) != CONST_DECL)
-      || (TREE_CODE (decl) == VAR_DECL
-	  && !TREE_STATIC (decl)))
+      || (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
+      || (VAR_P (decl) && !TREE_STATIC (decl)))
     return false;
 
   if (TREE_READONLY (decl)
@@ -18303,7 +18299,7 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 	  && TREE_CODE (TREE_OPERAND (value, 1)) == FIELD_DECL)
 	decl = TREE_OPERAND (value, 1);
 
-      else if (TREE_CODE (value) == VAR_DECL
+      else if (VAR_P (value)
 	       || TREE_CODE (value) == PARM_DECL
 	       || TREE_CODE (value) == RESULT_DECL)
 	decl = value;
@@ -18839,9 +18835,9 @@ static void
 add_linkage_name (dw_die_ref die, tree decl)
 {
   if (debug_info_level > DINFO_LEVEL_NONE
-      && (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
+      && VAR_OR_FUNCTION_DECL_P (decl)
       && TREE_PUBLIC (decl)
-      && !(TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
+      && !(VAR_P (decl) && DECL_REGISTER (decl))
       && die->die_tag != DW_TAG_member)
     add_linkage_name_raw (die, decl);
 }
@@ -20121,7 +20117,7 @@ set_block_abstract_flags (tree stmt, vec<tree> &abstract_vec)
   for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
     {
       local_decl = BLOCK_NONLOCALIZED_VAR (stmt, i);
-      if ((TREE_CODE (local_decl) == VAR_DECL && !TREE_STATIC (local_decl))
+      if ((VAR_P (local_decl) && !TREE_STATIC (local_decl))
 	  || TREE_CODE (local_decl) == PARM_DECL)
 	set_decl_abstract_flags (local_decl, abstract_vec);
     }
@@ -21205,7 +21201,7 @@ decl_will_get_specification_p (dw_die_ref old_die, tree decl, bool declaration)
 static inline bool
 local_function_static (tree decl)
 {
-  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_P (decl));
   return TREE_STATIC (decl)
     && DECL_CONTEXT (decl)
     && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL;
@@ -21456,7 +21452,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	  /* Local static vars are shared between all clones/inlines,
 	     so emit DW_AT_location on the abstract DIE if DECL_RTL is
 	     already set.  */
-	  || (TREE_CODE (decl_or_origin) == VAR_DECL
+	  || (VAR_P (decl_or_origin)
 	      && TREE_STATIC (decl_or_origin)
 	      && DECL_RTL_SET_P (decl_or_origin)))
       /* When abstract origin already has DW_AT_location attribute, no need
@@ -23889,8 +23885,7 @@ dwarf2out_late_global_decl (tree decl)
 {
   /* Fill-in any location information we were unable to determine
      on the first pass.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      && !POINTER_BOUNDS_P (decl))
+  if (VAR_P (decl) && !POINTER_BOUNDS_P (decl))
     {
       dw_die_ref die = lookup_decl_die (decl);
 
@@ -26649,7 +26644,7 @@ optimize_one_addr_into_implicit_ptr (dw_loc_descr_ref loc)
   if (GET_CODE (rtl) == SYMBOL_REF && SYMBOL_REF_DECL (rtl))
     {
       decl = SYMBOL_REF_DECL (rtl);
-      if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
+      if (VAR_P (decl) && !DECL_EXTERNAL (decl))
 	{
 	  ref = lookup_decl_die (decl);
 	  if (ref && (get_AT (ref, DW_AT_location)
@@ -26811,7 +26806,7 @@ resolve_addr_in_expr (dw_loc_descr_ref loc)
 static void
 optimize_location_into_implicit_ptr (dw_die_ref die, tree decl)
 {
-  if (TREE_CODE (decl) != VAR_DECL
+  if (!VAR_P (decl)
       || lookup_decl_die (decl) != die
       || DECL_EXTERNAL (decl)
       || !TREE_STATIC (decl)

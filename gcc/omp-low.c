@@ -7106,7 +7106,7 @@ expand_omp_regimplify_p (tree *tp, int *walk_subtrees, void *)
   tree t = *tp;
 
   /* Any variable with DECL_VALUE_EXPR needs to be regimplified.  */
-  if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
+  if (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t))
     return t;
 
   if (TREE_CODE (t) == ADDR_EXPR)
@@ -7287,9 +7287,7 @@ expand_omp_taskreg (struct omp_region *region)
 	 rather than in containing function's local_decls chain,
 	 which would mean cgraph missed finalizing them.  Do it now.  */
       for (t = BLOCK_VARS (block); t; t = DECL_CHAIN (t))
-	if (TREE_CODE (t) == VAR_DECL
-	    && TREE_STATIC (t)
-	    && !DECL_EXTERNAL (t))
+	if (VAR_P (t) && TREE_STATIC (t) && !DECL_EXTERNAL (t))
 	  varpool_node::finalize_decl (t);
       DECL_SAVED_TREE (child_fn) = NULL;
       /* We'll create a CFG for child_fn, so no gimple body is needed.  */
@@ -13129,9 +13127,7 @@ expand_omp_target (struct omp_region *region)
 	 rather than in containing function's local_decls chain,
 	 which would mean cgraph missed finalizing them.  Do it now.  */
       for (t = BLOCK_VARS (block); t; t = DECL_CHAIN (t))
-	if (TREE_CODE (t) == VAR_DECL
-	    && TREE_STATIC (t)
-	    && !DECL_EXTERNAL (t))
+	if (VAR_P (t) && TREE_STATIC (t) && !DECL_EXTERNAL (t))
 	  varpool_node::finalize_decl (t);
       DECL_SAVED_TREE (child_fn) = NULL;
       /* We'll create a CFG for child_fn, so no gimple body is needed.  */
@@ -16892,7 +16888,7 @@ lower_omp_regimplify_p (tree *tp, int *walk_subtrees,
   tree t = *tp;
 
   /* Any variable with DECL_VALUE_EXPR needs to be regimplified.  */
-  if (TREE_CODE (t) == VAR_DECL && data == NULL && DECL_HAS_VALUE_EXPR_P (t))
+  if (VAR_P (t) && data == NULL && DECL_HAS_VALUE_EXPR_P (t))
     return t;
 
   if (task_shared_vars
@@ -17196,7 +17192,7 @@ grid_reg_assignment_to_local_var_p (gimple *stmt)
   if (!assign)
     return false;
   tree lhs = gimple_assign_lhs (assign);
-  if (TREE_CODE (lhs) != VAR_DECL
+  if (!VAR_P (lhs)
       || !is_gimple_reg_type (TREE_TYPE (lhs))
       || is_global_var (lhs))
     return false;
@@ -17634,7 +17630,7 @@ grid_remap_prebody_decls (tree *tp, int *walk_subtrees, void *data)
   else
     *walk_subtrees = 1;
 
-  if (TREE_CODE (t) == VAR_DECL)
+  if (VAR_P (t))
     {
       struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
       hash_map<tree, tree> *declmap = (hash_map<tree, tree> *) wi->info;
@@ -18449,7 +18445,7 @@ add_decls_addresses_to_decl_constructor (vec<tree, va_gc> *v_decls,
   for (unsigned i = 0; i < len; i++)
     {
       tree it = (*v_decls)[i];
-      bool is_var = TREE_CODE (it) == VAR_DECL;
+      bool is_var = VAR_P (it);
       bool is_link_var
 	= is_var
 #ifdef ACCEL_COMPILER
@@ -19920,7 +19916,7 @@ find_link_var_op (tree *tp, int *walk_subtrees, void *)
 {
   tree t = *tp;
 
-  if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t)
+  if (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t)
       && lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (t)))
     {
       *walk_subtrees = 0;

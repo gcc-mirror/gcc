@@ -1339,8 +1339,7 @@ rewrite_stmt (gimple_stmt_iterator *si)
 	  {
 	    /* If we rewrite a DECL into SSA form then drop its
 	       clobber stmts and replace uses with a new default def.  */
-	    gcc_checking_assert (TREE_CODE (var) == VAR_DECL
-				 && !gimple_vdef (stmt));
+	    gcc_checking_assert (VAR_P (var) && !gimple_vdef (stmt));
 	    gsi_replace (si, gimple_build_nop (), true);
 	    register_new_def (get_or_create_ssa_default_def (cfun, var), var);
 	    break;
@@ -1821,7 +1820,7 @@ maybe_register_def (def_operand_p def_p, gimple *stmt,
 	{
 	  if (gimple_clobber_p (stmt) && is_gimple_reg (sym))
 	    {
-	      gcc_checking_assert (TREE_CODE (sym) == VAR_DECL);
+	      gcc_checking_assert (VAR_P (sym));
 	      /* Replace clobber stmts with a default def. This new use of a
 		 default definition may make it look like SSA_NAMEs have
 		 conflicting lifetimes, so we need special code to let them
@@ -2393,7 +2392,7 @@ pass_build_ssa::execute (function *fun)
 	continue;
       tree decl = SSA_NAME_VAR (name);
       if (decl
-	  && TREE_CODE (decl) == VAR_DECL
+	  && VAR_P (decl)
 	  && !VAR_DECL_IS_VIRTUAL_OPERAND (decl)
 	  && DECL_IGNORED_P (decl))
 	SET_SSA_NAME_VAR_OR_IDENTIFIER (name, DECL_NAME (decl));

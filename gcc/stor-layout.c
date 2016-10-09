@@ -1137,7 +1137,7 @@ place_field (record_layout_info rli, tree field)
      really like a structure field.  If it is a FUNCTION_DECL, it's a
      method.  In both cases, all we do is lay out the decl, and we do
      it *after* the record is laid out.  */
-  if (TREE_CODE (field) == VAR_DECL)
+  if (VAR_P (field))
     {
       vec_safe_push (rli->pending_statics, field);
       return;

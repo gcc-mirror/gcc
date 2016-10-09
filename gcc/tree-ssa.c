@@ -246,8 +246,7 @@ target_for_debug_bind (tree var)
 	return NULL_TREE;
     }
 
-  if ((TREE_CODE (var) != VAR_DECL
-       || VAR_DECL_IS_VIRTUAL_OPERAND (var))
+  if ((!VAR_P (var) || VAR_DECL_IS_VIRTUAL_OPERAND (var))
       && TREE_CODE (var) != PARM_DECL)
     return NULL_TREE;
 
@@ -974,7 +973,7 @@ verify_phi_args (gphi *phi, basic_block bb, basic_block *definition_block)
 	  tree base = TREE_OPERAND (op, 0);
 	  while (handled_component_p (base))
 	    base = TREE_OPERAND (base, 0);
-	  if ((TREE_CODE (base) == VAR_DECL
+	  if ((VAR_P (base)
 	       || TREE_CODE (base) == PARM_DECL
 	       || TREE_CODE (base) == RESULT_DECL)
 	      && !TREE_ADDRESSABLE (base))
@@ -1246,7 +1245,7 @@ ssa_undefined_value_p (tree t, bool partial)
   else if (TREE_CODE (var) == RESULT_DECL && DECL_BY_REFERENCE (var))
     return false;
   /* Hard register variables get their initial value from the ether.  */
-  else if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
+  else if (VAR_P (var) && DECL_HARD_REGISTER (var))
     return false;
 
   /* The value is undefined iff its definition statement is empty.  */
@@ -1538,7 +1537,7 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs,
       && (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
 	  || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE)
       && !TREE_THIS_VOLATILE (var)
-      && (TREE_CODE (var) != VAR_DECL || !DECL_HARD_REGISTER (var)))
+      && (!VAR_P (var) || !DECL_HARD_REGISTER (var)))
     {
       DECL_GIMPLE_REG_P (var) = 1;
       bitmap_set_bit (suitable_for_renaming, DECL_UID (var));

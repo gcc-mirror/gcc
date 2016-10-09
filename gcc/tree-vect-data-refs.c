@@ -5977,7 +5977,7 @@ vect_record_grouped_load_vectors (gimple *stmt, vec<tree> result_chain)
 bool
 vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
 {
-  if (TREE_CODE (decl) != VAR_DECL)
+  if (!VAR_P (decl))
     return false;
 
   if (decl_in_symtab_p (decl)

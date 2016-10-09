@@ -687,7 +687,7 @@ sra_deinitialize (void)
 
 static bool constant_decl_p (tree decl)
 {
-  return TREE_CODE (decl) == VAR_DECL && DECL_IN_CONSTANT_POOL (decl);
+  return VAR_P (decl) && DECL_IN_CONSTANT_POOL (decl);
 }
 
 /* Remove DECL from candidates for SRA and write REASON to the dump file if
@@ -1965,7 +1965,7 @@ find_var_candidates (void)
 
   FOR_EACH_LOCAL_DECL (cfun, i, var)
     {
-      if (TREE_CODE (var) != VAR_DECL)
+      if (!VAR_P (var))
         continue;
 
       ret |= maybe_add_sra_candidate (var);
@@ -2653,8 +2653,7 @@ analyze_all_variable_accesses (void)
       {
 	tree var = candidate (i);
 
-	if (TREE_CODE (var) == VAR_DECL
-	    && scalarizable_type_p (TREE_TYPE (var)))
+	if (VAR_P (var) && scalarizable_type_p (TREE_TYPE (var)))
 	  {
 	    if (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var)))
 		<= max_scalarization_size)

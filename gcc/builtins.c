@@ -691,7 +691,7 @@ builtin_save_expr (tree exp)
   if (TREE_CODE (exp) == SSA_NAME
       || (TREE_ADDRESSABLE (exp) == 0
 	  && (TREE_CODE (exp) == PARM_DECL
-	      || (TREE_CODE (exp) == VAR_DECL && !TREE_STATIC (exp)))))
+	      || (VAR_P (exp) && !TREE_STATIC (exp)))))
     return exp;
 
   return save_expr (exp);
@@ -7141,9 +7141,7 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
 	}
       while (TREE_CODE (inner) == COMPONENT_REF
 	     || TREE_CODE (inner) == ARRAY_REF);
-      if ((TREE_CODE (inner) == VAR_DECL
-           || TREE_CODE (inner) == FUNCTION_DECL)
-	  && DECL_WEAK (inner))
+      if (VAR_OR_FUNCTION_DECL_P (inner) && DECL_WEAK (inner))
 	return NULL_TREE;
     }
 
@@ -8813,7 +8811,7 @@ readonly_data_expr (tree exp)
      understand).  */
   if (TREE_CODE (exp) == STRING_CST
       || TREE_CODE (exp) == CONSTRUCTOR
-      || (TREE_CODE (exp) == VAR_DECL && TREE_STATIC (exp)))
+      || (VAR_P (exp) && TREE_STATIC (exp)))
     return decl_readonly_section (exp, 0);
   else
     return false;

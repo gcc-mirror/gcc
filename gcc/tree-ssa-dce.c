@@ -1093,7 +1093,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
       && is_gimple_val (gimple_assign_rhs1 (stmt)))
     {
       tree lhs = gimple_assign_lhs (stmt);
-      if ((TREE_CODE (lhs) == VAR_DECL || TREE_CODE (lhs) == PARM_DECL)
+      if ((VAR_P (lhs) || TREE_CODE (lhs) == PARM_DECL)
 	  && !DECL_IGNORED_P (lhs)
 	  && is_gimple_reg_type (TREE_TYPE (lhs))
 	  && !is_global_var (lhs)

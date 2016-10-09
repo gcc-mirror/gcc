@@ -4383,7 +4383,7 @@ force_expr_to_var_cost (tree expr, bool speed)
 	{
 	  tree obj = TREE_OPERAND (expr, 0);
 
-	  if (TREE_CODE (obj) == VAR_DECL
+	  if (VAR_P (obj)
 	      || TREE_CODE (obj) == PARM_DECL
 	      || TREE_CODE (obj) == RESULT_DECL)
 	    return comp_cost (symbol_cost [speed], 0);
@@ -4530,7 +4530,7 @@ split_address_cost (struct ivopts_data *data,
   if (toffset != 0
       || bitpos % BITS_PER_UNIT != 0
       || reversep
-      || TREE_CODE (core) != VAR_DECL)
+      || !VAR_P (core))
     {
       *symbol_present = false;
       *var_present = true;

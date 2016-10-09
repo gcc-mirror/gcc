@@ -536,8 +536,7 @@ dequeue_and_dump (dump_info_p di)
 	  if (DECL_FIELD_OFFSET (t))
 	    dump_child ("bpos", bit_position (t));
 	}
-      else if (TREE_CODE (t) == VAR_DECL
-	       || TREE_CODE (t) == PARM_DECL)
+      else if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
 	{
 	  dump_int (di, "used", TREE_USED (t));
 	  if (DECL_REGISTER (t))

@@ -268,8 +268,7 @@ find_implicit_erroneous_behavior (void)
 	      if (TREE_CODE (op) == ADDR_EXPR)
 		{
 		  tree valbase = get_base_address (TREE_OPERAND (op, 0));
-		  if ((TREE_CODE (valbase) == VAR_DECL
-		       && !is_global_var (valbase))
+		  if ((VAR_P (valbase) && !is_global_var (valbase))
 		      || TREE_CODE (valbase) == PARM_DECL)
 		    {
 		      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
@@ -426,8 +425,7 @@ find_explicit_erroneous_behavior (void)
 	      if (val && TREE_CODE (val) == ADDR_EXPR)
 		{
 		  tree valbase = get_base_address (TREE_OPERAND (val, 0));
-		  if ((TREE_CODE (valbase) == VAR_DECL
-		       && !is_global_var (valbase))
+		  if ((VAR_P (valbase) && !is_global_var (valbase))
 		      || TREE_CODE (valbase) == PARM_DECL)
 		    {
 		      /* We only need it for this particular case.  */

@@ -321,7 +321,7 @@ delegitimize_mem_from_attrs (rtx x)
 
       if (decl
 	  && mode == GET_MODE (x)
-	  && TREE_CODE (decl) == VAR_DECL
+	  && VAR_P (decl)
 	  && (TREE_STATIC (decl)
 	      || DECL_THREAD_LOCAL_P (decl))
 	  && DECL_RTL_SET_P (decl)
