@@ -193,7 +193,6 @@ function replace_pass(line, fnname,			num, i)
 }
 
 END {
-  delete pass_counts;
   for (i = 1; i < lineno; i++)
     {
       ret = parse_line(lines[i], "NEXT_PASS");
@@ -203,13 +202,13 @@ END {
 	  pass_name = args[1];
 	  with_arg = args[2];
 
-	  # Set pass_counts
-	  if (pass_name in pass_counts)
-	    pass_counts[pass_name]++;
+	  # Set pass_final_counts
+	  if (pass_name in pass_final_counts)
+	    pass_final_counts[pass_name]++;
 	  else
-	    pass_counts[pass_name] = 1;
+	    pass_final_counts[pass_name] = 1;
 
-	  pass_num = pass_counts[pass_name];
+	  pass_num = pass_final_counts[pass_name];
 
 	  # Print call expression with extra pass_num argument
 	  printf "%s", prefix;
