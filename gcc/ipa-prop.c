@@ -5677,6 +5677,9 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.bb_infos.release ();
   free_dominance_info (CDI_DOMINATORS);
   (*ipcp_transformations)[node->uid].agg_values = NULL;
+  (*ipcp_transformations)[node->uid].bits = NULL;
+  (*ipcp_transformations)[node->uid].m_vr = NULL;
+
   descriptors.release ();
 
   if (!something_changed)
