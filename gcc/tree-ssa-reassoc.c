@@ -2846,7 +2846,9 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 
   for (i = first; i < length; i++)
     {
-      if (ranges[i].exp == NULL_TREE || !ranges[i].in_p)
+      if (ranges[i].exp == NULL_TREE
+	  || TREE_CODE (ranges[i].exp) != SSA_NAME
+	  || !ranges[i].in_p)
 	continue;
 
       tree type = TREE_TYPE (ranges[i].exp);
@@ -2878,6 +2880,8 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
       tree rhs1, rhs2;
       if (ranges[i].exp)
 	{
+	  if (TREE_CODE (ranges[i].exp) != SSA_NAME)
+	    continue;
 	  stmt = SSA_NAME_DEF_STMT (ranges[i].exp);
 	  if (!is_gimple_assign (stmt))
 	    continue;

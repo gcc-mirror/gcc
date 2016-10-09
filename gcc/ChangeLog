@@ -1,3 +1,11 @@
+2016-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77901
+	* tree-ssa-reassoc.c (optimize_range_tests_var_bound): Only optimize
+	if ranges[i].exp is SSA_NAME when looking for >= and only when
+	ranges[i].exp is NULL or SSA_NAME when looking for the other
+	comparison.
+
 2016-10-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* ipa-cp.c (ipcp_alignment_lattice): Remove.

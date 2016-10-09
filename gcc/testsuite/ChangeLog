@@ -1,3 +1,8 @@
+2016-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77901
+	* gcc.c-torture/compile/pr77901.c: New test.
+
 2016-10-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/ipa/propalign-1.c: Adjust scan-ipa-dump.
