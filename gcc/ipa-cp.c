@@ -238,36 +238,6 @@ public:
   struct ipcp_agg_lattice *next;
 };
 
-/* Lattice of pointer alignment.  Unlike the previous types of lattices, this
-   one is only capable of holding one value.  */
-
-class ipcp_alignment_lattice
-{
-public:
-  /* If bottom and top are both false, these two fields hold values as given by
-     ptr_info_def and get_pointer_alignment_1.  */
-  unsigned align;
-  unsigned misalign;
-
-  inline bool bottom_p () const;
-  inline bool top_p () const;
-  inline bool set_to_bottom ();
-  bool meet_with (unsigned new_align, unsigned new_misalign);
-  bool meet_with (const ipcp_alignment_lattice &other, HOST_WIDE_INT offset);
-  void print (FILE * f);
-private:
-  /* If set, this lattice is bottom and all other fields should be
-     disregarded.  */
-  bool bottom;
-  /* If bottom and not_top are false, the lattice is TOP.  If not_top is true,
-     the known alignment is stored in the fields align and misalign.  The field
-     is negated so that memset to zero initializes the lattice to TOP
-     state.  */
-  bool not_top;
-
-  bool meet_with_1 (unsigned new_align, unsigned new_misalign);
-};
-
 /* Lattice of known bits, only capable of holding one value.
    Bitwise constant propagation propagates which bits of a
    value are constant.
@@ -354,8 +324,6 @@ public:
   ipcp_lattice<ipa_polymorphic_call_context> ctxlat;
   /* Lattices describing aggregate parts.  */
   ipcp_agg_lattice *aggs;
-  /* Lattice describing known alignment.  */
-  ipcp_alignment_lattice alignment;
   /* Lattice describing known bits.  */
   ipcp_bits_lattice bits_lattice;
   /* Lattice describing value range.  */
@@ -534,19 +502,6 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
     fprintf (f, "\n");
 }
 
-/* Print alignment lattice to F.  */
-
-void
-ipcp_alignment_lattice::print (FILE * f)
-{
-  if (top_p ())
-    fprintf (f, "         Alignment unknown (TOP)\n");
-  else if (bottom_p ())
-    fprintf (f, "         Alignment unusable (BOTTOM)\n");
-  else
-    fprintf (f, "         Alignment %u, misalignment %u\n", align, misalign);
-}
-
 void
 ipcp_bits_lattice::print (FILE *f)
 {
@@ -595,7 +550,6 @@ print_all_lattices (FILE * f, bool dump_sources, bool dump_benefits)
 	  plats->itself.print (f, dump_sources, dump_benefits);
 	  fprintf (f, "         ctxs: ");
 	  plats->ctxlat.print (f, dump_sources, dump_benefits);
-	  plats->alignment.print (f);
 	  plats->bits_lattice.print (f);
 	  fprintf (f, "         ");
 	  plats->m_value_range.print (f);
@@ -922,38 +876,6 @@ set_agg_lats_contain_variable (struct ipcp_param_lattices *plats)
   return ret;
 }
 
-/* Return true if alignment information in the lattice is yet unknown.  */
-
-bool
-ipcp_alignment_lattice::top_p () const
-{
-  return !bottom && !not_top;
-}
-
-/* Return true if alignment information in the lattice is known to be
-   unusable.  */
-
-bool
-ipcp_alignment_lattice::bottom_p () const
-{
-  return bottom;
-}
-
-/* Set alignment information in the lattice to bottom.  Return true if it
-   previously was in a different state.  */
-
-bool
-ipcp_alignment_lattice::set_to_bottom ()
-{
-  if (bottom_p ())
-    return false;
-  bottom = true;
-  return true;
-}
-
-/* Meet the current value of the lattice with described by OTHER
-   lattice.  */
-
 bool
 ipcp_vr_lattice::meet_with (const ipcp_vr_lattice &other)
 {
@@ -1020,82 +942,6 @@ ipcp_vr_lattice::set_to_bottom ()
     return false;
   m_vr.type = VR_VARYING;
   return true;
-}
-
-/* Meet the current value of the lattice with alignment described by NEW_ALIGN
-   and NEW_MISALIGN, assuming that we know the current value is neither TOP nor
-   BOTTOM.  Return true if the value of lattice has changed.  */
-
-bool
-ipcp_alignment_lattice::meet_with_1 (unsigned new_align, unsigned new_misalign)
-{
-  gcc_checking_assert (new_align != 0);
-  if (align == new_align && misalign == new_misalign)
-    return false;
-
-  bool changed = false;
-  if (align > new_align)
-    {
-      align = new_align;
-      misalign = misalign % new_align;
-      changed = true;
-    }
-  if (misalign != (new_misalign % align))
-    {
-      int diff = abs ((int) misalign - (int) (new_misalign % align));
-      align = least_bit_hwi (diff);
-      if (align)
-	misalign = misalign % align;
-      else
-	set_to_bottom ();
-      changed = true;
-    }
-  gcc_checking_assert (bottom_p () || align != 0);
-  return changed;
-}
-
-/* Meet the current value of the lattice with alignment described by NEW_ALIGN
-   and NEW_MISALIGN.  Return true if the value of lattice has changed.  */
-
-bool
-ipcp_alignment_lattice::meet_with (unsigned new_align, unsigned new_misalign)
-{
-  gcc_assert (new_align != 0);
-  if (bottom_p ())
-    return false;
-  if (top_p ())
-    {
-      not_top = true;
-      align = new_align;
-      misalign = new_misalign;
-      return true;
-    }
-  return meet_with_1 (new_align, new_misalign);
-}
-
-/* Meet the current value of the lattice with OTHER, taking into account that
-   OFFSET has been added to the pointer value.  Return true if the value of
-   lattice has changed.  */
-
-bool
-ipcp_alignment_lattice::meet_with (const ipcp_alignment_lattice &other,
-				   HOST_WIDE_INT offset)
-{
-  if (other.bottom_p ())
-    return set_to_bottom ();
-  if (bottom_p () || other.top_p ())
-    return false;
-
-  unsigned adjusted_misalign = (other.misalign + offset) % other.align;
-  if (top_p ())
-    {
-      not_top = true;
-      align = other.align;
-      misalign = adjusted_misalign;
-      return true;
-    }
-
-  return meet_with_1 (other.align, adjusted_misalign);
 }
 
 /* Set lattice value to bottom, if it already isn't the case.  */
@@ -1253,7 +1099,6 @@ set_all_contains_variable (struct ipcp_param_lattices *plats)
   ret = plats->itself.set_contains_variable ();
   ret |= plats->ctxlat.set_contains_variable ();
   ret |= set_agg_lats_contain_variable (plats);
-  ret |= plats->alignment.set_to_bottom ();
   ret |= plats->bits_lattice.set_to_bottom ();
   ret |= plats->m_value_range.set_to_bottom ();
   return ret;
@@ -1342,7 +1187,6 @@ initialize_node_lattices (struct cgraph_node *node)
 	      plats->itself.set_to_bottom ();
 	      plats->ctxlat.set_to_bottom ();
 	      set_agg_lats_to_bottom (plats);
-	      plats->alignment.set_to_bottom ();
 	      plats->bits_lattice.set_to_bottom ();
 	      plats->m_value_range.set_to_bottom ();
 	    }
@@ -1910,59 +1754,6 @@ propagate_context_accross_jump_function (cgraph_edge *cs,
   return ret;
 }
 
-/* Propagate alignments across jump function JFUNC that is associated with
-   edge CS and update DEST_LAT accordingly.  */
-
-static bool
-propagate_alignment_accross_jump_function (cgraph_edge *cs,
-					   ipa_jump_func *jfunc,
-					   ipcp_alignment_lattice *dest_lat)
-{
-  if (dest_lat->bottom_p ())
-    return false;
-
-  if (jfunc->type == IPA_JF_PASS_THROUGH
-	   || jfunc->type == IPA_JF_ANCESTOR)
-    {
-      struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-      HOST_WIDE_INT offset = 0;
-      int src_idx;
-
-      if (jfunc->type == IPA_JF_PASS_THROUGH)
-	{
-	  enum tree_code op = ipa_get_jf_pass_through_operation (jfunc);
-	  if (op != NOP_EXPR)
-	    {
-	      if (op != POINTER_PLUS_EXPR
-		  && op != PLUS_EXPR)
-		return dest_lat->set_to_bottom ();
-	      tree operand = ipa_get_jf_pass_through_operand (jfunc);
-	      if (!tree_fits_shwi_p (operand))
-		return dest_lat->set_to_bottom ();
-	      offset = tree_to_shwi (operand);
-	    }
-	  src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
-	}
-      else
-	{
-	  src_idx = ipa_get_jf_ancestor_formal_id (jfunc);
-	  offset = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;
-	}
-
-      struct ipcp_param_lattices *src_lats;
-      src_lats = ipa_get_parm_lattices (caller_info, src_idx);
-      return dest_lat->meet_with (src_lats->alignment, offset);
-    }
-  else
-    {
-      if (jfunc->alignment.known)
-	return dest_lat->meet_with (jfunc->alignment.align,
-				    jfunc->alignment.misalign);
-      else
-	return dest_lat->set_to_bottom ();
-    }
-}
-
 /* Propagate bits across jfunc that is associated with
    edge cs and update dest_lattice accordingly.  */
 
@@ -1993,16 +1784,29 @@ propagate_bits_accross_jump_function (cgraph_edge *cs, int idx, ipa_jump_func *j
   unsigned precision = TYPE_PRECISION (parm_type);
   signop sgn = TYPE_SIGN (parm_type);
 
-  if (jfunc->type == IPA_JF_PASS_THROUGH)
+  if (jfunc->type == IPA_JF_PASS_THROUGH
+      || jfunc->type == IPA_JF_ANCESTOR)
     {
       struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-      enum tree_code code = ipa_get_jf_pass_through_operation (jfunc);
       tree operand = NULL_TREE;
+      enum tree_code code;
+      unsigned src_idx;
 
-      if (code != NOP_EXPR)
-	operand = ipa_get_jf_pass_through_operand (jfunc);
+      if (jfunc->type == IPA_JF_PASS_THROUGH)
+	{
+	  code = ipa_get_jf_pass_through_operation (jfunc);
+	  src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
+	  if (code != NOP_EXPR)
+	    operand = ipa_get_jf_pass_through_operand (jfunc);
+	}
+      else
+	{
+	  code = POINTER_PLUS_EXPR; 
+	  src_idx = ipa_get_jf_ancestor_formal_id (jfunc);
+	  unsigned HOST_WIDE_INT offset = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;
+	  operand = build_int_cstu (size_type_node, offset);
+	}
 
-      int src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
       struct ipcp_param_lattices *src_lats
 	= ipa_get_parm_lattices (caller_info, src_idx);
 
@@ -2426,8 +2230,6 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 							 &dest_plats->itself);
 	  ret |= propagate_context_accross_jump_function (cs, jump_func, i,
 							  &dest_plats->ctxlat);
-	  ret |= propagate_alignment_accross_jump_function (cs, jump_func,
-							 &dest_plats->alignment);
 	  ret |= propagate_bits_accross_jump_function (cs, i, jump_func,
 						       &dest_plats->bits_lattice);
 	  ret |= propagate_aggs_accross_jump_function (cs, jump_func,
@@ -4997,81 +4799,6 @@ ipcp_decision_stage (struct ipa_topo_info *topo)
     }
 }
 
-/* Look up all alignment information that we have discovered and copy it over
-   to the transformation summary.  */
-
-static void
-ipcp_store_alignment_results (void)
-{
-  cgraph_node *node;
-
-  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-  {
-    ipa_node_params *info = IPA_NODE_REF (node);
-    bool dumped_sth = false;
-    bool found_useful_result = false;
-
-    if (!opt_for_fn (node->decl, flag_ipa_cp_alignment))
-      {
-	if (dump_file)
-	  fprintf (dump_file, "Not considering %s for alignment discovery "
-		   "and propagate; -fipa-cp-alignment: disabled.\n",
-		   node->name ());
-	continue;
-      }
-
-   if (info->ipcp_orig_node)
-      info = IPA_NODE_REF (info->ipcp_orig_node);
-
-   unsigned count = ipa_get_param_count (info);
-   for (unsigned i = 0; i < count ; i++)
-     {
-       ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-       if (!plats->alignment.bottom_p ()
-	   && !plats->alignment.top_p ())
-	 {
-	   gcc_checking_assert (plats->alignment.align > 0);
-	   found_useful_result = true;
-	   break;
-	 }
-     }
-   if (!found_useful_result)
-     continue;
-
-   ipcp_grow_transformations_if_necessary ();
-   ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
-   vec_safe_reserve_exact (ts->alignments, count);
-
-   for (unsigned i = 0; i < count ; i++)
-     {
-       ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-       ipa_alignment al;
-
-       if (!plats->alignment.bottom_p ()
-	   && !plats->alignment.top_p ())
-	 {
-	   al.known = true;
-	   al.align = plats->alignment.align;
-	   al.misalign = plats->alignment.misalign;
-	 }
-       else
-	 al.known = false;
-
-       ts->alignments->quick_push (al);
-       if (!dump_file || !al.known)
-	 continue;
-       if (!dumped_sth)
-	 {
-	   fprintf (dump_file, "Propagated alignment info for function %s/%i:\n",
-		    node->name (), node->order);
-	   dumped_sth = true;
-	 }
-       fprintf (dump_file, "  param %i: align: %u, misalign: %u\n",
-		i, al.align, al.misalign);
-     }
-  }
-}
-
 /* Look up all the bits information that we have discovered and copy it over
    to the transformation summary.  */
 
@@ -5246,8 +4973,6 @@ ipcp_driver (void)
   ipcp_propagate_stage (&topo);
   /* Decide what constant propagation and cloning should be performed.  */
   ipcp_decision_stage (&topo);
-  /* Store results of alignment propagation. */
-  ipcp_store_alignment_results ();
   /* Store results of bits propagation.  */
   ipcp_store_bits_results ();
   /* Store results of value range propagation.  */

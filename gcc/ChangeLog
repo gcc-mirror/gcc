@@ -1,3 +1,41 @@
+2016-10-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* ipa-cp.c (ipcp_alignment_lattice): Remove.
+	(ipcp_param_lattices): Remove field alignment.
+	(print_all_lattices): Remove call to ipcp_alignment_lattice::print.
+	(set_all_contains_variable): Remove call to
+	ipcp_alignment_lattice::set_to_bottom.
+	(initialize_node_lattices): Likewise.
+	(propagate_alignment_accross_jump_function): Remove.
+	(propagate_constants_accross_call): Remove call to
+	propagate_alignment_accross_jump_function.
+	(ipcp_store_alignment_results): Remove.
+	(ipcp_driver): Remove call to ipcp_store_alignment_results.
+	(propagate_bits_accross_jump_function): Handle ancestor jump function.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Remove
+	pretty-printing of alignment jump function.
+	(ipa_set_jf_unknown): Remove assignment to jfunc->alignment.known.
+	(ipa_compute_jump_functions_for_edge): Adjust ipa_bits jump function for
+	alignments and remove computing ipa_alignment jump function.
+	(ipa_node_params_t::duplicate): Remove copying of src_trans->alignments.
+	(ipa_write_jump_functions): Remove streaming for ipa_alignment.
+	(ipa_read_jump_function): Remove reading of ipa_alignment.
+	(write_ipcp_transformation_info): Remove streaming for alignment
+	propagation summary.
+	(read_ipcp_transformation_info): Remove reading of alignment
+	propagation summary. 
+	(ipcp_update_alignments): Remove.
+	(ipcp_update_bits): Adjust to set alignment for parameters of pointer
+	type.
+	(ipcp_transform_function): Remove call to ipcp_update_alignments()
+	and remove assignment to (*ipcp_transformations)[node->uid].alignments.
+	* ipa-prop.h (ipa_alignment): Remove.
+	(ipa_jump_func): Remove field alignment.
+	(ipcp_transformation_summary): Remove field alignments. 
+	* doc/invoke.texi: Mark fipa-cp-alignment as obsolete.
+	* opts.c (default_options_table): Remove entry for fipa-cp-alignment.
+	(enable_fdo_optimizations): Remove checking for fipa-cp-alignment.
+
 2016-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.h (FIXED_REGISTERS): Add %icc.

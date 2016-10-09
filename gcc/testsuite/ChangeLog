@@ -1,3 +1,11 @@
+2016-10-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/ipa/propalign-1.c: Adjust scan-ipa-dump.
+	* gcc.dg/ipa/propalign-2.c: Likewise
+	* gcc.dg/ipa/propalign-3.c: Likewise.
+	* gcc.dg/ipa/propalign-4.c: Likewise.
+	* gcc.dg/ipa/propalign-5.c: Likewise.
+
 2016-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/Wimplicit-fallthrough-23.c (foo): Add further tests.

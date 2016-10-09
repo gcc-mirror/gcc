@@ -7679,6 +7679,7 @@ parameters to support better vectorization and string operations.
 
 This flag is enabled by default at @option{-O2} and @option{-Os}.  It
 requires that @option{-fipa-cp} is enabled.
+@option{-fipa-cp-alignment} is obsolete, use @option{-fipa-bit-cp} instead.
 
 @item -fipa-bit-cp
 @opindex -fipa-bit-cp
