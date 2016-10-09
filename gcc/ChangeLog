@@ -1,3 +1,8 @@
+2016-10-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (BIGGEST_ALIGNMENT): Adjust comment.
+	(MALLOC_ABI_ALIGNMENT): Define.
+
 2016-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa.c (target_for_debug_bind, verify_phi_args,
