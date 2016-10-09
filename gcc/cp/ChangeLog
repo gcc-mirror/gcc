@@ -1,5 +1,7 @@
 2016-10-08  Jason Merrill  <jason@redhat.com>
 
+	* cp-gimplify.c (cp_fold): Add variable name.
+
 	* cp-gimplify.c (cp_fold): Distribute cp_truthvalue_conversion
 	into COND_EXPR.
 

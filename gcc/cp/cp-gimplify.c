@@ -2255,7 +2255,7 @@ cp_fold (tree x)
 
       if (TREE_CODE (TREE_TYPE (x)) == BOOLEAN_TYPE)
 	{
-	  warning_sentinel (warn_int_in_bool_context);
+	  warning_sentinel s (warn_int_in_bool_context);
 	  if (!VOID_TYPE_P (TREE_TYPE (op1)))
 	    op1 = cp_truthvalue_conversion (op1);
 	  if (!VOID_TYPE_P (TREE_TYPE (op2)))
