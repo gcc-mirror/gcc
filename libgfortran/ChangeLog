@@ -1,3 +1,26 @@
+2016-10-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/67585
+        * io/io.h: TEMP_FAILURE_RETRY: Define macro if not found.
+        * io/unix.c (raw_read): Handle EINTR.
+        (raw_write): Check for return value -1.
+        (raw_seek): Handle EINTR.
+        (raw_tell): Likewise.
+        (raw_size): Likewise.
+        (raw_truncate): Likewise.
+        (raw_close): Likewise.
+        (buf_flush): Call raw_seek instead of lseek.
+        (buf_read): Likewise.
+        (buf_write): Likewise.
+        (fd_to_stream): Handle EINTR.
+        (tempfile_open): Likewise.
+        (regular_file2): Likewise.
+        (compare_file_filename): Likewise.
+        (find_file): Likewise.
+        (inquire_sequential): Likewise.
+        (inquire_direct): Likewise.
+        (inquire_formatted): Likewise.
+
 2016-10-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/77868

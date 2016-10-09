@@ -298,8 +298,15 @@ static ssize_t
 raw_read (unix_stream * s, void * buf, ssize_t nbyte)
 {
   /* For read we can't do I/O in a loop like raw_write does, because
-     that will break applications that wait for interactive I/O.  */
-  return read (s->fd, buf, nbyte);
+     that will break applications that wait for interactive I/O.  We
+     still can loop around EINTR, though.  */
+  while (true)
+    {
+      ssize_t trans = read (s->fd, buf, nbyte);
+      if (trans == -1 && errno == EINTR)
+	continue;
+      return trans;
+    }
 }
 
 static ssize_t
@@ -316,7 +323,7 @@ raw_write (unix_stream * s, const void * buf, ssize_t nbyte)
   while (bytes_left > 0)
     {
       trans = write (s->fd, buf_st, bytes_left);
-      if (trans < 0)
+      if (trans == -1)
 	{
 	  if (errno == EINTR)
 	    continue;
@@ -333,22 +340,33 @@ raw_write (unix_stream * s, const void * buf, ssize_t nbyte)
 static gfc_offset
 raw_seek (unix_stream * s, gfc_offset offset, int whence)
 {
-  return lseek (s->fd, offset, whence);
+  while (true)
+    {
+      gfc_offset off = lseek (s->fd, offset, whence);
+      if (off == (gfc_offset) -1 && errno == EINTR)
+	continue;
+      return off;
+    }
 }
 
 static gfc_offset
 raw_tell (unix_stream * s)
 {
-  return lseek (s->fd, 0, SEEK_CUR);
+  while (true)
+    {
+      gfc_offset off = lseek (s->fd, 0, SEEK_CUR);
+      if (off == (gfc_offset) -1 && errno == EINTR)
+	continue;
+      return off;
+    }
 }
 
 static gfc_offset
 raw_size (unix_stream * s)
 {
   struct stat statbuf;
-  int ret = fstat (s->fd, &statbuf);
-  if (ret == -1)
-    return ret;
+  if (TEMP_FAILURE_RETRY (fstat (s->fd, &statbuf)) == -1)
+    return -1;
   if (S_ISREG (statbuf.st_mode))
     return statbuf.st_size;
   else
@@ -390,7 +408,9 @@ raw_truncate (unix_stream * s, gfc_offset length)
   lseek (s->fd, cur, SEEK_SET);
   return -1;
 #elif defined HAVE_FTRUNCATE
-  return ftruncate (s->fd, length);
+  if (TEMP_FAILURE_RETRY (ftruncate (s->fd, length)) == -1)
+    return -1;
+  return 0;
 #elif defined HAVE_CHSIZE
   return chsize (s->fd, length);
 #else
@@ -409,7 +429,17 @@ raw_close (unix_stream * s)
   else if (s->fd != STDOUT_FILENO
       && s->fd != STDERR_FILENO
       && s->fd != STDIN_FILENO)
-    retval = close (s->fd);
+    {
+      retval = close (s->fd);
+      /* close() and EINTR is special, as the file descriptor is
+	 deallocated before doing anything that might cause the
+	 operation to be interrupted. Thus if we get EINTR the best we
+	 can do is ignore it and continue (otherwise if we try again
+	 the file descriptor may have been allocated again to some
+	 other file).  */
+      if (retval == -1 && errno == EINTR)
+	retval = errno = 0;
+    }
   else
     retval = 0;
   free (s);
@@ -463,7 +493,7 @@ buf_flush (unix_stream * s)
     return 0;
   
   if (s->physical_offset != s->buffer_offset
-      && lseek (s->fd, s->buffer_offset, SEEK_SET) < 0)
+      && raw_seek (s, s->buffer_offset, SEEK_SET) < 0)
     return -1;
 
   writelen = raw_write (s, s->buffer, s->ndirty);
@@ -518,7 +548,7 @@ buf_read (unix_stream * s, void * buf, ssize_t nbyte)
       to_read = nbyte - nread;
       new_logical = s->logical_offset + nread;
       if (s->physical_offset != new_logical
-          && lseek (s->fd, new_logical, SEEK_SET) < 0)
+          && raw_seek (s, new_logical, SEEK_SET) < 0)
         return -1;
       s->buffer_offset = s->physical_offset = new_logical;
       if (to_read <= BUFFER_SIZE/2)
@@ -587,7 +617,7 @@ buf_write (unix_stream * s, const void * buf, ssize_t nbyte)
 	{
 	  if (s->physical_offset != s->logical_offset)
 	    {
-	      if (lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
+	      if (raw_seek (s, s->logical_offset, SEEK_SET) < 0)
 		return -1;
 	      s->physical_offset = s->logical_offset;
 	    }
@@ -1025,7 +1055,7 @@ fd_to_stream (int fd, bool unformatted)
 
   /* Get the current length of the file. */
 
-  if (fstat (fd, &statbuf) == -1)
+  if (TEMP_FAILURE_RETRY (fstat (fd, &statbuf)) == -1)
     {
       s->st_dev = s->st_ino = -1;
       s->file_length = 0;
@@ -1134,9 +1164,9 @@ tempfile_open (const char *tempdir, char **fname)
 #endif
 
 #if defined(HAVE_MKOSTEMP) && defined(O_CLOEXEC)
-  fd = mkostemp (template, O_CLOEXEC);
+  TEMP_FAILURE_RETRY (fd = mkostemp (template, O_CLOEXEC));
 #else
-  fd = mkstemp (template);
+  TEMP_FAILURE_RETRY (fd = mkstemp (template));
   set_close_on_exec (fd);
 #endif
 
@@ -1178,7 +1208,7 @@ tempfile_open (const char *tempdir, char **fname)
 	continue;
       }
 
-      fd = open (template, flags, S_IRUSR | S_IWUSR);
+      TEMP_FAILURE_RETRY (fd = open (template, flags, S_IRUSR | S_IWUSR));
     }
   while (fd == -1 && errno == EEXIST);
 #ifndef O_CLOEXEC
@@ -1355,7 +1385,7 @@ regular_file2 (const char *path, st_parameter_open *opp, unit_flags *flags)
 #endif
 
   mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-  fd = open (path, rwflag | crflag, mode);
+  TEMP_FAILURE_RETRY (fd = open (path, rwflag | crflag, mode));
   if (flags->action != ACTION_UNSPECIFIED)
     return fd;
 
@@ -1373,7 +1403,7 @@ regular_file2 (const char *path, st_parameter_open *opp, unit_flags *flags)
     crflag2 = crflag & ~(O_CREAT);
   else
     crflag2 = crflag;
-  fd = open (path, rwflag | crflag2, mode);
+  TEMP_FAILURE_RETRY (fd = open (path, rwflag | crflag2, mode));
   if (fd >=0)
     {
       flags->action = ACTION_READ;
@@ -1385,7 +1415,7 @@ regular_file2 (const char *path, st_parameter_open *opp, unit_flags *flags)
 
   /* retry for write-only access */
   rwflag = O_WRONLY;
-  fd = open (path, rwflag | crflag, mode);
+  TEMP_FAILURE_RETRY (fd = open (path, rwflag | crflag, mode));
   if (fd >=0)
     {
       flags->action = ACTION_WRITE;
@@ -1512,7 +1542,7 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
   /* If the filename doesn't exist, then there is no match with the
    * existing file. */
 
-  if (stat (path, &st) < 0)
+  if (TEMP_FAILURE_RETRY (stat (path, &st)) < 0)
     {
       ret = 0;
       goto done;
@@ -1614,7 +1644,7 @@ find_file (const char *file, gfc_charlen_type file_len)
 
   char *path = fc_strdup (file, file_len);
 
-  if (stat (path, &st[0]) < 0)
+  if (TEMP_FAILURE_RETRY (stat (path, &st[0])) < 0)
     {
       u = NULL;
       goto done;
@@ -1742,7 +1772,8 @@ file_size (const char *file, gfc_charlen_type file_len)
 {
   char *path = fc_strdup (file, file_len);
   struct stat statbuf;
-  int err = stat (path, &statbuf);
+  int err;
+  TEMP_FAILURE_RETRY (err = stat (path, &statbuf));
   free (path);
   if (err == -1)
     return -1;
@@ -1764,7 +1795,8 @@ inquire_sequential (const char *string, int len)
     return unknown;
 
   char *path = fc_strdup (string, len);
-  int err = stat (path, &statbuf);
+  int err;
+  TEMP_FAILURE_RETRY (err = stat (path, &statbuf));
   free (path);
   if (err == -1)
     return unknown;
@@ -1792,7 +1824,8 @@ inquire_direct (const char *string, int len)
     return unknown;
 
   char *path = fc_strdup (string, len);
-  int err = stat (path, &statbuf);
+  int err;
+  TEMP_FAILURE_RETRY (err = stat (path, &statbuf));
   free (path);
   if (err == -1)
     return unknown;
@@ -1820,7 +1853,8 @@ inquire_formatted (const char *string, int len)
     return unknown;
 
   char *path = fc_strdup (string, len);
-  int err = stat (path, &statbuf);
+  int err;
+  TEMP_FAILURE_RETRY (err = stat (path, &statbuf));
   free (path);
   if (err == -1)
     return unknown;
