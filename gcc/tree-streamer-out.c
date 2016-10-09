@@ -214,7 +214,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     {
       bp_pack_value (bp, DECL_HAS_DEBUG_EXPR_P (expr), 1);
       bp_pack_value (bp, DECL_NONLOCAL_FRAME (expr), 1);
@@ -222,11 +222,10 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
-      || TREE_CODE (expr) == VAR_DECL)
+      || VAR_P (expr))
     {
       bp_pack_value (bp, DECL_BY_REFERENCE (expr), 1);
-      if (TREE_CODE (expr) == VAR_DECL
-	  || TREE_CODE (expr) == PARM_DECL)
+      if (VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
 	bp_pack_value (bp, DECL_HAS_VALUE_EXPR_P (expr), 1);
     }
 }
@@ -256,7 +255,7 @@ pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_VISIBILITY (expr),  2);
   bp_pack_value (bp, DECL_VISIBILITY_SPECIFIED (expr),  1);
 
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     {
       bp_pack_value (bp, DECL_HARD_REGISTER (expr), 1);
       /* DECL_IN_TEXT_SECTION is set during final asm output only. */
@@ -589,12 +588,11 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
      for early inlining so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
 
-  if ((TREE_CODE (expr) == VAR_DECL
-       || TREE_CODE (expr) == PARM_DECL)
+  if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
     stream_write_tree (ob, DECL_VALUE_EXPR (expr), ref_p);
 
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     stream_write_tree (ob, DECL_DEBUG_EXPR (expr), ref_p);
 }
 

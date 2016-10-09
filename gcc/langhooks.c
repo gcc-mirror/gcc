@@ -128,7 +128,7 @@ lhd_warn_unused_global_decl (const_tree decl)
 
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
     return false;
-  if (TREE_CODE (decl) == VAR_DECL && TREE_READONLY (decl))
+  if (VAR_P (decl) && TREE_READONLY (decl))
     return false;
   if (DECL_IN_SYSTEM_HEADER (decl))
     return false;
@@ -152,7 +152,7 @@ lhd_set_decl_assembler_name (tree decl)
      VAR_DECLs for variables with static storage duration need a real
      DECL_ASSEMBLER_NAME.  */
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
-	      || (TREE_CODE (decl) == VAR_DECL
+	      || (VAR_P (decl)
 		  && (TREE_STATIC (decl)
 		      || DECL_EXTERNAL (decl)
 		      || TREE_PUBLIC (decl))));

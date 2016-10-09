@@ -1333,7 +1333,7 @@ dbxout_early_global_decl (tree decl ATTRIBUTE_UNUSED)
 static void
 dbxout_late_global_decl (tree decl)
 {
-  if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
+  if (VAR_P (decl) && !DECL_EXTERNAL (decl))
     {
       int saved_tree_used = TREE_USED (decl);
       TREE_USED (decl) = 1;
@@ -1511,7 +1511,7 @@ dbxout_type_fields (tree type)
 			&& DECL_BIT_FIELD_TYPE (tem))
 		       ? DECL_BIT_FIELD_TYPE (tem) : TREE_TYPE (tem), 0);
 
-	  if (TREE_CODE (tem) == VAR_DECL)
+	  if (VAR_P (tem))
 	    {
 	      if (TREE_STATIC (tem) && use_gnu_debug_info_extensions)
 		{
@@ -2610,7 +2610,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 
   if (flag_debug_only_used_symbols
       && (!TREE_USED (decl)
-          && (TREE_CODE (decl) != VAR_DECL || !DECL_INITIAL (decl))))
+          && (!VAR_P (decl) || !DECL_INITIAL (decl))))
     DBXOUT_DECR_NESTING_AND_RETURN (0);
 
   /* If dbxout_init has not yet run, queue this symbol for later.  */
@@ -2865,7 +2865,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       /* PARM_DECLs go in their own separate chain and are output by
 	 dbxout_reg_parms and dbxout_parms, except for those that are
 	 disguised VAR_DECLs like Out parameters in Ada.  */
-      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      gcc_assert (VAR_P (decl));
 
       /* fall through */
 
@@ -3272,7 +3272,7 @@ dbxout_common_check (tree decl, int *value)
      ??? DECL_THREAD_LOCAL_P check prevents problems with improper .stabs
      for thread-local symbols.  Can be handled via same mechanism as used
      in dwarf2out.c.  */
-  if (TREE_CODE (decl) != VAR_DECL
+  if (!VAR_P (decl)
       || !TREE_STATIC (decl)
       || !DECL_HAS_VALUE_EXPR_P (decl)
       || DECL_THREAD_LOCAL_P (decl)

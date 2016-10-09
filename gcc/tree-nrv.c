@@ -202,7 +202,7 @@ pass_nrv::execute (function *fun)
 
 	      /* The returned value must be a local automatic variable of the
 		 same type and alignment as the function's result.  */
-	      if (TREE_CODE (found) != VAR_DECL
+	      if (!VAR_P (found)
 		  || TREE_THIS_VOLATILE (found)
 		  || !auto_var_in_fn_p (found, current_function_decl)
 		  || TREE_ADDRESSABLE (found)

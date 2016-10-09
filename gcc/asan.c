@@ -1351,7 +1351,7 @@ asan_protect_global (tree decl)
 	return false;
       return true;
     }
-  if (TREE_CODE (decl) != VAR_DECL
+  if (!VAR_P (decl)
       /* TLS vars aren't statically protectable.  */
       || DECL_THREAD_LOCAL_P (decl)
       /* Externs will be protected elsewhere.  */
@@ -1810,7 +1810,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
       || bitsize != size_in_bytes * BITS_PER_UNIT)
     return;
 
-  if (TREE_CODE (inner) == VAR_DECL
+  if (VAR_P (inner)
       && offset == NULL_TREE
       && bitpos >= 0
       && DECL_SIZE (inner)

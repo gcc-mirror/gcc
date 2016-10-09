@@ -367,8 +367,7 @@ static tree
 update_vtable_references (tree *tp, int *walk_subtrees,
 			  void *data ATTRIBUTE_UNUSED)
 {
-  if (TREE_CODE (*tp) == VAR_DECL
-      || TREE_CODE (*tp) == FUNCTION_DECL)
+  if (VAR_OR_FUNCTION_DECL_P (*tp))
     {
       if (can_replace_by_local_alias_in_vtable (symtab_node::get (*tp)))
 	*tp = symtab_node::get (*tp)->noninterposable_alias ()->decl;

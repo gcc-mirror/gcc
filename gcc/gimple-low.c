@@ -885,7 +885,7 @@ record_vars_into (tree vars, tree fn)
 
       /* BIND_EXPRs contains also function/type/constant declarations
          we don't need to care about.  */
-      if (TREE_CODE (var) != VAR_DECL)
+      if (!VAR_P (var))
 	continue;
 
       /* Nothing to do in this case.  */

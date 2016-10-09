@@ -131,7 +131,7 @@ tree_is_indexable (tree t)
   /* IMPORTED_DECL is put into BLOCK and thus it never can be shared.  */
   else if (TREE_CODE (t) == IMPORTED_DECL)
     return false;
-  else if (((TREE_CODE (t) == VAR_DECL && !TREE_STATIC (t))
+  else if (((VAR_P (t) && !TREE_STATIC (t))
 	    || TREE_CODE (t) == TYPE_DECL
 	    || TREE_CODE (t) == CONST_DECL
 	    || TREE_CODE (t) == NAMELIST_DECL)
@@ -357,7 +357,7 @@ get_symbol_initial_value (lto_symtab_encoder_t encoder, tree expr)
 
   /* Handle DECL_INITIAL for symbols.  */
   tree initial = DECL_INITIAL (expr);
-  if (TREE_CODE (expr) == VAR_DECL
+  if (VAR_P (expr)
       && (TREE_STATIC (expr) || DECL_EXTERNAL (expr))
       && !DECL_IN_CONSTANT_POOL (expr)
       && initial)
@@ -766,11 +766,11 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	 leaks to this point.  */
       gcc_assert (DECL_ABSTRACT_ORIGIN (expr) != error_mark_node);
 
-      if ((TREE_CODE (expr) == VAR_DECL
+      if ((VAR_P (expr)
 	   || TREE_CODE (expr) == PARM_DECL)
 	  && DECL_HAS_VALUE_EXPR_P (expr))
 	DFS_follow_tree_edge (DECL_VALUE_EXPR (expr));
-      if (TREE_CODE (expr) == VAR_DECL)
+      if (VAR_P (expr))
 	DFS_follow_tree_edge (DECL_DEBUG_EXPR (expr));
     }
 
@@ -2509,12 +2509,10 @@ write_symbol (struct streamer_tree_cache_d *cache,
   if (!TREE_PUBLIC (t)
       || is_builtin_fn (t)
       || DECL_ABSTRACT_P (t)
-      || (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t)))
+      || (VAR_P (t) && DECL_HARD_REGISTER (t)))
     return;
-  gcc_assert (TREE_CODE (t) != RESULT_DECL);
 
-  gcc_assert (TREE_CODE (t) == VAR_DECL
-	      || TREE_CODE (t) == FUNCTION_DECL);
+  gcc_assert (VAR_OR_FUNCTION_DECL_P (t));
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
 
@@ -2545,8 +2543,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
 	kind = GCCPK_DEF;
 
       /* When something is defined, it should have node attached.  */
-      gcc_assert (alias || TREE_CODE (t) != VAR_DECL
-		  || varpool_node::get (t)->definition);
+      gcc_assert (alias || !VAR_P (t) || varpool_node::get (t)->definition);
       gcc_assert (alias || TREE_CODE (t) != FUNCTION_DECL
 		  || (cgraph_node::get (t)
 		      && cgraph_node::get (t)->definition));

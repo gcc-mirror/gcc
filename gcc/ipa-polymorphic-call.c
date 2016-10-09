@@ -575,7 +575,7 @@ decl_maybe_in_construction_p (tree base, tree outer_type,
 	  return true;
       }
 
-  if (!base || (TREE_CODE (base) == VAR_DECL && is_global_var (base)))
+  if (!base || (VAR_P (base) && is_global_var (base)))
     {
       if (TREE_CODE (TREE_TYPE (function)) != METHOD_TYPE
 	  || (!DECL_CXX_CONSTRUCTOR_P (function)

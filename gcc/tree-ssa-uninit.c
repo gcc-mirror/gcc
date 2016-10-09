@@ -244,7 +244,7 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	      tree base = get_base_address (rhs);
 
 	      /* Do not warn if it can be initialized outside this function.  */
-	      if (TREE_CODE (base) != VAR_DECL
+	      if (!VAR_P (base)
 		  || DECL_HARD_REGISTER (base)
 		  || is_global_var (base))
 		continue;

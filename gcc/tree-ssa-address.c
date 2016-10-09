@@ -400,9 +400,8 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr,
 static bool
 fixed_address_object_p (tree obj)
 {
-  return (TREE_CODE (obj) == VAR_DECL
-	  && (TREE_STATIC (obj)
-	      || DECL_EXTERNAL (obj))
+  return (VAR_P (obj)
+	  && (TREE_STATIC (obj) || DECL_EXTERNAL (obj))
 	  && ! DECL_DLLIMPORT_P (obj));
 }
 
@@ -893,7 +892,7 @@ copy_ref_info (tree new_ref, tree old_ref)
 	  else
 	    mark_ptr_info_alignment_unknown (new_pi);
 	}
-      else if (TREE_CODE (base) == VAR_DECL
+      else if (VAR_P (base)
 	       || TREE_CODE (base) == PARM_DECL
 	       || TREE_CODE (base) == RESULT_DECL)
 	{

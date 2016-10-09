@@ -942,7 +942,7 @@ chrec_contains_symbols (const_tree chrec)
     return false;
 
   if (TREE_CODE (chrec) == SSA_NAME
-      || TREE_CODE (chrec) == VAR_DECL
+      || VAR_P (chrec)
       || TREE_CODE (chrec) == PARM_DECL
       || TREE_CODE (chrec) == FUNCTION_DECL
       || TREE_CODE (chrec) == LABEL_DECL

@@ -163,7 +163,7 @@ insert_debug_decl_map (copy_body_data *id, tree key, tree value)
     return;
 
   gcc_assert (TREE_CODE (key) == PARM_DECL);
-  gcc_assert (TREE_CODE (value) == VAR_DECL);
+  gcc_assert (VAR_P (value));
 
   if (!id->debug_map)
     id->debug_map = new hash_map<tree, tree>;
@@ -228,7 +228,7 @@ remap_ssa_name (tree name, copy_body_data *id)
   var = SSA_NAME_VAR (name);
   if (!var
       || (!SSA_NAME_IS_DEFAULT_DEF (name)
-	  && TREE_CODE (var) == VAR_DECL
+	  && VAR_P (var)
 	  && !VAR_DECL_IS_VIRTUAL_OPERAND (var)
 	  && DECL_ARTIFICIAL (var)
 	  && DECL_IGNORED_P (var)
@@ -264,7 +264,7 @@ remap_ssa_name (tree name, copy_body_data *id)
      Replace the SSA name representing RESULT_DECL by variable during
      inlining:  this saves us from need to introduce PHI node in a case
      return value is just partly initialized.  */
-  if ((TREE_CODE (new_tree) == VAR_DECL || TREE_CODE (new_tree) == PARM_DECL)
+  if ((VAR_P (new_tree) || TREE_CODE (new_tree) == PARM_DECL)
       && (!SSA_NAME_VAR (name)
 	  || TREE_CODE (SSA_NAME_VAR (name)) != RESULT_DECL
 	  || !id->transform_return_to_modify))
@@ -607,8 +607,7 @@ can_be_nonlocal (tree decl, copy_body_data *id)
 
   /* Local static vars must be non-local or we get multiple declaration
      problems.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      && !auto_var_in_fn_p (decl, id->src_fn))
+  if (VAR_P (decl) && !auto_var_in_fn_p (decl, id->src_fn))
     return true;
 
   return false;
@@ -630,9 +629,7 @@ remap_decls (tree decls, vec<tree, va_gc> **nonlocalized_list,
 	{
 	  /* We need to add this variable to the local decls as otherwise
 	     nothing else will do so.  */
-	  if (TREE_CODE (old_var) == VAR_DECL
-	      && ! DECL_EXTERNAL (old_var)
-	      && cfun)
+	  if (VAR_P (old_var) && ! DECL_EXTERNAL (old_var) && cfun)
 	    add_local_decl (cfun, old_var);
 	  if ((!optimize || debug_info_level > DINFO_LEVEL_TERSE)
 	      && !DECL_IGNORED_P (old_var)
@@ -664,8 +661,7 @@ remap_decls (tree decls, vec<tree, va_gc> **nonlocalized_list,
 	  new_decls = new_var;
  
 	  /* Also copy value-expressions.  */
-	  if (TREE_CODE (new_var) == VAR_DECL
-	      && DECL_HAS_VALUE_EXPR_P (new_var))
+	  if (VAR_P (new_var) && DECL_HAS_VALUE_EXPR_P (new_var))
 	    {
 	      tree tem = DECL_VALUE_EXPR (new_var);
 	      bool old_regimplify = id->regimplify;
@@ -2876,12 +2872,10 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
   if (TREE_CODE (t) == PARM_DECL && id->debug_map
       && (n = id->debug_map->get (t)))
     {
-      gcc_assert (TREE_CODE (*n) == VAR_DECL);
+      gcc_assert (VAR_P (*n));
       t = *n;
     }
-  else if (TREE_CODE (t) == VAR_DECL
-	   && !is_global_var (t)
-	   && !id->decl_map->get (t))
+  else if (VAR_P (t) && !is_global_var (t) && !id->decl_map->get (t))
     /* T is a non-localized variable.  */;
   else
     walk_tree (&t, remap_gimple_op_r, &wi, NULL);
@@ -3277,8 +3271,7 @@ initialize_inlined_parameters (copy_body_data *id, gimple *stmt,
   for (p = parms, i = 0; p; p = DECL_CHAIN (p), i++)
     {
       tree *varp = id->decl_map->get (p);
-      if (varp
-	  && TREE_CODE (*varp) == VAR_DECL)
+      if (varp && VAR_P (*varp))
 	{
 	  tree def = (gimple_in_ssa_p (cfun) && is_gimple_reg (p)
 		      ? ssa_default_def (id->src_cfun, p) : NULL);
@@ -4297,7 +4290,7 @@ add_local_variables (struct function *callee, struct function *caller,
         tree new_var = remap_decl (var, id);
 
         /* Remap debug-expressions.  */
-	if (TREE_CODE (new_var) == VAR_DECL
+	if (VAR_P (new_var)
 	    && DECL_HAS_DEBUG_EXPR_P (var)
 	    && new_var != var)
 	  {
@@ -4325,7 +4318,7 @@ reset_debug_binding (copy_body_data *id, tree srcvar, gimple_seq *bindings)
   if (!remappedvarp)
     return;
 
-  if (TREE_CODE (*remappedvarp) != VAR_DECL)
+  if (!VAR_P (*remappedvarp))
     return;
 
   if (*remappedvarp == id->retvar || *remappedvarp == id->retbnd)
@@ -5202,8 +5195,7 @@ replace_locals_op (tree *tp, int *walk_subtrees, void *data)
 	SSA_NAME_DEF_STMT (*tp) = gsi_stmt (wi->gsi);
     }
   /* Only a local declaration (variable or label).  */
-  else if ((TREE_CODE (expr) == VAR_DECL
-	    && !TREE_STATIC (expr))
+  else if ((VAR_P (expr) && !TREE_STATIC (expr))
 	   || TREE_CODE (expr) == LABEL_DECL)
     {
       /* Lookup the declaration.  */

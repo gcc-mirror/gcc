@@ -310,7 +310,7 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   /* If this is a reference based on a partitioned decl replace the
      base with a MEM_REF of the pointer representative we
      created during stack slot partitioning.  */
-  if (TREE_CODE (base) == VAR_DECL
+  if (VAR_P (base)
       && ! is_global_var (base)
       && cfun->gimple_df->decls_to_pointers != NULL)
     {
@@ -870,7 +870,7 @@ get_alias_set (tree t)
       /* If we've already determined the alias set for a decl, just return
 	 it.  This is necessary for C++ anonymous unions, whose component
 	 variables don't look like union members (boo!).  */
-      if (TREE_CODE (t) == VAR_DECL
+      if (VAR_P (t)
 	  && DECL_RTL_SET_P (t) && MEM_P (DECL_RTL (t)))
 	return MEM_ALIAS_SET (DECL_RTL (t));
 
@@ -2087,7 +2087,7 @@ compare_base_symbol_refs (const_rtx x_base, const_rtx y_base)
         return -1;
       /* Anchors contains static VAR_DECLs and CONST_DECLs.  We are safe
 	 to ignore CONST_DECLs because they are readonly.  */
-      if (TREE_CODE (x_decl) != VAR_DECL
+      if (!VAR_P (x_decl)
 	  || (!TREE_STATIC (x_decl) && !TREE_PUBLIC (x_decl)))
 	return 0;
 

@@ -1729,7 +1729,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	gcc_assert (!jfunc->bits.known);
 
       if (is_gimple_ip_invariant (arg)
-	  || (TREE_CODE (arg) == VAR_DECL
+	  || (VAR_P (arg)
 	      && is_global_var (arg)
 	      && TREE_READONLY (arg)))
 	ipa_set_jf_constant (jfunc, arg, cs);
@@ -2861,7 +2861,7 @@ ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset, bool by_ref)
       scalar = TREE_OPERAND (scalar, 0);
     }
 
-  if (TREE_CODE (scalar) != VAR_DECL
+  if (!VAR_P (scalar)
       || !is_global_var (scalar)
       || !TREE_READONLY (scalar)
       || !DECL_INITIAL (scalar)

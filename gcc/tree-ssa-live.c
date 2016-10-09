@@ -329,7 +329,7 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
   /* Only need to mark VAR_DECLS; parameters and return results are not
      eliminated as unused.  */
-  if (TREE_CODE (t) == VAR_DECL)
+  if (VAR_P (t))
     {
       /* When a global var becomes used for the first time also walk its
          initializer (non global ones don't have any).  */
@@ -425,7 +425,7 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
 	 SET_DEST overlaps with others, and if the value expr changes
 	 by virtual register instantiation, we may get end up with
 	 different results.  */
-      else if (TREE_CODE (*t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (*t))
+      else if (VAR_P (*t) && DECL_HAS_VALUE_EXPR_P (*t))
 	unused = false;
 
       /* Remove everything we don't generate debug info for.  */
@@ -791,7 +791,7 @@ remove_unused_locals (void)
 		tree base = get_base_address (lhs);
 		/* Remove clobbers referencing unused vars, or clobbers
 		   with MEM_REF lhs referencing uninitialized pointers.  */
-		if ((TREE_CODE (base) == VAR_DECL && !is_used_p (base))
+		if ((VAR_P (base) && !is_used_p (base))
 		    || (TREE_CODE (lhs) == MEM_REF
 			&& TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME
 			&& SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (lhs, 0))
@@ -825,7 +825,7 @@ remove_unused_locals (void)
   for (srcidx = 0, dstidx = 0; srcidx < num; srcidx++)
     {
       var = (*cfun->local_decls)[srcidx];
-      if (TREE_CODE (var) == VAR_DECL)
+      if (VAR_P (var))
 	{
 	  if (!is_used_p (var))
 	    {
@@ -842,9 +842,7 @@ remove_unused_locals (void)
 	      continue;
 	    }
 	}
-      if (TREE_CODE (var) == VAR_DECL
-	  && DECL_HARD_REGISTER (var)
-	  && !is_global_var (var))
+      if (VAR_P (var) && DECL_HARD_REGISTER (var) && !is_global_var (var))
 	cfun->has_local_explicit_reg_vars = true;
 
       if (srcidx != dstidx)

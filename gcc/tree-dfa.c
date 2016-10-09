@@ -302,7 +302,7 @@ ssa_default_def (struct function *fn, tree var)
 {
   struct tree_decl_minimal ind;
   struct tree_ssa_name in;
-  gcc_assert (TREE_CODE (var) == VAR_DECL
+  gcc_assert (VAR_P (var)
 	      || TREE_CODE (var) == PARM_DECL
 	      || TREE_CODE (var) == RESULT_DECL);
   in.var = (tree)&ind;
@@ -319,7 +319,7 @@ set_ssa_default_def (struct function *fn, tree var, tree def)
   struct tree_decl_minimal ind;
   struct tree_ssa_name in;
 
-  gcc_assert (TREE_CODE (var) == VAR_DECL
+  gcc_assert (VAR_P (var)
 	      || TREE_CODE (var) == PARM_DECL
 	      || TREE_CODE (var) == RESULT_DECL);
   in.var = (tree)&ind;
@@ -612,8 +612,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
   if (DECL_P (exp))
     {
-      if (flag_unconstrained_commons
-	  && TREE_CODE (exp) == VAR_DECL && DECL_COMMON (exp))
+      if (flag_unconstrained_commons && VAR_P (exp) && DECL_COMMON (exp))
 	{
 	  tree sz_tree = TYPE_SIZE (TREE_TYPE (exp));
 	  /* If size is unknown, or we have read to the end, assume there

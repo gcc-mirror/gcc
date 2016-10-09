@@ -7942,7 +7942,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
       if (TREE_CODE (op0) == ADDR_EXPR)
 	{
 	  tree op00 = TREE_OPERAND (op0, 0);
-	  if ((TREE_CODE (op00) == VAR_DECL
+	  if ((VAR_P (op00)
 	       || TREE_CODE (op00) == PARM_DECL
 	       || TREE_CODE (op00) == RESULT_DECL)
 	      && !TREE_READONLY (op00))

@@ -662,7 +662,7 @@ symbol_table::process_same_body_aliases (void)
   FOR_EACH_SYMBOL (node)
     if (node->cpp_implicit_alias && !node->analyzed)
       node->resolve_alias
-	(TREE_CODE (node->alias_target) == VAR_DECL
+	(VAR_P (node->alias_target)
 	 ? (symtab_node *)varpool_node::get_create (node->alias_target)
 	 : (symtab_node *)cgraph_node::get_create (node->alias_target));
   cpp_implicit_aliases_done = true;
@@ -950,7 +950,7 @@ check_global_declaration (symtab_node *snode)
 			&& (decl_file = DECL_SOURCE_FILE (decl)) != NULL
 			&& filename_cmp (main_input_filename,
 					 decl_file) == 0))))
-	   && TREE_CODE (decl) == VAR_DECL))
+	   && VAR_P (decl)))
       && ! DECL_IN_SYSTEM_HEADER (decl)
       && ! snode->referred_to_p (/*include_self=*/false)
       /* This TREE_USED check is needed in addition to referred_to_p
@@ -967,7 +967,7 @@ check_global_declaration (symtab_node *snode)
       /* A volatile variable might be used in some non-obvious way.  */
       && (! VAR_P (decl) || ! TREE_THIS_VOLATILE (decl))
       /* Global register variables must be declared to reserve them.  */
-      && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
+      && ! (VAR_P (decl) && DECL_REGISTER (decl))
       /* Global ctors and dtors are called by the runtime.  */
       && (TREE_CODE (decl) != FUNCTION_DECL
 	  || (!DECL_STATIC_CONSTRUCTOR (decl)
@@ -1194,7 +1194,7 @@ analyze_functions (bool first_time)
 	     at looking at optimized away DECLs, since
 	     late_global_decl will subsequently be called from the
 	     contents of the now pruned symbol table.  */
-	  if (TREE_CODE (node->decl) == VAR_DECL
+	  if (VAR_P (node->decl)
 	      && !decl_function_context (node->decl))
 	    {
 	      /* We are reclaiming totally unreachable code and variables
@@ -1305,7 +1305,7 @@ handle_alias_pairs (void)
 	  cgraph_node::create_alias (p->decl, target_node->decl);
 	  alias_pairs->unordered_remove (i);
 	}
-      else if (TREE_CODE (p->decl) == VAR_DECL
+      else if (VAR_P (p->decl)
 	       && target_node && is_a <varpool_node *> (target_node))
 	{
 	  varpool_node::create_alias (p->decl, target_node->decl);
@@ -1559,7 +1559,7 @@ thunk_adjust (gimple_stmt_iterator * bsi,
     {
       tree ptrtmp;
 
-      if (TREE_CODE (ptr) == VAR_DECL)
+      if (VAR_P (ptr))
         ptrtmp = ptr;
       else
         {
@@ -1738,7 +1738,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 		{
 		  restmp = resdecl;
 
-		  if (TREE_CODE (restmp) == VAR_DECL)
+		  if (VAR_P (restmp))
 		    add_local_decl (cfun, restmp);
 		  BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
 		}

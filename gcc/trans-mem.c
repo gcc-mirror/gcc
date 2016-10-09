@@ -1545,7 +1545,7 @@ requires_barrier (basic_block entry_block, tree x, gimple *stmt)
       x = TREE_OPERAND (TMR_BASE (x), 0);
       if (TREE_CODE (x) == PARM_DECL)
 	return false;
-      gcc_assert (TREE_CODE (x) == VAR_DECL);
+      gcc_assert (VAR_P (x));
       /* FALLTHRU */
 
     case PARM_DECL:

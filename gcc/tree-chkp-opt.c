@@ -610,7 +610,7 @@ chkp_get_check_result (struct check_info *ci, tree bounds)
       chkp_collect_value (DECL_INITIAL (bnd_var), bound_val);
       if (ci->type == CHECK_UPPER_BOUND)
 	{
-	  if (TREE_CODE (var) == VAR_DECL)
+	  if (VAR_P (var))
 	    {
 	      if (DECL_SIZE (var)
 		  && !chkp_variable_size_type (TREE_TYPE (var)))

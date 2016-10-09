@@ -128,9 +128,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 	return false;
     }
 
-  if (TREE_READONLY (base)
-      || (TREE_CODE (base) == VAR_DECL
-	  && DECL_HARD_REGISTER (base)))
+  if (TREE_READONLY (base) || (VAR_P (base) && DECL_HARD_REGISTER (base)))
     return false;
 
   stmt = gsi_stmt (gsi);

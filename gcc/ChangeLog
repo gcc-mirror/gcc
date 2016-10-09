@@ -1,5 +1,151 @@
 2016-10-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-ssa.c (target_for_debug_bind, verify_phi_args,
+	ssa_undefined_value_p, maybe_optimize_var): Use VAR_P and/or
+	VAR_OR_FUNCTION_DECL_P macros.
+	* tree-chkp.c (chkp_register_var_initializer, chkp_make_static_bounds,
+	chkp_get_bounds_for_decl_addr, chkp_parse_array_and_component_ref,
+	chkp_find_bounds_1): Likewise.
+	* ipa-polymorphic-call.c (decl_maybe_in_construction_p): Likewise.
+	* hsa-gen.c (get_symbol_for_decl): Likewise.
+	* cgraphunit.c (check_global_declaration, analyze_functions,
+	handle_alias_pairs, thunk_adjust, cgraph_node::expand_thunk):
+	Likewise.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p,
+	canonicalize_constructor_val, gimple_get_virt_method_for_vtable):
+	Likewise.
+	* tree.c (set_decl_section_name, copy_node_stat,
+	need_assembler_name_p, free_lang_data_in_decl, find_decls_types_r,
+	merge_dllimport_decl_attributes, handle_dll_attribute,
+	decl_init_priority_insert, auto_var_in_fn_p, array_at_struct_end_p,
+	verify_type): Likewise.
+	* gimple-ssa-isolate-paths.c (find_implicit_erroneous_behavior,
+	find_explicit_erroneous_behavior): Likewise.
+	* sdbout.c (sdbout_toplevel_data, sdbout_late_global_decl): Likewise.
+	* ipa.c (process_references): Likewise.
+	* tree-chkp-opt.c (chkp_get_check_result): Likewise.
+	* varasm.c (get_block_for_decl, use_blocks_for_decl_p, make_decl_rtl,
+	notice_global_symbol, assemble_variable, mark_decl_referenced,
+	build_constant_desc, output_constant_def_contents, do_assemble_alias,
+	make_decl_one_only, default_section_type_flags,
+	categorize_decl_for_section, default_encode_section_info): Likewise.
+	* trans-mem.c (requires_barrier): Likewise.
+	* gimple-expr.c (mark_addressable): Likewise.
+	* cfgexpand.c (add_scope_conflicts_1, expand_one_var,
+	expand_used_vars_for_block, clear_tree_used, stack_protect_decl_p,
+	expand_debug_expr): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* ubsan.c (instrument_bool_enum_load): Likewise.
+	* tree-pretty-print.c (print_declaration): Likewise.
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Likewise.
+	* tree-ssa-uninit.c (warn_uninitialized_vars): Likewise.
+	* asan.c (asan_protect_global, instrument_derefs): Likewise.
+	* tree-into-ssa.c (rewrite_stmt, maybe_register_def,
+	pass_build_ssa::execute): Likewise.
+	* var-tracking.c (var_debug_decl, track_expr_p): Likewise.
+	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost, split_address_cost):
+	Likewise.
+	* ipa-split.c (test_nonssa_use, consider_split, mark_nonssa_use):
+	Likewise.
+	* tree-inline.c (insert_debug_decl_map, remap_ssa_name,
+	can_be_nonlocal, remap_decls, copy_debug_stmt,
+	initialize_inlined_parameters, add_local_variables,
+	reset_debug_binding, replace_locals_op): Likewise.
+	* dse.c (can_escape): Likewise.
+	* ipa-devirt.c (compare_virtual_tables, referenced_from_vtable_p):
+	Likewise.
+	* tree-diagnostic.c (default_tree_printer): Likewise.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields,
+	unpack_ts_decl_with_vis_value_fields,
+	lto_input_ts_decl_common_tree_pointers): Likewise.
+	* builtins.c (builtin_save_expr, fold_builtin_expect,
+	readonly_data_expr): Likewise.
+	* tree-ssa-structalias.c (new_var_info, get_constraint_for_ssa_var,
+	create_variable_info_for, set_uids_in_ptset, visit_loadstore):
+	Likewise.
+	* gimple-streamer-out.c (output_gimple_stmt): Likewise.
+	* gimplify.c (force_constant_size, gimplify_bind_expr,
+	gimplify_decl_expr, gimplify_var_or_parm_decl,
+	gimplify_compound_lval, gimplify_init_constructor,
+	gimplify_modify_expr, gimplify_asm_expr, gimplify_oacc_declare,
+	gimplify_type_sizes): Likewise.
+	* cgraphbuild.c (record_reference, record_type_list, mark_address,
+	mark_load, mark_store, pass_build_cgraph_edges::execute): Likewise.
+	* tree-ssa-live.c (mark_all_vars_used_1, remove_unused_scope_block_p,
+	remove_unused_locals): Likewise.
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p, ptrs_compare_unequal,
+	ref_maybe_used_by_call_p_1, call_may_clobber_ref_p_1): Likewise.
+	* function.c (instantiate_expr, instantiate_decls_1,
+	setjmp_vars_warning, add_local_decl): Likewise.
+	* alias.c (ao_ref_from_mem, get_alias_set, compare_base_symbol_refs):
+	Likewise.
+	* tree-stdarg.c (find_va_list_reference, va_list_counter_struct_op,
+	va_list_ptr_read, va_list_ptr_write, check_all_va_list_escapes,
+	optimize_va_list_gpr_fpr_size): Likewise.
+	* tree-nrv.c (pass_nrv::execute): Likewise.
+	* tsan.c (instrument_expr): Likewise.
+	* tree-ssa-dce.c (remove_dead_stmt): Likewise.
+	* vtable-verify.c (verify_bb_vtables): Likewise.
+	* tree-dfa.c (ssa_default_def, set_ssa_default_def,
+	get_ref_base_and_extent): Likewise.
+	* toplev.c (wrapup_global_declaration_1, wrapup_global_declaration_2):
+	Likewise.
+	* tree-sra.c (static bool constant_decl_p, find_var_candidates,
+	analyze_all_variable_accesses): Likewise.
+	* tree-nested.c (get_nonlocal_debug_decl,
+	convert_nonlocal_omp_clauses, note_nonlocal_vla_type,
+	note_nonlocal_block_vlas, convert_nonlocal_reference_stmt,
+	get_local_debug_decl, convert_local_omp_clauses,
+	convert_local_reference_stmt, nesting_copy_decl, remap_vla_decls):
+	Likewise.
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Likewise.
+	* stmt.c (decl_overlaps_hard_reg_set_p): Likewise.
+	* dbxout.c (dbxout_late_global_decl, dbxout_type_fields,
+	dbxout_symbol, dbxout_common_check): Likewise.
+	* expr.c (expand_assignment, expand_expr_real_2, expand_expr_real_1,
+	string_constant): Likewise.
+	* hsa.c (hsa_get_declaration_name): Likewise.
+	* passes.c (rest_of_decl_compilation): Likewise.
+	* tree-ssanames.c (make_ssa_name_fn): Likewise.
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields,
+	pack_ts_decl_with_vis_value_fields,
+	write_ts_decl_common_tree_pointers): Likewise.
+	* stor-layout.c (place_field): Likewise.
+	* symtab.c (symtab_node::maybe_create_reference,
+	symtab_node::verify_base, symtab_node::make_decl_local,
+	symtab_node::copy_visibility_from,
+	symtab_node::can_increase_alignment_p): Likewise.
+	* dwarf2out.c (add_var_loc_to_decl, tls_mem_loc_descriptor,
+	decl_by_reference_p, reference_to_unused, rtl_for_decl_location,
+	fortran_common, add_location_or_const_value_attribute,
+	add_scalar_info, add_linkage_name, set_block_abstract_flags,
+	local_function_static, gen_variable_die, dwarf2out_late_global_decl,
+	optimize_one_addr_into_implicit_ptr,
+	optimize_location_into_implicit_ptr): Likewise.
+	* gimple-low.c (record_vars_into): Likewise.
+	* ipa-visibility.c (update_vtable_references): Likewise.
+	* tree-ssa-address.c (fixed_address_object_p, copy_ref_info):
+	Likewise.
+	* lto-streamer-out.c (tree_is_indexable, get_symbol_initial_value,
+	DFS::DFS_write_tree_body, write_symbol): Likewise.
+	* langhooks.c (lhd_warn_unused_global_decl,
+	lhd_set_decl_assembler_name): Likewise.
+	* attribs.c (decl_attributes): Likewise.
+	* except.c (output_ttype): Likewise.
+	* varpool.c (varpool_node::get_create, ctor_for_folding,
+	varpool_node::assemble_decl, varpool_node::create_alias): Likewise.
+	* fold-const.c (fold_unary_loc): Likewise.
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge,
+	ipa_find_agg_cst_from_init): Likewise.
+	* omp-low.c (expand_omp_regimplify_p, expand_omp_taskreg,
+	expand_omp_target, lower_omp_regimplify_p,
+	grid_reg_assignment_to_local_var_p, grid_remap_prebody_decls,
+	find_link_var_op): Likewise.
+	* tree-chrec.c (chrec_contains_symbols): Likewise.
+	* tree-cfg.c (verify_address, verify_expr, verify_expr_location_1,
+	gimple_duplicate_bb, move_stmt_op, replace_block_vars_by_duplicates,
+	execute_fixup_cfg): Likewise.
+
 	PR tree-optimization/77901
 	* tree-ssa-reassoc.c (optimize_range_tests_var_bound): Only optimize
 	if ranges[i].exp is SSA_NAME when looking for >= and only when

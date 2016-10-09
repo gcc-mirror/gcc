@@ -260,7 +260,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt)
   tree t;
   use_operand_p imm;
 
-  gcc_assert (TREE_CODE (var) == VAR_DECL
+  gcc_assert (VAR_P (var)
 	      || TREE_CODE (var) == PARM_DECL
 	      || TREE_CODE (var) == RESULT_DECL
 	      || (TYPE_P (var) && is_gimple_reg_type (var)));

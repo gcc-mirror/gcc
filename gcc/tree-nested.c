@@ -856,7 +856,7 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
   DECL_SEEN_IN_BIND_EXPR_P (new_decl) = 1;
   if ((TREE_CODE (decl) == PARM_DECL
        || TREE_CODE (decl) == RESULT_DECL
-       || TREE_CODE (decl) == VAR_DECL)
+       || VAR_P (decl))
       && DECL_BY_REFERENCE (decl))
     DECL_BY_REFERENCE (new_decl) = 1;
 
@@ -1076,7 +1076,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	do_decl_clause:
 	  decl = OMP_CLAUSE_DECL (clause);
-	  if (TREE_CODE (decl) == VAR_DECL
+	  if (VAR_P (decl)
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	    break;
 	  if (decl_function_context (decl) != info->context)
@@ -1175,7 +1175,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    }
 	  /* Like do_decl_clause, but don't add any suppression.  */
 	  decl = OMP_CLAUSE_DECL (clause);
-	  if (TREE_CODE (decl) == VAR_DECL
+	  if (VAR_P (decl)
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	    break;
 	  if (decl_function_context (decl) != info->context)
@@ -1308,11 +1308,11 @@ note_nonlocal_vla_type (struct nesting_info *info, tree type)
       if (domain)
 	{
 	  t = TYPE_MIN_VALUE (domain);
-	  if (t && (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL)
+	  if (t && (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
 	      && decl_function_context (t) != info->context)
 	    get_nonlocal_debug_decl (info, t);
 	  t = TYPE_MAX_VALUE (domain);
-	  if (t && (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL)
+	  if (t && (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
 	      && decl_function_context (t) != info->context)
 	    get_nonlocal_debug_decl (info, t);
 	}
@@ -1328,7 +1328,7 @@ note_nonlocal_block_vlas (struct nesting_info *info, tree block)
   tree var;
 
   for (var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
-    if (TREE_CODE (var) == VAR_DECL
+    if (VAR_P (var)
 	&& variably_modified_type_p (TREE_TYPE (var), NULL)
 	&& DECL_HAS_VALUE_EXPR_P (var)
 	&& decl_function_context (var) != info->context)
@@ -1492,7 +1492,7 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 
 	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (decls), i, decl)
 	      {
-		if (TREE_CODE (decl) == VAR_DECL
+		if (VAR_P (decl)
 		    && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 		  continue;
 		if (decl_function_context (decl) != info->context)
@@ -1554,7 +1554,7 @@ get_local_debug_decl (struct nesting_info *info, tree decl, tree field)
   DECL_SEEN_IN_BIND_EXPR_P (new_decl) = 1;
   if ((TREE_CODE (decl) == PARM_DECL
        || TREE_CODE (decl) == RESULT_DECL
-       || TREE_CODE (decl) == VAR_DECL)
+       || VAR_P (decl))
       && DECL_BY_REFERENCE (decl))
     DECL_BY_REFERENCE (new_decl) = 1;
 
@@ -1774,7 +1774,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	do_decl_clause:
 	  decl = OMP_CLAUSE_DECL (clause);
-	  if (TREE_CODE (decl) == VAR_DECL
+	  if (VAR_P (decl)
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	    break;
 	  if (decl_function_context (decl) == info->context
@@ -1878,7 +1878,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    }
 	  /* Like do_decl_clause, but don't add any suppression.  */
 	  decl = OMP_CLAUSE_DECL (clause);
-	  if (TREE_CODE (decl) == VAR_DECL
+	  if (VAR_P (decl)
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	    break;
 	  if (decl_function_context (decl) == info->context
@@ -2144,7 +2144,7 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 
 	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (decls), i, decl)
 	      {
-		if (TREE_CODE (decl) == VAR_DECL
+		if (VAR_P (decl)
 		    && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 		  continue;
 		if (decl_function_context (decl) == info->context
@@ -2685,7 +2685,7 @@ nesting_copy_decl (tree decl, copy_body_data *id)
       return new_decl;
     }
 
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       || TREE_CODE (decl) == PARM_DECL
       || TREE_CODE (decl) == RESULT_DECL)
     return decl;
@@ -2728,7 +2728,7 @@ remap_vla_decls (tree block, struct nesting_info *root)
     remap_vla_decls (subblock, root);
 
   for (var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
-    if (TREE_CODE (var) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (var))
+    if (VAR_P (var) && DECL_HAS_VALUE_EXPR_P (var))
       {
 	val = DECL_VALUE_EXPR (var);
 	type = TREE_TYPE (var);
@@ -2752,7 +2752,7 @@ remap_vla_decls (tree block, struct nesting_info *root)
   id.root = root;
 
   for (; var; var = DECL_CHAIN (var))
-    if (TREE_CODE (var) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (var))
+    if (VAR_P (var) && DECL_HAS_VALUE_EXPR_P (var))
       {
 	struct nesting_info *i;
 	tree newt, context;

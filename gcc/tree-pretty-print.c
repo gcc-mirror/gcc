@@ -3284,7 +3284,7 @@ print_declaration (pretty_printer *pp, tree t, int spc, int flags)
       dump_generic_node (pp, t, spc, flags, false);
     }
 
-  if (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t))
+  if (VAR_P (t) && DECL_HARD_REGISTER (t))
     {
       pp_string (pp, " __asm__ ");
       pp_left_paren (pp);
@@ -3307,7 +3307,7 @@ print_declaration (pretty_printer *pp, tree t, int spc, int flags)
 	}
     }
 
-  if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
+  if (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t))
     {
       pp_string (pp, " [value-expr: ");
       dump_generic_node (pp, DECL_VALUE_EXPR (t), spc, flags, false);

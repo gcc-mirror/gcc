@@ -798,7 +798,7 @@ hsa_get_declaration_name (tree decl)
 
   tree name_tree;
   if (TREE_CODE (decl) == FUNCTION_DECL
-      || (TREE_CODE (decl) == VAR_DECL && is_global_var (decl)))
+      || (VAR_P (decl) && is_global_var (decl)))
     name_tree = DECL_ASSEMBLER_NAME (decl);
   else
     name_tree = DECL_NAME (decl);
