@@ -1,3 +1,8 @@
+2016-10-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* ipa-prop.c (ipcp_transform_function): Set fields m_vr and bits to NULL of
+	(*ipcp_transformations)][node->uid].
+
 2016-10-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.h (BIGGEST_ALIGNMENT): Adjust comment.
