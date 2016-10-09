@@ -660,6 +660,21 @@ typedef struct gfc_saved_unit
 }
 gfc_saved_unit;
 
+/* TEMP_FAILURE_RETRY macro from glibc.  */
+
+#ifndef TEMP_FAILURE_RETRY
+/* Evaluate EXPRESSION, and repeat as long as it returns -1 with `errno'
+   set to EINTR.  */
+
+# define TEMP_FAILURE_RETRY(expression) \
+  (__extension__                                                              \
+    ({ long int __result;                                                     \
+       do __result = (long int) (expression);                                 \
+       while (__result == -1L && errno == EINTR);                             \
+       __result; }))
+#endif
+
+
 /* unit.c */
 
 /* Maximum file offset, computed at library initialization time.  */
