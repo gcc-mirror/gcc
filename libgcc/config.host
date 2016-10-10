@@ -331,6 +331,11 @@ aarch64*-*-elf | aarch64*-*-rtems*)
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	;;
+aarch64*-*-freebsd*)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
+	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	;;
 aarch64*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
 	md_unwind_header=aarch64/linux-unwind.h

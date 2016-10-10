@@ -3385,6 +3385,9 @@ case "${target}" in
   *-*-vxworks*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
+  aarch64*-*-freebsd*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
