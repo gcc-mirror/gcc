@@ -347,20 +347,14 @@ type g struct {
 	tracelastp     puintptr // last P emitted an event for this goroutine
 	lockedm        *m
 	sig            uint32
-
-	// Temporary gccgo field.
-	writenbuf int32
-	// Not for gccgo yet: writebuf       []byte
-	// Temporary different type for gccgo.
-	writebuf *byte
-
-	sigcode0 uintptr
-	sigcode1 uintptr
-	sigpc    uintptr
-	gopc     uintptr // pc of go statement that created this goroutine
-	startpc  uintptr // pc of goroutine function
-	racectx  uintptr
-	waiting  *sudog // sudog structures this g is waiting on (that have a valid elem ptr); in lock order
+	writebuf       []byte
+	sigcode0       uintptr
+	sigcode1       uintptr
+	sigpc          uintptr
+	gopc           uintptr // pc of go statement that created this goroutine
+	startpc        uintptr // pc of goroutine function
+	racectx        uintptr
+	waiting        *sudog // sudog structures this g is waiting on (that have a valid elem ptr); in lock order
 	// Not for gccgo: cgoCtxt        []uintptr // cgo traceback context
 
 	// Per-G GC state

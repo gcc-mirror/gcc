@@ -299,42 +299,47 @@ DEF_GO_RUNTIME(INTERFACE_EMPTY_COMPARE, "__go_interface_empty_compare",
 	       P2(IFACE, EFACE), R1(INT))
 
 
+// Lock the printer (for print/println).
+DEF_GO_RUNTIME(PRINTLOCK, "runtime.printlock", P0(), R0())
+
+// Unlock the printer (for print/println).
+DEF_GO_RUNTIME(PRINTUNLOCK, "runtime.printunlock", P0(), R0())
+
 // Print a string (for print/println).
-DEF_GO_RUNTIME(PRINT_STRING, "__go_print_string", P1(STRING), R0())
+DEF_GO_RUNTIME(PRINTSTRING, "runtime.printstring", P1(STRING), R0())
 
 // Print a uint64 (for print/println).
-DEF_GO_RUNTIME(PRINT_UINT64, "__go_print_uint64", P1(UINT64), R0())
+DEF_GO_RUNTIME(PRINTUINT, "runtime.printuint", P1(UINT64), R0())
 
 // Print a int64 (for print/println).
-DEF_GO_RUNTIME(PRINT_INT64, "__go_print_int64", P1(INT64), R0())
+DEF_GO_RUNTIME(PRINTINT, "runtime.printint", P1(INT64), R0())
 
 // Print a float64 (for print/println).
-DEF_GO_RUNTIME(PRINT_DOUBLE, "__go_print_double", P1(FLOAT64), R0())
+DEF_GO_RUNTIME(PRINTFLOAT, "runtime.printfloat", P1(FLOAT64), R0())
 
 // Print a complex128 (for print/println).
-DEF_GO_RUNTIME(PRINT_COMPLEX, "__go_print_complex", P1(COMPLEX128), R0())
+DEF_GO_RUNTIME(PRINTCOMPLEX, "runtime.printcomplex", P1(COMPLEX128), R0())
 
 // Print a bool (for print/println).
-DEF_GO_RUNTIME(PRINT_BOOL, "__go_print_bool", P1(BOOL), R0())
+DEF_GO_RUNTIME(PRINTBOOL, "runtime.printbool", P1(BOOL), R0())
 
 // Print a pointer/map/channel/function (for print/println).
-DEF_GO_RUNTIME(PRINT_POINTER, "__go_print_pointer", P1(POINTER), R0())
+DEF_GO_RUNTIME(PRINTPOINTER, "runtime.printpointer", P1(POINTER), R0())
 
 // Print an empty interface (for print/println).
-DEF_GO_RUNTIME(PRINT_EMPTY_INTERFACE, "__go_print_empty_interface",
-	       P1(EFACE), R0())
+DEF_GO_RUNTIME(PRINTEFACE, "runtime.printeface", P1(EFACE), R0())
 
 // Print a non-empty interface (for print/println).
-DEF_GO_RUNTIME(PRINT_INTERFACE, "__go_print_interface", P1(IFACE), R0())
+DEF_GO_RUNTIME(PRINTIFACE, "runtime.printiface", P1(IFACE), R0())
 
 // Print a slice (for print/println).
-DEF_GO_RUNTIME(PRINT_SLICE, "__go_print_slice", P1(SLICE), R0())
+DEF_GO_RUNTIME(PRINTSLICE, "runtime.printslice", P1(SLICE), R0())
 
 // Print a space (for println).
-DEF_GO_RUNTIME(PRINT_SPACE, "__go_print_space", P0(), R0())
+DEF_GO_RUNTIME(PRINTSP, "runtime.printsp", P0(), R0())
 
 // Print a newline (for println).
-DEF_GO_RUNTIME(PRINT_NL, "__go_print_nl", P0(), R0())
+DEF_GO_RUNTIME(PRINTNL, "runtime.printnl", P0(), R0())
 
 
 // Used for field tracking for data analysis.

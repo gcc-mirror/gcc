@@ -419,17 +419,19 @@ func Stack(b Slice, all bool) (n int) {
 		n = 0;
 	else{
 		G* g = runtime_g();
-		g->writebuf = (byte*)b.__values;
-		g->writenbuf = b.__count;
+		g->writebuf.__values = b.__values;
+		g->writebuf.__count = 0;
+		g->writebuf.__capacity = b.__count;
 		USED(pc);
 		runtime_goroutineheader(g);
 		runtime_traceback();
 		runtime_printcreatedby(g);
 		if(all)
 			runtime_tracebackothers(g);
-		n = b.__count - g->writenbuf;
-		g->writebuf = nil;
-		g->writenbuf = 0;
+		n = g->writebuf.__count;
+		g->writebuf.__values = nil;
+		g->writebuf.__count = 0;
+		g->writebuf.__capacity = 0;
 	}
 	
 	if(all) {

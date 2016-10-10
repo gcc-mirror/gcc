@@ -2,11 +2,31 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore
-
 package runtime
 
 import "unsafe"
+
+// For gccgo, use go:linkname to rename compiler-called functions to
+// themselves, so that the compiler will export them.
+//
+//go:linkname printbool runtime.printbool
+//go:linkname printfloat runtime.printfloat
+//go:linkname printint runtime.printint
+//go:linkname printhex runtime.printhex
+//go:linkname printuint runtime.printuint
+//go:linkname printcomplex runtime.printcomplex
+//go:linkname printstring runtime.printstring
+//go:linkname printpointer runtime.printpointer
+//go:linkname printiface runtime.printiface
+//go:linkname printeface runtime.printeface
+//go:linkname printslice runtime.printslice
+//go:linkname printnl runtime.printnl
+//go:linkname printsp runtime.printsp
+//go:linkname printlock runtime.printlock
+//go:linkname printunlock runtime.printunlock
+// Temporary for C code to call:
+//go:linkname gwrite runtime.gwrite
+//go:linkname printhex runtime.printhex
 
 // The compiler knows that a print of a value of this type
 // should use printhex instead of printuint (decimal).
@@ -201,10 +221,6 @@ func printpointer(p unsafe.Pointer) {
 }
 
 func printstring(s string) {
-	if uintptr(len(s)) > maxstring {
-		gwrite(bytes("[string too long]"))
-		return
-	}
 	gwrite(bytes(s))
 }
 

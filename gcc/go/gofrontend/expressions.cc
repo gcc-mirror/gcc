@@ -7018,6 +7018,26 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	  }
       }
       break;
+
+    case BUILTIN_PRINT:
+    case BUILTIN_PRINTLN:
+      // Force all the arguments into temporary variables, so that we
+      // don't try to evaluate something while holding the print lock.
+      if (this->args() == NULL)
+	break;
+      for (Expression_list::iterator pa = this->args()->begin();
+	   pa != this->args()->end();
+	   ++pa)
+	{
+	  if (!(*pa)->is_variable())
+	    {
+	      Temporary_statement* temp =
+		Statement::make_temporary(NULL, *pa, loc);
+	      inserter->insert(temp);
+	      *pa = Expression::make_temporary_reference(temp, loc);
+	    }
+	}
+      break;
     }
 
   return this;
@@ -8336,7 +8356,9 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
     case BUILTIN_PRINTLN:
       {
 	const bool is_ln = this->code_ == BUILTIN_PRINTLN;
-        Expression* print_stmts = NULL;
+
+	Expression* print_stmts = Runtime::make_call(Runtime::PRINTLOCK,
+						     location, 0);
 
 	const Expression_list* call_args = this->args();
 	if (call_args != NULL)
@@ -8348,8 +8370,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 		if (is_ln && p != call_args->begin())
 		  {
                     Expression* print_space =
-                        Runtime::make_call(Runtime::PRINT_SPACE,
-                                           this->location(), 0);
+		      Runtime::make_call(Runtime::PRINTSP, location, 0);
 
                     print_stmts =
                         Expression::make_compound(print_stmts, print_space,
@@ -8360,51 +8381,51 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 		Type* type = arg->type();
                 Runtime::Function code;
 		if (type->is_string_type())
-                  code = Runtime::PRINT_STRING;
+                  code = Runtime::PRINTSTRING;
 		else if (type->integer_type() != NULL
 			 && type->integer_type()->is_unsigned())
 		  {
 		    Type* itype = Type::lookup_integer_type("uint64");
 		    arg = Expression::make_cast(itype, arg, location);
-                    code = Runtime::PRINT_UINT64;
+                    code = Runtime::PRINTUINT;
 		  }
 		else if (type->integer_type() != NULL)
 		  {
 		    Type* itype = Type::lookup_integer_type("int64");
 		    arg = Expression::make_cast(itype, arg, location);
-                    code = Runtime::PRINT_INT64;
+                    code = Runtime::PRINTINT;
 		  }
 		else if (type->float_type() != NULL)
 		  {
                     Type* dtype = Type::lookup_float_type("float64");
                     arg = Expression::make_cast(dtype, arg, location);
-                    code = Runtime::PRINT_DOUBLE;
+                    code = Runtime::PRINTFLOAT;
 		  }
 		else if (type->complex_type() != NULL)
 		  {
                     Type* ctype = Type::lookup_complex_type("complex128");
                     arg = Expression::make_cast(ctype, arg, location);
-                    code = Runtime::PRINT_COMPLEX;
+                    code = Runtime::PRINTCOMPLEX;
 		  }
 		else if (type->is_boolean_type())
-                  code = Runtime::PRINT_BOOL;
+                  code = Runtime::PRINTBOOL;
 		else if (type->points_to() != NULL
 			 || type->channel_type() != NULL
 			 || type->map_type() != NULL
 			 || type->function_type() != NULL)
 		  {
                     arg = Expression::make_cast(type, arg, location);
-                    code = Runtime::PRINT_POINTER;
+                    code = Runtime::PRINTPOINTER;
 		  }
 		else if (type->interface_type() != NULL)
 		  {
 		    if (type->interface_type()->is_empty())
-                      code = Runtime::PRINT_EMPTY_INTERFACE;
+                      code = Runtime::PRINTEFACE;
 		    else
-                      code = Runtime::PRINT_INTERFACE;
+                      code = Runtime::PRINTIFACE;
 		  }
 		else if (type->is_slice_type())
-                  code = Runtime::PRINT_SLICE;
+                  code = Runtime::PRINTSLICE;
 		else
 		  {
 		    go_assert(saw_errors());
@@ -8412,30 +8433,22 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 		  }
 
                 Expression* call = Runtime::make_call(code, location, 1, arg);
-                if (print_stmts == NULL)
-                  print_stmts = call;
-                else
-                  print_stmts = Expression::make_compound(print_stmts, call,
-                                                          location);
+		print_stmts = Expression::make_compound(print_stmts, call,
+							location);
 	      }
 	  }
 
 	if (is_ln)
 	  {
             Expression* print_nl =
-                Runtime::make_call(Runtime::PRINT_NL, location, 0);
-            if (print_stmts == NULL)
-              print_stmts = print_nl;
-            else
-              print_stmts = Expression::make_compound(print_stmts, print_nl,
-                                                      location);
+                Runtime::make_call(Runtime::PRINTNL, location, 0);
+	    print_stmts = Expression::make_compound(print_stmts, print_nl,
+						    location);
 	  }
 
-        // There aren't any arguments to the print builtin.  The compiler
-        // issues a warning for this so we should avoid getting the backend
-        // representation for this call.  Instead, perform a no-op.
-        if (print_stmts == NULL)
-          return context->backend()->boolean_constant_expression(false);
+	Expression* unlock = Runtime::make_call(Runtime::PRINTUNLOCK,
+						location, 0);
+	print_stmts = Expression::make_compound(print_stmts, unlock, location);
 
         return print_stmts->get_backend(context);
       }

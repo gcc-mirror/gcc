@@ -2037,8 +2037,9 @@ goexit0(G *gp)
 	gp->paniconfault = 0;
 	gp->_defer = nil; // should be true already but just in case.
 	gp->_panic = nil; // non-nil for Goexit during panic. points at stack-allocated data.
-	gp->writenbuf = 0;
-	gp->writebuf = nil;
+	gp->writebuf.__values = nil;
+	gp->writebuf.__count = 0;
+	gp->writebuf.__capacity = 0;
 	gp->waitreason = runtime_gostringnocopy(nil);
 	gp->param = nil;
 	m->curg = nil;

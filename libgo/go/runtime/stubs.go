@@ -445,6 +445,3 @@ func releaseSudog(s *sudog) {
 
 // Temporary hack for gccgo until we port the garbage collector.
 func typeBitsBulkBarrier(typ *_type, p, size uintptr) {}
-
-// Temporary for gccgo until we port print.go.
-type hex uint64
