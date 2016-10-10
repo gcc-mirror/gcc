@@ -1,8 +1,22 @@
+2016-10-10  Matthew Wahab  <matthew.wahab@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* target-supports.exp (add_options_for_arm_v8_2a_fp16_scalar): Mention
+	AArch64 support.
+	(add_options_for_arm_v8_2a_fp16_neon): Likewise.
+	(check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache): Support
+	AArch64 targets.
+	(check_effective_target_arm_v8_2a_fp16_neon_ok_nocache): Support
+	AArch64 targets.
+	(check_effective_target_arm_v8_2a_fp16_scalar_hw): Support AArch64
+	targets.
+	(check_effective_target_arm_v8_2a_fp16_neon_hw): Likewise.
+
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/vfa.ads: New test.
 
-2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+2016-10-10  Eric Botgazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/inline13.ad[sb]: New test.
 	* gnat.dg/inline13_pkg.ad[sb]: New helper.
