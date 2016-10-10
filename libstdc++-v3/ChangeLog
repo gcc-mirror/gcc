@@ -1,5 +1,11 @@
 2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (_Bind_result::__enable_if_void): Use alias
+	template instead of class template.
+	(_Bind_result::__disable_if_void): Likewise.
+	(_Bind_result::__call): Adjust uses of __enable_if_void and
+	__disable_if_void.
+
 	* doc/xml/manual/intro.xml: Document DR 2296 status.
 	* doc/xml/manual/status_cxx2017.xml: Update status.
 	* include/bits/move.h (__addressof): Add _GLIBCXX_CONSTEXPR and
