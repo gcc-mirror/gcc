@@ -14293,8 +14293,8 @@ This is the default for @option{-Os}.
 
 @item -mcompact-casesi
 @opindex mcompact-casesi
-Enable compact casesi pattern.
-This is the default for @option{-Os}.
+Enable compact casesi pattern.  This is the default for @option{-Os},
+and only available for ARCv1 cores.
 
 @item -mno-cond-exec
 @opindex mno-cond-exec

@@ -56,7 +56,6 @@ static const struct default_options arc_option_optimization_table[] =
     { OPT_LEVELS_ALL, OPT_mbbit_peephole, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_mq_class, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_mcase_vector_pcrel, NULL, 1 },
-    { OPT_LEVELS_SIZE, OPT_mcompact_casesi, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 
