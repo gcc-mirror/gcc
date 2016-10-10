@@ -1,3 +1,14 @@
+2016-10-10  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (FP16_SUPPORTED):
+	Enable AArch64.
+	* gcc.target/aarch64/advsimd-intrinsics/vdup_lane.c: Add support for
+	vdup*_laneq.
+	* gcc.target/aarch64/advsimd-intrinsics/vduph_lane.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vtrn_half.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp_half.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip_half.c: New.
+
 2016-10-10  Matthew Wahab  <matthew.wahab@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 
