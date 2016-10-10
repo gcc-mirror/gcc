@@ -43,12 +43,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup utilities
    */
   template<typename _Tp>
-    inline _Tp*
+    inline _GLIBCXX_CONSTEXPR _Tp*
     __addressof(_Tp& __r) _GLIBCXX_NOEXCEPT
-    {
-      return reinterpret_cast<_Tp*>
-	(&const_cast<char&>(reinterpret_cast<const volatile char&>(__r)));
-    }
+    { return __builtin_addressof(__r); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
@@ -123,6 +120,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // declval, from type_traits.
 
+#if __cplusplus > 201402L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2296. std::addressof should be constexpr
+# define __cpp_lib_addressof_constexpr 201603
+#endif
   /**
    *  @brief Returns the actual address of the object or function
    *         referenced by r, even in the presence of an overloaded
@@ -131,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return   The actual address.
   */
   template<typename _Tp>
-    inline _Tp*
+    inline _GLIBCXX17_CONSTEXPR _Tp*
     addressof(_Tp& __r) noexcept
     { return std::__addressof(__r); }
 

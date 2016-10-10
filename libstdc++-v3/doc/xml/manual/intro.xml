@@ -961,6 +961,13 @@ requirements of the license of GCC.
     is included by <code>&lt;array&gt;</code>.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2296">2296</link>:
+	<emphasis><code>std::addressof</code> should be constexpr</emphasis>
+    </term>
+    <listitem><para>Use <code>__builtin_addressof</code> and add
+    <code>constexpr</code> to <code>addressof</code> for C++17 and later.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2313">2313</link>:
 	<emphasis><code>tuple_size</code> should always derive from <code>integral_constant&lt;size_t, N&gt;</code></emphasis>
     </term>
