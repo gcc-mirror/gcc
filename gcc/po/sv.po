@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-09-03 11:38+0200\n"
+"PO-Revision-Date: 2016-10-10 21:39+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -28575,7 +28575,7 @@ msgstr "-mpower9-dform behöver -mupper-regs-sf"
 #: config/rs6000/rs6000.c:4291
 #, gcc-internal-format
 msgid "-mvsx-timode might need -mlra"
-msgstr "-mvsx-timode behöver -mlra"
+msgstr "-mvsx-timode kan behöva -mlra"
 
 #: config/rs6000/rs6000.c:4316
 #, gcc-internal-format
@@ -37212,7 +37212,7 @@ msgstr "tilldelning (inte initiering) i deklaration"
 #: cp/decl.c:6645
 #, gcc-internal-format
 msgid "initializer for %<decltype(auto) %D%> has function type (did you forget the %<()%> ?)"
-msgstr "initieraren för %<decltype(auto) %qD%> har funktionstyp (glömde du %<()%> ?)"
+msgstr "initieraren för %<decltype(auto) %D%> har funktionstyp (glömde du %<()%> ?)"
 
 #: cp/decl.c:6746
 #, gcc-internal-format
@@ -51552,7 +51552,7 @@ msgstr "Syntaxfel i OpenACC-uttryckslista vid %C"
 #: fortran/openmp.c:457
 #, gcc-internal-format
 msgid "Unexpected OpenACC parallelism."
-msgstr "Oväntad OpenACC-parallellism"
+msgstr "Oväntad OpenACC-parallellism."
 
 #: fortran/openmp.c:489
 #, gcc-internal-format, gfc-internal-format
@@ -53198,7 +53198,7 @@ msgstr "Symbolen  %qs vid %C har ingen IMPLICIT-typ"
 #: fortran/primary.c:1994
 #, gcc-internal-format
 msgid "Unexpected %<%c%> for nonderived-type variable %qs at %C"
-msgstr "Oväntat %<%c%> för variabel med icke härled typ %qs vid %C"
+msgstr "Oväntat %<%c%> för variabel med icke härledd typ %qs vid %C"
 
 #: fortran/primary.c:2012
 #, gcc-internal-format, gfc-internal-format
