@@ -179,6 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      typename _Tp = _Decay<_ValueType>,
 	      typename _Mgr = _Manager<_Tp>,
               __any_constructible_t<_Tp, _Args&&...> = false>
+      explicit
       any(in_place_type_t<_ValueType>, _Args&&... __args)
       : _M_manager(&_Mgr::_S_manage)
       {
@@ -192,6 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      typename _Mgr = _Manager<_Tp>,
               __any_constructible_t<_Tp, initializer_list<_Up>,
 				    _Args&&...> = false>
+      explicit
       any(in_place_type_t<_ValueType>,
 	  initializer_list<_Up> __il, _Args&&... __args)
       : _M_manager(&_Mgr::_S_manage)
@@ -207,16 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Copy the state of another object.
     any& operator=(const any& __rhs)
     {
-      if (!__rhs.has_value())
-	reset();
-      else if (this != &__rhs)
-	{
-	  if (has_value())
-	    _M_manager(_Op_destroy, this, nullptr);
-	  _Arg __arg;
-	  __arg._M_any = this;
-	  __rhs._M_manager(_Op_clone, &__rhs, &__arg);
-	}
+      *this = any(__rhs);
       return *this;
     }
 
@@ -231,8 +224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	reset();
       else if (this != &__rhs)
 	{
-	  if (has_value())
-	    _M_manager(_Op_destroy, this, nullptr);
+	  reset();
 	  _Arg __arg;
 	  __arg._M_any = this;
 	  __rhs._M_manager(_Op_xfer, &__rhs, &__arg);
@@ -243,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Store a copy of @p __rhs as the contained object.
     template<typename _ValueType,
 	     typename _Tp = _Decay<_ValueType>>
-    enable_if_t<is_copy_constructible<_Tp>::value, any&>
+      enable_if_t<is_copy_constructible<_Tp>::value, any&>
       operator=(_ValueType&& __rhs)
       {
 	*this = any(std::forward<_ValueType>(__rhs));
@@ -556,7 +548,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__ptr->~_Tp();
 	break;
       case _Op_xfer:
-	::new(&__arg->_M_any->_M_storage._M_buffer) _Tp(*__ptr);
+	::new(&__arg->_M_any->_M_storage._M_buffer) _Tp
+	  (std::move(*const_cast<_Tp*>(__ptr)));
 	__ptr->~_Tp();
 	__arg->_M_any->_M_manager = __any->_M_manager;
 	const_cast<any*>(__any)->_M_manager = nullptr;

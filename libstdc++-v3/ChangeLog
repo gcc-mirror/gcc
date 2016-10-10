@@ -1,3 +1,23 @@
+2016-10-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make any's copy assignment operator exception-safe,
+	don't copy the underlying value when any is moved,
+	make in_place constructors explicit.
+	* include/std/any (any(in_place_type_t<_ValueType>, _Args&&...)):
+	Make explicit.
+	(any(in_place_type_t<_ValueType>, initializer_list<_Up>, _Args&&...)):
+	Likewise.
+	(operator=(const any&)): Make strongly exception-safe.
+	(operator=(any&&)): reset() unconditionally in the case where
+	rhs has a value.
+	(operator=(_ValueType&&)): Indent the return type.
+	(_Manager_internal<_Tp>::_S_manage): Move in _Op_xfer, don't copy.
+	* testsuite/20_util/any/assign/2.cc: Adjust.
+	* testsuite/20_util/any/assign/exception.cc: New.
+	* testsuite/20_util/any/cons/2.cc: Adjust.
+	* testsuite/20_util/any/cons/explicit.cc: New.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Ajust.
+
 2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/appendix_contributing.xml (contrib.organization):
