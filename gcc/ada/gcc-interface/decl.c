@@ -4728,14 +4728,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      && AGGREGATE_TYPE_P (gnu_type)
 	      && TYPE_BY_REFERENCE_P (gnu_type))
 	    SET_TYPE_MODE (gnu_type, BLKmode);
-
-	  if (Treat_As_Volatile (gnat_entity))
-	    {
-	      const int quals
-		= TYPE_QUAL_VOLATILE
-		  | (Is_Atomic_Or_VFA (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
-	      gnu_type = change_qualified_type (gnu_type, quals);
-	    }
 	}
 
       /* If this is a derived type, relate its alias set to that of its parent
@@ -4814,6 +4806,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  relate_alias_sets (gnu_type, gnat_to_gnu_type (gnat_parent_type),
 			     Is_Composite_Type (gnat_entity)
 			     ? ALIAS_SET_COPY : ALIAS_SET_SUPERSET);
+	}
+
+      if (Treat_As_Volatile (gnat_entity))
+	{
+	  const int quals
+	    = TYPE_QUAL_VOLATILE
+	      | (Is_Atomic_Or_VFA (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+	  gnu_type = change_qualified_type (gnu_type, quals);
 	}
 
       if (!gnu_decl)
@@ -5386,12 +5386,9 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
     }
 
   /* If this is a read-only parameter, make a variant of the type that is
-     read-only.  ??? However, if this is an unconstrained array, that type
-     can be very complex, so skip it for now.  Likewise for any other
-     self-referential type.  */
-  if (ro_param
-      && TREE_CODE (gnu_param_type) != UNCONSTRAINED_ARRAY_TYPE
-      && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
+     read-only.  ??? However, if this is a self-referential type, the type
+     can be very complex, so skip it for now.  */
+  if (ro_param && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
     gnu_param_type = change_qualified_type (gnu_param_type, TYPE_QUAL_CONST);
 
   /* For foreign conventions, pass arrays as pointers to the element type.
@@ -6254,6 +6251,10 @@ gnu_ext_name_for_subprog (Entity_Id gnat_subprog, tree gnu_entity_name)
 static tree
 change_qualified_type (tree type, int type_quals)
 {
+  /* Qualifiers must be put on the associated array type.  */
+  if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+    return type;
+
   return build_qualified_type (type, TYPE_QUALS (type) | type_quals);
 }
 

@@ -1,5 +1,9 @@
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/vfa.ads: New test.
+
+2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/inline13.ad[sb]: New test.
 	* gnat.dg/inline13_pkg.ad[sb]: New helper.
 

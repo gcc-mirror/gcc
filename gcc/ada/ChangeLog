@@ -1,5 +1,12 @@
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Put volatile qualifier
+	on types at the very end of the processing.
+	(gnat_to_gnu_param): Remove redundant test.
+	(change_qualified_type): Do nothing for unconstrained array types.
+
+2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (find_common_type): Do not return the LHS type
 	if it's an array with non-constant lower bound and the RHS type is an
 	array with a constant one.
