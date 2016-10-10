@@ -1,3 +1,8 @@
+2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (convert): For a biased input type, convert
+	the bias itself to the base type before adding it.
+
 2016-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (convert) <VECTOR_CST>: Add missing break.
