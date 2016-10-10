@@ -1,3 +1,13 @@
+2016-10-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/77824
+	* gimple-ssa-strength-reduction.c (stmt_cost): Explicitly return
+	zero cost for copies.
+	(find_candidates_dom_walker::before_dom_children): Replace
+	MODIFY_EXPR with SSA_NAME.
+	(replace_mult_candidate): Likewise.
+	(replace_profitable_candidates): Likewise.
+
 2016-10-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.h: Wrap more macros args in brackets and fix
