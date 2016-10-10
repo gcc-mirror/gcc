@@ -1,3 +1,11 @@
+2016-10-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* common/config/arc/arc-common.c (arc_option_optimization_table):
+	Remove compact casesi option.
+	* config/arc/arc.c (arc_override_options): Use compact casesi
+	option only for pre-ARCv2 cores.
+	* doc/invoke.texi (mcompact-casesi): Update text.
+
 2016-10-09  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.h (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED): 
