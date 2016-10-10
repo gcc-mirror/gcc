@@ -1,3 +1,7 @@
+2016-10-10  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.h: Wrap more macros args in brackets and fix
+
 2016-10-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/gen-avr-mmcu-texi.c (string.h): Include.
