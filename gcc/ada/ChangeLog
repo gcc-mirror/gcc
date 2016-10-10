@@ -1,7 +1,13 @@
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc-interface/utils.c (convert): For a biased input type, convert
-	the bias itself to the base type before adding it.
+	* gcc-interface/utils2.c (find_common_type): Do not return the LHS type
+	if it's an array with non-constant lower bound and the RHS type is an
+	array with a constant one.
+
+2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (convert): For a biased input type, convert the
+	bias itself to the base type before adding it.
 
 2016-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 

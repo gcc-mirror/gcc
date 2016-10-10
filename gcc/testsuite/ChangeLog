@@ -1,5 +1,10 @@
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/inline13.ad[sb]: New test.
+	* gnat.dg/inline13_pkg.ad[sb]: New helper.
+
+2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/biased_subtype.adb: New test.
 
 2016-10-09  Jakub Jelinek  <jakub@redhat.com>
