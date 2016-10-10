@@ -253,14 +253,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> <code>std::addressof</code> should be constexpr </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0304r0.html#2296">
 	LWG2296
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> 7 </entry>
       <entry><code> __cpp_lib_addressof_constexpr >= 201603 </code></entry>
     </row>
 

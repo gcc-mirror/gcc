@@ -1,5 +1,14 @@
 2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document DR 2296 status.
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* include/bits/move.h (__addressof): Add _GLIBCXX_CONSTEXPR and
+	call __builtin_addressof.
+	(addressof): Add _GLIBCXX17_CONSTEXPR.
+	* testsuite/20_util/addressof/requirements/constexpr.cc: New test.
+	* testsuite/20_util/forward/c_neg.cc: Adjust dg-error lineno.
+	* testsuite/20_util/forward/f_neg.cc: Likewise.
+
 	* include/bits/allocator.h (allocator<T>::is_always_equal): Define.
 	* testsuite/20_util/allocator/requirements/typedefs.cc: Test for
 	is_always_equal.
