@@ -1562,11 +1562,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
       __weak_ptr<_Tp, _Lp>
-      weak_from_this()
+      weak_from_this() noexcept
       { return this->_M_weak_this; }
 
       __weak_ptr<const _Tp, _Lp>
-      weak_from_this() const
+      weak_from_this() const noexcept
       { return this->_M_weak_this; }
 #endif
 

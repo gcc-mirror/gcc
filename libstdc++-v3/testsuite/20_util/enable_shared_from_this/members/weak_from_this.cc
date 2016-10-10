@@ -26,6 +26,9 @@
 
 struct X : public std::enable_shared_from_this<X> { };
 
+static_assert( noexcept(std::declval<X&>().weak_from_this()) );
+static_assert( noexcept(std::declval<const X&>().weak_from_this()) );
+
 void
 test01()
 {

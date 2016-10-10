@@ -593,11 +593,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
 #define __cpp_lib_enable_shared_from_this 201603
       weak_ptr<_Tp>
-      weak_from_this()
+      weak_from_this() noexcept
       { return this->_M_weak_this; }
 
       weak_ptr<const _Tp>
-      weak_from_this() const
+      weak_from_this() const noexcept
       { return this->_M_weak_this; }
 #endif
 
