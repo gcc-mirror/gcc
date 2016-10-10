@@ -145,7 +145,7 @@ Node::details() const
   std::stringstream details;
 
   if (!this->is_sink())
-    details << " l(" << LOCATION_LINE(this->location().gcc_location()) << ")";
+    details << " l(" << Linemap::location_to_line(this->location()) << ")";
 
   bool is_varargs = false;
   bool is_address_taken = false;

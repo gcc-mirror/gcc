@@ -63,6 +63,10 @@ class Linemap
   virtual std::string
   to_string(Location) = 0;
 
+  // Return the line number for a given location (for debugging dumps)
+  virtual int
+  location_line(Location) = 0;
+
  protected:
   // Return a special Location used for predeclared identifiers.  This
   // Location should be different from that for any actual source
@@ -134,6 +138,14 @@ class Linemap
   {
     go_assert(Linemap::instance_ != NULL);
     return Linemap::instance_->to_string(loc);
+  }
+
+  // Return line number for location
+  static int
+  location_to_line(Location loc)
+  {
+    go_assert(Linemap::instance_ != NULL);
+    return Linemap::instance_->location_line(loc);
   }
 };
 
