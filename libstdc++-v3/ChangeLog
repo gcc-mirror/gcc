@@ -1,5 +1,11 @@
 2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/numeric (gcd, lcm): Make bool arguments
+	ill-formed.
+	* include/std/numeric (gcd, lcm): Likewise.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: New test.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: New test.
+
 	* include/bits/shared_ptr.h (enable_shared_from_this::weak_from_this):
 	Add noexcept.
 	* include/bits/shared_ptr_base.h
