@@ -1,3 +1,7 @@
+2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config-lang.in (lang_requires_boot_languages): Delete.
+
 2016-10-06  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Gcc_backend::stack_allocation_expression): Clear the
