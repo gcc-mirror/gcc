@@ -199,91 +199,104 @@
   
 
   <para>
-    The unpacked source directory of libstdc++ contains the files
-    needed to create the GNU C++ Library.
+    The <filename class="directory">libstdc++-v3</filename> directory in the
+    GCC sources contains the files needed to create the GNU C++ Library.
   </para>
 
   <literallayout class="normal">
 It has subdirectories:
 
-  doc
+  <filename class="directory">doc</filename>
     Files in HTML and text format that document usage, quirks of the
     implementation, and contributor checklists.
 
-  include
+  <filename class="directory">include</filename>
     All header files for the C++ library are within this directory,
     modulo specific runtime-related files that are in the libsupc++
     directory.
 
-    include/std
+    <filename class="directory">include/std</filename>
       Files meant to be found by #include &lt;name&gt; directives in
       standard-conforming user programs.
 
-    include/c
+    <filename class="directory">include/c</filename>
       Headers intended to directly include standard C headers.
-      [NB: this can be enabled via --enable-cheaders=c]
+      [NB: this can be enabled via <option>--enable-cheaders=c</option>]
 
-    include/c_global
+    <filename class="directory">include/c_global</filename>
       Headers intended to include standard C headers in
       the global namespace, and put select names into the std::
       namespace.  [NB: this is the default, and is the same as
-      --enable-cheaders=c_global]
+      <option>--enable-cheaders=c_global</option>]
 
-    include/c_std
+    <filename class="directory">include/c_std</filename>
       Headers intended to include standard C headers
       already in namespace std, and put select names into the std::
-      namespace.  [NB: this is the same as --enable-cheaders=c_std]
+      namespace.  [NB: this is the same as
+      <option>--enable-cheaders=c_std</option>]
 
-    include/bits
+    <filename class="directory">include/bits</filename>
       Files included by standard headers and by other files in
       the bits directory.
 
-    include/backward
+    <filename class="directory">include/backward</filename>
       Headers provided for backward compatibility, such as &lt;iostream.h&gt;.
       They are not used in this library.
 
-    include/ext
+    <filename class="directory">include/ext</filename>
       Headers that define extensions to the standard library.  No
       standard header refers to any of them.
 
-  scripts
+  <filename class="directory">scripts</filename>
     Scripts that are used during the configure, build, make, or test
     process.
 
-  src
+  <filename class="directory">src</filename>
     Files that are used in constructing the library, but are not
     installed.
 
-  testsuites/[backward, demangle, ext, performance, thread, 17_* to 30_*]
+    <filename class="directory">src/c++98</filename>
+    Source files compiled using <option>-std=gnu++98</option>.
+
+    <filename class="directory">src/c++11</filename>
+    Source files compiled using <option>-std=gnu++11</option>.
+
+    <filename class="directory">src/filesystem</filename>
+    Source files for the Filesystem TS.
+
+    <filename class="directory">src/shared</filename>
+    Source code included by other files under both
+    <filename class="directory">src/c++98</filename> and
+    <filename class="directory">src/c++11</filename>
+
+  <filename class="directory">testsuites/[backward, demangle, ext, performance, thread, 17_* to 30_*]</filename>
     Test programs are here, and may be used to begin to exercise the
     library.  Support for "make check" and "make check-install" is
     complete, and runs through all the subdirectories here when this
     command is issued from the build directory.  Please note that
-    "make check" requires DejaGNU 1.4 or later to be installed.  Please
-    note that "make check-script" calls the script mkcheck, which
-    requires bash, and which may need the paths to bash adjusted to
-    work properly, as /bin/bash is assumed.
+    "make check" requires DejaGNU 1.4 or later to be installed.
 
 Other subdirectories contain variant versions of certain files
 that are meant to be copied or linked by the configure script.
 Currently these are:
 
-  config/abi
-  config/cpu
-  config/io
-  config/locale
-  config/os
+  <filename class="directory">config/abi</filename>
+  <filename class="directory">config/cpu</filename>
+  <filename class="directory">config/io</filename>
+  <filename class="directory">config/locale</filename>
+  <filename class="directory">config/os</filename>
 
 In addition, a subdirectory holds the convenience library libsupc++.
 
-  libsupc++
+  <filename class="directory">libsupc++</filename>
     Contains the runtime library for C++, including exception
     handling and memory allocation and deallocation, RTTI, terminate
     handlers, etc.
 
-Note that glibc also has a bits/ subdirectory.  We will either
-need to be careful not to collide with names in its bits/
-directory; or rename bits to (e.g.) cppbits/.
+Note that glibc also has a <filename class="directory">bits/</filename>
+subdirectory.  We will either need to be careful not to collide with names
+in its <filename class="directory">bits/</filename>
+directory; or rename <filename class="directory">bits</filename> to (e.g.) <filename class="directory">cppbits</filename>.
 
 In files throughout the system, lines marked with an "XXX" indicate
 a bug or incompletely-implemented feature.  Lines marked "XXX MT"

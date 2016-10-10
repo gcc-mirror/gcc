@@ -1,5 +1,10 @@
 2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/appendix_contributing.xml (contrib.organization):
+	Describe other subdirectories and add markup. Remove outdated
+	reference to check-script target.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/status_cxx2011.xml: Correct C++11 status.
 
 	* libsupc++/eh_ptr.cc (exception_ptr): Replace _GLIBCXX_USE_NOEXCEPT
