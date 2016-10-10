@@ -1,3 +1,13 @@
+2016-10-10  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/77586
+	* config/ia64/ia64.c (ia64_libgcc_floating_mode_supported_p)
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Remove.
+	* config/ia64/elf.h (IA64_NO_LIBGCC_TFMODE): Likewise.
+	* config/ia64/freebsd.h (IA64_NO_LIBGCC_TFMODE): Likewise.
+	* config/ia64/vms.h (IA64_NO_LIBGCC_XFMODE)
+	(IA64_NO_LIBGCC_TFMODE): Likewise.
+
 2016-10-11  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-vrp.c (vrp_intersect_ranges_1): Allocate bitmap before

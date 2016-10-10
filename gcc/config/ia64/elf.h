@@ -65,6 +65,4 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 			  %{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}\
 			crti.o%s crtbegin.o%s"
 
-#define IA64_NO_LIBGCC_TFMODE
-
 /* End of elf.h */

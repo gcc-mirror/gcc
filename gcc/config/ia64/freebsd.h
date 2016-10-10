@@ -50,5 +50,3 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_ELF		1
 
 #define JMP_BUF_SIZE  76
-
-#define IA64_NO_LIBGCC_TFMODE
