@@ -1,3 +1,7 @@
+2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/biased_subtype.adb: New test.
+
 2016-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/77901

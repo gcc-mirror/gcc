@@ -4193,12 +4193,15 @@ convert (tree type, tree expr)
       return convert (type, unpadded);
     }
 
-  /* If the input is a biased type, adjust first.  */
+  /* If the input is a biased type, convert first to the base type and add
+     the bias.  Note that the bias must go through a full conversion to the
+     base type, lest it is itself a biased value; this happens for subtypes
+     of biased types.  */
   if (ecode == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (etype))
     return convert (type, fold_build2 (PLUS_EXPR, TREE_TYPE (etype),
 				       fold_convert (TREE_TYPE (etype), expr),
-				       fold_convert (TREE_TYPE (etype),
-						     TYPE_MIN_VALUE (etype))));
+				       convert (TREE_TYPE (etype),
+						TYPE_MIN_VALUE (etype))));
 
   /* If the input is a justified modular type, we need to extract the actual
      object before converting it to any other type with the exceptions of an
@@ -4502,7 +4505,12 @@ convert (tree type, tree expr)
 	  && (ecode == ARRAY_TYPE || ecode == UNCONSTRAINED_ARRAY_TYPE
 	      || (ecode == RECORD_TYPE && TYPE_CONTAINS_TEMPLATE_P (etype))))
 	return unchecked_convert (type, expr, false);
-      else if (TYPE_BIASED_REPRESENTATION_P (type))
+
+      /* If the output is a biased type, convert first to the base type and
+	 subtract the bias.  Note that the bias itself must go through a full
+	 conversion to the base type, lest it is a biased value; this happens
+	 for subtypes of biased types.  */
+      if (TYPE_BIASED_REPRESENTATION_P (type))
 	return fold_convert (type,
 			     fold_build2 (MINUS_EXPR, TREE_TYPE (type),
 					  convert (TREE_TYPE (type), expr),
