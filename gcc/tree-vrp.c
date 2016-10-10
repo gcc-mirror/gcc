@@ -8622,7 +8622,10 @@ vrp_intersect_ranges_1 (value_range *vr0, value_range *vr1)
   if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
     bitmap_ior_into (vr0->equiv, vr1->equiv);
   else if (vr1->equiv && !vr0->equiv)
-    bitmap_copy (vr0->equiv, vr1->equiv);
+    {
+      vr0->equiv = BITMAP_ALLOC (&vrp_equiv_obstack);
+      bitmap_copy (vr0->equiv, vr1->equiv);
+    }
 }
 
 void
