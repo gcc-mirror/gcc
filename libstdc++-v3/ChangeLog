@@ -1,5 +1,11 @@
 2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/allocator.h (allocator<T>::is_always_equal): Define.
+	* testsuite/20_util/allocator/requirements/typedefs.cc: Test for
+	is_always_equal.
+	* testsuite/util/testsuite_allocator.h
+	(uneq_allocator::is_always_equal): Define as false_type.
+
 	* include/experimental/numeric (gcd, lcm): Make bool arguments
 	ill-formed.
 	* include/std/numeric (gcd, lcm): Likewise.

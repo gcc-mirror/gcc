@@ -297,6 +297,7 @@ namespace __gnu_test
 
 #if __cplusplus >= 201103L
       typedef std::true_type			propagate_on_container_swap;
+      typedef std::false_type			is_always_equal;
 #endif
 
       template<typename Tp1>
