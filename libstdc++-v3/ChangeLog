@@ -1,5 +1,7 @@
 2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Correct C++11 status.
+
 	* libsupc++/eh_ptr.cc (exception_ptr): Replace _GLIBCXX_USE_NOEXCEPT
 	with noexcept.
 
