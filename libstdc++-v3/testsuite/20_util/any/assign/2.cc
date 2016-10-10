@@ -24,28 +24,69 @@
 using std::any;
 using std::any_cast;
 
+bool moved = false;
+bool copied = false;
+
 struct X
 {
-  bool moved = false;
-  bool moved_from = false;
   X() = default;
-  X(const X&) = default;
-  X(X&& x) : moved(true) { x.moved_from = true; }
+  X(const X&) { copied = true; }
+  X(X&& x) { moved = true; }
+};
+
+struct X2
+{
+  X2() = default;
+  X2(const X2&) { copied = true; }
+  X2(X2&& x) noexcept { moved = true; }
 };
 
 void test01()
 {
+  moved = false;
   X x;
   any a1;
   a1 = x;
-  VERIFY(x.moved_from == false);
+  VERIFY(moved == false);
   any a2;
+  copied = false;
   a2 = std::move(x);
-  VERIFY(x.moved_from == true);
-  VERIFY(any_cast<X&>(a2).moved == true );
+  VERIFY(moved == true);
+  VERIFY(copied == false);
+}
+
+void test02()
+{
+  moved = false;
+  X x;
+  any a1;
+  a1 = x;
+  VERIFY(moved == false);
+  any a2;
+  copied = false;
+  a2 = std::move(a1);
+  VERIFY(moved == false);
+  VERIFY(copied == false);
+}
+
+void test03()
+{
+  moved = false;
+  X2 x;
+  any a1;
+  a1 = x;
+  VERIFY(copied && moved);
+  any a2;
+  moved = false;
+  copied = false;
+  a2 = std::move(a1);
+  VERIFY(moved == true);
+  VERIFY(copied == false);
 }
 
 int main()
 {
   test01();
+  test02();
+  test03();
 }

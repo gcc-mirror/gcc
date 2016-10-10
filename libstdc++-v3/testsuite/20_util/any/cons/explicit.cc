@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do compile }
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +19,12 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <any>
+#include <testsuite_hooks.h>
+#include <vector>
 
-void test01()
+int main()
 {
-  using std::any;
-  using std::any_cast;
-
-  const any y(1);
-  any_cast<int&>(y); // { dg-error "qualifiers" "" { target { *-*-* } } 432 }
+  std::any a = {std::in_place<int>, 42}; // { dg-error "converting" }
+  std::any a2 =
+    {std::in_place<std::vector<int>>, {42, 666}}; // { dg-error "converting" }  
 }
