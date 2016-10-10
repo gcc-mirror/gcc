@@ -56,7 +56,6 @@
 #include "arch.h"
 #include "malloc.h"
 #include "mgc0.h"
-#include "chan.h"
 #include "go-type.h"
 
 // Map gccgo field names to gc field names.
@@ -1112,15 +1111,13 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			// There are no heap pointers in struct Hchan,
 			// so we can ignore the leading sizeof(Hchan) bytes.
 			if(!(chantype->elem->__code & kindNoPointers)) {
-				// Channel's buffer follows Hchan immediately in memory.
-				// Size of buffer (cap(c)) is second int in the chan struct.
-				chancap = ((uintgo*)chan)[1];
-				if(chancap > 0) {
+				chancap = chan->dataqsiz;
+				if(chancap > 0 && markonly(chan->buf)) {
 					// TODO(atom): split into two chunks so that only the
 					// in-use part of the circular buffer is scanned.
 					// (Channel routines zero the unused part, so the current
 					// code does not lead to leaks, it's just a little inefficient.)
-					*sbuf.obj.pos++ = (Obj){(byte*)chan+runtime_Hchansize, chancap*chantype->elem->__size,
+					*sbuf.obj.pos++ = (Obj){chan->buf, chancap*chantype->elem->__size,
 						(uintptr)chantype->elem->__gc | PRECISE | LOOP};
 					if(sbuf.obj.pos == sbuf.obj.end)
 						flushobjbuf(&sbuf);

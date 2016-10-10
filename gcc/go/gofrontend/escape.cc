@@ -293,7 +293,6 @@ Node::op_format() const
 		  break;
 
 		case Runtime::MAKECHAN:
-		case Runtime::MAKECHANBIG:
 		case Runtime::MAKEMAP:
 		case Runtime::MAKESLICE1:
 		case Runtime::MAKESLICE2:
@@ -1229,7 +1228,6 @@ Escape_analysis_assign::expression(Expression** pexpr)
 		break;
 
 	      case Runtime::MAKECHAN:
-	      case Runtime::MAKECHANBIG:
 	      case Runtime::MAKEMAP:
 	      case Runtime::MAKESLICE1:
 	      case Runtime::MAKESLICE2:
@@ -1838,7 +1836,6 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 		    }
 
 		  case Runtime::MAKECHAN:
-		  case Runtime::MAKECHANBIG:
 		  case Runtime::MAKEMAP:
 		  case Runtime::MAKESLICE1:
 		  case Runtime::MAKESLICE2:
@@ -2612,7 +2609,6 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 		      break;
 
 		    case Runtime::MAKECHAN:
-		    case Runtime::MAKECHANBIG:
 		    case Runtime::MAKEMAP:
 		    case Runtime::MAKESLICE1:
 		    case Runtime::MAKESLICE2:

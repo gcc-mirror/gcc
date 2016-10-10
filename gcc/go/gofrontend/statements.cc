@@ -4330,7 +4330,6 @@ Send_statement::do_get_backend(Translate_context* context)
 						       element_type,
 						       this->val_, loc);
 
-  bool is_small;
   bool can_take_address;
   switch (element_type->base()->classification())
     {
@@ -4340,25 +4339,18 @@ Send_statement::do_get_backend(Translate_context* context)
     case Type::TYPE_POINTER:
     case Type::TYPE_MAP:
     case Type::TYPE_CHANNEL:
-      is_small = true;
-      can_take_address = false;
-      break;
-
     case Type::TYPE_FLOAT:
     case Type::TYPE_COMPLEX:
     case Type::TYPE_STRING:
     case Type::TYPE_INTERFACE:
-      is_small = false;
       can_take_address = false;
       break;
 
     case Type::TYPE_STRUCT:
-      is_small = false;
       can_take_address = true;
       break;
 
     case Type::TYPE_ARRAY:
-      is_small = false;
       can_take_address = !element_type->is_slice_type();
       break;
 
@@ -4384,28 +4376,19 @@ Send_statement::do_get_backend(Translate_context* context)
   Expression* td = Expression::make_type_descriptor(this->channel_->type(),
 						    loc);
 
-  Runtime::Function code;
   Bstatement* btemp = NULL;
-  if (is_small)
-      {
-	// Type is small enough to handle as uint64.
-	code = Runtime::SEND_SMALL;
-	val = Expression::make_unsafe_cast(Type::lookup_integer_type("uint64"),
-					   val, loc);
-      }
-  else if (can_take_address)
+  if (can_take_address)
     {
-      // Must pass address of value.  The function doesn't change the
-      // value, so just take its address directly.
-      code = Runtime::SEND_BIG;
+      // The function doesn't change the value, so just take its
+      // address directly.
       val = Expression::make_unary(OPERATOR_AND, val, loc);
     }
   else
     {
-      // Must pass address of value, but the value is small enough
-      // that it might be in registers.  Copy value into temporary
-      // variable to take address.
-      code = Runtime::SEND_BIG;
+      // The value is not in a variable, or is small enough that it
+      // might be in a register, and taking the address would push it
+      // on the stack.  Copy it into a temporary variable to take the
+      // address.
       Temporary_statement* temp = Statement::make_temporary(element_type,
 							    val, loc);
       Expression* ref = Expression::make_temporary_reference(temp, loc);
@@ -4413,7 +4396,8 @@ Send_statement::do_get_backend(Translate_context* context)
       btemp = temp->get_backend(context);
     }
 
-  Expression* call = Runtime::make_call(code, loc, 3, td, this->channel_, val);
+  Expression* call = Runtime::make_call(Runtime::CHANSEND, loc, 3, td,
+					this->channel_, val);
 
   context->gogo()->lower_expression(context->function(), NULL, &call);
   Bexpression* bcall = call->get_backend(context);
@@ -4491,6 +4475,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
   Location loc = this->location_;
 
   Expression* selref = Expression::make_temporary_reference(sel, loc);
+  selref = Expression::make_unary(OPERATOR_AND, selref, loc);
 
   Expression* index_expr = Expression::make_integer_ul(this->index_, NULL,
 						       loc);
@@ -4854,6 +4839,7 @@ Select_clauses::get_backend(Translate_context* context,
     }
 
   Expression* selref = Expression::make_temporary_reference(sel, location);
+  selref = Expression::make_unary(OPERATOR_AND, selref, location);
   Expression* call = Runtime::make_call(Runtime::SELECTGO, location, 1,
 					selref);
   context->gogo()->lower_expression(context->function(), NULL, &call);
@@ -4920,12 +4906,26 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 
   go_assert(this->sel_ == NULL);
 
-  Expression* size_expr = Expression::make_integer_ul(this->clauses_->size(),
-						      NULL, loc);
-  Expression* call = Runtime::make_call(Runtime::NEWSELECT, loc, 1, size_expr);
-
-  this->sel_ = Statement::make_temporary(NULL, call, loc);
+  int ncases = this->clauses_->size();
+  Type* selstruct_type = Channel_type::select_type(ncases);
+  this->sel_ = Statement::make_temporary(selstruct_type, NULL, loc);
   b->add_statement(this->sel_);
+
+  int64_t selstruct_size;
+  if (!selstruct_type->backend_type_size(gogo, &selstruct_size))
+    {
+      go_assert(saw_errors());
+      return Statement::make_error_statement(loc);
+    }
+
+  Expression* ref = Expression::make_temporary_reference(this->sel_, loc);
+  ref = Expression::make_unary(OPERATOR_AND, ref, loc);
+  Expression* selstruct_size_expr =
+    Expression::make_integer_int64(selstruct_size, NULL, loc);
+  Expression* size_expr = Expression::make_integer_ul(ncases, NULL, loc);
+  Expression* call = Runtime::make_call(Runtime::NEWSELECT, loc, 3,
+					ref, selstruct_size_expr, size_expr);
+  b->add_statement(Statement::make_statement(call, true));
 
   this->clauses_->lower(gogo, function, b, this->sel_);
   this->is_lowered_ = true;

@@ -2809,6 +2809,9 @@ class Channel_type : public Type
   static Type*
   make_chan_type_descriptor_type();
 
+  static Type*
+  select_type(int ncases);
+
  protected:
   int
   do_traverse(Traverse* traverse)

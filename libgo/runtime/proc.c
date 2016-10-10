@@ -564,7 +564,8 @@ static struct __go_channel_type chan_bool_type_descriptor =
     CHANNEL_BOTH_DIR
   };
 
-extern Hchan *__go_new_channel (ChanType *, uintptr);
+extern Hchan *makechan (ChanType *, int64)
+  __asm__ (GOSYM_PREFIX "runtime.makechan");
 extern void closechan(Hchan *) __asm__ (GOSYM_PREFIX "runtime.closechan");
 
 static void
@@ -613,7 +614,7 @@ runtime_main(void* dummy __attribute__((unused)))
 		runtime_throw("runtime_main not on m0");
 	__go_go(runtime_MHeap_Scavenger, nil);
 
-	runtime_main_init_done = __go_new_channel(&chan_bool_type_descriptor, 0);
+	runtime_main_init_done = makechan(&chan_bool_type_descriptor, 0);
 
 	_cgo_notify_runtime_init_done();
 
@@ -851,6 +852,14 @@ runtime_ready(G *gp)
 	if(runtime_atomicload(&runtime_sched.npidle) != 0 && runtime_atomicload(&runtime_sched.nmspinning) == 0)  // TODO: fast atomic
 		wakep();
 	g->m->locks--;
+}
+
+void goready(G*, int) __asm__ (GOSYM_PREFIX "runtime.goready");
+
+void
+goready(G* gp, int traceskip __attribute__ ((unused)))
+{
+	runtime_ready(gp);
 }
 
 int32
@@ -1898,6 +1907,22 @@ runtime_park(bool(*unlockf)(G*, void*), void *lock, const char *reason)
 	runtime_mcall(park0);
 }
 
+void gopark(FuncVal *, void *, String, byte, int)
+  __asm__ ("runtime.gopark");
+
+void
+gopark(FuncVal *unlockf, void *lock, String reason,
+       byte traceEv __attribute__ ((unused)),
+       int traceskip __attribute__ ((unused)))
+{
+	if(g->atomicstatus != _Grunning)
+		runtime_throw("bad g status");
+	g->m->waitlock = lock;
+	g->m->waitunlockf = unlockf == nil ? nil : (void*)unlockf->fn;
+	g->waitreason = reason;
+	runtime_mcall(park0);
+}
+
 static bool
 parkunlock(G *gp, void *lock)
 {
@@ -1912,6 +1937,21 @@ void
 runtime_parkunlock(Lock *lock, const char *reason)
 {
 	runtime_park(parkunlock, lock, reason);
+}
+
+void goparkunlock(Lock *, String, byte, int)
+  __asm__ (GOSYM_PREFIX "runtime.goparkunlock");
+
+void
+goparkunlock(Lock *lock, String reason, byte traceEv __attribute__ ((unused)),
+	     int traceskip __attribute__ ((unused)))
+{
+	if(g->atomicstatus != _Grunning)
+		runtime_throw("bad g status");
+	g->m->waitlock = lock;
+	g->m->waitunlockf = parkunlock;
+	g->waitreason = reason;
+	runtime_mcall(park0);
 }
 
 // runtime_park continuation on g0.

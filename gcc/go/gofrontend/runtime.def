@@ -127,20 +127,13 @@ DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(POINTER), R0())
 
 
 // Make a channel.
-DEF_GO_RUNTIME(MAKECHAN, "__go_new_channel", P2(TYPE, UINTPTR), R1(CHAN))
-DEF_GO_RUNTIME(MAKECHANBIG, "__go_new_channel_big", P2(TYPE, UINT64), R1(CHAN))
+DEF_GO_RUNTIME(MAKECHAN, "runtime.makechan", P2(TYPE, INT64), R1(CHAN))
 
-// Get the capacity of a channel (the size of the buffer).
-DEF_GO_RUNTIME(CHAN_CAP, "__go_chan_cap", P1(CHAN), R1(INT))
-
-// Send a small value on a channel.
-DEF_GO_RUNTIME(SEND_SMALL, "__go_send_small", P3(TYPE, CHAN, UINT64), R0())
-
-// Send a big value on a channel.
-DEF_GO_RUNTIME(SEND_BIG, "__go_send_big", P3(TYPE, CHAN, POINTER), R0())
+// Send a value on a channel.
+DEF_GO_RUNTIME(CHANSEND, "runtime.chansend1", P3(TYPE, CHAN, POINTER), R0())
 
 // Receive a value from a channel.
-DEF_GO_RUNTIME(RECEIVE, "__go_receive", P3(TYPE, CHAN, POINTER), R0())
+DEF_GO_RUNTIME(CHANRECV1, "runtime.chanrecv1", P3(TYPE, CHAN, POINTER), R0())
 
 // Receive a value from a channel returning whether it is closed.
 DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P3(TYPE, CHAN, POINTER),
@@ -148,7 +141,7 @@ DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P3(TYPE, CHAN, POINTER),
 
 
 // Start building a select statement.
-DEF_GO_RUNTIME(NEWSELECT, "runtime.newselect", P1(INT32), R1(POINTER))
+DEF_GO_RUNTIME(NEWSELECT, "runtime.newselect", P3(POINTER, INT64, INT32), R0())
 
 // Add a default clause to a select statement.
 DEF_GO_RUNTIME(SELECTDEFAULT, "runtime.selectdefault",
@@ -202,7 +195,7 @@ DEF_GO_RUNTIME(RUNTIME_ERROR, "__go_runtime_error", P1(INT32), R0())
 
 
 // Close.
-DEF_GO_RUNTIME(CLOSE, "__go_builtin_close", P1(CHAN), R0())
+DEF_GO_RUNTIME(CLOSE, "runtime.closechan", P1(CHAN), R0())
 
 
 // Copy.

@@ -3604,6 +3604,7 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
               || et->channel_type() != NULL
               || et->map_type() != NULL
               || et->function_type() != NULL
+	      || et->integer_type() != NULL
               || et->is_nil_type());
   else if (et->is_unsafe_pointer_type())
     go_assert(t->points_to() != NULL);
@@ -7077,6 +7078,7 @@ Builtin_call_expression::do_flatten(Gogo*, Named_object*,
       break;
 
     case BUILTIN_LEN:
+    case BUILTIN_CAP:
       Expression_list::iterator pa = this->args()->begin();
       if (!(*pa)->is_variable()
 	  && ((*pa)->type()->map_type() != NULL
@@ -7217,10 +7219,7 @@ Builtin_call_expression::lower_make()
 			      Expression::make_nil(loc),
 			      Expression::make_nil(loc));
   else if (is_chan)
-    call = Runtime::make_call((have_big_args
-			       ? Runtime::MAKECHANBIG
-			       : Runtime::MAKECHAN),
-			      loc, 2, type_arg, len_arg);
+    call = Runtime::make_call(Runtime::MAKECHAN, loc, 2, type_arg, len_arg);
   else
     go_unreachable();
 
@@ -8300,7 +8299,31 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 		this->seen_ = false;
 	      }
 	    else if (arg_type->channel_type() != NULL)
-              val = Runtime::make_call(Runtime::CHAN_CAP, location, 1, arg);
+	      {
+		// The second field is the capacity.  If the pointer
+		// is nil, the capacity is zero.
+		Type* uintptr_type = Type::lookup_integer_type("uintptr");
+		Type* pint_type = Type::make_pointer_type(int_type);
+		Expression* parg = Expression::make_unsafe_cast(uintptr_type,
+								arg,
+								location);
+		int off = int_type->integer_type()->bits() / 8;
+		Expression* eoff = Expression::make_integer_ul(off,
+							       uintptr_type,
+							       location);
+		parg = Expression::make_binary(OPERATOR_PLUS, parg, eoff,
+					       location);
+		parg = Expression::make_unsafe_cast(pint_type, parg, location);
+		Expression* nil = Expression::make_nil(location);
+		nil = Expression::make_cast(pint_type, nil, location);
+		Expression* cmp = Expression::make_binary(OPERATOR_EQEQ,
+							  arg, nil, location);
+		Expression* zero = Expression::make_integer_ul(0, int_type,
+							       location);
+		Expression* indir = Expression::make_unary(OPERATOR_MULT,
+							   parg, location);
+		val = Expression::make_conditional(cmp, zero, indir, location);
+	      }
 	    else
 	      go_unreachable();
 	  }
@@ -13729,9 +13752,8 @@ Receive_expression::do_get_backend(Translate_context* context)
   Expression* recv_addr =
     Expression::make_temporary_reference(this->temp_receiver_, loc);
   recv_addr = Expression::make_unary(OPERATOR_AND, recv_addr, loc);
-  Expression* recv =
-    Runtime::make_call(Runtime::RECEIVE, loc, 3,
-		       td, this->channel_, recv_addr);
+  Expression* recv = Runtime::make_call(Runtime::CHANRECV1, loc, 3,
+					td, this->channel_, recv_addr);
   return Expression::make_compound(recv, recv_ref, loc)->get_backend(context);
 }
 

@@ -381,7 +381,7 @@ func TestAllocs(t *testing.T) {
 				<-c.Done()
 			},
 			limit:      8,
-			gccgoLimit: 15,
+			gccgoLimit: 18,
 		},
 		{
 			desc: "WithCancel(bg)",
