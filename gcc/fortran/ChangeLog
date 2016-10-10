@@ -1,3 +1,9 @@
+2016-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/77915
+	* frontend-passes.c (inline_matmul_assign):  Return early if
+	inside a FORALL statement.
+
 2016-10-07  Fritz Reese  <fritzoreese@gmail.com>
 
 	* interface.c (compare_components): Check charlen for BT_CHAR.
