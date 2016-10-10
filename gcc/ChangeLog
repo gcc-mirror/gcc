@@ -1,3 +1,9 @@
+2016-10-11  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* tree-vrp.c (evrp_dom_walker::try_add_new_range): New.
+	(evrp_dom_walker::before_dom_children): Infer and push new value
+	ranges for x in y < x.
+
 2016-10-10  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/77586
