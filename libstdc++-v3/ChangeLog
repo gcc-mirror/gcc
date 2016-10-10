@@ -1,3 +1,12 @@
+2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h (enable_shared_from_this::weak_from_this):
+	Add noexcept.
+	* include/bits/shared_ptr_base.h
+	(__enable_shared_from_this::weak_from_this): Likewise.
+	* testsuite/20_util/enable_shared_from_this/members/weak_from_this.cc:
+	Test exception-specification of weak_from_this.
+
 2016-10-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx1998.xml: Improve documentation of
