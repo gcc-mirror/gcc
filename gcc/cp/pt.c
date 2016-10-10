@@ -13233,11 +13233,15 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		TYPE_POINTER_TO (r) = NULL_TREE;
 		TYPE_REFERENCE_TO (r) = NULL_TREE;
 
-		/* Propagate constraints on placeholders.  */
                 if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-                  if (tree constr = PLACEHOLDER_TYPE_CONSTRAINTS (t))
-		    PLACEHOLDER_TYPE_CONSTRAINTS (r)
-		      = tsubst_constraint (constr, args, complain, in_decl);
+		  {
+		    /* Propagate constraints on placeholders.  */
+		    if (tree constr = PLACEHOLDER_TYPE_CONSTRAINTS (t))
+		      PLACEHOLDER_TYPE_CONSTRAINTS (r)
+			= tsubst_constraint (constr, args, complain, in_decl);
+		    else if (tree pl = CLASS_PLACEHOLDER_TEMPLATE (t))
+		      CLASS_PLACEHOLDER_TEMPLATE (r) = pl;
+		  }
 
 		if (TREE_CODE (r) == TEMPLATE_TEMPLATE_PARM)
 		  /* We have reduced the level of the template
@@ -24431,9 +24435,10 @@ do_class_deduction (tree tmpl, tree init, tsubst_flags_t complain)
       return error_mark_node;
     }
 
+  ++cp_unevaluated_operand;
   tree t = build_new_function_call (cands, &args, /*koenig*/false,
 				    complain|tf_decltype);
-
+  --cp_unevaluated_operand;
   release_tree_vector (args);
 
   return TREE_TYPE (t);
