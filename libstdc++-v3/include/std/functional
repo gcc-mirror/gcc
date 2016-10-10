@@ -1000,15 +1000,17 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // sfinae types
       template<typename _Res>
-	struct __enable_if_void : enable_if<is_void<_Res>::value, int> { };
+	using __enable_if_void
+	  = typename enable_if<is_void<_Res>{}>::type;
+
       template<typename _Res>
-	struct __disable_if_void : enable_if<!is_void<_Res>::value, int> { };
+	using __disable_if_void
+	  = typename enable_if<!is_void<_Res>{}, _Result>::type;
 
       // Call unqualified
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	_Result
-	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
-	    typename __disable_if_void<_Res>::type = 0)
+	__disable_if_void<_Res>
+	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
 	{
 	  return _M_f(_Mu<_Bound_args>()
 		      (std::get<_Indexes>(_M_bound_args), __args)...);
@@ -1016,9 +1018,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call unqualified, return void
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	void
-	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
-	    typename __enable_if_void<_Res>::type = 0)
+	__enable_if_void<_Res>
+	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
 	{
 	  _M_f(_Mu<_Bound_args>()
 	       (std::get<_Indexes>(_M_bound_args), __args)...);
@@ -1026,9 +1027,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call as const
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	_Result
-	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
-	    typename __disable_if_void<_Res>::type = 0) const
+	__disable_if_void<_Res>
+	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
 	{
 	  return _M_f(_Mu<_Bound_args>()
 		      (std::get<_Indexes>(_M_bound_args), __args)...);
@@ -1036,9 +1036,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call as const, return void
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	void
-	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
-	    typename __enable_if_void<_Res>::type = 0) const
+	__enable_if_void<_Res>
+	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
 	{
 	  _M_f(_Mu<_Bound_args>()
 	       (std::get<_Indexes>(_M_bound_args),  __args)...);
@@ -1046,9 +1045,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call as volatile
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	_Result
-	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
-	    typename __disable_if_void<_Res>::type = 0) volatile
+	__disable_if_void<_Res>
+	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) volatile
 	{
 	  return _M_f(_Mu<_Bound_args>()
 		      (__volget<_Indexes>(_M_bound_args), __args)...);
@@ -1056,9 +1054,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call as volatile, return void
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	void
-	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
-	    typename __enable_if_void<_Res>::type = 0) volatile
+	__enable_if_void<_Res>
+	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) volatile
 	{
 	  _M_f(_Mu<_Bound_args>()
 	       (__volget<_Indexes>(_M_bound_args), __args)...);
@@ -1066,9 +1063,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call as const volatile
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	_Result
-	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>,
-	    typename __disable_if_void<_Res>::type = 0) const volatile
+	__disable_if_void<_Res>
+	__call(tuple<_Args...>&& __args,
+	       _Index_tuple<_Indexes...>) const volatile
 	{
 	  return _M_f(_Mu<_Bound_args>()
 		      (__volget<_Indexes>(_M_bound_args), __args)...);
@@ -1076,10 +1073,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call as const volatile, return void
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	void
+	__enable_if_void<_Res>
 	__call(tuple<_Args...>&& __args,
-	       _Index_tuple<_Indexes...>,
-	    typename __enable_if_void<_Res>::type = 0) const volatile
+	       _Index_tuple<_Indexes...>) const volatile
 	{
 	  _M_f(_Mu<_Bound_args>()
 	       (__volget<_Indexes>(_M_bound_args), __args)...);
