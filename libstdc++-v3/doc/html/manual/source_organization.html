@@ -5,105 +5,95 @@
 </th><td width="20%" align="right"> <a accesskey="n" href="source_code_style.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="contrib.organization"></a>Directory Layout and Source Conventions</h2></div></div></div><p>
     The <code class="filename">libstdc++-v3</code> directory in the
     GCC sources contains the files needed to create the GNU C++ Library.
-  </p><div class="literallayout"><p><br />
-It has subdirectories:<br />
-<br />
-  <code class="filename">doc</code><br />
-    Files in HTML and text format that document usage, quirks of the<br />
-    implementation, and contributor checklists.<br />
-<br />
-  <code class="filename">include</code><br />
-    All header files for the C++ library are within this directory,<br />
-    modulo specific runtime-related files that are in the libsupc++<br />
-    directory.<br />
-<br />
-    <code class="filename">include/std</code><br />
-      Files meant to be found by #include &lt;name&gt; directives in<br />
-      standard-conforming user programs.<br />
-<br />
-    <code class="filename">include/c</code><br />
-      Headers intended to directly include standard C headers.<br />
-      [NB: this can be enabled via <code class="option">--enable-cheaders=c</code>]<br />
-<br />
-    <code class="filename">include/c_global</code><br />
-      Headers intended to include standard C headers in<br />
-      the global namespace, and put select names into the std::<br />
-      namespace.  [NB: this is the default, and is the same as<br />
-      <code class="option">--enable-cheaders=c_global</code>]<br />
-<br />
-    <code class="filename">include/c_std</code><br />
-      Headers intended to include standard C headers<br />
-      already in namespace std, and put select names into the std::<br />
-      namespace.  [NB: this is the same as<br />
-      <code class="option">--enable-cheaders=c_std</code>]<br />
-<br />
-    <code class="filename">include/bits</code><br />
-      Files included by standard headers and by other files in<br />
-      the bits directory.<br />
-<br />
-    <code class="filename">include/backward</code><br />
-      Headers provided for backward compatibility, such as &lt;iostream.h&gt;.<br />
-      They are not used in this library.<br />
-<br />
-    <code class="filename">include/ext</code><br />
-      Headers that define extensions to the standard library.  No<br />
-      standard header refers to any of them.<br />
-<br />
-  <code class="filename">scripts</code><br />
-    Scripts that are used during the configure, build, make, or test<br />
-    process.<br />
-<br />
-  <code class="filename">src</code><br />
-    Files that are used in constructing the library, but are not<br />
-    installed.<br />
-<br />
-    <code class="filename">src/c++98</code><br />
-    Source files compiled using <code class="option">-std=gnu++98</code>.<br />
-<br />
-    <code class="filename">src/c++11</code><br />
-    Source files compiled using <code class="option">-std=gnu++11</code>.<br />
-<br />
-    <code class="filename">src/filesystem</code><br />
-    Source files for the Filesystem TS.<br />
-<br />
-    <code class="filename">src/shared</code><br />
-    Source code included by other files under both<br />
-    <code class="filename">src/c++98</code> and<br />
-    <code class="filename">src/c++11</code><br />
-<br />
-  <code class="filename">testsuites/[backward, demangle, ext, performance, thread, 17_* to 30_*]</code><br />
-    Test programs are here, and may be used to begin to exercise the<br />
-    library.  Support for "make check" and "make check-install" is<br />
-    complete, and runs through all the subdirectories here when this<br />
-    command is issued from the build directory.  Please note that<br />
-    "make check" requires DejaGNU 1.4 or later to be installed.<br />
-<br />
-Other subdirectories contain variant versions of certain files<br />
-that are meant to be copied or linked by the configure script.<br />
-Currently these are:<br />
-<br />
-  <code class="filename">config/abi</code><br />
-  <code class="filename">config/cpu</code><br />
-  <code class="filename">config/io</code><br />
-  <code class="filename">config/locale</code><br />
-  <code class="filename">config/os</code><br />
-<br />
-In addition, a subdirectory holds the convenience library libsupc++.<br />
-<br />
-  <code class="filename">libsupc++</code><br />
-    Contains the runtime library for C++, including exception<br />
-    handling and memory allocation and deallocation, RTTI, terminate<br />
-    handlers, etc.<br />
-<br />
-Note that glibc also has a <code class="filename">bits/</code><br />
-subdirectory.  We will either need to be careful not to collide with names<br />
-in its <code class="filename">bits/</code><br />
-directory; or rename <code class="filename">bits</code> to (e.g.) <code class="filename">cppbits</code>.<br />
-<br />
-In files throughout the system, lines marked with an "XXX" indicate<br />
-a bug or incompletely-implemented feature.  Lines marked "XXX MT"<br />
-indicate a place that may require attention for multi-thread safety.<br />
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="appendix_contributing.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_contributing.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="source_code_style.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Appendix A. 
+  </p><p>
+It has subdirectories:
+</p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="filename">doc</code></span></dt><dd>
+    Files in HTML and text format that document usage, quirks of the
+    implementation, and contributor checklists.
+    </dd><dt><span class="term"><code class="filename">include</code></span></dt><dd>
+    All header files for the C++ library are within this directory,
+    modulo specific runtime-related files that are in the libsupc++
+    directory.
+
+    <div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="filename">include/std</code></span></dt><dd>
+      Files meant to be found by <code class="code">#include &lt;name&gt;</code> directives
+      in standard-conforming user programs.
+      </dd><dt><span class="term"><code class="filename">include/c</code></span></dt><dd>
+      Headers intended to directly include standard C headers.
+      [NB: this can be enabled via <code class="option">--enable-cheaders=c</code>]
+      </dd><dt><span class="term"><code class="filename">include/c_global</code></span></dt><dd>
+      Headers intended to include standard C headers in
+      the global namespace, and put select names into the <code class="code">std::</code>
+      namespace.  [NB: this is the default, and is the same as
+      <code class="option">--enable-cheaders=c_global</code>]
+      </dd><dt><span class="term"><code class="filename">include/c_std</code></span></dt><dd>
+      Headers intended to include standard C headers
+      already in namespace std, and put select names into the <code class="code">std::</code>
+      namespace.  [NB: this is the same as
+      <code class="option">--enable-cheaders=c_std</code>]
+      </dd><dt><span class="term"><code class="filename">include/bits</code></span></dt><dd>
+      Files included by standard headers and by other files in
+      the bits directory.
+      </dd><dt><span class="term"><code class="filename">include/backward</code></span></dt><dd>
+      Headers provided for backward compatibility, such as
+      <code class="filename">&lt;backward/hash_map&gt;</code>.
+      They are not used in this library.
+    </dd><dt><span class="term"><code class="filename">include/ext</code></span></dt><dd>
+      Headers that define extensions to the standard library.  No
+      standard header refers to any of them, in theory (there are some
+      exceptions).
+      </dd></dl></div></dd><dt><span class="term"><code class="filename">scripts</code></span></dt><dd>
+    Scripts that are used during the configure, build, make, or test
+    process.
+    </dd><dt><span class="term"><code class="filename">src</code></span></dt><dd>
+    Files that are used in constructing the library, but are not
+    installed.
+
+    <div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="filename">src/c++98</code></span></dt><dd>
+    Source files compiled using <code class="option">-std=gnu++98</code>.
+      </dd><dt><span class="term"><code class="filename">src/c++11</code></span></dt><dd>
+    Source files compiled using <code class="option">-std=gnu++11</code>.
+      </dd><dt><span class="term"><code class="filename">src/filesystem</code></span></dt><dd>
+    Source files for the Filesystem TS.
+      </dd><dt><span class="term"><code class="filename">src/shared</code></span></dt><dd>
+    Source code included by other files under both
+    <code class="filename">src/c++98</code> and
+    <code class="filename">src/c++11</code></dd></dl></div></dd><dt><span class="term"><code class="filename">testsuites/[backward, demangle, ext, performance, thread, 17_* to 30_*]</code></span></dt><dd>
+    Test programs are here, and may be used to begin to exercise the
+    library.  Support for "make check" and "make check-install" is
+    complete, and runs through all the subdirectories here when this
+    command is issued from the build directory.  Please note that
+    "make check" requires DejaGNU 1.4 or later to be installed.
+    </dd></dl></div><p>
+Other subdirectories contain variant versions of certain files
+that are meant to be copied or linked by the configure script.
+Currently these are:
+</p><div class="literallayout"><p><code class="filename">config/abi</code><br />
+<code class="filename">config/allocator</code><br />
+<code class="filename">config/cpu</code><br />
+<code class="filename">config/io</code><br />
+<code class="filename">config/locale</code><br />
+<code class="filename">config/os</code><br />
+</p></div><p>
+</p><p>
+In addition, a subdirectory holds the convenience library libsupc++.
+</p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="filename">libsupc++</code></span></dt><dd>
+    Contains the runtime library for C++, including exception
+    handling and memory allocation and deallocation, RTTI, terminate
+    handlers, etc.
+  </dd></dl></div><p>
+Note that glibc also has a <code class="filename">bits/</code>
+subdirectory.  We need to be careful not to collide with names in its
+<code class="filename">bits/</code> directory. For example
+<code class="filename">&lt;bits/std_mutex.h&gt;</code> has to be
+renamed from <code class="filename">&lt;bits/mutex.h&gt;</code>.
+Another solution would be to rename <code class="filename">bits</code>
+to (e.g.) <code class="filename">cppbits</code>.
+</p><p>
+In files throughout the system, lines marked with an "XXX" indicate
+a bug or incompletely-implemented feature.  Lines marked "XXX MT"
+indicate a place that may require attention for multi-thread safety.
+</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="appendix_contributing.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_contributing.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="source_code_style.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Appendix A. 
   Contributing
   
  </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Coding Style</td></tr></table></div></body></html>

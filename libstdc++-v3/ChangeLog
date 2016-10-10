@@ -1,3 +1,10 @@
+2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml (contrib.organization):
+	Replace <literallayout> with nested <variablelist> elements. Update
+	some more outdated text.
+	* doc/html/*: Regenerate.
+
 2016-10-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Make any's copy assignment operator exception-safe,
