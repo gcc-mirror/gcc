@@ -1,0 +1,908 @@
+/* { dg-do run } */
+/* { dg-require-effective-target arm_v8_2a_fp16_neon_hw } */
+/* { dg-add-options arm_v8_2a_fp16_neon } */
+/* { dg-skip-if "" { arm*-*-* } } */
+
+#include <arm_neon.h>
+#include "arm-neon-ref.h"
+#include "compute-ref-data.h"
+
+#define FP16_C(a) ((__fp16) a)
+#define A0 FP16_C (123.4)
+#define A1 FP16_C (-5.8)
+#define A2 FP16_C (-0.0)
+#define A3 FP16_C (10)
+#define A4 FP16_C (123412.43)
+#define A5 FP16_C (-5.8)
+#define A6 FP16_C (90.8)
+#define A7 FP16_C (24)
+
+#define B0 FP16_C (23.4)
+#define B1 FP16_C (-5.8)
+#define B2 FP16_C (8.9)
+#define B3 FP16_C (4.0)
+#define B4 FP16_C (3.4)
+#define B5 FP16_C (-550.8)
+#define B6 FP16_C (-31.8)
+#define B7 FP16_C (20000.0)
+
+/* Expected results for vfma_lane.  */
+VECT_VAR_DECL (expected0_static, hfloat, 16, 4) []
+  = { 0x613E /* A0 + B0 * B0.  */,
+      0xD86D /* A1 + B1 * B0.  */,
+      0x5A82 /* A2 + B2 * B0.  */,
+      0x567A /* A3 + B3 * B0.  */};
+
+VECT_VAR_DECL (expected1_static, hfloat, 16, 4) []
+  = { 0xCA33 /* A0 + B0 * B1.  */,
+      0x4EF6 /* A1 + B1 * B1.  */,
+      0xD274 /* A2 + B2 * B1.  */,
+      0xCA9A /* A3 + B3 * B1.  */ };
+
+VECT_VAR_DECL (expected2_static, hfloat, 16, 4) []
+  = { 0x5D2F /* A0 + B0 * B2.  */,
+      0xD32D /* A1 + B1 * B2.  */,
+      0x54F3 /* A2 + B2 * B2.  */,
+      0x51B3 /* A3 + B3 * B2.  */ };
+
+VECT_VAR_DECL (expected3_static, hfloat, 16, 4) []
+  = { 0x5AC8 /* A0 + B0 * B3.  */,
+      0xCF40 /* A1 + B1 * B3.  */,
+      0x5073 /* A2 + B2 * B3.  */,
+      0x4E80 /* A3 + B3 * B3.  */ };
+
+/* Expected results for vfmaq_lane.  */
+VECT_VAR_DECL (expected0_static, hfloat, 16, 8) []
+  = { 0x613E /* A0 + B0 * B0.  */,
+      0xD86D /* A1 + B1 * B0.  */,
+      0x5A82 /* A2 + B2 * B0.  */,
+      0x567A /* A3 + B3 * B0.  */,
+      0x7C00 /* A4 + B4 * B0.  */,
+      0xF24D /* A5 + B5 * B0.  */,
+      0xE11B /* A6 + B6 * B0.  */,
+      0x7C00 /* A7 + B7 * B0.  */ };
+
+VECT_VAR_DECL (expected1_static, hfloat, 16, 8) []
+  = { 0xCA33 /* A0 + B0 * B1.  */,
+      0x4EF6 /* A1 + B1 * B1.  */,
+      0xD274 /* A2 + B2 * B1.  */,
+      0xCA9A /* A3 + B3 * B1.  */,
+      0x7C00 /* A4 + B4 * B1.  */,
+      0x6A3B /* A5 + B5 * B1.  */,
+      0x5C4D /* A6 + B6 * B1.  */,
+      0xFC00 /* A7 + B7 * B1.  */ };
+
+VECT_VAR_DECL (expected2_static, hfloat, 16, 8) []
+  = { 0x5D2F /* A0 + B0 * B2.  */,
+      0xD32D /* A1 + B1 * B2.  */,
+      0x54F3 /* A2 + B2 * B2.  */,
+      0x51B3 /* A3 + B3 * B2.  */,
+      0x7C00 /* A4 + B4 * B2.  */,
+      0xECCB /* A5 + B5 * B2.  */,
+      0xDA01 /* A6 + B6 * B2.  */,
+      0x7C00 /* A7 + B7 * B2.  */ };
+
+VECT_VAR_DECL (expected3_static, hfloat, 16, 8) []
+  = { 0x5AC8 /* A0 + B0 * B3.  */,
+      0xCF40 /* A1 + B1 * B3.  */,
+      0x5073 /* A2 + B2 * B3.  */,
+      0x4E80 /* A3 + B3 * B3.  */,
+      0x7C00 /* A4 + B4 * B3.  */,
+      0xE851 /* A5 + B5 * B3.  */,
+      0xD08C /* A6 + B6 * B3.  */,
+      0x7C00 /* A7 + B7 * B3.  */ };
+
+/* Expected results for vfma_laneq.  */
+VECT_VAR_DECL (expected0_laneq_static, hfloat, 16, 4) []
+  = { 0x613E /* A0 + B0 * B0.  */,
+      0xD86D /* A1 + B1 * B0.  */,
+      0x5A82 /* A2 + B2 * B0.  */,
+      0x567A /* A3 + B3 * B0.  */ };
+
+VECT_VAR_DECL (expected1_laneq_static, hfloat, 16, 4) []
+  = { 0xCA33 /* A0 + B0 * B1.  */,
+      0x4EF6 /* A1 + B1 * B1.  */,
+      0xD274 /* A2 + B2 * B1.  */,
+      0xCA9A /* A3 + B3 * B1.  */ };
+
+VECT_VAR_DECL (expected2_laneq_static, hfloat, 16, 4) []
+  = { 0x5D2F /* A0 + B0 * B2.  */,
+      0xD32D /* A1 + B1 * B2.  */,
+      0x54F3 /* A2 + B2 * B2.  */,
+      0x51B3 /* A3 + B3 * B2.  */ };
+
+VECT_VAR_DECL (expected3_laneq_static, hfloat, 16, 4) []
+  = { 0x5AC8 /* A0 + B0 * B3.  */,
+      0xCF40 /* A1 + B1 * B3.  */,
+      0x5073 /* A2 + B2 * B3.  */,
+      0x4E80 /* A3 + B3 * B3.  */ };
+
+VECT_VAR_DECL (expected4_laneq_static, hfloat, 16, 4) []
+  = { 0x5A58 /* A0 + B0 * B4.  */,
+      0xCE62 /* A1 + B1 * B4.  */,
+      0x4F91 /* A2 + B2 * B4.  */,
+      0x4DE6 /* A3 + B3 * B4.  */ };
+
+VECT_VAR_DECL (expected5_laneq_static, hfloat, 16, 4) []
+  = { 0xF23D /* A0 + B0 * B5.  */,
+      0x6A3B /* A1 + B1 * B5.  */,
+      0xECCA /* A2 + B2 * B5.  */,
+      0xE849 /* A3 + B3 * B5.  */ };
+
+VECT_VAR_DECL (expected6_laneq_static, hfloat, 16, 4) []
+  = { 0xE0DA /* A0 + B0 * B6.  */,
+      0x5995 /* A1 + B1 * B6.  */,
+      0xDC6C /* A2 + B2 * B6.  */,
+      0xD753 /* A3 + B3 * B6.  */ };
+
+VECT_VAR_DECL (expected7_laneq_static, hfloat, 16, 4) []
+  = { 0x7C00 /* A0 + B0 * B7.  */,
+      0xFC00 /* A1 + B1 * B7.  */,
+      0x7C00 /* A2 + B2 * B7.  */,
+      0x7C00 /* A3 + B3 * B7.  */ };
+
+/* Expected results for vfmaq_laneq.  */
+VECT_VAR_DECL (expected0_laneq_static, hfloat, 16, 8) []
+  = { 0x613E /* A0 + B0 * B0.  */,
+      0xD86D /* A1 + B1 * B0.  */,
+      0x5A82 /* A2 + B2 * B0.  */,
+      0x567A /* A3 + B3 * B0.  */,
+      0x7C00 /* A4 + B4 * B0.  */,
+      0xF24D /* A5 + B5 * B0.  */,
+      0xE11B /* A6 + B6 * B0.  */,
+      0x7C00 /* A7 + B7 * B0.  */ };
+
+VECT_VAR_DECL (expected1_laneq_static, hfloat, 16, 8) []
+  = { 0xCA33 /* A0 + B0 * B1.  */,
+      0x4EF6 /* A1 + B1 * B1.  */,
+      0xD274 /* A2 + B2 * B1.  */,
+      0xCA9A /* A3 + B3 * B1.  */,
+      0x7C00 /* A4 + B4 * B1.  */,
+      0x6A3B /* A5 + B5 * B1.  */,
+      0x5C4D /* A6 + B6 * B1.  */,
+      0xFC00 /* A7 + B7 * B1.  */ };
+
+VECT_VAR_DECL (expected2_laneq_static, hfloat, 16, 8) []
+  = { 0x5D2F /* A0 + B0 * B2.  */,
+      0xD32D /* A1 + B1 * B2.  */,
+      0x54F3 /* A2 + B2 * B2.  */,
+      0x51B3 /* A3 + B3 * B2.  */,
+      0x7C00 /* A4 + B4 * B2.  */,
+      0xECCB /* A5 + B5 * B2.  */,
+      0xDA01 /* A6 + B6 * B2.  */,
+      0x7C00 /* A7 + B7 * B2.  */ };
+
+VECT_VAR_DECL (expected3_laneq_static, hfloat, 16, 8) []
+  = { 0x5AC8 /* A0 + B0 * B3.  */,
+      0xCF40 /* A1 + B1 * B3.  */,
+      0x5073 /* A2 + B2 * B3.  */,
+      0x4E80 /* A3 + B3 * B3.  */,
+      0x7C00 /* A4 + B4 * B3.  */,
+      0xE851 /* A5 + B5 * B3.  */,
+      0xD08C /* A6 + B6 * B3.  */,
+      0x7C00 /* A7 + B7 * B3.  */ };
+
+VECT_VAR_DECL (expected4_laneq_static, hfloat, 16, 8) []
+  = { 0x5A58 /* A0 + B0 * B4.  */,
+      0xCE62 /* A1 + B1 * B4.  */,
+      0x4F91 /* A2 + B2 * B4.  */,
+      0x4DE6 /* A3 + B3 * B4.  */,
+      0x7C00 /* A4 + B4 * B4.  */,
+      0xE757 /* A5 + B5 * B4.  */,
+      0xCC54 /* A6 + B6 * B4.  */,
+      0x7C00 /* A7 + B7 * B4.  */ };
+
+VECT_VAR_DECL (expected5_laneq_static, hfloat, 16, 8) []
+  = { 0xF23D /* A0 + B0 * B5.  */,
+      0x6A3B /* A1 + B1 * B5.  */,
+      0xECCA /* A2 + B2 * B5.  */,
+      0xE849 /* A3 + B3 * B5.  */,
+      0x7C00 /* A4 + B4 * B5.  */,
+      0x7C00 /* A5 + B5 * B5.  */,
+      0x744D /* A6 + B6 * B5.  */,
+      0xFC00 /* A7 + B7 * B5.  */ };
+
+VECT_VAR_DECL (expected6_laneq_static, hfloat, 16, 8) []
+  = { 0xE0DA /* A0 + B0 * B6.  */,
+      0x5995 /* A1 + B1 * B6.  */,
+      0xDC6C /* A2 + B2 * B6.  */,
+      0xD753 /* A3 + B3 * B6.  */,
+      0x7C00 /* A4 + B4 * B6.  */,
+      0x7447 /* A5 + B5 * B6.  */,
+      0x644E /* A6 + B6 * B6.  */,
+      0xFC00 /* A7 + B7 * B6.  */ };
+
+VECT_VAR_DECL (expected7_laneq_static, hfloat, 16, 8) []
+  = { 0x7C00 /* A0 + B0 * B7.  */,
+      0xFC00 /* A1 + B1 * B7.  */,
+      0x7C00 /* A2 + B2 * B7.  */,
+      0x7C00 /* A3 + B3 * B7.  */,
+      0x7C00 /* A4 + B4 * B7.  */,
+      0xFC00 /* A5 + B5 * B7.  */,
+      0xFC00 /* A6 + B6 * B7.  */,
+      0x7C00 /* A7 + B7 * B7.  */ };
+
+/* Expected results for vfms_lane.  */
+VECT_VAR_DECL (expected0_fms_static, hfloat, 16, 4) []
+  = { 0xDEA2 /* A0 + (-B0) * B0.  */,
+      0x5810 /* A1 + (-B1) * B0.  */,
+      0xDA82 /* A2 + (-B2) * B0.  */,
+      0xD53A /* A3 + (-B3) * B0.  */ };
+
+VECT_VAR_DECL (expected1_fms_static, hfloat, 16, 4) []
+  = { 0x5C0D /* A0 + (-B0) * B1.  */,
+      0xD0EE /* A1 + (-B1) * B1.  */,
+      0x5274 /* A2 + (-B2) * B1.  */,
+      0x5026 /* A3 + (-B3) * B1.  */ };
+
+VECT_VAR_DECL (expected2_fms_static, hfloat, 16, 4) []
+  = { 0xD54E /* A0 + (-B0) * B2.  */,
+      0x51BA /* A1 + (-B1) * B2.  */,
+      0xD4F3 /* A2 + (-B2) * B2.  */,
+      0xCE66 /* A3 + (-B3) * B2.  */ };
+
+VECT_VAR_DECL (expected3_fms_static, hfloat, 16, 4) []
+  = { 0x4F70 /* A0 + (-B0) * B3.  */,
+      0x4C5A /* A1 + (-B1) * B3.  */,
+      0xD073 /* A2 + (-B2) * B3.  */,
+      0xC600 /* A3 + (-B3) * B3.  */ };
+
+/* Expected results for vfmsq_lane.  */
+VECT_VAR_DECL (expected0_fms_static, hfloat, 16, 8) []
+  = { 0xDEA2 /* A0 + (-B0) * B0.  */,
+      0x5810 /* A1 + (-B1) * B0.  */,
+      0xDA82 /* A2 + (-B2) * B0.  */,
+      0xD53A /* A3 + (-B3) * B0.  */,
+      0x7C00 /* A4 + (-B4) * B0.  */,
+      0x724B /* A5 + (-B5) * B0.  */,
+      0x6286 /* A6 + (-B6) * B0.  */,
+      0xFC00 /* A7 + (-B7) * B0.  */ };
+
+VECT_VAR_DECL (expected1_fms_static, hfloat, 16, 8) []
+  = { 0x5C0D /* A0 + (-B0) * B1.  */,
+      0xD0EE /* A1 + (-B1) * B1.  */,
+      0x5274 /* A2 + (-B2) * B1.  */,
+      0x5026 /* A3 + (-B3) * B1.  */,
+      0x7C00 /* A4 + (-B4) * B1.  */,
+      0xEA41 /* A5 + (-B5) * B1.  */,
+      0xD5DA /* A6 + (-B6) * B1.  */,
+      0x7C00 /* A7 + (-B7) * B1.  */ };
+
+VECT_VAR_DECL (expected2_fms_static, hfloat, 16, 8) []
+  = { 0xD54E /* A0 + (-B0) * B2.  */,
+      0x51BA /* A1 + (-B1) * B2.  */,
+      0xD4F3 /* A2 + (-B2) * B2.  */,
+      0xCE66 /* A3 + (-B3) * B2.  */,
+      0x7C00 /* A4 + (-B4) * B2.  */,
+      0x6CC8 /* A5 + (-B5) * B2.  */,
+      0x5DD7 /* A6 + (-B6) * B2.  */,
+      0xFC00 /* A7 + (-B7) * B2.  */ };
+
+VECT_VAR_DECL (expected3_fms_static, hfloat, 16, 8) []
+  = { 0x4F70 /* A0 + (-B0) * B3.  */,
+      0x4C5A /* A1 + (-B1) * B3.  */,
+      0xD073 /* A2 + (-B2) * B3.  */,
+      0xC600 /* A3 + (-B3) * B3.  */,
+      0x7C00 /* A4 + (-B4) * B3.  */,
+      0x684B /* A5 + (-B5) * B3.  */,
+      0x5AD0 /* A6 + (-B6) * B3.  */,
+      0xFC00 /* A7 + (-B7) * B3.  */ };
+
+/* Expected results for vfms_laneq.  */
+VECT_VAR_DECL (expected0_fms_laneq_static, hfloat, 16, 4) []
+  = { 0xDEA2 /* A0 + (-B0) * B0.  */,
+      0x5810 /* A1 + (-B1) * B0.  */,
+      0xDA82 /* A2 + (-B2) * B0.  */,
+      0xD53A /* A3 + (-B3) * B0.  */ };
+
+VECT_VAR_DECL (expected1_fms_laneq_static, hfloat, 16, 4) []
+  = { 0x5C0D /* A0 + (-B0) * B1.  */,
+      0xD0EE /* A1 + (-B1) * B1.  */,
+      0x5274 /* A2 + (-B2) * B1.  */,
+      0x5026 /* A3 + (-B3) * B1.  */ };
+
+VECT_VAR_DECL (expected2_fms_laneq_static, hfloat, 16, 4) []
+  = { 0xD54E /* A0 + (-B0) * B2.  */,
+      0x51BA /* A1 + (-B1) * B2.  */,
+      0xD4F3 /* A2 + (-B2) * B2.  */,
+      0xCE66 /* A3 + (-B3) * B2.  */ };
+
+VECT_VAR_DECL (expected3_fms_laneq_static, hfloat, 16, 4) []
+  = { 0x4F70 /* A0 + (-B0) * B3.  */,
+      0x4C5A /* A1 + (-B1) * B3.  */,
+      0xD073 /* A2 + (-B2) * B3.  */,
+      0xC600 /* A3 + (-B3) * B3.  */ };
+
+VECT_VAR_DECL (expected4_fms_laneq_static, hfloat, 16, 4) []
+  = { 0x5179 /* A0 + (-B0) * B4.  */,
+      0x4AF6 /* A1 + (-B1) * B4.  */,
+      0xCF91 /* A2 + (-B2) * B4.  */,
+      0xC334 /* A3 + (-B3) * B4.  */ };
+
+VECT_VAR_DECL (expected5_fms_laneq_static, hfloat, 16, 4) []
+  = { 0x725C /* A0 + (-B0) * B5.  */,
+      0xEA41 /* A1 + (-B1) * B5.  */,
+      0x6CCA /* A2 + (-B2) * B5.  */,
+      0x6853 /* A3 + (-B3) * B5.  */ };
+
+VECT_VAR_DECL (expected6_fms_laneq_static, hfloat, 16, 4) []
+  = { 0x62C7 /* A0 + (-B0) * B6.  */,
+      0xD9F2 /* A1 + (-B1) * B6.  */,
+      0x5C6C /* A2 + (-B2) * B6.  */,
+      0x584A /* A3 + (-B3) * B6.  */ };
+
+VECT_VAR_DECL (expected7_fms_laneq_static, hfloat, 16, 4) []
+  = { 0xFC00 /* A0 + (-B0) * B7.  */,
+      0x7C00 /* A1 + (-B1) * B7.  */,
+      0xFC00 /* A2 + (-B2) * B7.  */,
+      0xFC00 /* A3 + (-B3) * B7.  */ };
+
+/* Expected results for vfmsq_laneq.  */
+VECT_VAR_DECL (expected0_fms_laneq_static, hfloat, 16, 8) []
+  = { 0xDEA2 /* A0 + (-B0) * B0.  */,
+      0x5810 /* A1 + (-B1) * B0.  */,
+      0xDA82 /* A2 + (-B2) * B0.  */,
+      0xD53A /* A3 + (-B3) * B0.  */,
+      0x7C00 /* A4 + (-B4) * B0.  */,
+      0x724B /* A5 + (-B5) * B0.  */,
+      0x6286 /* A6 + (-B6) * B0.  */,
+      0xFC00 /* A7 + (-B7) * B0.  */ };
+
+VECT_VAR_DECL (expected1_fms_laneq_static, hfloat, 16, 8) []
+  = { 0x5C0D /* A0 + (-B0) * B1.  */,
+      0xD0EE /* A1 + (-B1) * B1.  */,
+      0x5274 /* A2 + (-B2) * B1.  */,
+      0x5026 /* A3 + (-B3) * B1.  */,
+      0x7C00 /* A4 + (-B4) * B1.  */,
+      0xEA41 /* A5 + (-B5) * B1.  */,
+      0xD5DA /* A6 + (-B6) * B1.  */,
+      0x7C00 /* A7 + (-B7) * B1.  */ };
+
+VECT_VAR_DECL (expected2_fms_laneq_static, hfloat, 16, 8) []
+  = { 0xD54E /* A0 + (-B0) * B2.  */,
+      0x51BA /* A1 + (-B1) * B2.  */,
+      0xD4F3 /* A2 + (-B2) * B2.  */,
+      0xCE66 /* A3 + (-B3) * B2.  */,
+      0x7C00 /* A4 + (-B4) * B2.  */,
+      0x6CC8 /* A5 + (-B5) * B2.  */,
+      0x5DD7 /* A6 + (-B6) * B2.  */,
+      0xFC00 /* A7 + (-B7) * B2.  */ };
+
+VECT_VAR_DECL (expected3_fms_laneq_static, hfloat, 16, 8) []
+  = { 0x4F70 /* A0 + (-B0) * B3.  */,
+      0x4C5A /* A1 + (-B1) * B3.  */,
+      0xD073 /* A2 + (-B2) * B3.  */,
+      0xC600 /* A3 + (-B3) * B3.  */,
+      0x7C00 /* A4 + (-B4) * B3.  */,
+      0x684B /* A5 + (-B5) * B3.  */,
+      0x5AD0 /* A6 + (-B6) * B3.  */,
+      0xFC00 /* A7 + (-B7) * B3.  */ };
+
+VECT_VAR_DECL (expected4_fms_laneq_static, hfloat, 16, 8) []
+  = { 0x5179 /* A0 + (-B0) * B4.  */,
+      0x4AF6 /* A1 + (-B1) * B4.  */,
+      0xCF91 /* A2 + (-B2) * B4.  */,
+      0xC334 /* A3 + (-B3) * B4.  */,
+      0x7C00 /* A4 + (-B4) * B4.  */,
+      0x674C /* A5 + (-B5) * B4.  */,
+      0x5A37 /* A6 + (-B6) * B4.  */,
+      0xFC00 /* A7 + (-B7) * B4.  */ };
+
+VECT_VAR_DECL (expected5_fms_laneq_static, hfloat, 16, 8) []
+  = { 0x725C /* A0 + (-B0) * B5.  */,
+      0xEA41 /* A1 + (-B1) * B5.  */,
+      0x6CCA /* A2 + (-B2) * B5.  */,
+      0x6853 /* A3 + (-B3) * B5.  */,
+      0x7C00 /* A4 + (-B4) * B5.  */,
+      0xFC00 /* A5 + (-B5) * B5.  */,
+      0xF441 /* A6 + (-B6) * B5.  */,
+      0x7C00 /* A7 + (-B7) * B5.  */ };
+
+VECT_VAR_DECL (expected6_fms_laneq_static, hfloat, 16, 8) []
+  = { 0x62C7 /* A0 + (-B0) * B6.  */,
+      0xD9F2 /* A1 + (-B1) * B6.  */,
+      0x5C6C /* A2 + (-B2) * B6.  */,
+      0x584A /* A3 + (-B3) * B6.  */,
+      0x7C00 /* A4 + (-B4) * B6.  */,
+      0xF447 /* A5 + (-B5) * B6.  */,
+      0xE330 /* A6 + (-B6) * B6.  */,
+      0x7C00 /* A7 + (-B7) * B6.  */ };
+
+VECT_VAR_DECL (expected7_fms_laneq_static, hfloat, 16, 8) []
+  = { 0xFC00 /* A0 + (-B0) * B7.  */,
+      0x7C00 /* A1 + (-B1) * B7.  */,
+      0xFC00 /* A2 + (-B2) * B7.  */,
+      0xFC00 /* A3 + (-B3) * B7.  */,
+      0x7C00 /* A4 + (-B4) * B7.  */,
+      0x7C00 /* A5 + (-B5) * B7.  */,
+      0x7C00 /* A6 + (-B6) * B7.  */,
+      0xFC00 /* A7 + (-B7) * B7.  */ };
+
+void exec_vfmas_lane_f16 (void)
+{
+#undef TEST_MSG
+#define TEST_MSG "VFMA_LANE (FP16)"
+  clean_results ();
+
+  DECL_VARIABLE(vsrc_1, float, 16, 4);
+  DECL_VARIABLE(vsrc_2, float, 16, 4);
+  VECT_VAR_DECL (buf_src_1, float, 16, 4) [] = {A0, A1, A2, A3};
+  VECT_VAR_DECL (buf_src_2, float, 16, 4) [] = {B0, B1, B2, B3};
+  VLOAD (vsrc_1, buf_src_1, , float, f, 16, 4);
+  VLOAD (vsrc_2, buf_src_2, , float, f, 16, 4);
+  DECL_VARIABLE (vector_res, float, 16, 4)
+    = vfma_lane_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4), 0);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected0_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_lane_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4), 1);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected1_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_lane_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4), 2);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected2_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_lane_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4), 3);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected3_static, "");
+
+#undef TEST_MSG
+#define TEST_MSG "VFMAQ_LANE (FP16)"
+  clean_results ();
+
+  DECL_VARIABLE(vsrc_1, float, 16, 8);
+  DECL_VARIABLE(vsrc_2, float, 16, 8);
+  VECT_VAR_DECL (buf_src_1, float, 16, 8) [] = {A0, A1, A2, A3, A4, A5, A6, A7};
+  VECT_VAR_DECL (buf_src_2, float, 16, 8) [] = {B0, B1, B2, B3, B4, B5, B6, B7};
+  VLOAD (vsrc_1, buf_src_1, q, float, f, 16, 8);
+  VLOAD (vsrc_2, buf_src_2, q, float, f, 16, 8);
+  DECL_VARIABLE (vector_res, float, 16, 8)
+    = vfmaq_lane_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 4), 0);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected0_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_lane_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 4), 1);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected1_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_lane_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 4), 2);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected2_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_lane_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 4), 3);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected3_static, "");
+
+#undef TEST_MSG
+#define TEST_MSG "VFMA_LANEQ (FP16)"
+  clean_results ();
+
+  DECL_VARIABLE(vsrc_3, float, 16, 8);
+  VECT_VAR_DECL (buf_src_3, float, 16, 8) [] = {B0, B1, B2, B3, B4, B5, B6, B7};
+  VLOAD (vsrc_3, buf_src_3, q, float, f, 16, 8);
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 0);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected0_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 1);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected1_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 2);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected2_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 3);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected3_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 4);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected4_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 5);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected5_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 6);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected6_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfma_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 7);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected7_laneq_static, "");
+
+#undef TEST_MSG
+#define TEST_MSG "VFMAQ_LANEQ (FP16)"
+  clean_results ();
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 0);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected0_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 1);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected1_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 2);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected2_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 3);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected3_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 4);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected4_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 5);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected5_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 6);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected6_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmaq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 7);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected7_laneq_static, "");
+
+#undef TEST_MSG
+#define TEST_MSG "VFMS_LANE (FP16)"
+  clean_results ();
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_lane_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4), 0);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected0_fms_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_lane_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4), 1);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected1_fms_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_lane_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4), 2);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected2_fms_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_lane_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4),
+		     VECT_VAR (vsrc_2, float, 16, 4), 3);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected3_fms_static, "");
+
+#undef TEST_MSG
+#define TEST_MSG "VFMSQ_LANE (FP16)"
+  clean_results ();
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_lane_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 4), 0);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected0_fms_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_lane_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 4), 1);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected1_fms_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_lane_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 4), 2);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected2_fms_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_lane_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 8),
+		      VECT_VAR (vsrc_2, float, 16, 4), 3);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected3_fms_static, "");
+
+#undef TEST_MSG
+#define TEST_MSG "VFMS_LANEQ (FP16)"
+  clean_results ();
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 0);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected0_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 1);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected1_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 2);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected2_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 3);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected3_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 4);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected4_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 5);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected5_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 6);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected6_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 4)
+    = vfms_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 4),
+		      VECT_VAR (vsrc_2, float, 16, 4),
+		      VECT_VAR (vsrc_3, float, 16, 8), 7);
+  vst1_f16 (VECT_VAR (result, float, 16, 4),
+	    VECT_VAR (vector_res, float, 16, 4));
+
+  CHECK_FP (TEST_MSG, float, 16, 4, PRIx16, expected7_fms_laneq_static, "");
+
+#undef TEST_MSG
+#define TEST_MSG "VFMSQ_LANEQ (FP16)"
+  clean_results ();
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 0);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected0_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 1);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected1_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 2);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected2_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 3);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected3_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 4);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected4_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 5);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected5_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 6);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected6_fms_laneq_static, "");
+
+  VECT_VAR (vector_res, float, 16, 8)
+    = vfmsq_laneq_f16 (VECT_VAR (vsrc_1, float, 16, 8),
+		       VECT_VAR (vsrc_2, float, 16, 8),
+		       VECT_VAR (vsrc_3, float, 16, 8), 7);
+  vst1q_f16 (VECT_VAR (result, float, 16, 8),
+	     VECT_VAR (vector_res, float, 16, 8));
+
+  CHECK_FP (TEST_MSG, float, 16, 8, PRIx16, expected7_fms_laneq_static, "");
+}
+
+int
+main (void)
+{
+  exec_vfmas_lane_f16 ();
+  return 0;
+}
