@@ -1,3 +1,9 @@
+2016-10-10  Andreas Schwab  <schwab@suse.de>
+
+	PR target/77738
+	* config/ia64/ia64.md ("doloop_end"): Reject if mode of loop
+	pseudo is not DImode.
+
 2016-10-10  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* common/config/arc/arc-common.c (arc_option_optimization_table):
@@ -8,7 +14,7 @@
 
 2016-10-09  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
-	* config/rs6000/rs6000.h (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED): 
+	* config/rs6000/rs6000.h (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED):
 	Add macro to say we can efficiently handle overlapping unaligned
 	loads.
 	* config/rs6000/rs6000.c (expand_block_compare): Avoid generating
@@ -207,7 +213,7 @@
 	(write_ipcp_transformation_info): Remove streaming for alignment
 	propagation summary.
 	(read_ipcp_transformation_info): Remove reading of alignment
-	propagation summary. 
+	propagation summary.
 	(ipcp_update_alignments): Remove.
 	(ipcp_update_bits): Adjust to set alignment for parameters of pointer
 	type.
@@ -215,7 +221,7 @@
 	and remove assignment to (*ipcp_transformations)[node->uid].alignments.
 	* ipa-prop.h (ipa_alignment): Remove.
 	(ipa_jump_func): Remove field alignment.
-	(ipcp_transformation_summary): Remove field alignments. 
+	(ipcp_transformation_summary): Remove field alignments.
 	* doc/invoke.texi: Mark fipa-cp-alignment as obsolete.
 	* opts.c (default_options_table): Remove entry for fipa-cp-alignment.
 	(enable_fdo_optimizations): Remove checking for fipa-cp-alignment.
@@ -491,7 +497,7 @@
 	which is not safe.
 
 2016-10-06  James Clarke  <jrtc27@jrtc27.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/77759
 	* config/sparc/sparc.c (classify_data_t): Remove int_regs field.
@@ -3397,7 +3403,7 @@
 2016-09-02  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* cfg.c (free_original_copy_tables): Replace second assignment of
-	bb_copy = NULL by bb_original = NULL. 
+	bb_copy = NULL by bb_original = NULL.
 
 2016-09-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -19189,7 +19195,7 @@
 
 	Tweak the pipeline model for Exynos M1
 
-	* config/aarch64/aarch64.c (exynosm1_tunings): 	Enable weak prefetching
+	* config/aarch64/aarch64.c (exynosm1_tunings):	Enable weak prefetching
 	model.
 
 2016-03-17  David Malcolm  <dmalcolm@redhat.com>
