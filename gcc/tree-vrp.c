@@ -10650,6 +10650,7 @@ public:
   virtual void after_dom_children (basic_block);
   void push_value_range (const_tree var, value_range *vr);
   value_range *pop_value_range (const_tree var);
+  void try_add_new_range (tree op, tree_code code, tree limit);
 
   /* Cond_stack holds the old VR.  */
   auto_vec<std::pair <const_tree, value_range*> > stack;
@@ -10657,20 +10658,42 @@ public:
   vec<gimple *> stmts_to_fixup;
 };
 
+
+/*  Add new range to OP such that (OP CODE LIMIT) is true.  */
+
+void
+evrp_dom_walker::try_add_new_range (tree op, tree_code code, tree limit)
+{
+  value_range vr = VR_INITIALIZER;
+  value_range *old_vr = get_value_range (op);
+
+  /* Discover VR when condition is true.  */
+  extract_range_for_var_from_comparison_expr (op, code, op,
+					      limit, &vr);
+  if (old_vr->type == VR_RANGE || old_vr->type == VR_ANTI_RANGE)
+    vrp_intersect_ranges (&vr, old_vr);
+  /* If we found any usable VR, set the VR to ssa_name and create a
+     PUSH old value in the stack with the old VR.  */
+  if (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
+    {
+      value_range *new_vr = vrp_value_range_pool.allocate ();
+      *new_vr = vr;
+      push_value_range (op, new_vr);
+    }
+}
+
 /* See if there is any new scope is entered with new VR and set that VR to
    ssa_name before visiting the statements in the scope.  */
 
 edge
 evrp_dom_walker::before_dom_children (basic_block bb)
 {
-  value_range *new_vr = NULL;
   tree op0 = NULL_TREE;
 
   push_value_range (NULL_TREE, NULL);
   if (single_pred_p (bb))
     {
       edge e = single_pred_edge (bb);
-      value_range vr = VR_INITIALIZER;
       gimple *stmt = last_stmt (e->src);
       if (stmt
 	  && gimple_code (stmt) == GIMPLE_COND
@@ -10683,7 +10706,6 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	     here.  */
 	  tree op1 = gimple_cond_rhs (stmt);
 	  tree_code code = gimple_cond_code (stmt);
-	  value_range *old_vr = get_value_range (op0);
 
 	  if (TREE_OVERFLOW_P (op1))
 	    op1 = drop_tree_overflow (op1);
@@ -10692,18 +10714,21 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  if (e->flags & EDGE_FALSE_VALUE)
 	    code = invert_tree_comparison (gimple_cond_code (stmt),
 					   HONOR_NANS (op0));
-	  /* Discover VR when condition is true.  */
-	  extract_range_for_var_from_comparison_expr (op0, code, op0, op1, &vr);
-	  if (old_vr->type == VR_RANGE || old_vr->type == VR_ANTI_RANGE)
-	    vrp_intersect_ranges (&vr, old_vr);
+	  /* Add VR when (OP0 CODE OP1) condition is true.  */
+	  try_add_new_range (op0, code, op1);
 
-	  /* If we found any usable VR, set the VR to ssa_name and create a
-	     PUSH old value in the stack with the old VR.  */
-	  if (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
+	  /* Register ranges for y in x < y where
+	     y might have ranges that are useful.  */
+	  tree limit;
+	  tree_code new_code;
+	  if (TREE_CODE (op1) == SSA_NAME
+	      && extract_code_and_val_from_cond_with_ops (op1, code,
+							  op0, op1,
+							  false,
+							  &new_code, &limit))
 	    {
-	      new_vr = vrp_value_range_pool.allocate ();
-	      *new_vr = vr;
-	      push_value_range (op0, new_vr);
+	      /* Add VR when (OP1 NEW_CODE LIMIT) condition is true.  */
+	      try_add_new_range (op1, new_code, limit);
 	    }
 	}
     }
