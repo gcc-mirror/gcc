@@ -1,3 +1,7 @@
+2016-10-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-texi.c (string.h): Include.
+
 2016-10-10  Andreas Schwab  <schwab@suse.de>
 
 	PR target/77738
