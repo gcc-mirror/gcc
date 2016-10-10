@@ -474,7 +474,6 @@ runtime_files = \
 	runtime/go-new.c \
 	runtime/go-nosys.c \
 	runtime/go-panic.c \
-	runtime/go-print.c \
 	runtime/go-recover.c \
 	runtime/go-reflect-call.c \
 	runtime/go-rune.c \

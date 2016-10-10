@@ -72,9 +72,11 @@ __go_rundefer(void)
 void
 runtime_startpanic(void)
 {
+	G *g;
 	M *m;
 
-	m = runtime_m();
+	g = runtime_g();
+	m = g->m;
 	if(runtime_mheap.cachealloc.size == 0) { // very early
 		runtime_printf("runtime: panic before malloc heap initialized\n");
 		m->mallocing = 1; // tell rest of panic not to try to malloc
@@ -83,8 +85,9 @@ runtime_startpanic(void)
 	switch(m->dying) {
 	case 0:
 		m->dying = 1;
-		if(runtime_g() != nil)
-			runtime_g()->writebuf = nil;
+		g->writebuf.__values = nil;
+		g->writebuf.__count = 0;
+		g->writebuf.__capacity = 0;
 		runtime_xadd(&runtime_panicking, 1);
 		runtime_lock(&paniclk);
 		if(runtime_debug.schedtrace > 0 || runtime_debug.scheddetail > 0)
