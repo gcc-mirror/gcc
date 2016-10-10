@@ -64,6 +64,7 @@ extern void abort ();
 /* Format strings for error reporting.  */
 #define FMT16 "0x%04x"
 #define FMT32 "0x%08x"
+#define FMT64 "0x%016x"
 #define FMT CAT (FMT,OUTPUT_TYPE_SIZE)
 
 /* Type construction: forms TS_t, where T is the base type and S the size in
