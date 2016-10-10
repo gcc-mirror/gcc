@@ -1,5 +1,67 @@
 2016-10-10  Jiong Wang  <jiong.wang@arm.com>
 
+	* gcc.target/aarch64/advsimd-intrinsics/unary_scalar_op.inc: Support FMT64.
+	* gcc.target/aarch64/advsimd-intrinsics/vabdh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcageh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcagth_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcaleh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcalth_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vceqh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vceqzh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcgeh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcgezh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcgth_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcgtzh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcleh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vclezh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vclth_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcltzh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtah_s16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtah_s64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtah_u16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtah_u64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_f16_s16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_f16_s64_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_f16_u16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_f16_u64_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_f16_s16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_f16_s64_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_f16_u16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_f16_u64_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_s16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_s64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_u16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_n_u64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_s16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_s64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_u16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvth_u64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtmh_s16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtmh_s64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtmh_u16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtmh_u64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtnh_s16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtnh_s64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtnh_u16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtnh_u64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtph_s16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtph_s64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtph_u16_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtph_u64_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vfmash_lane_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmaxh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vminh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulh_lane_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxh_lane_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrecpeh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrecpsh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrecpxh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrsqrteh_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrsqrtsh_f16_1.c: New.
+
+2016-10-10  Jiong Wang  <jiong.wang@arm.com>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vdiv_f16_1.c: New.
 	* gcc.target/aarch64/advsimd-intrinsics/vfmas_lane_f16_1.c: New.
 	* gcc.target/aarch64/advsimd-intrinsics/vfmas_n_f16_1.c: New.
