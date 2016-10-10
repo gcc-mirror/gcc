@@ -320,9 +320,9 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
    FUNCTION is VOIDmode because calling convention maintains SP.
    BLOCK needs Pmode for SP.
    NONLOCAL needs twice Pmode to maintain both backchain and SP.  */
-#define STACK_SAVEAREA_MODE(LEVEL)      \
-  (LEVEL == SAVE_FUNCTION ? VOIDmode    \
-  : LEVEL == SAVE_NONLOCAL ? (TARGET_64BIT ? OImode : TImode) : Pmode)
+#define STACK_SAVEAREA_MODE(LEVEL)					\
+  ((LEVEL) == SAVE_FUNCTION ? VOIDmode					\
+   : (LEVEL) == SAVE_NONLOCAL ? (TARGET_64BIT ? OImode : TImode) : Pmode)
 
 
 /* Type layout.  */
@@ -491,7 +491,7 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
   s390_hard_regno_mode_ok ((REGNO), (MODE))
 
 #define HARD_REGNO_RENAME_OK(FROM, TO)          \
-  s390_hard_regno_rename_ok (FROM, TO)
+  s390_hard_regno_rename_ok ((FROM), (TO))
 
 #define MODES_TIEABLE_P(MODE1, MODE2)		\
    (((MODE1) == SFmode || (MODE1) == DFmode)	\
@@ -584,7 +584,7 @@ enum reg_class
    reload can decide not to use the hard register because some
    constant was forced to be in memory.  */
 #define IRA_HARD_REGNO_ADD_COST_MULTIPLIER(regno)	\
-  (regno != BASE_REGNUM ? 0.0 : 0.5)
+  ((regno) != BASE_REGNUM ? 0.0 : 0.5)
 
 /* Register -> class mapping.  */
 extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
@@ -617,10 +617,10 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 
      FIXME: Should we try splitting it into two vlgvg's/vlvg's instead?  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (((reg_classes_intersect_p (CLASS1, VEC_REGS)				\
-     && reg_classes_intersect_p (CLASS2, GENERAL_REGS))			\
-    || (reg_classes_intersect_p (CLASS1, GENERAL_REGS)			\
-	&& reg_classes_intersect_p (CLASS2, VEC_REGS)))			\
+  (((reg_classes_intersect_p ((CLASS1), VEC_REGS)			\
+     && reg_classes_intersect_p ((CLASS2), GENERAL_REGS))		\
+    || (reg_classes_intersect_p ((CLASS1), GENERAL_REGS)		\
+	&& reg_classes_intersect_p ((CLASS2), VEC_REGS)))		\
    && (!TARGET_DFP || !TARGET_64BIT || GET_MODE_SIZE (MODE) != 8)	\
    && (!TARGET_VX || (SCALAR_FLOAT_MODE_P (MODE)			\
 			  && GET_MODE_SIZE (MODE) > 8)))
@@ -630,7 +630,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
  (GET_MODE_BITSIZE (MODE) < 32				\
   ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)	\
-  : MODE)
+  : (MODE))
 
 
 /* Stack layout and calling conventions.  */
@@ -720,8 +720,8 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Define the dwarf register mapping.
    v16-v31 -> 68-83
    rX      -> X      otherwise  */
-#define DBX_REGISTER_NUMBER(regno)			\
-  ((regno >= 38 && regno <= 53) ? regno + 30 : regno)
+#define DBX_REGISTER_NUMBER(regno)				\
+  (((regno) >= 38 && (regno) <= 53) ? (regno) + 30 : (regno))
 
 /* Frame registers.  */
 
@@ -832,24 +832,25 @@ CUMULATIVE_ARGS;
    operand.  If we find one, push the reload and jump to WIN.  This
    macro is used in only one place: `find_reloads_address' in reload.c.  */
 #define LEGITIMIZE_RELOAD_ADDRESS(AD, MODE, OPNUM, TYPE, IND, WIN)	\
-do {									\
-  rtx new_rtx = legitimize_reload_address (AD, MODE, OPNUM, (int)(TYPE));	\
-  if (new_rtx)								\
-    {									\
-      (AD) = new_rtx;							\
-      goto WIN;								\
-    }									\
-} while (0)
+  do {									\
+    rtx new_rtx = legitimize_reload_address ((AD), (MODE),		\
+					     (OPNUM), (int)(TYPE));	\
+    if (new_rtx)							\
+      {									\
+	(AD) = new_rtx;							\
+	goto WIN;							\
+      }									\
+  } while (0)
 
 /* Helper macro for s390.c and s390.md to check for symbolic constants.  */
-#define SYMBOLIC_CONST(X)       \
-(GET_CODE (X) == SYMBOL_REF                                             \
- || GET_CODE (X) == LABEL_REF                                           \
- || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
+#define SYMBOLIC_CONST(X)						\
+  (GET_CODE (X) == SYMBOL_REF						\
+   || GET_CODE (X) == LABEL_REF						\
+   || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
-#define TLS_SYMBOLIC_CONST(X)	\
-((GET_CODE (X) == SYMBOL_REF && tls_symbolic_operand (X))	\
- || (GET_CODE (X) == CONST && tls_symbolic_reference_mentioned_p (X)))
+#define TLS_SYMBOLIC_CONST(X)						\
+  ((GET_CODE (X) == SYMBOL_REF && tls_symbolic_operand (X))		\
+   || (GET_CODE (X) == CONST && tls_symbolic_reference_mentioned_p (X)))
 
 
 /* Condition codes.  */
@@ -928,8 +929,8 @@ do {									\
 #define ASM_COMMENT_START "#"
 
 /* Declare an uninitialized external linkage data object.  */
-#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
-  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
+  asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".globl "
@@ -946,7 +947,7 @@ do {									\
 #define LOCAL_LABEL_PREFIX "."
 
 #define LABEL_ALIGN(LABEL) \
-  s390_label_align (LABEL)
+  s390_label_align ((LABEL))
 
 /* How to refer to registers in assembler output.  This sequence is
    indexed by compiler's hard-register-number (see above).  */
@@ -967,8 +968,8 @@ do {									\
     { "v9", 28 }, { "v11", 29 }, { "v13", 30 }, { "v15", 31 } };
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.  */
-#define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
+#define PRINT_OPERAND(FILE, X, CODE) print_operand ((FILE), (X), (CODE))
+#define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address ((FILE), (ADDR))
 
 /* Output an element of a case-vector that is absolute.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)				\
@@ -998,8 +999,8 @@ do {									\
 #define EPILOGUE_USES(REGNO) ((REGNO) == RETURN_REGNUM)
 
 #undef ASM_OUTPUT_FUNCTION_LABEL
-#define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
-  s390_asm_output_function_label (FILE, NAME, DECL)
+#define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL)		\
+  s390_asm_output_function_label ((FILE), (NAME), (DECL))
 
 #if S390_USE_TARGET_ATTRIBUTE
 /* Hook to output .machine and .machinemode at start of function.  */
@@ -1056,24 +1057,25 @@ do {									\
    the symbol_refs that can be misaligned and assume that the others
    are correctly aligned.  Hence, if a symbol_ref does not have
    a _NOTALIGN flag it is supposed to be correctly aligned.  */
-#define SYMBOL_FLAG_SET_NOTALIGN2(X) SYMBOL_FLAG_SET_ALIGN(X, 1)
-#define SYMBOL_FLAG_SET_NOTALIGN4(X) SYMBOL_FLAG_SET_ALIGN(X, 2)
-#define SYMBOL_FLAG_SET_NOTALIGN8(X) SYMBOL_FLAG_SET_ALIGN(X, 3)
+#define SYMBOL_FLAG_SET_NOTALIGN2(X) SYMBOL_FLAG_SET_ALIGN((X), 1)
+#define SYMBOL_FLAG_SET_NOTALIGN4(X) SYMBOL_FLAG_SET_ALIGN((X), 2)
+#define SYMBOL_FLAG_SET_NOTALIGN8(X) SYMBOL_FLAG_SET_ALIGN((X), 3)
 
 #define SYMBOL_FLAG_NOTALIGN2_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 1)
-#define SYMBOL_FLAG_NOTALIGN4_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 2 \
+#define SYMBOL_FLAG_NOTALIGN4_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 2	\
 				    || SYMBOL_FLAG_GET_ALIGN(X) == 1)
-#define SYMBOL_FLAG_NOTALIGN8_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 3 \
-				    || SYMBOL_FLAG_GET_ALIGN(X) == 2 \
+#define SYMBOL_FLAG_NOTALIGN8_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 3	\
+				    || SYMBOL_FLAG_GET_ALIGN(X) == 2	\
 				    || SYMBOL_FLAG_GET_ALIGN(X) == 1)
 
 /* Check whether integer displacement is in range for a short displacement.  */
 #define SHORT_DISP_IN_RANGE(d) ((d) >= 0 && (d) <= 4095)
 
 /* Check whether integer displacement is in range.  */
-#define DISP_IN_RANGE(d) \
-  (TARGET_LONG_DISPLACEMENT? ((d) >= -524288 && (d) <= 524287) \
-                           : SHORT_DISP_IN_RANGE(d))
+#define DISP_IN_RANGE(d)				\
+  (TARGET_LONG_DISPLACEMENT				\
+   ? ((d) >= -524288 && (d) <= 524287)			\
+   : SHORT_DISP_IN_RANGE(d))
 
 /* Reads can reuse write prefetches, used by tree-ssa-prefetch-loops.c.  */
 #define READ_CAN_USE_WRITE_PREFETCH 1
