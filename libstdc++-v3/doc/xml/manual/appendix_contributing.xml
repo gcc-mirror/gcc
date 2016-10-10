@@ -203,105 +203,195 @@
     GCC sources contains the files needed to create the GNU C++ Library.
   </para>
 
-  <literallayout class="normal">
+<para>
 It has subdirectories:
+</para>
 
-  <filename class="directory">doc</filename>
+<variablelist>
+  <varlistentry>
+  <term><filename class="directory">doc</filename></term>
+  <listitem>
     Files in HTML and text format that document usage, quirks of the
     implementation, and contributor checklists.
+    </listitem>
+  </varlistentry>
 
-  <filename class="directory">include</filename>
+  <varlistentry>
+  <term><filename class="directory">include</filename></term>
+  <listitem>
     All header files for the C++ library are within this directory,
     modulo specific runtime-related files that are in the libsupc++
     directory.
 
-    <filename class="directory">include/std</filename>
-      Files meant to be found by #include &lt;name&gt; directives in
-      standard-conforming user programs.
+    <variablelist>
+    <varlistentry>
+    <term><filename class="directory">include/std</filename></term>
+    <listitem>
+      Files meant to be found by <code>#include &lt;name&gt;</code> directives
+      in standard-conforming user programs.
+      </listitem>
+    </varlistentry>
 
-    <filename class="directory">include/c</filename>
+    <varlistentry>
+    <term><filename class="directory">include/c</filename></term>
+    <listitem>
       Headers intended to directly include standard C headers.
       [NB: this can be enabled via <option>--enable-cheaders=c</option>]
+      </listitem>
+    </varlistentry>
 
-    <filename class="directory">include/c_global</filename>
+    <varlistentry>
+    <term><filename class="directory">include/c_global</filename></term>
+    <listitem>
       Headers intended to include standard C headers in
-      the global namespace, and put select names into the std::
+      the global namespace, and put select names into the <code>std::</code>
       namespace.  [NB: this is the default, and is the same as
       <option>--enable-cheaders=c_global</option>]
+      </listitem>
+    </varlistentry>
 
-    <filename class="directory">include/c_std</filename>
+    <varlistentry>
+    <term><filename class="directory">include/c_std</filename></term>
+    <listitem>
       Headers intended to include standard C headers
-      already in namespace std, and put select names into the std::
+      already in namespace std, and put select names into the <code>std::</code>
       namespace.  [NB: this is the same as
       <option>--enable-cheaders=c_std</option>]
+      </listitem>
+    </varlistentry>
 
-    <filename class="directory">include/bits</filename>
+    <varlistentry>
+    <term><filename class="directory">include/bits</filename></term>
+    <listitem>
       Files included by standard headers and by other files in
       the bits directory.
+      </listitem>
+    </varlistentry>
 
-    <filename class="directory">include/backward</filename>
-      Headers provided for backward compatibility, such as &lt;iostream.h&gt;.
+    <varlistentry>
+    <term><filename class="directory">include/backward</filename></term>
+    <listitem>
+      Headers provided for backward compatibility, such as
+      <filename class="headerfile">&lt;backward/hash_map&gt;</filename>.
       They are not used in this library.
+    </listitem>
+    </varlistentry>
 
-    <filename class="directory">include/ext</filename>
+    <varlistentry>
+    <term><filename class="directory">include/ext</filename></term>
+    <listitem>
       Headers that define extensions to the standard library.  No
-      standard header refers to any of them.
+      standard header refers to any of them, in theory (there are some
+      exceptions).
+      </listitem>
+    </varlistentry>
+    </variablelist>
+  </listitem>
+  </varlistentry>
 
-  <filename class="directory">scripts</filename>
+  <varlistentry>
+  <term><filename class="directory">scripts</filename></term>
+  <listitem>
     Scripts that are used during the configure, build, make, or test
     process.
+    </listitem>
+  </varlistentry>
 
-  <filename class="directory">src</filename>
+  <varlistentry>
+  <term><filename class="directory">src</filename></term>
+  <listitem>
     Files that are used in constructing the library, but are not
     installed.
 
-    <filename class="directory">src/c++98</filename>
+    <variablelist>
+    <varlistentry>
+    <term><filename class="directory">src/c++98</filename></term>
+    <listitem>
     Source files compiled using <option>-std=gnu++98</option>.
+      </listitem>
+    </varlistentry>
 
-    <filename class="directory">src/c++11</filename>
+    <varlistentry>
+    <term><filename class="directory">src/c++11</filename></term>
+    <listitem>
     Source files compiled using <option>-std=gnu++11</option>.
+      </listitem>
+    </varlistentry>
 
-    <filename class="directory">src/filesystem</filename>
+    <varlistentry>
+    <term><filename class="directory">src/filesystem</filename></term>
+    <listitem>
     Source files for the Filesystem TS.
+      </listitem>
+    </varlistentry>
 
-    <filename class="directory">src/shared</filename>
+    <varlistentry>
+    <term><filename class="directory">src/shared</filename></term>
+    <listitem>
     Source code included by other files under both
     <filename class="directory">src/c++98</filename> and
     <filename class="directory">src/c++11</filename>
+      </listitem>
+    </varlistentry>
+    </variablelist>
+  </listitem>
+  </varlistentry>
 
-  <filename class="directory">testsuites/[backward, demangle, ext, performance, thread, 17_* to 30_*]</filename>
+  <varlistentry>
+  <term><filename class="directory">testsuites/[backward, demangle, ext, performance, thread, 17_* to 30_*]</filename></term>
+  <listitem>
     Test programs are here, and may be used to begin to exercise the
     library.  Support for "make check" and "make check-install" is
     complete, and runs through all the subdirectories here when this
     command is issued from the build directory.  Please note that
     "make check" requires DejaGNU 1.4 or later to be installed.
+    </listitem>
+  </varlistentry>
+</variablelist>
 
+<para>
 Other subdirectories contain variant versions of certain files
 that are meant to be copied or linked by the configure script.
 Currently these are:
+<literallayout><filename class="directory">config/abi</filename>
+<filename class="directory">config/allocator</filename>
+<filename class="directory">config/cpu</filename>
+<filename class="directory">config/io</filename>
+<filename class="directory">config/locale</filename>
+<filename class="directory">config/os</filename>
+</literallayout>
+</para>
 
-  <filename class="directory">config/abi</filename>
-  <filename class="directory">config/cpu</filename>
-  <filename class="directory">config/io</filename>
-  <filename class="directory">config/locale</filename>
-  <filename class="directory">config/os</filename>
-
+<para>
 In addition, a subdirectory holds the convenience library libsupc++.
+</para>
 
-  <filename class="directory">libsupc++</filename>
+<variablelist>
+<varlistentry>
+  <term><filename class="directory">libsupc++</filename></term>
+  <listitem>
     Contains the runtime library for C++, including exception
     handling and memory allocation and deallocation, RTTI, terminate
     handlers, etc.
+  </listitem>
+</varlistentry>
+</variablelist>
 
+<para>
 Note that glibc also has a <filename class="directory">bits/</filename>
-subdirectory.  We will either need to be careful not to collide with names
-in its <filename class="directory">bits/</filename>
-directory; or rename <filename class="directory">bits</filename> to (e.g.) <filename class="directory">cppbits</filename>.
+subdirectory.  We need to be careful not to collide with names in its
+<filename class="directory">bits/</filename> directory. For example
+<filename class="headerfile">&lt;bits/std_mutex.h&gt;</filename> has to be
+renamed from <filename class="headerfile">&lt;bits/mutex.h&gt;</filename>.
+Another solution would be to rename <filename class="directory">bits</filename>
+to (e.g.) <filename class="directory">cppbits</filename>.
+</para>
 
+<para>
 In files throughout the system, lines marked with an "XXX" indicate
 a bug or incompletely-implemented feature.  Lines marked "XXX MT"
 indicate a place that may require attention for multi-thread safety.
-  </literallayout>
+</para>
 
 </section>
 
