@@ -19,7 +19,6 @@
 
 package sync
 #include "runtime.h"
-#include "chan.h"
 #include "arch.h"
 
 typedef struct SemaWaiter SemaWaiter;
@@ -373,7 +372,7 @@ func runtime_notifyListWait(l *notifyList, t uint32) {
 	if (l->tail == nil) {
 		l->head = &s;
 	} else {
-		l->tail->link = &s;
+		l->tail->next = &s;
 	}
 	l->tail = &s;
 	runtime_parkunlock(&l->lock, "semacquire");
@@ -409,8 +408,8 @@ func runtime_notifyListNotifyAll(l *notifyList) {
 
 	// Go through the local list and ready all waiters.
 	while (s != nil) {
-		SudoG* next = s->link;
-		s->link = nil;
+		SudoG* next = s->next;
+		s->next = nil;
 		readyWithTime(s, 4);
 		s = next;
 	}
@@ -442,11 +441,11 @@ func runtime_notifyListNotifyOne(l *notifyList) {
 	// needs to be notified. If it hasn't made it to the list yet we won't
 	// find it, but it won't park itself once it sees the new notify number.
 	runtime_atomicstore(&l->notify, t+1);
-	for (p = nil, s = l->head; s != nil; p = s, s = s->link) {
+	for (p = nil, s = l->head; s != nil; p = s, s = s->next) {
 		if (s->ticket == t) {
-			SudoG *n = s->link;
+			SudoG *n = s->next;
 			if (p != nil) {
-				p->link = n;
+				p->next = n;
 			} else {
 				l->head = n;
 			}
@@ -454,7 +453,7 @@ func runtime_notifyListNotifyOne(l *notifyList) {
 				l->tail = p;
 			}
 			runtime_unlock(&l->lock);
-			s->link = nil;
+			s->next = nil;
 			readyWithTime(s, 4);
 			return;
 		}

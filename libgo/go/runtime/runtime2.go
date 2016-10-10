@@ -231,9 +231,6 @@ func (mp *muintptr) set(m *m) { *mp = muintptr(unsafe.Pointer(m)) }
 //
 // sudogs are allocated from a special pool. Use acquireSudog and
 // releaseSudog to allocate and free them.
-/*
-Commented out for gccgo for now.
-
 type sudog struct {
 	// The following fields are protected by the hchan.lock of the
 	// channel this sudog is blocking on. shrinkstack depends on
@@ -253,7 +250,6 @@ type sudog struct {
 	waitlink    *sudog // g.waiting list
 	c           *hchan // channel
 }
-*/
 
 type gcstats struct {
 	// the struct must consist of only uint64's,
@@ -364,7 +360,7 @@ type g struct {
 	gopc     uintptr // pc of go statement that created this goroutine
 	startpc  uintptr // pc of goroutine function
 	racectx  uintptr
-	// Not for gccgo for now: waiting        *sudog    // sudog structures this g is waiting on (that have a valid elem ptr); in lock order
+	waiting  *sudog // sudog structures this g is waiting on (that have a valid elem ptr); in lock order
 	// Not for gccgo: cgoCtxt        []uintptr // cgo traceback context
 
 	// Per-G GC state
@@ -528,7 +524,7 @@ type p struct {
 	gfree    *g
 	gfreecnt int32
 
-	// Not for gccgo for now: sudogcache []*sudog
+	sudogcache []*sudog
 	// Not for gccgo for now: sudogbuf   [128]*sudog
 
 	// Not for gccgo for now: tracebuf traceBufPtr

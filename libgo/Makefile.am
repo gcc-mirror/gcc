@@ -520,7 +520,6 @@ runtime_files = \
 	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
-	chan.c \
 	cpuprof.c \
 	go-iface.c \
 	lfstack.c \

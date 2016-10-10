@@ -10,7 +10,8 @@
 #include "go-panic.h"
 #include "go-type.h"
 
-extern void __go_receive (ChanType *, Hchan *, byte *);
+extern void chanrecv1 (ChanType *, Hchan *, void *)
+  __asm__ (GOSYM_PREFIX "runtime.chanrecv1");
 
 /* Prepare to call from code written in Go to code written in C or
    C++.  This takes the current goroutine out of the Go scheduler, as
@@ -97,7 +98,7 @@ syscall_cgocallback ()
 	 Go.  In the case of -buildmode=c-archive or c-shared, this
 	 call may be coming in before package initialization is
 	 complete.  Wait until it is.  */
-      __go_receive (NULL, runtime_main_init_done, NULL);
+      chanrecv1 (NULL, runtime_main_init_done, NULL);
     }
 
   mp = runtime_m ();

@@ -66,7 +66,7 @@ typedef	struct	FuncVal		FuncVal;
 typedef	struct	SigTab		SigTab;
 typedef	struct	mcache		MCache;
 typedef struct	FixAlloc	FixAlloc;
-typedef	struct	Hchan		Hchan;
+typedef	struct	hchan		Hchan;
 typedef	struct	Timers		Timers;
 typedef	struct	Timer		Timer;
 typedef	struct	gcstats		GCStats;
@@ -75,6 +75,7 @@ typedef	struct	ParFor		ParFor;
 typedef	struct	ParForThread	ParForThread;
 typedef	struct	cgoMal		CgoMal;
 typedef	struct	PollDesc	PollDesc;
+typedef	struct	sudog		SudoG;
 
 typedef	struct	__go_open_array		Slice;
 typedef struct	__go_interface		Iface;
@@ -294,7 +295,6 @@ extern	uint32	runtime_panicking;
 extern	int8*	runtime_goos;
 extern	int32	runtime_ncpu;
 extern 	void	(*runtime_sysargs)(int32, uint8**);
-extern	uint32	runtime_Hchansize;
 extern	struct debugVars runtime_debug;
 extern	uintptr	runtime_maxstacksize;
 

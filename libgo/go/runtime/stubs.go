@@ -384,3 +384,67 @@ func errno() int
 func entersyscall(int32)
 func entersyscallblock(int32)
 func exitsyscall(int32)
+func gopark(func(*g, unsafe.Pointer) bool, unsafe.Pointer, string, byte, int)
+func goparkunlock(*mutex, string, byte, int)
+func goready(*g, int)
+
+// Temporary for gccgo until we port mprof.go.
+var blockprofilerate uint64
+
+func blockevent(cycles int64, skip int) {}
+
+// Temporary hack for gccgo until we port proc.go.
+//go:nosplit
+func acquireSudog() *sudog {
+	mp := acquirem()
+	pp := mp.p.ptr()
+	if len(pp.sudogcache) == 0 {
+		pp.sudogcache = append(pp.sudogcache, new(sudog))
+	}
+	n := len(pp.sudogcache)
+	s := pp.sudogcache[n-1]
+	pp.sudogcache[n-1] = nil
+	pp.sudogcache = pp.sudogcache[:n-1]
+	if s.elem != nil {
+		throw("acquireSudog: found s.elem != nil in cache")
+	}
+	releasem(mp)
+	return s
+}
+
+// Temporary hack for gccgo until we port proc.go.
+//go:nosplit
+func releaseSudog(s *sudog) {
+	if s.elem != nil {
+		throw("runtime: sudog with non-nil elem")
+	}
+	if s.selectdone != nil {
+		throw("runtime: sudog with non-nil selectdone")
+	}
+	if s.next != nil {
+		throw("runtime: sudog with non-nil next")
+	}
+	if s.prev != nil {
+		throw("runtime: sudog with non-nil prev")
+	}
+	if s.waitlink != nil {
+		throw("runtime: sudog with non-nil waitlink")
+	}
+	if s.c != nil {
+		throw("runtime: sudog with non-nil c")
+	}
+	gp := getg()
+	if gp.param != nil {
+		throw("runtime: releaseSudog with non-nil gp.param")
+	}
+	mp := acquirem() // avoid rescheduling to another P
+	pp := mp.p.ptr()
+	pp.sudogcache = append(pp.sudogcache, s)
+	releasem(mp)
+}
+
+// Temporary hack for gccgo until we port the garbage collector.
+func typeBitsBulkBarrier(typ *_type, p, size uintptr) {}
+
+// Temporary for gccgo until we port print.go.
+type hex uint64

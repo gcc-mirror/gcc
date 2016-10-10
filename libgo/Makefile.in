@@ -263,9 +263,9 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	$(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
 	$(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo $(am__objects_3) yield.lo \
-	$(am__objects_4) chan.lo cpuprof.lo go-iface.lo lfstack.lo \
-	malloc.lo mprof.lo netpoll.lo rdebug.lo reflect.lo runtime1.lo \
-	sema.lo sigqueue.lo string.lo time.lo $(am__objects_5)
+	$(am__objects_4) cpuprof.lo go-iface.lo lfstack.lo malloc.lo \
+	mprof.lo netpoll.lo rdebug.lo reflect.lo runtime1.lo sema.lo \
+	sigqueue.lo string.lo time.lo $(am__objects_5)
 am_libgo_llgo_la_OBJECTS = $(am__objects_6)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -921,7 +921,6 @@ runtime_files = \
 	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
-	chan.c \
 	cpuprof.c \
 	go-iface.c \
 	lfstack.c \
@@ -1557,7 +1556,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpuprof.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/env_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-bsd.Plo@am__quote@
