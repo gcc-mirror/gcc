@@ -2857,6 +2857,11 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   if (in_where)
     return 0;
 
+  /* The BLOCKS generated for the temporary variables and FORALL don't
+     mix.  */
+  if (forall_level > 0)
+    return 0;
+
   /* For now don't do anything in OpenMP workshare, it confuses
      its translation, which expects only the allowed statements in there.
      We should figure out how to parallelize this eventually.  */
