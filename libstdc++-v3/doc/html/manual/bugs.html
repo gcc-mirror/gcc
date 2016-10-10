@@ -423,6 +423,10 @@
     </span></dt><dd><p>The <code class="code">tuple_size</code> and <code class="code">tuple_element</code>
     partial specializations are defined in <code class="code">&lt;utility&gt;</code> which
     is included by <code class="code">&lt;array&gt;</code>.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2296" target="_top">2296</a>:
+	<span class="emphasis"><em><code class="code">std::addressof</code> should be constexpr</em></span>
+    </span></dt><dd><p>Use <code class="code">__builtin_addressof</code> and add
+    <code class="code">constexpr</code> to <code class="code">addressof</code> for C++17 and later.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2313" target="_top">2313</a>:
 	<span class="emphasis"><em><code class="code">tuple_size</code> should always derive from <code class="code">integral_constant&lt;size_t, N&gt;</code></em></span>
     </span></dt><dd><p>Update definitions of the partial specializations for const and volatile types.

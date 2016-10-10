@@ -3,89 +3,102 @@
   Contributing
   
 </th><td width="20%" align="right"> <a accesskey="n" href="source_code_style.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="contrib.organization"></a>Directory Layout and Source Conventions</h2></div></div></div><p>
-    The unpacked source directory of libstdc++ contains the files
-    needed to create the GNU C++ Library.
+    The <code class="filename">libstdc++-v3</code> directory in the
+    GCC sources contains the files needed to create the GNU C++ Library.
   </p><div class="literallayout"><p><br />
 It has subdirectories:<br />
 <br />
-  doc<br />
+  <code class="filename">doc</code><br />
     Files in HTML and text format that document usage, quirks of the<br />
     implementation, and contributor checklists.<br />
 <br />
-  include<br />
+  <code class="filename">include</code><br />
     All header files for the C++ library are within this directory,<br />
     modulo specific runtime-related files that are in the libsupc++<br />
     directory.<br />
 <br />
-    include/std<br />
+    <code class="filename">include/std</code><br />
       Files meant to be found by #include &lt;name&gt; directives in<br />
       standard-conforming user programs.<br />
 <br />
-    include/c<br />
+    <code class="filename">include/c</code><br />
       Headers intended to directly include standard C headers.<br />
-      [NB: this can be enabled via --enable-cheaders=c]<br />
+      [NB: this can be enabled via <code class="option">--enable-cheaders=c</code>]<br />
 <br />
-    include/c_global<br />
+    <code class="filename">include/c_global</code><br />
       Headers intended to include standard C headers in<br />
       the global namespace, and put select names into the std::<br />
       namespace.  [NB: this is the default, and is the same as<br />
-      --enable-cheaders=c_global]<br />
+      <code class="option">--enable-cheaders=c_global</code>]<br />
 <br />
-    include/c_std<br />
+    <code class="filename">include/c_std</code><br />
       Headers intended to include standard C headers<br />
       already in namespace std, and put select names into the std::<br />
-      namespace.  [NB: this is the same as --enable-cheaders=c_std]<br />
+      namespace.  [NB: this is the same as<br />
+      <code class="option">--enable-cheaders=c_std</code>]<br />
 <br />
-    include/bits<br />
+    <code class="filename">include/bits</code><br />
       Files included by standard headers and by other files in<br />
       the bits directory.<br />
 <br />
-    include/backward<br />
+    <code class="filename">include/backward</code><br />
       Headers provided for backward compatibility, such as &lt;iostream.h&gt;.<br />
       They are not used in this library.<br />
 <br />
-    include/ext<br />
+    <code class="filename">include/ext</code><br />
       Headers that define extensions to the standard library.  No<br />
       standard header refers to any of them.<br />
 <br />
-  scripts<br />
+  <code class="filename">scripts</code><br />
     Scripts that are used during the configure, build, make, or test<br />
     process.<br />
 <br />
-  src<br />
+  <code class="filename">src</code><br />
     Files that are used in constructing the library, but are not<br />
     installed.<br />
 <br />
-  testsuites/[backward, demangle, ext, performance, thread, 17_* to 30_*]<br />
+    <code class="filename">src/c++98</code><br />
+    Source files compiled using <code class="option">-std=gnu++98</code>.<br />
+<br />
+    <code class="filename">src/c++11</code><br />
+    Source files compiled using <code class="option">-std=gnu++11</code>.<br />
+<br />
+    <code class="filename">src/filesystem</code><br />
+    Source files for the Filesystem TS.<br />
+<br />
+    <code class="filename">src/shared</code><br />
+    Source code included by other files under both<br />
+    <code class="filename">src/c++98</code> and<br />
+    <code class="filename">src/c++11</code><br />
+<br />
+  <code class="filename">testsuites/[backward, demangle, ext, performance, thread, 17_* to 30_*]</code><br />
     Test programs are here, and may be used to begin to exercise the<br />
     library.  Support for "make check" and "make check-install" is<br />
     complete, and runs through all the subdirectories here when this<br />
     command is issued from the build directory.  Please note that<br />
-    "make check" requires DejaGNU 1.4 or later to be installed.  Please<br />
-    note that "make check-script" calls the script mkcheck, which<br />
-    requires bash, and which may need the paths to bash adjusted to<br />
-    work properly, as /bin/bash is assumed.<br />
+    "make check" requires DejaGNU 1.4 or later to be installed.<br />
 <br />
 Other subdirectories contain variant versions of certain files<br />
 that are meant to be copied or linked by the configure script.<br />
 Currently these are:<br />
 <br />
-  config/abi<br />
-  config/cpu<br />
-  config/io<br />
-  config/locale<br />
-  config/os<br />
+  <code class="filename">config/abi</code><br />
+  <code class="filename">config/cpu</code><br />
+  <code class="filename">config/io</code><br />
+  <code class="filename">config/locale</code><br />
+  <code class="filename">config/os</code><br />
 <br />
 In addition, a subdirectory holds the convenience library libsupc++.<br />
 <br />
-  libsupc++<br />
+  <code class="filename">libsupc++</code><br />
     Contains the runtime library for C++, including exception<br />
     handling and memory allocation and deallocation, RTTI, terminate<br />
     handlers, etc.<br />
 <br />
-Note that glibc also has a bits/ subdirectory.  We will either<br />
-need to be careful not to collide with names in its bits/<br />
-directory; or rename bits to (e.g.) cppbits/.<br />
+Note that glibc also has a <code class="filename">bits/</code><br />
+subdirectory.  We will either need to be careful not to collide with names<br />
+in its <code class="filename">bits/</code><br />
+directory; or rename <code class="filename">bits</code> to (e.g.) <code class="filename">cppbits</code>.<br />
 <br />
 In files throughout the system, lines marked with an "XXX" indicate<br />
 a bug or incompletely-implemented feature.  Lines marked "XXX MT"<br />
