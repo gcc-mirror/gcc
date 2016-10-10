@@ -1,5 +1,22 @@
 2016-10-10  Jiong Wang  <jiong.wang@arm.com>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vdiv_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vfmas_lane_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vfmas_n_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmaxnmv_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmaxv_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vminnmv_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vminv_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmul_lane_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulx_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulx_lane_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulx_n_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vpminmaxnm_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vrndi_f16_1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vsqrt_f16_1.c: New.
+
+2016-10-10  Jiong Wang  <jiong.wang@arm.com>
+
 	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (FP16_SUPPORTED):
 	Enable AArch64.
 	* gcc.target/aarch64/advsimd-intrinsics/vdup_lane.c: Add support for
