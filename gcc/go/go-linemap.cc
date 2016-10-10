@@ -32,6 +32,9 @@ class Gcc_linemap : public Linemap
   std::string
   to_string(Location);
 
+  int
+  location_line(Location);
+
  protected:
   Location
   get_predeclared_location();
@@ -86,6 +89,13 @@ Gcc_linemap::to_string(Location location)
   std::stringstream ss;
   ss << lbasename(path) << ":" << SOURCE_LINE (lmo, location.gcc_location());
   return ss.str();
+}
+
+// Return the line number for a given location (for debugging dumps)
+int
+Gcc_linemap::location_line(Location loc)
+{
+  return LOCATION_LINE(loc.gcc_location());
 }
 
 // Stop getting locations.

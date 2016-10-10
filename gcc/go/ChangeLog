@@ -1,3 +1,7 @@
+2016-10-10  Than McIntosh  <thanm@google.com>
+
+	* go-linemap.cc (Gcc_linemap::location_line): New method.
+
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config-lang.in (lang_requires_boot_languages): Delete.
