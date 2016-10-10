@@ -1,3 +1,9 @@
+2016-10-10  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/71947
+	* tree-ssa-dom.c (cprop_into_stmt): Avoid replacing A with B, then
+	B with A within a single statement.
+
 2016-10-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/77824

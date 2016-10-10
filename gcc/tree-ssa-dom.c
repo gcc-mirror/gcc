@@ -1731,9 +1731,26 @@ cprop_into_stmt (gimple *stmt)
 {
   use_operand_p op_p;
   ssa_op_iter iter;
+  tree last_copy_propagated_op = NULL;
 
   FOR_EACH_SSA_USE_OPERAND (op_p, stmt, iter, SSA_OP_USE)
-    cprop_operand (stmt, op_p);
+    {
+      tree old_op = USE_FROM_PTR (op_p);
+
+      /* If we have A = B and B = A in the copy propagation tables
+	 (due to an equality comparison), avoid substituting B for A
+	 then A for B in the trivially discovered cases.   This allows
+	 optimization of statements were A and B appear as input
+	 operands.  */
+      if (old_op != last_copy_propagated_op)
+	{
+	  cprop_operand (stmt, op_p);
+
+	  tree new_op = USE_FROM_PTR (op_p);
+	  if (new_op != old_op && TREE_CODE (new_op) == SSA_NAME)
+	    last_copy_propagated_op = new_op;
+	}
+    }
 }
 
 /* Optimize the statement in block BB pointed to by iterator SI
