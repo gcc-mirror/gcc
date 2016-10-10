@@ -48,3 +48,6 @@ static_assert( is_same<allocator<int>::rebind<char>::other,
 static_assert( is_same<allocator<int>::propagate_on_container_move_assignment,
                        std::true_type>::value,
                "propagate_on_container_move_assignment" );
+
+static_assert( is_same<allocator<int>::is_always_equal, std::true_type>::value,
+               "is_always_equal" );
