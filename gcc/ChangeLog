@@ -1,3 +1,11 @@
+2016-10-09  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED): 
+	Add macro to say we can efficiently handle overlapping unaligned
+	loads.
+	* config/rs6000/rs6000.c (expand_block_compare): Avoid generating
+	poor code for processors older than p8.
+
 2016-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gen-pass-instances.awk: Remove GNUism.

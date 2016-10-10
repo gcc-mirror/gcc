@@ -18771,6 +18771,14 @@ expand_block_compare (rtx operands[])
   if (bytes <= 0)
     return true;
 
+  /* The code generated for p7 and older is not faster than glibc
+     memcmp if alignment is small and length is not short, so bail
+     out to avoid those conditions.  */
+  if (!TARGET_EFFICIENT_OVERLAPPING_UNALIGNED
+      && ((base_align == 1 && bytes > 16)
+	  || (base_align == 2 && bytes > 32)))
+    return false;
+
   rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
   rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
 
@@ -18820,13 +18828,18 @@ expand_block_compare (rtx operands[])
   while (bytes > 0)
     {
       int align = compute_current_alignment (base_align, offset);
-      load_mode = select_block_compare_mode(offset, bytes, align, word_mode_ok);
+      if (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED)
+	load_mode = select_block_compare_mode (offset, bytes, align,
+					       word_mode_ok);
+      else
+	load_mode = select_block_compare_mode (0, bytes, align, word_mode_ok);
       load_mode_size = GET_MODE_SIZE (load_mode);
       if (bytes >= load_mode_size)
 	cmp_bytes = load_mode_size;
-      else
+      else if (TARGET_EFFICIENT_OVERLAPPING_UNALIGNED)
 	{
-	  /* Move this load back so it doesn't go past the end.  */
+	  /* Move this load back so it doesn't go past the end.
+	     P8/P9 can do this efficiently.  */
 	  int extra_bytes = load_mode_size - bytes;
 	  cmp_bytes = bytes;
 	  if (extra_bytes < offset)
@@ -18836,7 +18849,12 @@ expand_block_compare (rtx operands[])
 	      bytes = cmp_bytes;
 	    }
 	}
-
+      else
+	/* P7 and earlier can't do the overlapping load trick fast,
+	   so this forces a non-overlapping load and a shift to get
+	   rid of the extra bytes.  */
+	cmp_bytes = bytes;
+      
       src1 = adjust_address (orig_src1, load_mode, offset);
       src2 = adjust_address (orig_src2, load_mode, offset);
 
