@@ -1340,12 +1340,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.2.1</entry>
       <entry>General container requirements</entry>
-      <entry>Partial</entry>
-      <entry><code>list</code> does not meet the requirements
-             relating to allocator use and propagation.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>23.2.2</entry>
@@ -1396,11 +1394,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.3.5</entry>
       <entry>Class template <code>list</code></entry>
-      <entry>Partial</entry>
-      <entry>Incomplete allocator support.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3.6</entry>
@@ -2349,8 +2346,7 @@ particular release.
       <entry>30.4.1.3</entry>
       <entry>Timed mutex types</entry>
       <entry/>
-      <entry>On POSIX sytems these types are only defined if the OS
-         supports the POSIX Timeouts option. </entry>
+      <entry/>
     </row>
     <row>
       <entry>30.4.1.3.1</entry>
