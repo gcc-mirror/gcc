@@ -1,5 +1,14 @@
 2016-10-11  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (DEBUG_STR_OFFSETS_SECTION): Remove conditional.
+	(init_sections_and_labels): Use DEBUG_DWO_STR_OFFSETS_SECTION.
+	(verify_die): New function.
+	(dwarf2out_finish): Call it.
+	(output_line_info): Handle case of -gsplit-dwarf without
+	DWARF2_ASM_LINE_DEBUG_INFO.
+
+2016-10-11  Richard Biener  <rguenther@suse.de>
+
 	PR debug/77931
 	* gimple-low.c (lower_gimple_bind): Handle arbitrary common
 	sub-chains of BLOCK_VARS and gimple_bind_vars.

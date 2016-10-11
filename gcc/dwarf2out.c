@@ -3538,12 +3538,11 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
   ((debug_generate_pub_sections == 2) \
    ? ".debug_gnu_pubtypes" : ".debug_pubtypes")
 #endif
-#define DEBUG_NORM_STR_OFFSETS_SECTION ".debug_str_offsets"
-#define DEBUG_DWO_STR_OFFSETS_SECTION ".debug_str_offsets.dwo"
 #ifndef DEBUG_STR_OFFSETS_SECTION
-#define DEBUG_STR_OFFSETS_SECTION                                       \
-  (!dwarf_split_debug_info                                              \
-   ? (DEBUG_NORM_STR_OFFSETS_SECTION) : (DEBUG_DWO_STR_OFFSETS_SECTION))
+#define DEBUG_STR_OFFSETS_SECTION ".debug_str_offsets"
+#endif
+#ifndef DEBUG_DWO_STR_OFFSETS_SECTION
+#define DEBUG_DWO_STR_OFFSETS_SECTION ".debug_str_offsets.dwo"
 #endif
 #ifndef DEBUG_STR_DWO_SECTION
 #define DEBUG_STR_DWO_SECTION   ".debug_str.dwo"
@@ -5833,6 +5832,41 @@ debug_dwarf (void)
 {
   print_indent = 0;
   print_die (comp_unit_die (), stderr);
+}
+
+/* Verify the DIE tree structure.  */
+
+DEBUG_FUNCTION void
+verify_die (dw_die_ref die)
+{
+  gcc_assert (!die->die_mark);
+  if (die->die_parent == NULL
+      && die->die_sib == NULL)
+    return;
+  /* Verify the die_sib list is cyclic.  */
+  dw_die_ref x = die;
+  do
+    {
+      x->die_mark = 1;
+      x = x->die_sib;
+    }
+  while (x && !x->die_mark);
+  gcc_assert (x == die);
+  x = die;
+  do
+    {
+      /* Verify all dies have the same parent.  */
+      gcc_assert (x->die_parent == die->die_parent);
+      if (x->die_child)
+	{
+	  /* Verify the child has the proper parent and recurse.  */
+	  gcc_assert (x->die_child->die_parent == x);
+	  verify_die (x->die_child);
+	}
+      x->die_mark = 0;
+      x = x->die_sib;
+    }
+  while (x && x->die_mark);
 }
 
 /* Sanity checks on DIEs.  */
@@ -10710,6 +10744,7 @@ output_one_line_info_table (dw_line_info_table *table)
 static void
 output_line_info (bool prologue_only)
 {
+  static unsigned int generation;
   char l1[MAX_ARTIFICIAL_LABEL_BYTES], l2[MAX_ARTIFICIAL_LABEL_BYTES];
   char p1[MAX_ARTIFICIAL_LABEL_BYTES], p2[MAX_ARTIFICIAL_LABEL_BYTES];
   /* We don't support DWARFv5 line tables yet.  */
@@ -10717,10 +10752,10 @@ output_line_info (bool prologue_only)
   bool saw_one = false;
   int opc;
 
-  ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL, generation);
+  ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL, generation);
+  ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL, generation);
+  ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL, generation++);
 
   if (!XCOFF_DEBUGGING_INFO)
     {
@@ -25590,7 +25625,7 @@ init_sections_and_labels (void)
 		       SECTION_DEBUG | SECTION_EXCLUDE, NULL);
       ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_line_section_label,
                                    DEBUG_SKELETON_LINE_SECTION_LABEL, 0);
-      debug_str_offsets_section = get_section (DEBUG_STR_OFFSETS_SECTION,
+      debug_str_offsets_section = get_section (DEBUG_DWO_STR_OFFSETS_SECTION,
                                                SECTION_DEBUG | SECTION_EXCLUDE,
                                                NULL);
       ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_info_section_label,
@@ -27843,6 +27878,13 @@ dwarf2out_finish (const char *)
 
   /* Flush out any latecomers to the limbo party.  */
   flush_limbo_die_list ();
+
+  if (flag_checking)
+    {
+      verify_die (comp_unit_die ());
+      for (limbo_die_node *node = cu_die_list; node; node = node->next)
+	verify_die (node->die);
+    }
 
   /* We shouldn't have any symbols with delayed asm names for
      DIEs generated after early finish.  */
