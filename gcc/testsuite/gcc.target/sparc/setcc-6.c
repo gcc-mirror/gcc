@@ -1,40 +1,38 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
-/* { dg-options "-O1 -mvis3 -msubxc" } */
+/* { dg-options "-O1" } */
 
-long neq (long a, long b)
+int foo1 (int a, int i)
 {
-  return a != b;
+  return a + (i != 0);
 }
 
-long eq (long a, long b)
+int foo2 (int a, int i)
 {
-  return a == b;
+  return a - (i != 0);
 }
 
-long lt (unsigned long a, unsigned long b)
+int foo3 (int a, int b, int i)
 {
-  return a < b;
+  return a + b + (i != 0);
 }
 
-long leq (unsigned long a, unsigned long b)
+int foo4 (int a, int b, int i)
 {
-  return a <= b;
+  return a - b - (i != 0);
 }
 
-long geq (unsigned long a, unsigned long b)
+int foo5 (int a, int i)
 {
-  return a >= b;
+  return a + (i == 0);
 }
 
-long gt (unsigned long a, unsigned long b)
+int foo6 (int a, int i)
 {
-  return a > b;
+  return a - (i == 0);
 }
 
-/* { dg-final { scan-assembler-times "xor\t%" 2 } } */
+/* { dg-final { scan-assembler-times "addx\t%" 3 } } */
+/* { dg-final { scan-assembler-times "subx\t%" 3 } } */
 /* { dg-final { scan-assembler-times "cmp\t%" 6 } } */
-/* { dg-final { scan-assembler-times "addxc\t%" 3 } } */
-/* { dg-final { scan-assembler-times "subxc\t%" 3 } } */
-/* { dg-final { scan-assembler-not "sra\t%" } } */
-/* { dg-final { scan-assembler-not "and\t%" } } */
+/* { dg-final { scan-assembler-not "add\t%" } } */
+/* { dg-final { scan-assembler-not "sub\t%" } } */

@@ -1,3 +1,30 @@
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (emit_scc_insn): Remove direct support for EQ
+	and GEU in DImode if TARGET_SUBXC.
+	* config/sparc/sparc.md (seqdi<W:mode>_zero): Remove TARGET_SUBXC.
+	(seqdi<W:mode>_zero_subxc): Delete.
+	(neg_seqdi<W:mode>_zero): Remove TARGET_VIS3.
+	(neg_seqdi<W:mode>_zero_vis3): Delete.
+	(plus_seqdi<W:mode>_zero): Likewise.
+	(minus_seqdi<W:mode>_zero): Likewise.
+	(plus_plus_sltu<W:mode>): Accept only register.
+	(addx<W:mode>): Likewise.
+	(plus_sltu<W:mode>_vis3): Likewise.
+	(plus_plus_sltu<W:mode>_vis3): Likewise.
+	(neg_sgeu<W:mode>_vis3): Delete.
+	(minus_sgeu<W:mode>_vis3): Likewise.
+	(addxc<W:mode>): Accept only registers.
+	(neg_sltu<W:mode>_subxc): Write %%g0 instead of 0.
+	(minus_neg_sltu<W:mode>_subxc): Accept only register.
+	(neg_plus_sltu<W:mode>_subxc): Likewise.
+	(minus_sltu<W:mode>_subxc): Write %%g0 instead of 0.
+	(minus_minus_sltu<W:mode>_subxc): Accept only register.
+	(sgeu<W:mode>_insn_subxc): Delete.
+	(plus_sgeu<W:mode>_subxc): Likewise.
+	(subxc<W:mode>): Accept only register.
+	(scc splitter): Split always GEU again.
+
 2016-10-11  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/77424

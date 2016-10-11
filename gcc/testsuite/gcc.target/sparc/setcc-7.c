@@ -1,32 +1,33 @@
 /* { dg-do compile } */
-/* { dg-options "-O1" } */
+/* { dg-require-effective-target lp64 } */
+/* { dg-options "-O1 -mno-vis3" } */
 
-int foo1 (int a, int i)
+long foo1 (long a, int i)
 {
   return a + (i != 0);
 }
 
-int foo2 (int a, int i)
+long foo2 (long a, int i)
 {
   return a - (i != 0);
 }
 
-int foo3 (int a, int b, int i)
+long foo3 (long a, long b, int i)
 {
   return a + b + (i != 0);
 }
 
-int foo4 (int a, int b, int i)
+long foo4 (long a, long b, int i)
 {
   return a - b - (i != 0);
 }
 
-int foo5 (int a, int i)
+long foo5 (long a, int i)
 {
   return a + (i == 0);
 }
 
-int foo6 (int a, int i)
+long foo6 (long a, int i)
 {
   return a - (i == 0);
 }

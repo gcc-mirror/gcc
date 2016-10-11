@@ -3023,10 +3023,8 @@ emit_scc_insn (rtx operands[])
 			     gen_rtx_fmt_ee (code, GET_MODE (operands[0]),
 					     x, const0_rtx));
 
-      /* If we can use addx/subx or addxc/subxc, add a clobber for CC.  */
-      if (mode == SImode
-	  || (code == NE && TARGET_VIS3)
-	  || (code == EQ && TARGET_SUBXC))
+      /* If we can use addx/subx or addxc, add a clobber for CC.  */
+      if (mode == SImode || (code == NE && TARGET_VIS3))
 	{
 	  rtx clobber
 	    = gen_rtx_CLOBBER (VOIDmode,
@@ -3039,12 +3037,10 @@ emit_scc_insn (rtx operands[])
       return true;
     }
 
-  /* We can do LTU in DImode using the addxc instruction with VIS3
-     and GEU in DImode using the subxc instruction with SUBXC.  */
+  /* We can do LTU in DImode using the addxc instruction with VIS3.  */
   if (TARGET_ARCH64
       && mode == DImode
       && !((code == LTU || code == GTU) && TARGET_VIS3)
-      && !((code == GEU || code == LEU) && TARGET_SUBXC)
       && gen_v9_scc (operands[0], code, x, y))
     return true;
 
