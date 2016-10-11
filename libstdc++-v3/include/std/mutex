@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     native_handle_type
-    native_handle()
+    native_handle() noexcept
     { return &_M_mutex; }
   };
 
@@ -219,7 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     native_handle_type
-    native_handle()
+    native_handle() noexcept
     { return &_M_mutex; }
 
     private:
@@ -279,7 +279,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     native_handle_type
-    native_handle()
+    native_handle() noexcept
     { return &_M_mutex; }
 
     private:
