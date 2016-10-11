@@ -1,3 +1,8 @@
+2016-10-11  Fritz Reese  <fritzoreese@gmail.com>
+
+	* iresolve.c (get_radians, get_degrees): Fix sloppy commit.
+	* simplify.c (degrees_f, radians_f): Ditto.
+
 2016-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* simplify.c (radians_f): Fix mpdr_mod.

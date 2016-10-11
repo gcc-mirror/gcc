@@ -2687,7 +2687,7 @@ get_radians (gfc_expr *deg)
   /* Set factor = pi / 180.  */
   factor = gfc_get_constant_expr (deg->ts.type, deg->ts.kind, &deg->where);
   mpfr_const_pi (factor->value.real, GFC_RND_MODE);
-  mpfr_div_d (factor->value.real, factor->value.real, 180.0, GFC_RND_MODE);
+  mpfr_div_ui (factor->value.real, factor->value.real, 180, GFC_RND_MODE);
 
   /* Result is rad = (deg % 360) * (pi / 180).  */
   result = gfc_multiply (result, factor);
@@ -2725,7 +2725,7 @@ get_degrees (gfc_expr *rad)
 
   /* Set factor = 180 / pi.  */
   factor = gfc_get_constant_expr (rad->ts.type, rad->ts.kind, &rad->where);
-  mpfr_set_d (factor->value.real, 180.0, GFC_RND_MODE);
+  mpfr_set_ui (factor->value.real, 180, GFC_RND_MODE);
   mpfr_init (tmp);
   mpfr_const_pi (tmp, GFC_RND_MODE);
   mpfr_div (factor->value.real, factor->value.real, tmp, GFC_RND_MODE);
