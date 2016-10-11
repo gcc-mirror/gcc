@@ -1881,7 +1881,7 @@ static struct tlist_cache *save_expr_cache;
 static void add_tlist (struct tlist **, struct tlist *, tree, int);
 static void merge_tlist (struct tlist **, struct tlist *, int);
 static void verify_tree (tree, struct tlist **, struct tlist **, tree);
-static int warning_candidate_p (tree);
+static bool warning_candidate_p (tree);
 static bool candidate_equal_p (const_tree, const_tree);
 static void warn_for_collisions (struct tlist *);
 static void warn_for_collisions_1 (tree, tree, struct tlist *, int);
@@ -2000,32 +2000,33 @@ warn_for_collisions (struct tlist *list)
 
 /* Return nonzero if X is a tree that can be verified by the sequence point
    warnings.  */
-static int
+
+static bool
 warning_candidate_p (tree x)
 {
   if (DECL_P (x) && DECL_ARTIFICIAL (x))
-    return 0;
+    return false;
 
   if (TREE_CODE (x) == BLOCK)
-    return 0;
+    return false;
 
   /* VOID_TYPE_P (TREE_TYPE (x)) is workaround for cp/tree.c
      (lvalue_p) crash on TRY/CATCH. */
   if (TREE_TYPE (x) == NULL_TREE || VOID_TYPE_P (TREE_TYPE (x)))
-    return 0;
+    return false;
 
   if (!lvalue_p (x))
-    return 0;
+    return false;
 
   /* No point to track non-const calls, they will never satisfy
      operand_equal_p.  */
   if (TREE_CODE (x) == CALL_EXPR && (call_expr_flags (x) & ECF_CONST) == 0)
-    return 0;
+    return false;
 
   if (TREE_CODE (x) == STRING_CST)
-    return 0;
+    return false;
 
-  return 1;
+  return true;
 }
 
 /* Return nonzero if X and Y appear to be the same candidate (or NULL) */
@@ -6315,7 +6316,7 @@ handle_destructor_attribute (tree *node, tree name, tree args,
    This returns nonzero even if there is no hardware support for the
    vector mode, but we can emulate with narrower modes.  */
 
-static int
+static bool
 vector_mode_valid_p (machine_mode mode)
 {
   enum mode_class mclass = GET_MODE_CLASS (mode);
@@ -6328,11 +6329,11 @@ vector_mode_valid_p (machine_mode mode)
       && mclass != MODE_VECTOR_UFRACT
       && mclass != MODE_VECTOR_ACCUM
       && mclass != MODE_VECTOR_UACCUM)
-    return 0;
+    return false;
 
   /* Hardware support.  Woo hoo!  */
   if (targetm.vector_mode_supported_p (mode))
-    return 1;
+    return true;
 
   innermode = GET_MODE_INNER (mode);
 
