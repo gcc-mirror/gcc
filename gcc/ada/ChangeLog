@@ -1,32 +1,42 @@
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-linux-armeb.ads (Backend_Overflow_Checks): Change to True.
+	* system-linux-mips.ads (Backend_Overflow_Checks): Likewise.
+	* system-linux-mips64el.ads (Backend_Overflow_Checks): Likewise.
+	* system-linux-mipsel.ads (Backend_Overflow_Checks): Likewise.
+	* system-linux-sparcv9.ads (Backend_Overflow_Checks): Likewise.
+	* system-rtems.ads: Likewise.
+
 2016-10-11  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	* adaint.c: Include process.h, signal.h, dir.h and utime.h for DJGPP.
-	ISALPHA: include <ctype.h> and define to isalpha for DJGPP when IN_RTS is defined.
+	ISALPHA: include <ctype.h> and define to isalpha for DJGPP when IN_RTS
+	is defined.
 	(DIR_SEPARATOR) define to '\\' for DJGPP.
-	(__gnat_get_file_names_case_sensitive): return 0 for DJGPP unless
-	overriden in environment
-	(__gnat_is_absolute_path): Support MS-DOS style absolute paths for DJGPP.
+	(__gnat_get_file_names_case_sensitive): Return 0 for DJGPP unless
+	overriden in environment.
+	(__gnat_is_absolute_path): Support MS-DOS absolute paths for DJGPP.
 	(__gnat_portable_spawn): Use spewnvp for DJGPP.
 	(__gnat_portable_no_block_spawn): Use spawnvp for DJGPP.
 	(__gnat_portable_wait): Return 0 for DJGPP.
 
 2016-10-11  Andris Pavenis  <andris.pavenis@iki.fi>
 
-	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS): Define for DJGPP target
-	(EH_MECHANISM): Define to -gcc for DJGPP
-	* system-djgpp.ads: New file
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS): Define for DJGPP.
+	(EH_MECHANISM): Define to -gcc for DJGPP.
+	* system-djgpp.ads: New file.
 
 2016-10-11  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	* ctrl_c.c: Do not use macro SA_RESTART for DJGPP.
 	* gsocket.h: Do not support sockets for DJGPP.
-	* init.c (__gnat_install_handler): Implememt for DJGPP
-	* sysdep.c: Include <io.h> for DJGPP
-	(_setmode): Define to setmode for DJGPP
-	(__gnat_set_mode): Add implementation for DJGPP
-	(__gnat_localtime_tzoff): Use localtime_r for DJGPP
+	* init.c (__gnat_install_handler): Implememt for DJGPP.
+	* sysdep.c: Include <io.h> for DJGPP.
+	(_setmode): Define to setmode for DJGPP.
+	(__gnat_set_mode): Add implementation for DJGPP.
+	(__gnat_localtime_tzoff): Use localtime_r for DJGPP.
 	* terminals.c: Add DJGPP to list of unsupported platforms.
-	* env.c (__gnat_clearenv): use _gnat_unsetenv on all entries for DJGPP
+	* env.c (__gnat_clearenv): Use _gnat_unsetenv on all entries for DJGPP.
 
 2016-10-11  Pierre-Marie de Rodat  <derodat@adacore.com>
 
