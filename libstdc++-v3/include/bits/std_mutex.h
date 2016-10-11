@@ -122,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     native_handle_type
-    native_handle()
+    native_handle() noexcept
     { return &_M_mutex; }
   };
 
@@ -161,7 +161,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit lock_guard(mutex_type& __m) : _M_device(__m)
       { _M_device.lock(); }
 
-      lock_guard(mutex_type& __m, adopt_lock_t) : _M_device(__m)
+      lock_guard(mutex_type& __m, adopt_lock_t) noexcept : _M_device(__m)
       { } // calling thread owns mutex
 
       ~lock_guard()
@@ -206,7 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_device(std::__addressof(__m)), _M_owns(_M_device->try_lock())
       { }
 
-      unique_lock(mutex_type& __m, adopt_lock_t)
+      unique_lock(mutex_type& __m, adopt_lock_t) noexcept
       : _M_device(std::__addressof(__m)), _M_owns(true)
       {
 	// XXX calling thread owns mutex
