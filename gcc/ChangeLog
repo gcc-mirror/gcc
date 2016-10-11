@@ -1,3 +1,14 @@
+2016-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (Wimplicit-fallthrough) Turn into alias to
+	-Wimplicit-fallthrough=3.  Remove EnabledBy.
+	(Wimplicit-fallthrough=): New option.
+	* gimplify.c (warn_implicit_fallthrough_r): Use
+	OPT_Wimplicit_fallthrough_ instead of OPT_Wimplicit_fallthrough.
+	* doc/invoke.texi (-Wimplicit-fallthrough): Document as alias
+	to -Wimplicit-fallthrough=3.
+	(-Wimplicit-fallthrough=): Document.
+
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (emit_scc_insn): Remove direct support for EQ

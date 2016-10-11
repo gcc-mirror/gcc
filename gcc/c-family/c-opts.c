@@ -1279,6 +1279,11 @@ sanitize_cpp_opts (void)
   if (flag_working_directory == -1)
     flag_working_directory = (debug_info_level != DINFO_LEVEL_NONE);
 
+  if (warn_implicit_fallthrough < 5)
+    cpp_opts->cpp_warn_implicit_fallthrough = warn_implicit_fallthrough;
+  else
+    cpp_opts->cpp_warn_implicit_fallthrough = 0;
+
   if (cpp_opts->directives_only)
     {
       if (cpp_warn_unused_macros)

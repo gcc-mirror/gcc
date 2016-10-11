@@ -1,3 +1,11 @@
+2016-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add
+	cpp_warn_implicit_fallthrough.
+	* init.c (cpp_create_reader): Initialize it to 0.
+	* lex.c (fallthrough_comment_p): Handle different
+	cpp_warn_implicit_fallthrough levels.  Whitespace fixes.
+
 2016-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* lex.c (fallthrough_comment_p): Accept Else, fallthrough.

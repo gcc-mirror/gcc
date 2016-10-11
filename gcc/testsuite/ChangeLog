@@ -1,3 +1,15 @@
+2016-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/Wimplicit-fallthrough-25.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-26.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-27.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-28.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-29.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-30.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-31.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-32.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-33.c: New test.
+
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/setcc-4.c: Adjust.

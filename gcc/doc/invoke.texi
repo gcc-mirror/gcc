@@ -273,8 +273,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-signedness  -Wformat-y2k -Wframe-address @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
--Wimplicit  -Wimplicit-fallthrough  -Wimplicit-function-declaration @gol
--Wimplicit-int @gol
+-Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
+-Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast -Winvalid-memory-model -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len} @gol
@@ -3734,7 +3734,7 @@ name is still supported, but the newer name is more descriptive.)
 @gccoptlist{-Wclobbered  @gol
 -Wempty-body  @gol
 -Wignored-qualifiers @gol
--Wimplicit-fallthrough @gol
+-Wimplicit-fallthrough=3 @gol
 -Wmissing-field-initializers  @gol
 -Wmissing-parameter-type @r{(C only)}  @gol
 -Wold-style-declaration @r{(C only)}  @gol
@@ -4106,6 +4106,12 @@ This warning is enabled by @option{-Wall}.
 @item -Wimplicit-fallthrough
 @opindex Wimplicit-fallthrough
 @opindex Wno-implicit-fallthrough
+@option{-Wimplicit-fallthrough} is the same as @option{-Wimplicit-fallthrough=3}
+and @option{-Wno-implicit-fallthrough} is the same as
+@option{-Wimplicit-fallthrough=0}.
+
+@item -Wimplicit-fallthrough=@var{n}
+@opindex Wimplicit-fallthrough=
 Warn when a switch case falls through.  For example:
 
 @smallexample
@@ -4126,7 +4132,7 @@ switch (cond)
 
 This warning does not warn when the last statement of a case cannot
 fall through, e.g. when there is a return statement or a call to function
-declared with the noreturn attribute.  @option{-Wimplicit-fallthrough}
+declared with the noreturn attribute.  @option{-Wimplicit-fallthrough=}
 also takes into account control flow statements, such as ifs, and only
 warns when appropriate.  E.g.@:
 
@@ -4169,9 +4175,23 @@ switch (cond)
 C++17 provides a standard way to suppress the @option{-Wimplicit-fallthrough}
 warning using @code{[[fallthrough]];} instead of the GNU attribute.  In C++11
 or C++14 users can use @code{[[gnu::fallthrough]];}, which is a GNU extension.
-Instead of the these attributes, it is also possible to add a "falls through"
+Instead of the these attributes, it is also possible to add a fallthrough
 comment to silence the warning.  The whole body of the C or C++ style comment
-should match one of the following regular expressions:
+should match the given regular expressions listed below.  The option argument
+@var{n} specifies what kind of comments are accepted:
+
+@itemize @bullet
+
+@item @option{-Wimplicit-fallthrough=0} disables the warning altogether.
+
+@item @option{-Wimplicit-fallthrough=1} matches @code{.*} regular
+expression, any comment is used as fallthrough comment.
+
+@item @option{-Wimplicit-fallthrough=2} case insensitively matches
+@code{.*falls?[ \t-]*thr(ough|u).*} regular expression.
+
+@item @option{-Wimplicit-fallthrough=3} case sensitively matches one of the
+following regular expressions:
 
 @itemize @bullet
 
@@ -4179,17 +4199,37 @@ should match one of the following regular expressions:
 
 @item @code{@@fallthrough@@}
 
-@item @code{lint -fallthrough ?}
+@item @code{lint -fallthrough[ \t]*}
 
-@item @code{[ \t.!]*(ELSE,? |INTENTIONAL(LY)? )?FALL(S | |-)?THR(OUGH|U)[ \t.!]*(-[^\n\r]*)?}
+@item @code{[ \t.!]*(ELSE,? |INTENTIONAL(LY)? )?@*FALL(S | |-)?THR(OUGH|U)[ \t.!]*(-[^\n\r]*)?}
 
-@item @code{[ \t.!]*(Else,? |Intentional(ly)? )?Fall((s | |-)[Tt]|t)hr(ough|u)[ \t.!]*(-[^\n\r]*)?}
+@item @code{[ \t.!]*(Else,? |Intentional(ly)? )?@*Fall((s | |-)[Tt]|t)hr(ough|u)[ \t.!]*(-[^\n\r]*)?}
 
-@item @code{[ \t.!]*([Ee]lse,? |[Ii]ntentional(ly)? )?fall(s | |-)?thr(ough|u)[ \t.!]*(-[^\n\r]*)?}
+@item @code{[ \t.!]*([Ee]lse,? |[Ii]ntentional(ly)? )?@*fall(s | |-)?thr(ough|u)[ \t.!]*(-[^\n\r]*)?}
 
 @end itemize
 
-and the comment needs to be followed after optional whitespace and other comments
+@item @option{-Wimplicit-fallthrough=4} case sensitively matches one of the
+following regular expressions:
+
+@itemize @bullet
+
+@item @code{-fallthrough}
+
+@item @code{@@fallthrough@@}
+
+@item @code{lint -fallthrough[ \t]*}
+
+@item @code{[ \t]*FALLTHR(OUGH|U)[ \t]*}
+
+@end itemize
+
+@item @option{-Wimplicit-fallthrough=5} doesn't recognize any comments as
+fallthrough comments, only attributes disable the warning.
+
+@end itemize
+
+The comment needs to be followed after optional whitespace and other comments
 by @code{case} or @code{default} keywords or by a user label that preceeds some
 @code{case} or @code{default} label.
 
@@ -4206,7 +4246,7 @@ switch (cond)
 @end group
 @end smallexample
 
-This warning is enabled by @option{-Wextra}.
+The @option{-Wimplicit-fallthrough=3} warning is enabled by @option{-Wextra}.
 
 @item -Wignored-qualifiers @r{(C and C++ only)}
 @opindex Wignored-qualifiers

@@ -602,7 +602,10 @@ Common Var(warn_hsa) Init(1) Warning
 Warn when a function cannot be expanded to HSAIL.
 
 Wimplicit-fallthrough
-Common Var(warn_implicit_fallthrough) Warning EnabledBy(Wextra)
+Common Alias(Wimplicit-fallthrough=,3,0) Warning
+
+Wimplicit-fallthrough=
+Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning
 Warn when a switch case falls through.
 
 Winline
