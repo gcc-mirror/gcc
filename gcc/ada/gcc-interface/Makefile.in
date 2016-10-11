@@ -1773,6 +1773,23 @@ ifeq ($(strip $(filter-out elf eabi eabispe,$(target_os))),)
   indepsw.adb<indepsw-gnu.adb
 endif
 
+ifeq ($(strip $(filter-out %djgpp,$(target_os))),)
+  GNATRTL_SOCKETS_OBJS =
+
+  LIBGNAT_TARGET_PAIRS = \
+	a-intnam.ads<a-intnam-dummy.ads \
+	s-inmaop.adb<s-inmaop-dummy.adb \
+	s-intman.adb<s-intman-dummy.adb \
+	s-osinte.ads<s-osinte-dummy.ads \
+	s-osprim.adb<s-osprim-unix.adb \
+	s-taprop.adb<s-taprop-dummy.adb \
+	s-taspri.ads<s-taspri-dummy.ads \
+	system.ads<system-djgpp.ads \
+	$(DUMMY_SOCKETS_TARGET_PAIRS)
+
+  EH_MECHANISM=-gcc
+endif
+
 # Cygwin/Mingw32
 ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   # Cygwin provides a full Posix environment, and so we use the default

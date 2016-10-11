@@ -1,5 +1,11 @@
 2016-10-11  Andris Pavenis  <andris.pavenis@iki.fi>
 
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS): Define for DJGPP target
+	(EH_MECHANISM): Define to -gcc for DJGPP
+	* system-djgpp.ads: New file
+
+2016-10-11  Andris Pavenis  <andris.pavenis@iki.fi>
+
 	* ctrl_c.c: Do not use macro SA_RESTART for DJGPP.
 	* gsocket.h: Do not support sockets for DJGPP.
 	* init.c (__gnat_install_handler): Implememt for DJGPP
