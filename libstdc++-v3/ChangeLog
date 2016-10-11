@@ -1,5 +1,8 @@
 2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_list.h (assign(initializer_list<value_type>)): Call
+	_M_assign_dispatch directly with correct tag.
+
 	* doc/xml/manual/intro.xml: Document LWG 2484 status.
 	* libsupc++/nested_exception.h (_Throw_with_nested_impl)
 	(_Throw_with_nested_helper): Remove.
