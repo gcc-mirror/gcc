@@ -1,3 +1,10 @@
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+            Tristan Gingold  <gingold@adacore.com>
+
+	* system-linux-ppc64.ads: Delete.
+	* system-linux-ppc.ads: Make 32-bit/64-bit neutral.
+	* gcc-interface/Makefile.in (PowerPC/Linux): Simplify.
+
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Put volatile qualifier
