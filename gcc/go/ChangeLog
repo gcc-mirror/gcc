@@ -1,5 +1,15 @@
 2016-10-10  Than McIntosh  <thanm@google.com>
 
+	* go-gcc.h: New file.
+	* go-c.h (struct go_create_gogo_args): Add backend and linemap
+	fields.
+	* go-lang.c: Include "go-gcc.h".
+	(go_langhook_init): Set linemap and backend fields of args.
+	* go-gcc.cc: Include "go-gcc.h".
+	* go-linemap.cc: Include "go-gcc.h".
+
+2016-10-10  Than McIntosh  <thanm@google.com>
+
 	* go-linemap.cc (Gcc_linemap::location_line): New method.
 
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>

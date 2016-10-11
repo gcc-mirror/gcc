@@ -740,8 +740,4 @@ class Backend
                            const std::vector<Bvariable*>& variable_decls) = 0;
 };
 
-// The backend interface has to define this function.
-
-extern Backend* go_get_backend();
-
 #endif // !defined(GO_BACKEND_H)

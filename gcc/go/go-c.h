@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define GO_EXTERN_C
 
+class Linemap;
+class Backend;
 
 /* Functions defined in the Go frontend proper called by the GCC
    interface.  */
@@ -36,9 +38,11 @@ struct go_create_gogo_args
   int int_type_size;
   int pointer_size;
   const char* pkgpath;
-  const char *prefix;
-  const char *relative_import_path;
-  const char *c_header;
+  const char* prefix;
+  const char* relative_import_path;
+  const char* c_header;
+  Backend* backend;
+  Linemap* linemap;
   bool check_divide_by_zero;
   bool check_divide_overflow;
   bool compiling_runtime;

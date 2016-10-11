@@ -149,8 +149,4 @@ class Linemap
   }
 };
 
-// The backend interface must define this function.  It should return
-// a fully implemented instance of Linemap.
-extern Linemap* go_get_linemap();
-
 #endif // !defined(GO_LINEMAP_H)
