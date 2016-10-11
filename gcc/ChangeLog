@@ -1,3 +1,14 @@
+2016-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha-passes.def: New file.
+	* config/alpha/t-alpha: New file.
+	* config/alpha/alpha-protos.h (gcc::context, rtl_opt_pass): Declare.
+	(make_pass_handle_trap_shadows): New prototype.
+	(make_pass_align_insns): Ditto.
+	* config/alpha/alpha.c (alpha_option_override): Don't register
+	passes here.
+	* config.gcc (alpha*-*-*) Add alpha/t-alpha to tmake_file.
+
 2016-10-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/77924
@@ -229,7 +240,7 @@
 
 2016-10-10  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/71947
+	PR tree-optimization/71947
 	* tree-ssa-dom.c (cprop_into_stmt): Avoid replacing A with B, then
 	B with A within a single statement.
 
@@ -524,12 +535,16 @@
 
 	* config/aarch64/aarch64-arches.def (AARCH64_ARCH): #undef at the end.
 	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Likewise.
-	* config/aarch64/aarch64-fusion-pairs.def (AARCH64_FUSION_PAIR): Likewise.
-	* config/aarch64/aarch64-option-extensions.def (AARCH64_OPT_EXTENSION): Likewise.
-	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNING_OPTION): Likewise.
+	* config/aarch64/aarch64-fusion-pairs.def (AARCH64_FUSION_PAIR):
+	Likewise.
+	* config/aarch64/aarch64-option-extensions.def (AARCH64_OPT_EXTENSION):
+	Likewise.
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNING_OPTION):
+	Likewise.
 	* config/aarch64/aarch64-opts.h (AARCH64_CORE): Don't #undef here.
 	(AARCH64_ARCH): Likewise.
-	* common/config/aarch64/aarch64-common.c (AARCH64_OPT_EXTENSION): Likewise.
+	* common/config/aarch64/aarch64-common.c (AARCH64_OPT_EXTENSION):
+	Likewise.
 	(AARCH64_CORE): Likewise.
 	(AARCH64_ARCH): Likewise.
 	* config/aarch64/aarch64-protos.h (AARCH64_FUSION_PAIR): Likewise.

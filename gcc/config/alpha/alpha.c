@@ -374,18 +374,6 @@ alpha_option_override (void)
       64, 64, 16*1024 }
   };
 
-  opt_pass *pass_handle_trap_shadows = make_pass_handle_trap_shadows (g);
-  struct register_pass_info handle_trap_shadows_info
-    = { pass_handle_trap_shadows, "eh_ranges",
-	1, PASS_POS_INSERT_AFTER
-      };
-
-  opt_pass *pass_align_insns = make_pass_align_insns (g);
-  struct register_pass_info align_insns_info
-    = { pass_align_insns, "shorten",
-	1, PASS_POS_INSERT_BEFORE
-      };
-
   int const ct_size = ARRAY_SIZE (cpu_table);
   int line_size = 0, l1_size = 0, l2_size = 0;
   int i;
@@ -610,9 +598,6 @@ alpha_option_override (void)
     target_flags |= MASK_LONG_DOUBLE_128;
 #endif
 
-  /* This needs to be done at start up.  It's convenient to do it here.  */
-  register_pass (&handle_trap_shadows_info);
-  register_pass (&align_insns_info);
 }
 
 /* Implement targetm.override_options_after_change.  */
