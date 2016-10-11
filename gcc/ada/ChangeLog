@@ -1,3 +1,9 @@
+2016-10-11  Tristan Gingold  <gingold@adacore.com>
+
+	* fe.h (Constant_Value): Declare.
+	* gcc-interface/decl.c (compile_time_known_address_p): Also consider
+	references to constants.
+
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Op_Add>: Adjust comment.
