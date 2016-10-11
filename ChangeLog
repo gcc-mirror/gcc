@@ -1,3 +1,7 @@
+2016-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Update email address.
+
 2016-10-10  Andreas Tobler <andreast@gcc.gnu.org>
 
 	* configure.ac: Add aarch64-*-freebsd*.

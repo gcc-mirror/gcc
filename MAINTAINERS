@@ -86,7 +86,7 @@ nds32 port		Shiva Chen		<shiva0217@gmail.com>
 nios2 port		Chung-Lin Tang		<cltang@codesourcery.com>
 nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
 nvptx port		Bernd Schmidt		<bschmidt@redhat.com>
-nvptx port		Nathan Sidwell		<nathan@codesourcery.com>
+nvptx port		Nathan Sidwell		<nathan@acm.org>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 picochip port		Daniel Towner		<dant@picochip.com>
 rl78 port		DJ Delorie		<dj@redhat.com>
@@ -134,7 +134,7 @@ RTEMS Ports		Ralf Corsepius		<ralf.corsepius@rtems.org>
 RTEMS Ports		Sebastian Huber		<sebastian.huber@embedded-brains.de>
 VMS			Douglas Rupp		<douglas.b.rupp@gmail.com>
 VMS			Tristan Gingold		<tgingold@free.fr>
-VxWorks ports		Nathan Sidwell		<nathan@codesourcery.com>
+VxWorks ports		Nathan Sidwell		<nathan@acm.org>
 VxWorks ports		Olivier Hainque		<hainque@adacore.com>
 cygwin, mingw-w64	Jonathan Yong		<10walls@gmail.com>
 
@@ -145,7 +145,7 @@ C front end/ISO C99	Richard Henderson	<rth@redhat.com>
 Ada front end		Arnaud Charlet		<charlet@adacore.com>
 Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
 c++			Jason Merrill		<jason@redhat.com>
-c++			Nathan Sidwell		<nathan@codesourcery.com>
+c++			Nathan Sidwell		<nathan@acm.org>
 go			Ian Lance Taylor	<ian@airs.com>
 objective-c/c++		Mike Stump		<mikestump@comcast.net>
 objective-c/c++		Iain Sandoe		<iain@codesourcery.com>
@@ -216,7 +216,7 @@ docstring relicensing	Gerald Pfeifer		<gerald@pfeifer.com>
 docstring relicensing	Joseph Myers		<joseph@codesourcery.com>
 predict.def		Jan Hubicka		<hubicka@ucw.cz>
 gcov			Jan Hubicka		<hubicka@ucw.cz>
-gcov			Nathan Sidwell		<nathan@codesourcery.com>
+gcov			Nathan Sidwell		<nathan@acm.org>
 option handling		Neil Booth		<neil@daikokuya.co.uk>
 option handling		Joseph Myers		<joseph@codesourcery.com>
 middle-end		Jeff Law		<law@redhat.com>
@@ -226,7 +226,6 @@ tree-ssa		Andrew MacLeod		<amacleod@redhat.com>
 tree browser/unparser	Sebastian Pop		<sebpop@gmail.com>
 scev, data dependence	Sebastian Pop		<sebpop@gmail.com>
 profile feedback	Jan Hubicka		<hubicka@ucw.cz>
-type-safe vectors	Nathan Sidwell		<nathan@codesourcery.com>
 reload			Ulrich Weigand		<uweigand@de.ibm.com>
 reload			Bernd Schmidt		<bschmidt@redhat.com>
 dfp.c, related		Ben Elliston		<bje@gnu.org>
