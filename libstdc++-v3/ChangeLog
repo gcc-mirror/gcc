@@ -1,5 +1,9 @@
 2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/string_view (basic_string_view::_S_compare):
+	Remove redundant const from return type.
+	* include/std/string_view (basic_string_view:_S_compare): Likewise.
+
 	* include/bits/std_mutex.h (mutex::native_handle)
 	(lock_guard(mutex_type&, adopt_lock_t)
 	(unique_lock(mutex_type&, adopt_lock_t): Add noexcept.
