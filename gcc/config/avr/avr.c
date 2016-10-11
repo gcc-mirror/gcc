@@ -295,6 +295,7 @@ avr_to_int_mode (rtx x)
     : simplify_gen_subreg (int_mode_for_mode (mode), x, mode, 0);
 }
 
+namespace {
 
 static const pass_data avr_pass_data_recompute_notes =
 {
@@ -328,20 +329,12 @@ public:
   }
 }; // avr_pass_recompute_notes
 
+} // anon namespace
 
-static void
-avr_register_passes (void)
+rtl_opt_pass*
+make_avr_pass_recompute_notes (gcc::context *ctxt)
 {
-  /* This avr-specific pass (re)computes insn notes, in particular REG_DEAD
-     notes which are used by `avr.c::reg_unused_after' and branch offset
-     computations.  These notes must be correct, i.e. there must be no
-     dangling REG_DEAD notes; otherwise wrong code might result, cf. PR64331.
-
-     DF needs (correct) CFG, hence right before free_cfg is the last
-     opportunity to rectify notes.  */
-
-  register_pass (new avr_pass_recompute_notes (g, "avr-notes-free-cfg"),
-                 PASS_POS_INSERT_BEFORE, "*free_cfg", 1);
+  return new avr_pass_recompute_notes (ctxt, "avr-notes-free-cfg");
 }
 
 
@@ -464,11 +457,6 @@ avr_option_override (void)
   init_machine_status = avr_init_machine_status;
 
   avr_log_set_avr_log();
-
-  /* Register some avr-specific pass(es).  There is no canonical place for
-     pass registration.  This function is convenient.  */
-
-  avr_register_passes ();
 }
 
 /* Function to set up the backend function structure.  */

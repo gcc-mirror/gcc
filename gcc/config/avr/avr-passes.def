@@ -1,0 +1,28 @@
+/* Description of target passes for AVR.
+   Copyright (C) 2016 Free Software Foundation, Inc. */
+
+/* This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 3, or (at your option) any later
+   version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This avr-specific pass (re)computes insn notes, in particular REG_DEAD
+   notes which are used by `avr.c::reg_unused_after' and branch offset
+   computations.  These notes must be correct, i.e. there must be no
+   dangling REG_DEAD notes; otherwise wrong code might result, cf. PR64331.
+
+   DF needs (correct) CFG, hence right before free_cfg is the last
+   opportunity to rectify notes.  */
+
+INSERT_PASS_BEFORE (pass_free_cfg, 1, avr_pass_recompute_notes);
