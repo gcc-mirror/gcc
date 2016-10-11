@@ -390,7 +390,7 @@ class ListMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::list<.*>$', class_type.tag):
+        if not re.match('^std::(__cxx11::)?list<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:

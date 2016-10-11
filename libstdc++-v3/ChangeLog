@@ -1,5 +1,10 @@
 2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (build_libstdcxx_dictionary):
+	Register printer for std::__cxx11::list.
+	* python/libstdcxx/v6/xmethods.py (ListMethodsMatcher.match): Match
+	std::__cxx11::list as well as std::list.
+
 	* include/experimental/string_view (basic_string_view::_S_compare):
 	Remove redundant const from return type.
 	* include/std/string_view (basic_string_view:_S_compare): Likewise.

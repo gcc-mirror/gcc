@@ -1445,6 +1445,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_container('std::', 'bitset', StdBitsetPrinter)
     libstdcxx_printer.add_container('std::', 'deque', StdDequePrinter)
     libstdcxx_printer.add_container('std::', 'list', StdListPrinter)
+    libstdcxx_printer.add_container('std::__cxx11::', 'list', StdListPrinter)
     libstdcxx_printer.add_container('std::', 'map', StdMapPrinter)
     libstdcxx_printer.add_container('std::', 'multimap', StdMapPrinter)
     libstdcxx_printer.add_container('std::', 'multiset', StdSetPrinter)
