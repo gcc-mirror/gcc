@@ -830,7 +830,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       void
       assign(initializer_list<value_type> __l)
-      { this->assign(__l.begin(), __l.end()); }
+      { this->_M_assign_dispatch(__l.begin(), __l.end(), __false_type()); }
 #endif
 
       /// Get a copy of the memory allocation object.
