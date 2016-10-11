@@ -1,3 +1,10 @@
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (build_complex_type): Add second parameter with default.
+	* tree.c (build_complex_type): Add NAMED second parameter and adjust
+	recursive call.  Create a TYPE_DECL only if NAMED is true.
+	(build_common_tree_nodes): Pass true in calls to build_complex_type.
+
 2016-10-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	New avr-passes.def to register AVR specific passes.
