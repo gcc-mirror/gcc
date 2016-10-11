@@ -647,6 +647,7 @@ static reg_class_t sparc_secondary_reload (bool, rtx, reg_class_t,
 					   secondary_reload_info *);
 static machine_mode sparc_cstore_mode (enum insn_code icode);
 static void sparc_atomic_assign_expand_fenv (tree *, tree *, tree *);
+static bool sparc_fixed_condition_code_regs (unsigned int *, unsigned int *);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -856,6 +857,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV sparc_atomic_assign_expand_fenv
+
+#undef TARGET_FIXED_CONDITION_CODE_REGS
+#define TARGET_FIXED_CONDITION_CODE_REGS sparc_fixed_condition_code_regs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1314,13 +1318,13 @@ sparc_option_override (void)
       MASK_V9|MASK_POPC|MASK_VIS2 },
     /* UltraSPARC T3 */
     { "niagara3",	MASK_ISA,
-      MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF },
+      MASK_V9|MASK_POPC|MASK_VIS3|MASK_FMAF },
     /* UltraSPARC T4 */
     { "niagara4",	MASK_ISA,
-      MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF|MASK_CBCOND },
+      MASK_V9|MASK_POPC|MASK_VIS3|MASK_FMAF|MASK_CBCOND },
     /* UltraSPARC M7 */
     { "niagara7",	MASK_ISA,
-      MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_VIS4|MASK_FMAF|MASK_CBCOND },
+      MASK_V9|MASK_POPC|MASK_VIS4|MASK_FMAF|MASK_CBCOND|MASK_SUBXC }
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -1451,7 +1455,7 @@ sparc_option_override (void)
 		   & ~MASK_CBCOND
 #endif
 #ifndef HAVE_AS_SPARC5_VIS4
-		   & ~MASK_VIS4
+		   & ~(MASK_VIS4 | MASK_SUBXC)
 #endif
 #ifndef HAVE_AS_LEON
 		   & ~(MASK_LEON | MASK_LEON3)
@@ -2742,14 +2746,24 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
   sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits);
 }
 
+/* Implement TARGET_FIXED_CONDITION_CODE_REGS.  */
+
+static bool
+sparc_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
+{
+  *p1 = SPARC_ICC_REG;
+  *p2 = SPARC_FCC_REG;
+  return true;
+}
+
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point,
-   CCFP[E]mode is used.  CC_NOOVmode should be used when the first operand
+   CCFP[E]mode is used.  CCNZmode should be used when the first operand
    is a PLUS, MINUS, NEG, or ASHIFT.  CCmode should be used when no special
    processing is needed.  */
 
 machine_mode
-select_cc_mode (enum rtx_code op, rtx x, rtx y ATTRIBUTE_UNUSED)
+select_cc_mode (enum rtx_code op, rtx x, rtx y)
 {
   if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
     {
@@ -2781,12 +2795,21 @@ select_cc_mode (enum rtx_code op, rtx x, rtx y ATTRIBUTE_UNUSED)
 	   || GET_CODE (x) == NEG || GET_CODE (x) == ASHIFT)
     {
       if (TARGET_ARCH64 && GET_MODE (x) == DImode)
-	return CCX_NOOVmode;
+	return CCXNZmode;
       else
-	return CC_NOOVmode;
+	return CCNZmode;
     }
   else
     {
+      /* This is for the cmp<mode>_sne pattern.  */
+      if (GET_CODE (x) == NOT && y == constm1_rtx)
+	{
+	  if (TARGET_ARCH64 && GET_MODE (x) == DImode)
+	    return CCXCmode;
+	  else
+	    return CCCmode;
+	}
+
       if (TARGET_ARCH64 && GET_MODE (x) == DImode)
 	return CCXmode;
       else
@@ -2951,9 +2974,6 @@ gen_v9_scc (rtx dest, enum rtx_code compare_code, rtx x, rtx y)
       x = gen_compare_reg_1 (compare_code, x, y);
       y = const0_rtx;
 
-      gcc_assert (GET_MODE (x) != CC_NOOVmode
-		  && GET_MODE (x) != CCX_NOOVmode);
-
       emit_insn (gen_rtx_SET (dest, const0_rtx));
       emit_insn (gen_rtx_SET (dest,
 			  gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
@@ -2971,10 +2991,9 @@ gen_v9_scc (rtx dest, enum rtx_code compare_code, rtx x, rtx y)
 bool
 emit_scc_insn (rtx operands[])
 {
-  rtx tem;
-  rtx x;
-  rtx y;
+  rtx tem, x, y;
   enum rtx_code code;
+  machine_mode mode;
 
   /* The quad-word fp compare library routines all return nonzero to indicate
      true, which is different from the equivalent libgcc routines, so we must
@@ -2990,59 +3009,42 @@ emit_scc_insn (rtx operands[])
   code = GET_CODE (operands[1]);
   x = operands[2];
   y = operands[3];
+  mode = GET_MODE (x);
 
   /* For seq/sne on v9 we use the same code as v8 (the addx/subx method has
      more applications).  The exception to this is "reg != 0" which can
      be done in one instruction on v9 (so we do it).  */
-  if (code == EQ)
+  if ((code == EQ || code == NE) && (mode == SImode || mode == DImode))
     {
-      if (GET_MODE (x) == SImode)
-        {
-	  rtx pat;
-	  if (TARGET_ARCH64)
-	    pat = gen_seqsidi_special (operands[0], x, y);
-	  else
-	    pat = gen_seqsisi_special (operands[0], x, y);
-          emit_insn (pat);
-          return true;
-        }
-      else if (GET_MODE (x) == DImode)
-        {
-	  rtx pat = gen_seqdi_special (operands[0], x, y);
-          emit_insn (pat);
-          return true;
-        }
+      if (y != const0_rtx)
+	x = force_reg (mode, gen_rtx_XOR (mode, x, y));
+
+      rtx pat = gen_rtx_SET (operands[0],
+			     gen_rtx_fmt_ee (code, GET_MODE (operands[0]),
+					     x, const0_rtx));
+
+      /* If we can use addx/subx or addxc/subxc, add a clobber for CC.  */
+      if (mode == SImode
+	  || (code == NE && TARGET_VIS3)
+	  || (code == EQ && TARGET_SUBXC))
+	{
+	  rtx clobber
+	    = gen_rtx_CLOBBER (VOIDmode,
+			       gen_rtx_REG (mode == SImode ? CCmode : CCXmode,
+					    SPARC_ICC_REG));
+	  pat = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, pat, clobber));
+	}
+
+      emit_insn (pat);
+      return true;
     }
 
-  if (code == NE)
-    {
-      if (GET_MODE (x) == SImode)
-        {
-          rtx pat;
-	  if (TARGET_ARCH64)
-	    pat = gen_snesidi_special (operands[0], x, y);
-	  else
-	    pat = gen_snesisi_special (operands[0], x, y);
-          emit_insn (pat);
-          return true;
-        }
-      else if (GET_MODE (x) == DImode)
-        {
-	  rtx pat;
-	  if (TARGET_VIS3)
-	    pat = gen_snedi_special_vis3 (operands[0], x, y);
-	  else
-	    pat = gen_snedi_special (operands[0], x, y);
-          emit_insn (pat);
-          return true;
-        }
-    }
-
-  if (TARGET_V9
-      && TARGET_ARCH64
-      && GET_MODE (x) == DImode
-      && !(TARGET_VIS3
-	   && (code == GTU || code == LTU))
+  /* We can do LTU in DImode using the addxc instruction with VIS3
+     and GEU in DImode using the subxc instruction with SUBXC.  */
+  if (TARGET_ARCH64
+      && mode == DImode
+      && !((code == LTU || code == GTU) && TARGET_VIS3)
+      && !((code == GEU || code == LEU) && TARGET_SUBXC)
       && gen_v9_scc (operands[0], code, x, y))
     return true;
 
@@ -3061,8 +3063,7 @@ emit_scc_insn (rtx operands[])
         }
     }
 
-  if (code == LTU
-      || (!TARGET_VIS3 && code == GEU))
+  if (code == LTU || code == GEU)
     {
       emit_insn (gen_rtx_SET (operands[0],
 			      gen_rtx_fmt_ee (code, GET_MODE (operands[0]),
@@ -7715,7 +7716,6 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	case LTGT:
 	  branch = "fblg";
 	  break;
-
 	default:
 	  gcc_unreachable ();
 	}
@@ -7741,7 +7741,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	  branch = "be";
 	  break;
 	case GE:
-	  if (mode == CC_NOOVmode || mode == CCX_NOOVmode)
+	  if (mode == CCNZmode || mode == CCXNZmode)
 	    branch = "bpos";
 	  else
 	    branch = "bge";
@@ -7753,7 +7753,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	  branch = "ble";
 	  break;
 	case LT:
-	  if (mode == CC_NOOVmode || mode == CCX_NOOVmode)
+	  if (mode == CCNZmode || mode == CCXNZmode)
 	    branch = "bneg";
 	  else
 	    branch = "bl";
@@ -7770,7 +7770,6 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	case LTU:
 	  branch = "blu";
 	  break;
-
 	default:
 	  gcc_unreachable ();
 	}
@@ -7801,28 +7800,37 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	    v8 = 1;
 	}
 
-      if (mode == CCFPmode || mode == CCFPEmode)
+      switch (mode)
 	{
-	  static char v9_fcc_labelno[] = "%%fccX, ";
-	  /* Set the char indicating the number of the fcc reg to use.  */
-	  v9_fcc_labelno[5] = REGNO (cc_reg) - SPARC_FIRST_V9_FCC_REG + '0';
-	  labelno = v9_fcc_labelno;
-	  if (v8)
-	    {
-	      gcc_assert (REGNO (cc_reg) == SPARC_FCC_REG);
-	      labelno = "";
-	    }
-	}
-      else if (mode == CCXmode || mode == CCX_NOOVmode)
-	{
-	  labelno = "%%xcc, ";
-	  gcc_assert (! v8);
-	}
-      else
-	{
+	case CCmode:
+	case CCNZmode:
+	case CCCmode:
 	  labelno = "%%icc, ";
 	  if (v8)
 	    labelno = "";
+	  break;
+	case CCXmode:
+	case CCXNZmode:
+	case CCXCmode:
+	  labelno = "%%xcc, ";
+	  gcc_assert (!v8);
+	  break;
+	case CCFPmode:
+	case CCFPEmode:
+	  {
+	    static char v9_fcc_labelno[] = "%%fccX, ";
+	    /* Set the char indicating the number of the fcc reg to use.  */
+	    v9_fcc_labelno[5] = REGNO (cc_reg) - SPARC_FIRST_V9_FCC_REG + '0';
+	    labelno = v9_fcc_labelno;
+	    if (v8)
+	      {
+		gcc_assert (REGNO (cc_reg) == SPARC_FCC_REG);
+		labelno = "";
+	      }
+	  }
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
 
       if (*labelno && insn && (note = find_reg_note (insn, REG_BR_PROB, NULL_RTX)))
@@ -8129,10 +8137,7 @@ output_cbcond (rtx op, rtx dest, rtx_insn *insn)
       break;
 
     case GE:
-      if (mode == CC_NOOVmode || mode == CCX_NOOVmode)
-	cond_str = "pos";
-      else
-	cond_str = "ge";
+      cond_str = "ge";
       break;
 
     case GT:
@@ -8144,10 +8149,7 @@ output_cbcond (rtx op, rtx dest, rtx_insn *insn)
       break;
 
     case LT:
-      if (mode == CC_NOOVmode || mode == CCX_NOOVmode)
-	cond_str = "neg";
-      else
-	cond_str = "l";
+      cond_str = "l";
       break;
 
     case GEU:
@@ -8699,6 +8701,8 @@ sparc_print_operand_punct_valid_p (unsigned char code)
 static void
 sparc_print_operand (FILE *file, rtx x, int code)
 {
+  const char *s;
+
   switch (code)
     {
     case '#':
@@ -8806,14 +8810,22 @@ sparc_print_operand (FILE *file, rtx x, int code)
       /* Print a condition code register.  */
       if (REGNO (x) == SPARC_ICC_REG)
 	{
-	  /* We don't handle CC[X]_NOOVmode because they're not supposed
-	     to occur here.  */
-	  if (GET_MODE (x) == CCmode)
-	    fputs ("%icc", file);
-	  else if (GET_MODE (x) == CCXmode)
-	    fputs ("%xcc", file);
-	  else
-	    gcc_unreachable ();
+	  switch (GET_MODE (x))
+	    {
+	    case CCmode:
+	    case CCNZmode:
+	    case CCCmode:
+	      s = "%icc";
+	      break;
+	    case CCXmode:
+	    case CCXNZmode:
+	    case CCXCmode:
+	      s = "%xcc";
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  fputs (s, file);
 	}
       else
 	/* %fccN register */
@@ -8838,67 +8850,147 @@ sparc_print_operand (FILE *file, rtx x, int code)
     case 'A':
       switch (GET_CODE (x))
 	{
-	case IOR: fputs ("or", file); break;
-	case AND: fputs ("and", file); break;
-	case XOR: fputs ("xor", file); break;
-	default: output_operand_lossage ("invalid %%A operand");
+	case IOR:
+	  s = "or";
+	  break;
+	case AND:
+	  s = "and";
+	  break;
+	case XOR:
+	  s = "xor";
+	  break;
+	default:
+	  output_operand_lossage ("invalid %%A operand");
+	  s = "";
+	  break;
 	}
+      fputs (s, file);
       return;
 
     case 'B':
       switch (GET_CODE (x))
 	{
-	case IOR: fputs ("orn", file); break;
-	case AND: fputs ("andn", file); break;
-	case XOR: fputs ("xnor", file); break;
-	default: output_operand_lossage ("invalid %%B operand");
+	case IOR:
+	  s = "orn";
+	  break;
+	case AND:
+	  s = "andn";
+	  break;
+	case XOR:
+	  s = "xnor";
+	  break;
+	default:
+	  output_operand_lossage ("invalid %%B operand");
+	  s = "";
+	  break;
 	}
+      fputs (s, file);
       return;
 
       /* This is used by the conditional move instructions.  */
     case 'C':
       {
-	enum rtx_code rc = GET_CODE (x);
-	
-	switch (rc)
+	machine_mode mode = GET_MODE (XEXP (x, 0));
+	switch (GET_CODE (x))
 	  {
-	  case NE: fputs ("ne", file); break;
-	  case EQ: fputs ("e", file); break;
-	  case GE: fputs ("ge", file); break;
-	  case GT: fputs ("g", file); break;
-	  case LE: fputs ("le", file); break;
-	  case LT: fputs ("l", file); break;
-	  case GEU: fputs ("geu", file); break;
-	  case GTU: fputs ("gu", file); break;
-	  case LEU: fputs ("leu", file); break;
-	  case LTU: fputs ("lu", file); break;
-	  case LTGT: fputs ("lg", file); break;
-	  case UNORDERED: fputs ("u", file); break;
-	  case ORDERED: fputs ("o", file); break;
-	  case UNLT: fputs ("ul", file); break;
-	  case UNLE: fputs ("ule", file); break;
-	  case UNGT: fputs ("ug", file); break;
-	  case UNGE: fputs ("uge", file); break;
-	  case UNEQ: fputs ("ue", file); break;
-	  default: output_operand_lossage ("invalid %%C operand");
+	  case NE:
+	    s = "ne";
+	    break;
+	  case EQ:
+	    s = "e";
+	    break;
+	  case GE:
+	    if (mode == CCNZmode || mode == CCXNZmode)
+	      s = "pos";
+	    else
+	      s = "ge";
+	    break;
+	  case GT:
+	    s = "g";
+	    break;
+	  case LE:
+	    s = "le";
+	    break;
+	  case LT:
+	    if (mode == CCNZmode || mode == CCXNZmode)
+	      s = "neg";
+	    else
+	      s = "l";
+	    break;
+	  case GEU:
+	    s = "geu";
+	    break;
+	  case GTU:
+	    s = "gu";
+	    break;
+	  case LEU:
+	    s = "leu";
+	    break;
+	  case LTU:
+	    s = "lu";
+	    break;
+	  case LTGT:
+	    s = "lg";
+	    break;
+	  case UNORDERED:
+	    s = "u";
+	    break;
+	  case ORDERED:
+	    s = "o";
+	    break;
+	  case UNLT:
+	    s = "ul";
+	    break;
+	  case UNLE:
+	    s = "ule";
+	    break;
+	  case UNGT:
+	    s = "ug";
+	    break;
+	  case UNGE:
+	    s = "uge"
+	    ; break;
+	  case UNEQ:
+	    s = "ue";
+	    break;
+	  default:
+	    output_operand_lossage ("invalid %%C operand");
+	    s = "";
+	    break;
 	  }
+	fputs (s, file);
 	return;
       }
 
       /* This are used by the movr instruction pattern.  */
     case 'D':
       {
-	enum rtx_code rc = GET_CODE (x);
-	switch (rc)
+	switch (GET_CODE (x))
 	  {
-	  case NE: fputs ("ne", file); break;
-	  case EQ: fputs ("e", file); break;
-	  case GE: fputs ("gez", file); break;
-	  case LT: fputs ("lz", file); break;
-	  case LE: fputs ("lez", file); break;
-	  case GT: fputs ("gz", file); break;
-	  default: output_operand_lossage ("invalid %%D operand");
+	  case NE:
+	    s = "ne";
+	    break;
+	  case EQ:
+	    s = "e";
+	    break;
+	  case GE:
+	    s = "gez";
+	    break;
+	  case LT:
+	    s = "lz";
+	    break;
+	  case LE:
+	    s = "lez";
+	    break;
+	  case GT:
+	    s = "gz";
+	    break;
+	  default:
+	    output_operand_lossage ("invalid %%D operand");
+	    s = "";
+	    break;
 	  }
+	fputs (s, file);
 	return;
       }
 
@@ -11237,6 +11329,10 @@ sparc_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t from, reg_class_t to)
 {
   bool need_memory = false;
+
+  /* This helps postreload CSE to eliminate redundant comparisons.  */
+  if (from == NO_REGS || to == NO_REGS)
+    return 100;
 
   if (from == FPCC_REGS || to == FPCC_REGS)
     need_memory = true;

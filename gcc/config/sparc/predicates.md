@@ -234,53 +234,23 @@
 
 ;; Return true if OP is a floating point condition code register.
 (define_predicate "fcc_register_operand"
-  (match_code "reg")
-{
-  if (mode != VOIDmode && mode != GET_MODE (op))
-    return false;
-  if (mode == VOIDmode
-      && (GET_MODE (op) != CCFPmode && GET_MODE (op) != CCFPEmode))
-    return false;
-
-#if 0 /* ??? 1 when %fcc0-3 are pseudos first.  See gen_compare_reg().  */
-  if (reg_renumber == 0)
-    return REGNO (op) >= FIRST_PSEUDO_REGISTER;
-  return REGNO_OK_FOR_CCFP_P (REGNO (op));
-#else
-  return ((unsigned) REGNO (op) - SPARC_FIRST_V9_FCC_REG) < 4;
-#endif
-})
+  (and (match_code "reg")
+       (match_test "((unsigned) REGNO (op) - SPARC_FIRST_V9_FCC_REG) < 4")))
 
 ;; Return true if OP is the floating point condition code register fcc0.
 (define_predicate "fcc0_register_operand"
-  (match_code "reg")
-{
-  if (mode != VOIDmode && mode != GET_MODE (op))
-    return false;
-  if (mode == VOIDmode
-      && (GET_MODE (op) != CCFPmode && GET_MODE (op) != CCFPEmode))
-    return false;
+  (and (match_code "reg")
+       (match_test "REGNO (op) == SPARC_FCC_REG")))
 
-  return REGNO (op) == SPARC_FCC_REG;
-})
+;; Return true if OP is an integer condition code register.
+(define_predicate "icc_register_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == SPARC_ICC_REG")))
 
 ;; Return true if OP is an integer or floating point condition code register.
 (define_predicate "icc_or_fcc_register_operand"
-  (match_code "reg")
-{
-  if (REGNO (op) == SPARC_ICC_REG)
-    {
-      if (mode != VOIDmode && mode != GET_MODE (op))
-	return false;
-      if (mode == VOIDmode
-	  && GET_MODE (op) != CCmode && GET_MODE (op) != CCXmode)
-	return false;
-
-      return true;
-    }
-
-  return fcc_register_operand (op, mode);
-})
+  (ior (match_operand 0 "icc_register_operand")
+       (match_operand 0 "fcc_register_operand")))
 
 
 ;; Predicates for arithmetic instructions.
@@ -442,46 +412,74 @@
 
 ;; Predicates for operators.
 
-;; Return true if OP is a comparison operator.  This allows the use of
-;; MATCH_OPERATOR to recognize all the branch insns.
-(define_predicate "noov_compare_operator"
-  (match_code "ne,eq,ge,gt,le,lt,geu,gtu,leu,ltu")
+;; Return true if OP is a valid comparison operator for CCNZmode.
+(define_predicate "nz_comparison_operator"
+  (match_code "eq,ne,lt,ge"))
+
+;; Return true if OP is a valid comparison operator for CCCmode.
+(define_predicate "c_comparison_operator"
+  (match_code "ltu,geu"))
+
+;; Return true if OP is an integer comparison operator.  This allows
+;; the use of MATCH_OPERATOR to recognize all the branch insns.
+(define_predicate "icc_comparison_operator"
+  (match_operand 0 "ordered_comparison_operator")
 {
-  enum rtx_code code = GET_CODE (op);
-  if (GET_MODE (XEXP (op, 0)) == CC_NOOVmode
-      || GET_MODE (XEXP (op, 0)) == CCX_NOOVmode)
-    /* These are the only branches which work with CC_NOOVmode.  */
-    return (code == EQ || code == NE || code == GE || code == LT);
-  return true;
+  switch (GET_MODE (XEXP (op, 0)))
+    {
+    case CCmode:
+    case CCXmode:
+      return true;
+    case CCNZmode:
+    case CCXNZmode:
+      return nz_comparison_operator (op, mode);
+    case CCCmode:
+    case CCXCmode:
+      return c_comparison_operator (op, mode);
+    default:
+      return false;
+    }
 })
 
-;; Return true if OP is a 64-bit comparison operator.  This allows the use of
-;; MATCH_OPERATOR to recognize all the branch insns.
-(define_predicate "noov_compare64_operator"
-  (and (match_code "ne,eq,ge,gt,le,lt,geu,gtu,leu,ltu")
-       (match_test "TARGET_V9"))
+;; Return true if OP is a FP comparison operator.
+(define_predicate "fcc_comparison_operator"
+  (match_operand 0 "comparison_operator")
 {
-  enum rtx_code code = GET_CODE (op);
-  if (GET_MODE (XEXP (op, 0)) == CCX_NOOVmode)
-    /* These are the only branches which work with CCX_NOOVmode.  */
-    return (code == EQ || code == NE || code == GE || code == LT);
-  return (GET_MODE (XEXP (op, 0)) == CCXmode);
+  switch (GET_MODE (XEXP (op, 0)))
+    {
+    case CCFPmode:
+    case CCFPEmode:
+      return true;
+    default:
+      return false;
+    }
 })
+
+;; Return true if OP is an integer or FP comparison operator.  This allows
+;; the use of MATCH_OPERATOR to recognize all the conditional move insns.
+(define_predicate "icc_or_fcc_comparison_operator"
+  (ior (match_operand 0 "icc_comparison_operator")
+       (match_operand 0 "fcc_comparison_operator")))
+
+;; Return true if OP is an integer comparison operator for V9.
+(define_predicate "v9_comparison_operator"
+  (and (match_operand 0 "ordered_comparison_operator")
+       (match_test "TARGET_V9")))
 
 ;; Return true if OP is a comparison operator suitable for use in V9
 ;; conditional move or branch on register contents instructions.
-(define_predicate "v9_register_compare_operator"
+(define_predicate "v9_register_comparison_operator"
   (match_code "eq,ne,ge,lt,le,gt"))
 
 ;; Return true if OP is an operator which can set the condition codes
-;; explicitly.  We do not include PLUS and MINUS because these
-;; require CC_NOOVmode, which we handle explicitly.
+;; explicitly.  We do not include PLUS/MINUS/NEG/ASHIFT because these
+;; require CCNZmode, which we handle explicitly.
 (define_predicate "cc_arith_operator"
   (match_code "and,ior,xor"))
 
 ;; Return true if OP is an operator which can bitwise complement its
 ;; second operand and set the condition codes explicitly.
 ;; XOR is not here because combine canonicalizes (xor (not ...) ...)
-;; and (xor ... (not ...)) to (not (xor ...)).  */
+;; and (xor ... (not ...)) to (not (xor ...)).
 (define_predicate "cc_arith_not_operator"
   (match_code "and,ior"))

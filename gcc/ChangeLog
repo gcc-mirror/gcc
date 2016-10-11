@@ -1,5 +1,102 @@
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.opt (msubxc): New option.
+	* doc/invoke.texi (SPARC options): Document it and tidy up.
+	* doc/tm.texi.in (Condition Codes): Adjust SPARC example.
+	* doc/tm.texi: Regenerate.
+	* config/sparc/sparc-modes.def (CC_NOOV): Rename into...
+	(CCNZ): ...this.
+	(CCX_NOOV): Rename into...
+	(CCXNZ): ...this.
+	(CCC): New.
+	(CCXC): Likewise.
+	* config/sparc/predicates.m (fcc_register_operand): Simplify.
+	(fcc0_register_operand): Likewise.
+	(icc_register_operand): New.
+	(icc_or_fcc_register_operand): Simplify.
+	(nz_comparison_operator): New.
+	(c_comparison_operator): Likewise.
+	(noov_compare_operator): Rename into...
+	(icc_comparison_operator): ...this.  Use above predicates.
+	(noov_compare64_operator): Rename into...
+	(v9_comparison_operator): ...this and tidy up.
+	(fcc_comparison_operator): New.
+	(icc_or_fcc_comparison_operator): Likewise.
+	(v9_register_compare_operator): Rename info...
+	(v9_register_comparison_operator): ...this.
+	* config/sparc/sparc.c (TARGET_FIXED_CONDITION_CODE_REGS): Define.
+	(sparc_option_override): Remove redundant VIS masks and add MASK_SUBXC
+	for Niagara-7.
+	(sparc_fixed_condition_code_regs): New function.
+	(select_cc_mode): Remove ATTRIBUTE_UNUSED.  Adjust for CCNZ/CCXNZ
+	renaming and add support for CCC/CCXC.
+	(output_cbranch): Likewise.
+	(sparc_print_operand): Likewise.
+	(gen_v9_scc): Remove obsolete assertion.
+	(emit_scc_insn): Emit RTL directly for EQ and NE.  Add direct support
+	for EQ in DImode if TARGET_SUBXC.  Remove test on TARGET_VIS3 for GEU.
+	(output_cbcond): Remove bogus handling of CC modes.
+	(sparc_register_move_cost): Return 100 for NO_REGS.
+	* config/sparc/sparc.md (W): New mode iterator.
+	(length): Adjust for noov_compare64_operator renaming.
+	(cmpsi_sne): New instruction.
+	(cmpdi_sne): Likewise.
+	(seqdi_special): Delete.
+	(seqdi_special): Likewise.
+	(snesi<P:mode>_special): Likewise.
+	(snedi_special): Likewise.
+	(snedi_special_vis3): Likewise.
+	(snesi patterns): Use W iterator.
+	(snedi patterns): Likewise.  Add TARGET_SUBXC patterns.
+	(sltu patterns): Likewise.
+	(sgeu patterns): Likewise.
+	(scc splitter): Do not split GEU in DImode if TARGET_SUBXC.
+	(normal_branch): Use icc_comparison_operator predicate.
+	(inverted_branch): Likewise.
+	(cbcond_sp32): Use comparison_operator predicate.
+	(cbcond_sp64): Likewise.
+	(normal_int_branch_sp64): Adjust for renaming
+	(inverted_int_branch_sp64): Likewise.
+	(mov<I:mode>_cc_reg_sp64): Likewise.
+	(movsf_cc_reg_sp6): Likewise.
+	(movdf_cc_reg_sp64): Likewise.
+	(movtf_cc_reg_hq_sp64): Likewise.
+	(movtf_cc_reg_sp64): Likewise.
+	(mov<I:mode>_cc_v9): Use icc_or_fcc_comparison_operator predicate.
+	(movsf_cc_v9): Likewise.
+	(movdf_cc_v9): Likewise.
+	(movtf_cc_hq_v9): Likewise.
+	(movtf_cc_v9): Likewise.
+	(adddi3): Call gen_adddi3_sp32.
+	(adddi3_insn_sp32): Rename to...
+	(adddi3_sp32): ...this.  Accept only register_operand as operand #1
+	and use CCCmode for the carry.
+	(addx_extend_sp32): Use CCCmode for the carry.
+	(addx_extend_sp64): Delete.
+	(adddi3_extend_sp32): Use CCCmode for the carry.
+	(cmp_plus patterns): Use CCNZ/CCXNZ mode and add C variants.
+	(subdi3): Call gen_subdi3_sp32.
+	(subdi3_insn_sp32): Rename to...
+	(subdi3_sp32): ...this and use CCmode for the carry.
+	(subx_extend_sp32): Use CCCmode for the carry.
+	(subx_extend_sp64): Delete.
+	(subdi3_extend_sp32): Use CCmode for the carry.
+	(cmp_minus patterns): Use CCNZ/CCXNZ mode and add C variants.
+	(negdi3): Call gen_negdi3_sp32.
+	(negdi3_sp32): Use CCCmode for the carry.
+	(cmp_neg patterns): Use CCNZ/CCXNZ mode and add C variants.
+	(cmp_nz_ashift_1): Use CCNZ mode.
+	(cmp_nz_set_ashift_1): Likewise.
+	(ctrapsi4): Use comparison_operator predicate.
+	(ctrapdi4): Likewise.
+	(trapsi_insn): Use icc_comparison_operator predicate.
+	(trapdi_insn): Likewise.
+	(edge8 patterns): Use CCNZmode.
+	(edge16 patterns): Likewise.
+	(edge32 patterns): Likewise.
+
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/visium/visium-modes.def (CC_NOOV): Rename into...
 	(CCNZ): ...this.
 	(CC_BTST): Rename into...

@@ -4443,8 +4443,8 @@ the case of the add on the SPARC discussed above, we have the pattern
 
 @smallexample
 (define_insn ""
-  [(set (reg:CC_NOOV 0)
-        (compare:CC_NOOV
+  [(set (reg:CCNZ 0)
+        (compare:CCNZ
           (plus:SI (match_operand:SI 0 "register_operand" "%r")
                    (match_operand:SI 1 "arith_operand" "rI"))
           (const_int 0)))]
@@ -4453,7 +4453,7 @@ the case of the add on the SPARC discussed above, we have the pattern
 @end smallexample
 
 @noindent
-together with a @code{SELECT_CC_MODE} that returns @code{CC_NOOVmode}
+together with a @code{SELECT_CC_MODE} that returns @code{CCNZmode}
 for comparisons whose argument is a @code{plus}:
 
 @smallexample
@@ -4463,7 +4463,7 @@ for comparisons whose argument is a @code{plus}:
       ? CCFPEmode : CCFPmode)                            \
    : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS     \
        || GET_CODE (X) == NEG || GET_CODE (x) == ASHIFT) \
-      ? CC_NOOVmode : CCmode))
+      ? CCNZmode : CCmode))
 @end smallexample
 
 Another reason to use modes is to retain information on which operands
