@@ -1,5 +1,11 @@
 2016-10-11  Marek Polacek  <polacek@redhat.com>
 
+	* c-common.c (warning_candidate_p): Change the return type to bool
+	and return true/false instead of 1/0.
+	(vector_mode_valid_p): Likewise.
+
+2016-10-11  Marek Polacek  <polacek@redhat.com>
+
 	* c-common.c (fold_for_warn): No longer static.
 	(bool_promoted_to_int_p): Likewise.
 	(c_common_get_narrower): Likewise.
