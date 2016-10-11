@@ -1,3 +1,22 @@
+2016-10-11  Fritz Reese  <fritzoreese@gmail.com>
+
+	* lang.opt: New flag -fdec-math.
+	* options.c (set_dec_flags): Enable with -fdec.
+	* invoke.texi, gfortran.texi, intrinsic.texi: Update documentation.
+	* intrinsics.c (add_functions, do_simplify): New intrinsics
+	with -fdec-math.
+	* gfortran.h (gfc_isym_id): New isym GFC_ISYM_COTAN.
+	* gfortran.h (gfc_resolve_atan2d, gfc_resolve_cotan,
+	gfc_resolve_trigd, gfc_resolve_atrigd): New prototypes.
+	* iresolve.c (resolve_trig_call, get_degrees, get_radians,
+	is_trig_resolved, gfc_resolve_cotan, gfc_resolve_trigd,
+	gfc_resolve_atrigd, gfc_resolve_atan2d): New functions.
+	* intrinsics.h (gfc_simplify_atan2d, gfc_simplify_atrigd,
+	gfc_simplify_cotan, gfc_simplify_trigd): New prototypes.
+	* simplify.c (simplify_trig_call, degrees_f, radians_f,
+	gfc_simplify_cotan, gfc_simplify_trigd, gfc_simplify_atrigd,
+	gfc_simplify_atan2d): New functions.
+
 2016-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/77915
