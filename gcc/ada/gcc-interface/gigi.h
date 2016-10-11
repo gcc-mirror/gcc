@@ -174,10 +174,6 @@ enum alias_set_op
 extern void relate_alias_sets (tree gnu_new_type, tree gnu_old_type,
 			       enum alias_set_op op);
 
-/* Given a GNU tree and a GNAT list of choices, generate an expression to test
-   the value passed against the list of choices.  */
-extern tree choices_to_gnu (tree operand, Node_Id choices);
-
 /* Given GNAT_ENTITY, an object (constant, variable, parameter, exception)
    and GNU_TYPE, its corresponding GCC type, set Esize and Alignment to the
    size and alignment used by Gigi.  Prefer SIZE over TYPE_SIZE if non-null.
@@ -860,9 +856,11 @@ extern tree build_load_modify_store (tree dest, tree src, Node_Id gnat_node);
 /* Make a binary operation of kind OP_CODE.  RESULT_TYPE is the type
    desired for the result.  Usually the operation is to be performed
    in that type.  For MODIFY_EXPR and ARRAY_REF, RESULT_TYPE may be 0
-   in which case the type to be used will be derived from the operands.  */
+   in which case the type to be used will be derived from the operands.
+   Don't fold the result if NO_FOLD is true.  */
 extern tree build_binary_op (enum tree_code op_code, tree result_type,
-                             tree left_operand, tree right_operand);
+			     tree left_operand, tree right_operand,
+			     bool no_fold=false);
 
 /* Similar, but make unary operation.  */
 extern tree build_unary_op (enum tree_code op_code, tree result_type,
