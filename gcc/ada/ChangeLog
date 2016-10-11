@@ -1,4 +1,11 @@
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (type_unsigned_for_rm): New predicate.
+	(make_type_from_size): Use it.
+	(unchecked_convert): Likewise.  Do not skip the extension step if the
+	source type is not integral.
+
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
             Tristan Gingold  <gingold@adacore.com>
 
 	* system-linux-ppc64.ads: Delete.

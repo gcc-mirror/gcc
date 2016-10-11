@@ -1,5 +1,11 @@
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/unchecked_convert10.adb: New test.
+	* gnat.dg/unchecked_convert11.adb: Likewise.
+	* gnat.dg/unchecked_convert12.adb: Likewise.
+
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.target/sparc/cbcond-1.c: New test.
 	* gcc.target/sparc/cbcond-2.c: Likewise.
 	* gcc.target/sparc/movcc-1.c: Likewise.
