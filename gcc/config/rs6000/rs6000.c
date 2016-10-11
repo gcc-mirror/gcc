@@ -16572,10 +16572,10 @@ rs6000_init_builtins (void)
      floating point, we need make sure the type is non-zero or else self-test
      fails during bootstrap.
 
-     We don't register a built-in type for __ibm128 or __float128 if the type
-     is the same as long double.  Instead we add a #define for __ibm128 or
-     __float128 in rs6000_cpu_cpp_builtins to long double.  */
-  if (TARGET_IEEEQUAD || !TARGET_LONG_DOUBLE_128)
+     We don't register a built-in type for __ibm128 if the type is the same as
+     long double.  Instead we add a #define for __ibm128 in
+     rs6000_cpu_cpp_builtins to long double.  */
+  if (TARGET_LONG_DOUBLE_128 && FLOAT128_IEEE_P (TFmode))
     {
       ibm128_float_type_node = make_node (REAL_TYPE);
       TYPE_PRECISION (ibm128_float_type_node) = 128;
