@@ -1,3 +1,9 @@
+2016-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR debug/77931
+	* gimple-low.c (lower_gimple_bind): Handle arbitrary common
+	sub-chains of BLOCK_VARS and gimple_bind_vars.
+
 2016-10-11  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
 
 	* config/i386/znver1.md : Fix imov/imovx load type reservations.
