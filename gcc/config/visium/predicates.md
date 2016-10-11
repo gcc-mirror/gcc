@@ -112,6 +112,13 @@
        (and (match_code "const_int")
             (match_test ("INTVAL (op) >= -65535 && INTVAL (op) <= 65535")))))
 
+;; Return true if OP can be used as the second operand in a 32-bit or 64-bit
+;; add or subtract instruction directly, i.e. without the reverse trick.
+(define_predicate "real_add_operand"
+  (ior (match_operand 0 "gpc_reg_operand")
+       (and (match_code "const_int")
+            (match_test ("INTVAL (op) >= 0 && INTVAL (op) <= 65535")))))
+
 ;; Return true if OP is (or could be) outside the range 0 .. 65535, which is
 ;; the range of the immediate operands, but accept -1 for NOT.
 (define_predicate "large_immediate_operand"
@@ -119,33 +126,41 @@
        (and (match_code "const_int")
             (match_test ("INTVAL (op) < -1 || INTVAL (op) > 65535")))))
 
+;; Return true if OP is an equality comparison operator.
+(define_predicate "visium_equality_comparison_operator"
+  (match_code "eq,ne"))
+
+;; Return true if OP is a valid comparison operator for CCNZmode.
+(define_special_predicate "visium_nz_comparison_operator"
+  (match_code "eq,ne,lt,ge"))
+
+;; Return true if OP is a valid comparison operator for CCCmode.
+(define_special_predicate "visium_c_comparison_operator"
+  (match_code "eq,ne,ltu,geu"))
+
 ;; Return true if OP is a valid FP comparison operator.
 (define_predicate "visium_fp_comparison_operator"
   (match_code "eq,ne,ordered,unordered,unlt,unle,ungt,unge,lt,le,gt,ge"))
-
-;; Return true if OP is a valid comparison operator for CC_BTSTmode.
-(define_special_predicate "visium_btst_operator"
-  (match_code "eq,ne"))
-
-;; Return true if OP is a valid comparison operator for CC_NOOVmode.
-(define_special_predicate "visium_noov_operator"
-  (match_code "eq,ne,ge,lt"))
 
 ;; Return true if OP is a valid comparison operator for a branch.  This allows
 ;; the use of MATCH_OPERATOR to recognize all the branch insns.
 (define_predicate "visium_branch_operator"
   (match_operand 0 "comparison_operator")
 {
-  enum rtx_code code = GET_CODE (op);
-  /* These 2 comparison codes are not supported.  */
-  if (code == UNEQ || code == LTGT)
-    return false;
-  enum machine_mode cc_mode = GET_MODE (XEXP (op, 0));
-  if (cc_mode == CC_NOOVmode)
-    return visium_noov_operator (op, mode);
-  if (cc_mode == CC_BTSTmode)
-    return visium_btst_operator (op, mode);
-  return true;
+  switch (GET_MODE (XEXP (op, 0)))
+    {
+    case CCmode:
+      return ordered_comparison_operator (op, mode);
+    case CCNZmode:
+      return visium_nz_comparison_operator (op, mode);
+    case CCCmode:
+      return visium_c_comparison_operator (op, mode);
+    case CCFPmode:
+    case CCFPEmode:
+      return visium_fp_comparison_operator (op, mode);
+    default:
+      return false;
+    }
 })
 
 ;; Return true if OP is a valid comparison operator for an integer cstore.

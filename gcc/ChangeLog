@@ -1,3 +1,31 @@
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium-modes.def (CC_NOOV): Rename into...
+	(CCNZ): ...this.
+	(CC_BTST): Rename into...
+	(CCC): ...this.
+	* config/visium/predicates.md (real_add_operand): New.
+	(visium_btst_operator): Rename into...
+	(visium_equality_comparison_operator): ...this.
+	(visium_noov_operator): Rename into...
+	(visium_nz_comparison_operator): ...this.
+	(visium_c_comparison_operator): New.
+	(visium_branch_operator): Adjust and deal with all CC modes.
+	* config/visium/visium.c (visium_adjust_cost): Adjust.
+	(visium_split_double_add): Use the *_set_carry patterns.
+	(visium_select_cc_mode): Add support for CCC mode and adjust.
+	(output_cbranch): Adjust and use the carry-based operators for
+	floating-point comparisons.
+	* config/visium/visium.md (flags_subst_arith): Adjust.
+	(addsi3_insn_set_carry): New instruction.
+	(subsi3_insn_set_carry): Likewise.
+	(negsi2_insn_set_carry): Likewise.
+	(btst): Adjust.
+	(cmp<mode>_sne): Likewise.
+	(cbranch<mode>4): Use ordered_comparison_operator.
+	(cbranch<mode>4_insn): Likewise.
+	(cbranchsi4_btst_insn): Adjust.
+
 2016-10-11  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/77558

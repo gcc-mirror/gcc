@@ -257,8 +257,8 @@
    (clobber (reg:CC R_FLAGS))]
   ""
   [(set (match_dup 0) (match_dup 1))
-   (set (reg:CC_NOOV R_FLAGS)
-	(compare:CC_NOOV (match_dup 1) (const_int 0)))])
+   (set (reg:CCNZ R_FLAGS)
+	(compare:CCNZ (match_dup 1) (const_int 0)))])
 
 (define_subst_attr "subst_arith" "flags_subst_arith" "_flags" "_set_flags")
 
@@ -809,6 +809,19 @@
     addi    %0,%2"
   [(set_attr "type" "arith")])
 
+(define_insn "addsi3_insn_set_carry"
+  [(set (match_operand:SI 0 "register_operand"          "=r,r")
+	(plus:SI (match_operand:SI 1 "register_operand" "%r,0")
+		 (match_operand:SI 2 "real_add_operand" " r,J")))
+   (set (reg:CCC R_FLAGS)
+	(compare:CCC (plus:SI (match_dup 1) (match_dup 2))
+		     (match_dup 1)))]
+  "reload_completed"
+  "@
+    add.l   %0,%1,%2
+    addi    %0,%2"
+  [(set_attr "type" "arith")])
+
 (define_expand "adddi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 1 "register_operand" "")
@@ -948,6 +961,18 @@
     subi    %0,%2"
   [(set_attr "type" "arith")])
 
+(define_insn "subsi3_insn_set_carry"
+  [(set (match_operand:SI 0 "register_operand"           "=r,r")
+	(minus:SI (match_operand:SI 1 "register_operand" " r,0")
+		  (match_operand:SI 2 "real_add_operand" " r,J")))
+   (set (reg:CC R_FLAGS)
+	(compare:CC (match_dup 1) (match_dup 2)))]
+  "reload_completed"
+  "@
+    sub.l   %0,%r1,%2
+    subi    %0,%2"
+  [(set_attr "type" "arith")])
+
 (define_expand "subdi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(minus:DI (match_operand:DI 1 "register_operand" "")
@@ -1039,6 +1064,15 @@
    (clobber (reg:CC R_FLAGS))]
   "reload_completed"
   "sub<s>   %0,r0,%1"
+  [(set_attr "type" "arith")])
+
+(define_insn "negsi2_insn_set_carry"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (neg:SI (match_operand:SI 1 "register_operand" "r")))
+   (set (reg:CCC R_FLAGS)
+	(compare:CCC (not:SI (match_dup 1)) (const_int -1)))]
+  "reload_completed"
+  "sub.l   %0,r0,%1"
   [(set_attr "type" "arith")])
 
 (define_expand "negdi2"
@@ -1803,12 +1837,12 @@
 ; BITS_BIG_ENDIAN is defined to 1 so operand #1 counts from the MSB.
 
 (define_insn "*btst"
-  [(set (reg:CC_BTST R_FLAGS)
-	(compare:CC_BTST (zero_extract:SI
-			   (match_operand:SI 0 "register_operand" "r")
-			   (const_int 1)
-			   (match_operand:QI 1 "const_shift_operand" "K"))
-			 (const_int 0)))]
+  [(set (reg:CCC R_FLAGS)
+	(compare:CCC (zero_extract:SI
+		       (match_operand:SI 0 "register_operand" "r")
+		       (const_int 1)
+		       (match_operand:QI 1 "const_shift_operand" "K"))
+		     (const_int 0)))]
   "reload_completed"
   "lsr.l   r0,%0,32-%1"
   [(set_attr "type" "logic")])
@@ -1832,9 +1866,9 @@
   [(set_attr "type" "cmp")])
 
 (define_insn "*cmp<mode>_sne"
-  [(set (reg:CC R_FLAGS)
-	(compare:CC (not:I (match_operand:I 0 "register_operand" "r"))
-		    (const_int -1)))]
+  [(set (reg:CCC R_FLAGS)
+	(compare:CCC (not:I (match_operand:I 0 "register_operand" "r"))
+		     (const_int -1)))]
   "reload_completed"
   "cmp<s>   r0,%0"
   [(set_attr "type" "cmp")])
@@ -2065,7 +2099,7 @@
 
 (define_expand "cbranch<mode>4"
   [(set (pc)
-	(if_then_else (match_operator 0 "comparison_operator"
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
 		       [(match_operand:I 1 "register_operand")
 		        (match_operand:I 2 "reg_or_0_operand")])
 		      (label_ref (match_operand 3 ""))
@@ -2075,7 +2109,7 @@
 
 (define_insn_and_split "*cbranch<mode>4_insn"
   [(set (pc)
-	(if_then_else (match_operator 0 "comparison_operator"
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
 		       [(match_operand:I 1 "register_operand" "r")
  		        (match_operand:I 2 "reg_or_0_operand" "rO")])
 		      (label_ref (match_operand 3 ""))
@@ -2093,7 +2127,7 @@
 
 (define_insn_and_split "*cbranchsi4_btst_insn"
   [(set (pc)
-	(if_then_else (match_operator 0 "visium_btst_operator"
+	(if_then_else (match_operator 0 "visium_equality_comparison_operator"
 		       [(zero_extract:SI
 			   (match_operand:SI 1 "register_operand" "r")
 			   (const_int 1)
