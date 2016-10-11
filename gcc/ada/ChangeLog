@@ -1,5 +1,18 @@
 2016-10-11  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* exp_dbug.adb (Debug_Renaming_Declaration): Process underlying types.
+	Emit GNAT encodings for object renamings involving record components
+ 	whose normalized bit offset is not null.
+	* uintp.h (UI_No_Uint): Declare.
+	* gcc-interface/gigi.h (can_materialize_object_renaming_p): New.
+	* gcc-interface/utils.c (can_materialize_object_renaming_p): New
+	function.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Object_Renaming_Declaration>:
+	In code generation mode, materialize all renamings as long as they need
+	debug info and we are not optimizing.
+
+2016-10-11  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* gcc-interface/utils2.c (build_binary_op): Add a NO_FOLD
 	argument.  Disable folding when true.
 	* gcc-interface/gigi.h (choices_to_gnu): Remove declaration.

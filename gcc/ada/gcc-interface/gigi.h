@@ -1014,6 +1014,11 @@ extern void process_deferred_decl_context (bool force);
    IS_SUBPROGRAM to whether the returned entity is a subprogram.  */
 extern Entity_Id get_debug_scope (Node_Id gnat_node, bool *is_subprogram);
 
+/* Return whether EXPR, which is the renamed object in an object renaming
+   declaration, can be materialized as a reference (REFERENCE_TYPE).  This
+   should be synchronized with Exp_Dbug.Debug_Renaming_Declaration.  */
+extern bool can_materialize_object_renaming_p (Node_Id expr);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
