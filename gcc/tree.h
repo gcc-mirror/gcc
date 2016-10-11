@@ -4042,7 +4042,7 @@ extern tree build_varargs_function_type_array (tree, int, tree *);
 extern tree build_method_type_directly (tree, tree, tree);
 extern tree build_method_type (tree, tree);
 extern tree build_offset_type (tree, tree);
-extern tree build_complex_type (tree);
+extern tree build_complex_type (tree, bool named = false);
 extern tree array_type_nelts (const_tree);
 
 extern tree value_member (tree, tree);
