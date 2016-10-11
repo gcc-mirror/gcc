@@ -4,6 +4,8 @@
 typedef unsigned short u16;
 typedef unsigned char u8;
 typedef unsigned int u32;
+__extension__ typedef __INT32_TYPE__ i32;
+
 long int random(int);
 #define NNN 10
 
@@ -37,7 +39,7 @@ Calc_crc8 (u8 data, u16 crc)
 int
 main (int argc, char argv[])
 {
-  int i, j; u16 crc;
+  int i; i32 j; u16 crc;
   for (j = 0; j < 10000000; j++)
     {
       for (i = 0; i < NNN; i++)

@@ -1,3 +1,8 @@
+2016-10-11  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/pr59597.c: Typedef  __INT32_TYPE__ to i32.
+	(main): Declare j as i32 instead of int.
+
 2016-10-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR testsuite/PR77710
