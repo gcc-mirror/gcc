@@ -19652,8 +19652,15 @@ mips_option_override (void)
   if ((target_flags_explicit & MASK_BRANCHLIKELY) == 0)
     {
       if (ISA_HAS_BRANCHLIKELY
-	  && (optimize_size
-	      || (mips_tune_info->tune_flags & PTF_AVOID_BRANCHLIKELY) == 0))
+	  && ((optimize_size
+	       && (mips_tune_info->tune_flags
+		   & PTF_AVOID_BRANCHLIKELY_SIZE) == 0)
+	      || (!optimize_size
+		  && optimize > 0
+		  && (mips_tune_info->tune_flags
+		      & PTF_AVOID_BRANCHLIKELY_SPEED) == 0)
+	      || (mips_tune_info->tune_flags
+		  & PTF_AVOID_BRANCHLIKELY_ALWAYS) == 0))
 	target_flags |= MASK_BRANCHLIKELY;
       else
 	target_flags &= ~MASK_BRANCHLIKELY;

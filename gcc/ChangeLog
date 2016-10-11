@@ -1,3 +1,17 @@
+2016-10-11  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips-cpus.def: Replace PTF_AVOID_BRANCHLIKELY with
+	PTF_AVOID_BRANCHLIKELY_ALWAYS for generic architecture and with
+	PTF_AVOID_BRANCHLIKELY_SPEED for others.
+	(mips2, mips3, mips4): Add PTF_AVOID_BRANCHLIKELY_SIZE to tune
+	flags.
+	* config/mips/mips.c (mips_option_override): Enable the branch
+	likely depending on the tune flags and optimization level.
+	* config/mips/mips.h (PTF_AVOID_BRANCHLIKELY): Remove.
+	(PTF_AVOID_BRANCHLIKELY_SPEED): Define.
+	(PTF_AVOID_BRANCHLIKELY_SIZE): Likewise.
+	(PTF_AVOID_BRANCHLIKELY_ALWAYS): Likewise.
+
 2016-10-11  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer-out.c (collect_block_tree_leafs): New helper.
