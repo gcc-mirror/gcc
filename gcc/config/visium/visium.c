@@ -561,11 +561,12 @@ visium_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 
 	      /* The logical instructions use CCmode and thus work with any
 		 comparison operator, whereas the arithmetic instructions use
-		 CC_NOOVmode and thus work with only a small subset.  */
+		 CCNZmode and thus work with only a small subset.  */
 	      if (dep_attr_type == TYPE_LOGIC
 		  || (dep_attr_type == TYPE_ARITH
-		      && visium_noov_operator (XEXP (src, 0),
-					       GET_MODE (XEXP (src, 0)))))
+		      && visium_nz_comparison_operator (XEXP (src, 0),
+							GET_MODE
+							(XEXP (src, 0)))))
 		return 0;
 	    }
 	}
@@ -2113,16 +2114,12 @@ visium_split_double_add (enum rtx_code code, rtx op0, rtx op1, rtx op2)
       op8 = gen_highpart (SImode, op2);
     }
 
-  /* This is the {add,sub,neg}si3_insn_set_flags pattern.  */
   if (op4 == const0_rtx)
-    x = gen_rtx_NEG (SImode, op5);
+    pat = gen_negsi2_insn_set_carry (op3, op5);
+  else if (code == MINUS)
+    pat = gen_subsi3_insn_set_carry (op3, op4, op5);
   else
-    x = gen_rtx_fmt_ee (code, SImode, op4, op5);
-  pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
-  XVECEXP (pat, 0, 0) = gen_rtx_SET (op3, x);
-  flags = gen_rtx_REG (CC_NOOVmode, FLAGS_REGNUM);
-  x = gen_rtx_COMPARE (CC_NOOVmode, shallow_copy_rtx (x), const0_rtx);
-  XVECEXP (pat, 0, 1) = gen_rtx_SET (flags, x);
+    pat = gen_addsi3_insn_set_carry (op3, op4, op5);
   emit_insn (pat);
 
   /* This is the plus_[plus_]sltu_flags or minus_[minus_]sltu_flags pattern.  */
@@ -2130,6 +2127,7 @@ visium_split_double_add (enum rtx_code code, rtx op0, rtx op1, rtx op2)
     x = op7;
   else
     x = gen_rtx_fmt_ee (code, SImode, op7, op8);
+  flags = gen_rtx_REG (CCCmode, FLAGS_REGNUM);
   x = gen_rtx_fmt_ee (code, SImode, x, gen_rtx_LTU (SImode, flags, const0_rtx));
   pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
   XVECEXP (pat, 0, 0) = gen_rtx_SET (op6, x);
@@ -2814,6 +2812,16 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	}
     }
 
+  /* This is for the cmp<mode>_sne pattern.  */
+  if (op1 == constm1_rtx)
+    return CCCmode;
+
+  /* This is for the add<mode>3_insn_set_carry pattern.  */
+  if ((code == LTU || code == GEU)
+      && GET_CODE (op0) == PLUS
+      && rtx_equal_p (XEXP (op0, 0), op1))
+    return CCCmode;
+
   if (op1 != const0_rtx)
     return CCmode;
 
@@ -2825,17 +2833,17 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
     case ASHIFT:
     case LTU:
     case LT:
-      /* The V flag may be set differently from a COMPARE with zero.
-	 The consequence is that a comparison operator testing V must
-	 be turned into another operator not testing V and yielding
-	 the same result for a comparison with zero.  That's possible
-	 for GE/LT which become NC/NS respectively, but not for GT/LE
-	 for which the altered operator doesn't exist on the Visium.  */
-      return CC_NOOVmode;
+      /* The C and V flags may be set differently from a COMPARE with zero.
+	 The consequence is that a comparison operator testing C or V must
+	 be turned into another operator not testing C or V and yielding
+	 the same result for a comparison with zero.  That's possible for
+	 GE/LT which become NC/NS respectively, but not for GT/LE for which
+	 the altered operator doesn't exist on the Visium.  */
+      return CCNZmode;
 
     case ZERO_EXTRACT:
       /* This is a btst, the result is in C instead of Z.  */
-      return CC_BTSTmode;
+      return CCCmode;
 
     case CONST_INT:
       /* This is a degenerate case, typically an uninitialized variable.  */
@@ -3077,21 +3085,21 @@ output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
   switch (code)
     {
     case NE:
-      if (cc_mode == CC_BTSTmode)
+      if (cc_mode == CCCmode)
 	cond = "cs";
       else
 	cond = "ne";
       break;
 
     case EQ:
-      if (cc_mode == CC_BTSTmode)
+      if (cc_mode == CCCmode)
 	cond = "cc";
       else
 	cond = "eq";
       break;
 
     case GE:
-      if (cc_mode == CC_NOOVmode)
+      if (cc_mode == CCNZmode)
 	cond = "nc";
       else
 	cond = "ge";
@@ -3110,8 +3118,8 @@ output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
 
     case LT:
       if (cc_mode == CCFPmode || cc_mode == CCFPEmode)
-	cond = "ns";
-      else if (cc_mode == CC_NOOVmode)
+	cond = "cs"; /* or "ns" */
+      else if (cc_mode == CCNZmode)
 	cond = "ns";
       else
 	cond = "lt";
@@ -3142,7 +3150,7 @@ output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
       break;
 
     case UNGE:
-      cond = "nc";
+      cond = "cc"; /* or "nc" */
       break;
 
     case UNGT:

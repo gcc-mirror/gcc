@@ -19,19 +19,22 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Add any extra modes needed to represent the condition code.
 
-   On the Visium, we have a "no-overflow" mode which is used when arithmetic
-   instructions set the condition code.  Different branches are used in this
-   case for some operations.
+   We have a CCNZ mode which is used for implicit comparisons with zero when
+   arithmetic instructions set the condition code.  Only the N and Z flags
+   are valid in this mode, which means that only the =,!= and <,>= operators
+   can be used in conjunction with it.
 
-   We also have a "bit-test" mode which is used when the bit-test instruction
-   sets the condition code.
+   We also have a CCCmode which is used by the arithmetic instructions when
+   they explicitly set the C flag (unsigned overflow) and by the bit-test
+   instruction.  Only the =,!= and unsigned <,>= operators can be used in
+   conjunction with it.
 
    We also have two modes to indicate that the condition code is set by the
    the floating-point unit.  One for comparisons which generate an exception
    if the result is unordered (CCFPEmode) and one for comparisons which never
    generate such an exception (CCFPmode).  */
 
-CC_MODE (CC_NOOV);
-CC_MODE (CC_BTST);
+CC_MODE (CCNZ);
+CC_MODE (CCC);
 CC_MODE (CCFP);
 CC_MODE (CCFPE);
