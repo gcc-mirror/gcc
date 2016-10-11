@@ -6832,7 +6832,7 @@ elaborate_reference (tree ref, Entity_Id gnat_entity, bool definition,
 /* Given a GNU tree and a GNAT list of choices, generate an expression to test
    the value passed against the list of choices.  */
 
-tree
+static tree
 choices_to_gnu (tree operand, Node_Id choices)
 {
   Node_Id choice;
@@ -6851,9 +6851,10 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  this_test
 	    = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
 			       build_binary_op (GE_EXPR, boolean_type_node,
-						operand, low),
+						operand, low, true),
 			       build_binary_op (LE_EXPR, boolean_type_node,
-						operand, high));
+						operand, high, true),
+			       true);
 
 	  break;
 
@@ -6865,9 +6866,10 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  this_test
 	    = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
 			       build_binary_op (GE_EXPR, boolean_type_node,
-						operand, low),
+						operand, low, true),
 			       build_binary_op (LE_EXPR, boolean_type_node,
-						operand, high));
+						operand, high, true),
+			       true);
 	  break;
 
 	case N_Identifier:
@@ -6886,9 +6888,10 @@ choices_to_gnu (tree operand, Node_Id choices)
 	      this_test
 		= build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
 				   build_binary_op (GE_EXPR, boolean_type_node,
-						    operand, low),
+						    operand, low, true),
 				   build_binary_op (LE_EXPR, boolean_type_node,
-						    operand, high));
+						    operand, high, true),
+				   true);
 	      break;
 	    }
 
@@ -6898,7 +6901,7 @@ choices_to_gnu (tree operand, Node_Id choices)
 	case N_Integer_Literal:
 	  single = gnat_to_gnu (choice);
 	  this_test = build_binary_op (EQ_EXPR, boolean_type_node, operand,
-				       single);
+				       single, true);
 	  break;
 
 	case N_Others_Choice:
@@ -6909,8 +6912,11 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  gcc_unreachable ();
 	}
 
-      result = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node, result,
-				this_test);
+      if (result == boolean_false_node)
+	result = this_test;
+      else
+	result = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node, result,
+				  this_test, true);
     }
 
   return result;

@@ -834,6 +834,7 @@ build_load_modify_store (tree dest, tree src, Node_Id gnat_node)
    in that type.  For INIT_EXPR and MODIFY_EXPR, RESULT_TYPE must be
    NULL_TREE.  For ARRAY_REF, RESULT_TYPE may be NULL_TREE, in which
    case the type to be used will be derived from the operands.
+   Don't fold the result if NO_FOLD is true.
 
    This function is very much unlike the ones for C and C++ since we
    have already done any type conversion and matching required.  All we
@@ -841,7 +842,8 @@ build_load_modify_store (tree dest, tree src, Node_Id gnat_node)
 
 tree
 build_binary_op (enum tree_code op_code, tree result_type,
-                 tree left_operand, tree right_operand)
+		 tree left_operand, tree right_operand,
+		 bool no_fold)
 {
   tree left_type = TREE_TYPE (left_operand);
   tree right_type = TREE_TYPE (right_operand);
@@ -1283,10 +1285,16 @@ build_binary_op (enum tree_code op_code, tree result_type,
   else if (TREE_CODE (right_operand) == NULL_EXPR)
     return build1 (NULL_EXPR, operation_type, TREE_OPERAND (right_operand, 0));
   else if (op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
-    result = fold (build4 (op_code, operation_type, left_operand,
-			   right_operand, NULL_TREE, NULL_TREE));
+    {
+      result = build4 (op_code, operation_type, left_operand, right_operand,
+		       NULL_TREE, NULL_TREE);
+      if (!no_fold)
+	result = fold (result);
+    }
   else if (op_code == INIT_EXPR || op_code == MODIFY_EXPR)
     result = build2 (op_code, void_type_node, left_operand, right_operand);
+  else if (no_fold)
+    result = build2 (op_code, operation_type, left_operand, right_operand);
   else
     result
       = fold_build2 (op_code, operation_type, left_operand, right_operand);
@@ -1307,8 +1315,13 @@ build_binary_op (enum tree_code op_code, tree result_type,
   /* If we are working with modular types, perform the MOD operation
      if something above hasn't eliminated the need for it.  */
   if (modulus)
-    result = fold_build2 (FLOOR_MOD_EXPR, operation_type, result,
-			  convert (operation_type, modulus));
+    {
+      modulus = convert (operation_type, modulus);
+      if (no_fold)
+	result = build2 (FLOOR_MOD_EXPR, operation_type, result, modulus);
+      else
+	result = fold_build2 (FLOOR_MOD_EXPR, operation_type, result, modulus);
+    }
 
   if (result_type && result_type != operation_type)
     result = convert (result_type, result);
