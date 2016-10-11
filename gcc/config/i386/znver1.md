@@ -228,18 +228,18 @@
 				   (eq_attr "memory" "store")))
 				   "znver1-direct,znver1-ieu,znver1-store")
 
-(define_insn_reservation "znver1_load_imov_double_load" 6
+(define_insn_reservation "znver1_load_imov_double_load" 5
 			 (and (eq_attr "cpu" "znver1")
 			      (and (eq_attr "znver1_decode" "double")
 				   (and (eq_attr "type" "imovx")
 					(eq_attr "memory" "load"))))
-			 "znver1-double,znver1-load,znver1-ieu")
+			 "znver1-double,znver1-load")
 
-(define_insn_reservation "znver1_load_imov_direct_load" 5
+(define_insn_reservation "znver1_load_imov_direct_load" 4
 			 (and (eq_attr "cpu" "znver1")
 			      (and (eq_attr "type" "imov,imovx")
 				   (eq_attr "memory" "load")))
-			 "znver1-direct,znver1-load,znver1-ieu")
+			 "znver1-direct,znver1-load")
 
 ;; INTEGER/GENERAL instructions
 ;; register/imm operands only: ALU, ICMP, NEG, NOT, ROTATE, ISHIFT, TEST
