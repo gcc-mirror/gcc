@@ -1092,8 +1092,8 @@ See RS/6000 and PowerPC Options.
 -muser-mode  -mno-user-mode @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
--mcbcond -mno-cbcond @gol
--mfmaf  -mno-fmaf  -mpopc  -mno-popc @gol
+-mcbcond -mno-cbcond  -mfmaf  -mno-fmaf  @gol
+-mpopc  -mno-popc  -msubxc  -mno-subxc@gol
 -mfix-at697f -mfix-ut699}
 
 @emph{SPU Options}
@@ -22941,18 +22941,9 @@ also sets @option{-mvis3}, @option{-mvis2} and @option{-mvis}.
 @itemx -mno-cbcond
 @opindex mcbcond
 @opindex mno-cbcond
-With @option{-mcbcond}, GCC generates code that takes advantage of
-compare-and-branch instructions, as defined in the Sparc Architecture 2011.
-The default is @option{-mcbcond} when targeting a cpu that supports such
-instructions, such as niagara-4 and later.
-
-@item -mpopc
-@itemx -mno-popc
-@opindex mpopc
-@opindex mno-popc
-With @option{-mpopc}, GCC generates code that takes advantage of the UltraSPARC
-population count instruction.  The default is @option{-mpopc}
-when targeting a cpu that supports such instructions, such as Niagara-2 and
+With @option{-mcbcond}, GCC generates code that takes advantage of the UltraSPARC
+Compare-and-Branch-on-Condition instructions.  The default is @option{-mcbcond}
+when targeting a CPU that supports such instructions, such as Niagara-4 and
 later.
 
 @item -mfmaf
@@ -22960,8 +22951,26 @@ later.
 @opindex mfmaf
 @opindex mno-fmaf
 With @option{-mfmaf}, GCC generates code that takes advantage of the UltraSPARC
-Fused Multiply-Add Floating-point extensions.  The default is @option{-mfmaf}
-when targeting a cpu that supports such instructions, such as Niagara-3 and
+Fused Multiply-Add Floating-point instructions.  The default is @option{-mfmaf}
+when targeting a CPU that supports such instructions, such as Niagara-3 and
+later.
+
+@item -mpopc
+@itemx -mno-popc
+@opindex mpopc
+@opindex mno-popc
+With @option{-mpopc}, GCC generates code that takes advantage of the UltraSPARC
+Population Count instruction.  The default is @option{-mpopc}
+when targeting a CPU that supports such an instruction, such as Niagara-2 and
+later.
+
+@item -msubxc
+@itemx -mno-subxc
+@opindex msubxc
+@opindex mno-subxc
+With @option{-msubxc}, GCC generates code that takes advantage of the UltraSPARC
+Subtract-Extended-with-Carry instruction.  The default is @option{-msubxc}
+when targeting a CPU that supports such an instruction, such as Niagara-7 and
 later.
 
 @item -mfix-at697f

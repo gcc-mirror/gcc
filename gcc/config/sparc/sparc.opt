@@ -89,6 +89,10 @@ mpopc
 Target Report Mask(POPC)
 Use UltraSPARC Population-Count instruction.
 
+msubxc
+Target Report Mask(SUBXC)
+Use UltraSPARC Subtract-Extended-with-Carry instruction.
+
 mptr64
 Target Report RejectNegative Mask(PTR64)
 Pointers are 64-bit.

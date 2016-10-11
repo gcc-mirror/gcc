@@ -1,3 +1,20 @@
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/cbcond-1.c: New test.
+	* gcc.target/sparc/cbcond-2.c: Likewise.
+	* gcc.target/sparc/movcc-1.c: Likewise.
+	* gcc.target/sparc/movcc-2.c: Likewise.
+	* gcc.target/sparc/setcc-1.c: Adjust.
+	* gcc.target/sparc/setcc-2.c: Likewise.
+	* gcc.target/sparc/setcc-3.c: Likewise.
+	* gcc.target/sparc/setcc-4.c: Likewise.
+	* gcc.target/sparc/setcc-5.c: Likewise.
+	* gcc.target/sparc/setcc-6.c: New test.
+	* gcc.target/sparc/setcc-7.c: Likewise.
+	* gcc.target/sparc/setcc-8.c: Likewise.
+	* gcc.target/sparc/setcc-9.c: Likewise.
+	* gcc.target/sparc/setcc-10.c: Likewise.
+
 2016-10-10  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71947

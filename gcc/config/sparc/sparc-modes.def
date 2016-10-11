@@ -1,7 +1,7 @@
 /* Definitions of target machine for GCC, for Sun SPARC.
    Copyright (C) 2002-2016 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
-   64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
+   64-bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
 
 This file is part of GCC.
@@ -25,20 +25,27 @@ FLOAT_MODE (TF, 16, ieee_quad_format);
 
 /* Add any extra modes needed to represent the condition code.
 
-   On the SPARC, we have a "no-overflow" mode which is used when an add or
-   subtract insn is used to set the condition code.  Different branches are
-   used in this case for some operations.
+   We have a CCNZ mode which is used for implicit comparisons with zero when
+   arithmetic instructions set the condition code.  Only the N and Z flags
+   are valid in this mode, which means that only the =,!= and <,>= operators
+   can be used in conjunction with it.
+
+   We also have a CCCmode which is used by the arithmetic instructions when
+   they explicitly set the C flag (unsigned overflow).  Only the unsigned
+   <,>= operators can be used in conjunction with it.
 
    We also have two modes to indicate that the relevant condition code is
    in the floating-point condition code register.  One for comparisons which
    will generate an exception if the result is unordered (CCFPEmode) and
    one for comparisons which will never trap (CCFPmode).
 
-   CCXmode and CCX_NOOVmode are only used by v9.  */
+   CC modes are used for the 32-bit ICC, CCX modes for the 64-bit XCC.  */
 
 CC_MODE (CCX);
-CC_MODE (CC_NOOV);
-CC_MODE (CCX_NOOV);
+CC_MODE (CCNZ);
+CC_MODE (CCXNZ);
+CC_MODE (CCC);
+CC_MODE (CCXC);
 CC_MODE (CCFP);
 CC_MODE (CCFPE);
 
