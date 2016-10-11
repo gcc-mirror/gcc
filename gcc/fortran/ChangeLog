@@ -1,3 +1,8 @@
+2016-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77942
+	* simplify.c (gfc_simplify_cshift): Check for zero.
+
 2016-10-11  Fritz Reese  <fritzoreese@gmail.com>
 
 	* iresolve.c (get_radians, get_degrees): Fix sloppy commit.
@@ -5,7 +10,7 @@
 
 2016-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	* simplify.c (radians_f): Fix mpdr_mod.
+	* simplify.c (radians_f): Fix mpfr_mod.
 	* ireolce.c (get_degrees): Declare tmp.
 
 2016-10-11  Fritz Reese  <fritzoreese@gmail.com>
