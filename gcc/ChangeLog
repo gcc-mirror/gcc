@@ -1,3 +1,9 @@
+2016-10-11  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/77424
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Remove
+	dead conditionals.  Assert that all e->aux fields are NULL.
+
 2016-10-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* print-rtl.c (print_rtx): Rename "i" to "idx".  Split out the

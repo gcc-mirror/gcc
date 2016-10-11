@@ -2550,55 +2550,15 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       retval |= thread_through_loop_header (loop, may_peel_loop_headers);
     }
 
-  /* Any jump threading paths that are still attached to edges at this
-     point must be one of two cases.
-
-     First, we could have a jump threading path which went from outside
-     a loop to inside a loop that was ignored because a prior jump thread
-     across a backedge was realized (which indirectly causes the loop
-     above to ignore the latter thread).  We can detect these because the
-     loop structures will be different and we do not currently try to
-     optimize this case.
-
-     Second, we could be threading across a backedge to a point within the
-     same loop.  This occurrs for the FSA/FSM optimization and we would
-     like to optimize it.  However, we have to be very careful as this
-     may completely scramble the loop structures, with the result being
-     irreducible loops causing us to throw away our loop structure.
-
-     As a compromise for the latter case, if the thread path ends in
-     a block where the last statement is a multiway branch, then go
-     ahead and thread it, else ignore it.  */
+  /* All jump threading paths should have been resolved at this
+     point.  Verify that is the case.  */
   basic_block bb;
-  edge e;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      /* If we do end up threading here, we can remove elements from
-	 BB->preds.  Thus we can not use the FOR_EACH_EDGE iterator.  */
-      for (edge_iterator ei = ei_start (bb->preds);
-	   (e = ei_safe_edge (ei));)
-	if (e->aux)
-	  {
-	    vec<jump_thread_edge *> *path = THREAD_PATH (e);
-
-	    /* Case 1, threading from outside to inside the loop
-	       after we'd already threaded through the header.  */
-	    if ((*path)[0]->e->dest->loop_father
-		!= path->last ()->e->src->loop_father)
-	      {
-		delete_jump_thread_path (path);
-		e->aux = NULL;
-		ei_next (&ei);
-	      }
-	    else
-	      {
-		delete_jump_thread_path (path);
-		e->aux = NULL;
-		ei_next (&ei);
-	      }
- 	  }
-	else
-	  ei_next (&ei);
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	gcc_assert (e->aux == NULL);
     }
 
   statistics_counter_event (cfun, "Jumps threaded",
