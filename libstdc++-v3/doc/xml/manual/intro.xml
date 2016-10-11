@@ -1078,6 +1078,14 @@ requirements of the license of GCC.
     <listitem><para>Divide by the object type.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2484">2484</link>:
+       <emphasis><code>rethrow_if_nested()</code>  is doubly unimplementable
+       </emphasis>
+    </term>
+    <listitem><para>Avoid using <code>dynamic_cast</code> when it would be
+    ill-formed.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2583">2583</link>:
        <emphasis>There is no way to supply an allocator for <code> basic_string(str, pos)</code>
        </emphasis>

@@ -1,5 +1,18 @@
 2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 2484 status.
+	* libsupc++/nested_exception.h (_Throw_with_nested_impl)
+	(_Throw_with_nested_helper): Remove.
+	(__throw_with_nested_impl): New overloaded functions to implement
+	throw_with_nested logic.
+	(throw_with_nested): Call __throw_with_nested_impl.
+	(_Rethrow_if_nested_impl): Remove
+	(__rethrow_if_nested_impl): New overloaded functions to implement
+	rethrow_if_nested logic.
+	(rethrow_if_nested): Call __rethrow_if_nested_impl.
+	* testsuite/18_support/nested_exception/rethrow_if_nested.cc: Test
+	problem cases from LWG 2484.
+
 	* python/libstdcxx/v6/printers.py (build_libstdcxx_dictionary):
 	Register printer for std::__cxx11::list.
 	* python/libstdcxx/v6/xmethods.py (ListMethodsMatcher.match): Match
