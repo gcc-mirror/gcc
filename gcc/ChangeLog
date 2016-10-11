@@ -1,3 +1,9 @@
+2016-10-11  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/77558
+	* builtins.c (std_canonical_va_list_type): Remove RECORD_TYPE
+	special-casing.
+
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (build_complex_type): Add second parameter with default.

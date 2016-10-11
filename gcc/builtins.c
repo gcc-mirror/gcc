@@ -4090,10 +4090,8 @@ std_canonical_va_list_type (tree type)
 
   wtype = va_list_type_node;
   htype = type;
-  /* Treat structure va_list types.  */
-  if (TREE_CODE (wtype) == RECORD_TYPE && POINTER_TYPE_P (htype))
-    htype = TREE_TYPE (htype);
-  else if (TREE_CODE (wtype) == ARRAY_TYPE)
+
+  if (TREE_CODE (wtype) == ARRAY_TYPE)
     {
       /* If va_list is an array type, the argument may have decayed
 	 to a pointer type, e.g. by being passed to another function.
