@@ -1463,6 +1463,7 @@ without warning.
 * UNION and MAP::
 * Type variants for integer intrinsics::
 * AUTOMATIC and STATIC attributes::
+* Extended math intrinsics::
 @end menu
 
 @node Old-style kind specifications
@@ -2471,6 +2472,42 @@ subroutine f
   ! a is automatic; b, c, and d are static
 endsubroutine
 @end example
+
+@node Extended math intrinsics
+@subsection Extended math intrinsics
+@cindex intrinsics, math
+@cindex intrinsics, trigonometric functions
+
+GNU Fortran supports an extended list of mathematical intrinsics with the
+compile flag @option{-fdec-math} for compatability with legacy code.
+These intrinsics are described fully in @ref{Intrinsic Procedures} where it is
+noted that they are extensions and should be avoided whenever possible.
+
+Specifically, @option{-fdec-math} enables the @ref{COTAN} intrinsic, and
+trigonometric intrinsics which accept or produce values in degrees instead of
+radians.  Here is a summary of the new intrinsics:
+
+@multitable @columnfractions .5 .5
+@headitem Radians @tab Degrees
+@item @code{@ref{ACOS}}   @tab @code{@ref{ACOSD}}*
+@item @code{@ref{ASIN}}   @tab @code{@ref{ASIND}}*
+@item @code{@ref{ATAN}}   @tab @code{@ref{ATAND}}*
+@item @code{@ref{ATAN2}}  @tab @code{@ref{ATAN2D}}*
+@item @code{@ref{COS}}    @tab @code{@ref{COSD}}*
+@item @code{@ref{COTAN}}* @tab @code{@ref{COTAND}}*
+@item @code{@ref{SIN}}    @tab @code{@ref{SIND}}*
+@item @code{@ref{TAN}}    @tab @code{@ref{TAND}}*
+@end multitable
+
+* Enabled with @option{-fdec-math}.
+
+For advanced users, it may be important to know the implementation of these
+functions. They are simply wrappers around the standard radian functions, which
+have more accurate builtin versions. These functions convert their arguments
+(or results) to degrees (or radians) by taking the value modulus 360 (or 2*pi)
+and then multiplying it by a constant radian-to-degree (or degree-to-radian)
+factor, as appropriate. The factor is computed at compile-time as 180/pi (or
+pi/180).
 
 
 @node Extensions not implemented in GNU Fortran

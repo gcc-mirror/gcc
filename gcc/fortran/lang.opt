@@ -428,6 +428,10 @@ fdec-intrinsic-ints
 Fortran Var(flag_dec_intrinsic_ints)
 Enable kind-specific variants of integer intrinsic functions.
 
+fdec-math
+Fortran Var(flag_dec_math)
+Enable legacy math intrinsics for compatibility.
+
 fdec-structure
 Fortran
 Enable support for DEC STRUCTURE/RECORD.

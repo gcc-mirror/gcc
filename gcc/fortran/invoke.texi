@@ -116,7 +116,7 @@ by type.  Explanations are in the following sections.
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
 -fd-lines-as-comments @gol
--fdec -fdec-structure -fdec-intrinsic-ints -fdec-static @gol
+-fdec -fdec-structure -fdec-intrinsic-ints -fdec-static -fdec-math @gol
 -fdefault-double-8 -fdefault-integer-8 @gol
 -fdefault-real-8 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
@@ -254,6 +254,11 @@ instead where possible.
 @opindex @code{fdec-intrinsic-ints}
 Enable B/I/J/K kind variants of existing integer functions (e.g. BIAND, IIAND,
 JIAND, etc...). For a complete list of intrinsics see the full documentation.
+
+@item -fdec-math
+@opindex @code{fdec-math}
+Enable legacy math intrinsics such as COTAN and degree-valued trigonometric
+functions (e.g. TAND, ATAND, etc...) for compatability with older code.
 
 @item -fdec-static
 @opindex @code{fdec-static}

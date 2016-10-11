@@ -23,6 +23,9 @@ Some basic guidelines for editing this document:
 @end ignore
 
 @tex
+\gdef\acosd{\mathop{\rm acosd}\nolimits}
+\gdef\asind{\mathop{\rm asind}\nolimits}
+\gdef\atand{\mathop{\rm atand}\nolimits}
 \gdef\acos{\mathop{\rm acos}\nolimits}
 \gdef\asin{\mathop{\rm asin}\nolimits}
 \gdef\atan{\mathop{\rm atan}\nolimits}
@@ -43,6 +46,7 @@ Some basic guidelines for editing this document:
 * @code{ACCESS}:        ACCESS,    Checks file access modes
 * @code{ACHAR}:         ACHAR,     Character in @acronym{ASCII} collating sequence
 * @code{ACOS}:          ACOS,      Arccosine function
+* @code{ACOSD}:         ACOSD,     Arccosine function, degrees
 * @code{ACOSH}:         ACOSH,     Inverse hyperbolic cosine function
 * @code{ADJUSTL}:       ADJUSTL,   Left adjust a string
 * @code{ADJUSTR}:       ADJUSTR,   Right adjust a string
@@ -55,10 +59,13 @@ Some basic guidelines for editing this document:
 * @code{ANINT}:         ANINT,     Nearest whole number
 * @code{ANY}:           ANY,       Determine if any values are true
 * @code{ASIN}:          ASIN,      Arcsine function
+* @code{ASIND}:         ASIND,     Arcsine function, degrees
 * @code{ASINH}:         ASINH,     Inverse hyperbolic sine function
 * @code{ASSOCIATED}:    ASSOCIATED, Status of a pointer or pointer/target pair
 * @code{ATAN}:          ATAN,      Arctangent function
+* @code{ATAND}:         ATAND,     Arctangent function, degrees
 * @code{ATAN2}:         ATAN2,     Arctangent function
+* @code{ATAN2D}:        ATAN2D,    Arctangent function, degrees
 * @code{ATANH}:         ATANH,     Inverse hyperbolic tangent function
 * @code{ATOMIC_ADD}:    ATOMIC_ADD, Atomic ADD operation
 * @code{ATOMIC_AND}:    ATOMIC_AND, Atomic bitwise AND operation
@@ -106,7 +113,10 @@ Some basic guidelines for editing this document:
 * @code{COMPLEX}:       COMPLEX,   Complex conversion function
 * @code{CONJG}:         CONJG,     Complex conjugate function
 * @code{COS}:           COS,       Cosine function
+* @code{COSD}:          COSD,      Cosine function, degrees
 * @code{COSH}:          COSH,      Hyperbolic cosine function
+* @code{COTAN}:         COTAN,     Cotangent function
+* @code{COTAND}:        COTAND,    Cotangent function, degrees
 * @code{COUNT}:         COUNT,     Count occurrences of TRUE in an array
 * @code{CPU_TIME}:      CPU_TIME,  CPU time subroutine
 * @code{CSHIFT}:        CSHIFT,    Circular shift elements of an array
@@ -277,6 +287,7 @@ Some basic guidelines for editing this document:
 * @code{SIGN}:          SIGN,      Sign copying function
 * @code{SIGNAL}:        SIGNAL,    Signal handling subroutine (or function)
 * @code{SIN}:           SIN,       Sine function
+* @code{SIND}:          SIND,      Sine function, degrees
 * @code{SINH}:          SINH,      Hyperbolic sine function
 * @code{SIZE}:          SIZE,      Function to determine the size of an array
 * @code{SIZEOF}:        SIZEOF,    Determine the size in bytes of an expression
@@ -292,6 +303,7 @@ Some basic guidelines for editing this document:
 * @code{SYSTEM}:        SYSTEM,    Execute a shell command
 * @code{SYSTEM_CLOCK}:  SYSTEM_CLOCK, Time function
 * @code{TAN}:           TAN,       Tangent function
+* @code{TAND}:          TAND,      Tangent function, degrees
 * @code{TANH}:          TANH,      Hyperbolic tangent function
 * @code{THIS_IMAGE}:    THIS_IMAGE, Cosubscript index of this image
 * @code{TIME}:          TIME,      Time function
@@ -619,6 +631,65 @@ end program test_acos
 
 @item @emph{See also}:
 Inverse function: @ref{COS}
+Degrees function: @ref{ACOSD}
+
+@end table
+
+
+
+@node ACOSD
+@section @code{ACOSD} --- Arccosine function, degrees
+@fnindex ACOSD
+@fnindex DACOSD
+@cindex trigonometric function, cosine, inverse, degrees
+@cindex cosine, inverse, degrees
+
+@table @asis
+@item @emph{Description}:
+@code{ACOSD(X)} computes the arccosine of @var{X} in degrees (inverse of
+@code{COSD(X)}).
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
+
+@item @emph{Standard}:
+GNU Extension, enabled with @option{-fdec-math}
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = ACOSD(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall either be @code{REAL} with a magnitude that is
+less than or equal to one - or the type shall be @code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+The real part of the result is in degrees and lies in the range
+@math{0 \leq \Re \acos(x) \leq 180}.
+
+@item @emph{Example}:
+@smallexample
+program test_acosd
+  real(8) :: x = 0.866_8
+  x = acosd(x)
+end program test_acosd
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument         @tab Return type     @tab Standard
+@item @code{ACOSD(X)}  @tab @code{REAL(4) X} @tab @code{REAL(4)}  @tab GNU Extension
+@item @code{DACOSD(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}  @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{COSD}
+Radians function: @ref{ACOS}
 
 @end table
 
@@ -1269,6 +1340,65 @@ end program test_asin
 
 @item @emph{See also}:
 Inverse function: @ref{SIN}
+Degrees function: @ref{ASIND}
+
+@end table
+
+
+
+@node ASIND
+@section @code{ASIND} --- Arcsine function, degrees
+@fnindex ASIND
+@fnindex DASIND
+@cindex trigonometric function, sine, inverse, degrees
+@cindex sine, inverse, degrees
+
+@table @asis
+@item @emph{Description}:
+@code{ASIND(X)} computes the arcsine of its @var{X} in degrees (inverse of
+@code{SIND(X)}).
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
+
+@item @emph{Standard}:
+GNU Extension, enabled with @option{-fdec-math}.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = ASIND(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be either @code{REAL} and a magnitude that is
+less than or equal to one - or be @code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+The real part of the result is in degrees and lies in the range
+@math{-90 \leq \Re \asin(x) \leq 90}.
+
+@item @emph{Example}:
+@smallexample
+program test_asind
+  real(8) :: x = 0.866_8
+  x = asind(x)
+end program test_asind
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{ASIND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab GNU Extension
+@item @code{DASIND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{SIND}
+Radians function: @ref{ASIN}
 
 @end table
 
@@ -1458,6 +1588,71 @@ end program test_atan
 
 @item @emph{See also}:
 Inverse function: @ref{TAN}
+Degrees function: @ref{ATAND}
+
+@end table
+
+
+
+@node ATAND
+@section @code{ATAND} --- Arctangent function, degrees
+@fnindex ATAND
+@fnindex DATAND
+@cindex trigonometric function, tangent, inverse, degrees
+@cindex tangent, inverse, degrees
+
+@table @asis
+@item @emph{Description}:
+@code{ATAND(X)} computes the arctangent of @var{X} in degrees (inverse of
+@ref{TAND}).
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
+
+@item @emph{Standard}:
+GNU Extension, enabled with @option{-fdec-math}.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = ATAND(X)}
+@item @code{RESULT = ATAND(Y, X)}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX};
+if @var{Y} is present, @var{X} shall be REAL.
+@item @var{Y} shall be of the same type and kind as @var{X}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+If @var{Y} is present, the result is identical to @code{ATAND2(Y,X)}.
+Otherwise, it is the arcus tangent of @var{X}, where the real part of
+the result is in degrees and lies in the range
+@math{-90 \leq \Re \atand(x) \leq 90}.
+
+@item @emph{Example}:
+@smallexample
+program test_atand
+  real(8) :: x = 2.866_8
+  x = atand(x)
+end program test_atand
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{ATAND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab GNU Extension
+@item @code{DATAND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{TAND}
+Radians function: @ref{ATAN}
 
 @end table
 
@@ -1473,7 +1668,7 @@ Inverse function: @ref{TAN}
 @table @asis
 @item @emph{Description}:
 @code{ATAN2(Y, X)} computes the principal value of the argument
-function of the complex number @math{X + i Y}. This function can
+function of the complex number @math{X + i Y}.  This function can
 be used to transform from Cartesian into polar coordinates and
 allows to determine the angle in the correct quadrant.
 
@@ -1518,6 +1713,78 @@ end program test_atan2
 @item @code{ATAN2(X, Y)}  @tab @code{REAL(4) X, Y} @tab @code{REAL(4)} @tab Fortran 77 and later
 @item @code{DATAN2(X, Y)} @tab @code{REAL(8) X, Y} @tab @code{REAL(8)} @tab Fortran 77 and later
 @end multitable
+
+@item @emph{See also}:
+Alias: @ref{ATAN}
+Degrees function: @ref{ATAN2D}
+
+@end table
+
+
+
+@node ATAN2D
+@section @code{ATAN2D} --- Arctangent function, degrees
+@fnindex ATAN2D
+@fnindex DATAN2D
+@cindex trigonometric function, tangent, inverse, degrees
+@cindex tangent, inverse, degrees
+
+@table @asis
+@item @emph{Description}:
+@code{ATAN2D(Y, X)} computes the principal value of the argument
+function of the complex number @math{X + i Y} in degrees.  This function can
+be used to transform from Cartesian into polar coordinates and
+allows to determine the angle in the correct quadrant.
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
+
+@item @emph{Standard}:
+GNU Extension, enabled with @option{-fdec-math}.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = ATAN2D(Y, X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{Y} @tab The type shall be @code{REAL}.
+@item @var{X} @tab The type and kind type parameter shall be the same as @var{Y}.
+If @var{Y} is zero, then @var{X} must be nonzero.
+@end multitable
+
+@item @emph{Return value}:
+The return value has the same type and kind type parameter as @var{Y}. It
+is the principal value of the complex number @math{X + i Y}.  If @var{X}
+is nonzero, then it lies in the range @math{-180 \le \atan (x) \leq 180}.
+The sign is positive if @var{Y} is positive.  If @var{Y} is zero, then
+the return value is zero if @var{X} is strictly positive, @math{180} if
+@var{X} is negative and @var{Y} is positive zero (or the processor does
+not handle signed zeros), and @math{-180} if @var{X} is negative and
+@var{Y} is negative zero.  Finally, if @var{X} is zero, then the
+magnitude of the result is @math{90}.
+
+@item @emph{Example}:
+@smallexample
+program test_atan2d
+  real(4) :: x = 1.e0_4, y = 0.5e0_4
+  x = atan2d(y,x)
+end program test_atan2d
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name                @tab Argument            @tab Return type    @tab Standard
+@item @code{ATAN2D(X, Y)}  @tab @code{REAL(4) X, Y} @tab @code{REAL(4)} @tab GNU Extension
+@item @code{DATAN2D(X, Y)} @tab @code{REAL(8) X, Y} @tab @code{REAL(8)} @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Alias: @ref{ATAND}
+Radians function: @ref{ATAN2}
+
 @end table
 
 
@@ -3895,6 +4162,70 @@ end program test_cos
 
 @item @emph{See also}:
 Inverse function: @ref{ACOS}
+Degrees function: @ref{COSD}
+
+@end table
+
+
+
+@node COSD
+@section @code{COSD} --- Cosine function, degrees
+@fnindex COSD
+@fnindex DCOSD
+@fnindex CCOSD
+@fnindex ZCOSD
+@fnindex CDCOSD
+@cindex trigonometric function, cosine, degrees
+@cindex cosine, degrees
+
+@table @asis
+@item @emph{Description}:
+@code{COSD(X)} computes the cosine of @var{X} in degrees.
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
+
+@item @emph{Standard}:
+GNU Extension, enabled with @option{-fdec-math}.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = COSD(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL} or
+@code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}. The real part
+of the result is in degrees.  If @var{X} is of the type @code{REAL},
+the return value lies in the range @math{ -1 \leq \cosd (x) \leq 1}.
+
+@item @emph{Example}:
+@smallexample
+program test_cosd
+  real :: x = 0.0
+  x = cosd(x)
+end program test_cosd
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{COSD(X)}   @tab @code{REAL(4) X}    @tab @code{REAL(4)}    @tab GNU Extension
+@item @code{DCOSD(X)}  @tab @code{REAL(8) X}    @tab @code{REAL(8)}    @tab GNU Extension
+@item @code{CCOSD(X)}  @tab @code{COMPLEX(4) X} @tab @code{COMPLEX(4)} @tab GNU Extension
+@item @code{ZCOSD(X)}  @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
+@item @code{CDCOSD(X)} @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
+@end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{ACOSD}
+Radians function: @ref{COS}
 
 @end table
 
@@ -3949,6 +4280,115 @@ end program test_cosh
 
 @item @emph{See also}:
 Inverse function: @ref{ACOSH}
+
+@end table
+
+
+
+@node COTAN
+@section @code{COTAN} --- Cotangent function
+@fnindex COTAN
+@fnindex DCOTAN
+@cindex trigonometric function, cotangent
+@cindex cotangent
+
+@table @asis
+@item @emph{Description}:
+@code{COTAN(X)} computes the cotangent of @var{X}. Equivalent to @code{COS(x)}
+divided by @code{SIN(x)}, or @code{1 / TAN(x)}.
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
+
+@item @emph{Standard}:
+GNU Extension, enabled with @option{-fdec-math}.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = COTAN(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has same type and kind as @var{X}, and its value is in radians.
+
+@item @emph{Example}:
+@smallexample
+program test_cotan
+  real(8) :: x = 0.165_8
+  x = cotan(x)
+end program test_cotan
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument          @tab Return type     @tab Standard
+@item @code{COTAN(X)}   @tab @code{REAL(4) X}  @tab @code{REAL(4)}  @tab GNU Extension
+@item @code{DCOTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Converse function: @ref{TAN}
+Degrees function: @ref{COTAND}
+@end table
+
+
+
+@node COTAND
+@section @code{COTAND} --- Cotangent function, degrees
+@fnindex COTAND
+@fnindex DCOTAND
+@cindex trigonometric function, cotangent, degrees
+@cindex cotangent, degrees
+
+@table @asis
+@item @emph{Description}:
+@code{COTAND(X)} computes the cotangent of @var{X} in degrees.  Equivalent to
+@code{COSD(x)} divided by @code{SIND(x)}, or @code{1 / TAND(x)}.
+
+@item @emph{Standard}:
+GNU Extension, enabled with @option{-fdec-math}.
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = COTAND(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has same type and kind as @var{X}, and its value is in degrees.
+
+@item @emph{Example}:
+@smallexample
+program test_cotand
+  real(8) :: x = 0.165_8
+  x = cotand(x)
+end program test_cotand
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument          @tab Return type     @tab Standard
+@item @code{COTAND(X)}   @tab @code{REAL(4) X}  @tab @code{REAL(4)}  @tab GNU Extension
+@item @code{DCOTAND(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Converse function: @ref{TAND}
+Radians function: @ref{COTAN}
 
 @end table
 
@@ -12390,7 +12830,69 @@ end program test_sin
 @end multitable
 
 @item @emph{See also}:
-@ref{ASIN}
+Inverse function: @ref{ASIN}
+Degrees function: @ref{SIND}
+@end table
+
+
+
+@node SIND
+@section @code{SIND} --- Sine function, degrees
+@fnindex SIND
+@fnindex DSIND
+@fnindex CSIND
+@fnindex ZSIND
+@fnindex CDSIND
+@cindex trigonometric function, sine, degrees
+@cindex sine, degrees
+
+@table @asis
+@item @emph{Description}:
+@code{SIND(X)} computes the sine of @var{X} in degrees.
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
+
+@item @emph{Standard}:
+GNU Extension, enabled with @option{-fdec-math}.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = SIND(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL} or
+@code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has same type and kind as @var{X}, and its value is in degrees.
+
+@item @emph{Example}:
+@smallexample
+program test_sind
+  real :: x = 0.0
+  x = sind(x)
+end program test_sind
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument             @tab Return type       @tab Standard
+@item @code{SIND(X)}   @tab @code{REAL(4) X}     @tab @code{REAL(4)}    @tab GNU Extension
+@item @code{DSIND(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}    @tab GNU Extension
+@item @code{CSIND(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)} @tab GNU Extension
+@item @code{ZSIND(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)} @tab GNU Extension
+@item @code{CDSIND(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)} @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{ASIND}
+Radians function: @ref{SIN}
+
 @end table
 
 
@@ -13151,7 +13653,7 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value has same type and kind as @var{X}.
+The return value has same type and kind as @var{X}, and its value is in radians.
 
 @item @emph{Example}:
 @smallexample
@@ -13169,7 +13671,61 @@ end program test_tan
 @end multitable
 
 @item @emph{See also}:
-@ref{ATAN}
+Inverse function: @ref{ATAN}
+Degrees function: @ref{TAND}
+@end table
+
+
+
+@node TAND
+@section @code{TAND} --- Tangent function, degrees
+@fnindex TAND
+@fnindex DTAND
+@cindex trigonometric function, tangent, degrees
+@cindex tangent, degrees
+
+@table @asis
+@item @emph{Description}:
+@code{TAND(X)} computes the tangent of @var{X} in degrees.
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
+
+@item @emph{Standard}:
+GNU Extension, enabled with @option{-fdec-math}.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = TAND(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has same type and kind as @var{X}, and its value is in degrees.
+
+@item @emph{Example}:
+@smallexample
+program test_tand
+  real(8) :: x = 0.165_8
+  x = tand(x)
+end program test_tand
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name            @tab Argument          @tab Return type     @tab Standard
+@item @code{TAND(X)}   @tab @code{REAL(4) X}  @tab @code{REAL(4)}  @tab GNU Extension
+@item @code{DTAND(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{ATAND}
+Radians function: @ref{TAN}
 @end table
 
 
