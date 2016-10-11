@@ -1,3 +1,22 @@
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-linux-armeb.ads (Backend_Overflow_Checks): Change to True.
+	* system-linux-mips.ads (Backend_Overflow_Checks): Likewise.
+	* system-linux-mips64el.ads (Backend_Overflow_Checks): Likewise.
+	* system-linux-mipsel.ads (Backend_Overflow_Checks): Likewise.
+	* system-linux-sparcv9.ads (Backend_Overflow_Checks): Likewise.
+	* system-rtems.ads: Likewise.
+
+	2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+		    Tristan Gingold  <gingold@adacore.com>
+
+	* system-linux-ppc64.ads: Delete.
+	* system-linux-ppc.ads: Make 32-bit/64-bit neutral.
+	* gcc-interface/Makefile.in (PowerPC/Linux): Simplify.
+
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (convert): For a biased input type, convert
