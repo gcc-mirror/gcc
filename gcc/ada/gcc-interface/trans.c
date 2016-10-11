@@ -6680,10 +6680,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	/* Instead of expanding overflow checks for addition, subtraction
 	   and multiplication itself, the front end will leave this to
-	   the back end when Backend_Overflow_Checks_On_Target is set.
-	   As the back end itself does not know yet how to properly
-	   do overflow checking, do it here.  The goal is to push
-	   the expansions further into the back end over time.  */
+	   the back end when Backend_Overflow_Checks_On_Target is set.  */
 	if (Do_Overflow_Check (gnat_node)
 	    && Backend_Overflow_Checks_On_Target
 	    && (code == PLUS_EXPR || code == MINUS_EXPR || code == MULT_EXPR)
@@ -6754,7 +6751,11 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_expr = gnat_to_gnu (Right_Opnd (gnat_node));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
+      /* Instead of expanding overflow checks for negation and absolute
+	 value itself, the front end will leave this to the back end
+	 when Backend_Overflow_Checks_On_Target is set.  */
       if (Do_Overflow_Check (gnat_node)
+	  && Backend_Overflow_Checks_On_Target
 	  && !TYPE_UNSIGNED (gnu_result_type)
 	  && !FLOAT_TYPE_P (gnu_result_type))
 	gnu_result
@@ -8937,8 +8938,9 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 					lhs, rhs);
       tree tgt = save_expr (call);
       gnu_expr = build1 (REALPART_EXPR, gnu_type, tgt);
-      check
-	= convert (boolean_type_node, build1 (IMAGPART_EXPR, gnu_type, tgt));
+      check = fold_build2 (NE_EXPR, boolean_type_node,
+			   build1 (IMAGPART_EXPR, gnu_type, tgt),
+			   build_int_cst (gnu_type, 0));
       return
 	emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
    }
