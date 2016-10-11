@@ -44,18 +44,28 @@ extern int target_flags_explicit;
 
 /* Masks that affect tuning.
 
-   PTF_AVOID_BRANCHLIKELY
+   PTF_AVOID_BRANCHLIKELY_SPEED
 	Set if it is usually not profitable to use branch-likely instructions
-	for this target, typically because the branches are always predicted
-	taken and so incur a large overhead when not taken.
+	for this target when optimizing code for speed, typically because
+	the branches are always predicted taken and so incur a large overhead
+	when not taken.
+
+   PTF_AVOID_BRANCHLIKELY_SIZE
+	As above but when optimizing for size.
+
+   PTF_AVOID_BRANCHLIKELY_ALWAYS
+	As above but regardless of whether we optimize for speed or size.
 
    PTF_AVOID_IMADD
 	Set if it is usually not profitable to use the integer MADD or MSUB
 	instructions because of the overhead of getting the result out of
 	the HI/LO registers.  */
 
-#define PTF_AVOID_BRANCHLIKELY	0x1
-#define PTF_AVOID_IMADD		0x2
+#define PTF_AVOID_BRANCHLIKELY_SPEED	0x1
+#define PTF_AVOID_BRANCHLIKELY_SIZE	0x2
+#define PTF_AVOID_BRANCHLIKELY_ALWAYS	(PTF_AVOID_BRANCHLIKELY_SPEED | \
+					 PTF_AVOID_BRANCHLIKELY_SIZE)
+#define PTF_AVOID_IMADD			0x4
 
 /* Information about one recognized processor.  Defined here for the
    benefit of TARGET_CPU_CPP_BUILTINS.  */
