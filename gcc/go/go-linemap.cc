@@ -6,6 +6,8 @@
 
 #include "go-linemap.h"
 
+#include "go-gcc.h"
+
 // This class implements the Linemap interface defined by the
 // frontend.
 

@@ -24,8 +24,7 @@ void
 go_create_gogo(const struct go_create_gogo_args* args)
 {
   go_assert(::gogo == NULL);
-  Linemap* linemap = go_get_linemap();
-  ::gogo = new Gogo(go_get_backend(), linemap, args->int_type_size,
+  ::gogo = new Gogo(args->backend, args->linemap, args->int_type_size,
 		    args->pointer_size);
 
   if (args->pkgpath != NULL)

@@ -43,6 +43,7 @@
 #include "builtins.h"
 
 #include "go-c.h"
+#include "go-gcc.h"
 
 #include "gogo.h"
 #include "backend.h"
