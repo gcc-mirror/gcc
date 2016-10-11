@@ -1989,7 +1989,7 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
       shft = shft < 0 ? 1 - shft : shft;
 
       /* Special case: Shift to the original order!  */
-      if (shft % sz == 0)
+      if (sz == 0 || shft % sz == 0)
 	return a;
 
       result = gfc_copy_expr (a);
