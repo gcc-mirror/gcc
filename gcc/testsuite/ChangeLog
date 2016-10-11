@@ -1,3 +1,8 @@
+2016-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77942
+	* gfortran.dg/pr77942.f90
+
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/inline13.ad[sb]: New test.
