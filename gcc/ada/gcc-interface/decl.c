@@ -6333,6 +6333,15 @@ array_type_has_nonaliased_component (tree gnu_type, Entity_Id gnat_type)
 static bool
 compile_time_known_address_p (Node_Id gnat_address)
 {
+  /* Handle reference to a constant.  */
+  if (Is_Entity_Name (gnat_address)
+      && Ekind (Entity (gnat_address)) == E_Constant)
+    {
+      gnat_address = Constant_Value (Entity (gnat_address));
+      if (No (gnat_address))
+	return false;
+    }
+
   /* Catch System'To_Address.  */
   if (Nkind (gnat_address) == N_Unchecked_Type_Conversion)
     gnat_address = Expression (gnat_address);
