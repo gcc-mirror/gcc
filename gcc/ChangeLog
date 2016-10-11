@@ -1,3 +1,16 @@
+2016-10-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	New avr-passes.def to register AVR specific passes.
+
+	* config/avr/avr-passes.def: New file.
+	* config/avr/t-avr (PASSES_EXTRA): Add avr-passes.def.
+	* config/avr/avr-protos.h (gcc::context, rtl_opt_pass): Declare.
+	(make_avr_pass_recompute_note): New proto.
+	* config/avr/avr.c (make_avr_pass_recompute_notes): New function.
+	(avr_pass_recompute_notes): Use anonymous namespace.
+	(avr_register_passes): Remove function...
+	(avr_option_override): ...and its call.
+
 2016-10-11  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips-cpus.def: Replace PTF_AVOID_BRANCHLIKELY with

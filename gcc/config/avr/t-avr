@@ -16,6 +16,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+PASSES_EXTRA += $(srcdir)/config/avr/avr-passes.def
+
 driver-avr.o: $(srcdir)/config/avr/driver-avr.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(srcdir)/config/avr/avr-arch.h $(TM_H)

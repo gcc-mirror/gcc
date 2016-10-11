@@ -154,6 +154,11 @@ extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 
 extern bool avr_have_dimode;
 
+namespace gcc { class context; }
+class rtl_opt_pass;
+
+extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
+
 /* From avr-log.c */
 
 #define avr_dump(...) avr_vdump (NULL, __FUNCTION__, __VA_ARGS__)
