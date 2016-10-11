@@ -1,3 +1,9 @@
+2016-10-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR testsuite/PR77710
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-4.c: Use *-*-* as catch-all
+	target triplet instead of *-*-*-*.
+
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/unchecked_convert10.adb: New test.

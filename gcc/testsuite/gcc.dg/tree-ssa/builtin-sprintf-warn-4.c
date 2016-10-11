@@ -8,8 +8,8 @@ char dst [8];
 void test (void)
 {
   sprintf (dst + 7, "%-s", "1");
-  /* { dg-warning "writing a terminating nul past the end of the destination" "" { target *-*-*-* } 10 }
-     { dg-message "format output 2 bytes into a destination of size 1" "" { target *-*-*-* } 10 }
+  /* { dg-warning "writing a terminating nul past the end of the destination" "" { target *-*-* } 10 }
+     { dg-message "format output 2 bytes into a destination of size 1" "" { target *-*-* } 10 }
      { dg-begin-multiline-output "" }
    sprintf (dst + 7, "%-s", "1");
                       ~~^~
@@ -20,8 +20,8 @@ void test (void)
    { dg-end-multiline-output "" } */
 
   sprintf (dst + 7, "%-s", "abcd");
-  /* { dg-warning ".%-s. directive writing 4 bytes into a region of size 1" "" { target *-*-*-* } 22 }
-     { dg-message "format output 5 bytes into a destination of size 1" "" { target *-*-*-* } 22 }
+  /* { dg-warning ".%-s. directive writing 4 bytes into a region of size 1" "" { target *-*-* } 22 }
+     { dg-message "format output 5 bytes into a destination of size 1" "" { target *-*-* } 22 }
      { dg-begin-multiline-output "" }
    sprintf (dst + 7, "%-s", "abcd");
                       ^~~   ~~~~~~
