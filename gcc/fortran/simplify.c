@@ -1717,27 +1717,24 @@ simplify_trig_call (gfc_expr *icall)
 
   /* The actual simplifiers will return NULL for non-constant x.  */
   switch (func)
-  {
+    {
     case GFC_ISYM_ACOS:
-	return gfc_simplify_acos (x);
+      return gfc_simplify_acos (x);
     case GFC_ISYM_ASIN:
-	return gfc_simplify_asin (x);
+      return gfc_simplify_asin (x);
     case GFC_ISYM_ATAN:
-	return gfc_simplify_atan (x);
+      return gfc_simplify_atan (x);
     case GFC_ISYM_COS:
-	return gfc_simplify_cos (x);
+      return gfc_simplify_cos (x);
     case GFC_ISYM_COTAN:
-	return gfc_simplify_cotan (x);
+      return gfc_simplify_cotan (x);
     case GFC_ISYM_SIN:
-	return gfc_simplify_sin (x);
+      return gfc_simplify_sin (x);
     case GFC_ISYM_TAN:
-	return gfc_simplify_tan (x);
+      return gfc_simplify_tan (x);
     default:
-	 break;
-  }
-
-  gfc_internal_error ("in simplify_trig_call(): Bad intrinsic");
-  return NULL;
+      gfc_internal_error ("in simplify_trig_call(): Bad intrinsic");
+    }
 }
 
 /* Convert a floating-point number from radians to degrees.  */
@@ -1745,22 +1742,22 @@ simplify_trig_call (gfc_expr *icall)
 static void
 degrees_f (mpfr_t x, mp_rnd_t rnd_mode)
 {
-    mpfr_t tmp;
-    mpfr_init (tmp);
+  mpfr_t tmp;
+  mpfr_init (tmp);
 
-    /* Set x = x % 2pi to avoid offsets with large angles.  */
-    mpfr_const_pi (tmp, rnd_mode);
-    mpfr_mul_ui (tmp, tmp, 2, rnd_mode);
-    mpfr_fmod (tmp, x, tmp, rnd_mode);
+  /* Set x = x % 2pi to avoid offsets with large angles.  */
+  mpfr_const_pi (tmp, rnd_mode);
+  mpfr_mul_ui (tmp, tmp, 2, rnd_mode);
+  mpfr_fmod (tmp, x, tmp, rnd_mode);
 
-    /* Set x = x * 180.  */
-    mpfr_mul_ui (x, x, 180, rnd_mode);
+  /* Set x = x * 180.  */
+  mpfr_mul_ui (x, x, 180, rnd_mode);
 
-    /* Set x = x / pi.  */
-    mpfr_const_pi (tmp, rnd_mode);
-    mpfr_div (x, x, tmp, rnd_mode);
+  /* Set x = x / pi.  */
+  mpfr_const_pi (tmp, rnd_mode);
+  mpfr_div (x, x, tmp, rnd_mode);
 
-    mpfr_clear (tmp);
+  mpfr_clear (tmp);
 }
 
 /* Convert a floating-point number from degrees to radians.  */
@@ -1768,21 +1765,21 @@ degrees_f (mpfr_t x, mp_rnd_t rnd_mode)
 static void
 radians_f (mpfr_t x, mp_rnd_t rnd_mode)
 {
-    mpfr_t tmp;
-    mpfr_init (tmp);
+  mpfr_t tmp;
+  mpfr_init (tmp);
 
-    /* Set x = x % 360 to avoid offsets with large angles.  */
-    mpfr_set_ui (tmp, 360, rnd_mode);
-    mpfr_fmod (tmp, x, tmp, rnd_mode);
+  /* Set x = x % 360 to avoid offsets with large angles.  */
+  mpfr_set_ui (tmp, 360, rnd_mode);
+  mpfr_fmod (tmp, x, tmp, rnd_mode);
 
-    /* Set x = x * pi.  */
-    mpfr_const_pi (tmp, rnd_mode);
-    mpfr_mul (x, x, tmp, rnd_mode);
+  /* Set x = x * pi.  */
+  mpfr_const_pi (tmp, rnd_mode);
+  mpfr_mul (x, x, tmp, rnd_mode);
 
-    /* Set x = x / 180.  */
-    mpfr_div_ui (x, x, 180, rnd_mode);
+  /* Set x = x / 180.  */
+  mpfr_div_ui (x, x, 180, rnd_mode);
 
-    mpfr_clear (tmp);
+  mpfr_clear (tmp);
 }
 
 
@@ -1820,11 +1817,11 @@ gfc_simplify_atrigd (gfc_expr *icall)
   result = simplify_trig_call (icall);
 
   if (result && result->expr_type == EXPR_CONSTANT)
-  {
+    {
       /* Convert constant to degrees after passing off to actual simplifier.  */
       degrees_f (result->value.real, GFC_RND_MODE);
       return result;
-  }
+    }
 
   /* Let gfc_resolve_atrigd take care of the non-constant case.  */
   return NULL;
@@ -6403,22 +6400,22 @@ gfc_simplify_cotan (gfc_expr *x)
 
   switch (x->ts.type)
     {
-      case BT_REAL:
-	mpfr_cot (result->value.real, x->value.real, GFC_RND_MODE);
-	break;
+    case BT_REAL:
+      mpfr_cot (result->value.real, x->value.real, GFC_RND_MODE);
+      break;
 
-      case BT_COMPLEX:
-	/* There is no builtin mpc_cot, so compute cot = cos / sin.  */
-	val = &result->value.complex;
-	mpc_init2 (swp, mpfr_get_default_prec ());
-	mpc_cos (swp, x->value.complex, GFC_MPC_RND_MODE);
-	mpc_sin (*val, x->value.complex, GFC_MPC_RND_MODE);
-	mpc_div (*val, swp, *val, GFC_MPC_RND_MODE);
-	mpc_clear (swp);
-	break;
+    case BT_COMPLEX:
+      /* There is no builtin mpc_cot, so compute cot = cos / sin.  */
+      val = &result->value.complex;
+      mpc_init2 (swp, mpfr_get_default_prec ());
+      mpc_cos (swp, x->value.complex, GFC_MPC_RND_MODE);
+      mpc_sin (*val, x->value.complex, GFC_MPC_RND_MODE);
+      mpc_div (*val, swp, *val, GFC_MPC_RND_MODE);
+      mpc_clear (swp);
+      break;
 
-      default:
-	gcc_unreachable ();
+    default:
+      gcc_unreachable ();
     }
 
   return range_check (result, "COTAN");
