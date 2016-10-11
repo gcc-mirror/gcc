@@ -1,3 +1,7 @@
+2016-10-11  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in (C_COMMON_OBJS): Add c-family/c-warn.o.
+
 2016-10-11  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-vrp.c (evrp_dom_walker::try_add_new_range): New.

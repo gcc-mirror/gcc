@@ -1,3 +1,47 @@
+2016-10-11  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (fold_for_warn): No longer static.
+	(bool_promoted_to_int_p): Likewise.
+	(c_common_get_narrower): Likewise.
+	(constant_expression_warning): Move to c-warn.c.
+	(constant_expression_error): Likewise.
+	(overflow_warning): Likewise.
+	(warn_logical_operator): Likewise.
+	(find_array_ref_with_const_idx_r): Likewise.
+	(warn_tautological_cmp): Likewise.
+	(expr_has_boolean_operands_p): Likewise.
+	(warn_logical_not_parentheses): Likewise.
+	(warn_if_unused_value): Likewise.
+	(strict_aliasing_warning): Likewise.
+	(sizeof_pointer_memaccess_warning): Likewise.
+	(check_main_parameter_types): Likewise.
+	(conversion_warning): Likewise.
+	(warnings_for_convert_and_check): Likewise.
+	(match_case_to_enum_1): Likewise.
+	(match_case_to_enum): Likewise.
+	(c_do_switch_warnings): Likewise.
+	(warn_for_omitted_condop): Likewise.
+	(readonly_error): Likewise.
+	(lvalue_error): Likewise.
+	(invalid_indirection_error): Likewise.
+	(warn_array_subscript_with_type_char): Likewise.
+	(warn_about_parentheses): Likewise.
+	(warn_for_unused_label): Likewise.
+	(warn_for_div_by_zero): Likewise.
+	(warn_for_memset): Likewise.
+	(warn_for_sign_compare): Likewise.
+	(do_warn_double_promotion): Likewise.
+	(do_warn_unused_parameter): Likewise.
+	(record_locally_defined_typedef): Likewise.
+	(maybe_record_typedef_use): Likewise.
+	(maybe_warn_unused_local_typedefs): Likewise.
+	(maybe_warn_bool_compare): Likewise.
+	(maybe_warn_shift_overflow): Likewise.
+	(warn_duplicated_cond_add_or_warn): Likewise.
+	(diagnose_mismatched_attributes): Likewise.
+	* c-common.h: Move the declarations from c-warn.c to its own section.
+	* c-warn.c: New file.
+
 2016-10-08  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (c_common_truthvalue_conversion): Don't distribute
