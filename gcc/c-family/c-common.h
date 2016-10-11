@@ -838,22 +838,7 @@ extern tree c_alignof_expr (location_t, tree);
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error (rich_location *, enum tree_code, tree, tree);
 extern tree fix_string_type (tree);
-extern void constant_expression_warning (tree);
-extern void constant_expression_error (tree);
-extern bool strict_aliasing_warning (tree, tree, tree);
-extern void sizeof_pointer_memaccess_warning (location_t *, tree,
-					      vec<tree, va_gc> *, tree *,
-					      bool (*) (tree, tree));
-extern void warnings_for_convert_and_check (location_t, tree, tree, tree);
 extern tree convert_and_check (location_t, tree, tree);
-extern void overflow_warning (location_t, tree);
-extern bool warn_if_unused_value (const_tree, location_t);
-extern void warn_logical_operator (location_t, enum tree_code, tree,
-				   enum tree_code, tree, enum tree_code, tree);
-extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
-					  tree);
-extern void warn_tautological_cmp (location_t, enum tree_code, tree, tree);
-extern void check_main_parameter_types (tree decl);
 extern bool c_determine_visibility (tree);
 extern bool vector_types_compatible_elements_p (tree, tree);
 extern void mark_valid_location_for_stdc_pragma (bool);
@@ -869,7 +854,9 @@ extern bool keyword_is_decl_specifier (enum rid);
 extern unsigned max_align_t_align (void);
 extern bool cxx_fundamental_alignment_p (unsigned);
 extern bool pointer_to_zero_sized_aggr_p (tree);
-extern bool diagnose_mismatched_attributes (tree, tree);
+extern bool bool_promoted_to_int_p (tree);
+extern tree fold_for_warn (tree);
+extern tree c_common_get_narrower (tree, int *);
 
 #define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, false, 1)
 #define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, false, 1)
@@ -922,9 +909,6 @@ extern HOST_WIDE_INT c_common_to_target_charset (HOST_WIDE_INT);
 extern void c_parse_file (void);
 
 extern void c_parse_final_cleanups (void);
-
-extern void warn_for_omitted_condop (location_t, tree);
-extern void warn_for_memset (location_t, tree, tree, int);
 
 /* These macros provide convenient access to the various _STMT nodes.  */
 
@@ -990,9 +974,6 @@ extern int case_compare (splay_tree_key, splay_tree_key);
 
 extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree, tree,
 			      bool *);
-
-extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool,
-				  bool);
 
 extern tree build_function_call (location_t, tree, tree);
 
@@ -1066,49 +1047,14 @@ extern void verify_sequence_points (tree);
 extern tree fold_offsetof_1 (tree, tree_code ctx = ERROR_MARK);
 extern tree fold_offsetof (tree);
 
-/* Places where an lvalue, or modifiable lvalue, may be required.
-   Used to select diagnostic messages in lvalue_error and
-   readonly_error.  */
-enum lvalue_use {
-  lv_assign,
-  lv_increment,
-  lv_decrement,
-  lv_addressof,
-  lv_asm
-};
-
-extern void readonly_error (location_t, tree, enum lvalue_use);
-extern void lvalue_error (location_t, enum lvalue_use);
-extern void invalid_indirection_error (location_t, tree, ref_operator);
-
 extern int complete_array_type (tree *, tree, bool);
 
 extern tree builtin_type_for_size (int, bool);
 
 extern void c_common_mark_addressable_vec (tree);
 
-extern void warn_array_subscript_with_type_char (location_t, tree);
-extern void warn_about_parentheses (location_t,
-				    enum tree_code,
-				    enum tree_code, tree,
-				    enum tree_code, tree);
-extern void warn_for_unused_label (tree label);
-extern void warn_for_div_by_zero (location_t, tree divisor);
-extern void warn_for_sign_compare (location_t,
-				   tree orig_op0, tree orig_op1,
-				   tree op0, tree op1,
-				   tree result_type,
-				   enum tree_code resultcode);
-extern void do_warn_unused_parameter (tree);
-extern void do_warn_double_promotion (tree, tree, tree, const char *, 
-				      location_t);
 extern void set_underlying_type (tree);
 extern void record_types_used_by_current_var_decl (tree);
-extern void record_locally_defined_typedef (tree);
-extern void maybe_record_typedef_use (tree);
-extern void maybe_warn_unused_local_typedefs (void);
-extern void maybe_warn_bool_compare (location_t, enum tree_code, tree, tree);
-extern bool maybe_warn_shift_overflow (location_t, tree, tree);
 extern vec<tree, va_gc> *make_tree_vector (void);
 extern void release_tree_vector (vec<tree, va_gc> *);
 extern vec<tree, va_gc> *make_tree_vector_single (tree);
@@ -1529,11 +1475,68 @@ extern tree cilk_for_number_of_iterations (tree);
 extern bool check_no_cilk (tree, const char *, const char *,
 		           location_t loc = UNKNOWN_LOCATION);
 extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
-extern void warn_duplicated_cond_add_or_warn (location_t, tree, vec<tree> **);
 extern bool valid_array_size_p (location_t, tree, tree);
 
 extern bool cilk_ignorable_spawn_rhs_op (tree);
 extern bool cilk_recognize_spawn (tree, tree *);
+
+/* In c-warn.c.  */
+extern void constant_expression_warning (tree);
+extern void constant_expression_error (tree);
+extern void overflow_warning (location_t, tree);
+extern void warn_logical_operator (location_t, enum tree_code, tree,
+				   enum tree_code, tree, enum tree_code, tree);
+extern void warn_tautological_cmp (location_t, enum tree_code, tree, tree);
+extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
+					  tree);
+extern bool warn_if_unused_value (const_tree, location_t);
+extern bool strict_aliasing_warning (tree, tree, tree);
+extern void sizeof_pointer_memaccess_warning (location_t *, tree,
+					      vec<tree, va_gc> *, tree *,
+					      bool (*) (tree, tree));
+extern void check_main_parameter_types (tree decl);
+extern void warnings_for_convert_and_check (location_t, tree, tree, tree);
+extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool,
+				  bool);
+extern void warn_for_omitted_condop (location_t, tree);
+
+/* Places where an lvalue, or modifiable lvalue, may be required.
+   Used to select diagnostic messages in lvalue_error and
+   readonly_error.  */
+enum lvalue_use {
+  lv_assign,
+  lv_increment,
+  lv_decrement,
+  lv_addressof,
+  lv_asm
+};
+
+extern void lvalue_error (location_t, enum lvalue_use);
+extern void invalid_indirection_error (location_t, tree, ref_operator);
+extern void readonly_error (location_t, tree, enum lvalue_use);
+extern void warn_array_subscript_with_type_char (location_t, tree);
+extern void warn_about_parentheses (location_t,
+				    enum tree_code,
+				    enum tree_code, tree,
+				    enum tree_code, tree);
+extern void warn_for_unused_label (tree label);
+extern void warn_for_div_by_zero (location_t, tree divisor);
+extern void warn_for_memset (location_t, tree, tree, int);
+extern void warn_for_sign_compare (location_t,
+				   tree orig_op0, tree orig_op1,
+				   tree op0, tree op1,
+				   tree result_type,
+				   enum tree_code resultcode);
+extern void do_warn_double_promotion (tree, tree, tree, const char *,
+				      location_t);
+extern void do_warn_unused_parameter (tree);
+extern void record_locally_defined_typedef (tree);
+extern void maybe_record_typedef_use (tree);
+extern void maybe_warn_unused_local_typedefs (void);
+extern void maybe_warn_bool_compare (location_t, enum tree_code, tree, tree);
+extern bool maybe_warn_shift_overflow (location_t, tree, tree);
+extern void warn_duplicated_cond_add_or_warn (location_t, tree, vec<tree> **);
+extern bool diagnose_mismatched_attributes (tree, tree);
 
 #if CHECKING_P
 namespace selftest {
