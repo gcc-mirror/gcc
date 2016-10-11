@@ -6185,6 +6185,58 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   return NULL_TREE;
 }
 
+/* Return whether EXPR, which is the renamed object in an object renaming
+   declaration, can be materialized as a reference (REFERENCE_TYPE).  This
+   should be synchronized with Exp_Dbug.Debug_Renaming_Declaration.  */
+
+bool
+can_materialize_object_renaming_p (Node_Id expr)
+{
+  while (true)
+    {
+      switch Nkind (expr)
+	{
+	case N_Identifier:
+	case N_Expanded_Name:
+	  return true;
+
+	case N_Selected_Component:
+	  {
+	    if (Is_Packed (Underlying_Type (Etype (Prefix (expr)))))
+	      return false;
+
+	    const Uint bitpos
+	      = Normalized_First_Bit (Entity (Selector_Name (expr)));
+	    if (!UI_Is_In_Int_Range (bitpos)
+		|| (bitpos != UI_No_Uint && bitpos != UI_From_Int (0)))
+	      return false;
+
+	    expr = Prefix (expr);
+	    break;
+	  }
+
+	case N_Indexed_Component:
+	case N_Slice:
+	  {
+	    const Entity_Id t = Underlying_Type (Etype (Prefix (expr)));
+
+	    if (Is_Array_Type (t) && Present (Packed_Array_Impl_Type (t)))
+	      return false;
+
+	    expr = Prefix (expr);
+	    break;
+	  }
+
+	case N_Explicit_Dereference:
+	  expr = Prefix (expr);
+	  break;
+
+	default:
+	  return true;
+	};
+    }
+}
+
 /* ----------------------------------------------------------------------- *
  *                              BUILTIN FUNCTIONS                          *
  * ----------------------------------------------------------------------- */

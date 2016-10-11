@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 1992-2014, Free Software Foundation, Inc.       *
+ *            Copyright (C) 1992-2016, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -63,6 +63,10 @@ extern Uint UI_From_Int			(int);
 
 /* Similarly, but take a GCC INTEGER_CST.  */
 extern Uint UI_From_gnu			(tree);
+
+/* A constant value indicating a missing or unset Uint value.  */
+#define UI_No_Uint uintp__no_uint
+extern const Uint UI_No_Uint;
 
 /* Uint values are represented as multiple precision integers stored in a
    multi-digit format using UI_Base as the base.  This value is chosen so
