@@ -92,41 +92,21 @@ namespace std
       { }
     };
 
-  template<typename _Tp,
-	   bool __with_nested = !__is_base_of(nested_exception, _Tp)>
-    struct _Throw_with_nested_impl
+  // [except.nested]/8
+  // Throw an exception of unspecified type that is publicly derived from
+  // both remove_reference_t<_Tp> and nested_exception.
+  template<typename _Tp>
+    inline void
+    __throw_with_nested_impl(_Tp&& __t, true_type)
     {
-      template<typename _Up>
-	static void _S_throw(_Up&& __t)
-	{ throw _Nested_exception<_Tp>{static_cast<_Up&&>(__t)}; }
-    };
+      using _Up = typename remove_reference<_Tp>::type;
+      throw _Nested_exception<_Up>{std::forward<_Tp>(__t)};
+    }
 
   template<typename _Tp>
-    struct _Throw_with_nested_impl<_Tp, false>
-    {
-      template<typename _Up>
-	static void _S_throw(_Up&& __t)
-	{ throw static_cast<_Up&&>(__t); }
-    };
-
-  template<typename _Tp, bool = __is_class(_Tp) && !__is_final(_Tp)>
-    struct _Throw_with_nested_helper : _Throw_with_nested_impl<_Tp>
-    { };
-
-  template<typename _Tp>
-    struct _Throw_with_nested_helper<_Tp, false>
-    : _Throw_with_nested_impl<_Tp, false>
-    { };
-
-  template<typename _Tp>
-    struct _Throw_with_nested_helper<_Tp&, false>
-    : _Throw_with_nested_helper<_Tp>
-    { };
-
-  template<typename _Tp>
-    struct _Throw_with_nested_helper<_Tp&&, false>
-    : _Throw_with_nested_helper<_Tp>
-    { };
+    inline void
+    __throw_with_nested_impl(_Tp&& __t, false_type)
+    { throw std::forward<_Tp>(__t); }
 
   /// If @p __t is derived from nested_exception, throws @p __t.
   /// Else, throws an implementation-defined object derived from both.
@@ -135,33 +115,43 @@ namespace std
     inline void
     throw_with_nested(_Tp&& __t)
     {
-      _Throw_with_nested_helper<_Tp>::_S_throw(static_cast<_Tp&&>(__t));
+      using _Up = typename remove_reference<_Tp>::type;
+      using _CopyConstructible
+	= __and_<is_copy_constructible<_Up>, is_move_constructible<_Up>>;
+      static_assert(_CopyConstructible::value,
+	  "throw_with_nested argument must be CopyConstructible");
+      using __nest = __and_<is_class<_Up>, __bool_constant<!__is_final(_Up)>,
+			    __not_<is_base_of<nested_exception, _Up>>>;
+      return std::__throw_with_nested_impl(std::forward<_Tp>(__t), __nest{});
     }
 
-  template<typename _Tp, bool = __is_polymorphic(_Tp)>
-    struct _Rethrow_if_nested_impl
-    {
-      static void _S_rethrow(const _Tp& __t)
-      {
-	if (auto __tp =
-            dynamic_cast<const nested_exception*>(std::__addressof(__t)))
-	  __tp->rethrow_nested();
-      }
-    };
-
+  // Determine if dynamic_cast<const nested_exception&> would be well-formed.
   template<typename _Tp>
-    struct _Rethrow_if_nested_impl<_Tp, false>
+    using __rethrow_if_nested_cond = typename enable_if<
+      __and_<is_polymorphic<_Tp>,
+	     __or_<__not_<is_base_of<nested_exception, _Tp>>,
+		   is_convertible<_Tp*, nested_exception*>>>::value
+    >::type;
+
+  // Attempt dynamic_cast to nested_exception and call rethrow_nested().
+  template<typename _Ex>
+    inline __rethrow_if_nested_cond<_Ex>
+    __rethrow_if_nested_impl(const _Ex* __ptr)
     {
-      static void _S_rethrow(const _Tp&) { }
-    };
+      if (auto __ne_ptr = dynamic_cast<const nested_exception*>(__ptr))
+	__ne_ptr->rethrow_nested();
+    }
+
+  // Otherwise, no effects.
+  inline void
+  __rethrow_if_nested_impl(const void*)
+  { }
 
   /// If @p __ex is derived from nested_exception, @p __ex.rethrow_nested().
   template<typename _Ex>
     inline void
     rethrow_if_nested(const _Ex& __ex)
-    {
-      _Rethrow_if_nested_impl<_Ex>::_S_rethrow(__ex);
-    }
+    { std::__rethrow_if_nested_impl(std::__addressof(__ex)); }
 
   // @} group exceptions
 } // namespace std
