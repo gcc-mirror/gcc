@@ -1,3 +1,8 @@
+2016-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* simplify.c (radians_f): Fix mpdr_mod.
+	* ireolce.c (get_degrees): Declare tmp.
+
 2016-10-11  Fritz Reese  <fritzoreese@gmail.com>
 
 	* lang.opt: New flag -fdec-math.

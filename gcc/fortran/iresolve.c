@@ -2702,6 +2702,7 @@ get_degrees (gfc_expr *rad)
 {
   gfc_expr *result, *factor;
   gfc_actual_arglist *mod_args;
+  mpfr_t tmp;
 
   gcc_assert (rad->ts.type == BT_REAL);
 
