@@ -784,7 +784,7 @@
   [(set (match_operand:W 0 "register_operand" "=&r")
         (eq:W (match_operand:DI 1 "register_operand" "r")
               (const_int 0)))]
-  "TARGET_ARCH64 && !TARGET_SUBXC"
+  "TARGET_ARCH64"
   "#"
   "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
@@ -794,24 +794,11 @@
   ""
   [(set_attr "length" "2")])
 
-(define_insn_and_split "*seqdi<W:mode>_zero_subxc"
-  [(set (match_operand:W 0 "register_operand" "=r")
-	(eq:W (match_operand:DI 1 "register_operand" "r")
-	      (const_int 0)))
-   (clobber (reg:CCX CC_REG))]
-  "TARGET_ARCH64 && TARGET_SUBXC"
-  "#"
-  ""
-  [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
-   (set (match_dup 0) (geu:W (reg:CCXC CC_REG) (const_int 0)))]
-  ""
-  [(set_attr "length" "2")])
-
 (define_insn_and_split "*neg_seqdi<W:mode>_zero"
   [(set (match_operand:W 0 "register_operand" "=&r")
         (neg:W (eq:W (match_operand:DI 1 "register_operand" "r")
                      (const_int 0))))]
-  "TARGET_ARCH64 && !TARGET_VIS3"
+  "TARGET_ARCH64"
   "#"
   "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
@@ -820,19 +807,6 @@
                                       (match_dup 0)))]
   ""
   [(set_attr "length" "2")]) 
-
-(define_insn_and_split "*neg_seqdi<W:mode>_zero"
-  [(set (match_operand:W 0 "register_operand" "=r")
-	(neg:W (eq:W (match_operand:DI 1 "register_operand" "r")
-		     (const_int 0))))
-   (clobber (reg:CCX CC_REG))]
-  "TARGET_ARCH64 && TARGET_VIS3"
-  "#"
-  ""
-  [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
-   (set (match_dup 0) (neg:W (geu:W (reg:CCXC CC_REG) (const_int 0))))]
-  ""
-  [(set_attr "length" "2")])
 
 ;; We can also do (x + (i == 0)) and related, so put them in.
 
@@ -935,8 +909,8 @@
 (define_insn_and_split "*minus_snedi<W:mode>_zero"
   [(set (match_operand:W 0 "register_operand" "=r")
 	(minus:W (match_operand:W 2 "register_operand" "r")
-		  (ne:W (match_operand:DI 1 "register_operand" "r")
-			(const_int 0))))
+		 (ne:W (match_operand:DI 1 "register_operand" "r")
+		       (const_int 0))))
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_SUBXC"
   "#"
@@ -979,21 +953,6 @@
   ""
   [(set_attr "length" "2")])
 
-(define_insn_and_split "*plus_seqdi<W:mode>_zero"
-  [(set (match_operand:W 0 "register_operand" "=r")
-	(plus:W (eq:W (match_operand:DI 1 "register_operand" "r")
-		      (const_int 0))
-		(match_operand:W 2 "register_operand" "r")))
-   (clobber (reg:CCX CC_REG))]
-  "TARGET_ARCH64 && TARGET_SUBXC"
-  "#"
-  ""
-  [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
-   (set (match_dup 0) (plus:W (geu:W (reg:CCXC CC_REG) (const_int 0))
-			      (match_dup 2)))]
-  ""
-  [(set_attr "length" "2")])
-
 (define_insn_and_split "*minus_seqsi<W:mode>_zero"
   [(set (match_operand:W 0 "register_operand" "=r")
 	(minus:W (match_operand:W 2 "register_operand" "r")
@@ -1006,21 +965,6 @@
   [(set (reg:CCC CC_REG) (compare:CCC (not:SI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (minus:W (match_dup 2)
 			       (geu:W (reg:CCC CC_REG) (const_int 0))))]
-  ""
-  [(set_attr "length" "2")])
-
-(define_insn_and_split "*minus_seqdi<W:mode>_zero"
-  [(set (match_operand:W 0 "register_operand" "=r")
-	(minus:W (match_operand:W 2 "register_operand" "r")
-		 (eq:W (match_operand:DI 1 "register_operand" "r")
-		       (const_int 0))))
-   (clobber (reg:CCX CC_REG))]
-  "TARGET_ARCH64 && TARGET_VIS3"
-  "#"
-  ""
-  [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
-   (set (match_dup 0) (minus:W (match_dup 2)
-			       (geu:W (reg:CCXC CC_REG) (const_int 0))))]
   ""
   [(set_attr "length" "2")])
 
@@ -1046,7 +990,7 @@
   [(set (match_operand:W 0 "register_operand" "=r")
 	(plus:W (plus:W (ltu:W (match_operand 3 "icc_register_operand" "X")
 			       (const_int 0))
-			(match_operand:W 1 "arith_operand" "%r"))
+			(match_operand:W 1 "register_operand" "%r"))
 		(match_operand:W 2 "arith_operand" "rI")))]
   "GET_MODE (operands[3]) == CCmode || GET_MODE (operands[3]) == CCCmode"
   "addx\t%1, %2, %0"
@@ -1080,7 +1024,7 @@
 
 (define_insn "*addx<W:mode>"
   [(set (match_operand:W 0 "register_operand" "=r")
-	(plus:W (plus:W (match_operand:W 1 "arith_operand" "%r")
+	(plus:W (plus:W (match_operand:W 1 "register_operand" "%r")
 			(match_operand:W 2 "arith_operand" "rI"))
 		(ltu:W (match_operand 3 "icc_register_operand" "X")
 		       (const_int 0))))]
@@ -1100,7 +1044,7 @@
   [(set (match_operand:W 0 "register_operand" "=r")
 	(plus:W (ltu:W (match_operand 2 "icc_register_operand" "X")
 		       (const_int 0))
-		(match_operand:W 1 "arith_operand" "rI")))]
+		(match_operand:W 1 "register_operand" "r")))]
   "TARGET_ARCH64 && TARGET_VIS3
    && (GET_MODE (operands[2]) == CCXmode || GET_MODE (operands[2]) == CCXCmode)"
   "addxc\t%%g0, %1, %0"
@@ -1110,41 +1054,22 @@
   [(set (match_operand:W 0 "register_operand" "=r")
 	(plus:W (plus:W (ltu:W (match_operand 3 "icc_register_operand" "X")
 			       (const_int 0))
-			(match_operand:W 1 "arith_operand" "%r"))
-		(match_operand:W 2 "arith_operand" "rI")))]
+			(match_operand:W 1 "register_operand" "%r"))
+		(match_operand:W 2 "register_operand" "r")))]
   "TARGET_ARCH64 && TARGET_VIS3
    && (GET_MODE (operands[3]) == CCXmode || GET_MODE (operands[3]) == CCXCmode)"
   "addxc\t%1, %2, %0"
   [(set_attr "type" "ialuX")])
 
-(define_insn "*neg_sgeu<W:mode>_vis3"
-  [(set (match_operand:W 0 "register_operand" "=r")
-	(neg:W (geu:W (match_operand 1 "icc_register_operand" "X")
-		      (const_int 0))))]
-  "TARGET_ARCH64 && TARGET_VIS3
-   && (GET_MODE (operands[1]) == CCXmode || GET_MODE (operands[1]) == CCXCmode)"
-  "addxc\t%%g0, -1, %0"
-  [(set_attr "type" "ialuX")])
-
-(define_insn "*minus_sgeu<W:mode>_vis3"
-  [(set (match_operand:W 0 "register_operand" "=r")
-	(minus:W (match_operand:W 1 "register_operand" "r")
-		 (geu:W (match_operand 2 "icc_register_operand" "X")
-		        (const_int 0))))]
-  "TARGET_ARCH64 && TARGET_VIS3
-   && (GET_MODE (operands[2]) == CCXmode || GET_MODE (operands[2]) == CCXCmode)"
-  "addxc\t%1, -1, %0"
-  [(set_attr "type" "ialuX")])
-
 (define_insn "*addxc<W:mode>"
   [(set (match_operand:W 0 "register_operand" "=r")
-	(plus:W (plus:W (match_operand:W 1 "register_or_zero_operand" "%rJ")
-			(match_operand:W 2 "register_or_zero_operand" "rJ"))
+	(plus:W (plus:W (match_operand:W 1 "register_operand" "%r")
+			(match_operand:W 2 "register_operand" "r"))
 		(ltu:W (match_operand 3 "icc_register_operand" "X")
 		       (const_int 0))))]
   "TARGET_ARCH64 && TARGET_VIS3
    && (GET_MODE (operands[3]) == CCXmode || GET_MODE (operands[3]) == CCXCmode)"
-  "addxc\t%r1, %r2, %0"
+  "addxc\t%1, %2, %0"
   [(set_attr "type" "ialuX")])
 
 (define_insn "*neg_sltu<W:mode>"
@@ -1233,14 +1158,14 @@
 		      (const_int 0))))]
   "TARGET_ARCH64 && TARGET_SUBXC
    && (GET_MODE (operands[1]) == CCXmode || GET_MODE (operands[1]) == CCXCmode)"
-  "subxc\t%%g0, 0, %0"
+  "subxc\t%%g0, %%g0, %0"
   [(set_attr "type" "ialuX")])
 
 (define_insn "*minus_neg_sltu<W:mode>_subxc"
   [(set (match_operand:W 0 "register_operand" "=r")
 	(minus:W (neg:W (ltu:W (match_operand 2 "icc_register_operand" "X")
 			       (const_int 0)))
-		 (match_operand:W 1 "arith_operand" "rI")))]
+		 (match_operand:W 1 "register_operand" "r")))]
   "TARGET_ARCH64 && TARGET_SUBXC
    && (GET_MODE (operands[2]) == CCXmode || GET_MODE (operands[2]) == CCXCmode)"
   "subxc\t%%g0, %1, %0"
@@ -1250,7 +1175,7 @@
   [(set (match_operand:W 0 "register_operand" "=r")
 	(neg:W (plus:W (ltu:W (match_operand 2 "icc_register_operand" "X")
 			      (const_int 0))
-		       (match_operand:W 1 "arith_operand" "rI"))))]
+		       (match_operand:W 1 "register_operand" "r"))))]
   "TARGET_ARCH64 && TARGET_SUBXC
    && (GET_MODE (operands[2]) == CCXmode || GET_MODE (operands[2]) == CCXCmode)"
   "subxc\t%%g0, %1, %0"
@@ -1263,7 +1188,7 @@
 			(const_int 0))))]
   "TARGET_ARCH64 && TARGET_SUBXC
    && (GET_MODE (operands[2]) == CCXmode || GET_MODE (operands[2]) == CCXCmode)"
-  "subxc\t%1, 0, %0"
+  "subxc\t%1, %%g0, %0"
   [(set_attr "type" "ialuX")])
 
 (define_insn "*minus_minus_sltu<W:mode>_subxc"
@@ -1271,34 +1196,16 @@
 	(minus:W (minus:W (match_operand:W 1 "register_or_zero_operand" "rJ")
 			  (ltu:W (match_operand 3 "icc_register_operand" "X")
 				 (const_int 0)))
-		 (match_operand:W 2 "arith_operand" "rI")))]
+		 (match_operand:W 2 "register_operand" "r")))]
   "TARGET_ARCH64 && TARGET_SUBXC
    && (GET_MODE (operands[3]) == CCXmode || GET_MODE (operands[3]) == CCXCmode)"
   "subxc\t%r1, %2, %0"
   [(set_attr "type" "ialuX")])
 
-(define_insn "*sgeu<W:mode>_insn_subxc"
-  [(set (match_operand:W 0 "register_operand" "=r")
-	(geu:W (match_operand 1 "icc_register_operand" "X") (const_int 0)))]
-  "TARGET_ARCH64 && TARGET_SUBXC
-   && (GET_MODE (operands[1]) == CCXmode || GET_MODE (operands[1]) == CCXCmode)"
-  "subxc\t%%g0, -1, %0"
-  [(set_attr "type" "ialuX")])
-
-(define_insn "*plus_sgeu<W:mode>_subxc"
-  [(set (match_operand:W 0 "register_operand" "=r")
-	(plus:W (geu:W (match_operand 2 "icc_register_operand" "X")
-		       (const_int 0))
-		(match_operand:W 1 "register_operand" "r")))]
-  "TARGET_ARCH64 && TARGET_SUBXC
-   && (GET_MODE (operands[2]) == CCXmode || GET_MODE (operands[2]) == CCXCmode)"
-  "subxc\t%1, -1, %0"
-  [(set_attr "type" "ialuX")])
-
 (define_insn "*subxc<W:mode>"
   [(set (match_operand:W 0 "register_operand" "=r")
 	(minus:W (minus:W (match_operand:W 1 "register_or_zero_operand" "rJ")
-			  (match_operand:W 2 "arith_operand" "rI"))
+			  (match_operand:W 2 "register_operand" "r"))
 		 (ltu:W (match_operand 3 "icc_register_operand" "X")
 			(const_int 0))))]
   "TARGET_ARCH64 && TARGET_SUBXC
@@ -1316,11 +1223,6 @@
 	&& (GET_MODE (operands[2]) == CCXmode
 	    || GET_MODE (operands[2]) == CCXCmode)
 	&& TARGET_VIS3)
-   /* 64-bit GEU is better implemented using subxc with SUBXC.  */
-   && !(GET_CODE (operands[1]) == GEU
-	&& (GET_MODE (operands[2]) == CCXmode
-	    || GET_MODE (operands[2]) == CCXCmode)
-	&& TARGET_SUBXC)
    /* 32-bit LTU/GEU are better implemented using addx/subx.  */
    && !((GET_CODE (operands[1]) == LTU || GET_CODE (operands[1]) == GEU)
 	&& (GET_MODE (operands[2]) == CCmode
