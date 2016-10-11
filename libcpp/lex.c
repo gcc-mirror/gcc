@@ -2040,6 +2040,64 @@ static bool
 fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
 {
   const unsigned char *from = comment_start + 1;
+
+  switch (CPP_OPTION (pfile, cpp_warn_implicit_fallthrough))
+    {
+      /* For both -Wimplicit-fallthrough=0 and -Wimplicit-fallthrough=5 we
+	 don't recognize any comments.  The latter only checks attributes,
+	 the former doesn't warn.  */
+    case 0:
+    default:
+      return false;
+      /* -Wimplicit-fallthrough=1 considers any comment, no matter what
+	 content it has.  */
+    case 1:
+      return true;
+    case 2:
+      /* -Wimplicit-fallthrough=2 looks for (case insensitive)
+	 .*falls?[ \t-]*thr(u|ough).* regex.  */
+      for (; (size_t) (pfile->buffer->cur - from) >= sizeof "fallthru" - 1;
+	   from++)
+	{
+	  /* Is there anything like strpbrk with upper boundary, or
+	     memchr looking for 2 characters rather than just one?  */
+	  if (from[0] != 'f' && from[0] != 'F')
+	    continue;
+	  if (from[1] != 'a' && from[1] != 'A')
+	    continue;
+	  if (from[2] != 'l' && from[2] != 'L')
+	    continue;
+	  if (from[3] != 'l' && from[3] != 'L')
+	    continue;
+	  from += sizeof "fall" - 1;
+	  if (from[0] == 's' || from[0] == 'S')
+	    from++;
+	  while (*from == ' ' || *from == '\t' || *from == '-')
+	    from++;
+	  if (from[0] != 't' && from[0] != 'T')
+	    continue;
+	  if (from[1] != 'h' && from[1] != 'H')
+	    continue;
+	  if (from[2] != 'r' && from[2] != 'R')
+	    continue;
+	  if (from[3] == 'u' || from[3] == 'U')
+	    return true;
+	  if (from[3] != 'o' && from[3] != 'O')
+	    continue;
+	  if (from[4] != 'u' && from[4] != 'U')
+	    continue;
+	  if (from[5] != 'g' && from[5] != 'G')
+	    continue;
+	  if (from[6] != 'h' && from[6] != 'H')
+	    continue;
+	  return true;
+	}
+      return false;
+    case 3:
+    case 4:
+      break;
+    }
+
   /* Whole comment contents:
      -fallthrough
      @fallthrough@
@@ -2060,7 +2118,7 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
       from += 1 + len;
     }
   /* Whole comment contents (regex):
-     lint -fallthrough ?
+     lint -fallthrough[ \t]*
    */
   else if (*from == 'l')
     {
@@ -2068,10 +2126,33 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
       if ((size_t) (pfile->buffer->cur - from - 1) < len)
 	return false;
       if (memcmp (from + 1, "int -fallthrough", len))
-        return false;
+	return false;
       from += 1 + len;
-      if (*from == ' ')
-        from++;
+      while (*from == ' ' || *from == '\t')
+	from++;
+    }
+  /* Whole comment contents (regex):
+     [ \t]*FALLTHR(U|OUGH)[ \t]*
+   */
+  else if (CPP_OPTION (pfile, cpp_warn_implicit_fallthrough) == 4)
+    {
+      while (*from == ' ' || *from == '\t')
+	from++;
+      if ((size_t) (pfile->buffer->cur - from)  < sizeof "FALLTHRU" - 1)
+	return false;
+      if (memcmp (from, "FALLTHR", sizeof "FALLTHR" - 1))
+	return false;
+      from += sizeof "FALLTHR" - 1;
+      if (*from == 'U')
+	from++;
+      else if ((size_t) (pfile->buffer->cur - from)  < sizeof "OUGH" - 1)
+	return false;
+      else if (memcmp (from, "OUGH", sizeof "OUGH" - 1))
+	return false;
+      else
+	from += sizeof "OUGH" - 1;
+      while (*from == ' ' || *from == '\t')
+	from++;
     }
   /* Whole comment contents (regex):
      [ \t.!]*(ELSE,? |INTENTIONAL(LY)? )?FALL(S | |-)?THR(OUGH|U)[ \t.!]*(-[^\n\r]*)?
@@ -2085,8 +2166,8 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
       unsigned char f = *from;
       bool all_upper = false;
       if (f == 'E' || f == 'e')
-        {
-          if ((size_t) (pfile->buffer->cur - from)
+	{
+	  if ((size_t) (pfile->buffer->cur - from)
 	      < sizeof "else fallthru" - 1)
 	    return false;
 	  if (f == 'E' && memcmp (from + 1, "LSE", sizeof "LSE" - 1) == 0)
@@ -2096,7 +2177,7 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
 	  from += sizeof "else" - 1;
 	  if (*from == ',')
 	    from++;
-          if (*from != ' ')
+	  if (*from != ' ')
 	    return false;
 	  from++;
 	  if (all_upper && *from == 'f')
@@ -2104,10 +2185,10 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
 	  if (f == 'e' && *from == 'F')
 	    return false;
 	  f = *from;
-        }
+	}
       else if (f == 'I' || f == 'i')
-        {
-          if ((size_t) (pfile->buffer->cur - from)
+	{
+	  if ((size_t) (pfile->buffer->cur - from)
 	      < sizeof "intentional fallthru" - 1)
 	    return false;
 	  if (f == 'I' && memcmp (from + 1, "NTENTIONAL",
@@ -2138,7 +2219,7 @@ fallthrough_comment_p (cpp_reader *pfile, const unsigned char *comment_start)
 	  if (f == 'i' && *from == 'F')
 	    return false;
 	  f = *from;
-        }
+	}
       if (f != 'F' && f != 'f')
 	return false;
       if ((size_t) (pfile->buffer->cur - from) < sizeof "fallthru" - 1)

@@ -1918,7 +1918,7 @@ warn_implicit_fallthrough_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	    else if (gimple_code (prev) == GIMPLE_LABEL
 		     && (label = gimple_label_label (as_a <glabel *> (prev)))
 		     && (l = find_label_entry (&labels, label)))
-	      warned_p = warning_at (l->loc, OPT_Wimplicit_fallthrough,
+	      warned_p = warning_at (l->loc, OPT_Wimplicit_fallthrough_,
 				     "this statement may fall through");
 	    else if (!gimple_call_internal_p (prev, IFN_FALLTHROUGH)
 		     /* Try to be clever and don't warn when the statement
@@ -1926,7 +1926,7 @@ warn_implicit_fallthrough_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 		     && gimple_stmt_may_fallthru (prev)
 		     && gimple_has_location (prev))
 	      warned_p = warning_at (gimple_location (prev),
-				     OPT_Wimplicit_fallthrough,
+				     OPT_Wimplicit_fallthrough_,
 				     "this statement may fall through");
 	    if (warned_p)
 	      inform (gimple_location (next), "here");

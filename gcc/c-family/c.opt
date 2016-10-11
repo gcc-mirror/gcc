@@ -462,6 +462,10 @@ Werror-implicit-function-declaration
 C ObjC RejectNegative Warning Alias(Werror=, implicit-function-declaration)
 This switch is deprecated; use -Werror=implicit-function-declaration instead.
 
+Wextra
+C ObjC C++ ObjC++ Warning
+; in common.opt
+
 Wfloat-conversion
 C ObjC C++ ObjC++ Var(warn_float_conversion) Warning LangEnabledBy(C ObjC C++ ObjC++,Wconversion)
 Warn for implicit type conversions that cause loss of floating point precision.
@@ -535,6 +539,10 @@ Warn about variables which are initialized to themselves.
 Wimplicit
 C ObjC Var(warn_implicit) Warning LangEnabledBy(C ObjC,Wall)
 Warn about implicit declarations.
+
+Wimplicit-fallthrough=
+LangEnabledBy(C ObjC C++ ObjC++,Wextra,3,0)
+; in common.opt
 
 Wdouble-promotion
 C ObjC C++ ObjC++ Var(warn_double_promotion) Warning

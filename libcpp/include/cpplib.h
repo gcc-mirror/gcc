@@ -395,6 +395,9 @@ struct cpp_options
      explicitly undefined.  */
   unsigned char warn_builtin_macro_redefined;
 
+  /* Different -Wimplicit-fallthrough= levels.  */
+  unsigned char cpp_warn_implicit_fallthrough;
+
   /* Nonzero means we should look for header.gcc files that remap file
      names.  */
   unsigned char remap;

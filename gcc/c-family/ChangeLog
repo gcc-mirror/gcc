@@ -1,3 +1,10 @@
+2016-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wextra): Add as C/C++/ObjC/ObjC++ option.
+	(Wimplicit-fallthrough=): Enable for these languages by -Wextra.
+	* c-opts.c (sanitize_cpp_opts): Initialize
+	cpp_opts->cpp_warn_implicit_fallthrough.
+
 2016-10-11  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (warning_candidate_p): Change the return type to bool
