@@ -1,5 +1,11 @@
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Op_Add>: Adjust comment.
+	<N_Op_Minus>: Add comment and missing guard.
+	* gcc-interface/trans.c (build_binary_op_trapv): Use an explicit test.
+
+2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (type_unsigned_for_rm): New predicate.
 	(make_type_from_size): Use it.
 	(unchecked_convert): Likewise.  Do not skip the extension step if the
