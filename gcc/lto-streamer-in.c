@@ -1036,6 +1036,9 @@ input_function (tree fn_decl, struct data_in *data_in,
 
   /* Read the tree of lexical scopes for the function.  */
   DECL_INITIAL (fn_decl) = stream_read_tree (ib, data_in);
+  unsigned block_leaf_count = streamer_read_uhwi (ib);
+  while (block_leaf_count--)
+    stream_read_tree (ib, data_in);
 
   if (!streamer_read_uhwi (ib))
     return;

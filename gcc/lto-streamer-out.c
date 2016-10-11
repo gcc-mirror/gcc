@@ -2016,6 +2016,18 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
 }
 
 
+/* Collect all leaf BLOCKs beyond ROOT into LEAFS.  */
+
+static void
+collect_block_tree_leafs (tree root, vec<tree> &leafs)
+{
+  for (root = BLOCK_SUBBLOCKS (root); root; root = BLOCK_CHAIN (root))
+    if (! BLOCK_SUBBLOCKS (root))
+      leafs.safe_push (root);
+    else
+      collect_block_tree_leafs (BLOCK_SUBBLOCKS (root), leafs);
+}
+
 /* Output the body of function NODE->DECL.  */
 
 static void
@@ -2048,10 +2060,16 @@ output_function (struct cgraph_node *node)
   streamer_write_chain (ob, DECL_ARGUMENTS (function), true);
 
   /* Output DECL_INITIAL for the function, which contains the tree of
-     lexical scopes.
-     ???  This only streams the outermost block because we do not
-     recurse into BLOCK_SUBBLOCKS but re-build those on stream-in.  */
+     lexical scopes.  */
   stream_write_tree (ob, DECL_INITIAL (function), true);
+  /* As we do not recurse into BLOCK_SUBBLOCKS but only BLOCK_SUPERCONTEXT
+     collect block tree leafs and stream those.  */
+  auto_vec<tree> block_tree_leafs;
+  if (DECL_INITIAL (function))
+    collect_block_tree_leafs (DECL_INITIAL (function), block_tree_leafs);
+  streamer_write_uhwi (ob, block_tree_leafs.length ());
+  for (unsigned i = 0; i < block_tree_leafs.length (); ++i)
+    stream_write_tree (ob, block_tree_leafs[i], true);
 
   /* We also stream abstract functions where we stream only stuff needed for
      debug info.  */

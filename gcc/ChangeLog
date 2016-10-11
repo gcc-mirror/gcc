@@ -1,3 +1,9 @@
+2016-10-11  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer-out.c (collect_block_tree_leafs): New helper.
+	(output_function): Properly stream the whole block tree.
+	* lto-streamer-in.c (input_function): Likewise.
+
 2016-10-11  Marek Polacek  <polacek@redhat.com>
 
 	* Makefile.in (C_COMMON_OBJS): Add c-family/c-warn.o.
