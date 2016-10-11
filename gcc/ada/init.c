@@ -2516,6 +2516,14 @@ __gnat_install_handler (void)
   __gnat_handler_installed = 1;
 }
 
+#elif defined (__DJGPP__)
+
+void
+__gnat_install_handler ()
+{
+  __gnat_handler_installed = 1;
+}
+
 #elif defined(__ANDROID__)
 
 /*******************/

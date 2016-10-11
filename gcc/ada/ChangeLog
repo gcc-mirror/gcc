@@ -1,3 +1,15 @@
+2016-10-11  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	* ctrl_c.c: Do not use macro SA_RESTART for DJGPP.
+	* gsocket.h: Do not support sockets for DJGPP.
+	* init.c (__gnat_install_handler): Implememt for DJGPP
+	* sysdep.c: Include <io.h> for DJGPP
+	(_setmode): Define to setmode for DJGPP
+	(__gnat_set_mode): Add implementation for DJGPP
+	(__gnat_localtime_tzoff): Use localtime_r for DJGPP
+	* terminals.c: Add DJGPP to list of unsupported platforms.
+	* env.c (__gnat_clearenv): use _gnat_unsetenv on all entries for DJGPP
+
 2016-10-11  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* exp_dbug.adb (Debug_Renaming_Declaration): Process underlying types.
