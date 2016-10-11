@@ -414,7 +414,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       
     private:
 
-      static constexpr const int
+      static constexpr int
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
 	return difference_type{__n1 - __n2} > std::numeric_limits<int>::max()
