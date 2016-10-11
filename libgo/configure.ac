@@ -447,9 +447,9 @@ EOF
 cat > conftest2.c << EOF
 void f() {}
 EOF
-$CC -c -fsplit-stack $CFLAGS $CPPFLAGS conftest1.c
-$CC -c $CFLAGS $CPPFLAGS conftest2.c
-if $CC -o conftest conftest1.$ac_objext conftest2.$ac_objext; then
+$CC -c -fsplit-stack $CFLAGS $CPPFLAGS conftest1.c >/dev/null 2>&1
+$CC -c $CFLAGS $CPPFLAGS conftest2.c > /dev/null 2>&1
+if $CC -o conftest conftest1.$ac_objext conftest2.$ac_objext > /dev/null 2>&1; then
   libgo_cv_c_linker_split_non_split=yes
 else
   libgo_cv_c_linker_split_non_split=no
