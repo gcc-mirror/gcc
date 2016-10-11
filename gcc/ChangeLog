@@ -1,3 +1,12 @@
+2016-10-11  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2016-10-11  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/77558
+	* builtins.c (std_canonical_va_list_type): Remove RECORD_TYPE
+	special-casing.
+
 2016-10-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/gen-avr-mmcu-texi.c (string.h): Include.
