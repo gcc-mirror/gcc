@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   size_t space = 100;
   void* ptr = new char[space];
   char* const orig_ptr = static_cast<char*>(ptr);

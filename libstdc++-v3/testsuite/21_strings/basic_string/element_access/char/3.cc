@@ -25,9 +25,8 @@
 
 // Do another sanity check, this time for member functions that return
 // iterators, namely insert and erase.
-bool test02(void)
+void test02(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::iterator siterator;
   typedef std::string::reverse_iterator sriterator;
@@ -73,7 +72,6 @@ bool test02(void)
   std::string str13 = str12;
   *p2 = 'e';
   VERIFY( str12 != str13 );
-  return test;
 }
 
 int main()

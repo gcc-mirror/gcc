@@ -46,8 +46,6 @@ struct hintable_allocator
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::allocator_traits<hintable_allocator<X>> traits_type;
   traits_type::allocator_type a;
   traits_type::const_void_pointer v;
@@ -74,8 +72,6 @@ struct unhintable_allocator
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::allocator_traits<unhintable_allocator<X>> traits_type;
   traits_type::allocator_type a;
   traits_type::const_void_pointer v;

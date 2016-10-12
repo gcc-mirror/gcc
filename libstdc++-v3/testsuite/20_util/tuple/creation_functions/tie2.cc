@@ -26,7 +26,6 @@
 int
 main()
 {
-  bool test __attribute__((unused)) = true; 
   using namespace std;
 
   int i;

@@ -37,8 +37,6 @@ struct D {
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   D d = D();
   std::unique_ptr<A, D&> up(new A, d);
   {

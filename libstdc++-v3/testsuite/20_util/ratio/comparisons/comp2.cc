@@ -26,8 +26,6 @@ static const std::intmax_t M = INTMAX_MAX;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
- 
   // No overflow with same denominator
   VERIFY( (std::ratio_less<std::ratio<M - 2, M>,
            std::ratio<M - 1, M>>::value == 1) );

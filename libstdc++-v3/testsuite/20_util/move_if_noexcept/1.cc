@@ -93,8 +93,6 @@ private:
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   noexcept_move_copy nemc1;
   auto nemc2 __attribute__((unused)) = std::move_if_noexcept(nemc1);
   VERIFY( nemc1 == false );

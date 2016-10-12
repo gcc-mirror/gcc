@@ -24,8 +24,6 @@
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   // template<typename _InputIter>
   //   basic_string(_InputIter begin, _InputIter end, const allocator& a)
   // where _InputIter is integral [21.3.1 para 15]

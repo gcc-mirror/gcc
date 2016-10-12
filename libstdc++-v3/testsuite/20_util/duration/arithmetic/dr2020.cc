@@ -26,7 +26,6 @@
 // DR 2020
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
 
   constexpr duration<int> d0(12);

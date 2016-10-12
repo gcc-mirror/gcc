@@ -23,7 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
 
   typedef duration<std::int64_t, std::ratio<36 * 24 * 36525>> Years;

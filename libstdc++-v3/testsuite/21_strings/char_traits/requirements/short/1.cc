@@ -30,7 +30,6 @@
 void test02(void)
 {
   typedef short char_type;
-  bool test __attribute__((unused)) = true;
  
   // 21.1.1 character traits requirements
 

@@ -31,8 +31,6 @@ template<typename T, typename R>
   void
   do_test()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef std::numeric_limits<T> char_type;
     typedef std::numeric_limits<R> impl_type;
 

@@ -28,8 +28,6 @@ int inc(int& i) { return ++i; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int counter = 0;
   std::bind(&inc, _1)(counter);
   VERIFY(counter == 1 );
@@ -47,8 +45,6 @@ struct Inc
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   int counter = 0;
   std::bind(Inc(), _1)(counter);
   VERIFY(counter == 1 );

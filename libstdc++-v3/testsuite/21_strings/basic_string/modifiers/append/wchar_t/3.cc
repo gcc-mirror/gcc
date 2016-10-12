@@ -33,8 +33,6 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std;
  
   const wchar_t * source = L"Kesto";

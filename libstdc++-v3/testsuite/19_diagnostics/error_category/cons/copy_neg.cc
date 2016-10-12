@@ -23,8 +23,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_test::test_category c1;
   __gnu_test::test_category c2(c1); // { dg-error "deleted" }
 

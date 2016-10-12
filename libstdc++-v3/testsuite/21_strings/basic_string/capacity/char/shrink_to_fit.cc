@@ -25,8 +25,6 @@
 // libstdc++/42573
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::string s(100, 'a');
   s.push_back('b');
   s.push_back('b');

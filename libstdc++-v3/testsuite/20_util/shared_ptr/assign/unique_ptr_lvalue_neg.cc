@@ -30,8 +30,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a;
   std::unique_ptr<A> u;
   a = u; // { dg-error "" }

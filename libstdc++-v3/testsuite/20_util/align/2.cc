@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int i = 0;
   void* ptr = &i;
   auto space = sizeof(i);

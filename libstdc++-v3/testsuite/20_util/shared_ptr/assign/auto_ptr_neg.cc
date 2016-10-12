@@ -32,8 +32,6 @@ struct B { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a;
   std::auto_ptr<B> b;
   a = std::move(b);                      // { dg-error "here" }

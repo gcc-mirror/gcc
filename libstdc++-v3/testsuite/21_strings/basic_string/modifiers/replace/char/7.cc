@@ -25,7 +25,6 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
   std::string_view str1("foo");
   std::string str2("bar");
   str2.replace(0, 3, str1);
@@ -51,8 +50,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   std::string str("a");
   char c = 'b';
   str.replace(0, 1, &c, 1);

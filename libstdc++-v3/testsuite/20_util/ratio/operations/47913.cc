@@ -25,7 +25,6 @@
 // libstdc++/47913
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const intmax_t m1 = (intmax_t)1 << (4 * sizeof(intmax_t) - 1);

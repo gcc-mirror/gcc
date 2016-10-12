@@ -22,11 +22,9 @@
 #include <string_view>
 #include <testsuite_hooks.h>
 
-bool
+void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::string_view::size_type csize_type;
   typedef std::string_view::const_reference cref;
   typedef std::string_view::reference ref;
@@ -85,8 +83,6 @@ test01()
   VERIFY( csz01 == csz02 );
   csz01 = str01.find('/');
   VERIFY( csz01 == npos );
-
-  return test;
 }
 
 int

@@ -22,7 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   const bool* p = &std::integral_constant<bool, true>::value;
   VERIFY( p );
 }

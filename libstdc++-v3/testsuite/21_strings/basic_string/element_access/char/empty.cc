@@ -22,8 +22,6 @@
 // as per 21.3.4
 int main()
 {
-  bool test __attribute__((unused)) = true;
-  
   {
     std::string empty;
     char c = empty[0];

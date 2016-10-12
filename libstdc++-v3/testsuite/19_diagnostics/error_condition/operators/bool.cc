@@ -24,8 +24,6 @@
 // unspecified bool operator positive tests
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // 1
   std::error_condition e1;
   if (static_cast<bool>(e1))

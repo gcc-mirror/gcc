@@ -28,7 +28,7 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   using namespace std;
   
   long long ll1 = -2;

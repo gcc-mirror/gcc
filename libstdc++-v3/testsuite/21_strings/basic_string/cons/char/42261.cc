@@ -21,7 +21,6 @@
 // libstdc++/42261
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const string s(string::size_type(6), string::size_type('f'));

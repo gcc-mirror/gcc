@@ -30,8 +30,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique_ptr<A> up(new A);
   std::shared_ptr<A> sp(std::move(up));
   VERIFY( up.get() == 0 );

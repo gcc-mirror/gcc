@@ -30,11 +30,9 @@
 #include <iostream>
 #include <testsuite_hooks.h>
 
-bool
+void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::string_view::size_type csize_type;
   typedef std::string_view::const_reference cref;
   typedef std::string_view::reference ref;
@@ -56,8 +54,6 @@ test01()
   
   std::string_view hello_world;
   std::cout << hello_world;
-
-  return test;
 }
 
 int

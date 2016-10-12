@@ -41,8 +41,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   struct DefaultConstructible
   {
     DefaultConstructible(int i = 0) : value(i) { }
@@ -63,8 +61,6 @@ double f(double) { return 0; }
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   int (*fp)(int);
   std::exchange(fp, &f);
   VERIFY( fp != nullptr );

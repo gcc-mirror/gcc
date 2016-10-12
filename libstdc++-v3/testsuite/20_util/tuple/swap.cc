@@ -56,8 +56,6 @@ make_move_only (int i)
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tuple<> t1, t2;
   std::swap(t1, t2);
 
@@ -66,8 +64,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tuple<int> t1(1), t2(2);
   std::swap(t1, t2);
   
@@ -76,8 +72,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tuple<int, float> t1(1, 1.0f), t2(2, 2.0f);
   std::swap(t1, t2);
 
@@ -87,8 +81,6 @@ void test03()
 
 void test04()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tuple<int, float, MoveOnly> 
     t1(1, 1.0f, make_move_only(1)), 
     t2(2, 2.0f, make_move_only(2));

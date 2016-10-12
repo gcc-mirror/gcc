@@ -32,8 +32,6 @@ struct foo
 void
 test_constructors()
 {
-  bool test __attribute__((unused)) = true;
-
   int x1=0,x2=0;
   const int &z1=x1;
 

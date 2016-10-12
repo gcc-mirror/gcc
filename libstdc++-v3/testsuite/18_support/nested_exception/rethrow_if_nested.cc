@@ -30,7 +30,7 @@ struct derived2 : base, std::nested_exception { };
 
 void test01() 
 {
-  bool test __attribute__((unused)) = false;
+  bool test = false;
 
   try
   {
@@ -55,7 +55,7 @@ void test01()
 
 void test02() 
 {
-  bool test __attribute__((unused)) = false;
+  bool test = false;
 
   try
   {
@@ -72,7 +72,7 @@ void test02()
 
 void test03() 
 {
-  bool test __attribute__((unused)) = false;
+  bool test = false;
 
   try
   {

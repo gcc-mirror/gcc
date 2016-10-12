@@ -31,7 +31,6 @@
 // based on a bug report libstdc++ 9
 void test04(std::size_t size)
 {
-  bool test __attribute__((unused)) = true;
   std::wstring str(size, L's');
   std::size_t expected_size = 2 * (size + 1);
   std::wostringstream oss(str);
@@ -43,11 +42,11 @@ void test04(std::size_t size)
   // stress test
   oss << str << std::endl;
   if (!oss.good()) 
-    test = false;
+    VERIFY( false );
 
   oss << str << std::endl;
   if (!oss.good()) 
-    test = false;
+    VERIFY( false );
 
   VERIFY( str.size() == size );
   VERIFY( oss.good() );

@@ -26,8 +26,6 @@
 // http://gcc.gnu.org/ml/libstdc++/2001-11/msg00150.html
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring str01 = L"twelve chars";
   // str01 becomes shared
   std::wstring str02 = str01;

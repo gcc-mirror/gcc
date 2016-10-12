@@ -26,7 +26,6 @@
 // Make sure each invocation of what() doesn't grow the message.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::string s("after nine thirty, this request cannot be met");
 
   std::system_error obj =

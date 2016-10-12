@@ -22,11 +22,9 @@
 
 // basic_string_view::find_last_not_of
 
-bool
+void
 test03()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::wstring_view::size_type csize_type;
   std::wstring_view::size_type pos;
   csize_type npos = std::wstring_view::npos;
@@ -58,8 +56,6 @@ test03()
   VERIFY( pos == 0 );
   pos = z.find_last_not_of(L"Xa");
   VERIFY( pos == 1 );
-
-  return test;
 }
 int
 main()

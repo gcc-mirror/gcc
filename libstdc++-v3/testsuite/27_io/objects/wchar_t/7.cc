@@ -31,9 +31,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// No asserts, avoid leaking the semaphore if a VERIFY fails.
-#undef _GLIBCXX_ASSERT
-
 #include <testsuite_hooks.h>
 
 // Check that wcout.flush() is called when last ios_base::Init is destroyed.
@@ -41,7 +38,7 @@ bool test07()
 {
   using namespace std;
   using namespace __gnu_test;
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   const char* name = "tmp_fifo4";
 
@@ -52,7 +49,7 @@ bool test07()
   semaphore s1;
 
   int child = fork();
-  VERIFY( child != -1 );
+  test &= bool( child != -1 );
 
   if (child == 0)
     {
@@ -69,8 +66,8 @@ bool test07()
   fbin.open(name, ios_base::in);
   s1.signal();
   wfilebuf::int_type c = fbin.sbumpc();
-  VERIFY( c != wfilebuf::traits_type::eof() );
-  VERIFY( c == wfilebuf::traits_type::to_int_type(L'a') );
+  test &= bool( c != wfilebuf::traits_type::eof() );
+  test &= bool( c == wfilebuf::traits_type::to_int_type(L'a') );
 
   fbin.close();
 

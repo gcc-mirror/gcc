@@ -24,8 +24,6 @@
 
 int test01(void)
 {
-  bool test __attribute__((unused)) = true;
-
   std::string_view str1("foo");;
   std::string str2;
   

@@ -30,8 +30,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::shared_ptr<A> p1(new A);
   p1.reset();     // { dg-error "" }
 

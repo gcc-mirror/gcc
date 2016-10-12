@@ -24,7 +24,6 @@
 // libstdc++/24808
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_function;
   using namespace __gnu_test;
 

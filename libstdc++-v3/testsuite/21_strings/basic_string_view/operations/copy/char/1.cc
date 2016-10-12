@@ -25,8 +25,6 @@
 bool
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::string_view::size_type csize_type;
 
   const char str_lit01[] = "123456789A";
@@ -36,8 +34,6 @@ test01()
   csize_type len = str01.copy(buffer, sizeof(buffer), 8);
   VERIFY( 2 == len );
   VERIFY( '9' == buffer[0] );
-
-  return test;
 }
 
 int

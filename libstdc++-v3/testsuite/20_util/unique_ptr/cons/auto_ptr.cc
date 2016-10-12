@@ -31,8 +31,6 @@ struct A { };
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::auto_ptr<A> a(new A);
   std::unique_ptr<A> a2(std::move(a));
   VERIFY( a.get() == nullptr );

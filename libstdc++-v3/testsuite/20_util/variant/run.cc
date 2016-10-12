@@ -51,16 +51,12 @@ struct AlwaysThrow
 
 void default_ctor()
 {
-  bool test [[gnu::unused]] = true;
-
   variant<monostate, string> v;
   VERIFY(holds_alternative<monostate>(v));
 }
 
 void copy_ctor()
 {
-  bool test [[gnu::unused]] = true;
-
   variant<monostate, string> v("a");
   VERIFY(holds_alternative<string>(v));
   variant<monostate, string> u(v);
@@ -70,8 +66,6 @@ void copy_ctor()
 
 void move_ctor()
 {
-  bool test [[gnu::unused]] = true;
-
   variant<monostate, string> v("a");
   VERIFY(holds_alternative<string>(v));
   variant<monostate, string> u(std::move(v));
@@ -82,8 +76,6 @@ void move_ctor()
 
 void arbitrary_ctor()
 {
-  bool test [[gnu::unused]] = true;
-
   variant<int, string> v("a");
   VERIFY(holds_alternative<string>(v));
   VERIFY(get<1>(v) == "a");
@@ -91,8 +83,6 @@ void arbitrary_ctor()
 
 void copy_assign()
 {
-  bool test [[gnu::unused]] = true;
-
   variant<monostate, string> v("a");
   VERIFY(holds_alternative<string>(v));
   variant<monostate, string> u;
@@ -103,8 +93,6 @@ void copy_assign()
 
 void move_assign()
 {
-  bool test [[gnu::unused]] = true;
-
   variant<monostate, string> v("a");
   VERIFY(holds_alternative<string>(v));
   variant<monostate, string> u;
@@ -116,8 +104,6 @@ void move_assign()
 
 void arbitrary_assign()
 {
-  bool test [[gnu::unused]] = true;
-
   variant<int, string> v;
   v = "a";
 
@@ -127,8 +113,6 @@ void arbitrary_assign()
 
 void dtor()
 {
-  bool test [[gnu::unused]] = true;
-
   struct A {
       A(int& called) : called(called) {}
       ~A() {
@@ -150,8 +134,6 @@ void dtor()
 
 void in_place_index_ctor()
 {
-  bool test [[gnu::unused]] = true;
-
   {
     variant<int, string> v(in_place<1>, "a");
     VERIFY(holds_alternative<string>(v));
@@ -166,8 +148,6 @@ void in_place_index_ctor()
 
 void in_place_type_ctor()
 {
-  bool test [[gnu::unused]] = true;
-
   {
     variant<int, string> v(in_place<string>, "a");
     VERIFY(holds_alternative<string>(v));
@@ -206,8 +186,6 @@ namespace std
 
 void uses_allocator_ctor()
 {
-  bool test [[gnu::unused]] = true;
-
   std::allocator<char> a;
   variant<UsesAllocatable> v(std::allocator_arg, a);
   VERIFY(get<0>(v).d == 0);
@@ -226,8 +204,6 @@ void uses_allocator_ctor()
 
 void emplace()
 {
-  bool test [[gnu::unused]] = true;
-
   variant<int, string> v;
   v.emplace<0>(1);
   VERIFY(get<0>(v) == 1);
@@ -252,8 +228,6 @@ void emplace()
 
 void test_get()
 {
-  bool test [[gnu::unused]] = true;
-
   VERIFY(get<1>(variant<int, string>("a")) == "a");
   VERIFY(get<string>(variant<int, string>("a")) == "a");
   {
@@ -286,8 +260,6 @@ void test_get()
 
 void test_relational()
 {
-  bool test [[gnu::unused]] = true;
-
   VERIFY((variant<int, string>(2) < variant<int, string>(3)));
   VERIFY((variant<int, string>(3) == variant<int, string>(3)));
   VERIFY((variant<int, string>(3) > variant<int, string>(2)));
@@ -303,8 +275,6 @@ void test_relational()
 
 void test_swap()
 {
-  bool test [[gnu::unused]] = true;
-
   variant<int, string> a("a"), b("b");
   a.swap(b);
   VERIFY(get<1>(a) == "b");
@@ -316,8 +286,6 @@ void test_swap()
 
 void test_visit()
 {
-  bool test [[gnu::unused]] = true;
-
   {
     struct Visitor
     {
@@ -383,8 +351,6 @@ void test_visit()
 
 void test_hash()
 {
-  bool test [[gnu::unused]] = true;
-
   unordered_set<variant<int, string>> s;
   VERIFY(s.emplace(3).second);
   VERIFY(s.emplace("asdf").second);
@@ -419,8 +385,6 @@ void test_hash()
 
 void test_valueless_by_exception()
 {
-  bool test [[gnu::unused]] = true;
-
   {
     AlwaysThrow a;
     bool caught = false;

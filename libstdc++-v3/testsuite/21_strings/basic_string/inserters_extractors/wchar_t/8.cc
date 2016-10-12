@@ -33,7 +33,6 @@ void test08()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   wistringstream istrm(L"enero:2001");
   int 		 year;
   wchar_t	 sep;

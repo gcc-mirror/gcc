@@ -34,8 +34,6 @@ struct B {
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> spA = std::make_shared<A>();
 
   VERIFY( spA.get() != 0 );
@@ -43,8 +41,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<B> spB = std::make_shared<B>(99);
 
   VERIFY( spB->i == 99 );

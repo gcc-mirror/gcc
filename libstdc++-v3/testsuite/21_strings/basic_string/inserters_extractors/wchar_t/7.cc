@@ -33,7 +33,6 @@
 // NB: this is a defect in the standard.
 void test07(void)
 {
-  bool test __attribute__((unused)) = true;
   const std::wstring name(L"z6.cc");
   std::wistringstream iss(name);
   int i = 0;

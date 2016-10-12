@@ -21,9 +21,8 @@
 #include <testsuite_hooks.h>
 
 // 21.3.6.4 basic_string::find_last_of
-bool test02()
+void test02()
 {
-  bool test __attribute__((unused)) = true;
   std::wstring::size_type pos;
   std::wstring z(L"ab");
   pos = z.find_last_of(L"ab");
@@ -40,7 +39,6 @@ bool test02()
   VERIFY( pos == 1 );
   pos = z.find_last_of(L'X');
   VERIFY( pos == std::wstring::npos );
-  return test;
 }
 
 int main()

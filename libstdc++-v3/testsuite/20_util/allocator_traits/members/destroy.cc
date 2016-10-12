@@ -53,8 +53,6 @@ struct allocator_without_destroy
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::allocator_traits<allocator_with_destroy<X>> traits_type;
   traits_type::allocator_type a;
   X* p = 0;
@@ -65,8 +63,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::allocator_traits<allocator_without_destroy<X>> traits_type;
   traits_type::allocator_type a;
   char buf[sizeof(X)];

@@ -42,8 +42,6 @@ create_auto_ptr()
 void 
 process(std::shared_ptr<A> a)
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( a.get() != 0 );
   VERIFY( a.use_count() == 1 );
 }

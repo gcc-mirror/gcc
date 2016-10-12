@@ -39,8 +39,6 @@ struct deleter
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<int> p = nullptr;
   VERIFY( p.get() == nullptr );
   VERIFY( p.use_count() == 0 );
@@ -50,8 +48,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   deleter d;
   std::shared_ptr<int> p(nullptr, std::ref(d));
   VERIFY( p.get() == nullptr );
@@ -66,8 +62,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   deleter d;
   __gnu_test::tracker_allocator<int> a;
   std::shared_ptr<int> p(nullptr, std::ref(d), a);

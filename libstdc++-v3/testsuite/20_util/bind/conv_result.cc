@@ -30,7 +30,6 @@ struct X
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::bind;
   using std::ref;
   ::X x = { true };

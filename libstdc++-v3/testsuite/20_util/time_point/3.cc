@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
   
   time_point<system_clock> t1(seconds(1));

@@ -27,7 +27,6 @@ void test01()
 {
   typedef std::logic_error test_type;
 
-  bool test __attribute__((unused)) = true;
   const std::string xxx(10000, 'x');
   test_type t(xxx);
   VERIFY( std::strcmp(t.what(), xxx.c_str()) == 0 );

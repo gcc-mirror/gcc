@@ -115,8 +115,6 @@ template<class charT, class traits, class Allocator>
 int
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::string_view 	str_0("costa rica");
   std::string_view 	str_1("costa marbella");
   std::string_view 	str_2("cost");

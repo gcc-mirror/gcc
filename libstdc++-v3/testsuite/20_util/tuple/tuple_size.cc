@@ -27,8 +27,6 @@ using namespace std;
 int
 main()
 {
-  bool test __attribute__((unused)) = true;
-
   static_assert(tuple_size<tuple<>>::value == 0, "");
   static_assert(tuple_size<tuple<int>>::value == 1, "");
   static_assert(tuple_size<tuple<void>>::value == 1, "");

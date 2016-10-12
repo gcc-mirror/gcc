@@ -24,7 +24,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   const std::string s("too late: boulangerie out of pain au raisin");
   const std::error_code
     e(std::make_error_code(std::errc::operation_not_supported));

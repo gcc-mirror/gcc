@@ -30,7 +30,8 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
+  bool test = false;
+
   using namespace std;
 
   try

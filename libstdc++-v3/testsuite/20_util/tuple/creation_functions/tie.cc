@@ -27,8 +27,6 @@ using namespace std;
 int
 main()
 {
-  bool test __attribute__((unused)) = true; 
-
   int x1 = 0;
   int x2 = 0;
   int y1 = 0;

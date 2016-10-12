@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::ratio_multiply<
     std::ratio<2, INTMAX_MAX>,
     std::ratio<INTMAX_MAX, 2>>::type r1;
@@ -45,9 +43,7 @@ test01()
 
 void
 test02()
-{  
-  bool test __attribute__((unused)) = true;
-  
+{
   std::ratio_divide<
     std::ratio<INTMAX_MAX, 2>,
     std::ratio<INTMAX_MAX, 2>>::type r1;

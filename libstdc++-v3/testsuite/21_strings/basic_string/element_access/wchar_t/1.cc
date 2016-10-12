@@ -23,9 +23,8 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-bool test01(void)
+void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   typedef std::wstring::const_reference cref;
   typedef std::wstring::reference ref;
@@ -78,7 +77,6 @@ bool test01(void)
   catch(...) {
     VERIFY( false );
   }
-  return test;
 }
 
 int main()

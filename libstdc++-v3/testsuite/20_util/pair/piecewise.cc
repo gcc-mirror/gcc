@@ -67,8 +67,6 @@ private:
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::pair<type_one, type_zero> pp0(std::piecewise_construct,
 				     std::forward_as_tuple(-3),
 				     std::forward_as_tuple());

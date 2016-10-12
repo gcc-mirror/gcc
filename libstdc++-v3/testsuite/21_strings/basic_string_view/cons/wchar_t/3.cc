@@ -25,8 +25,6 @@
 void
 test05()
 {
-  bool test [[gnu::unused]] = true;
-
   wchar_t const * s = 0;
   std::wstring_view zero_length_built_with_NULL(s, 0);
 }

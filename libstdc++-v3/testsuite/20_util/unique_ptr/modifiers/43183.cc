@@ -36,8 +36,6 @@ int D::count = 0;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique_ptr<int, D> up;
   up.reset();
   VERIFY( D::count == 0 );

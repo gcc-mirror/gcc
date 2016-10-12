@@ -236,7 +236,7 @@ proc libstdc++_init { testfile } {
 
     # Default settings.
     set cxx [transform "g++"]
-    set cxxflags "-D_GLIBCXX_ASSERT -fmessage-length=0"
+    set cxxflags "-fmessage-length=0"
     set cxxpchflags ""
     set cxxvtvflags ""
     set cxxldflags ""

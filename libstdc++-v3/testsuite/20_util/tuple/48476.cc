@@ -29,8 +29,6 @@ template<typename T>
 // libstdc++/48476
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<int> p(new int()), q, r;
   
   std::tuple<std::shared_ptr<int>&, int>  t0(p, 23), t1(q, 0);

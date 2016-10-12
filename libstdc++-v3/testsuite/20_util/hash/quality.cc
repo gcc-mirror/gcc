@@ -59,7 +59,6 @@ random_strings(unsigned int n, unsigned int len)
 double
 score_from_varying_position(string s, unsigned int index)
 {
-  bool test __attribute__((unused)) = true;
   unsigned int bits_in_hash_code = sizeof(size_t) * 8;
 
   // We'll iterate through all 256 vals for s[index], leaving the rest
@@ -146,7 +145,6 @@ quality_test(unsigned int num_strings, unsigned int string_size)
 void
 quality_test()
 {
-  bool test __attribute__((unused)) = true;
   srand(137);
   double sum_of_scores = 0;
   for (unsigned int i = 0; i < num_quality_tests; i++)

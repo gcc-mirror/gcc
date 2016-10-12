@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::ratio<1,3> r0;
   std::ratio<2,6> r1;  
   std::ratio<2,-6> r2;

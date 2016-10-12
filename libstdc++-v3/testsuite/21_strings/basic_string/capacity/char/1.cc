@@ -25,7 +25,6 @@
 void test01()
 {
   // POD types : resize, capacity, reserve
-  bool test __attribute__((unused)) = true;
   std::string str01;
   typedef std::string::size_type size_type_s;
 

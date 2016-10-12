@@ -20,9 +20,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// No asserts, avoid leaking the semaphores if a VERIFY fails.
-#undef _GLIBCXX_ASSERT
-
 #include <testsuite_hooks.h>
 #include <cstdio>
 #include <cstdlib>
@@ -41,7 +38,7 @@ bool test01()
   using namespace std;
   using namespace __gnu_test;
 
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   const char* name = "tmp_fifo5";
 
@@ -52,12 +49,12 @@ bool test01()
   semaphore s1, s2;
   
   int child = fork();
-  VERIFY( child != -1 );
+  test &= bool( child != -1 );
 
   if (child == 0)
     {
       FILE* file = fopen(name, "r+");
-      VERIFY( file != 0 );
+      test &= bool( file != 0 );
       fputs("Whatever\n", file);
       fflush(file);
       s1.signal();
@@ -67,25 +64,25 @@ bool test01()
       exit(0);
     }
 
-  VERIFY( freopen(name, "r", stdin) );
+  test &= bool( freopen(name, "r", stdin) );
   s1.wait();
 
   int c1 = fgetc(stdin);
-  VERIFY( c1 != EOF );
+  test &= bool( c1 != EOF );
   int c2 = cin.rdbuf()->sputbackc('a');
-  VERIFY( c2 != EOF );
-  VERIFY( c2 == 'a' );
+  test &= bool( c2 != EOF );
+  test &= bool( c2 == 'a' );
   
   int c3 = fgetc(stdin);
-  VERIFY( c3 != EOF );
-  VERIFY( c3 == c2 );
+  test &= bool( c3 != EOF );
+  test &= bool( c3 == c2 );
   int c4 = ungetc('b', stdin);
-  VERIFY( c4 != EOF );
-  VERIFY( c4 == 'b' );
+  test &= bool( c4 != EOF );
+  test &= bool( c4 == 'b' );
   
   int c5 = cin.rdbuf()->sgetc();
-  VERIFY( c5 != EOF );
-  VERIFY( c5 == c4 );
+  test &= bool( c5 != EOF );
+  test &= bool( c5 == c4 );
   s2.signal();
   s1.wait();
 

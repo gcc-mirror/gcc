@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
   typedef std::string_view::size_type csize_type;
 
   // basic_string_view()

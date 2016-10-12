@@ -26,7 +26,6 @@
 void
 test_uniform_random()
 {
-  bool test __attribute__((unused)) = true;
   std::srand(137);
   std::unordered_set<std::string> set;
   std::string s;

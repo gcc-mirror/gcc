@@ -28,10 +28,8 @@
 #include <testsuite_hooks.h>
 
 // libstdc++/5045
-bool test03()
+void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( std::numeric_limits<bool>::digits10 == 0 );
   if (__CHAR_BIT__ == 8)
     {
@@ -53,7 +51,6 @@ bool test03()
       VERIFY( std::numeric_limits<signed long long>::digits10 == 18 );
       VERIFY( std::numeric_limits<unsigned long long>::digits10 == 19 );
     }
-  return test;
 }
 
 int main()

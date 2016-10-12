@@ -23,8 +23,6 @@
 
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
-
   std::nested_exception e;
 
   VERIFY( e.nested_ptr() == 0 );
@@ -32,8 +30,6 @@ void test01()
 
 void test02() 
 {
-  bool test __attribute__((unused)) = true;
-
   try
   {
     throw 42;

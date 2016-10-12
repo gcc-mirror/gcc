@@ -57,8 +57,8 @@ int main()
         a1 = a2;
     } catch (...) {
         auto x = std::any_cast<Good>(a1);
-        assert(del_count == 0);
-        assert(a1.has_value());
+        VERIFY( del_count == 0 );
+        VERIFY( a1.has_value() );
         std::any_cast<Good>(a1);
     }
     std::any a3 = Good();
@@ -70,8 +70,8 @@ int main()
         a3 = a4;
     } catch (...) {
         auto x = std::any_cast<Good>(a1);
-        assert(del_count == 0);
-        assert(a1.has_value());
+        VERIFY( del_count == 0 );
+        VERIFY( a1.has_value() );
         std::any_cast<Good>(a1);
     }
 }

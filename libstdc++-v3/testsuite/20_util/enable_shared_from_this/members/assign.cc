@@ -24,7 +24,6 @@ struct X : public std::enable_shared_from_this<X> { };
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   auto x1 = std::make_shared<X>(), x2 = std::make_shared<X>();
   *x1 = *x2;
   VERIFY( x1->shared_from_this() != x2->shared_from_this() );

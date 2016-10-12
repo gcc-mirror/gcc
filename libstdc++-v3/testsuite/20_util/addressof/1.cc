@@ -27,7 +27,6 @@ void f1(int) { }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace __gnu_test;
   
   OverloadedAddress* ao1 = new OverloadedAddress();

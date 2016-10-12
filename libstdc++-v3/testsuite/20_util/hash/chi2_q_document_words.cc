@@ -25,7 +25,6 @@
 void
 test_document_words()
 {
-  bool test __attribute__((unused)) = true;
   const std::string f_name = "thirty_years_among_the_dead_preproc.txt";
   std::ifstream in(f_name);
   VERIFY( in.is_open() );

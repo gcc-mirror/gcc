@@ -26,7 +26,6 @@
 
 void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   typedef std::wstring::iterator citerator;
   csize_type npos = std::wstring::npos;

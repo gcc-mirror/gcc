@@ -30,8 +30,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   std::shared_ptr<A> a1(a);
   std::weak_ptr<A> wa(a1);

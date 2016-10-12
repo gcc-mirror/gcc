@@ -24,7 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef __gnu_test::uneq_allocator<double> ua_type;
   ua_type one(1), two(2);
 

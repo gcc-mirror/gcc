@@ -24,9 +24,6 @@
 
 #include <tuple>
 
-bool test __attribute__((unused)) = true;
-
-
 // make_tuple
 void
 test_make_tuple()

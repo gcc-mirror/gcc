@@ -42,8 +42,6 @@ using std::placeholders::_2;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b0 = std::bind(X());
   VERIFY( b0() == 0 );
 
@@ -59,8 +57,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b0 = std::bind<int>(X());
   VERIFY( b0() == 0 );
 
@@ -76,8 +72,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b0 = std::bind(X(), 0, _1, _2);
   VERIFY( b0(0, 0) == 0 );
 
@@ -93,8 +87,6 @@ void test03()
 
 void test04()
 {
-  bool test __attribute__((unused)) = true;
-
   auto b0 = std::bind<int>(X(), 0, _1, _2);
   VERIFY( b0(0, 0) == 0 );
 

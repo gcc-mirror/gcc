@@ -24,11 +24,10 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::enable_if;
 
   // Negative  tests.
   typedef enable_if<false, int>::type     test2_type;
 }
 
-// { dg-error "does not name a type" "" { target *-*-* } 31 }
+// { dg-error "does not name a type" "" { target *-*-* } 30 }

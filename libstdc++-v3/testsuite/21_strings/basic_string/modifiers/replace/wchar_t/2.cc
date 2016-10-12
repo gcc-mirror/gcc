@@ -26,7 +26,6 @@
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   const wchar_t* strlit = L"../the long pier/Hanalei Bay/Kauai/Hawaii";
   std::wstring aux = strlit;
   aux.replace(aux.begin()+5, aux.begin()+20,

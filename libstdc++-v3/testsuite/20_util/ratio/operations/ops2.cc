@@ -31,8 +31,6 @@ typedef std::ratio<INTMAX_MAX, 2> max_over_two;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::ratio_add<one_over_max, one_over_max>::type r1;
 
   VERIFY( r1.num == two_over_max::num);
@@ -48,9 +46,7 @@ test01()
 
 void
 test02()
-{  
-  bool test __attribute__((unused)) = true;
-  
+{
   std::ratio_subtract<one_over_max, one_over_max>::type r1;
 
   VERIFY( r1.num == 0);

@@ -22,11 +22,9 @@
 
 // basic_string_view rfind
 
-bool
+void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::wstring_view::size_type csize_type;
   typedef std::wstring_view::const_reference cref;
   typedef std::wstring_view::reference ref;
@@ -85,8 +83,6 @@ test01()
   VERIFY( csz01 == csz02 );
   csz01 = str01.rfind(L'/');
   VERIFY( csz01 == npos );
-
-  return test;
 }
 
 int

@@ -27,7 +27,6 @@
 // libstdc++/1972
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::string s("lack of sunlight, no water error");
 
   // 1
@@ -42,7 +41,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   std::string s("lack of sunlight error");
   std::domain_error x(s);
   

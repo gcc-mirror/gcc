@@ -24,8 +24,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::string_view str("ramifications");
   const std::string_view cstr("melodien");
 
