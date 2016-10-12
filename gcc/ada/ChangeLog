@@ -1,5 +1,10 @@
 2016-10-12  Ed Schonberg  <schonberg@adacore.com>
 
+	* contracts.adb (Analyze_Contracts): For a type declaration, analyze
+	an iterable aspect when present.
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch12.adb (Check_Formal_Package_Instance): Handle properly
 	an instance of a formal package with defaults, when defaulted
 	parameters include tagged private types and array types.
