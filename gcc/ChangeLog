@@ -1,3 +1,8 @@
+2016-10-12  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (dwarf2out_early_global_decl): For nested
+	functions, call dwarf2out_decl on the parent function first.
+
 2016-10-12  Richard Biener  <rguenther@suse.de>
 
 	* match.pd ((X /[ex] A) * A -> X): Remove unnecessary constraint
