@@ -541,14 +541,16 @@ package body Exp_Ch7 is
         (Desig_Typ : Entity_Id;
          Unit_Id   : Entity_Id;
          Unit_Decl : Node_Id) return Entity_Id;
-      --  Create a new anonymous finalization master for access type Ptr_Typ
-      --  with designated type Desig_Typ. The declaration of the master along
-      --  with its specialized initialization is inserted in the declarative
-      --  part of unit Unit_Decl. Unit_Id denotes the entity of Unit_Decl.
+      --  Create a new anonymous master for access type Ptr_Typ with designated
+      --  type Desig_Typ. The declaration of the master and its initialization
+      --  are inserted in the declarative part of unit Unit_Decl. Unit_Id is
+      --  the entity of Unit_Decl.
 
-      function In_Subtree (N : Node_Id; Root : Node_Id) return Boolean;
-      --  Determine whether arbitrary node N appears within the subtree rooted
-      --  at node Root.
+      function Current_Anonymous_Master
+        (Desig_Typ : Entity_Id;
+         Unit_Id   : Entity_Id) return Entity_Id;
+      --  Find an anonymous master declared within unit Unit_Id which services
+      --  designated type Desig_Typ. If there is no such master, return Empty.
 
       -----------------------------
       -- Create_Anonymous_Master --
@@ -559,16 +561,42 @@ package body Exp_Ch7 is
          Unit_Id   : Entity_Id;
          Unit_Decl : Node_Id) return Entity_Id
       is
-         Loc       : constant Source_Ptr := Sloc (Unit_Id);
-         Spec_Id   : constant Entity_Id  := Unique_Defining_Entity (Unit_Decl);
+         Loc : constant Source_Ptr := Sloc (Unit_Id);
+
+         All_FMs   : Elist_Id;
          Decls     : List_Id;
          FM_Decl   : Node_Id;
          FM_Id     : Entity_Id;
          FM_Init   : Node_Id;
-         Pref      : Character;
          Unit_Spec : Node_Id;
 
       begin
+         --  Generate:
+         --    <FM_Id> : Finalization_Master;
+
+         FM_Id := Make_Temporary (Loc, 'A');
+
+         FM_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => FM_Id,
+             Object_Definition   =>
+               New_Occurrence_Of (RTE (RE_Finalization_Master), Loc));
+
+         --  Generate:
+         --    Set_Base_Pool
+         --      (<FM_Id>, Global_Pool_Object'Unrestricted_Access);
+
+         FM_Init :=
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
+             Parameter_Associations => New_List (
+               New_Occurrence_Of (FM_Id, Loc),
+               Make_Attribute_Reference (Loc,
+                 Prefix         =>
+                   New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
+                 Attribute_Name => Name_Unrestricted_Access)));
+
          --  Find the declarative list of the unit
 
          if Nkind (Unit_Decl) = N_Package_Declaration then
@@ -588,8 +616,8 @@ package body Exp_Ch7 is
 
          --    procedure Comp_Unit_Proc (Param : access Ctrl := new Ctrl);
 
-         --  There is no suitable place to create the anonymous master as the
-         --  subprogram is not in a declarative list.
+         --  There is no suitable place to create the master as the subprogram
+         --  is not in a declarative list.
 
          else
             Decls := Declarations (Unit_Decl);
@@ -600,100 +628,74 @@ package body Exp_Ch7 is
             end if;
          end if;
 
-         --  Step 1: Anonymous master creation
-
-         --  Use a unique prefix in case the same unit requires two anonymous
-         --  masters, one for the spec (S) and one for the body (B).
-
-         if Ekind_In (Unit_Id, E_Function, E_Package, E_Procedure) then
-            Pref := 'S';
-         else
-            Pref := 'B';
-         end if;
-
-         --  The name of the anonymous master has the following format:
-
-         --    [BS]scopN__scop1__chars_of_desig_typAM
-
-         --  The name utilizes the fully qualified name of the designated type
-         --  in case two controlled types with the same name are declared in
-         --  different scopes and both have anonymous access types.
-
-         FM_Id :=
-           Make_Defining_Identifier (Loc,
-             New_External_Name
-               (Related_Id => Get_Qualified_Name (Desig_Typ),
-                Suffix     => "AM",
-                Prefix     => Pref));
-
-         --  Associate the anonymous master with the designated type. This
-         --  ensures that any additional anonymous access types with the same
-         --  designated type will share the same anonymous master within the
-         --  same unit.
-
-         Set_Anonymous_Master (Desig_Typ, FM_Id);
-
-         --  Generate:
-         --    <FM_Id> : Finalization_Master;
-
-         FM_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => FM_Id,
-             Object_Definition   =>
-               New_Occurrence_Of (RTE (RE_Finalization_Master), Loc));
-
-         --  Step 2: Initialization actions
-
-         --  Generate:
-         --    Set_Base_Pool
-         --      (<FM_Id>, Global_Pool_Object'Unrestricted_Access);
-
-         FM_Init :=
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
-             Parameter_Associations => New_List (
-               New_Occurrence_Of (FM_Id, Loc),
-               Make_Attribute_Reference (Loc,
-                 Prefix         =>
-                   New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
-                 Attribute_Name => Name_Unrestricted_Access)));
-
          Prepend_To (Decls, FM_Init);
          Prepend_To (Decls, FM_Decl);
 
-         --  Since the anonymous master and all its initialization actions are
-         --  inserted at top level, use the scope of the unit when analyzing.
+         --  Use the scope of the unit when analyzing the declaration of the
+         --  master and its initialization actions.
 
-         Push_Scope (Spec_Id);
+         Push_Scope (Unit_Id);
          Analyze (FM_Decl);
          Analyze (FM_Init);
          Pop_Scope;
 
+         --  Mark the master as servicing this specific designated type
+
+         Set_Anonymous_Designated_Type (FM_Id, Desig_Typ);
+
+         --  Include the anonymous master in the list of existing masters which
+         --  appear in this unit. This effectively creates a mapping between a
+         --  master and a designated type which in turn allows for the reusal
+         --  of masters on a per-unit basis.
+
+         All_FMs := Anonymous_Masters (Unit_Id);
+
+         if No (All_FMs) then
+            All_FMs := New_Elmt_List;
+            Set_Anonymous_Masters (Unit_Id, All_FMs);
+         end if;
+
+         Prepend_Elmt (FM_Id, All_FMs);
+
          return FM_Id;
       end Create_Anonymous_Master;
 
-      ----------------
-      -- In_Subtree --
-      ----------------
+      ------------------------------
+      -- Current_Anonymous_Master --
+      ------------------------------
 
-      function In_Subtree (N : Node_Id; Root : Node_Id) return Boolean is
-         Par : Node_Id;
+      function Current_Anonymous_Master
+        (Desig_Typ : Entity_Id;
+         Unit_Id   : Entity_Id) return Entity_Id
+      is
+         All_FMs : constant Elist_Id := Anonymous_Masters (Unit_Id);
+         FM_Elmt : Elmt_Id;
+         FM_Id   : Entity_Id;
 
       begin
-         --  Traverse the parent chain until reaching the same root
+         --  Inspect the list of anonymous masters declared within the unit
+         --  looking for an existing master which services the same designated
+         --  type.
 
-         Par := N;
-         while Present (Par) loop
-            if Par = Root then
-               return True;
-            end if;
+         if Present (All_FMs) then
+            FM_Elmt := First_Elmt (All_FMs);
+            while Present (FM_Elmt) loop
+               FM_Id := Node (FM_Elmt);
 
-            Par := Parent (Par);
-         end loop;
+               --  The currect master services the same designated type. As a
+               --  result the master can be reused and associated with another
+               --  anonymous access-to-controlled type.
 
-         return False;
-      end In_Subtree;
+               if Anonymous_Designated_Type (FM_Id) = Desig_Typ then
+                  return FM_Id;
+               end if;
+
+               Next_Elmt (FM_Elmt);
+            end loop;
+         end if;
+
+         return Empty;
+      end Current_Anonymous_Master;
 
       --  Local variables
 
@@ -714,7 +716,7 @@ package body Exp_Ch7 is
       end if;
 
       Unit_Decl := Unit (Cunit (Current_Sem_Unit));
-      Unit_Id   := Defining_Entity (Unit_Decl);
+      Unit_Id   := Unique_Defining_Entity (Unit_Decl);
 
       --  The compilation unit is a package instantiation. In this case the
       --  anonymous master is associated with the package spec as both the
@@ -738,21 +740,14 @@ package body Exp_Ch7 is
          Desig_Typ := Priv_View;
       end if;
 
-      FM_Id := Anonymous_Master (Desig_Typ);
+      --  Determine whether the current semantic unit already has an anonymous
+      --  master which services the designated type.
 
-      --  The designated type already has at least one anonymous access type
-      --  pointing to it within the current unit. Reuse the anonymous master
-      --  because the designated type is the same.
+      FM_Id := Current_Anonymous_Master (Desig_Typ, Unit_Id);
 
-      if Present (FM_Id)
-        and then In_Subtree (Declaration_Node (FM_Id), Root => Unit_Decl)
-      then
-         null;
+      --  If this is not the case, create a new master
 
-      --  Otherwise the designated type lacks an anonymous master or it is
-      --  declared in a different unit. Create a brand new master.
-
-      else
+      if No (FM_Id) then
          FM_Id := Create_Anonymous_Master (Desig_Typ, Unit_Id, Unit_Decl);
       end if;
 

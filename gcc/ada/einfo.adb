@@ -244,6 +244,7 @@ package body Einfo is
    --    Relative_Deadline_Variable      Node28
    --    Underlying_Record_View          Node28
 
+   --    Anonymous_Masters               Elist29
    --    BIP_Initialization_Call         Node29
    --    Subprograms_For_Type            Elist29
 
@@ -265,7 +266,7 @@ package body Einfo is
 
    --    Contract                        Node34
 
-   --    Anonymous_Master                Node35
+   --    Anonymous_Designated_Type       Node35
    --    Import_Pragma                   Node35
 
    --    Class_Wide_Preconds             List38
@@ -766,11 +767,20 @@ package body Einfo is
       return Uint14 (Id);
    end Alignment;
 
-   function Anonymous_Master (Id : E) return E is
+   function Anonymous_Designated_Type (Id : E) return E is
    begin
-      pragma Assert (Is_Type (Id));
+      pragma Assert (Ekind (Id) = E_Variable);
       return Node35 (Id);
-   end Anonymous_Master;
+   end Anonymous_Designated_Type;
+
+   function Anonymous_Masters (Id : E) return L is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function,
+                                   E_Package,
+                                   E_Procedure,
+                                   E_Subprogram_Body));
+      return Elist29 (Id);
+   end Anonymous_Masters;
 
    function Anonymous_Object (Id : E) return E is
    begin
@@ -3726,11 +3736,20 @@ package body Einfo is
       Set_Elist16 (Id, V);
    end Set_Access_Disp_Table;
 
-   procedure Set_Anonymous_Master (Id : E; V : E) is
+   procedure Set_Anonymous_Designated_Type (Id : E; V : E) is
    begin
-      pragma Assert (Is_Type (Id));
+      pragma Assert (Ekind (Id) = E_Variable);
       Set_Node35 (Id, V);
-   end Set_Anonymous_Master;
+   end Set_Anonymous_Designated_Type;
+
+   procedure Set_Anonymous_Masters (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function,
+                                   E_Package,
+                                   E_Procedure,
+                                   E_Subprogram_Body));
+      Set_Elist29 (Id, V);
+   end Set_Anonymous_Masters;
 
    procedure Set_Anonymous_Object (Id : E; V : E) is
    begin
@@ -10503,6 +10522,12 @@ package body Einfo is
    procedure Write_Field29_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Function                                   |
+              E_Package                                    |
+              E_Procedure                                  |
+              E_Subprogram_Body                            =>
+            Write_Str ("Anonymous_Masters");
+
          when E_Constant                                   |
               E_Variable                                   =>
             Write_Str ("BIP_Initialization_Call");
@@ -10650,8 +10675,8 @@ package body Einfo is
    procedure Write_Field35_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Type_Kind                                    =>
-            Write_Str ("Anonymous_Master");
+         when E_Variable                                   =>
+            Write_Str ("Anonymous_Designated_Type");
 
          when Subprogram_Kind                              =>
             Write_Str ("Import_Pragma");

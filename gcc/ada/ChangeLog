@@ -1,3 +1,42 @@
+2016-10-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb Add new usage for Elist29 and Node35.
+	(Anonymous_Designated_Type): New routine.
+	(Anonymous_Master): Removed.
+	(Anonymous_Masters): New routine.
+	(Set_Anonymous_Designated_Type): New routine.
+	(Set_Anonymous_Master): Removed.
+	(Set_Anonymous_Masters): New routine.
+	(Write_Field29_Name): Add output for Anonymous_Masters.
+	(Write_Field35_Name): Remove the output for Anonymous_Master. Add
+	output for Anonymous_Designated_Type.
+	* einfo.ads Remove attribute Anonymous_Master along with
+	usage in entities. Add attributes Anonymous_Designated_Type
+	and Anonymous_Masters along with usage in entities.
+	(Anonymous_Designated_Type): New routine along with pragma Inline.
+	(Anonymous_Master): Removed along with pragma Inline.
+	(Anonymous_Masters): New routine along with pragma Inline.
+	(Set_Anonymous_Designated_Type): New routine along with pragma Inline.
+	(Set_Anonymous_Master): Removed along with pragma Inline.
+	(Set_Anonymous_Masters): New routine along with pragma Inline.
+	* exp_ch7.adb (Build_Anonymous_Master): Reuse an anonymous master
+	defined in the same unit if it services the same designated
+	type, otherwise create a new one.
+	(Create_Anonymous_Master): Reimplemented.
+	(Current_Anonymous_Master): New routine.
+	(In_Subtree): Removed.
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Dynamic_Predicate):
+	Check properly whether there is an explicit assertion policy
+	for predicate checking, even in the presence of a general Ignore
+	assertion policy.
+
+2016-10-12  Steve Baird  <baird@adacore.com>
+
+	* sem.adb (Walk_Library_Items): Cope with ignored ghost units.
+
 2016-10-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* lib-writ.adb (Write_ALI): Removal of unused file entries from

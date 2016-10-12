@@ -19136,15 +19136,17 @@ package body Sem_Prag is
             --  the rep item chain, for processing when the type is frozen.
             --  This is accomplished by a call to Rep_Item_Too_Late. We also
             --  mark the type as having predicates.
-            --  If the current policy is Ignore mark the subtype accordingly.
-            --  In the case of predicates we consider them enabled unless an
-            --  Ignore is specified, to preserve existing warnings.
+
+            --  If the current policy for predicate checking is Ignore mark the
+            --  subtype accordingly. In the case of predicates we consider them
+            --  enabled unless Ignore is specified (either directly or with a
+            --  general Assertion_Policy pragma) to preserve existing warnings.
 
             Set_Has_Predicates (Typ);
             Set_Predicates_Ignored (Typ,
               Present (Check_Policy_List)
                 and then
-                  Policy_In_Effect (Name_Assertion_Policy) = Name_Ignore);
+                  Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
          end Predicate;
 
