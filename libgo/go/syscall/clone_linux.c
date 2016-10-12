@@ -10,7 +10,10 @@
 
 #include "runtime.h"
 
-long rawClone (unsigned long flags, void *child_stack, void *ptid, void *ctid, struct pt_regs *regs) __asm__ (GOSYM_PREFIX "syscall.rawClone");
+long rawClone (unsigned long flags, void *child_stack, void *ptid,
+	       void *ctid, struct pt_regs *regs)
+  __asm__ (GOSYM_PREFIX "syscall.rawClone")
+  __attribute__ ((no_split_stack));
 
 long
 rawClone (unsigned long flags, void *child_stack, void *ptid, void *ctid, struct pt_regs *regs)
