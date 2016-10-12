@@ -5989,7 +5989,7 @@ package body Sem_Ch12 is
          --  itypes and predefined operators (concatenation for arrays, eg).
          --  Skip it and keep the formal entity to find a later match for it.
 
-         elsif No (Parent (E2)) then
+         elsif No (Parent (E2)) and then Ekind (E1) /= Ekind (E2) then
             E1 := Prev_E1;
             goto Next_E;
 

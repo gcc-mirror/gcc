@@ -1,5 +1,14 @@
 2016-10-12  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch12.adb (Check_Formal_Package_Instance): Skip an internal
+	formal entity without a parent only if the corresponding actual
+	entity has a different kind.
+	* exp_ch9.adb (Build_Class_Wide_Master): If the master is
+	declared locally, insert the renaming declaration after the
+	master declaration, to prevent access before elaboration in gigi.
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
 	* contracts.adb (Analyze_Contracts): For a type declaration, analyze
 	an iterable aspect when present.
 
