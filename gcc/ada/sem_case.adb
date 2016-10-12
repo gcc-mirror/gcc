@@ -114,9 +114,11 @@ package body Sem_Case is
       Others_Present : Boolean;
       Case_Node      : Node_Id)
    is
-      Predicate_Error : Boolean;
+      Predicate_Error : Boolean := False;
       --  Flag to prevent cascaded errors when a static predicate is known to
       --  be violated by one choice.
+
+      Num_Choices : constant Nat := Choice_Table'Last;
 
       procedure Check_Against_Predicate
         (Pred    : in out Node_Id;
@@ -129,6 +131,10 @@ package body Sem_Case is
       --  to be examined. Prev_Lo and Prev_Hi are the bounds of the previous
       --  choice that covered a predicate set. Error denotes whether the check
       --  found an illegal intersection.
+
+      procedure Check_Duplicates;
+      --  Check for duplicate choices, and call Dup_Choice is there are any
+      --  such errors. Note that predicates are irrelevant here.
 
       procedure Dup_Choice (Lo, Hi : Uint; C : Node_Id);
       --  Post message "duplication of choice value(s) bla bla at xx". Message
@@ -236,8 +242,7 @@ package body Sem_Case is
             Val : Uint) return Boolean
          is
          begin
-            return
-              Val = Lo or else Val = Hi or else (Lo < Val and then Val < Hi);
+            return Lo <= Val and then Val <= Hi;
          end Inside_Range;
 
          --  Local variables
@@ -276,14 +281,12 @@ package body Sem_Case is
             return;
          end if;
 
-         --  Step 1: Detect duplicate choices
+         --  Step 1: Ignore duplicate choices, other than to set the flag,
+         --  because these were already detected by Check_Duplicates.
 
-         if Inside_Range (Choice_Lo, Choice_Hi, Prev_Lo) then
-            Dup_Choice (Prev_Lo, UI_Min (Prev_Hi, Choice_Hi), LocN);
-            Error := True;
-
-         elsif Inside_Range (Choice_Lo, Choice_Hi, Prev_Hi) then
-            Dup_Choice (UI_Max (Choice_Lo, Prev_Lo), Prev_Hi, LocN);
+         if Inside_Range (Choice_Lo, Choice_Hi, Prev_Lo)
+           or else  Inside_Range (Choice_Lo, Choice_Hi, Prev_Hi)
+         then
             Error := True;
 
          --  Step 2: Detect full coverage
@@ -446,6 +449,59 @@ package body Sem_Case is
             end if;
          end if;
       end Check_Against_Predicate;
+
+      ----------------------
+      -- Check_Duplicates --
+      ----------------------
+
+      procedure Check_Duplicates is
+         Prev_Hi : Uint := Expr_Value (Choice_Table (1).Hi);
+      begin
+         for Outer_Index in 2 .. Num_Choices loop
+            declare
+               Choice_Lo : constant Uint :=
+                 Expr_Value (Choice_Table (Outer_Index).Lo);
+               Choice_Hi : constant Uint :=
+                 Expr_Value (Choice_Table (Outer_Index).Hi);
+            begin
+               if Choice_Lo <= Prev_Hi then
+                  --  Choices overlap; this is an error
+
+                  declare
+                     Choice : constant Node_Id :=
+                       Choice_Table (Outer_Index).Node;
+                     Prev_Choice : Node_Id;
+                  begin
+                     --  Find first previous choice that overlaps
+
+                     for Inner_Index in 1 .. Outer_Index - 1 loop
+                        if Choice_Lo <=
+                             Expr_Value (Choice_Table (Inner_Index).Hi)
+                        then
+                           Prev_Choice := Choice_Table (Inner_Index).Node;
+                           exit;
+                        end if;
+                     end loop;
+
+                     if Sloc (Prev_Choice) <= Sloc (Choice) then
+                        Error_Msg_Sloc := Sloc (Prev_Choice);
+                        Dup_Choice
+                          (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Choice);
+                     else
+                        Error_Msg_Sloc := Sloc (Choice);
+                        Dup_Choice
+                          (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi),
+                           Prev_Choice);
+                     end if;
+                  end;
+               end if;
+
+               if Choice_Hi > Prev_Hi then
+                  Prev_Hi := Choice_Hi;
+               end if;
+            end;
+         end loop;
+      end Check_Duplicates;
 
       ----------------
       -- Dup_Choice --
@@ -709,17 +765,13 @@ package body Sem_Case is
 
       Bounds_Hi     : constant Node_Id := Type_High_Bound (Bounds_Type);
       Bounds_Lo     : constant Node_Id := Type_Low_Bound  (Bounds_Type);
-      Num_Choices   : constant Nat     := Choice_Table'Last;
       Has_Predicate : constant Boolean :=
                         Is_OK_Static_Subtype (Bounds_Type)
                           and then Has_Static_Predicate (Bounds_Type);
 
-      Choice      : Node_Id;
       Choice_Hi   : Uint;
       Choice_Lo   : Uint;
-      Error       : Boolean;
       Pred        : Node_Id;
-      Prev_Choice : Node_Id;
       Prev_Lo     : Uint;
       Prev_Hi     : Uint;
 
@@ -734,8 +786,6 @@ package body Sem_Case is
       then
          return;
       end if;
-
-      Predicate_Error := False;
 
       --  Choice_Table must start at 0 which is an unused location used by the
       --  sorting algorithm. However the first valid position for a discrete
@@ -756,16 +806,22 @@ package body Sem_Case is
 
       Sorting.Sort (Positive (Choice_Table'Last));
 
-      --  The type covered by the list of choices is actually a static subtype
-      --  subject to a static predicate. The predicate defines subsets of legal
-      --  values and requires finer grained analysis.
+      --  First check for duplicates. This involved the choices; predicates, if
+      --  any, are irrelevant.
+
+      Check_Duplicates;
+
+      --  Then check for overlaps
+
+      --  If the subtype has a static predicate, the predicate defines subsets
+      --  of legal values and requires finer grained analysis.
 
       --  Note that in GNAT the predicate is considered static if the predicate
       --  expression is static, independently of whether the aspect mentions
       --  Static explicitly.
 
       if Has_Predicate then
-         Pred    := First (Static_Discrete_Predicate (Bounds_Type));
+         Pred := First (Static_Discrete_Predicate (Bounds_Type));
 
          --  Make initial value smaller than 'First of type, so that first
          --  range comparison succeeds. This applies both to integer types
@@ -774,28 +830,30 @@ package body Sem_Case is
          Prev_Lo := Expr_Value (Type_Low_Bound (Bounds_Type)) - 1;
          Prev_Hi := Prev_Lo;
 
-         Error   := False;
+         declare
+            Error : Boolean := False;
+         begin
+            for Index in 1 .. Num_Choices loop
+               Check_Against_Predicate
+                 (Pred    => Pred,
+                  Choice  => Choice_Table (Index),
+                  Prev_Lo => Prev_Lo,
+                  Prev_Hi => Prev_Hi,
+                  Error   => Error);
 
-         for Index in 1 .. Num_Choices loop
-            Check_Against_Predicate
-              (Pred    => Pred,
-               Choice  => Choice_Table (Index),
-               Prev_Lo => Prev_Lo,
-               Prev_Hi => Prev_Hi,
-               Error   => Error);
+               --  The analysis detected an illegal intersection between a
+               --  choice and a static predicate set. Do not examine other
+               --  choices unless all errors are requested.
 
-            --  The analysis detected an illegal intersection between a choice
-            --  and a static predicate set. Do not examine other choices unless
-            --  all errors are requested.
+               if Error then
+                  Predicate_Error := True;
 
-            if Error then
-               Predicate_Error := True;
-
-               if not All_Errors_Mode then
-                  return;
+                  if not All_Errors_Mode then
+                     return;
+                  end if;
                end if;
-            end if;
-         end loop;
+            end loop;
+         end;
 
          if Predicate_Error then
             return;
@@ -826,35 +884,11 @@ package body Sem_Case is
             end if;
          end if;
 
-         for Outer_Index in 2 .. Num_Choices loop
-            Choice_Lo := Expr_Value (Choice_Table (Outer_Index).Lo);
-            Choice_Hi := Expr_Value (Choice_Table (Outer_Index).Hi);
+         for Index in 2 .. Num_Choices loop
+            Choice_Lo := Expr_Value (Choice_Table (Index).Lo);
+            Choice_Hi := Expr_Value (Choice_Table (Index).Hi);
 
-            if Choice_Lo <= Prev_Hi then
-               Choice := Choice_Table (Outer_Index).Node;
-
-               --  Find first previous choice that overlaps
-
-               for Inner_Index in 1 .. Outer_Index - 1 loop
-                  if Choice_Lo <=
-                       Expr_Value (Choice_Table (Inner_Index).Hi)
-                  then
-                     Prev_Choice := Choice_Table (Inner_Index).Node;
-                     exit;
-                  end if;
-               end loop;
-
-               if Sloc (Prev_Choice) <= Sloc (Choice) then
-                  Error_Msg_Sloc := Sloc (Prev_Choice);
-                  Dup_Choice
-                    (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Choice);
-               else
-                  Error_Msg_Sloc := Sloc (Choice);
-                  Dup_Choice
-                    (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Prev_Choice);
-               end if;
-
-            elsif not Others_Present and then Choice_Lo /= Prev_Hi + 1 then
+            if Choice_Lo > Prev_Hi + 1 and then not Others_Present then
                Missing_Choice (Prev_Hi + 1, Choice_Lo - 1);
             end if;
 

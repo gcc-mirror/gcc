@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2015, AdaCore                     --
+--                     Copyright (C) 2000-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,40 +41,49 @@
 --  instances of the table, while an instantiation of GNAT.Table creates a
 --  single instance of the table type.
 
---  Note that this interface should remain synchronized with those in
---  GNAT.Table and the GNAT compiler source unit Table to keep as much
---  coherency as possible between these three related units.
+--  Note that these three interfaces should remain synchronized to keep as much
+--  coherency as possible among these three related units:
+--
+--     GNAT.Dynamic_Tables
+--     GNAT.Table
+--     Table (the compiler unit)
 
 pragma Compiler_Unit_Warning;
+
+with Ada.Unchecked_Conversion;
 
 generic
    type Table_Component_Type is private;
    type Table_Index_Type     is range <>;
 
    Table_Low_Bound : Table_Index_Type;
-   Table_Initial   : Positive;
-   Table_Increment : Natural;
+   Table_Initial   : Positive := 8;
+   Table_Increment : Natural := 100;
 
 package GNAT.Dynamic_Tables is
 
-   --  Table_Component_Type and Table_Index_Type specify the type of the
-   --  array, Table_Low_Bound is the lower bound. Table_Index_Type must be an
-   --  integer type. The effect is roughly to declare:
+   --  Table_Component_Type and Table_Index_Type specify the type of the array,
+   --  Table_Low_Bound is the lower bound. The effect is roughly to declare:
 
    --    Table : array (Table_Low_Bound .. <>) of Table_Component_Type;
 
-   --    Note: since the upper bound can be one less than the lower
-   --    bound for an empty array, the table index type must be able
-   --    to cover this range, e.g. if the lower bound is 1, then the
-   --    Table_Index_Type should be Natural rather than Positive.
+   --  The lower bound of Table_Index_Type is ignored.
 
-   --  Table_Component_Type may be any Ada type, except that controlled
-   --  types are not supported. Note however that default initialization
-   --  will NOT occur for array components.
+   pragma Assert (Table_Low_Bound /= Table_Index_Type'Base'First);
 
-   --  The Table_Initial values controls the allocation of the table when
-   --  it is first allocated, either by default, or by an explicit Init
-   --  call.
+   function First return Table_Index_Type;
+   pragma Inline (First);
+   --  Export First as synonym for Table_Low_Bound (parallel with use of Last)
+
+   subtype Valid_Table_Index_Type is Table_Index_Type'Base
+     range Table_Low_Bound .. Table_Index_Type'Base'Last;
+   subtype Table_Count_Type is Table_Index_Type'Base
+     range Table_Low_Bound - 1 .. Table_Index_Type'Base'Last;
+
+   --  Table_Component_Type must not be a type with controlled parts.
+
+   --  The Table_Initial value controls the allocation of the table when
+   --  it is first allocated.
 
    --  The Table_Increment value controls the amount of increase, if the
    --  table has to be increased in size. The value given is a percentage
@@ -90,97 +99,114 @@ package GNAT.Dynamic_Tables is
    --  to take the access of a table element, use Unrestricted_Access.
 
    type Table_Type is
-     array (Table_Index_Type range <>) of Table_Component_Type;
+     array (Valid_Table_Index_Type range <>) of Table_Component_Type;
    subtype Big_Table_Type is
-     Table_Type (Table_Low_Bound .. Table_Index_Type'Last);
+     Table_Type (Table_Low_Bound .. Valid_Table_Index_Type'Last);
    --  We work with pointers to a bogus array type that is constrained with
    --  the maximum possible range bound. This means that the pointer is a thin
    --  pointer, which is more efficient. Since subscript checks in any case
    --  must be on the logical, rather than physical bounds, safety is not
-   --  compromised by this approach. These types should not be used by the
-   --  client.
+   --  compromised by this approach.
+
+   --  To get subscript checking, rename a slice of the Table, like this:
+
+   --     Table : Table_Type renames T.Table (First .. Last (T));
+
+   --  and the refer to components of Table.
 
    type Table_Ptr is access all Big_Table_Type;
    for Table_Ptr'Storage_Size use 0;
-   --  The table is actually represented as a pointer to allow reallocation.
-   --  This type should not be used by the client.
+   --  The table is actually represented as a pointer to allow reallocation
 
    type Table_Private is private;
    --  Table private data that is not exported in Instance
 
+   --  Private use only:
+   subtype Empty_Table_Array_Type is
+     Table_Type (Table_Low_Bound .. Table_Low_Bound - 1);
+   type Empty_Table_Array_Ptr is access all Empty_Table_Array_Type;
+   Empty_Table_Array : aliased Empty_Table_Array_Type;
+   function Empty_Table_Array_Ptr_To_Table_Ptr is
+     new Ada.Unchecked_Conversion (Empty_Table_Array_Ptr, Table_Ptr);
+   --  End private use only. The above are used to initialize Table to point to
+   --  an empty array.
+
    type Instance is record
-      Table : aliased Table_Ptr := null;
-   --  The table itself. The lower bound is the value of Low_Bound.
-   --  Logically the upper bound is the current value of Last (although
-   --  the actual size of the allocated table may be larger than this).
-   --  The program may only access and modify Table entries in the
-   --  range First .. Last.
+      Table : aliased Table_Ptr :=
+                Empty_Table_Array_Ptr_To_Table_Ptr (Empty_Table_Array'Access);
+      --  The table itself. The lower bound is the value of First. Logically
+      --  the upper bound is the current value of Last (although the actual
+      --  size of the allocated table may be larger than this). The program may
+      --  only access and modify Table entries in the range First .. Last.
+      --
+      --  It's a good idea to access this via a renaming of a slice, in order
+      --  to ensure bounds checking, as in:
+      --
+      --     Tab : Table_Type renames X.Table (First .. X.Last);
+
+      Locked : Boolean := False;
+      --  Table expansion is permitted only if this switch is set to False. A
+      --  client may set Locked to True, in which case any attempt to expand
+      --  the table will cause an assertion failure. Note that while a table
+      --  is locked, its address in memory remains fixed and unchanging.
 
       P : Table_Private;
    end record;
 
    procedure Init (T : in out Instance);
-   --  This procedure allocates a new table of size Initial (freeing any
-   --  previously allocated larger table). Init must be called before using
-   --  the table. Init is convenient in reestablishing a table for new use.
+   --  Reinitializes the table to empty. There is no need to call this before
+   --  using a table; tables default to empty.
 
-   function Last (T : Instance) return Table_Index_Type;
+   function Last (T : Instance) return Table_Count_Type;
    pragma Inline (Last);
-   --  Returns the current value of the last used entry in the table,
-   --  which can then be used as a subscript for Table. Note that the
-   --  only way to modify Last is to call the Set_Last procedure. Last
-   --  must always be used to determine the logically last entry.
+   --  Returns the current value of the last used entry in the table, which can
+   --  then be used as a subscript for Table.
 
    procedure Release (T : in out Instance);
    --  Storage is allocated in chunks according to the values given in the
-   --  Initial and Increment parameters. A call to Release releases all
-   --  storage that is allocated, but is not logically part of the current
+   --  Table_Initial and Table_Increment parameters. A call to Release releases
+   --  all storage that is allocated, but is not logically part of the current
    --  array value. Current array values are not affected by this call.
 
    procedure Free (T : in out Instance);
-   --  Free all allocated memory for the table. A call to init is required
-   --  before any use of this table after calling Free.
+   --  Same as Init
 
-   First : constant Table_Index_Type := Table_Low_Bound;
-   --  Export First as synonym for Low_Bound (parallel with use of Last)
-
-   procedure Set_Last (T : in out Instance; New_Val : Table_Index_Type);
+   procedure Set_Last (T : in out Instance; New_Val : Table_Count_Type);
    pragma Inline (Set_Last);
-   --  This procedure sets Last to the indicated value. If necessary the
-   --  table is reallocated to accommodate the new value (i.e. on return
-   --  the allocated table has an upper bound of at least Last). If
-   --  Set_Last reduces the size of the table, then logically entries are
-   --  removed from the table. If Set_Last increases the size of the
-   --  table, then new entries are logically added to the table.
+   --  This procedure sets Last to the indicated value. If necessary the table
+   --  is reallocated to accommodate the new value (i.e. on return the
+   --  allocated table has an upper bound of at least Last). If Set_Last
+   --  reduces the size of the table, then logically entries are removed from
+   --  the table. If Set_Last increases the size of the table, then new entries
+   --  are logically added to the table.
 
    procedure Increment_Last (T : in out Instance);
    pragma Inline (Increment_Last);
-   --  Adds 1 to Last (same as Set_Last (Last + 1)
+   --  Adds 1 to Last (same as Set_Last (Last + 1))
 
    procedure Decrement_Last (T : in out Instance);
    pragma Inline (Decrement_Last);
-   --  Subtracts 1 from Last (same as Set_Last (Last - 1)
+   --  Subtracts 1 from Last (same as Set_Last (Last - 1))
 
    procedure Append (T : in out Instance; New_Val : Table_Component_Type);
    pragma Inline (Append);
+   --  Appends New_Val onto the end of the table
    --  Equivalent to:
    --    Increment_Last (T);
    --    T.Table (T.Last) := New_Val;
-   --  i.e. the table size is increased by one, and the given new item
-   --  stored in the newly created table element.
 
    procedure Append_All (T : in out Instance; New_Vals : Table_Type);
    --  Appends all components of New_Vals
 
    procedure Set_Item
      (T     : in out Instance;
-      Index : Table_Index_Type;
+      Index : Valid_Table_Index_Type;
       Item  : Table_Component_Type);
    pragma Inline (Set_Item);
-   --  Put Item in the table at position Index. The table is expanded if
-   --  current table length is less than Index and in that case Last is set to
-   --  Index. Item will replace any value already present in the table at this
-   --  position.
+   --  Put Item in the table at position Index. If Index points to an existing
+   --  item (i.e. it is in the range First .. Last (T)), the item is replaced.
+   --  Otherwise (i.e. Index > Last (T), the table is expanded, and Last is set
+   --  to Index.
 
    procedure Allocate (T : in out Instance; Num : Integer := 1);
    pragma Inline (Allocate);
@@ -188,17 +214,17 @@ package GNAT.Dynamic_Tables is
 
    generic
      with procedure Action
-       (Index : Table_Index_Type;
+       (Index : Valid_Table_Index_Type;
         Item  : Table_Component_Type;
         Quit  : in out Boolean) is <>;
    procedure For_Each (Table : Instance);
-   --  Calls procedure Action for each component of the table Table, or until
-   --  one of these calls set Quit to True.
+   --  Calls procedure Action for each component of the table, or until one of
+   --  these calls set Quit to True.
 
    generic
      with function Lt (Comp1, Comp2 : Table_Component_Type) return Boolean;
    procedure Sort_Table (Table : in out Instance);
-   --  This procedure sorts the components of table Table into ascending
+   --  This procedure sorts the components of the table into ascending
    --  order making calls to Lt to do required comparisons, and using
    --  assignments to move components around. The Lt function returns True
    --  if Comp1 is less than Comp2 (in the sense of the desired sort), and
@@ -208,16 +234,16 @@ package GNAT.Dynamic_Tables is
    --  in the table is not preserved).
 
 private
+
    type Table_Private is record
-      Max : Integer;
-      --  Subscript of the maximum entry in the currently allocated table
+      Last_Allocated : Table_Count_Type := Table_Low_Bound - 1;
+      --  Subscript of the maximum entry in the currently allocated table.
+      --  Initial value ensures that we initially allocate the table.
 
-      Length : Integer := 0;
-      --  Number of entries in currently allocated table. The value of zero
-      --  ensures that we initially allocate the table.
+      Last : Table_Count_Type := Table_Low_Bound - 1;
+      --  Current value of Last function
 
-      Last_Val : Integer;
-      --  Current value of Last
+      --  Invariant: Last <= Last_Allocated
    end record;
 
 end GNAT.Dynamic_Tables;
