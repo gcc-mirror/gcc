@@ -2109,7 +2109,7 @@ __gnat_install_handler (void)
     if ((strncmp (model, "Linux", 5) == 0)
         || (strncmp (model, "Windows", 7) == 0)
         || (strncmp (model, "SIMLINUX", 8) == 0) /* vx7 */
-        || (strncmp (model, "SIMWINDOWS", 10) == 0)) /* ditto */
+        || (strncmp (model, "SIMNT", 5) == 0)) /* ditto */
       __gnat_set_is_vxsim (TRUE);
   }
 #endif
