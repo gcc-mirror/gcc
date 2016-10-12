@@ -182,6 +182,17 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
+      <entry> Library Fundamentals V1 TS Components: Sampling </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0220r1.html">
+	P0220R1
+	</link>
+      </entry>
+      <entry align="center"> 7 </entry>
+      <entry> <code>__cpp_lib_sample >= 201603</code> </entry>
+    </row>
+
+    <row>
       <entry> Constant View: A proposal for a <code>std::as_const</code> helper function template	</entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="">

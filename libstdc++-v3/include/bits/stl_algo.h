@@ -5615,6 +5615,86 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 				__gnu_cxx::__ops::__iter_comp_iter(__comp));
     }
 
+#if __cplusplus >= 201402L
+  /// Reservoir sampling algorithm.
+  template<typename _InputIterator, typename _RandomAccessIterator,
+           typename _Size, typename _UniformRandomBitGenerator>
+    _RandomAccessIterator
+    __sample(_InputIterator __first, _InputIterator __last, input_iterator_tag,
+	     _RandomAccessIterator __out, random_access_iterator_tag,
+	     _Size __n, _UniformRandomBitGenerator&& __g)
+    {
+      using __distrib_type = uniform_int_distribution<_Size>;
+      using __param_type = typename __distrib_type::param_type;
+      __distrib_type __d{};
+      _Size __sample_sz = 0;
+      while (__first != __last && __sample_sz != __n)
+	{
+	  __out[__sample_sz++] = *__first;
+	  ++__first;
+	}
+      for (auto __pop_sz = __sample_sz; __first != __last;
+	  ++__first, (void) ++__pop_sz)
+	{
+	  const auto __k = __d(__g, __param_type{0, __pop_sz});
+	  if (__k < __n)
+	    __out[__k] = *__first;
+	}
+      return __out + __sample_sz;
+    }
+
+  /// Selection sampling algorithm.
+  template<typename _ForwardIterator, typename _OutputIterator, typename _Cat,
+           typename _Size, typename _UniformRandomBitGenerator>
+    _OutputIterator
+    __sample(_ForwardIterator __first, _ForwardIterator __last,
+	     forward_iterator_tag,
+	     _OutputIterator __out, _Cat,
+	     _Size __n, _UniformRandomBitGenerator&& __g)
+    {
+      using __distrib_type = uniform_int_distribution<_Size>;
+      using __param_type = typename __distrib_type::param_type;
+      __distrib_type __d{};
+      _Size __unsampled_sz = std::distance(__first, __last);
+      for (__n = std::min(__n, __unsampled_sz); __n != 0; ++__first)
+	if (__d(__g, __param_type{0, --__unsampled_sz}) < __n)
+	  {
+	    *__out++ = *__first;
+	    --__n;
+	  }
+      return __out;
+    }
+
+#if __cplusplus > 201402L
+#define __cpp_lib_sample 201603
+  /// Take a random sample from a population.
+  template<typename _PopulationIterator, typename _SampleIterator,
+           typename _Distance, typename _UniformRandomBitGenerator>
+    _SampleIterator
+    sample(_PopulationIterator __first, _PopulationIterator __last,
+	   _SampleIterator __out, _Distance __n,
+	   _UniformRandomBitGenerator&& __g)
+    {
+      using __pop_cat = typename
+	std::iterator_traits<_PopulationIterator>::iterator_category;
+      using __samp_cat = typename
+	std::iterator_traits<_SampleIterator>::iterator_category;
+
+      static_assert(
+	  __or_<is_convertible<__pop_cat, forward_iterator_tag>,
+		is_convertible<__samp_cat, random_access_iterator_tag>>::value,
+	  "output range must use a RandomAccessIterator when input range"
+	  " does not meet the ForwardIterator requirements");
+
+      static_assert(is_integral<_Distance>::value,
+		    "sample size must be an integer type");
+
+      return std::__sample(__first, __last, __pop_cat{}, __out, __samp_cat{},
+			   __n, std::forward<_UniformRandomBitGenerator>(__g));
+    }
+#endif // C++17
+#endif // C++14
+
 _GLIBCXX_END_NAMESPACE_ALGO
 } // namespace std
 

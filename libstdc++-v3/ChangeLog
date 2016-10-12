@@ -1,5 +1,14 @@
 2016-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Add std::sample status.
+	* doc/html/*: Regenerate.
+	* include/experimental/algorithm (__sample): Move to bits/stl_algo.h
+	and into namespace std.
+	* include/bits/stl_algo.h (__sample): Define here. Fix invalid use
+	of input iterator. Defend against overloaded comma operator.
+	(sample): Define for C++17.
+	* testsuite/25_algorithms/sample/1.cc: New test.
+
 	* testsuite/util/testsuite_common_types.h
 	(bitwise_assignment_operators): Use direct-initialization for C++11
 	and later, to avoid CopyConstructible requirement.
