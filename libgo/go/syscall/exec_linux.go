@@ -7,7 +7,6 @@
 package syscall
 
 import (
-	"runtime"
 	"unsafe"
 )
 
@@ -49,6 +48,9 @@ type SysProcAttr struct {
 func runtime_BeforeFork()
 func runtime_AfterFork()
 
+// Implemented in clone_linux.c
+func rawClone(flags _C_ulong, child_stack *byte, ptid *Pid_t, ctid *Pid_t, regs unsafe.Pointer) _C_long
+
 // Fork, dup fd onto 0..len(fd), and exec(argv0, argvv, envv) in child.
 // If a dup or exec fails, write the errno error to pipe.
 // (Pipe is close-on-exec so if exec succeeds, it will be closed.)
@@ -64,6 +66,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// declarations require heap allocation (e.g., err1).
 	var (
 		r1     uintptr
+		r2     _C_long
 		err1   Errno
 		err2   Errno
 		nextfd int
@@ -98,20 +101,16 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// About to call fork.
 	// No more allocation or calls of non-assembly functions.
 	runtime_BeforeFork()
-	if runtime.GOARCH == "s390x" || runtime.GOARCH == "s390" {
-		r1, _, err1 = RawSyscall6(SYS_CLONE, 0, uintptr(SIGCHLD)|sys.Cloneflags, 0, 0, 0, 0)
-	} else {
-		r1, _, err1 = RawSyscall6(SYS_CLONE, uintptr(SIGCHLD)|sys.Cloneflags, 0, 0, 0, 0, 0)
-	}
-	if err1 != 0 {
+	r2 = rawClone(_C_ulong(uintptr(SIGCHLD)|sys.Cloneflags), nil, nil, nil, unsafe.Pointer(nil))
+	if r2 < 0 {
 		runtime_AfterFork()
-		return 0, err1
+		return 0, GetErrno()
 	}
 
-	if r1 != 0 {
+	if r2 != 0 {
 		// parent; return PID
 		runtime_AfterFork()
-		pid = int(r1)
+		pid = int(r2)
 
 		if sys.UidMappings != nil || sys.GidMappings != nil {
 			Close(p[0])
