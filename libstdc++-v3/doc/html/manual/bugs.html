@@ -466,6 +466,10 @@
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2441" target="_top">2441</a>:
        <span class="emphasis"><em>Exact-width atomic typedefs should be provided</em></span>
     </span></dt><dd><p>Define the typedefs.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2442" target="_top">2442</a>:
+       <span class="emphasis"><em><code class="code">call_once()</code> shouldn't <code class="code">DECAY_COPY()</code></em></span>
+    </span></dt><dd><p>Remove indirection through call wrapper that made copies
+    of arguments and forward arguments straight to <code class="code">std::invoke</code>.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2454" target="_top">2454</a>:
        <span class="emphasis"><em>Add <code class="code">raw_storage_iterator::base()</code> member
        </em></span>
@@ -486,6 +490,11 @@
        <span class="emphasis"><em><code class="code">allocator_traits::max_size()</code> default behavior is incorrect
        </em></span>
     </span></dt><dd><p>Divide by the object type.
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2484" target="_top">2484</a>:
+       <span class="emphasis"><em><code class="code">rethrow_if_nested()</code>  is doubly unimplementable
+       </em></span>
+    </span></dt><dd><p>Avoid using <code class="code">dynamic_cast</code> when it would be
+    ill-formed.
     </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2583" target="_top">2583</a>:
        <span class="emphasis"><em>There is no way to supply an allocator for <code class="code"> basic_string(str, pos)</code>
        </em></span>
