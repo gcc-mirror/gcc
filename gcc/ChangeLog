@@ -1,5 +1,28 @@
 2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (machine_function): Add new fields
+	gpr_is_wrapped_separately and lr_is_wrapped_separately.
+	(TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS,
+	TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB,
+	TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS,
+	TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS,
+	TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS,
+	TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS): Define.
+	(rs6000_get_separate_components): New function.
+	(rs6000_components_for_bb): New function.
+	(rs6000_disqualify_components): New function.
+	(rs6000_emit_prologue_components): New function.
+	(rs6000_emit_epilogue_components): New function.
+	(rs6000_set_handled_components): New function.
+	(rs6000_emit_prologue): Don't emit LR save if lr_is_wrapped_separately.
+	Don't emit GPR saves if gpr_is_wrapped_separately for that register.
+	(restore_saved_lr): Don't restore LR if lr_is_wrapped_separately.
+	(rs6000_emit_epilogue): Don't emit GPR restores if
+	gpr_is_wrapped_separately for that register.  Don't make a
+	REG_CFA_RESTORE note for registers we did not restore, either.
+
+2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* function.c (thread_prologue_and_epilogue_insns): Call
 	try_shrink_wrapping_separate.  Compute the prologue_seq afterwards,
 	if it has possibly changed.  Compute the split_prologue_seq and
