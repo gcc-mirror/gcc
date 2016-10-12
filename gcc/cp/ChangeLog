@@ -1,3 +1,10 @@
+2016-10-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77742
+	* init.c (build_new_1): Don't -Waligned-new about placement new.
+	(malloc_alignment): New.  Consider MALLOC_ABI_ALIGNMENT.
+	* decl.c (cxx_init_decl_processing): New.
+
 2016-10-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/77890

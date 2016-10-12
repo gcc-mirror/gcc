@@ -2589,6 +2589,16 @@ type_has_new_extended_alignment (tree t)
 	  && TYPE_ALIGN_UNIT (t) > (unsigned)aligned_new_threshold);
 }
 
+/* Return the alignment we expect malloc to guarantee.  This should just be
+   MALLOC_ABI_ALIGNMENT, but that macro defaults to only BITS_PER_WORD for some
+   reason, so don't let the threshold be smaller than max_align_t_align.  */
+
+unsigned
+malloc_alignment ()
+{
+  return MAX (max_align_t_align(), MALLOC_ABI_ALIGNMENT);
+}
+
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -2974,8 +2984,23 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   gcc_assert (alloc_fn != NULL_TREE);
 
+  /* Now, check to see if this function is actually a placement
+     allocation function.  This can happen even when PLACEMENT is NULL
+     because we might have something like:
+
+       struct S { void* operator new (size_t, int i = 0); };
+
+     A call to `new S' will get this allocation function, even though
+     there is no explicit placement argument.  If there is more than
+     one argument, or there are variable arguments, then this is a
+     placement allocation function.  */
+  placement_allocation_fn_p
+    = (type_num_arguments (TREE_TYPE (alloc_fn)) > 1
+       || varargs_function_p (alloc_fn));
+
   if (warn_aligned_new
-      && TYPE_ALIGN (elt_type) > max_align_t_align ()
+      && !placement_allocation_fn_p
+      && TYPE_ALIGN (elt_type) > malloc_alignment ()
       && (warn_aligned_new > 1
 	  || CP_DECL_CONTEXT (alloc_fn) == global_namespace)
       && !aligned_allocation_fn_p (alloc_fn))
@@ -3032,20 +3057,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   /* Strip any COMPOUND_EXPRs from ALLOC_CALL.  */
   while (TREE_CODE (alloc_call) == COMPOUND_EXPR)
     alloc_call = TREE_OPERAND (alloc_call, 1);
-
-  /* Now, check to see if this function is actually a placement
-     allocation function.  This can happen even when PLACEMENT is NULL
-     because we might have something like:
-
-       struct S { void* operator new (size_t, int i = 0); };
-
-     A call to `new S' will get this allocation function, even though
-     there is no explicit placement argument.  If there is more than
-     one argument, or there are variable arguments, then this is a
-     placement allocation function.  */
-  placement_allocation_fn_p
-    = (type_num_arguments (TREE_TYPE (alloc_fn)) > 1
-       || varargs_function_p (alloc_fn));
 
   /* Preevaluate the placement args so that we don't reevaluate them for a
      placement delete.  */

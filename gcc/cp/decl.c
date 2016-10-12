@@ -4082,7 +4082,7 @@ cxx_init_decl_processing (void)
   if (aligned_new_threshold == -1)
     aligned_new_threshold = (cxx_dialect >= cxx1z) ? 1 : 0;
   if (aligned_new_threshold == 1)
-    aligned_new_threshold = max_align_t_align () / BITS_PER_UNIT;
+    aligned_new_threshold = malloc_alignment () / BITS_PER_UNIT;
 
   {
     tree newattrs, extvisattr;
