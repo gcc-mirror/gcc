@@ -1,3 +1,43 @@
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Removal of unused file entries from
+	dependency list must be performed before the list is sorted,
+	so that the dependency number of other files is properly set-up
+	for use in tools that relate entity information to the unit in
+	which they are declared.
+
+2016-10-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Initialize_Ctrl_Array_Component):
+	Create a copy of the initialization expression to avoid sharing
+	it between multiple components.
+
+2016-10-12  Yannick Moy  <moy@adacore.com>
+
+	* einfo.adb, einfo.ads (Has_Partial_Visible_Refinement): New flag
+	in abtract states.
+	(Has_Non_Null_Visible_Refinement): Return true for patial refinement.
+	(Partial_Refinement_Constituents): New function returns the full or
+	partial refinement constituents depending on scope.
+	* sem_ch3.adb (Analyze_Declarations): Remove partial visible
+	refinements when exiting the scope of a package spec or body
+	and those partial refinements are not in scope afterwards.
+	* sem_ch7.adb, sem_ch7.ads (Install_Partial_Declarations): Mark
+	abstract states of parent units with partial refinement so that
+	it is visible.
+	* sem_prag.adb (Analyze_Part_Of_In_Decl_Part): Mark enclosing
+	abstract state if any as having partial refinement in that scope.
+	(Analyze_Refined_Global_In_Decl_Part): Check constituent usage
+	based on full or partial refinement depending on scope.
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): If the target type
+	has an invariant aspect, insert invariant call at the proper
+	place in the code rather than rewriting the expression as an
+	expression with actions, to prevent spurious semantic errors on
+	the rewritten conversion when it is the object in a renaming.
+
 2016-10-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch5.adb, sem_ch3.adb, exp_ch9.adb, a-tags.adb, sem_prag.adb,

@@ -3410,6 +3410,13 @@ package body Sem_Prag is
 
          Append_Elmt (Var_Id, Constits);
          Set_Encapsulating_State (Var_Id, Encap_Id);
+
+         --  A Part_Of constituent partially refines an abstract state. This
+         --  property does not apply to protected or task units.
+
+         if Ekind (Encap_Id) = E_Abstract_State then
+            Set_Has_Partial_Visible_Refinement (Encap_Id);
+         end if;
       end if;
 
       --  Emit a clarification message when the encapsulator is undefined,
@@ -18717,7 +18724,7 @@ package body Sem_Prag is
 
             Add_Contract_Item (N, Item_Id);
 
-            --  A variable may act as consituent of a single concurrent type
+            --  A variable may act as constituent of a single concurrent type
             --  which in turn could be declared after the variable. Due to this
             --  discrepancy, the full analysis of indicator Part_Of is delayed
             --  until the end of the enclosing declarative region (see routine
@@ -24051,7 +24058,7 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits     : constant Elist_Id :=
-                             Refinement_Constituents (State_Id);
+                             Partial_Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
             Posted       : Boolean := False;
@@ -24614,7 +24621,7 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits      : constant Elist_Id :=
-                              Refinement_Constituents (State_Id);
+                              Partial_Refinement_Constituents (State_Id);
             Constit_Elmt  : Elmt_Id;
             Constit_Id    : Entity_Id;
             Has_Missing   : Boolean := False;
@@ -24753,7 +24760,7 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits     : constant Elist_Id :=
-                             Refinement_Constituents (State_Id);
+                             Partial_Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
             In_Seen      : Boolean := False;
@@ -24853,7 +24860,7 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits     : constant Elist_Id :=
-                             Refinement_Constituents (State_Id);
+                             Partial_Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
             Posted       : Boolean := False;
@@ -24952,7 +24959,7 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits      : constant Elist_Id :=
-                              Refinement_Constituents (State_Id);
+                              Partial_Refinement_Constituents (State_Id);
             Constit_Elmt  : Elmt_Id;
             Constit_Id    : Entity_Id;
             Proof_In_Seen : Boolean := False;
@@ -25083,7 +25090,10 @@ package body Sem_Prag is
 
             if Ekind_In (Item_Id, E_Abstract_State, E_Constant, E_Variable)
              and then Present (Encapsulating_State (Item_Id))
-             and then Has_Visible_Refinement (Encapsulating_State (Item_Id))
+             and then
+               (Has_Visible_Refinement (Encapsulating_State (Item_Id))
+                  or else
+                Has_Partial_Visible_Refinement (Encapsulating_State (Item_Id)))
              and then Contains (States, Encapsulating_State (Item_Id))
             then
                if Global_Mode = Name_Input then
@@ -25438,10 +25448,10 @@ package body Sem_Prag is
       --  Non-instance case
 
       else
-         --  The corresponding Global pragma must mention at least one state
-         --  witha visible refinement at the point Refined_Global is processed.
-         --  States with null refinements need Refined_Global pragma
-         --  (SPARK RM 7.2.4(2)).
+         --  The corresponding Global pragma must mention at least one
+         --  state with a visible refinement at the point Refined_Global
+         --  is processed. States with null refinements need Refined_Global
+         --  pragma (SPARK RM 7.2.4(2)).
 
          if not Has_In_State
            and then not Has_In_Out_State

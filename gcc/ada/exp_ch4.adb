@@ -10577,15 +10577,16 @@ package body Exp_Ch4 is
       end if;
 
       --  Check for case of converting to a type that has an invariant
-      --  associated with it. This required an invariant check. We convert
+      --  associated with it. This requires an invariant check. We insert
+      --  a call:
 
-      --    typ (expr)
+      --        invariant_check (typ (expr))
 
-      --  into
-
-      --    do invariant_check (typ (expr)) in typ (expr);
-
-      --  using Duplicate_Subexpr to avoid multiple side effects
+      --  in the code, after removing side effects from the expression.
+      --  This is clearer than replacing the conversion into an expression
+      --  with actions, because the context may impose additional actions
+      --  (tag checks, membership tests, etc.) that conflict with this
+      --  rewriting (used previously).
 
       --  Note: the Comes_From_Source check, and then the resetting of this
       --  flag prevents what would otherwise be an infinite recursion.
@@ -10595,12 +10596,8 @@ package body Exp_Ch4 is
         and then Comes_From_Source (N)
       then
          Set_Comes_From_Source (N, False);
-         Rewrite (N,
-           Make_Expression_With_Actions (Loc,
-             Actions    => New_List (
-               Make_Invariant_Call (Duplicate_Subexpr (N))),
-             Expression => Duplicate_Subexpr_No_Checks (N)));
-         Analyze_And_Resolve (N, Target_Type);
+         Remove_Side_Effects (N);
+         Insert_Action (N, Make_Invariant_Call (Duplicate_Subexpr (N)));
          goto Done;
       end if;
 

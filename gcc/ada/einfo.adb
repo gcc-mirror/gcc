@@ -610,8 +610,8 @@ package body Einfo is
    --    Is_Actual_Subtype               Flag293
    --    Has_Pragma_Unused               Flag294
    --    Is_Ignored_Transient            Flag295
+   --    Has_Partial_Visible_Refinement  Flag296
 
-   --    (unused)                        Flag296
    --    (unused)                        Flag297
    --    (unused)                        Flag298
    --    (unused)                        Flag299
@@ -1681,6 +1681,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag232 (Id);
    end Has_Own_Invariants;
+
+   function Has_Partial_Visible_Refinement (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      return Flag296 (Id);
+   end Has_Partial_Visible_Refinement;
 
    function Has_Per_Object_Constraint (Id : E) return B is
    begin
@@ -4698,6 +4704,12 @@ package body Einfo is
       Set_Flag232 (Id, V);
    end Set_Has_Own_Invariants;
 
+   procedure Set_Has_Partial_Visible_Refinement (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Set_Flag296 (Id, V);
+   end Set_Has_Partial_Visible_Refinement;
+
    procedure Set_Has_Per_Object_Constraint (Id : E; V : B := True) is
    begin
       Set_Flag154 (Id, V);
@@ -7485,13 +7497,14 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Abstract_State);
       Constits := Refinement_Constituents (Id);
 
-      --  For a refinement to be non-null, the first constituent must be
-      --  anything other than null.
+      --  A partial refinement is always non-null. For a full refinement to be
+      --  non-null, the first constituent must be anything other than null.
 
       return
-        Has_Visible_Refinement (Id)
-          and then Present (Constits)
-          and then Nkind (Node (First_Elmt (Constits))) /= N_Null;
+        Has_Partial_Visible_Refinement (Id)
+          or else (Has_Visible_Refinement (Id)
+                    and then Present (Constits)
+                    and then Nkind (Node (First_Elmt (Constits))) /= N_Null);
    end Has_Non_Null_Visible_Refinement;
 
    -----------------------------
@@ -8369,6 +8382,29 @@ package body Einfo is
 
       return Empty;
    end Partial_Invariant_Procedure;
+
+   -------------------------------------
+   -- Partial_Refinement_Constituents --
+   -------------------------------------
+
+   function Partial_Refinement_Constituents (Id : E) return L is
+      Constits : Elist_Id;
+
+   begin
+      --  "Refinement" is a concept applicable only to abstract states
+
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+      Constits := Refinement_Constituents (Id);
+
+      --  A refinement may be partially visible when objects declared in the
+      --  private part of a package are subject to a Part_Of indicator.
+
+      if No (Constits) then
+         Constits := Part_Of_Constituents (Id);
+      end if;
+
+      return Constits;
+   end Partial_Refinement_Constituents;
 
    ------------------------
    -- Predicate_Function --

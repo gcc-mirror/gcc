@@ -2178,10 +2178,17 @@ package body Sem_Ch3 is
       --  case, add a proper spec if the body lacks one. The spec is inserted
       --  before Body_Decl and immediately analyzed.
 
+      procedure Remove_Partial_Visible_Refinements (Spec_Id : Entity_Id);
+      --  Spec_Id is the entity of a package that may define abstract states,
+      --  and in the case of a child unit, whose ancestors may define abstract
+      --  states. If the states have partial visible refinement, remove the
+      --  partial visibility of each constituent at the end of the package
+      --  spec and body declarations.
+
       procedure Remove_Visible_Refinements (Spec_Id : Entity_Id);
       --  Spec_Id is the entity of a package that may define abstract states.
       --  If the states have visible refinement, remove the visibility of each
-      --  constituent at the end of the package body declarations.
+      --  constituent at the end of the package body declaration.
 
       -----------------
       -- Adjust_Decl --
@@ -2334,6 +2341,29 @@ package body Sem_Ch3 is
 
          Insert_Before_And_Analyze (Body_Decl, Decl);
       end Handle_Late_Controlled_Primitive;
+
+      ----------------------------------------
+      -- Remove_Partial_Visible_Refinements --
+      ----------------------------------------
+
+      procedure Remove_Partial_Visible_Refinements (Spec_Id : Entity_Id) is
+         State_Elmt : Elmt_Id;
+      begin
+         if Present (Abstract_States (Spec_Id)) then
+            State_Elmt := First_Elmt (Abstract_States (Spec_Id));
+            while Present (State_Elmt) loop
+               Set_Has_Partial_Visible_Refinement (Node (State_Elmt), False);
+               Next_Elmt (State_Elmt);
+            end loop;
+         end if;
+
+         --  For a child unit, also hide the partial state refinement from
+         --  ancestor packages.
+
+         if Is_Child_Unit (Spec_Id) then
+            Remove_Partial_Visible_Refinements (Scope (Spec_Id));
+         end if;
+      end Remove_Partial_Visible_Refinements;
 
       --------------------------------
       -- Remove_Visible_Refinements --
@@ -2576,6 +2606,15 @@ package body Sem_Ch3 is
             --  restore the original state conditions.
 
             Remove_Visible_Refinements (Corresponding_Spec (Context));
+            Remove_Partial_Visible_Refinements (Corresponding_Spec (Context));
+
+         elsif Nkind (Context) = N_Package_Declaration then
+
+            --  Partial state refinements are visible up to the end of the
+            --  package spec declarations. Hide the partial state refinements
+            --  from visibility to restore the original state conditions.
+
+            Remove_Partial_Visible_Refinements (Corresponding_Spec (Context));
          end if;
 
          --  Verify that all abstract states found in any package declared in
