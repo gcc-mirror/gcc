@@ -1,3 +1,47 @@
+2016-10-12  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Delay_Relative_Statement): Add support
+	for a secondary procedure in case of missing Ada.Calendar.Delays
+	* rtsfind.ads (RTU_Id): Add System_Relative_Delays.
+	(RE_Id): Add RO_RD_Delay_For.
+	* rtsfind.adb (Output_Entity_Name): Handle correctly units RO_XX.
+	* s-rident.ads: Remove No_Relative_Delays
+	restriction for GNAT_Extended_Ravenscar.
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elab.adb (Within_Initial_Condition):  When deternining
+	the context of the expression, use the original node if it is
+	a pragma, because Check pragmas are rewritten as conditionals
+	when assertions are not enabled.
+
+2016-10-12  Bob Duff  <duff@adacore.com>
+
+	* spitbol_table.ads, spitbol_table.adb (Adjust, Finalize): Add
+	"overriding".
+
+2016-10-12  Bob Duff  <duff@adacore.com>
+
+	* a-strunb-shared.ads, a-strunb-shared.adb (Finalize):
+	Make sure Finalize is idempotent.
+	(Unreference): Check for
+	Empty_Shared_String, in case the reference count of the empty
+	string wraps around.
+	Also add "not null" in various places that can't be null.
+
+2016-10-12  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c: Fix sigtramp with the x86_64-vx7-vxsim target on
+	Windows host.
+
+2016-10-12  Vadim Godunko  <godunko@adacore.com>
+
+	* s-os_lib.ads (Is_Owner_Readable_File): Renamed from
+	Is_Readable_File.
+	(Is_Owner_Writable_File): Renamed from Is_Writable_File.
+	(Is_Readable_File): Renames Is_Read_Accessible_File.
+	(Is_Writable_File): Renames Is_Write_Accessible_File.
+
 2016-10-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Check_Formal_Package_Instance): Skip an internal

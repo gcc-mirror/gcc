@@ -574,7 +574,6 @@ package System.Rident is
                            No_Implicit_Protected_Object_Allocations
                                                             => True,
                            No_Local_Timing_Events           => True,
-                           No_Relative_Delay                => True,
                            No_Select_Statements             => True,
                            No_Specific_Termination_Handlers => True,
                            No_Task_Termination              => True,

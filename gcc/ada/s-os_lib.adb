@@ -1510,24 +1510,24 @@ package body System.OS_Lib is
       return Is_Read_Accessible_File (F_Name'Address) /= 0;
    end Is_Read_Accessible_File;
 
-   ----------------------
-   -- Is_Readable_File --
-   ----------------------
+   ----------------------------
+   -- Is_Owner_Readable_File --
+   ----------------------------
 
-   function Is_Readable_File (Name : C_File_Name) return Boolean is
+   function Is_Owner_Readable_File (Name : C_File_Name) return Boolean is
       function Is_Readable_File (Name : Address) return Integer;
       pragma Import (C, Is_Readable_File, "__gnat_is_readable_file");
    begin
       return Is_Readable_File (Name) /= 0;
-   end Is_Readable_File;
+   end Is_Owner_Readable_File;
 
-   function Is_Readable_File (Name : String) return Boolean is
+   function Is_Owner_Readable_File (Name : String) return Boolean is
       F_Name : String (1 .. Name'Length + 1);
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
-      return Is_Readable_File (F_Name'Address);
-   end Is_Readable_File;
+      return Is_Owner_Readable_File (F_Name'Address);
+   end Is_Owner_Readable_File;
 
    ------------------------
    -- Is_Executable_File --
@@ -1601,24 +1601,24 @@ package body System.OS_Lib is
       return Is_Write_Accessible_File (F_Name'Address) /= 0;
    end Is_Write_Accessible_File;
 
-   ----------------------
-   -- Is_Writable_File --
-   ----------------------
+   ----------------------------
+   -- Is_Owner_Writable_File --
+   ----------------------------
 
-   function Is_Writable_File (Name : C_File_Name) return Boolean is
+   function Is_Owner_Writable_File (Name : C_File_Name) return Boolean is
       function Is_Writable_File (Name : Address) return Integer;
       pragma Import (C, Is_Writable_File, "__gnat_is_writable_file");
    begin
       return Is_Writable_File (Name) /= 0;
-   end Is_Writable_File;
+   end Is_Owner_Writable_File;
 
-   function Is_Writable_File (Name : String) return Boolean is
+   function Is_Owner_Writable_File (Name : String) return Boolean is
       F_Name : String (1 .. Name'Length + 1);
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
-      return Is_Writable_File (F_Name'Address);
-   end Is_Writable_File;
+      return Is_Owner_Writable_File (F_Name'Address);
+   end Is_Owner_Writable_File;
 
    ----------
    -- Kill --

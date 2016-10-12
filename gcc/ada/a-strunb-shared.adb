@@ -499,7 +499,9 @@ package body Ada.Strings.Unbounded is
    -- Allocate --
    --------------
 
-   function Allocate (Max_Length : Natural) return Shared_String_Access is
+   function Allocate
+     (Max_Length : Natural) return not null Shared_String_Access
+   is
    begin
       --  Empty string requested, return shared empty string
 
@@ -622,7 +624,7 @@ package body Ada.Strings.Unbounded is
    -------------------
 
    function Can_Be_Reused
-     (Item   : Shared_String_Access;
+     (Item   : not null Shared_String_Access;
       Length : Natural) return Boolean is
    begin
       return
@@ -785,10 +787,9 @@ package body Ada.Strings.Unbounded is
    --------------
 
    procedure Finalize (Object : in out Unbounded_String) is
-      SR : constant Shared_String_Access := Object.Reference;
-
+      SR : constant not null Shared_String_Access := Object.Reference;
    begin
-      if SR /= null then
+      if SR /= Null_Unbounded_String.Reference then
 
          --  The same controlled object can be finalized several times for
          --  some reason. As per 7.6.1(24) this should have no ill effect,
@@ -2101,11 +2102,12 @@ package body Ada.Strings.Unbounded is
    begin
       if System.Atomic_Counters.Decrement (Aux.Counter) then
 
-         --  Reference counter of Empty_Shared_String must never reach zero
+         --  Reference counter of Empty_Shared_String should never reach
+         --  zero. We check here in case it wraps around.
 
-         pragma Assert (Aux /= Empty_Shared_String'Access);
-
-         Free (Aux);
+         if Aux /= Empty_Shared_String'Access then
+            Free (Aux);
+         end if;
       end if;
    end Unreference;
 

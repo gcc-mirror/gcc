@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1144,6 +1144,9 @@ package body Rtsfind is
       --  M (1 .. P) is current message to be output
 
       RE_Image : constant String := RE_Id'Image (Id);
+      S : Natural;
+      --  RE_Image (S .. RE_Image'Last) is the name of the entity without the
+      --  "RE_" or "RO_XX_" prefix.
 
    begin
       if Id = RE_Null then
@@ -1168,8 +1171,15 @@ package body Rtsfind is
 
       --  Add entity name and closing quote to message
 
-      Name_Len := RE_Image'Length - 3;
-      Name_Buffer (1 .. Name_Len) := RE_Image (4 .. RE_Image'Length);
+      if RE_Image (2) = 'E' then
+         --  Strip "RE"
+         S := 4;
+      else
+         --  Strip "RO_XX"
+         S := 7;
+      end if;
+      Name_Len := RE_Image'Length - S + 1;
+      Name_Buffer (1 .. Name_Len) := RE_Image (S .. RE_Image'Last);
       Set_Casing (Mixed_Case);
       M (P + 1 .. P + Name_Len) := Name_Buffer (1 .. Name_Len);
       P := P + Name_Len;
