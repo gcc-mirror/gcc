@@ -1,5 +1,10 @@
 2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* dce.c (delete_unmarked_insns): Don't delete instructions with
+	a REG_CFA_RESTORE note.
+
+2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* common.opt (-fshrink-wrap-separate): New flag.
 	* doc/invoke.texi: Document it.
 	* doc/tm.texi.in (Shrink-wrapping separate components): New subsection.
