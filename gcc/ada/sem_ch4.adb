@@ -4804,6 +4804,7 @@ package body Sem_Ch4 is
          In_Scope := In_Open_Scopes (Prefix_Type);
 
          while Present (Comp) loop
+
             --  Do not examine private operations of the type if not within
             --  its scope.
 
@@ -4821,10 +4822,9 @@ package body Sem_Ch4 is
                   --  a visible entity is found.
 
                   if Is_Tagged_Type (Prefix_Type)
-                    and then
-                      Nkind_In (Parent (N), N_Procedure_Call_Statement,
-                                            N_Function_Call,
-                                            N_Indexed_Component)
+                    and then Nkind_In (Parent (N), N_Function_Call,
+                                                   N_Indexed_Component,
+                                                   N_Procedure_Call_Statement)
                     and then Has_Mode_Conformant_Spec (Comp)
                   then
                      Has_Candidate := True;

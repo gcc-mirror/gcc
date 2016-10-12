@@ -617,9 +617,9 @@ package body Ghost is
          --  A non-Ghost primitive of a type extension cannot override an
          --  inherited Ghost primitive (SPARK RM 6.9(8)).
 
-         if not Is_Ghost_Entity (Subp)
+         if Is_Ghost_Entity (Over_Subp)
+           and then not Is_Ghost_Entity (Subp)
            and then not Is_Abstract_Subprogram (Subp)
-           and then Is_Ghost_Entity (Over_Subp)
          then
             Error_Msg_N ("incompatible overriding in effect", Subp);
 

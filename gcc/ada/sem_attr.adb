@@ -68,7 +68,6 @@ with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with System;
-with System.CRC32; use System.CRC32;
 with Stringt;  use Stringt;
 with Style;
 with Stylesw;  use Stylesw;
@@ -78,6 +77,8 @@ with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Uname;    use Uname;
 with Urealp;   use Urealp;
+
+with System.CRC32; use System.CRC32;
 
 package body Sem_Attr is
 
@@ -5288,7 +5289,8 @@ package body Sem_Attr is
          --  Local variables
 
          In_Inlined_C_Postcondition : constant Boolean :=
-           Modify_Tree_For_C and then In_Inlined_Body;
+                                        Modify_Tree_For_C
+                                          and then In_Inlined_Body;
 
          Legal   : Boolean;
          Pref_Id : Entity_Id;
@@ -5339,7 +5341,7 @@ package body Sem_Attr is
          if Chars (Spec_Id) = Name_uPostconditions
            or else
              (In_Inlined_C_Postcondition
-                and then Nkind (Parent (Spec_Id)) = N_Block_Statement)
+               and then Nkind (Parent (Spec_Id)) = N_Block_Statement)
          then
             Rewrite (N, Make_Identifier (Loc, Name_uResult));
 
@@ -6136,149 +6138,150 @@ package body Sem_Attr is
       -- Type_Key --
       --------------
 
-      when Attribute_Type_Key =>
+      when Attribute_Type_Key => Type_Key : declare
+         Full_Name  : constant String_Id :=
+                        Fully_Qualified_Name_String (Entity (P));
+
+         CRC : CRC32;
+         --  The computed signature for the type
+
+         Deref : Boolean;
+         --  To simplify the handling of mutually recursive types, follow a
+         --  single dereference link in a composite type.
+
+         procedure Compute_Type_Key (T : Entity_Id);
+         --  Create a CRC integer from the declaration of the type, For a
+         --  composite type, fold in the representation of its components in
+         --  recursive fashion. We use directly the source representation of
+         --  the types involved.
+
+         ----------------------
+         -- Compute_Type_Key --
+         ----------------------
+
+         procedure Compute_Type_Key (T : Entity_Id) is
+            Buffer : Source_Buffer_Ptr;
+            P_Max  : Source_Ptr;
+            P_Min  : Source_Ptr;
+            Rep    : Node_Id;
+            SFI    : Source_File_Index;
+
+            procedure Process_One_Declaration;
+            --  Update CRC with the characters of one type declaration, or a
+            --  representation pragma that applies to the type.
+
+            -----------------------------
+            -- Process_One_Declaration --
+            -----------------------------
+
+            procedure Process_One_Declaration is
+               Ptr : Source_Ptr;
+
+            begin
+               Ptr := P_Min;
+
+               --  Scan type declaration, skipping blanks
+
+               while Ptr <= P_Max loop
+                  if Buffer (Ptr) /= ' ' then
+                     System.CRC32.Update (CRC, Buffer (Ptr));
+                  end if;
+
+                  Ptr := Ptr + 1;
+               end loop;
+            end Process_One_Declaration;
+
+         --  Start of processing for Compute_Type_Key
+
+         begin
+            if Is_Itype (T) then
+               return;
+            end if;
+
+            Sloc_Range (Enclosing_Declaration (T), P_Min, P_Max);
+            SFI    := Get_Source_File_Index (P_Min);
+            Buffer := Source_Text (SFI);
+
+            Process_One_Declaration;
+
+            --  Recurse on relevant component types
+
+            if Is_Array_Type (T) then
+               Compute_Type_Key (Component_Type (T));
+
+            elsif Is_Access_Type (T) then
+               if not Deref then
+                  Deref := True;
+                  Compute_Type_Key (Designated_Type (T));
+               end if;
+
+            elsif Is_Derived_Type (T) then
+               Compute_Type_Key (Etype  (T));
+
+            elsif Is_Record_Type (T) then
+               declare
+                  Comp : Entity_Id;
+               begin
+                  Comp := First_Component (T);
+                  while Present (Comp) loop
+                     Compute_Type_Key (Etype (Comp));
+                     Next_Component (Comp);
+                  end loop;
+               end;
+            end if;
+
+            --  Fold in representation aspects for the type, which appear in
+            --  the same source buffer.
+
+            Rep := First_Rep_Item (T);
+
+            while Present (Rep) loop
+               if Comes_From_Source (Rep) then
+                  Sloc_Range (Rep, P_Min, P_Max);
+                  Process_One_Declaration;
+               end if;
+
+               Rep := Next_Rep_Item (Rep);
+            end loop;
+         end Compute_Type_Key;
+
+      --  Start of processing for Type_Key
+
+      begin
          Check_E0;
          Check_Type;
 
-         declare
-            Full_Name  : constant String_Id :=
-              Fully_Qualified_Name_String (Entity (P));
+         Start_String;
+         Deref := False;
 
-            Deref      : Boolean;
-            --  To simplify the handling of mutually recursive types, follow
-            --  a single dereference link in a composite type.
+         --  Copy all characters in Full_Name but the trailing NUL
 
-            CRC        : CRC32;
-            --  The computed signature for the type.
+         for J in 1 .. String_Length (Full_Name) - 1 loop
+            Store_String_Char (Get_String_Char (Full_Name, Pos (J)));
+         end loop;
 
-            procedure Compute_Type_Key (T : Entity_Id);
-            --  Create a CRC integer from the declaration of the type, For
-            --  a composite type, fold in the representation of its components
-            --  in recursive fashion. We use directly the source representation
-            --  of the types involved.
+         --  For standard type return the name of the type. as there is no
+         --  explicit source declaration to use. Otherwise compute CRC and
+         --  convert it to string one character at a time so as not to use
+         --  Image within the compiler.
 
-            --------------
-            -- Type_Key --
-            --------------
+         if Scope (Entity (P)) /= Standard_Standard then
+            Initialize (CRC);
+            Compute_Type_Key (Entity (P));
 
-            procedure Compute_Type_Key (T : Entity_Id)  is
-               SFI          : Source_File_Index;
-               Buffer       : Source_Buffer_Ptr;
-               P_Min, P_Max : Source_Ptr;
-               Rep          : Node_Id;
-
-               procedure Process_One_Declaration;
-               --  Update CRC with the characters of one type declaration,
-               --  or a representation pragma that applies to the type.
-
-               -----------------------------
-               -- Process_One_Declaration --
-               -----------------------------
-
-               procedure Process_One_Declaration is
-                  Ptr : Source_Ptr;
-
-               begin
-                  Ptr := P_Min;
-
-                  --  Scan type declaration, skipping blanks,
-
-                  while Ptr <= P_Max loop
-                     if Buffer (Ptr) /= ' ' then
-                        System.CRC32.Update (CRC, Buffer (Ptr));
-                     end if;
-
-                     Ptr := Ptr + 1;
-                  end loop;
-               end Process_One_Declaration;
-
-            begin  --  Start of processing for Compute_Type_Key
-
-               if Is_Itype (T) then
-                  return;
-               end if;
-
-               Sloc_Range (Enclosing_Declaration (T), P_Min, P_Max);
-               SFI        := Get_Source_File_Index (P_Min);
-               Buffer     := Source_Text (SFI);
-
-               Process_One_Declaration;
-
-               --  Recurse on relevant component types.
-
-               if Is_Array_Type (T) then
-                  Compute_Type_Key (Component_Type (T));
-
-               elsif Is_Access_Type (T) then
-                  if not Deref then
-                     Deref := True;
-                     Compute_Type_Key (Designated_Type (T));
-                  end if;
-
-               elsif Is_Derived_Type (T) then
-                  Compute_Type_Key (Etype  (T));
-
-               elsif Is_Record_Type (T) then
-                  declare
-                     Comp : Entity_Id;
-                  begin
-                     Comp := First_Component (T);
-                     while Present (Comp) loop
-                        Compute_Type_Key (Etype (Comp));
-
-                        Next_Component (Comp);
-                     end loop;
-                  end;
-               end if;
-
-               --  Fold in representation aspects for the type, which
-               --  appear in the same source buffer.
-
-               Rep := First_Rep_Item (T);
-
-               while Present (Rep) loop
-                  if Comes_From_Source (Rep) then
-                     Sloc_Range (Rep, P_Min, P_Max);
-                     Process_One_Declaration;
-                  end if;
-
-                  Rep := Next_Rep_Item (Rep);
-               end loop;
-            end Compute_Type_Key;
-
-         begin
-            Start_String;
-            Deref := False;
-
-            --  Copy all characters in Full_Name but the trailing NUL
-
-            for J in 1 .. String_Length (Full_Name) - 1 loop
-               Store_String_Char (Get_String_Char (Full_Name, Pos (J)));
-            end loop;
-
-            --  For standard type return the name of the type. as there is
-            --  no explicit source declaration to use. Otherwise compute
-            --  CRC and convert it to string one character at a time. so as
-            --  not to use Image within the compiler.
-
-            if Scope (Entity (P)) /= Standard_Standard then
-               Initialize (CRC);
-               Compute_Type_Key (Entity (P));
-
-               if not Is_Frozen (Entity (P)) then
-                  Error_Msg_N ("premature usage of Type_Key?", N);
-               end if;
-
-               while CRC > 0 loop
-                  Store_String_Char (Character'Val (48 + (CRC rem 10)));
-                  CRC := CRC / 10;
-               end loop;
+            if not Is_Frozen (Entity (P)) then
+               Error_Msg_N ("premature usage of Type_Key?", N);
             end if;
 
-            Rewrite (N, Make_String_Literal (Loc, End_String));
-         end;
+            while CRC > 0 loop
+               Store_String_Char (Character'Val (48 + (CRC rem 10)));
+               CRC := CRC / 10;
+            end loop;
+         end if;
 
+         Rewrite (N, Make_String_Literal (Loc, End_String));
          Analyze_And_Resolve (N, Standard_String);
+      end Type_Key;
 
       -----------------------
       -- Unbiased_Rounding --

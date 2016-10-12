@@ -1,3 +1,11 @@
+2016-10-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb, sem_ch3.adb, exp_ch9.adb, a-tags.adb, sem_prag.adb,
+	sem_ch12.adb, xref_lib.adb, a-strunb-shared.adb, rtsfind.adb,
+	freeze.adb, sem_attr.adb, sem_case.adb, exp_ch4.adb, ghost.adb,
+	exp_ch6.adb, sem_ch4.adb, restrict.adb, s-os_lib.adb: Minor
+	reformatting.
+
 2016-10-12  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch10.adb (Remove_Limited_With_Clause): Add a check to

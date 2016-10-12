@@ -330,10 +330,11 @@ package body Exp_Ch5 is
          case Nkind (Exp) is
             when N_Indexed_Component | N_Selected_Component | N_Slice =>
                return Is_Non_Local_Array (Prefix (Exp));
+
             when others =>
                return
-                 not (Is_Entity_Name (Exp) and then
-                                        Scope (Entity (Exp)) = Current_Scope);
+                 not (Is_Entity_Name (Exp)
+                       and then Scope (Entity (Exp)) = Current_Scope);
          end case;
       end Is_Non_Local_Array;
 

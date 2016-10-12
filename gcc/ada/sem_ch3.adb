@@ -877,6 +877,7 @@ package body Sem_Ch3 is
          then
             Build_Itype_Reference (Anon_Type, Parent (Current_Scope));
          end if;
+
          return Anon_Type;
       end if;
 
@@ -14758,9 +14759,9 @@ package body Sem_Ch3 is
         or else Is_Private_Overriding
         or else Is_Internal_Name (Chars (Parent_Subp))
         or else (Is_Controlled (Parent_Type)
-                  and then Nam_In (Chars (Parent_Subp), Name_Initialize,
-                                                        Name_Adjust,
-                                                        Name_Finalize))
+                  and then Nam_In (Chars (Parent_Subp), Name_Adjust,
+                                                        Name_Finalize,
+                                                        Name_Initialize))
       then
          Set_Derived_Name;
 

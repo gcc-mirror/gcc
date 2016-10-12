@@ -625,7 +625,8 @@ package body Ada.Strings.Unbounded is
 
    function Can_Be_Reused
      (Item   : not null Shared_String_Access;
-      Length : Natural) return Boolean is
+      Length : Natural) return Boolean
+   is
    begin
       return
         System.Atomic_Counters.Is_One (Item.Counter)
