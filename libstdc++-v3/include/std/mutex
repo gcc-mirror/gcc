@@ -579,21 +579,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_HAVE_TLS
   extern __thread void* __once_callable;
   extern __thread void (*__once_call)();
-
-  template<typename _Tuple, typename _IndexSeq
-	   = typename _Build_index_tuple<tuple_size<_Tuple>::value>::__type>
-    struct _Once_call;
-
-  template<typename _Tuple, size_t... _Ind>
-    struct _Once_call<_Tuple, _Index_tuple<_Ind...>>
-    {
-      static void
-      _S_call()
-      {
-	auto& __f_args = *static_cast<_Tuple*>(__once_callable);
-	std::__invoke(std::get<_Ind>(std::move(__f_args))...);
-      }
-    };
 #else
   extern function<void()> __once_functor;
 
@@ -613,17 +598,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2442. call_once() shouldn't DECAY_COPY()
-#ifdef _GLIBCXX_HAVE_TLS
-      auto __f_args = std::forward_as_tuple(
-	  std::forward<_Callable>(__f), std::forward<_Args>(__args)...);
-      __once_callable = std::__addressof(__f_args);
-      __once_call = _Once_call<decltype(__f_args)>::_S_call;
-#else
-      unique_lock<mutex> __functor_lock(__get_once_mutex());
-      __once_functor = [&] {
+      auto __callable = [&] {
 	  std::__invoke(std::forward<_Callable>(__f),
 			std::forward<_Args>(__args)...);
       };
+#ifdef _GLIBCXX_HAVE_TLS
+      __once_callable = std::__addressof(__callable);
+      __once_call = []{ (*(decltype(__callable)*)__once_callable)(); };
+#else
+      unique_lock<mutex> __functor_lock(__get_once_mutex());
+      __once_functor = __callable;
       __set_once_functor_lock_ptr(&__functor_lock);
 #endif
 

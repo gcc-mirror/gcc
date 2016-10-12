@@ -1,5 +1,8 @@
 2016-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/mutex [_GLIBCXX_HAVE_TLS] (_Once_call): Remove.
+	(call_once) [_GLIBCXX_HAVE_TLS]: Simplify by removing _Once_call.
+
 	* include/bits/stl_uninitialized.h
 	(__uninitialized_default_novalue_n_1<true>): Add missing return.
 	* testsuite/20_util/specialized_algorithms/memory_management_tools/
