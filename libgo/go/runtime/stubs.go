@@ -250,17 +250,6 @@ func typedmemmove(typ *_type, dst, src unsafe.Pointer) {
 	memmove(dst, src, typ.size)
 }
 
-// Here for gccgo unless and until we port string.go.
-type stringStruct struct {
-	str unsafe.Pointer
-	len int
-}
-
-// Here for gccgo unless and until we port string.go.
-func stringStructOf(sp *string) *stringStruct {
-	return (*stringStruct)(unsafe.Pointer(sp))
-}
-
 // Here for gccgo unless and until we port slice.go.
 type slice struct {
 	array unsafe.Pointer
@@ -284,76 +273,6 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 		flag = 1 << 3
 	}
 	return c_mallocgc(size, uintptr(unsafe.Pointer(typ)), flag)
-}
-
-// Here for gccgo unless and until we port string.go.
-func rawstring(size int) (p unsafe.Pointer, s string) {
-	p = mallocgc(uintptr(size), nil, false)
-
-	(*(*stringStruct)(unsafe.Pointer(&s))).str = p
-	(*(*stringStruct)(unsafe.Pointer(&s))).len = size
-
-	return
-}
-
-// Here for gccgo unless and until we port string.go.
-func gostring(p *byte) string {
-	l := findnull(p)
-	if l == 0 {
-		return ""
-	}
-	m, s := rawstring(l)
-	memmove(m, unsafe.Pointer(p), uintptr(l))
-	return s
-}
-
-// Here for gccgo unless and until we port string.go.
-func index(s, t string) int {
-	if len(t) == 0 {
-		return 0
-	}
-	for i := 0; i < len(s); i++ {
-		if s[i] == t[0] && hasprefix(s[i:], t) {
-			return i
-		}
-	}
-	return -1
-}
-
-// Here for gccgo unless and until we port string.go.
-func hasprefix(s, t string) bool {
-	return len(s) >= len(t) && s[:len(t)] == t
-}
-
-// Here for gccgo unless and until we port string.go.
-//go:nosplit
-func findnull(s *byte) int {
-	if s == nil {
-		return 0
-	}
-	p := (*[_MaxMem/2 - 1]byte)(unsafe.Pointer(s))
-	l := 0
-	for p[l] != 0 {
-		l++
-	}
-	return l
-}
-
-// Here for gccgo unless and until we port string.go.
-//go:nosplit
-func gostringnocopy(str *byte) string {
-	ss := stringStruct{str: unsafe.Pointer(str), len: findnull(str)}
-	return *(*string)(unsafe.Pointer(&ss))
-}
-
-// Here for gccgo unless and until we port string.go.
-func atoi(s string) int {
-	n := 0
-	for len(s) > 0 && '0' <= s[0] && s[0] <= '9' {
-		n = n*10 + int(s[0]) - '0'
-		s = s[1:]
-	}
-	return n
 }
 
 // Here for gccgo until we port mgc.go.
@@ -445,3 +364,6 @@ func releaseSudog(s *sudog) {
 
 // Temporary hack for gccgo until we port the garbage collector.
 func typeBitsBulkBarrier(typ *_type, p, size uintptr) {}
+
+// Here for gccgo until we port msize.go.
+func roundupsize(uintptr) uintptr

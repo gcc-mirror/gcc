@@ -285,7 +285,8 @@ void	runtime_updatememstats(GCStats *stats);
 //	making new objects in class i
 
 int32	runtime_SizeToClass(int32);
-uintptr	runtime_roundupsize(uintptr);
+uintptr	runtime_roundupsize(uintptr)
+  __asm__(GOSYM_PREFIX "runtime.roundupsize");
 extern	int32	runtime_class_to_size[_NumSizeClasses];
 extern	int32	runtime_class_to_allocnpages[_NumSizeClasses];
 extern	int8	runtime_size_to_class8[1024/8 + 1];

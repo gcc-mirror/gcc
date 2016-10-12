@@ -64,6 +64,14 @@ enum Runtime_function_type
   RFT_FUNC_PTR,
   // Pointer to Go type descriptor.
   RFT_TYPE,
+  // [2]string.
+  RFT_ARRAY2STRING,
+  // [3]string.
+  RFT_ARRAY3STRING,
+  // [4]string.
+  RFT_ARRAY4STRING,
+  // [5]string.
+  RFT_ARRAY5STRING,
 
   NUMBER_OF_RUNTIME_FUNCTION_TYPES
 };
@@ -180,6 +188,30 @@ runtime_function_type(Runtime_function_type bft)
 	case RFT_TYPE:
 	  t = Type::make_type_descriptor_ptr_type();
 	  break;
+
+	case RFT_ARRAY2STRING:
+	  t = Type::make_array_type(Type::make_string_type(),
+				    Expression::make_integer_ul(2, NULL,
+								bloc));
+	  break;
+
+	case RFT_ARRAY3STRING:
+	  t = Type::make_array_type(Type::make_string_type(),
+				    Expression::make_integer_ul(3, NULL,
+								bloc));
+	  break;
+
+	case RFT_ARRAY4STRING:
+	  t = Type::make_array_type(Type::make_string_type(),
+				    Expression::make_integer_ul(4, NULL,
+								bloc));
+	  break;
+
+	case RFT_ARRAY5STRING:
+	  t = Type::make_array_type(Type::make_string_type(),
+				    Expression::make_integer_ul(5, NULL,
+								bloc));
+	  break;
 	}
 
       runtime_function_types[bft] = t;
@@ -226,6 +258,10 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
     case RFT_CHAN:
     case RFT_IFACE:
     case RFT_EFACE:
+    case RFT_ARRAY2STRING:
+    case RFT_ARRAY3STRING:
+    case RFT_ARRAY4STRING:
+    case RFT_ARRAY5STRING:
       return Expression::make_unsafe_cast(runtime_function_type(bft), e, loc);
 
     case RFT_TYPE:

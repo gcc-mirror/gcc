@@ -1233,13 +1233,17 @@ Escape_analysis_assign::expression(Expression** pexpr)
 	      case Runtime::MAKESLICE2:
 	      case Runtime::MAKESLICE1BIG:
 	      case Runtime::MAKESLICE2BIG:
-	      case Runtime::BYTE_ARRAY_TO_STRING:
-	      case Runtime::INT_ARRAY_TO_STRING:
-	      case Runtime::STRING_TO_BYTE_ARRAY:
-	      case Runtime::STRING_TO_INT_ARRAY:
-	      case Runtime::STRING_PLUS:
+	      case Runtime::SLICEBYTETOSTRING:
+	      case Runtime::SLICERUNETOSTRING:
+	      case Runtime::STRINGTOSLICEBYTE:
+	      case Runtime::STRINGTOSLICERUNE:
+	      case Runtime::CONCATSTRINGS:
+	      case Runtime::CONCATSTRING2:
+	      case Runtime::CONCATSTRING3:
+	      case Runtime::CONCATSTRING4:
+	      case Runtime::CONCATSTRING5:
 	      case Runtime::CONSTRUCT_MAP:
-	      case Runtime::INT_TO_STRING:
+	      case Runtime::INTSTRING:
 		{
 		  Node* runtime_node = Node::make_node(fe);
 		  this->context_->track(runtime_node);
@@ -1842,21 +1846,25 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 		  case Runtime::MAKESLICE1BIG:
 		  case Runtime::MAKESLICE2BIG:
 		    // DST = make(...).
-		  case Runtime::BYTE_ARRAY_TO_STRING:
+		  case Runtime::SLICEBYTETOSTRING:
 		    // DST = string([]byte{...}).
-		  case Runtime::INT_ARRAY_TO_STRING:
+		  case Runtime::SLICERUNETOSTRING:
 		    // DST = string([]int{...}).
-		  case Runtime::STRING_TO_BYTE_ARRAY:
+		  case Runtime::STRINGTOSLICEBYTE:
 		    // DST = []byte(str).
-		  case Runtime::STRING_TO_INT_ARRAY:
-		    // DST = []int(str).
-		  case Runtime::STRING_PLUS:
+		  case Runtime::STRINGTOSLICERUNE:
+		    // DST = []rune(str).
+		  case Runtime::CONCATSTRINGS:
+		  case Runtime::CONCATSTRING2:
+		  case Runtime::CONCATSTRING3:
+		  case Runtime::CONCATSTRING4:
+		  case Runtime::CONCATSTRING5:
 		    // DST = str1 + str2
 		  case Runtime::CONSTRUCT_MAP:
 		    // When building a map literal's backend representation.
 		    // Likely never seen here and covered in
 		    // Expression::EXPRESSION_MAP_CONSTRUCTION.
-		  case Runtime::INT_TO_STRING:
+		  case Runtime::INTSTRING:
 		    // DST = string(i).
 		  case Runtime::IFACEE2E2:
 		  case Runtime::IFACEI2E2:
@@ -2614,13 +2622,17 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 		    case Runtime::MAKESLICE2:
 		    case Runtime::MAKESLICE1BIG:
 		    case Runtime::MAKESLICE2BIG:
-		    case Runtime::BYTE_ARRAY_TO_STRING:
-		    case Runtime::INT_ARRAY_TO_STRING:
-		    case Runtime::STRING_TO_BYTE_ARRAY:
-		    case Runtime::STRING_TO_INT_ARRAY:
-		    case Runtime::STRING_PLUS:
+		    case Runtime::SLICEBYTETOSTRING:
+		    case Runtime::SLICERUNETOSTRING:
+		    case Runtime::STRINGTOSLICEBYTE:
+		    case Runtime::STRINGTOSLICERUNE:
+		    case Runtime::CONCATSTRINGS:
+		    case Runtime::CONCATSTRING2:
+		    case Runtime::CONCATSTRING3:
+		    case Runtime::CONCATSTRING4:
+		    case Runtime::CONCATSTRING5:
 		    case Runtime::CONSTRUCT_MAP:
-		    case Runtime::INT_TO_STRING:
+		    case Runtime::INTSTRING:
 		    case Runtime::CONVERT_INTERFACE:
 		      // All runtime calls that involve allocation of memory
 		      // except new.  Runtime::NEW gets lowered into an

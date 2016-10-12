@@ -241,32 +241,29 @@ libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@	getncpu-bsd.lo
 @LIBGO_IS_LINUX_TRUE@am__objects_5 = getncpu-linux.lo
 am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
-	go-byte-array-to-string.lo go-breakpoint.lo go-caller.lo \
-	go-callers.lo go-can-convert-interface.lo go-cdiv.lo go-cgo.lo \
+	go-breakpoint.lo go-caller.lo go-callers.lo \
+	go-can-convert-interface.lo go-cdiv.lo go-cgo.lo \
 	go-check-interface.lo go-construct-map.lo \
 	go-convert-interface.lo go-copy.lo go-defer.lo \
 	go-deferred-recover.lo go-eface-compare.lo \
 	go-eface-val-compare.lo go-ffi.lo go-fieldtrack.lo \
-	go-int-array-to-string.lo go-int-to-string.lo \
 	go-interface-compare.lo go-interface-eface-compare.lo \
 	go-interface-val-compare.lo go-make-slice.lo go-matherr.lo \
 	go-memclr.lo go-memcmp.lo go-memequal.lo go-memmove.lo \
 	go-nanotime.lo go-now.lo go-new.lo go-nosys.lo go-panic.lo \
-	go-recover.lo go-reflect-call.lo go-rune.lo \
-	go-runtime-error.lo go-setenv.lo go-signal.lo go-strcmp.lo \
-	go-string-to-byte-array.lo go-string-to-int-array.lo \
-	go-strplus.lo go-strslice.lo go-traceback.lo \
-	go-type-complex.lo go-type-eface.lo go-type-float.lo \
-	go-type-identity.lo go-type-interface.lo go-type-string.lo \
-	go-typedesc-equal.lo go-unsafe-new.lo go-unsafe-newarray.lo \
-	go-unsafe-pointer.lo go-unsetenv.lo go-unwind.lo go-varargs.lo \
-	env_posix.lo heapdump.lo mcache.lo mcentral.lo \
-	$(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
-	$(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
+	go-recover.lo go-reflect-call.lo go-runtime-error.lo \
+	go-setenv.lo go-signal.lo go-strcmp.lo go-strslice.lo \
+	go-traceback.lo go-type-complex.lo go-type-eface.lo \
+	go-type-float.lo go-type-identity.lo go-type-interface.lo \
+	go-type-string.lo go-typedesc-equal.lo go-unsafe-new.lo \
+	go-unsafe-newarray.lo go-unsafe-pointer.lo go-unsetenv.lo \
+	go-unwind.lo go-varargs.lo env_posix.lo heapdump.lo mcache.lo \
+	mcentral.lo $(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo \
+	msize.lo $(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo $(am__objects_3) yield.lo \
 	$(am__objects_4) cpuprof.lo go-iface.lo lfstack.lo malloc.lo \
 	mprof.lo netpoll.lo rdebug.lo reflect.lo runtime1.lo \
-	sigqueue.lo string.lo time.lo $(am__objects_5)
+	sigqueue.lo time.lo $(am__objects_5)
 am_libgo_llgo_la_OBJECTS = $(am__objects_6)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -843,7 +840,6 @@ runtime_files = \
 	runtime/go-append.c \
 	runtime/go-assert.c \
 	runtime/go-assert-interface.c \
-	runtime/go-byte-array-to-string.c \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
@@ -860,8 +856,6 @@ runtime_files = \
 	runtime/go-eface-val-compare.c \
 	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
-	runtime/go-int-array-to-string.c \
-	runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
 	runtime/go-interface-eface-compare.c \
 	runtime/go-interface-val-compare.c \
@@ -878,14 +872,10 @@ runtime_files = \
 	runtime/go-panic.c \
 	runtime/go-recover.c \
 	runtime/go-reflect-call.c \
-	runtime/go-rune.c \
 	runtime/go-runtime-error.c \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-strcmp.c \
-	runtime/go-string-to-byte-array.c \
-	runtime/go-string-to-int-array.c \
-	runtime/go-strplus.c \
 	runtime/go-strslice.c \
 	runtime/go-traceback.c \
 	runtime/go-type-complex.c \
@@ -931,7 +921,6 @@ runtime_files = \
 	reflect.c \
 	runtime1.c \
 	sigqueue.c \
-	string.c \
 	time.c \
 	$(runtime_getncpu_file)
 
@@ -1569,7 +1558,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-assert-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-assert.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-breakpoint.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-byte-array-to-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-caller.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-callers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-can-convert-interface.Plo@am__quote@
@@ -1586,8 +1574,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-fieldtrack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-iface.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-int-array-to-string.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-int-to-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-interface-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-interface-eface-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-interface-val-compare.Plo@am__quote@
@@ -1604,14 +1590,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-panic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-recover.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-reflect-call.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-rune.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-runtime-error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-setenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-signal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strcmp.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-string-to-byte-array.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-string-to-int-array.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strplus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strslice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-traceback.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-complex.Plo@am__quote@
@@ -1657,7 +1639,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signal_unix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sigqueue.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-sema.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread.Plo@am__quote@
@@ -1747,13 +1728,6 @@ go-assert-interface.lo: runtime/go-assert-interface.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-assert-interface.c' object='go-assert-interface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-assert-interface.lo `test -f 'runtime/go-assert-interface.c' || echo '$(srcdir)/'`runtime/go-assert-interface.c
-
-go-byte-array-to-string.lo: runtime/go-byte-array-to-string.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-byte-array-to-string.lo -MD -MP -MF $(DEPDIR)/go-byte-array-to-string.Tpo -c -o go-byte-array-to-string.lo `test -f 'runtime/go-byte-array-to-string.c' || echo '$(srcdir)/'`runtime/go-byte-array-to-string.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-byte-array-to-string.Tpo $(DEPDIR)/go-byte-array-to-string.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-byte-array-to-string.c' object='go-byte-array-to-string.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-byte-array-to-string.lo `test -f 'runtime/go-byte-array-to-string.c' || echo '$(srcdir)/'`runtime/go-byte-array-to-string.c
 
 go-breakpoint.lo: runtime/go-breakpoint.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-breakpoint.lo -MD -MP -MF $(DEPDIR)/go-breakpoint.Tpo -c -o go-breakpoint.lo `test -f 'runtime/go-breakpoint.c' || echo '$(srcdir)/'`runtime/go-breakpoint.c
@@ -1867,20 +1841,6 @@ go-fieldtrack.lo: runtime/go-fieldtrack.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-fieldtrack.lo `test -f 'runtime/go-fieldtrack.c' || echo '$(srcdir)/'`runtime/go-fieldtrack.c
 
-go-int-array-to-string.lo: runtime/go-int-array-to-string.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-int-array-to-string.lo -MD -MP -MF $(DEPDIR)/go-int-array-to-string.Tpo -c -o go-int-array-to-string.lo `test -f 'runtime/go-int-array-to-string.c' || echo '$(srcdir)/'`runtime/go-int-array-to-string.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-int-array-to-string.Tpo $(DEPDIR)/go-int-array-to-string.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-int-array-to-string.c' object='go-int-array-to-string.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-int-array-to-string.lo `test -f 'runtime/go-int-array-to-string.c' || echo '$(srcdir)/'`runtime/go-int-array-to-string.c
-
-go-int-to-string.lo: runtime/go-int-to-string.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-int-to-string.lo -MD -MP -MF $(DEPDIR)/go-int-to-string.Tpo -c -o go-int-to-string.lo `test -f 'runtime/go-int-to-string.c' || echo '$(srcdir)/'`runtime/go-int-to-string.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-int-to-string.Tpo $(DEPDIR)/go-int-to-string.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-int-to-string.c' object='go-int-to-string.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-int-to-string.lo `test -f 'runtime/go-int-to-string.c' || echo '$(srcdir)/'`runtime/go-int-to-string.c
-
 go-interface-compare.lo: runtime/go-interface-compare.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-interface-compare.lo -MD -MP -MF $(DEPDIR)/go-interface-compare.Tpo -c -o go-interface-compare.lo `test -f 'runtime/go-interface-compare.c' || echo '$(srcdir)/'`runtime/go-interface-compare.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-interface-compare.Tpo $(DEPDIR)/go-interface-compare.Plo
@@ -1993,13 +1953,6 @@ go-reflect-call.lo: runtime/go-reflect-call.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-reflect-call.lo `test -f 'runtime/go-reflect-call.c' || echo '$(srcdir)/'`runtime/go-reflect-call.c
 
-go-rune.lo: runtime/go-rune.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-rune.lo -MD -MP -MF $(DEPDIR)/go-rune.Tpo -c -o go-rune.lo `test -f 'runtime/go-rune.c' || echo '$(srcdir)/'`runtime/go-rune.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-rune.Tpo $(DEPDIR)/go-rune.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-rune.c' object='go-rune.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-rune.lo `test -f 'runtime/go-rune.c' || echo '$(srcdir)/'`runtime/go-rune.c
-
 go-runtime-error.lo: runtime/go-runtime-error.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-runtime-error.lo -MD -MP -MF $(DEPDIR)/go-runtime-error.Tpo -c -o go-runtime-error.lo `test -f 'runtime/go-runtime-error.c' || echo '$(srcdir)/'`runtime/go-runtime-error.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-runtime-error.Tpo $(DEPDIR)/go-runtime-error.Plo
@@ -2027,27 +1980,6 @@ go-strcmp.lo: runtime/go-strcmp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-strcmp.c' object='go-strcmp.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-strcmp.lo `test -f 'runtime/go-strcmp.c' || echo '$(srcdir)/'`runtime/go-strcmp.c
-
-go-string-to-byte-array.lo: runtime/go-string-to-byte-array.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-string-to-byte-array.lo -MD -MP -MF $(DEPDIR)/go-string-to-byte-array.Tpo -c -o go-string-to-byte-array.lo `test -f 'runtime/go-string-to-byte-array.c' || echo '$(srcdir)/'`runtime/go-string-to-byte-array.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-string-to-byte-array.Tpo $(DEPDIR)/go-string-to-byte-array.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-string-to-byte-array.c' object='go-string-to-byte-array.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-string-to-byte-array.lo `test -f 'runtime/go-string-to-byte-array.c' || echo '$(srcdir)/'`runtime/go-string-to-byte-array.c
-
-go-string-to-int-array.lo: runtime/go-string-to-int-array.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-string-to-int-array.lo -MD -MP -MF $(DEPDIR)/go-string-to-int-array.Tpo -c -o go-string-to-int-array.lo `test -f 'runtime/go-string-to-int-array.c' || echo '$(srcdir)/'`runtime/go-string-to-int-array.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-string-to-int-array.Tpo $(DEPDIR)/go-string-to-int-array.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-string-to-int-array.c' object='go-string-to-int-array.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-string-to-int-array.lo `test -f 'runtime/go-string-to-int-array.c' || echo '$(srcdir)/'`runtime/go-string-to-int-array.c
-
-go-strplus.lo: runtime/go-strplus.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-strplus.lo -MD -MP -MF $(DEPDIR)/go-strplus.Tpo -c -o go-strplus.lo `test -f 'runtime/go-strplus.c' || echo '$(srcdir)/'`runtime/go-strplus.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-strplus.Tpo $(DEPDIR)/go-strplus.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-strplus.c' object='go-strplus.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-strplus.lo `test -f 'runtime/go-strplus.c' || echo '$(srcdir)/'`runtime/go-strplus.c
 
 go-strslice.lo: runtime/go-strslice.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-strslice.lo -MD -MP -MF $(DEPDIR)/go-strslice.Tpo -c -o go-strslice.lo `test -f 'runtime/go-strslice.c' || echo '$(srcdir)/'`runtime/go-strslice.c

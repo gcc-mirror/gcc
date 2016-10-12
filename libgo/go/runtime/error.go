@@ -4,6 +4,8 @@
 
 package runtime
 
+import "unsafe"
+
 // The Error interface identifies a run time error.
 type Error interface {
 	error
@@ -107,10 +109,8 @@ type errorCString struct{ cstr uintptr }
 
 func (e errorCString) RuntimeError() {}
 
-func cstringToGo(uintptr) string
-
 func (e errorCString) Error() string {
-	return "runtime error: " + cstringToGo(e.cstr)
+	return "runtime error: " + gostringnocopy((*byte)(unsafe.Pointer(e.cstr)))
 }
 
 // For calling from C.

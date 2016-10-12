@@ -3419,7 +3419,8 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
 	}
 
       Expression* i2s_expr =
-          Runtime::make_call(Runtime::INT_TO_STRING, loc, 1, this->expr_);
+          Runtime::make_call(Runtime::INTSTRING, loc, 2,
+			     Expression::make_nil(loc), this->expr_);
       return Expression::make_cast(type, i2s_expr, loc)->get_backend(context);
     }
   else if (type->is_string_type() && expr_type->is_slice_type())
@@ -3431,16 +3432,14 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
 
       Runtime::Function code;
       if (e->integer_type()->is_byte())
-        code = Runtime::BYTE_ARRAY_TO_STRING;
+        code = Runtime::SLICEBYTETOSTRING;
       else
         {
           go_assert(e->integer_type()->is_rune());
-          code = Runtime::INT_ARRAY_TO_STRING;
+          code = Runtime::SLICERUNETOSTRING;
         }
-      Expression* valptr = a->get_value_pointer(gogo, this->expr_);
-      Expression* len = a->get_length(gogo, this->expr_);
-      return Runtime::make_call(code, loc, 2, valptr,
-				len)->get_backend(context);
+      return Runtime::make_call(code, loc, 2, Expression::make_nil(loc),
+				this->expr_)->get_backend(context);
     }
   else if (type->is_slice_type() && expr_type->is_string_type())
     {
@@ -3449,13 +3448,15 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
 
       Runtime::Function code;
       if (e->integer_type()->is_byte())
-	code = Runtime::STRING_TO_BYTE_ARRAY;
+	code = Runtime::STRINGTOSLICEBYTE;
       else
 	{
 	  go_assert(e->integer_type()->is_rune());
-	  code = Runtime::STRING_TO_INT_ARRAY;
+	  code = Runtime::STRINGTOSLICERUNE;
 	}
-      Expression* s2a = Runtime::make_call(code, loc, 1, this->expr_);
+      Expression* s2a = Runtime::make_call(code, loc, 2,
+					   Expression::make_nil(loc),
+					   this->expr_);
       return Expression::make_unsafe_cast(type, s2a, loc)->get_backend(context);
     }
   else if (type->is_numeric_type())
@@ -5068,6 +5069,31 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 	return this->lower_interface_value_comparison(gogo, inserter);
     }
 
+  // Lower string concatenation to String_concat_expression, so that
+  // we can group sequences of string additions.
+  if (this->left_->type()->is_string_type() && this->op_ == OPERATOR_PLUS)
+    {
+      Expression_list* exprs;
+      String_concat_expression* left_sce =
+	this->left_->string_concat_expression();
+      if (left_sce != NULL)
+	exprs = left_sce->exprs();
+      else
+	{
+	  exprs = new Expression_list();
+	  exprs->push_back(this->left_);
+	}
+
+      String_concat_expression* right_sce =
+	this->right_->string_concat_expression();
+      if (right_sce != NULL)
+	exprs->append(right_sce->exprs());
+      else
+	exprs->push_back(this->right_);
+
+      return Expression::make_string_concat(exprs);
+    }
+
   return this;
 }
 
@@ -5277,25 +5303,6 @@ Binary_expression::do_flatten(Gogo* gogo, Named_object*,
     }
 
   Temporary_statement* temp;
-  if (this->left_->type()->is_string_type()
-      && this->op_ == OPERATOR_PLUS)
-    {
-      if (!this->left_->is_variable()
-	  && !this->left_->is_constant())
-        {
-          temp = Statement::make_temporary(NULL, this->left_, loc);
-          inserter->insert(temp);
-          this->left_ = Expression::make_temporary_reference(temp, loc);
-        }
-      if (!this->right_->is_variable()
-	  && !this->right_->is_constant())
-        {
-          temp =
-              Statement::make_temporary(this->left_->type(), this->right_, loc);
-          this->right_ = Expression::make_temporary_reference(temp, loc);
-          inserter->insert(temp);
-        }
-    }
 
   Type* left_type = this->left_->type();
   bool is_shift_op = (this->op_ == OPERATOR_LSHIFT
@@ -5792,14 +5799,9 @@ Binary_expression::do_get_backend(Translate_context* context)
       go_unreachable();
     }
 
-  if (left_type->is_string_type())
-    {
-      go_assert(this->op_ == OPERATOR_PLUS);
-      Expression* string_plus =
-          Runtime::make_call(Runtime::STRING_PLUS, loc, 2,
-                             this->left_, this->right_);
-      return string_plus->get_backend(context);
-    }
+  // The only binary operation for string is +, and that should have
+  // been converted to a String_concat_expression in do_lower.
+  go_assert(!left_type->is_string_type());
 
   // For complex division Go might want slightly different results than the
   // backend implementation provides, so we have our own runtime routine.
@@ -6292,6 +6294,182 @@ Expression::comparison(Translate_context* context, Type* result_type,
     ret = gogo->backend()->convert_expression(result_type->get_backend(gogo),
                                               ret, location);
   return ret;
+}
+
+// Class String_concat_expression.
+
+bool
+String_concat_expression::do_is_constant() const
+{
+  for (Expression_list::const_iterator pe = this->exprs_->begin();
+       pe != this->exprs_->end();
+       ++pe)
+    {
+      if (!(*pe)->is_constant())
+	return false;
+    }
+  return true;
+}
+
+bool
+String_concat_expression::do_is_immutable() const
+{
+  for (Expression_list::const_iterator pe = this->exprs_->begin();
+       pe != this->exprs_->end();
+       ++pe)
+    {
+      if (!(*pe)->is_immutable())
+	return false;
+    }
+  return true;
+}
+
+Type*
+String_concat_expression::do_type()
+{
+  Type* t = this->exprs_->front()->type();
+  Expression_list::iterator pe = this->exprs_->begin();
+  ++pe;
+  for (; pe != this->exprs_->end(); ++pe)
+    {
+      Type* t1;
+      if (!Binary_expression::operation_type(OPERATOR_PLUS, t,
+					     (*pe)->type(),
+					     &t1))
+	return Type::make_error_type();
+      t = t1;
+    }
+  return t;
+}
+
+void
+String_concat_expression::do_determine_type(const Type_context* context)
+{
+  Type_context subcontext(*context);
+  for (Expression_list::iterator pe = this->exprs_->begin();
+       pe != this->exprs_->end();
+       ++pe)
+    {
+      Type* t = (*pe)->type();
+      if (!t->is_abstract())
+	{
+	  subcontext.type = t;
+	  break;
+	}
+    }
+  if (subcontext.type == NULL)
+    subcontext.type = this->exprs_->front()->type();
+  for (Expression_list::iterator pe = this->exprs_->begin();
+       pe != this->exprs_->end();
+       ++pe)
+    (*pe)->determine_type(&subcontext);
+}
+
+void
+String_concat_expression::do_check_types(Gogo*)
+{
+  if (this->is_error_expression())
+    return;
+  Type* t = this->exprs_->front()->type();
+  if (t->is_error())
+    {
+      this->set_is_error();
+      return;
+    }
+  Expression_list::iterator pe = this->exprs_->begin();
+  ++pe;
+  for (; pe != this->exprs_->end(); ++pe)
+    {
+      Type* t1 = (*pe)->type();
+      if (!Type::are_compatible_for_binop(t, t1))
+	{
+	  this->report_error("incompatible types in binary expression");
+	  return;
+	}
+      if (!Binary_expression::check_operator_type(OPERATOR_PLUS, t, t1,
+						  this->location()))
+	{
+	  this->set_is_error();
+	  return;
+	}
+    }
+}
+
+Expression*
+String_concat_expression::do_flatten(Gogo*, Named_object*,
+				     Statement_inserter*)
+{
+  if (this->is_error_expression())
+    return this;
+  Location loc = this->location();
+  Type* type = this->type();
+  Expression* nil_arg = Expression::make_nil(loc);
+  Expression* call;
+  switch (this->exprs_->size())
+    {
+    case 0: case 1:
+      go_unreachable();
+
+    case 2: case 3: case 4: case 5:
+      {
+	Expression* len = Expression::make_integer_ul(this->exprs_->size(),
+						      NULL, loc);
+	Array_type* arg_type = Type::make_array_type(type, len);
+	arg_type->set_is_array_incomparable();
+	Expression* arg =
+	  Expression::make_array_composite_literal(arg_type, this->exprs_,
+						   loc);
+	Runtime::Function code;
+	switch (this->exprs_->size())
+	  {
+	  default:
+	    go_unreachable();
+	  case 2:
+	    code = Runtime::CONCATSTRING2;
+	    break;
+	  case 3:
+	    code = Runtime::CONCATSTRING3;
+	    break;
+	  case 4:
+	    code = Runtime::CONCATSTRING4;
+	    break;
+	  case 5:
+	    code = Runtime::CONCATSTRING5;
+	    break;
+	  }
+	call = Runtime::make_call(code, loc, 2, nil_arg, arg);
+      }
+      break;
+
+    default:
+      {
+	Type* arg_type = Type::make_array_type(type, NULL);
+	Slice_construction_expression* sce =
+	  Expression::make_slice_composite_literal(arg_type, this->exprs_,
+						   loc);
+	sce->set_storage_does_not_escape();
+	call = Runtime::make_call(Runtime::CONCATSTRINGS, loc, 2, nil_arg,
+				  sce);
+      }
+      break;
+    }
+
+  return Expression::make_cast(type, call, loc);
+}
+
+void
+String_concat_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "concat(";
+  ast_dump_context->dump_expression_list(this->exprs_, false);
+  ast_dump_context->ostream() << ")";
+}
+
+Expression*
+Expression::make_string_concat(Expression_list* exprs)
+{
+  return new String_concat_expression(exprs);
 }
 
 // Class Bound_method_expression.

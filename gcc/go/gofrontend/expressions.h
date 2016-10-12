@@ -37,6 +37,7 @@ class Type_conversion_expression;
 class Unsafe_type_conversion_expression;
 class Unary_expression;
 class Binary_expression;
+class String_concat_expression;
 class Call_expression;
 class Call_result_expression;
 class Func_expression;
@@ -85,6 +86,7 @@ class Expression
     EXPRESSION_TYPE,
     EXPRESSION_UNARY,
     EXPRESSION_BINARY,
+    EXPRESSION_STRING_CONCAT,
     EXPRESSION_CONST_REFERENCE,
     EXPRESSION_VAR_REFERENCE,
     EXPRESSION_ENCLOSED_VAR_REFERENCE,
@@ -159,6 +161,10 @@ class Expression
   // Make a binary expression.
   static Expression*
   make_binary(Operator, Expression*, Expression*, Location);
+
+  // Make a string concatenation expression.
+  static Expression*
+  make_string_concat(Expression_list*);
 
   // Make a reference to a constant in an expression.
   static Expression*
@@ -619,6 +625,14 @@ class Expression
   Binary_expression*
   binary_expression()
   { return this->convert<Binary_expression, EXPRESSION_BINARY>(); }
+
+  // If this is a string concatenation expression, return the
+  // String_concat_expression structure.  Otherwise, return NULL.
+  String_concat_expression*
+  string_concat_expression()
+  {
+    return this->convert<String_concat_expression, EXPRESSION_STRING_CONCAT>();
+  }
 
   // If this is a call expression, return the Call_expression
   // structure.  Otherwise, return NULL.  This is a controlled dynamic
@@ -1877,6 +1891,13 @@ class Binary_expression : public Expression
   static bool
   check_operator_type(Operator op, Type* type, Type* otype, Location);
 
+  // Set *RESULT_TYPE to the resulting type when OP is applied to
+  // operands of type LEFT_TYPE and RIGHT_TYPE.  Return true on
+  // success, false on failure.
+  static bool
+  operation_type(Operator op, Type* left_type, Type* right_type,
+		 Type** result_type);
+
  protected:
   int
   do_traverse(Traverse* traverse);
@@ -1928,10 +1949,6 @@ class Binary_expression : public Expression
 
  private:
   static bool
-  operation_type(Operator op, Type* left_type, Type* right_type,
-		 Type** result_type);
-
-  static bool
   cmp_to_bool(Operator op, int cmp);
 
   static bool
@@ -1978,6 +1995,69 @@ class Binary_expression : public Expression
   Expression* right_;
   // The type of a comparison operation.
   Type* type_;
+};
+
+// A string concatenation expression.  This is a sequence of strings
+// added together.  It is created when lowering Binary_expression.
+
+class String_concat_expression : public Expression
+{
+ public:
+  String_concat_expression(Expression_list* exprs)
+    : Expression(EXPRESSION_STRING_CONCAT, exprs->front()->location()),
+      exprs_(exprs)
+  { }
+
+  // Return the list of string expressions to be concatenated.
+  Expression_list*
+  exprs()
+  { return this->exprs_; }
+
+ protected:
+  int
+  do_traverse(Traverse* traverse)
+  { return this->exprs_->traverse(traverse); }
+
+  Expression*
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int)
+  { return this; }
+
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
+  bool
+  do_is_constant() const;
+
+  bool
+  do_is_immutable() const;
+
+  Type*
+  do_type();
+
+  void
+  do_determine_type(const Type_context*);
+
+  void
+  do_check_types(Gogo*);
+
+  Expression*
+  do_copy()
+  { return Expression::make_string_concat(this->exprs_->copy()); }
+
+  Bexpression*
+  do_get_backend(Translate_context*)
+  { go_unreachable(); }
+
+  void
+  do_export(Export*) const
+  { go_unreachable(); }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The string expressions to concatenate.
+  Expression_list* exprs_;
 };
 
 // A call expression.  The go statement needs to dig inside this.

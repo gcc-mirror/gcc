@@ -441,7 +441,6 @@ runtime_files = \
 	runtime/go-append.c \
 	runtime/go-assert.c \
 	runtime/go-assert-interface.c \
-	runtime/go-byte-array-to-string.c \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
@@ -458,8 +457,6 @@ runtime_files = \
 	runtime/go-eface-val-compare.c \
 	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
-	runtime/go-int-array-to-string.c \
-	runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
 	runtime/go-interface-eface-compare.c \
 	runtime/go-interface-val-compare.c \
@@ -476,14 +473,10 @@ runtime_files = \
 	runtime/go-panic.c \
 	runtime/go-recover.c \
 	runtime/go-reflect-call.c \
-	runtime/go-rune.c \
 	runtime/go-runtime-error.c \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-strcmp.c \
-	runtime/go-string-to-byte-array.c \
-	runtime/go-string-to-int-array.c \
-	runtime/go-strplus.c \
 	runtime/go-strslice.c \
 	runtime/go-traceback.c \
 	runtime/go-type-complex.c \
@@ -529,7 +522,6 @@ runtime_files = \
 	reflect.c \
 	runtime1.c \
 	sigqueue.c \
-	string.c \
 	time.c \
 	$(runtime_getncpu_file)
 
