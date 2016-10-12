@@ -1,5 +1,10 @@
 2016-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_uninitialized.h
+	(__uninitialized_default_novalue_n_1<true>): Add missing return.
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/
+	1.cc: Check return values of uninitialized_xxx_n algorithms.
+
 	* libsupc++/nested_exception.h (throw_with_nested): Remove return.
 
 	* doc/xml/manual/intro.xml: Document LWG 2442 status.

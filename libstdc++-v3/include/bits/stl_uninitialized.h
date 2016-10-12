@@ -705,8 +705,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _ForwardIterator, typename _Size>
 	static _ForwardIterator
 	__uninit_default_novalue_n(_ForwardIterator __first, _Size __n)
-	{
-	}
+	{ return std::next(__first, __n); }
     };
 
   // __uninitialized_default_novalue
