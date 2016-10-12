@@ -278,9 +278,9 @@ package body Exp_Ch5 is
 
       function Is_Non_Local_Array (Exp : Node_Id) return Boolean;
       --  Determine if Exp is a reference to an array variable which is other
-      --  than an object defined in the current scope, or a slice of such
-      --  an object. Such objects can be aliased to parameters (unlike local
-      --  array references).
+      --  than an object defined in the current scope, or a component or a
+      --  slice of such an object. Such objects can be aliased to parameters
+      --  (unlike local array references).
 
       -----------------------
       -- Apply_Dereference --
@@ -327,10 +327,14 @@ package body Exp_Ch5 is
 
       function Is_Non_Local_Array (Exp : Node_Id) return Boolean is
       begin
-         return (Is_Entity_Name (Exp)
-                   and then Scope (Entity (Exp)) /= Current_Scope)
-            or else (Nkind (Exp) = N_Slice
-                       and then Is_Non_Local_Array (Prefix (Exp)));
+         case Nkind (Exp) is
+            when N_Indexed_Component | N_Selected_Component | N_Slice =>
+               return Is_Non_Local_Array (Prefix (Exp));
+            when others =>
+               return
+                 not (Is_Entity_Name (Exp) and then
+                                        Scope (Entity (Exp)) = Current_Scope);
+         end case;
       end Is_Non_Local_Array;
 
       --  Determine if Lhs, Rhs are formal arrays or nonlocal arrays
