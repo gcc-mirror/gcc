@@ -265,7 +265,7 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	$(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo $(am__objects_3) yield.lo \
 	$(am__objects_4) cpuprof.lo go-iface.lo lfstack.lo malloc.lo \
-	mprof.lo netpoll.lo rdebug.lo reflect.lo runtime1.lo sema.lo \
+	mprof.lo netpoll.lo rdebug.lo reflect.lo runtime1.lo \
 	sigqueue.lo string.lo time.lo $(am__objects_5)
 am_libgo_llgo_la_OBJECTS = $(am__objects_6)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
@@ -930,7 +930,6 @@ runtime_files = \
 	rdebug.c \
 	reflect.c \
 	runtime1.c \
-	sema.c \
 	sigqueue.c \
 	string.c \
 	time.c \
@@ -1656,7 +1655,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rtems-task-variable-add.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime1.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sema.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signal_unix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sigqueue.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/string.Plo@am__quote@

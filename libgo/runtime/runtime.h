@@ -552,8 +552,10 @@ void	runtime_newErrorCString(const char*, Eface*)
 /*
  * wrapped for go users
  */
-void	runtime_semacquire(uint32 volatile *, bool);
-void	runtime_semrelease(uint32 volatile *);
+void	runtime_semacquire(uint32 volatile *, bool)
+     __asm__ (GOSYM_PREFIX "runtime.semacquire");
+void	runtime_semrelease(uint32 volatile *)
+     __asm__ (GOSYM_PREFIX "runtime.semrelease");
 int32	runtime_gomaxprocsfunc(int32 n);
 void	runtime_procyield(uint32)
   __asm__(GOSYM_PREFIX "runtime.procyield");

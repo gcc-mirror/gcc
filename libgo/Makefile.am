@@ -528,7 +528,6 @@ runtime_files = \
 	rdebug.c \
 	reflect.c \
 	runtime1.c \
-	sema.c \
 	sigqueue.c \
 	string.c \
 	time.c \
