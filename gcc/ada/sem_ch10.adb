@@ -6377,6 +6377,13 @@ package body Sem_Ch10 is
       --  Limited_Withed_Unit.
 
       else
+         --  If the limited_with_clause is in some other unit in the context
+         --  then it is not visible in the main unit.
+
+         if not In_Extended_Main_Source_Unit (N) then
+            Set_Is_Immediately_Visible (P, False);
+         end if;
+
          --  Real entities that are type or subtype declarations were hidden
          --  from visibility at the point of installation of the limited-view.
          --  Now we recover the previous value of the hidden attribute.
