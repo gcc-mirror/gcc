@@ -1,3 +1,8 @@
+2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/warn-1.c: Change line number in dg-warning.
+	* gcc.target/powerpc/warn-2.c: Ditto.
+
 2016-10-12  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* gcc.dg/vect/slp-26.c: Check if vectorized for MIPS MSA.
