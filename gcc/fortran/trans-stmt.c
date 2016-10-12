@@ -5928,7 +5928,7 @@ gfc_trans_allocate (gfc_code * code)
 	      al_len_needs_set = false;
 	    }
 	  else if (expr->ts.type == BT_CHARACTER && al_len != NULL_TREE
-		   && code->ext.alloc.ts.u.cl->length)
+	      && code->ext.alloc.ts.u.cl->length)
 	    {
 	      /* Cover the cases where a string length is explicitly
 		 specified by a type spec for deferred length character
@@ -6015,7 +6015,7 @@ gfc_trans_allocate (gfc_code * code)
 		expr3_len = NULL_TREE;
 	    }
 	  else if (code->ext.alloc.ts.type == BT_CHARACTER
-		   && code->ext.alloc.ts.u.cl->length)
+	      && code->ext.alloc.ts.u.cl->length)
 	    {
 	      /* Cover the cases where a string length is explicitly
 		 specified by a type spec for deferred length character
