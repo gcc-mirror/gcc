@@ -877,13 +877,15 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 		}
 	    }
 	}
+
       /* This tests if the user provided the appropriate -Werror=foo
 	 option.  */
       if (diag_class == DK_UNSPECIFIED
-	  && context->classify_diagnostic[diagnostic->option_index] != DK_UNSPECIFIED)
-	{
-	  diagnostic->kind = context->classify_diagnostic[diagnostic->option_index];
-	}
+	  && (context->classify_diagnostic[diagnostic->option_index]
+	      != DK_UNSPECIFIED))
+	diagnostic->kind
+	  = context->classify_diagnostic[diagnostic->option_index];
+
       /* This allows for future extensions, like temporarily disabling
 	 warnings for ranges of source code.  */
       if (diagnostic->kind == DK_IGNORED)

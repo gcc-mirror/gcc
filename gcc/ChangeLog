@@ -1,3 +1,7 @@
+2016-10-12  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostc_report_diagnostic): Fix formatting.
+
 2016-10-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (int_loc_descriptor): Generate opcodes for another
