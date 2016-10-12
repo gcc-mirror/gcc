@@ -1879,7 +1879,9 @@ rest.cross: specs
 
 # GCC's selftests.
 # Specify a dummy input file to placate the driver.
-SELFTEST_FLAGS = -x c /dev/null -S -fself-test
+# Specify -nostdinc to work around missing WIND_BASE environment variable
+# required for *-wrs-vxworks-* targets.
+SELFTEST_FLAGS = -nostdinc -x c /dev/null -S -fself-test
 
 # Run the selftests during the build once we have a driver and a cc1,
 # so that self-test failures are caught as early as possible.
