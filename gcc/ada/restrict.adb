@@ -1194,8 +1194,10 @@ package body Restrict is
          Restricted_Profile_Cached := True;
 
          declare
-            R : Restriction_Flags  renames Profile_Info (Restricted).Set;
-            V : Restriction_Values renames Profile_Info (Restricted).Value;
+            R : Restriction_Flags  renames
+                   Profile_Info (Restricted_Tasking).Set;
+            V : Restriction_Values renames
+                   Profile_Info (Restricted_Tasking).Value;
          begin
             for J in R'Range loop
                if R (J)

@@ -1,3 +1,33 @@
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Formal_Package_Instance): Handle properly
+	an instance of a formal package with defaults, when defaulted
+	parameters include tagged private types and array types.
+
+2016-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/64057.
+	* exp_ch5.adb (Is_Non_Local_Array): Return true for every array
+	that is not a component or slice of an entity in the current
+	scope.
+
+2016-10-12  Tristan Gingold  <gingold@adacore.com>
+
+	* restrict.ads, restrict.adb (Restricted_Profile): Adjust
+	comment, use Restricted_Tasking to compare restrictions.
+	* s-rident.ads (Profile_Name): Add Restricted_Tasking and
+	reorder literals.
+	(Profile_Info): Set restrictions for Restricted_Tasking.
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Set Ghost status
+	of type before elaborating inherited operations, so that the
+	Ghost status is set properly for them.
+	* ghost.adb (Check_Ghost_Overriding): A ghost subprogram can
+	override an abstract subprogram coming from an interface
+	operation.
+
 2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-linux-armeb.ads (Backend_Overflow_Checks): Change to True.

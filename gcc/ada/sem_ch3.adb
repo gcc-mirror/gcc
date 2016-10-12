@@ -877,7 +877,6 @@ package body Sem_Ch3 is
          then
             Build_Itype_Reference (Anon_Type, Parent (Current_Scope));
          end if;
-
          return Anon_Type;
       end if;
 
@@ -2805,6 +2804,13 @@ package body Sem_Ch3 is
       if not Analyzed (T) then
          Set_Analyzed (T);
 
+         --  A type declared within a Ghost region is automatically Ghost
+         --  (SPARK RM 6.9(2)).
+
+         if Ghost_Mode > None then
+            Set_Is_Ghost_Entity (T);
+         end if;
+
          case Nkind (Def) is
             when N_Access_To_Subprogram_Definition =>
                Access_Subprogram_Declaration (T, Def);
@@ -2885,13 +2891,6 @@ package body Sem_Ch3 is
 
       if Is_Visibly_Controlled (T) then
          Check_SPARK_05_Restriction ("controlled type is not allowed", N);
-      end if;
-
-      --  A type declared within a Ghost region is automatically Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (T);
       end if;
 
       --  Some common processing for all types

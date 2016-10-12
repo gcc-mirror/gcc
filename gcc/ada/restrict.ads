@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -424,10 +424,10 @@ package Restrict is
    --  executing this code only if needed.
 
    function Restricted_Profile return Boolean;
-   --  Tests if set of restrictions corresponding to Profile (Restricted) is
-   --  currently in effect (set by pragma Profile, or by an appropriate set of
-   --  individual Restrictions pragmas). Returns True only if all the required
-   --  restrictions are set.
+   --  Tests if set of restrictions corresponding to Restricted_Tasking profile
+   --  is currently in effect (set by pragma Profile, or by an appropriate set
+   --  of individual Restrictions pragmas). Returns True only if all the
+   --  required restrictions are set.
 
    procedure Set_Hidden_Part_In_SPARK (Loc1, Loc2 : Source_Ptr);
    --  Insert a new hidden region range in the SPARK hides table. The effect
