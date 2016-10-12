@@ -1,5 +1,7 @@
 2016-10-12  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* Makefile.in (SELFTEST_FLAGS): Add -nostdinc.
+
 	* Makefile.in (SELFTEST_FLAGS): New variable.
 	(s-selftest, selftest-gdb, selftest-valgrind): Use it.
 
