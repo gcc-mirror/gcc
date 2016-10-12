@@ -1,5 +1,7 @@
 2016-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/nested_exception.h (throw_with_nested): Remove return.
+
 	* doc/xml/manual/intro.xml: Document LWG 2442 status.
 	* include/std/mutex [_GLIBCXX_HAVE_TLS] (__once_call_impl): Remove.
 	[_GLIBCXX_HAVE_TLS] (_Once_call): Declare primary template and define

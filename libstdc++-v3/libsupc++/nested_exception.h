@@ -122,7 +122,7 @@ namespace std
 	  "throw_with_nested argument must be CopyConstructible");
       using __nest = __and_<is_class<_Up>, __bool_constant<!__is_final(_Up)>,
 			    __not_<is_base_of<nested_exception, _Up>>>;
-      return std::__throw_with_nested_impl(std::forward<_Tp>(__t), __nest{});
+      std::__throw_with_nested_impl(std::forward<_Tp>(__t), __nest{});
     }
 
   // Determine if dynamic_cast<const nested_exception&> would be well-formed.
