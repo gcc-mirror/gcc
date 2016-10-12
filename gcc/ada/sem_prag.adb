@@ -23811,7 +23811,8 @@ package body Sem_Prag is
                      Matched := True;
 
                   --  An abstract state with visible non-null refinement
-                  --  matches one of its constituents.
+                  --  matches one of its constituents, or itself for an
+                  --  abstract state with partial visible refinement.
 
                   elsif Has_Non_Null_Visible_Refinement (Dep_Item_Id) then
                      if Is_Entity_Name (Ref_Item) then
@@ -23823,6 +23824,12 @@ package body Sem_Prag is
                           and then Present (Encapsulating_State (Ref_Item_Id))
                           and then Encapsulating_State (Ref_Item_Id) =
                                      Dep_Item_Id
+                        then
+                           Record_Item (Dep_Item_Id);
+                           Matched := True;
+
+                        elsif not Has_Visible_Refinement (Dep_Item_Id)
+                          and then Ref_Item_Id = Dep_Item_Id
                         then
                            Record_Item (Dep_Item_Id);
                            Matched := True;
@@ -24050,9 +24057,9 @@ package body Sem_Prag is
 
       procedure Check_Output_States is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
-         --  Determine whether all constituents of state State_Id with visible
-         --  refinement are used as outputs in pragma Refined_Depends. Emit an
-         --  error if this is not the case.
+         --  Determine whether all constituents of state State_Id with full
+         --  visible refinement are used as outputs in pragma Refined_Depends.
+         --  Emit an error if this is not the case.
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24060,7 +24067,7 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits     : constant Elist_Id :=
-                             Partial_Refinement_Constituents (State_Id);
+                             Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
             Posted       : Boolean := False;
@@ -24147,7 +24154,9 @@ package body Sem_Prag is
                   --  Ensure that all of the constituents are utilized as
                   --  outputs in pragma Refined_Depends.
 
-                  elsif Has_Non_Null_Visible_Refinement (Item_Id) then
+                  elsif Has_Visible_Refinement (Item_Id)
+                    and then Has_Non_Null_Visible_Refinement (Item_Id)
+                  then
                      Check_Constituent_Usage (Item_Id);
                   end if;
                end if;
@@ -24540,7 +24549,14 @@ package body Sem_Prag is
       --  The entity of the subprogram subject to pragma Refined_Global
 
       States : Elist_Id := No_Elist;
-      --  A list of all states with visible refinement found in pragma Global
+      --  A list of all states with full or partial visible refinement found in
+      --  pragma Global.
+
+      Repeat_Items : Elist_Id := No_Elist;
+      --  A list of all global items without full visible refinement found
+      --  in pragma Global. These states should be repeated in the global
+      --  refinement (SPARK RM 7.2.4(3c)) unless they have a partial visible
+      --  refinement, in which case they may be repeated (SPARK RM 7.2.4(3d)).
 
       procedure Check_In_Out_States;
       --  Determine whether the corresponding Global pragma mentions In_Out
@@ -24587,9 +24603,10 @@ package body Sem_Prag is
       --  and separate them in lists In_Items, In_Out_Items, Out_Items and
       --  Proof_In_Items. Flags Has_In_State, Has_In_Out_State, Has_Out_State
       --  and Has_Proof_In_State are set when there is at least one abstract
-      --  state with visible refinement available in the corresponding mode.
-      --  Flag Has_Null_State is set when at least state has a null refinement.
-      --  Mode enotes the current global mode in effect.
+      --  state with full or partial visible refinement available in the
+      --  corresponding mode. Flag Has_Null_State is set when at least state
+      --  has a null refinement. Mode denotes the current global mode in
+      --  effect.
 
       function Present_Then_Remove
         (List : Elist_Id;
@@ -24598,9 +24615,17 @@ package body Sem_Prag is
       --  remove it from List. This routine is used to strip lists In_Constits,
       --  In_Out_Constits and Out_Constits of valid constituents.
 
+      procedure Present_Then_Remove (List : Elist_Id; Item : Entity_Id);
+      --  Same as function Present_Then_Remove, but do not report presence of
+      --  Item in List.
+
       procedure Report_Extra_Constituents;
       --  Emit an error for each constituent found in lists In_Constits,
       --  In_Out_Constits and Out_Constits.
+
+      procedure Report_Missing_Items;
+      --  Emit an error for each global item not repeated found in list
+      --  Repeat_Items.
 
       -------------------------
       -- Check_In_Out_States --
@@ -24690,15 +24715,24 @@ package body Sem_Prag is
                      N, State_Id);
                end if;
 
-            --  The state lacks a completion
+            --  The state lacks a completion. When full refinement is
+            --  visible, always emit an error (SPARK RM 7.2.4(3a)). When only
+            --  partial refinement is visible, emit an error if the abstract
+            --  state itself is not utilized (SPARK RM 7.2.4(3d)). In the
+            --  case where both are utilized, an error will be issued in
+            --  Check_State_And_Constituent_Use.
 
             elsif not Input_Seen
-              and not In_Out_Seen
-              and not Output_Seen
-              and not Proof_In_Seen
+              and then not In_Out_Seen
+              and then not Output_Seen
+              and then not Proof_In_Seen
             then
-               SPARK_Msg_NE
-                 ("missing global refinement of state &", N, State_Id);
+               if Has_Visible_Refinement (State_Id)
+                 or else Contains (Repeat_Items, State_Id)
+               then
+                  SPARK_Msg_NE
+                    ("missing global refinement of state &", N, State_Id);
+               end if;
 
             --  Otherwise the state has a malformed completion where at least
             --  one of the constituents has a different mode.
@@ -24752,9 +24786,10 @@ package body Sem_Prag is
       procedure Check_Input_States is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether at least one constituent of state State_Id with
-         --  visible refinement is used and has mode Input. Ensure that the
-         --  remaining constituents do not have In_Out or Output modes. Emit an
-         --  error if this is not the case (SPARK RM 7.2.4(5)).
+         --  full or partial visible refinement is used and has mode Input.
+         --  Ensure that the remaining constituents do not have In_Out or
+         --  Output modes. Emit an error if this is not the case (SPARK RM
+         --  7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24801,9 +24836,18 @@ package body Sem_Prag is
                end loop;
             end if;
 
-            --  Not one of the constituents appeared as Input
+            --  Not one of the constituents appeared as Input. When full
+            --  refinement is visible, always emit an error (SPARK RM
+            --  7.2.4(3a)). When only partial refinement is visible, emit an
+            --  error if the abstract state itself is not utilized (SPARK RM
+            --  7.2.4(3d)). In the case where both are utilized, an error will
+            --  be issued in Check_State_And_Constituent_Use.
 
-            if not In_Seen then
+            if not In_Seen
+              and then (Has_Visible_Refinement (State_Id)
+                          or else
+                        Contains (Repeat_Items, State_Id))
+            then
                SPARK_Msg_NE
                  ("global refinement of state & must include at least one "
                   & "constituent of mode `Input`", N, State_Id);
@@ -24832,8 +24876,11 @@ package body Sem_Prag is
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
 
-               --  Ensure that at least one of the constituents is utilized and
-               --  is of mode Input.
+               --  When full refinement is visible, ensure that at least one of
+               --  the constituents is utilized and is of mode Input. When only
+               --  partial refinement is visible, ensure that either one of
+               --  the constituents is utilized and is of mode Input, or the
+               --  abstract state is repeated and no constituent is utilized.
 
                if Ekind (Item_Id) = E_Abstract_State
                  and then Has_Non_Null_Visible_Refinement (Item_Id)
@@ -24852,9 +24899,9 @@ package body Sem_Prag is
 
       procedure Check_Output_States is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
-         --  Determine whether all constituents of state State_Id with visible
-         --  refinement are used and have mode Output. Emit an error if this is
-         --  not the case (SPARK RM 7.2.4(5)).
+         --  Determine whether all constituents of state State_Id with full
+         --  visible refinement are used and have mode Output. Emit an error
+         --  if this is not the case (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24865,6 +24912,8 @@ package body Sem_Prag is
                              Partial_Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
+            Only_Partial : constant Boolean :=
+                             not Has_Visible_Refinement (State_Id);
             Posted       : Boolean := False;
 
          begin
@@ -24873,7 +24922,27 @@ package body Sem_Prag is
                while Present (Constit_Elmt) loop
                   Constit_Id := Node (Constit_Elmt);
 
-                  if Present_Then_Remove (Out_Constits, Constit_Id) then
+                  --  Issue an error when a constituent of State_Id is
+                  --  utilized, and State_Id has only partial visible
+                  --  refinement (SPARK RM 7.2.4(3d)).
+
+                  if Only_Partial then
+                     if Present_Then_Remove (Out_Constits, Constit_Id)
+                       or else Present_Then_Remove (In_Constits, Constit_Id)
+                       or else
+                         Present_Then_Remove (In_Out_Constits, Constit_Id)
+                       or else
+                         Present_Then_Remove (Proof_In_Constits, Constit_Id)
+                     then
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_NE
+                          ("constituent & of state % cannot be used in "
+                           & "global refinement", N, Constit_Id);
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_N ("\use state % instead", N);
+                     end if;
+
+                  elsif Present_Then_Remove (Out_Constits, Constit_Id) then
                      null;
 
                   --  The constituent appears in the global refinement, but has
@@ -24930,8 +24999,10 @@ package body Sem_Prag is
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
 
-               --  Ensure that all of the constituents are utilized and they
-               --  have mode Output.
+               --  When full refinement is visible, ensure that all of the
+               --  constituents are utilized and they have mode Output.
+               --  When only partial refinement is visible, ensure that
+               --  no constituent is utilized.
 
                if Ekind (Item_Id) = E_Abstract_State
                  and then Has_Non_Null_Visible_Refinement (Item_Id)
@@ -24951,9 +25022,10 @@ package body Sem_Prag is
       procedure Check_Proof_In_States is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether at least one constituent of state State_Id with
-         --  visible refinement is used and has mode Proof_In. Ensure that the
-         --  remaining constituents do not have Input, In_Out or Output modes.
-         --  Emit an error of this is not the case (SPARK RM 7.2.4(5)).
+         --  full or partial visible refinement is used and has mode Proof_In.
+         --  Ensure that the remaining constituents do not have Input, In_Out
+         --  or Output modes. Emit an error of this is not the case (SPARK RM
+         --  7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24994,9 +25066,18 @@ package body Sem_Prag is
                end loop;
             end if;
 
-            --  Not one of the constituents appeared as Proof_In
+            --  Not one of the constituents appeared as Proof_In. When
+            --  full refinement is visible, always emit an error (SPARK RM
+            --  7.2.4(3a)). When only partial refinement is visible, emit an
+            --  error if the abstract state itself is not utilized (SPARK RM
+            --  7.2.4(3d)). In the case where both are utilized, an error will
+            --  be issued in Check_State_And_Constituent_Use.
 
-            if not Proof_In_Seen then
+            if not Proof_In_Seen
+              and then (Has_Visible_Refinement (State_Id)
+                          or else
+                        Contains (Repeat_Items, State_Id))
+            then
                SPARK_Msg_NE
                  ("global refinement of state & must include at least one "
                   & "constituent of mode `Proof_In`", N, State_Id);
@@ -25025,8 +25106,11 @@ package body Sem_Prag is
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
 
-               --  Ensure that at least one of the constituents is utilized and
-               --  is of mode Proof_In
+               --  Ensure that at least one of the constituents is utilized
+               --  and is of mode Proof_In. When only partial refinement is
+               --  visible, ensure that either one of the constituents is
+               --  utilized and is of mode Proof_In, or the abstract state
+               --  is repeated and no constituent is utilized.
 
                if Ekind (Item_Id) = E_Abstract_State
                  and then Has_Non_Null_Visible_Refinement (Item_Id)
@@ -25081,23 +25165,37 @@ package body Sem_Prag is
                SPARK_Msg_N ("\expected mode %, found mode %", Item);
             end Inconsistent_Mode_Error;
 
+            Enc_State : Entity_Id := Empty;
+            --  Encapsulating state for constituent, Empty otherwise
+
          --  Start of processing for Check_Refined_Global_Item
 
          begin
+            if Ekind_In (Item_Id, E_Abstract_State, E_Constant, E_Variable)
+            then
+               Enc_State := Encapsulating_State (Item_Id);
+            end if;
+
             --  When the state or object acts as a constituent of another
             --  state with a visible refinement, collect it for the state
             --  completeness checks performed later on. Note that the item
             --  acts as a constituent only when the encapsulating state is
             --  present in pragma Global.
 
-            if Ekind_In (Item_Id, E_Abstract_State, E_Constant, E_Variable)
-             and then Present (Encapsulating_State (Item_Id))
-             and then
-               (Has_Visible_Refinement (Encapsulating_State (Item_Id))
-                  or else
-                Has_Partial_Visible_Refinement (Encapsulating_State (Item_Id)))
-             and then Contains (States, Encapsulating_State (Item_Id))
+            if Present (Enc_State)
+              and then (Has_Visible_Refinement (Enc_State)
+                          or else
+                        Has_Partial_Visible_Refinement (Enc_State))
+              and then Contains (States, Enc_State)
             then
+               --  If the state has only partial visible refinement, remove it
+               --  from the list of items that should be repeated from pragma
+               --  Global.
+
+               if not Has_Visible_Refinement (Enc_State) then
+                  Present_Then_Remove (Repeat_Items, Enc_State);
+               end if;
+
                if Global_Mode = Name_Input then
                   Append_New_Elmt (Item_Id, In_Constits);
 
@@ -25112,31 +25210,37 @@ package body Sem_Prag is
                end if;
 
             --  When not a constituent, ensure that both occurrences of the
-            --  item in pragmas Global and Refined_Global match.
-
-            elsif Contains (In_Items, Item_Id) then
-               if Global_Mode /= Name_Input then
-                  Inconsistent_Mode_Error (Name_Input);
-               end if;
-
-            elsif Contains (In_Out_Items, Item_Id) then
-               if Global_Mode /= Name_In_Out then
-                  Inconsistent_Mode_Error (Name_In_Out);
-               end if;
-
-            elsif Contains (Out_Items, Item_Id) then
-               if Global_Mode /= Name_Output then
-                  Inconsistent_Mode_Error (Name_Output);
-               end if;
-
-            elsif Contains (Proof_In_Items, Item_Id) then
-               null;
-
-            --  The item does not appear in the corresponding Global pragma,
-            --  it must be an extra (SPARK RM 7.2.4(3)).
+            --  item in pragmas Global and Refined_Global match. Also remove
+            --  it when present from the list of items that should be repeated
+            --  from pragma Global.
 
             else
-               SPARK_Msg_NE ("extra global item &", Item, Item_Id);
+               Present_Then_Remove (Repeat_Items, Item_Id);
+
+               if Contains (In_Items, Item_Id) then
+                  if Global_Mode /= Name_Input then
+                     Inconsistent_Mode_Error (Name_Input);
+                  end if;
+
+               elsif Contains (In_Out_Items, Item_Id) then
+                  if Global_Mode /= Name_In_Out then
+                     Inconsistent_Mode_Error (Name_In_Out);
+                  end if;
+
+               elsif Contains (Out_Items, Item_Id) then
+                  if Global_Mode /= Name_Output then
+                     Inconsistent_Mode_Error (Name_Output);
+                  end if;
+
+               elsif Contains (Proof_In_Items, Item_Id) then
+                  null;
+
+               --  The item does not appear in the corresponding Global pragma,
+               --  it must be an extra (SPARK RM 7.2.4(3)).
+
+               else
+                  SPARK_Msg_NE ("extra global item &", Item, Item_Id);
+               end if;
             end if;
          end Check_Refined_Global_Item;
 
@@ -25255,6 +25359,16 @@ package body Sem_Prag is
                end if;
             end if;
 
+            --  Record global items without full visible refinement found in
+            --  pragma Global, which should (SPARK RM 7.2.4(3c)) or may (SPARK
+            --  RM 7.2.4(3d)) be repeated in the global refinement.
+
+            if Ekind (Item_Id) /= E_Abstract_State
+              or else not Has_Visible_Refinement (Item_Id)
+            then
+               Append_New_Elmt (Item_Id, Repeat_Items);
+            end if;
+
             --  Add the item to the proper list
 
             if Item_Mode = Name_Input then
@@ -25354,6 +25468,12 @@ package body Sem_Prag is
          return False;
       end Present_Then_Remove;
 
+      procedure Present_Then_Remove (List : Elist_Id; Item : Entity_Id) is
+         Ignore : Boolean;
+      begin
+         Ignore := Present_Then_Remove (List, Item);
+      end Present_Then_Remove;
+
       -------------------------------
       -- Report_Extra_Constituents --
       -------------------------------
@@ -25396,11 +25516,38 @@ package body Sem_Prag is
          end if;
       end Report_Extra_Constituents;
 
+      --------------------------
+      -- Report_Missing_Items --
+      --------------------------
+
+      procedure Report_Missing_Items is
+         Item_Elmt : Elmt_Id;
+         Item_Id   : Entity_Id;
+      begin
+         --  Do not perform this check in an instance because it was already
+         --  performed successfully in the generic template.
+
+         if Is_Generic_Instance (Spec_Id) then
+            null;
+
+         else
+            if Present (Repeat_Items) then
+               Item_Elmt := First_Elmt (Repeat_Items);
+               while Present (Item_Elmt) loop
+                  Item_Id := Node (Item_Elmt);
+                  SPARK_Msg_NE ("missing global item &", N, Item_Id);
+                  Next_Elmt (Item_Elmt);
+               end loop;
+            end if;
+         end if;
+      end Report_Missing_Items;
+
       --  Local variables
 
-      Body_Decl : constant Node_Id := Find_Related_Declaration_Or_Body (N);
-      Errors    : constant Nat     := Serious_Errors_Detected;
-      Items     : Node_Id;
+      Body_Decl  : constant Node_Id := Find_Related_Declaration_Or_Body (N);
+      Errors     : constant Nat     := Serious_Errors_Detected;
+      Items      : Node_Id;
+      No_Constit : Boolean;
 
    --  Start of processing for Analyze_Refined_Global_In_Decl_Part
 
@@ -25499,6 +25646,15 @@ package body Sem_Prag is
          Check_Refined_Global_List (Items);
       end if;
 
+      --  Store the information that no constituent is used in the global
+      --  refinement, prior to calling checking procedures which remove items
+      --  from the list of constituents.
+
+      No_Constit := No (In_Constits)
+        and then No (In_Out_Constits)
+        and then No (Out_Constits)
+        and then No (Proof_In_Constits);
+
       --  For Input states with visible refinement, at least one constituent
       --  must be used as an Input in the global refinement.
 
@@ -25532,6 +25688,29 @@ package body Sem_Prag is
 
       if Serious_Errors_Detected = Errors then
          Report_Extra_Constituents;
+      end if;
+
+      --  Emit errors for all items in Global that are not repeated in the
+      --  global refinement and for which there is no full visible refinement
+      --  and, in the case of states with partial visible refinement, no
+      --  constituent is mentioned in the global refinement.
+
+      if Serious_Errors_Detected = Errors then
+         Report_Missing_Items;
+      end if;
+
+      --  Emit an error if no constituent is used in the global refinement
+      --  (SPARK RM 7.2.4(3f)). Emit this error last, in case a more precise
+      --  one may be issued by the checking procedures. Do not perform this
+      --  check in an instance because it was already performed successfully
+      --  in the generic template.
+
+      if Serious_Errors_Detected = Errors
+        and then not Is_Generic_Instance (Spec_Id)
+        and then not Has_Null_State
+        and then No_Constit
+      then
+         SPARK_Msg_N ("missing refinement", N);
       end if;
 
       <<Leave>>
