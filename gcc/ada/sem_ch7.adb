@@ -2275,6 +2275,34 @@ package body Sem_Ch7 is
          Next_Entity (Id);
       end loop;
 
+      --  An abstract state is partially refined when it has at least one
+      --  Part_Of constituent. Since these constituents are being installed
+      --  into visibility, update the partial refinement status of any state
+      --  defined in the associated package, subject to at least one Part_Of
+      --  constituent.
+
+      if Ekind_In (P, E_Generic_Package, E_Package) then
+         declare
+            States     : constant Elist_Id := Abstract_States (P);
+            State_Elmt : Elmt_Id;
+            State_Id   : Entity_Id;
+
+         begin
+            if Present (States) then
+               State_Elmt := First_Elmt (States);
+               while Present (State_Elmt) loop
+                  State_Id := Node (State_Elmt);
+
+                  if Present (Part_Of_Constituents (State_Id)) then
+                     Set_Has_Partial_Visible_Refinement (State_Id);
+                  end if;
+
+                  Next_Elmt (State_Elmt);
+               end loop;
+            end if;
+         end;
+      end if;
+
       --  Indicate that the private part is currently visible, so it can be
       --  properly reset on exit.
 

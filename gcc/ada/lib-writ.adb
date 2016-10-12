@@ -990,8 +990,27 @@ package body Lib.Writ is
          if Cunit_Entity (Unum) = Empty
            or else not From_Limited_With (Cunit_Entity (Unum))
          then
-            Num_Sdep := Num_Sdep + 1;
-            Sdep_Table (Num_Sdep) := Unum;
+            --  Units that are not analyzed need not appear in the dependency
+            --  list. These units are either units appearing in limited_with
+            --  clauses of other units, or units loaded for inlining that end
+            --  up not inlined by a later decision of the inlining code, to
+            --  prevent circularities. We want to exclude these files from the
+            --  list of dependencies, so that the dependency number of other
+            --  is correctly set, as that number is used by cross-reference
+            --  tools to relate entity information to the unit in which they
+            --  are declared.
+
+            if Present (Cunit_Entity (Unum))
+              and then Ekind (Cunit_Entity (Unum)) = E_Void
+              and then Nkind (Unit (Cunit (Unum))) /= N_Subunit
+              and then Serious_Errors_Detected = 0
+            then
+               null;
+
+            else
+               Num_Sdep := Num_Sdep + 1;
+               Sdep_Table (Num_Sdep) := Unum;
+            end if;
          end if;
       end loop;
 
@@ -1433,32 +1452,6 @@ package body Lib.Writ is
             Units.Table (Unum).Dependency_Num := J;
             Sind := Units.Table (Unum).Source_Index;
 
-            --  The dependency table also contains units that appear in the
-            --  context of a unit loaded through a limited_with clause. These
-            --  units are never analyzed, and thus the main unit does not
-            --  really have a dependency on them. Subunits are always compiled
-            --  in the context of the parent, and their file table entries are
-            --  not properly decorated, they are recognized syntactically.
-
-            --  This optimization is disabled when inline is active, because
-            --  inline may propose some bodies for inlining, and decide later
-            --  that they may lead to circularities, in which case they are
-            --  also left unanalyzed in the file table. There is no simple way
-            --  to distinguish between the two kinds of unanalyzed entries,
-            --  so simplest is to skip this step.
-
-            --  Actually, this optimization is always disabled, because it
-            --  breaks gnatfind.
-
-            if False -- ???
-              and then Present (Cunit_Entity (Unum))
-              and then Ekind (Cunit_Entity (Unum)) = E_Void
-              and then Nkind (Unit (Cunit (Unum))) /= N_Subunit
-              and then not Inline_Active
-            then
-               goto Next_Unit;
-            end if;
-
             Write_Info_Initiate ('D');
             Write_Info_Char (' ');
 
@@ -1534,9 +1527,6 @@ package body Lib.Writ is
             end if;
 
             Write_Info_EOL;
-
-         <<Next_Unit>>
-            null;
          end loop;
       end;
 

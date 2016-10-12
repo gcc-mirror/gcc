@@ -1812,6 +1812,14 @@ package Einfo is
 --       one invariant of its own. The flag is also set on the full view of a
 --       private extension or a private type for completeness.
 
+--    Has_Partial_Visible_Refinement (Flag296)
+--       Defined in E_Abstract_State entities. Set when a state has at least
+--       one refinement constituent subject to indicator Part_Of, and analysis
+--       is in the region between the declaration of the first constituent for
+--       this abstract state (in the private part of the package) and the end
+--       of the package spec or body with visibility over this private part
+--       (which includes the package itself and its child packages).
+
 --    Has_Per_Object_Constraint (Flag154)
 --       Defined in E_Component entities. Set if the subtype of the component
 --       has a per object constraint. Per object constraints result from the
@@ -3780,6 +3788,11 @@ package Einfo is
 --       Note: the reason this is marked as a synthesized attribute is that the
 --       way this is stored is as an element of the Subprograms_For_Type field.
 
+--    Partial_Refinement_Constituents (synthesized)
+--       Present in abstract state entities. Contains the constituents that
+--       refine the state in its private part, in other words, all the hidden
+--       states that indicate this abstract state in a Part_Of aspect/pragma.
+
 --    Partial_View_Has_Unknown_Discr (Flag280)
 --       Present in all types. Set to Indicate that the partial view of a type
 --       has unknown discriminants. A default initialization of an object of
@@ -5619,6 +5632,7 @@ package Einfo is
    --    Non_Limited_View                    (Node19)
    --    Encapsulating_State                 (Node32)
    --    From_Limited_With                   (Flag159)
+   --    Has_Partial_Visible_Refinement      (Flag296)
    --    Has_Visible_Refinement              (Flag263)
    --    Has_Non_Limited_View                (synth)
    --    Has_Non_Null_Visible_Refinement     (synth)
@@ -5626,6 +5640,7 @@ package Einfo is
    --    Is_External_State                   (synth)
    --    Is_Null_State                       (synth)
    --    Is_Synchronized_State               (synth)
+   --    Partial_Refinement_Constituents     (synth)
 
    --  E_Access_Protected_Subprogram_Type
    --    Equivalent_Type                     (Node18)
@@ -6977,6 +6992,7 @@ package Einfo is
    function Has_Object_Size_Clause              (Id : E) return B;
    function Has_Out_Or_In_Out_Parameter         (Id : E) return B;
    function Has_Own_Invariants                  (Id : E) return B;
+   function Has_Partial_Visible_Refinement      (Id : E) return B;
    function Has_Per_Object_Constraint           (Id : E) return B;
    function Has_Pragma_Controlled               (Id : E) return B;
    function Has_Pragma_Elaborate_Body           (Id : E) return B;
@@ -7412,6 +7428,7 @@ package Einfo is
    function Number_Entries                      (Id : E) return Nat;
    function Number_Formals                      (Id : E) return Pos;
    function Parameter_Mode                      (Id : E) return Formal_Kind;
+   function Partial_Refinement_Constituents     (Id : E) return L;
    function Primitive_Operations                (Id : E) return L;
    function Root_Type                           (Id : E) return E;
    function Safe_Emax_Value                     (Id : E) return U;
@@ -7652,6 +7669,7 @@ package Einfo is
    procedure Set_Has_Object_Size_Clause          (Id : E; V : B := True);
    procedure Set_Has_Out_Or_In_Out_Parameter     (Id : E; V : B := True);
    procedure Set_Has_Own_Invariants              (Id : E; V : B := True);
+   procedure Set_Has_Partial_Visible_Refinement  (Id : E; V : B := True);
    procedure Set_Has_Per_Object_Constraint       (Id : E; V : B := True);
    procedure Set_Has_Pragma_Controlled           (Id : E; V : B := True);
    procedure Set_Has_Pragma_Elaborate_Body       (Id : E; V : B := True);
@@ -8444,6 +8462,7 @@ package Einfo is
    pragma Inline (Has_Object_Size_Clause);
    pragma Inline (Has_Out_Or_In_Out_Parameter);
    pragma Inline (Has_Own_Invariants);
+   pragma Inline (Has_Partial_Visible_Refinement);
    pragma Inline (Has_Per_Object_Constraint);
    pragma Inline (Has_Pragma_Controlled);
    pragma Inline (Has_Pragma_Elaborate_Body);
@@ -8959,6 +8978,7 @@ package Einfo is
    pragma Inline (Set_Has_Object_Size_Clause);
    pragma Inline (Set_Has_Out_Or_In_Out_Parameter);
    pragma Inline (Set_Has_Own_Invariants);
+   pragma Inline (Set_Has_Partial_Visible_Refinement);
    pragma Inline (Set_Has_Per_Object_Constraint);
    pragma Inline (Set_Has_Pragma_Controlled);
    pragma Inline (Set_Has_Pragma_Elaborate_Body);
