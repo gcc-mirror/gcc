@@ -1,5 +1,8 @@
 2016-10-12  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* Makefile.in (SELFTEST_FLAGS): New variable.
+	(s-selftest, selftest-gdb, selftest-valgrind): Use it.
+
 	* vmsdbgout.c (vmsdbg_debug_hooks): Add filename parameter to
 	early_finish hook.
 

@@ -1877,6 +1877,10 @@ endif
 # This does the things that can't be done on the host machine.
 rest.cross: specs
 
+# GCC's selftests.
+# Specify a dummy input file to placate the driver.
+SELFTEST_FLAGS = -x c /dev/null -S -fself-test
+
 # Run the selftests during the build once we have a driver and a cc1,
 # so that self-test failures are caught as early as possible.
 # Use "s-selftest" to ensure that we only run the selftests if the
@@ -1884,18 +1888,19 @@ rest.cross: specs
 .PHONY: selftest
 selftest: s-selftest
 s-selftest: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
-	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test
+	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS)
 	$(STAMP) $@
 
 # Convenience method for running selftests under gdb:
 .PHONY: selftest-gdb
 selftest-gdb: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
-	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test -wrapper gdb,--args
+	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS) \
+	  -wrapper gdb,--args
 
 # Convenience method for running selftests under valgrind:
 .PHONY: selftest-valgrind
 selftest-valgrind: $(GCC_PASSES) cc1$(exeext) stmp-int-hdrs
-	$(GCC_FOR_TARGET) -xc -S -c /dev/null -fself-test \
+	$(GCC_FOR_TARGET) $(SELFTEST_FLAGS) \
 	  -wrapper valgrind,--leak-check=full
 
 # Recompile all the language-independent object files.
