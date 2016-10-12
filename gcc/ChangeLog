@@ -1,5 +1,8 @@
 2016-10-12  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* dwarf2out.c (dwarf2_lineno_debug_hooks): Use
+	dwarf2out_assembly_start.
+
 	* Makefile.in (SELFTEST_FLAGS): Add -nostdinc.
 
 	* Makefile.in (SELFTEST_FLAGS): New variable.
