@@ -9495,7 +9495,12 @@ package body Sem_Res is
          then
             null;
 
-         elsif Nkind (N) = N_Qualified_Expression then
+         --  In the case of a qualified expression in an allocator, the check
+         --  is applied when expanding the allocator, so avoid redundant check.
+
+         elsif Nkind (N) = N_Qualified_Expression
+           and then Nkind (Parent (N)) /= N_Allocator
+         then
             Apply_Predicate_Check (N, Target_Typ);
          end if;
       end if;

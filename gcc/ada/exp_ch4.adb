@@ -4279,8 +4279,13 @@ package body Exp_Ch4 is
       --  in the aggregate might not match the subtype mark in the allocator.
 
       if Nkind (Expression (N)) = N_Qualified_Expression then
-         Apply_Constraint_Check
-           (Expression (Expression (N)), Etype (Expression (N)));
+         declare
+            Exp : constant Node_Id := Expression (Expression (N));
+            Typ : constant Entity_Id := Etype (Expression (N));
+         begin
+            Apply_Constraint_Check (Exp, Typ);
+            Apply_Predicate_Check  (Exp, Typ);
+         end;
 
          Expand_Allocator_Expression (N);
          return;

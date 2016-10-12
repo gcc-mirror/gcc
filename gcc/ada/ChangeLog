@@ -1,3 +1,16 @@
+2016-10-12  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch10.adb (Remove_Limited_With_Clause): Add a check to
+	detect accidental visibility.
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator): If the expression is a qualified
+	expression, add a predicate check after the constraint check.
+	* sem_res.adb (Resolve_Qualified_Expression): If context is an
+	allocator, do not apply predicate check, as it will be done when
+	allocator is expanded.
+
 2016-10-12  Bob Duff  <duff@adacore.com>
 
 	* xref_lib.adb: Use renamings-of-slices to ensure
