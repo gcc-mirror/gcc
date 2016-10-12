@@ -1035,15 +1035,6 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
     {
       bool did_replace;
       gimple *stmt = gsi_stmt (i);
-      enum gimple_code code = gimple_code (stmt);
-
-      /* Ignore ASSERT_EXPRs.  They are used by VRP to generate
-	 range information for names and they are discarded
-	 afterwards.  */
-
-      if (code == GIMPLE_ASSIGN
-	  && TREE_CODE (gimple_assign_rhs1 (stmt)) == ASSERT_EXPR)
-	continue;
 
       /* No point propagating into a stmt we have a value for we
          can propagate into all uses.  Mark it for removal instead.  */
@@ -1056,7 +1047,10 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	      && sprime != lhs
 	      && may_propagate_copy (lhs, sprime)
 	      && !stmt_could_throw_p (stmt)
-	      && !gimple_has_side_effects (stmt))
+	      && !gimple_has_side_effects (stmt)
+	      /* We have to leave ASSERT_EXPRs around for jump-threading.  */
+	      && (!is_gimple_assign (stmt)
+		  || gimple_assign_rhs_code (stmt) != ASSERT_EXPR))
 	    {
 	      stmts_to_remove.safe_push (stmt);
 	      continue;

@@ -6894,9 +6894,9 @@ remove_range_assertions (void)
 	    imm_use_iterator iter;
 
 	    var = ASSERT_EXPR_VAR (rhs);
-	    gcc_assert (TREE_CODE (var) == SSA_NAME);
 
-	    if (!POINTER_TYPE_P (TREE_TYPE (lhs))
+	    if (TREE_CODE (var) == SSA_NAME
+		&& !POINTER_TYPE_P (TREE_TYPE (lhs))
 		&& SSA_NAME_RANGE_INFO (lhs))
 	      {
 		if (is_unreachable == -1)
@@ -6928,8 +6928,11 @@ remove_range_assertions (void)
 
 	    /* Propagate the RHS into every use of the LHS.  */
 	    FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-		SET_USE (use_p, var);
+	      {
+		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		  SET_USE (use_p, var);
+		update_stmt (use_stmt);
+	      }
 
 	    /* And finally, remove the copy, it is not needed.  */
 	    gsi_remove (&si, true);
@@ -10611,7 +10614,7 @@ vrp_finalize (bool warn_array_bounds_p)
       }
 
   substitute_and_fold (op_with_constant_singleton_value_range,
-		       vrp_fold_stmt, false);
+		       vrp_fold_stmt, true);
 
   if (warn_array_bounds && warn_array_bounds_p)
     check_all_array_refs ();
