@@ -2994,12 +2994,26 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	}
       else
 	{
-	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (ranges[i].exp)),
-				   ccode, rhs1, rhs2);
+	  operand_entry *oe = (*ops)[ranges[i].idx];
+	  tree ctype = oe->op ? TREE_TYPE (oe->op) : boolean_type_node;
+	  if (!INTEGRAL_TYPE_P (ctype)
+	      || (TREE_CODE (ctype) != BOOLEAN_TYPE
+		  && TYPE_PRECISION (ctype) != 1))
+	    ctype = boolean_type_node;
+	  g = gimple_build_assign (make_ssa_name (ctype), ccode, rhs1, rhs2);
 	  gimple_set_uid (g, uid);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	  if (oe->op && ctype != TREE_TYPE (oe->op))
+	    {
+	      g = gimple_build_assign (make_ssa_name (TREE_TYPE (oe->op)),
+				       NOP_EXPR, gimple_assign_lhs (g));
+	      gimple_set_uid (g, uid);
+	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	    }
 	  ranges[i].exp = gimple_assign_lhs (g);
-	  (*ops)[ranges[i].idx]->op = ranges[i].exp;
+	  oe->op = ranges[i].exp;
+	  ranges[i].low = build_zero_cst (TREE_TYPE (ranges[i].exp));
+	  ranges[i].high = ranges[i].low;
 	}
       ranges[i].strict_overflow_p = false;
       operand_entry *oe = (*ops)[ranges[*idx].idx];
