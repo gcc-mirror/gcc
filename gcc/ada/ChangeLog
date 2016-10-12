@@ -1,5 +1,19 @@
 2016-10-12  Yannick Moy  <moy@adacore.com>
 
+	* einfo.adb, einfo.ads (Partial_Refinement_Constituents): Take
+	into account constituents that are themselves abstract states
+	with full or partial refinement visible.
+	* sem_prag.adb (Find_Encapsulating_State): Move function
+	to library-level, to share between subprograms.
+	(Analyze_Refined_Global_In_Decl_Part): Use
+	Find_Encapsulating_State to get relevant encapsulating state.
+
+2016-10-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb: Fix minor typo.
+
+2016-10-12  Yannick Moy  <moy@adacore.com>
+
 	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Adapt checking
 	for optional refinement of abstract state with partial
 	visible refinement.

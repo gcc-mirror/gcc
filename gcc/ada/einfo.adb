@@ -8407,19 +8407,79 @@ package body Einfo is
    -------------------------------------
 
    function Partial_Refinement_Constituents (Id : E) return L is
-      Constits : Elist_Id;
+      Constits : Elist_Id := No_Elist;
+
+      procedure Add_Usable_Constituents (Item : E);
+      --  Add global item Item and/or its constituents to list Constits when
+      --  they can be used in a global refinement within the current scope. The
+      --  criteria are:
+      --    1) If Item is an abstract state with full refinement visible, add
+      --       its constituents.
+      --    2) If Item is an abstract state with only partial refinement
+      --       visible, add both Item and its constituents.
+      --    3) If Item is an abstract state without a visible refinement, add
+      --       it.
+      --    4) If Id is not an abstract state, add it.
+
+      procedure Add_Usable_Constituents (List : Elist_Id);
+      --  Apply Add_Usable_Constituents to every constituent in List
+
+      -----------------------------
+      -- Add_Usable_Constituents --
+      -----------------------------
+
+      procedure Add_Usable_Constituents (Item : E) is
+      begin
+         if Ekind (Item) = E_Abstract_State then
+            if Has_Visible_Refinement (Item) then
+               Add_Usable_Constituents (Refinement_Constituents (Item));
+
+            elsif Has_Partial_Visible_Refinement (Item) then
+               Append_New_Elmt (Item, Constits);
+               Add_Usable_Constituents (Part_Of_Constituents (Item));
+
+            else
+               Append_New_Elmt (Item, Constits);
+            end if;
+
+         else
+            Append_New_Elmt (Item, Constits);
+         end if;
+      end Add_Usable_Constituents;
+
+      procedure Add_Usable_Constituents (List : Elist_Id) is
+         Constit_Elmt : Elmt_Id;
+      begin
+         if Present (List) then
+            Constit_Elmt := First_Elmt (List);
+            while Present (Constit_Elmt) loop
+               Add_Usable_Constituents (Node (Constit_Elmt));
+               Next_Elmt (Constit_Elmt);
+            end loop;
+         end if;
+      end Add_Usable_Constituents;
+
+   --  Start of processing for Partial_Refinement_Constituents
 
    begin
       --  "Refinement" is a concept applicable only to abstract states
 
       pragma Assert (Ekind (Id) = E_Abstract_State);
-      Constits := Refinement_Constituents (Id);
+
+      if Has_Visible_Refinement (Id) then
+         Constits := Refinement_Constituents (Id);
 
       --  A refinement may be partially visible when objects declared in the
       --  private part of a package are subject to a Part_Of indicator.
 
-      if No (Constits) then
-         Constits := Part_Of_Constituents (Id);
+      elsif Has_Partial_Visible_Refinement (Id) then
+         Add_Usable_Constituents (Part_Of_Constituents (Id));
+
+      --  Function should only be called when full or partial refinement is
+      --  visible.
+
+      else
+         raise Program_Error;
       end if;
 
       return Constits;

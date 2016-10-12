@@ -258,6 +258,13 @@ package body Sem_Prag is
    --  Subsidiary to all Find_Related_xxx routines. Emit an error on pragma
    --  Prag that duplicates previous pragma Prev.
 
+   function Find_Encapsulating_State
+     (States     : Elist_Id;
+      Constit_Id : Entity_Id) return Entity_Id;
+   --  Given the entity of a constituent Constit_Id, find the corresponding
+   --  encapsulating state which appears in States. The routine returns Empty
+   --  is no such state is found.
+
    function Find_Related_Context
      (Prag      : Node_Id;
       Do_Checks : Boolean := False) return Node_Id;
@@ -24545,18 +24552,18 @@ package body Sem_Prag is
       --  These list contain the entities of all Input, In_Out, Output and
       --  Proof_In items defined in the corresponding Global pragma.
 
+      Repeat_Items : Elist_Id := No_Elist;
+      --  A list of all global items without full visible refinement found
+      --  in pragma Global. These states should be repeated in the global
+      --  refinement (SPARK RM 7.2.4(3c)) unless they have a partial visible
+      --  refinement, in which case they may be repeated (SPARK RM 7.2.4(3d)).
+
       Spec_Id : Entity_Id;
       --  The entity of the subprogram subject to pragma Refined_Global
 
       States : Elist_Id := No_Elist;
       --  A list of all states with full or partial visible refinement found in
       --  pragma Global.
-
-      Repeat_Items : Elist_Id := No_Elist;
-      --  A list of all global items without full visible refinement found
-      --  in pragma Global. These states should be repeated in the global
-      --  refinement (SPARK RM 7.2.4(3c)) unless they have a partial visible
-      --  refinement, in which case they may be repeated (SPARK RM 7.2.4(3d)).
 
       procedure Check_In_Out_States;
       --  Determine whether the corresponding Global pragma mentions In_Out
@@ -24616,8 +24623,8 @@ package body Sem_Prag is
       --  In_Out_Constits and Out_Constits of valid constituents.
 
       procedure Present_Then_Remove (List : Elist_Id; Item : Entity_Id);
-      --  Same as function Present_Then_Remove, but do not report presence of
-      --  Item in List.
+      --  Same as function Present_Then_Remove, but do not report the presence
+      --  of Item in List.
 
       procedure Report_Extra_Constituents;
       --  Emit an error for each constituent found in lists In_Constits,
@@ -24715,12 +24722,12 @@ package body Sem_Prag is
                      N, State_Id);
                end if;
 
-            --  The state lacks a completion. When full refinement is
-            --  visible, always emit an error (SPARK RM 7.2.4(3a)). When only
-            --  partial refinement is visible, emit an error if the abstract
-            --  state itself is not utilized (SPARK RM 7.2.4(3d)). In the
-            --  case where both are utilized, an error will be issued in
-            --  Check_State_And_Constituent_Use.
+            --  The state lacks a completion. When full refinement is visible,
+            --  always emit an error (SPARK RM 7.2.4(3a)). When only partial
+            --  refinement is visible, emit an error if the abstract state
+            --  itself is not utilized (SPARK RM 7.2.4(3d)). In the case where
+            --  both are utilized, Check_State_And_Constituent_Use. will issue
+            --  the error.
 
             elsif not Input_Seen
               and then not In_Out_Seen
@@ -24836,17 +24843,16 @@ package body Sem_Prag is
                end loop;
             end if;
 
-            --  Not one of the constituents appeared as Input. When full
-            --  refinement is visible, always emit an error (SPARK RM
-            --  7.2.4(3a)). When only partial refinement is visible, emit an
+            --  Not one of the constituents appeared as Input. Always emit an
+            --  error when the full refinement is visible (SPARK RM 7.2.4(3a)).
+            --  When only partial refinement is visible, emit an
             --  error if the abstract state itself is not utilized (SPARK RM
             --  7.2.4(3d)). In the case where both are utilized, an error will
             --  be issued in Check_State_And_Constituent_Use.
 
             if not In_Seen
               and then (Has_Visible_Refinement (State_Id)
-                          or else
-                        Contains (Repeat_Items, State_Id))
+                         or else Contains (Repeat_Items, State_Id))
             then
                SPARK_Msg_NE
                  ("global refinement of state & must include at least one "
@@ -24910,10 +24916,10 @@ package body Sem_Prag is
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits     : constant Elist_Id :=
                              Partial_Refinement_Constituents (State_Id);
-            Constit_Elmt : Elmt_Id;
-            Constit_Id   : Entity_Id;
             Only_Partial : constant Boolean :=
                              not Has_Visible_Refinement (State_Id);
+            Constit_Elmt : Elmt_Id;
+            Constit_Id   : Entity_Id;
             Posted       : Boolean := False;
 
          begin
@@ -24922,9 +24928,9 @@ package body Sem_Prag is
                while Present (Constit_Elmt) loop
                   Constit_Id := Node (Constit_Elmt);
 
-                  --  Issue an error when a constituent of State_Id is
-                  --  utilized, and State_Id has only partial visible
-                  --  refinement (SPARK RM 7.2.4(3d)).
+                  --  Issue an error when a constituent of State_Id is utilized
+                  --  and State_Id has only partial visible refinement
+                  --  (SPARK RM 7.2.4(3d)).
 
                   if Only_Partial then
                      if Present_Then_Remove (Out_Constits, Constit_Id)
@@ -24936,8 +24942,8 @@ package body Sem_Prag is
                      then
                         Error_Msg_Name_1 := Chars (State_Id);
                         SPARK_Msg_NE
-                          ("constituent & of state % cannot be used in "
-                           & "global refinement", N, Constit_Id);
+                          ("constituent & of state % cannot be used in global "
+                           & "refinement", N, Constit_Id);
                         Error_Msg_Name_1 := Chars (State_Id);
                         SPARK_Msg_N ("\use state % instead", N);
                      end if;
@@ -25000,9 +25006,9 @@ package body Sem_Prag is
                Item_Id := Node (Item_Elmt);
 
                --  When full refinement is visible, ensure that all of the
-               --  constituents are utilized and they have mode Output.
-               --  When only partial refinement is visible, ensure that
-               --  no constituent is utilized.
+               --  constituents are utilized and they have mode Output. When
+               --  only partial refinement is visible, ensure that no
+               --  constituent is utilized.
 
                if Ekind (Item_Id) = E_Abstract_State
                  and then Has_Non_Null_Visible_Refinement (Item_Id)
@@ -25066,17 +25072,16 @@ package body Sem_Prag is
                end loop;
             end if;
 
-            --  Not one of the constituents appeared as Proof_In. When
-            --  full refinement is visible, always emit an error (SPARK RM
-            --  7.2.4(3a)). When only partial refinement is visible, emit an
-            --  error if the abstract state itself is not utilized (SPARK RM
-            --  7.2.4(3d)). In the case where both are utilized, an error will
-            --  be issued in Check_State_And_Constituent_Use.
+            --  Not one of the constituents appeared as Proof_In. Always emit
+            --  an error when full refinement is visible (SPARK RM 7.2.4(3a)).
+            --  When only partial refinement is visible, emit an error if the
+            --  abstract state itself is not utilized (SPARK RM 7.2.4(3d)). In
+            --  the case where both are utilized, an error will be issued by
+            --  Check_State_And_Constituent_Use.
 
             if not Proof_In_Seen
               and then (Has_Visible_Refinement (State_Id)
-                          or else
-                        Contains (Repeat_Items, State_Id))
+                         or else Contains (Repeat_Items, State_Id))
             then
                SPARK_Msg_NE
                  ("global refinement of state & must include at least one "
@@ -25165,15 +25170,19 @@ package body Sem_Prag is
                SPARK_Msg_N ("\expected mode %, found mode %", Item);
             end Inconsistent_Mode_Error;
 
+            --  Local variables
+
             Enc_State : Entity_Id := Empty;
             --  Encapsulating state for constituent, Empty otherwise
 
          --  Start of processing for Check_Refined_Global_Item
 
          begin
-            if Ekind_In (Item_Id, E_Abstract_State, E_Constant, E_Variable)
+            if Ekind_In (Item_Id, E_Abstract_State,
+                                  E_Constant,
+                                  E_Variable)
             then
-               Enc_State := Encapsulating_State (Item_Id);
+               Enc_State := Find_Encapsulating_State (States, Item_Id);
             end if;
 
             --  When the state or object acts as a constituent of another
@@ -25184,8 +25193,7 @@ package body Sem_Prag is
 
             if Present (Enc_State)
               and then (Has_Visible_Refinement (Enc_State)
-                          or else
-                        Has_Partial_Visible_Refinement (Enc_State))
+                         or else Has_Partial_Visible_Refinement (Enc_State))
               and then Contains (States, Enc_State)
             then
                --  If the state has only partial visible refinement, remove it
@@ -25360,8 +25368,8 @@ package body Sem_Prag is
             end if;
 
             --  Record global items without full visible refinement found in
-            --  pragma Global, which should (SPARK RM 7.2.4(3c)) or may (SPARK
-            --  RM 7.2.4(3d)) be repeated in the global refinement.
+            --  pragma Global which should be repeated in the global refinement
+            --  (SPARK RM 7.2.4(3c), SPARK RM 7.2.4(3d)).
 
             if Ekind (Item_Id) /= E_Abstract_State
               or else not Has_Visible_Refinement (Item_Id)
@@ -25523,6 +25531,7 @@ package body Sem_Prag is
       procedure Report_Missing_Items is
          Item_Elmt : Elmt_Id;
          Item_Id   : Entity_Id;
+
       begin
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
@@ -25650,10 +25659,11 @@ package body Sem_Prag is
       --  refinement, prior to calling checking procedures which remove items
       --  from the list of constituents.
 
-      No_Constit := No (In_Constits)
-        and then No (In_Out_Constits)
-        and then No (Out_Constits)
-        and then No (Proof_In_Constits);
+      No_Constit :=
+        No (In_Constits)
+          and then No (In_Out_Constits)
+          and then No (Out_Constits)
+          and then No (Proof_In_Constits);
 
       --  For Input states with visible refinement, at least one constituent
       --  must be used as an Input in the global refinement.
@@ -27267,45 +27277,9 @@ package body Sem_Prag is
       Constits : Elist_Id;
       Context  : Node_Id)
    is
-      function Find_Encapsulating_State
-        (Constit_Id : Entity_Id) return Entity_Id;
-      --  Given the entity of a constituent, try to find a corresponding
-      --  encapsulating state that appears in the same context. The routine
-      --  returns Empty is no such state is found.
-
-      ------------------------------
-      -- Find_Encapsulating_State --
-      ------------------------------
-
-      function Find_Encapsulating_State
-        (Constit_Id : Entity_Id) return Entity_Id
-      is
-         State_Id : Entity_Id;
-
-      begin
-         --  Since a constituent may be part of a larger constituent set, climb
-         --  the encapsulating state chain looking for a state that appears in
-         --  the same context.
-
-         State_Id := Encapsulating_State (Constit_Id);
-         while Present (State_Id) loop
-            if Contains (States, State_Id) then
-               return State_Id;
-            end if;
-
-            State_Id := Encapsulating_State (State_Id);
-         end loop;
-
-         return Empty;
-      end Find_Encapsulating_State;
-
-      --  Local variables
-
       Constit_Elmt : Elmt_Id;
       Constit_Id   : Entity_Id;
       State_Id     : Entity_Id;
-
-   --  Start of processing for Check_State_And_Constituent_Use
 
    begin
       --  Nothing to do if there are no states or constituents
@@ -27325,7 +27299,7 @@ package body Sem_Prag is
          --  state that appears in the same context and if this is the case,
          --  emit an error (SPARK RM 7.2.6(7)).
 
-         State_Id := Find_Encapsulating_State (Constit_Id);
+         State_Id := Find_Encapsulating_State (States, Constit_Id);
 
          if Present (State_Id) then
             Error_Msg_Name_1 := Chars (Constit_Id);
@@ -27800,6 +27774,33 @@ package body Sem_Prag is
    begin
       return Num_Primitives (E mod 511);
    end Entity_Hash;
+
+   ------------------------------
+   -- Find_Encapsulating_State --
+   ------------------------------
+
+   function Find_Encapsulating_State
+     (States     : Elist_Id;
+      Constit_Id : Entity_Id) return Entity_Id
+   is
+      State_Id : Entity_Id;
+
+   begin
+      --  Since a constituent may be part of a larger constituent set, climb
+      --  the encapsulating state chain looking for a state that appears in
+      --  States.
+
+      State_Id := Encapsulating_State (Constit_Id);
+      while Present (State_Id) loop
+         if Contains (States, State_Id) then
+            return State_Id;
+         end if;
+
+         State_Id := Encapsulating_State (State_Id);
+      end loop;
+
+      return Empty;
+   end Find_Encapsulating_State;
 
    --------------------------
    -- Find_Related_Context --
