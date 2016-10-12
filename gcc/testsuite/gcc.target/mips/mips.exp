@@ -290,6 +290,7 @@ foreach option {
     relax-pic-calls
     mcount-ra-address
     odd-spreg
+    msa
 } {
     lappend mips_option_groups $option "-m(no-|)$option"
 }
@@ -818,6 +819,12 @@ proc mips-dg-init {} {
 	    "-msynci",
 	    #else
 	    "-mno-synci",
+	    #endif
+
+	    #ifdef __mips_msa
+	    "-mmsa"
+	    #else
+	    "-mno-msa"
 	    #endif
 
 	    0
@@ -1368,6 +1375,7 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mfpxx" "-mno-paired-single"
     mips_option_dependency options "-msoft-float" "-mno-paired-single"
     mips_option_dependency options "-mno-paired-single" "-mno-mips3d"
+    mips_option_dependency options "-mmsa" "-mno-mips16"
 
     # If the test requires an unsupported option, change run tests
     # to link tests.
