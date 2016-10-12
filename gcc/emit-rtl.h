@@ -254,6 +254,10 @@ struct GTY(()) rtl_data {
   /* True if we performed shrink-wrapping for the current function.  */
   bool shrink_wrapped;
 
+  /* True if we performed shrink-wrapping for separate components for
+     the current function.  */
+  bool shrink_wrapped_separate;
+
   /* Nonzero if function being compiled doesn't modify the stack pointer
      (ignoring the prologue and epilogue).  This is only valid after
      pass_stack_ptr_mod has run.  */

@@ -2200,6 +2200,10 @@ Common Report Var(flag_shrink_wrap) Optimization
 Emit function prologues only before parts of the function that need it,
 rather than at the top of the function.
 
+fshrink-wrap-separate
+Common Report Var(flag_shrink_wrap_separate) Init(1) Optimization
+Shrink-wrap parts of the prologue and epilogue separately.
+
 fsignaling-nans
 Common Report Var(flag_signaling_nans) Optimization SetByCombined
 Disable optimizations observable by IEEE signaling NaNs.

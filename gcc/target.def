@@ -5814,6 +5814,63 @@ DEFHOOK
  bool, (tree),
  hook_bool_tree_true)
 
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_SHRINK_WRAP_"
+HOOK_VECTOR (TARGET_SHRINK_WRAP_HOOKS, shrink_wrap)
+
+DEFHOOK
+(get_separate_components,
+ "This hook should return an @code{sbitmap} with the bits set for those\n\
+components that can be separately shrink-wrapped in the current function.\n\
+Return @code{NULL} if the current function should not get any separate\n\
+shrink-wrapping.\n\
+Don't define this hook if it would always return @code{NULL}.\n\
+If it is defined, the other hooks in this group have to be defined as well.",
+ sbitmap, (void),
+ NULL)
+
+DEFHOOK
+(components_for_bb,
+ "This hook should return an @code{sbitmap} with the bits set for those\n\
+components where either the prologue component has to be executed before\n\
+the @code{basic_block}, or the epilogue component after it, or both.",
+ sbitmap, (basic_block),
+ NULL)
+
+DEFHOOK
+(disqualify_components,
+ "This hook should clear the bits in the @var{components} bitmap for those\n\
+components in @var{edge_components} that the target cannot handle on edge\n\
+@var{e}, where @var{is_prologue} says if this is for a prologue or an\n\
+epilogue instead.",
+ void, (sbitmap components, edge e, sbitmap edge_components, bool is_prologue),
+ NULL)
+
+DEFHOOK
+(emit_prologue_components,
+ "Emit prologue insns for the components indicated by the parameter.",
+ void, (sbitmap),
+ NULL)
+
+DEFHOOK
+(emit_epilogue_components,
+ "Emit epilogue insns for the components indicated by the parameter.",
+ void, (sbitmap),
+ NULL)
+
+DEFHOOK
+(set_handled_components,
+ "Mark the components in the parameter as handled, so that the\n\
+@code{prologue} and @code{epilogue} named patterns know to ignore those\n\
+components.  The target code should not hang on to the @code{sbitmap}, it\n\
+will be deleted after this call.",
+ void, (sbitmap),
+ NULL)
+
+HOOK_VECTOR_END (shrink_wrap)
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_"
+
 /* Determine the type of unwind info to emit for debugging.  */
 DEFHOOK
 (debug_unwind_info,

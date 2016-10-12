@@ -399,7 +399,8 @@ Objective-C and Objective-C++ Dialects}.
 -fschedule-insns -fschedule-insns2 -fsection-anchors @gol
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
--fsemantic-interposition -fshrink-wrap -fsignaling-nans @gol
+-fsemantic-interposition -fshrink-wrap -fshrink-wrap-separate @gol
+-fsignaling-nans @gol
 -fsingle-precision-constant -fsplit-ivs-in-unroller @gol
 -fsplit-paths @gol
 -fsplit-wide-types -fssa-backprop -fssa-phiopt @gol
@@ -6663,6 +6664,7 @@ compilation time.
 -fmove-loop-invariants @gol
 -freorder-blocks @gol
 -fshrink-wrap @gol
+-fshrink-wrap-separate @gol
 -fsplit-wide-types @gol
 -fssa-backprop @gol
 -fssa-phiopt @gol
@@ -7572,6 +7574,13 @@ and for symbols explicitly declared weak.
 Emit function prologues only before parts of the function that need it,
 rather than at the top of the function.  This flag is enabled by default at
 @option{-O} and higher.
+
+@item -fshrink-wrap-separate
+@opindex fshrink-wrap-separate
+Shrink-wrap separate parts of the prologue and epilogue separately, so that
+those parts are only executed when needed.
+This option is on by default, but has no effect unless @option{-fshrink-wrap}
+is also turned on and the target supports this.
 
 @item -fcaller-saves
 @opindex fcaller-saves
