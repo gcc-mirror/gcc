@@ -1,5 +1,8 @@
 2016-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/77929
+	* gcc.c-torture/compile/pr77929.c: New test.
+
 	* c-c++-common/Wimplicit-fallthrough-25.c: New test.
 	* c-c++-common/Wimplicit-fallthrough-26.c: New test.
 	* c-c++-common/Wimplicit-fallthrough-27.c: New test.

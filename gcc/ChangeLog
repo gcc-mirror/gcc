@@ -1,3 +1,9 @@
+2016-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77929
+	* tree-ssa-reassoc.c (optimize_range_tests_var_bound): Handle
+	(*ops)[ranges[i].idx]->op != ranges[i].exp case.
+
 2016-10-12  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/77934
