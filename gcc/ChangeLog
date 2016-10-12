@@ -1,3 +1,8 @@
+2016-10-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* rtl.h (struct rtx_def): Comment how RTX_FLAGS will be
+	dumped in RTL dumps.
+
 2016-10-12  Martin Liska  <mliska@suse.cz>
 
 	* gimple-fold.c (create_tmp_reg_or_ssa_name): New function.
