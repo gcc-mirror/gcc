@@ -1783,10 +1783,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (mult (convert1? (exact_div @0 @1)) (convert2? @2))
   /* We cannot use matching captures here, since in the case of
-     constants we don't see the second conversion.  Look through
-     a sign-changing or widening conversions.  */
-  (if (operand_equal_p (@1, @2, 0)
-       && element_precision (@0) <= element_precision (type))
+     constants we don't see the second conversion.  */
+  (if (operand_equal_p (@1, @2, 0))
    (convert @0)))
 
 /* Canonicalization of binary operations.  */

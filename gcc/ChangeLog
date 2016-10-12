@@ -1,5 +1,10 @@
 2016-10-12  Richard Biener  <rguenther@suse.de>
 
+	* match.pd ((X /[ex] A) * A -> X): Remove unnecessary constraint
+	on the conversion.
+
+2016-10-12  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-propagate.c
 	(substitute_and_fold_dom_walker::before_dom_children): Do not
 	ignore ASSERT_EXPRs but only preserve them.
