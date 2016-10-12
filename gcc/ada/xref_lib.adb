@@ -401,8 +401,9 @@ package body Xref_Lib is
      (File : ALI_File;
       Num  : Positive) return File_Reference
    is
+      Table : Table_Type renames File.Dep.Table (1 .. Last (File.Dep));
    begin
-      return File.Dep.Table (Num);
+      return Table (Num);
    end File_Name;
 
    --------------------
@@ -642,10 +643,15 @@ package body Xref_Lib is
                Token := Gnatchop_Name + 1;
             end if;
 
-            File.Dep.Table (Num_Dependencies) := Add_To_Xref_File
-              (Ali (File_Start .. File_End),
-               Gnatchop_File => Ali (Token .. Ptr - 1),
-               Gnatchop_Offset => Gnatchop_Offset);
+            declare
+               Table : Table_Type renames
+                 File.Dep.Table (1 .. Last (File.Dep));
+            begin
+               Table (Num_Dependencies) := Add_To_Xref_File
+                 (Ali (File_Start .. File_End),
+                  Gnatchop_File => Ali (Token .. Ptr - 1),
+                  Gnatchop_Offset => Gnatchop_Offset);
+            end;
 
          elsif W_Lines and then Ali (Ptr) = 'W' then
 
@@ -854,6 +860,8 @@ package body Xref_Lib is
          Ptr := Ptr + 1;
       end Skip_To_Matching_Closing_Bracket;
 
+      Table : Table_Type renames File.Dep.Table (1 .. Last (File.Dep));
+
    --  Start of processing for Parse_Identifier_Info
 
    begin
@@ -976,9 +984,9 @@ package body Xref_Lib is
                   --  We don't have a unit number specified, so we set P_Eun to
                   --  the current unit.
 
-                  for K in Dependencies_Tables.First .. Last (File.Dep) loop
+                  for K in Table'Range loop
                      P_Eun := K;
-                     exit when File.Dep.Table (K) = File_Ref;
+                     exit when Table (K) = File_Ref;
                   end loop;
                end if;
 
@@ -1011,7 +1019,7 @@ package body Xref_Lib is
                            Symbol,
                            P_Line,
                            P_Column,
-                           File.Dep.Table (P_Eun));
+                           Table (P_Eun));
                      end if;
                   end;
                end if;
@@ -1029,7 +1037,7 @@ package body Xref_Lib is
                      Add_Entity
                        (Pattern,
                         Get_Symbol_Name (P_Eun, P_Line, P_Column)
-                        & ':' & Get_Gnatchop_File (File.Dep.Table (P_Eun))
+                        & ':' & Get_Gnatchop_File (Table (P_Eun))
                         & ':' & Get_Line (Get_Parent (Decl_Ref))
                         & ':' & Get_Column (Get_Parent (Decl_Ref)),
                         False);
@@ -1080,11 +1088,10 @@ package body Xref_Lib is
 
       if Wide_Search then
          declare
-            File_Ref : File_Reference;
-            pragma Unreferenced (File_Ref);
             File_Name : constant String := Get_Gnatchop_File (File.X_File);
+            Ignored : File_Reference;
          begin
-            File_Ref := Add_To_Xref_File (ALI_File_Name (File_Name), False);
+            Ignored := Add_To_Xref_File (ALI_File_Name (File_Name), False);
          end;
       end if;
 
@@ -1252,6 +1259,8 @@ package body Xref_Lib is
       Ptr     : Positive renames File.Current_Line;
       File_Nr : Natural;
 
+      Table : Table_Type renames File.Dep.Table (1 .. Last (File.Dep));
+
    begin
       while Ali (Ptr) = 'X' loop
 
@@ -1267,8 +1276,8 @@ package body Xref_Lib is
 
          --  If the referenced file is unknown, we simply ignore it
 
-         if File_Nr in Dependencies_Tables.First .. Last (File.Dep) then
-            File.X_File := File.Dep.Table (File_Nr);
+         if File_Nr in Table'Range then
+            File.X_File := Table (File_Nr);
          else
             File.X_File := Empty_File;
          end if;

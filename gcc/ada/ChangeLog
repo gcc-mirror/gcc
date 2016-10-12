@@ -1,3 +1,29 @@
+2016-10-12  Bob Duff  <duff@adacore.com>
+
+	* xref_lib.adb: Use renamings-of-slices to ensure
+	that all references to Tables are properly bounds checked (when
+	checks are turned on).
+	* g-dyntab.ads, g-dyntab.adb: Default-initialize the array
+	components, so we don't get uninitialized pointers in case
+	of Tables containing access types.  Misc cleanup of the code
+	and comments.
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Type_Key): Implement
+	functionality of attribute, to provide a reasonably unique key
+	for a given type and detect any changes in the semantics of the
+	type or any of its subcomponents from version to version.
+
+2016-10-12  Bob Duff  <duff@adacore.com>
+
+	* sem_case.adb (Check_Choice_Set): Separate
+	checking for duplicates out into a separate pass from checking
+	full coverage, because the check for duplicates does not depend
+	on predicates. Therefore, we shouldn't do it separately for the
+	predicate vs. no-predicate case; we should share code. The code
+	for the predicate case was wrong.
+
 2016-10-12  Jerome Lambourg  <lambourg@adacore.com>
 
 	* init.c: Make sure to call finit on x86_64-vx7 to reinitialize
