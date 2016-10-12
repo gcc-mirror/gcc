@@ -1,5 +1,11 @@
 2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.target/powerpc/shrink-wrap-separate-0.c: New testcase.
+	* gcc.target/powerpc/shrink-wrap-separate-1.c: New testcase.
+	* gcc.target/powerpc/shrink-wrap-separate-2.c: New testcase.
+
+2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* gcc.target/powerpc/warn-1.c: Change line number in dg-warning.
 	* gcc.target/powerpc/warn-2.c: Ditto.
 
