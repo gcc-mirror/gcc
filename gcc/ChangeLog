@@ -1,3 +1,9 @@
+2016-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium.c (visium_gimplify_va_arg): Emit a big-endian
+	correction if the type is smaller than a word.
+	(visium_select_cc_mode): Add ... fall through ... comment.
+
 2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (machine_function): Add new fields

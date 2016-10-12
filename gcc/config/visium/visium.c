@@ -1626,8 +1626,8 @@ visium_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
      7:   {
      8:     bytes = 0;
      9:     addr_rtx = ovfl;
-     10:     ovfl += rsize;
-     11:   }
+     10:    ovfl += rsize;
+     11:  }
 
    */
 
@@ -1691,6 +1691,16 @@ visium_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   gimplify_and_add (t, pre_p);
   t = build1 (LABEL_EXPR, void_type_node, lab_over);
   gimplify_and_add (t, pre_p);
+
+  /* Emit a big-endian correction if size < UNITS_PER_WORD.  */
+  if (size < UNITS_PER_WORD)
+    {
+      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr), addr,
+		  size_int (UNITS_PER_WORD - size));
+      t = build2 (MODIFY_EXPR, void_type_node, addr, t);
+      gimplify_and_add (t, pre_p);
+    }
+
   addr = fold_convert (ptrtype, addr);
 
   return build_va_arg_indirect_ref (addr);
@@ -2848,6 +2858,9 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
     case CONST_INT:
       /* This is a degenerate case, typically an uninitialized variable.  */
       gcc_assert (op0 == constm1_rtx);
+
+      /* ... fall through ... */
+
     case REG:
     case AND:
     case IOR:
