@@ -23902,6 +23902,16 @@ dwarf2out_early_global_decl (tree decl)
 	  if (!DECL_STRUCT_FUNCTION (decl))
 	    goto early_decl_exit;
 
+	  /* For nested functions, emit DIEs for the parents first so that all
+	     nested DIEs are generated at the proper scope in the first
+	     shot.  */
+	  tree context = decl_function_context (decl);
+	  if (context != NULL)
+	    {
+	      current_function_decl = context;
+	      dwarf2out_decl (context);
+	    }
+
 	  current_function_decl = decl;
 	}
       dwarf2out_decl (decl);
