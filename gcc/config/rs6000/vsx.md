@@ -1938,8 +1938,8 @@
 (define_insn "vsx_concat_<mode>"
   [(set (match_operand:VSX_D 0 "gpc_reg_operand" "=<VSa>,we")
 	(vec_concat:VSX_D
-	 (match_operand:<VS_scalar> 1 "gpc_reg_operand" "<VS_64reg>,r")
-	 (match_operand:<VS_scalar> 2 "gpc_reg_operand" "<VS_64reg>,r")))]
+	 (match_operand:<VS_scalar> 1 "gpc_reg_operand" "<VS_64reg>,b")
+	 (match_operand:<VS_scalar> 2 "gpc_reg_operand" "<VS_64reg>,b")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   if (which_alternative == 0)

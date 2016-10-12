@@ -1,3 +1,9 @@
+2016-10-12  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/77934
+	* config/rs6000/vmx.md (vsx_concat_<mode>): The mtvsrdd instruction
+	needs a base register for arg 1.
+
 2016-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* common.opt (Wimplicit-fallthrough) Turn into alias to
