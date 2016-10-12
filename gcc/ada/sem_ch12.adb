@@ -5787,8 +5787,9 @@ package body Sem_Ch12 is
      (Formal_Pack : Entity_Id;
       Actual_Pack : Entity_Id)
    is
-      E1 : Entity_Id := First_Entity (Actual_Pack);
-      E2 : Entity_Id := First_Entity (Formal_Pack);
+      E1      : Entity_Id := First_Entity (Actual_Pack);
+      E2      : Entity_Id := First_Entity (Formal_Pack);
+      Prev_E1 : Entity_Id;
 
       Expr1 : Node_Id;
       Expr2 : Node_Id;
@@ -5954,6 +5955,7 @@ package body Sem_Ch12 is
    --  Start of processing for Check_Formal_Package_Instance
 
    begin
+      Prev_E1 := E1;
       while Present (E1) and then Present (E2) loop
          exit when Ekind (E1) = E_Package
            and then Renamed_Entity (E1) = Renamed_Entity (Actual_Pack);
@@ -5983,6 +5985,14 @@ package body Sem_Ch12 is
          if No (E1) then
             return;
 
+         --  Entities may be declared without full declaration, such as
+         --  itypes and predefined operators (concatenation for arrays, eg).
+         --  Skip it and keep the formal entity to find a later match for it.
+
+         elsif No (Parent (E2)) then
+            E1 := Prev_E1;
+            goto Next_E;
+
          --  If the formal entity comes from a formal declaration, it was
          --  defaulted in the formal package, and no check is needed on it.
 
@@ -5990,6 +6000,13 @@ package body Sem_Ch12 is
                          N_Formal_Object_Declaration,
                          N_Formal_Type_Declaration)
          then
+            --  If the formal is a tagged type the corresponding class-wide
+            --  type has been generated as well, and it must be skipped.
+
+            if Is_Type (E2) and then Is_Tagged_Type (E2) then
+               Next_Entity (E2);
+            end if;
+
             goto Next_E;
 
          --  Ditto for defaulted formal subprograms.
@@ -6144,6 +6161,7 @@ package body Sem_Ch12 is
          end if;
 
          <<Next_E>>
+            Prev_E1 := E1;
             Next_Entity (E1);
             Next_Entity (E2);
       end loop;

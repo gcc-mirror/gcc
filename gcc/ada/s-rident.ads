@@ -378,15 +378,19 @@ package System.Rident is
    type Profile_Name is
      (No_Profile,
       No_Implementation_Extensions,
+      Restricted_Tasking,
+      Restricted,
       Ravenscar,
-      GNAT_Extended_Ravenscar,
-      Restricted);
+      GNAT_Extended_Ravenscar);
    --  Names of recognized profiles. No_Profile is used to indicate that a
    --  restriction came from pragma Restrictions[_Warning], as opposed to
-   --  pragma Profile[_Warning].
+   --  pragma Profile[_Warning]. Restricted_Tasking is a non-user profile that
+   --  contaings the minimal set of restrictions to trigger the user of the
+   --  restricted tasking runtime. Restricted is the corresponding user profile
+   --  that also restrict protected types.
 
    subtype Profile_Name_Actual is Profile_Name
-     range No_Implementation_Extensions .. Restricted;
+     range No_Implementation_Extensions .. GNAT_Extended_Ravenscar;
    --  Actual used profile names
 
    type Profile_Data is record
@@ -421,6 +425,37 @@ package System.Rident is
 
                         Value =>
                           (others                          => 0)),
+
+                     --  Restricted_Tasking Profile
+
+                     Restricted_Tasking =>
+
+                        --  Restrictions for Restricted_Tasking profile
+
+                       (Set   =>
+                          (No_Abort_Statements             => True,
+                           No_Asynchronous_Control         => True,
+                           No_Dynamic_Attachment           => True,
+                           No_Dynamic_Priorities           => True,
+                           No_Local_Protected_Objects      => True,
+                           No_Protected_Type_Allocators    => True,
+                           No_Requeue_Statements           => True,
+                           No_Task_Allocators              => True,
+                           No_Task_Attributes_Package      => True,
+                           No_Task_Hierarchy               => True,
+                           No_Terminate_Alternatives       => True,
+                           Max_Asynchronous_Select_Nesting => True,
+                           Max_Select_Alternatives         => True,
+                           Max_Task_Entries                => True,
+                           others                          => False),
+
+                        --  Value settings for Restricted_Tasking profile
+
+                        Value =>
+                          (Max_Asynchronous_Select_Nesting => 0,
+                           Max_Select_Alternatives         => 0,
+                           Max_Task_Entries                => 0,
+                           others                          => 0)),
 
                      --  Restricted Profile
 
