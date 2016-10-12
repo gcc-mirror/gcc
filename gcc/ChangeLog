@@ -1,5 +1,7 @@
 2016-10-12  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* lto-streamer.c: Fix LTO_STREAMER_DEBUG build.
+
 	* dwarf2out.c (dwarf2_lineno_debug_hooks): Use
 	dwarf2out_assembly_start.
 
