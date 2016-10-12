@@ -1,3 +1,15 @@
+2016-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 2442 status.
+	* include/std/mutex [_GLIBCXX_HAVE_TLS] (__once_call_impl): Remove.
+	[_GLIBCXX_HAVE_TLS] (_Once_call): Declare primary template and define
+	partial specialization to unpack args and forward to std::invoke.
+	(call_once) [_GLIBCXX_HAVE_TLS]: Use forward_as_tuple and _Once_call
+	instead of __bind_simple and __once_call_impl.
+	(call_once) [!_GLIBCXX_HAVE_TLS]: Use __invoke instead of
+	__bind_simple.
+	* testsuite/30_threads/call_once/dr2442.cc: New test.
+
 2016-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_list.h (assign(initializer_list<value_type>)): Call
