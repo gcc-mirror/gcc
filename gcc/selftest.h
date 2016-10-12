@@ -146,6 +146,13 @@ class line_table_test
 extern void
 for_each_line_table_case (void (*testcase) (const line_table_case &));
 
+/* Read the contents of PATH into memory, returning a 0-terminated buffer
+   that must be freed by the caller.
+   Fail (and abort) if there are any problems, with LOC as the reported
+   location of the failure.  */
+
+extern char *read_file (const location &loc, const char *path);
+
 /* Declarations for specific families of tests (by source file), in
    alphabetical order.  */
 extern void bitmap_c_tests ();

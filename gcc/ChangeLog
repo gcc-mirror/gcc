@@ -1,3 +1,10 @@
+2016-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c (selftest::read_file): New function.
+	(selftest::test_read_file): New function.
+	(selftest::selftest_c_tests): Call test_read_file.
+	* selftest.h (selftest::read_file): New decl.
+
 2016-10-12  Richard Biener  <rguenther@suse.de>
 
 	PR debug/77947

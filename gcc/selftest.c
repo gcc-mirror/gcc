@@ -151,6 +151,53 @@ temp_source_file::temp_source_file (const location &loc,
   fclose (out);
 }
 
+/* Read the contents of PATH into memory, returning a 0-terminated buffer
+   that must be freed by the caller.
+   Fail (and abort) if there are any problems, with LOC as the reported
+   location of the failure.  */
+
+char *
+read_file (const location &loc, const char *path)
+{
+  FILE *f_in = fopen (path, "r");
+  if (!f_in)
+    fail_formatted (loc, "unable to open file: %s", path);
+
+  /* Read content, allocating FIXME.  */
+  char *result = NULL;
+  size_t total_sz = 0;
+  size_t alloc_sz = 0;
+  char buf[4096];
+  size_t iter_sz_in;
+
+  while ( (iter_sz_in = fread (buf, 1, sizeof (buf), f_in)) )
+    {
+      gcc_assert (alloc_sz >= total_sz);
+      size_t old_total_sz = total_sz;
+      total_sz += iter_sz_in;
+      /* Allow 1 extra byte for 0-termination.  */
+      if (alloc_sz < (total_sz + 1))
+	{
+	  size_t new_alloc_sz = alloc_sz ? alloc_sz * 2: total_sz + 1;
+	  result = (char *)xrealloc (result, new_alloc_sz);
+	  alloc_sz = new_alloc_sz;
+	}
+      memcpy (result + old_total_sz, buf, iter_sz_in);
+    }
+
+  if (!feof (f_in))
+    fail_formatted (loc, "error reading from %s: %s", path,
+		    xstrerror (errno));
+
+  fclose (f_in);
+
+  /* 0-terminate the buffer.  */
+  gcc_assert (total_sz < alloc_sz);
+  result[total_sz] = '\0';
+
+  return result;
+}
+
 /* Selftests for the selftest system itself.  */
 
 /* Sanity-check the ASSERT_ macros with various passing cases.  */
@@ -181,6 +228,18 @@ test_named_temp_file ()
   fclose (f);
 }
 
+/* Verify read_file (and also temp_source_file).  */
+
+static void
+test_read_file ()
+{
+  temp_source_file t (SELFTEST_LOCATION, "test1.s",
+		      "\tjmp\t.L2\n");
+  char *buf = read_file (SELFTEST_LOCATION, t.get_filename ());
+  ASSERT_STREQ ("\tjmp\t.L2\n", buf);
+  free (buf);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -188,6 +247,7 @@ selftest_c_tests ()
 {
   test_assertions ();
   test_named_temp_file ();
+  test_read_file ();
 }
 
 } // namespace selftest
