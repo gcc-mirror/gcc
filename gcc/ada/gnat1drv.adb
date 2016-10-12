@@ -343,7 +343,7 @@ procedure Gnat1drv is
          --  of compiler warnings, but these are being turned off by default,
          --  and CodePeer generates better messages (referencing original
          --  variables) this way.
-         --  Do this only is -gnatws is set (the default with -gnatcC), so that
+         --  Do this only if -gnatws is set (the default with -gnatcC), so that
          --  if warnings are enabled, we'll get better messages from GNAT.
 
          if Warning_Mode = Suppress then

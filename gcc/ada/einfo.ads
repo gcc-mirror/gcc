@@ -3793,9 +3793,11 @@ package Einfo is
 --       way this is stored is as an element of the Subprograms_For_Type field.
 
 --    Partial_Refinement_Constituents (synthesized)
---       Present in abstract state entities. Contains the constituents that
---       refine the state in its private part, in other words, all the hidden
---       states that indicate this abstract state in a Part_Of aspect/pragma.
+--       Defined in abstract state entities. Returns the constituents that
+--       refine the state in the current scope, which are allowed in a global
+--       refinement in this scope. These consist in those constituents that are
+--       abstract states with no or only partial refinement visible, and those
+--       that are not themselves abstract states.
 
 --    Partial_View_Has_Unknown_Discr (Flag280)
 --       Present in all types. Set to Indicate that the partial view of a type
