@@ -40,6 +40,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch12; use Sem_Ch12;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
@@ -408,6 +409,22 @@ package body Contracts is
                                N_Task_Type_Declaration)
          then
             Analyze_Task_Contract (Defining_Entity (Decl));
+
+         --  For type declarations, we need to do the pre-analysis of
+         --  Iterable aspect specifications.
+         --  Other type aspects need to be resolved here???
+
+         elsif Nkind (Decl) = N_Private_Type_Declaration
+           and then Present (Aspect_Specifications (Decl))
+         then
+            declare
+               E  : constant Entity_Id := Defining_Identifier (Decl);
+               It : constant Node_Id   := Find_Aspect (E, Aspect_Iterable);
+            begin
+               if Present (It) then
+                  Validate_Iterable_Aspect (E, It);
+               end if;
+            end;
          end if;
 
          Next (Decl);
