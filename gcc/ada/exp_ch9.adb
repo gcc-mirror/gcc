@@ -1107,6 +1107,7 @@ package body Exp_Ch9 is
    procedure Build_Class_Wide_Master (Typ : Entity_Id) is
       Loc          : constant Source_Ptr := Sloc (Typ);
       Master_Id    : Entity_Id;
+      Master_Decl  : Node_Id;
       Master_Scope : Entity_Id;
       Name_Id      : Node_Id;
       Related_Node : Node_Id;
@@ -1146,13 +1147,12 @@ package body Exp_Ch9 is
       --  the second transient scope requires a _master, it cannot use the one
       --  already declared because the entity is not visible.
 
-      Name_Id := Make_Identifier (Loc, Name_uMaster);
+      Name_Id     := Make_Identifier (Loc, Name_uMaster);
+      Master_Decl := Empty;
 
       if not Has_Master_Entity (Master_Scope)
         or else No (Current_Entity_In_Scope (Name_Id))
       then
-         declare
-            Master_Decl : Node_Id;
          begin
             Set_Has_Master_Entity (Master_Scope);
 
@@ -1214,7 +1214,17 @@ package body Exp_Ch9 is
           Subtype_Mark        => New_Occurrence_Of (Standard_Integer, Loc),
           Name                => Name_Id);
 
-      Insert_Action (Related_Node, Ren_Decl);
+      --  If the master is declared locally, add the renaming declaration
+      --  immediately after it, to prevent access-before-elaboration in the
+      --  back-end.
+
+      if Present (Master_Decl) then
+         Insert_After (Master_Decl, Ren_Decl);
+         Analyze (Ren_Decl);
+
+      else
+         Insert_Action (Related_Node, Ren_Decl);
+      end if;
 
       Set_Master_Id (Typ, Master_Id);
    end Build_Class_Wide_Master;
