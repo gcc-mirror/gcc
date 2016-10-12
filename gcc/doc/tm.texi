@@ -2924,6 +2924,7 @@ This describes the stack layout and calling conventions.
 * Function Entry::
 * Profiling::
 * Tail Calls::
+* Shrink-wrapping separate components::
 * Stack Smashing Protection::
 * Miscellaneous Register Hooks::
 @end menu
@@ -4851,6 +4852,68 @@ This hook should add additional registers that are computed by the prologue to t
 
 @deftypefn {Target Hook} bool TARGET_WARN_FUNC_RETURN (tree)
 True if a function's return statements should be checked for matching the function's return type.  This includes checking for falling off the end of a non-void function.  Return false if no such check should be made.
+@end deftypefn
+
+@node Shrink-wrapping separate components
+@subsection Shrink-wrapping separate components
+@cindex shrink-wrapping separate components
+
+The prologue may perform a variety of target dependent tasks such as
+saving callee-saved registers, saving the return address, aligning the
+stack, creating a stack frame, initializing the PIC register, setting
+up the static chain, etc.
+
+On some targets some of these tasks may be independent of others and
+thus may be shrink-wrapped separately.  These independent tasks are
+referred to as components and are handled generically by the target
+independent parts of GCC.
+
+Using the following hooks those prologue or epilogue components can be
+shrink-wrapped separately, so that the initialization (and possibly
+teardown) those components do is not done as frequently on execution
+paths where this would unnecessary.
+
+What exactly those components are is up to the target code; the generic
+code treats them abstractly, as a bit in an @code{sbitmap}.  These
+@code{sbitmap}s are allocated by the @code{shrink_wrap.get_separate_components}
+and @code{shrink_wrap.components_for_bb} hooks, and deallocated by the
+generic code.
+
+@deftypefn {Target Hook} sbitmap TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS (void)
+This hook should return an @code{sbitmap} with the bits set for those
+components that can be separately shrink-wrapped in the current function.
+Return @code{NULL} if the current function should not get any separate
+shrink-wrapping.
+Don't define this hook if it would always return @code{NULL}.
+If it is defined, the other hooks in this group have to be defined as well.
+@end deftypefn
+
+@deftypefn {Target Hook} sbitmap TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB (basic_block)
+This hook should return an @code{sbitmap} with the bits set for those
+components where either the prologue component has to be executed before
+the @code{basic_block}, or the epilogue component after it, or both.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS (sbitmap @var{components}, edge @var{e}, sbitmap @var{edge_components}, bool @var{is_prologue})
+This hook should clear the bits in the @var{components} bitmap for those
+components in @var{edge_components} that the target cannot handle on edge
+@var{e}, where @var{is_prologue} says if this is for a prologue or an
+epilogue instead.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS (sbitmap)
+Emit prologue insns for the components indicated by the parameter.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS (sbitmap)
+Emit epilogue insns for the components indicated by the parameter.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS (sbitmap)
+Mark the components in the parameter as handled, so that the
+@code{prologue} and @code{epilogue} named patterns know to ignore those
+components.  The target code should not hang on to the @code{sbitmap}, it
+will be deleted after this call.
 @end deftypefn
 
 @node Stack Smashing Protection

@@ -2530,6 +2530,7 @@ This describes the stack layout and calling conventions.
 * Function Entry::
 * Profiling::
 * Tail Calls::
+* Shrink-wrapping separate components::
 * Stack Smashing Protection::
 * Miscellaneous Register Hooks::
 @end menu
@@ -3774,6 +3775,43 @@ the function prologue.  Normally, the profiling code comes after.
 @hook TARGET_SET_UP_BY_PROLOGUE
 
 @hook TARGET_WARN_FUNC_RETURN
+
+@node Shrink-wrapping separate components
+@subsection Shrink-wrapping separate components
+@cindex shrink-wrapping separate components
+
+The prologue may perform a variety of target dependent tasks such as
+saving callee-saved registers, saving the return address, aligning the
+stack, creating a stack frame, initializing the PIC register, setting
+up the static chain, etc.
+
+On some targets some of these tasks may be independent of others and
+thus may be shrink-wrapped separately.  These independent tasks are
+referred to as components and are handled generically by the target
+independent parts of GCC.
+
+Using the following hooks those prologue or epilogue components can be
+shrink-wrapped separately, so that the initialization (and possibly
+teardown) those components do is not done as frequently on execution
+paths where this would unnecessary.
+
+What exactly those components are is up to the target code; the generic
+code treats them abstractly, as a bit in an @code{sbitmap}.  These
+@code{sbitmap}s are allocated by the @code{shrink_wrap.get_separate_components}
+and @code{shrink_wrap.components_for_bb} hooks, and deallocated by the
+generic code.
+
+@hook TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
+
+@hook TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB
+
+@hook TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS
+
+@hook TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS
+
+@hook TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS
+
+@hook TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS
 
 @node Stack Smashing Protection
 @subsection Stack smashing protection

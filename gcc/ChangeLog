@@ -1,5 +1,17 @@
 2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* common.opt (-fshrink-wrap-separate): New flag.
+	* doc/invoke.texi: Document it.
+	* doc/tm.texi.in (Shrink-wrapping separate components): New subsection.
+	* doc/tm.texi: Regenerate.
+	* emit-rtl.h (struct rtl_data): New field shrink_wrapped_separate.
+	* target.def (shrink_wrap): New hook vector.
+	(get_separate_components, components_for_bb, disqualify_components,
+	emit_prologue_components, emit_epilogue_components,
+	set_handled_components): New hooks.
+
+2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.c (rs6000_return_in_memory): Warn for
 	vector return by reference only if -Wpsabi.
 	(rs6000_pass_by_reference): Similarly, for argument passing.
