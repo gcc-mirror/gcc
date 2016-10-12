@@ -1,5 +1,12 @@
 2016-10-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* dwarf2out.c (int_loc_descriptor): Generate opcodes for another
+	equivalent 32-bit constant (modulo 2**32) when that yields
+	smaller instructions.
+	(size_of_int_loc_descriptor): Update accordingly.
+
+2016-10-12  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* dwarf2out.c (dwarf2out_early_global_decl): For nested
 	functions, call dwarf2out_decl on the parent function first.
 
