@@ -1,3 +1,8 @@
+2016-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR debug/77947
+	* g++.dg/torture/pr77947.C: New testcase.
+
 2016-10-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat.dg/debug8.adb: New testcase.

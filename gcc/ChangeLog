@@ -1,3 +1,9 @@
+2016-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR debug/77947
+	* cgraphunit.c (analyze_functions): Preserve cgraph nodes
+	function context.
+
 2016-10-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lto-streamer.c: Fix LTO_STREAMER_DEBUG build.
