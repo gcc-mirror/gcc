@@ -1,5 +1,26 @@
 2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* function.c (thread_prologue_and_epilogue_insns): Call
+	try_shrink_wrapping_separate.  Compute the prologue_seq afterwards,
+	if it has possibly changed.  Compute the split_prologue_seq and
+	epilogue_seq later, too.
+	* shrink-wrap.c: #include cfgbuild.h and insn-config.h.
+	(dump_components): New function.
+	(struct sw): New struct.
+	(SW): New function.
+	(init_separate_shrink_wrap): New function.
+	(fini_separate_shrink_wrap): New function.
+	(place_prologue_for_one_component): New function.
+	(spread_components): New function.
+	(disqualify_problematic_components): New function.
+	(emit_common_heads_for_components): New function.
+	(emit_common_tails_for_components): New function.
+	(insert_prologue_epilogue_for_components): New function.
+	(try_shrink_wrapping_separate): New function.
+	* shrink-wrap.h: Declare try_shrink_wrapping_separate.
+
+2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* regrename.c (build_def_use): Invalidate chains that have a
 	REG_CFA_RESTORE on some instruction.
 
