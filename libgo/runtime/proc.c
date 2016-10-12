@@ -246,12 +246,15 @@ static void
 kickoff(void)
 {
 	void (*fn)(void*);
+	void *param;
 
 	if(g->traceback != nil)
 		gtraceback(g);
 
 	fn = (void (*)(void*))(g->entry);
-	fn(g->param);
+	param = g->param;
+	g->param = nil;
+	fn(param);
 	runtime_goexit();
 }
 
