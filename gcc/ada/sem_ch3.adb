@@ -14757,9 +14757,10 @@ package body Sem_Ch3 is
         or else Is_Internal (Parent_Subp)
         or else Is_Private_Overriding
         or else Is_Internal_Name (Chars (Parent_Subp))
-        or else Nam_In (Chars (Parent_Subp), Name_Initialize,
-                                             Name_Adjust,
-                                             Name_Finalize)
+        or else (Is_Controlled (Parent_Type)
+                  and then Nam_In (Chars (Parent_Subp), Name_Initialize,
+                                                        Name_Adjust,
+                                                        Name_Finalize))
       then
          Set_Derived_Name;
 
