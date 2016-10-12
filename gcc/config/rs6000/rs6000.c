@@ -153,6 +153,10 @@ typedef struct GTY(()) machine_function
   bool split_stack_argp_used;
   /* Flag if r2 setup is needed with ELFv2 ABI.  */
   bool r2_setup_needed;
+  /* The components already handled by separate shrink-wrapping, which should
+     not be considered by the prologue and epilogue.  */
+  bool gpr_is_wrapped_separately[32];
+  bool lr_is_wrapped_separately;
 } machine_function;
 
 /* Support targetm.vectorize.builtin_mask_for_load.  */
@@ -1521,6 +1525,19 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_SET_UP_BY_PROLOGUE
 #define TARGET_SET_UP_BY_PROLOGUE rs6000_set_up_by_prologue
+
+#undef TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
+#define TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS rs6000_get_separate_components
+#undef TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB
+#define TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB rs6000_components_for_bb
+#undef TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS
+#define TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS rs6000_disqualify_components
+#undef TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS
+#define TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS rs6000_emit_prologue_components
+#undef TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS
+#define TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS rs6000_emit_epilogue_components
+#undef TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS
+#define TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS rs6000_set_handled_components
 
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY rs6000_live_on_entry
@@ -27411,6 +27428,212 @@ rs6000_global_entry_point_needed_p (void)
   return cfun->machine->r2_setup_needed;
 }
 
+/* Implement TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS.  */
+static sbitmap
+rs6000_get_separate_components (void)
+{
+  rs6000_stack_t *info = rs6000_stack_info ();
+
+  if (!(info->savres_strategy & SAVE_INLINE_GPRS)
+      || !(info->savres_strategy & REST_INLINE_GPRS)
+      || WORLD_SAVE_P (info))
+    return NULL;
+
+  sbitmap components = sbitmap_alloc (32);
+  bitmap_clear (components);
+
+  /* The GPRs we need saved to the frame.  */
+  int reg_size = TARGET_32BIT ? 4 : 8;
+  int offset = info->gp_save_offset;
+  if (info->push_p)
+    offset += info->total_size;
+
+  for (unsigned regno = info->first_gp_reg_save; regno < 32; regno++)
+    {
+      if (IN_RANGE (offset, -0x8000, 0x7fff)
+	  && rs6000_reg_live_or_pic_offset_p (regno))
+	bitmap_set_bit (components, regno);
+
+      offset += reg_size;
+    }
+
+  /* Don't mess with the hard frame pointer.  */
+  if (frame_pointer_needed)
+    bitmap_clear_bit (components, HARD_FRAME_POINTER_REGNUM);
+
+  /* Don't mess with the fixed TOC register.  */
+  if ((TARGET_TOC && TARGET_MINIMAL_TOC)
+      || (flag_pic == 1 && DEFAULT_ABI == ABI_V4)
+      || (flag_pic && DEFAULT_ABI == ABI_DARWIN))
+    bitmap_clear_bit (components, RS6000_PIC_OFFSET_TABLE_REGNUM);
+
+  /* Optimize LR save and restore if we can.  This is component 0.  */
+  if (info->lr_save_p
+      && !(flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN)))
+    {
+      offset = info->lr_save_offset;
+      if (info->push_p)
+	offset += info->total_size;
+      if (IN_RANGE (offset, -0x8000, 0x7fff))
+	bitmap_set_bit (components, 0);
+    }
+
+  return components;
+}
+
+/* Implement TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB.  */
+static sbitmap
+rs6000_components_for_bb (basic_block bb)
+{
+  rs6000_stack_t *info = rs6000_stack_info ();
+
+  bitmap in = DF_LIVE_IN (bb);
+  bitmap gen = &DF_LIVE_BB_INFO (bb)->gen;
+  bitmap kill = &DF_LIVE_BB_INFO (bb)->kill;
+
+  sbitmap components = sbitmap_alloc (32);
+  bitmap_clear (components);
+
+  /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
+  for (unsigned regno = info->first_gp_reg_save; regno < 32; regno++)
+    if (bitmap_bit_p (in, regno)
+	|| bitmap_bit_p (gen, regno)
+	|| bitmap_bit_p (kill, regno))
+      bitmap_set_bit (components, regno);
+
+  /* LR needs to be saved around a bb if it is killed in that bb.  */
+  if (bitmap_bit_p (gen, LR_REGNO)
+      || bitmap_bit_p (kill, LR_REGNO))
+    bitmap_set_bit (components, 0);
+
+  return components;
+}
+
+/* Implement TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS.  */
+static void
+rs6000_disqualify_components (sbitmap components, edge e,
+			      sbitmap edge_components, bool /*is_prologue*/)
+{
+  /* Our LR pro/epilogue code moves LR via R0, so R0 had better not be
+     live where we want to place that code.  */
+  if (bitmap_bit_p (edge_components, 0)
+      && bitmap_bit_p (DF_LIVE_IN (e->dest), 0))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Disqualifying LR because GPR0 is live "
+		 "on entry to bb %d\n", e->dest->index);
+      bitmap_clear_bit (components, 0);
+    }
+}
+
+/* Implement TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS.  */
+static void
+rs6000_emit_prologue_components (sbitmap components)
+{
+  rs6000_stack_t *info = rs6000_stack_info ();
+  rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
+			     ? HARD_FRAME_POINTER_REGNUM
+			     : STACK_POINTER_REGNUM);
+  int reg_size = TARGET_32BIT ? 4 : 8;
+
+  /* Prologue for LR.  */
+  if (bitmap_bit_p (components, 0))
+    {
+      rtx reg = gen_rtx_REG (Pmode, 0);
+      rtx_insn *insn = emit_move_insn (reg, gen_rtx_REG (Pmode, LR_REGNO));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_REGISTER, NULL);
+
+      int offset = info->lr_save_offset;
+      if (info->push_p)
+	offset += info->total_size;
+
+      insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
+      rtx mem = copy_rtx (SET_DEST (single_set (insn)));
+      add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (mem, lr));
+    }
+
+  /* Prologue for the GPRs.  */
+  int offset = info->gp_save_offset;
+  if (info->push_p)
+    offset += info->total_size;
+
+  for (int i = info->first_gp_reg_save; i < 32; i++)
+    {
+      if (bitmap_bit_p (components, i))
+	{
+	  rtx reg = gen_rtx_REG (Pmode, i);
+	  rtx_insn *insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  rtx set = copy_rtx (single_set (insn));
+	  add_reg_note (insn, REG_CFA_OFFSET, set);
+	}
+
+      offset += reg_size;
+    }
+}
+
+/* Implement TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS.  */
+static void
+rs6000_emit_epilogue_components (sbitmap components)
+{
+  rs6000_stack_t *info = rs6000_stack_info ();
+  rtx ptr_reg = gen_rtx_REG (Pmode, frame_pointer_needed
+			     ? HARD_FRAME_POINTER_REGNUM
+			     : STACK_POINTER_REGNUM);
+  int reg_size = TARGET_32BIT ? 4 : 8;
+
+  /* Epilogue for the GPRs.  */
+  int offset = info->gp_save_offset;
+  if (info->push_p)
+    offset += info->total_size;
+
+  for (int i = info->first_gp_reg_save; i < 32; i++)
+    {
+      if (bitmap_bit_p (components, i))
+	{
+	  rtx reg = gen_rtx_REG (Pmode, i);
+	  rtx_insn *insn = emit_insn (gen_frame_load (reg, ptr_reg, offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_CFA_RESTORE, reg);
+	}
+
+      offset += reg_size;
+    }
+
+  /* Epilogue for LR.  */
+  if (bitmap_bit_p (components, 0))
+    {
+      int offset = info->lr_save_offset;
+      if (info->push_p)
+	offset += info->total_size;
+
+      rtx reg = gen_rtx_REG (Pmode, 0);
+      rtx_insn *insn = emit_insn (gen_frame_load (reg, ptr_reg, offset));
+
+      rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
+      insn = emit_move_insn (lr, reg);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_RESTORE, lr);
+    }
+}
+
+/* Implement TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS.  */
+static void
+rs6000_set_handled_components (sbitmap components)
+{
+  rs6000_stack_t *info = rs6000_stack_info ();
+
+  for (int i = info->first_gp_reg_save; i < 32; i++)
+    if (bitmap_bit_p (components, i))
+      cfun->machine->gpr_is_wrapped_separately[i] = true;
+
+  if (bitmap_bit_p (components, 0))
+    cfun->machine->lr_is_wrapped_separately = true;
+}
+
 /* Emit function prologue as insns.  */
 
 void
@@ -27668,7 +27891,8 @@ rs6000_emit_prologue (void)
     }
 
   /* If we use the link register, get it into r0.  */
-  if (!WORLD_SAVE_P (info) && info->lr_save_p)
+  if (!WORLD_SAVE_P (info) && info->lr_save_p
+      && !cfun->machine->lr_is_wrapped_separately)
     {
       rtx addr, reg, mem;
 
@@ -27896,13 +28120,16 @@ rs6000_emit_prologue (void)
     }
   else if (!WORLD_SAVE_P (info))
     {
-      int i;
-      for (i = 0; i < 32 - info->first_gp_reg_save; i++)
-	if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
-	  emit_frame_save (frame_reg_rtx, reg_mode,
-			   info->first_gp_reg_save + i,
-			   info->gp_save_offset + frame_off + reg_size * i,
-			   sp_off - frame_off);
+      int offset = info->gp_save_offset + frame_off;
+      for (int i = info->first_gp_reg_save; i < 32; i++)
+	{
+	  if (rs6000_reg_live_or_pic_offset_p (i)
+	      && !cfun->machine->gpr_is_wrapped_separately[i])
+	    emit_frame_save (frame_reg_rtx, reg_mode, i, offset,
+			     sp_off - frame_off);
+
+	  offset += reg_size;
+	}
     }
 
   if (crtl->calls_eh_return)
@@ -28825,7 +29052,9 @@ rs6000_emit_epilogue (int sibcall)
 		&& (restoring_FPRs_inline
 		    || (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR))
 		&& (restoring_GPRs_inline
-		    || info->first_fp_reg_save < 64));
+		    || info->first_fp_reg_save < 64)
+		&& !cfun->machine->lr_is_wrapped_separately);
+
 
   if (WORLD_SAVE_P (info))
     {
@@ -29460,12 +29689,18 @@ rs6000_emit_epilogue (int sibcall)
     }
   else
     {
-      for (i = 0; i < 32 - info->first_gp_reg_save; i++)
-	if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
-	  emit_insn (gen_frame_load
-		     (gen_rtx_REG (reg_mode, info->first_gp_reg_save + i),
-		      frame_reg_rtx,
-		      info->gp_save_offset + frame_off + reg_size * i));
+      int offset = info->gp_save_offset + frame_off;
+      for (i = info->first_gp_reg_save; i < 32; i++)
+	{
+	  if (rs6000_reg_live_or_pic_offset_p (i)
+	      && !cfun->machine->gpr_is_wrapped_separately[i])
+	    {
+	      rtx reg = gen_rtx_REG (reg_mode, i);
+	      emit_insn (gen_frame_load (reg, frame_reg_rtx, offset));
+	    }
+
+	  offset += reg_size;
+	}
     }
 
   if (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
@@ -29504,8 +29739,10 @@ rs6000_emit_epilogue (int sibcall)
 	    || using_load_multiple
 	    || rs6000_reg_live_or_pic_offset_p (i))
 	  {
-	    rtx reg = gen_rtx_REG (reg_mode, i);
+	    if (cfun->machine->gpr_is_wrapped_separately[i])
+	      continue;
 
+	    rtx reg = gen_rtx_REG (reg_mode, i);
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	  }
     }
