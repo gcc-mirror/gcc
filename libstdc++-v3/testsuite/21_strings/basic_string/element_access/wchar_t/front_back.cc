@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring str(L"ramifications");
   const std::wstring cstr(L"melodien");
 

@@ -25,7 +25,6 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
   std::string_view str1("foobar");
   std::string str2("foobar");
 
@@ -53,8 +52,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::string str("a");
   char c = 'a';
   int res = str.compare(0, 1, &c, 1);

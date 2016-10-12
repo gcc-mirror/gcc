@@ -47,8 +47,6 @@ namespace std
 // libstdc++/39881
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::error_condition ec2;
   ec2 = my_err;
   VERIFY( ec2 == make_error_condition(my_err) );

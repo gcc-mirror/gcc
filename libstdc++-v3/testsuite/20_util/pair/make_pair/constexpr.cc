@@ -27,7 +27,6 @@
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::pair<int, float> pair_type;
   constexpr pair_type p1 __attribute__((unused)) = std::make_pair(22, 22.222);
 }

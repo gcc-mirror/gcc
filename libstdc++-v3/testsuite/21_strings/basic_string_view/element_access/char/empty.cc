@@ -24,8 +24,6 @@
 int
 main()
 {
-  bool test [[gnu::unused]] = true;
-
   {
     std::string_view empty;
     VERIFY( empty.empty() );

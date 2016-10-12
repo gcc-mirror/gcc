@@ -39,7 +39,6 @@ public:
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -56,7 +55,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -71,7 +69,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -89,7 +86,6 @@ void test03()
 
 void test04()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -119,7 +115,6 @@ void test05_helper()
 
 void test05()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -145,7 +140,6 @@ void test06_helper()
 
 void test06()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -165,7 +159,6 @@ std::exception_ptr gep;
 
 void test99()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;

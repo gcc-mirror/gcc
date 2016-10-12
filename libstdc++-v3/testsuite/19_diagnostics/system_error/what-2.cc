@@ -32,7 +32,6 @@ public:
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   try
     { throw fuzzy_logic(); }
   catch(const fuzzy_logic& obj)

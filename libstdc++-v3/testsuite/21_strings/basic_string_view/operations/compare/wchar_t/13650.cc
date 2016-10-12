@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   using std::wstring_view;
 
   const wchar_t lit_01[] = { L'w', L'e', L'\0', L'r', L'd' };

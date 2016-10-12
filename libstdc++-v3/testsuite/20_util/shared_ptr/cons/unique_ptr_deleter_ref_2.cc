@@ -39,8 +39,6 @@ struct D {
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   D d;
   std::unique_ptr<A, D&> p1(new A, d);
 

@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tuple<int, double> a(1, 2.0), b;
   b = std::move(a);
   VERIFY( std::get<0>(b) == 1 && std::get<1>(b) == 2.0 );

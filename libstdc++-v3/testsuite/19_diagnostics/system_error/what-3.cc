@@ -37,7 +37,6 @@ void allocate_on_stack(void)
 
 void test04()
 {
-  bool test __attribute__((unused)) = true;
   const std::string s("CA ISO emergency once again:immediate power down");
   const char* strlit1 = "wish I lived in Palo Alto";
   const char* strlit2 = "...or Santa Barbara";

@@ -22,7 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::true_type;
   using std::false_type;
 

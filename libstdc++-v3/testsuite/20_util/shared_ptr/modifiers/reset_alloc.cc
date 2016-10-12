@@ -41,7 +41,6 @@ long D::delete_count = 0;
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
   tracker_allocator_counter::reset();
 
   {

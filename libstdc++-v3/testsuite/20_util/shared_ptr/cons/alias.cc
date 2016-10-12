@@ -44,7 +44,7 @@ void deletefunc(A* p) { delete p; }
 
 int test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   std::shared_ptr<A> a;
   std::shared_ptr<bool> b1(a, &test);
@@ -62,8 +62,6 @@ int test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a(new A);
   std::shared_ptr<int> i1(a, &a->i);
   VERIFY( i1.use_count() == 2 );
@@ -78,8 +76,6 @@ test02()
 int
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<B> b(new B);
   std::shared_ptr<A> a1(b, b.get());
   std::shared_ptr<A> a2(b, &b->a);

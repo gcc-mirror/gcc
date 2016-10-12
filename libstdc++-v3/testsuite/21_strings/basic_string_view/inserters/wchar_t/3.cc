@@ -31,8 +31,6 @@
 void
 test09()
 {
-  bool test [[gnu::unused]] = true;
-
   std::wstring_view foo{L"peace\0\0\0& love"};
   
   std::wostringstream oss1;

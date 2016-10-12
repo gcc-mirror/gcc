@@ -30,8 +30,6 @@ struct B { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // test empty weak_ptrs compare equivalent
   std::weak_ptr<A> p1;
   std::weak_ptr<B> p2;
@@ -47,8 +45,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a0;
   std::weak_ptr<A> w0(a0);
 

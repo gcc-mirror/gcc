@@ -24,7 +24,6 @@
 // Operations on empty function<> objects
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::placeholders;
 
   int five = 5;

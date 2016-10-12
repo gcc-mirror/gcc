@@ -33,7 +33,7 @@
 // mode == out
 void test05(std::size_t size)
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   const char filename[] = "inserters_extractors-1.txt";
   const wchar_t fillc = L'f';
   std::wofstream ofs(filename);

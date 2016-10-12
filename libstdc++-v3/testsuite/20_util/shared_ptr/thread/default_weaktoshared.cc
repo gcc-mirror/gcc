@@ -124,7 +124,6 @@ void thread_hammer(wp_vector_t& weak_pool)
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   sp_vector_t obj_pool(POOL_SIZE);
   
   for(auto& obj : obj_pool)

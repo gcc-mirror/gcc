@@ -87,7 +87,6 @@ typedef type_emulator<double> dbl_emulator;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
   
   duration<int> d0(3);

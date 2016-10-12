@@ -32,8 +32,6 @@ struct A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int i = 0;
   double d = 0;
   char c = 0;

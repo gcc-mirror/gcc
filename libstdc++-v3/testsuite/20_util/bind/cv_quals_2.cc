@@ -30,8 +30,6 @@ struct X
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const auto b0 = std::bind(X());
   VERIFY( b0() == 0 );
 

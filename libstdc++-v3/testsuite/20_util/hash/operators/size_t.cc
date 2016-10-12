@@ -26,8 +26,6 @@ template<typename T>
   void
   do_test()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef T 				value_type;
     typedef std::hash<value_type> 	hash_type;
     using std::size_t;

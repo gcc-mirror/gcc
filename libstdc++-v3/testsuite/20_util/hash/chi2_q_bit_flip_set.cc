@@ -27,7 +27,6 @@
 void
 test_bit_flip_set()
 {
-  bool test __attribute__((unused)) = true;
   const unsigned long N = SAMPLES;
   const unsigned long k = N/100;
   const unsigned int len = 67;

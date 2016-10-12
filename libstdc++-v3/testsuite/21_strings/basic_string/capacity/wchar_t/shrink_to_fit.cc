@@ -25,8 +25,6 @@
 // libstdc++/42573
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring s(100, L'a');
   s.push_back(L'b');
   s.push_back(L'b');

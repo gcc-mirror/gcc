@@ -24,8 +24,6 @@
 // Operations on empty function<> objects
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( std::bind(std::plus<int>(), 3, 5)() == 8 );
   VERIFY( std::bind(std::minus<int>(), 3, 5)() == -2 );
   VERIFY( std::bind<int>(std::plus<int>(), 3, 5)() == 8 );

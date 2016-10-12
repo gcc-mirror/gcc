@@ -34,8 +34,6 @@ struct A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   const std::shared_ptr<A> p(a);
   VERIFY( p.get() == a );
@@ -45,8 +43,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   const std::shared_ptr<A> p(a);
   VERIFY( &*p == a );
@@ -56,8 +52,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   const std::shared_ptr<A> p(a);
   VERIFY( &p->i == &a->i );
@@ -66,8 +60,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
 #if !(defined _GLIBCXX_DEBUG && defined _GLIBCXX_DEBUG_PEDANTIC)
   std::shared_ptr<int> p;
   auto np = p.operator->();

@@ -26,7 +26,6 @@
 // DR 1261. Insufficient overloads for to_string / to_wstring
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const wstring one(to_wstring(-2));

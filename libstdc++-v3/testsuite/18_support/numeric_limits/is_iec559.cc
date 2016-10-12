@@ -52,10 +52,8 @@ test_is_iec559()
 }
 
 // libstdc++/8949
-bool test04()
+void test04()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( !std::numeric_limits<short>::is_iec559 );
   VERIFY( !std::numeric_limits<unsigned short>::is_iec559 );
   VERIFY( !std::numeric_limits<int>::is_iec559 );
@@ -64,7 +62,6 @@ bool test04()
   VERIFY( !std::numeric_limits<unsigned long>::is_iec559 );
   VERIFY( !std::numeric_limits<long long>::is_iec559 );
   VERIFY( !std::numeric_limits<unsigned long long>::is_iec559 );
-  return test;
 }
 
 int main()

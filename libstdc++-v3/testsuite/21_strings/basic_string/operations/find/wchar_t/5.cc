@@ -30,7 +30,6 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
   std::wstring_view str1(L"bar");
   std::wstring str2(L"foobar");
 

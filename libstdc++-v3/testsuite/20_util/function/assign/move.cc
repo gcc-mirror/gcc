@@ -25,8 +25,6 @@ struct { int operator()() { return 2; } } f2;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::function<int()> function;
 
   function fo(f1);

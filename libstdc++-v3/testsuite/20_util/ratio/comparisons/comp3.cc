@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( (std::ratio_less<std::ratio<59, 29131>,
 	                   std::ratio<59, 29129>>::value == 1) );
   VERIFY( (std::ratio_less<std::ratio<4733, 13>,

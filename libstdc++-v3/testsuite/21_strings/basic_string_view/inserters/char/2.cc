@@ -37,7 +37,7 @@
 void
 test05(std::size_t size)
 {
-  bool test [[gnu::unused]] = true;
+  bool test = true;
 
   const char filename[] = "inserters_extractors-2.txt";
   const char fillc = 'f';

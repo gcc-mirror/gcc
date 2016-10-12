@@ -22,11 +22,9 @@
 #include <string_view>
 #include <testsuite_hooks.h>
 
-bool
+void
 test03()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::wstring_view::size_type csize_type;
   csize_type npos = std::wstring_view::npos;
   csize_type csz01;
@@ -84,8 +82,6 @@ test03()
   VERIFY( csz01 == 0 );
   csz01 = str04.find_first_not_of(L'S');
   VERIFY( csz01 == npos );
-
-  return test;
 }
 
 int

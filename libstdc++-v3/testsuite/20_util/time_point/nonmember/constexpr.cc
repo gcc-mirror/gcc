@@ -22,7 +22,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
   
   typedef time_point<system_clock> time_type;

@@ -25,8 +25,6 @@
 
 int test01(void)
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring str1;
   std::wstring str2;
   

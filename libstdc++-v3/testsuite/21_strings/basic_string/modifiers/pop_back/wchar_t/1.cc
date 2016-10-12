@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::wstring cstr(L"Badger");
   std::wstring str = cstr;
   str.pop_back();

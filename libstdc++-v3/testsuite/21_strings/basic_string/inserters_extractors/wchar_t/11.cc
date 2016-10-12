@@ -46,8 +46,6 @@ wstring prepare(wstring::size_type len, unsigned nchunks)
 
 void check(wistream& stream, const wstring& str, unsigned nchunks)
 {
-  bool test __attribute__((unused)) = true;
-
   wstring chunk;
   wstring::size_type index = 0, index_new = 0;
   unsigned n = 0;

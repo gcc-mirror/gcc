@@ -27,10 +27,6 @@
 #include <string>
 #include <testsuite_hooks.h>
 
-#ifndef _GLIBCXX_ASSERT
-#  define TEST_NUMPUT_VERBOSE 1
-#endif
-
 #ifdef TEST_NUMPUT_VERBOSE
 #  include <iostream>
 #endif

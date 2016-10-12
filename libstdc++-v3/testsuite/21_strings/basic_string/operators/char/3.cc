@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::string;
 
   VERIFY( (string("abc") + string("def")

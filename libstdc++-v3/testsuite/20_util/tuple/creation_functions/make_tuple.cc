@@ -28,8 +28,6 @@ using namespace std;
 int
 main()
 {
-  bool test __attribute__((unused)) = true;
-
   int i=0;
   make_tuple(1,2,4.0);
   make_tuple(ref(i)) = tuple<int>(1);

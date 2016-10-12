@@ -24,8 +24,6 @@
 
 using namespace std;
 
-bool test __attribute__((unused)) = true;
-
 #define TEST1(x) VERIFY( x == x && !(x != x) && x <= x && !(x < x) )
 
 int

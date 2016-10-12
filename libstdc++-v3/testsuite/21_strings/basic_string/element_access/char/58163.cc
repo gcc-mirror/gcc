@@ -24,8 +24,6 @@
 // PR c++/58163
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::string cs;
         std::string  s;
 

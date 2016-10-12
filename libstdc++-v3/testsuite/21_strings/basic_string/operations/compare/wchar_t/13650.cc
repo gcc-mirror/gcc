@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   const wchar_t lit_01[] = { L'w', L'e', L'\0', L'r', L'd' };
   const wchar_t lit_02[] = { L'w', L'e', L'i', L'\0', L'd' };

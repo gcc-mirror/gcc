@@ -40,7 +40,6 @@ test_value(int result, want_value expected);
 int
 test_value(int result, want_value expected)
 {
-  bool test __attribute__((unused)) = true;
   bool pass = false;
 
   switch (expected) {

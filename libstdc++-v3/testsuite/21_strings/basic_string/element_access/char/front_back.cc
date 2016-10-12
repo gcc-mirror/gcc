@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::string str("ramifications");
   const std::string cstr("melodien");
 

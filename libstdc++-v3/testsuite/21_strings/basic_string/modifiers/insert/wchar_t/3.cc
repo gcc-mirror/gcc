@@ -25,7 +25,6 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
   std::wstring_view str1(L"foo");
   std::wstring str2;
   str2.insert(0, str1);
@@ -43,8 +42,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring str(L"a");
 
   wchar_t c = L'b';

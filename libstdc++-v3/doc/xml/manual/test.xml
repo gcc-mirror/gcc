@@ -564,7 +564,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
       <command>make</command>, or via options for the DejaGnu test framework
       (described below). The latter approach uses the
       <option>--target_board</option> option that was shown earlier.
-      For example, to run the tests with <option>-O1 -D_GLIBCXX_ASSERT</option>
+      For example, to run the tests with <option>-O1 -D_GLIBCXX_ASSERTIONS</option>
       you could use:
 <programlisting>    make RUNTESTFLAGS=--target_board=unix/-O1/-D_GLIBCXX_ASSERTIONS</programlisting>
     </para>

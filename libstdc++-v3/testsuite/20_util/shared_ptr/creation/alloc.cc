@@ -56,7 +56,6 @@ struct reset_count_struct
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   reset_count_struct __attribute__((unused)) reset;
 
   {
@@ -74,7 +73,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   reset_count_struct __attribute__((unused)) reset;
 
   std::shared_ptr<A> p1;

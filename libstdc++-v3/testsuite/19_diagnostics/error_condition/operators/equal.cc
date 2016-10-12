@@ -24,8 +24,6 @@
 // unspecified bool operator positive tests
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::error_condition e1;
   std::error_condition e2(std::errc::operation_not_supported);
 

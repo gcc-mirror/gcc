@@ -37,8 +37,6 @@ public:
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   twstring a, b;
   a.push_back(L'1');
   b = std::move(a);

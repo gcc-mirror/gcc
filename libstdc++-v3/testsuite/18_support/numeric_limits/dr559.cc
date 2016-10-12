@@ -26,7 +26,6 @@
 template<typename T>
   void do_test_aux()
   {
-    bool test __attribute__((unused)) = true;
     typedef std::numeric_limits<T> cv_limits;
     typedef std::numeric_limits<typename std::remove_cv<T>::type> limits;
 

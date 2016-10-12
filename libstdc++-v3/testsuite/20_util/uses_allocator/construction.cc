@@ -91,8 +91,6 @@ template<typename TestType, typename... T>
 template<typename... T>
   void test(T... args)
   {
-    bool test __attribute__((unused)) = true;
-
     VERIFY( test2<CannotUse>(args...) );
     VERIFY( test2<DoesNotUse>(args...) );
     VERIFY( test2<UsesWithTag>(args...) );

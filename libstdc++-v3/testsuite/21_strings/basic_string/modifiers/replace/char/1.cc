@@ -23,9 +23,8 @@
 #include <algorithm> // for std::find
 #include <testsuite_hooks.h>
 
-bool test01(void)
+void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::const_reference cref;
   typedef std::string::reference ref;
@@ -71,7 +70,6 @@ bool test01(void)
 	    std::find(x.rbegin(), x.rend(), 'l').base(), ar, 
 	    ar + sizeof(ar) / sizeof(ar[0]));
   VERIFY( x == "jeHelloo" );
-  return test;
 }
 
 int main()

@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::ratio_add<std::ratio<3,8>, std::ratio<5,12>>::type r;
 
   VERIFY( r.num == 19 );
@@ -37,7 +35,6 @@ test01()
 void
 test02()
 {  
-  bool test __attribute__((unused)) = true;
   std::ratio_subtract<std::ratio<3,8>, std::ratio<5,12>>::type r;
 
   VERIFY( r.num == -1 );
@@ -47,7 +44,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
   std::ratio_multiply<std::ratio<3,8>, std::ratio<5,12>>::type r;
 
   VERIFY( r.num == 5 );
@@ -57,7 +53,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
   std::ratio_divide<std::ratio<3,8>, std::ratio<5,12>>::type r;
 
   VERIFY( r.num == 9 );

@@ -21,12 +21,11 @@
 
 #include <memory>
 #include <new>
-#include <testsuite_hooks.h>
 
 struct A
 {
-    void* operator new(size_t n) { return new char[sizeof(A)]; }
-    void operator delete(void* p, size_t) { delete (char*)p; }
+  void* operator new(size_t n) { return new char[sizeof(A)]; }
+  void operator delete(void* p, size_t) { delete (char*)p; }
 };
 
 // 20.6.6.2.6 shared_ptr creation [util.smartptr.shared.create]
@@ -34,8 +33,6 @@ struct A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> p = std::make_shared<A>();
 }
 

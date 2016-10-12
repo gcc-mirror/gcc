@@ -38,7 +38,6 @@ struct UD { typedef MyDerivedAlloc  allocator_type; };
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::uses_allocator;
   using namespace __gnu_test;
 

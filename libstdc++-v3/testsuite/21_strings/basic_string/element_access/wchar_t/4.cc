@@ -25,7 +25,6 @@
 // http://gcc.gnu.org/ml/libstdc++/2004-01/msg00184.html
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   for (int i = 0; i < 2000; ++i)

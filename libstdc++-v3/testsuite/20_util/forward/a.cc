@@ -45,7 +45,6 @@ public:
 
   void test() const
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( data_ == 3 );
   }
 };

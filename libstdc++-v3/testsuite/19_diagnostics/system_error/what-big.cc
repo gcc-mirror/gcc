@@ -26,7 +26,6 @@ void test01()
 {
   typedef std::system_error test_type;
 
-  bool test __attribute__((unused)) = true;
   const std::string xxx(10000, 'x');
   test_type t(std::error_code(), xxx);
   VERIFY( std::string(t.what()).find(xxx) != std::string::npos );

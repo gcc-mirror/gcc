@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::exception_ptr p = std::make_exception_ptr(0);
 
   VERIFY( !(p == 0) );

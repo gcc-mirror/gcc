@@ -26,9 +26,8 @@
 // Do a quick sanity check on known problems with element access and
 // ref-counted strings. These should all pass, regardless of the
 // underlying string implementation, of course.
-bool test01(void)
+void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   typedef std::wstring::iterator siterator;
   typedef std::wstring::reverse_iterator sriterator;
@@ -100,8 +99,6 @@ bool test01(void)
   VERIFY( str03[0] == L'x' );
 
   // need to also test for const begin/const end
-  VERIFY(test);
-  return test;
 }
 
 int main()

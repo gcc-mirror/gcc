@@ -30,8 +30,6 @@ construct(Args&&... args)
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using string = std::string;
   using list = std::initializer_list<string::value_type>;
 

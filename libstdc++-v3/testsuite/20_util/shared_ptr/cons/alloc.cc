@@ -41,7 +41,6 @@ long D::delete_count = 0;
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
   tracker_allocator_counter::reset();
 
   std::shared_ptr<A> p1(new A, deletefunc, tracker_allocator<A>());
@@ -68,7 +67,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
   tracker_allocator_counter::reset();
 
   std::shared_ptr<A> p1(new A, deletefunc, tracker_allocator<A>());

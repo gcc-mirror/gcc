@@ -25,8 +25,6 @@
 
 using namespace __gnu_test;
 
-bool test __attribute__((unused)) = true;
-
 // Put function objects into a void-returning function<> wrapper
 void test09()
 {

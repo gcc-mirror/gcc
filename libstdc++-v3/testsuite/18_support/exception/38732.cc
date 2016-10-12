@@ -61,7 +61,6 @@ extern "C" __cxa_eh_globals *__cxa_get_globals () throw();
 // PR libstdc++/38732
 void test01 ()
 {
-  bool test __attribute__((unused)) = true;
   try {
     throw 0;
   } catch(...) {

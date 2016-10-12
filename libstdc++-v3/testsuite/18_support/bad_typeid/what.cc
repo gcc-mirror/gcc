@@ -26,7 +26,6 @@
 // libstdc++/14493
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   bad_typeid bt;

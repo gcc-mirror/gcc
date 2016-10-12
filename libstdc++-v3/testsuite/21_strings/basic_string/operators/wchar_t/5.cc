@@ -24,8 +24,6 @@
 
 int test01(void)
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring_view str1(L"foo");;
   std::wstring str2;
   

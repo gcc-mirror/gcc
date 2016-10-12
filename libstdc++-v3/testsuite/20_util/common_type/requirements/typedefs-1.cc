@@ -66,7 +66,6 @@ struct B : A { };
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::common_type;
   using std::is_same;
 
@@ -98,7 +97,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using std::common_type;
   using std::is_same;
   

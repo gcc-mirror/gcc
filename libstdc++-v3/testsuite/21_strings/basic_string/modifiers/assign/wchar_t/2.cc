@@ -27,8 +27,6 @@
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std;
   
   wstring one = L"Selling England by the pound";

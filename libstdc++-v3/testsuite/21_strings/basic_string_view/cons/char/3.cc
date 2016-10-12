@@ -26,8 +26,6 @@
 void
 test05()
 {
-  bool test [[gnu::unused]] = true;
-
   char const * s = 0;
   std::string_view zero_length_built_with_NULL(s, 0);
 }

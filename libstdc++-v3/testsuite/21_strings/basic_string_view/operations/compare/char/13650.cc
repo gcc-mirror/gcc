@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   using std::string_view;
 
   const char lit_01[]{ 'w', 'e', '\0', 'r', 'd' };

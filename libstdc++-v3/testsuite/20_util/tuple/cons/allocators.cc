@@ -102,7 +102,6 @@ struct UsesWithoutTag
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::allocator_arg;
   using std::tuple;
   using std::make_tuple;
@@ -164,7 +163,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using std::allocator_arg;
   using std::tuple;
   using std::make_tuple;

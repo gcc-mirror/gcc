@@ -27,7 +27,6 @@
 void
 test_numeric_pattern_set()
 {
-  bool test __attribute__((unused)) = true;
   const unsigned long N = SAMPLES;
   const unsigned long k = N/100;
   std::vector<std::string> set;

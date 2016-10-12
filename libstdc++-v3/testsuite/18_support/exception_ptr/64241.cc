@@ -25,7 +25,7 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   {
     // Put some non-zero bytes on the stack
     void* p __attribute__((unused)) = &test;

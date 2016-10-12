@@ -29,7 +29,6 @@ struct Deleter
   Deleter&
   operator=(const Deleter&)
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( true );
     return *this;
   }
@@ -37,7 +36,6 @@ struct Deleter
   Deleter&
   operator=(Deleter&&)
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( false );
     return *this;
   }

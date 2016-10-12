@@ -22,11 +22,9 @@
 #include <string_view>
 #include <testsuite_hooks.h>
 
-bool
+void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::wstring_view::size_type csize_type;
   csize_type npos = std::wstring_view::npos;
   csize_type csz01, csz02;
@@ -84,8 +82,6 @@ test02()
   csz01 = str01.find_first_of(L'z');
   csz02 = str01.size() - 1;
   VERIFY( csz01 == csz02 );
-
-  return test;
 }
 
 int

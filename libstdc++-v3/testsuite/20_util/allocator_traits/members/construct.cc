@@ -52,8 +52,6 @@ struct fake_allocator
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::allocator_traits<fake_allocator<X>> traits_type;
   traits_type::allocator_type a;
   X* p = traits_type::allocate(a, 1);

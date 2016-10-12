@@ -44,8 +44,6 @@ template<typename T>
 // homogeneous
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::pair<bool, bool> p_bb_1(true, false);
   std::pair<bool, bool> p_bb_2 = std::make_pair(true, false);
   VERIFY( p_bb_1 == p_bb_2 );

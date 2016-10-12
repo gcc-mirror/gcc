@@ -28,8 +28,6 @@ struct simple
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   constexpr simple s { 5 };
   constexpr auto s2  __attribute__((unused)) = std::move_if_noexcept(s);
 }

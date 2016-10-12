@@ -34,8 +34,6 @@ void test01()
   typedef basic_stringbuf<pod_ushort> 	stringbuf_type;
   typedef basic_istream<pod_ushort> 	istream_type;
 
-  bool test __attribute__((unused)) = true;
-
   string_type str;
   stringbuf_type strbuf01;
   istream_type stream(&strbuf01);

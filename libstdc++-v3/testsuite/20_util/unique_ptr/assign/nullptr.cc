@@ -27,8 +27,6 @@ struct A { };
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique_ptr<A> p(new A);
   p = nullptr;
 
@@ -38,8 +36,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique_ptr<A[]> p(new A[2]);
   p = nullptr;
 

@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   struct T { };
 
   std::shared_ptr<T>                s0(new T);

@@ -33,9 +33,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// No asserts, avoid leaking the semaphores if a VERIFY fails.
-#undef _GLIBCXX_ASSERT
-
 #include <testsuite_hooks.h>
 
 // libstdc++/9964
@@ -43,7 +40,7 @@ bool test_07()
 {
   using namespace std;
   using namespace __gnu_test;
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   semaphore s1, s2;
 
   const char* name = "tmp_fifo3";
@@ -54,7 +51,7 @@ bool test_07()
   mkfifo(name, S_IRWXU);
   
   int child = fork();
-  VERIFY( child != -1 );
+  test &= bool( child != -1 );
 
   if (child == 0)
     {
@@ -68,15 +65,15 @@ bool test_07()
   
   filebuf fb;
   filebuf* ret = fb.open(name, ios_base::in | ios_base::out);
-  VERIFY( ret != 0 );
-  VERIFY( fb.is_open() );
+  test &= bool( ret != 0 );
+  test &= bool( fb.is_open() );
   s1.signal();
   s2.wait();
   fb.sputc('a');
 
   ret = fb.close();
-  VERIFY( ret != 0 );
-  VERIFY( !fb.is_open() );
+  test &= bool( ret != 0 );
+  test &= bool( !fb.is_open() );
 
   return test;
 }

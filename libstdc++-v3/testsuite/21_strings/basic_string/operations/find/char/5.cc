@@ -30,7 +30,6 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
   std::string_view str1("bar");
   std::string str2("foobar");
 

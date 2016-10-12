@@ -24,8 +24,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   // 1
   std::error_code e1;
   VERIFY( e1.value() == 0 );

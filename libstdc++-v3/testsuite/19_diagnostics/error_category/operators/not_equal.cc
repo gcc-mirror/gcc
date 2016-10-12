@@ -23,8 +23,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_test::test_category c1;
   __gnu_test::test_derived_category c2;
   VERIFY( !(c1 != c1) );

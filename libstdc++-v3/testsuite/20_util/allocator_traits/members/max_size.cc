@@ -42,8 +42,6 @@ struct unsized_allocator
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::allocator_traits<maxsize_allocator<X>> traits_type;
   traits_type::allocator_type a;
   auto size = a.max_size();
@@ -52,8 +50,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::allocator_traits<unsized_allocator<X>> traits_type;
   traits_type::allocator_type a;
   auto size = std::numeric_limits<traits_type::size_type>::max();
@@ -62,8 +58,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::allocator_traits<unsized_allocator<int>> traits_type;
   traits_type::allocator_type a;
   auto size = std::numeric_limits<traits_type::size_type>::max();

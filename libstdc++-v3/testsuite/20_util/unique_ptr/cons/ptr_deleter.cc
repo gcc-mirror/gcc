@@ -30,7 +30,6 @@ void vdel(int* p) { ++count; delete[] p; }
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   count = 0;
   {
     std::unique_ptr<int, void(*)(int*)> p(nullptr, del);
@@ -45,7 +44,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   count = 0;
   {
     std::unique_ptr<int[], void(*)(int*)> p(nullptr, vdel);

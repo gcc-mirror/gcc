@@ -25,8 +25,6 @@
 
 using namespace __gnu_test;
 
-bool test __attribute__((unused)) = true;
-
 // Put reference_wrappers to member pointers
 void test08()
 {

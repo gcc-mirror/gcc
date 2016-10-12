@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
   
   duration<int> d0(3);
@@ -59,7 +58,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
   
   duration<int> d7(3);

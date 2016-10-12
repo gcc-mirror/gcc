@@ -41,8 +41,6 @@ namespace std
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::less<std::shared_ptr<A>> less;
   // test empty shared_ptrs compare equivalent
   std::shared_ptr<A> p1;
@@ -57,8 +55,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::less<std::shared_ptr<A>> less;
 
   std::shared_ptr<A> empty;
@@ -81,8 +77,6 @@ test02()
 int
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::less<std::shared_ptr<A>> less;
 
   A a;

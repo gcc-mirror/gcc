@@ -56,8 +56,6 @@ void operator delete(void* p)
 // libstdc++/50594
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::string s = "Hello World, this is not a small string.";
   }

@@ -29,8 +29,6 @@ template<typename... Args1, typename... Args2>
   void
   check_tuple_cat(std::tuple<Args1...> t1, std::tuple<Args2...> t2)
   {
-    bool test __attribute__((unused)) = true;
-
     typedef std::tuple<Args1..., Args2...> concatenated;
   
     auto cat1 = std::tuple_cat(     t1,       t2 );

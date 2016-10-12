@@ -25,7 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std::chrono;
 
   const duration<int> d0(17);

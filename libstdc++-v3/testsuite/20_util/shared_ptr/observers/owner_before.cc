@@ -37,8 +37,6 @@ struct B : A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // test empty shared_ptrs compare equivalent
   std::shared_ptr<A> p1;
   std::shared_ptr<B> p2;
@@ -50,8 +48,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a0;
 
   std::shared_ptr<A> a1(new A);
@@ -77,8 +73,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> p1(new A());
   std::shared_ptr<int> p2(p1, &p1->i);
   VERIFY( !p1.owner_before(p2) && !p2.owner_before(p1) );

@@ -120,8 +120,6 @@ template<typename A, typename B>
   void
   test_def()
   {
-    bool test __attribute((unused)) = false;
-
     typedef std::pair<A, B> test_type;
     typedef uneq_allocator<test_type> alloc_type;
     typedef scoped_allocator_adaptor<alloc_type, alloc_type> alloc_adaptor;
@@ -167,8 +165,6 @@ template<typename A, typename B>
   void
   test_copying()
   {
-    bool test __attribute((unused)) = false;
-
     typedef std::pair<A, B> test_type;
     typedef uneq_allocator<test_type> alloc_type;
     typedef scoped_allocator_adaptor<alloc_type, alloc_type> alloc_adaptor;
@@ -218,8 +214,6 @@ template<typename A, typename B>
   void
   test_moving()
   {
-    bool test __attribute((unused)) = false;
-
     typedef std::pair<A, B> test_type;
     typedef uneq_allocator<test_type> alloc_type;
     typedef scoped_allocator_adaptor<alloc_type, alloc_type> alloc_adaptor;

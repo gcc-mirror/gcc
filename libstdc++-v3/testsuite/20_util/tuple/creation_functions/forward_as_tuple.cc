@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_as_tuple();
 
   VERIFY( std::get<0>(std::forward_as_tuple(-1)) == -1 );

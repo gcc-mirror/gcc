@@ -23,11 +23,9 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-bool
+void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::wstring_view::size_type csize_type;
   typedef std::wstring_view::const_reference cref;
   typedef std::wstring_view::reference ref;
@@ -62,8 +60,6 @@ test01()
   {
     VERIFY( false );
   }
-
-  return test;
 }
 
 int

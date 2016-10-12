@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::wstring;
 
   VERIFY( (wstring(L"abc") + wstring(L"def")

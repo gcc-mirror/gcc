@@ -25,7 +25,6 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
   std::string_view str1("foo");
   std::string str2;
   str2 += str1;
@@ -42,8 +41,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   std::string str("a");
   char c = 'b';
   str.append(&c, 1);
