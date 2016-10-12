@@ -1117,14 +1117,21 @@ analyze_functions (bool first_time)
 		}
 
 	      /* If decl is a clone of an abstract function,
-	      mark that abstract function so that we don't release its body.
-	      The DECL_INITIAL() of that abstract function declaration
-	      will be later needed to output debug info.  */
+		 mark that abstract function so that we don't release its body.
+		 The DECL_INITIAL() of that abstract function declaration
+		 will be later needed to output debug info.  */
 	      if (DECL_ABSTRACT_ORIGIN (decl))
 		{
 		  cgraph_node *origin_node
 		    = cgraph_node::get_create (DECL_ABSTRACT_ORIGIN (decl));
 		  origin_node->used_as_abstract_origin = true;
+		}
+	      /* Preserve a functions function context node.  It will
+		 later be needed to output debug info.  */
+	      if (tree fn = decl_function_context (decl))
+		{
+		  cgraph_node *origin_node = cgraph_node::get_create (fn);
+		  enqueue_node (origin_node);
 		}
 	    }
 	  else
