@@ -1,3 +1,8 @@
+2016-10-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* vmsdbgout.c (vmsdbg_debug_hooks): Add filename parameter to
+	early_finish hook.
+
 2016-10-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	* rtl.h (struct rtx_def): Comment how RTX_FLAGS will be

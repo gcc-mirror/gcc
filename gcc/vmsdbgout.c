@@ -174,7 +174,7 @@ static void vmsdbgout_abstract_function (tree);
 const struct gcc_debug_hooks vmsdbg_debug_hooks
 = {vmsdbgout_init,
    vmsdbgout_finish,
-   debug_nothing_void,
+   debug_nothing_charstar,
    vmsdbgout_assembly_start,
    vmsdbgout_define,
    vmsdbgout_undef,
