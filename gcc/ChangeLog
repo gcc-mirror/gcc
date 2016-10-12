@@ -1,5 +1,18 @@
 2016-10-12  David Malcolm  <dmalcolm@redhat.com>
 
+	* function-tests.c: Include "print-rtl.h".
+	(selftest::test_expansion_to_rtl): Call print_rtx_function on the
+	function, and verify what is dumped.
+	* print-rtl-function.c (print_edge): New function.
+	(begin_any_block): New function.
+	(end_any_block): New function.
+	(can_have_basic_block_p): New function.
+	(print_rtx_function): Track the basic blocks of insns in the
+	chain, wrapping those that are within blocks within "(block)"
+	directives.  Remove the "(cfg)" directive.
+
+2016-10-12  David Malcolm  <dmalcolm@redhat.com>
+
 	* selftest.c (selftest::read_file): New function.
 	(selftest::test_read_file): New function.
 	(selftest::selftest_c_tests): Call test_read_file.

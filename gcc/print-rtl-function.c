@@ -33,14 +33,106 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "emit-rtl.h"
 
+/* Print an "(edge-from)" or "(edge-to)" directive describing E
+   to OUTFILE.  */
+
+static void
+print_edge (FILE *outfile, edge e, bool from)
+{
+  fprintf (outfile, "      (%s ", from ? "edge-from" : "edge-to");
+  basic_block bb = from ? e->src : e->dest;
+  gcc_assert (bb);
+  switch (bb->index)
+    {
+    case ENTRY_BLOCK:
+      fprintf (outfile, "entry");
+      break;
+    case EXIT_BLOCK:
+      fprintf (outfile, "exit");
+      break;
+    default:
+      fprintf (outfile, "%i", bb->index);
+      break;
+    }
+
+  /* Express edge flags as a string with " | " separator.
+     e.g. (flags "FALLTHRU | DFS_BACK").  */
+  fprintf (outfile, " (flags \"");
+  bool seen_flag = false;
+#define DEF_EDGE_FLAG(NAME,IDX) \
+  do {						\
+    if (e->flags & EDGE_##NAME)			\
+      {						\
+	if (seen_flag)				\
+	  fprintf (outfile, " | ");		\
+	fprintf (outfile, "%s", (#NAME));	\
+	seen_flag = true;			\
+      }						\
+  } while (0);
+#include "cfg-flags.def"
+#undef DEF_EDGE_FLAG
+
+  fprintf (outfile, "\"))\n");
+}
+
+/* If BB is non-NULL, print the start of a "(block)" directive for it
+   to OUTFILE, otherwise do nothing.  */
+
+static void
+begin_any_block (FILE *outfile, basic_block bb)
+{
+  if (!bb)
+    return;
+
+  edge e;
+  edge_iterator ei;
+
+  fprintf (outfile, "    (block %i\n", bb->index);
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    print_edge (outfile, e, true);
+}
+
+/* If BB is non-NULL, print the end of a "(block)" directive for it
+   to OUTFILE, otherwise do nothing.  */
+
+static void
+end_any_block (FILE *outfile, basic_block bb)
+{
+  if (!bb)
+    return;
+
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    print_edge (outfile, e, false);
+  fprintf (outfile, "    ) ;; block %i\n", bb->index);
+}
+
+/* Determine if INSN is of a kind that can have a basic block.  */
+
+static bool
+can_have_basic_block_p (const rtx_insn *insn)
+{
+  rtx_code code = GET_CODE (insn);
+  if (code == BARRIER)
+    return false;
+  gcc_assert (GET_RTX_FORMAT (code)[2] == 'B');
+  return true;
+}
+
 /* Write FN to OUTFILE in a form suitable for parsing, with indentation
-   and comments to make the structure easy for a human to grok.
+   and comments to make the structure easy for a human to grok.  Track
+   the basic blocks of insns in the chain, wrapping those that are within
+   blocks within "(block)" directives.
 
    Example output:
 
-     (function "times_two"
-       (insn-chain
-	 (note 1 0 4 (nil) NOTE_INSN_DELETED)
+   (function "times_two"
+     (insn-chain
+       (note 1 0 4 (nil) NOTE_INSN_DELETED)
+       (block 2
+	 (edge-from entry (flags "FALLTHRU"))
 	 (note 4 1 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
 	 (insn 2 4 3 2 (set (mem/c:SI (plus:DI (reg/f:DI 82 virtual-stack-vars)
 			     (const_int -4 [0xfffffffffffffffc])) [1 i+0 S4 A32])
@@ -69,23 +161,15 @@ along with GCC; see the file COPYING3.  If not see
 		  (nil))
 	 (insn 15 14 0 2 (use (reg/i:SI 0 ax)) t.c:4 -1
 		  (nil))
-       ) ;; insn-chain
-       (cfg
-	 (bb 0
-	   (edge 0 2 (flags 0x1))
-	 ) ;; bb
-	 (bb 2
-	   (edge 2 1 (flags 0x1))
-	 ) ;; bb
-	 (bb 1
-	 ) ;; bb
-       ) ;; cfg
-       (crtl
-	 (return_rtx
-	   (reg/i:SI 0 ax)
-	 ) ;; return_rtx
-       ) ;; crtl
-     ) ;; function "times_two"
+	 (edge-to exit (flags "FALLTHRU"))
+       ) ;; block 2
+     ) ;; insn-chain
+     (crtl
+       (return_rtx
+	  (reg/i:SI 0 ax)
+       ) ;; return_rtx
+     ) ;; crtl
+   ) ;; function "times_two"
 */
 
 DEBUG_FUNCTION void
@@ -99,26 +183,24 @@ print_rtx_function (FILE *outfile, function *fn)
 
   /* The instruction chain.  */
   fprintf (outfile, "  (insn-chain\n");
+  basic_block curr_bb = NULL;
   for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    print_rtl_single_with_indent (outfile, insn, 4);
+    {
+      basic_block insn_bb;
+      if (can_have_basic_block_p (insn))
+	insn_bb = BLOCK_FOR_INSN (insn);
+      else
+	insn_bb = NULL;
+      if (curr_bb != insn_bb)
+	{
+	  end_any_block (outfile, curr_bb);
+	  curr_bb = insn_bb;
+	  begin_any_block (outfile, curr_bb);
+	}
+      print_rtl_single_with_indent (outfile, insn, curr_bb ? 6 : 4);
+    }
+  end_any_block (outfile, curr_bb);
   fprintf (outfile, "  ) ;; insn-chain\n");
-
-  /* The CFG.  */
-  fprintf (outfile, "  (cfg\n");
-  {
-    basic_block bb;
-    FOR_ALL_BB_FN (bb, fn)
-      {
-	fprintf (outfile, "    (bb %i\n", bb->index);
-	edge e;
-	edge_iterator ei;
-	FOR_EACH_EDGE (e, ei, bb->succs)
-	  fprintf (outfile, "      (edge %i %i (flags 0x%x))\n",
-		   e->src->index, e->dest->index, e->flags);
-	fprintf (outfile, "    ) ;; bb\n");
-      }
-  }
-  fprintf (outfile, "  ) ;; cfg\n");
 
   /* Additional RTL state.  */
   fprintf (outfile, "  (crtl\n");
