@@ -1,3 +1,9 @@
+2016-10-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_return_in_memory): Warn for
+	vector return by reference only if -Wpsabi.
+	(rs6000_pass_by_reference): Similarly, for argument passing.
+
 2016-10-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* function-tests.c: Include "print-rtl.h".
