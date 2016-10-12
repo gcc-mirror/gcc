@@ -6034,6 +6034,15 @@ package body Sem_Res is
          end;
 
       else
+         --  If the function returns the limited view of type, the call must
+         --  appear in a context in which the non-limited view is available.
+         --  As is done in Try_Object_Operation, use the available view to
+         --  prevent back-end confusion.
+
+         if From_Limited_With (Etype (Nam)) then
+            Set_Etype (Nam, Available_View (Etype (Nam)));
+         end if;
+
          Set_Etype (N, Etype (Nam));
       end if;
 

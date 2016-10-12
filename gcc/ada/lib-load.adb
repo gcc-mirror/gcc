@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -784,7 +784,7 @@ package body Lib.Load is
 
             --  Generate message if unit required
 
-            if Required and then Present (Error_Node) then
+            if Required then
                if Is_Predefined_File_Name (Fname) then
 
                   --  This is a predefined library unit which is not present
@@ -799,7 +799,9 @@ package body Lib.Load is
                   --  the message about the restriction violation is generated,
                   --  if needed.
 
-                  Check_Restricted_Unit (Load_Name, Error_Node);
+                  if Present (Error_Node) then
+                     Check_Restricted_Unit (Load_Name, Error_Node);
+                  end if;
 
                   Error_Msg_Unit_1 := Uname_Actual;
                   Error_Msg -- CODEFIX

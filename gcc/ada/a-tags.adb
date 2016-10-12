@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,13 @@ package body Ada.Tags is
    --  Given a tag returns True if it has the signature of a primary dispatch
    --  table.  This is Inline_Always since it is called from other Inline_
    --  Always subprograms where we want no out of line code to be generated.
+
+   function IW_Membership
+     (Descendant_TSD : Type_Specific_Data_Ptr;
+      T              : Tag) return Boolean;
+   --  Subsidiary function of IW_Membership and CW_Membership which factorizes
+   --  the functionality needed to check if a given descendant implements an
+   --  interface tag T.
 
    function Length (Str : Cstring_Ptr) return Natural;
    --  Length of string represented by the given pointer (treating the string
@@ -431,27 +438,14 @@ package body Ada.Tags is
    -- IW_Membership --
    -------------------
 
-   --  Canonical implementation of Classwide Membership corresponding to:
-
-   --     Obj in Iface'Class
-
-   --  Each dispatch table contains a table with the tags of all the
-   --  implemented interfaces.
-
-   --  Obj is in Iface'Class if Iface'Tag is found in the table of interfaces
-   --  that are contained in the dispatch table referenced by Obj'Tag.
-
-   function IW_Membership (This : System.Address; T : Tag) return Boolean is
+   function IW_Membership
+     (Descendant_TSD : Type_Specific_Data_Ptr;
+      T              : Tag) return Boolean
+   is
       Iface_Table : Interface_Data_Ptr;
-      Obj_Base    : System.Address;
-      Obj_DT      : Dispatch_Table_Ptr;
-      Obj_TSD     : Type_Specific_Data_Ptr;
 
    begin
-      Obj_Base    := Base_Address (This);
-      Obj_DT      := DT (To_Tag_Ptr (Obj_Base).all);
-      Obj_TSD     := To_Type_Specific_Data_Ptr (Obj_DT.TSD);
-      Iface_Table := Obj_TSD.Interfaces_Table;
+      Iface_Table := Descendant_TSD.Interfaces_Table;
 
       if Iface_Table /= null then
          for Id in 1 .. Iface_Table.Nb_Ifaces loop
@@ -464,13 +458,40 @@ package body Ada.Tags is
       --  Look for the tag in the ancestor tags table. This is required for:
       --     Iface_CW in Typ'Class
 
-      for Id in 0 .. Obj_TSD.Idepth loop
-         if Obj_TSD.Tags_Table (Id) = T then
+      for Id in 0 .. Descendant_TSD.Idepth loop
+         if Descendant_TSD.Tags_Table (Id) = T then
             return True;
          end if;
       end loop;
 
       return False;
+   end IW_Membership;
+
+   -------------------
+   -- IW_Membership --
+   -------------------
+
+   --  Canonical implementation of Classwide Membership corresponding to:
+
+   --     Obj in Iface'Class
+
+   --  Each dispatch table contains a table with the tags of all the
+   --  implemented interfaces.
+
+   --  Obj is in Iface'Class if Iface'Tag is found in the table of interfaces
+   --  that are contained in the dispatch table referenced by Obj'Tag.
+
+   function IW_Membership (This : System.Address; T : Tag) return Boolean is
+      Obj_Base : System.Address;
+      Obj_DT   : Dispatch_Table_Ptr;
+      Obj_TSD  : Type_Specific_Data_Ptr;
+
+   begin
+      Obj_Base := Base_Address (This);
+      Obj_DT   := DT (To_Tag_Ptr (Obj_Base).all);
+      Obj_TSD  := To_Type_Specific_Data_Ptr (Obj_DT.TSD);
+
+      return IW_Membership (Obj_TSD, T);
    end IW_Membership;
 
    -------------------
@@ -721,18 +742,27 @@ package body Ada.Tags is
      (Descendant : Tag;
       Ancestor   : Tag) return Boolean
    is
-      D_TSD_Ptr : constant Addr_Ptr :=
-        To_Addr_Ptr (To_Address (Descendant) - DT_Typeinfo_Ptr_Size);
-      A_TSD_Ptr : constant Addr_Ptr :=
-        To_Addr_Ptr (To_Address (Ancestor) - DT_Typeinfo_Ptr_Size);
-      D_TSD     : constant Type_Specific_Data_Ptr :=
-        To_Type_Specific_Data_Ptr (D_TSD_Ptr.all);
-      A_TSD     : constant Type_Specific_Data_Ptr :=
-        To_Type_Specific_Data_Ptr (A_TSD_Ptr.all);
-
    begin
-      return CW_Membership (Descendant, Ancestor)
-        and then D_TSD.Access_Level = A_TSD.Access_Level;
+      if Descendant = Ancestor then
+         return True;
+
+      else
+         declare
+            D_TSD_Ptr : constant Addr_Ptr :=
+              To_Addr_Ptr (To_Address (Descendant) - DT_Typeinfo_Ptr_Size);
+            A_TSD_Ptr : constant Addr_Ptr :=
+              To_Addr_Ptr (To_Address (Ancestor) - DT_Typeinfo_Ptr_Size);
+            D_TSD     : constant Type_Specific_Data_Ptr :=
+              To_Type_Specific_Data_Ptr (D_TSD_Ptr.all);
+            A_TSD     : constant Type_Specific_Data_Ptr :=
+              To_Type_Specific_Data_Ptr (A_TSD_Ptr.all);
+         begin
+            return D_TSD.Access_Level = A_TSD.Access_Level
+              and then (CW_Membership (Descendant, Ancestor)
+                          or else
+                        IW_Membership (D_TSD, Ancestor));
+         end;
+      end if;
    end Is_Descendant_At_Same_Level;
 
    ------------

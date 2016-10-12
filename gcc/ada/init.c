@@ -2138,9 +2138,9 @@ __gnat_init_float (void)
 #endif
 #endif
 
-#if defined (__i386__) && !defined (VTHREADS)
+#if (defined (__i386__) || defined (__x86_64__)) && !defined (VTHREADS)
   /* This is used to properly initialize the FPU on an x86 for each
-     process thread. Is this needed for x86_64 ???  */
+     process thread. */
   asm ("finit");
 #endif
 

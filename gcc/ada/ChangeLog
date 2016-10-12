@@ -1,3 +1,60 @@
+2016-10-12  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c: Make sure to call finit on x86_64-vx7 to reinitialize
+	the FPU unit.
+
+2016-10-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-load.adb (Load_Unit): Generate an error message even when
+	Error_Node is null.
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Disable optimization related to transitive
+	limited_with clauses for now.
+
+2016-10-12  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Generating C
+	code handle 'old located in inlined _postconditions procedures.
+	(Analyze_Attribute [Attribute_Result]): Handle 'result when
+	rewriting the attribute as a reference to the formal parameter
+	_Result of inlined _postconditions procedures.
+
+2016-10-12  Tristan Gingold  <gingold@adacore.com>
+
+	* s-rident.ads (Profile_Info): Remove
+	Max_Protected_Entries restriction from GNAT_Extended_Ravenscar
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration):
+	Not a controlled type on restricted runtimes.
+
+2016-10-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprogram): Add test
+	for Is_Controlled of Parent_Type when determining whether an
+	inherited subprogram with one of the special names Initialize,
+	Adjust, or Finalize should be derived with its normal name even
+	when inherited as a private operation (which would normally
+	result in the inherited operation having a special "hidden" name).
+
+2016-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): If a function call returns a
+	limited view of a type replace it with the non-limited view,
+	which must be available when compiling call.  This was already
+	done elsewhere for non-overloaded calls, but needs to be done
+	after resolution if function name is overloaded.
+
+2016-10-12  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.adb (IW_Membership [private]): new overloaded
+	subprogram that factorizes the code needed to check if a
+	given type implements an interface type.
+	(IW_Membership
+	[public]): invoke the new internal IW_Membership function.
+	(Is_Descendant_At_Same_Level): Fix this routine to implement RM
+	3.9 (12.3/3)
+
 2016-10-12  Tristan Gingold  <gingold@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Delay_Relative_Statement): Add support
