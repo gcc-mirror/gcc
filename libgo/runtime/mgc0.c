@@ -2216,7 +2216,7 @@ static void
 gc(struct gc_args *args)
 {
 	M *m;
-	int64 t0, t1, t2, t3, t4;
+	int64 tm0, tm1, tm2, tm3, tm4;
 	uint64 heap0, heap1, obj, ninstr;
 	GCStats stats;
 	uint32 i;
@@ -2228,7 +2228,7 @@ gc(struct gc_args *args)
 		runtime_tracegc();
 
 	m->traceback = 2;
-	t0 = args->start_time;
+	tm0 = args->start_time;
 	work.tstart = args->start_time; 
 
 	if(CollectStats)
@@ -2239,9 +2239,9 @@ gc(struct gc_args *args)
 		work.markfor = runtime_parforalloc(MaxGcproc);
 	m->locks--;
 
-	t1 = 0;
+	tm1 = 0;
 	if(runtime_debug.gctrace)
-		t1 = runtime_nanotime();
+		tm1 = runtime_nanotime();
 
 	// Sweep what is not sweeped by bgsweep.
 	while(runtime_sweepone() != (uintptr)-1)
@@ -2256,17 +2256,17 @@ gc(struct gc_args *args)
 		runtime_helpgc(work.nproc);
 	}
 
-	t2 = 0;
+	tm2 = 0;
 	if(runtime_debug.gctrace)
-		t2 = runtime_nanotime();
+		tm2 = runtime_nanotime();
 
 	gchelperstart();
 	runtime_parfordo(work.markfor);
 	scanblock(nil, true);
 
-	t3 = 0;
+	tm3 = 0;
 	if(runtime_debug.gctrace)
-		t3 = runtime_nanotime();
+		tm3 = runtime_nanotime();
 
 	bufferList[m->helpgc].busy = 0;
 	if(work.nproc > 1)
@@ -2280,14 +2280,14 @@ gc(struct gc_args *args)
 	// concurrent/lazy sweep will reduce this number while discovering new garbage
 	mstats.next_gc = mstats.heap_alloc+(mstats.heap_alloc-runtime_stacks_sys)*gcpercent/100;
 
-	t4 = runtime_nanotime();
+	tm4 = runtime_nanotime();
 	mstats.last_gc = runtime_unixnanotime();  // must be Unix time to make sense to user
-	mstats.pause_ns[mstats.numgc%nelem(mstats.pause_ns)] = t4 - t0;
+	mstats.pause_ns[mstats.numgc%nelem(mstats.pause_ns)] = tm4 - tm0;
 	mstats.pause_end[mstats.numgc%nelem(mstats.pause_end)] = mstats.last_gc;
-	mstats.pause_total_ns += t4 - t0;
+	mstats.pause_total_ns += tm4 - tm0;
 	mstats.numgc++;
 	if(mstats.debuggc)
-		runtime_printf("pause %D\n", t4-t0);
+		runtime_printf("pause %D\n", tm4-tm0);
 
 	if(runtime_debug.gctrace) {
 		heap1 = mstats.heap_alloc;
@@ -2305,7 +2305,7 @@ gc(struct gc_args *args)
 		runtime_printf("gc%d(%d): %D+%D+%D+%D us, %D -> %D MB, %D (%D-%D) objects,"
 				" %d/%d/%d sweeps,"
 				" %D(%D) handoff, %D(%D) steal, %D/%D/%D yields\n",
-			mstats.numgc, work.nproc, (t1-t0)/1000, (t2-t1)/1000, (t3-t2)/1000, (t4-t3)/1000,
+			mstats.numgc, work.nproc, (tm1-tm0)/1000, (tm2-tm1)/1000, (tm3-tm2)/1000, (tm4-tm3)/1000,
 			heap0>>20, heap1>>20, obj,
 			mstats.nmalloc, mstats.nfree,
 			sweep.nspan, gcstats.nbgsweep, gcstats.npausesweep,

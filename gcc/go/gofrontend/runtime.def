@@ -38,8 +38,17 @@ DEF_GO_RUNTIME(STRINGITER, "runtime.stringiter", P2(STRING, INT), R1(INT))
 DEF_GO_RUNTIME(STRINGITER2, "runtime.stringiter2", P2(STRING, INT),
 	       R2(INT, RUNE))
 
-// Concatenate two strings.
-DEF_GO_RUNTIME(STRING_PLUS, "__go_string_plus", P2(STRING, STRING), R1(STRING))
+// Concatenate strings.
+DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings", P2(POINTER, SLICE),
+	       R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRING2, "runtime.concatstring2",
+	       P2(POINTER, ARRAY2STRING), R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRING3, "runtime.concatstring3",
+	       P2(POINTER, ARRAY3STRING), R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRING4, "runtime.concatstring4",
+	       P2(POINTER, ARRAY4STRING), R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRING5, "runtime.concatstring5",
+	       P2(POINTER, ARRAY5STRING), R1(STRING))
 
 // Compare two strings.
 DEF_GO_RUNTIME(STRCMP, "__go_strcmp", P2(STRING, STRING), R1(INT))
@@ -49,23 +58,23 @@ DEF_GO_RUNTIME(STRING_SLICE, "__go_string_slice", P3(STRING, INT, INT),
 	       R1(STRING))
 
 // Convert an integer to a string.
-DEF_GO_RUNTIME(INT_TO_STRING, "__go_int_to_string", P1(INT), R1(STRING))
+DEF_GO_RUNTIME(INTSTRING, "runtime.intstring", P2(POINTER, INT64), R1(STRING))
 
-// Convert a byte array to a string.
-DEF_GO_RUNTIME(BYTE_ARRAY_TO_STRING, "__go_byte_array_to_string",
-	       P2(POINTER, INT), R1(STRING))
+// Convert a []byte to a string.
+DEF_GO_RUNTIME(SLICEBYTETOSTRING, "runtime.slicebytetostring",
+	       P2(POINTER, SLICE), R1(STRING))
 
-// Convert an int array to a string.
-DEF_GO_RUNTIME(INT_ARRAY_TO_STRING, "__go_int_array_to_string",
-	       P2(POINTER, INT), R1(STRING))
+// Convert a []rune to a string.
+DEF_GO_RUNTIME(SLICERUNETOSTRING, "runtime.slicerunetostring",
+	       P2(POINTER, SLICE), R1(STRING))
 
-// Convert a string to a byte slice.
-DEF_GO_RUNTIME(STRING_TO_BYTE_ARRAY, "__go_string_to_byte_array",
-	       P1(STRING), R1(SLICE))
+// Convert a string to a []byte.
+DEF_GO_RUNTIME(STRINGTOSLICEBYTE, "runtime.stringtoslicebyte",
+	       P2(POINTER, STRING), R1(SLICE))
 
-// Convert a string to an int slice.
-DEF_GO_RUNTIME(STRING_TO_INT_ARRAY, "__go_string_to_int_array",
-	       P1(STRING), R1(SLICE))
+// Convert a string to a []rune.
+DEF_GO_RUNTIME(STRINGTOSLICERUNE, "runtime.stringtoslicerune",
+	       P2(POINTER, STRING), R1(SLICE))
 
 
 // Complex division.

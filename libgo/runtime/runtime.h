@@ -307,8 +307,8 @@ extern	bool	runtime_isarchive;
 #define runtime_strcmp(s1, s2) __builtin_strcmp((s1), (s2))
 #define runtime_strncmp(s1, s2, n) __builtin_strncmp((s1), (s2), (n))
 #define runtime_strstr(s1, s2) __builtin_strstr((s1), (s2))
-intgo	runtime_findnull(const byte*);
-intgo	runtime_findnullw(const uint16*);
+intgo	runtime_findnull(const byte*)
+  __asm__ (GOSYM_PREFIX "runtime.findnull");
 
 void	runtime_gogo(G*);
 struct __go_func_type;
@@ -328,8 +328,8 @@ int32	runtime_snprintf(byte*, int32, const char*, ...);
 #define runtime_mcmp(a, b, s) __builtin_memcmp((a), (b), (s))
 #define runtime_memmove(a, b, s) __builtin_memmove((a), (b), (s))
 void*	runtime_mal(uintptr);
-String	runtime_gostring(const byte*);
-String	runtime_gostringnocopy(const byte*);
+String	runtime_gostringnocopy(const byte*)
+  __asm__ (GOSYM_PREFIX "runtime.gostringnocopy");
 void	runtime_schedinit(void);
 void	runtime_initsig(bool);
 void	runtime_sigenable(uint32 sig);
