@@ -1043,6 +1043,13 @@ requirements of the license of GCC.
     <listitem><para>Define the typedefs.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2442">2442</link>:
+       <emphasis><code>call_once()</code> shouldn't <code>DECAY_COPY()</code></emphasis>
+    </term>
+    <listitem><para>Remove indirection through call wrapper that made copies
+    of arguments and forward arguments straight to <code>std::invoke</code>.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2454">2454</link>:
        <emphasis>Add <code>raw_storage_iterator::base()</code> member
        </emphasis>
