@@ -1,3 +1,46 @@
+2016-10-12  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.dg/vect/slp-26.c: Check if vectorized for MIPS MSA.
+	* gcc.dg/vect/tree-vect.h (check_vect): Check for MIPS SIMD support.
+	* gcc.target/mips/mips.exp: Add support for -mmsa.  Imply -mno-mips16
+	for -mmsa.
+	* gcc.target/mips/msa.c: New test.
+	* gcc.target/mips/msa-builtins.c: Likewise.
+	* lib/target-supports.exp (check_mips_msa_hw_available): New.
+	(check_effective_target_mips_msa_runtime): Likewise.
+	(check_effective_target_mips_msa): Likewise.
+	(add_options_for_mips_msa): Likewise.
+	(check_effective_target_vect_int): Return TRUE for MIPS MSA.
+	(check_effective_target_vect_intfloat_cvt): Likewise.
+	(check_effective_target_vect_uintfloat_cvt): Likewise.
+	(check_effective_target_vect_floatint_cvt): Likewise.
+	(check_effective_target_vect_floatuint_cvt): Likewise.
+	(check_effective_target_vect_shift): Likewise.
+	(check_effective_target_vect_shift_char): Likewise.
+	(check_effective_target_vect_long): Likewise.
+	(check_effective_target_vect_float): Likewise.
+	(check_effective_target_vect_double): Likewise.
+	(check_effective_target_vect_long_long): Likewise.
+	(check_effective_target_vect_perm): Likewise.
+	(check_effective_target_vect_perm_byte): Likewise.
+	(check_effective_target_vect_perm_short): Likewise.
+	(check_effective_target_vect_sdot_qi): Likewise.
+	(check_effective_target_vect_udot_qi): Likewise.
+	(check_effective_target_vect_sdot_hi): Likewise.
+	(check_effective_target_vect_udot_hi): Likewise.
+	(check_effective_target_vect_pack_trunc): Likewise.
+	(check_effective_target_vect_unpack): Likewise.
+	(check_effective_target_vect_hw_misalign): Likewise.
+	(check_effective_target_vect_condition): Likewise.
+	(check_effective_target_vect_cond_mixed): Likewise.
+	(check_effective_target_vect_char_mult): Likewise.
+	(check_effective_target_vect_short_mult): Likewise.
+	(check_effective_target_vect_int_mult): Likewise.
+	(check_effective_target_vect_extract_even_odd): Likewise.
+	(check_effective_target_vect_interleave): Likewise.
+	(check_vect_support_and_set_flags): Check if the target supports MSA
+	and append to the list of EFFECTIVE_TARGETS.
+
 2016-10-12  Richard Biener  <rguenther@suse.de>
 
 	PR debug/77947
