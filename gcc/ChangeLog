@@ -1,5 +1,14 @@
 2016-10-12  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-propagate.c
+	(substitute_and_fold_dom_walker::before_dom_children): Do not
+	ignore ASSERT_EXPRs but only preserve them.
+	* tree-vrp.c (remove_range_assertions): Deal with ASSERT_EXPRs
+	that have been propagated into.
+	(vrp_finalize): Enable DCE for substitute_and_fold.
+
+2016-10-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/77920
 	* tree-vrp.c (simplify_div_or_mod_using_ranges): Simplify.
 	(simplify_min_or_max_using_ranges): Pass in gsi and use it.
