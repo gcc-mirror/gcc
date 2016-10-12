@@ -349,8 +349,10 @@ fi
 sizeof_long=`grep '^const ___SIZEOF_LONG__ = ' gen-sysinfo.go | sed -e 's/.*= //'`
 if test "$sizeof_long" = "4"; then
   echo "type _C_long int32" >> ${OUT}
+  echo "type _C_ulong uint32" >> ${OUT}
 elif test "$sizeof_long" = "8"; then
   echo "type _C_long int64" >> ${OUT}
+  echo "type _C_ulong uint64" >> ${OUT}
 else
   echo 1>&2 "mksysinfo.sh: could not determine size of long (got $sizeof_long)"
   exit 1
