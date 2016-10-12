@@ -1,3 +1,13 @@
+2016-10-12  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Adapt checking
+	for optional refinement of abstract state with partial
+	visible refinement.
+	(Analyze_Refined_Global_In_Decl_Part): Adapt checking for optional
+	refinement of abstract state with partial visible refinement. Implement
+	new rules in SPARK RM 7.2.4 related to optional refinement.
+	Also fix the missing detection of missing items.
+
 2016-10-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb Add new usage for Elist29 and Node35.
