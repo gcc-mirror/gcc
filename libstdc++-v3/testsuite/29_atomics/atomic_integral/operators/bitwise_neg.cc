@@ -26,10 +26,8 @@ int main()
   return 0;
 }
 
-// { dg-error "deleted" "" { target *-*-* } 469 }
-// { dg-error "deleted" "" { target *-*-* } 470 }
-// { dg-error "operator" "" { target *-*-* } 471 }
-// { dg-error "operator" "" { target *-*-* } 472 }
-// { dg-error "operator" "" { target *-*-* } 473 }
+// { dg-error "operator" "" { target *-*-* } 476 }
+// { dg-error "operator" "" { target *-*-* } 477 }
+// { dg-error "operator" "" { target *-*-* } 478 }
 
 // { dg-prune-output "declared here" }

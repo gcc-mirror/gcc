@@ -466,8 +466,13 @@ namespace __gnu_test
     void
     bitwise_assignment_operators()
     {
+#if __cplusplus >= 201103L
+      _Tp a{};
+      _Tp b{};
+#else
       _Tp a = _Tp();
       _Tp b = _Tp();
+#endif
       a |= b; // set
       a &= ~b; // clear
       a ^= b;

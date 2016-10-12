@@ -1,5 +1,16 @@
 2016-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_common_types.h
+	(bitwise_assignment_operators): Use direct-initialization for C++11
+	and later, to avoid CopyConstructible requirement.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc:
+	Adjust expected errors and line numbers.
+
 	* include/std/mutex [_GLIBCXX_HAVE_TLS] (_Once_call): Remove.
 	(call_once) [_GLIBCXX_HAVE_TLS]: Simplify by removing _Once_call.
 
