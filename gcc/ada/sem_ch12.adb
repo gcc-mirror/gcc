@@ -8948,7 +8948,6 @@ package body Sem_Ch12 is
       Gen_Body : Node_Id;
       Gen_Decl : Node_Id)
    is
-
       function In_Same_Scope (Gen_Id, Act_Id : Node_Id) return Boolean;
       --  Check if the generic definition and the instantiation come from
       --  a common scope, in which case the instance must be frozen after
@@ -8990,12 +8989,12 @@ package body Sem_Ch12 is
       ---------------
 
       function True_Sloc (N, Act_Unit : Node_Id) return Source_Ptr is
-         Res : Source_Ptr;
          N1  : Node_Id;
+         Res : Source_Ptr;
 
       begin
          Res := Sloc (N);
-         N1 := N;
+         N1  := N;
          while Present (N1) and then N1 /= Act_Unit loop
             if Sloc (N1) > Res then
                Res := Sloc (N1);
@@ -9013,11 +9012,11 @@ package body Sem_Ch12 is
       Par       : constant Entity_Id := Scope (Gen_Id);
       Gen_Unit  : constant Node_Id   :=
                     Unit (Cunit (Get_Source_Unit (Gen_Decl)));
-      Orig_Body : Node_Id := Gen_Body;
-      F_Node    : Node_Id;
-      Body_Unit : Node_Id;
 
+      Body_Unit  : Node_Id;
+      F_Node     : Node_Id;
       Must_Delay : Boolean;
+      Orig_Body  : Node_Id := Gen_Body;
 
    --  Start of processing for Install_Body
 
@@ -9080,13 +9079,13 @@ package body Sem_Ch12 is
 
       Must_Delay :=
         (Gen_Unit = Act_Unit
-          and then (Nkind_In (Gen_Unit, N_Package_Declaration,
-                                        N_Generic_Package_Declaration)
+          and then (Nkind_In (Gen_Unit, N_Generic_Package_Declaration,
+                                        N_Package_Declaration)
                      or else (Gen_Unit = Body_Unit
                                and then True_Sloc (N, Act_Unit)
                                           < Sloc (Orig_Body)))
           and then Is_In_Main_Unit (Original_Node (Gen_Unit))
-          and then (In_Same_Scope (Gen_Id, Act_Id)));
+          and then In_Same_Scope (Gen_Id, Act_Id));
 
       --  If this is an early instantiation, the freeze node is placed after
       --  the generic body. Otherwise, if the generic appears in an instance,
@@ -12914,7 +12913,6 @@ package body Sem_Ch12 is
       end if;
 
       Current_Unit := Parent (N);
-
       while Present (Current_Unit)
         and then Nkind (Current_Unit) /= N_Compilation_Unit
       loop

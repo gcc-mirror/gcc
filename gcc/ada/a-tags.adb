@@ -757,10 +757,10 @@ package body Ada.Tags is
             A_TSD     : constant Type_Specific_Data_Ptr :=
               To_Type_Specific_Data_Ptr (A_TSD_Ptr.all);
          begin
-            return D_TSD.Access_Level = A_TSD.Access_Level
-              and then (CW_Membership (Descendant, Ancestor)
-                          or else
-                        IW_Membership (D_TSD, Ancestor));
+            return
+              D_TSD.Access_Level = A_TSD.Access_Level
+                and then (CW_Membership (Descendant, Ancestor)
+                           or else IW_Membership (D_TSD, Ancestor));
          end;
       end if;
    end Is_Descendant_At_Same_Level;

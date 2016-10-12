@@ -1106,8 +1106,8 @@ package body Exp_Ch9 is
 
    procedure Build_Class_Wide_Master (Typ : Entity_Id) is
       Loc          : constant Source_Ptr := Sloc (Typ);
-      Master_Id    : Entity_Id;
       Master_Decl  : Node_Id;
+      Master_Id    : Entity_Id;
       Master_Scope : Entity_Id;
       Name_Id      : Node_Id;
       Related_Node : Node_Id;
@@ -8390,21 +8390,25 @@ package body Exp_Ch9 is
    procedure Expand_N_Delay_Relative_Statement (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Proc : Entity_Id;
+
    begin
+      --  Try to use System.Relative_Delays.Delay_For only if available. This
+      --  is the implementation used on restricted platforms when Ada.Calendar
+      --  is not available.
+
       if RTE_Available (RO_RD_Delay_For) then
-         --  Try to use System.Relative_Delays.Delay_For only if available.
-         --  This is the implementation used on restricted platforms when
-         --  Ada.Calendar is not available.
          Proc := RTE (RO_RD_Delay_For);
+
+      --  Otherwise, use Ada.Calendar.Delays.Delay_For and emit an error
+      --  message if not available.
+
       else
-         --  Otherwise, use Ada.Calendar.Delays.Delay_For and emit an error
-         --  message if not available.
          Proc := RTE (RO_CA_Delay_For);
       end if;
 
       Rewrite (N,
         Make_Procedure_Call_Statement (Loc,
-          Name => New_Occurrence_Of (Proc, Loc),
+          Name                   => New_Occurrence_Of (Proc, Loc),
           Parameter_Associations => New_List (Expression (N))));
       Analyze (N);
    end Expand_N_Delay_Relative_Statement;

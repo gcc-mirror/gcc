@@ -26411,9 +26411,6 @@ package body Sem_Prag is
       Par_Subp    : Entity_Id;
       Adjust_Sloc : Boolean)
    is
-      Par_Formal  : Entity_Id;
-      Subp_Formal : Entity_Id;
-
       function Replace_Entity (N : Node_Id) return Traverse_Result;
       --  Replace reference to formal of inherited operation or to primitive
       --  operation of root type, with corresponding entity for derived type,
@@ -26515,6 +26512,11 @@ package body Sem_Prag is
 
       procedure Replace_Condition_Entities is
         new Traverse_Proc (Replace_Entity);
+
+      --  Local variables
+
+      Par_Formal  : Entity_Id;
+      Subp_Formal : Entity_Id;
 
    --  Start of processing for Build_Class_Wide_Expression
 

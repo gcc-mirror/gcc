@@ -1195,17 +1195,17 @@ package body Restrict is
 
          declare
             R : Restriction_Flags  renames
-                   Profile_Info (Restricted_Tasking).Set;
+                  Profile_Info (Restricted_Tasking).Set;
             V : Restriction_Values renames
-                   Profile_Info (Restricted_Tasking).Value;
+                  Profile_Info (Restricted_Tasking).Value;
          begin
             for J in R'Range loop
                if R (J)
                  and then (Restrictions.Set (J) = False
-                             or else Restriction_Warnings (J)
-                             or else
-                               (J in All_Parameter_Restrictions
-                                  and then Restrictions.Value (J) > V (J)))
+                            or else Restriction_Warnings (J)
+                            or else
+                              (J in All_Parameter_Restrictions
+                                and then Restrictions.Value (J) > V (J)))
                then
                   Restricted_Profile_Result := False;
                   exit;

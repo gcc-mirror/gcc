@@ -1169,15 +1169,19 @@ package body Rtsfind is
       M (P + 1) := '.';
       P := P + 1;
 
-      --  Add entity name and closing quote to message
+      --  Strip "RE"
 
       if RE_Image (2) = 'E' then
-         --  Strip "RE"
          S := 4;
+
+      --  Strip "RO_XX"
+
       else
-         --  Strip "RO_XX"
          S := 7;
       end if;
+
+      --  Add entity name and closing quote to message
+
       Name_Len := RE_Image'Length - S + 1;
       Name_Buffer (1 .. Name_Len) := RE_Image (S .. RE_Image'Last);
       Set_Casing (Mixed_Case);

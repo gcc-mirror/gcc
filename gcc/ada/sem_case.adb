@@ -455,51 +455,48 @@ package body Sem_Case is
       ----------------------
 
       procedure Check_Duplicates is
-         Prev_Hi : Uint := Expr_Value (Choice_Table (1).Hi);
+         Choice      : Node_Id;
+         Choice_Hi   : Uint;
+         Choice_Lo   : Uint;
+         Prev_Choice : Node_Id;
+         Prev_Hi     : Uint;
+
       begin
+         Prev_Hi := Expr_Value (Choice_Table (1).Hi);
+
          for Outer_Index in 2 .. Num_Choices loop
-            declare
-               Choice_Lo : constant Uint :=
-                 Expr_Value (Choice_Table (Outer_Index).Lo);
-               Choice_Hi : constant Uint :=
-                 Expr_Value (Choice_Table (Outer_Index).Hi);
-            begin
-               if Choice_Lo <= Prev_Hi then
-                  --  Choices overlap; this is an error
+            Choice_Lo := Expr_Value (Choice_Table (Outer_Index).Lo);
+            Choice_Hi := Expr_Value (Choice_Table (Outer_Index).Hi);
 
-                  declare
-                     Choice : constant Node_Id :=
-                       Choice_Table (Outer_Index).Node;
-                     Prev_Choice : Node_Id;
-                  begin
-                     --  Find first previous choice that overlaps
+            --  Choices overlap; this is an error
 
-                     for Inner_Index in 1 .. Outer_Index - 1 loop
-                        if Choice_Lo <=
-                             Expr_Value (Choice_Table (Inner_Index).Hi)
-                        then
-                           Prev_Choice := Choice_Table (Inner_Index).Node;
-                           exit;
-                        end if;
-                     end loop;
+            if Choice_Lo <= Prev_Hi then
+               Choice := Choice_Table (Outer_Index).Node;
 
-                     if Sloc (Prev_Choice) <= Sloc (Choice) then
-                        Error_Msg_Sloc := Sloc (Prev_Choice);
-                        Dup_Choice
-                          (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Choice);
-                     else
-                        Error_Msg_Sloc := Sloc (Choice);
-                        Dup_Choice
-                          (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi),
-                           Prev_Choice);
-                     end if;
-                  end;
+               --  Find first previous choice that overlaps
+
+               for Inner_Index in 1 .. Outer_Index - 1 loop
+                  if Choice_Lo <=
+                       Expr_Value (Choice_Table (Inner_Index).Hi)
+                  then
+                     Prev_Choice := Choice_Table (Inner_Index).Node;
+                     exit;
+                  end if;
+               end loop;
+
+               if Sloc (Prev_Choice) <= Sloc (Choice) then
+                  Error_Msg_Sloc := Sloc (Prev_Choice);
+                  Dup_Choice (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Choice);
+               else
+                  Error_Msg_Sloc := Sloc (Choice);
+                  Dup_Choice
+                    (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Prev_Choice);
                end if;
+            end if;
 
-               if Choice_Hi > Prev_Hi then
-                  Prev_Hi := Choice_Hi;
-               end if;
-            end;
+            if Choice_Hi > Prev_Hi then
+               Prev_Hi := Choice_Hi;
+            end if;
          end loop;
       end Check_Duplicates;
 

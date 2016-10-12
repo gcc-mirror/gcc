@@ -1408,7 +1408,7 @@ package body Freeze is
          --  care of all overridings and is done only once.
 
          if Present (Overridden_Operation (Prim))
-            and then Comes_From_Source (Prim)
+           and then Comes_From_Source (Prim)
          then
             Update_Primitives_Mapping (Overridden_Operation (Prim), Prim);
 
@@ -1444,9 +1444,7 @@ package body Freeze is
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
          Prim := Node (Op_Node);
-         if not Comes_From_Source (Prim)
-           and then Present (Alias (Prim))
-         then
+         if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
             A_Pre    := Find_Aspect (Par_Prim, Aspect_Pre);
 

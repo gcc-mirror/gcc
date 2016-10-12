@@ -645,7 +645,7 @@ package body Xref_Lib is
 
             declare
                Table : Table_Type renames
-                 File.Dep.Table (1 .. Last (File.Dep));
+                         File.Dep.Table (1 .. Last (File.Dep));
             begin
                Table (Num_Dependencies) := Add_To_Xref_File
                  (Ali (File_Start .. File_End),

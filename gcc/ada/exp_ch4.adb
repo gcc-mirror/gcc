@@ -4280,8 +4280,9 @@ package body Exp_Ch4 is
 
       if Nkind (Expression (N)) = N_Qualified_Expression then
          declare
-            Exp : constant Node_Id := Expression (Expression (N));
+            Exp : constant Node_Id   := Expression (Expression (N));
             Typ : constant Entity_Id := Etype (Expression (N));
+
          begin
             Apply_Constraint_Check (Exp, Typ);
             Apply_Predicate_Check  (Exp, Typ);

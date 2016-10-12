@@ -511,7 +511,6 @@ package body System.OS_Lib is
             when None =>
                null;
          end case;
-
       end Copy_To;
 
    --  Start of processing for Copy_File
@@ -622,6 +621,7 @@ package body System.OS_Lib is
       Ada_Pathname : String_Access :=
                        To_Path_String_Access
                          (Pathname, C_String_Length (Pathname));
+
    begin
       Copy_File (Ada_Name.all, Ada_Pathname.all, Success, Mode, Preserve);
       Free (Ada_Name);
@@ -639,9 +639,10 @@ package body System.OS_Lib is
       Copy_Timestamp   : Boolean := True;
       Copy_Permissions : Boolean := True)
    is
-      F    : aliased String (1 .. From'Length + 1);
+      F : aliased String (1 .. From'Length + 1);
+      T : aliased String (1 .. To'Length + 1);
+
       Mode : Integer;
-      T    : aliased String (1 .. To'Length + 1);
 
    begin
       if Copy_Timestamp then
@@ -713,6 +714,7 @@ package body System.OS_Lib is
       Ada_Dest   : String_Access :=
                      To_Path_String_Access
                        (Dest, C_String_Length (Dest));
+
    begin
       Copy_Time_Stamps (Ada_Source.all, Ada_Dest.all, Success);
       Free (Ada_Source);
@@ -1504,6 +1506,7 @@ package body System.OS_Lib is
       pragma Import
         (C, Is_Read_Accessible_File, "__gnat_is_read_accessible_file");
       F_Name : String (1 .. Name'Length + 1);
+
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
@@ -1595,6 +1598,7 @@ package body System.OS_Lib is
       pragma Import
         (C, Is_Write_Accessible_File, "__gnat_is_write_accessible_file");
       F_Name : String (1 .. Name'Length + 1);
+
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
@@ -1849,8 +1853,8 @@ package body System.OS_Lib is
 
       else
          Result :=
-          Non_Blocking_Spawn
-            (Program_Name, Args, Output_File_Descriptor, Err_To_Out);
+           Non_Blocking_Spawn
+             (Program_Name, Args, Output_File_Descriptor, Err_To_Out);
 
          --  Close the file just created for the output, as the file descriptor
          --  cannot be used anywhere, being a local value. It is safe to do
@@ -2628,6 +2632,7 @@ package body System.OS_Lib is
       function rename (From, To : Address) return Integer;
       pragma Import (C, rename, "__gnat_rename");
       R : Integer;
+
    begin
       R := rename (Old_Name, New_Name);
       Success := (R = 0);
@@ -2640,6 +2645,7 @@ package body System.OS_Lib is
    is
       C_Old_Name : String (1 .. Old_Name'Length + 1);
       C_New_Name : String (1 .. New_Name'Length + 1);
+
    begin
       C_Old_Name (1 .. Old_Name'Length) := Old_Name;
       C_Old_Name (C_Old_Name'Last)      := ASCII.NUL;
@@ -2673,6 +2679,7 @@ package body System.OS_Lib is
       procedure C_Set_Executable (Name : C_File_Name; Mode : Integer);
       pragma Import (C, C_Set_Executable, "__gnat_set_executable");
       C_Name : aliased String (Name'First .. Name'Last + 1);
+
    begin
       C_Name (Name'Range)  := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
@@ -2687,6 +2694,7 @@ package body System.OS_Lib is
       procedure C_Set_File_Time (Name : C_File_Name; Time : OS_Time);
       pragma Import (C, C_Set_File_Time, "__gnat_set_file_time_name");
       C_Name : aliased String (Name'First .. Name'Last + 1);
+
    begin
       C_Name (Name'Range)  := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
@@ -2701,6 +2709,7 @@ package body System.OS_Lib is
       procedure C_Set_Non_Readable (Name : C_File_Name);
       pragma Import (C, C_Set_Non_Readable, "__gnat_set_non_readable");
       C_Name : aliased String (Name'First .. Name'Last + 1);
+
    begin
       C_Name (Name'Range)  := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
@@ -2715,6 +2724,7 @@ package body System.OS_Lib is
       procedure C_Set_Non_Writable (Name : C_File_Name);
       pragma Import (C, C_Set_Non_Writable, "__gnat_set_non_writable");
       C_Name : aliased String (Name'First .. Name'Last + 1);
+
    begin
       C_Name (Name'Range)  := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
@@ -2729,6 +2739,7 @@ package body System.OS_Lib is
       procedure C_Set_Readable (Name : C_File_Name);
       pragma Import (C, C_Set_Readable, "__gnat_set_readable");
       C_Name : aliased String (Name'First .. Name'Last + 1);
+
    begin
       C_Name (Name'Range)  := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
@@ -2743,6 +2754,7 @@ package body System.OS_Lib is
       procedure C_Set_Writable (Name : C_File_Name);
       pragma Import (C, C_Set_Writable, "__gnat_set_writable");
       C_Name : aliased String (Name'First .. Name'Last + 1);
+
    begin
       C_Name (Name'Range)  := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
@@ -2889,8 +2901,8 @@ package body System.OS_Lib is
          type Chars is array (Positive range <>) of aliased Character;
          type Char_Ptr is access constant Character;
 
-         Command_Len  : constant Positive := Program_Name'Length + 1 +
-                                               Args_Length (Args);
+         Command_Len  : constant Positive :=
+                          Program_Name'Length + 1 + Args_Length (Args);
          Command_Last : Natural := 0;
          Command      : aliased Chars (1 .. Command_Len);
          --  Command contains all characters of the Program_Name and Args, all
