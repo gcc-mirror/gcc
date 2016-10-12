@@ -74,15 +74,17 @@ void test02()
 void test03()
 {
   char test_data[] = "123456";
-  std::uninitialized_default_construct_n(std::begin(test_data), 6);
+  auto end = std::uninitialized_default_construct_n(std::begin(test_data), 6);
   VERIFY(std::string(test_data) == "123456");
+  VERIFY( end == test_data + 6 );
 }
 
 void test04()
 {
   char test_data[] = "123456";
-  std::uninitialized_value_construct_n(std::begin(test_data), 6);
-  VERIFY(std::string(test_data, 6) == std::string("\0\0\0\0\0\0", 6));
+  auto end = std::uninitialized_value_construct_n(std::begin(test_data), 5);
+  VERIFY(std::string(test_data, 6) == std::string("\0\0\0\0\0" "6", 6));
+  VERIFY( end == test_data + 5 );
 }
 
 void test05()
@@ -112,8 +114,9 @@ void test07()
   del_count = 0;
   DelCount* x = (DelCount*)malloc(sizeof(DelCount)*10);
   for (int i = 0; i < 10; ++i) new (x+i) DelCount;
-  std::destroy_n(x, 10);
+  auto end = std::destroy_n(x, 10);
   VERIFY(del_count == 10);
+  VERIFY( end == x + 10 );
   del_count = 0;
   free(x);
 }
@@ -127,7 +130,8 @@ void test08()
   std::uninitialized_move(source.begin(), source.end(), target);
   for (const auto& x : source) VERIFY(!x);
   for (int i = 0; i < 10; ++i) VERIFY(bool(*(target+i)));
-  std::destroy_n(target, 10);
+  auto end = std::destroy_n(target, 10);
+  VERIFY( end == target + 10 );
   free(target);
 }
 
@@ -137,10 +141,13 @@ void test09()
   for (int i = 0; i < 10; ++i) source.push_back(std::make_unique<int>(i));
   std::unique_ptr<int>* target =
     (std::unique_ptr<int>*)malloc(sizeof(std::unique_ptr<int>)*10);
-  std::uninitialized_move_n(source.begin(), 10, target);
+  auto end = std::uninitialized_move_n(source.begin(), 10, target);
+  VERIFY( end.first == source.begin() + 10 );
+  VERIFY( end.second == target + 10 );
   for (const auto& x : source) VERIFY(!x);
   for (int i = 0; i < 10; ++i) VERIFY(bool(*(target+i)));
-  std::destroy_n(target, 10);
+  auto end2 = std::destroy_n(target, 10);
+  VERIFY( end2 == target + 10 );
   free(target);
 }
 
@@ -156,7 +163,8 @@ void test11()
 {
   char* x = (char*)malloc(sizeof(char)*10);
   for (int i = 0; i < 10; ++i) new (x+i) char;
-  std::destroy_n(x, 10);
+  auto end = std::destroy_n(x, 10);
+  VERIFY( end == x + 10 );
   free(x);
 }
 
@@ -285,10 +293,12 @@ void test19()
 {
   char test_source[] = "123456";
   char test_target[] = "000000";
-  std::uninitialized_move_n(std::begin(test_source),
-			    6,
-			    test_target);
+  auto end = std::uninitialized_move_n(std::begin(test_source),
+                                       6,
+                                       test_target);
   VERIFY(std::string(test_target) == "123456");
+  VERIFY( end.first == test_source + 6 );
+  VERIFY( end.second == test_target + 6 );
 }
 
 int main()
