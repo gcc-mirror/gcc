@@ -1,3 +1,11 @@
+2016-10-12  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): Fixed style.
+	(gfc_trans_class_init_assign): Same.
+	(gfc_conv_procedure_call): Same.
+	(gfc_trans_assignment_1): Same.
+	* trans-stmt.c (gfc_trans_allocate): Same.
+
 2016-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* iresolve.c (is_trig_resolved, resolve_trig_call): Formatting fixes.

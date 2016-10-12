@@ -357,8 +357,7 @@ gfc_find_and_cut_at_last_class_ref (gfc_expr *e)
   array_ref = NULL;
   for (ref = e->ref; ref; ref = ref->next)
     {
-      if (ref->type == REF_ARRAY
-	  && ref->u.ar.type != AR_ELEMENT)
+      if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
 	array_ref = ref;
 
       if (ref->type == REF_COMPONENT
@@ -367,11 +366,10 @@ gfc_find_and_cut_at_last_class_ref (gfc_expr *e)
 	  /* Component to the right of a part reference with nonzero rank
 	     must not have the ALLOCATABLE attribute.  If attempts are
 	     made to reference such a component reference, an error results
-	     followed by anICE.  */
-	  if (array_ref
-	      && CLASS_DATA (ref->u.c.component)->attr.allocatable)
+	     followed by an ICE.  */
+	  if (array_ref && CLASS_DATA (ref->u.c.component)->attr.allocatable)
 	    return NULL;
-	class_ref = ref;
+	  class_ref = ref;
 	}
 
       if (ref->next == NULL)
@@ -1428,7 +1426,7 @@ gfc_trans_class_init_assign (gfc_code *code)
   rhs->rank = 0;
 
   if (code->expr1->ts.type == BT_CLASS
-	&& CLASS_DATA (code->expr1)->attr.dimension)
+      && CLASS_DATA (code->expr1)->attr.dimension)
     tmp = gfc_trans_class_array_init_assign (rhs, lhs, code->expr1);
   else
     {
@@ -5880,7 +5878,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   if (comp)
     ts = comp->ts;
   else
-   ts = sym->ts;
+    ts = sym->ts;
 
   if (ts.type == BT_CHARACTER && sym->attr.is_bind_c)
     se->string_length = build_int_cst (gfc_charlen_type_node, 1);
@@ -9549,9 +9547,9 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      nullification occurs before the call to the finalizer. In the case of
      a scalar to array assignment, this is done in gfc_trans_scalar_assign
      as part of the deep copy.  */
-  if (!scalar_to_array && (expr1->ts.type == BT_DERIVED)
-					      && (gfc_is_alloc_class_array_function (expr2)
-						      || gfc_is_alloc_class_scalar_function (expr2)))
+  if (!scalar_to_array && expr1->ts.type == BT_DERIVED
+		       && (gfc_is_alloc_class_array_function (expr2)
+			   || gfc_is_alloc_class_scalar_function (expr2)))
     {
       tmp = rse.expr;
       tmp = gfc_nullify_alloc_comp (expr1->ts.u.derived, rse.expr, 0);
