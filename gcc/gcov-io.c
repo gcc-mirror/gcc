@@ -115,10 +115,9 @@ static inline gcov_unsigned_t from_file (gcov_unsigned_t value)
    opened. If MODE is >= 0 an existing file will be opened, if
    possible, and if MODE is <= 0, a new file will be created. Use
    MODE=0 to attempt to reopen an existing file and then fall back on
-   creating a new one.  If MODE < 0, the file will be opened in
+   creating a new one.  If MODE > 0, the file will be opened in
    read-only mode.  Otherwise it will be opened for modification.
-   Return zero on failure, >0 on opening an existing file and <0 on
-   creating a new one.  */
+   Return zero on failure, non-zero on success.  */
 
 GCOV_LINKAGE int
 #if IN_LIBGCOV
@@ -156,17 +155,12 @@ gcov_open (const char *name, int mode)
       /* pass mode (ignored) for compatibility */
       fd = open (name, O_RDONLY, S_IRUSR | S_IWUSR);
     }
-  else if (mode < 0)
+  else
      {
        /* Write mode - acquire a write-lock.  */
        s_flock.l_type = F_WRLCK;
-      fd = open (name, O_RDWR | O_CREAT | O_TRUNC, 0666);
-    }
-  else /* mode == 0 */
-    {
-      /* Read-Write mode - acquire a write-lock.  */
-      s_flock.l_type = F_WRLCK;
-      fd = open (name, O_RDWR | O_CREAT, 0666);
+       /* Truncate if force new mode.  */
+       fd = open (name, O_RDWR | O_CREAT | (mode < 0 ? O_TRUNC : 0), 0666);
     }
   if (fd < 0)
     return 0;
@@ -181,41 +175,22 @@ gcov_open (const char *name, int mode)
       close (fd);
       return 0;
     }
-
-  if (mode > 0)
-    gcov_var.mode = 1;
-  else if (mode == 0)
-    {
-      struct stat st;
-
-      if (fstat (fd, &st) < 0)
-	{
-	  fclose (gcov_var.file);
-	  gcov_var.file = 0;
-	  return 0;
-	}
-      if (st.st_size != 0)
-	gcov_var.mode = 1;
-      else
-	gcov_var.mode = mode * 2 + 1;
-    }
-  else
-    gcov_var.mode = mode * 2 + 1;
 #else
   if (mode >= 0)
+    /* Open an existing file.  */
     gcov_var.file = fopen (name, (mode > 0) ? "rb" : "r+b");
 
   if (gcov_var.file)
-    gcov_var.mode = 1;
+    mode = 1;
   else if (mode <= 0)
-    {
-      gcov_var.file = fopen (name, "w+b");
-      if (gcov_var.file)
-	gcov_var.mode = mode * 2 + 1;
-    }
+    /* Create a new file.  */
+    gcov_var.file = fopen (name, "w+b");
+
   if (!gcov_var.file)
     return 0;
 #endif
+
+  gcov_var.mode = mode ? mode : 1;
 
   setbuf (gcov_var.file, (char *)0);
 
