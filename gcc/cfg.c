@@ -1066,6 +1066,18 @@ initialize_original_copy_tables (void)
   loop_copy = new hash_table<bb_copy_hasher> (10);
 }
 
+/* Reset the data structures to maintain mapping between blocks and
+   its copies.  */
+
+void
+reset_original_copy_tables (void)
+{
+  gcc_assert (original_copy_bb_pool);
+  bb_original->empty ();
+  bb_copy->empty ();
+  loop_copy->empty ();
+}
+
 /* Free the data structures to maintain mapping between blocks and
    its copies.  */
 void
