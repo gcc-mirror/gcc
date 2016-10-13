@@ -1003,9 +1003,9 @@ slpeel_can_duplicate_loop_p (const struct loop *loop, const_edge e)
   gimple_stmt_iterator loop_exit_gsi = gsi_last_bb (exit_e->src);
   unsigned int num_bb = loop->inner? 5 : 2;
 
-      /* All loops have an outer scope; the only case loop->outer is NULL is for
-         the function itself.  */
-      if (!loop_outer (loop)
+  /* All loops have an outer scope; the only case loop->outer is NULL is for
+     the function itself.  */
+  if (!loop_outer (loop)
       || loop->num_nodes != num_bb
       || !empty_block_p (loop->latch)
       || !single_exit (loop)
@@ -1786,7 +1786,6 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo,
   struct loop *new_loop;
   edge update_e;
   basic_block preheader;
-  int loop_num;
   int max_iter;
   tree cond_expr = NULL_TREE;
   gimple_seq cond_expr_stmt_list = NULL;
@@ -1797,8 +1796,6 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo,
 
   initialize_original_copy_tables ();
 
-  loop_num  = loop->num;
-
   new_loop
     = slpeel_tree_peel_loop_to_edge (loop, scalar_loop, single_exit (loop),
 				     &ratio_mult_vf_name, ni_name, false,
@@ -1806,7 +1803,6 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo,
 				     cond_expr, cond_expr_stmt_list,
 				     0, LOOP_VINFO_VECT_FACTOR (loop_vinfo));
   gcc_assert (new_loop);
-  gcc_assert (loop_num == loop->num);
   slpeel_checking_verify_cfg_after_peeling (loop, new_loop);
 
   /* A guard that controls whether the new_loop is to be executed or skipped
@@ -2053,8 +2049,6 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, tree ni_name,
 
   initialize_original_copy_tables ();
 
-  gimple_seq stmts = NULL;
-  gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
   niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo,
 							   ni_name,
 							   &bound);

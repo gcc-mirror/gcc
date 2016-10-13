@@ -1,3 +1,10 @@
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop-manip.c (slpeel_can_duplicate_loop_p): Fix code
+	style issue.
+	(vect_do_peeling_for_loop_bound, vect_do_peeling_for_alignment):
+	Remove useless code.
+
 2016-10-13  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/77943
