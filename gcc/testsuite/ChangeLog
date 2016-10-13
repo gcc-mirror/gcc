@@ -1,3 +1,8 @@
+2016-10-13  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Cast 0 to wint_t
+	to placate -Wformat on targets where the type is not int.
+
 2016-10-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.target/i386/vararg-loc.c: Update for quoting of xloc.file

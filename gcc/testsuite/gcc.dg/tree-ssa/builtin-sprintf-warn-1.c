@@ -1293,9 +1293,9 @@ void test_snprintf_chk_c_const (void)
   T (3, "%c_%c", '1', '2');      /* { dg-warning "output truncated" } */
 
   /* Wide characters.  */
-  T (0, "%lc",  0);
-  T (1, "%lc",  0);
-  T (2, "%lc",  0);
+  T (0, "%lc",  (wint_t)0);
+  T (1, "%lc",  (wint_t)0);
+  T (2, "%lc",  (wint_t)0);
 
   /* The following could result in as few as a single byte and in as many
      as MB_CUR_MAX, but since the MB_CUR_MAX value is a runtime property
