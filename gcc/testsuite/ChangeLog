@@ -1,3 +1,10 @@
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/vect/vect-98.c: Refine test case.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2.c: Increase niters.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2.c: Ditto.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c: Ditto.
+
 2016-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/77946

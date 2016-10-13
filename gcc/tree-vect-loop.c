@@ -2059,6 +2059,25 @@ start_over:
       return false;
     }
 
+  /* If epilog loop is required because of data accesses with gaps,
+     one additional iteration needs to be peeled.  Check if there is
+     enough iterations for vectorization.  */
+  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+      && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    {
+      int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      tree scalar_niters = LOOP_VINFO_NITERSM1 (loop_vinfo);
+
+      if (wi::to_widest (scalar_niters) < vf)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "loop has no enough iterations to support"
+			     " peeling for gaps.\n");
+	  return false;
+	}
+    }
+
   /* Analyze cost.  Decide if worth while to vectorize.  */
   int min_profitable_estimate, min_profitable_iters;
   vect_estimate_min_profitable_iters (loop_vinfo, &min_profitable_iters,

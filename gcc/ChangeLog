@@ -1,5 +1,10 @@
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-loop.c (vect_analyze_loop_2): Check and skip loop if it
+	has no enough iterations for LOOP_VINFO_PEELING_FOR_GAPS.
+
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-loop.c (vectorizable_live_operation): Support handling
 	for live variable outside loop but not in lcssa form.
 
