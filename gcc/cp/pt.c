@@ -21923,7 +21923,8 @@ instantiate_decl (tree d, int defer_ok,
     {
       deleted_p = false;
       if (DECL_CLASS_SCOPE_P (code_pattern))
-	pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
+	pattern_defined = (! DECL_IN_AGGR_P (code_pattern)
+			   || DECL_INLINE_VAR_P (code_pattern));
       else
 	pattern_defined = ! DECL_EXTERNAL (code_pattern);
     }

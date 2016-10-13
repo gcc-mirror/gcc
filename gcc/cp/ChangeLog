@@ -1,3 +1,44 @@
+2016-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Implement P0386R2 - C++17 inline variables
+	* cp-tree.h (struct lang_type): Shrink language field to 1 bit
+	from 4.  Add var_declared_inline_p field.  Mention 2 spare bits.
+	(DECL_VAR_DECLARED_INLINE_P): Define.
+	(SET_DECL_VAR_DECLARED_INLINE_P): Define.
+	(DECL_INLINE_VAR_P): Define.
+	(diagnose_inline_vars_for_namespace): Declare.
+	* decl.c (diagnose_inline_vars_for_namespace): New function.
+	(duplicate_decls): For static data members copy
+	DECL_DECLARED_CONSTEXPR_P.
+	(redeclaration_error_message): Handle C++17 redundant redeclaration
+	of constexpr static data member outside of class.
+	(maybe_commonize_var): Handle inline variables.
+	(check_initializer): Ignore inline variables for diagnostics.
+	Adjust diagnostic wording for C++17.
+	(make_rtl_for_nonlocal_decl): Allow in-class definition of
+	inline static data members.
+	(bad_specifiers): Don't diagnose inline on variables here.
+	(grokvardecl): Add inlinep argument, non-static const inline variables
+	are TREE_PUBLIC.
+	(check_static_variable_definition): Return early also for inline
+	variables.
+	(mark_inline_variable): New.
+	(grokdeclarator): Handle inline variables and inline static data
+	members.
+	* typeck2.c (store_init_value): Don't diagnose non-constant
+	initializers for non-constexpr inline static data members.
+	* decl2.c (vague_linkage_p): Return true for inline variables.
+	(c_parse_final_cleanups): In-class declaration of inline static
+	data members is a definition.  Call diagnose_inline_vars_for_namespace
+	through walk_namespaces.
+	* pt.c (instantiate_decl): Set pattern_defined for in-class definitions
+	of inline static data members.
+
+2016-10-13  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (mark_inline_variable): New.
+
 2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* decl2.c: Include memmodel.h.

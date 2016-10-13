@@ -2214,7 +2214,7 @@ struct GTY(()) lang_type {
 
 struct GTY(()) lang_decl_base {
   unsigned selector : 16;   /* Larger than necessary for faster access.  */
-  ENUM_BITFIELD(languages) language : 4;
+  ENUM_BITFIELD(languages) language : 1;
   unsigned use_template : 2;
   unsigned not_really_extern : 1;	   /* var or fn */
   unsigned initialized_in_class : 1;	   /* var or fn */
@@ -2227,7 +2227,8 @@ struct GTY(()) lang_decl_base {
   unsigned odr_used : 1;		   /* var or fn */
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
-  /* 0 spare bits */
+  unsigned var_declared_inline_p : 1;	   /* var */
+  /* 2 spare bits */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -3606,6 +3607,23 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    #pragma omp threadprivate.  */
 #define CP_DECL_THREADPRIVATE_P(DECL) \
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (DECL))->u.base.threadprivate_or_deleted_p)
+
+/* Nonzero if NODE is a VAR_DECL which has been declared inline.  */
+#define DECL_VAR_DECLARED_INLINE_P(NODE) \
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))			\
+   ? DECL_LANG_SPECIFIC (NODE)->u.base.var_declared_inline_p	\
+   : false)
+#define SET_DECL_VAR_DECLARED_INLINE_P(NODE) \
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.var_declared_inline_p \
+   = true)
+
+/* Nonzero if NODE is an inline VAR_DECL.  In C++17, static data members
+   declared with constexpr specifier are implicitly inline variables.  */
+#define DECL_INLINE_VAR_P(NODE) \
+  (DECL_VAR_DECLARED_INLINE_P (NODE)				\
+   || (cxx_dialect >= cxx1z					\
+       && DECL_DECLARED_CONSTEXPR_P (NODE)			\
+       && DECL_CLASS_SCOPE_P (NODE)))
 
 /* Nonzero if DECL was declared with '= delete'.  */
 #define DECL_DELETED_FN(DECL) \
@@ -5799,6 +5817,7 @@ typedef int (*walk_namespaces_fn)		(tree, void *);
 extern int walk_namespaces			(walk_namespaces_fn,
 						 void *);
 extern int wrapup_globals_for_namespace		(tree, void *);
+extern int diagnose_inline_vars_for_namespace	(tree, void *);
 extern tree create_implicit_typedef		(tree, tree);
 extern int local_variable_p			(const_tree);
 extern tree register_dtor_fn			(tree);

@@ -68,7 +68,7 @@ static int unary_op_p (enum tree_code);
 static void push_local_name (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
-			 int, int, int, tree);
+			 int, int, int, int, tree);
 static int check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (tree, tree, bool);
@@ -936,6 +936,27 @@ wrapup_globals_for_namespace (tree name_space, void* data ATTRIBUTE_UNUSED)
 
   /* Write out any globals that need to be output.  */
   return wrapup_global_declarations (vec, len);
+}
+
+/* Diagnose odr-used extern inline variables without definitions
+   in the current TU.  */
+int
+diagnose_inline_vars_for_namespace (tree name_space, void *)
+{
+  cp_binding_level *level = NAMESPACE_LEVEL (name_space);
+  vec<tree, va_gc> *statics = level->static_decls;
+  tree decl;
+  unsigned int i;
+
+  FOR_EACH_VEC_SAFE_ELT (statics, i, decl)
+    if (VAR_P (decl)
+	&& DECL_EXTERNAL (decl)
+	&& DECL_INLINE_VAR_P (decl)
+	&& DECL_ODR_USED (decl))
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"odr-used inline variable %qD is not defined", decl);
+
+  return 0;
 }
 
 /* In C++, you don't have to write `struct S' to refer to `S'; you
@@ -2098,6 +2119,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    |= DECL_NONTRIVIALLY_INITIALIZED_P (olddecl);
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (newdecl)
 	    |= DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (olddecl);
+          if (DECL_CLASS_SCOPE_P (olddecl))
+            DECL_DECLARED_CONSTEXPR_P (newdecl)
+	      |= DECL_DECLARED_CONSTEXPR_P (olddecl);
 
 	  /* Merge the threadprivate attribute from OLDDECL into NEWDECL.  */
 	  if (DECL_LANG_SPECIFIC (olddecl)
@@ -2882,6 +2906,27 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	 is valid.  */
       if (DECL_EXTERNAL (newdecl) || DECL_EXTERNAL (olddecl))
 	return NULL;
+
+      /* Static data member declared outside a class definition
+	 if the variable is defined within the class with constexpr
+	 specifier is declaration rather than definition (and
+	 deprecated).  */
+      if (cxx_dialect >= cxx1z
+	  && DECL_CLASS_SCOPE_P (olddecl)
+	  && DECL_DECLARED_CONSTEXPR_P (olddecl)
+	  && !DECL_INITIAL (newdecl))
+	{
+	  DECL_EXTERNAL (newdecl) = 1;
+	  /* For now, only warn with explicit -Wdeprecated.  */
+	  if (global_options_set.x_warn_deprecated
+	      && warning_at (DECL_SOURCE_LOCATION (newdecl), OPT_Wdeprecated,
+			     "redundant redeclaration of %<constexpr%> static "
+			     "data member %qD", newdecl))
+	    inform (DECL_SOURCE_LOCATION (olddecl),
+		    "previous declaration of %qD", olddecl);
+	  return NULL;
+	}
+
       /* Reject two definitions.  */
       return G_("redefinition of %q#D");
     }
@@ -5405,11 +5450,12 @@ maybe_commonize_var (tree decl)
 {
   /* Static data in a function with comdat linkage also has comdat
      linkage.  */
-  if (TREE_STATIC (decl)
-      /* Don't mess with __FUNCTION__.  */
-      && ! DECL_ARTIFICIAL (decl)
-      && DECL_FUNCTION_SCOPE_P (decl)
-      && vague_linkage_p (DECL_CONTEXT (decl)))
+  if ((TREE_STATIC (decl)
+       /* Don't mess with __FUNCTION__.  */
+       && ! DECL_ARTIFICIAL (decl)
+       && DECL_FUNCTION_SCOPE_P (decl)
+       && vague_linkage_p (DECL_CONTEXT (decl)))
+      || (TREE_PUBLIC (decl) && DECL_INLINE_VAR_P (decl)))
     {
       if (flag_weak)
 	{
@@ -5435,10 +5481,17 @@ maybe_commonize_var (tree decl)
 		 be merged.  */
 	      TREE_PUBLIC (decl) = 0;
 	      DECL_COMMON (decl) = 0;
+	      const char *msg;
+	      if (DECL_INLINE_VAR_P (decl))
+		msg = G_("sorry: semantics of inline variable "
+			 "%q#D are wrong (you%'ll wind up with "
+			 "multiple copies)");
+	      else
+		msg = G_("sorry: semantics of inline function "
+			 "static data %q#D are wrong (you%'ll wind "
+			 "up with multiple copies)");
 	      if (warning_at (DECL_SOURCE_LOCATION (decl), 0,
-			      "sorry: semantics of inline function static "
-			      "data %q#D are wrong (you%'ll wind up "
-			      "with multiple copies)", decl))
+			      msg, decl))
 		inform (DECL_SOURCE_LOCATION (decl),
 			"you can work around this by removing the initializer");
 	    }
@@ -6282,15 +6335,19 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
       TREE_CONSTANT (decl) = false;
     }
 
-  if (init_code && DECL_IN_AGGR_P (decl))
+  if (init_code
+      && (DECL_IN_AGGR_P (decl) && !DECL_VAR_DECLARED_INLINE_P (decl)))
     {
       static int explained = 0;
 
       if (cxx_dialect < cxx11)
 	error ("initializer invalid for static member with constructor");
-      else
+      else if (cxx_dialect < cxx1z)
 	error ("non-constant in-class initialization invalid for static "
 	       "member %qD", decl);
+      else
+	error ("non-constant in-class initialization invalid for non-inline "
+	       "static member %qD", decl);
       if (!explained)
 	{
 	  inform (input_location,
@@ -6346,7 +6403,9 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
       /* An in-class declaration of a static data member should be
 	 external; it is only a declaration, and not a definition.  */
       if (init == NULL_TREE)
-	gcc_assert (DECL_EXTERNAL (decl) || !TREE_PUBLIC (decl));
+	gcc_assert (DECL_EXTERNAL (decl)
+		    || !TREE_PUBLIC (decl)
+		    || DECL_INLINE_VAR_P (decl));
     }
 
   /* We don't create any RTL for local variables.  */
@@ -7745,8 +7804,6 @@ bad_specifiers (tree object,
       case BSP_VAR:
 	if (virtualp)
 	  error ("%qD declared as a %<virtual%> variable", object);
-	if (inlinep)
-	  error ("%qD declared as an %<inline%> variable", object);
 	if (quals)
 	  error ("%<const%> and %<volatile%> function specifiers on "
 	         "%qD invalid in variable declaration", object);
@@ -8456,6 +8513,7 @@ grokvardecl (tree type,
 	     const cp_decl_specifier_seq *declspecs,
 	     int initialized,
 	     int flags,
+	     int inlinep,
 	     int template_count,
 	     tree scope)
 {
@@ -8520,7 +8578,9 @@ grokvardecl (tree type,
   else if (toplevel_bindings_p ())
     {
       TREE_PUBLIC (decl) = (declspecs->storage_class != sc_static
-			    && (DECL_THIS_EXTERN (decl) || ! constp));
+			    && (DECL_THIS_EXTERN (decl)
+				|| ! constp
+				|| inlinep));
       TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
     }
   /* Not at top level, only `static' makes a static definition.  */
@@ -8692,8 +8752,10 @@ check_static_variable_definition (tree decl, tree type)
   if (dependent_type_p (type))
     return 0;
   /* If DECL is declared constexpr, we'll do the appropriate checks
-     in check_initializer.  */
-  if (DECL_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl))
+     in check_initializer.  Similarly for inline static data members.  */
+  if (DECL_P (decl)
+      && (DECL_DECLARED_CONSTEXPR_P (decl)
+	  || DECL_VAR_DECLARED_INLINE_P (decl)))
     return 0;
   else if (cxx_dialect >= cxx11 && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
@@ -9239,6 +9301,29 @@ check_var_type (tree identifier, tree type)
     }
 
   return type;
+}
+
+/* Handle declaring DECL as an inline variable.  */
+
+static void
+mark_inline_variable (tree decl)
+{
+  bool inlinep = true;
+  if (! toplevel_bindings_p ())
+    {
+      error ("%<inline%> specifier invalid for variable "
+	     "%qD declared at block scope", decl);
+      inlinep = false;
+    }
+  else if (cxx_dialect < cxx1z)
+    pedwarn (DECL_SOURCE_LOCATION (decl), 0,
+	     "inline variables are only available "
+	     "with -std=c++1z or -std=gnu++1z");
+  if (inlinep)
+    {
+      retrofit_lang_decl (decl);
+      SET_DECL_VAR_DECLARED_INLINE_P (decl);
+    }
 }
 
 /* Given declspecs and a declarator (abstract or otherwise), determine
@@ -11349,11 +11434,6 @@ grokdeclarator (const cp_declarator *declarator,
 					    : input_location,
 					    VAR_DECL, unqualified_id, type);
 		set_linkage_for_static_data_member (decl);
-		/* Even if there is an in-class initialization, DECL
-		   is considered undefined until an out-of-class
-		   definition is provided.  */
-		DECL_EXTERNAL (decl) = 1;
-
 		if (thread_p)
 		  {
 		    CP_DECL_THREAD_LOCAL_P (decl) = true;
@@ -11371,6 +11451,17 @@ grokdeclarator (const cp_declarator *declarator,
 			   "initializer", decl);
 		    constexpr_p = false;
 		  }
+
+		if (inlinep)
+		  mark_inline_variable (decl);
+
+		if (!DECL_VAR_DECLARED_INLINE_P (decl)
+		    && !(cxx_dialect >= cxx1z && constexpr_p))
+		  /* Even if there is an in-class initialization, DECL
+		     is considered undefined until an out-of-class
+		     definition is provided, unless this is an inline
+		     variable.  */
+		  DECL_EXTERNAL (decl) = 1;
 	      }
 	    else
 	      {
@@ -11411,7 +11502,8 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    bad_specifiers (decl, BSP_FIELD, virtualp,
 			    memfn_quals != TYPE_UNQUALIFIED,
-			    inlinep, friendp, raises != NULL_TREE);
+			    staticp ? false : inlinep, friendp,
+			    raises != NULL_TREE);
 	  }
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE
@@ -11535,6 +11627,7 @@ grokdeclarator (const cp_declarator *declarator,
 			    declspecs,
 			    initialized,
 			    ((type_quals & TYPE_QUAL_CONST) != 0) | (2 * concept_p),
+			    inlinep,
 			    template_count,
 			    ctype ? ctype : in_namespace);
 	if (decl == NULL_TREE)
@@ -11573,6 +11666,9 @@ grokdeclarator (const cp_declarator *declarator,
 		   decl);
 	    constexpr_p = false;
 	  }
+
+	if (inlinep)
+	  mark_inline_variable (decl);
       }
 
     if (VAR_P (decl) && !initialized)
