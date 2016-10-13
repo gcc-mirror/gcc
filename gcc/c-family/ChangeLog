@@ -1,3 +1,7 @@
+2016-10-13  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add __cpp_inline_variables.
+
 2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* c-cppbuiltin.c: Include memmodel.h.

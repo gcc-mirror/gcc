@@ -1,3 +1,13 @@
+2016-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/inline-var1.C: New test.
+	* g++.dg/cpp1z/inline-var1a.C: New test.
+	* g++.dg/cpp1z/inline-var1.h: New file.
+	* g++.dg/cpp1z/inline-var2.C: New test.
+	* g++.dg/cpp1z/inline-var3.C: New test.
+	* g++.dg/concepts/decl-diagnose.C (struct X): Expect also error about
+	uninitialized const.
+
 2016-10-13  Sandra Loosemore <sandra@codesourcery.com>
 
 	* gcc.target/arm/scd42-1.c: Skip if -mcpu incompatible with

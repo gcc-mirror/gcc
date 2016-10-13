@@ -1827,7 +1827,8 @@ vague_linkage_p (tree decl)
       || (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_DECLARED_INLINE_P (decl))
       || (DECL_LANG_SPECIFIC (decl)
-	  && DECL_TEMPLATE_INSTANTIATION (decl)))
+	  && DECL_TEMPLATE_INSTANTIATION (decl))
+      || (VAR_P (decl) && DECL_INLINE_VAR_P (decl)))
     return true;
   else if (DECL_FUNCTION_SCOPE_P (decl))
     /* A local static in an inline effectively has vague linkage.  */
@@ -4711,7 +4712,7 @@ c_parse_final_cleanups (void)
 	{
 	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl)
 	      /* Don't write it out if we haven't seen a definition.  */
-	      || DECL_IN_AGGR_P (decl))
+	      || (DECL_IN_AGGR_P (decl) && !DECL_INLINE_VAR_P (decl)))
 	    continue;
 	  import_export_decl (decl);
 	  /* If this static data member is needed, provide it to the
@@ -4727,6 +4728,8 @@ c_parse_final_cleanups (void)
       retries++;
     }
   while (reconsider);
+
+  walk_namespaces (diagnose_inline_vars_for_namespace, /*data=*/0);
 
   lower_var_init ();
 

@@ -22653,7 +22653,18 @@ gen_member_die (tree type, dw_die_ref context_die)
 
       child = lookup_decl_die (member);
       if (child)
-	splice_child_die (context_die, child);
+	{
+	  /* Handle inline static data members, which only have in-class
+	     declarations.  */
+	  if (child->die_tag == DW_TAG_variable
+	      && child->die_parent == comp_unit_die ())
+	    {
+	      reparent_child (child, context_die);
+	      child->die_tag = DW_TAG_member;
+	    }
+	  else
+	    splice_child_die (context_die, child);
+	}
 
       /* Do not generate standard DWARF for variant parts if we are generating
 	 the corresponding GNAT encodings: DIEs generated for both would
