@@ -2816,8 +2816,7 @@ analyze_increments (slsr_cand_t first_dep, machine_mode mode, bool speed)
       else if (incr == 0
 	       || incr == 1
 	       || (incr == -1
-		   && (gimple_assign_rhs_code (first_dep->cand_stmt)
-		       != POINTER_PLUS_EXPR)))
+		   && !POINTER_TYPE_P (first_dep->cand_type)))
 	incr_vec[i].cost = COST_NEUTRAL;
       
       /* FORNOW: If we need to add an initializer, give up if a cast from

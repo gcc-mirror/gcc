@@ -1,3 +1,10 @@
+2016-10-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/77937
+	* gimple-ssa-strength-reduction.c (analyze_increments): Use
+	POINTER_TYPE_P on the candidate type to determine whether
+	candidates in this chain require pointer arithmetic.
+
 2016-10-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium.c (visium_gimplify_va_arg): Emit a big-endian
