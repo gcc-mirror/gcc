@@ -23653,15 +23653,26 @@ package body Sem_Prag is
       --  The inputs and outputs of the subprogram spec synthesized from pragma
       --  Depends.
 
-      procedure Check_Dependency_Clause (Dep_Clause : Node_Id);
+      procedure Check_Dependency_Clause
+        (States     : Elist_Id;
+         Dep_Clause : Node_Id);
       --  Try to match a single dependency clause Dep_Clause against one or
       --  more refinement clauses found in list Refinements. Each successful
       --  match eliminates at least one refinement clause from Refinements.
+      --  States is a list of states appearing in dependencies obtained by
+      --  calling Get_States_Seen.
 
       procedure Check_Output_States;
       --  Determine whether pragma Depends contains an output state with a
       --  visible refinement and if so, ensure that pragma Refined_Depends
       --  mentions all its constituents as outputs.
+
+      function Get_States_Seen (Dependencies : List_Id) return Elist_Id;
+      --  Given a normalized list of dependencies obtained from calling
+      --  Normalize_Clauses, return a list containing the entities of all
+      --  states appearing in dependencies. It helps in checking refinements
+      --  involving a state and a corresponding constituent which is not a
+      --  direct constituent of the state.
 
       procedure Normalize_Clauses (Clauses : List_Id);
       --  Given a list of dependence or refinement clauses Clauses, normalize
@@ -23675,7 +23686,10 @@ package body Sem_Prag is
       -- Check_Dependency_Clause --
       -----------------------------
 
-      procedure Check_Dependency_Clause (Dep_Clause : Node_Id) is
+      procedure Check_Dependency_Clause
+        (States     : Elist_Id;
+         Dep_Clause : Node_Id)
+      is
          Dep_Input  : constant Node_Id := Expression (Dep_Clause);
          Dep_Output : constant Node_Id := First (Choices (Dep_Clause));
 
@@ -23692,7 +23706,7 @@ package body Sem_Prag is
             Ref_Item : Node_Id;
             Matched  : out Boolean);
          --  Try to match dependence item Dep_Item against refinement item
-         --  Ref_Item. To match against a possible null refinement (see 2, 7),
+         --  Ref_Item. To match against a possible null refinement (see 2, 9),
          --  set Ref_Item to Empty. Flag Matched is set to True when one of
          --  the following conformance scenarios is in effect:
          --    1) Both items denote null
@@ -23706,10 +23720,11 @@ package body Sem_Prag is
          --       and Ref_Item denotes null.
          --    9) Dep_Item is an abstract state with visible null refinement
          --       and Ref_Item is Empty (special case).
-         --   10) Dep_Item is an abstract state with visible non-null
-         --       refinement and Ref_Item denotes one of its constituents.
-         --   11) Dep_Item is an abstract state without a visible refinement
-         --       and Ref_Item denotes the same state.
+         --   10) Dep_Item is an abstract state with full or partial visible
+         --       non-null refinement and Ref_Item denotes one of its
+         --       constituents.
+         --   11) Dep_Item is an abstract state without a full visible
+         --       refinement and Ref_Item denotes the same state.
          --  When scenario 10 is in effect, the entity of the abstract state
          --  denoted by Dep_Item is added to list Refined_States.
 
@@ -23829,8 +23844,8 @@ package body Sem_Prag is
                                                   E_Constant,
                                                   E_Variable)
                           and then Present (Encapsulating_State (Ref_Item_Id))
-                          and then Encapsulating_State (Ref_Item_Id) =
-                                     Dep_Item_Id
+                          and then Find_Encapsulating_State
+                                     (States, Ref_Item_Id) = Dep_Item_Id
                         then
                            Record_Item (Dep_Item_Id);
                            Matched := True;
@@ -24066,7 +24081,7 @@ package body Sem_Prag is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether all constituents of state State_Id with full
          --  visible refinement are used as outputs in pragma Refined_Depends.
-         --  Emit an error if this is not the case.
+         --  Emit an error if this is not the case (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24074,9 +24089,11 @@ package body Sem_Prag is
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
             Constits     : constant Elist_Id :=
-                             Refinement_Constituents (State_Id);
+                             Partial_Refinement_Constituents (State_Id);
             Constit_Elmt : Elmt_Id;
             Constit_Id   : Entity_Id;
+            Only_Partial : constant Boolean :=
+                             not Has_Visible_Refinement (State_Id);
             Posted       : Boolean := False;
 
          begin
@@ -24085,9 +24102,28 @@ package body Sem_Prag is
                while Present (Constit_Elmt) loop
                   Constit_Id := Node (Constit_Elmt);
 
+                  --  Issue an error when a constituent of State_Id is used,
+                  --  and State_Id has only partial visible refinement
+                  --  (SPARK RM 7.2.4(3d)).
+
+                  if Only_Partial then
+                     if (Present (Body_Inputs)
+                          and then Appears_In (Body_Inputs, Constit_Id))
+                       or else
+                        (Present (Body_Outputs)
+                          and then Appears_In (Body_Outputs, Constit_Id))
+                     then
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_NE
+                          ("constituent & of state % cannot be used in "
+                           & "dependence refinement", N, Constit_Id);
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_N ("\use state % instead", N);
+                     end if;
+
                   --  The constituent acts as an input (SPARK RM 7.2.5(3))
 
-                  if Present (Body_Inputs)
+                  elsif Present (Body_Inputs)
                     and then Appears_In (Body_Inputs, Constit_Id)
                   then
                      Error_Msg_Name_1 := Chars (State_Id);
@@ -24161,9 +24197,7 @@ package body Sem_Prag is
                   --  Ensure that all of the constituents are utilized as
                   --  outputs in pragma Refined_Depends.
 
-                  elsif Has_Visible_Refinement (Item_Id)
-                    and then Has_Non_Null_Visible_Refinement (Item_Id)
-                  then
+                  elsif Has_Non_Null_Visible_Refinement (Item_Id) then
                      Check_Constituent_Usage (Item_Id);
                   end if;
                end if;
@@ -24172,6 +24206,55 @@ package body Sem_Prag is
             end loop;
          end if;
       end Check_Output_States;
+
+      ---------------------
+      -- Get_States_Seen --
+      ---------------------
+
+      function Get_States_Seen (Dependencies : List_Id) return Elist_Id is
+         States_Seen : Elist_Id := No_Elist;
+
+         procedure Get_State (Glob_Item : Node_Id);
+         --  Add global item to States_Seen when it corresponds to a state
+
+         ---------------
+         -- Get_State --
+         ---------------
+
+         procedure Get_State (Glob_Item : Node_Id) is
+            Id : Entity_Id;
+         begin
+            if Is_Entity_Name (Glob_Item) then
+               Id := Entity_Of (Glob_Item);
+
+               if Ekind (Id) = E_Abstract_State then
+                  Append_New_Elmt (Id, States_Seen);
+               end if;
+            end if;
+         end Get_State;
+
+         --  Local variables
+
+         Dep_Clause : Node_Id;
+         Dep_Input  : Node_Id;
+         Dep_Output : Node_Id;
+
+      --  Start of processing for Get_States_Seen
+
+      begin
+         Dep_Clause := First (Dependencies);
+         while Present (Dep_Clause) loop
+            Dep_Input  := Expression (Dep_Clause);
+            Dep_Output := First (Choices (Dep_Clause));
+
+            Get_State (Dep_Input);
+            Get_State (Dep_Output);
+
+            Next (Dep_Clause);
+         end loop;
+
+         return States_Seen;
+      end Get_States_Seen;
 
       -----------------------
       -- Normalize_Clauses --
@@ -24380,7 +24463,6 @@ package body Sem_Prag is
       Body_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
       Body_Id   : constant Entity_Id := Defining_Entity (Body_Decl);
       Errors    : constant Nat       := Serious_Errors_Detected;
-      Clause    : Node_Id;
       Deps      : Node_Id;
       Dummy     : Boolean;
       Refs      : Node_Id;
@@ -24502,11 +24584,17 @@ package body Sem_Prag is
          --  and one input. Examine all clauses of pragma Depends looking for
          --  matching clauses in pragma Refined_Depends.
 
-         Clause := First (Dependencies);
-         while Present (Clause) loop
-            Check_Dependency_Clause (Clause);
-            Next (Clause);
-         end loop;
+         declare
+            States_Seen : constant Elist_Id := Get_States_Seen (Dependencies);
+            Clause      : Node_Id;
+
+         begin
+            Clause := First (Dependencies);
+            while Present (Clause) loop
+               Check_Dependency_Clause (States_Seen, Clause);
+               Next (Clause);
+            end loop;
+         end;
 
          if Serious_Errors_Detected = Errors then
             Report_Extra_Clauses;
@@ -24795,8 +24883,8 @@ package body Sem_Prag is
          --  Determine whether at least one constituent of state State_Id with
          --  full or partial visible refinement is used and has mode Input.
          --  Ensure that the remaining constituents do not have In_Out or
-         --  Output modes. Emit an error if this is not the case (SPARK RM
-         --  7.2.4(5)).
+         --  Output modes. Emit an error if this is not the case
+         --  (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24846,9 +24934,9 @@ package body Sem_Prag is
             --  Not one of the constituents appeared as Input. Always emit an
             --  error when the full refinement is visible (SPARK RM 7.2.4(3a)).
             --  When only partial refinement is visible, emit an
-            --  error if the abstract state itself is not utilized (SPARK RM
-            --  7.2.4(3d)). In the case where both are utilized, an error will
-            --  be issued in Check_State_And_Constituent_Use.
+            --  error if the abstract state itself is not utilized
+            --  (SPARK RM 7.2.4(3d)). In the case where both are utilized,
+            --  an error will be issued in Check_State_And_Constituent_Use.
 
             if not In_Seen
               and then (Has_Visible_Refinement (State_Id)
@@ -25030,8 +25118,8 @@ package body Sem_Prag is
          --  Determine whether at least one constituent of state State_Id with
          --  full or partial visible refinement is used and has mode Proof_In.
          --  Ensure that the remaining constituents do not have Input, In_Out
-         --  or Output modes. Emit an error of this is not the case (SPARK RM
-         --  7.2.4(5)).
+         --  or Output modes. Emit an error of this is not the case
+         --  (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --

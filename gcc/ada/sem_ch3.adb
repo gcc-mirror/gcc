@@ -18133,11 +18133,38 @@ package body Sem_Ch3 is
       then
          return True;
 
-      --  In the body of an instantiation, no need to check for the visibility
-      --  of a component.
+      --  In the body of an instantiation, check the visibility of a component
+      --  in case it has a homograph that is a primitive operation of a private
+      --  type which was not visible in the generic unit.
+
+      --  Should Is_Prefixed_Call be propagated from template to instance???
 
       elsif In_Instance_Body then
-         return True;
+         if not Is_Tagged_Type (Original_Type)
+           or else not Is_Private_Type (Original_Type)
+         then
+            return True;
+
+         else
+            declare
+               Subp_Elmt : Elmt_Id;
+
+            begin
+               Subp_Elmt := First_Elmt (Primitive_Operations (Original_Type));
+               while Present (Subp_Elmt) loop
+
+                  --  The component is hidden by a primitive operation
+
+                  if Chars (Node (Subp_Elmt)) = Chars (C) then
+                     return False;
+                  end if;
+
+                  Next_Elmt (Subp_Elmt);
+               end loop;
+
+               return True;
+            end;
+         end if;
 
       --  If the component has been declared in an ancestor which is currently
       --  a private type, then it is not visible. The same applies if the
