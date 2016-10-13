@@ -1,3 +1,25 @@
+2016-10-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Adapt to
+	optional refinement for abstract states with only partial refinement
+	visible.
+
+2016-10-13  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch13.adb: Minor correction in comment in
+	Analyze_Aspect_Specifications
+	* sem_prag.adb: Minor reformatting.
+
+2016-10-13  Thomas Quinot  <quinot@adacore.com>
+
+	* s-stratt-xdr.adb: Disable compiler unit warnings.
+
+2016-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Visible_Component): In an instance body, check
+	whether the component may be hidden in a selected component by
+	a homonym that is a primitive operation of the type of the prefix.
+
 2016-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77957

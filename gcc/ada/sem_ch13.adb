@@ -1852,7 +1852,7 @@ package body Sem_Ch13 is
                Set_From_Aspect_Specification (Aitem);
             end Make_Aitem_Pragma;
 
-         --  Start of processing for Analyze_One_Aspect
+         --  Start of processing for Analyze_Aspect_Specifications
 
          begin
             --  Skip aspect if already analyzed, to avoid looping in some cases
