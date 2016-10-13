@@ -776,7 +776,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
 					struct loop *scalar_loop, edge e)
 {
   struct loop *new_loop;
-  basic_block *new_bbs, *bbs;
+  basic_block *new_bbs, *bbs, *pbbs;
   bool at_exit;
   bool was_imm_dom;
   basic_block exit_dest;
@@ -792,12 +792,13 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
     scalar_loop = loop;
 
   bbs = XNEWVEC (basic_block, scalar_loop->num_nodes + 1);
-  get_loop_body_with_size (scalar_loop, bbs, scalar_loop->num_nodes);
+  pbbs = bbs + 1;
+  get_loop_body_with_size (scalar_loop, pbbs, scalar_loop->num_nodes);
   /* Allow duplication of outer loops.  */
   if (scalar_loop->inner)
     duplicate_outer_loop = true;
   /* Check whether duplication is possible.  */
-  if (!can_copy_bbs_p (bbs, scalar_loop->num_nodes))
+  if (!can_copy_bbs_p (pbbs, scalar_loop->num_nodes))
     {
       free (bbs);
       return NULL;
@@ -817,15 +818,15 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
      pre-header unconditionally for this.  */
   basic_block preheader = split_edge (loop_preheader_edge (scalar_loop));
   edge entry_e = single_pred_edge (preheader);
-  bbs[scalar_loop->num_nodes] = preheader;
+  bbs[0] = preheader;
   new_bbs = XNEWVEC (basic_block, scalar_loop->num_nodes + 1);
 
   exit = single_exit (scalar_loop);
   copy_bbs (bbs, scalar_loop->num_nodes + 1, new_bbs,
 	    &exit, 1, &new_exit, NULL,
-	    e->src, true);
+	    at_exit ? loop->latch : e->src, true);
   exit = single_exit (loop);
-  basic_block new_preheader = new_bbs[scalar_loop->num_nodes];
+  basic_block new_preheader = new_bbs[0];
 
   add_phi_args_after_copy (new_bbs, scalar_loop->num_nodes + 1, NULL);
 
