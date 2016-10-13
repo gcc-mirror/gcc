@@ -16,6 +16,7 @@
 
 2016-10-13  Ed Falis  <falis@adacore.com>
 
+	* i-vxinco.adb, i-vxinco.ads: New files.
 	* impunit.adb: add i-vxinco.ads.
 	* s-interr-vxworks.adb: add hook for user interrupt connection routine.
 
