@@ -133,7 +133,7 @@ package body Sem_Case is
       --  found an illegal intersection.
 
       procedure Check_Duplicates;
-      --  Check for duplicate choices, and call Dup_Choice is there are any
+      --  Check for duplicate choices, and call Dup_Choice if there are any
       --  such errors. Note that predicates are irrelevant here.
 
       procedure Dup_Choice (Lo, Hi : Uint; C : Node_Id);
@@ -811,7 +811,7 @@ package body Sem_Case is
       --  Then check for overlaps
 
       --  If the subtype has a static predicate, the predicate defines subsets
-      --  of legal values and requires finer grained analysis.
+      --  of legal values and requires finer-grained analysis.
 
       --  Note that in GNAT the predicate is considered static if the predicate
       --  expression is static, independently of whether the aspect mentions

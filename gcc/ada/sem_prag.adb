@@ -263,7 +263,7 @@ package body Sem_Prag is
       Constit_Id : Entity_Id) return Entity_Id;
    --  Given the entity of a constituent Constit_Id, find the corresponding
    --  encapsulating state which appears in States. The routine returns Empty
-   --  is no such state is found.
+   --  if no such state is found.
 
    function Find_Related_Context
      (Prag      : Node_Id;
@@ -24848,10 +24848,10 @@ package body Sem_Prag is
 
             --  Not one of the constituents appeared as Input. Always emit an
             --  error when the full refinement is visible (SPARK RM 7.2.4(3a)).
-            --  When only partial refinement is visible, emit an
-            --  error if the abstract state itself is not utilized
-            --  (SPARK RM 7.2.4(3d)). In the case where both are utilized,
-            --  an error will be issued in Check_State_And_Constituent_Use.
+            --  When only partial refinement is visible, emit an error if the
+            --  abstract state itself is not utilized (SPARK RM 7.2.4(3d)). In
+            --  the case where both are utilized, an error will be issued in
+            --  Check_State_And_Constituent_Use.
 
             if not In_Seen
               and then (Has_Visible_Refinement (State_Id)
@@ -25032,8 +25032,8 @@ package body Sem_Prag is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether at least one constituent of state State_Id with
          --  full or partial visible refinement is used and has mode Proof_In.
-         --  Ensure that the remaining constituents do not have Input, In_Out
-         --  or Output modes. Emit an error of this is not the case
+         --  Ensure that the remaining constituents do not have Input, In_Out,
+         --  or Output modes. Emit an error if this is not the case
          --  (SPARK RM 7.2.4(5)).
 
          -----------------------------

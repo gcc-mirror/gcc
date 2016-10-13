@@ -1,3 +1,9 @@
+2016-10-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch7.adb, einfo.ads, sem_prag.adb, sem_prag.ads, sem.ads,
+	sem_attr.adb, sem_case.adb, sem_ch13.ads: Minor typo fixes and
+	reformatting.
+
 2016-10-13  Javier Miranda  <miranda@adacore.com>
 
 	* sem_prag.ads (Process_Compile_Time_Warning_Or_Error): New

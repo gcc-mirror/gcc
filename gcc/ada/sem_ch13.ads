@@ -192,13 +192,13 @@ package Sem_Ch13 is
    --  N is a pragma Compile_Time_Error or Compile_Warning_Error whose boolean
    --  expression is not known at compile time. This procedure makes an entry
    --  in a table. The actual checking is performed by Validate_Compile_Time_
-   --  Warning_Errors which is invoked after calling the backend.
+   --  Warning_Errors, which is invoked after calling the back end.
 
    procedure Validate_Compile_Time_Warning_Errors;
-   --  This routine is called after calling the backend to validate pragmas
+   --  This routine is called after calling the back end to validate pragmas
    --  Compile_Time_Error and Compile_Time_Warning for size and alignment
    --  appropriateness. The reason it is called that late is to take advantage
-   --  of any back-annotation of size and alignment performed by the backend.
+   --  of any back-annotation of size and alignment performed by the back end.
 
    procedure Validate_Unchecked_Conversion
      (N        : Node_Id;
@@ -212,10 +212,10 @@ package Sem_Ch13 is
    --  back end as required.
 
    procedure Validate_Unchecked_Conversions;
-   --  This routine is called after calling the backend to validate unchecked
+   --  This routine is called after calling the back end to validate unchecked
    --  conversions for size and alignment appropriateness. The reason it is
    --  called that late is to take advantage of any back-annotation of size
-   --  and alignment performed by the backend.
+   --  and alignment performed by the back end.
 
    procedure Validate_Address_Clauses;
    --  This is called after the back end has been called (and thus after the

@@ -490,8 +490,8 @@ package Sem_Prag is
       Eloc : Source_Ptr);
    --  Common processing for Compile_Time_Error and Compile_Time_Warning of
    --  pragma N. Called when the pragma is processed as part of its regular
-   --  analysis but also called after calling the backend to validate these
-   --  pragmas for size and alignment apropriateness.
+   --  analysis but also called after calling the back end to validate these
+   --  pragmas for size and alignment appropriateness.
 
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id);
    --  Called at the start of processing compilation unit N to deal with any
