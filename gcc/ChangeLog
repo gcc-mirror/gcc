@@ -1,3 +1,9 @@
+2016-10-13  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/77943
+	* tree-ssa-tail-merge.c (merge_stmts_p): Do not merge BBs with
+	a different EH landing pads.
+
 2016-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77957

@@ -1,3 +1,8 @@
+2016-10-13  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/77943
+	* g++.dg/tree-ssa/pr77943.C: New test.
+
 2016-10-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/72832
