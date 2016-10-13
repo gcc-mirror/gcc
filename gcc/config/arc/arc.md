@@ -1939,13 +1939,11 @@
 				  (const_int 0))))
    (clobber (match_operand:SI 3 "acc1_operand" ""))]
   "TARGET_MULMAC_32BY16_SET"
-  "@mululw 0, %0, %1
-    mululw 0, %0, %1
-    mululw%? 0, %1, %0"
+  "mululw 0, %0, %1"
   [(set_attr "length" "4,4,8")
-   (set_attr "type" "mulmac_600, mulmac_600, mulmac_600")
-   (set_attr "predicable" "no, no, yes")
-   (set_attr "cond" "nocond, canuse_limm, canuse")])
+   (set_attr "type" "mulmac_600")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
 
 (define_insn "mac_600"
   [(set (match_operand:SI 2 "acc2_operand" "")
@@ -2374,13 +2372,11 @@
 				  (const_int 0))))
   ]
   "TARGET_MULMAC_32BY16_SET"
-  "@mululw 0, %0, %1
-    mululw 0, %0, %1
-    mululw%? 0, %1, %0"
+  "mululw 0, %0, %1"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "mulmac_600")
-   (set_attr "predicable" "no,no,yes")
-   (set_attr "cond" "nocond, canuse_limm, canuse")])
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
 
 
 (define_insn "umac64_600"

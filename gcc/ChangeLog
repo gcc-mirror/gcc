@@ -1,5 +1,10 @@
 2016-10-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (umul_600): Remove predicated variant.
+	(umul64_600): Likewise.
+
+2016-10-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.h (INSN_LENGTH_ALIGNMENT): Change.
 
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
