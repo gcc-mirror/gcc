@@ -10646,7 +10646,7 @@ public:
   virtual void after_dom_children (basic_block);
   void push_value_range (const_tree var, value_range *vr);
   value_range *pop_value_range (const_tree var);
-  void try_add_new_range (tree op, tree_code code, tree limit);
+  value_range *try_find_new_range (tree op, tree_code code, tree limit);
 
   /* Cond_stack holds the old VR.  */
   auto_vec<std::pair <const_tree, value_range*> > stack;
@@ -10655,10 +10655,10 @@ public:
 };
 
 
-/*  Add new range to OP such that (OP CODE LIMIT) is true.  */
+/*  Find new range for OP such that (OP CODE LIMIT) is true.  */
 
-void
-evrp_dom_walker::try_add_new_range (tree op, tree_code code, tree limit)
+value_range *
+evrp_dom_walker::try_find_new_range (tree op, tree_code code, tree limit)
 {
   value_range vr = VR_INITIALIZER;
   value_range *old_vr = get_value_range (op);
@@ -10674,8 +10674,9 @@ evrp_dom_walker::try_add_new_range (tree op, tree_code code, tree limit)
     {
       value_range *new_vr = vrp_value_range_pool.allocate ();
       *new_vr = vr;
-      push_value_range (op, new_vr);
+      return new_vr;
     }
+  return NULL;
 }
 
 /* See if there is any new scope is entered with new VR and set that VR to
@@ -10711,7 +10712,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	    code = invert_tree_comparison (gimple_cond_code (stmt),
 					   HONOR_NANS (op0));
 	  /* Add VR when (OP0 CODE OP1) condition is true.  */
-	  try_add_new_range (op0, code, op1);
+	  value_range *op0_range = try_find_new_range (op0, code, op1);
 
 	  /* Register ranges for y in x < y where
 	     y might have ranges that are useful.  */
@@ -10724,8 +10725,13 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 							  &new_code, &limit))
 	    {
 	      /* Add VR when (OP1 NEW_CODE LIMIT) condition is true.  */
-	      try_add_new_range (op1, new_code, limit);
+	      value_range *op1_range = try_find_new_range (op1, new_code, limit);
+	      if (op1_range)
+		push_value_range (op1, op1_range);
 	    }
+
+	  if (op0_range)
+	    push_value_range (op0, op0_range);
 	}
     }
 

@@ -1,3 +1,10 @@
+2016-10-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (evrp_dom_walker::try_find_new_range): Renamed from
+	try_add_new_range and made to eturn new range.
+	(evrp_dom_walker::before_dom_children): Push op1 value range before
+	pushing op0 value range.
+
 2016-10-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/77937
