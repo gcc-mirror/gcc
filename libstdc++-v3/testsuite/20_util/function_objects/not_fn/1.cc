@@ -91,6 +91,35 @@ test05()
   auto copy(nf); // PR libstdc++/70564
 }
 
+void
+test06()
+{
+  struct Boolean {
+    Boolean operator!() noexcept(false) { return *this; }
+  };
+  struct F {
+    Boolean operator()() { return {}; }
+  };
+  F f;
+  auto notf = std::not_fn(f);
+  using NotF = decltype(notf);
+  static_assert( std::is_callable<NotF()>::value, "cannot negate" );
+  static_assert( !noexcept(notf()), "conversion to bool affects noexcept" );
+}
+
+void
+test07()
+{
+  struct NonNegatable { };
+  struct F {
+    NonNegatable operator()() { return {}; }
+  };
+  F f;
+  auto notf = std::not_fn(f);
+  using NotF = decltype(notf);
+  static_assert( !std::is_callable<NotF()>::value, "cannot negate" );
+}
+
 int
 main()
 {
@@ -99,4 +128,6 @@ main()
   test03();
   test04();
   test05();
+  test06();
+  test07();
 }

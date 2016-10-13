@@ -1,5 +1,11 @@
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (_Not_fn): Make exception specifications
+	depend on whether negating the result can throw.
+	* testsuite/20_util/not_fn/1.cc: Move to ...
+	* testsuite/20_util/function_objects/not_fn/1.cc: ... here. Add tests
+	for types that can throw when negated and that cannot be negated.
+
 	* include/bits/invoke.h (__invoke): Fix exception-specification.
 	* include/std/functional (invoke): Likewise.
 	* testsuite/20_util/function_objects/invoke/1.cc: New test.

@@ -2140,6 +2140,16 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   template<typename _Fn>
     class _Not_fn
     {
+      template<typename _Tp>
+	using __is_nothrow_negatable
+	  = __bool_constant<noexcept(!std::declval<_Tp>())>;
+
+      template<typename _Fn2, typename... _Args>
+	using __noexcept_cond = __and_<
+	  __is_nothrow_callable<_Fn2(_Args&&...)>,
+	  __is_nothrow_negatable<result_of_t<_Fn2(_Args&&...)>>
+	>;
+
     public:
       template<typename _Fn2>
 	_Not_fn(_Fn2&& __fn, int)
@@ -2152,21 +2162,21 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) &
-	noexcept(__is_nothrow_callable<_Fn&(_Args&&...)>::value)
+	noexcept(__noexcept_cond<_Fn&, _Args&&...>::value)
 	-> decltype(!std::declval<result_of_t<_Fn&(_Args&&...)>>())
 	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) const &
-	noexcept(__is_nothrow_callable<const _Fn&(_Args&&...)>::value)
+	noexcept(__noexcept_cond<const _Fn&, _Args&&...>::value)
 	-> decltype(!std::declval<result_of_t<const _Fn&(_Args&&...)>>())
 	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) &&
-	noexcept(__is_nothrow_callable<_Fn&&(_Args&&...)>::value)
+	noexcept(__noexcept_cond<_Fn&&, _Args&&...>::value)
 	-> decltype(!std::declval<result_of_t<_Fn&&(_Args&&...)>>())
 	{
 	  return !std::__invoke(std::move(_M_fn),
@@ -2176,7 +2186,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) const &&
-	noexcept(__is_nothrow_callable<const _Fn&&(_Args&&...)>::value)
+	noexcept(__noexcept_cond<const _Fn&&, _Args&&...>::value)
 	-> decltype(!std::declval<result_of_t<const _Fn&&(_Args&&...)>>())
 	{
 	  return !std::__invoke(std::move(_M_fn),
