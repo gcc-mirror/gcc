@@ -516,6 +516,7 @@ package body Atree is
       Table_Low_Bound      => First_Node_Id,
       Table_Initial        => Alloc.Orig_Nodes_Initial,
       Table_Increment      => Alloc.Orig_Nodes_Increment,
+      Release_Threshold    => Alloc.Orig_Nodes_Release_Threshold,
       Table_Name           => "Orig_Nodes");
 
    --------------------------

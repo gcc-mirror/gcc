@@ -1,5 +1,37 @@
 2016-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch6.adb (Analyze_Expression_Function):
+	Remove the aspects of the original expression function has been
+	rewritten into a subprogram declaration or a body. Reinsert the
+	aspects once they have been analyzed.
+
+2016-10-13  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Asynchronous_Select): Return immediately
+	on restricted profile.
+
+2016-10-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb
+	(Process_Compile_Time_Warning_Or_Error): Register the pragma
+	for its validation after the backend has been called only if its
+	expression has some occurrence of attributes 'size or 'alignment
+	* table.ads (Release_Threshold): New formal.
+	(Release): Adding documentation of its new functionality.
+	* table.adb (Release): Extend its functionality with a
+	Release_Threshold.
+	* nlists.adb (Next_Node table): Set its Release_Threshold.
+	* atree.adb (Orig_Nodes table): Set its Release_Threshold.
+	* atree.ads (Nodes table): Set its Release_Threshold.
+	(Flags table): Set its Release_Threshold.
+	* alloc.ads (Nodes_Release_Threshold): New constant declaration.
+	(Orig_Nodes_Release_Threshold): New constant declaration.
+	* debug.adb (switch d.9): Left free.
+	* gnat1drv.adb (Post_Compilation_Validation_Checks): Enable
+	validation of pragmas Compile_Time_Error and Compile_Time_Warning.
+
+2016-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch6.adb (Create_Extra_Formals): Generate
 	an Itype reference for the object extra formal in case the
 	subprogram is called within the same or nested scope.

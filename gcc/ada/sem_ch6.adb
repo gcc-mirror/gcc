@@ -274,16 +274,16 @@ package body Sem_Ch6 is
       LocX : constant Source_Ptr := Sloc (Expr);
       Spec : constant Node_Id    := Specification (N);
 
-      Def_Id : Entity_Id;
+      Asp      : Node_Id;
+      Def_Id   : Entity_Id;
+      New_Body : Node_Id;
+      New_Spec : Node_Id;
+      Orig_N   : Node_Id;
+      Ret      : Node_Id;
 
       Prev : Entity_Id;
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed. Def_Id is needed to analyze the spec.
-
-      New_Body : Node_Id;
-      New_Spec : Node_Id;
-      Ret      : Node_Id;
-      Asp      : Node_Id;
 
    begin
       --  This is one of the occasions on which we transform the tree during
@@ -392,12 +392,11 @@ package body Sem_Ch6 is
          Generate_Reference (Prev, Defining_Entity (N), 'b', Force => True);
          Rewrite (N, New_Body);
 
-         --  Correct the parent pointer of the aspect specification list to
-         --  reference the rewritten node.
+         --  Remove any existing aspects from the original node because the act
+         --  of rewriting cases the list to be shared between the two nodes.
 
-         if Has_Aspects (N) then
-            Set_Parent (Aspect_Specifications (N), N);
-         end if;
+         Orig_N := Original_Node (N);
+         Remove_Aspects (Orig_N);
 
          --  Propagate any pragmas that apply to the expression function to the
          --  proper body when the expression function acts as a completion.
@@ -405,6 +404,14 @@ package body Sem_Ch6 is
 
          Relocate_Pragmas_To_Body (N);
          Analyze (N);
+
+         --  Once the aspects of the generated body has been analyzed, create a
+         --  copy for ASIS purposes and assciate it with the original node.
+
+         if Has_Aspects (N) then
+            Set_Aspect_Specifications (Orig_N,
+              New_Copy_List_Tree (Aspect_Specifications (N)));
+         end if;
 
          --  Prev is the previous entity with the same name, but it is can
          --  be an unrelated spec that is not completed by the expression
@@ -451,15 +458,21 @@ package body Sem_Ch6 is
 
          Rewrite (N, Make_Subprogram_Declaration (Loc, Specification => Spec));
 
-         --  Correct the parent pointer of the aspect specification list to
-         --  reference the rewritten node.
+         --  Remove any existing aspects from the original node because the act
+         --  of rewriting cases the list to be shared between the two nodes.
 
-         if Has_Aspects (N) then
-            Set_Parent (Aspect_Specifications (N), N);
-         end if;
+         Orig_N := Original_Node (N);
+         Remove_Aspects (Orig_N);
 
          Analyze (N);
-         Def_Id := Defining_Entity (N);
+
+         --  Once the aspects of the generated spec has been analyzed, create a
+         --  copy for ASIS purposes and assciate it with the original node.
+
+         if Has_Aspects (N) then
+            Set_Aspect_Specifications (Orig_N,
+              New_Copy_List_Tree (Aspect_Specifications (N)));
+         end if;
 
          --  If aspect SPARK_Mode was specified on the body, it needs to be
          --  repeated both on the generated spec and the body.
@@ -471,6 +484,8 @@ package body Sem_Ch6 is
             Set_Analyzed (Asp, False);
             Set_Aspect_Specifications (New_Body, New_List (Asp));
          end if;
+
+         Def_Id := Defining_Entity (N);
 
          --  Within a generic pre-analyze the original expression for name
          --  capture. The body is also generated but plays no role in
