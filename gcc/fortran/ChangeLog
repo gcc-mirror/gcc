@@ -1,3 +1,13 @@
+2016-10-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/72832
+	* trans-expr.c (gfc_copy_class_to_class): Add generation of
+	runtime array bounds check.
+	* trans-intrinsic.c (gfc_conv_intrinsic_size): Add a crutch to
+	get the descriptor of a function returning a class object.
+	* trans-stmt.c (gfc_trans_allocate): Use the array spec on the
+	array to allocate instead of the array spec from source=.
+
 2016-10-12  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): Fixed style.
