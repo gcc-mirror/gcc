@@ -1,5 +1,8 @@
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++11/compatibility-thread-c++0x.cc (_Bind_simple)
+	(_Bind_simple_helper, __bind_simple): Restore for ABI compat symbols.
+
 	* include/std/functional (_Bind_simple, _Bind_simple_helper)
 	(__bind_simple): Remove.
 	* include/std/future: Include <bits/invoke.h> instead of <functional>.
