@@ -1,4 +1,4 @@
-2016-10-13  Richard Earsnhaw  <rearnsha@arm.com>
+2016-10-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (TARGET_VFP): Delete.
 	(TARGET_VFPD32): Remove references to TARGET_VFP.
@@ -75,7 +75,7 @@
 	(set_fpscr, get_fpscr): Likewise.
 	* arm-c.c (arm_cpu_builtins): Unconditionally define __VFP_FP__.
 
-2016-10-13  Richard Earsnhaw  <rearnsha@arm.com>
+2016-10-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (TARGET_VFP): Unconditionally define to 1.
 	(arm_fpu_desc): Remove 'model' field.
