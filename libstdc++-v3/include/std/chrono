@@ -224,7 +224,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
       {
 	auto __to = chrono::duration_cast<_ToDur>(__d);
 	if (__to > __d)
-	  --__to;
+	  return __to - _ToDur{1};
 	return __to;
       }
 
