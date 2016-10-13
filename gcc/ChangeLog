@@ -1,3 +1,13 @@
+2016-10-13  Richard Earsnhaw  <rearnsha@arm.com>
+
+	* arm.h (TARGET_VFP): Unconditionally define to 1.
+	(arm_fpu_desc): Remove 'model' field.
+	(TARGET_FPU_MODEL): Delete.
+	* arm.c (all_fpus): Don't initialize the model field.
+	(arm_can_inline_p): Don't check the FPU model.
+	* arm-fpus.def: Remove redundant model field from all FPU
+	descriptions.
+
 2016-10-13  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/77826

@@ -134,7 +134,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
-#define TARGET_VFP		        (TARGET_FPU_MODEL == ARM_FP_MODEL_VFP)
+/* We only support the VFP model these days.  */
+#define TARGET_VFP		        (1)
 #define TARGET_IWMMXT			(arm_arch_iwmmxt)
 #define TARGET_IWMMXT2			(arm_arch_iwmmxt2)
 #define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_32BIT)
@@ -363,7 +364,6 @@ enum vfp_reg_type
 extern const struct arm_fpu_desc
 {
   const char *name;
-  enum arm_fp_model model;
   int rev;
   enum vfp_reg_type regs;
   arm_fpu_feature_set features;
@@ -372,7 +372,6 @@ extern const struct arm_fpu_desc
 /* Accessors.  */
 
 #define TARGET_FPU_NAME     (all_fpus[arm_fpu_index].name)
-#define TARGET_FPU_MODEL    (all_fpus[arm_fpu_index].model)
 #define TARGET_FPU_REV      (all_fpus[arm_fpu_index].rev)
 #define TARGET_FPU_REGS     (all_fpus[arm_fpu_index].regs)
 #define TARGET_FPU_FEATURES (all_fpus[arm_fpu_index].features)
