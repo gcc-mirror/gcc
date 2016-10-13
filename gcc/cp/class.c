@@ -147,11 +147,12 @@ static void check_methods (tree);
 static void remove_zero_width_bit_fields (tree);
 static bool accessible_nvdtor_p (tree);
 
-/* Used by find_flexarrays and related.  */
+/* Used by find_flexarrays and related functions.  */
 struct flexmems_t;
-static void find_flexarrays (tree, flexmems_t *);
 static void diagnose_flexarrays (tree, const flexmems_t *);
-static void check_flexarrays (tree, flexmems_t * = NULL);
+static void find_flexarrays (tree, flexmems_t *, bool = false,
+			     tree = NULL_TREE, tree = NULL_TREE);
+static void check_flexarrays (tree, flexmems_t * = NULL, bool = false);
 static void check_bases (tree, int *, int *);
 static void check_bases_and_members (tree);
 static tree create_vtable_ptr (tree, tree *);
@@ -6692,52 +6693,147 @@ field_nonempty_p (const_tree fld)
   return false;
 }
 
-/* Used by find_flexarrays and related.  */
-struct flexmems_t {
+/* Used by find_flexarrays and related functions.  */
+
+struct flexmems_t
+{
   /* The first flexible array member or non-zero array member found
-     in order of layout.  */
+     in the order of layout.  */
   tree array;
   /* First non-static non-empty data member in the class or its bases.  */
   tree first;
-  /* First non-static non-empty data member following either the flexible
-     array member, if found, or the zero-length array member.  */
-  tree after;
+  /* The first non-static non-empty data member following either
+     the flexible array member, if found, or the zero-length array member
+     otherwise.  AFTER[1] refers to the first such data member of a union
+     of which the struct containing the flexible array member or zero-length
+     array is a member, or NULL when no such union exists.  This element is
+     only used during searching, not for diagnosing problems.  AFTER[0]
+     refers to the first such data member that is not a member of such
+     a union.  */
+  tree after[2];
+
+  /* Refers to a struct (not union) in which the struct of which the flexible
+     array is member is defined.  Used to diagnose strictly (according to C)
+     invalid uses of the latter structs.  */
+  tree enclosing;
 };
 
 /* Find either the first flexible array member or the first zero-length
-   array, in that order or preference, among members of class T (but not
-   its base classes), and set members of FMEM accordingly.  */
+   array, in that order of preference, among members of class T (but not
+   its base classes), and set members of FMEM accordingly.
+   BASE_P is true if T is a base class of another class.
+   PUN is set to the outermost union in which the flexible array member
+   (or zero-length array) is defined if one such union exists, otherwise
+   to NULL.
+   Similarly, PSTR is set to a data member of the outermost struct of
+   which the flexible array is a member if one such struct exists,
+   otherwise to NULL.  */
 
 static void
-find_flexarrays (tree t, flexmems_t *fmem)
+find_flexarrays (tree t, flexmems_t *fmem, bool base_p,
+		 tree pun /* = NULL_TREE */,
+		 tree pstr /* = NULL_TREE */)
 {
-  for (tree fld = TYPE_FIELDS (t), next; fld; fld = next)
-    {
-      /* Find the next non-static data member if it exists.  */
-      for (next = fld;
-	   (next = DECL_CHAIN (next))
-	     && TREE_CODE (next) != FIELD_DECL; );
+  /* Set the "pointer" to the outermost enclosing union if not set
+     yet and maintain it for the remainder of the recursion.   */
+  if (!pun && TREE_CODE (t) == UNION_TYPE)
+    pun = t;
 
-      tree fldtype = TREE_TYPE (fld);
-      if (TREE_CODE (fld) != TYPE_DECL
-	  && RECORD_OR_UNION_TYPE_P (fldtype)
-	  && TYPE_UNNAMED_P (fldtype))
+  for (tree fld = TYPE_FIELDS (t); fld; fld = DECL_CHAIN (fld))
+    {
+      if (fld == error_mark_node)
+	return;
+
+      /* Is FLD a typedef for an anonymous struct?  */
+
+      /* FIXME: Note that typedefs (as well as arrays) need to be fully
+	 handled elsewhere so that errors like the following are detected
+	 as well:
+	   typedef struct { int i, a[], j; } S;   // bug c++/72753
+	   S s [2];                               // bug c++/68489
+      */
+      if (TREE_CODE (fld) == TYPE_DECL
+	  && DECL_IMPLICIT_TYPEDEF_P (fld)
+	  && CLASS_TYPE_P (TREE_TYPE (fld))
+	  && anon_aggrname_p (DECL_NAME (fld)))
 	{
-	  /* Members of anonymous structs and unions are treated as if
-	     they were members of the containing class.  Descend into
-	     the anonymous struct or union and find a flexible array
-	     member or zero-length array among its fields.  */
-	  find_flexarrays (fldtype, fmem);
+	  /* Check the nested unnamed type referenced via a typedef
+	     independently of FMEM (since it's not a data member of
+	     the enclosing class).  */
+	  check_flexarrays (TREE_TYPE (fld));
 	  continue;
 	}
 
-      /* Skip anything that's not a (non-static) data member.  */
-      if (TREE_CODE (fld) != FIELD_DECL)
+      /* Skip anything that's GCC-generated or not a (non-static) data
+	 member.  */
+      if (DECL_ARTIFICIAL (fld) || TREE_CODE (fld) != FIELD_DECL)
 	continue;
 
-      /* Skip virtual table pointers.  */
-      if (DECL_ARTIFICIAL (fld))
-	continue;
+      /* Type of the member.  */
+      tree fldtype = TREE_TYPE (fld);
+      if (fldtype == error_mark_node)
+	return;
+
+      /* Determine the type of the array element or object referenced
+	 by the member so that it can be checked for flexible array
+	 members if it hasn't been yet.  */
+      tree eltype = fldtype;
+      while (TREE_CODE (eltype) == ARRAY_TYPE
+	     || TREE_CODE (eltype) == POINTER_TYPE
+	     || TREE_CODE (eltype) == REFERENCE_TYPE)
+	eltype = TREE_TYPE (eltype);
+
+      if (RECORD_OR_UNION_TYPE_P (eltype))
+	{
+	  if (fmem->array && !fmem->after[bool (pun)])
+	    {
+	      /* Once the member after the flexible array has been found
+		 we're done.  */
+	      fmem->after[bool (pun)] = fld;
+	      break;
+	    }
+
+	  if (eltype == fldtype || TYPE_UNNAMED_P (eltype))
+	    {
+	      /* Descend into the non-static member struct or union and try
+		 to find a flexible array member or zero-length array among
+		 its members.  This is only necessary for anonymous types
+		 and types in whose context the current type T has not been
+		 defined (the latter must not be checked again because they
+		 are already in the process of being checked by one of the
+		 recursive calls).  */
+
+	      tree first = fmem->first;
+	      tree array = fmem->array;
+
+	      /* If this member isn't anonymous and a prior non-flexible array
+		 member has been seen in one of the enclosing structs, clear
+		 the FIRST member since it doesn't contribute to the flexible
+		 array struct's members.  */
+	      if (first && !array && !ANON_AGGR_TYPE_P (eltype))
+		fmem->first = NULL_TREE;
+
+	      find_flexarrays (eltype, fmem, false, pun,
+			       !pstr && TREE_CODE (t) == RECORD_TYPE ? fld : pstr);
+
+	      if (fmem->array != array)
+		continue;
+
+	      if (first && !array && !ANON_AGGR_TYPE_P (eltype))
+		{
+		  /* Restore the FIRST member reset above if no flexible
+		     array member has been found in this member's struct.  */
+		  fmem->first = first;
+		}
+
+	      /* If the member struct contains the first flexible array
+		 member, or if this member is a base class, continue to
+		 the next member and avoid setting the FMEM->NEXT pointer
+		 to point to it.  */
+	      if (base_p)
+		continue;
+	    }
+	}
 
       if (field_nonempty_p (fld))
 	{
@@ -6748,8 +6844,8 @@ find_flexarrays (tree t, flexmems_t *fmem)
 	  /* Remember the first non-static data member after the flexible
 	     array member, if one has been found, or the zero-length array
 	     if it has been found.  */
-	  if (!fmem->after && fmem->array)
-	    fmem->after = fld;
+	  if (fmem->array && !fmem->after[bool (pun)])
+	    fmem->after[bool (pun)] = fld;
 	}
 
       /* Skip non-arrays.  */
@@ -6765,13 +6861,16 @@ find_flexarrays (tree t, flexmems_t *fmem)
 		 such field or a flexible array member has been seen to
 		 handle the pathological and unlikely case of multiple
 		 such members.  */
-	      if (!fmem->after)
-		fmem->after = fld;
+	      if (!fmem->after[bool (pun)])
+		fmem->after[bool (pun)] = fld;
 	    }
 	  else if (integer_all_onesp (TYPE_MAX_VALUE (TYPE_DOMAIN (fldtype))))
-	    /* Remember the first zero-length array unless a flexible array
-	       member has already been seen.  */
-	    fmem->array = fld;
+	    {
+	      /* Remember the first zero-length array unless a flexible array
+		 member has already been seen.  */
+	      fmem->array = fld;
+	      fmem->enclosing = pstr;
+	    }
 	}
       else
 	{
@@ -6782,14 +6881,37 @@ find_flexarrays (tree t, flexmems_t *fmem)
 		 reset the after pointer.  */
 	      if (TYPE_DOMAIN (TREE_TYPE (fmem->array)))
 		{
+		  fmem->after[bool (pun)] = NULL_TREE;
 		  fmem->array = fld;
-		  fmem->after = NULL_TREE;
+		  fmem->enclosing = pstr;
 		}
 	    }
 	  else
-	    fmem->array = fld;
+	    {
+	      fmem->array = fld;
+	      fmem->enclosing = pstr;
+	    }
 	}
     }
+}
+
+/* Diagnose a strictly (by the C standard) invalid use of a struct with
+   a flexible array member (or the zero-length array extension).  */
+
+static void
+diagnose_invalid_flexarray (const flexmems_t *fmem)
+{
+  if (fmem->array && fmem->enclosing
+      && pedwarn (location_of (fmem->enclosing), OPT_Wpedantic,
+		  TYPE_DOMAIN (TREE_TYPE (fmem->array))
+		  ? G_("invalid use of %q#T with a zero-size array "
+		       "in %q#D")
+		  : G_("invalid use of %q#T with a flexible array member "
+		       "in %q#T"),
+		  DECL_CONTEXT (fmem->array),
+		  DECL_CONTEXT (fmem->enclosing)))
+    inform (DECL_SOURCE_LOCATION (fmem->array),
+	    "array member %q#D declared here", fmem->array);
 }
 
 /* Issue diagnostics for invalid flexible array members or zero-length
@@ -6799,49 +6921,70 @@ find_flexarrays (tree t, flexmems_t *fmem)
 static void
 diagnose_flexarrays (tree t, const flexmems_t *fmem)
 {
-  /* Members of anonymous structs and unions are considered to be members
-     of the containing struct or union.  */
-  if (TYPE_UNNAMED_P (t) || !fmem->array)
+  if (!fmem->array)
     return;
+
+  if (fmem->first && !fmem->after[0])
+    {
+      diagnose_invalid_flexarray (fmem);
+      return;
+    }
+
+  /* Has a diagnostic been issued?  */
+  bool diagd = false;
 
   const char *msg = 0;
 
   if (TYPE_DOMAIN (TREE_TYPE (fmem->array)))
     {
-      if (fmem->after)
+      if (fmem->after[0])
 	msg = G_("zero-size array member %qD not at end of %q#T");
       else if (!fmem->first)
 	msg = G_("zero-size array member %qD in an otherwise empty %q#T");
 
-      if (msg && pedwarn (DECL_SOURCE_LOCATION (fmem->array),
-			  OPT_Wpedantic, msg, fmem->array, t))
+      if (msg)
+	{
+	  location_t loc = DECL_SOURCE_LOCATION (fmem->array);
 
-	inform (location_of (t), "in the definition of %q#T", t);
+	  if (pedwarn (loc, OPT_Wpedantic, msg, fmem->array, t))
+	    {
+	      inform (location_of (t), "in the definition of %q#T", t);
+	      diagd = true;
+	    }
+	}
     }
   else
     {
-      if (fmem->after)
+      if (fmem->after[0])
 	msg = G_("flexible array member %qD not at end of %q#T");
       else if (!fmem->first)
 	msg = G_("flexible array member %qD in an otherwise empty %q#T");
 
       if (msg)
 	{
-	  error_at (DECL_SOURCE_LOCATION (fmem->array), msg,
-		    fmem->array, t);
+	  location_t loc = DECL_SOURCE_LOCATION (fmem->array);
+	  diagd = true;
+
+	  error_at (loc, msg, fmem->array, t);
 
 	  /* In the unlikely event that the member following the flexible
-	     array member is declared in a different class, point to it.
+	     array member is declared in a different class, or the member
+	     overlaps another member of a common union, point to it.
 	     Otherwise it should be obvious.  */
-	  if (fmem->after
-	      && (DECL_CONTEXT (fmem->after) != DECL_CONTEXT (fmem->array)))
-	      inform (DECL_SOURCE_LOCATION (fmem->after),
+	  if (fmem->after[0]
+	      && ((DECL_CONTEXT (fmem->after[0])
+		   != DECL_CONTEXT (fmem->array))))
+	    {
+	      inform (DECL_SOURCE_LOCATION (fmem->after[0]),
 		      "next member %q#D declared here",
-		      fmem->after);
-
-	  inform (location_of (t), "in the definition of %q#T", t);
+		      fmem->after[0]);
+	      inform (location_of (t), "in the definition of %q#T", t);
+	    }
 	}
     }
+
+  if (!diagd && fmem->array && fmem->enclosing)
+    diagnose_invalid_flexarray (fmem);
 }
 
 
@@ -6854,7 +6997,8 @@ diagnose_flexarrays (tree t, const flexmems_t *fmem)
    that fails the checks.  */
 
 static void
-check_flexarrays (tree t, flexmems_t *fmem /* = NULL */)
+check_flexarrays (tree t, flexmems_t *fmem /* = NULL */,
+		  bool base_p /* = false */)
 {
   /* Initialize the result of a search for flexible array and zero-length
      array members.  Avoid doing any work if the most interesting FMEM data
@@ -6862,18 +7006,20 @@ check_flexarrays (tree t, flexmems_t *fmem /* = NULL */)
   flexmems_t flexmems = flexmems_t ();
   if (!fmem)
     fmem = &flexmems;
-  else if (fmem->array && fmem->first && fmem->after)
+  else if (fmem->array && fmem->first && fmem->after[0])
     return;
+
+  tree fam = fmem->array;
 
   /* Recursively check the primary base class first.  */
   if (CLASSTYPE_HAS_PRIMARY_BASE_P (t))
     {
       tree basetype = BINFO_TYPE (CLASSTYPE_PRIMARY_BINFO (t));
-      check_flexarrays (basetype, fmem);
+      check_flexarrays (basetype, fmem, true);
     }
 
   /* Recursively check the base classes.  */
-  int nbases = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
+  int nbases = TYPE_BINFO (t) ? BINFO_N_BASE_BINFOS (TYPE_BINFO (t)) : 0;
   for (int i = 0; i < nbases; ++i)
     {
       tree base_binfo = BINFO_BASE_BINFO (TYPE_BINFO (t), i);
@@ -6887,7 +7033,7 @@ check_flexarrays (tree t, flexmems_t *fmem /* = NULL */)
 	continue;
 
       /* Check the base class.  */
-      check_flexarrays (BINFO_TYPE (base_binfo), fmem);
+      check_flexarrays (BINFO_TYPE (base_binfo), fmem, /*base_p=*/true);
     }
 
   if (fmem == &flexmems)
@@ -6904,17 +7050,26 @@ check_flexarrays (tree t, flexmems_t *fmem /* = NULL */)
 	  /* Check the virtual base class.  */
 	  tree basetype = TREE_TYPE (base_binfo);
 
-	  check_flexarrays (basetype, fmem);
+	  check_flexarrays (basetype, fmem, /*base_p=*/true);
 	}
     }
 
-  /* Search the members of the current (derived) class.  */
-  find_flexarrays (t, fmem);
+  /* Is the type unnamed (and therefore a member of it potentially
+     an anonymous struct or union)?  */
+  bool maybe_anon_p = TYPE_UNNAMED_P (t);
 
-  if (fmem == &flexmems)
+  /* Search the members of the current (possibly derived) class, skipping
+     unnamed structs and unions since those could be anonymous.  */
+  if (fmem != &flexmems || !maybe_anon_p)
+    find_flexarrays (t, fmem, base_p || fam != fmem->array);
+
+  if (fmem == &flexmems && !maybe_anon_p)
     {
-      /* Issue diagnostics for invalid flexible and zero-length array members
-	 found in base classes or among the members of the current class.  */
+      /* Issue diagnostics for invalid flexible and zero-length array
+	 members found in base classes or among the members of the current
+	 class.  Ignore anonymous structs and unions whose members are
+	 considered to be members of the enclosing class and thus will
+	 be diagnosed when checking it.  */
       diagnose_flexarrays (t, fmem);
     }
 }
