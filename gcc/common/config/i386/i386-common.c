@@ -86,7 +86,6 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_XSAVEC_SET \
   (OPTION_MASK_ISA_XSAVEC | OPTION_MASK_ISA_XSAVE)
 #define OPTION_MASK_ISA_CLWB_SET OPTION_MASK_ISA_CLWB
-#define OPTION_MASK_ISA_PCOMMIT_SET OPTION_MASK_ISA_PCOMMIT
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -185,7 +184,6 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_CLFLUSHOPT_UNSET OPTION_MASK_ISA_CLFLUSHOPT
 #define OPTION_MASK_ISA_XSAVEC_UNSET OPTION_MASK_ISA_XSAVEC
 #define OPTION_MASK_ISA_XSAVES_UNSET OPTION_MASK_ISA_XSAVES
-#define OPTION_MASK_ISA_PCOMMIT_UNSET OPTION_MASK_ISA_PCOMMIT
 #define OPTION_MASK_ISA_CLWB_UNSET OPTION_MASK_ISA_CLWB
 #define OPTION_MASK_ISA_MWAITX_UNSET OPTION_MASK_ISA_MWAITX
 
@@ -905,19 +903,6 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CLFLUSHOPT_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CLFLUSHOPT_UNSET;
-	}
-      return true;
-
-    case OPT_mpcommit:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PCOMMIT_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCOMMIT_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_PCOMMIT_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCOMMIT_UNSET;
 	}
       return true;
 

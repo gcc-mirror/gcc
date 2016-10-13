@@ -367,7 +367,7 @@ i[34567]86-*-*)
 		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
 		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
-		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h mwaitxintrin.h"
+		       avx512vbmivlintrin.h clwbintrin.h mwaitxintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -388,7 +388,7 @@ x86_64-*-*)
 		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
 		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
-		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h mwaitxintrin.h"
+		       avx512vbmivlintrin.h clwbintrin.h mwaitxintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h

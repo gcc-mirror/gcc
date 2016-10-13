@@ -77,8 +77,6 @@
 
 #include <clwbintrin.h>
 
-#include <pcommitintrin.h>
-
 #include <clflushoptintrin.h>
 
 #include <xsavesintrin.h>

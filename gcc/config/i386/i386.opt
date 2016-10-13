@@ -747,8 +747,8 @@ Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
 Support CLWB instruction
 
 mpcommit
-Target Report Mask(ISA_PCOMMIT) Var(ix86_isa_flags) Save
-Support PCOMMIT instruction
+Target Undocumented Warn(%<-mpcommit%> was deprecated)
+;; Deprecated
 
 mfxsr
 Target Report Mask(ISA_FXSR) Var(ix86_isa_flags) Save

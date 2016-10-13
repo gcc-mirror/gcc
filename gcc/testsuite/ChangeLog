@@ -1,3 +1,15 @@
+2016-10-13  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	Backport from trunk
+	* testsuite/gcc.target/i386/pcommit-1.c: Deleted test.
+	* testsuite/gcc.target/i386/sse-12.c: Deleted -pcommit option.
+	* testsuite/gcc.target/i386/sse-13.c: Ditto.
+	* testsuite/gcc.target/i386/sse-14.c: Ditto.
+	* testsuite/gcc.target/i386/sse-22.c: Ditto.
+	* testsuite/gcc.target/i386/sse-23.c: Ditto.
+	* testsuite/g++.dg/other/i386-2.C: Ditto.
+	* testsuite/g++.dg/other/i386-3.C: Ditto.
+
 2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/biased_subtype.adb: New test.
