@@ -2156,7 +2156,7 @@
   [(set (match_operand:SF 0 "s_register_operand" "")
 	(div:SF (match_operand:SF 1 "s_register_operand" "")
 		(match_operand:SF 2 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT"
   "")
 
 (define_expand "divdf3"
@@ -4747,7 +4747,7 @@
 (define_expand "negsf2"
   [(set (match_operand:SF         0 "s_register_operand" "")
 	(neg:SF (match_operand:SF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT"
   ""
 )
 
@@ -5020,7 +5020,7 @@
 (define_expand "sqrtsf2"
   [(set (match_operand:SF 0 "s_register_operand" "")
 	(sqrt:SF (match_operand:SF 1 "s_register_operand" "")))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT"
   "")
 
 (define_expand "sqrtdf2"
@@ -5825,7 +5825,7 @@
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, r, q, m")
 	(match_operand:DI 1 "di_operand"              "rDa,Db,Dc,mi,q"))]
   "TARGET_32BIT
-   && !(TARGET_HARD_FLOAT && TARGET_VFP)
+   && !(TARGET_HARD_FLOAT)
    && !TARGET_IWMMXT
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
@@ -6051,8 +6051,7 @@
 (define_insn "*arm_movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m")
 	(match_operand:SI 1 "general_operand"      "rk, I,K,j,mi,rk"))]
-  "TARGET_ARM && ! TARGET_IWMMXT
-   && !(TARGET_HARD_FLOAT && TARGET_VFP)
+  "TARGET_ARM && !TARGET_IWMMXT && !TARGET_HARD_FLOAT
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
@@ -6701,7 +6700,7 @@
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m,r")
 	(match_operand:HI 1 "general_operand"      "rIk,K,n,r,mi"))]
   "TARGET_ARM
-   && arm_arch4 && !(TARGET_HARD_FLOAT && TARGET_VFP)
+   && arm_arch4 && !TARGET_HARD_FLOAT
    && (register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
   "@
@@ -6727,7 +6726,7 @@
 (define_insn "*movhi_bytes"
   [(set (match_operand:HI 0 "s_register_operand" "=r,r,r")
 	(match_operand:HI 1 "arm_rhs_operand"  "I,rk,K"))]
-  "TARGET_ARM && !(TARGET_HARD_FLOAT && TARGET_VFP)"
+  "TARGET_ARM && !TARGET_HARD_FLOAT"
   "@
    mov%?\\t%0, %1\\t%@ movhi
    mov%?\\t%0, %1\\t%@ movhi
@@ -6887,7 +6886,7 @@
 (define_insn "*arm32_movhf"
   [(set (match_operand:HF 0 "nonimmediate_operand" "=r,m,r,r")
 	(match_operand:HF 1 "general_operand"	   " m,r,r,F"))]
-  "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_VFP)
+  "TARGET_32BIT && !TARGET_HARD_FLOAT
    && (	  s_register_operand (operands[0], HFmode)
        || s_register_operand (operands[1], HFmode))"
   "*
@@ -7231,7 +7230,7 @@
   [(set (pc) (if_then_else
 	      (match_operator 0 "expandable_comparison_operator"
 	       [(match_operand:SF 1 "s_register_operand" "")
-	        (match_operand:SF 2 "arm_float_compare_operand" "")])
+	        (match_operand:SF 2 "vfp_compare_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
@@ -7243,7 +7242,7 @@
   [(set (pc) (if_then_else
 	      (match_operator 0 "expandable_comparison_operator"
 	       [(match_operand:DF 1 "s_register_operand" "")
-	        (match_operand:DF 2 "arm_float_compare_operand" "")])
+	        (match_operand:DF 2 "vfp_compare_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && !TARGET_VFP_SINGLE"
@@ -7709,7 +7708,7 @@
   [(set (match_operand:SI 0 "s_register_operand")
 	(match_operator:SI 1 "expandable_comparison_operator"
 	 [(match_operand:HF 2 "s_register_operand")
-	  (match_operand:HF 3 "arm_float_compare_operand")]))]
+	  (match_operand:HF 3 "vfp_compare_operand")]))]
   "TARGET_VFP_FP16INST"
   {
     if (!arm_validize_comparison (&operands[1],
@@ -7727,7 +7726,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(match_operator:SI 1 "expandable_comparison_operator"
 	 [(match_operand:SF 2 "s_register_operand" "")
-	  (match_operand:SF 3 "arm_float_compare_operand" "")]))]
+	  (match_operand:SF 3 "vfp_compare_operand" "")]))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
   "emit_insn (gen_cstore_cc (operands[0], operands[1],
 			     operands[2], operands[3])); DONE;"
@@ -7737,7 +7736,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(match_operator:SI 1 "expandable_comparison_operator"
 	 [(match_operand:DF 2 "s_register_operand" "")
-	  (match_operand:DF 3 "arm_float_compare_operand" "")]))]
+	  (match_operand:DF 3 "vfp_compare_operand" "")]))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && !TARGET_VFP_SINGLE"
   "emit_insn (gen_cstore_cc (operands[0], operands[1],
 			     operands[2], operands[3])); DONE;"
@@ -11052,7 +11051,7 @@
                    (match_operand:SI 2 "const_int_I_operand" "I")))
      (set (match_operand:DF 3 "vfp_hard_register_operand" "")
           (mem:DF (match_dup 1)))])]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT"
   "*
   {
     int num_regs = XVECLEN (operands[0], 0);

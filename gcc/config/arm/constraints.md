@@ -333,13 +333,13 @@
  "@internal
   In ARM/ Thumb2 a const_double which can be used with a vcvt.f32.s32 with fract bits operation"
   (and (match_code "const_double")
-       (match_test "TARGET_32BIT && TARGET_VFP && vfp3_const_double_for_fract_bits (op)")))
+       (match_test "TARGET_32BIT && vfp3_const_double_for_fract_bits (op)")))
 
 (define_constraint "Dp"
  "@internal
   In ARM/ Thumb2 a const_double which can be used with a vcvt.s32.f32 with bits operation"
   (and (match_code "const_double")
-       (match_test "TARGET_32BIT && TARGET_VFP
+       (match_test "TARGET_32BIT
 		    && vfp3_const_double_for_bits (op) > 0")))
 
 (define_register_constraint "Ts" "(arm_restrict_it) ? LO_REGS : GENERAL_REGS"

@@ -241,11 +241,6 @@
        (and (match_code "const_double")
 	    (match_test "arm_const_double_rtx (op)"))))
 
-(define_predicate "arm_float_compare_operand"
-  (if_then_else (match_test "TARGET_VFP")
-		(match_operand 0 "vfp_compare_operand")
-		(match_operand 0 "s_register_operand")))
-
 ;; True for valid index operands.
 (define_predicate "index_operand"
   (ior (match_operand 0 "s_register_operand")
@@ -621,12 +616,12 @@
 
 (define_predicate "const_double_vcvt_power_of_two_reciprocal"
   (and (match_code "const_double")
-       (match_test "TARGET_32BIT && TARGET_VFP
-                   && vfp3_const_double_for_fract_bits (op)")))
+       (match_test "TARGET_32BIT
+		    && vfp3_const_double_for_fract_bits (op)")))
 
 (define_predicate "const_double_vcvt_power_of_two"
   (and (match_code "const_double")
-       (match_test "TARGET_32BIT && TARGET_VFP
+       (match_test "TARGET_32BIT
 		    && vfp3_const_double_for_bits (op) > 0")))
 
 (define_predicate "neon_struct_operand"
