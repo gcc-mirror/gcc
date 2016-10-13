@@ -1,5 +1,10 @@
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-predcom.c (tree_predictive_commoning_loop): Skip loop that only
+	iterates 1 time.
+
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-loop-manip.c (adjust_vec_debug_stmts): Don't release
 	adjust_vec automatically.
 	(slpeel_add_loop_guard): Remove param cond_expr_stmt_list.  Rename

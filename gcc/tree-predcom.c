@@ -2465,6 +2465,15 @@ tree_predictive_commoning_loop (struct loop *loop)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing loop %d\n",  loop->num);
 
+  /* Nothing for predicitive commoning if loop only iterates 1 time.  */
+  if (get_max_loop_iterations_int (loop) == 0)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Loop iterates only 1 time, nothing to do.\n");
+
+      return false;
+    }
+
   /* Find the data references and split them into components according to their
      dependence relations.  */
   auto_vec<loop_p, 3> loop_nest;

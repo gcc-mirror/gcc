@@ -1,5 +1,9 @@
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: New test string.
+
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
 	* gcc.dg/vect/vect-98.c: Refine test case.
 	* gcc.dg/vect/vect-strided-a-u8-i8-gap2.c: Increase niters.
 	* gcc.dg/vect/vect-strided-u8-i8-gap2.c: Ditto.
