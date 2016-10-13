@@ -645,8 +645,8 @@ package body Exp_Ch7 is
 
          --  Include the anonymous master in the list of existing masters which
          --  appear in this unit. This effectively creates a mapping between a
-         --  master and a designated type which in turn allows for the reusal
-         --  of masters on a per-unit basis.
+         --  master and a designated type which in turn allows for the reuse of
+         --  masters on a per-unit basis.
 
          All_FMs := Anonymous_Masters (Unit_Id);
 

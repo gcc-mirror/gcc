@@ -255,8 +255,8 @@ package Sem is
 
    In_Compile_Time_Warning_Or_Error : Boolean := False;
    --  Switch to indicate that we are validating a pragma Compile_Time_Warning
-   --  or Compile_Time_Error after the backend has been called (to check these
-   --  pragmas for size and alignment apropriateness).
+   --  or Compile_Time_Error after the back end has been called (to check these
+   --  pragmas for size and alignment appropriateness).
 
    In_Default_Expr : Boolean := False;
    --  Switch to indicate that we are analyzing a default component expression.

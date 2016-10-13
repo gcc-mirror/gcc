@@ -440,7 +440,7 @@ package Einfo is
 
 --    Anonymous_Designated_Type (Node35)
 --       Defined in variables which represent anonymous finalization masters.
---       Contains the designated type which is being services by the master.
+--       Contains the designated type which is being serviced by the master.
 
 --    Anonymous_Masters (Elist29)
 --       Defined in packages, subprograms, and subprogram bodies. Contains a
@@ -3795,7 +3795,7 @@ package Einfo is
 --    Partial_Refinement_Constituents (synthesized)
 --       Defined in abstract state entities. Returns the constituents that
 --       refine the state in the current scope, which are allowed in a global
---       refinement in this scope. These consist in those constituents that are
+--       refinement in this scope. These consist of those constituents that are
 --       abstract states with no or only partial refinement visible, and those
 --       that are not themselves abstract states.
 

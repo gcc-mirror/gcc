@@ -3025,7 +3025,7 @@ package body Sem_Attr is
       when Attribute_Asm_Input =>
          Check_Asm_Attribute;
 
-         --  The back-end may need to take the address of E2
+         --  The back end may need to take the address of E2
 
          if Is_Entity_Name (E2) then
             Set_Address_Taken (Entity (E2));
@@ -3052,7 +3052,7 @@ package body Sem_Attr is
 
          Note_Possible_Modification (E2, Sure => True);
 
-         --  The back-end may need to take the address of E2
+         --  The back end may need to take the address of E2
 
          if Is_Entity_Name (E2) then
             Set_Address_Taken (Entity (E2));
@@ -4991,7 +4991,7 @@ package body Sem_Attr is
             --  out-of-order issues.
 
             --  This expansion is both harmful and not needed in SPARK mode,
-            --  since the formal verification backend relies on the types of
+            --  since the formal verification back end relies on the types of
             --  nodes (hence is not robust w.r.t. a change to base type here),
             --  and does not suffer from the out-of-order issue described
             --  above. Thus, this expansion is skipped in SPARK mode.
@@ -5748,7 +5748,7 @@ package body Sem_Attr is
          Set_Etype (N, Universal_Integer);
 
          --  If we are processing pragmas Compile_Time_Warning and Compile_
-         --  Time_Errors after the backend has been called and this occurrence
+         --  Time_Errors after the back end has been called and this occurrence
          --  of 'Size is known at compile time then it is safe to perform this
          --  evaluation. Needed to perform the static evaluation of the full
          --  boolean expression of these pragmas.
@@ -6276,9 +6276,9 @@ package body Sem_Attr is
             Store_String_Char (Get_String_Char (Full_Name, Pos (J)));
          end loop;
 
-         --  For standard type return the name of the type. as there is no
+         --  For standard types return the name of the type, as there is no
          --  explicit source declaration to use. Otherwise compute CRC and
-         --  convert it to string one character at a time so as not to use
+         --  convert it to string one character at a time, so as not to use
          --  Image within the compiler.
 
          if Scope (Entity (P)) /= Standard_Standard then
