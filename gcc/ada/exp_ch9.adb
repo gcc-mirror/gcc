@@ -7176,6 +7176,13 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Asynchronous_Select
 
    begin
+      --  Asynchronous select is not supported on restricted runtimes. Don't
+      --  try to expand.
+
+      if Restricted_Profile then
+         return;
+      end if;
+
       Process_Statements_For_Controlled_Objects (Trig);
       Process_Statements_For_Controlled_Objects (Abrt);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,10 +47,11 @@ package Table is
       type Table_Component_Type is private;
       type Table_Index_Type     is range <>;
 
-      Table_Low_Bound  : Table_Index_Type;
-      Table_Initial    : Pos;
-      Table_Increment  : Nat;
-      Table_Name       : String;
+      Table_Low_Bound   : Table_Index_Type;
+      Table_Initial     : Pos;
+      Table_Increment   : Nat;
+      Table_Name        : String;
+      Release_Threshold : Nat := 0;
 
    package Table is
 
@@ -151,9 +152,15 @@ package Table is
 
       procedure Release;
       --  Storage is allocated in chunks according to the values given in the
-      --  Initial and Increment parameters. A call to Release releases all
-      --  storage that is allocated, but is not logically part of the current
-      --  array value. Current array values are not affected by this call.
+      --  Initial and Increment parameters. If Release_Threshold is 0 or the
+      --  length of the table does not exceed this threshold then a call to
+      --  Release releases all storage that is allocated, but is not logically
+      --  part of the current array value; otherwise the call to Release leaves
+      --  the current array value plus 0.1% of the current table length free
+      --  elements located at the end of the table (this parameter facilitates
+      --  reopening large tables and adding a few elements without allocating a
+      --  chunk of memory). In both cases current array values are not affected
+      --  by this call.
 
       procedure Free;
       --  Free all allocated memory for the table. A call to init is required

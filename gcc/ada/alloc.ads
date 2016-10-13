@@ -102,6 +102,7 @@ package Alloc is
 
    Nodes_Initial                    : constant := 50_000;  -- Atree
    Nodes_Increment                  : constant := 100;
+   Nodes_Release_Threshold          : constant := 100_000;
 
    Notes_Initial                    : constant := 100;     -- Lib
    Notes_Increment                  : constant := 200;
@@ -111,6 +112,7 @@ package Alloc is
 
    Orig_Nodes_Initial               : constant := 50_000;  -- Atree
    Orig_Nodes_Increment             : constant := 100;
+   Orig_Nodes_Release_Threshold     : constant := 100_000;
 
    Pending_Instantiations_Initial   : constant := 10;      -- Inline
    Pending_Instantiations_Increment : constant := 100;

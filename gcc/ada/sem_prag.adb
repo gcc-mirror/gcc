@@ -7015,7 +7015,44 @@ package body Sem_Prag is
       -------------------------------------------
 
       procedure Process_Compile_Time_Warning_Or_Error is
+         Validation_Needed : Boolean := False;
+
+         function Check_Node (N : Node_Id) return Traverse_Result;
+         --  Tree visitor that checks if N is an attribute reference that can
+         --  be statically computed by the backend. Validation_Needed is set
+         --  to True if found.
+
+         ----------------
+         -- Check_Node --
+         ----------------
+
+         function Check_Node (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Attribute_Reference
+              and then Is_Entity_Name (Prefix (N))
+            then
+               declare
+                  Attr_Id : constant Attribute_Id :=
+                              Get_Attribute_Id (Attribute_Name (N));
+               begin
+                  if Attr_Id = Attribute_Alignment
+                    or else Attr_Id = Attribute_Size
+                  then
+                     Validation_Needed := True;
+                  end if;
+               end;
+            end if;
+
+            return OK;
+         end Check_Node;
+
+         procedure Check_Expression is new Traverse_Proc (Check_Node);
+
+         --  Local variables
+
          Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
+
+      --  Start of processing for Process_Compile_Time_Warning_Or_Error
 
       begin
          Check_Arg_Count (2);
@@ -7025,8 +7062,18 @@ package body Sem_Prag is
 
          if Compile_Time_Known_Value (Arg1x) then
             Process_Compile_Time_Warning_Or_Error (N, Sloc (Arg1));
+
+         --  Register the expression for its validation after the backend has
+         --  been called if it has occurrences of attributes size or alignment
+         --  (because they may be statically computed by the backend and hence
+         --  the whole expression needs to be re-evaluated).
+
          else
-            Sem_Ch13.Validate_Compile_Time_Warning_Error (N);
+            Check_Expression (Arg1x);
+
+            if Validation_Needed then
+               Sem_Ch13.Validate_Compile_Time_Warning_Error (N);
+            end if;
          end if;
       end Process_Compile_Time_Warning_Or_Error;
 

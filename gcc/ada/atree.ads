@@ -4206,6 +4206,7 @@ package Atree is
         Table_Low_Bound      => First_Node_Id,
         Table_Initial        => Alloc.Nodes_Initial,
         Table_Increment      => Alloc.Nodes_Increment,
+        Release_Threshold    => Alloc.Nodes_Release_Threshold,
         Table_Name           => "Nodes");
 
       --  The following is a parallel table to Nodes, which provides 8 more
@@ -4251,6 +4252,7 @@ package Atree is
         Table_Low_Bound      => First_Node_Id,
         Table_Initial        => Alloc.Nodes_Initial,
         Table_Increment      => Alloc.Nodes_Increment,
+        Release_Threshold    => Alloc.Nodes_Release_Threshold,
         Table_Name           => "Flags");
 
    end Atree_Private_Part;
