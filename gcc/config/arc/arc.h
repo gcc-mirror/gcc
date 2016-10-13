@@ -1546,10 +1546,10 @@ extern int arc_return_address_regs[4];
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
   ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE));
 
-#define INSN_LENGTH_ALIGNMENT(INSN) \
-  ((JUMP_P (INSN) \
+#define INSN_LENGTH_ALIGNMENT(INSN)		  \
+  ((JUMP_TABLE_DATA_P (INSN)			  \
     && GET_CODE (PATTERN (INSN)) == ADDR_DIFF_VEC \
-    && GET_MODE (PATTERN (INSN)) == QImode) \
+    && GET_MODE (PATTERN (INSN)) == QImode)	  \
    ? 0 : length_unit_log)
 
 /* Define if operations between registers always perform the operation

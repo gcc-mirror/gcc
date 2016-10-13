@@ -1,3 +1,7 @@
+2016-10-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (INSN_LENGTH_ALIGNMENT): Change.
+
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop.c (loop_niters_no_overflow): New func.
