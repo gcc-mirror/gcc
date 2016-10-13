@@ -1,5 +1,10 @@
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experiumental/functional (boyer_moore_searcher)
+	(__boyer_moore_map_base, __boyer_moore_array_base): Qualify containers
+	with _GLIBCXX_STD_C.
+	* include/std/functional: Likewise.
+
 	* include/std/chrono (floor): Replace non-constexpr operation.
 	* testsuite/20_util/duration_cast/rounding.cc: Test conversion to
 	durations with floating pointer representations.

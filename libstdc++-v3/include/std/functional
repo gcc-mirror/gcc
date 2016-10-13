@@ -2206,7 +2206,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       _Pred
       _M_pred() const { return _M_bad_char.key_eq(); }
 
-      std::unordered_map<_Key, _Tp, _Hash, _Pred> _M_bad_char;
+      _GLIBCXX_STD_C::unordered_map<_Key, _Tp, _Hash, _Pred> _M_bad_char;
     };
 
   template<typename _Tp, size_t _Len, typename _Pred>
@@ -2215,7 +2215,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       template<typename _RAIter, typename _Unused>
 	__boyer_moore_array_base(_RAIter __pat, size_t __patlen,
 				 _Unused&&, _Pred&& __pred)
-	: _M_bad_char{ std::array<_Tp, _Len>{}, std::move(__pred) }
+	: _M_bad_char{ _GLIBCXX_STD_C::array<_Tp, _Len>{}, std::move(__pred) }
 	{
 	  std::get<0>(_M_bad_char).fill(__patlen);
 	  if (__patlen > 0)
@@ -2243,7 +2243,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       const _Pred&
       _M_pred() const { return std::get<1>(_M_bad_char); }
 
-      std::tuple<std::array<_Tp, _Len>, _Pred> _M_bad_char;
+      std::tuple<_GLIBCXX_STD_C::array<_Tp, _Len>, _Pred> _M_bad_char;
     };
 
   template<typename _Pred>
@@ -2316,7 +2316,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       _RAIter _M_pat;
       _RAIter _M_pat_end;
-      std::vector<__diff_type> _M_good_suffix;
+      _GLIBCXX_STD_C::vector<__diff_type> _M_good_suffix;
     };
 
   template<typename _RAIter, typename _Hash
