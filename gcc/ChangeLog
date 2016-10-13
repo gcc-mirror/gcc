@@ -1,5 +1,45 @@
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-loop-manip.c (adjust_vec_debug_stmts): Don't release
+	adjust_vec automatically.
+	(slpeel_add_loop_guard): Remove param cond_expr_stmt_list.  Rename
+	param exit_bb to guard_to.
+	(slpeel_checking_verify_cfg_after_peeling):
+	(set_prologue_iterations):
+	(create_lcssa_for_virtual_phi): New func which is factored out from
+	slpeel_tree_peel_loop_to_edge.
+	(slpeel_tree_peel_loop_to_edge):
+	(iv_phi_p): New func.
+	(vect_can_advance_ivs_p): Call iv_phi_p.
+	(vect_update_ivs_after_vectorizer): Call iv_phi_p.  Directly insert
+	new gimple stmts in basic block.
+	(vect_do_peeling_for_loop_bound):
+	(vect_do_peeling_for_alignment):
+	(vect_gen_niters_for_prolog_loop): Rename to...
+	(vect_gen_prolog_loop_niters): ...Rename from.  Change parameters and
+	adjust implementation.
+	(vect_update_inits_of_drs): Fix code style issue.  Convert niters to
+	sizetype if necessary.
+	(vect_build_loop_niters): Move to here from tree-vect-loop.c.  Change
+	it to external function.
+	(vect_gen_scalar_loop_niters, vect_gen_vector_loop_niters): New.
+	(vect_gen_vector_loop_niters_mult_vf): New.
+	(slpeel_update_phi_nodes_for_loops): New.
+	(slpeel_update_phi_nodes_for_guard1): Reimplement.
+	(find_guard_arg, slpeel_update_phi_nodes_for_guard2): Reimplement.
+	(slpeel_update_phi_nodes_for_lcssa, vect_do_peeling): New.
+	* tree-vect-loop.c (vect_build_loop_niters): Move to file
+	tree-vect-loop-manip.c
+	(vect_generate_tmps_on_preheader): Delete.
+	(vect_transform_loop): Rename vectorization_factor to vf.  Call
+	vect_do_peeling instead of vect_do_peeling-* functions.
+	* tree-vectorizer.h (vect_do_peeling): New decl.
+	(vect_build_loop_niters, vect_gen_vector_loop_niters): New decls.
+	(vect_do_peeling_for_loop_bound): Delete.
+	(vect_do_peeling_for_alignment): Delete.
+
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-loop-manip.c (slpeel_tree_duplicate_loop_to_edge_cfg): Put
 	duplicated loop after its preheader and after the original loop.
 
