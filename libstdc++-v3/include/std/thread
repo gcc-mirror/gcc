@@ -36,11 +36,12 @@
 #else
 
 #include <chrono>
-#include <functional>
 #include <memory>
+#include <tuple>
 #include <cerrno>
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
+#include <bits/invoke.h>
 #include <bits/gthr.h>
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
@@ -122,8 +123,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto __depend = nullptr;
 #endif
         _M_start_thread(_S_make_state(
-	      std::__bind_simple(std::forward<_Callable>(__f),
-				 std::forward<_Args>(__args)...)),
+	      __make_invoker(std::forward<_Callable>(__f),
+			     std::forward<_Args>(__args)...)),
 	    __depend);
       }
 
@@ -212,6 +213,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _M_start_thread(__shared_base_type);
 #endif
+
+  private:
+    // A call wrapper that does INVOKE(forwarded tuple elements...)
+    template<typename _Tuple>
+      struct _Invoker
+      {
+	_Tuple _M_t;
+
+	template<size_t _Index>
+	  static __tuple_element_t<_Index, _Tuple>&&
+	  _S_declval();
+
+	template<size_t... _Ind>
+	  auto
+	  _M_invoke(_Index_tuple<_Ind...>)
+	  noexcept(noexcept(std::__invoke(_S_declval<_Ind>()...)))
+	  -> decltype(std::__invoke(_S_declval<_Ind>()...))
+	  { return std::__invoke(std::get<_Ind>(std::move(_M_t))...); }
+
+	using _Indices
+	  = typename _Build_index_tuple<tuple_size<_Tuple>::value>::__type;
+
+	using result_type
+	  = decltype(std::declval<_Invoker>()._M_invoke(_Indices()));
+
+	result_type
+	operator()()
+	noexcept(noexcept(std::declval<_Invoker>()._M_invoke(_Indices())))
+	{ return _M_invoke(_Indices()); }
+
+      };
+
+    // Alias for _Invoker<tuple<DECAY_COPY(_Tp)...>>
+    template<typename... _Tp>
+      using __invoker_type
+	= _Invoker<decltype(std::make_tuple(std::declval<_Tp>()...))>;
+
+  public:
+    // Returns a call wrapper that does
+    // INVOKE(DECAY_COPY(__callable), DECAY_COPY(__args)).
+    template<typename _Callable, typename... _Args>
+      static __invoker_type<_Callable, _Args...>
+      __make_invoker(_Callable&& __callable, _Args&&... __args)
+      {
+	return { {
+	    std::make_tuple(std::forward<_Callable>(__callable),
+			    std::forward<_Args>(__args)...)
+	} };
+      }
   };
 
   inline void

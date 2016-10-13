@@ -35,7 +35,6 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <functional>
 #include <mutex>
 #include <thread>
 #include <condition_variable>
@@ -43,6 +42,7 @@
 #include <atomic>
 #include <bits/atomic_futex.h>
 #include <bits/functexcept.h>
+#include <bits/invoke.h>
 #include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>
 #include <bits/uses_allocator.h>
@@ -1403,35 +1403,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void
       _M_run(_Args&&... __args)
       {
-	// bound arguments decay so wrap lvalue references
-	auto __boundfn = std::__bind_simple(std::ref(_M_impl._M_fn),
-	    _S_maybe_wrap_ref(std::forward<_Args>(__args))...);
+	auto __boundfn = [&] () -> typename result_of<_Fn(_Args&&...)>::type {
+	    return std::__invoke(_M_impl._M_fn, std::forward<_Args>(__args)...);
+	};
 	this->_M_set_result(_S_task_setter(this->_M_result, __boundfn));
       }
 
       virtual void
       _M_run_delayed(_Args&&... __args, weak_ptr<_State_base> __self)
       {
-	// bound arguments decay so wrap lvalue references
-	auto __boundfn = std::__bind_simple(std::ref(_M_impl._M_fn),
-	    _S_maybe_wrap_ref(std::forward<_Args>(__args))...);
+	auto __boundfn = [&] () -> typename result_of<_Fn(_Args&&...)>::type {
+	    return std::__invoke(_M_impl._M_fn, std::forward<_Args>(__args)...);
+	};
 	this->_M_set_delayed_result(_S_task_setter(this->_M_result, __boundfn),
 				    std::move(__self));
       }
 
       virtual shared_ptr<_Task_state_base<_Res(_Args...)>>
       _M_reset();
-
-      template<typename _Tp>
-	static reference_wrapper<_Tp>
-	_S_maybe_wrap_ref(_Tp& __t)
-	{ return std::ref(__t); }
-
-      template<typename _Tp>
-	static
-	typename enable_if<!is_lvalue_reference<_Tp>::value, _Tp>::type&&
-	_S_maybe_wrap_ref(_Tp&& __t)
-	{ return std::forward<_Tp>(__t); }
 
       struct _Impl : _Alloc
       {
@@ -1713,8 +1702,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __try
 	    {
-	      __state = __future_base::_S_make_async_state(std::__bind_simple(
-		  std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
+	      __state = __future_base::_S_make_async_state(
+		  std::thread::__make_invoker(std::forward<_Fn>(__fn),
+					      std::forward<_Args>(__args)...)
+		  );
 	    }
 #if __cpp_exceptions
 	  catch(const system_error& __e)
@@ -1727,8 +1718,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       if (!__state)
 	{
-	  __state = __future_base::_S_make_deferred_state(std::__bind_simple(
-              std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
+	  __state = __future_base::_S_make_deferred_state(
+	      std::thread::__make_invoker(std::forward<_Fn>(__fn),
+					  std::forward<_Args>(__args)...));
 	}
       return future<__async_result_of<_Fn, _Args...>>(__state);
     }
