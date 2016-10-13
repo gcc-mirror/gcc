@@ -20,7 +20,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.5 Engines and egine adaptors with predefined parameters [rand.predef]
+// 26.4.5 Engines and engine adaptors with predefined parameters [rand.predef]
 // 26.4.5 [10]
 
 #include <random>
@@ -38,7 +38,7 @@ test01()
   std::minstd_rand0 b;
   b.discard(9999);
 
-  assert( a() == b() );
+  VERIFY( a() == b() );
 }
 
 int main()
