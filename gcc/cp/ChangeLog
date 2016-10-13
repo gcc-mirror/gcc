@@ -1,3 +1,13 @@
+2016-10-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71912
+	* class.c (struct flexmems_t):  Add members.
+	(find_flexarrays): Add arguments.  Correct handling of anonymous
+	structs.
+	(diagnose_flexarrays): Adjust to issue warnings in addition to errors.
+	(check_flexarrays): Add argument.
+	(diagnose_invalid_flexarray): New functions.
+
 2016-10-13  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
@@ -39,6 +49,7 @@
 
 	* decl.c (mark_inline_variable): New.
 
+>>>>>>> .r241142
 2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* decl2.c: Include memmodel.h.

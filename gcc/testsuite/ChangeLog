@@ -27,6 +27,19 @@
 
 2016-10-13  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/71912
+	* g++.dg/ext/flexary4.C: Adjust.
+	* g++.dg/ext/flexary5.C: Same.
+	* g++.dg/ext/flexary9.C: Same.
+	* g++.dg/ext/flexary19.C: New test.
+	* g++.dg/ext/flexary18.C: New test.
+	* g++.dg/torture/pr64312.C: Add a dg-error directive to an ill-formed
+	regression test.
+        * g++.dg/compat/struct-layout-1_generate.c (subfield): Add argument.
+        Avoid generating a flexible array member in an array.
+
+2016-10-13  Martin Sebor  <msebor@redhat.com>
+
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Cast 0 to wint_t
 	to placate -Wformat on targets where the type is not int.
 
@@ -1852,6 +1865,12 @@
 	* gcc.target/msp430/function-attributes-1.c: New test.
 	* gcc.target/msp430/function-attributes-2.c: New test.
 	* gcc.target/msp430/function-attributes-3.c: New test.
+
+2015-04-18  Martin Sebor  <msebor@redhat.com>
+
+	* gfortran.dg/pr32627.f03 (strptr): Change size to match the number
+	of non-nul characters.
+	* gfortran.dg/substr_6.f90: Make the NUL character visible on stdout
 
 2016-09-13  Jakub Jelinek  <jakub@redhat.com>
 
