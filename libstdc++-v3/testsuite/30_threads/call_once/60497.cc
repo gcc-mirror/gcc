@@ -25,6 +25,7 @@
 
 #include <mutex>
 #include <memory>
+#include <functional>
 
 struct A;
 template<typename T> struct B { T t; };

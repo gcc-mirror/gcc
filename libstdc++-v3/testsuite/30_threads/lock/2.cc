@@ -24,6 +24,7 @@
 
 #include <mutex>
 #include <thread>
+#include <functional>
 #include <testsuite_hooks.h>
 
 void locker(std::mutex& m1, std::mutex& m2, std::mutex& m3)

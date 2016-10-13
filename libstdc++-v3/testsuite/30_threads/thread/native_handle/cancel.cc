@@ -24,6 +24,7 @@
 #include <pthread.h>
 #include <thread>
 #include <atomic>
+#include <functional>
 
 void f(std::atomic<bool>& started)
 {

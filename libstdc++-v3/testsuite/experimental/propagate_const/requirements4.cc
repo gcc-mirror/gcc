@@ -21,8 +21,8 @@
 
 using std::experimental::propagate_const;
 
-// { dg-error "requires a class or a pointer to an object type" "" { target *-*-* } 105 }
-// { dg-error "invalid type" "" { target *-*-* } 66 }
-// { dg-error "uninitialized reference member" "" { target *-*-* } 112 }
+// { dg-error "requires a class or a pointer to an object type" "" { target *-*-* } 107 }
+// { dg-error "invalid type" "" { target *-*-* } 68 }
+// { dg-error "uninitialized reference member" "" { target *-*-* } 114 }
 
 propagate_const<int&> test1; // { dg-error "use of deleted function" }

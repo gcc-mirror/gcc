@@ -21,6 +21,7 @@
 #include <testsuite_hooks.h>
 #include <string>
 #include <array>
+#include <vector>
 #include <sstream>
 
 int del_count = 0;

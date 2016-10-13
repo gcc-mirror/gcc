@@ -21,6 +21,6 @@
 
 using std::experimental::propagate_const;
 
-// { dg-error "requires a class or a pointer to an object type" "" { target *-*-* } 105 }
+// { dg-error "requires a class or a pointer to an object type" "" { target *-*-* } 107 }
 
 propagate_const<int[1]> test1;

@@ -39,12 +39,14 @@
 #include <chrono>
 #include <exception>
 #include <type_traits>
-#include <functional>
 #include <system_error>
 #include <bits/std_mutex.h>
 #if ! _GTHREAD_USE_MUTEX_TIMEDLOCK
 # include <condition_variable>
 # include <thread>
+#endif
+#ifndef _GLIBCXX_HAVE_TLS
+# include <functional>
 #endif
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1

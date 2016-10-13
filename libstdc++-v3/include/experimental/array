@@ -36,7 +36,6 @@
 #else
 
 #include <array>
-#include <functional>
 #include <experimental/type_traits>
 
 namespace std _GLIBCXX_VISIBILITY(default)

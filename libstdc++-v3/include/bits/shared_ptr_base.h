@@ -49,7 +49,10 @@
 #ifndef _SHARED_PTR_BASE_H
 #define _SHARED_PTR_BASE_H 1
 
-#include <typeinfo>
+#include <functional>
+#if __cpp_rtti
+# include <typeinfo>
+#endif
 #include <bits/allocated_ptr.h>
 #include <ext/aligned_buffer.h>
 
