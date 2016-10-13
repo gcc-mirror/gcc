@@ -1,5 +1,10 @@
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-loop-manip.c (slpeel_tree_duplicate_loop_to_edge_cfg): Put
+	duplicated loop after its preheader and after the original loop.
+
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-loop.c (vect_analyze_loop_2): Check and skip loop if it
 	has no enough iterations for LOOP_VINFO_PEELING_FOR_GAPS.
 
