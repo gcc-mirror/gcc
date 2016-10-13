@@ -1,3 +1,9 @@
+2016-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77957
+	* gcc-interface/misc.c (LANG_HOOKS_GETDECLS): Use hook_tree_void_null
+	instead of lhd_return_null_tree_v.
+
 2016-10-12  Yannick Moy  <moy@adacore.com>
 
 	* einfo.adb, einfo.ads (Partial_Refinement_Constituents): Take

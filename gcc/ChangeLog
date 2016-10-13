@@ -1,3 +1,22 @@
+2016-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77957
+	* hooks.h (hook_tree_void_null): Declare.
+	* hooks.c (hook_tree_void_null): New function.
+	* langhooks.c (lhd_return_null_tree_v): Remove.
+	* langhooks-def.h (lhd_return_null_tree_v): Remove.
+	* cfgexpand.c (stack_protect_prologue): If guard_decl is NULL,
+	set y to const0_rtx.
+	* function.c (stack_protect_epilogue): Likewise.
+	* config/tilepro/tilepro.c (TARGET_STACK_PROTECT_GUARD): Redefine
+	if TARGET_THREAD_SSP_OFFSET is defined.
+	* config/s390/s390.c (TARGET_STACK_PROTECT_GUARD): Likewise.
+	* config/sparc/sparc.c (TARGET_STACK_PROTECT_GUARD): Likewise.
+	* config/tilegx/tilegx.c (TARGET_STACK_PROTECT_GUARD): Likewise.
+	* config/rs6000/rs6000.c (TARGET_STACK_PROTECT_GUARD): Likewise.
+	* config/i386/i386.c (TARGET_STACK_PROTECT_GUARD): Likewise.
+	(ix86_stack_protect_guard): New function.
+
 2016-10-13  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (tree_add_const_value_attribute): Do not try

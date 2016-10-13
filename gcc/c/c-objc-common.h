@@ -91,7 +91,7 @@ along with GCC; see the file COPYING3.  If not see
    This means it must also provide its own write_globals.  */
 
 #undef LANG_HOOKS_GETDECLS
-#define LANG_HOOKS_GETDECLS lhd_return_null_tree_v
+#define LANG_HOOKS_GETDECLS hook_tree_void_null
 
 /* Hooks for tree gimplification.  */
 #undef LANG_HOOKS_GIMPLIFY_EXPR
