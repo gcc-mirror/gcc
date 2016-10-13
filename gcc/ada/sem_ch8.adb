@@ -8197,9 +8197,9 @@ package body Sem_Ch8 is
          --  semantics of pragma Component_Alignment.
 
          if Scope_Stack.Last > Scope_Stack.First then
-            SST.Component_Alignment_Default := Scope_Stack.Table
-                                                 (Scope_Stack.Last - 1).
-                                                   Component_Alignment_Default;
+            SST.Component_Alignment_Default :=
+              Scope_Stack.Table
+                (Scope_Stack.Last - 1).  Component_Alignment_Default;
 
          --  Otherwise, this is the first scope being pushed on the scope
          --  stack. Inherit the component alignment from the configuration

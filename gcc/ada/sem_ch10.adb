@@ -6145,15 +6145,14 @@ package body Sem_Ch10 is
    -------------------------------
 
    procedure Check_Body_Needed_For_SAL (Unit_Name : Entity_Id) is
-
       function Entity_Needs_Body (E : Entity_Id) return Boolean;
       --  Determine whether use of entity E might require the presence of its
       --  body. For a package this requires a recursive traversal of all nested
       --  declarations.
 
-      ---------------------------
-      -- Entity_Needed_For_SAL --
-      ---------------------------
+      -----------------------
+      -- Entity_Needs_Body --
+      -----------------------
 
       function Entity_Needs_Body (E : Entity_Id) return Boolean is
          Ent : Entity_Id;
@@ -6163,7 +6162,18 @@ package body Sem_Ch10 is
             return True;
 
          elsif Ekind_In (E, E_Generic_Function, E_Generic_Procedure) then
-            return True;
+
+            --  A generic subprogram always requires the presence of its
+            --  body because an instantiation needs both templates. The only
+            --  exceptions is a generic subprogram renaming. In this case the
+            --  body is needed only when the template is declared outside the
+            --  compilation unit being checked.
+
+            if Present (Renamed_Entity (E)) then
+               return not Within_Scope (E, Unit_Name);
+            else
+               return True;
+            end if;
 
          elsif Ekind (E) = E_Generic_Package
            and then

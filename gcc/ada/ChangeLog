@@ -1,3 +1,24 @@
+2016-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb (Entity_Needs_Body): A generic
+	subprogram renaming needs a body if the renamed unit is declared
+	outside the current compilation unit.
+
+2016-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sinfo.ads, sem_ch12.adb, sem.adb, expander.adb, sem_res.ads,
+	sem_ch4.adb, sem_ch8.adb, s-memory.adb: Minor reformatting.
+
+2016-10-13  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Delete all temporary files when invoked as gnat
+	list -V -P ...
+
+2016-10-13  Ed Falis  <falis@adacore.com>
+
+	* impunit.adb: add i-vxinco.ads.
+	* s-interr-vxworks.adb: add hook for user interrupt connection routine.
+
 2016-10-13  Ed Falis  <falis@adacore.com>
 
 	* s-interr-hwint.adb, s-interr-vxworks.adb: Rename s-interr-hwint.adb

@@ -5232,13 +5232,13 @@ package Sinfo is
       --  Acts_As_Spec (Flag4-Sem)
       --  Bad_Is_Detected (Flag15) used only by parser
       --  Do_Storage_Check (Flag17-Sem)
+      --  Has_Relative_Deadline_Pragma (Flag9-Sem)
       --  Is_Entry_Barrier_Function (Flag8-Sem)
       --  Is_Protected_Subprogram_Body (Flag7-Sem)
       --  Is_Task_Body_Procedure (Flag1-Sem)
       --  Is_Task_Master (Flag5-Sem)
-      --  Was_Originally_Stub (Flag13-Sem)
-      --  Has_Relative_Deadline_Pragma (Flag9-Sem)
       --  Was_Expression_Function (Flag18-Sem)
+      --  Was_Originally_Stub (Flag13-Sem)
 
       -------------------------
       -- Expression Function --
