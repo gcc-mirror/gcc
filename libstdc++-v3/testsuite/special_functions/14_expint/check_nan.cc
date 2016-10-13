@@ -38,7 +38,6 @@ test01()
   long double d = std::expint(xl);
   long double e = std::expintl(xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

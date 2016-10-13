@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY(!regex_match_debug("x", regex("[]")));
   VERIFY(regex_match_debug("x", regex("[^]")));
   VERIFY(!regex_match_debug("]", regex("[]]")));

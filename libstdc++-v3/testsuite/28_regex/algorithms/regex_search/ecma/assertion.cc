@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY(!regex_search_debug("2123456", regex("^1234")));
   VERIFY(regex_search_debug("123456", regex("^1234")));
   VERIFY(regex_search_debug("123456", regex("(5|^)1234")));

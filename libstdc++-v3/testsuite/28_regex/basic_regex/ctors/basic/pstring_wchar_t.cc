@@ -27,8 +27,6 @@
 // Tests Pascal-style counted-string constructor of the basic_regex class.  
 void test01()
 {
-	bool test __attribute__((unused)) = true;
-
   const wchar_t* cs = L"aab";
 	std::wregex re(cs, 3, std::wregex::basic);
 

@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   cmatch m;
   regex re("((as)(df))", regex_constants::ECMAScript | regex_constants::nosubs);
   VERIFY(regex_search_debug("asdf", m, re));

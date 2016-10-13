@@ -22,7 +22,6 @@
 // [28.8.3] class template basic_regex assign()
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests assign operation from a Pascal-style counted-string.  
 void test01()

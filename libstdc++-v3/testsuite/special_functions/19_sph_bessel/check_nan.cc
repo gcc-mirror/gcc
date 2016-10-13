@@ -40,7 +40,6 @@ test01()
   long double d = std::sph_bessel(n, xl);
   long double e = std::sph_bessell(n, xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

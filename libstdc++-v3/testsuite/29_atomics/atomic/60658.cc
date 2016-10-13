@@ -34,8 +34,6 @@ struct Bar {
 int
 main ()
 {
-  bool test __attribute__((unused)) = true;
-
   std::atomic<Foo*> a;
   std::atomic<Bar*> b;
 

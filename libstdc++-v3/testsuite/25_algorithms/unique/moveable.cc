@@ -36,8 +36,6 @@ typedef test_container<rvalstruct, forward_iterator_wrapper> Container;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int intarray1[] = {1, 4, 4, 6, 1, 2, 2, 3, 1, 6, 6, 6, 5, 7, 5, 4, 4};
   int intarray2[] = {1, 1, 1, 2, 2, 1, 1, 7, 6, 6, 7, 8, 8, 8, 8, 9, 9};
 
@@ -69,8 +67,6 @@ bool are_equal(const rvalstruct& rhs, const rvalstruct& lhs)
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   int intarray1[] = {1, 4, 4, 6, 1, 2, 2, 3, 1, 6, 6, 6, 5, 7, 5, 4, 4};
   int intarray2[] = {1, 1, 1, 2, 2, 1, 1, 7, 6, 6, 7, 8, 8, 8, 8, 9, 9};
 

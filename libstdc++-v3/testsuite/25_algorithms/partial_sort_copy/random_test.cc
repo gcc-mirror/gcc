@@ -38,8 +38,6 @@ struct testPartialSortCopy
   template<typename Container, typename RandomGen>
   void operator()(Container con, RandomGen& rg)
   {
-    bool test __attribute__((unused)) = true;
-
     const int size = con.end() - con.begin();
     auto dist = std::uniform_int_distribution<>(0, size);
     const int element = dist(rg);

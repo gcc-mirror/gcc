@@ -33,16 +33,15 @@ test01()
 {
   typedef wchar_t CharT;
   typedef std::regex_traits<CharT> traits;
-  bool test __attribute__((unused)) = true;
   const CharT* p = L"";
 
-	std::size_t i = traits::length(p);
+  std::size_t i = traits::length(p);
 
-	VERIFY( i == 0 );
+  VERIFY( i == 0 );
 }
 
 int main()
 {
-	test01();
-	return 0;
+  test01();
+  return 0;
 }

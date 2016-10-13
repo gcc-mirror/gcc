@@ -40,7 +40,6 @@ test01()
   long double d = std::laguerre(n, xl);
   long double e = std::laguerrel(n, xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

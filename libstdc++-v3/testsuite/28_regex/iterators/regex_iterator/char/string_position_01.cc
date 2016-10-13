@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex re("asdf");
   std::string s("asdfasdfasdf");
   int i = 0;
@@ -46,8 +44,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex re("\\w+");
   std::string s("-a-b-c-");
 
@@ -75,8 +71,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::smatch m;
   std::string s = "abcde";
   std::regex_search(s, m, std::regex("bcd"));

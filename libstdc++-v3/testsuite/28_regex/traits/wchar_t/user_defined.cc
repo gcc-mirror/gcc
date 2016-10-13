@@ -45,8 +45,6 @@ template<typename CharT>
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   basic_regex<wchar_t, MyRegexTraits<wchar_t>> re(L".");
   VERIFY(!regex_match(L"\n", re));
   VERIFY(!regex_match(L"\r", re));

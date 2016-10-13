@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::regex  re("zxcv/(one.*)abc", std::regex::ECMAScript);
     std::string target("zxcv/onetwoabc");

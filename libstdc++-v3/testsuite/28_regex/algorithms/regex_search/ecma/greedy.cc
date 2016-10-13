@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   cmatch m;
 #define TEST(i, s) VERIFY(m[i].matched && string(m[i].first, m[i].second) == s)
   VERIFY(regex_search_debug("aaaa", m, regex("a*")));

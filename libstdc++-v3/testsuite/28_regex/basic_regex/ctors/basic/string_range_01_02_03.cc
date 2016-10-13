@@ -29,16 +29,14 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
-	try
-	{
-		std::regex  re("a\\{1,2,3\\}", std::regex::basic);
-	}
-	catch (std::regex_error& ex)
-	{
-		VERIFY( ex.code() == std::regex_constants::error_brace );
-	}
+  try
+    {
+      std::regex  re("a\\{1,2,3\\}", std::regex::basic);
+    }
+  catch (std::regex_error& ex)
+    {
+      VERIFY( ex.code() == std::regex_constants::error_brace );
+    }
 }
 
 

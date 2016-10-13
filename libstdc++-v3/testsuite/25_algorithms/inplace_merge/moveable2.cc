@@ -37,8 +37,6 @@ are_ordered(const rvalstruct& lhs, const rvalstruct& rhs)
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int array1[]={0,2,4,1,3,5};
   rvalstruct rv_array1[6];
   std::copy(array1, array1 + 6, rv_array1);

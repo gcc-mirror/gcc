@@ -26,8 +26,6 @@
 // libstdc++/64585
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   static const char s[] = "a";
   std::regex re("a");
   VERIFY(std::regex_search(s, re));

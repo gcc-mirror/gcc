@@ -27,8 +27,6 @@
 void
 test01() 
 { 
-  bool test __attribute__((unused)) = true;
-
   std::regex re("(wee|week)(knights|night)", std::regex::extended);
   
   VERIFY( re.flags() == std::regex::extended );

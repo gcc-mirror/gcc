@@ -23,7 +23,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   std::atomic_flag f = ATOMIC_FLAG_INIT;
 
   f.clear(); // set to false

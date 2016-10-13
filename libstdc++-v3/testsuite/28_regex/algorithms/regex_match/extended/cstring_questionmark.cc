@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex  re("(aa?)", std::regex::extended);
   char target[] = "a";
   std::cmatch m;

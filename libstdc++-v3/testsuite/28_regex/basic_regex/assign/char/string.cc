@@ -28,7 +28,6 @@
 // Tests C++ string assignment of the basic_regex class.  
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::basic_regex<char> test_type;
 
   std::string s("a*b");
@@ -39,7 +38,6 @@ void test01()
 // libstdc++/64584
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   std::regex re("", std::regex_constants::extended);
   auto flags = re.flags();
   try

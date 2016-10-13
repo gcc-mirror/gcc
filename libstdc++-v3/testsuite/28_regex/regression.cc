@@ -28,16 +28,12 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   regex re("((.)", regex_constants::basic);
 }
 
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::string re_str
     {
       "/abcd" "\n"
@@ -51,8 +47,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY(regex_match_debug("a.", regex(R"(a\b.)"), regex_constants::match_not_eow));
   VERIFY(regex_match_debug(".a", regex(R"(.\ba)"), regex_constants::match_not_bow));
   VERIFY(regex_search_debug("a", regex(R"(^\b)")));
@@ -65,8 +59,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   static const char* kNumericAnchor ="(\\$|usd)(usd|\\$|to|and|up to|[0-9,\\.\\-\\sk])+";
   const std::regex re(kNumericAnchor);
   (void)re;
@@ -75,8 +67,6 @@ test04()
 void
 test05()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY(regex_match_debug("!", std::regex("[![:alnum:]]")));
   VERIFY(regex_match_debug("-", std::regex("[a-]", regex_constants::basic)));
   VERIFY(regex_match_debug("-", std::regex("[a-]")));

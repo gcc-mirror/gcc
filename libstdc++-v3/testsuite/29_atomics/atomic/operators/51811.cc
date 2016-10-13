@@ -26,8 +26,6 @@
 // pointer arithimetic vs. atomic<_Tp*> specialization
 int main(void)
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std;
 
   typedef int 	value_type;

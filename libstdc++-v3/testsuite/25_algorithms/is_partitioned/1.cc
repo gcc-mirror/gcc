@@ -36,8 +36,6 @@ predicate(const int& i)
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
-
   Container con(array, array);
   VERIFY( std::is_partitioned(con.begin(), con.end(), predicate) );
 }
@@ -45,8 +43,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
-  
   Container con(array, array + 1);
   VERIFY( std::is_partitioned(con.begin(), con.end(), predicate) );
 }
@@ -54,8 +50,6 @@ test2()
 void
 test3()
 {
-  bool test __attribute__((unused)) = true;
-
   Container con(array, array + 8);
   VERIFY( !std::is_partitioned(con.begin(), con.end(), predicate) );
 }
@@ -63,8 +57,6 @@ test3()
 void
 test4()
 {
-  bool test __attribute__((unused)) = true;
-
   Container con(array + 2, array + 7);
   VERIFY( std::is_partitioned(con.begin(), con.end(), predicate) );
 }

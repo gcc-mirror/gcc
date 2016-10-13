@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   std::regex_token_iterator<wchar_t*> it;
 	std::wcregex_token_iterator cit;
 	std::wsregex_token_iterator sit;

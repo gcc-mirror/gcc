@@ -31,13 +31,12 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef char CharT;
   typedef std::regex_traits<CharT> traits;
 
-	traits t;
-	traits::string_type G = "abc";
-	traits::string_type H = "def";
+  traits t;
+  traits::string_type G = "abc";
+  traits::string_type H = "def";
 
   VERIFY( G < H );
   VERIFY( t.transform(G.begin(), G.end()) < t.transform(H.begin(), H.end()) );
@@ -45,6 +44,6 @@ test01()
 
 int main()
 {
-	test01();
-	return 0;
+  test01();
+  return 0;
 }

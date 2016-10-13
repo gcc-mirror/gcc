@@ -37,8 +37,6 @@ struct testSort
   template<typename Container, typename RandomGen>
   void operator()(Container con, RandomGen&)
   {
-    bool test __attribute__((unused)) = true;
-
     std::sort(con.begin(), con.end());
     VERIFY( std::is_sorted(con.begin(), con.end()) );
   }

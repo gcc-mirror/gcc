@@ -27,8 +27,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   for (unsigned size = 0; size < 50; ++size)
     {
       std::vector<int> vref(size);

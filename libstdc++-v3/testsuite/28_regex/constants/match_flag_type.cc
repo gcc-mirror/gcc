@@ -22,27 +22,24 @@
 // 28.5.1 
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  std::regex_constants::match_flag_type flag = std::regex_constants::match_default;
 
-	std::regex_constants::match_flag_type flag = std::regex_constants::match_default;
-
-	flag |= std::regex_constants::match_not_bol;
-	flag |= std::regex_constants::match_not_eol;
-	flag |= std::regex_constants::match_not_bow;
-	flag |= std::regex_constants::match_not_eow;
-	flag |= std::regex_constants::match_any;
-	flag |= std::regex_constants::match_not_null;
-	flag |= std::regex_constants::match_continuous;
-	flag |= std::regex_constants::match_prev_avail;
-	flag |= std::regex_constants::format_default;
-	flag |= std::regex_constants::format_sed;
-	flag |= std::regex_constants::format_no_copy;
-	flag |= std::regex_constants::format_first_only;
+  flag |= std::regex_constants::match_not_bol;
+  flag |= std::regex_constants::match_not_eol;
+  flag |= std::regex_constants::match_not_bow;
+  flag |= std::regex_constants::match_not_eow;
+  flag |= std::regex_constants::match_any;
+  flag |= std::regex_constants::match_not_null;
+  flag |= std::regex_constants::match_continuous;
+  flag |= std::regex_constants::match_prev_avail;
+  flag |= std::regex_constants::format_default;
+  flag |= std::regex_constants::format_sed;
+  flag |= std::regex_constants::format_no_copy;
+  flag |= std::regex_constants::format_first_only;
 }
 
 int main()

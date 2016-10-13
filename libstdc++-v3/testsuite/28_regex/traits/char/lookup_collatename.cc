@@ -31,7 +31,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef char CharT;
   typedef std::regex_traits<CharT> traits;
 

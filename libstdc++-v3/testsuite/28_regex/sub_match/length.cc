@@ -29,22 +29,20 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::sub_match<const char*> sm_t;
   const char*           test_data = "cabbage";
   sm_t::difference_type test_len = 3;
 
-	sm_t sm1;
-	sm1.first   = test_data + 0;
-	sm1.second  = test_data + test_len;
-	sm1.matched = true;
+  sm_t sm1;
+  sm1.first   = test_data + 0;
+  sm1.second  = test_data + test_len;
+  sm1.matched = true;
 
-	sm_t sm2;
-	sm2.matched = false;
+  sm_t sm2;
+  sm2.matched = false;
 
-	VERIFY( sm1.length() == test_len );
-	VERIFY( sm2.length() == 0 );
+  VERIFY( sm1.length() == test_len );
+  VERIFY( sm2.length() == 0 );
 }
 
 int main()

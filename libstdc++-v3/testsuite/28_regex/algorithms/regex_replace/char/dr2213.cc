@@ -29,8 +29,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   char buff[4096] = {0};
   regex re("asdf");
   cmatch m;

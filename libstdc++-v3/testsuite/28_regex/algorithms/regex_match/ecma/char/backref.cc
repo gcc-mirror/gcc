@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   regex re("([A-Z])\\1*");
   smatch m;
   {

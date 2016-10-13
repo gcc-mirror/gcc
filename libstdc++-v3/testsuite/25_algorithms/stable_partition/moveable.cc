@@ -51,8 +51,6 @@ struct Pred
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   rvalstruct s1[N];
   std::copy(A, A + N, s1);
   Container con(s1, s1 + N);
@@ -65,8 +63,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   rvalstruct s1[N2];
   std::copy(A2, A2 + N2, s1);
   Container con(s1, s1 + N2);

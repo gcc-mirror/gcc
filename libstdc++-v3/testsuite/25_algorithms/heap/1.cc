@@ -53,8 +53,6 @@ int Gt::_M_count = 0;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // sort array s1 using push_heap/pop_heap
   int s1[N];
   std::copy(A, A + N, s1);
@@ -83,8 +81,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   Gt gt;
 
 #ifndef _GLIBCXX_DEBUG

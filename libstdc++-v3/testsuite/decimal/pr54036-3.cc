@@ -44,7 +44,6 @@ my_inf128 (void)
 int
 main ()
 {
-  bool test __attribute__((unused)) = true;
   decimal128 v;
 
   v = my_nan128 ();

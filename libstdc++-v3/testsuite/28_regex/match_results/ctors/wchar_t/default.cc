@@ -27,8 +27,6 @@
 // Tests default constructor of the match_result class.  
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wcmatch cm;
   VERIFY( cm.size() == 0 );
   VERIFY( !cm.ready() );
@@ -36,8 +34,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wsmatch sm;
   VERIFY( sm.size() == 0 );
   VERIFY( !sm.ready() );

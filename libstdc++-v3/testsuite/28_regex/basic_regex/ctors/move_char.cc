@@ -28,17 +28,16 @@
 // Tests move constructor of the basic_regex class.  
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::basic_regex<char> test_type;
 
   test_type src_re("aaba");
   const unsigned mark_count = src_re.mark_count();
-	const test_type::flag_type flags = src_re.flags();
+  const test_type::flag_type flags = src_re.flags();
 
   test_type target_re = std::move(src_re);
   
-	VERIFY( target_re.flags() == flags );
-	VERIFY( target_re.mark_count() == mark_count );
+  VERIFY( target_re.flags() == flags );
+  VERIFY( target_re.mark_count() == mark_count );
 }
 
 int

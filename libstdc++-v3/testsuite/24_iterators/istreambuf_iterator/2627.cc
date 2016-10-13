@@ -26,7 +26,6 @@
 // libstdc++/2627
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   const std::string s("free the vieques");
 
   // 1

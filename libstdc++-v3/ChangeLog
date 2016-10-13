@@ -1,3 +1,403 @@
+2016-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/24_iterators/container_access.cc: Remove 'test' variables.
+	* testsuite/24_iterators/istream_iterator/2.cc: Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/2.cc: Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/2627.cc: Likewise.
+	* testsuite/24_iterators/operations/next.cc: Likewise.
+	* testsuite/24_iterators/operations/prev.cc: Likewise.
+	* testsuite/24_iterators/ostreambuf_iterator/2.cc: Likewise.
+	* testsuite/24_iterators/random_access_iterator/26020.cc: Likewise.
+	* testsuite/24_iterators/range_access_cpp14.cc: Likewise.
+	* testsuite/24_iterators/reverse_iterator/11729.cc: Likewise.
+	* testsuite/24_iterators/reverse_iterator/3.cc: Likewise.
+	* testsuite/25_algorithms/adjacent_find/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/all_of/1.cc: Likewise.
+	* testsuite/25_algorithms/any_of/1.cc: Likewise.
+	* testsuite/25_algorithms/binary_search/2.cc: Likewise.
+	* testsuite/25_algorithms/binary_search/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/clamp/1.cc: Likewise.
+	* testsuite/25_algorithms/clamp/2.cc: Likewise.
+	* testsuite/25_algorithms/copy/1.cc: Likewise.
+	* testsuite/25_algorithms/copy/2.cc: Likewise.
+	* testsuite/25_algorithms/copy/3.cc: Likewise.
+	* testsuite/25_algorithms/copy/34595.cc: Likewise.
+	* testsuite/25_algorithms/copy/4.cc: Likewise.
+	* testsuite/25_algorithms/copy/deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/1.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/2.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/3.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/4.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/1.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/3.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/4.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy_backward/deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_backward/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/2.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/3.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/4.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/50119.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/equal_range/2.cc: Likewise.
+	* testsuite/25_algorithms/equal_range/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/fill/1.cc: Likewise.
+	* testsuite/25_algorithms/fill/2.cc: Likewise.
+	* testsuite/25_algorithms/fill/3.cc: Likewise.
+	* testsuite/25_algorithms/fill/4.cc: Likewise.
+	* testsuite/25_algorithms/fill_n/1.cc: Likewise.
+	* testsuite/25_algorithms/find/39546.cc: Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/char/1.cc: Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/char/2.cc: Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/1.cc:
+	Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/find_if/1.cc: Likewise.
+	* testsuite/25_algorithms/find_if_not/1.cc: Likewise.
+	* testsuite/25_algorithms/for_each/1.cc: Likewise.
+	* testsuite/25_algorithms/heap/1.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/heap/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/includes/1.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/1.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/49559.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/moveable.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/is_heap/1.cc: Likewise.
+	* testsuite/25_algorithms/is_heap_until/1.cc: Likewise.
+	* testsuite/25_algorithms/is_partitioned/1.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/1.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted/1.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/1.cc: Likewise.
+	* testsuite/25_algorithms/iter_swap/20577.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/2.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/make_heap/complexity.cc: Likewise.
+	* testsuite/25_algorithms/max/1.cc: Likewise.
+	* testsuite/25_algorithms/max/2.cc: Likewise.
+	* testsuite/25_algorithms/max/3.cc: Likewise.
+	* testsuite/25_algorithms/max/37547.cc: Likewise.
+	* testsuite/25_algorithms/max/4.cc: Likewise.
+	* testsuite/25_algorithms/min/1.cc: Likewise.
+	* testsuite/25_algorithms/min/2.cc: Likewise.
+	* testsuite/25_algorithms/min/3.cc: Likewise.
+	* testsuite/25_algorithms/min/37547.cc: Likewise.
+	* testsuite/25_algorithms/min/4.cc: Likewise.
+	* testsuite/25_algorithms/minmax/1.cc: Likewise.
+	* testsuite/25_algorithms/minmax/2.cc: Likewise.
+	* testsuite/25_algorithms/minmax/3.cc: Likewise.
+	* testsuite/25_algorithms/minmax/37547.cc: Likewise.
+	* testsuite/25_algorithms/minmax_element/1.cc: Likewise.
+	* testsuite/25_algorithms/move/1.cc: Likewise.
+	* testsuite/25_algorithms/move/deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/1.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/next_permutation/moveable.cc: Likewise.
+	* testsuite/25_algorithms/none_of/1.cc: Likewise.
+	* testsuite/25_algorithms/nth_element/1.cc: Likewise.
+	* testsuite/25_algorithms/nth_element/2.cc: Likewise.
+	* testsuite/25_algorithms/nth_element/3.cc: Likewise.
+	* testsuite/25_algorithms/nth_element/moveable.cc: Likewise.
+	* testsuite/25_algorithms/nth_element/random_test.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort/2.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort/check_compare_by_value.cc:
+	Likewise.
+	* testsuite/25_algorithms/partial_sort/moveable.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort/random_test.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/2.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/random_test.cc: Likewise.
+	* testsuite/25_algorithms/partition/1.cc: Likewise.
+	* testsuite/25_algorithms/partition/moveable.cc: Likewise.
+	* testsuite/25_algorithms/partition_copy/1.cc: Likewise.
+	* testsuite/25_algorithms/partition_point/1.cc: Likewise.
+	* testsuite/25_algorithms/pop_heap/complexity.cc: Likewise.
+	* testsuite/25_algorithms/prev_permutation/moveable.cc: Likewise.
+	* testsuite/25_algorithms/push_heap/complexity.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/1.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewise.
+	* testsuite/25_algorithms/rotate/1.cc: Likewise.
+	* testsuite/25_algorithms/rotate/moveable.cc: Likewise.
+	* testsuite/25_algorithms/rotate/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/rotate/rotate.cc: Likewise.
+	* testsuite/25_algorithms/search/1.cc: Likewise.
+	* testsuite/25_algorithms/search_n/58358.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/1.cc: Likewise.
+	* testsuite/25_algorithms/sort/1.cc: Likewise.
+	* testsuite/25_algorithms/sort/check_compare_by_value.cc: Likewise.
+	* testsuite/25_algorithms/sort/moveable.cc: Likewise.
+	* testsuite/25_algorithms/sort/random_test.cc: Likewise.
+	* testsuite/25_algorithms/sort/vectorbool.cc: Likewise.
+	* testsuite/25_algorithms/sort_heap/check_compare_by_value.cc: Likewise.
+	* testsuite/25_algorithms/sort_heap/complexity.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/1.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/mem_check.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/moveable.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/2.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/3.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/49559.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/check_compare_by_value.cc:
+	Likewise.
+	* testsuite/25_algorithms/stable_sort/mem_check.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/moveable.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/swap_ranges/1.cc: Likewise.
+	* testsuite/25_algorithms/unique/11480.cc: Likewise.
+	* testsuite/25_algorithms/unique/2.cc: Likewise.
+	* testsuite/25_algorithms/unique/moveable.cc: Likewise.
+	* testsuite/25_algorithms/unique_copy/1.cc: Likewise.
+	* testsuite/25_algorithms/unique_copy/2.cc: Likewise.
+	* testsuite/25_algorithms/unique_copy/26133.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/2.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/partitioned.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/awk/cstring_01.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/basic/empty_range.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/basic/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/basic/
+	string_range_00_03.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/basic/
+	string_range_01_03.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/basic/
+	string_range_02_03.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/cstring_bracket_01.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/53622.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/57173.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/58576.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/68863.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/anymatcher.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/backref.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/empty_range.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/emptygroup.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/hex.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/quoted_char.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/ungreedy.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/63199.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/
+	anymatcher.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/cjk_match.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/hex.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/cstring_plus.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	cstring_questionmark.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	cstring_range.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/string_any.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_range_00_03.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_range_01_03.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_range_02_03.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	wstring_locale.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_replace/char/basic_replace.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_replace/char/dr2213.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_search/61720.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_search/basic/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/assertion.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/flags.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/greedy.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/basic_regex/assign/char/cstring.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/char/cstring_op.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/char/moveable.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/char/pstring.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/char/range.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/char/string.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/char/string_op.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/cstring.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/cstring_op.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/pstring.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/range.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/string.cc: Likewise.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/string_op.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/basic/pstring_wchar_t.cc:
+	Likewise.
+	* testsuite/28_regex/basic_regex/ctors/basic/string_range_01_02_03.cc:
+	Likewise.
+	* testsuite/28_regex/basic_regex/ctors/extended/cstring.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/extended/
+	string_range_01_02_03.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/move_char.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/string_wchar_t.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/wchar_t/cstring.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/wchar_t/default.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/wchar_t/range.cc: Likewise.
+	* testsuite/28_regex/basic_regex/imbue/string.cc: Likewise.
+	* testsuite/28_regex/constants/error_type.cc: Likewise.
+	* testsuite/28_regex/constants/match_flag_type.cc: Likewise.
+	* testsuite/28_regex/init-list.cc: Likewise.
+	* testsuite/28_regex/iterators/regex_iterator/char/64140.cc: Likewise.
+	* testsuite/28_regex/iterators/regex_iterator/char/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/iterators/regex_iterator/char/
+	string_position_01.cc
+	* testsuite/28_regex/iterators/regex_iterator/ctors/char/default.cc:
+	Likewise.
+	* testsuite/28_regex/iterators/regex_iterator/ctors/wchar_t/
+	default.cc: Likewise.
+	* testsuite/28_regex/iterators/regex_iterator/typedefs.cc: Likewise.
+	* testsuite/28_regex/iterators/regex_iterator/wchar_t/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/iterators/regex_iterator/wchar_t/string_02.cc:
+	Likewise.
+	* testsuite/28_regex/iterators/regex_token_iterator/64303.cc: Likewise.
+	* testsuite/28_regex/iterators/regex_token_iterator/char/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/iterators/regex_token_iterator/ctors/char/
+	default.cc: Likewise.
+	* testsuite/28_regex/iterators/regex_token_iterator/ctors/wchar_t/
+	default.cc: Likewise.
+	* testsuite/28_regex/iterators/regex_token_iterator/typedefs.cc:
+	Likewise.
+	* testsuite/28_regex/iterators/regex_token_iterator/wchar_t/
+	string_01.cc: Likewise.
+	* testsuite/28_regex/iterators/regex_token_iterator/wchar_t/
+	wstring_02.cc: Likewise.
+	* testsuite/28_regex/match_results/ctors/char/default.cc: Likewise.
+	* testsuite/28_regex/match_results/ctors/wchar_t/default.cc: Likewise.
+	* testsuite/28_regex/match_results/format.cc: Likewise.
+	* testsuite/28_regex/match_results/out_of_range_submatches.cc: Likewise.
+	* testsuite/28_regex/match_results/swap.cc: Likewise.
+	* testsuite/28_regex/match_results/typedefs.cc: Likewise.
+	* testsuite/28_regex/regex_error/regex_error.cc: Likewise.
+	* testsuite/28_regex/regression.cc: Likewise.
+	* testsuite/28_regex/sub_match/cast_char.cc: Likewise.
+	* testsuite/28_regex/sub_match/cast_wchar_t.cc: Likewise.
+	* testsuite/28_regex/sub_match/embedded_zeros_cmp.cc: Likewise.
+	* testsuite/28_regex/sub_match/length.cc: Likewise.
+	* testsuite/28_regex/traits/char/ctor.cc: Likewise.
+	* testsuite/28_regex/traits/char/isctype.cc: Likewise.
+	* testsuite/28_regex/traits/char/length.cc: Likewise.
+	* testsuite/28_regex/traits/char/lookup_classname.cc: Likewise.
+	* testsuite/28_regex/traits/char/lookup_collatename.cc: Likewise.
+	* testsuite/28_regex/traits/char/transform.cc: Likewise.
+	* testsuite/28_regex/traits/char/transform_primary.cc: Likewise.
+	* testsuite/28_regex/traits/char/translate.cc: Likewise.
+	* testsuite/28_regex/traits/char/translate_nocase.cc: Likewise.
+	* testsuite/28_regex/traits/char/user_defined.cc: Likewise.
+	* testsuite/28_regex/traits/char/value.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/ctor.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/isctype.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/length.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/lookup_classname.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/lookup_collatename.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/transform.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/transform_primary.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/translate.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/translate_nocase.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/user_defined.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/value.cc: Likewise.
+	* testsuite/29_atomics/atomic/60658.cc: Likewise.
+	* testsuite/29_atomics/atomic/operators/51811.cc: Likewise.
+	* testsuite/29_atomics/atomic_flag/clear/1.cc: Likewise.
+	* testsuite/backward/11460.cc: Likewise.
+	* testsuite/backward/hash_map/1.cc: Likewise.
+	* testsuite/backward/hash_map/25896.cc: Likewise.
+	* testsuite/backward/hash_set/1.cc: Likewise.
+	* testsuite/backward/hash_set/25896.cc: Likewise.
+	* testsuite/decimal/binary-arith.cc: Likewise.
+	* testsuite/decimal/comparison.cc: Likewise.
+	* testsuite/decimal/compound-assignment-memfunc.cc: Likewise.
+	* testsuite/decimal/compound-assignment.cc: Likewise.
+	* testsuite/decimal/conversion-from-float.cc: Likewise.
+	* testsuite/decimal/conversion-from-integral.cc: Likewise.
+	* testsuite/decimal/conversion-to-generic-float.cc: Likewise.
+	* testsuite/decimal/conversion-to-integral.cc: Likewise.
+	* testsuite/decimal/ctor.cc: Likewise.
+	* testsuite/decimal/incdec-memfunc.cc: Likewise.
+	* testsuite/decimal/incdec.cc: Likewise.
+	* testsuite/decimal/make-decimal.cc: Likewise.
+	* testsuite/decimal/pr54036-1.cc: Likewise.
+	* testsuite/decimal/pr54036-2.cc: Likewise.
+	* testsuite/decimal/pr54036-3.cc: Likewise.
+	* testsuite/decimal/unary-arith.cc: Likewise.
+	* testsuite/special_functions/01_assoc_laguerre/check_nan.cc: Likewise.
+	* testsuite/special_functions/01_assoc_laguerre/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/02_assoc_legendre/check_nan.cc: Likewise.
+	* testsuite/special_functions/02_assoc_legendre/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/03_beta/check_nan.cc: Likewise.
+	* testsuite/special_functions/03_beta/check_value.cc: Likewise.
+	* testsuite/special_functions/04_comp_ellint_1/check_nan.cc: Likewise.
+	* testsuite/special_functions/04_comp_ellint_1/check_value.cc: Likewise.
+	* testsuite/special_functions/05_comp_ellint_2/check_nan.cc: Likewise.
+	* testsuite/special_functions/05_comp_ellint_2/check_value.cc: Likewise.
+	* testsuite/special_functions/06_comp_ellint_3/check_nan.cc: Likewise.
+	* testsuite/special_functions/06_comp_ellint_3/check_value.cc: Likewise.
+	* testsuite/special_functions/07_cyl_bessel_i/check_nan.cc: Likewise.
+	* testsuite/special_functions/07_cyl_bessel_i/check_value.cc: Likewise.
+	* testsuite/special_functions/07_cyl_bessel_i/pr56216.cc: Likewise.
+	* testsuite/special_functions/08_cyl_bessel_j/check_nan.cc: Likewise.
+	* testsuite/special_functions/08_cyl_bessel_j/check_value.cc: Likewise.
+	* testsuite/special_functions/09_cyl_bessel_k/check_nan.cc: Likewise.
+	* testsuite/special_functions/09_cyl_bessel_k/check_value.cc: Likewise.
+	* testsuite/special_functions/10_cyl_neumann/check_nan.cc: Likewise.
+	* testsuite/special_functions/10_cyl_neumann/check_value.cc: Likewise.
+	* testsuite/special_functions/11_ellint_1/check_nan.cc: Likewise.
+	* testsuite/special_functions/11_ellint_1/check_value.cc: Likewise.
+	* testsuite/special_functions/12_ellint_2/check_nan.cc: Likewise.
+	* testsuite/special_functions/12_ellint_2/check_value.cc: Likewise.
+	* testsuite/special_functions/13_ellint_3/check_nan.cc: Likewise.
+	* testsuite/special_functions/13_ellint_3/check_value.cc: Likewise.
+	* testsuite/special_functions/14_expint/check_nan.cc: Likewise.
+	* testsuite/special_functions/14_expint/check_value.cc: Likewise.
+	* testsuite/special_functions/15_hermite/check_nan.cc: Likewise.
+	* testsuite/special_functions/15_hermite/check_value.cc: Likewise.
+	* testsuite/special_functions/16_laguerre/check_nan.cc: Likewise.
+	* testsuite/special_functions/16_laguerre/check_value.cc: Likewise.
+	* testsuite/special_functions/17_legendre/check_nan.cc: Likewise.
+	* testsuite/special_functions/17_legendre/check_value.cc: Likewise.
+	* testsuite/special_functions/18_riemann_zeta/check_nan.cc: Likewise.
+	* testsuite/special_functions/18_riemann_zeta/check_value.cc: Likewise.
+	* testsuite/special_functions/19_sph_bessel/check_nan.cc: Likewise.
+	* testsuite/special_functions/19_sph_bessel/check_value.cc: Likewise.
+	* testsuite/special_functions/20_sph_legendre/check_nan.cc: Likewise.
+	* testsuite/special_functions/20_sph_legendre/check_value.cc: Likewise.
+	* testsuite/special_functions/21_sph_neumann/check_nan.cc: Likewise.
+	* testsuite/special_functions/21_sph_neumann/check_value.cc: Likewise.
+	* testsuite/tr2/bases/value.cc: Likewise.
+	* testsuite/tr2/direct_bases/value.cc: Likewise.
+	* testsuite/util/debug/checks.h: Likewise.
+	* testsuite/util/debug/unordered_checks.h: Likewise.
+	* testsuite/util/testsuite_allocator.h: Likewise.
+	* testsuite/util/testsuite_api.h: Likewise.
+	* testsuite/util/testsuite_common_types.h: Likewise.
+	* testsuite/util/testsuite_random.h: Likewise.
+	* testsuite/util/testsuite_rvalref.h: Likewise.
+
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_base.h: Include <functional>.

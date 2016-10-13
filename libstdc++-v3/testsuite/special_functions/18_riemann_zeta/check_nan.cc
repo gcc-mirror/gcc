@@ -38,7 +38,6 @@ test01()
   long double d = std::riemann_zeta(xl);
   long double e = std::riemann_zetal(xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

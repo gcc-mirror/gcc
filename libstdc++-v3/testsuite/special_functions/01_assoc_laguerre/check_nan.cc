@@ -29,7 +29,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
   float xf = std::numeric_limits<float>::quiet_NaN();
   double xd = std::numeric_limits<double>::quiet_NaN();
   long double xl = std::numeric_limits<long double>::quiet_NaN();

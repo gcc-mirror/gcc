@@ -842,7 +842,6 @@ namespace __gnu_test
 	    _Ttype __a(__v1);
 	    __v0 = __a;
 
-	    bool test __attribute__((unused)) = true;
 	    VERIFY( __v1 == __v0 );
 	  }
 	};
@@ -869,7 +868,6 @@ namespace __gnu_test
 	    __a = __v1;
 	    _Tvalue __vr = __a;
 
-	    bool test __attribute__((unused)) = true;
 	    VERIFY( __v1 == __vr );
 	  }
 	};

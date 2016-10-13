@@ -29,8 +29,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::setlocale(LC_ALL, "");
 
   std::wstring current_token(L"II.");

@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::regex  re("pre/[za-x]", std::regex::extended);
     VERIFY( regex_match_debug("pre/z", re) );
@@ -70,8 +68,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   try
   {
     std::regex re("[-----]", std::regex::extended);
@@ -103,8 +99,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   try
   {
     std::regex re("[z-a]", std::regex::extended);
@@ -119,8 +113,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex re("[-0-9a-z]");
   VERIFY(regex_match_debug("-", re));
   VERIFY(regex_match_debug("1", re));
@@ -135,8 +127,6 @@ test04()
 void
 test05()
 {
-  bool test __attribute__((unused)) = true;
-
   regex lanana_namespace("^[a-z0-9]+$", regex::extended);
   regex lsb_namespace("^_?([a-z0-9_.]+-, regex::extended)+[a-z0-9]+$");
   regex debian_dpkg_conffile_cruft("dpkg-(old|dist|new|tmp, regex::extended)$");
@@ -154,8 +144,6 @@ test05()
 void
 test06()
 {
-  bool test __attribute__((unused)) = true;
-
   regex lanana_namespace("^[a-z0-9]+$");
   regex lsb_namespace("^_?([a-z0-9_.]+-)+[a-z0-9]+$");
   regex debian_dpkg_conffile_cruft("dpkg-(old|dist|new|tmp)$");

@@ -27,7 +27,6 @@ using namespace std::decimal;
 void
 conversion_to_generic_float_32 ()
 {
-  bool test __attribute__((unused)) = true;
   decimal32 d32(123);
   float f;
   double d;
@@ -52,7 +51,6 @@ conversion_to_generic_float_32 ()
 void
 conversion_to_generic_float_64 ()
 {
-  bool test __attribute__((unused)) = true;
   decimal64 d64(234);
   float f;
   double d;
@@ -77,7 +75,6 @@ conversion_to_generic_float_64 ()
 void
 conversion_to_generic_float_128 ()
 {
-  bool test __attribute__((unused)) = true;
   decimal128 d128(345);
   float f;
   double d;

@@ -37,8 +37,6 @@ typedef test_container<rvalstruct,
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int inarray[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   const int size = sizeof(inarray) / sizeof(int);
 

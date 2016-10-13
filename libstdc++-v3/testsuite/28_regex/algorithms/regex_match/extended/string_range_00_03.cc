@@ -32,8 +32,6 @@ using namespace __gnu_test;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex  re("a{0,3}", std::regex::extended);
   std::string target("aa");
   std::smatch m;

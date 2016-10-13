@@ -36,8 +36,6 @@ predicate(const int& i)
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
-
   Container con(array, array);
 
   forward_iterator_wrapper<int> mid =
@@ -50,8 +48,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
-
   Container con(array, array + 1);
 
   forward_iterator_wrapper<int> mid =
@@ -64,8 +60,6 @@ test2()
 void
 test3()
 {
-  bool test __attribute__((unused)) = true;
-
   Container con(array, array + 6);
 
   forward_iterator_wrapper<int> mid =

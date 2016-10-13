@@ -40,8 +40,6 @@ typedef test_container<rvalstruct, random_access_iterator_wrapper> Container;
 void 
 test1()
 {
-  bool test __attribute__((unused)) = true;
-
   int intarray[] = {6, 5, 4, 3, 2, 1, 0};
   rvalstruct array[7];
   std::copy(intarray, intarray + 7, array);
@@ -58,8 +56,6 @@ test1()
 void 
 test2()
 {
-  bool test __attribute__((unused)) = true;
-
   int intarray[] = {0, 6, 1, 5, 2, 4, 3};
   rvalstruct array[7];
   std::copy(intarray, intarray + 7, array);
@@ -80,8 +76,6 @@ are_less(const rvalstruct& lhs, const rvalstruct& rhs)
 void 
 test3()
 {
-  bool test __attribute__((unused)) = true;
-
   int intarray[] = {0, 6, 1, 5, 2, 4, 3};
   rvalstruct array[7];
   std::copy(intarray, intarray + 7, array);

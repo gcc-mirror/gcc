@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const int x = std::clamp(1, 2, 4);
   const int y = std::clamp(3, 2, 4);
   const int z = std::clamp(5, 2, 4);

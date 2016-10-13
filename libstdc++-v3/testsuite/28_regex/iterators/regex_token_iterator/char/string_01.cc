@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::basic_regex<char> re(" ");
   const char s[] = "Quick brown fox.";
   int cnt = 0;

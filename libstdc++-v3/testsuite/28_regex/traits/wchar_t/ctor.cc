@@ -22,7 +22,6 @@
 // [28.7] class template regex_traits
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests default constructor of the regex_traits class.  There is only the
 // default constructor.

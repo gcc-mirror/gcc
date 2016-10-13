@@ -23,7 +23,6 @@
 
 #include <string>
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests basic_regex assignment operator from a C++ string;
 void test01()

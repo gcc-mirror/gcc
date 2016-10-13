@@ -29,8 +29,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   string s = R"("test\")";
   VERIFY(!regex_search_debug(s, regex(R"("([^"]|\\")*[^\\]")")));
   VERIFY(!regex_match_debug(s, regex(R"("([^"]|\\")*[^\\]")")));

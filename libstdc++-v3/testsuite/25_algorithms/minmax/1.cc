@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::pair<const int, const int> z = std::minmax(1, 2);
   std::pair<const int, const int> w = std::minmax(4, 3);
   VERIFY( z.first == 1 );

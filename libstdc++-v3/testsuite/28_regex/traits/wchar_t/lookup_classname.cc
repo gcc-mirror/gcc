@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef wchar_t CharT;
   typedef std::regex_traits<CharT> traits;
 

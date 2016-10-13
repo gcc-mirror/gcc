@@ -36,8 +36,6 @@ predicate(const int& i)
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
-
   Container con(array, array);
   VERIFY( std::find_if_not(con.begin(), con.end(), 
 			   predicate).ptr == array );
@@ -46,8 +44,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
-  
   Container con(array, array + 1);
   VERIFY( std::find_if_not(con.begin(), con.end(), 
 			   predicate).ptr == array + 1 );
@@ -56,8 +52,6 @@ test2()
 void
 test3()
 {
-  bool test __attribute__((unused)) = true;
-
   Container con(array, array + 6);
   VERIFY( std::find_if_not(con.begin(), con.end(),
 			   predicate).ptr == array + 3 );

@@ -39,8 +39,6 @@ bool even(const copy_tracker& ct)
 void
 test1(int throw_count)
 {
-  bool test __attribute__((unused)) = true;
-
   copy_tracker vals[30];
   for(int i = 0; i < 30; ++i)
     vals[i] = A[i];

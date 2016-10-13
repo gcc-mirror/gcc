@@ -37,7 +37,6 @@ unsigned long long ull = 50;
 void
 compare_eq_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a;
 
   a = si;   VERIFY (a == si);   VERIFY (si == a);
@@ -54,7 +53,6 @@ compare_eq_32 (void)
 void
 compare_ne_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a = 100;
 
   VERIFY (a != si);   VERIFY (si != a);
@@ -71,7 +69,6 @@ compare_ne_32 (void)
 void
 compare_lt_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a = -100;
 
   VERIFY (a < si);
@@ -99,7 +96,6 @@ compare_lt_32 (void)
 void
 compare_le_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a;
 
   a = si;   VERIFY (a <= si);   VERIFY (si <= a);
@@ -138,7 +134,6 @@ compare_le_32 (void)
 void
 compare_gt_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a = 100;
 
   VERIFY (a > si);
@@ -166,7 +161,6 @@ compare_gt_32 (void)
 void
 compare_ge_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a;
 
   a = si;   VERIFY (a >= si);   VERIFY (si <= a);
@@ -205,7 +199,6 @@ compare_ge_32 (void)
 void
 compare_eq_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a;
 
   a = si;   VERIFY (a == si);   VERIFY (si == a);
@@ -222,7 +215,6 @@ compare_eq_64 (void)
 void
 compare_ne_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a = 100;
 
   VERIFY (a != si);   VERIFY (si != a);
@@ -239,7 +231,6 @@ compare_ne_64 (void)
 void
 compare_lt_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a = -100;
 
   VERIFY (a < si);
@@ -267,7 +258,6 @@ compare_lt_64 (void)
 void
 compare_le_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a;
 
   a = si;   VERIFY (a <= si);   VERIFY (si <= a);
@@ -306,7 +296,6 @@ compare_le_64 (void)
 void
 compare_gt_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a = 100;
 
   VERIFY (a > si);
@@ -334,7 +323,6 @@ compare_gt_64 (void)
 void
 compare_ge_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a;
 
   a = si;   VERIFY (a >= si);   VERIFY (si <= a);
@@ -373,7 +361,6 @@ compare_ge_64 (void)
 void
 compare_eq_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a;
 
   a = si;   VERIFY (a == si);   VERIFY (si == a);
@@ -390,7 +377,6 @@ compare_eq_128 (void)
 void
 compare_ne_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a = 100;
 
   VERIFY (a != si);   VERIFY (si != a);
@@ -407,7 +393,6 @@ compare_ne_128 (void)
 void
 compare_lt_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a = -100;
 
   VERIFY (a < si);
@@ -435,7 +420,6 @@ compare_lt_128 (void)
 void
 compare_le_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a;
 
   a = si;   VERIFY (a <= si);   VERIFY (si <= a);
@@ -474,7 +458,6 @@ compare_le_128 (void)
 void
 compare_gt_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a = 100;
 
   VERIFY (a > si);
@@ -502,7 +485,6 @@ compare_gt_128 (void)
 void
 compare_ge_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a;
 
   a = si;   VERIFY (a >= si);   VERIFY (si <= a);

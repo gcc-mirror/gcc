@@ -40,7 +40,6 @@ test01()
   long double d = std::hermite(n, xl);
   long double e = std::hermitel(n, xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

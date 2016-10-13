@@ -42,7 +42,6 @@ test01()
   long double d = std::ellint_2(kl, phil);
   long double e = std::ellint_2l(kl, phil);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));
@@ -69,7 +68,6 @@ test02()
   long double d = std::ellint_2(kl, phil);
   long double e = std::ellint_2l(kl, phil);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

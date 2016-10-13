@@ -37,8 +37,6 @@ const int arr0[] = { 11, 22, 33, 44, 55 };
 void
 do_test(int arr1[5], bool np = true)
 {
-  bool test __attribute__((unused)) = true;
-
   do
     VERIFY( std::is_permutation(arr1, arr1 + 5, arr0) == np );
   while (std::next_permutation(arr1, arr1 + 5));
@@ -48,8 +46,6 @@ template<typename Predicate>
   void
   do_test(int arr1[5], Predicate pred, bool np = true)
   {
-    bool test __attribute__((unused)) = true;
-
     do
       VERIFY( std::is_permutation(arr1, arr1 + 5, arr0, pred) == np );
     while (std::next_permutation(arr1, arr1 + 5));

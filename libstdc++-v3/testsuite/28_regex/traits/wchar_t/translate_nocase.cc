@@ -27,7 +27,6 @@
 // Verifies the workings of the regex_traits translate_nocase function.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef wchar_t CharT;
 
   std::regex_traits<CharT> t;

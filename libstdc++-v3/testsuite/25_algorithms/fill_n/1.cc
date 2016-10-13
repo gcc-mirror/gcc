@@ -27,7 +27,6 @@ void
 test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   const int A1[] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
   const int N1 = sizeof(A1) / sizeof(int);

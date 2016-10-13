@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::setlocale(LC_ALL, "en_US.UTF-8");
 
   std::wstring str2 = L"ä\u2009Ä\u2009ö\u2009Ö\u2009ü\u2009Ü";

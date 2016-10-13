@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::basic_regex<char> re("asdf");
   const char s[] = "ffasdf88asdf99asdf00asdf77";
   int cnt = 0;

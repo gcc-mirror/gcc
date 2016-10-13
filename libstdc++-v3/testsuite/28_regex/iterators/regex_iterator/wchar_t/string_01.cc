@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::basic_regex<wchar_t> re(L"asdf");
   const wchar_t s[] = L"ffasdf88asdf99asdf00asdf77";
   int cnt = 0;
