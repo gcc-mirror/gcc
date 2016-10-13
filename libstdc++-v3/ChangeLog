@@ -1,5 +1,9 @@
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/chrono (floor): Replace non-constexpr operation.
+	* testsuite/20_util/duration_cast/rounding.cc: Test conversion to
+	durations with floating pointer representations.
+
 	* src/c++11/compatibility-thread-c++0x.cc (_Bind_simple)
 	(_Bind_simple_helper, __bind_simple): Restore for ABI compat symbols.
 
