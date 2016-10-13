@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "emit-rtl.h"
 
+extern bool flag_compact;
+
 /* Print an "(edge-from)" or "(edge-to)" directive describing E
    to OUTFILE.  */
 
@@ -126,55 +128,63 @@ can_have_basic_block_p (const rtx_insn *insn)
    the basic blocks of insns in the chain, wrapping those that are within
    blocks within "(block)" directives.
 
-   Example output:
+   If COMPACT, then instructions are printed in a compact form:
+   - INSN_UIDs are omitted, except for jumps and CODE_LABELs,
+   - INSN_CODEs are omitted,
+   - register numbers are omitted for hard and virtual regs
+   - insn names are prefixed with "c" (e.g. "cinsn", "cnote", etc)
+
+   Example output (with COMPACT==true):
 
    (function "times_two"
      (insn-chain
-       (note 1 0 4 (nil) NOTE_INSN_DELETED)
+       (cnote NOTE_INSN_DELETED)
        (block 2
 	 (edge-from entry (flags "FALLTHRU"))
-	 (note 4 1 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
-	 (insn 2 4 3 2 (set (mem/c:SI (plus:DI (reg/f:DI 82 virtual-stack-vars)
-			     (const_int -4 [0xfffffffffffffffc])) [1 i+0 S4 A32])
-		     (reg:SI 5 di [ i ])) t.c:2 -1
-		  (nil))
-	 (note 3 2 6 2 NOTE_INSN_FUNCTION_BEG)
-	 (insn 6 3 7 2 (set (reg:SI 89)
-		     (mem/c:SI (plus:DI (reg/f:DI 82 virtual-stack-vars)
-			     (const_int -4 [0xfffffffffffffffc])) [1 i+0 S4 A32])) t.c:3 -1
-		  (nil))
-	 (insn 7 6 10 2 (parallel [
-			 (set (reg:SI 87 [ _2 ])
-			     (ashift:SI (reg:SI 89)
-				 (const_int 1 [0x1])))
-			 (clobber (reg:CC 17 flags))
-		     ]) t.c:3 -1
-		  (expr_list:REG_EQUAL (ashift:SI (mem/c:SI (plus:DI (reg/f:DI 82 virtual-stack-vars)
-				 (const_int -4 [0xfffffffffffffffc])) [1 i+0 S4 A32])
-			 (const_int 1 [0x1]))
-		     (nil)))
-	 (insn 10 7 14 2 (set (reg:SI 88 [ <retval> ])
-		     (reg:SI 87 [ _2 ])) t.c:3 -1
-		  (nil))
-	 (insn 14 10 15 2 (set (reg/i:SI 0 ax)
-		     (reg:SI 88 [ <retval> ])) t.c:4 -1
-		  (nil))
-	 (insn 15 14 0 2 (use (reg/i:SI 0 ax)) t.c:4 -1
-		  (nil))
+	 (cnote [bb 2] NOTE_INSN_BASIC_BLOCK)
+	 (cinsn (set (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
+			       (const_int -4)) [1 i+0 S4 A32])
+		       (reg:SI di [ i ])) "t.c":2
+		   (nil))
+	 (cnote NOTE_INSN_FUNCTION_BEG)
+	 (cinsn (set (reg:SI 89)
+		       (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
+			       (const_int -4)) [1 i+0 S4 A32])) "t.c":3
+		   (nil))
+	 (cinsn (parallel [
+			   (set (reg:SI 87 [ _2 ])
+			       (ashift:SI (reg:SI 89)
+				   (const_int 1)))
+			   (clobber (reg:CC flags))
+		       ]) "t.c":3
+		   (expr_list:REG_EQUAL (ashift:SI (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
+				   (const_int -4)) [1 i+0 S4 A32])
+			   (const_int 1))
+		       (nil)))
+	 (cinsn (set (reg:SI 88 [ <retval> ])
+		       (reg:SI 87 [ _2 ])) "t.c":3
+		   (nil))
+	 (cinsn (set (reg/i:SI ax)
+		       (reg:SI 88 [ <retval> ])) "t.c":4
+		   (nil))
+	 (cinsn (use (reg/i:SI ax)) "t.c":4
+		   (nil))
 	 (edge-to exit (flags "FALLTHRU"))
        ) ;; block 2
      ) ;; insn-chain
      (crtl
        (return_rtx
-	  (reg/i:SI 0 ax)
+	 (reg/i:SI ax)
        ) ;; return_rtx
      ) ;; crtl
    ) ;; function "times_two"
 */
 
 DEBUG_FUNCTION void
-print_rtx_function (FILE *outfile, function *fn)
+print_rtx_function (FILE *outfile, function *fn, bool compact)
 {
+  flag_compact = compact;
+
   tree fdecl = fn->decl;
 
   const char *dname = lang_hooks.decl_printable_name (fdecl, 2);
@@ -210,4 +220,6 @@ print_rtx_function (FILE *outfile, function *fn)
   fprintf (outfile, "  ) ;; crtl\n");
 
   fprintf (outfile, ") ;; function \"%s\"\n", dname);
+
+  flag_compact = false;
 }

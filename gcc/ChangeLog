@@ -1,3 +1,27 @@
+2016-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* function-tests.c (selftest::test_expansion_to_rtl): Add "true"
+	for new "compact" param of print_rtx_function.  Check for "cinsn"
+	rather than "insn".
+	* print-rtl-function.c (flag_compact): New decl.
+	(print_rtx_function): Add param "compact" and use it to set
+	flag_compact, adding a description of the effect to the leading
+	comment, and updating the example output.
+	* print-rtl.c (flag_compact): New variable.
+	(print_rtx_operand_code_0): Omit the JUMP_LABEL reference in compact
+	mode.
+	(print_rtx_operand_code_i): When printing source locations, wrap
+	xloc.file in quotes.  Don't print INSN_CODEs in compact mode.
+	(print_rtx_operand_code_r): Don't print regnos for hard regs and
+	virtuals in compact mode.
+	(print_rtx_operand_code_u): Don't print insn UIDs in compact mode,
+	apart from in LABEL_REFs.
+	(print_rtx_operand): In case 'w', don't print in hex in compact mode.
+	Don't print basic block ids in compact mode.
+	(print_rtx):  In compact mode, prefix the code of insns with "c",
+	only print the INSN_UID of CODE_LABELs, and omit their LABEL_NUSES.
+	* print-rtl.h (print_rtx_function): Add "compact" param.
+
 2016-10-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (TARGET_VFP): Delete.
