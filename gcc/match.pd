@@ -334,11 +334,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* X - (X / Y) * Y is the same as X % Y.  */
 (simplify
- (minus (convert1? @2) (convert2? (mult:c (trunc_div @0 @1) @1)))
- /* We cannot use matching captures here, since in the case of
-    constants we really want the type of @0, not @2.  */
- (if (operand_equal_p (@0, @2, 0)
-      && (INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type)))
+ (minus (convert1? @0) (convert2? (mult:c (trunc_div @@0 @@1) @1)))
+ (if (INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
   (convert (trunc_mod @0 @1))))
 
 /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
@@ -714,7 +711,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* (X | Y) ^ X -> Y & ~ X*/
 (simplify
- (bit_xor:c (convert? (bit_ior:c @0 @1)) (convert? @0))
+ (bit_xor:c (convert1? (bit_ior:c @@0 @1)) (convert2? @0))
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
   (convert (bit_and @1 (bit_not @0)))))
 
@@ -747,7 +744,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for op (bit_and bit_ior bit_xor)
      rop (bit_ior bit_and bit_and)
  (simplify
-  (op (convert? (rop:c @0 @1)) (convert? (rop:c @0 @2)))
+  (op (convert? (rop:c @@0 @1)) (convert? (rop:c @0 @2)))
   (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
        && tree_nop_conversion_p (type, TREE_TYPE (@2)))
    (rop (convert @0) (op (convert @1) (convert @2))))))
@@ -757,11 +754,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (X | Y) | Y -> X | Y  */
 (for op (bit_and bit_ior)
  (simplify
-  (op:c (convert?@2 (op:c @0 @1)) (convert? @1))
+  (op:c (convert1?@2 (op:c @0 @@1)) (convert2? @1))
   @2))
 /* (X ^ Y) ^ Y -> X  */
 (simplify
- (bit_xor:c (convert? (bit_xor:c @0 @1)) (convert? @1))
+ (bit_xor:c (convert1? (bit_xor:c @0 @@1)) (convert2? @1))
  (convert @0))
 /* (X & Y) & (X & Z) -> (X & Y) & Z
    (X | Y) | (X | Z) -> (X | Y) | Z  */
@@ -991,7 +988,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Fold A - (A & B) into ~B & A.  */
 (simplify
- (minus (convert? @0) (convert?:s (bit_and:cs @0 @1)))
+ (minus (convert1? @0) (convert2?:s (bit_and:cs @@0 @1)))
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
       && tree_nop_conversion_p (type, TREE_TYPE (@1)))
   (convert (bit_and (bit_not @1) @0))))
@@ -1206,7 +1203,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* (T)(P + A) - (T)P -> (T) A */
   (for add (plus pointer_plus)
    (simplify
-    (minus (convert (add @0 @1))
+    (minus (convert (add @@0 @1))
      (convert @0))
     (if (element_precision (type) <= element_precision (TREE_TYPE (@1))
 	 /* For integer types, if A has a smaller type
@@ -1231,7 +1228,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (for add (plus pointer_plus)
    (simplify
     (minus (convert @0)
-     (convert (add @0 @1)))
+     (convert (add @@0 @1)))
     (if (element_precision (type) <= element_precision (TREE_TYPE (@1))
 	 /* For integer types, if A has a smaller type
 	    than T the result depends on the possible
@@ -1254,7 +1251,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* (T)(P + A) - (T)(P + B) -> (T)A - (T)B */
   (for add (plus pointer_plus)
    (simplify
-    (minus (convert (add @0 @1))
+    (minus (convert (add @@0 @1))
      (convert (add @0 @2)))
     (if (element_precision (type) <= element_precision (TREE_TYPE (@1))
 	 /* For integer types, if A has a smaller type
@@ -1781,11 +1778,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* (X /[ex] A) * A -> X.  */
 (simplify
-  (mult (convert1? (exact_div @0 @1)) (convert2? @2))
-  /* We cannot use matching captures here, since in the case of
-     constants we don't see the second conversion.  */
-  (if (operand_equal_p (@1, @2, 0))
-   (convert @0)))
+  (mult (convert1? (exact_div @0 @@1)) (convert2? @1))
+  (convert @0))
 
 /* Canonicalization of binary operations.  */
 
