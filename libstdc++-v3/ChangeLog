@@ -1,5 +1,8 @@
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/26_numerics/random/default_random_engine.cc: Use VERIFY
+	instead of assert.
+
 	* include/experiumental/functional (boyer_moore_searcher)
 	(__boyer_moore_map_base, __boyer_moore_array_base): Qualify containers
 	with _GLIBCXX_STD_C.
