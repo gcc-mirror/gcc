@@ -1,5 +1,20 @@
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
+	* gcc.target/i386/l_fma_float_1.c: Revise test.
+	* gcc.target/i386/l_fma_float_2.c: Ditto.
+	* gcc.target/i386/l_fma_float_3.c: Ditto.
+	* gcc.target/i386/l_fma_float_4.c: Ditto.
+	* gcc.target/i386/l_fma_float_5.c: Ditto.
+	* gcc.target/i386/l_fma_float_6.c: Ditto.
+	* gcc.target/i386/l_fma_double_1.c: Ditto.
+	* gcc.target/i386/l_fma_double_2.c: Ditto.
+	* gcc.target/i386/l_fma_double_3.c: Ditto.
+	* gcc.target/i386/l_fma_double_4.c: Ditto.
+	* gcc.target/i386/l_fma_double_5.c: Ditto.
+	* gcc.target/i386/l_fma_double_6.c: Ditto.
+
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
 	* gfortran.dg/vect/fast-math-mgrid-resid.f: New test string.
 
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
