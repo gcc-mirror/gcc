@@ -6544,9 +6544,20 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
   if (actual->expr->ts.type == BT_CLASS)
     gfc_add_class_array_ref (actual->expr);
 
-  argse.want_pointer = 1;
   argse.data_not_needed = 1;
-  gfc_conv_expr_descriptor (&argse, actual->expr);
+  if (gfc_is_alloc_class_array_function (actual->expr))
+    {
+      /* For functions that return a class array conv_expr_descriptor is not
+	 able to get the descriptor right.  Therefore this special case.  */
+      gfc_conv_expr_reference (&argse, actual->expr);
+      argse.expr = gfc_build_addr_expr (NULL_TREE,
+					gfc_class_data_get (argse.expr));
+    }
+  else
+    {
+      argse.want_pointer = 1;
+      gfc_conv_expr_descriptor (&argse, actual->expr);
+    }
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
   arg1 = gfc_evaluate_now (argse.expr, &se->pre);

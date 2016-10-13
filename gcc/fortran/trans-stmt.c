@@ -5489,7 +5489,8 @@ gfc_trans_allocate (gfc_code * code)
 		  desc = tmp;
 		  tmp = gfc_class_data_get (tmp);
 		}
-	      e3_is = E3_DESC;
+	      if (code->ext.alloc.arr_spec_from_expr3)
+		e3_is = E3_DESC;
 	    }
 	  else
 	    desc = !is_coarray ? se.expr
