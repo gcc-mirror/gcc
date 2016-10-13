@@ -1,3 +1,7 @@
+2016-10-13  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.target/m68k/stack-limit-1.c: Expect warning on line 0.
+
 2016-10-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/77937
