@@ -1,4 +1,4 @@
-/* { dg-do compile { target { arm_thumb2 || arm_thumb1_movt_ok } } } */
+/* { dg-do compile { target { arm_thumb2_ok || arm_thumb1_movt_ok } } } */
 /* { dg-options "-O2" } */
 
 short

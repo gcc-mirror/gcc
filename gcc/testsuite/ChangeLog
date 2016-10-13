@@ -1,3 +1,10 @@
+2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/movhi_movw.c: Enable test for ARM mode.
+	* gcc.target/arm/movsi_movw.c: Likewise.
+	* gcc.target/arm/movdi_movw.c: Likewise and adapt scan-assembler
+	directive to work on big endian targets.
+
 2016-10-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.dg/tree-ssa/evrp6.c: New test.
