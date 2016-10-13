@@ -1,3 +1,8 @@
+2016-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.target/i386/vararg-loc.c: Update for quoting of xloc.file
+	in INSN_LOCATION.
+
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.target/i386/l_fma_float_1.c: Revise test.

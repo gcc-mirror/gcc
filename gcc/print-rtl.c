@@ -60,6 +60,13 @@ static int indent;
 
 static bool in_call_function_usage;
 
+/* If true, use compact dump format:
+   - INSN_UIDs are omitted, except for jumps and CODE_LABELs,
+   - INSN_CODEs are omitted,
+   - register numbers are omitted for hard and virtual regs
+   - insn names are prefixed with "c" (e.g. "cinsn", "cnote", etc).  */
+bool flag_compact;
+
 static void print_rtx (const_rtx);
 
 /* String printed at beginning of each RTL when it is dumped.
@@ -176,7 +183,8 @@ print_rtx_operand_code_0 (const_rtx in_rtx ATTRIBUTE_UNUSED,
 	  break;
 	}
     }
-  else if (idx == 7 && JUMP_P (in_rtx) && JUMP_LABEL (in_rtx) != NULL)
+  else if (idx == 7 && JUMP_P (in_rtx) && JUMP_LABEL (in_rtx) != NULL
+	   && !flag_compact)
     {
       /* Output the JUMP_LABEL reference.  */
       fprintf (outfile, "\n%s%*s -> ", print_rtx_head, indent * 2, "");
@@ -284,7 +292,7 @@ print_rtx_operand_code_i (const_rtx in_rtx, int idx)
       if (INSN_HAS_LOCATION (in_insn))
 	{
 	  expanded_location xloc = insn_location (in_insn);
-	  fprintf (outfile, " %s:%i", xloc.file, xloc.line);
+	  fprintf (outfile, " \"%s\":%i", xloc.file, xloc.line);
 	}
 #endif
     }
@@ -335,6 +343,13 @@ print_rtx_operand_code_i (const_rtx in_rtx, int idx)
       const char *name;
       int is_insn = INSN_P (in_rtx);
 
+      /* Don't print INSN_CODEs in compact mode.  */
+      if (flag_compact && is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, idx))
+	{
+	  sawclose = 0;
+	  return;
+	}
+
       if (flag_dump_unnumbered
 	  && (is_insn || NOTE_P (in_rtx)))
 	fputc ('#', outfile);
@@ -358,26 +373,28 @@ print_rtx_operand_code_r (const_rtx in_rtx)
   unsigned int regno = REGNO (in_rtx);
 
 #ifndef GENERATOR_FILE
+  /* For hard registers and virtuals, always print the
+     regno, except in compact mode.  */
+  if (regno <= LAST_VIRTUAL_REGISTER && !flag_compact)
+    fprintf (outfile, " %d", regno);
   if (regno < FIRST_PSEUDO_REGISTER)
-    fprintf (outfile, " %d %s", regno, reg_names[regno]);
+    fprintf (outfile, " %s", reg_names[regno]);
   else if (regno <= LAST_VIRTUAL_REGISTER)
     {
       if (regno == VIRTUAL_INCOMING_ARGS_REGNUM)
-	fprintf (outfile, " %d virtual-incoming-args", regno);
+	fprintf (outfile, " virtual-incoming-args");
       else if (regno == VIRTUAL_STACK_VARS_REGNUM)
-	fprintf (outfile, " %d virtual-stack-vars", regno);
+	fprintf (outfile, " virtual-stack-vars");
       else if (regno == VIRTUAL_STACK_DYNAMIC_REGNUM)
-	fprintf (outfile, " %d virtual-stack-dynamic", regno);
+	fprintf (outfile, " virtual-stack-dynamic");
       else if (regno == VIRTUAL_OUTGOING_ARGS_REGNUM)
-	fprintf (outfile, " %d virtual-outgoing-args", regno);
+	fprintf (outfile, " virtual-outgoing-args");
       else if (regno == VIRTUAL_CFA_REGNUM)
-	fprintf (outfile, " %d virtual-cfa", regno);
+	fprintf (outfile, " virtual-cfa");
       else if (regno == VIRTUAL_PREFERRED_STACK_BOUNDARY_REGNUM)
-	fprintf (outfile, " %d virtual-preferred-stack-boundary",
-		 regno);
+	fprintf (outfile, " virtual-preferred-stack-boundary");
       else
-	fprintf (outfile, " %d virtual-reg-%d", regno,
-		 regno-FIRST_VIRTUAL_REGISTER);
+	fprintf (outfile, " virtual-reg-%d", regno-FIRST_VIRTUAL_REGISTER);
     }
   else
 #endif
@@ -410,6 +427,10 @@ print_rtx_operand_code_r (const_rtx in_rtx)
 static void
 print_rtx_operand_code_u (const_rtx in_rtx, int idx)
 {
+  /* Don't print insn UIDs in compact mode, apart from in LABEL_REFs.  */
+  if (flag_compact && GET_CODE (in_rtx) != LABEL_REF)
+    return;
+
   if (XEXP (in_rtx, idx) != NULL)
     {
       rtx sub = XEXP (in_rtx, idx);
@@ -492,7 +513,7 @@ print_rtx_operand (const_rtx in_rtx, int idx)
       if (! flag_simple)
 	fprintf (outfile, " ");
       fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, XWINT (in_rtx, idx));
-      if (! flag_simple)
+      if (! flag_simple && !flag_compact)
 	fprintf (outfile, " [" HOST_WIDE_INT_PRINT_HEX "]",
 		 (unsigned HOST_WIDE_INT) XWINT (in_rtx, idx));
       break;
@@ -533,6 +554,9 @@ print_rtx_operand (const_rtx in_rtx, int idx)
       break;
 
     case 'B':
+      /* Don't print basic block ids in compact mode.  */
+      if (flag_compact)
+	break;
 #ifndef GENERATOR_FILE
       if (XBBDEF (in_rtx, idx))
 	fprintf (outfile, " %i", XBBDEF (in_rtx, idx)->index);
@@ -575,7 +599,20 @@ print_rtx (const_rtx in_rtx)
     }
 
   /* Print name of expression code.  */
-  if (flag_simple && CONST_INT_P (in_rtx))
+
+  /* In compact mode, prefix the code of insns with "c",
+     giving "cinsn", "cnote" etc.  */
+  if (flag_compact && is_a <const rtx_insn *, const struct rtx_def> (in_rtx))
+    {
+      /* "ccode_label" is slightly awkward, so special-case it as
+	 just "clabel".  */
+      rtx_code code = GET_CODE (in_rtx);
+      if (code == CODE_LABEL)
+	fprintf (outfile, "(clabel");
+      else
+	fprintf (outfile, "(c%s", GET_RTX_NAME (code));
+    }
+  else if (flag_simple && CONST_INT_P (in_rtx))
     fputc ('(', outfile);
   else
     fprintf (outfile, "(%s", GET_RTX_NAME (GET_CODE (in_rtx)));
@@ -639,7 +676,10 @@ print_rtx (const_rtx in_rtx)
     idx = 5;
 #endif
 
-  if (INSN_CHAIN_CODE_P (GET_CODE (in_rtx)))
+  /* For insns, print the INSN_UID.
+     In compact mode, we only print the INSN_UID of CODE_LABELs.  */
+  if (INSN_CHAIN_CODE_P (GET_CODE (in_rtx))
+      && (!flag_compact || GET_CODE (in_rtx) == CODE_LABEL))
     {
       if (flag_dump_unnumbered)
 	fprintf (outfile, " #");
@@ -704,7 +744,8 @@ print_rtx (const_rtx in_rtx)
 #endif
 
     case CODE_LABEL:
-      fprintf (outfile, " [%d uses]", LABEL_NUSES (in_rtx));
+      if (!flag_compact)
+	fprintf (outfile, " [%d uses]", LABEL_NUSES (in_rtx));
       switch (LABEL_KIND (in_rtx))
 	{
 	  case LABEL_NORMAL: break;

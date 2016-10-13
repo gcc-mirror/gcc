@@ -648,7 +648,7 @@ test_expansion_to_rtl ()
   /* Verify that print_rtl_function is sane.  */
   named_temp_file tmp_out (".rtl");
   FILE *outfile = fopen (tmp_out.get_filename (), "w");
-  print_rtx_function (outfile, fun);
+  print_rtx_function (outfile, fun, true);
   fclose (outfile);
 
   char *dump = read_file (SELFTEST_LOCATION, tmp_out.get_filename ());
@@ -656,7 +656,7 @@ test_expansion_to_rtl ()
   ASSERT_STR_CONTAINS (dump, "  (insn-chain\n");
   ASSERT_STR_CONTAINS (dump, "    (block 2\n");
   ASSERT_STR_CONTAINS (dump, "      (edge-from entry (flags \"FALLTHRU\"))\n");
-  ASSERT_STR_CONTAINS (dump, "      (insn "); /* ...etc.  */
+  ASSERT_STR_CONTAINS (dump, "      (cinsn "); /* ...etc.  */
   ASSERT_STR_CONTAINS (dump, "      (edge-to exit (flags \"FALLTHRU\"))\n");
   ASSERT_STR_CONTAINS (dump, "    ) ;; block 2\n");
   ASSERT_STR_CONTAINS (dump, "  ) ;; insn-chain\n");
