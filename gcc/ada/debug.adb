@@ -163,7 +163,7 @@ package body Debug is
    --  d.6
    --  d.7
    --  d.8
-   --  d.9
+   --  d.9  Enable validation of pragma Compile_Time_[Error/Warning]
 
    --  Debug flags for binder (GNATBIND)
 
@@ -774,6 +774,10 @@ package body Debug is
    --  d.5  By default a subprogram imported generates a subprogram profile.
    --       This debug flag disables this generation when generating C code,
    --       assuming a proper #include will be used instead.
+   --
+   --  d.9  Flag used temporarily to enable the validation of pragmas Compile_
+   --       Time_Error and Compile_Time_Warning after the back end has been
+   --       called.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

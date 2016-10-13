@@ -875,13 +875,18 @@ procedure Gnat1drv is
       --  and alignment annotated by the backend where possible). We need to
       --  unlock temporarily these tables to reanalyze their expression.
 
-      Atree.Unlock;
-      Nlists.Unlock;
-      Sem.Unlock;
-      Sem_Ch13.Validate_Compile_Time_Warning_Errors;
-      Sem.Lock;
-      Nlists.Lock;
-      Atree.Lock;
+      --  ??? temporarily disabled since it causes regressions with large
+      --  sources
+
+      if Debug_Flag_Dot_9 then
+         Atree.Unlock;
+         Nlists.Unlock;
+         Sem.Unlock;
+         Sem_Ch13.Validate_Compile_Time_Warning_Errors;
+         Sem.Lock;
+         Nlists.Lock;
+         Atree.Lock;
+      end if;
 
       --  Validate unchecked conversions (using the values for size and
       --  alignment annotated by the backend where possible).
