@@ -188,6 +188,18 @@ package Sem_Ch13 is
    --  change. A False result is possible only for array, enumeration or
    --  record types.
 
+   procedure Validate_Compile_Time_Warning_Error (N : Node_Id);
+   --  N is a pragma Compile_Time_Error or Compile_Warning_Error whose boolean
+   --  expression is not known at compile time. This procedure makes an entry
+   --  in a table. The actual checking is performed by Validate_Compile_Time_
+   --  Warning_Errors which is invoked after calling the backend.
+
+   procedure Validate_Compile_Time_Warning_Errors;
+   --  This routine is called after calling the backend to validate pragmas
+   --  Compile_Time_Error and Compile_Time_Warning for size and alignment
+   --  appropriateness. The reason it is called that late is to take advantage
+   --  of any back-annotation of size and alignment performed by the backend.
+
    procedure Validate_Unchecked_Conversion
      (N        : Node_Id;
       Act_Unit : Entity_Id);
