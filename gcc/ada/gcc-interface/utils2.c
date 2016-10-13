@@ -26,6 +26,7 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "memmodel.h"
 #include "tm.h"
 #include "vec.h"
 #include "alias.h"

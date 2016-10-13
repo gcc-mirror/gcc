@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "expmed.h"

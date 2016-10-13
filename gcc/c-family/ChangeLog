@@ -1,3 +1,10 @@
+2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* c-cppbuiltin.c: Include memmodel.h.
+	* c-opts.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-warn.c: Likewise.
+
 2016-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (Wextra): Add as C/C++/ObjC/ObjC++ option.

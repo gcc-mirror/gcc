@@ -28,6 +28,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "stor-layout.h"
 #include "varasm.h"

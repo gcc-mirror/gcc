@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "alloc-pool.h"
 #include "tree-pass.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "tree-vrp.h"

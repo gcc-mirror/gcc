@@ -69,11 +69,11 @@ __gcov_interval_profiler_atomic (gcov_type *counters, gcov_type value,
 {
   gcov_type delta = value - start;
   if (delta < 0)
-    __atomic_fetch_add (&counters[steps + 1], 1, MEMMODEL_RELAXED);
+    __atomic_fetch_add (&counters[steps + 1], 1, __ATOMIC_RELAXED);
   else if (delta >= steps)
-    __atomic_fetch_add (&counters[steps], 1, MEMMODEL_RELAXED);
+    __atomic_fetch_add (&counters[steps], 1, __ATOMIC_RELAXED);
   else
-    __atomic_fetch_add (&counters[delta], 1, MEMMODEL_RELAXED);
+    __atomic_fetch_add (&counters[delta], 1, __ATOMIC_RELAXED);
 }
 #endif
 
@@ -99,9 +99,9 @@ void
 __gcov_pow2_profiler_atomic (gcov_type *counters, gcov_type value)
 {
   if (value == 0 || (value & (value - 1)))
-    __atomic_fetch_add (&counters[0], 1, MEMMODEL_RELAXED);
+    __atomic_fetch_add (&counters[0], 1, __ATOMIC_RELAXED);
   else
-    __atomic_fetch_add (&counters[1], 1, MEMMODEL_RELAXED);
+    __atomic_fetch_add (&counters[1], 1, __ATOMIC_RELAXED);
 }
 #endif
 
@@ -132,7 +132,7 @@ __gcov_one_value_profiler_body (gcov_type *counters, gcov_type value,
     counters[1]--;
 
   if (use_atomic)
-    __atomic_fetch_add (&counters[2], 1, MEMMODEL_RELAXED);
+    __atomic_fetch_add (&counters[2], 1, __ATOMIC_RELAXED);
   else
     counters[2]++;
 }
@@ -361,7 +361,7 @@ void
 __gcov_time_profiler_atomic (gcov_type* counters)
 {
   if (!counters[0])
-    counters[0] = __atomic_add_fetch (&function_counter, 1, MEMMODEL_RELAXED);
+    counters[0] = __atomic_add_fetch (&function_counter, 1, __ATOMIC_RELAXED);
 }
 #endif
 #endif
@@ -386,8 +386,8 @@ __gcov_average_profiler (gcov_type *counters, gcov_type value)
 void
 __gcov_average_profiler_atomic (gcov_type *counters, gcov_type value)
 {
-  __atomic_fetch_add (&counters[0], value, MEMMODEL_RELAXED);
-  __atomic_fetch_add (&counters[1], 1, MEMMODEL_RELAXED);
+  __atomic_fetch_add (&counters[0], value, __ATOMIC_RELAXED);
+  __atomic_fetch_add (&counters[1], 1, __ATOMIC_RELAXED);
 }
 #endif
 
@@ -407,7 +407,7 @@ __gcov_ior_profiler (gcov_type *counters, gcov_type value)
 void
 __gcov_ior_profiler_atomic (gcov_type *counters, gcov_type value)
 {
-  __atomic_fetch_or (&counters[0], value, MEMMODEL_RELAXED);
+  __atomic_fetch_or (&counters[0], value, __ATOMIC_RELAXED);
 }
 #endif
 

@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "c-target.h"
 #include "c-common.h"
+#include "memmodel.h"
 #include "tm_p.h"		/* For C_COMMON_OVERRIDE_OPTIONS.  */
 #include "diagnostic.h"
 #include "c-pragma.h"

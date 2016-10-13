@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "c-common.h"
+#include "memmodel.h"
 #include "tm_p.h"		/* For TARGET_CPU_CPP_BUILTINS & friends.  */
 #include "stringpool.h"
 #include "stor-layout.h"

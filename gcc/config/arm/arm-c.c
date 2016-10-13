@@ -21,6 +21,7 @@
 #include "coretypes.h"
 #include "target.h"
 #include "c-family/c-common.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "c-family/c-pragma.h"
 #include "stringpool.h"

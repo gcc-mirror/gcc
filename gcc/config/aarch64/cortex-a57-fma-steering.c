@@ -28,6 +28,7 @@
 #include "df.h"
 #include "insn-config.h"
 #include "regs.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "recog.h"
 #include "cfganal.h"

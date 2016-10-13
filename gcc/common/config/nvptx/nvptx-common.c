@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic-core.h"
 #include "tm.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "common/common-target.h"
 #include "common/common-target-def.h"

@@ -219,6 +219,7 @@ output_prologue (void)
   printf ("#include \"expmed.h\"\n");
   printf ("#include \"dojump.h\"\n");
   printf ("#include \"explow.h\"\n");
+  printf ("#include \"memmodel.h\"\n");
   printf ("#include \"emit-rtl.h\"\n");
   printf ("#include \"stmt.h\"\n");
   printf ("#include \"expr.h\"\n");
@@ -231,7 +232,6 @@ output_prologue (void)
   printf ("#include \"diagnostic-core.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"target.h\"\n");
-  printf ("#include \"memmodel.h\"\n");
   printf ("#include \"tm-constrs.h\"\n");
 }
 

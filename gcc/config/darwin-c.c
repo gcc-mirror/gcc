@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "c-family/c-target.h"
 #include "c-family/c-target-def.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "cgraph.h"
 #include "incpath.h"

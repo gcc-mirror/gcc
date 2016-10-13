@@ -21,6 +21,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "common/common-target.h"
 #include "common/common-target-def.h"

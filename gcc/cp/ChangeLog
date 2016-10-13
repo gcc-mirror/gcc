@@ -1,3 +1,8 @@
+2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* decl2.c: Include memmodel.h.
+	* rtti.c: Likewise.
+
 2016-10-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/77742

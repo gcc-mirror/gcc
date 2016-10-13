@@ -95,6 +95,7 @@
 #include "cfghooks.h"
 #include "alloc-pool.h"
 #include "tree-pass.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"

@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tree-ssa-alias.h"
 #include "gimple-expr.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "tree-vrp.h"

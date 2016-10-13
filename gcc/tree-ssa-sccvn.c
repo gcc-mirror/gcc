@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "expmed.h"
 #include "insn-config.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "cgraph.h"
 #include "gimple-pretty-print.h"

@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "print-rtl.h"
 #include "langhooks.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 
 extern bool flag_compact;

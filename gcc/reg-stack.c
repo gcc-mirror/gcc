@@ -161,6 +161,7 @@
 #include "tree.h"
 #include "df.h"
 #include "insn-config.h"
+#include "memmodel.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "recog.h"
 #include "varasm.h"

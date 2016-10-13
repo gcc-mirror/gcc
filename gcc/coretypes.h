@@ -331,34 +331,6 @@ enum symbol_visibility
   VISIBILITY_INTERNAL
 };
 
-/* Suppose that higher bits are target dependent. */
-#define MEMMODEL_MASK ((1<<16)-1)
-
-/* Legacy sync operations set this upper flag in the memory model.  This allows
-   targets that need to do something stronger for sync operations to
-   differentiate with their target patterns and issue a more appropriate insn
-   sequence.  See bugzilla 65697 for background.  */
-#define MEMMODEL_SYNC (1<<15)
-
-/* Memory model without SYNC bit for targets/operations that do not care.  */
-#define MEMMODEL_BASE_MASK (MEMMODEL_SYNC-1)
-
-/* Memory model types for the __atomic* builtins. 
-   This must match the order in libstdc++-v3/include/bits/atomic_base.h.  */
-enum memmodel
-{
-  MEMMODEL_RELAXED = 0,
-  MEMMODEL_CONSUME = 1,
-  MEMMODEL_ACQUIRE = 2,
-  MEMMODEL_RELEASE = 3,
-  MEMMODEL_ACQ_REL = 4,
-  MEMMODEL_SEQ_CST = 5,
-  MEMMODEL_LAST = 6,
-  MEMMODEL_SYNC_ACQUIRE = MEMMODEL_ACQUIRE | MEMMODEL_SYNC,
-  MEMMODEL_SYNC_RELEASE = MEMMODEL_RELEASE | MEMMODEL_SYNC,
-  MEMMODEL_SYNC_SEQ_CST = MEMMODEL_SEQ_CST | MEMMODEL_SYNC
-};
-
 /* Support for user-provided GGC and PCH markers.  The first parameter
    is a pointer to a pointer, the second a cookie.  */
 typedef void (*gt_pointer_operator) (void *, void *);

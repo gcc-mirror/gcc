@@ -1,3 +1,7 @@
+2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* go-backend.c: Include memmodel.h.
+
 2016-10-10  Than McIntosh  <thanm@google.com>
 
 	* go-gcc.h: New file.

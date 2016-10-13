@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "df.h"
 #include "insn-config.h"
 #include "regs.h"
+#include "memmodel.h"
 #include "ira.h"
 #include "recog.h"
 #include "lra.h"

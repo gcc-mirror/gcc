@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "tree-pass.h"
 #include "ssa.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "cgraph.h"
 #include "coverage.h"

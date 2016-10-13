@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expmed.h"
 #include "optabs-query.h"
 #include "insn-config.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "recog.h"
 #include "fold-const.h"

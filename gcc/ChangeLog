@@ -1,3 +1,77 @@
+2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* coretypes.h: Move MEMMODEL_* macros and enum memmodel definition
+	into ...
+	* memmodel.h: This file.
+	* alias.c, asan.c, auto-inc-dec.c, bb-reorder.c, bt-load.c,
+	  caller-save.c, calls.c, ccmp.c, cfgbuild.c, cfgcleanup.c,
+	  cfgexpand.c, cfgloopanal.c, cfgrtl.c, cilk-common.c, combine.c,
+	  combine-stack-adj.c, common/config/aarch64/aarch64-common.c,
+	  common/config/arm/arm-common.c, common/config/bfin/bfin-common.c,
+	  common/config/c6x/c6x-common.c, common/config/i386/i386-common.c,
+	  common/config/ia64/ia64-common.c, common/config/nvptx/nvptx-common.c,
+	  compare-elim.c, config/aarch64/aarch64-builtins.c,
+	  config/aarch64/aarch64-c.c, config/aarch64/cortex-a57-fma-steering.c,
+	  config/arc/arc.c, config/arc/arc-c.c, config/arm/arm-builtins.c,
+	  config/arm/arm-c.c, config/avr/avr.c, config/avr/avr-c.c,
+	  config/avr/avr-log.c, config/bfin/bfin.c, config/c6x/c6x.c,
+	  config/cr16/cr16.c, config/cris/cris.c, config/darwin-c.c,
+	  config/darwin.c, config/epiphany/epiphany.c,
+	  config/epiphany/mode-switch-use.c,
+	  config/epiphany/resolve-sw-modes.c, config/fr30/fr30.c,
+	  config/frv/frv.c, config/ft32/ft32.c, config/h8300/h8300.c,
+	  config/i386/i386-c.c, config/i386/winnt.c, config/iq2000/iq2000.c,
+	  config/lm32/lm32.c, config/m32c/m32c.c, config/m32r/m32r.c,
+	  config/m68k/m68k.c, config/mcore/mcore.c,
+	  config/microblaze/microblaze.c, config/mmix/mmix.c,
+	  config/mn10300/mn10300.c, config/moxie/moxie.c,
+	  config/msp430/msp430.c, config/nds32/nds32-cost.c,
+	  config/nds32/nds32-intrinsic.c, config/nds32/nds32-md-auxiliary.c,
+	  config/nds32/nds32-memory-manipulation.c,
+	  config/nds32/nds32-predicates.c, config/nds32/nds32.c,
+	  config/nios2/nios2.c, config/nvptx/nvptx.c, config/pa/pa.c,
+	  config/pdp11/pdp11.c, config/rl78/rl78.c, config/rs6000/rs6000-c.c,
+	  config/rx/rx.c, config/s390/s390-c.c, config/s390/s390.c,
+	  config/sh/sh.c, config/sh/sh-c.c, config/sh/sh-mem.cc,
+	  config/sh/sh_treg_combine.cc, config/sol2.c, config/spu/spu.c,
+	  config/stormy16/stormy16.c, config/tilegx/tilegx.c,
+	  config/tilepro/tilepro.c, config/v850/v850.c, config/vax/vax.c,
+	  config/visium/visium.c, config/vms/vms-c.c, config/xtensa/xtensa.c,
+	  coverage.c, cppbuiltin.c, cprop.c, cse.c, cselib.c, dbxout.c, dce.c,
+	  df-core.c, df-problems.c, df-scan.c, dojump.c, dse.c, dwarf2asm.c,
+	  dwarf2cfi.c, dwarf2out.c, emit-rtl.c, except.c, explow.c, expmed.c,
+	  expr.c, final.c, fold-const.c, function.c, fwprop.c, gcse.c,
+	  ggc-page.c, haifa-sched.c, hsa-brig.c, hsa-gen.c, hw-doloop.c,
+	  ifcvt.c, init-regs.c, internal-fn.c, ira-build.c, ira-color.c,
+	  ira-conflicts.c, ira-costs.c, ira-emit.c, ira-lives.c, ira.c, jump.c,
+	  loop-doloop.c, loop-invariant.c, loop-iv.c, loop-unroll.c,
+	  lower-subreg.c, lra.c, lra-assigns.c, lra-coalesce.c,
+	  lra-constraints.c, lra-eliminations.c, lra-lives.c, lra-remat.c,
+	  lra-spills.c, mode-switching.c, modulo-sched.c, omp-low.c, passes.c,
+	  postreload-gcse.c, postreload.c, predict.c, print-rtl-function.c,
+	  recog.c, ree.c, reg-stack.c, regcprop.c, reginfo.c, regrename.c,
+	  reload.c, reload1.c, reorg.c, resource.c, rtl-chkp.c, rtl-tests.c,
+	  rtlanal.c, rtlhooks.c, sched-deps.c, sched-rgn.c, sdbout.c,
+	  sel-sched-ir.c, sel-sched.c, shrink-wrap.c, simplify-rtx.c,
+	  stack-ptr-mod.c, stmt.c, stor-layout.c, target-globals.c,
+	  targhooks.c, toplev.c, tree-nested.c, tree-outof-ssa.c,
+	  tree-profile.c, tree-ssa-coalesce.c, tree-ssa-ifcombine.c,
+	  tree-ssa-loop-ivopts.c, tree-ssa-loop.c, tree-ssa-reassoc.c,
+	  tree-ssa-sccvn.c, tree-vect-data-refs.c, ubsan.c, valtrack.c,
+	  var-tracking.c, varasm.c: Include memmodel.h.
+	* genattrtab.c (write_header): Include memmodel.h in generated file.
+	* genautomata.c (main): Likewise.
+	* gengtype.c (open_base_files): Likewise.
+	* genopinit.c (main): Likewise.
+	* genconditions.c (write_header): Include memmodel.h earlier in
+	generated file.
+	* genemit.c (main): Likewise.
+	* genoutput.c (output_prologue): Likewise.
+	* genpeep.c (main): Likewise.
+	* genpreds.c (write_insn_preds_c): Likewise.
+	* genrecog.c (write_header): Likewise.
+	* Makefile.in (PLUGIN_HEADERS): Include memmodel.h
+
 2016-10-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* function-tests.c (selftest::test_expansion_to_rtl): Add "true"

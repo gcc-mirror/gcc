@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-rtl.h"
 #include "selftest.h"
 #include "function.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 
 #if CHECKING_P
