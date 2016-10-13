@@ -1,5 +1,10 @@
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-loop.c (vectorizable_live_operation): Support handling
+	for live variable outside loop but not in lcssa form.
+
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
 	* cfg.c (reset_original_copy_tables): New func.
 	* cfg.h (reset_original_copy_tables): New decl.
 

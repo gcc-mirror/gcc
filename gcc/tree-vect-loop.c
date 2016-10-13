@@ -6488,14 +6488,6 @@ vectorizable_live_operation (gimple *stmt,
 	: gimple_get_lhs (stmt);
   lhs_type = TREE_TYPE (lhs);
 
-  /* Find all uses of STMT outside the loop - there should be at least one.  */
-  auto_vec<gimple *, 4> worklist;
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
-    if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
-	&& !is_gimple_debug (use_stmt))
-      worklist.safe_push (use_stmt);
-  gcc_assert (worklist.length () >= 1);
-
   bitsize = TYPE_SIZE (TREE_TYPE (vectype));
   vec_bitsize = TYPE_SIZE (vectype);
 
@@ -6546,12 +6538,24 @@ vectorizable_live_operation (gimple *stmt,
   if (stmts)
     gsi_insert_seq_on_edge_immediate (single_exit (loop), stmts);
 
-  /* Replace all uses of the USE_STMT in the worklist with the newly inserted
-     statement.  */
-  while (!worklist.is_empty ())
+  /* Replace use of lhs with newly computed result.  If the use stmt is a
+     single arg PHI, just replace all uses of PHI result.  It's necessary
+     because lcssa PHI defining lhs may be before newly inserted stmt.  */
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
+    if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
+	&& !is_gimple_debug (use_stmt))
     {
-      use_stmt = worklist.pop ();
-      replace_uses_by (gimple_phi_result (use_stmt), new_tree);
+      if (gimple_code (use_stmt) == GIMPLE_PHI
+	  && gimple_phi_num_args (use_stmt) == 1)
+	{
+	  replace_uses_by (gimple_phi_result (use_stmt), new_tree);
+	}
+      else
+	{
+	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	    SET_USE (use_p, new_tree);
+	}
       update_stmt (use_stmt);
     }
 
