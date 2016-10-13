@@ -1,3 +1,9 @@
+2016-10-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/77937
+	* gcc.dg/torture/pr77937-1.c: New.
+	* gcc.dg/torture/pr77937-2.c: New.
+
 2016-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/inline-var1.C: New test.
