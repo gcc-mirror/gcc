@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "valtrack.h"
 #include "regs.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 
 /* gen_lowpart_no_emit hook implementation for DEBUG_INSNs.  In DEBUG_INSNs,

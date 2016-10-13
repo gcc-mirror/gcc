@@ -24,6 +24,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "cgraph.h"

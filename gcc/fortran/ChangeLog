@@ -1,3 +1,7 @@
+2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* trans-intrinsic.c: Include memmodel.h.
+
 2016-10-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/72832

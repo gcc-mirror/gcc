@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "tree.h"
 #include "c-common.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "diagnostic.h"
 #include "intl.h"

@@ -4181,6 +4181,7 @@ write_header (void)
 #include \"backend.h\"\n\
 #include \"predict.h\"\n\
 #include \"rtl.h\"\n\
+#include \"memmodel.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"emit-rtl.h\"\n\
 #include \"insn-config.h\"\n\
@@ -4192,7 +4193,6 @@ write_header (void)
 #include \"diagnostic-core.h\"\n\
 #include \"reload.h\"\n\
 #include \"regs.h\"\n\
-#include \"memmodel.h\"\n\
 #include \"tm-constrs.h\"\n\
 \n");
 

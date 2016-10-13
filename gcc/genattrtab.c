@@ -5159,6 +5159,7 @@ write_header (FILE *outf)
   fprintf (outf, "#include \"stor-layout.h\"\n");
   fprintf (outf, "#include \"calls.h\"\n");
   fprintf (outf, "#include \"insn-attr.h\"\n");
+  fprintf (outf, "#include \"memmodel.h\"\n");
   fprintf (outf, "#include \"tm_p.h\"\n");
   fprintf (outf, "#include \"insn-config.h\"\n");
   fprintf (outf, "#include \"recog.h\"\n");

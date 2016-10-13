@@ -27,6 +27,7 @@
 #include "tree.h"
 #include "df.h"
 #include "regs.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "diagnostic-core.h"
 #include "output.h"

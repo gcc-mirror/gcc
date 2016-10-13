@@ -26,6 +26,7 @@
 #include "c-family/c-common.h"
 #include "stor-layout.h"
 #include "langhooks.h"
+#include "memmodel.h"
 #include "tm_p.h"
 
 /* IDs for all the AVR builtins.  */

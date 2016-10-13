@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "rtl.h"
 #include "cfghooks.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "cfgrtl.h"
 #include "cfganal.h"

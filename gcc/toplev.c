@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "alloc-pool.h"
 #include "timevar.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs-libfuncs.h"
 #include "insn-config.h"

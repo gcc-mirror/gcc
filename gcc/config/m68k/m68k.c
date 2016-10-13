@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "stmt.h"
 #include "expr.h"

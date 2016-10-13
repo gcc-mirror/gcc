@@ -25,6 +25,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "gimple-expr.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "emit-rtl.h"

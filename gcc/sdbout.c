@@ -69,6 +69,7 @@ static GTY(()) bool sdbout_initialized;
 #include "rtl.h"
 #include "regs.h"
 #include "function.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "flags.h"
 #include "insn-config.h"

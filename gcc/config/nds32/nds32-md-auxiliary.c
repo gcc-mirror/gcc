@@ -28,6 +28,7 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"		/* For GEN_FCN.  */
 #include "recog.h"

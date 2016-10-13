@@ -1,3 +1,7 @@
+2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* c-typeck.c: Include memmodel.h.
+
 2016-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77957

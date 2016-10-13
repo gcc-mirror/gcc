@@ -1569,6 +1569,7 @@ write_insn_preds_c (void)
 #include \"varasm.h\"\n\
 #include \"stor-layout.h\"\n\
 #include \"calls.h\"\n\
+#include \"memmodel.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\
@@ -1580,7 +1581,6 @@ write_insn_preds_c (void)
 #include \"reload.h\"\n\
 #include \"regs.h\"\n\
 #include \"emit-rtl.h\"\n\
-#include \"memmodel.h\"\n\
 #include \"tm-constrs.h\"\n");
 
   FOR_ALL_PREDICATES (p)

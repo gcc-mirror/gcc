@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "memmodel.h"
 #include "target.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"

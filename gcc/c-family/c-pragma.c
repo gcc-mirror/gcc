@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "function.h"		/* For cfun.  */
 #include "c-common.h"
+#include "memmodel.h"
 #include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS.  */
 #include "stringpool.h"
 #include "cgraph.h"
