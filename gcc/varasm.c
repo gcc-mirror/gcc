@@ -6856,8 +6856,8 @@ default_binds_local_p_3 (const_tree exp, bool shlib, bool weak_dominate,
      FIXME: We can resolve the weakref case more curefuly by looking at the
      weakref alias.  */
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp))
-	   || (TREE_CODE (exp) == FUNCTION_DECL
-	       && lookup_attribute ("ifunc", DECL_ATTRIBUTES (exp))))
+      || (TREE_CODE (exp) == FUNCTION_DECL
+	  && lookup_attribute ("ifunc", DECL_ATTRIBUTES (exp))))
     return false;
 
   /* Static variables are always local.  */
