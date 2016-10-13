@@ -1,5 +1,12 @@
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-loop.c (loop_niters_no_overflow): New func.
+	(vect_transform_loop): Call loop_niters_no_overflow.  Pass the
+	no-overflow information to vect_do_peeling_for_loop_bound and
+	vect_gen_vector_loop_niters.
+
+2016-10-13  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-predcom.c (tree_predictive_commoning_loop): Skip loop that only
 	iterates 1 time.
 

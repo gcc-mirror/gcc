@@ -6620,6 +6620,39 @@ vect_loop_kill_debug_uses (struct loop *loop, gimple *stmt)
     }
 }
 
+/* Given loop represented by LOOP_VINFO, return true if computation of
+   LOOP_VINFO_NITERS (= LOOP_VINFO_NITERSM1 + 1) doesn't overflow, false
+   otherwise.  */
+
+static bool
+loop_niters_no_overflow (loop_vec_info loop_vinfo)
+{
+  /* Constant case.  */
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    {
+      tree cst_niters = LOOP_VINFO_NITERS (loop_vinfo);
+      tree cst_nitersm1 = LOOP_VINFO_NITERSM1 (loop_vinfo);
+
+      gcc_assert (TREE_CODE (cst_niters) == INTEGER_CST);
+      gcc_assert (TREE_CODE (cst_nitersm1) == INTEGER_CST);
+      if (wi::to_widest (cst_nitersm1) < wi::to_widest (cst_niters))
+	return true;
+    }
+
+  widest_int max;
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  /* Check the upper bound of loop niters.  */
+  if (get_max_loop_iterations (loop, &max))
+    {
+      tree type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
+      signop sgn = TYPE_SIGN (type);
+      widest_int type_max = widest_int::from (wi::max_value (type), sgn);
+      if (max < type_max)
+	return true;
+    }
+  return false;
+}
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -6707,8 +6740,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   tree niters = vect_build_loop_niters (loop_vinfo);
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = niters;
   tree nitersm1 = unshare_expr (LOOP_VINFO_NITERSM1 (loop_vinfo));
+  bool niters_no_overflow = loop_niters_no_overflow (loop_vinfo);
   vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector, th,
-		   check_profitability, false);
+		   check_profitability, niters_no_overflow);
   if (niters_vector == NULL_TREE)
     {
       if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
@@ -6717,7 +6751,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 			   LOOP_VINFO_INT_NITERS (loop_vinfo) / vf);
       else
 	vect_gen_vector_loop_niters (loop_vinfo, niters, &niters_vector,
-				     false);
+				     niters_no_overflow);
     }
 
   /* 1) Make sure the loop header has exactly two entries
