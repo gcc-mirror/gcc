@@ -200,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Callable, typename... _Args>
     inline result_of_t<_Callable&&(_Args&&...)>
     invoke(_Callable&& __fn, _Args&&... __args)
-    noexcept(is_nothrow_callable_v<_Callable(_Args&&...)>)
+    noexcept(is_nothrow_callable_v<_Callable&&(_Args&&...)>)
     {
       return std::__invoke(std::forward<_Callable>(__fn),
 			   std::forward<_Args>(__args)...);

@@ -1,3 +1,9 @@
+2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/invoke.h (__invoke): Fix exception-specification.
+	* include/std/functional (invoke): Likewise.
+	* testsuite/20_util/function_objects/invoke/1.cc: New test.
+
 2016-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/util/testsuite_hooks.h: Rewrite VERIFY in terms of
