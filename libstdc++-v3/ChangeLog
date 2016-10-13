@@ -1,5 +1,8 @@
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/propagate_const (element_type): Qualify
+	declval.
+
 	* testsuite/26_numerics/random/default_random_engine.cc: Use VERIFY
 	instead of assert.
 
