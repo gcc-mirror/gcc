@@ -253,6 +253,11 @@ package Sem is
    --  future possibility by making it a counter. As with In_Spec_Expression,
    --  it must be recursively saved and restored for a Semantics call.
 
+   In_Compile_Time_Warning_Or_Error : Boolean := False;
+   --  Switch to indicate that we are validating a pragma Compile_Time_Warning
+   --  or Compile_Time_Error after the backend has been called (to check these
+   --  pragmas for size and alignment apropriateness).
+
    In_Default_Expr : Boolean := False;
    --  Switch to indicate that we are analyzing a default component expression.
    --  As with In_Spec_Expression, it must be recursively saved and restored
@@ -574,6 +579,9 @@ package Sem is
 
    procedure Lock;
    --  Lock internal tables before calling back end
+
+   procedure Unlock;
+   --  Unlock internal tables
 
    procedure Semantics (Comp_Unit : Node_Id);
    --  This procedure is called to perform semantic analysis on the specified

@@ -1621,6 +1621,15 @@ package body Sem is
       return ss (Scope_Stack.Last);
    end sst;
 
+   ------------
+   -- Unlock --
+   ------------
+
+   procedure Unlock is
+   begin
+      Scope_Stack.Locked := False;
+   end Unlock;
+
    ------------------------
    -- Walk_Library_Items --
    ------------------------

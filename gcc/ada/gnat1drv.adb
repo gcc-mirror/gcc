@@ -871,6 +871,18 @@ procedure Gnat1drv is
 
       Checks.Validate_Alignment_Check_Warnings;
 
+      --  Validate compile time warnings and errors (using the values for size
+      --  and alignment annotated by the backend where possible). We need to
+      --  unlock temporarily these tables to reanalyze their expression.
+
+      Atree.Unlock;
+      Nlists.Unlock;
+      Sem.Unlock;
+      Sem_Ch13.Validate_Compile_Time_Warning_Errors;
+      Sem.Lock;
+      Nlists.Lock;
+      Atree.Lock;
+
       --  Validate unchecked conversions (using the values for size and
       --  alignment annotated by the backend where possible).
 

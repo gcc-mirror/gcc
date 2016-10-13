@@ -1,3 +1,26 @@
+2016-10-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.ads (Process_Compile_Time_Warning_Or_Error): New
+	overloaded subprogram that factorizes code executed as part
+	of the regular processing of these pragmas and as part of its
+	validation after invoking the backend.
+	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): New
+	subprogram.
+	(Process_Compile_Time_Warning_Or_Error): If the
+	condition is known at compile time then invoke the new overloaded
+	subprogram; otherwise register the pragma in a table to validate
+	it after invoking the backend.
+	* sem.ads, sem.adb (Unlock): New subprogram.
+	* sem_attr.adb (Analyze_Attribute [Size]): If we are processing
+	pragmas Compile_Time_Warning and Compile_Time_Errors after the
+	backend has been called then evaluate this attribute if 'Size
+	is known at compile time.
+	* gnat1drv.adb (Post_Compilation_Validation_Checks): Validate
+	compile time warnings and errors.
+	* sem_ch13.ads, sem_ch13.adb (Validate_Compile_Time_Warning_Error):
+	New subprogram.
+	(Validate_Compile_Time_Warning_Errors): New subprogram.
+
 2016-10-13  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Adapt to

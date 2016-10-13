@@ -5746,6 +5746,22 @@ package body Sem_Attr is
          Check_Not_Incomplete_Type;
          Check_Not_CPP_Type;
          Set_Etype (N, Universal_Integer);
+
+         --  If we are processing pragmas Compile_Time_Warning and Compile_
+         --  Time_Errors after the backend has been called and this occurrence
+         --  of 'Size is known at compile time then it is safe to perform this
+         --  evaluation. Needed to perform the static evaluation of the full
+         --  boolean expression of these pragmas.
+
+         if In_Compile_Time_Warning_Or_Error
+           and then Is_Entity_Name (P)
+           and then (Is_Type (Entity (P))
+                      or else Ekind (Entity (P)) = E_Enumeration_Literal)
+           and then Size_Known_At_Compile_Time (Entity (P))
+         then
+            Rewrite (N, Make_Integer_Literal (Sloc (N), Esize (Entity (P))));
+            Analyze (N);
+         end if;
       end Size;
 
       -----------
