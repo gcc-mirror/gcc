@@ -44023,6 +44023,18 @@ ix86_mangle_type (const_tree type)
     }
 }
 
+#ifdef TARGET_THREAD_SSP_OFFSET
+/* If using TLS guards, don't waste time creating and expanding
+   __stack_chk_guard decl and MEM as we are going to ignore it.  */
+static tree
+ix86_stack_protect_guard (void)
+{
+  if (TARGET_SSP_TLS_GUARD)
+    return NULL_TREE;
+  return default_stack_protect_guard ();
+}
+#endif
+
 /* For 32-bit code we can save PIC register setup by using
    __stack_chk_fail_local hidden function instead of calling
    __stack_chk_fail directly.  64-bit code doesn't need to setup any PIC
@@ -50613,6 +50625,11 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE ix86_mangle_type
+
+#ifdef TARGET_THREAD_SSP_OFFSET
+#undef TARGET_STACK_PROTECT_GUARD
+#define TARGET_STACK_PROTECT_GUARD ix86_stack_protect_guard
+#endif
 
 #if !TARGET_MACHO
 #undef TARGET_STACK_PROTECT_FAIL

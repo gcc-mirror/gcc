@@ -429,6 +429,13 @@ hook_tree_const_tree_null (const_tree)
   return NULL;
 }
 
+/* Generic hook that takes no arguments and returns a NULL_TREE.  */
+tree
+hook_tree_void_null (void)
+{
+  return NULL;
+}
+
 /* Generic hook that takes a rtx_insn * and an int and returns a bool.  */
 
 bool

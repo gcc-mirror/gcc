@@ -1366,7 +1366,7 @@ get_lang_specific (tree node)
 #undef  LANG_HOOKS_TYPE_HASH_EQ
 #define LANG_HOOKS_TYPE_HASH_EQ		gnat_type_hash_eq
 #undef  LANG_HOOKS_GETDECLS
-#define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
+#define LANG_HOOKS_GETDECLS		hook_tree_void_null
 #undef  LANG_HOOKS_PUSHDECL
 #define LANG_HOOKS_PUSHDECL		gnat_return_tree
 #undef  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
