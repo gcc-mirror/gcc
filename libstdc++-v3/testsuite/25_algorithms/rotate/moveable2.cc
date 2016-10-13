@@ -42,8 +42,6 @@ template<typename Con>
   void
   test_con(int length, int rotate_pos)
   {
-    bool test __attribute__((unused)) = true;
-
     /* Make sure the VLA upper bound is positive. */
     rvalstruct array[length + 1];
     for(int i = 0; i < length; ++i)

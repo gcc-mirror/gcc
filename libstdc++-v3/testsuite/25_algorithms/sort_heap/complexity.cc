@@ -28,8 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using __gnu_test::counter_type;
   const std::size_t nb_values = 1000;
 

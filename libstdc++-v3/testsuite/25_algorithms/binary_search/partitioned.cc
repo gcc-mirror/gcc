@@ -39,8 +39,6 @@ struct X
 void
 test01()
 {
-  bool test __attribute((unused)) = true;
-
   // Test with range that is partitioned, but not sorted.
   X seq[] = { 1, 3, 5, 7, 1, 6, 4 };
   test_container<X, forward_iterator_wrapper> c(seq);

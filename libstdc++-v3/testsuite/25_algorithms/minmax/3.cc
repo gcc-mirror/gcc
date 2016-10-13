@@ -39,8 +39,6 @@ int compare_counter::count = 0;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::minmax({1, 2, 3, 4, 5, 6, 7, 8}, compare_counter());
 
   // If N is the number of arguments in the minmax function call, 

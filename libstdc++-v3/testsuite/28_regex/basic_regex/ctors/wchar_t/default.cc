@@ -22,12 +22,10 @@
 // [28.8.2] class template basic_regex constructor
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests default constructor of the basic_regex class.  
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::basic_regex<wchar_t> test_type;
 
   // default constructor

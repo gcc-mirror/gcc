@@ -39,8 +39,6 @@ struct X
 void
 test01()
 {
-  bool test __attribute((unused)) = true;
-
   // Test with range that is partitioned, but not sorted.
   X seq[] = { 1, 3, 5, 7, 1, 6, 4, 2 };
   test_container<X, forward_iterator_wrapper> c(seq);
@@ -69,8 +67,6 @@ struct Y
 void
 test02()
 {
-  bool test __attribute((unused)) = true;
-
   // Test that Debug Mode checks don't fire (libstdc++/71545)
 
   Y seq[] = { -0.1, 1.2, 5.0, 5.2, 5.1, 5.9, 5.5, 6.0 };

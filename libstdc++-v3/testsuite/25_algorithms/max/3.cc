@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const int& x = std::max({1, 3, 2});
   const int& y = std::max({4, 3, 2});
   const int& z = std::max({3, 2, 4});

@@ -24,8 +24,6 @@
 // libstdc++/37547
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int> v{1,2,3,4,5};
 
   auto p = std::max({v});

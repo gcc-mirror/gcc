@@ -34,8 +34,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::regex  re("/asdf(/.*)", std::regex::ECMAScript);
     std::string target("/asdf/qwerty");

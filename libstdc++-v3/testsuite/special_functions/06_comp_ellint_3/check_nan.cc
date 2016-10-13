@@ -42,7 +42,6 @@ test01()
   long double d = std::comp_ellint_3(kl, nul);
   long double e = std::comp_ellint_3l(kl, nul);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));
@@ -69,7 +68,6 @@ test02()
   long double d = std::comp_ellint_3(kl, nul);
   long double e = std::comp_ellint_3l(kl, nul);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

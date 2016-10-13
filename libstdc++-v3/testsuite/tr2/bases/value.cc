@@ -28,8 +28,6 @@ struct C : public B1, public B2 { };
 
 void test()
 {
-  bool test __attribute__((unused)) = true;
-
   // 1
   {
     typedef std::tr2::bases<A>::type tl;

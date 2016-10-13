@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const int& z = std::min({1, 3, 2});
   const int& w = std::min({4, 3, 5});
   const int& y = std::min({4, 3, 2});

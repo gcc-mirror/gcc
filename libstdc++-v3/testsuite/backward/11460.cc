@@ -35,8 +35,6 @@ public:
 // libstdc++/11460
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::strstreambuf::traits_type Traits;
   const char str[] = "a\xff";
   

@@ -43,8 +43,6 @@ bool order(const rvalstruct& lhs, const rvalstruct& rhs)
 // libstdc++/49559
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   rvalstruct s1[1];
   std::copy(A, A + 1, s1);
   Container con1(s1, s1 + 1);

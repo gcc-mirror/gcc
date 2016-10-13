@@ -39,8 +39,6 @@ typedef test_container<V, random_access_iterator_wrapper> Container;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   V s1[] = { 10, 20, 1, 11, 2, 12, 3, 13, 4, 14, 5, 15, 6, 16, 7, 
 	     17, 8, 18, 9, 19 };
   const int N = sizeof(s1) / sizeof(V);
@@ -57,8 +55,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   V s1[] = { 10, 20, 1, 11, 2, 12, 3, 13, 4, 14, 5, 15, 6, 16, 7, 
 	     17, 8, 18, 9, 19 };
   const int N = sizeof(s1) / sizeof(V);
@@ -75,8 +71,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   V vvs[] = { 2, 0 };
   std::partial_sort(vvs, vvs + 2, vvs + 2);
   VERIFY( vvs[0].ok && vvs[0].val == 0 );

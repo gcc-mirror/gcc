@@ -40,7 +40,6 @@ test01()
   long double d = std::sph_legendre(l, m, thetal);
   long double e = std::sph_legendrel(l, m, thetal);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

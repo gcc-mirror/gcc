@@ -33,8 +33,6 @@ using namespace __gnu_test;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   cmatch m;
   VERIFY(regex_search_debug("*** this is a string !!!", m,
 			    regex("(\\w+) (\\w+) (\\w+) (\\w+)")));
@@ -48,8 +46,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   regex re("asdf");
   cmatch m;
   regex_match("asdf", m, re);

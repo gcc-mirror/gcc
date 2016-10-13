@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   regex("\\[", regex_constants::awk);
   VERIFY(regex_match_debug("\"", regex("[\\\"]", regex_constants::awk)));
   VERIFY(regex_match_debug("/", regex("/", regex_constants::awk)));

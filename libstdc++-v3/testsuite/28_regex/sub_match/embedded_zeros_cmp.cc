@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef char                          value_type;
   typedef std::basic_string<value_type> string_type;
   typedef std::sub_match<value_type*>   sub_match_type;
@@ -37,19 +35,19 @@ int main()
   value_type test_data2[] = {'a', 'b', 'c'};
   const string_type test_data3("abc");
 
-	sub_match_type sm;
-	sm.first = std::begin(test_data2);
-	sm.second  = std::end(test_data2);
-	sm.matched = true;
+  sub_match_type sm;
+  sm.first = std::begin(test_data2);
+  sm.second  = std::end(test_data2);
+  sm.matched = true;
 
-	VERIFY( test_data1 != sm );
-	VERIFY( sm != test_data1 );
-	VERIFY( sm < test_data1 );
-	VERIFY( !(test_data1 < sm) );
-	VERIFY( test_data1 > sm );
+  VERIFY( test_data1 != sm );
+  VERIFY( sm != test_data1 );
+  VERIFY( sm < test_data1 );
+  VERIFY( !(test_data1 < sm) );
+  VERIFY( test_data1 > sm );
 
-	VERIFY( test_data3 == sm );
-	VERIFY( sm == test_data3 );
-	VERIFY( !(sm < test_data3) );
-	VERIFY( !(test_data3 < sm) );
+  VERIFY( test_data3 == sm );
+  VERIFY( sm == test_data3 );
+  VERIFY( !(sm < test_data3) );
+  VERIFY( !(test_data3 < sm) );
 }

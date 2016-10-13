@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::regex e("z*");
   const std::string s("ab");
 

@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   string domain_name = "valid.hostname.org";
   /**
    * based on http://stackoverflow.com/questions/1418423/the-hostname-regex

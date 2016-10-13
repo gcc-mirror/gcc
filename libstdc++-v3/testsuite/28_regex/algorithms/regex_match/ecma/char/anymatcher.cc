@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
 #define TEST(res, s) \
   {\
     regex re(res);\

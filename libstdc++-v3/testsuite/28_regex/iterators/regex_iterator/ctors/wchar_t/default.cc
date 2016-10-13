@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   std::regex_iterator<wchar_t*> it;
 	std::wcregex_iterator cit;
 	std::wsregex_iterator sit;

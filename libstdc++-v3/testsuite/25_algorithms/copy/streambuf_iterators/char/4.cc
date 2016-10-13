@@ -28,7 +28,6 @@
 // In the occasion of libstdc++/25482
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef istreambuf_iterator<char> in_iterator_type;

@@ -45,7 +45,6 @@ private:
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::test_container;
   using __gnu_test::input_iterator_wrapper;
 

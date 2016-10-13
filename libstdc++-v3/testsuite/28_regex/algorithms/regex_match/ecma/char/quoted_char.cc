@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY(regex_match_debug("01", regex("\\d*")));
   VERIFY(regex_match_debug("asdfjkl", regex("\\D*")));
   VERIFY(!regex_match_debug("asdfjkl0", regex("\\D*")));

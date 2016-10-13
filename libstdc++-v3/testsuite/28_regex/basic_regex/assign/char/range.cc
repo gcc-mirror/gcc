@@ -22,7 +22,6 @@
 // [28.8.3] class template basic_regex assign()
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests range assign of the basic_regex class.  
 void test01()

@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<bool> v1 = { true, false, true, false, true };
   std::vector<bool> v2 = { false, true, false, true, true };
   VERIFY( std::is_permutation(v1.begin(), v1.end(), v2.begin()) );
@@ -35,8 +33,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<bool> v1 = { true, false, true, false, true };
   std::vector<bool> v2 = { false, true, false, true, true };
   VERIFY( std::is_permutation(v1.begin(), v1.end(), v2.begin(), v2.end()) );

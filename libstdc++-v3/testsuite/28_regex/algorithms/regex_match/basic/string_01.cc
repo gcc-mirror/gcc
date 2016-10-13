@@ -33,28 +33,26 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  std::regex  re("\\(a\\).*", std::regex::basic);
+  std::string target("aaba");
+  std::smatch m;
 
-	std::regex  re("\\(a\\).*", std::regex::basic);
-	std::string target("aaba");
-	std::smatch m;
+  VERIFY( regex_match_debug(target, m, re) );
 
-	VERIFY( regex_match_debug(target, m, re) );
-
-	VERIFY( m.size()  == re.mark_count()+1 );
-	VERIFY( m.empty() == false );
-	VERIFY( m.prefix().first == target.begin() );
-	VERIFY( m.prefix().second == target.begin() );
-	VERIFY( m.prefix().matched == false );
-	VERIFY( m.suffix().first == target.end() );
-	VERIFY( m.suffix().second == target.end() );
-	VERIFY( m.suffix().matched == false );
-	VERIFY( m[0].first == target.begin() );
-	VERIFY( m[0].second == target.end() );
-	VERIFY( m[0].matched == true );
-	VERIFY( m[1].first == target.begin() );
-	VERIFY( m[1].second == target.begin()+1 );
-	VERIFY( m[1].matched == true );
+  VERIFY( m.size()  == re.mark_count()+1 );
+  VERIFY( m.empty() == false );
+  VERIFY( m.prefix().first == target.begin() );
+  VERIFY( m.prefix().second == target.begin() );
+  VERIFY( m.prefix().matched == false );
+  VERIFY( m.suffix().first == target.end() );
+  VERIFY( m.suffix().second == target.end() );
+  VERIFY( m.suffix().matched == false );
+  VERIFY( m[0].first == target.begin() );
+  VERIFY( m[0].second == target.end() );
+  VERIFY( m[0].matched == true );
+  VERIFY( m[1].first == target.begin() );
+  VERIFY( m[1].second == target.begin()+1 );
+  VERIFY( m[1].matched == true );
 }
 
 

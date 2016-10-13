@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex  re("as\\(df\\)", std::regex::basic);
   std::string target("xxasdfyy");
   std::smatch m;

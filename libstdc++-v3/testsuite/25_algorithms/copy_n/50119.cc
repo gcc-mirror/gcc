@@ -27,7 +27,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   vector<int> v;
   istringstream s("1 2 3 4 5");

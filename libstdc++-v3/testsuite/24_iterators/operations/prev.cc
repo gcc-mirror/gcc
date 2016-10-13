@@ -26,7 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::vector<int> c(3);    
   std::vector<int>::iterator i = c.end(), j;
 
@@ -37,7 +36,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   std::list<int> c(3);    
   std::list<int>::iterator i = c.end(), j;
 

@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   regex re;
   re.assign("(ab){3}", std::regex::extended);
   VERIFY(!regex_match_debug("abab", re));

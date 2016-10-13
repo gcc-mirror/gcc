@@ -22,7 +22,6 @@
 // [28.8.3] class template basic_regex assign()
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests basic_regex assign operator from a C-style null-terminated-string.  
 void test01()

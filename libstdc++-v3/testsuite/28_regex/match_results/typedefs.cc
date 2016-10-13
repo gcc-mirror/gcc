@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::match_results<char*> mr;
 
   typedef mr::value_type       value_type;

@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::string s("  111  222  ");
   const std::regex re("\\w+");
 

@@ -24,8 +24,6 @@
 void 
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<bool> v;
   v.push_back(true);
   v.push_back(false);

@@ -24,8 +24,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::cmatch m;
   std::regex_match("a", m, std::regex("a"));
   std::cmatch mm1 = m, mm2;

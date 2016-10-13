@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::regex_token_iterator<char*> it;
 
   typedef it::regex_type         regex_type;

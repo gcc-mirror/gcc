@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int> a{2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
   int count = 0;
   std::search_n(a.begin(), a.end(), 10, 1,

@@ -27,7 +27,6 @@
 // Tests the value() function of the regex_traits<wchar_t> class.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::regex_traits<wchar_t> t;
   VERIFY( t.value(L'7', 8)  == 7 );
   VERIFY( t.value(L'7', 10) == 7 );

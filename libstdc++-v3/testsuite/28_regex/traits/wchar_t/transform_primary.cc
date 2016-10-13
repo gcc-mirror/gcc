@@ -29,14 +29,13 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef wchar_t CharT;
   typedef std::regex_traits<CharT> traits;
 
-	traits t;
-	traits::string_type G = L"abc";
-	traits::string_type H = L"def";
-	traits::string_type J = L"ABC";
+  traits t;
+  traits::string_type G = L"abc";
+  traits::string_type H = L"def";
+  traits::string_type J = L"ABC";
 
   VERIFY( G < H );
   VERIFY( t.transform_primary(G.begin(), G.end())
@@ -49,6 +48,6 @@ test01()
 
 int main()
 {
-	test01();
-	return 0;
+  test01();
+  return 0;
 }

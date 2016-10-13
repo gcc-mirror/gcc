@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   std::regex_iterator<char*> it;
 	std::cregex_iterator cit;
 	std::sregex_iterator sit;

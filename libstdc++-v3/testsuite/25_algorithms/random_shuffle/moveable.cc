@@ -46,8 +46,6 @@ void fill_ascending()
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   fill_ascending();
   rvalstruct rv[N];
   std::copy(A, A + N, rv);
@@ -68,8 +66,6 @@ int random_generator(int)
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   rvalstruct rv[10] = {1,2,3,4,5,6,7,8,9,10};
   int result[10] = {10,1,2,3,4,5,6,7,8,9};
   Container con(rv, rv + 10);

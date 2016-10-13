@@ -30,8 +30,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY(!std::regex_match("aa", std::regex("(.)(?!\\1).")));
 }
 

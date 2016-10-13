@@ -34,8 +34,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring str2 = L"ÜBER";
   std::wregex re2;
   re2.imbue(std::locale("de_DE.UTF-8"));

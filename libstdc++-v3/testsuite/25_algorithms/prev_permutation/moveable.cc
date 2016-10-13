@@ -34,8 +34,6 @@ typedef test_container<rvalstruct, bidirectional_iterator_wrapper> Container;
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
-
   // Note: The standard is unclear on what should happen in this case.
   // This seems the only really sensible behaviour, and what is done.
   rvalstruct array[] = {0};
@@ -46,8 +44,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
-
   rvalstruct array[] = {0};
   Container con(array, array + 1);
   VERIFY( !prev_permutation(con.begin(), con.end()) );
@@ -56,8 +52,6 @@ test2()
 void
 test3()
 {
-  bool test __attribute__((unused)) = true;
-
   rvalstruct array[] = {3, 0};
   Container con(array, array + 2);
   VERIFY( prev_permutation(con.begin(), con.end()) );
@@ -69,8 +63,6 @@ test3()
 void
 test4()
 {
-  bool test __attribute__((unused)) = true;
-
   int array[6] = {5, 4, 3, 2, 1, 0};
   for(int i = 0 ; i < 719; ++i)
     {
@@ -98,8 +90,6 @@ are_ordered(const rvalstruct& lhs, const rvalstruct& rhs)
 void
 test5()
 {
-  bool test __attribute__((unused)) = true;
-
   int array[6] = {5, 4, 3, 2, 1, 0};
   for(int i = 0 ; i < 719; ++i)
     {

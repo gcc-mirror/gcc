@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const int z = std::min(1, 2);
   const int w = std::min(4, 3);
   VERIFY( z == 1 );

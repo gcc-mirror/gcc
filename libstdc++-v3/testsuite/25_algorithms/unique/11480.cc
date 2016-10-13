@@ -31,8 +31,6 @@ bool compare(int a, int b)
 // libstdc++/11480
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique(a, a+10, compare);
   VERIFY( compare_count == 9 );
 }

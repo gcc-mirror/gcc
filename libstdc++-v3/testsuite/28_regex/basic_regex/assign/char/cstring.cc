@@ -35,8 +35,6 @@ void test01()
 // basic_regex::operator=() resets flags. libstdc++/64680
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex re("[[:alnum:]]", std::regex_constants::basic);
   re = "\\w+";
 }

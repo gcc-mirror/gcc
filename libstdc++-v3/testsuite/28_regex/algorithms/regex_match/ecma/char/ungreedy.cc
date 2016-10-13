@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   regex re("(a*?)*?");
   cmatch m;
   VERIFY(regex_match("a", m, re));

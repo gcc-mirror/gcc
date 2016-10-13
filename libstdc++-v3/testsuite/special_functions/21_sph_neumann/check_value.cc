@@ -507,7 +507,6 @@ template<typename Tp, unsigned int Num>
   void
   test(const testcase_sph_neumann<Tp> (&data)[Num], Tp toler)
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);

@@ -44,7 +44,6 @@ my_inf32 (void)
 int
 main ()
 {
-  bool test __attribute__((unused)) = true;
   decimal32 v;
 
   v = my_nan32 ();

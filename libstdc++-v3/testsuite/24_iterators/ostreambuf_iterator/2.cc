@@ -23,11 +23,10 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-bool test02(void)
+void test02(void)
 {
   typedef std::ostreambuf_iterator<char> costreambuf_iter;
   typedef costreambuf_iter::streambuf_type cstreambuf_type;
-  bool test __attribute__((unused)) = true;
   const char slit01[] = "playa hermosa, liberia, guanacaste";
   const char slit02[] = "bodega bay, lost coast, california";
   std::string str01(slit01);
@@ -81,7 +80,6 @@ bool test02(void)
   tmp = ostrs00.str();
   VERIFY ( tmp != str01 );
   VERIFY ( tmp != str02 );
-  return test;
 }
 
 int main()

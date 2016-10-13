@@ -32,8 +32,6 @@ const int N = sizeof(A) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   for (int i = 0; i <= N; ++i)
     {
       VERIFY( std::is_sorted(A, A + i) );

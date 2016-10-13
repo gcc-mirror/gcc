@@ -31,8 +31,6 @@ typedef std::pair<forward_iterator_wrapper<int>, forward_iterator_wrapper<int> >
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
-  
   int array[] = {0};
   Container con(array, array);
   pair_type p1 = minmax_element(con.begin(), con.end());
@@ -43,8 +41,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
-
   int array[] = {0};
   Container con(array, array + 1);
   pair_type p1 = minmax_element(con.begin(), con.end());
@@ -55,8 +51,6 @@ test2()
 void
 test3()
 {
-  bool test __attribute__((unused)) = true;
-  
   int array[] = {0, 3};
   Container con(array, array + 2);
   pair_type p1 = minmax_element(con.begin(), con.end());
@@ -67,8 +61,6 @@ test3()
 void
 test4()
 {
-  bool test __attribute__((unused)) = true;
-  
   int array[] = {3, 0};
   Container con(array, array + 2);
   pair_type p1 = minmax_element(con.begin(), con.end());
@@ -79,8 +71,6 @@ test4()
 void
 test5()
 {
-  bool test __attribute__((unused)) = true;
-
   int array[] = {3, 3};
   Container con(array, array + 2);
   pair_type p1 = minmax_element(con.begin(), con.end());
@@ -91,8 +81,6 @@ test5()
 void
 test6()
 {
-  bool test __attribute__((unused)) = true;
-
   int array[] = {6, 3, 0, 2, 6, 4, 0};
   Container con(array, array + 7);
   pair_type p1 = minmax_element(con.begin(), con.end());
@@ -103,8 +91,6 @@ test6()
 void
 test7()
 {
-  bool test __attribute__((unused)) = true;
-
   int array[] = {4, 4, 4, 6, 6, 6, 1, 1, 0, 0, 0, 2, 2};
   Container con(array, array + 13);
   pair_type p1 = minmax_element(con.begin(), con.end());
@@ -115,8 +101,6 @@ test7()
 void
 test8()
 {
-  bool test __attribute__((unused)) = true;
-
   int array[] = {1, 7, 5, 5, 10, 1, 0, 0, 8, 4, 4, 0, 10, 10, 10, 1};
   Container con(array, array + 16);
   pair_type p1 = minmax_element(con.begin(), con.end());

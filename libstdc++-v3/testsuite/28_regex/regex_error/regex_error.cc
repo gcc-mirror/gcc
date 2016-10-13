@@ -27,18 +27,16 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  std::regex_error error(std::regex_constants::error_collate);
+  VERIFY(error.code() == std::regex_constants::error_collate);
 
-	std::regex_error error(std::regex_constants::error_collate);
-	VERIFY(error.code() == std::regex_constants::error_collate);
-
-	try
-	{
-		throw error;
-	}
-	catch (std::runtime_error& ex)
-	{
-	}
+  try
+    {
+      throw error;
+    }
+  catch (std::runtime_error& ex)
+    {
+    }
 }
 
 int main()

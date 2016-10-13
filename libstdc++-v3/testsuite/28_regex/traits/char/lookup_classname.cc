@@ -31,20 +31,19 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef char CharT;
   typedef std::regex_traits<CharT> traits;
 
-	char n1[] = "lower";
-	char n2[] = "alpha";
-	traits t;
+  char n1[] = "lower";
+  char n2[] = "alpha";
+  traits t;
 
   traits::char_class_type c1 = t.lookup_classname(n1, n1+sizeof(n1)-1);
   VERIFY( c1 != 0 );
 
   traits::char_class_type c2 = t.lookup_classname(n1, n1+sizeof(n1)-1, true);
   traits::char_class_type c3 = t.lookup_classname(n2, n2+sizeof(n2)-1, true);
-	VERIFY( c2 == c3 );
+  VERIFY( c2 == c3 );
 }
 
 // Test forward iterator

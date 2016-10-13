@@ -70,7 +70,6 @@ namespace __gnu_test
       // behavior is ambiguity.
       static void test()
       {
-	bool test __attribute__((unused)) = true;
 	try
 	  { throw error_type(); }
 	catch (std::exception const&)
