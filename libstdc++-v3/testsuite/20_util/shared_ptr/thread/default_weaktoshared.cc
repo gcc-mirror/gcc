@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <thread>
 #include <atomic>
+#include <functional>
 #include <testsuite_hooks.h>
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H

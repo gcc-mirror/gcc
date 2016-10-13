@@ -1,5 +1,35 @@
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr_base.h: Include <functional>.
+	[!__cpp_rtti]: Do not include <typeinfo>.
+	* include/experimental/array: Do not include <functional>.
+	* include/experimental/memory: Include <bits/functional_hash.h>
+	instead of <functional>.
+	* include/experimental/propagate_const: Include <bits/stl_function.h>,
+	<bits/functional_hash.h>, and <bits/move.h> instead of <functional>.
+	* include/experimental/tuple: Do not include <functional>.
+	* include/std/future: Include <functional>.
+	* include/std/memory: Do not include <functional>.
+	* include/std/mutex: [_GLIBCXX_HAVE_TLS]: Likewise.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc: Add
+	missing includes.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/
+	1.cc: Likewise.
+	* testsuite/30_threads/call_once/60497.cc: Likewise.
+	* testsuite/30_threads/lock/2.cc: Likewise.
+	* testsuite/30_threads/thread/native_handle/cancel.cc: Likewise.
+	* testsuite/experimental/algorithm/sample.cc: Likewise.
+	* testsuite/experimental/array/make_array.cc: Likewise.
+	* testsuite/experimental/array/neg.cc: Likewise. Adjust dg-error line.
+	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
+	Adjust dg-error lines.
+	* testsuite/experimental/propagate_const/cons/move_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+
 	* testsuite/experimental/algorithm/sample.cc: Add missing header.
 
 	* include/experimental/propagate_const (element_type): Qualify

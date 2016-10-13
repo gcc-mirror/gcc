@@ -36,7 +36,6 @@
 #else
 
 #include <tuple>
-#include <functional>
 #include <bits/invoke.h>
 #include <experimental/bits/lfts_config.h>
 

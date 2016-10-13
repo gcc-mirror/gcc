@@ -40,6 +40,7 @@
 #include <condition_variable>
 #include <system_error>
 #include <atomic>
+#include <functional>
 #include <bits/atomic_futex.h>
 #include <bits/functexcept.h>
 #include <bits/invoke.h>

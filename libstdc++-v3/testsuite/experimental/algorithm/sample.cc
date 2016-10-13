@@ -23,6 +23,7 @@
 #include <forward_list>
 #include <vector>
 #include <random>
+#include <algorithm>
 #include <testsuite_hooks.h>
 
 std::mt19937 rng;

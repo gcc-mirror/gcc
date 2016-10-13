@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/array>
+#include <functional>
 
 struct MoveOnly
 {
