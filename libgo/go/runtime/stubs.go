@@ -367,3 +367,51 @@ func typeBitsBulkBarrier(typ *_type, p, size uintptr) {}
 
 // Here for gccgo until we port msize.go.
 func roundupsize(uintptr) uintptr
+
+// Here for gccgo until we port mgc.go.
+func GC()
+
+// Here for gccgo until we port proc.go.
+var worldsema uint32 = 1
+
+func stopTheWorldWithSema()
+func startTheWorldWithSema()
+
+// For gccgo to call from C code.
+//go:linkname acquireWorldsema runtime.acquireWorldsema
+func acquireWorldsema() {
+	semacquire(&worldsema, false)
+}
+
+// For gccgo to call from C code.
+//go:linkname releaseWorldsema runtime.releaseWorldsema
+func releaseWorldsema() {
+	semrelease(&worldsema)
+}
+
+// Here for gccgo until we port proc.go.
+func stopTheWorld(reason string) {
+	semacquire(&worldsema, false)
+	getg().m.preemptoff = reason
+	getg().m.gcing = 1
+	systemstack(stopTheWorldWithSema)
+}
+
+// Here for gccgo until we port proc.go.
+func startTheWorld() {
+	getg().m.gcing = 0
+	getg().m.locks++
+	systemstack(startTheWorldWithSema)
+	// worldsema must be held over startTheWorldWithSema to ensure
+	// gomaxprocs cannot change while worldsema is held.
+	semrelease(&worldsema)
+	getg().m.preemptoff = ""
+	getg().m.locks--
+}
+
+// For gccgo to call from C code, so that the C code and the Go code
+// can share the memstats variable for now.
+//go:linkname getMstats runtime.getMstats
+func getMstats() *mstats {
+	return &memstats
+}

@@ -448,9 +448,14 @@ int32	runtime_setmaxthreads(int32);
 G*	runtime_timejump(void);
 void	runtime_iterate_finq(void (*callback)(FuncVal*, void*, const FuncType*, const PtrType*));
 
-void	runtime_stoptheworld(void);
-void	runtime_starttheworld(void);
-extern uint32 runtime_worldsema;
+void	runtime_stopTheWorldWithSema(void)
+  __asm__(GOSYM_PREFIX "runtime.stopTheWorldWithSema");
+void	runtime_startTheWorldWithSema(void)
+  __asm__(GOSYM_PREFIX "runtime.startTheWorldWithSema");
+void	runtime_acquireWorldsema(void)
+  __asm__(GOSYM_PREFIX "runtime.acquireWorldsema");
+void	runtime_releaseWorldsema(void)
+  __asm__(GOSYM_PREFIX "runtime.releaseWorldsema");
 
 /*
  * mutual exclusion locks.  in the uncontended case,

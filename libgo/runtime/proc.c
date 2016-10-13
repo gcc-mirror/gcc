@@ -508,7 +508,7 @@ runtime_schedinit(void)
 	procresize(procs);
 
 	// Can not enable GC until all roots are registered.
-	// mstats.enablegc = 1;
+	// mstats()->enablegc = 1;
 }
 
 extern void main_init(void) __asm__ (GOSYM_PREFIX "__go_init_main");
@@ -633,7 +633,7 @@ runtime_main(void* dummy __attribute__((unused)))
 	// For gccgo we have to wait until after main is initialized
 	// to enable GC, because initializing main registers the GC
 	// roots.
-	mstats.enablegc = 1;
+	mstats()->enablegc = 1;
 
 	if(runtime_isarchive) {
 		// This is not a complete program, but is instead a
@@ -951,7 +951,7 @@ runtime_freezetheworld(void)
 }
 
 void
-runtime_stoptheworld(void)
+runtime_stopTheWorldWithSema(void)
 {
 	int32 i;
 	uint32 s;
@@ -1001,7 +1001,7 @@ mhelpgc(void)
 }
 
 void
-runtime_starttheworld(void)
+runtime_startTheWorldWithSema(void)
 {
 	P *p, *p1;
 	M *mp;
@@ -1045,7 +1045,7 @@ runtime_starttheworld(void)
 			mp = (M*)p->m;
 			p->m = 0;
 			if(mp->nextp)
-				runtime_throw("starttheworld: inconsistent mp->nextp");
+				runtime_throw("startTheWorldWithSema: inconsistent mp->nextp");
 			mp->nextp = (uintptr)p;
 			runtime_notewakeup(&mp->park);
 		} else {
@@ -2373,7 +2373,7 @@ runtime_malg(int32 stacksize, byte** ret_stack, uintptr* ret_stacksize)
                 // 32-bit mode, the Go allocation space is all of
                 // memory anyhow.
 		if(sizeof(void*) == 8) {
-			void *p = runtime_SysAlloc(stacksize, &mstats.other_sys);
+			void *p = runtime_SysAlloc(stacksize, &mstats()->other_sys);
 			if(p == nil)
 				runtime_throw("runtime: cannot allocate memory for goroutine stack");
 			*ret_stack = (byte*)p;
@@ -2583,13 +2583,13 @@ runtime_gomaxprocsfunc(int32 n)
 	}
 	runtime_unlock(&runtime_sched);
 
-	runtime_semacquire(&runtime_worldsema, false);
+	runtime_acquireWorldsema();
 	g->m->gcing = 1;
-	runtime_stoptheworld();
+	runtime_stopTheWorldWithSema();
 	newprocs = n;
 	g->m->gcing = 0;
-	runtime_semrelease(&runtime_worldsema);
-	runtime_starttheworld();
+	runtime_releaseWorldsema();
+	runtime_startTheWorldWithSema();
 
 	return ret;
 }

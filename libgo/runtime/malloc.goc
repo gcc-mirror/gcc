@@ -51,11 +51,8 @@ package runtime
 
 // Mark mheap as 'no pointers', it does not contain interesting pointers but occupies ~45K.
 MHeap runtime_mheap;
-MStats mstats;
 
 int32	runtime_checking;
-
-extern MStats mstats;	// defined in zruntime_def_$GOOS_$GOARCH.go
 
 extern volatile intgo runtime_MemProfileRate
   __asm__ (GOSYM_PREFIX "runtime.MemProfileRate");
@@ -81,6 +78,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 	MLink *v, *next;
 	byte *tiny;
 	bool incallback;
+	MStats *pmstats;
 
 	if(size == 0) {
 		// All 0-length allocations use this pointer.
@@ -105,7 +103,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		flag |= FlagNoInvokeGC;
 	}
 
-	if(runtime_gcwaiting() && g != m->g0 && m->locks == 0 && !(flag & FlagNoInvokeGC)) {
+	if(runtime_gcwaiting() && g != m->g0 && m->locks == 0 && !(flag & FlagNoInvokeGC) && m->preemptoff.len == 0) {
 		runtime_gosched();
 		m = runtime_m();
 	}
@@ -252,7 +250,8 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 
 	m->locks--;
 
-	if(!(flag & FlagNoInvokeGC) && mstats.heap_alloc >= mstats.next_gc)
+	pmstats = mstats();
+	if(!(flag & FlagNoInvokeGC) && pmstats->heap_alloc >= pmstats->next_gc)
 		runtime_gc(0);
 
 	if(incallback)
@@ -472,9 +471,9 @@ runtime_purgecachedstats(MCache *c)
 
 	// Protected by either heap or GC lock.
 	h = &runtime_mheap;
-	mstats.heap_alloc += (intptr)c->local_cachealloc;
+	mstats()->heap_alloc += (intptr)c->local_cachealloc;
 	c->local_cachealloc = 0;
-	mstats.nlookup += c->local_nlookup;
+	mstats()->nlookup += c->local_nlookup;
 	c->local_nlookup = 0;
 	h->largefree += c->local_largefree;
 	c->local_largefree = 0;
@@ -485,13 +484,6 @@ runtime_purgecachedstats(MCache *c)
 		c->local_nsmallfree[i] = 0;
 	}
 }
-
-extern uintptr runtime_sizeof_C_MStats
-  __asm__ (GOSYM_PREFIX "runtime.Sizeof_C_MStats");
-
-// Size of the trailing by_size array differs between Go and C,
-// _NumSizeClasses was changed, but we can not change Go struct because of backward compatibility.
-// sizeof_C_MStats is what C thinks about size of Go struct.
 
 // Initialized in mallocinit because it's defined in go/runtime/mem.go.
 
@@ -507,8 +499,6 @@ runtime_mallocinit(void)
 	uintptr limit;
 	uint64 i;
 	bool reserved;
-
-	runtime_sizeof_C_MStats = sizeof(MStats) - (_NumSizeClasses - 61) * sizeof(mstats.by_size[0]);
 
 	p = nil;
 	p_size = 0;
@@ -685,7 +675,7 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 	if(n <= (uintptr)(h->arena_end - h->arena_used)) {
 		// Keep taking from our reservation.
 		p = h->arena_used;
-		runtime_SysMap(p, n, h->arena_reserved, &mstats.heap_sys);
+		runtime_SysMap(p, n, h->arena_reserved, &mstats()->heap_sys);
 		h->arena_used += n;
 		runtime_MHeap_MapBits(h);
 		runtime_MHeap_MapSpans(h);
@@ -703,14 +693,14 @@ runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 	// try to get memory at a location chosen by the OS
 	// and hope that it is in the range we allocated bitmap for.
 	p_size = ROUND(n, PageSize) + PageSize;
-	p = runtime_SysAlloc(p_size, &mstats.heap_sys);
+	p = runtime_SysAlloc(p_size, &mstats()->heap_sys);
 	if(p == nil)
 		return nil;
 
 	if(p < h->arena_start || (uintptr)(p+p_size - h->arena_start) >= MaxArena32) {
 		runtime_printf("runtime: memory allocated by OS (%p) not in usable range [%p,%p)\n",
 			p, h->arena_start, h->arena_start+MaxArena32);
-		runtime_SysFree(p, p_size, &mstats.heap_sys);
+		runtime_SysFree(p, p_size, &mstats()->heap_sys);
 		return nil;
 	}
 	
@@ -763,7 +753,7 @@ runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
 	runtime_lock(&persistent);
 	persistent.pos = (byte*)ROUND((uintptr)persistent.pos, align);
 	if(persistent.pos + size > persistent.end) {
-		persistent.pos = runtime_SysAlloc(PersistentAllocChunk, &mstats.other_sys);
+		persistent.pos = runtime_SysAlloc(PersistentAllocChunk, &mstats()->other_sys);
 		if(persistent.pos == nil) {
 			runtime_unlock(&persistent);
 			runtime_throw("runtime: cannot allocate memory");
@@ -773,10 +763,10 @@ runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
 	p = persistent.pos;
 	persistent.pos += size;
 	runtime_unlock(&persistent);
-	if(stat != &mstats.other_sys) {
+	if(stat != &mstats()->other_sys) {
 		// reaccount the allocation against provided stat
 		runtime_xadd64(stat, size);
-		runtime_xadd64(&mstats.other_sys, -(uint64)size);
+		runtime_xadd64(&mstats()->other_sys, -(uint64)size);
 	}
 	return p;
 }

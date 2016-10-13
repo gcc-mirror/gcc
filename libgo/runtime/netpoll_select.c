@@ -149,7 +149,7 @@ runtime_netpoll(bool block)
 
 	if(inuse) {
 		if(!allocatedfds) {
-			prfds = runtime_SysAlloc(4 * sizeof fds, &mstats.other_sys);
+			prfds = runtime_SysAlloc(4 * sizeof fds, &mstats()->other_sys);
 			pwfds = prfds + 1;
 			pefds = pwfds + 1;
 			ptfds = pefds + 1;
@@ -239,7 +239,7 @@ runtime_netpoll(bool block)
 		goto retry;
 
 	if(allocatedfds) {
-		runtime_SysFree(prfds, 4 * sizeof fds, &mstats.other_sys);
+		runtime_SysFree(prfds, 4 * sizeof fds, &mstats()->other_sys);
 	} else {
 		runtime_lock(&selectlock);
 		inuse = false;

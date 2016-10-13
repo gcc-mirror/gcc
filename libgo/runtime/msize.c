@@ -60,6 +60,7 @@ runtime_InitSizes(void)
 	int32 align, sizeclass, size, nextsize, n;
 	uint32 i;
 	uintptr allocsize, npages;
+	MStats *pmstats;
 
 	// Initialize the runtime_class_to_size table (and choose class sizes in the process).
 	runtime_class_to_size[0] = 0;
@@ -134,8 +135,9 @@ runtime_InitSizes(void)
 	}
 
 	// Copy out for statistics table.
+	pmstats = mstats();
 	for(i=0; i<nelem(runtime_class_to_size); i++)
-		mstats.by_size[i].size = runtime_class_to_size[i];
+		pmstats->by_size[i].size = runtime_class_to_size[i];
 	return;
 
 dump:

@@ -3026,6 +3026,21 @@ Parse::create_closure(Named_object* function, Enclosing_vars* enclosing_vars,
   Struct_type* st = closure_var->var_value()->type()->deref()->struct_type();
   Expression* cv = Expression::make_struct_composite_literal(st, initializer,
 							     location);
+
+  // When compiling the runtime, closures do not escape.  When escape
+  // analysis becomes the default, and applies to closures, this
+  // should be changed to make it an error if a closure escapes.
+  if (this->gogo_->compiling_runtime()
+      && this->gogo_->package_name() == "runtime")
+    {
+      Temporary_statement* ctemp = Statement::make_temporary(st, cv, location);
+      this->gogo_->add_statement(ctemp);
+      Expression* ref = Expression::make_temporary_reference(ctemp, location);
+      Expression* addr = Expression::make_unary(OPERATOR_AND, ref, location);
+      addr->unary_expression()->set_does_not_escape();
+      return addr;
+    }
+
   return Expression::make_heap_expression(cv, location);
 }
 
