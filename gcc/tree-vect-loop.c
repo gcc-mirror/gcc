@@ -6620,120 +6620,6 @@ vect_loop_kill_debug_uses (struct loop *loop, gimple *stmt)
     }
 }
 
-
-/* This function builds ni_name = number of iterations.  Statements
-   are emitted on the loop preheader edge.  */
-
-static tree
-vect_build_loop_niters (loop_vec_info loop_vinfo)
-{
-  tree ni = unshare_expr (LOOP_VINFO_NITERS (loop_vinfo));
-  if (TREE_CODE (ni) == INTEGER_CST)
-    return ni;
-  else
-    {
-      tree ni_name, var;
-      gimple_seq stmts = NULL;
-      edge pe = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
-
-      var = create_tmp_var (TREE_TYPE (ni), "niters");
-      ni_name = force_gimple_operand (ni, &stmts, false, var);
-      if (stmts)
-	gsi_insert_seq_on_edge_immediate (pe, stmts);
-
-      return ni_name;
-    }
-}
-
-
-/* This function generates the following statements:
-
-   ni_name = number of iterations loop executes
-   ratio = ni_name / vf
-   ratio_mult_vf_name = ratio * vf
-
-   and places them on the loop preheader edge.  */
-
-static void
-vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
-				 tree ni_name,
-				 tree *ratio_mult_vf_name_ptr,
-				 tree *ratio_name_ptr)
-{
-  tree ni_minus_gap_name;
-  tree var;
-  tree ratio_name;
-  tree ratio_mult_vf_name;
-  int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  edge pe = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
-  tree log_vf;
-
-  log_vf = build_int_cst (TREE_TYPE (ni_name), exact_log2 (vf));
-
-  /* If epilogue loop is required because of data accesses with gaps, we
-     subtract one iteration from the total number of iterations here for
-     correct calculation of RATIO.  */
-  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-    {
-      ni_minus_gap_name = fold_build2 (MINUS_EXPR, TREE_TYPE (ni_name),
-				       ni_name,
-			               build_one_cst (TREE_TYPE (ni_name)));
-      if (!is_gimple_val (ni_minus_gap_name))
-	{
-	  var = create_tmp_var (TREE_TYPE (ni_name), "ni_gap");
-	  gimple *stmts = NULL;
-          ni_minus_gap_name = force_gimple_operand (ni_minus_gap_name, &stmts,
-						    true, var);
-	  gsi_insert_seq_on_edge_immediate (pe, stmts);
-        }
-    }
-  else
-    ni_minus_gap_name = ni_name;
-
-  /* Create: ratio = ni >> log2(vf) */
-  /* ???  As we have ni == number of latch executions + 1, ni could
-     have overflown to zero.  So avoid computing ratio based on ni
-     but compute it using the fact that we know ratio will be at least
-     one, thus via (ni - vf) >> log2(vf) + 1.  */
-  ratio_name
-    = fold_build2 (PLUS_EXPR, TREE_TYPE (ni_name),
-		   fold_build2 (RSHIFT_EXPR, TREE_TYPE (ni_name),
-				fold_build2 (MINUS_EXPR, TREE_TYPE (ni_name),
-					     ni_minus_gap_name,
-					     build_int_cst
-					       (TREE_TYPE (ni_name), vf)),
-				log_vf),
-		   build_int_cst (TREE_TYPE (ni_name), 1));
-  if (!is_gimple_val (ratio_name))
-    {
-      var = create_tmp_var (TREE_TYPE (ni_name), "bnd");
-      gimple *stmts = NULL;
-      ratio_name = force_gimple_operand (ratio_name, &stmts, true, var);
-      gsi_insert_seq_on_edge_immediate (pe, stmts);
-    }
-  *ratio_name_ptr = ratio_name;
-
-  /* Create: ratio_mult_vf = ratio << log2 (vf).  */
-
-  if (ratio_mult_vf_name_ptr)
-    {
-      ratio_mult_vf_name = fold_build2 (LSHIFT_EXPR, TREE_TYPE (ratio_name),
-					ratio_name, log_vf);
-      if (!is_gimple_val (ratio_mult_vf_name))
-	{
-	  var = create_tmp_var (TREE_TYPE (ni_name), "ratio_mult_vf");
-	  gimple *stmts = NULL;
-	  ratio_mult_vf_name = force_gimple_operand (ratio_mult_vf_name, &stmts,
-						     true, var);
-	  gsi_insert_seq_on_edge_immediate (pe, stmts);
-	}
-      *ratio_mult_vf_name_ptr = ratio_mult_vf_name;
-    }
-
-  return;
-}
-
-
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -6747,8 +6633,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
   int i;
-  tree ratio = NULL;
-  int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  tree niters_vector = NULL;
+  int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   bool grouped_store;
   bool slp_scheduled = false;
   gimple *stmt, *pattern_stmt;
@@ -6818,49 +6704,20 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	}
     }
 
-  tree ni_name = vect_build_loop_niters (loop_vinfo);
-  LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = ni_name;
-
-  /* Peel the loop if there are data refs with unknown alignment.
-     Only one data ref with unknown store is allowed.  */
-
-  if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo))
+  tree niters = vect_build_loop_niters (loop_vinfo);
+  LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = niters;
+  tree nitersm1 = unshare_expr (LOOP_VINFO_NITERSM1 (loop_vinfo));
+  vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector, th,
+		   check_profitability, false);
+  if (niters_vector == NULL_TREE)
     {
-      vect_do_peeling_for_alignment (loop_vinfo, ni_name,
-				     th, check_profitability);
-      check_profitability = false;
-      /* The above adjusts LOOP_VINFO_NITERS, so cause ni_name to
-	 be re-computed.  */
-      ni_name = NULL_TREE;
-    }
-
-  /* If the loop has a symbolic number of iterations 'n' (i.e. it's not a
-     compile time constant), or it is a constant that doesn't divide by the
-     vectorization factor, then an epilog loop needs to be created.
-     We therefore duplicate the loop: the original loop will be vectorized,
-     and will compute the first (n/VF) iterations.  The second copy of the loop
-     will remain scalar and will compute the remaining (n%VF) iterations.
-     (VF is the vectorization factor).  */
-
-  if (LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)
-      || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-    {
-      tree ratio_mult_vf;
-      if (!ni_name)
-	ni_name = vect_build_loop_niters (loop_vinfo);
-      vect_generate_tmps_on_preheader (loop_vinfo, ni_name, &ratio_mult_vf,
-				       &ratio);
-      vect_do_peeling_for_loop_bound (loop_vinfo, ni_name, ratio_mult_vf,
-				      th, check_profitability);
-    }
-  else if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-    ratio = build_int_cst (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)),
-		LOOP_VINFO_INT_NITERS (loop_vinfo) / vectorization_factor);
-  else
-    {
-      if (!ni_name)
-	ni_name = vect_build_loop_niters (loop_vinfo);
-      vect_generate_tmps_on_preheader (loop_vinfo, ni_name, NULL, &ratio);
+      if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+	niters_vector
+	  = build_int_cst (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)),
+			   LOOP_VINFO_INT_NITERS (loop_vinfo) / vf);
+      else
+	vect_gen_vector_loop_niters (loop_vinfo, niters, &niters_vector,
+				     false);
     }
 
   /* 1) Make sure the loop header has exactly two entries
@@ -6903,7 +6760,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
 	  if (STMT_VINFO_VECTYPE (stmt_info)
 	      && (TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info))
-		  != (unsigned HOST_WIDE_INT) vectorization_factor)
+		  != (unsigned HOST_WIDE_INT) vf)
 	      && dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
 
@@ -7036,7 +6893,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		= (unsigned int)
 		  TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
 	      if (!STMT_SLP_TYPE (stmt_info)
-		  && nunits != (unsigned int) vectorization_factor
+		  && nunits != (unsigned int) vf
 		  && dump_enabled_p ())
 		  /* For SLP VF is set according to unrolling factor, and not
 		     to vector size, hence for SLP this print is not valid.  */
@@ -7108,11 +6965,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	}		        /* stmts in BB */
     }				/* BBs in loop */
 
-  slpeel_make_loop_iterate_ntimes (loop, ratio);
+  slpeel_make_loop_iterate_ntimes (loop, niters_vector);
 
   /* Reduce loop iterations by the vectorization factor.  */
-  scale_loop_profile (loop, GCOV_COMPUTE_SCALE (1, vectorization_factor),
-		      expected_iterations / vectorization_factor);
+  scale_loop_profile (loop, GCOV_COMPUTE_SCALE (1, vf),
+		      expected_iterations / vf);
   if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
     {
       if (loop->nb_iterations_upper_bound != 0)
@@ -7122,16 +6979,14 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	   = loop->nb_iterations_likely_upper_bound - 1;
     }
   loop->nb_iterations_upper_bound
-    = wi::udiv_floor (loop->nb_iterations_upper_bound + 1,
-		      vectorization_factor) - 1;
+    = wi::udiv_floor (loop->nb_iterations_upper_bound + 1, vf) - 1;
   loop->nb_iterations_likely_upper_bound
-    = wi::udiv_floor (loop->nb_iterations_likely_upper_bound + 1,
-		      vectorization_factor) - 1;
+    = wi::udiv_floor (loop->nb_iterations_likely_upper_bound + 1, vf) - 1;
 
   if (loop->any_estimate)
     {
       loop->nb_iterations_estimate
-        = wi::udiv_floor (loop->nb_iterations_estimate, vectorization_factor);
+	= wi::udiv_floor (loop->nb_iterations_estimate, vf);
        if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
 	   && loop->nb_iterations_estimate != 0)
 	 loop->nb_iterations_estimate = loop->nb_iterations_estimate - 1;

@@ -1032,10 +1032,8 @@ extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *,
 						     struct loop *, edge);
 extern void vect_loop_versioning (loop_vec_info, unsigned int, bool);
-extern void vect_do_peeling_for_loop_bound (loop_vec_info, tree, tree,
-					    unsigned int, bool);
-extern void vect_do_peeling_for_alignment (loop_vec_info, tree,
-					   unsigned int, bool);
+extern void vect_do_peeling (loop_vec_info, tree, tree,
+			     tree *, int, bool, bool);
 extern source_location find_loop_location (struct loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
@@ -1147,6 +1145,8 @@ extern gimple *vect_force_simple_reduction (loop_vec_info, gimple *, bool,
 					    bool *, bool);
 /* Drive for loop analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *);
+extern tree vect_build_loop_niters (loop_vec_info);
+extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *, bool);
 /* Drive for loop transformation stage.  */
 extern void vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);
