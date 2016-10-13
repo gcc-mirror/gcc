@@ -1,3 +1,9 @@
+2016-10-13  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in (insn-attrtab.o-warn, insn-dfatab.o-warn,
+	insn-latencytab.o-warn, insn-output.o-warn, insn-emit.o-warn): Don't
+	use -Wno-error.
+
 2016-10-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/77937
