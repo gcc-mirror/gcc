@@ -1,3 +1,10 @@
+2016-10-13  Sandra Loosemore <sandra@codesourcery.com>
+
+	* scd42-1.c: Skip if -mcpu incompatible with Xscale is specified,
+	not just -march.
+	* scd42-2.c: Fix existing logic to skip if -mcpu is incompatible
+	with Xscale.
+
 2016-10-13  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Cast 0 to wint_t
