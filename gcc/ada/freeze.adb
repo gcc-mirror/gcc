@@ -7661,18 +7661,37 @@ package body Freeze is
       --  Check for shaving
 
       if Comes_From_Source (Typ) then
-         if Orig_Lo < Expr_Value_R (Lo) then
-            Error_Msg_N
-              ("declared low bound of type & is outside type range??", Typ);
-            Error_Msg_N
-              ("\low bound adjusted up by delta (RM 3.5.9(13))??", Typ);
-         end if;
 
-         if Orig_Hi > Expr_Value_R (Hi) then
-            Error_Msg_N
-              ("declared high bound of type & is outside type range??", Typ);
-            Error_Msg_N
-              ("\high bound adjusted down by delta (RM 3.5.9(13))??", Typ);
+         --  In SPARK mode the given bounds must be strictly representable
+
+         if SPARK_Mode = On then
+            if Orig_Lo < Expr_Value_R (Lo) then
+               Error_Msg_NE
+                 ("declared low bound of type & is outside type range",
+                  Lo, Typ);
+            end if;
+
+            if Orig_Hi > Expr_Value_R (Hi) then
+               Error_Msg_NE
+                 ("declared high bound of type & is outside type range",
+                  Hi, Typ);
+            end if;
+
+         else
+            if Orig_Lo < Expr_Value_R (Lo) then
+               Error_Msg_N
+                 ("declared low bound of type & is outside type range??", Typ);
+               Error_Msg_N
+                 ("\low bound adjusted up by delta (RM 3.5.9(13))??", Typ);
+            end if;
+
+            if Orig_Hi > Expr_Value_R (Hi) then
+               Error_Msg_N
+                 ("declared high bound of type & is outside type range??",
+                  Typ);
+               Error_Msg_N
+                 ("\high bound adjusted down by delta (RM 3.5.9(13))??", Typ);
+            end if;
          end if;
       end if;
    end Freeze_Fixed_Point_Type;

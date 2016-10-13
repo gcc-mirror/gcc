@@ -7307,11 +7307,9 @@ package body Sem_Ch6 is
    --------------------------
 
    procedure Create_Extra_Formals (E : Entity_Id) is
-      Formal      : Entity_Id;
       First_Extra : Entity_Id := Empty;
-      Last_Extra  : Entity_Id;
-      Formal_Type : Entity_Id;
-      P_Formal    : Entity_Id := Empty;
+      Formal      : Entity_Id;
+      Last_Extra  : Entity_Id := Empty;
 
       function Add_Extra_Formal
         (Assoc_Entity : Entity_Id;
@@ -7377,6 +7375,11 @@ package body Sem_Ch6 is
          return EF;
       end Add_Extra_Formal;
 
+      --  Local variables
+
+      Formal_Type : Entity_Id;
+      P_Formal    : Entity_Id := Empty;
+
    --  Start of processing for Create_Extra_Formals
 
    begin
@@ -7402,7 +7405,6 @@ package body Sem_Ch6 is
          P_Formal := First_Formal (Alias (E));
       end if;
 
-      Last_Extra := Empty;
       Formal := First_Formal (E);
       while Present (Formal) loop
          Last_Extra := Formal;
@@ -7548,6 +7550,7 @@ package body Sem_Ch6 is
             Result_Subt : constant Entity_Id := Etype (E);
             Full_Subt   : constant Entity_Id := Available_View (Result_Subt);
             Formal_Typ  : Entity_Id;
+            Subp_Decl   : Node_Id;
 
             Discard : Entity_Id;
             pragma Warnings (Off, Discard);
@@ -7629,6 +7632,26 @@ package body Sem_Ch6 is
               (Formal_Typ, From_Limited_With (Result_Subt));
 
             Layout_Type (Formal_Typ);
+
+            --  Force the definition of the Itype in case of internal function
+            --  calls within the same or nested scope.
+
+            if Is_Subprogram_Or_Generic_Subprogram (E) then
+               Subp_Decl := Parent (E);
+
+               --  The insertion point for an Itype reference should be after
+               --  the unit declaration node of the subprogram. An exception
+               --  to this are inherited operations from a parent type in which
+               --  case the derived type acts as their parent.
+
+               if Nkind_In (Subp_Decl, N_Function_Specification,
+                                       N_Procedure_Specification)
+               then
+                  Subp_Decl := Parent (Subp_Decl);
+               end if;
+
+               Build_Itype_Reference (Formal_Typ, Subp_Decl);
+            end if;
 
             Discard :=
               Add_Extra_Formal

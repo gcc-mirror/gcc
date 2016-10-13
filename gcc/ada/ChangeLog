@@ -1,5 +1,32 @@
 2016-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch6.adb (Create_Extra_Formals): Generate
+	an Itype reference for the object extra formal in case the
+	subprogram is called within the same or nested scope.
+
+2016-10-13  Claire Dross  <dross@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification):
+	Also create a renaming in GNATprove mode.
+
+2016-10-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Fixed_Point_Type): in SPARK mode, the
+	given bounds of the type must be strictly representable, and the
+	range reduction by one delta ("shaving") allowed by the Ada RM,
+	is not applicable in SPARK.
+
+2016-10-13  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb (switch d.9): Used to temporarily disable the support
+	needed for this enhancement since it causes regressions with
+	large sources.
+	* gnat1drv.adb (Post_Compilation_Validation_Checks): Temporarily
+	leave the validation of pragmas Compile_Time_Warning and
+	Compile_Time_Error under control of -gnatd.9/
+
+2016-10-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch10.adb (Entity_Needs_Body): A generic
 	subprogram renaming needs a body if the renamed unit is declared
 	outside the current compilation unit.
