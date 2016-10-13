@@ -90,7 +90,7 @@ stkbucket(int32 typ, uintptr size, Location *stk, int32 nstk, bool alloc)
 	Bucket *b;
 
 	if(buckhash == nil) {
-		buckhash = runtime_SysAlloc(BuckHashSize*sizeof buckhash[0], &mstats.buckhash_sys);
+		buckhash = runtime_SysAlloc(BuckHashSize*sizeof buckhash[0], &mstats()->buckhash_sys);
 		if(buckhash == nil)
 			runtime_throw("runtime: cannot allocate memory");
 	}
@@ -127,7 +127,7 @@ stkbucket(int32 typ, uintptr size, Location *stk, int32 nstk, bool alloc)
 	if(!alloc)
 		return nil;
 
-	b = runtime_persistentalloc(sizeof *b + nstk*sizeof stk[0], 0, &mstats.buckhash_sys);
+	b = runtime_persistentalloc(sizeof *b + nstk*sizeof stk[0], 0, &mstats()->buckhash_sys);
 	bucketmem += sizeof *b + nstk*sizeof stk[0];
 	runtime_memmove(b->stk, stk, nstk*sizeof stk[0]);
 	b->typ = typ;
@@ -408,11 +408,11 @@ func Stack(b Slice, all bool) (n int) {
 	pc = (byte*)(uintptr)runtime_getcallerpc(&b);
 
 	if(all) {
-		runtime_semacquire(&runtime_worldsema, false);
+		runtime_acquireWorldsema();
 		runtime_m()->gcing = 1;
-		runtime_stoptheworld();
-		enablegc = mstats.enablegc;
-		mstats.enablegc = false;
+		runtime_stopTheWorldWithSema();
+		enablegc = mstats()->enablegc;
+		mstats()->enablegc = false;
 	}
 
 	if(b.__count == 0)
@@ -436,9 +436,9 @@ func Stack(b Slice, all bool) (n int) {
 	
 	if(all) {
 		runtime_m()->gcing = 0;
-		mstats.enablegc = enablegc;
-		runtime_semrelease(&runtime_worldsema);
-		runtime_starttheworld();
+		mstats()->enablegc = enablegc;
+		runtime_releaseWorldsema();
+		runtime_startTheWorldWithSema();
 	}
 }
 
@@ -469,9 +469,9 @@ func GoroutineProfile(b Slice) (n int, ok bool) {
 	ok = false;
 	n = runtime_gcount();
 	if(n <= b.__count) {
-		runtime_semacquire(&runtime_worldsema, false);
+		runtime_acquireWorldsema();
 		runtime_m()->gcing = 1;
-		runtime_stoptheworld();
+		runtime_stopTheWorldWithSema();
 
 		n = runtime_gcount();
 		if(n <= b.__count) {
@@ -488,8 +488,8 @@ func GoroutineProfile(b Slice) (n int, ok bool) {
 		}
 	
 		runtime_m()->gcing = 0;
-		runtime_semrelease(&runtime_worldsema);
-		runtime_starttheworld();
+		runtime_releaseWorldsema();
+		runtime_startTheWorldWithSema();
 	}
 }
 

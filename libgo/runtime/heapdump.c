@@ -489,33 +489,33 @@ dumpmemstats(void)
 	int32 i;
 
 	dumpint(TagMemStats);
-	dumpint(mstats.alloc);
-	dumpint(mstats.total_alloc);
-	dumpint(mstats.sys);
-	dumpint(mstats.nlookup);
-	dumpint(mstats.nmalloc);
-	dumpint(mstats.nfree);
-	dumpint(mstats.heap_alloc);
-	dumpint(mstats.heap_sys);
-	dumpint(mstats.heap_idle);
-	dumpint(mstats.heap_inuse);
-	dumpint(mstats.heap_released);
-	dumpint(mstats.heap_objects);
-	dumpint(mstats.stacks_inuse);
-	dumpint(mstats.stacks_sys);
-	dumpint(mstats.mspan_inuse);
-	dumpint(mstats.mspan_sys);
-	dumpint(mstats.mcache_inuse);
-	dumpint(mstats.mcache_sys);
-	dumpint(mstats.buckhash_sys);
-	dumpint(mstats.gc_sys);
-	dumpint(mstats.other_sys);
-	dumpint(mstats.next_gc);
-	dumpint(mstats.last_gc);
-	dumpint(mstats.pause_total_ns);
+	dumpint(mstats()->alloc);
+	dumpint(mstats()->total_alloc);
+	dumpint(mstats()->sys);
+	dumpint(mstats()->nlookup);
+	dumpint(mstats()->nmalloc);
+	dumpint(mstats()->nfree);
+	dumpint(mstats()->heap_alloc);
+	dumpint(mstats()->heap_sys);
+	dumpint(mstats()->heap_idle);
+	dumpint(mstats()->heap_inuse);
+	dumpint(mstats()->heap_released);
+	dumpint(mstats()->heap_objects);
+	dumpint(mstats()->stacks_inuse);
+	dumpint(mstats()->stacks_sys);
+	dumpint(mstats()->mspan_inuse);
+	dumpint(mstats()->mspan_sys);
+	dumpint(mstats()->mcache_inuse);
+	dumpint(mstats()->mcache_sys);
+	dumpint(mstats()->buckhash_sys);
+	dumpint(mstats()->gc_sys);
+	dumpint(mstats()->other_sys);
+	dumpint(mstats()->next_gc);
+	dumpint(mstats()->last_gc);
+	dumpint(mstats()->pause_total_ns);
 	for(i = 0; i < 256; i++)
-		dumpint(mstats.pause_ns[i]);
-	dumpint(mstats.numgc);
+		dumpint(mstats()->pause_ns[i]);
+	dumpint(mstats()->numgc);
 }
 
 static void
@@ -615,11 +615,11 @@ runtime_debug_WriteHeapDump(uintptr fd)
 	G *g;
 
 	// Stop the world.
-	runtime_semacquire(&runtime_worldsema, false);
+	runtime_acquireWorldsema();
 	m = runtime_m();
 	m->gcing = 1;
 	m->locks++;
-	runtime_stoptheworld();
+	runtime_stopTheWorldWithSema();
 
 	// Update stats so we can dump them.
 	// As a side effect, flushes all the MCaches so the MSpan.freelist
@@ -640,8 +640,8 @@ runtime_debug_WriteHeapDump(uintptr fd)
 
 	// Start up the world again.
 	m->gcing = 0;
-	runtime_semrelease(&runtime_worldsema);
-	runtime_starttheworld();
+	runtime_releaseWorldsema();
+	runtime_startTheWorldWithSema();
 	m->locks--;
 }
 

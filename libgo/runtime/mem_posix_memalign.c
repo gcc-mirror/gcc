@@ -9,7 +9,7 @@ runtime_SysAlloc(uintptr n)
 {
 	void *p;
 
-	mstats.sys += n;
+	mstats()->sys += n;
 	errno = posix_memalign(&p, PageSize, n);
 	if (errno > 0) {
 		perror("posix_memalign");
@@ -29,7 +29,7 @@ runtime_SysUnused(void *v, uintptr n)
 void
 runtime_SysFree(void *v, uintptr n)
 {
-	mstats.sys -= n;
+	mstats()->sys -= n;
 	free(v);
 }
 

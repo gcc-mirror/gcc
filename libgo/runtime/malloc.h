@@ -83,7 +83,7 @@
 typedef struct MCentral	MCentral;
 typedef struct MHeap	MHeap;
 typedef struct mspan	MSpan;
-typedef struct MStats	MStats;
+typedef struct mstats	MStats;
 typedef struct mlink	MLink;
 typedef struct mtypes	MTypes;
 typedef struct gcstats	GCStats;
@@ -216,63 +216,10 @@ void	runtime_FixAlloc_Init(FixAlloc *f, uintptr size, void (*first)(void*, byte*
 void*	runtime_FixAlloc_Alloc(FixAlloc *f);
 void	runtime_FixAlloc_Free(FixAlloc *f, void *p);
 
-
-// Statistics.
-// Shared with Go: if you edit this structure, also edit type MemStats in mem.go.
-struct MStats
-{
-	// General statistics.
-	uint64	alloc;		// bytes allocated and still in use
-	uint64	total_alloc;	// bytes allocated (even if freed)
-	uint64	sys;		// bytes obtained from system (should be sum of xxx_sys below, no locking, approximate)
-	uint64	nlookup;	// number of pointer lookups
-	uint64	nmalloc;	// number of mallocs
-	uint64	nfree;  // number of frees
-
-	// Statistics about malloc heap.
-	// protected by mheap.Lock
-	uint64	heap_alloc;	// bytes allocated and still in use
-	uint64	heap_sys;	// bytes obtained from system
-	uint64	heap_idle;	// bytes in idle spans
-	uint64	heap_inuse;	// bytes in non-idle spans
-	uint64	heap_released;	// bytes released to the OS
-	uint64	heap_objects;	// total number of allocated objects
-
-	// Statistics about allocation of low-level fixed-size structures.
-	// Protected by FixAlloc locks.
-	uint64	stacks_inuse;	// bootstrap stacks
-	uint64	stacks_sys;
-	uint64	mspan_inuse;	// MSpan structures
-	uint64	mspan_sys;
-	uint64	mcache_inuse;	// MCache structures
-	uint64	mcache_sys;
-	uint64	buckhash_sys;	// profiling bucket hash table
-	uint64	gc_sys;
-	uint64	other_sys;
-
-	// Statistics about garbage collector.
-	// Protected by mheap or stopping the world during GC.
-	uint64	next_gc;	// next GC (in heap_alloc time)
-	uint64  last_gc;	// last GC (in absolute time)
-	uint64	pause_total_ns;
-	uint64	pause_ns[256];
-	uint64	pause_end[256];
-	uint32	numgc;
-	float64	gc_cpu_fraction;
-	bool	enablegc;
-	bool	debuggc;
-
-	// Statistics about allocation size classes.
-	struct {
-		uint32 size;
-		uint64 nmalloc;
-		uint64 nfree;
-	} by_size[_NumSizeClasses];
-};
-
-extern MStats mstats
-  __asm__ (GOSYM_PREFIX "runtime.memStats");
-void	runtime_updatememstats(GCStats *stats);
+extern MStats *mstats(void)
+  __asm__ (GOSYM_PREFIX "runtime.getMstats");
+void	runtime_updatememstats(GCStats *stats)
+  __asm__ (GOSYM_PREFIX "runtime.updatememstats");
 
 // Size classes.  Computed and initialized by InitSizes.
 //
