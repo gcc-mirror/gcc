@@ -116,6 +116,68 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Replaced with inline definition in gcc-4.8.0
   __future_base::_Async_state_common::~_Async_state_common() { _M_join(); }
 
+  template<typename _Signature>
+    struct _Bind_simple;
+
+  template<typename _Callable, typename... _Args>
+    struct _Bind_simple<_Callable(_Args...)>
+    {
+      typedef typename result_of<_Callable(_Args...)>::type result_type;
+
+      template<typename _Tp, typename... _Up>
+        explicit
+        _Bind_simple(_Tp&& __f, _Up&&... __args)
+        : _M_bound(std::forward<_Tp>(__f), std::forward<_Up>(__args)...)
+        { }
+
+      _Bind_simple(const _Bind_simple&) = default;
+      _Bind_simple(_Bind_simple&&) = default;
+
+      result_type
+      operator()()
+      {
+        typedef typename _Build_index_tuple<sizeof...(_Args)>::__type _Indices;
+        return _M_invoke(_Indices());
+      }
+
+    private:
+      template<std::size_t... _Indices>
+        typename result_of<_Callable(_Args...)>::type
+        _M_invoke(_Index_tuple<_Indices...>)
+        {
+         // std::bind always forwards bound arguments as lvalues,
+         // but this type can call functions which only accept rvalues.
+          return std::forward<_Callable>(std::get<0>(_M_bound))(
+              std::forward<_Args>(std::get<_Indices+1>(_M_bound))...);
+        }
+
+      std::tuple<_Callable, _Args...> _M_bound;
+    };
+
+  template<typename _Func, typename... _BoundArgs>
+    struct _Bind_simple_helper
+    {
+      typedef _Maybe_wrap_member_pointer<typename decay<_Func>::type>
+        __maybe_type;
+      typedef typename __maybe_type::type __func_type;
+      typedef _Bind_simple<__func_type(typename decay<_BoundArgs>::type...)>
+               __type;
+    };
+
+  // Simplified version of std::bind for internal use, without support for
+  // unbound arguments, placeholders or nested bind expressions.
+  template<typename _Callable, typename... _Args>
+    typename _Bind_simple_helper<_Callable, _Args...>::__type
+    __bind_simple(_Callable&& __callable, _Args&&... __args)
+    {
+      typedef _Bind_simple_helper<_Callable, _Args...> __helper_type;
+      typedef typename __helper_type::__maybe_type __maybe_type;
+      typedef typename __helper_type::__type __result_type;
+      return __result_type(
+          __maybe_type::__do_wrap( std::forward<_Callable>(__callable)),
+          std::forward<_Args>(__args)...);
+    }
+
   // Explicit instantiation due to -fno-implicit-instantiation.
   template void call_once(once_flag&, void (thread::*&&)(), reference_wrapper<thread>&&);
   template _Bind_simple_helper<void (thread::*)(), reference_wrapper<thread>>::__type __bind_simple(void (thread::*&&)(), reference_wrapper<thread>&&);
