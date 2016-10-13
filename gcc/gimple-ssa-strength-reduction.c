@@ -2818,6 +2818,11 @@ analyze_increments (slsr_cand_t first_dep, machine_mode mode, bool speed)
 	       || (incr == -1
 		   && !POINTER_TYPE_P (first_dep->cand_type)))
 	incr_vec[i].cost = COST_NEUTRAL;
+
+      /* FIXME: We don't handle pointers with a -1 increment yet.
+         They are usually unprofitable anyway.  */
+      else if (incr == -1 && POINTER_TYPE_P (first_dep->cand_type))
+	incr_vec[i].cost = COST_INFINITE;
       
       /* FORNOW: If we need to add an initializer, give up if a cast from
 	 the candidate's type to its stride's type can lose precision.

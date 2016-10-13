@@ -1,3 +1,9 @@
+2016-10-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/77937
+	* gimple-ssa-strength-reduction.c (analyze_increments): Set cost
+	to infinite when we have a pointer with an increment of -1.
+
 2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* coretypes.h: Move MEMMODEL_* macros and enum memmodel definition
