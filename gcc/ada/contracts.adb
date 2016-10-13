@@ -2030,11 +2030,13 @@ package body Contracts is
                   --  A protection field renaming appears as
                   --    Prot : ... := _object._object;
 
+                  --  A renamed private component is just a component of
+                  --  _object, with an arbitrary name.
+
                   elsif Ekind (Obj) = E_Variable
                     and then Nkind (Pref) = N_Identifier
                     and then Chars (Pref) = Name_uObject
                     and then Nkind (Sel) = N_Identifier
-                    and then Chars (Sel) = Name_uObject
                   then
                      return True;
                   end if;
@@ -2307,9 +2309,16 @@ package body Contracts is
                --  Certain internally generated object renamings such as those
                --  for discriminants and protection fields must be elaborated
                --  before the preconditions are evaluated, as their expressions
-               --  may mention the discriminants.
+               --  may mention the discriminants. The renamings include those
+               --  for private components so we need to find the last such.
 
                elsif Is_Prologue_Renaming (Decl) then
+                  while Present (Next (Decl))
+                    and then Is_Prologue_Renaming (Next (Decl))
+                  loop
+                     Next (Decl);
+                  end loop;
+
                   Insert_Node := Decl;
 
                --  Otherwise the declaration does not come from source. This
