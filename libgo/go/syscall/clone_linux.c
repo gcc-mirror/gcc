@@ -5,18 +5,17 @@
    license that can be found in the LICENSE file.  */
 
 #include <errno.h>
-#include <asm/ptrace.h>
 #include <sys/syscall.h>
 
 #include "runtime.h"
 
 long rawClone (unsigned long flags, void *child_stack, void *ptid,
-	       void *ctid, struct pt_regs *regs)
+	       void *ctid, void *regs)
   __asm__ (GOSYM_PREFIX "syscall.rawClone")
   __attribute__ ((no_split_stack));
 
 long
-rawClone (unsigned long flags, void *child_stack, void *ptid, void *ctid, struct pt_regs *regs)
+rawClone (unsigned long flags, void *child_stack, void *ptid, void *ctid, void *regs)
 {
 #if defined(__arc__) || defined(__aarch64__) || defined(__arm__) || defined(__mips__) || defined(__hppa__) || defined(__powerpc__) || defined(__score__) || defined(__i386__) || defined(__xtensa__)
   // CLONE_BACKWARDS
