@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Callable, typename... _Args>
     constexpr typename result_of<_Callable&&(_Args&&...)>::type
     __invoke(_Callable&& __fn, _Args&&... __args)
-    noexcept(__is_nothrow_callable<_Callable(_Args&&...)>::value)
+    noexcept(__is_nothrow_callable<_Callable&&(_Args&&...)>::value)
     {
       using __result_of = result_of<_Callable&&(_Args&&...)>;
       using __type = typename __result_of::type;
