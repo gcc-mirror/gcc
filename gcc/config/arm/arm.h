@@ -134,8 +134,6 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
-/* We only support the VFP model these days.  */
-#define TARGET_VFP		        (1)
 #define TARGET_IWMMXT			(arm_arch_iwmmxt)
 #define TARGET_IWMMXT2			(arm_arch_iwmmxt2)
 #define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_32BIT)
@@ -173,46 +171,45 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    to be more careful with TARGET_NEON as noted below.  */
 
 /* FPU is has the full VFPv3/NEON register file of 32 D registers.  */
-#define TARGET_VFPD32 (TARGET_VFP && TARGET_FPU_REGS == VFP_REG_D32)
+#define TARGET_VFPD32 (TARGET_FPU_REGS == VFP_REG_D32)
 
 /* FPU supports VFPv3 instructions.  */
-#define TARGET_VFP3 (TARGET_VFP && TARGET_FPU_REV >= 3)
+#define TARGET_VFP3 (TARGET_FPU_REV >= 3)
 
 /* FPU supports FPv5 instructions.  */
-#define TARGET_VFP5 (TARGET_VFP && TARGET_FPU_REV >= 5)
+#define TARGET_VFP5 (TARGET_FPU_REV >= 5)
 
 /* FPU only supports VFP single-precision instructions.  */
-#define TARGET_VFP_SINGLE (TARGET_VFP && TARGET_FPU_REGS == VFP_REG_SINGLE)
+#define TARGET_VFP_SINGLE (TARGET_FPU_REGS == VFP_REG_SINGLE)
 
 /* FPU supports VFP double-precision instructions.  */
-#define TARGET_VFP_DOUBLE (TARGET_VFP && TARGET_FPU_REGS != VFP_REG_SINGLE)
+#define TARGET_VFP_DOUBLE (TARGET_FPU_REGS != VFP_REG_SINGLE)
 
 /* FPU supports half-precision floating-point with NEON element load/store.  */
-#define TARGET_NEON_FP16						\
-  (TARGET_VFP								\
-   && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON)		\
+#define TARGET_NEON_FP16					\
+  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON)		\
    && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
 
 /* FPU supports VFP half-precision floating-point.  */
 #define TARGET_FP16							\
-  (TARGET_VFP && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
+  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
 
 /* FPU supports fused-multiply-add operations.  */
-#define TARGET_FMA (TARGET_VFP && TARGET_FPU_REV >= 4)
+#define TARGET_FMA (TARGET_FPU_REV >= 4)
 
 /* FPU is ARMv8 compatible.  */
-#define TARGET_FPU_ARMV8 (TARGET_VFP && TARGET_FPU_REV >= 8)
+#define TARGET_FPU_ARMV8 (TARGET_FPU_REV >= 8)
 
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO							\
-  (TARGET_VFP && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_CRYPTO))
+  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_CRYPTO))
 
 /* FPU supports Neon instructions.  The setting of this macro gets
    revealed via __ARM_NEON__ so we add extra guards upon TARGET_32BIT
    and TARGET_HARD_FLOAT to ensure that NEON instructions are
    available.  */
 #define TARGET_NEON							\
-  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP			\
+  (TARGET_32BIT && TARGET_HARD_FLOAT					\
    && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON))
 
 /* FPU supports ARMv8.1 Adv.SIMD extensions.  */
@@ -1216,7 +1213,7 @@ enum reg_class
    the data layout happens to be consistent for big-endian, so we explicitly allow
    that case.  */
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (TARGET_VFP && TARGET_BIG_END					\
+  (TARGET_BIG_END						\
    && !(GET_MODE_SIZE (FROM) == 16 && GET_MODE_SIZE (TO) == 8)	\
    && (GET_MODE_SIZE (FROM) > UNITS_PER_WORD			\
        || GET_MODE_SIZE (TO) > UNITS_PER_WORD)			\
@@ -1267,8 +1264,7 @@ enum reg_class
    NO_REGS is returned.  */
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)		\
   /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
-  ((TARGET_VFP && TARGET_HARD_FLOAT				\
-    && IS_VFP_CLASS (CLASS))					\
+  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))			\
    ? coproc_secondary_reload_class (MODE, X, FALSE)		\
    : (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS)			\
    ? coproc_secondary_reload_class (MODE, X, TRUE)		\
@@ -1280,8 +1276,7 @@ enum reg_class
 /* If we need to load shorts byte-at-a-time, then we need a scratch.  */
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)		\
   /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
-  ((TARGET_VFP && TARGET_HARD_FLOAT				\
-    && IS_VFP_CLASS (CLASS))					\
+  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))			\
     ? coproc_secondary_reload_class (MODE, X, FALSE) :		\
     (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS) ?			\
     coproc_secondary_reload_class (MODE, X, TRUE) :		\
@@ -1541,7 +1536,7 @@ typedef struct
    On the ARM, r0-r3 are used to pass args.  */
 #define FUNCTION_ARG_REGNO_P(REGNO)					\
    (IN_RANGE ((REGNO), 0, 3)						\
-    || (TARGET_AAPCS_BASED && TARGET_VFP && TARGET_HARD_FLOAT		\
+    || (TARGET_AAPCS_BASED && TARGET_HARD_FLOAT				\
 	&& IN_RANGE ((REGNO), FIRST_VFP_REGNUM, FIRST_VFP_REGNUM + 15))	\
     || (TARGET_IWMMXT_ABI						\
 	&& IN_RANGE ((REGNO), FIRST_IWMMXT_REGNUM, FIRST_IWMMXT_REGNUM + 9)))

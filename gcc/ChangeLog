@@ -1,5 +1,82 @@
 2016-10-13  Richard Earsnhaw  <rearnsha@arm.com>
 
+	* arm.h (TARGET_VFP): Delete.
+	(TARGET_VFPD32): Remove references to TARGET_VFP.
+	(TARGET_VFP3, TARGET_VFP5): Likewise.
+	(TARGET_VFP_SINGLE, TARGET_VFP_DOUBLE): Likewise.
+	(TARGET_NEON_FP16): Likewise.
+	(TARGET_FMA): Likewise.
+	(TARGET_CRYPTO): Likewise.
+	(TARGET_NEON): Likewise.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Likewise.
+	(FUNCTION_ARG_REGNO_P): Likewise.
+	* arm.c (arm_option_check_internal): Likewise.
+	(arm_option_override): Likewise.
+	(use_return_insn): Likewise.
+	(arm_function_value_regno_p): Likewise.
+	(arm_apply_result_size): Likewise.
+	(use_vfp_abi): Likewise.
+	(arm_legitimate_address_outer_p): Likewise.
+	(thumb2_legitimate_address_p): Likewise.
+	(arm_legitimate_index_p): Likewise.
+	(thumb2_legitimate_index_p): Likewise.
+	(arm_legitimate_address): Likewise.
+	(arm_get_vfp_saved_size): Likewise.
+	(arm_emit_vfp_multi_reg_pop): Likewise.
+	(arm_get_frame_offsets): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(arm_hard_regno_mode_ok): Likewise.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+	(arm_file_start): Likewise.
+	(arm_conditional_register_usage): Likewise.
+	(arm_validize_comparison): Use vfp_compare_operand directly.
+	* arm-builtins.c (arm_init_builtins): Remove references to TARGET_VFP.
+	(arm_expand_vfp_builtin): Use TARGET_HARD_FLOAT for detecting
+	unsupported usage.
+	(arm_atomic_assign_expand_fenv): Likewise.
+	* arm.md (divsf3): Likewise.
+	(arm_negsi2): Likewise.
+	(absdf2): Likewise.
+	(arm_movdi): Likewise.
+	(arm_movt): Likewise.
+	(cbranchsf4): Change predicate to vfp_compare_operand.
+	(cbranchdf4): Change predicate to vfp_compare_operand.
+	(cstorehf4): Change predicate to vfp_compare_operand.
+	(cstoresf4): Change predicate to vfp_compare_operand.
+	(cstoredf4): Change predicate to vfp_compare_operand.
+	(vfp_pop_multiple_with_writeback): Remove references to TARGET_VFP.
+	(movhi_insn_arch4, movhi_bytes): Likewise.
+	* constraints.md (Dt): Likewise.
+	(Dp): Likewise.
+	* iterators.md (SDF): Likewise.
+	* predicates.md (arm_float_compare_operand): Delete.
+	(const_double_vcvt_power_of_two_reciprocal): Remove references to
+	TARGET_VFP.
+	(const_double_vcvt_power_of_two): Likewise.
+	* thumb2.md thumb2_movsi_insn): Likewise.
+	* vfp.md (arm_movhi_vfp, thumb2_movhi_vfp): Likewise.
+	(movhf_vfp): Likewise.
+	(arm_movsi_vfp, thumb2_movsi_vfp): Likewise.
+	(movdi_vfp, movdi_vfp_cortexa8): Likewise.
+	(movsf_vfp, thumb2_movsf_vfp): Likewise.
+	(movdf_vfp, thumb2_movdf_vfp): Likewise.
+	(movsfcc_vfp, abssf2_vfp, negsf2_vfp, addsf3_vfp): Likewise.
+	(subsf3_vfp, divsf3_vfp): Likewise.
+	(mulsf3_vfp, mulsf3negsf_vfp, negmulsf3_vfp): Likewise.
+	(mulsf3addsf_vfp, (mulsf3subsf_vfp, mulsf3negsfaddsf_vfp): Likewise.
+	(mulsf3negsfsubsf_vfp): Likewise.
+	(truncsisf2_vfp, fixuns_truncsfsi2, floatsisf2_vfp): Likewise.
+	(floatunssisf2, sqrtsf2_vfp): Likewise.
+	(movcc_vfp): Likewise.
+	(cmpsf_split_vfp, cmpsf_trap_split_vfp): Likewise.
+	(cmpsf_vfp, cmpsf_trap_vfp): Likewise.
+	(push_multi_vfp): Likewise.
+	(set_fpscr, get_fpscr): Likewise.
+	* arm-c.c (arm_cpu_builtins): Unconditionally define __VFP_FP__.
+
+2016-10-13  Richard Earsnhaw  <rearnsha@arm.com>
+
 	* arm.h (TARGET_VFP): Unconditionally define to 1.
 	(arm_fpu_desc): Remove 'model' field.
 	(TARGET_FPU_MODEL): Delete.

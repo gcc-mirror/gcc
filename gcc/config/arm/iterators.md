@@ -46,7 +46,7 @@
 (define_mode_iterator SIDI [SI DI])
 
 ;; A list of modes which the VFP unit can handle
-(define_mode_iterator SDF [(SF "TARGET_VFP") (DF "TARGET_VFP_DOUBLE")])
+(define_mode_iterator SDF [(SF "") (DF "TARGET_VFP_DOUBLE")])
 
 ;; Integer element sizes implemented by IWMMXT.
 (define_mode_iterator VMMX [V2SI V4HI V8QI])

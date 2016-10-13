@@ -243,15 +243,15 @@ typedef struct {
 
 /* The NEON builtin data can be found in arm_neon_builtins.def and
    arm_vfp_builtins.def.  The entries in arm_neon_builtins.def require
-   TARGET_NEON to be true.  The entries in arm_vfp_builtins.def require
-   TARGET_VFP to be true.  The feature tests are checked when the builtins are
-   expanded.
+   TARGET_NEON to be true.  The feature tests are checked when the
+   builtins are expanded.
 
-   The mode entries in the following table correspond to
-   the "key" type of the instruction variant, i.e. equivalent to that which
-   would be specified after the assembler mnemonic, which usually refers to the
-   last vector operand.  The modes listed per instruction should be the same as
-   those defined for that instruction's pattern in neon.md.  */
+   The mode entries in the following table correspond to the "key"
+   type of the instruction variant, i.e. equivalent to that which
+   would be specified after the assembler mnemonic, which usually
+   refers to the last vector operand.  The modes listed per
+   instruction should be the same as those defined for that
+   instruction's pattern in neon.md.  */
 
 static neon_builtin_datum vfp_builtin_data[] =
 {
@@ -1817,7 +1817,7 @@ arm_init_builtins (void)
   if (TARGET_CRC32)
     arm_init_crc32_builtins ();
 
-  if (TARGET_VFP && TARGET_HARD_FLOAT)
+  if (TARGET_HARD_FLOAT)
     {
       tree ftype_set_fpscr
 	= build_function_type_list (void_type_node, unsigned_type_node, NULL);
@@ -2357,14 +2357,14 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
   return arm_expand_neon_builtin_1 (fcode, exp, target, d);
 }
 
-/* Expand a VFP builtin, if TARGET_VFP is true.  These builtins are treated like
+/* Expand a VFP builtin.  These builtins are treated like
    neon builtins except that the data is looked up in table
    VFP_BUILTIN_DATA.  */
 
 static rtx
 arm_expand_vfp_builtin (int fcode, tree exp, rtx target)
 {
-  if (fcode >= ARM_BUILTIN_VFP_BASE && ! TARGET_VFP)
+  if (fcode >= ARM_BUILTIN_VFP_BASE && ! TARGET_HARD_FLOAT)
     {
       fatal_error (input_location,
 		   "You must enable VFP instructions"
@@ -3078,7 +3078,7 @@ arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree new_fenv_var, reload_fenv, restore_fnenv;
   tree update_call, atomic_feraiseexcept, hold_fnclex;
 
-  if (!TARGET_VFP || !TARGET_HARD_FLOAT)
+  if (!TARGET_HARD_FLOAT)
     return;
 
   /* Generate the equivalent of :
