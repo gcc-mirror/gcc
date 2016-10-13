@@ -17977,12 +17977,15 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
   init = t;
   gcc_assert (!DECL_P (init));
 
-  rtl = rtl_for_decl_init (init, type);
-  if (rtl)
-    return add_const_value_attribute (die, rtl);
+  if (! early_dwarf)
+    {
+      rtl = rtl_for_decl_init (init, type);
+      if (rtl)
+	return add_const_value_attribute (die, rtl);
+    }
   /* If the host and target are sane, try harder.  */
-  else if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
-	   && initializer_constant_valid_p (init, type))
+  if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
+      && initializer_constant_valid_p (init, type))
     {
       HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (init));
       if (size > 0 && (int) size == size)
@@ -21288,13 +21291,13 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   if (com_decl)
     {
       dw_die_ref com_die;
-      dw_loc_list_ref loc;
+      dw_loc_list_ref loc = NULL;
       die_node com_die_arg;
 
       var_die = lookup_decl_die (decl_or_origin);
       if (var_die)
 	{
-	  if (get_AT (var_die, DW_AT_location) == NULL)
+	  if (! early_dwarf && get_AT (var_die, DW_AT_location) == NULL)
 	    {
 	      loc = loc_list_from_tree (com_decl, off ? 1 : 2, NULL);
 	      if (loc)
@@ -21328,7 +21331,8 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
       com_die_arg.decl_id = DECL_UID (com_decl);
       com_die_arg.die_parent = context_die;
       com_die = common_block_die_table->find (&com_die_arg);
-      loc = loc_list_from_tree (com_decl, 2, NULL);
+      if (! early_dwarf)
+	loc = loc_list_from_tree (com_decl, 2, NULL);
       if (com_die == NULL)
 	{
 	  const char *cnam
@@ -21569,7 +21573,7 @@ gen_label_die (tree decl, dw_die_ref context_die)
 
   if (DECL_ABSTRACT_P (decl))
     equate_decl_number_to_die (decl, lbl_die);
-  else
+  else if (! early_dwarf)
     {
       insn = DECL_RTL_IF_SET (decl);
 
@@ -23346,9 +23350,13 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
     {
       for (decl = BLOCK_VARS (stmt); decl != NULL; decl = DECL_CHAIN (decl))
 	process_scope_var (stmt, decl, NULL_TREE, context_die);
-      for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
-	process_scope_var (stmt, NULL, BLOCK_NONLOCALIZED_VAR (stmt, i),
-			   context_die);
+      /* BLOCK_NONLOCALIZED_VARs simply generate DIE stubs with abstract
+	 origin - avoid doing this twice as we have no good way to see
+	 if we've done it once already.  */
+      if (! early_dwarf)
+	for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
+	  process_scope_var (stmt, NULL, BLOCK_NONLOCALIZED_VAR (stmt, i),
+			     context_die);
     }
 
   /* Even if we're at -g1, we need to process the subblocks in order to get

@@ -1,3 +1,12 @@
+2016-10-13  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (tree_add_const_value_attribute): Do not try
+	rtl_for_decl_init during early phase.
+	(gen_variable_die): Do not create locations during early phase.
+	(gen_label_die): Likewise.
+	(decls_for_scope): Do not waste time handling BLOCK_NONLOCALIZED_VARs
+	twice.
+
 2016-10-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (evrp_dom_walker::try_find_new_range): Renamed from
