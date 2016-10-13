@@ -1,5 +1,18 @@
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (_Bind_simple, _Bind_simple_helper)
+	(__bind_simple): Remove.
+	* include/std/future: Include <bits/invoke.h> instead of <functional>.
+	(__future_base::_Task_state::_M_run)
+	(__future_base::_Task_state::_M_run_delayed): Use lambda expressions
+	instead of __bind_simple.
+	(__future_base::_Task_state::_S_maybe_wrap_ref): Remove.
+	(async): Use thread::__make_invoker instead of __bind_simple.
+	* include/std/thread: Include <tuple> and <bits/invoke.h> instead of
+	<functional>.
+	(thread::_Invoker, thread::__make_invoker): Define helpers to do
+	INVOKE(DECAY_COPY(f), DECAY_COPY(args)...).
+
 	* include/std/functional (_Not_fn): Make exception specifications
 	depend on whether negating the result can throw.
 	* testsuite/20_util/not_fn/1.cc: Move to ...

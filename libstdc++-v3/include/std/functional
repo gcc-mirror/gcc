@@ -1300,69 +1300,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 			   std::forward<_BoundArgs>(__args)...);
     }
 
-  template<typename _Signature>
-    struct _Bind_simple;
-
-  template<typename _Callable, typename... _Args>
-    struct _Bind_simple<_Callable(_Args...)>
-    {
-      typedef typename result_of<_Callable(_Args...)>::type result_type;
-
-      template<typename _Tp, typename... _Up>
-        explicit
-        _Bind_simple(_Tp&& __f, _Up&&... __args)
-        : _M_bound(std::forward<_Tp>(__f), std::forward<_Up>(__args)...)
-        { }
-
-      _Bind_simple(const _Bind_simple&) = default;
-      _Bind_simple(_Bind_simple&&) = default;
-
-      result_type
-      operator()()
-      {
-        typedef typename _Build_index_tuple<sizeof...(_Args)>::__type _Indices;
-        return _M_invoke(_Indices());
-      }
-
-    private:
-      template<std::size_t... _Indices>
-        typename result_of<_Callable(_Args...)>::type
-        _M_invoke(_Index_tuple<_Indices...>)
-        {
-	  // std::bind always forwards bound arguments as lvalues,
-	  // but this type can call functions which only accept rvalues.
-          return std::forward<_Callable>(std::get<0>(_M_bound))(
-              std::forward<_Args>(std::get<_Indices+1>(_M_bound))...);
-        }
-
-      std::tuple<_Callable, _Args...> _M_bound;
-    };
-
-  template<typename _Func, typename... _BoundArgs>
-    struct _Bind_simple_helper
-    : _Bind_check_arity<typename decay<_Func>::type, _BoundArgs...>
-    {
-      typedef _Maybe_wrap_member_pointer<typename decay<_Func>::type>
-        __maybe_type;
-      typedef typename __maybe_type::type __func_type;
-      typedef _Bind_simple<__func_type(typename decay<_BoundArgs>::type...)>
-       	__type;
-    };
-
-  // Simplified version of std::bind for internal use, without support for
-  // unbound arguments, placeholders or nested bind expressions.
-  template<typename _Callable, typename... _Args>
-    typename _Bind_simple_helper<_Callable, _Args...>::__type
-    __bind_simple(_Callable&& __callable, _Args&&... __args)
-    {
-      typedef _Bind_simple_helper<_Callable, _Args...> __helper_type;
-      typedef typename __helper_type::__maybe_type __maybe_type;
-      typedef typename __helper_type::__type __result_type;
-      return __result_type(
-          __maybe_type::__do_wrap( std::forward<_Callable>(__callable)),
-          std::forward<_Args>(__args)...);
-    }
-
   /**
    *  @brief Exception class thrown when class template function's
    *  operator() is called with an empty target.
