@@ -1,3 +1,9 @@
+2016-10-13  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.c (m68k_option_override): Check
+	opt_fstack_limit_symbol_arg and opt_fstack_limit_register_no
+	instead of stack_limit_rtx.
+
 2016-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (gen_member_die): Handle inline static data member
