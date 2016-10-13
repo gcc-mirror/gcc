@@ -52,7 +52,7 @@ package body System.Memory is
    use System.Soft_Links;
 
    function c_malloc (Size : System.CRTL.size_t) return System.Address
-    renames System.CRTL.malloc;
+     renames System.CRTL.malloc;
 
    procedure c_free (Ptr : System.Address)
      renames System.CRTL.free;

@@ -1341,7 +1341,7 @@ package body Sem is
          --  unconditionally, and has no restore mechanism, because it is
          --  intended as a lowest-level Pure package.
 
-         Save_Max_Line   : constant Int := Style_Max_Line_Length;
+         Save_Max_Line : constant Int := Style_Max_Line_Length;
 
          List : Elist_Id;
 
@@ -1367,7 +1367,7 @@ package body Sem is
          --  Check for scope mismatch on exit from compilation
 
          pragma Assert (Current_Scope = Standard_Standard
-                          or else Comp_Unit = Cunit (Main_Unit));
+                         or else Comp_Unit = Cunit (Main_Unit));
 
          --  Then pop entry for Standard, and pop implicit types
 

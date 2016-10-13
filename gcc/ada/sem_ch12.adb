@@ -14259,7 +14259,6 @@ package body Sem_Ch12 is
             then
                Copy_Dimensions (N2, N);
             end if;
-
          end Set_Global_Type;
 
          ------------------
@@ -14335,7 +14334,7 @@ package body Sem_Ch12 is
                   if Is_Global (Entity (Original_Node (N2))) then
                      N2 := Original_Node (N2);
                      Set_Associated_Node (N, N2);
-                     Set_Global_Type (N, N2);
+                     Set_Global_Type     (N, N2);
 
                   --  Renaming is local, and will be resolved in instance
 
@@ -14377,7 +14376,7 @@ package body Sem_Ch12 is
             if Is_Global (Entity (Parent (N2))) then
                Change_Selected_Component_To_Expanded_Name (Parent (N));
                Set_Associated_Node (Parent (N), Parent (N2));
-               Set_Global_Type (Parent (N), Parent (N2));
+               Set_Global_Type     (Parent (N), Parent (N2));
                Save_Entity_Descendants (N);
 
             --  If this is a reference to the current generic entity, replace
@@ -14436,7 +14435,7 @@ package body Sem_Ch12 is
                if Is_Global (Entity (Name (Parent (N2)))) then
                   Change_Selected_Component_To_Expanded_Name (Parent (N));
                   Set_Associated_Node (Parent (N), Name (Parent (N2)));
-                  Set_Global_Type (Parent (N), Name (Parent (N2)));
+                  Set_Global_Type     (Parent (N), Name (Parent (N2)));
                   Save_Entity_Descendants (N);
 
                else

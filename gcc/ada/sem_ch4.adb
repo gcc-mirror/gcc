@@ -231,18 +231,17 @@ package body Sem_Ch4 is
       R     : Node_Id;
       Op_Id : Entity_Id;
       T1    : Entity_Id);
-   --  For equality and comparison operators, the result is always boolean,
-   --  and the legality of the operation is determined from the visibility
-   --  of the operand types. If one of the operands has a universal interpre-
-   --  tation,  the legality check uses some compatible non-universal
-   --  interpretation of the other operand. N can be an operator node, or
-   --  a function call whose name is an operator designator. Any_Access, which
-   --  is the initial type of the literal NULL, is a universal type for the
-   --  purpose of this routine.
+   --  For equality and comparison operators, the result is always boolean, and
+   --  the legality of the operation is determined from the visibility of the
+   --  operand types. If one of the operands has a universal interpretation,
+   --  the legality check uses some compatible non-universal interpretation of
+   --  the other operand. N can be an operator node, or a function call whose
+   --  name is an operator designator. Any_Access, which is the initial type of
+   --  the literal NULL, is a universal type for the purpose of this routine.
 
    function Find_Primitive_Operation (N : Node_Id) return Boolean;
-   --  Find candidate interpretations for the name Obj.Proc when it appears
-   --  in a subprogram renaming declaration.
+   --  Find candidate interpretations for the name Obj.Proc when it appears in
+   --  a subprogram renaming declaration.
 
    procedure Find_Unary_Types
      (R     : Node_Id;

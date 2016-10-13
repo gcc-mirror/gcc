@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,7 +151,6 @@ package body Expander is
             --  corresponding expand routines.
 
             case Nkind (N) is
-
                when N_Abort_Statement =>
                   Expand_N_Abort_Statement (N);
 
