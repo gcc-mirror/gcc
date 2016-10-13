@@ -7214,6 +7214,14 @@ Named_object::get_backend(Gogo* gogo, std::vector<Bexpression*>& const_decls,
                           std::vector<Btype*>& type_decls,
                           std::vector<Bfunction*>& func_decls)
 {
+  // If this is a definition, avoid trying to get the backend
+  // representation, as that can crash.
+  if (this->is_redefinition_)
+    {
+      go_assert(saw_errors());
+      return;
+    }
+
   switch (this->classification_)
     {
     case NAMED_OBJECT_CONST:
