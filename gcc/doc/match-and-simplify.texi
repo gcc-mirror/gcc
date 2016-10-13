@@ -110,7 +110,11 @@ are @code{@@} followed by a number or an identifier.
 @end smallexample
 
 In this example @code{@@0} is mentioned twice which constrains the matched
-expression to have two equal operands.  This example also introduces
+expression to have two equal operands.  Usually matches are constraint
+to equal types.  If operands may be constants and conversions are involved
+matching by value might be preferred in which case use @code{@@@@0} to
+denote a by value match and the specific operand you want to refer to
+in the result part.  This example also introduces
 operands written in C code.  These can be used in the expression
 replacements and are supposed to evaluate to a tree node which has to
 be a valid GIMPLE operand (so you cannot generate expressions in C code).

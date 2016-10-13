@@ -1,3 +1,37 @@
+2016-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77826
+	* genmatch.c (struct capture): Add value_match member.
+	(commutate): Preserve value_match.
+	(lower_opt_convert): Likewise.
+	(lower_cond): Likewise.
+	(replace_id): Likewise.
+	(struct dt_operand): Add value_match member.
+	(decision_tree::cmp_node): Compare it.
+	(decision_tree::insert_operand): Honor it when finding and
+	when appending a DT_MATCH.
+	(dt_operand::gen_match_op): Generate a type check after
+	operand_equal_p if ! value_match for both GENERIC and GIMPLE.
+	(parser::get_internal_capture_id): New helper.
+	(parser::finish_match_operand): New function lowering @@<id>.
+	(parser::parse_capture): Parse @@<id> as value-match.
+	(parser::parse_expr): Use get_internal_capture_id.
+	(parser::parse_simplify): Call finish_match_operand.
+	(walk_captures): New helper.
+	* match.pd (X - (X / Y) * Y -> X % Y): Use value-matching instead
+	of operand_equal_p.
+	((X /[ex] A) * A -> X): Likewise.
+	((X | Y) ^ X -> Y & ~ X): Handle constants properly by using
+	convert[12] and value-matching.
+	((A | B) & (A | C) ->  A | (B & C)): Likewise.
+	((X | Y) | Y -> X | Y): Likewise.
+	((X ^ Y) ^ Y -> X): Likewise.
+	(A - (A & B) -> ~B & A): Likewise.
+	((T)(P + A) - (T)P -> (T) A): Likewise.
+	((T)P - (T)(P + A) -> -(T) A): Likewise.
+	((T)(P + A) - (T)(P + B) -> (T)A - (T)B): Likewise.
+	* doc/match-and-simplify.texi: Amend capture section.
+
 2016-10-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (umul_600): Remove predicated variant.
