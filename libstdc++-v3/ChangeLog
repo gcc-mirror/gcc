@@ -1,5 +1,7 @@
 2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/algorithm/sample.cc: Add missing header.
+
 	* include/experimental/propagate_const (element_type): Qualify
 	declval.
 
