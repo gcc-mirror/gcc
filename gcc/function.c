@@ -5923,7 +5923,9 @@ thread_prologue_and_epilogue_insns (void)
   edge entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   edge orig_entry_edge = entry_edge;
 
+  rtx_insn *split_prologue_seq = make_split_prologue_seq ();
   rtx_insn *prologue_seq = make_prologue_seq ();
+  rtx_insn *epilogue_seq = make_epilogue_seq ();
 
   /* Try to perform a kind of shrink-wrapping, making sure the
      prologue/epilogue is emitted only around those parts of the
@@ -5935,13 +5937,17 @@ thread_prologue_and_epilogue_insns (void)
   try_shrink_wrapping_separate (entry_edge->dest);
 
   /* If that did anything for any component we now need the generate the
-     "main" prologue again.  If that does not work for some target then
-     that target should not enable separate shrink-wrapping.  */
+     "main" prologue again.  Because some targets require some of these
+     to be called in a specific order (i386 requires the split prologue
+     to be first, for example), we create all three sequences again here.
+     If this does not work for some target, that target should not enable
+     separate shrink-wrapping.  */
   if (crtl->shrink_wrapped_separate)
-    prologue_seq = make_prologue_seq ();
-
-  rtx_insn *split_prologue_seq = make_split_prologue_seq ();
-  rtx_insn *epilogue_seq = make_epilogue_seq ();
+    {
+      split_prologue_seq = make_split_prologue_seq ();
+      prologue_seq = make_prologue_seq ();
+      epilogue_seq = make_epilogue_seq ();
+    }
 
   rtl_profile_for_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
 

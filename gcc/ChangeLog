@@ -1,3 +1,10 @@
+2016-10-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR bootstrap/77962
+	* function.c (thread_prologue_and_epilogue_insns): Call all
+	make_*logue_seq in the same order as traditional.  Call them
+	all a second time if shrink_wrapped_separate.
+
 2016-10-13  Marek Polacek  <polacek@redhat.com>
 
 	* Makefile.in (insn-attrtab.o-warn, insn-dfatab.o-warn,
