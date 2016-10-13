@@ -1,3 +1,10 @@
+2016-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/77946
+	* tree.h (FALLTHROUGH_LABEL_P): Use private_flag instead of
+	public_flag.
+	* varasm.c (default_binds_local_p_3): Formatting fix.
+
 2016-10-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop-manip.c (slpeel_can_duplicate_loop_p): Fix code
