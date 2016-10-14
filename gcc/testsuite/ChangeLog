@@ -1,3 +1,9 @@
+2016-10-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/builtins-folding-generic.c: New test.
+	* gcc.dg/tree-ssa/builtins-folding-gimple.c: Likewise.
+	* gcc.dg/tree-ssa/builtins-folding-gimple-ub.c: Likewise.
+
 2016-10-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/torture/pr77937-1.c: Move -O3 to dg-options.
