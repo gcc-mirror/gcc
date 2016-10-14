@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-cargs -g -gdwarf-2 -gstrict-dwarf -dA -margs" }
+-- { dg-options "-cargs -gdwarf-2 -gstrict-dwarf -dA -margs" }
 -- { dg-final { scan-assembler "DW_TAG_imported_decl" } }
 
 package body Debug7 is

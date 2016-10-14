@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-cargs -g -fgnat-encodings=minimal -dA" }
+-- { dg-options "-cargs -g -fgnat-encodings=minimal -dA -margs" }
 -- { dg-final { scan-assembler-not "DW_OP_const4u" } }
 -- { dg-final { scan-assembler-not "DW_OP_const8u" } }
 
