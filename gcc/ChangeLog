@@ -1,3 +1,16 @@
+2016-10-14  Martin Liska  <mliska@suse.cz>
+
+	* builtins.c (fold_builtin_strcmp): Remove function.
+	(fold_builtin_strncmp): Likewise.
+	(fold_builtin_2): Remove call of the function.
+	(fold_builtin_3): Likewise.
+	* fold-const-call.c (fold_const_call): Add constant folding
+	for CFN_BUILT_IN_STRCASECMP and CFN_BUILT_IN_STRNCASECMP.
+	* fold-const-call.h (build_cmp_result): Declare the function.
+	* gimple-fold.c (gimple_load_first_char): New function.
+	(gimple_fold_builtin_string_compare): Likewise.
+	(gimple_fold_builtin): Call the function.
+
 2016-10-14  Nathan Sidwell  <nathan@acm.org>
 
 	* gcov-io.c (gcov_open): Deconstify 'mode'.

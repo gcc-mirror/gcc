@@ -69,7 +69,7 @@ host_size_t_cst_p (tree t, size_t *size_out)
    "equal" and > 0 means "more".  Canonicalize it to -1, 0 or 1 and
    return it in type TYPE.  */
 
-static inline tree
+tree
 build_cmp_result (tree type, int res)
 {
   return build_int_cst (type, res < 0 ? -1 : res > 0 ? 1 : 0);
@@ -1397,6 +1397,15 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 	return build_cmp_result (type, strcmp (p0, p1));
       return NULL_TREE;
 
+    case CFN_BUILT_IN_STRCASECMP:
+      if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	{
+	  int r = strcmp (p0, p1);
+	  if (r == 0)
+	    return build_cmp_result (type, r);
+	}
+      return NULL_TREE;
+
     default:
       return fold_const_call_1 (fn, type, arg0, arg1);
     }
@@ -1464,16 +1473,36 @@ tree
 fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 {
   const char *p0, *p1;
-  size_t s2;
+  size_t s2 = 0;
   switch (fn)
     {
     case CFN_BUILT_IN_STRNCMP:
-      if ((p0 = c_getstr (arg0))
-	  && (p1 = c_getstr (arg1))
-	  && host_size_t_cst_p (arg2, &s2))
-	return build_int_cst (type, strncmp (p0, p1, s2));
-      return NULL_TREE;
-
+      {
+	bool const_size_p = host_size_t_cst_p (arg2, &s2);
+	if (const_size_p && s2 == 0
+	    && !TREE_SIDE_EFFECTS (arg0)
+	    && !TREE_SIDE_EFFECTS (arg1))
+	  return build_int_cst (type, 0);
+	else if (const_size_p
+		 && (p0 = c_getstr (arg0))
+		 && (p1 = c_getstr (arg1)))
+	  return build_int_cst (type, strncmp (p0, p1, s2));
+	return NULL_TREE;
+      }
+    case CFN_BUILT_IN_STRNCASECMP:
+      {
+	bool const_size_p = host_size_t_cst_p (arg2, &s2);
+	if (const_size_p && s2 == 0
+	    && !TREE_SIDE_EFFECTS (arg0)
+	    && !TREE_SIDE_EFFECTS (arg1))
+	  return build_int_cst (type, 0);
+	else if (const_size_p
+		 && (p0 = c_getstr (arg0))
+		 && (p1 = c_getstr (arg1))
+		 && strncmp (p0, p1, s2) == 0)
+	  return build_int_cst (type, 0);
+	return NULL_TREE;
+      }
     case CFN_BUILT_IN_BCMP:
     case CFN_BUILT_IN_MEMCMP:
       if ((p0 = c_getstr (arg0))
