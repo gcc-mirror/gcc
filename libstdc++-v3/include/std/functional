@@ -742,7 +742,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	       const _Index_tuple<_Indexes...>&) const volatile
 	-> decltype(__arg(declval<_Args>()...))
 	{
-	  return __arg(std::forward<_Args>(std::get<_Indexes>(__tuple))...);
+	  return __arg(std::get<_Indexes>(std::move(__tuple))...);
 	}
     };
 
@@ -759,10 +759,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	_Safe_tuple_element_t<(is_placeholder<_Arg>::value - 1), _Tuple>&&
 	operator()(const volatile _Arg&, _Tuple& __tuple) const volatile
 	{
-	  using __type
-	    = __tuple_element_t<(is_placeholder<_Arg>::value - 1), _Tuple>;
-	  return std::forward<__type>(
-	      ::std::get<(is_placeholder<_Arg>::value - 1)>(__tuple));
+	  return
+	    ::std::get<(is_placeholder<_Arg>::value - 1)>(std::move(__tuple));
 	}
     };
 
@@ -779,50 +777,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	_CVArg&&
 	operator()(_CVArg&& __arg, _Tuple&) const volatile
 	{ return std::forward<_CVArg>(__arg); }
-    };
-
-  /**
-   *  Maps member pointers into instances of _Mem_fn but leaves all
-   *  other function objects untouched. Used by std::bind(). The
-   *  primary template handles the non-member-pointer case.
-   */
-  template<typename _Tp>
-    struct _Maybe_wrap_member_pointer
-    {
-      typedef _Tp type;
-
-      static constexpr const _Tp&
-      __do_wrap(const _Tp& __x)
-      { return __x; }
-
-      static constexpr _Tp&&
-      __do_wrap(_Tp&& __x)
-      { return static_cast<_Tp&&>(__x); }
-    };
-
-  /**
-   *  Maps member pointers into instances of _Mem_fn but leaves all
-   *  other function objects untouched. Used by std::bind(). This
-   *  partial specialization handles the member pointer case.
-   */
-  template<typename _Tp, typename _Class>
-    struct _Maybe_wrap_member_pointer<_Tp _Class::*>
-    {
-      typedef _Mem_fn<_Tp _Class::*> type;
-
-      static constexpr type
-      __do_wrap(_Tp _Class::* __pm)
-      { return type(__pm); }
-    };
-
-  // Specialization needed to prevent "forming reference to void" errors when
-  // bind<void>() is called, because argument deduction instantiates
-  // _Maybe_wrap_member_pointer<void> outside the immediate context where
-  // SFINAE applies.
-  template<>
-    struct _Maybe_wrap_member_pointer<void>
-    {
-      typedef void type;
     };
 
   // std::get<I> for volatile-qualified tuples
@@ -858,8 +812,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	_Result
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
 	{
-	  return _M_f(_Mu<_Bound_args>()
-		      (std::get<_Indexes>(_M_bound_args), __args)...);
+	  return std::__invoke(_M_f,
+	      _Mu<_Bound_args>()(std::get<_Indexes>(_M_bound_args), __args)...
+	      );
 	}
 
       // Call as const
@@ -867,8 +822,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	_Result
 	__call_c(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
 	{
-	  return _M_f(_Mu<_Bound_args>()
-		      (std::get<_Indexes>(_M_bound_args), __args)...);
+	  return std::__invoke(_M_f,
+	      _Mu<_Bound_args>()(std::get<_Indexes>(_M_bound_args), __args)...
+	      );
 	}
 
       // Call as volatile
@@ -877,8 +833,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__call_v(tuple<_Args...>&& __args,
 		 _Index_tuple<_Indexes...>) volatile
 	{
-	  return _M_f(_Mu<_Bound_args>()
-		      (__volget<_Indexes>(_M_bound_args), __args)...);
+	  return std::__invoke(_M_f,
+	      _Mu<_Bound_args>()(__volget<_Indexes>(_M_bound_args), __args)...
+	      );
 	}
 
       // Call as const volatile
@@ -887,9 +844,32 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__call_c_v(tuple<_Args...>&& __args,
 		   _Index_tuple<_Indexes...>) const volatile
 	{
-	  return _M_f(_Mu<_Bound_args>()
-		      (__volget<_Indexes>(_M_bound_args), __args)...);
+	  return std::__invoke(_M_f,
+	      _Mu<_Bound_args>()(__volget<_Indexes>(_M_bound_args), __args)...
+	      );
 	}
+
+      template<typename _BoundArg, typename _CallArgs>
+	using _Mu_type = decltype(
+	    _Mu<typename remove_cv<_BoundArg>::type>()(
+	      std::declval<_BoundArg&>(), std::declval<_CallArgs&>()) );
+
+      template<typename _Fn, typename _CallArgs, typename... _BArgs>
+	using _Res_type_impl
+	  = typename result_of< _Fn&(_Mu_type<_BArgs, _CallArgs>...) >::type;
+
+      template<typename _CallArgs>
+	using _Res_type = _Res_type_impl<_Functor, _CallArgs, _Bound_args...>;
+
+      template<typename _CallArgs>
+	using __dependent = typename
+	  enable_if<bool(tuple_size<_CallArgs>::value+1), _Functor>::type;
+
+      template<typename _CallArgs, template<class> class __cv_quals>
+	using _Res_type_cv = _Res_type_impl<
+	  typename __cv_quals<__dependent<_CallArgs>>::type,
+	  _CallArgs,
+	  typename __cv_quals<_Bound_args>::type...>;
 
      public:
       template<typename... _Args>
@@ -909,10 +889,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       { }
 
       // Call unqualified
-      template<typename... _Args, typename _Result
-	= decltype( std::declval<_Functor&>()(
-	      _Mu<_Bound_args>()( std::declval<_Bound_args&>(),
-				  std::declval<tuple<_Args...>&>() )... ) )>
+      template<typename... _Args,
+	       typename _Result = _Res_type<tuple<_Args...>>>
 	_Result
 	operator()(_Args&&... __args)
 	{
@@ -922,11 +900,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	}
 
       // Call as const
-      template<typename... _Args, typename _Result
-	= decltype( std::declval<typename enable_if<(sizeof...(_Args) >= 0),
-		       typename add_const<_Functor>::type&>::type>()(
-	      _Mu<_Bound_args>()( std::declval<const _Bound_args&>(),
-				  std::declval<tuple<_Args...>&>() )... ) )>
+      template<typename... _Args,
+	       typename _Result = _Res_type_cv<tuple<_Args...>, add_const>>
 	_Result
 	operator()(_Args&&... __args) const
 	{
@@ -935,12 +910,16 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	      _Bound_indexes());
 	}
 
+#if __cplusplus > 201402L
+# define _GLIBCXX_DEPR_BIND \
+      [[deprecated("std::bind does not support volatile in C++17")]]
+#else
+# define _GLIBCXX_DEPR_BIND
+#endif
       // Call as volatile
-      template<typename... _Args, typename _Result
-	= decltype( std::declval<typename enable_if<(sizeof...(_Args) >= 0),
-                       typename add_volatile<_Functor>::type&>::type>()(
-	      _Mu<_Bound_args>()( std::declval<volatile _Bound_args&>(),
-				  std::declval<tuple<_Args...>&>() )... ) )>
+      template<typename... _Args,
+	       typename _Result = _Res_type_cv<tuple<_Args...>, add_volatile>>
+	_GLIBCXX_DEPR_BIND
 	_Result
 	operator()(_Args&&... __args) volatile
 	{
@@ -950,11 +929,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	}
 
       // Call as const volatile
-      template<typename... _Args, typename _Result
-	= decltype( std::declval<typename enable_if<(sizeof...(_Args) >= 0),
-                       typename add_cv<_Functor>::type&>::type>()(
-	      _Mu<_Bound_args>()( std::declval<const volatile _Bound_args&>(),
-				  std::declval<tuple<_Args...>&>() )... ) )>
+      template<typename... _Args,
+	       typename _Result = _Res_type_cv<tuple<_Args...>, add_cv>>
+	_GLIBCXX_DEPR_BIND
 	_Result
 	operator()(_Args&&... __args) const volatile
 	{
@@ -991,7 +968,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__disable_if_void<_Res>
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
 	{
-	  return _M_f(_Mu<_Bound_args>()
+	  return std::__invoke(_M_f, _Mu<_Bound_args>()
 		      (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
@@ -1000,7 +977,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__enable_if_void<_Res>
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
 	{
-	  _M_f(_Mu<_Bound_args>()
+	  std::__invoke(_M_f, _Mu<_Bound_args>()
 	       (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
@@ -1009,7 +986,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__disable_if_void<_Res>
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
 	{
-	  return _M_f(_Mu<_Bound_args>()
+	  return std::__invoke(_M_f, _Mu<_Bound_args>()
 		      (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
@@ -1018,7 +995,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__enable_if_void<_Res>
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
 	{
-	  _M_f(_Mu<_Bound_args>()
+	  std::__invoke(_M_f, _Mu<_Bound_args>()
 	       (std::get<_Indexes>(_M_bound_args),  __args)...);
 	}
 
@@ -1027,7 +1004,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__disable_if_void<_Res>
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) volatile
 	{
-	  return _M_f(_Mu<_Bound_args>()
+	  return std::__invoke(_M_f, _Mu<_Bound_args>()
 		      (__volget<_Indexes>(_M_bound_args), __args)...);
 	}
 
@@ -1036,7 +1013,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__enable_if_void<_Res>
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) volatile
 	{
-	  _M_f(_Mu<_Bound_args>()
+	  std::__invoke(_M_f, _Mu<_Bound_args>()
 	       (__volget<_Indexes>(_M_bound_args), __args)...);
 	}
 
@@ -1046,7 +1023,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__call(tuple<_Args...>&& __args,
 	       _Index_tuple<_Indexes...>) const volatile
 	{
-	  return _M_f(_Mu<_Bound_args>()
+	  return std::__invoke(_M_f, _Mu<_Bound_args>()
 		      (__volget<_Indexes>(_M_bound_args), __args)...);
 	}
 
@@ -1056,7 +1033,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__call(tuple<_Args...>&& __args,
 	       _Index_tuple<_Indexes...>) const volatile
 	{
-	  _M_f(_Mu<_Bound_args>()
+	  std::__invoke(_M_f, _Mu<_Bound_args>()
 	       (__volget<_Indexes>(_M_bound_args), __args)...);
 	}
 
@@ -1101,6 +1078,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call as volatile
       template<typename... _Args>
+	_GLIBCXX_DEPR_BIND
 	result_type
 	operator()(_Args&&... __args) volatile
 	{
@@ -1111,6 +1089,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call as const volatile
       template<typename... _Args>
+	_GLIBCXX_DEPR_BIND
 	result_type
 	operator()(_Args&&... __args) const volatile
 	{
@@ -1119,6 +1098,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	      _Bound_indexes());
 	}
     };
+#undef _GLIBCXX_DEPR_BIND
 
   /**
    *  @brief Class template _Bind is always a bind expression.
@@ -1222,9 +1202,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     struct _Bind_helper
     : _Bind_check_arity<typename decay<_Func>::type, _BoundArgs...>
     {
-      typedef _Maybe_wrap_member_pointer<typename decay<_Func>::type>
-	__maybe_type;
-      typedef typename __maybe_type::type __func_type;
+      typedef typename decay<_Func>::type __func_type;
       typedef _Bind<__func_type(typename decay<_BoundArgs>::type...)> type;
     };
 
@@ -1245,19 +1223,15 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     bind(_Func&& __f, _BoundArgs&&... __args)
     {
       typedef _Bind_helper<false, _Func, _BoundArgs...> __helper_type;
-      typedef typename __helper_type::__maybe_type __maybe_type;
-      typedef typename __helper_type::type __result_type;
-      return __result_type(__maybe_type::__do_wrap(std::forward<_Func>(__f)),
-			   std::forward<_BoundArgs>(__args)...);
+      return typename __helper_type::type(std::forward<_Func>(__f),
+					  std::forward<_BoundArgs>(__args)...);
     }
 
   template<typename _Result, typename _Func, typename... _BoundArgs>
     struct _Bindres_helper
     : _Bind_check_arity<typename decay<_Func>::type, _BoundArgs...>
     {
-      typedef _Maybe_wrap_member_pointer<typename decay<_Func>::type>
-	__maybe_type;
-      typedef typename __maybe_type::type __functor_type;
+      typedef typename decay<_Func>::type __functor_type;
       typedef _Bind_result<_Result,
 			   __functor_type(typename decay<_BoundArgs>::type...)>
 	type;
@@ -1273,10 +1247,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     bind(_Func&& __f, _BoundArgs&&... __args)
     {
       typedef _Bindres_helper<_Result, _Func, _BoundArgs...> __helper_type;
-      typedef typename __helper_type::__maybe_type __maybe_type;
-      typedef typename __helper_type::type __result_type;
-      return __result_type(__maybe_type::__do_wrap(std::forward<_Func>(__f)),
-			   std::forward<_BoundArgs>(__args)...);
+      return typename __helper_type::type(std::forward<_Func>(__f),
+					  std::forward<_BoundArgs>(__args)...);
     }
 
   /**

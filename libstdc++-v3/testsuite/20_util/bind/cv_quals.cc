@@ -48,11 +48,13 @@ void test01()
   const auto b1 = std::bind(X());
   VERIFY( b1() == 1 );
 
+#if __cplusplus <= 201402L
   volatile auto b2 = std::bind(X());
   VERIFY( b2() == 2 );
 
   const volatile auto b3 = std::bind(X());
   VERIFY( b3() == 3 );
+#endif
 }
 
 void test02()
@@ -63,11 +65,13 @@ void test02()
   const auto b1 = std::bind<int>(X());
   VERIFY( b1() == 1 );
 
+#if __cplusplus <= 201402L
   volatile auto b2 = std::bind<int>(X());
   VERIFY( b2() == 2 );
 
   const volatile auto b3 = std::bind<int>(X());
   VERIFY( b3() == 3 );
+#endif
 }
 
 void test03()
@@ -78,11 +82,13 @@ void test03()
   const auto b1 = std::bind(X(), _1, 0, _2);
   VERIFY( b1(0, 0) == 1 );
 
+#if __cplusplus <= 201402L
   volatile auto b2 = std::bind(X(), _1, _2, 0);
   VERIFY( b2(0, 0) == 2 );
 
   const volatile auto b3 = std::bind(X(), _1, 0, _2);
   VERIFY( b3(0, 0) == 3 );
+#endif
 }
 
 void test04()
@@ -93,11 +99,13 @@ void test04()
   const auto b1 = std::bind<int>(X(), _1, 0, _2);
   VERIFY( b1(0, 0) == 1 );
 
+#if __cplusplus <= 201402L
   volatile auto b2 = std::bind<int>(X(), _1, _2, 0);
   VERIFY( b2(0, 0) == 2 );
 
   const volatile auto b3 = std::bind<int>(X(), _1, 0, _2);
   VERIFY( b3(0, 0) == 3 );
+#endif
 }
 
 
