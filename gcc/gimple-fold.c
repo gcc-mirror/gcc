@@ -57,20 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "fold-const-call.h"
 
-/* Return true if T is a constant and the value cast to a target char
-   can be represented by a host char.
-   Store the casted char constant in *P if so.  */
-
-static bool
-target_char_cst_p (tree t, char *p)
-{
-  if (!tree_fits_uhwi_p (t) || CHAR_TYPE_SIZE != HOST_BITS_PER_CHAR)
-    return false;
-
-  *p = (char)tree_to_uhwi (t);
-  return true;
-}
-
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
    We can get declarations that are not possible to reference for various
@@ -1967,6 +1953,67 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/* Fold a call to the memchr pointed by GSI iterator.  */
+
+static bool
+gimple_fold_builtin_memchr (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree lhs = gimple_call_lhs (stmt);
+  tree arg1 = gimple_call_arg (stmt, 0);
+  tree arg2 = gimple_call_arg (stmt, 1);
+  tree len = gimple_call_arg (stmt, 2);
+
+  /* If the LEN parameter is zero, return zero.  */
+  if (integer_zerop (len))
+    {
+      replace_call_with_value (gsi, build_int_cst (ptr_type_node, 0));
+      return true;
+    }
+
+  char c;
+  if (TREE_CODE (arg2) != INTEGER_CST
+      || !tree_fits_uhwi_p (len)
+      || !target_char_cst_p (arg2, &c))
+    return false;
+
+  unsigned HOST_WIDE_INT length = tree_to_uhwi (len);
+  unsigned HOST_WIDE_INT string_length;
+  const char *p1 = c_getstr (arg1, &string_length);
+
+  if (p1)
+    {
+      const char *r = (const char *)memchr (p1, c, MIN (length, string_length));
+      if (r == NULL)
+	{
+	  if (length <= string_length)
+	    {
+	      replace_call_with_value (gsi, build_int_cst (ptr_type_node, 0));
+	      return true;
+	    }
+	}
+      else
+	{
+	  unsigned HOST_WIDE_INT offset = r - p1;
+	  gimple_seq stmts = NULL;
+	  if (lhs != NULL_TREE)
+	    {
+	      tree offset_cst = build_int_cst (TREE_TYPE (len), offset);
+	      gassign *stmt = gimple_build_assign (lhs, POINTER_PLUS_EXPR,
+						   arg1, offset_cst);
+	      gimple_seq_add_stmt_without_update (&stmts, stmt);
+	    }
+	  else
+	    gimple_seq_add_stmt_without_update (&stmts,
+						gimple_build_nop ());
+
+	  gsi_replace_with_seq_vops (gsi, stmts);
+	  return true;
+	}
+    }
+
+  return false;
+}
 
 /* Fold a call to the fputs builtin.  ARG0 and ARG1 are the arguments
    to the call.  IGNORE is true if the value returned
@@ -3194,6 +3241,8 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_STRNCMP:
     case BUILT_IN_STRNCASECMP:
       return gimple_fold_builtin_string_compare (gsi);
+    case BUILT_IN_MEMCHR:
+      return gimple_fold_builtin_memchr (gsi);
     case BUILT_IN_FPUTS:
       return gimple_fold_builtin_fputs (gsi, gimple_call_arg (stmt, 0),
 					gimple_call_arg (stmt, 1), false);

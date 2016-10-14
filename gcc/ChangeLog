@@ -1,5 +1,15 @@
 2016-10-14  Martin Liska  <mliska@suse.cz>
 
+	* builtins.h(target_char_cst_p): Declare the function.
+	* builtins.c (fold_builtin_memchr): Remove.
+	(target_char_cst_p): Move the function from gimple-fold.c.
+	(fold_builtin_3): Do not call the function.
+	* gimple-fold.c (gimple_fold_builtin_memchr): New function.
+	(gimple_fold_builtin): Call the function.
+	* fold-const-call.c (fold_const_call_1): Handle CFN_BUILT_IN_MEMCHR.
+
+2016-10-14  Martin Liska  <mliska@suse.cz>
+
 	* builtins.c (fold_builtin_strcmp): Remove function.
 	(fold_builtin_strncmp): Likewise.
 	(fold_builtin_2): Remove call of the function.
