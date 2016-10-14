@@ -1,3 +1,10 @@
+2016-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/77968
+	* gcc-interface/utils.c (create_var_decl): Do not clear TREE_READONLY
+	in LTO mode for an external variable.
+	(can_materialize_object_renaming_p): Move up.
+
 2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc-interface/utils2.c: Include memmodel.h.
