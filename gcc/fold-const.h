@@ -182,7 +182,7 @@ extern bool expr_not_equal_to (tree t, const wide_int &);
 extern tree const_unop (enum tree_code, tree, tree);
 extern tree const_binop (enum tree_code, tree, tree, tree);
 extern bool negate_mathfn_p (combined_fn);
-extern const char *c_getstr (tree);
+extern const char *c_getstr (tree, unsigned HOST_WIDE_INT *strlen = NULL);
 
 /* Return OFF converted to a pointer offset type suitable as offset for
    POINTER_PLUS_EXPR.  Use location LOC for this conversion.  */
