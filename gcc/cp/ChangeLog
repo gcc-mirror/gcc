@@ -1,3 +1,13 @@
+2016-10-14  Jason Merrill  <jason@redhat.com>
+
+	Implement P0017R1, C++17 aggregates with bases.
+	* class.c (build_base_field_1): Split out from...
+	(build_base_field): ...here.  In C++17 mode, build a field for
+	empty bases.
+	* decl.c (xref_basetypes): In C++17 aggregates can have bases.
+	(next_initializable_field): Allow base fields in C++17.
+	* typeck2.c (process_init_constructor_record): Likewise.
+
 2016-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	DR 1511 - const volatile variables and ODR
