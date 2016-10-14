@@ -478,7 +478,6 @@ runtime_files = \
 	runtime/go-signal.c \
 	runtime/go-strcmp.c \
 	runtime/go-strslice.c \
-	runtime/go-traceback.c \
 	runtime/go-type-complex.c \
 	runtime/go-type-eface.c \
 	runtime/go-type-float.c \
@@ -515,7 +514,6 @@ runtime_files = \
 	go-iface.c \
 	lfstack.c \
 	malloc.c \
-	mprof.c \
 	netpoll.c \
 	rdebug.c \
 	reflect.c \

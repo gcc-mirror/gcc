@@ -1277,7 +1277,6 @@ markroot(ParFor *desc, uint32 i)
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_allp, sizeof runtime_allp, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&work, sizeof work, 0});
 		runtime_proc_scan(&wbuf, enqueue1);
-		runtime_MProf_Mark(&wbuf, enqueue1);
 		runtime_time_scan(&wbuf, enqueue1);
 		runtime_netpoll_scan(&wbuf, enqueue1);
 		break;

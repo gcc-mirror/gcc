@@ -89,7 +89,7 @@ typedef struct	__go_interface_type	InterfaceType;
 typedef struct	__go_map_type		MapType;
 typedef struct	__go_channel_type	ChanType;
 
-typedef struct  traceback	Traceback;
+typedef struct  tracebackg	Traceback;
 
 typedef struct	location	Location;
 
@@ -261,8 +261,10 @@ enum {
 };
 void	runtime_hashinit(void);
 
-void	runtime_traceback(void);
-void	runtime_tracebackothers(G*);
+void	runtime_traceback(void)
+  __asm__ (GOSYM_PREFIX "runtime.traceback");
+void	runtime_tracebackothers(G*)
+  __asm__ (GOSYM_PREFIX "runtime.tracebackothers");
 enum
 {
 	// The maximum number of frames we print for a traceback
@@ -325,8 +327,10 @@ void	runtime_sigenable(uint32 sig);
 void	runtime_sigdisable(uint32 sig);
 void	runtime_sigignore(uint32 sig);
 int32	runtime_gotraceback(bool *crash);
-void	runtime_goroutineheader(G*);
-void	runtime_printtrace(Location*, int32, bool);
+void	runtime_goroutineheader(G*)
+  __asm__ (GOSYM_PREFIX "runtime.goroutineheader");
+void	runtime_printtrace(Slice, G*)
+  __asm__ (GOSYM_PREFIX "runtime.printtrace");
 #define runtime_open(p, f, m) open((p), (f), (m))
 #define runtime_read(d, v, n) read((d), (v), (n))
 #define runtime_write(d, v, n) write((d), (v), (n))
@@ -561,8 +565,8 @@ void	runtime_lockOSThread(void);
 void	runtime_unlockOSThread(void);
 bool	runtime_lockedOSThread(void);
 
-bool	runtime_showframe(String, bool);
-void	runtime_printcreatedby(G*);
+void	runtime_printcreatedby(G*)
+  __asm__(GOSYM_PREFIX "runtime.printcreatedby");
 
 uintptr	runtime_memlimit(void);
 

@@ -303,7 +303,7 @@ struct SpecialFinalizer
 };
 
 // The described object is being heap profiled.
-typedef struct Bucket Bucket; // from mprof.goc
+typedef struct bucket Bucket; // from mprof.go
 typedef struct SpecialProfile SpecialProfile;
 struct SpecialProfile
 {
@@ -414,7 +414,8 @@ void	runtime_MHeap_Scavenger(void*);
 void	runtime_MHeap_SplitSpan(MHeap *h, MSpan *s);
 
 void*	runtime_mallocgc(uintptr size, uintptr typ, uint32 flag);
-void*	runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat);
+void*	runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
+  __asm__(GOSYM_PREFIX "runtime.persistentalloc");
 int32	runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **s);
 void	runtime_gc(int32 force);
 uintptr	runtime_sweepone(void);
@@ -428,12 +429,15 @@ void	runtime_markspan(void *v, uintptr size, uintptr n, bool leftover);
 void	runtime_unmarkspan(void *v, uintptr size);
 void	runtime_purgecachedstats(MCache*);
 void*	runtime_cnew(const Type*)
-	  __asm__(GOSYM_PREFIX "runtime.newobject");
+  __asm__(GOSYM_PREFIX "runtime.newobject");
 void*	runtime_cnewarray(const Type*, intgo)
-	  __asm__(GOSYM_PREFIX "runtime.newarray");
-void	runtime_tracealloc(void*, uintptr, uintptr);
-void	runtime_tracefree(void*, uintptr);
-void	runtime_tracegc(void);
+  __asm__(GOSYM_PREFIX "runtime.newarray");
+void	runtime_tracealloc(void*, uintptr, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.tracealloc");
+void	runtime_tracefree(void*, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.tracefree");
+void	runtime_tracegc(void)
+  __asm__ (GOSYM_PREFIX "runtime.tracegc");
 
 uintptr	runtime_gettype(void*);
 
@@ -455,10 +459,14 @@ struct Obj
 	uintptr	ti;	// type info
 };
 
-void	runtime_MProf_Malloc(void*, uintptr);
-void	runtime_MProf_Free(Bucket*, uintptr, bool);
-void	runtime_MProf_GC(void);
-void	runtime_iterate_memprof(void (*callback)(Bucket*, uintptr, Location*, uintptr, uintptr, uintptr));
+void	runtime_MProf_Malloc(void*, uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.mProf_Malloc");
+void	runtime_MProf_Free(Bucket*, uintptr, bool)
+  __asm__ (GOSYM_PREFIX "runtime.mProf_Free");
+void	runtime_MProf_GC(void)
+  __asm__ (GOSYM_PREFIX "runtime.mProf_GC");
+void	runtime_iterate_memprof(void (*callback)(Bucket*, uintptr, Location*, uintptr, uintptr, uintptr))
+  __asm__ (GOSYM_PREFIX "runtime.iterate_memprof");
 int32	runtime_gcprocs(void);
 void	runtime_helpgc(int32 nproc);
 void	runtime_gchelper(void);
@@ -467,7 +475,8 @@ G*	runtime_wakefing(void);
 extern bool	runtime_fingwait;
 extern bool	runtime_fingwake;
 
-void	runtime_setprofilebucket(void *p, Bucket *b);
+void	runtime_setprofilebucket(void *p, Bucket *b)
+  __asm__ (GOSYM_PREFIX "runtime.setprofilebucket");
 
 struct __go_func_type;
 struct __go_ptr_type;
@@ -533,7 +542,6 @@ int32	runtime_setgcpercent(int32);
 #define PoisonStack ((uintptr)0x6868686868686868ULL)
 
 struct Workbuf;
-void	runtime_MProf_Mark(struct Workbuf**, void (*)(struct Workbuf**, Obj));
 void	runtime_proc_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));
 void	runtime_time_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));
 void	runtime_netpoll_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));

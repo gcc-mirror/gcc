@@ -253,17 +253,17 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-nanotime.lo go-now.lo go-new.lo go-nosys.lo go-panic.lo \
 	go-recover.lo go-reflect-call.lo go-runtime-error.lo \
 	go-setenv.lo go-signal.lo go-strcmp.lo go-strslice.lo \
-	go-traceback.lo go-type-complex.lo go-type-eface.lo \
-	go-type-float.lo go-type-identity.lo go-type-interface.lo \
-	go-type-string.lo go-typedesc-equal.lo go-unsafe-new.lo \
-	go-unsafe-newarray.lo go-unsafe-pointer.lo go-unsetenv.lo \
-	go-unwind.lo go-varargs.lo env_posix.lo heapdump.lo mcache.lo \
-	mcentral.lo $(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo \
-	msize.lo $(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
+	go-type-complex.lo go-type-eface.lo go-type-float.lo \
+	go-type-identity.lo go-type-interface.lo go-type-string.lo \
+	go-typedesc-equal.lo go-unsafe-new.lo go-unsafe-newarray.lo \
+	go-unsafe-pointer.lo go-unsetenv.lo go-unwind.lo go-varargs.lo \
+	env_posix.lo heapdump.lo mcache.lo mcentral.lo \
+	$(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
+	$(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo $(am__objects_3) yield.lo \
-	$(am__objects_4) go-iface.lo lfstack.lo malloc.lo mprof.lo \
-	netpoll.lo rdebug.lo reflect.lo runtime1.lo sigqueue.lo \
-	time.lo $(am__objects_5)
+	$(am__objects_4) go-iface.lo lfstack.lo malloc.lo netpoll.lo \
+	rdebug.lo reflect.lo runtime1.lo sigqueue.lo time.lo \
+	$(am__objects_5)
 am_libgo_llgo_la_OBJECTS = $(am__objects_6)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -877,7 +877,6 @@ runtime_files = \
 	runtime/go-signal.c \
 	runtime/go-strcmp.c \
 	runtime/go-strslice.c \
-	runtime/go-traceback.c \
 	runtime/go-type-complex.c \
 	runtime/go-type-eface.c \
 	runtime/go-type-float.c \
@@ -914,7 +913,6 @@ runtime_files = \
 	go-iface.c \
 	lfstack.c \
 	malloc.c \
-	mprof.c \
 	netpoll.c \
 	rdebug.c \
 	reflect.c \
@@ -1593,7 +1591,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-signal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strcmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strslice.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-traceback.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-complex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-eface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-float.Plo@am__quote@
@@ -1620,7 +1617,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mfixalloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgc0.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mheap.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mprof.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msize.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netpoll.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netpoll_epoll.Plo@am__quote@
@@ -1985,13 +1981,6 @@ go-strslice.lo: runtime/go-strslice.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-strslice.c' object='go-strslice.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-strslice.lo `test -f 'runtime/go-strslice.c' || echo '$(srcdir)/'`runtime/go-strslice.c
-
-go-traceback.lo: runtime/go-traceback.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-traceback.lo -MD -MP -MF $(DEPDIR)/go-traceback.Tpo -c -o go-traceback.lo `test -f 'runtime/go-traceback.c' || echo '$(srcdir)/'`runtime/go-traceback.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-traceback.Tpo $(DEPDIR)/go-traceback.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-traceback.c' object='go-traceback.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-traceback.lo `test -f 'runtime/go-traceback.c' || echo '$(srcdir)/'`runtime/go-traceback.c
 
 go-type-complex.lo: runtime/go-type-complex.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-complex.lo -MD -MP -MF $(DEPDIR)/go-type-complex.Tpo -c -o go-type-complex.lo `test -f 'runtime/go-type-complex.c' || echo '$(srcdir)/'`runtime/go-type-complex.c
