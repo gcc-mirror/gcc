@@ -1,3 +1,9 @@
+2016-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (_Reference_wrapper_base_impl): Remove.
+	(_Refwrap_base_arg1, _Refwrap_base_arg2): New helpers using __void_t.
+	(_Reference_wrapper_base): Inherit from new helpers.
+
 2016-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/24_iterators/container_access.cc: Remove 'test' variables.
