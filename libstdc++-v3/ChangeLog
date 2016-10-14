@@ -1,3 +1,10 @@
+2016-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/scoped_allocator (scoped_allocator_adaptor): Forward
+	piecewise construction arguments as tuples of references, to avoid
+	copies (related to LWG 2511).
+	* testsuite/20_util/scoped_allocator/construct_pair.cc: New test.
+
 2016-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/26_numerics/accumulate/1.cc: Remove 'test' variables.
