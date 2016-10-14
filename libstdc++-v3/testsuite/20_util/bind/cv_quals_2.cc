@@ -33,11 +33,13 @@ void test01()
   const auto b0 = std::bind(X());
   VERIFY( b0() == 0 );
 
+#if __cplusplus <= 201402L
   volatile auto b1 = std::bind(X());
   VERIFY( b1() == 1 );
 
   const volatile auto b2 = std::bind(X());
   VERIFY( b2() == 2 );
+#endif
 }
 
 int main()

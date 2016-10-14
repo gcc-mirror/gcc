@@ -45,8 +45,10 @@ void test01()
   A res = bound(1.0);
   const auto bound_c = bound;
   B res_c = bound_c(1.0);
+#if __cplusplus <= 201402L
   volatile auto bound_v = bound;
   C res_v = bound_v(1.0);
   volatile const auto bound_cv = bound;
   D res_cv = bound_cv(1.0);
+#endif
 }

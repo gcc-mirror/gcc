@@ -1,5 +1,29 @@
 2016-10-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (_Mu<A, false, true>, _Mu<A, true, false>):
+	Simplify forwarding from tuple of references.
+	(_Maybe_wrap_member_pointer): Remove.
+	(_Bind::__call, _Bind::__call_c, _Bind::__call_v, _Bind::__call_c_v):
+	Use std::__invoke.
+	(_Bind::_Mu_type, _Bind::_Res_type_impl, _Bind::_Res_type)
+	(_Bind::__dependent, _Bind::_Res_type_cv): New helpers to simplify
+	return type deduction.
+	(_Bind::operator(), _Bind::operator() const): Use new helpers.
+	(_Bind::operator() volatile, _Bind::operator() const volatile):
+	Likewise. Add deprecated attribute for C++17 mode.
+	(_Bind_result::__call): Use std::__invoke.
+	(_Bind_result::operator() volatile)
+	(_Bind_result::operator() const volatile): Add deprecated attribute.
+	(_Bind_helper::__maybe_type, _Bindres_helper::__maybe_type): Remove.
+	(_Bind_helper, _Bindres_helper): Don't use _Maybe_wrap_member_pointer.
+	(bind, bind<R>): Don't use __maybe_type.
+	* src/c++11/compatibility-thread-c++0x.cc
+	(_Maybe_wrap_member_pointer): Define here for compatibility symbols.
+	* testsuite/20_util/bind/68912.cc: Don't test volatile-qualification
+	in C++17 mode.
+	* testsuite/20_util/bind/cv_quals.cc: Likewise.
+	* testsuite/20_util/bind/cv_quals_2.cc: Likewise.
+
 	* include/std/scoped_allocator (scoped_allocator_adaptor): Forward
 	piecewise construction arguments as tuples of references, to avoid
 	copies (related to LWG 2511).

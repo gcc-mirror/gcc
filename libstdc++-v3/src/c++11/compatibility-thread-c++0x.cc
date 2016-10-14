@@ -116,6 +116,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Replaced with inline definition in gcc-4.8.0
   __future_base::_Async_state_common::~_Async_state_common() { _M_join(); }
 
+  template<typename _Tp>
+    struct _Maybe_wrap_member_pointer;
+
+  template<typename _Tp, typename _Class>
+    struct _Maybe_wrap_member_pointer<_Tp _Class::*>
+    {
+      typedef _Mem_fn<_Tp _Class::*> type;
+
+      static constexpr type
+      __do_wrap(_Tp _Class::* __pm)
+      { return type(__pm); }
+    };
+
   template<typename _Signature>
     struct _Bind_simple;
 
