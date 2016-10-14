@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_cxx::__vstring;
   using std::move;
 

@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringstream str;
   std::minstd_rand0 u;
   std::minstd_rand0 v;

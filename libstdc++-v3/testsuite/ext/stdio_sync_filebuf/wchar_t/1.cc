@@ -26,7 +26,6 @@ void test01()
   using namespace std;
   typedef char_traits<wchar_t> traits_type;
 
-  bool test __attribute__((unused)) = true;
   const char* c_lit = "black pearl jasmine tea";
   const wchar_t* w_lit = L"black pearl jasmine tea";
   unsigned size = strlen(c_lit);

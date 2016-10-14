@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::student_t_distribution<> u;
   VERIFY( u.n() == 1.0 );
   typedef std::student_t_distribution<>::result_type result_type;

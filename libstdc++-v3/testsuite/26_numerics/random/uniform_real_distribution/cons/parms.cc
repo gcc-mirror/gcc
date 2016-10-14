@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::uniform_real_distribution<double> u(-5.0, 5.0);
   VERIFY( u.a() == -5.0 );
   VERIFY( u.b() == 5.0 );

@@ -38,8 +38,6 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   clean_env();
 
   if (!fs::exists("/tmp"))
@@ -56,8 +54,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   clean_env();
 
   if (::setenv("TMPDIR", __gnu_test::nonexistent_path().string().c_str(), 1))

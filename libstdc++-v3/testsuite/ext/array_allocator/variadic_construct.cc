@@ -28,7 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::pair<int, char> pair_type;
   typedef std::tr1::array<pair_type, 3> array_type;
   array_type store;

@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringstream str;
   std::mersenne_twister_engine<
     unsigned long, 32, 624, 397, 31,

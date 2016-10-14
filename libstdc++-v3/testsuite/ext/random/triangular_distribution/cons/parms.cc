@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::triangular_distribution<> u(1.5, 3.0, 3.5);
   VERIFY( u.a() == 1.5 );
   VERIFY( u.b() == 3.0 );

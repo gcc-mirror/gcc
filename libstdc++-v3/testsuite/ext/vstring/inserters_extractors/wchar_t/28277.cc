@@ -32,7 +32,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wostringstream oss_01;
   const __gnu_cxx::__wvstring str_01(50, L'a');

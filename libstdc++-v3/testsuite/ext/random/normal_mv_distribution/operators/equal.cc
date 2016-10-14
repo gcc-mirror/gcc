@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::normal_mv_distribution<2,double> u({5.0, 4.0}, {2.0, 1.5}), v, w;
 
   VERIFY( v == w );

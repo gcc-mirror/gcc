@@ -27,7 +27,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::pair<int, char> pair_type;
   __gnu_cxx::throw_allocator_random<pair_type> alloc1;
 

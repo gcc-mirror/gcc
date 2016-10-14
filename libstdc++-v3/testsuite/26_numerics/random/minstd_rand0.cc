@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::minstd_rand0 a;
   a.discard(9999);
 

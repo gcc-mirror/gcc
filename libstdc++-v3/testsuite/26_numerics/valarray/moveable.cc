@@ -22,8 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::valarray<int> a(1, 1), b(-1, 2);
   b = std::move(a);
   VERIFY( b.size() == 1 && b[0] == 1 && a.size() == 0 );

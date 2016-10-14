@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::lognormal_distribution<double> u(5.0, 2.0), v, w;
 
   VERIFY( v == w );

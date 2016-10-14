@@ -23,8 +23,6 @@
 template<typename T>
   void test01_do()
   {
-    bool test __attribute__((unused)) = true;
-
     const std::complex<T> ca(T(-2), T(2));
     const std::complex<T> cb(T(-2), T(0));
     const std::complex<T> cc(T(-2), T(-2));

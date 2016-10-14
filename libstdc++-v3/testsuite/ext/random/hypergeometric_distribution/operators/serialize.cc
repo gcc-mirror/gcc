@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::stringstream str;
   __gnu_cxx::hypergeometric_distribution<unsigned int> u(15, 3, 6), v;
   std::minstd_rand0 rng;

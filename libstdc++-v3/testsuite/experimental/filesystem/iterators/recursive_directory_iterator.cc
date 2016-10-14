@@ -28,7 +28,6 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
   std::error_code ec;
 
   // Test non-existent path.
@@ -101,8 +100,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   std::error_code ec;
   const auto p = __gnu_test::nonexistent_path();
   create_directories(p / "d1/d2", ec);
@@ -128,8 +125,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = false;
-
   std::error_code ec;
   const auto p = __gnu_test::nonexistent_path();
   create_directories(p / "longer_than_small_string_buffer", ec);
@@ -147,8 +142,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = false;
-
   // libstdc++/71004
   const fs::recursive_directory_iterator it;
   VERIFY( it == fs::recursive_directory_iterator() );
@@ -157,8 +150,6 @@ test04()
 void
 test05()
 {
-  bool test __attribute__((unused)) = false;
-
   auto p = __gnu_test::nonexistent_path();
   create_directory(p);
   create_directory_symlink(p, p / "l");

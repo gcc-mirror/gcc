@@ -28,8 +28,6 @@ auto is_odd_pair = [](const std::pair<const int, std::string>& p)
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::unordered_map<int, std::string> um{ { 10, "A" }, { 11, "B" },
 					   { 12, "C" }, { 14, "D" },
 					   { 15, "E" }, { 17, "F" },
@@ -43,8 +41,6 @@ test01()
 void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   std::unordered_multimap<int, std::string> umm{ { 20, "S" }, { 21, "T" },
 						 { 22, "U" }, { 22, "V" },
 						 { 23, "W" }, { 23, "X" },

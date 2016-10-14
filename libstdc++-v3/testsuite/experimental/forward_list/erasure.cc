@@ -23,8 +23,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   auto is_odd = [](const int i) { return i % 2 != 0; };
 
   std::forward_list<int> fl{ 10, 11, 12, 14, 15, 17, 18, 19 };
@@ -36,8 +34,6 @@ test01()
 void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   std::forward_list<int> fl{ 10, 11, 12, 14, 15, 17, 18, 19 };
   std::experimental::erase(fl, 14);
   std::forward_list<int> t{ 10, 11, 12, 15, 17, 18, 19 };

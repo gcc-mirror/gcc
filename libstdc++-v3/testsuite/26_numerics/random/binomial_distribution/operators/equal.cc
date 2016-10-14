@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::binomial_distribution<int> u(3, 0.75), v, w;
   
   VERIFY( v == w );

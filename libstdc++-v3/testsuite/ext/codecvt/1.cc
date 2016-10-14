@@ -37,7 +37,6 @@ void test01()
   typedef __gnu_cxx::encoding_state    			state_type;
   typedef codecvt<int_type, ext_type, state_type>	unicode_codecvt;
 
-  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
   int 			size = strlen(e_lit);
 

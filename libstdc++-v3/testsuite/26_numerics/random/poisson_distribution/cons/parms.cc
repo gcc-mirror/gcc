@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::poisson_distribution<> u(5.0);
   VERIFY( u.mean() == 5.0 );
   VERIFY( u.min() == 0 );

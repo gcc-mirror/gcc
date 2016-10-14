@@ -56,8 +56,6 @@ private:
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   cosine_distribution cd(1.5, 3.0);
   std::piecewise_constant_distribution<> u({-10.0, -8.0, -6.0, -4.0, -2.0,
                                             0.0, 2.0, 4.0, 6.0, 8.0, 10.0},

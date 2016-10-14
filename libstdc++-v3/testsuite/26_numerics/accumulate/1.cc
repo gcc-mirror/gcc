@@ -26,8 +26,6 @@ const int NA = sizeof(A) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int res = std::accumulate(A, A + NA, 11);
   VERIFY( res == 66 );
 }
@@ -38,8 +36,6 @@ const int NB = sizeof(B) / sizeof(bool);
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   int res = std::accumulate(B, B + NB, 100);
   VERIFY( res == 106 );
 }

@@ -27,7 +27,6 @@ void test01()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   const char* c_lit = "black pearl jasmine tea";
   unsigned size = strlen(c_lit);
   const char* name = "stdiobuf-1.txt";

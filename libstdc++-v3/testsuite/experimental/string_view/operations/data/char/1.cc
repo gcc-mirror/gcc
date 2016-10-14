@@ -25,8 +25,6 @@
 int
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::string_view empty;
 
   VERIFY( empty.size() == 0 );

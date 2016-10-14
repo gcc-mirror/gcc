@@ -30,8 +30,6 @@ struct A { };
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::experimental::shared_ptr<A[5]> p1;
   VERIFY( static_cast<bool>(p1) == false );
   const std::experimental::shared_ptr<A[5]> p2(p1);
@@ -41,8 +39,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> p1(new A[5]);
   VERIFY( static_cast<bool>(p1) );
   std::experimental::shared_ptr<A[5]> p2(p1);
@@ -55,8 +51,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> p1(new A[5]);
   std::experimental::shared_ptr<A[5]> p2(p1);
   p2.reset(new A[5]);

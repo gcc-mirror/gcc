@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::fisher_f_distribution<double> u(2.0, 3.0), v, w;
 
   VERIFY( v == w );

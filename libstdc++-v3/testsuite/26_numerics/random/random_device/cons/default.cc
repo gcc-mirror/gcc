@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::random_device x;
 
   VERIFY( x.min() == std::numeric_limits<std::random_device::result_type>::min() );

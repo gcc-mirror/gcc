@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::uniform_on_sphere_distribution<3> u, v;
 
   VERIFY( !(u != v) );

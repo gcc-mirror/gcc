@@ -31,8 +31,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::sfmt19937 u, v;
 
   VERIFY( u == v );

@@ -25,7 +25,6 @@ template<typename T>
   void
   check_remove_unsigned()
   {
-    bool test __attribute__((unused)) = true;
     typedef typename __gnu_cxx::__remove_unsigned<T>::__type signed_type;
     VERIFY( std::tr1::is_signed<signed_type>::value );
   }

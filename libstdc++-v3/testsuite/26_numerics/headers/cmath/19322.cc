@@ -23,8 +23,6 @@
 // libstdc++/19322
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( !std::isnan(3.0) );
 }
 

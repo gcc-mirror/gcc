@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::mersenne_twister_engine<
     unsigned long, 32, 624, 397, 31,
     0x9908b0dful, 11,

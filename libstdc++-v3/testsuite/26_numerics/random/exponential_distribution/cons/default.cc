@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::exponential_distribution<> u;
   VERIFY( u.lambda() == 1.0 );
   typedef std::exponential_distribution<>::result_type result_type;

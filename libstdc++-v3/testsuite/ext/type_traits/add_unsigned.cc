@@ -25,7 +25,6 @@ template<typename T>
   void
   check_add_unsigned()
   {
-    bool test __attribute__((unused)) = true;
     typedef typename __gnu_cxx::__add_unsigned<T>::__type unsigned_type;
     VERIFY( std::tr1::is_unsigned<unsigned_type>::value );
   }

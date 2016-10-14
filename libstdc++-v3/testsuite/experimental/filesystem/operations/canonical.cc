@@ -28,8 +28,6 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   std::error_code ec;
   auto p = __gnu_test::nonexistent_path();
   canonical( p, ec );
@@ -64,8 +62,6 @@ void
 test02()
 {
 #if __cpp_exceptions
-  bool test __attribute__((unused)) = false;
-
   fs::path p = "rel", base = __gnu_test::nonexistent_path();
   fs::path e1, e2;
   try {

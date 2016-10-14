@@ -126,8 +126,6 @@ namespace std
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::basic_string_view<A<B>> str02;
   typedef std::experimental::basic_string_view< A<B> >::size_type size_type_o;
   size_type_o sz03;

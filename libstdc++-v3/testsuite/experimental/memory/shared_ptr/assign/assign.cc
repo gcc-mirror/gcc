@@ -60,7 +60,6 @@ void
 test01()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::experimental::shared_ptr<A[5]> a;
   std::experimental::shared_ptr<A[]> a1;
@@ -98,8 +97,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> p(new A[5]);
   std::experimental::shared_ptr<A[5]> p1;
   std::experimental::shared_ptr<A[]> p2;

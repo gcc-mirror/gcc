@@ -36,8 +36,6 @@ struct B : A
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // test empty shared_ptrs compare equivalent
   std::experimental::shared_ptr<A[5]> p1;
   std::experimental::shared_ptr<B[5]> p2;
@@ -50,8 +48,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> A_default;
 
   std::experimental::shared_ptr<A[5]> A_from_A(new A[5]);

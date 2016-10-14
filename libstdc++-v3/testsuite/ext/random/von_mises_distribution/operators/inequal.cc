@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::von_mises_distribution<double> u(1.5, 3.0), v, w;
 
   VERIFY( u != v );

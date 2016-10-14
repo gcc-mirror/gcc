@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::subtract_with_carry_engine<unsigned long, 24, 10, 24> u;
   std::subtract_with_carry_engine<unsigned long, 24, 10, 24> v;
 

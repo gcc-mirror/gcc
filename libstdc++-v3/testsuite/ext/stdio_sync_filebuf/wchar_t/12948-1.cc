@@ -23,7 +23,6 @@
 // libstdc++/12048
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   const char* name = "cin_unget-1.txt";
 
   std::FILE* file = std::fopen(name, "r");

@@ -32,8 +32,6 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   auto p = __gnu_test::nonexistent_path();
   std::error_code ec;
 
@@ -59,8 +57,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   auto from = __gnu_test::nonexistent_path();
   auto to = __gnu_test::nonexistent_path();
   std::error_code ec;
@@ -98,8 +94,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = false;
-
   auto from = __gnu_test::nonexistent_path();
   auto to = __gnu_test::nonexistent_path();
 
@@ -124,8 +118,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = false;
-
   auto from = __gnu_test::nonexistent_path();
   auto to = __gnu_test::nonexistent_path();
   std::error_code ec;
@@ -136,8 +128,6 @@ test04()
 void
 test05()
 {
-  bool test __attribute__((unused)) = false;
-
   auto to = __gnu_test::nonexistent_path();
   std::error_code ec;
 

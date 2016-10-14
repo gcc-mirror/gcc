@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shuffle_order_engine
     <
       std::linear_congruential_engine<uint_fast32_t,16807UL, 0UL, 2147483647UL>,

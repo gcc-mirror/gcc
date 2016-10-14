@@ -44,7 +44,6 @@ init_vala(std::valarray<int>& v, size_t first, size_t last, int val)
 // libstdc++/30416
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   // shift

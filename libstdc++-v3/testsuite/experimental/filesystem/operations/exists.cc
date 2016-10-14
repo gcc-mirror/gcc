@@ -28,8 +28,6 @@ using std::experimental::filesystem::path;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   VERIFY( exists(path{"/"}) );
   VERIFY( exists(path{"/."}) );
   VERIFY( exists(path{"."}) );
@@ -40,8 +38,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   path rel = __gnu_test::nonexistent_path();
   VERIFY( !exists(rel) );
 }
@@ -49,8 +45,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = false;
-
   path abs = absolute(__gnu_test::nonexistent_path());
   VERIFY( !exists(abs) );
 }

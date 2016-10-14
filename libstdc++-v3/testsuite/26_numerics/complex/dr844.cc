@@ -29,7 +29,6 @@
 // and also PR57974.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::check_ret_type;
 
   typedef std::complex<float>       cmplx_f_type;

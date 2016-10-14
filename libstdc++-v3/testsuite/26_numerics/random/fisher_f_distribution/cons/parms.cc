@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::fisher_f_distribution<> u(2.0, 3.0);
   VERIFY( u.m() == 2.0 );
   VERIFY( u.n() == 3.0 );

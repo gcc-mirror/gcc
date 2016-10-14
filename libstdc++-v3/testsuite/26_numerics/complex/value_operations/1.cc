@@ -26,7 +26,6 @@
 void test01()
 {
  using namespace std;
- bool test __attribute__((unused)) = true;
  typedef complex<double> complex_type;
  const double cd1 = -11.451;
  const double cd2 = -442.1533;

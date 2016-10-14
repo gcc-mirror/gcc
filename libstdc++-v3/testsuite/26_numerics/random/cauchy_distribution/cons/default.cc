@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::cauchy_distribution<> u;
   VERIFY( u.a() == 0.0 );
   VERIFY( u.b() == 1.0 );

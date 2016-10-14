@@ -21,8 +21,6 @@
 // DR 543. valarray slice default constructor
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::valarray<int> v1(10);
   std::valarray<int> v2 = v1[std::slice()];
   VERIFY( v2.size() == 0 );

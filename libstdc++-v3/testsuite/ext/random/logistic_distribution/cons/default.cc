@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::logistic_distribution<> u;
   VERIFY( u.a() == 0.0 );
   VERIFY( u.b() == 1.0 );

@@ -29,7 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
   using std::experimental::filesystem::copy_options;
   std::error_code ec;
 

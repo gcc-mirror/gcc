@@ -30,8 +30,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> a;
   VERIFY( a.get() == 0 );
 

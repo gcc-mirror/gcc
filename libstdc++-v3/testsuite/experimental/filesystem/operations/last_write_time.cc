@@ -35,7 +35,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using time_type = std::experimental::filesystem::file_time_type;
 
   auto p = __gnu_test::nonexistent_path();

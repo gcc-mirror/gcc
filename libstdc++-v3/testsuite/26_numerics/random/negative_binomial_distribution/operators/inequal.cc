@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::negative_binomial_distribution<int> u(3, 0.75), v, w;
 
   VERIFY( u != v );

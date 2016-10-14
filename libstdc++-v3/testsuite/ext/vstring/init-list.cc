@@ -22,10 +22,8 @@
 #include <ext/vstring.h>
 #include <testsuite_hooks.h>
 
-int test01(void)
+void test01(void)
 {
-  bool test = true;
-
   __gnu_cxx::__vstring s1 = { 'a', 'b', 'c' };
   VERIFY(s1 == "abc");
 
@@ -59,8 +57,6 @@ int test01(void)
   i2 = i1+6;
   s1.replace(i1, i2, { 'y', 'z' });
   VERIFY(s1 == "mnyzo");
-
-  return test;
 }
 
 int main()

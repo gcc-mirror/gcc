@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::uniform_int_distribution<int> u;
   VERIFY( u.a() == 0 );
   VERIFY( u.b() == std::numeric_limits<int>::max() );

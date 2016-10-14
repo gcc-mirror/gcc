@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::k_distribution<double> u(2.0, 1.5, 3.0), v, w;
 
   VERIFY( u != v );

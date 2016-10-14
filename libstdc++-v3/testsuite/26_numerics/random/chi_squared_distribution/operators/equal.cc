@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::chi_squared_distribution<double> u(1.5), v, w;
 
   VERIFY( v == w );

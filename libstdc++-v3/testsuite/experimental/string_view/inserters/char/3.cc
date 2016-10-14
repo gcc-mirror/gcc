@@ -32,8 +32,6 @@
 void
 test09()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::string_view foo{"peace\0\0\0& love"};
 
   std::ostringstream oss1;

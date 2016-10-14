@@ -22,11 +22,9 @@
 
 // basic_string_view::find_last_of
 
-bool
+void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::string_view z("ab");
   std::experimental::string_view::size_type pos;
   pos = z.find_last_of("ab");
@@ -43,8 +41,6 @@ test02()
   VERIFY( pos == 1 );
   pos = z.find_last_of('X');
   VERIFY( pos == std::experimental::string_view::npos );
-
-  return test;
 }
 
 int

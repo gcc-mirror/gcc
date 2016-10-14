@@ -25,8 +25,6 @@
 // libstdc++/47773
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_cxx::__wvstring vstring_t;
   typedef std::unordered_map<vstring_t, int> map_t;
 

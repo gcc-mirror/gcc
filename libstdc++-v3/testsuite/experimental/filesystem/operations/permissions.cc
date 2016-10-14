@@ -29,7 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using perms = std::experimental::filesystem::perms;
 
   auto p = __gnu_test::nonexistent_path();

@@ -48,8 +48,6 @@ void isunordered() { }
 template <typename _Tp, typename _Up = _Tp>
   void test_c99_classify()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef _Tp fp_type_one;
     typedef _Up fp_type_two;
     fp_type_one f1 = 1.0;

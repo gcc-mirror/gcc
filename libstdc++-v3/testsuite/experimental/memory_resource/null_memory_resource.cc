@@ -28,8 +28,6 @@ using std::experimental::pmr::new_delete_resource;
 void
 test06()
 {
-  bool test __attribute((unused)) = false;
-
   memory_resource* r = null_memory_resource();
   bool caught = false;
 

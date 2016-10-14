@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::beta_distribution<> u;
   VERIFY( u.alpha() == 1.0 );
   VERIFY( u.beta() == 1.0 );

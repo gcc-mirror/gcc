@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std::experimental::filesystem;
   const std::string s = "abc";
   path p(s);
@@ -43,8 +41,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std::experimental::filesystem;
   const char* s = "abc";
   path p(s);

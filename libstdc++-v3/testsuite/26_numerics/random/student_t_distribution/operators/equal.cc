@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::student_t_distribution<double> u(1.5), v, w;
 
   VERIFY( v == w );

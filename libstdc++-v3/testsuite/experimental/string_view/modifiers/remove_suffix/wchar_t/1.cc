@@ -23,8 +23,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   using namespace std::experimental;
 
   wstring_view str0{L"olympus mons"};

@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::geometric_distribution<> u;
   VERIFY( u.p() == 0.5 );
   VERIFY( u.min() == 0 );

@@ -25,8 +25,6 @@ auto is_odd = [](const int i) { return i % 2 != 0; };
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::set<int> s{ 10, 11, 12, 14, 15, 17, 18, 19 };
   std::experimental::erase_if(s, is_odd);
   std::set<int> t{ 10, 12, 14, 18 };
@@ -36,8 +34,6 @@ test01()
 void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   std::multiset<int> ms{ 20, 21, 22, 22, 23, 23, 24, 25 };
   std::experimental::erase_if(ms, is_odd);
   std::multiset<int> t{ 20, 22, 22, 24 };

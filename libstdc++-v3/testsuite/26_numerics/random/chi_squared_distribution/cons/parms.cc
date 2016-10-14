@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::chi_squared_distribution<> u(1.5);
   VERIFY( u.n() == 1.5 );
   typedef std::chi_squared_distribution<>::result_type result_type;

@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringstream str;
   __gnu_cxx::arcsine_distribution<double> u(-1.5, 3.0), v;
   std::minstd_rand0 rng;

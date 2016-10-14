@@ -30,8 +30,6 @@ array_type extern_array;
 
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
-
   using __gnu_cxx::__versa_string;
   typedef __gnu_cxx::array_allocator<char_type, array_type> allocator_type;
   typedef __versa_string<char_type, traits_type, allocator_type> string_type;

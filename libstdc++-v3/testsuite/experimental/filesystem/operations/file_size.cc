@@ -28,8 +28,6 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   std::error_code ec;
   size_t size = fs::file_size(".", ec);
   VERIFY( ec == std::errc::is_a_directory );
@@ -48,8 +46,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   fs::path p = __gnu_test::nonexistent_path();
 
   std::error_code ec;

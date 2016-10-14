@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::weibull_distribution<> u(2.0, 3.5);
   VERIFY( u.a() == 2.0 );
   VERIFY( u.b() == 3.5 );

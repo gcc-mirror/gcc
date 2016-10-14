@@ -26,7 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef unsigned long value_type;
 
   std::mersenne_twister_engine<
