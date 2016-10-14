@@ -1,3 +1,16 @@
+2016-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto15.adb: Adjust.
+	* gnat.dg/lto16.adb: Likewise.
+	* gnat.dg/lto17.adb: Likewise
+	* gnat.dg/lto18.ad[sb]: New test.
+	* gnat.dg/lto18_pkg.ads: New helper.
+	* gnat.dg/lto19.adb: New test.
+	* gnat.dg/lto19_pkg1.ad[sb]: New helper.
+	* gnat.dg/lto19_pkg2.ad[sb]: Likewise.
+	* gnat.dg/lto20.adb: New test.
+	* gnat.dg/lto20_pkg.ad[sb]: New helper.
+
 2016-10-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* gfortran.dg/coarray_38.f90: Expect error message.

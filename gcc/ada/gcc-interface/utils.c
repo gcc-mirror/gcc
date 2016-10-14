@@ -2473,20 +2473,9 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
      constant initialization and save any variable elaborations for the
      elaboration routine.  If we are just annotating types, throw away the
      initialization if it isn't a constant.  */
-  if ((extern_flag && init && !constant_p)
+  if ((extern_flag && !constant_p)
       || (type_annotate_only && init && !TREE_CONSTANT (init)))
-    {
-      init = NULL_TREE;
-
-      /* In LTO mode, also clear TREE_READONLY the same way add_decl_expr
-	 would do it if the initializer was not thrown away here, as the
-	 WPA phase requires a consistent view across compilation units.  */
-      if (const_flag && flag_generate_lto)
-	{
-	  const_flag = false;
-	  DECL_READONLY_ONCE_ELAB (var_decl) = 1;
-	}
-    }
+    init = NULL_TREE;
 
   /* At the global level, a non-constant initializer generates elaboration
      statements.  Check that such statements are allowed, that is to say,
@@ -5341,6 +5330,58 @@ smaller_form_type_p (tree type, tree orig_type)
   return tree_int_cst_lt (size, osize) != 0;
 }
 
+/* Return whether EXPR, which is the renamed object in an object renaming
+   declaration, can be materialized as a reference (with a REFERENCE_TYPE).
+   This should be synchronized with Exp_Dbug.Debug_Renaming_Declaration.  */
+
+bool
+can_materialize_object_renaming_p (Node_Id expr)
+{
+  while (true)
+    {
+      switch Nkind (expr)
+	{
+	case N_Identifier:
+	case N_Expanded_Name:
+	  return true;
+
+	case N_Selected_Component:
+	  {
+	    if (Is_Packed (Underlying_Type (Etype (Prefix (expr)))))
+	      return false;
+
+	    const Uint bitpos
+	      = Normalized_First_Bit (Entity (Selector_Name (expr)));
+	    if (!UI_Is_In_Int_Range (bitpos)
+		|| (bitpos != UI_No_Uint && bitpos != UI_From_Int (0)))
+	      return false;
+
+	    expr = Prefix (expr);
+	    break;
+	  }
+
+	case N_Indexed_Component:
+	case N_Slice:
+	  {
+	    const Entity_Id t = Underlying_Type (Etype (Prefix (expr)));
+
+	    if (Is_Array_Type (t) && Present (Packed_Array_Impl_Type (t)))
+	      return false;
+
+	    expr = Prefix (expr);
+	    break;
+	  }
+
+	case N_Explicit_Dereference:
+	  expr = Prefix (expr);
+	  break;
+
+	default:
+	  return true;
+	};
+    }
+}
+
 /* Perform final processing on global declarations.  */
 
 static GTY (()) tree dummy_global;
@@ -6183,58 +6224,6 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   *node = vector_type;
 
   return NULL_TREE;
-}
-
-/* Return whether EXPR, which is the renamed object in an object renaming
-   declaration, can be materialized as a reference (REFERENCE_TYPE).  This
-   should be synchronized with Exp_Dbug.Debug_Renaming_Declaration.  */
-
-bool
-can_materialize_object_renaming_p (Node_Id expr)
-{
-  while (true)
-    {
-      switch Nkind (expr)
-	{
-	case N_Identifier:
-	case N_Expanded_Name:
-	  return true;
-
-	case N_Selected_Component:
-	  {
-	    if (Is_Packed (Underlying_Type (Etype (Prefix (expr)))))
-	      return false;
-
-	    const Uint bitpos
-	      = Normalized_First_Bit (Entity (Selector_Name (expr)));
-	    if (!UI_Is_In_Int_Range (bitpos)
-		|| (bitpos != UI_No_Uint && bitpos != UI_From_Int (0)))
-	      return false;
-
-	    expr = Prefix (expr);
-	    break;
-	  }
-
-	case N_Indexed_Component:
-	case N_Slice:
-	  {
-	    const Entity_Id t = Underlying_Type (Etype (Prefix (expr)));
-
-	    if (Is_Array_Type (t) && Present (Packed_Array_Impl_Type (t)))
-	      return false;
-
-	    expr = Prefix (expr);
-	    break;
-	  }
-
-	case N_Explicit_Dereference:
-	  expr = Prefix (expr);
-	  break;
-
-	default:
-	  return true;
-	};
-    }
 }
 
 /* ----------------------------------------------------------------------- *
