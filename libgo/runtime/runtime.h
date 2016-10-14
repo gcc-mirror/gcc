@@ -55,7 +55,6 @@ typedef uintptr		uintreg;
 
 typedef	uint8			bool;
 typedef	uint8			byte;
-typedef	struct	Func		Func;
 typedef	struct	g		G;
 typedef	struct	mutex		Lock;
 typedef	struct	m		M;
@@ -151,16 +150,6 @@ struct	SigTab
 	int32	sig;
 	int32	flags;
 	void*   fwdsig;
-};
-
-// Layout of in-memory per-function information prepared by linker
-// See http://golang.org/s/go12symtab.
-// Keep in sync with linker and with ../../libmach/sym.c
-// and with package debug/gosym.
-struct	Func
-{
-	String	name;
-	uintptr	entry;	// entry pc
 };
 
 #ifdef GOOS_nacl
@@ -446,7 +435,6 @@ void	runtime_crash(void);
 void	runtime_parsedebugvars(void)
   __asm__(GOSYM_PREFIX "runtime.parsedebugvars");
 void	_rt0_go(void);
-void*	runtime_funcdata(Func*, int32);
 int32	runtime_setmaxthreads(int32);
 G*	runtime_timejump(void);
 void	runtime_iterate_finq(void (*callback)(FuncVal*, void*, const FuncType*, const PtrType*));

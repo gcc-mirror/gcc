@@ -1,4 +1,4 @@
-/* go-caller.c -- runtime.Caller and runtime.FuncForPC for Go.
+/* go-caller.c -- look up function/file/line/entry info
 
    Copyright 2009 The Go Authors. All rights reserved.
    Use of this source code is governed by a BSD-style
@@ -171,8 +171,6 @@ struct caller_ret
 
 struct caller_ret Caller (int n) __asm__ (GOSYM_PREFIX "runtime.Caller");
 
-Func *FuncForPC (uintptr_t) __asm__ (GOSYM_PREFIX "runtime.FuncForPC");
-
 /* Implement runtime.Caller.  */
 
 struct caller_ret
@@ -193,115 +191,40 @@ Caller (int skip)
   return ret;
 }
 
-/* Implement runtime.FuncForPC.  */
+/* Look up the function name, file name, and line number for a PC.  */
 
-Func *
-FuncForPC (uintptr_t pc)
+struct funcfileline_return
 {
-  Func *ret;
-  String fn;
-  String file;
-  intgo line;
-  uintptr_t val;
-
-  if (!__go_file_line (pc, -1, &fn, &file, &line))
-    return NULL;
-
-  ret = (Func *) runtime_malloc (sizeof (*ret));
-  ret->name = fn;
-
-  if (__go_symbol_value (pc, &val))
-    ret->entry = val;
-  else
-    ret->entry = 0;
-
-  return ret;
-}
-
-/* Look up the file and line information for a PC within a
-   function.  */
-
-struct funcline_go_return
-{
+  String retfn;
   String retfile;
   intgo retline;
 };
 
-struct funcline_go_return
-runtime_funcline_go (Func *f, uintptr targetpc)
-  __asm__ (GOSYM_PREFIX "runtime.funcline_go");
+struct funcfileline_return
+runtime_funcfileline (uintptr targetpc, int32 index)
+  __asm__ (GOSYM_PREFIX "runtime.funcfileline");
 
-struct funcline_go_return
-runtime_funcline_go (Func *f __attribute__((unused)), uintptr targetpc)
+struct funcfileline_return
+runtime_funcfileline (uintptr targetpc, int32 index)
 {
-  struct funcline_go_return ret;
-  String fn;
+  struct funcfileline_return ret;
 
-  if (!__go_file_line (targetpc, -1, &fn, &ret.retfile,  &ret.retline))
+  if (!__go_file_line (targetpc, index, &ret.retfn, &ret.retfile,
+		       &ret.retline))
     runtime_memclr (&ret, sizeof ret);
   return ret;
-}
-
-/* Return the name of a function.  */
-String runtime_funcname_go (Func *f)
-  __asm__ (GOSYM_PREFIX "runtime.funcname_go");
-
-String
-runtime_funcname_go (Func *f)
-{
-  if (f == NULL)
-    return runtime_gostringnocopy ((const byte *) "");
-  return f->name;
 }
 
 /* Return the entry point of a function.  */
-uintptr runtime_funcentry_go(Func *f)
-  __asm__ (GOSYM_PREFIX "runtime.funcentry_go");
+uintptr runtime_funcentry(uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.funcentry");
 
 uintptr
-runtime_funcentry_go (Func *f)
+runtime_funcentry (uintptr pc)
 {
-  return f->entry;
-}
+  uintptr val;
 
-/* Look up file and line information for Frames.Next.  */
-
-struct funcframe_return
-{
-  Func* retfunc;
-  String retfile;
-  intgo retline;
-};
-
-struct funcframe_return
-runtime_funcframe (uintptr pc, int index)
-  __asm__ (GOSYM_PREFIX "runtime.funcframe");
-
-struct funcframe_return
-runtime_funcframe (uintptr pc, int index)
-{
-  struct funcframe_return ret;
-  String fn;
-  Func* func;
-  uintptr_t val;
-
-  // Subtract 1 from PC to undo the 1 we added in callback in go-callers.c.
-  --pc;
-
-  if (!__go_file_line (pc, index, &fn, &ret.retfile, &ret.retline))
-    runtime_memclr (&ret, sizeof ret);
-  else
-    {
-      func = (Func *) runtime_malloc (sizeof (*func));
-      func->name = fn;
-
-      if (__go_symbol_value (pc, &val))
-	func->entry = val;
-      else
-	func->entry = 0;
-
-      ret.retfunc = func;
-    }
-
-  return ret;
+  if (!__go_symbol_value (pc, &val))
+    return 0;
+  return val;
 }
