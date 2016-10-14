@@ -859,7 +859,8 @@ unroll_loop_runtime_iterations (struct loop *loop)
   rtx_insn *init_code, *branch_code;
   unsigned i, j, p;
   basic_block preheader, *body, swtch, ezc_swtch;
-  int may_exit_copy;
+  int may_exit_copy, iter_freq, new_freq;
+  gcov_type iter_count, new_count;
   unsigned n_peel;
   edge e;
   bool extra_zero_check, last_may_exit;
@@ -953,6 +954,15 @@ unroll_loop_runtime_iterations (struct loop *loop)
   /* Record the place where switch will be built for preconditioning.  */
   swtch = split_edge (loop_preheader_edge (loop));
 
+  /* Compute frequency/count increments for each switch block and initialize
+     innermost switch block.  Switch blocks and peeled loop copies are built
+     from innermost outward.  */
+  iter_freq = new_freq = swtch->frequency / (max_unroll + 1);
+  iter_count = new_count = swtch->count / (max_unroll + 1);
+  swtch->frequency = new_freq;
+  swtch->count = new_count;
+  single_succ_edge (swtch)->count = new_count;
+
   for (i = 0; i < n_peel; i++)
     {
       /* Peel the copy.  */
@@ -970,6 +980,10 @@ unroll_loop_runtime_iterations (struct loop *loop)
       p = REG_BR_PROB_BASE / (i + 2);
 
       preheader = split_edge (loop_preheader_edge (loop));
+      /* Add in frequency/count of edge from switch block.  */
+      preheader->frequency += iter_freq;
+      preheader->count += iter_count;
+      single_succ_edge (preheader)->count = preheader->count;
       branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
 					  block_label (preheader), p,
 					  NULL);
@@ -981,9 +995,14 @@ unroll_loop_runtime_iterations (struct loop *loop)
       swtch = split_edge_and_insert (single_pred_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
       single_succ_edge (swtch)->probability = REG_BR_PROB_BASE - p;
+      single_succ_edge (swtch)->count = new_count;
+      new_freq += iter_freq;
+      new_count += iter_count;
+      swtch->frequency = new_freq;
+      swtch->count = new_count;
       e = make_edge (swtch, preheader,
 		     single_succ_edge (swtch)->flags & EDGE_IRREDUCIBLE_LOOP);
-      e->count = RDIV (preheader->count * REG_BR_PROB_BASE, p);
+      e->count = iter_count;
       e->probability = p;
     }
 
@@ -993,6 +1012,14 @@ unroll_loop_runtime_iterations (struct loop *loop)
       p = REG_BR_PROB_BASE / (max_unroll + 1);
       swtch = ezc_swtch;
       preheader = split_edge (loop_preheader_edge (loop));
+      /* Recompute frequency/count adjustments since initial peel copy may
+	 have exited and reduced those values that were computed above.  */
+      iter_freq = swtch->frequency / (max_unroll + 1);
+      iter_count = swtch->count / (max_unroll + 1);
+      /* Add in frequency/count of edge from switch block.  */
+      preheader->frequency += iter_freq;
+      preheader->count += iter_count;
+      single_succ_edge (preheader)->count = preheader->count;
       branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
 					  block_label (preheader), p,
 					  NULL);
@@ -1001,9 +1028,10 @@ unroll_loop_runtime_iterations (struct loop *loop)
       swtch = split_edge_and_insert (single_succ_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
       single_succ_edge (swtch)->probability = REG_BR_PROB_BASE - p;
+      single_succ_edge (swtch)->count -= iter_count;
       e = make_edge (swtch, preheader,
 		     single_succ_edge (swtch)->flags & EDGE_IRREDUCIBLE_LOOP);
-      e->count = RDIV (preheader->count * REG_BR_PROB_BASE, p);
+      e->count = iter_count;
       e->probability = p;
     }
 

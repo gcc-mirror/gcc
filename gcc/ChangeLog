@@ -1,3 +1,11 @@
+2016-10-14  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR rtl-optimization/68212
+	* cfgloopmanip.c (duplicate_loop_to_header_edge): Use preheader edge
+	frequency when computing scale factor for peeled copies.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Fix freq/count
+	values for switch/peel blocks/edges.
+
 2016-10-14  Pedro Alves  <palves@redhat.com>
 
 	* coretypes.h (OVERRIDE, FINAL): Delete, moved to
