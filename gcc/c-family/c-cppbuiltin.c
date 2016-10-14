@@ -936,6 +936,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_if_constexpr=201606");
 	  cpp_define (pfile, "__cpp_capture_star_this=201603");
 	  cpp_define (pfile, "__cpp_inline_variables=201606");
+	  cpp_define (pfile, "__cpp_aggregate_bases=201603");
+	  cpp_define (pfile, "__cpp_deduction_guides=201606");
 	}
       if (flag_concepts)
 	/* Use a value smaller than the 201507 specified in
