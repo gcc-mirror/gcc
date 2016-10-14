@@ -1,5 +1,14 @@
 2016-10-14  Pedro Alves  <palves@redhat.com>
 
+	* ansidecl.h [__cplusplus >= 201103 && GCC_VERSION < 4007] (FINAL,
+	OVERRIDE): Define as empty.
+	[__cplusplus < 201103 && GCC_VERSION < 4007] (FINAL): Define as
+	__final.
+	[__cplusplus < 201103 && GCC_VERSION >= 4007] (OVERRIDE): Define as
+	empty.
+
+2016-10-14  Pedro Alves  <palves@redhat.com>
+
 	* ansidecl.h (GCC_FINAL): Delete.
 	(OVERRIDE, FINAL): New, moved from gcc/coretypes.h.
 

@@ -329,13 +329,23 @@ So instead we use the macro below and test it against specific values.  */
    this by default (actually GNU++14).  */
 
 #if __cplusplus >= 201103
-/* C++11 claims to be available: use it: */
-#define OVERRIDE override
-#define FINAL final
+/* C++11 claims to be available: use it.  final/override were only
+   implemented in 4.7, though.  */
+# if GCC_VERSION < 4007
+#  define OVERRIDE
+#  define FINAL
+# else
+#  define OVERRIDE override
+#  define FINAL final
+# endif
+#elif GCC_VERSION >= 4007
+/* G++ 4.7 supports __final in C++98.  */
+# define OVERRIDE
+# define FINAL __final
 #else
 /* No C++11 support; leave the macros empty: */
-#define OVERRIDE
-#define FINAL
+# define OVERRIDE
+# define FINAL
 #endif
 
 #ifdef __cplusplus
