@@ -1,5 +1,10 @@
 2016-10-14  Pat Haugen  <pthaugen@us.ibm.com>
 
+	* loop-unroll.c (unroll_loop_runtime_iterations): Condition initial
+	loop peel to loops with exit test at the beginning.
+
+2016-10-14  Pat Haugen  <pthaugen@us.ibm.com>
+
 	PR rtl-optimization/68212
 	* cfgloopmanip.c (duplicate_loop_to_header_edge): Use preheader edge
 	frequency when computing scale factor for peeled copies.

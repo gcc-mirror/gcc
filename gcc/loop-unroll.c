@@ -858,7 +858,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   rtx old_niter, niter, tmp;
   rtx_insn *init_code, *branch_code;
   unsigned i, j, p;
-  basic_block preheader, *body, swtch, ezc_swtch;
+  basic_block preheader, *body, swtch, ezc_swtch = NULL;
   int may_exit_copy, iter_freq, new_freq;
   gcov_type iter_count, new_count;
   unsigned n_peel;
@@ -918,6 +918,16 @@ unroll_loop_runtime_iterations (struct loop *loop)
   if (tmp != niter)
     emit_move_insn (niter, tmp);
 
+  /* For loops that exit at end, add one to niter to account for first pass
+     through loop body before reaching exit test. */
+  if (exit_at_end)
+    {
+      niter = expand_simple_binop (desc->mode, PLUS,
+				   niter, const1_rtx,
+				   NULL_RTX, 0, OPTAB_LIB_WIDEN);
+      old_niter = niter;
+    }
+
   /* Count modulo by ANDing it with max_unroll; we use the fact that
      the number of unrollings is a power of two, and thus this is correct
      even if there is overflow in the computation.  */
@@ -936,20 +946,21 @@ unroll_loop_runtime_iterations (struct loop *loop)
 
   auto_sbitmap wont_exit (max_unroll + 2);
 
-  /* Peel the first copy of loop body (almost always we must leave exit test
-     here; the only exception is when we have extra zero check and the number
-     of iterations is reliable.  Also record the place of (possible) extra
-     zero check.  */
-  bitmap_clear (wont_exit);
-  if (extra_zero_check
-      && !desc->noloop_assumptions)
-    bitmap_set_bit (wont_exit, 1);
-  ezc_swtch = loop_preheader_edge (loop)->src;
-  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-				      1, wont_exit, desc->out_edge,
-				      &remove_edges,
-				      DLTHE_FLAG_UPDATE_FREQ);
-  gcc_assert (ok);
+  if (extra_zero_check)
+    {
+      /* Peel the first copy of loop body.  Leave the exit test if the number
+	 of iterations is not reliable.  Also record the place of the extra zero
+	 check.  */
+      bitmap_clear (wont_exit);
+      if (!desc->noloop_assumptions)
+	bitmap_set_bit (wont_exit, 1);
+      ezc_swtch = loop_preheader_edge (loop)->src;
+      ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+					  1, wont_exit, desc->out_edge,
+					  &remove_edges,
+					  DLTHE_FLAG_UPDATE_FREQ);
+      gcc_assert (ok);
+    }
 
   /* Record the place where switch will be built for preconditioning.  */
   swtch = split_edge (loop_preheader_edge (loop));
