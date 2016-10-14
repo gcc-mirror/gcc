@@ -207,50 +207,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
-  /**
-   *  Knowing which of unary_function and binary_function _Tp derives
-   *  from, derives from the same and ensures that reference_wrapper
-   *  will have a weak result type. See cases below.
-   */
-  template<bool _Unary, bool _Binary, typename _Tp>
-    struct _Reference_wrapper_base_impl;
-
-  // None of the nested argument types.
-  template<typename _Tp>
-    struct _Reference_wrapper_base_impl<false, false, _Tp>
-    : _Weak_result_type<_Tp>
+  // Detect nested argument_type.
+  template<typename _Tp, typename = __void_t<>>
+    struct _Refwrap_base_arg1
     { };
 
-  // Nested argument_type only.
+  // Nested argument_type.
   template<typename _Tp>
-    struct _Reference_wrapper_base_impl<true, false, _Tp>
-    : _Weak_result_type<_Tp>
+    struct _Refwrap_base_arg1<_Tp,
+			      __void_t<typename _Tp::argument_type>>
     {
       typedef typename _Tp::argument_type argument_type;
     };
 
-  // Nested first_argument_type and second_argument_type only.
+  // Detect nested first_argument_type and second_argument_type.
+  template<typename _Tp, typename = __void_t<>>
+    struct _Refwrap_base_arg2
+    { };
+
+  // Nested first_argument_type and second_argument_type.
   template<typename _Tp>
-    struct _Reference_wrapper_base_impl<false, true, _Tp>
-    : _Weak_result_type<_Tp>
+    struct _Refwrap_base_arg2<_Tp,
+			      __void_t<typename _Tp::first_argument_type,
+				       typename _Tp::second_argument_type>>
     {
       typedef typename _Tp::first_argument_type first_argument_type;
       typedef typename _Tp::second_argument_type second_argument_type;
     };
-
-  // All the nested argument types.
-   template<typename _Tp>
-    struct _Reference_wrapper_base_impl<true, true, _Tp>
-    : _Weak_result_type<_Tp>
-    {
-      typedef typename _Tp::argument_type argument_type;
-      typedef typename _Tp::first_argument_type first_argument_type;
-      typedef typename _Tp::second_argument_type second_argument_type;
-    };
-
-  _GLIBCXX_HAS_NESTED_TYPE(argument_type)
-  _GLIBCXX_HAS_NESTED_TYPE(first_argument_type)
-  _GLIBCXX_HAS_NESTED_TYPE(second_argument_type)
 
   /**
    *  Derives from unary_function or binary_function when it
@@ -260,11 +243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _Tp>
     struct _Reference_wrapper_base
-    : _Reference_wrapper_base_impl<
-      __has_argument_type<_Tp>::value,
-      __has_first_argument_type<_Tp>::value
-      && __has_second_argument_type<_Tp>::value,
-      _Tp>
+    : _Weak_result_type<_Tp>, _Refwrap_base_arg1<_Tp>, _Refwrap_base_arg2<_Tp>
     { };
 
   // - a function type (unary)
