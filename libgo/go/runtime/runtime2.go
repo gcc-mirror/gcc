@@ -394,7 +394,7 @@ type g struct {
 	issystem     bool // do not output in stack dump
 	isbackground bool // ignore in deadlock detector
 
-	traceback *traceback // stack traceback buffer
+	traceback *tracebackg // stack traceback buffer
 
 	context      g_ucontext_t       // saved context for setcontext
 	stackcontext [10]unsafe.Pointer // split-stack context
@@ -800,21 +800,6 @@ var (
 // required size and picking an appropriate offset when we use the
 // array.
 type g_ucontext_t [(_sizeof_ucontext_t + 15) / unsafe.Sizeof(unsafe.Pointer(nil))]unsafe.Pointer
-
-// traceback is used to collect stack traces from other goroutines.
-type traceback struct {
-	gp     *g
-	locbuf [_TracebackMaxFrames]location
-	c      int
-}
-
-// location is a location in the program, used for backtraces.
-type location struct {
-	pc       uintptr
-	filename string
-	function string
-	lineno   int
-}
 
 // cgoMal tracks allocations made by _cgo_allocate
 // FIXME: _cgo_allocate has been removed from gc and can probably be

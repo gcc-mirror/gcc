@@ -658,67 +658,12 @@ runtime_main(void* dummy __attribute__((unused)))
 }
 
 void
-runtime_goroutineheader(G *gp)
-{
-	String status;
-	int64 waitfor;
-
-	switch(gp->atomicstatus) {
-	case _Gidle:
-		status = runtime_gostringnocopy((const byte*)"idle");
-		break;
-	case _Grunnable:
-		status = runtime_gostringnocopy((const byte*)"runnable");
-		break;
-	case _Grunning:
-		status = runtime_gostringnocopy((const byte*)"running");
-		break;
-	case _Gsyscall:
-		status = runtime_gostringnocopy((const byte*)"syscall");
-		break;
-	case _Gwaiting:
-		if(gp->waitreason.len > 0)
-			status = gp->waitreason;
-		else
-			status = runtime_gostringnocopy((const byte*)"waiting");
-		break;
-	default:
-		status = runtime_gostringnocopy((const byte*)"???");
-		break;
-	}
-
-	// approx time the G is blocked, in minutes
-	waitfor = 0;
-	if((gp->atomicstatus == _Gwaiting || gp->atomicstatus == _Gsyscall) && gp->waitsince != 0)
-		waitfor = (runtime_nanotime() - gp->waitsince) / (60LL*1000*1000*1000);
-
-	if(waitfor < 1)
-		runtime_printf("goroutine %D [%S]:\n", gp->goid, status);
-	else
-		runtime_printf("goroutine %D [%S, %D minutes]:\n", gp->goid, status, waitfor);
-}
-
-void
-runtime_printcreatedby(G *g)
-{
-	if(g != nil && g->gopc != 0 && g->goid != 1) {
-		String fn;
-		String file;
-		intgo line;
-
-		if(__go_file_line(g->gopc - 1, -1, &fn, &file, &line)) {
-			runtime_printf("created by %S\n", fn);
-			runtime_printf("\t%S:%D\n", file, (int64) line);
-		}
-	}
-}
-
-void
 runtime_tracebackothers(G * volatile me)
 {
 	G * volatile gp;
 	Traceback tb;
 	int32 traceback;
+	Slice slice;
 	volatile uintptr i;
 
 	tb.gp = me;
@@ -739,7 +684,10 @@ runtime_tracebackothers(G * volatile me)
 		  runtime_gogo(gp);
 		}
 
-		runtime_printtrace(tb.locbuf, tb.c, false);
+		slice.__values = &tb.locbuf[0];
+		slice.__count = tb.c;
+		slice.__capacity = tb.c;
+		runtime_printtrace(slice, nil);
 		runtime_printcreatedby(gp);
 	}
 
@@ -780,7 +728,10 @@ runtime_tracebackothers(G * volatile me)
 				runtime_gogo(gp);
 			}
 
-			runtime_printtrace(tb.locbuf, tb.c, false);
+			slice.__values = &tb.locbuf[0];
+			slice.__count = tb.c;
+			slice.__capacity = tb.c;
+			runtime_printtrace(slice, nil);
 			runtime_printcreatedby(gp);
 		}
 	}
@@ -3596,4 +3547,29 @@ void
 sync_runtime_doSpin()
 {
 	runtime_procyield(ACTIVE_SPIN_CNT);
+}
+
+// For Go code to look at variables, until we port proc.go.
+
+extern M** runtime_go_allm(void)
+  __asm__ (GOSYM_PREFIX "runtime.allm");
+
+M**
+runtime_go_allm()
+{
+	return &runtime_allm;
+}
+
+extern Slice runtime_go_allgs(void)
+  __asm__ (GOSYM_PREFIX "runtime.allgs");
+
+Slice
+runtime_go_allgs()
+{
+	Slice s;
+
+	s.__values = runtime_allg;
+	s.__count = runtime_allglen;
+	s.__capacity = allgcap;
+	return s;
 }

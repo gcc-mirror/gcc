@@ -307,11 +307,6 @@ func gopark(func(*g, unsafe.Pointer) bool, unsafe.Pointer, string, byte, int)
 func goparkunlock(*mutex, string, byte, int)
 func goready(*g, int)
 
-// Temporary for gccgo until we port mprof.go.
-var blockprofilerate uint64
-
-func blockevent(cycles int64, skip int) {}
-
 // Temporary hack for gccgo until we port proc.go.
 //go:nosplit
 func acquireSudog() *sudog {
@@ -428,3 +423,24 @@ func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer
 func cpuprofAdd(stk []uintptr) {
 	cpuprof.add(stk)
 }
+
+// For gccgo until we port proc.go.
+func Breakpoint()
+func LockOSThread()
+func UnlockOSThread()
+func allm() *m
+func allgs() []*g
+
+//go:nosplit
+func readgstatus(gp *g) uint32 {
+	return atomic.Load(&gp.atomicstatus)
+}
+
+// Temporary for gccgo until we port malloc.go
+func persistentalloc(size, align uintptr, sysStat *uint64) unsafe.Pointer
+
+// Temporary for gccgo until we port mheap.go
+func setprofilebucket(p unsafe.Pointer, b *bucket)
+
+// Currently in proc.c.
+func tracebackothers(*g)
