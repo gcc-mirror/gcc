@@ -1,3 +1,10 @@
+2016-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	DR 1511 - const volatile variables and ODR
+	* decl.c (grokvardecl): Change flags argument to type_quals,
+	add conceptp argument.  Set TREE_PUBLIC for non-static volatile vars.
+	(grokdeclarator): Adjust grokvardecl caller.
+
 2016-10-13  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/71912
