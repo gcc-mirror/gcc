@@ -184,7 +184,8 @@ enum
 // SysFault marks a (already SysAlloc'd) region to fault
 // if accessed.  Used only for debugging the runtime.
 
-void*	runtime_SysAlloc(uintptr nbytes, uint64 *stat);
+void*	runtime_SysAlloc(uintptr nbytes, uint64 *stat)
+  __asm__ (GOSYM_PREFIX "runtime.sysAlloc");
 void	runtime_SysFree(void *v, uintptr nbytes, uint64 *stat);
 void	runtime_SysUnused(void *v, uintptr nbytes);
 void	runtime_SysUsed(void *v, uintptr nbytes);

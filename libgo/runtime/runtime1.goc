@@ -55,10 +55,6 @@ func getgoroot() (out String) {
 	out = runtime_getenv("GOROOT");
 }
 
-func runtime_pprof.runtime_cyclesPerSecond() (res int64) {
-	res = runtime_tickspersecond();
-}
-
 func sync.runtime_procPin() (p int) {
 	M *mp;
 

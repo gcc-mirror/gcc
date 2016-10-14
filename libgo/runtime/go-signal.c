@@ -156,6 +156,8 @@ runtime_sighandler (int sig, Siginfo *info,
 #ifdef SIGPROF
   if (sig == SIGPROF)
     {
+      /* FIXME: Handle m == NULL by calling something like gc's
+	 sigprofNonGo.  */
       if (m != NULL && gp != m->g0 && gp != m->gsignal)
 	runtime_sigprof ();
       return;

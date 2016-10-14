@@ -417,7 +417,10 @@ void	runtime_freezetheworld(void);
 void	runtime_unwindstack(G*, byte*);
 void	runtime_sigprof();
 void	runtime_resetcpuprofiler(int32);
-void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
+void	runtime_setcpuprofilerate_m(int32)
+     __asm__ (GOSYM_PREFIX "runtime.setcpuprofilerate_m");
+void	runtime_cpuprofAdd(Slice)
+     __asm__ (GOSYM_PREFIX "runtime.cpuprofAdd");
 void	runtime_usleep(uint32)
      __asm__ (GOSYM_PREFIX "runtime.usleep");
 int64	runtime_cputicks(void)
