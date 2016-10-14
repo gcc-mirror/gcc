@@ -1,3 +1,8 @@
+2016-10-14  Eelis van der Weegen  <eelis@eelis.net>
+
+	* include/bits/stl_algo.h (shuffle): Extract two random numbers from
+	each generator invocation when its range is large enough.
+
 2016-10-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/algorithm/sample.cc: Qualify calls to
