@@ -101,13 +101,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
+#if __cpp_aligned_new
+	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	  {
+	    std::align_val_t __al = std::align_val_t(alignof(_Tp));
+	    return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp), __al));
+	  }
+#endif
 	return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
       }
 
       // __p is not permitted to be a null pointer.
       void
       deallocate(pointer __p, size_type)
-      { ::operator delete(__p); }
+      {
+#if __cpp_aligned_new
+	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	  {
+	    ::operator delete(__p, std::align_val_t(alignof(_Tp)));
+	    return;
+	  }
+#endif
+	::operator delete(__p);
+      }
 
       size_type
       max_size() const _GLIBCXX_USE_NOEXCEPT
