@@ -5569,7 +5569,8 @@ next_initializable_field (tree field)
   while (field
 	 && (TREE_CODE (field) != FIELD_DECL
 	     || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
-	     || DECL_ARTIFICIAL (field)))
+	     || (DECL_ARTIFICIAL (field)
+		 && !(cxx_dialect >= cxx1z && DECL_FIELD_IS_BASE (field)))))
     field = DECL_CHAIN (field);
 
   return field;
@@ -13153,8 +13154,8 @@ xref_basetypes (tree ref, tree base_list)
   if (max_bases)
     {
       vec_alloc (BINFO_BASE_ACCESSES (binfo), max_bases);
-      /* An aggregate cannot have baseclasses.  */
-      CLASSTYPE_NON_AGGREGATE (ref) = 1;
+      /* A C++98 POD cannot have base classes.  */
+      CLASSTYPE_NON_LAYOUT_POD_P (ref) = true;
 
       if (TREE_CODE (ref) == UNION_TYPE)
 	error ("derived union %qT invalid", ref);
@@ -13181,6 +13182,13 @@ xref_basetypes (tree ref, tree base_list)
 
       if (access == access_default_node)
 	access = default_access;
+
+      /* Before C++17, an aggregate cannot have base classes.  In C++17, an
+	 aggregate can't have virtual, private, or protected base classes.  */
+      if (cxx_dialect < cxx1z
+	  || access != access_public_node
+	  || via_virtual)
+	CLASSTYPE_NON_AGGREGATE (ref) = true;
 
       if (PACK_EXPANSION_P (basetype))
         basetype = PACK_EXPANSION_PATTERN (basetype);

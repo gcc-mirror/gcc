@@ -4452,6 +4452,34 @@ layout_empty_base (record_layout_info rli, tree binfo,
   return atend;
 }
 
+/* Build the FIELD_DECL for BASETYPE as a base of T, add it to the chain of
+   fields at NEXT_FIELD, and return it.  */
+
+static tree
+build_base_field_1 (tree t, tree basetype, tree *&next_field)
+{
+  /* Create the FIELD_DECL.  */
+  gcc_assert (CLASSTYPE_AS_BASE (basetype));
+  tree decl = build_decl (input_location,
+			  FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  DECL_FIELD_CONTEXT (decl) = t;
+  DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
+  DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
+  SET_DECL_ALIGN (decl, CLASSTYPE_ALIGN (basetype));
+  DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
+  DECL_MODE (decl) = TYPE_MODE (basetype);
+  DECL_FIELD_IS_BASE (decl) = 1;
+
+  /* Add the new FIELD_DECL to the list of fields for T.  */
+  DECL_CHAIN (decl) = *next_field;
+  *next_field = decl;
+  next_field = &DECL_CHAIN (decl);
+
+  return decl;
+}
+
 /* Layout the base given by BINFO in the class indicated by RLI.
    *BASE_ALIGN is a running maximum of the alignments of
    any base class.  OFFSETS gives the location of empty base
@@ -4483,29 +4511,12 @@ build_base_field (record_layout_info rli, tree binfo,
       CLASSTYPE_EMPTY_P (t) = 0;
 
       /* Create the FIELD_DECL.  */
-      decl = build_decl (input_location,
-			 FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
-      DECL_ARTIFICIAL (decl) = 1;
-      DECL_IGNORED_P (decl) = 1;
-      DECL_FIELD_CONTEXT (decl) = t;
-      if (CLASSTYPE_AS_BASE (basetype))
-	{
-	  DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
-	  DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
-	  SET_DECL_ALIGN (decl, CLASSTYPE_ALIGN (basetype));
-	  DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
-	  DECL_MODE (decl) = TYPE_MODE (basetype);
-	  DECL_FIELD_IS_BASE (decl) = 1;
+      decl = build_base_field_1 (t, basetype, next_field);
 
-	  /* Try to place the field.  It may take more than one try if we
-	     have a hard time placing the field without putting two
-	     objects of the same type at the same address.  */
-	  layout_nonempty_base_or_field (rli, decl, binfo, offsets);
-	  /* Add the new FIELD_DECL to the list of fields for T.  */
-	  DECL_CHAIN (decl) = *next_field;
-	  *next_field = decl;
-	  next_field = &DECL_CHAIN (decl);
-	}
+      /* Try to place the field.  It may take more than one try if we
+	 have a hard time placing the field without putting two
+	 objects of the same type at the same address.  */
+      layout_nonempty_base_or_field (rli, decl, binfo, offsets);
     }
   else
     {
@@ -4536,11 +4547,17 @@ build_base_field (record_layout_info rli, tree binfo,
 	    CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
 	}
 
-      /* We do not create a FIELD_DECL for empty base classes because
-	 it might overlap some other field.  We want to be able to
-	 create CONSTRUCTORs for the class by iterating over the
-	 FIELD_DECLs, and the back end does not handle overlapping
-	 FIELD_DECLs.  */
+      /* We used to not create a FIELD_DECL for empty base classes because of
+	 back end issues with overlapping FIELD_DECLs, but that doesn't seem to
+	 be a problem anymore.  We need them to handle initialization of C++17
+	 aggregate bases.  */
+      if (cxx_dialect >= cxx1z && !BINFO_VIRTUAL_P (binfo))
+	{
+	  tree decl = build_base_field_1 (t, basetype, next_field);
+	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
+	  DECL_FIELD_BIT_OFFSET (decl) = bitsize_zero_node;
+	  SET_DECL_OFFSET_ALIGN (decl, BITS_PER_UNIT);
+	}
 
       /* An empty virtual base causes a class to be non-empty
 	 -- but in that case we do not need to clear CLASSTYPE_EMPTY_P
@@ -6586,7 +6603,7 @@ layout_class_type (tree t, tree *virtuals_p)
 
   /* Make sure that empty classes are reflected in RLI at this
      point.  */
-  include_empty_classes(rli);
+  include_empty_classes (rli);
 
   /* Make sure not to create any structures with zero size.  */
   if (integer_zerop (rli_size_unit_so_far (rli)) && CLASSTYPE_EMPTY_P (t))
