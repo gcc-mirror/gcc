@@ -344,6 +344,18 @@
 #  error "__cpp_hex_float != 201603"
 #endif
 
+#ifndef __cpp_aggregate_bases
+#  error "__cpp_aggregate_bases"
+#elif __cpp_aggregate_bases != 201603
+#  error "__cpp_aggregate_bases != 201603"
+#endif
+
+#ifndef __cpp_deduction_guides
+#  error "__cpp_deduction_guides"
+#elif __cpp_deduction_guides != 201606
+#  error "__cpp_deduction_guides != 201606"
+#endif
+
 #ifndef __cpp_if_constexpr
 #  error "__cpp_if_constexpr"
 #elif __cpp_if_constexpr != 201606
