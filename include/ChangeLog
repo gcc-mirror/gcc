@@ -1,3 +1,8 @@
+2016-10-14  Pedro Alves  <palves@redhat.com>
+
+	* ansidecl.h (GCC_FINAL): Delete.
+	(OVERRIDE, FINAL): New, moved from gcc/coretypes.h.
+
 2016-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.def (DW_AT_string_length_bit_size,
