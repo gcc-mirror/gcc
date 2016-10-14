@@ -369,10 +369,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    = __use_alloc<_T1, inner_allocator_type, _Args1...>(__inner);
 	  auto __y_use_tag
 	    = __use_alloc<_T2, inner_allocator_type, _Args2...>(__inner);
+	  typename _Build_index_tuple<sizeof...(_Args1)>::__type __x_indices;
+	  typename _Build_index_tuple<sizeof...(_Args2)>::__type __y_indices;
 	  typedef __outermost_alloc_traits<scoped_allocator_adaptor> _O_traits;
 	  _O_traits::construct(__outermost(*this), __p, piecewise_construct,
-			       _M_construct_p(__x_use_tag, __x),
-			       _M_construct_p(__y_use_tag, __y));
+			       _M_construct_p(__x_use_tag, __x_indices, __x),
+			       _M_construct_p(__y_use_tag, __y_indices, __y));
 	}
 
       template<typename _T1, typename _T2>
@@ -428,26 +430,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                  const scoped_allocator_adaptor<_OutA2, _InA...>& __b) noexcept;
 
     private:
-      template<typename _Tuple>
-	_Tuple&&
-	_M_construct_p(__uses_alloc0, _Tuple& __t)
+      template<typename _Ind, typename... _Args>
+	tuple<_Args&&...>
+	_M_construct_p(__uses_alloc0, _Ind, tuple<_Args...>& __t)
 	{ return std::move(__t); }
 
-      template<typename... _Args>
-	std::tuple<allocator_arg_t, inner_allocator_type&, _Args...>
-	_M_construct_p(__uses_alloc1_, std::tuple<_Args...>& __t)
+      template<size_t... _Ind, typename... _Args>
+	tuple<allocator_arg_t, inner_allocator_type&, _Args&&...>
+	_M_construct_p(__uses_alloc1_, _Index_tuple<_Ind...>,
+		       tuple<_Args...>& __t)
 	{
-	  typedef std::tuple<allocator_arg_t, inner_allocator_type&> _Tuple;
-	  return std::tuple_cat(_Tuple(allocator_arg, inner_allocator()),
-				std::move(__t));
+	  return { allocator_arg, inner_allocator(),
+	      std::get<_Ind>(std::move(__t))...
+	  };
 	}
 
-      template<typename... _Args>
-	std::tuple<_Args..., inner_allocator_type&>
-	_M_construct_p(__uses_alloc2_, std::tuple<_Args...>& __t)
+      template<size_t... _Ind, typename... _Args>
+	tuple<_Args&&..., inner_allocator_type&>
+	_M_construct_p(__uses_alloc2_, _Index_tuple<_Ind...>,
+		       tuple<_Args...>& __t)
 	{
-	  typedef std::tuple<inner_allocator_type&> _Tuple;
-	  return std::tuple_cat(std::move(__t), _Tuple(inner_allocator()));
+	  return { std::get<_Ind>(std::move(__t))..., inner_allocator() };
 	}
     };
 
