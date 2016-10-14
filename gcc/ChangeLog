@@ -1,3 +1,9 @@
+2016-10-14  Martin Liska  <mliska@suse.cz>
+
+	* fold-const.c (c_getstr): Support of properly \0-terminated
+	string constants.  New argument is added.
+	* fold-const.h: New argument is added.
+
 2016-10-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_hint_for_core_or_arch):
