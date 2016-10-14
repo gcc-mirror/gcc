@@ -400,6 +400,14 @@ print_rtx_operand_code_r (const_rtx in_rtx)
 #endif
     if (flag_dump_unnumbered && is_insn)
       fputc ('#', outfile);
+    else if (flag_compact)
+      {
+	/* In compact mode, print pseudos with a '%' sigil following
+	   by the regno, offset by (LAST_VIRTUAL_REGISTER + 1), so that the
+	   first non-virtual pseudo is dumped as "%0".  */
+	gcc_assert (regno > LAST_VIRTUAL_REGISTER);
+	fprintf (outfile, " %%%d", regno - (LAST_VIRTUAL_REGISTER + 1));
+      }
     else
       fprintf (outfile, " %d", regno);
 

@@ -1,3 +1,13 @@
+2016-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* print-rtl-function.c (print_edge): Omit "(flags)" when none are
+	set.
+	(print_rtx_function): Update example in comment for...
+	* print-rtl.c (print_rtx_operand_code_r): In compact mode, print
+	non-virtual pseudos with a '%' sigil followed by the regno, offset
+	by (LAST_VIRTUAL_REGISTER + 1), so that the first non-virtual
+	pseudo is dumped as "%0".
+
 2016-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/77959
