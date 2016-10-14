@@ -1,3 +1,9 @@
+2016-10-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/torture/pr77937-1.c: Move -O3 to dg-options.
+	Pass -march=amdfam10 for both i?86-?-* and x86_64-*-*.
+	* gcc.dg/torture/pr77937-2.c: Likewise.
+
 2016-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto15.adb: Adjust.

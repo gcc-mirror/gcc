@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-do options "-O3 -march=amdfam10" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-O3" } */
+/* { dg-additional-options "-march=amdfam10" { target i?86-*-* x86_64-*-* } } */
 
 int *a;
 int b, c, d;
