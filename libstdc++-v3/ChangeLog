@@ -1,5 +1,8 @@
 2016-10-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/algorithm/sample.cc: Qualify calls to
+	resolve ambiguity between std::sample and std::experimental::sample.
+
 	* include/std/functional (_Mu<A, false, true>, _Mu<A, true, false>):
 	Simplify forwarding from tuple of references.
 	(_Maybe_wrap_member_pointer): Remove.
