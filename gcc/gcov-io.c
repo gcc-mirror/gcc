@@ -127,7 +127,7 @@ gcov_open (const char *name, int mode)
 #endif
 {
 #if IN_LIBGCOV
-  const int mode = 0;
+  int mode = 0;
 #endif
 #if GCOV_LOCKED
   struct flock s_flock;
