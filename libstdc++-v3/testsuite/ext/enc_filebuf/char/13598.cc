@@ -29,7 +29,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   typedef char char_type;
   typedef __gnu_cxx::enc_filebuf<char_type> filebuf_type;
   typedef filebuf_type::state_type state_type;

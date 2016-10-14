@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::minstd_rand0 a;
   std::minstd_rand0 b;
   std::minstd_rand0 c(120);

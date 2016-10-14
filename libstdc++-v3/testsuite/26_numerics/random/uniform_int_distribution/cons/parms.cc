@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::uniform_int_distribution<int> u(1, 20);
   VERIFY( u.a() == 1 );
   VERIFY( u.b() == 20 );

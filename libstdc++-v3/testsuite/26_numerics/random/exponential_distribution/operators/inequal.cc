@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::exponential_distribution<double> u(0.5), v, w;
 
   VERIFY( u != v );

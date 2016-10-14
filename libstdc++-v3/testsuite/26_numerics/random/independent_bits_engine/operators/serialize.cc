@@ -30,8 +30,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringstream str;
   std::independent_bits_engine
     <std::subtract_with_carry_engine<uint_fast64_t, 48, 5, 12>,

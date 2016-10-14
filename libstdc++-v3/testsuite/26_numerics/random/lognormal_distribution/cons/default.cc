@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::lognormal_distribution<> u;
   VERIFY( u.m() == 0.0 );
   VERIFY( u.s() == 1.0 );

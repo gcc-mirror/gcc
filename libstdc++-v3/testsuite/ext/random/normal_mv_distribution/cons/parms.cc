@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::normal_mv_distribution<2> u({5.0, 4.0}, {4.0, 9.0});
   VERIFY( u.mean()[0] == 5.0 );
   VERIFY( u.mean()[1] == 4.0 );

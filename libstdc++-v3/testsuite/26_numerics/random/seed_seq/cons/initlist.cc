@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::seed_seq seq({0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
   std::vector<unsigned> foo(10000);

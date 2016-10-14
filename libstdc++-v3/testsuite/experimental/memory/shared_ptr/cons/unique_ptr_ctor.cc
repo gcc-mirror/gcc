@@ -36,8 +36,6 @@ struct A : std::experimental::enable_shared_from_this<A>
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique_ptr<A[]> up(new A[5]);
   std::experimental::shared_ptr<A> sp(std::move(up));
   VERIFY( up.get() == 0 );

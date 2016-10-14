@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::gamma_distribution<> u;
   VERIFY( u.alpha() == 1.0 );
   VERIFY( u.beta() == 1.0 );

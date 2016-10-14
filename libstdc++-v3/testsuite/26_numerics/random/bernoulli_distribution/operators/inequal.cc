@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   std::bernoulli_distribution u(0.75), v, w;
 
   VERIFY( u != v );

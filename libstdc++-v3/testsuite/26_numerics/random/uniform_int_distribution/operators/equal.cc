@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::uniform_int_distribution<int> u(1, 20), v, w;
 
   VERIFY( v == w );

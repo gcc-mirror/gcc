@@ -28,7 +28,6 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
   std::error_code ec;
 
   // Test empty path.

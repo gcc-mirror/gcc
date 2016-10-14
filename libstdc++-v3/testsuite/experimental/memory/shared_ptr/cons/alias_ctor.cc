@@ -43,7 +43,7 @@ struct B : A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   std::experimental::shared_ptr<A[5]> a;
   std::experimental::shared_ptr<bool> b1(a, &test);
@@ -59,8 +59,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> a(new A[5]);
   std::experimental::shared_ptr<int> i1(a, &a[0].i);
   VERIFY( i1.use_count() == 2 );
@@ -73,8 +71,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<B> b(new B);
   std::experimental::shared_ptr<A> a1(b, b.get());
   std::experimental::shared_ptr<A> a2(b, &b->a);

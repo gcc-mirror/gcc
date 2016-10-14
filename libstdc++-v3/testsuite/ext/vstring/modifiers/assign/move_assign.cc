@@ -28,8 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::__sso_string a, b;
   a.push_back('1');
   b.assign(std::move(a));
@@ -38,8 +36,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::__rc_string a, b;
   a.push_back('1');
   b.assign(std::move(a));

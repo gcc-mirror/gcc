@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::nakagami_distribution<> u;
   VERIFY( u.mu() == 1.0 );
   VERIFY( u.omega() == 1.0 );

@@ -26,8 +26,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
 #if _GLIBCXX_HAVE_COMPLEX_H
   double _Complex x = .5;
   double _Complex y = cacos (x);

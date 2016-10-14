@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::bernoulli_distribution u(0.75);
   VERIFY( u.p() == 0.75 );
   VERIFY( u.min() == std::numeric_limits<bool>::min() );

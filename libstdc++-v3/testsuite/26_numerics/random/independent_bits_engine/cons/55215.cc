@@ -40,8 +40,6 @@ int g(int x)
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const int f1 = f(0);
   const int f2 = f(0);
 

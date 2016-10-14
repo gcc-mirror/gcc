@@ -23,8 +23,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   auto is_odd = [](const int i) { return i % 2 != 0; };
 
   std::unordered_set<int> us{ 10, 11, 12, 14, 15, 17, 18, 19 };
@@ -36,8 +34,6 @@ test01()
 void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   auto is_odd = [](const int i) { return i % 2 != 0; };
 
   std::unordered_multiset<int> ums{ 20, 21, 22, 22, 23, 23, 24, 25 };

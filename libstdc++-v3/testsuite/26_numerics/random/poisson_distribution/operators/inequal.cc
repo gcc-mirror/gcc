@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::poisson_distribution<int> u(5.0), v, w;
 
   VERIFY( u != v );

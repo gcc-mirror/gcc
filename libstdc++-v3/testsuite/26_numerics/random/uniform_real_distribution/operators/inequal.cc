@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::uniform_real_distribution<double> u(-5.0, 5.0), v, w;
 
   VERIFY( u != v );

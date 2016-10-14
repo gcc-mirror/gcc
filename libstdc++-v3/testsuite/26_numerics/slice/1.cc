@@ -50,7 +50,6 @@ assignment(std::size_t start, std::size_t size, std::size_t stride)
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   std::srand(20020717);         
   using std::rand;
   VERIFY(construction(rand(), rand(), rand()));

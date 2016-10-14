@@ -49,8 +49,6 @@ void run_test(std::initializer_list<typename SFMT::result_type> vals)
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::sfmt19937 e;
 
   VERIFY( e.min() == 0 );

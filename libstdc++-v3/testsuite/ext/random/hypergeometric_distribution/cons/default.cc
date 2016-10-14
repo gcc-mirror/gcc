@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::hypergeometric_distribution<> u;
   VERIFY( u.total_size() == 10 );
   VERIFY( u.successful_size() == 5 );

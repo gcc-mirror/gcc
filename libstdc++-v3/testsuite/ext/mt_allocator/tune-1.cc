@@ -32,8 +32,6 @@
 // __common_pool_policy
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using __gnu_cxx::__pool;
   using __gnu_cxx::__common_pool_policy;
 

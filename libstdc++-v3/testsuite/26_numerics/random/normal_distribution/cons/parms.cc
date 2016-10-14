@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::normal_distribution<> u(5.0, 2.0);
   VERIFY( u.mean() == 5.0 );
   VERIFY( u.stddev() == 2.0 );

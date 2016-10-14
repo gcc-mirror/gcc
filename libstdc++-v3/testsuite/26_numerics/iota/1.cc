@@ -31,8 +31,6 @@ const int N = sizeof(A) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::iota(A, A + N, 1);
   VERIFY( std::equal(A, A + N, B) );
 

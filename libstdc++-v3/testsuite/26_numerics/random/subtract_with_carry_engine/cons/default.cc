@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::subtract_with_carry_engine<unsigned long, 24, 10, 24> x;
   VERIFY( x.min() == 0 );
   VERIFY( x.max() == ((1UL << 24) - 1) );

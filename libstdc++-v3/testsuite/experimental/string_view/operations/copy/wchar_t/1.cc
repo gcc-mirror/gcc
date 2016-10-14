@@ -22,11 +22,9 @@
 #include <experimental/string_view>
 #include <testsuite_hooks.h>
 
-bool
+void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::experimental::wstring_view::size_type csize_type;
   csize_type csz01;
 
@@ -37,8 +35,6 @@ test01()
   csize_type len = str01.copy(buffer, sizeof(buffer), 8);
   VERIFY( 2 == len );
   VERIFY( L'9' == buffer[0] );
-
-  return test;
 }
 
 int

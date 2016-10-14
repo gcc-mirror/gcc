@@ -28,8 +28,6 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   std::error_code ec;
   fs::file_status st1 = fs::status(".", ec);
   VERIFY( !ec );
@@ -42,8 +40,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   fs::path p = __gnu_test::nonexistent_path();
 
   std::error_code ec;

@@ -28,7 +28,6 @@ void test01()
   typedef filebuf_type::state_type state_type;
   typedef codecvt<char_type, char, state_type> enc_codecvt;
 
-  bool test __attribute__((unused)) = true;
   ios_base::openmode mode = ios_base::in | ios_base::out | ios_base::trunc;
   try
     {

@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   __gnu_cxx::__wvstring str(L"ramifications");
   const __gnu_cxx::__wvstring cstr(L"melodien");

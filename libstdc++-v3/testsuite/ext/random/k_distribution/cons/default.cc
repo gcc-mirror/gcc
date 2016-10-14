@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::k_distribution<> u;
   VERIFY( u.lambda() == 1.0 );
   VERIFY( u.mu() == 1.0 );

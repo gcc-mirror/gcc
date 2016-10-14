@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::geometric_distribution<int> u(0.75), v, w;
 
   VERIFY( u != v );

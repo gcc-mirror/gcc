@@ -20,13 +20,10 @@
 // basic_string_view constructors.
 
 #include <experimental/string_view>
-#include <testsuite_hooks.h>
 
 void
 test05()
 {
-  bool test [[gnu::unused]] = true;
-
   wchar_t const * s = 0;
   std::experimental::wstring_view zero_length_built_with_NULL(s, 0);
 }

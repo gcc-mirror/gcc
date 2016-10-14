@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::pair<int, char> pair_type;
   __gnu_cxx::new_allocator<pair_type> alloc1;
 

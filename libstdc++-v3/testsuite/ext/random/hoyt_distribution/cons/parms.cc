@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::hoyt_distribution<> u(0.05, 3.0);
   VERIFY( u.q() == 0.05 );
   VERIFY( u.omega() == 3.0 );

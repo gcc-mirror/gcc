@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::linear_congruential_engine<std::uint64_t, 1103515245ULL,
 					  12345, 2147483648ULL> engine;
   engine eng(1103527590ULL);

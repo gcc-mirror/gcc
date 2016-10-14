@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::discrete_distribution<> u;
   std::vector<double> probablility = u.probabilities();
   VERIFY( probablility.size() == 1 );

@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::binomial_distribution<> u;
   VERIFY( u.t() == 1 );
   VERIFY( u.p() == 0.5 );

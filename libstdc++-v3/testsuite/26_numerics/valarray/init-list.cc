@@ -23,10 +23,8 @@
 
 using namespace std;
 
-int test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   valarray<int> m({ 1, 5, 37 });
   VERIFY(m.size() == 3);
   VERIFY(m[0] == 1);
@@ -38,8 +36,6 @@ int test01()
   VERIFY(m[0] == 28);
   VERIFY(m[1] == 37);
   VERIFY(m[2] == 102);
-
-  return test;
 }
 
 int main()

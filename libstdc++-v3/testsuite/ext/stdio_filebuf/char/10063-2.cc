@@ -29,7 +29,6 @@
 void test2()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   filebuf fbuf;
   fbuf.open("tmp_10063-2", ios_base::out | ios_base::trunc);

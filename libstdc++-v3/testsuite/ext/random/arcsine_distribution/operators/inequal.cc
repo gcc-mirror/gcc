@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::arcsine_distribution<double> u(-2.0, 3.0), v, w;
 
   VERIFY( u != v );

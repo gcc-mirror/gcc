@@ -25,8 +25,6 @@
 // PR c++/58163
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const __gnu_cxx::__wvstring cs;
         __gnu_cxx::__wvstring  s;
 

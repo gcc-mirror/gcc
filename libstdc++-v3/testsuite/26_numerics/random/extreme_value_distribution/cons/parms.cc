@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::extreme_value_distribution<> u(5.0, 2.0);
   VERIFY( u.a() == 5.0 );
   VERIFY( u.b() == 2.0 );

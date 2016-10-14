@@ -27,7 +27,6 @@
 void
 test03()
 {
-  bool test [[gnu::unused]] = true;
   const char* with_nulls = "This contains \0 a zero byte.";
 
   // These are tests to see how basic_string_view handles data with NUL

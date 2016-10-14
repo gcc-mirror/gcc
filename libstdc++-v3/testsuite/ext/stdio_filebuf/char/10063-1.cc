@@ -26,7 +26,6 @@
 void test1()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   FILE* file = fopen("tmp_10063-1", "w");
   putc('0', file);

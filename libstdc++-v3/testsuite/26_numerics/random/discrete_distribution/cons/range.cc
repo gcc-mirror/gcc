@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<double> wt = {0.5, 1.0, 2.5, 1.5, 0.5};
   std::discrete_distribution<> u(wt.begin(), wt.end());
   std::vector<double> probablility = u.probabilities();

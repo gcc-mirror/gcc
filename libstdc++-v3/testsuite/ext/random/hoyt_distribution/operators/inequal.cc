@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::hoyt_distribution<double> u(0.05, 3.0), v, w;
 
   VERIFY( u != v );

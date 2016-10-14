@@ -35,8 +35,6 @@
 void
 test05(std::size_t size)
 {
-  bool test [[gnu::unused]] = true;
-
   const char filename[] = "inserters_extractors-2.txt";
   const wchar_t fillc = L'f';
   std::wofstream ofs(filename);
@@ -49,12 +47,12 @@ test05(std::size_t size)
 
   // stress test
   ofs << str << std::endl;
-  if (!ofs.good()) 
-    test = false;
+  if (!ofs.good())
+    VERIFY( false );
 
   ofs << str << std::endl;
-  if (!ofs.good()) 
-    test = false;
+  if (!ofs.good())
+    VERIFY( false );
 
   VERIFY( str.size() == size );
   VERIFY( ofs.good() );

@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<double> x = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
   std::vector<double> wt = { 0.0, 1.0, 2.5, 1.5, 0.5, 0.0 };
   std::piecewise_linear_distribution<double>

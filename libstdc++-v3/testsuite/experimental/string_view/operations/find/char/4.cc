@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   typedef std::experimental::string_view::size_type csize_type;
   csize_type npos = std::experimental::string_view::npos;
 

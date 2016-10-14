@@ -50,7 +50,6 @@ test01()
   long double d = __gnu_cxx::hyperg(al, bl, cl, xl);
   long double e = __gnu_cxx::hypergl(al, bl, cl, xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));
@@ -85,7 +84,6 @@ test02()
   long double d = __gnu_cxx::hyperg(al, bl, cl, xl);
   long double e = __gnu_cxx::hypergl(al, bl, cl, xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));
@@ -120,7 +118,6 @@ test03()
   long double d = __gnu_cxx::hyperg(al, bl, cl, xl);
   long double e = __gnu_cxx::hypergl(al, bl, cl, xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));
@@ -155,7 +152,6 @@ test04()
   long double d = __gnu_cxx::hyperg(al, bl, cl, xl);
   long double e = __gnu_cxx::hypergl(al, bl, cl, xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

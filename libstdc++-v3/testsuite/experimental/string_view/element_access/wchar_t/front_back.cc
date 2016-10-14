@@ -24,8 +24,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::wstring_view str(L"ramifications");
   const std::experimental::wstring_view cstr(L"melodien");
 

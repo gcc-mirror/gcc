@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::von_mises_distribution<> u(1.5, 3.0);
   VERIFY( u.mu() == 1.5 );
   VERIFY( u.kappa() == 3.0 );

@@ -22,10 +22,8 @@
 #include <testsuite_hooks.h>
 
 template<typename StrT>
-int test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const StrT cstr("Badger");
   StrT str = cstr;
   str.pop_back();
@@ -33,8 +31,6 @@ int test01()
 
   str += cstr.back();
   VERIFY( str == cstr );
-
-  return test;
 }
 
 int main()

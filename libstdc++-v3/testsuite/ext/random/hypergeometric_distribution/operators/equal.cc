@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::hypergeometric_distribution<unsigned int> u(20, 3, 2), v, w;
 
   VERIFY( v == w );

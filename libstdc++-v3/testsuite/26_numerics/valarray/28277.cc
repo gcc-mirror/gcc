@@ -29,8 +29,6 @@
 // libstdc++/28277
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::valarray<int> v1(1, MAX_SIZE);
 
   const std::valarray<int> v2 = v1.shift(1);

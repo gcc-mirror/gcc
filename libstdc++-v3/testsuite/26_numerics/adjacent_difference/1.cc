@@ -28,8 +28,6 @@ const int N = sizeof(A) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int D[N];
 
   std::adjacent_difference(A, A + N, D);

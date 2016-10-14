@@ -23,8 +23,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   auto is_odd = [](const int i) { return i % 2 != 0; };
 
   std::vector<int> v{ 10, 11, 12, 14, 15, 17, 18, 19 };
@@ -36,8 +34,6 @@ test01()
 void
 test02()
 {
-  bool test [[gnu::unused]] = true;
-
   std::vector<int> v{ 0, 11, 0, 0, 22, 33, 0, 0, 44, 0 };
   std::experimental::erase(v, 0);
   std::vector<int> t{ 11, 22, 33, 44 };

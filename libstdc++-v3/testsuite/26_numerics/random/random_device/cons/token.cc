@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
 #ifdef _GLIBCXX_USE_RANDOM_TR1
   std::random_device x("/dev/random");
 #else

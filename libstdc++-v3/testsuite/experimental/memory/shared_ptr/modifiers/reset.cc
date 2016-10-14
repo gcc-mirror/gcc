@@ -37,8 +37,6 @@ long D::delete_count = 0;
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A[5];
   std::experimental::shared_ptr<A[5]> p1(a);
   std::experimental::shared_ptr<A[5]> p2(p1);
@@ -52,8 +50,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A[5];
   B * const b = new B[5];
   std::experimental::shared_ptr<A[5]> p1(a);
@@ -68,8 +64,6 @@ test02()
 int
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::experimental::shared_ptr<A[5]> p1;
     p1.reset(new B[5], D());

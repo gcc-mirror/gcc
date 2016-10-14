@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::crope r1("wibble");
   __gnu_cxx::crope r2;
   std::copy( r1.begin(), r1.end(),

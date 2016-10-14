@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::pareto_distribution<> u(1.5, 3.0);
   VERIFY( u.alpha() == 1.5 );
   VERIFY( u.mu() == 3.0 );

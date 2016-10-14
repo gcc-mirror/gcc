@@ -30,8 +30,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a1 = new A[5];
   A * const a2 = new A[5];
   std::experimental::shared_ptr<A[5]> p1(a1);

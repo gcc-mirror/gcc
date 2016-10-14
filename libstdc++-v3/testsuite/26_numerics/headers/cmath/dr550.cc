@@ -25,7 +25,6 @@
 // DR 550. What should the return type of pow(float,int) be?
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::check_ret_type;
 
   const int          i1 = 1;

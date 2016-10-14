@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::piecewise_constant_distribution<> u;
   std::vector<double> interval = u.intervals();
   std::vector<double> density = u.densities();

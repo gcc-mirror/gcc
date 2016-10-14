@@ -25,7 +25,6 @@ test01()
 {
   using namespace std;
   using namespace __gnu_cxx;
-  bool test __attribute__((unused)) = true;
 
   crope r(10000, 'x');
   crope r2 = r + "abc" + r;

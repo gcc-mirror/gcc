@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::weibull_distribution<double> u(2.0, 3.5), v, w;
 
   VERIFY( v == w );

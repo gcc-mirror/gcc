@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::discard_block_engine
     <
     std::subtract_with_carry_engine<unsigned long, 24, 10, 24>,
