@@ -1,3 +1,8 @@
+2016-10-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* optabs.def: Remove optab function gen_int_libfunc for sdivmod_optab and
+	udivmod_optab.
+
 2016-10-13  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.c (m68k_option_override): Check
