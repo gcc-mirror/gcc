@@ -1276,10 +1276,13 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	}
       else
 	{
+	  int preheader_freq = EDGE_FREQUENCY (e);
 	  scale_main = REG_BR_PROB_BASE;
 	  for (i = 0; i < ndupl; i++)
 	    scale_main = combine_probabilities (scale_main, scale_step[i]);
-	  scale_act = REG_BR_PROB_BASE - prob_pass_thru;
+	  if (preheader_freq > freq_in)
+	    preheader_freq = freq_in;
+	  scale_act = GCOV_COMPUTE_SCALE (preheader_freq, freq_in);
 	}
       for (i = 0; i < ndupl; i++)
 	gcc_assert (scale_step[i] >= 0 && scale_step[i] <= REG_BR_PROB_BASE);
