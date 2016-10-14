@@ -68,7 +68,7 @@ static int unary_op_p (enum tree_code);
 static void push_local_name (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
-			 int, int, int, int, tree);
+			 int, int, int, bool, int, tree);
 static int check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (tree, tree, bool);
@@ -8512,8 +8512,9 @@ grokvardecl (tree type,
 	     tree orig_declarator,
 	     const cp_decl_specifier_seq *declspecs,
 	     int initialized,
-	     int flags,
+	     int type_quals,
 	     int inlinep,
+	     bool conceptp,
 	     int template_count,
 	     tree scope)
 {
@@ -8522,8 +8523,8 @@ grokvardecl (tree type,
 
   gcc_assert (!name || identifier_p (name));
 
-  bool constp = flags&1;
-  bool conceptp = flags&2;
+  bool constp = (type_quals & TYPE_QUAL_CONST) != 0;
+  bool volatilep = (type_quals & TYPE_QUAL_VOLATILE) != 0;
 
   /* Compute the scope in which to place the variable, but remember
      whether or not that scope was explicitly specified by the user.   */
@@ -8580,6 +8581,7 @@ grokvardecl (tree type,
       TREE_PUBLIC (decl) = (declspecs->storage_class != sc_static
 			    && (DECL_THIS_EXTERN (decl)
 				|| ! constp
+				|| volatilep
 				|| inlinep));
       TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
     }
@@ -11626,8 +11628,9 @@ grokdeclarator (const cp_declarator *declarator,
 	decl = grokvardecl (type, dname, unqualified_id,
 			    declspecs,
 			    initialized,
-			    ((type_quals & TYPE_QUAL_CONST) != 0) | (2 * concept_p),
+			    type_quals,
 			    inlinep,
+			    concept_p,
 			    template_count,
 			    ctype ? ctype : in_namespace);
 	if (decl == NULL_TREE)
