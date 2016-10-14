@@ -1,3 +1,16 @@
+2016-10-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_hint_for_core_or_arch):
+	New function.
+	(aarch64_print_hint_for_core): Likewise.
+	(aarch64_print_hint_for_arch): Likewise.
+	(aarch64_validate_march): Use it.  Fix indentation in type signature.
+	(aarch64_validate_mcpu): Use aarch64_print_hint_for_core_or_arch.
+	(aarch64_validate_mtune): Likewise.
+	(aarch64_handle_attr_arch): Likewise.
+	(aarch64_handle_attr_cpu): Likewise.
+	(aarch64_handle_attr_tune): Likewise.
+
 2016-10-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* optabs.def: Remove optab function gen_int_libfunc for sdivmod_optab

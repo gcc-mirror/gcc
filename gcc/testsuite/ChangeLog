@@ -1,3 +1,12 @@
+2016-10-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/spellcheck_1.c: New test.
+	* gcc.target/aarch64/spellcheck_2.c: Likewise.
+	* gcc.target/aarch64/spellcheck_3.c: Likewise.
+	* gcc.target/aarch64/spellcheck_4.c: Likewise.
+	* gcc.target/aarch64/spellcheck_5.c: Likewise.
+	* gcc.target/aarch64/spellcheck_6.c: Likewise.
+
 2016-10-13  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc.target/m68k/stack-limit-1.c: Expect warning on line 0.
