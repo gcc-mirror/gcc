@@ -1,7 +1,30 @@
+2016-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65122
+	* include/ext/malloc_allocator.h (malloc_allocator::allocate): Use
+	aligned_alloc for types with extended alignment if available,
+	otherwise throw bad_alloc if malloc doesn't return a suitable value.
+	* include/ext/bitmap_allocator.h (bitmap_allocator::allocate)
+	(bitmap_allocator::deallocate): Use aligned new/delete for types with
+	extended alignment.
+	* include/ext/mt_allocator.h (__mt_alloc::allocate)
+	(__mt_alloc::deallocate): Likewise.
+	* include/ext/new_allocator.h (new_allocator::allocate)
+	(new_allocator::deallocate): Likewise.
+	* include/ext/pool_allocator.h (__pool_alloc::allocate)
+	(__pool_alloc::deallocate): Likewise.
+	* testsuite/20_util/allocator/overaligned.cc: New test.
+	* testsuite/ext/bitmap_allocator/overaligned.cc: New test.
+	* testsuite/ext/malloc_allocator/overaligned.cc: New test.
+	* testsuite/ext/mt_allocator/overaligned.cc: New test.
+	* testsuite/ext/new_allocator/overaligned.cc: New test.
+	* testsuite/ext/pool_allocator/overaligned.cc: New test.
+
 2016-10-14  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/77944
-	* include/std/variant: include <bits/funcexcept.h> for __try and __catch.
+	* include/std/variant: Include <bits/funcexcept.h> for __try and
+	__catch.
 
 2016-10-14  Jonathan Wakely  <jwakely@redhat.com>
 

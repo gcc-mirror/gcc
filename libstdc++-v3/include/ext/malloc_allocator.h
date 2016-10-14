@@ -30,6 +30,7 @@
 #define _MALLOC_ALLOCATOR_H 1
 
 #include <cstdlib>
+#include <cstddef>
 #include <new>
 #include <bits/functexcept.h>
 #include <bits/move.h>
@@ -100,9 +101,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
-	pointer __ret = static_cast<_Tp*>(std::malloc(__n * sizeof(_Tp)));
+	pointer __ret;
+#if __cpp_aligned_new
+#if __cplusplus > 201402L && _GLIBCXX_HAVE_ALIGNED_ALLOC
+	if (alignof(_Tp) > alignof(std::max_align_t))
+	  {
+	    __ret = static_cast<_Tp*>(::aligned_alloc(alignof(_Tp),
+						      __n * sizeof(_Tp)));
+	  }
+#else
+# define _GLIBCXX_CHECK_MALLOC_RESULT
+#endif
+#endif
+	if (!__ret)
+	  __ret = static_cast<_Tp*>(std::malloc(__n * sizeof(_Tp)));
 	if (!__ret)
 	  std::__throw_bad_alloc();
+#ifdef _GLIBCXX_CHECK_MALLOC_RESULT
+#undef _GLIBCXX_CHECK_MALLOC_RESULT
+	  if (reinterpret_cast<std::size_t>(__ret) % alignof(_Tp))
+	    {
+	      // Memory returned by malloc is not suitably aligned for _Tp.
+	      deallocate(__ret, __n);
+	      std::__throw_bad_alloc();
+	    }
+#endif
 	return __ret;
       }
 
