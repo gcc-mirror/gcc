@@ -1,3 +1,10 @@
+2016-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-passes.def: New file.
+	* config/sparc/t-sparc (PASSES_EXTRA): Add sparc-passes.def.
+	* config/sparc/sparc-protos.h (make_pass_work_around_errata): New.
+	* config/sparc/sparc.c (sparc_option_override): Don't register passes.
+
 2016-10-14  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* loop-unroll.c (unroll_loop_runtime_iterations): Condition initial
@@ -13,8 +20,7 @@
 
 2016-10-14  Pedro Alves  <palves@redhat.com>
 
-	* coretypes.h (OVERRIDE, FINAL): Delete, moved to
-	include/ansidecl.h.
+	* coretypes.h (OVERRIDE, FINAL): Delete, moved to include/ansidecl.h.
 
 2016-10-14  Catherine Moore  <clm@codesourcery.com>
 
