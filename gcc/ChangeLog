@@ -1,3 +1,9 @@
+2016-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/77959
+	* expr.c (expand_expr_real_1) <case CONST_DECL>: For EXPAND_WRITE
+	return a MEM.
+
 2016-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-passes.def: New file.
