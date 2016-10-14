@@ -9915,6 +9915,19 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       }
 
     case CONST_DECL:
+      if (modifier == EXPAND_WRITE)
+	{
+	  /* Writing into CONST_DECL is always invalid, but handle it
+	     gracefully.  */
+	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
+	  machine_mode address_mode = targetm.addr_space.address_mode (as);
+	  op0 = expand_expr_addr_expr_1 (exp, NULL_RTX, address_mode,
+					 EXPAND_NORMAL, as);
+	  op0 = memory_address_addr_space (mode, op0, as);
+	  temp = gen_rtx_MEM (mode, op0);
+	  set_mem_addr_space (temp, as);
+	  return temp;
+	}
       return expand_expr (DECL_INITIAL (exp), target, VOIDmode, modifier);
 
     case REAL_CST:
