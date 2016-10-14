@@ -1,3 +1,8 @@
+2016-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77979
+	* gcc.dg/torture/pr77979.c: New testcase.
+
 2016-10-14  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/builtins-folding-generic.c: New test.

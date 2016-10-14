@@ -7188,9 +7188,13 @@ compare_name_with_value (enum tree_code comp, tree var, tree val,
 
   EXECUTE_IF_SET_IN_BITMAP (e, 0, i, bi)
     {
+      tree name = ssa_name (i);
+      if (! name)
+	continue;
+
       if (! use_equiv_p
-	  && ! SSA_NAME_IS_DEFAULT_DEF (ssa_name (i))
-	  && prop_simulate_again_p (SSA_NAME_DEF_STMT (ssa_name (i))))
+	  && ! SSA_NAME_IS_DEFAULT_DEF (name)
+	  && prop_simulate_again_p (SSA_NAME_DEF_STMT (name)))
 	continue;
 
       equiv_vr = get_vr_for_comparison (i);
@@ -7289,11 +7293,17 @@ compare_names (enum tree_code comp, tree n1, tree n2,
      of the loop just to check N1 and N2 ranges.  */
   EXECUTE_IF_SET_IN_BITMAP (e1, 0, i1, bi1)
     {
+      if (! ssa_name (i1))
+	continue;
+
       value_range vr1 = get_vr_for_comparison (i1);
 
       t = retval = NULL_TREE;
       EXECUTE_IF_SET_IN_BITMAP (e2, 0, i2, bi2)
 	{
+	  if (! ssa_name (i2))
+	    continue;
+
 	  bool sop = false;
 
 	  value_range vr2 = get_vr_for_comparison (i2);
