@@ -148,7 +148,6 @@ static tree rewrite_call_expr (location_t, tree, int, tree, int, ...);
 static bool validate_arg (const_tree, enum tree_code code);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
-static tree fold_builtin_memchr (location_t, tree, tree, tree, tree);
 static tree fold_builtin_memcmp (location_t, tree, tree, tree);
 static tree fold_builtin_isascii (location_t, tree);
 static tree fold_builtin_toascii (location_t, tree);
@@ -7242,47 +7241,6 @@ fold_builtin_sincos (location_t loc,
 			 fold_build1_loc (loc, REALPART_EXPR, type, call)));
 }
 
-/* Fold function call to builtin memchr.  ARG1, ARG2 and LEN are the
-   arguments to the call, and TYPE is its return type.
-   Return NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_memchr (location_t loc, tree arg1, tree arg2, tree len, tree type)
-{
-  if (!validate_arg (arg1, POINTER_TYPE)
-      || !validate_arg (arg2, INTEGER_TYPE)
-      || !validate_arg (len, INTEGER_TYPE))
-    return NULL_TREE;
-  else
-    {
-      const char *p1;
-
-      if (TREE_CODE (arg2) != INTEGER_CST
-	  || !tree_fits_uhwi_p (len))
-	return NULL_TREE;
-
-      p1 = c_getstr (arg1);
-      if (p1 && compare_tree_int (len, strlen (p1) + 1) <= 0)
-	{
-	  char c;
-	  const char *r;
-	  tree tem;
-
-	  if (target_char_cast (arg2, &c))
-	    return NULL_TREE;
-
-	  r = (const char *) memchr (p1, c, tree_to_uhwi (len));
-
-	  if (r == NULL)
-	    return build_int_cst (TREE_TYPE (arg1), 0);
-
-	  tem = fold_build_pointer_plus_hwi_loc (loc, arg1, r - p1);
-	  return fold_convert_loc (loc, type, tem);
-	}
-      return NULL_TREE;
-    }
-}
-
 /* Fold function call to builtin memcmp with arguments ARG1 and ARG2.
    Return NULL_TREE if no simplification can be made.  */
 
@@ -8337,9 +8295,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
 	  && validate_arg (arg2, POINTER_TYPE))
 	return do_mpfr_remquo (arg0, arg1, arg2);
     break;
-
-    case BUILT_IN_MEMCHR:
-      return fold_builtin_memchr (loc, arg0, arg1, arg2, type);
 
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
@@ -9905,4 +9860,18 @@ is_inexpensive_builtin (tree decl)
       }
 
   return false;
+}
+
+/* Return true if T is a constant and the value cast to a target char
+   can be represented by a host char.
+   Store the casted char constant in *P if so.  */
+
+bool
+target_char_cst_p (tree t, char *p)
+{
+  if (!tree_fits_uhwi_p (t) || CHAR_TYPE_SIZE != HOST_BITS_PER_CHAR)
+    return false;
+
+  *p = (char)tree_to_uhwi (t);
+  return true;
 }
