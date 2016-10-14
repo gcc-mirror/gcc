@@ -24,5 +24,6 @@ tree fold_const_call (combined_fn, tree, tree);
 tree fold_const_call (combined_fn, tree, tree, tree);
 tree fold_const_call (combined_fn, tree, tree, tree, tree);
 tree fold_fma (location_t, tree, tree, tree, tree);
+tree build_cmp_result (tree type, int res);
 
 #endif

@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-low.h"
 #include "ipa-chkp.h"
 #include "tree-cfg.h"
-
+#include "fold-const-call.h"
 
 /* Return true if T is a constant and the value cast to a target char
    can be represented by a host char.
@@ -1786,6 +1786,188 @@ gimple_fold_builtin_strncat_chk (gimple_stmt_iterator *gsi)
   return true;
 }
 
+/* Build and append gimple statements to STMTS that would load a first
+   character of a memory location identified by STR.  LOC is location
+   of the statement.  */
+
+static tree
+gimple_load_first_char (location_t loc, tree str, gimple_seq *stmts)
+{
+  tree var;
+
+  tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+  tree cst_uchar_ptr_node
+    = build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
+  tree off0 = build_int_cst (cst_uchar_ptr_node, 0);
+
+  tree temp = fold_build2_loc (loc, MEM_REF, cst_uchar_node, str, off0);
+  gassign *stmt = gimple_build_assign (NULL_TREE, temp);
+  var = create_tmp_reg_or_ssa_name (cst_uchar_node, stmt);
+
+  gimple_assign_set_lhs (stmt, var);
+  gimple_seq_add_stmt_without_update (stmts, stmt);
+
+  return var;
+}
+
+/* Fold a call to the str{n}{case}cmp builtin pointed by GSI iterator.
+   FCODE is the name of the builtin.  */
+
+static bool
+gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree callee = gimple_call_fndecl (stmt);
+  enum built_in_function fcode = DECL_FUNCTION_CODE (callee);
+
+  tree type = integer_type_node;
+  tree str1 = gimple_call_arg (stmt, 0);
+  tree str2 = gimple_call_arg (stmt, 1);
+  tree lhs = gimple_call_lhs (stmt);
+  HOST_WIDE_INT length = -1;
+
+  /* Handle strncmp and strncasecmp functions.  */
+  if (gimple_call_num_args (stmt) == 3)
+    {
+      tree len = gimple_call_arg (stmt, 2);
+      if (tree_fits_uhwi_p (len))
+	length = tree_to_uhwi (len);
+    }
+
+  /* If the LEN parameter is zero, return zero.  */
+  if (length == 0)
+    {
+      replace_call_with_value (gsi, integer_zero_node);
+      return true;
+    }
+
+  /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
+  if (operand_equal_p (str1, str2, 0))
+    {
+      replace_call_with_value (gsi, integer_zero_node);
+      return true;
+    }
+
+  const char *p1 = c_getstr (str1);
+  const char *p2 = c_getstr (str2);
+
+  /* For known strings, return an immediate value.  */
+  if (p1 && p2)
+    {
+      int r = 0;
+      bool known_result = false;
+
+      switch (fcode)
+	{
+	case BUILT_IN_STRCMP:
+	  {
+	    r = strcmp (p1, p2);
+	    known_result = true;
+	    break;
+	  }
+	case BUILT_IN_STRNCMP:
+	  {
+	    if (length == -1)
+	      break;
+	    r = strncmp (p1, p2, length);
+	    known_result = true;
+	    break;
+	  }
+	/* Only handleable situation is where the string are equal (result 0),
+	   which is already handled by operand_equal_p case.  */
+	case BUILT_IN_STRCASECMP:
+	  break;
+	case BUILT_IN_STRNCASECMP:
+	  {
+	    if (length == -1)
+	      break;
+	    r = strncmp (p1, p2, length);
+	    if (r == 0)
+	      known_result = true;
+	    break;;
+	  }
+	default:
+	  gcc_unreachable ();
+	}
+
+      if (known_result)
+	{
+	  replace_call_with_value (gsi, build_cmp_result (type, r));
+	  return true;
+	}
+    }
+
+  bool nonzero_length = length >= 1
+    || fcode == BUILT_IN_STRCMP
+    || fcode == BUILT_IN_STRCASECMP;
+
+  location_t loc = gimple_location (stmt);
+
+  /* If the second arg is "", return *(const unsigned char*)arg1.  */
+  if (p2 && *p2 == '\0' && nonzero_length)
+    {
+      gimple_seq stmts = NULL;
+      tree var = gimple_load_first_char (loc, str1, &stmts);
+      if (lhs)
+	{
+	  stmt = gimple_build_assign (lhs, NOP_EXPR, var);
+	  gimple_seq_add_stmt_without_update (&stmts, stmt);
+	}
+
+      gsi_replace_with_seq_vops (gsi, stmts);
+      return true;
+    }
+
+  /* If the first arg is "", return -*(const unsigned char*)arg2.  */
+  if (p1 && *p1 == '\0' && nonzero_length)
+    {
+      gimple_seq stmts = NULL;
+      tree var = gimple_load_first_char (loc, str2, &stmts);
+
+      if (lhs)
+	{
+	  tree c = create_tmp_reg_or_ssa_name (integer_type_node);
+	  stmt = gimple_build_assign (c, NOP_EXPR, var);
+	  gimple_seq_add_stmt_without_update (&stmts, stmt);
+
+	  stmt = gimple_build_assign (lhs, NEGATE_EXPR, c);
+	  gimple_seq_add_stmt_without_update (&stmts, stmt);
+	}
+
+      gsi_replace_with_seq_vops (gsi, stmts);
+      return true;
+    }
+
+  /* If len parameter is one, return an expression corresponding to
+     (*(const unsigned char*)arg2 - *(const unsigned char*)arg1).  */
+  if (fcode == BUILT_IN_STRNCMP && length == 1)
+    {
+      gimple_seq stmts = NULL;
+      tree temp1 = gimple_load_first_char (loc, str1, &stmts);
+      tree temp2 = gimple_load_first_char (loc, str2, &stmts);
+
+      if (lhs)
+	{
+	  tree c1 = create_tmp_reg_or_ssa_name (integer_type_node);
+	  gassign *convert1 = gimple_build_assign (c1, NOP_EXPR, temp1);
+	  gimple_seq_add_stmt_without_update (&stmts, convert1);
+
+	  tree c2 = create_tmp_reg_or_ssa_name (integer_type_node);
+	  gassign *convert2 = gimple_build_assign (c2, NOP_EXPR, temp2);
+	  gimple_seq_add_stmt_without_update (&stmts, convert2);
+
+	  stmt = gimple_build_assign (lhs, MINUS_EXPR, c1, c2);
+	  gimple_seq_add_stmt_without_update (&stmts, stmt);
+	}
+
+      gsi_replace_with_seq_vops (gsi, stmts);
+      return true;
+    }
+
+  return false;
+}
+
+
 /* Fold a call to the fputs builtin.  ARG0 and ARG1 are the arguments
    to the call.  IGNORE is true if the value returned
    by the builtin will be ignored.  UNLOCKED is true is true if this
@@ -3007,6 +3189,11 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_RINDEX:
     case BUILT_IN_STRRCHR:
       return gimple_fold_builtin_strchr (gsi, true);
+    case BUILT_IN_STRCMP:
+    case BUILT_IN_STRCASECMP:
+    case BUILT_IN_STRNCMP:
+    case BUILT_IN_STRNCASECMP:
+      return gimple_fold_builtin_string_compare (gsi);
     case BUILT_IN_FPUTS:
       return gimple_fold_builtin_fputs (gsi, gimple_call_arg (stmt, 0),
 					gimple_call_arg (stmt, 1), false);

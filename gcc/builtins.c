@@ -150,8 +150,6 @@ static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
 static tree fold_builtin_memchr (location_t, tree, tree, tree, tree);
 static tree fold_builtin_memcmp (location_t, tree, tree, tree);
-static tree fold_builtin_strcmp (location_t, tree, tree);
-static tree fold_builtin_strncmp (location_t, tree, tree, tree);
 static tree fold_builtin_isascii (location_t, tree);
 static tree fold_builtin_toascii (location_t, tree);
 static tree fold_builtin_isdigit (location_t, tree);
@@ -7331,136 +7329,6 @@ fold_builtin_memcmp (location_t loc, tree arg1, tree arg2, tree len)
   return NULL_TREE;
 }
 
-/* Fold function call to builtin strcmp with arguments ARG1 and ARG2.
-   Return NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_strcmp (location_t loc, tree arg1, tree arg2)
-{
-  if (!validate_arg (arg1, POINTER_TYPE)
-      || !validate_arg (arg2, POINTER_TYPE))
-    return NULL_TREE;
-
-  /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
-  if (operand_equal_p (arg1, arg2, 0))
-    return integer_zero_node;
-
-  /* If the second arg is "", return *(const unsigned char*)arg1.  */
-  const char *p2 = c_getstr (arg2);
-  if (p2 && *p2 == '\0')
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node
-	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
-
-      return fold_convert_loc (loc, integer_type_node,
-			       build1 (INDIRECT_REF, cst_uchar_node,
-				       fold_convert_loc (loc,
-							 cst_uchar_ptr_node,
-							 arg1)));
-    }
-
-  /* If the first arg is "", return -*(const unsigned char*)arg2.  */
-  const char *p1 = c_getstr (arg1);
-  if (p1 && *p1 == '\0')
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node
-	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
-
-      tree temp
-	= fold_convert_loc (loc, integer_type_node,
-			    build1 (INDIRECT_REF, cst_uchar_node,
-				    fold_convert_loc (loc,
-						      cst_uchar_ptr_node,
-						      arg2)));
-      return fold_build1_loc (loc, NEGATE_EXPR, integer_type_node, temp);
-    }
-
-  return NULL_TREE;
-}
-
-/* Fold function call to builtin strncmp with arguments ARG1, ARG2, and LEN.
-   Return NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
-{
-  if (!validate_arg (arg1, POINTER_TYPE)
-      || !validate_arg (arg2, POINTER_TYPE)
-      || !validate_arg (len, INTEGER_TYPE))
-    return NULL_TREE;
-
-  /* If the LEN parameter is zero, return zero.  */
-  if (integer_zerop (len))
-    return omit_two_operands_loc (loc, integer_type_node, integer_zero_node,
-			      arg1, arg2);
-
-  /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
-  if (operand_equal_p (arg1, arg2, 0))
-    return omit_one_operand_loc (loc, integer_type_node, integer_zero_node, len);
-
-  /* If the second arg is "", and the length is greater than zero,
-     return *(const unsigned char*)arg1.  */
-  const char *p2 = c_getstr (arg2);
-  if (p2 && *p2 == '\0'
-      && TREE_CODE (len) == INTEGER_CST
-      && tree_int_cst_sgn (len) == 1)
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node
-	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
-
-      return fold_convert_loc (loc, integer_type_node,
-			       build1 (INDIRECT_REF, cst_uchar_node,
-				       fold_convert_loc (loc,
-							 cst_uchar_ptr_node,
-							 arg1)));
-    }
-
-  /* If the first arg is "", and the length is greater than zero,
-     return -*(const unsigned char*)arg2.  */
-  const char *p1 = c_getstr (arg1);
-  if (p1 && *p1 == '\0'
-      && TREE_CODE (len) == INTEGER_CST
-      && tree_int_cst_sgn (len) == 1)
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node
-	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
-
-      tree temp = fold_convert_loc (loc, integer_type_node,
-				    build1 (INDIRECT_REF, cst_uchar_node,
-					    fold_convert_loc (loc,
-							      cst_uchar_ptr_node,
-							      arg2)));
-      return fold_build1_loc (loc, NEGATE_EXPR, integer_type_node, temp);
-    }
-
-  /* If len parameter is one, return an expression corresponding to
-     (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if (tree_fits_uhwi_p (len) && tree_to_uhwi (len) == 1)
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node
-	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
-
-      tree ind1 = fold_convert_loc (loc, integer_type_node,
-				    build1 (INDIRECT_REF, cst_uchar_node,
-					    fold_convert_loc (loc,
-							      cst_uchar_ptr_node,
-							      arg1)));
-      tree ind2 = fold_convert_loc (loc, integer_type_node,
-				    build1 (INDIRECT_REF, cst_uchar_node,
-					    fold_convert_loc (loc,
-							      cst_uchar_ptr_node,
-							      arg2)));
-      return fold_build2_loc (loc, MINUS_EXPR, integer_type_node, ind1, ind2);
-    }
-
-  return NULL_TREE;
-}
-
 /* Fold a call to builtin isascii with argument ARG.  */
 
 static tree
@@ -8389,9 +8257,6 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
     case BUILT_IN_STRCSPN:
       return fold_builtin_strcspn (loc, arg0, arg1);
 
-    case BUILT_IN_STRCMP:
-      return fold_builtin_strcmp (loc, arg0, arg1);
-
     case BUILT_IN_STRPBRK:
       return fold_builtin_strpbrk (loc, arg0, arg1, type);
 
@@ -8472,9 +8337,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
 	  && validate_arg (arg2, POINTER_TYPE))
 	return do_mpfr_remquo (arg0, arg1, arg2);
     break;
-
-    case BUILT_IN_STRNCMP:
-      return fold_builtin_strncmp (loc, arg0, arg1, arg2);
 
     case BUILT_IN_MEMCHR:
       return fold_builtin_memchr (loc, arg0, arg1, arg2, type);
