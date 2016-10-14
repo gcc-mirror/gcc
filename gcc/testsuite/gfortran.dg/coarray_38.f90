@@ -71,7 +71,7 @@ end type t
 type t2
   class(t), allocatable :: caf2[:]
 end type t2
-class(t), allocatable :: caf[:]
+class(t), allocatable :: caf[:] ! { dg-error "Sorry, allocatable/pointer components in polymorphic" }
 type(t) :: x
 type(t2) :: y
 

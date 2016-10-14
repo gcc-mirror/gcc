@@ -13787,6 +13787,19 @@ resolve_symbol (gfc_symbol *sym)
      (just like derived type declaration symbols have flavor FL_DERIVED). */
   gcc_assert (sym->ts.type != BT_UNION);
 
+  /* Coarrayed polymorphic objects with allocatable or pointer components are
+     yet unsupported for -fcoarray=lib.  */
+  if (flag_coarray == GFC_FCOARRAY_LIB && sym->ts.type == BT_CLASS
+      && sym->ts.u.derived && CLASS_DATA (sym)
+      && CLASS_DATA (sym)->attr.codimension
+      && (sym->ts.u.derived->attr.alloc_comp
+	  || sym->ts.u.derived->attr.pointer_comp))
+    {
+      gfc_error ("Sorry, allocatable/pointer components in polymorphic (CLASS) "
+		 "type coarrays at %L are unsupported", &sym->declared_at);
+      return;
+    }
+
   if (sym->attr.artificial)
     return;
 

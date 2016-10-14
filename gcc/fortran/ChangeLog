@@ -1,3 +1,8 @@
+2016-10-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* resolve.c (resolve_symbol): Add unimplemented message for
+	polymorphic types with allocatable/pointer components and coarray=lib.
+
 2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* trans-intrinsic.c: Include memmodel.h.

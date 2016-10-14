@@ -1,3 +1,7 @@
+2016-10-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_38.f90: Expect error message.
+
 2016-10-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/spellcheck_1.c: New test.
