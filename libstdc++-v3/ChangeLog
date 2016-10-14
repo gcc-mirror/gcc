@@ -1,3 +1,8 @@
+2016-10-14  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/77944
+	* include/std/variant: include <bits/funcexcept.h> for __try and __catch.
+
 2016-10-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/functional (_Reference_wrapper_base_impl): Remove.

@@ -38,6 +38,7 @@
 #include <type_traits>
 #include <utility>
 #include <bits/enable_special_members.h>
+#include <bits/functexcept.h>
 #include <bits/move.h>
 #include <bits/uses_allocator.h>
 
