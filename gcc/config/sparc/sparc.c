@@ -883,10 +883,10 @@ mem_ref (rtx x)
 }
 
 /* We use a machine specific pass to enable workarounds for errata.
+
    We need to have the (essentially) final form of the insn stream in order
    to properly detect the various hazards.  Therefore, this machine specific
-   pass runs as late as possible.  The pass is inserted in the pass pipeline
-   at the end of sparc_option_override.  */
+   pass runs as late as possible.  */
 
 static unsigned int
 sparc_do_work_around_errata (void)
@@ -1706,21 +1706,6 @@ sparc_option_override (void)
      pessimizes for double floating-point registers.  */
   if (!global_options_set.x_flag_ira_share_save_slots)
     flag_ira_share_save_slots = 0;
-
-  /* We register a machine specific pass to work around errata, if any.
-     The pass mut be scheduled as late as possible so that we have the
-     (essentially) final form of the insn stream to work on.
-     Registering the pass must be done at start up.  It's convenient to
-     do it here.  */
-  opt_pass *errata_pass = make_pass_work_around_errata (g);
-  struct register_pass_info insert_pass_work_around_errata =
-    {
-      errata_pass,		/* pass */
-      "dbr",			/* reference_pass_name */
-      1,			/* ref_pass_instance_number */
-      PASS_POS_INSERT_AFTER	/* po_op */
-    };
-  register_pass (&insert_pass_work_around_errata);
 }
 
 /* Miscellaneous utilities.  */

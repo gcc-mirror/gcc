@@ -47,6 +47,7 @@ extern void sparc_profile_hook (int);
 extern void sparc_override_options (void);
 extern void sparc_output_scratch_registers (FILE *);
 extern void sparc_target_macros (void);
+extern void sparc_emit_membar_for_model (enum memmodel, int, int);
 
 #ifdef RTX_CODE
 extern machine_mode select_cc_mode (enum rtx_code, rtx, rtx);
@@ -110,6 +111,6 @@ unsigned int sparc_regmode_natural_size (machine_mode);
 bool sparc_modes_tieable_p (machine_mode, machine_mode);
 #endif /* RTX_CODE */
 
-extern void sparc_emit_membar_for_model (enum memmodel, int, int);
+extern rtl_opt_pass *make_pass_work_around_errata (gcc::context *);
 
 #endif /* __SPARC_PROTOS_H__ */

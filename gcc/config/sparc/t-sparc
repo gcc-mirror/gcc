@@ -18,6 +18,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+PASSES_EXTRA += $(srcdir)/config/sparc/sparc-passes.def
+
 sparc-c.o: $(srcdir)/config/sparc/sparc-c.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
