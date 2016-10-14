@@ -1,3 +1,13 @@
+2016-10-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/71912
+	* class.c (struct flexmems_t):  Add members.
+	(find_flexarrays): Add arguments.  Correct handling of anonymous
+	structs.
+	(diagnose_flexarrays): Adjust to issue warnings in addition to errors.
+	(check_flexarrays): Add argument.
+	(diagnose_invalid_flexarray): New functions.
+
 2016-10-04  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/77804
