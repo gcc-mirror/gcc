@@ -3623,6 +3623,8 @@ Unsafe_type_conversion_expression::do_get_backend(Translate_context* context)
               || et->map_type() != NULL
               || et->channel_type() != NULL
 	      || et->is_nil_type());
+  else if (t->function_type() != NULL)
+    go_assert(et->points_to() != NULL);
   else
     go_unreachable();
 
@@ -6482,34 +6484,6 @@ Bound_method_expression::do_traverse(Traverse* traverse)
   return Expression::traverse(&this->expr_, traverse);
 }
 
-// Lower the expression.  If this is a method value rather than being
-// called, and the method is accessed via a pointer, we may need to
-// add nil checks.  Introduce a temporary variable so that those nil
-// checks do not cause multiple evaluation.
-
-Expression*
-Bound_method_expression::do_lower(Gogo*, Named_object*,
-				  Statement_inserter* inserter, int)
-{
-  // For simplicity we use a temporary for every call to an embedded
-  // method, even though some of them might be pure value methods and
-  // not require a temporary.
-  if (this->expr_->var_expression() == NULL
-      && this->expr_->temporary_reference_expression() == NULL
-      && this->expr_->set_and_use_temporary_expression() == NULL
-      && (this->method_->field_indexes() != NULL
-	  || (this->method_->is_value_method()
-	      && this->expr_->type()->points_to() != NULL)))
-    {
-      Temporary_statement* temp =
-	Statement::make_temporary(this->expr_->type(), NULL, this->location());
-      inserter->insert(temp);
-      this->expr_ = Expression::make_set_and_use_temporary(temp, this->expr_,
-							   this->location());
-    }
-  return this;
-}
-
 // Return the type of a bound method expression.  The type of this
 // object is simply the type of the method with no receiver.
 
@@ -6724,32 +6698,43 @@ bme_check_nil(const Method::Field_indexes* field_indexes, Location loc,
   return cond;
 }
 
-// Get the backend representation for a method value.
+// Flatten a method value into a struct with nil checks.  We can't do
+// this in the lowering phase, because if the method value is called
+// directly we don't need a thunk.  That case will have been handled
+// by Call_expression::do_lower, so if we get here then we do need a
+// thunk.
 
-Bexpression*
-Bound_method_expression::do_get_backend(Translate_context* context)
+Expression*
+Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
+				    Statement_inserter* inserter)
 {
-  Named_object* thunk = Bound_method_expression::create_thunk(context->gogo(),
+  Location loc = this->location();
+
+  Named_object* thunk = Bound_method_expression::create_thunk(gogo,
 							      this->method_,
 							      this->function_);
   if (thunk->is_erroneous())
     {
       go_assert(saw_errors());
-      return context->backend()->error_expression();
+      return Expression::make_error(loc);
     }
 
-  // FIXME: We should lower this earlier, but we can't lower it in the
-  // lowering pass because at that point we don't know whether we need
-  // to create the thunk or not.  If the expression is called, we
-  // don't need the thunk.
-
-  Location loc = this->location();
+  // Force the expression into a variable.  This is only necessary if
+  // we are going to do nil checks below, but it's easy enough to
+  // always do it.
+  Expression* expr = this->expr_;
+  if (!expr->is_variable())
+    {
+      Temporary_statement* etemp = Statement::make_temporary(NULL, expr, loc);
+      inserter->insert(etemp);
+      expr = Expression::make_temporary_reference(etemp, loc);
+    }
 
   // If the method expects a value, and we have a pointer, we need to
   // dereference the pointer.
 
   Named_object* fn = this->method_->named_object();
-  Function_type* fntype;
+  Function_type *fntype;
   if (fn->is_function())
     fntype = fn->func_value()->type();
   else if (fn->is_function_declaration())
@@ -6757,7 +6742,7 @@ Bound_method_expression::do_get_backend(Translate_context* context)
   else
     go_unreachable();
 
-  Expression* val = this->expr_;
+  Expression* val = expr;
   if (fntype->receiver()->type()->points_to() == NULL
       && val->type()->points_to() != NULL)
     val = Expression::make_unary(OPERATOR_MULT, val, loc);
@@ -6781,17 +6766,28 @@ Bound_method_expression::do_get_backend(Translate_context* context)
   vals->push_back(val);
 
   Expression* ret = Expression::make_struct_composite_literal(st, vals, loc);
-  ret = Expression::make_heap_expression(ret, loc);
 
-  // See whether the expression or any embedded pointers are nil.
+  if (!gogo->compiling_runtime() || gogo->package_name() != "runtime")
+    ret = Expression::make_heap_expression(ret, loc);
+  else
+    {
+      // When compiling the runtime, method closures do not escape.
+      // When escape analysis becomes the default, and applies to
+      // method closures, this should be changed to make it an error
+      // if a method closure escapes.
+      Temporary_statement* ctemp = Statement::make_temporary(st, ret, loc);
+      inserter->insert(ctemp);
+      ret = Expression::make_temporary_reference(ctemp, loc);
+      ret = Expression::make_unary(OPERATOR_AND, ret, loc);
+      ret->unary_expression()->set_does_not_escape();
+    }
+
+  // If necessary, check whether the expression or any embedded
+  // pointers are nil.
 
   Expression* nil_check = NULL;
-  Expression* expr = this->expr_;
   if (this->method_->field_indexes() != NULL)
     {
-      // Note that we are evaluating this->expr_ twice, but that is OK
-      // because in the lowering pass we forced it into a temporary
-      // variable.
       Expression* ref = expr;
       nil_check = bme_check_nil(this->method_->field_indexes(), loc, &ref);
       expr = ref;
@@ -6808,19 +6804,20 @@ Bound_method_expression::do_get_backend(Translate_context* context)
 	nil_check = Expression::make_binary(OPERATOR_OROR, nil_check, n, loc);
     }
 
-  Bexpression* bme = ret->get_backend(context);
   if (nil_check != NULL)
     {
-      Gogo* gogo = context->gogo();
-      Bexpression* crash =
-	gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-			    loc)->get_backend(context);
-      Btype* btype = ret->type()->get_backend(gogo);
-      Bexpression* bcheck = nil_check->get_backend(context);
-      bme = gogo->backend()->conditional_expression(btype, bcheck, crash,
-						    bme, loc);
+      Expression* crash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
+					      loc);
+      // Fix the type of the conditional expression by pretending to
+      // evaluate to RET either way through the conditional.
+      crash = Expression::make_compound(crash, ret, loc);
+      ret = Expression::make_conditional(nil_check, crash, ret, loc);
     }
-  return bme;
+
+  // RET is a pointer to a struct, but we want a function type.
+  ret = Expression::make_unsafe_cast(this->type(), ret, loc);
+
+  return ret;
 }
 
 // Dump ast representation of a bound method expression.

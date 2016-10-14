@@ -2888,7 +2888,7 @@ class Bound_method_expression : public Expression
   do_traverse(Traverse*);
 
   Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
 
   Type*
   do_type();
@@ -2907,7 +2907,8 @@ class Bound_method_expression : public Expression
   }
 
   Bexpression*
-  do_get_backend(Translate_context*);
+  do_get_backend(Translate_context*)
+  { go_unreachable(); }
 
   void
   do_dump_expression(Ast_dump_context*) const;

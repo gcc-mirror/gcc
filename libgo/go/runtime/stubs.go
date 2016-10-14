@@ -415,3 +415,16 @@ func startTheWorld() {
 func getMstats() *mstats {
 	return &memstats
 }
+
+// Temporary for gccgo until we port proc.go.
+func setcpuprofilerate_m(hz int32)
+
+// Temporary for gccgo until we port mem_GOOS.go.
+func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer
+
+// Temporary for gccgo until we port proc.go, so that the C signal
+// handler can call into cpuprof.
+//go:linkname cpuprofAdd runtime.cpuprofAdd
+func cpuprofAdd(stk []uintptr) {
+	cpuprof.add(stk)
+}
