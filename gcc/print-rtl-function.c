@@ -60,9 +60,11 @@ print_edge (FILE *outfile, edge e, bool from)
 
   /* Express edge flags as a string with " | " separator.
      e.g. (flags "FALLTHRU | DFS_BACK").  */
-  fprintf (outfile, " (flags \"");
-  bool seen_flag = false;
-#define DEF_EDGE_FLAG(NAME,IDX) \
+  if (e->flags)
+    {
+      fprintf (outfile, " (flags \"");
+      bool seen_flag = false;
+#define DEF_EDGE_FLAG(NAME,IDX)			\
   do {						\
     if (e->flags & EDGE_##NAME)			\
       {						\
@@ -75,7 +77,10 @@ print_edge (FILE *outfile, edge e, bool from)
 #include "cfg-flags.def"
 #undef DEF_EDGE_FLAG
 
-  fprintf (outfile, "\"))\n");
+      fprintf (outfile, "\")");
+    }
+
+  fprintf (outfile, ")\n");
 }
 
 /* If BB is non-NULL, print the start of a "(block)" directive for it
@@ -132,7 +137,9 @@ can_have_basic_block_p (const rtx_insn *insn)
    If COMPACT, then instructions are printed in a compact form:
    - INSN_UIDs are omitted, except for jumps and CODE_LABELs,
    - INSN_CODEs are omitted,
-   - register numbers are omitted for hard and virtual regs
+   - register numbers are omitted for hard and virtual regs, and
+     non-virtual pseudos are offset relative to the first such reg, and
+     printed with a '%' sigil e.g. "%0" for (LAST_VIRTUAL_REGISTER + 1),
    - insn names are prefixed with "c" (e.g. "cinsn", "cnote", etc)
 
    Example output (with COMPACT==true):
@@ -148,13 +155,13 @@ can_have_basic_block_p (const rtx_insn *insn)
 		       (reg:SI di [ i ])) "t.c":2
 		   (nil))
 	 (cnote NOTE_INSN_FUNCTION_BEG)
-	 (cinsn (set (reg:SI 89)
+	 (cinsn (set (reg:SI %2)
 		       (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
 			       (const_int -4)) [1 i+0 S4 A32])) "t.c":3
 		   (nil))
 	 (cinsn (parallel [
-			   (set (reg:SI 87 [ _2 ])
-			       (ashift:SI (reg:SI 89)
+			   (set (reg:SI %0 [ _2 ])
+			       (ashift:SI (reg:SI %2)
 				   (const_int 1)))
 			   (clobber (reg:CC flags))
 		       ]) "t.c":3
@@ -162,11 +169,11 @@ can_have_basic_block_p (const rtx_insn *insn)
 				   (const_int -4)) [1 i+0 S4 A32])
 			   (const_int 1))
 		       (nil)))
-	 (cinsn (set (reg:SI 88 [ <retval> ])
-		       (reg:SI 87 [ _2 ])) "t.c":3
+	 (cinsn (set (reg:SI %1 [ <retval> ])
+		       (reg:SI %0 [ _2 ])) "t.c":3
 		   (nil))
 	 (cinsn (set (reg/i:SI ax)
-		       (reg:SI 88 [ <retval> ])) "t.c":4
+		       (reg:SI %1 [ <retval> ])) "t.c":4
 		   (nil))
 	 (cinsn (use (reg/i:SI ax)) "t.c":4
 		   (nil))
