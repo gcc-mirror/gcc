@@ -2382,18 +2382,26 @@ expand_parity (machine_mode mode, rtx op0, rtx target)
 
 	      last = get_last_insn ();
 
-	      if (target == 0)
-		target = gen_reg_rtx (mode);
+	      if (target == 0 || GET_MODE (target) != wider_mode)
+		target = gen_reg_rtx (wider_mode);
+
 	      xop0 = widen_operand (op0, wider_mode, mode, true, false);
 	      temp = expand_unop (wider_mode, popcount_optab, xop0, NULL_RTX,
 				  true);
 	      if (temp != 0)
 		temp = expand_binop (wider_mode, and_optab, temp, const1_rtx,
 				     target, true, OPTAB_DIRECT);
-	      if (temp == 0)
-		delete_insns_since (last);
 
-	      return temp;
+	      if (temp)
+		{
+		  if (mclass != MODE_INT
+		      || !TRULY_NOOP_TRUNCATION_MODES_P (mode, wider_mode))
+		    return convert_to_mode (mode, temp, 0);
+		  else
+		    return gen_lowpart (mode, temp);
+		}
+	      else
+		delete_insns_since (last);
 	    }
 	}
     }

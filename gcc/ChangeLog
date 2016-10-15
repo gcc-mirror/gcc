@@ -1,3 +1,8 @@
+2016-10-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* optabs.c (expand_parity): Fix mode mismatch, add final conversion
+	and keep looping on failure.
+
 2016-10-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* print-rtl-function.c (print_edge): Omit "(flags)" when none are
