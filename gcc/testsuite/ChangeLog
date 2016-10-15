@@ -1,7 +1,3 @@
-2016-10-14  Nathan Sidwell  <nathan@acm.org>
-
-	* c-c++-common/fmax-errors.c: Add error with note.
-
 2016-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/77959
