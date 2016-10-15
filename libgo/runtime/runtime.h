@@ -66,8 +66,7 @@ typedef	struct	SigTab		SigTab;
 typedef	struct	mcache		MCache;
 typedef struct	FixAlloc	FixAlloc;
 typedef	struct	hchan		Hchan;
-typedef	struct	Timers		Timers;
-typedef	struct	Timer		Timer;
+typedef	struct	timer		Timer;
 typedef	struct	gcstats		GCStats;
 typedef	struct	LFNode		LFNode;
 typedef	struct	ParFor		ParFor;
@@ -180,36 +179,6 @@ enum {
    Solaris = 0
 };
 #endif
-
-struct	Timers
-{
-	Lock;
-	G	*timerproc;
-	bool		sleeping;
-	bool		rescheduling;
-	Note	waitnote;
-	Timer	**t;
-	int32	len;
-	int32	cap;
-};
-
-// Package time knows the layout of this structure.
-// If this struct changes, adjust ../time/sleep.go:/runtimeTimer.
-// For GOOS=nacl, package syscall knows the layout of this structure.
-// If this struct changes, adjust ../syscall/net_nacl.go:/runtimeTimer.
-struct	Timer
-{
-	intgo	i;	// heap index
-
-	// Timer wakes up at when, and then at when+period, ... (period > 0 only)
-	// each time calling f(now, arg) in the timer goroutine, so f must be
-	// a well-behaved function and not block.
-	int64	when;
-	int64	period;
-	FuncVal	*fv;
-	Eface	arg;
-	uintptr	seq;
-};
 
 // Lock-free stack node.
 struct LFNode
@@ -403,7 +372,8 @@ bool	__go_sigsend(int32 sig);
 int32	runtime_callers(int32, Location*, int32, bool keep_callers);
 int64	runtime_nanotime(void)	// monotonic time
   __asm__(GOSYM_PREFIX "runtime.nanotime");
-int64	runtime_unixnanotime(void); // real time, can skip
+int64	runtime_unixnanotime(void) // real time, can skip
+  __asm__ (GOSYM_PREFIX "runtime.unixnanotime");
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void);
 void	runtime_freezetheworld(void);
@@ -422,8 +392,10 @@ int64	runtime_tickspersecond(void)
      __asm__ (GOSYM_PREFIX "runtime.tickspersecond");
 void	runtime_blockevent(int64, int32);
 extern int64 runtime_blockprofilerate;
-void	runtime_addtimer(Timer*);
-bool	runtime_deltimer(Timer*);
+void	runtime_addtimer(Timer*)
+  __asm__ (GOSYM_PREFIX "runtime.addtimer");
+bool	runtime_deltimer(Timer*)
+  __asm__ (GOSYM_PREFIX "runtime.deltimer");
 G*	runtime_netpoll(bool);
 void	runtime_netpollinit(void);
 int32	runtime_netpollopen(uintptr, PollDesc*);

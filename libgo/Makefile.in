@@ -262,8 +262,7 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	$(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo $(am__objects_3) yield.lo \
 	$(am__objects_4) go-iface.lo lfstack.lo malloc.lo netpoll.lo \
-	rdebug.lo reflect.lo runtime1.lo sigqueue.lo time.lo \
-	$(am__objects_5)
+	rdebug.lo reflect.lo runtime1.lo sigqueue.lo $(am__objects_5)
 am_libgo_llgo_la_OBJECTS = $(am__objects_6)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -918,7 +917,6 @@ runtime_files = \
 	reflect.c \
 	runtime1.c \
 	sigqueue.c \
-	time.c \
 	$(runtime_getncpu_file)
 
 noinst_DATA = zstdpkglist.go
@@ -1636,7 +1634,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-sema.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/yield.Plo@am__quote@
 
 .c.o:

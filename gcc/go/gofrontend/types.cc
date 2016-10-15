@@ -5928,7 +5928,7 @@ Struct_type::write_field_to_c_header(std::ostream& os, const std::string& name,
       break;
 
     case TYPE_FUNCTION:
-      os << "FuncVal";
+      os << "FuncVal*";
       break;
 
     case TYPE_POINTER:
