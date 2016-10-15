@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "unix.h"
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 
 /* IO locking rules:
@@ -68,18 +69,41 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    on it.  unlock_unit or close_unit must be always called only with the
    private lock held.  */
 
-/* Subroutines related to units */
 
-/* Unit number to be assigned when NEWUNIT is used in an OPEN statement.  */
-#define GFC_FIRST_NEWUNIT -10
+
+/* Table of allocated newunit values.  A simple solution would be to
+   map OS file descriptors (fd's) to unit numbers, e.g. with newunit =
+   -fd - 2, however that doesn't work since Fortran allows an existing
+   unit number to be reassociated with a new file. Thus the simple
+   approach may lead to a situation where we'd try to assign a
+   (negative) unit number which already exists. Hence we must keep
+   track of allocated newunit values ourselves. This is the purpose of
+   the newunits array. The indices map to newunit values as newunit =
+   -index + NEWUNIT_FIRST. E.g. newunits[0] having the value true
+   means that a unit with number NEWUNIT_FIRST exists. Similar to
+   POSIX file descriptors, we always allocate the lowest (in absolute
+   value) available unit number.
+ */
+static bool *newunits;
+static int newunit_size; /* Total number of elements in the newunits array.  */
+/* Low water indicator for the newunits array. Below the LWI all the
+   units are allocated, above and equal to the LWI there may be both
+   allocated and free units. */
+static int newunit_lwi;
+static void newunit_free (int);
+
+/* Unit numbers assigned with NEWUNIT start from here.  */
+#define NEWUNIT_START -10
+
+
 #define NEWUNIT_STACK_SIZE 16
-static GFC_INTEGER_4 next_available_newunit = GFC_FIRST_NEWUNIT;
 
 /* A stack to save previously used newunit-assigned unit numbers to
    allow them to be reused without reallocating the gfc_unit structure
    which is still in the treap.  */
 static gfc_saved_unit newunit_stack[NEWUNIT_STACK_SIZE];
 static int newunit_tos = 0; /* Index to Top of Stack.  */
+
 
 #define CACHE_SIZE 3
 static gfc_unit *unit_cache[CACHE_SIZE];
@@ -551,7 +575,7 @@ get_unit (st_parameter_dt *dtp, int do_create)
       if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) != 0)
 	{
 	  dtp->u.p.unit_is_internal = 1;
-	  dtp->common.unit = get_unique_unit_number (&dtp->common);
+	  dtp->common.unit = newunit_alloc ();
 	  unit = get_gfc_unit (dtp->common.unit, do_create);
 	  set_internal_unit (dtp, unit, kind);
 	  fbuf_init (unit, 128);
@@ -567,7 +591,7 @@ get_unit (st_parameter_dt *dtp, int do_create)
 	    }
 	  else
 	    {
-	      dtp->common.unit = get_unique_unit_number (&dtp->common);
+	      dtp->common.unit = newunit_alloc ();
 	      unit = xcalloc (1, sizeof (gfc_unit));
 	      fbuf_init (unit, 128);
 	    }
@@ -579,8 +603,12 @@ get_unit (st_parameter_dt *dtp, int do_create)
   dtp->u.p.unit_is_internal = 0;
   dtp->internal_unit = NULL;
   dtp->internal_unit_desc = NULL;
-  unit = get_gfc_unit (dtp->common.unit, do_create);
-  return unit;
+  /* For an external unit with unit number < 0 creating it on the fly
+     is not allowed, such units must be created with
+     OPEN(NEWUNIT=...).  */
+  if (dtp->common.unit < 0)
+    return get_gfc_unit (dtp->common.unit, 0);
+  return get_gfc_unit (dtp->common.unit, do_create);
 }
 
 
@@ -734,6 +762,9 @@ close_unit_1 (gfc_unit *u, int locked)
   free_format_hash_table (u);
   fbuf_destroy (u);
 
+  if (u->unit_number <= NEWUNIT_START)
+    newunit_free (u->unit_number);
+
   if (!locked)
     __gthread_mutex_unlock (&u->lock);
 
@@ -788,6 +819,9 @@ close_units (void)
 	free (newunit_stack[newunit_tos].unit->s);
 	free (newunit_stack[newunit_tos--].unit);
       }
+
+  free (newunits);
+
 #ifdef HAVE_FREELOCALE
   freelocale (c_locale);
 #endif
@@ -885,25 +919,53 @@ finish_last_advance_record (gfc_unit *u)
   fbuf_flush (u, u->mode);
 }
 
+
 /* Assign a negative number for NEWUNIT in OPEN statements or for
    internal units.  */
-GFC_INTEGER_4
-get_unique_unit_number (st_parameter_common *common)
+int
+newunit_alloc (void)
 {
-  GFC_INTEGER_4 num;
-
-#ifdef HAVE_SYNC_FETCH_AND_ADD
-  num = __sync_fetch_and_add (&next_available_newunit, -1);
-#else
   __gthread_mutex_lock (&unit_lock);
-  num = next_available_newunit--;
-  __gthread_mutex_unlock (&unit_lock);
-#endif
-  /* Do not allow NEWUNIT numbers to wrap.  */
-  if (num > GFC_FIRST_NEWUNIT)
+  if (!newunits)
     {
-      generate_error (common, LIBERROR_INTERNAL, "NEWUNIT exhausted");
-      return 0;
+      newunits = xcalloc (16, 1);
+      newunit_size = 16;
     }
-  return num;
+
+  /* Search for the next available newunit.  */
+  for (int ii = newunit_lwi; ii < newunit_size; ii++)
+    {
+      if (!newunits[ii])
+        {
+          newunits[ii] = true;
+          newunit_lwi = ii + 1;
+	  __gthread_mutex_unlock (&unit_lock);
+          return -ii + NEWUNIT_START;
+        }
+    }
+
+  /* Search failed, bump size of array and allocate the first
+     available unit.  */
+  int old_size = newunit_size;
+  newunit_size *= 2;
+  newunits = xrealloc (newunits, newunit_size);
+  memset (newunits + old_size, 0, old_size);
+  newunits[old_size] = true;
+  newunit_lwi = old_size + 1;
+    __gthread_mutex_unlock (&unit_lock);
+  return -old_size + NEWUNIT_START;
+}
+
+
+/* Free a previously allocated newunit= unit number.  unit_lock must
+   be held when calling.  */
+
+static void
+newunit_free (int unit)
+{
+  int ind = -unit + NEWUNIT_START;
+  assert(ind >= 0 && ind < newunit_size);
+  newunits[ind] = false;
+  if (ind < newunit_lwi)
+    newunit_lwi = ind;
 }

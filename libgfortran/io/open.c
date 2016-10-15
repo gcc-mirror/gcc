@@ -812,7 +812,7 @@ st_open (st_parameter_open *opp)
   if ((opp->common.flags & IOPARM_LIBRETURN_MASK) == IOPARM_LIBRETURN_OK)
     {
       if ((opp->common.flags & IOPARM_OPEN_HAS_NEWUNIT))
-	opp->common.unit = get_unique_unit_number(&opp->common);
+	opp->common.unit = newunit_alloc ();
       else if (opp->common.unit < 0)
 	{
 	  u = find_unit (opp->common.unit);

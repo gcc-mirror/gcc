@@ -715,8 +715,9 @@ internal_proto (finish_last_advance_record);
 extern int unit_truncate (gfc_unit *, gfc_offset, st_parameter_common *);
 internal_proto (unit_truncate);
 
-extern GFC_INTEGER_4 get_unique_unit_number (st_parameter_common *);
-internal_proto(get_unique_unit_number);
+extern int newunit_alloc (void);
+internal_proto(newunit_alloc);
+
 
 /* open.c */
 
