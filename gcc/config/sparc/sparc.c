@@ -12044,7 +12044,7 @@ sparc_expand_vec_perm_bmask (machine_mode vmode, rtx sel)
     }
 
   /* Always perform the final addition/merge within the bmask insn.  */
-  emit_insn (gen_bmasksi_vis (gen_rtx_REG (SImode, 0), sel, t_1));
+  emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), sel, t_1));
 }
 
 /* Implement TARGET_FRAME_POINTER_REQUIRED.  */
@@ -12310,7 +12310,7 @@ vector_init_bshuffle (rtx target, rtx elt, machine_mode mode,
     }
 
   sel = force_reg (SImode, GEN_INT (bmask));
-  emit_insn (gen_bmasksi_vis (gen_rtx_REG (SImode, 0), sel, const0_rtx));
+  emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), sel, const0_rtx));
   emit_insn (final_insn);
 }
 

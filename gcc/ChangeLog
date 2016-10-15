@@ -1,3 +1,11 @@
+2016-10-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_expand_vec_perm_bmask): Use a scratch
+	register as destination of bmask.
+	(vector_init_bshuffle): Likewise.
+	* config/sparc/sparc.md (vec_perm_constv8qi): Likewise.
+	(bmaskdi_vis): Enable only in 64-bit mode.
+
 2016-10-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_get_separate_components): Do not
