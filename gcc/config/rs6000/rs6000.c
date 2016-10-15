@@ -27439,27 +27439,29 @@ rs6000_get_separate_components (void)
 {
   rs6000_stack_t *info = rs6000_stack_info ();
 
-  if (!(info->savres_strategy & SAVE_INLINE_GPRS)
-      || !(info->savres_strategy & REST_INLINE_GPRS)
-      || WORLD_SAVE_P (info))
+  if (WORLD_SAVE_P (info))
     return NULL;
 
   sbitmap components = sbitmap_alloc (32);
   bitmap_clear (components);
 
   /* The GPRs we need saved to the frame.  */
-  int reg_size = TARGET_32BIT ? 4 : 8;
-  int offset = info->gp_save_offset;
-  if (info->push_p)
-    offset += info->total_size;
-
-  for (unsigned regno = info->first_gp_reg_save; regno < 32; regno++)
+  if ((info->savres_strategy & SAVE_INLINE_GPRS)
+      && (info->savres_strategy & REST_INLINE_GPRS))
     {
-      if (IN_RANGE (offset, -0x8000, 0x7fff)
-	  && rs6000_reg_live_or_pic_offset_p (regno))
-	bitmap_set_bit (components, regno);
+      int reg_size = TARGET_32BIT ? 4 : 8;
+      int offset = info->gp_save_offset;
+      if (info->push_p)
+	offset += info->total_size;
 
-      offset += reg_size;
+      for (unsigned regno = info->first_gp_reg_save; regno < 32; regno++)
+	{
+	  if (IN_RANGE (offset, -0x8000, 0x7fff)
+	      && rs6000_reg_live_or_pic_offset_p (regno))
+	    bitmap_set_bit (components, regno);
+
+	  offset += reg_size;
+	}
     }
 
   /* Don't mess with the hard frame pointer.  */
@@ -27472,11 +27474,18 @@ rs6000_get_separate_components (void)
       || (flag_pic && DEFAULT_ABI == ABI_DARWIN))
     bitmap_clear_bit (components, RS6000_PIC_OFFSET_TABLE_REGNUM);
 
-  /* Optimize LR save and restore if we can.  This is component 0.  */
+  /* Optimize LR save and restore if we can.  This is component 0.  Any
+     out-of-line register save/restore routines need LR.  */
   if (info->lr_save_p
-      && !(flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN)))
+      && !(flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN))
+      && (info->savres_strategy & SAVE_INLINE_GPRS)
+      && (info->savres_strategy & REST_INLINE_GPRS)
+      && (info->savres_strategy & SAVE_INLINE_FPRS)
+      && (info->savres_strategy & REST_INLINE_FPRS)
+      && (info->savres_strategy & SAVE_INLINE_VRS)
+      && (info->savres_strategy & REST_INLINE_VRS))
     {
-      offset = info->lr_save_offset;
+      int offset = info->lr_save_offset;
       if (info->push_p)
 	offset += info->total_size;
       if (IN_RANGE (offset, -0x8000, 0x7fff))

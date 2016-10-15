@@ -1,3 +1,11 @@
+2016-10-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_get_separate_components): Do not
+	make LR a separately shrink-wrapped component unless savres_strategy
+	contains all of {SAVE,REST}_INLINE_{GPRS,FPRS,VRS}.  Do not wrap
+	GPRs unless both {SAVE,REST}_INLINE_GPRS.  Do not disallow all
+	wrapping when not both {SAVE,REST}_INLINE_GPRS.
+
 2016-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* optabs.c (expand_parity): Fix mode mismatch, add final conversion
