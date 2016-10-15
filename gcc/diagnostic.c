@@ -470,8 +470,18 @@ diagnostic_action_after_output (diagnostic_context *context,
 	  diagnostic_finish (context);
 	  exit (FATAL_EXIT_CODE);
 	}
-      /* -fmax-error handling is just before the next diagnostic is
-	 emitted.  */
+      if (context->max_errors != 0
+	  && ((unsigned) (diagnostic_kind_count (context, DK_ERROR)
+			  + diagnostic_kind_count (context, DK_SORRY)
+			  + diagnostic_kind_count (context, DK_WERROR))
+	      >= context->max_errors))
+	{
+	  fnotice (stderr,
+		   "compilation terminated due to -fmax-errors=%u.\n",
+		   context->max_errors);
+	  diagnostic_finish (context);
+	  exit (FATAL_EXIT_CODE);
+	}
       break;
 
     case DK_ICE:
@@ -824,7 +834,9 @@ diagnostic_report_diagnostic (diagnostic_context *context,
      -Wno-error=*.  */
   if (context->warning_as_error_requested
       && diagnostic->kind == DK_WARNING)
-    diagnostic->kind = DK_ERROR;
+    {
+      diagnostic->kind = DK_ERROR;
+    }
 
   if (diagnostic->option_index
       && diagnostic->option_index != permissive_error_option (context))
@@ -878,25 +890,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	 warnings for ranges of source code.  */
       if (diagnostic->kind == DK_IGNORED)
 	return false;
-    }
-
-  if (diagnostic->kind != DK_NOTE && context->max_errors)
-    {
-      /* Check, before emitting the diagnostic, whether we would
-	 exceed the limit.  This way we will emit notes relevant to
-	 the final emitted error.  */
-      int count = (diagnostic_kind_count (context, DK_ERROR)
-		   + diagnostic_kind_count (context, DK_SORRY)
-		   + diagnostic_kind_count (context, DK_WERROR));
-
-      if ((unsigned) count >= context->max_errors)
-	{
-	  fnotice (stderr,
-		   "compilation terminated due to -fmax-errors=%u.\n",
-		   context->max_errors);
-	  diagnostic_finish (context);
-	  exit (FATAL_EXIT_CODE);
-	}
     }
 
   context->lock++;

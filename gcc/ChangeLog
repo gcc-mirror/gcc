@@ -1,9 +1,3 @@
-2016-10-14  Nathan Sidwell  <nathan@acm.org>
-
-	* diagnostic.c (diagnostic_action_after_output): Remove fatal
-	and max error handling here ....
-	(diagnostic_report_diagnostic): ... do it here instead.
-
 2016-10-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* print-rtl-function.c (print_edge): Omit "(flags)" when none are
