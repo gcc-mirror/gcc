@@ -1414,10 +1414,9 @@ restart:
 
       if (c != '&')
 	{
-	  if (in_string)
+	  if (in_string && gfc_current_locus.nextc)
 	    {
-	      if (gfc_current_locus.nextc)
-	        gfc_current_locus.nextc--;
+	      gfc_current_locus.nextc--;
 	      if (warn_ampersand && in_string == INSTRING_WARN)
 		gfc_warning (OPT_Wampersand, 
 			     "Missing %<&%> in continued character "

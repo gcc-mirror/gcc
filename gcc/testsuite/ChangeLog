@@ -1,3 +1,8 @@
+2016-10-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/77972
+	* gfortran.dg/unexpected_eof_4.f90: New test.
+
 2016-10-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR libfortran/48587
