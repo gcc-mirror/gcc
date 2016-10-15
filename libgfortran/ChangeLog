@@ -1,3 +1,23 @@
+2016-10-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/48587
+        * io/io.h (get_unique_unit_number): Remove prototype.
+        (newunit_alloc): New prototype.
+        * io/open.c (st_open): Call newunit_alloc.
+        * io/unit.c (newunits,newunit_size,newunit_lwi): New static
+        variables.
+        (GFC_FIRST_NEWUNIT): Rename to NEWUNIT_START.
+        (next_available_newunit): Remove variable.
+        (get_unit): Call newunit_alloc, don't try to create negative
+        external unit.
+        (close_unit_1): Call newunit_free.
+        (close_units): Free newunits array.
+        (get_unique_number): Remove function.
+        (newunit_alloc): New function.
+        (newunit_free): New function.
+        * io/transfer.c (data_transfer_init): Check for invalid unit
+        number.
+
 2016-10-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR libfortran/67585

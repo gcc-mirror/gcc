@@ -2601,7 +2601,15 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
   dtp->u.p.current_unit = get_unit (dtp, 1);
 
-  if (dtp->u.p.current_unit->s == NULL)
+  if (dtp->u.p.current_unit == NULL)
+    {
+      /* This means we tried to access an external unit < 0 without
+	 having opened it first with NEWUNIT=.  */
+      generate_error (&dtp->common, LIBERROR_BAD_OPTION,
+		      "Invalid unit number in statement");
+      return;
+    }
+  else if (dtp->u.p.current_unit->s == NULL)
     {  /* Open the unit with some default flags.  */
        st_parameter_open opp;
        unit_convert conv;
