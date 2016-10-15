@@ -3206,6 +3206,26 @@ var_in_maybe_constexpr_fn (tree t)
   return var_in_constexpr_fn (t);
 }
 
+/* We're assigning INIT to TARGET.  In do_build_copy_constructor and
+   build_over_call we implement trivial copy of a class with tail padding using
+   assignment of character arrays, which is valid in normal code, but not in
+   constexpr evaluation.  We don't need to worry about clobbering tail padding
+   in constexpr evaluation, so strip the type punning.  */
+
+static void
+maybe_simplify_trivial_copy (tree &target, tree &init)
+{
+  if (TREE_CODE (target) == MEM_REF
+      && TREE_CODE (init) == MEM_REF
+      && TREE_TYPE (target) == TREE_TYPE (init)
+      && TREE_CODE (TREE_TYPE (target)) == ARRAY_TYPE
+      && TREE_TYPE (TREE_TYPE (target)) == unsigned_char_type_node)
+    {
+      target = build_fold_indirect_ref (TREE_OPERAND (target, 0));
+      init = build_fold_indirect_ref (TREE_OPERAND (init, 0));
+    }
+}
+
 /* Evaluate an INIT_EXPR or MODIFY_EXPR.  */
 
 static tree
@@ -3222,6 +3242,9 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
   /* First we figure out where we're storing to.  */
   tree target = TREE_OPERAND (t, 0);
+
+  maybe_simplify_trivial_copy (target, init);
+
   tree type = TREE_TYPE (target);
   target = cxx_eval_constant_expression (ctx, target,
 					 true,

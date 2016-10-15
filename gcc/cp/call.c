@@ -7909,7 +7909,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  arg2 = TYPE_SIZE_UNIT (as_base);
 	  arg0 = cp_build_addr_expr (to, complain);
 
-	  array_type = build_array_type (char_type_node,
+	  array_type = build_array_type (unsigned_char_type_node,
 					 build_index_type
 					   (size_binop (MINUS_EXPR,
 							arg2, size_int (1))));
