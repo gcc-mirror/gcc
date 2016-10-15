@@ -1,5 +1,11 @@
 2016-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.target/sparc/bmaskbshuf.c: Rename to...
+	* gcc.target/sparc/bmaskbshuf-1.c: ...this.
+	* gcc.target/sparc/bmaskbshuf-2.c: New test.
+
+2016-10-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.target/sparc/popc.c: Rename to...
 	* gcc.target/sparc/popc-1.c: ...this.
 	* gcc.target/sparc/popc-2.c: New test.
