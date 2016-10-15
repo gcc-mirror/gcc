@@ -89,11 +89,6 @@ static FuncVal deadlineFn	= {(void(*)(void))deadline};
 static FuncVal readDeadlineFn	= {(void(*)(void))readDeadline};
 static FuncVal writeDeadlineFn	= {(void(*)(void))writeDeadline};
 
-// runtimeNano returns the current value of the runtime clock in nanoseconds.
-func runtimeNano() (ns int64) {
-	ns = runtime_nanotime();
-}
-
 func runtime_pollServerInit() {
 	runtime_netpollinit();
 }
@@ -176,13 +171,13 @@ func runtime_pollSetDeadline(pd *PollDesc, d int64, mode int) {
 	}
 	pd->seq++;  // invalidate current timers
 	// Reset current timers.
-	if(pd->rt.fv) {
+	if(pd->rt.f) {
 		runtime_deltimer(&pd->rt);
-		pd->rt.fv = nil;
+		pd->rt.f = nil;
 	}
-	if(pd->wt.fv) {
+	if(pd->wt.f) {
 		runtime_deltimer(&pd->wt);
-		pd->wt.fv = nil;
+		pd->wt.f = nil;
 	}
 	// Setup new timers.
 	if(d != 0 && d <= runtime_nanotime())
@@ -192,7 +187,7 @@ func runtime_pollSetDeadline(pd *PollDesc, d int64, mode int) {
 	if(mode == 'w' || mode == 'r'+'w')
 		pd->wd = d;
 	if(pd->rd > 0 && pd->rd == pd->wd) {
-		pd->rt.fv = &deadlineFn;
+		pd->rt.f = &deadlineFn;
 		pd->rt.when = pd->rd;
 		// Copy current seq into the timer arg.
 		// Timer func will check the seq against current descriptor seq,
@@ -203,7 +198,7 @@ func runtime_pollSetDeadline(pd *PollDesc, d int64, mode int) {
 		runtime_addtimer(&pd->rt);
 	} else {
 		if(pd->rd > 0) {
-			pd->rt.fv = &readDeadlineFn;
+			pd->rt.f = &readDeadlineFn;
 			pd->rt.when = pd->rd;
 			pd->rt.arg.type = nil; // should be *pollDesc type descriptor.
 			pd->rt.arg.data = pd;
@@ -211,7 +206,7 @@ func runtime_pollSetDeadline(pd *PollDesc, d int64, mode int) {
 			runtime_addtimer(&pd->rt);
 		}
 		if(pd->wd > 0) {
-			pd->wt.fv = &writeDeadlineFn;
+			pd->wt.f = &writeDeadlineFn;
 			pd->wt.when = pd->wd;
 			pd->wt.arg.type = nil; // should be *pollDesc type descriptor.
 			pd->wt.arg.data = pd;
@@ -244,13 +239,13 @@ func runtime_pollUnblock(pd *PollDesc) {
 	runtime_atomicstorep(&rg, nil);  // full memory barrier between store to closing and read of rg/wg in netpollunblock
 	rg = netpollunblock(pd, 'r', false);
 	wg = netpollunblock(pd, 'w', false);
-	if(pd->rt.fv) {
+	if(pd->rt.f) {
 		runtime_deltimer(&pd->rt);
-		pd->rt.fv = nil;
+		pd->rt.f = nil;
 	}
-	if(pd->wt.fv) {
+	if(pd->wt.f) {
 		runtime_deltimer(&pd->wt);
-		pd->wt.fv = nil;
+		pd->wt.f = nil;
 	}
 	runtime_unlock(pd);
 	if(rg)
@@ -408,17 +403,17 @@ deadlineimpl(Eface arg, uintptr seq, bool read, bool write)
 		return;
 	}
 	if(read) {
-		if(pd->rd <= 0 || pd->rt.fv == nil)
+		if(pd->rd <= 0 || pd->rt.f == nil)
 			runtime_throw("deadlineimpl: inconsistent read deadline");
 		pd->rd = -1;
-		runtime_atomicstorep(&pd->rt.fv, nil);  // full memory barrier between store to rd and load of rg in netpollunblock
+		runtime_atomicstorep(&pd->rt.f, nil);  // full memory barrier between store to rd and load of rg in netpollunblock
 		rg = netpollunblock(pd, 'r', false);
 	}
 	if(write) {
-		if(pd->wd <= 0 || (pd->wt.fv == nil && !read))
+		if(pd->wd <= 0 || (pd->wt.f == nil && !read))
 			runtime_throw("deadlineimpl: inconsistent write deadline");
 		pd->wd = -1;
-		runtime_atomicstorep(&pd->wt.fv, nil);  // full memory barrier between store to wd and load of wg in netpollunblock
+		runtime_atomicstorep(&pd->wt.f, nil);  // full memory barrier between store to wd and load of wg in netpollunblock
 		wg = netpollunblock(pd, 'w', false);
 	}
 	runtime_unlock(pd);

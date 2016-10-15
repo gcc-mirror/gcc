@@ -196,15 +196,15 @@ func getcallersp(argp unsafe.Pointer) uintptr
 // argp used in Defer structs when there is no argp.
 const _NoArgs = ^uintptr(0)
 
-// //go:linkname time_now time.now
-// func time_now() (sec int64, nsec int32)
+//go:linkname time_now time.now
+func time_now() (sec int64, nsec int32)
 
-/*
+// For gccgo, expose this for C callers.
+//go:linkname unixnanotime runtime.unixnanotime
 func unixnanotime() int64 {
 	sec, nsec := time_now()
 	return sec*1e9 + int64(nsec)
 }
-*/
 
 // round n up to a multiple of a.  a must be a power of 2.
 func round(n, a uintptr) uintptr {

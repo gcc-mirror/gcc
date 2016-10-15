@@ -519,7 +519,6 @@ runtime_files = \
 	reflect.c \
 	runtime1.c \
 	sigqueue.c \
-	time.c \
 	$(runtime_getncpu_file)
 
 goc2c.$(OBJEXT): runtime/goc2c.c
