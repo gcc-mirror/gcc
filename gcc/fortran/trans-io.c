@@ -2325,7 +2325,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 	  if (derived->attr.has_dtio_procs)
 	    arg2 = get_dtio_proc (ts, code, &dtio_sub);
 
-	  if (dtio_sub != NULL)
+	  if ((dtio_sub != NULL) && (last_dt != IOLENGTH))
 	    {
 	      tree decl;
 	      decl = build_fold_indirect_ref_loc (input_location,
