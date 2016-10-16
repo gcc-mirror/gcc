@@ -2642,6 +2642,7 @@ expand_call_stmt (gcall *stmt)
   else
     CALL_FROM_THUNK_P (exp) = gimple_call_from_thunk_p (stmt);
   CALL_EXPR_VA_ARG_PACK (exp) = gimple_call_va_arg_pack_p (stmt);
+  CALL_EXPR_BY_DESCRIPTOR (exp) = gimple_call_by_descriptor_p (stmt);
   SET_EXPR_LOCATION (exp, gimple_location (stmt));
   CALL_WITH_BOUNDS_P (exp) = gimple_call_with_bounds_p (stmt);
 

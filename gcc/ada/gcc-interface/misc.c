@@ -1415,6 +1415,8 @@ get_lang_specific (tree node)
 #define LANG_HOOKS_EH_PERSONALITY	gnat_eh_personality
 #undef  LANG_HOOKS_DEEP_UNSHARING
 #define LANG_HOOKS_DEEP_UNSHARING	true
+#undef  LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS
+#define LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS true
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

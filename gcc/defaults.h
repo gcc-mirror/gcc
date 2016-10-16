@@ -1048,9 +1048,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CASE_VECTOR_PC_RELATIVE 0
 #endif
 
+/* Force minimum alignment to be able to use the least significant bits
+   for distinguishing descriptor addresses from code addresses.  */
+#define FUNCTION_ALIGNMENT(ALIGN)					\
+  (lang_hooks.custom_function_descriptors				\
+   && targetm.calls.custom_function_descriptors > 0			\
+   ? MAX ((ALIGN),						\
+	  2 * targetm.calls.custom_function_descriptors * BITS_PER_UNIT)\
+   : (ALIGN))
+
 /* Assume that trampolines need function alignment.  */
 #ifndef TRAMPOLINE_ALIGNMENT
-#define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
+#define TRAMPOLINE_ALIGNMENT FUNCTION_ALIGNMENT (FUNCTION_BOUNDARY)
 #endif
 
 /* Register mappings for target machines without register windows.  */

@@ -3971,6 +3971,8 @@ is used for aligning trampolines.
 
 @hook TARGET_TRAMPOLINE_ADJUST_ADDRESS
 
+@hook TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+
 Implementing trampolines is difficult on many machines because they have
 separate instruction and data caches.  Writing into a stack location
 fails to clear the memory in the instruction cache, so when the program

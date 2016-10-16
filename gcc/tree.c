@@ -1019,7 +1019,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	{
 	  if (code == FUNCTION_DECL)
 	    {
-	      SET_DECL_ALIGN (t, FUNCTION_BOUNDARY);
+	      SET_DECL_ALIGN (t, FUNCTION_ALIGNMENT (FUNCTION_BOUNDARY));
 	      DECL_MODE (t) = FUNCTION_MODE;
 	    }
 	  else
@@ -10602,11 +10602,18 @@ build_common_builtin_nodes (void)
 			BUILT_IN_INIT_HEAP_TRAMPOLINE,
 			"__builtin_init_heap_trampoline",
 			ECF_NOTHROW | ECF_LEAF);
+  local_define_builtin ("__builtin_init_descriptor", ftype,
+			BUILT_IN_INIT_DESCRIPTOR,
+			"__builtin_init_descriptor", ECF_NOTHROW | ECF_LEAF);
 
   ftype = build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE);
   local_define_builtin ("__builtin_adjust_trampoline", ftype,
 			BUILT_IN_ADJUST_TRAMPOLINE,
 			"__builtin_adjust_trampoline",
+			ECF_CONST | ECF_NOTHROW);
+  local_define_builtin ("__builtin_adjust_descriptor", ftype,
+			BUILT_IN_ADJUST_DESCRIPTOR,
+			"__builtin_adjust_descriptor",
 			ECF_CONST | ECF_NOTHROW);
 
   ftype = build_function_type_list (void_type_node,

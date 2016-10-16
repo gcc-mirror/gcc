@@ -883,6 +883,8 @@ DEF_C99_BUILTIN        (BUILT_IN__EXIT2, "_Exit", BT_FN_VOID_INT, ATTR_NORETURN_
 DEF_BUILTIN_STUB (BUILT_IN_INIT_TRAMPOLINE, "__builtin_init_trampoline")
 DEF_BUILTIN_STUB (BUILT_IN_INIT_HEAP_TRAMPOLINE, "__builtin_init_heap_trampoline")
 DEF_BUILTIN_STUB (BUILT_IN_ADJUST_TRAMPOLINE, "__builtin_adjust_trampoline")
+DEF_BUILTIN_STUB (BUILT_IN_INIT_DESCRIPTOR, "__builtin_init_descriptor")
+DEF_BUILTIN_STUB (BUILT_IN_ADJUST_DESCRIPTOR, "__builtin_adjust_descriptor")
 DEF_BUILTIN_STUB (BUILT_IN_NONLOCAL_GOTO, "__builtin_nonlocal_goto")
 
 /* Implementing __builtin_setjmp.  */

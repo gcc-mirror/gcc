@@ -1,5 +1,16 @@
 2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/misc.c (LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS):Define.
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Access>: Deal with
+	a zero TARGET_CUSTOM_FUNCTION_DESCRIPTORS specially for Code_Address.
+	Otherwise, if TARGET_CUSTOM_FUNCTION_DESCRIPTORS is positive, set
+	FUNC_ADDR_BY_DESCRIPTOR for 'Access/'Unrestricted_Access of nested
+	subprograms if the type can use an internal representation.
+	(call_to_gnu): Likewise, but set CALL_EXPR_BY_DESCRIPTOR on indirect
+	calls if the type can use an internal representation.
+
+2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* system-aix.ads (Always_Compatible_Rep): Change to False.
 	* system-aix64.ads (Always_Compatible_Rep): Likewise.
 	* system-hpux-ia64.ads (Always_Compatible_Rep): Likewise.

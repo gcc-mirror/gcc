@@ -5245,6 +5245,24 @@ be returned; otherwise @var{addr} should be returned unchanged.
 If this hook is not defined, @var{addr} will be used for function calls.
 @end deftypefn
 
+@deftypevr {Target Hook} int TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+This hook should be defined to a power of 2 if the target will benefit
+from the use of custom descriptors for nested functions instead of the
+standard trampolines.  Such descriptors are created at run time on the
+stack and made up of data only, but they are non-standard so the generated
+code must be prepared to deal with them.  This hook should be defined to 0
+if the target uses function descriptors for its standard calling sequence,
+like for example HP-PA or IA-64.  Using descriptors for nested functions
+eliminates the need for trampolines that reside on the stack and require
+it to be made executable.
+
+The value of the macro is used to parameterize the run-time identification
+scheme implemented to distinguish descriptors from function addresses: it
+gives the number of bytes by which their address is misaligned compared
+with function addresses.  The value of 1 will generally work, unless it is
+already reserved by the target for another purpose, like for example on ARM.
+@end deftypevr
+
 Implementing trampolines is difficult on many machines because they have
 separate instruction and data caches.  Writing into a stack location
 fails to clear the memory in the instruction cache, so when the program

@@ -184,17 +184,76 @@ static void restore_fixed_argument_area (rtx, rtx, int, int);
 
 rtx
 prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
-		      rtx *call_fusage, int reg_parm_seen, int sibcallp)
+		      rtx *call_fusage, int reg_parm_seen, int flags)
 {
   /* Make a valid memory address and copy constants through pseudo-regs,
      but not for a constant address if -fno-function-cse.  */
   if (GET_CODE (funexp) != SYMBOL_REF)
-    /* If we are using registers for parameters, force the
-       function address into a register now.  */
-    funexp = ((reg_parm_seen
-	       && targetm.small_register_classes_for_mode_p (FUNCTION_MODE))
-	      ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
-	      : memory_address (FUNCTION_MODE, funexp));
+    {
+      /* If it's an indirect call by descriptor, generate code to perform
+	 runtime identification of the pointer and load the descriptor.  */
+      if ((flags & ECF_BY_DESCRIPTOR) && !flag_trampolines)
+	{
+	  const int bit_val = targetm.calls.custom_function_descriptors;
+	  rtx call_lab = gen_label_rtx ();
+
+	  gcc_assert (fndecl_or_type && TYPE_P (fndecl_or_type));
+	  fndecl_or_type
+	    = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, NULL_TREE,
+			  fndecl_or_type);
+	  DECL_STATIC_CHAIN (fndecl_or_type) = 1;
+	  rtx chain = targetm.calls.static_chain (fndecl_or_type, false);
+
+	  /* Avoid long live ranges around function calls.  */
+	  funexp = copy_to_mode_reg (Pmode, funexp);
+
+	  if (REG_P (chain))
+	    emit_insn (gen_rtx_CLOBBER (VOIDmode, chain));
+
+	  /* Emit the runtime identification pattern.  */
+	  rtx mask = gen_rtx_AND (Pmode, funexp, GEN_INT (bit_val));
+	  emit_cmp_and_jump_insns (mask, const0_rtx, EQ, NULL_RTX, Pmode, 1,
+				   call_lab);
+
+	  /* Statically predict the branch to very likely taken.  */
+	  rtx_insn *insn = get_last_insn ();
+	  if (JUMP_P (insn))
+	    predict_insn_def (insn, PRED_BUILTIN_EXPECT, TAKEN);
+
+	  /* Load the descriptor.  */
+	  rtx mem = gen_rtx_MEM (ptr_mode,
+				 plus_constant (Pmode, funexp, - bit_val));
+	  MEM_NOTRAP_P (mem) = 1;
+	  mem = convert_memory_address (Pmode, mem);
+	  emit_move_insn (chain, mem);
+
+	  mem = gen_rtx_MEM (ptr_mode,
+			     plus_constant (Pmode, funexp,
+					    POINTER_SIZE / BITS_PER_UNIT
+					      - bit_val));
+	  MEM_NOTRAP_P (mem) = 1;
+	  mem = convert_memory_address (Pmode, mem);
+	  emit_move_insn (funexp, mem);
+
+	  emit_label (call_lab);
+
+	  if (REG_P (chain))
+	    {
+	      use_reg (call_fusage, chain);
+	      STATIC_CHAIN_REG_P (chain) = 1;
+	    }
+
+	  /* Make sure we're not going to be overwritten below.  */
+	  gcc_assert (!static_chain_value);
+	}
+
+      /* If we are using registers for parameters, force the
+	 function address into a register now.  */
+      funexp = ((reg_parm_seen
+		 && targetm.small_register_classes_for_mode_p (FUNCTION_MODE))
+		 ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
+		 : memory_address (FUNCTION_MODE, funexp));
+    }
   else
     {
       /* funexp could be a SYMBOL_REF represents a function pointer which is
@@ -203,7 +262,7 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
       if (GET_MODE (funexp) != Pmode)
 	funexp = convert_memory_address (Pmode, funexp);
 
-      if (! sibcallp)
+      if (!(flags & ECF_SIBCALL))
 	{
 	  if (!NO_FUNCTION_CSE && optimize && ! flag_no_function_cse)
 	    funexp = force_reg (Pmode, funexp);
@@ -221,7 +280,10 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
 
       emit_move_insn (chain, static_chain_value);
       if (REG_P (chain))
-	use_reg (call_fusage, chain);
+	{
+	  use_reg (call_fusage, chain);
+	  STATIC_CHAIN_REG_P (chain) = 1;
+	}
     }
 
   return funexp;
@@ -807,11 +869,13 @@ call_expr_flags (const_tree t)
     flags = internal_fn_flags (CALL_EXPR_IFN (t));
   else
     {
-      t = TREE_TYPE (CALL_EXPR_FN (t));
-      if (t && TREE_CODE (t) == POINTER_TYPE)
-	flags = flags_from_decl_or_type (TREE_TYPE (t));
+      tree type = TREE_TYPE (CALL_EXPR_FN (t));
+      if (type && TREE_CODE (type) == POINTER_TYPE)
+	flags = flags_from_decl_or_type (TREE_TYPE (type));
       else
 	flags = 0;
+      if (CALL_EXPR_BY_DESCRIPTOR (t))
+	flags |= ECF_BY_DESCRIPTOR;
     }
 
   return flags;
@@ -2648,6 +2712,8 @@ expand_call (tree exp, rtx target, int ignore)
     {
       fntype = TREE_TYPE (TREE_TYPE (addr));
       flags |= flags_from_decl_or_type (fntype);
+      if (CALL_EXPR_BY_DESCRIPTOR (exp))
+	flags |= ECF_BY_DESCRIPTOR;
     }
   rettype = TREE_TYPE (exp);
 
@@ -3359,6 +3425,13 @@ expand_call (tree exp, rtx target, int ignore)
       if (STRICT_ALIGNMENT)
 	store_unaligned_arguments_into_pseudos (args, num_actuals);
 
+      /* Prepare the address of the call.  This must be done before any
+	 register parameters is loaded for find_first_parameter_load to
+	 work properly in the presence of descriptors.  */
+      funexp = prepare_call_address (fndecl ? fndecl : fntype, funexp,
+				     static_chain_value, &call_fusage,
+				     reg_parm_seen, flags);
+
       /* Now store any partially-in-registers parm.
 	 This is the last place a block-move can happen.  */
       if (reg_parm_seen)
@@ -3469,10 +3542,6 @@ expand_call (tree exp, rtx target, int ignore)
 	}
 
       after_args = get_last_insn ();
-      funexp = prepare_call_address (fndecl ? fndecl : fntype, funexp,
-				     static_chain_value, &call_fusage,
-				     reg_parm_seen, pass == 0);
-
       load_register_parameters (args, num_actuals, &call_fusage, flags,
 				pass == 0, &sibcall_failure);
 

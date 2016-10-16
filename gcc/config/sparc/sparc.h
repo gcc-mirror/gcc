@@ -1813,3 +1813,6 @@ extern int sparc_indent_opcode;
 #define SPARC_LOW_FE_EXCEPT_VALUES 0
 
 #define TARGET_SUPPORTS_WIDE_INT 1
+
+/* Use custom descriptors instead of trampolines when possible.  */
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1

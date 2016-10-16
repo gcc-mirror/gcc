@@ -21,6 +21,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
@@ -104,6 +105,7 @@ struct nesting_info
 
   bool any_parm_remapped;
   bool any_tramp_created;
+  bool any_descr_created;
   char static_chain_added;
 };
 
@@ -487,12 +489,38 @@ get_trampoline_type (struct nesting_info *info)
   return trampoline_type;
 }
 
-/* Given DECL, a nested function, find or create a field in the non-local
-   frame structure for a trampoline for this function.  */
+/* Build or return the type used to represent a nested function descriptor.  */
+
+static GTY(()) tree descriptor_type;
 
 static tree
-lookup_tramp_for_decl (struct nesting_info *info, tree decl,
-		       enum insert_option insert)
+get_descriptor_type (struct nesting_info *info)
+{
+  tree t;
+
+  if (descriptor_type)
+    return descriptor_type;
+
+  t = build_index_type (integer_one_node);
+  t = build_array_type (ptr_type_node, t);
+  t = build_decl (DECL_SOURCE_LOCATION (info->context),
+		  FIELD_DECL, get_identifier ("__data"), t);
+
+  descriptor_type = make_node (RECORD_TYPE);
+  TYPE_NAME (descriptor_type) = get_identifier ("__builtin_descriptor");
+  TYPE_FIELDS (descriptor_type) = t;
+  layout_type (descriptor_type);
+  DECL_CONTEXT (t) = descriptor_type;
+
+  return descriptor_type;
+}
+
+/* Given DECL, a nested function, find or create an element in the
+   var map for this function.  */
+
+static tree
+lookup_element_for_decl (struct nesting_info *info, tree decl,
+			 enum insert_option insert)
 {
   if (insert == NO_INSERT)
     {
@@ -502,19 +530,73 @@ lookup_tramp_for_decl (struct nesting_info *info, tree decl,
 
   tree *slot = &info->var_map->get_or_insert (decl);
   if (!*slot)
+    *slot = build_tree_list (NULL_TREE, NULL_TREE);
+
+  return (tree) *slot;
+} 
+
+/* Given DECL, a nested function, create a field in the non-local
+   frame structure for this function.  */
+
+static tree
+create_field_for_decl (struct nesting_info *info, tree decl, tree type)
+{
+  tree field = make_node (FIELD_DECL);
+  DECL_NAME (field) = DECL_NAME (decl);
+  TREE_TYPE (field) = type;
+  TREE_ADDRESSABLE (field) = 1;
+  insert_field_into_struct (get_frame_type (info), field);
+  return field;
+}
+
+/* Given DECL, a nested function, find or create a field in the non-local
+   frame structure for a trampoline for this function.  */
+
+static tree
+lookup_tramp_for_decl (struct nesting_info *info, tree decl,
+		       enum insert_option insert)
+{
+  tree elt, field;
+
+  elt = lookup_element_for_decl (info, decl, insert);
+  if (!elt)
+    return NULL_TREE;
+
+  field = TREE_PURPOSE (elt);
+
+  if (!field && insert == INSERT)
     {
-      tree field = make_node (FIELD_DECL);
-      DECL_NAME (field) = DECL_NAME (decl);
-      TREE_TYPE (field) = get_trampoline_type (info);
-      TREE_ADDRESSABLE (field) = 1;
-
-      insert_field_into_struct (get_frame_type (info), field);
-      *slot = field;
-
+      field = create_field_for_decl (info, decl, get_trampoline_type (info));
+      TREE_PURPOSE (elt) = field;
       info->any_tramp_created = true;
     }
 
-  return *slot;
+  return field;
+}
+
+/* Given DECL, a nested function, find or create a field in the non-local
+   frame structure for a descriptor for this function.  */
+
+static tree
+lookup_descr_for_decl (struct nesting_info *info, tree decl,
+		       enum insert_option insert)
+{
+  tree elt, field;
+
+  elt = lookup_element_for_decl (info, decl, insert);
+  if (!elt)
+    return NULL_TREE;
+
+  field = TREE_VALUE (elt);
+
+  if (!field && insert == INSERT)
+    {
+      field = create_field_for_decl (info, decl, get_descriptor_type (info));
+      TREE_VALUE (elt) = field;
+      info->any_descr_created = true;
+    }
+
+  return field;
 }
 
 /* Build or return the field within the non-local frame state that holds
@@ -2304,6 +2386,7 @@ convert_tramp_reference_op (tree *tp, int *walk_subtrees, void *data)
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   struct nesting_info *const info = (struct nesting_info *) wi->info, *i;
   tree t = *tp, decl, target_context, x, builtin;
+  bool descr;
   gcall *call;
 
   *walk_subtrees = 0;
@@ -2338,7 +2421,14 @@ convert_tramp_reference_op (tree *tp, int *walk_subtrees, void *data)
 	 we need to insert the trampoline.  */
       for (i = info; i->context != target_context; i = i->outer)
 	continue;
-      x = lookup_tramp_for_decl (i, decl, INSERT);
+
+      /* Decide whether to generate a descriptor or a trampoline. */
+      descr = FUNC_ADDR_BY_DESCRIPTOR (t) && !flag_trampolines;
+
+      if (descr)
+	x = lookup_descr_for_decl (i, decl, INSERT);
+      else
+	x = lookup_tramp_for_decl (i, decl, INSERT);
 
       /* Compute the address of the field holding the trampoline.  */
       x = get_frame_field (info, target_context, x, &wi->gsi);
@@ -2347,7 +2437,10 @@ convert_tramp_reference_op (tree *tp, int *walk_subtrees, void *data)
 
       /* Do machine-specific ugliness.  Normally this will involve
 	 computing extra alignment, but it can really be anything.  */
-      builtin = builtin_decl_implicit (BUILT_IN_ADJUST_TRAMPOLINE);
+      if (descr)
+	builtin = builtin_decl_implicit (BUILT_IN_ADJUST_DESCRIPTOR);
+      else
+	builtin = builtin_decl_implicit (BUILT_IN_ADJUST_TRAMPOLINE);
       call = gimple_build_call (builtin, 1, x);
       x = init_tmp_var_with_call (info, &wi->gsi, call);
 
@@ -2821,6 +2914,27 @@ fold_mem_refs (tree *const &e, void *data ATTRIBUTE_UNUSED)
   return true;
 }
 
+/* Given DECL, a nested function, build an initialization call for FIELD,
+   the trampoline or descriptor for DECL, using FUNC as the function.  */
+
+static gcall *
+build_init_call_stmt (struct nesting_info *info, tree decl, tree field,
+		      tree func)
+{
+  tree arg1, arg2, arg3, x;
+
+  gcc_assert (DECL_STATIC_CHAIN (decl));
+  arg3 = build_addr (info->frame_decl);
+
+  arg2 = build_addr (decl);
+
+  x = build3 (COMPONENT_REF, TREE_TYPE (field),
+	      info->frame_decl, field, NULL_TREE);
+  arg1 = build_addr (x);
+
+  return gimple_build_call (func, 3, arg1, arg2, arg3);
+}
+
 /* Do "everything else" to clean up or complete state collected by the various
    walking passes -- create a field to hold the frame base address, lay out the
    types and decls, generate code to initialize the frame decl, store critical
@@ -2966,23 +3080,32 @@ finalize_nesting_tree_1 (struct nesting_info *root)
       struct nesting_info *i;
       for (i = root->inner; i ; i = i->next)
 	{
-	  tree arg1, arg2, arg3, x, field;
+	  tree field, x;
 
 	  field = lookup_tramp_for_decl (root, i->context, NO_INSERT);
 	  if (!field)
 	    continue;
 
-	  gcc_assert (DECL_STATIC_CHAIN (i->context));
-	  arg3 = build_addr (root->frame_decl);
-
-	  arg2 = build_addr (i->context);
-
-	  x = build3 (COMPONENT_REF, TREE_TYPE (field),
-		      root->frame_decl, field, NULL_TREE);
-	  arg1 = build_addr (x);
-
 	  x = builtin_decl_implicit (BUILT_IN_INIT_TRAMPOLINE);
-	  stmt = gimple_build_call (x, 3, arg1, arg2, arg3);
+	  stmt = build_init_call_stmt (root, i->context, field, x);
+	  gimple_seq_add_stmt (&stmt_list, stmt);
+	}
+    }
+
+  /* If descriptors were created, then we need to initialize them.  */
+  if (root->any_descr_created)
+    {
+      struct nesting_info *i;
+      for (i = root->inner; i ; i = i->next)
+	{
+	  tree field, x;
+
+	  field = lookup_descr_for_decl (root, i->context, NO_INSERT);
+	  if (!field)
+	    continue;
+
+	  x = builtin_decl_implicit (BUILT_IN_INIT_DESCRIPTOR);
+	  stmt = build_init_call_stmt (root, i->context, field, x);
 	  gimple_seq_add_stmt (&stmt_list, stmt);
 	}
     }

@@ -146,6 +146,7 @@ enum gf_mask {
     GF_CALL_CTRL_ALTERING       = 1 << 7,
     GF_CALL_WITH_BOUNDS 	= 1 << 8,
     GF_CALL_MUST_TAIL_CALL	= 1 << 9,
+    GF_CALL_BY_DESCRIPTOR	= 1 << 10,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_PARALLEL_GRID_PHONY = 1 << 1,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
@@ -3366,6 +3367,26 @@ static inline bool
 gimple_call_alloca_for_var_p (gcall *s)
 {
   return (s->subcode & GF_CALL_ALLOCA_FOR_VAR) != 0;
+}
+
+/* If BY_DESCRIPTOR_P is true, GIMPLE_CALL S is an indirect call for which
+   pointers to nested function are descriptors instead of trampolines.  */
+
+static inline void
+gimple_call_set_by_descriptor (gcall  *s, bool by_descriptor_p)
+{
+  if (by_descriptor_p)
+    s->subcode |= GF_CALL_BY_DESCRIPTOR;
+  else
+    s->subcode &= ~GF_CALL_BY_DESCRIPTOR;
+}
+
+/* Return true if S is a by-descriptor call.  */
+
+static inline bool
+gimple_call_by_descriptor_p (gcall *s)
+{
+  return (s->subcode & GF_CALL_BY_DESCRIPTOR) != 0;
 }
 
 /* Copy all the GF_CALL_* flags from ORIG_CALL to DEST_CALL.  */

@@ -373,6 +373,7 @@ gimple_build_call_from_tree (tree t)
     gimple_call_set_from_thunk (call, CALL_FROM_THUNK_P (t));
   gimple_call_set_va_arg_pack (call, CALL_EXPR_VA_ARG_PACK (t));
   gimple_call_set_nothrow (call, TREE_NOTHROW (t));
+  gimple_call_set_by_descriptor (call, CALL_EXPR_BY_DESCRIPTOR (t));
   gimple_set_no_warning (call, TREE_NO_WARNING (t));
   gimple_call_set_with_bounds (call, CALL_WITH_BOUNDS_P (t));
 
@@ -1385,6 +1386,9 @@ gimple_call_flags (const gimple *stmt)
 
   if (stmt->subcode & GF_CALL_NOTHROW)
     flags |= ECF_NOTHROW;
+
+  if (stmt->subcode & GF_CALL_BY_DESCRIPTOR)
+    flags |= ECF_BY_DESCRIPTOR;
 
   return flags;
 }

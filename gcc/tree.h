@@ -967,6 +967,16 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define REF_REVERSE_STORAGE_ORDER(NODE) \
   (TREE_CHECK2 (NODE, BIT_FIELD_REF, MEM_REF)->base.default_def_flag)
 
+  /* In an ADDR_EXPR, indicates that this is a pointer to nested function
+   represented by a descriptor instead of a trampoline.  */
+#define FUNC_ADDR_BY_DESCRIPTOR(NODE) \
+  (TREE_CHECK (NODE, ADDR_EXPR)->base.default_def_flag)
+
+/* In a CALL_EXPR, indicates that this is an indirect call for which
+   pointers to nested function are descriptors instead of trampolines.  */
+#define CALL_EXPR_BY_DESCRIPTOR(NODE) \
+  (TREE_CHECK (NODE, CALL_EXPR)->base.default_def_flag)
+
 /* These flags are available for each language front end to use internally.  */
 #define TREE_LANG_FLAG_0(NODE) \
   (TREE_NOT_CHECK2 (NODE, TREE_VEC, SSA_NAME)->base.u.bits.lang_flag_0)

@@ -512,6 +512,10 @@ struct lang_hooks
      gimplification.  */
   bool deep_unsharing;
 
+  /* True if this language may use custom descriptors for nested functions
+     instead of trampolines.  */
+  bool custom_function_descriptors;
+
   /* Run all lang-specific selftests.  */
   void (*run_lang_selftests) (void);
 

@@ -90,6 +90,9 @@ struct die_struct;
 /* Nonzero if this call is into the transaction runtime library.  */
 #define ECF_TM_BUILTIN		  (1 << 13)
 
+/* Nonzero if this is an indirect call by descriptor.  */
+#define ECF_BY_DESCRIPTOR	  (1 << 14)
+
 /* Call argument flags.  */
 /* Nonzero if the argument is not dereferenced recursively, thus only
    directly reachable memory is read or written.  */
@@ -1250,6 +1253,12 @@ struct GTY(()) tree_base {
 
        REF_REVERSE_STORAGE_ORDER in
            BIT_FIELD_REF, MEM_REF
+
+       FUNC_ADDR_BY_DESCRIPTOR in
+           ADDR_EXPR
+
+       CALL_EXPR_BY_DESCRIPTOR in
+           CALL_EXPR
 */
 
 struct GTY(()) tree_typed {
