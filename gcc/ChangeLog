@@ -1,5 +1,62 @@
 2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/37139
+	PR ada/67205
+	* common.opt (-ftrampolines): New option.
+	* doc/invoke.texi (Code Gen Options): Document it.
+	* doc/tm.texi.in (Trampolines): Add TARGET_CUSTOM_FUNCTION_DESCRIPTORS.
+	* doc/tm.texi: Regenerate.
+	* builtins.def: Add init_descriptor and adjust_descriptor.
+	* builtins.c (expand_builtin_init_trampoline): Do not issue a warning
+	on platforms with descriptors.
+	(expand_builtin_init_descriptor): New function.
+	(expand_builtin_adjust_descriptor): Likewise.
+	(expand_builtin) <BUILT_IN_INIT_DESCRIPTOR>: New case.
+	<BUILT_IN_ADJUST_DESCRIPTOR>: Likewise.
+	* calls.c (prepare_call_address): Remove SIBCALLP parameter and add
+	FLAGS parameter.  Deal with indirect calls by descriptor and adjust.
+	Set STATIC_CHAIN_REG_P on the static chain register, if any.
+	(call_expr_flags): Set ECF_BY_DESCRIPTOR for calls by descriptor.
+	(expand_call): Likewise.  Move around call to prepare_call_address
+	and pass all flags to it.
+	* cfgexpand.c (expand_call_stmt): Reinstate CALL_EXPR_BY_DESCRIPTOR.
+	* gimple.h (enum gf_mask): New GF_CALL_BY_DESCRIPTOR value.
+	(gimple_call_set_by_descriptor): New setter.
+	(gimple_call_by_descriptor_p): New getter.
+	* gimple.c (gimple_build_call_from_tree): SetCALL_EXPR_BY_DESCRIPTOR.
+	(gimple_call_flags): Deal with GF_CALL_BY_DESCRIPTOR.
+	* langhooks.h (struct lang_hooks): Add custom_function_descriptors.
+	* langhooks-def.h (LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS): Define.
+	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS.
+	* rtl.h (STATIC_CHAIN_REG_P): New macro.
+	* rtlanal.c (find_first_parameter_load): Skip static chain registers.
+	* target.def (custom_function_descriptors): New POD hook.
+	* tree.h (FUNC_ADDR_BY_DESCRIPTOR): New flag on ADDR_EXPR.
+	(CALL_EXPR_BY_DESCRIPTOR): New flag on CALL_EXPR.
+	* tree-core.h (ECF_BY_DESCRIPTOR): New mask.
+	Document FUNC_ADDR_BY_DESCRIPTOR and CALL_EXPR_BY_DESCRIPTOR.
+	* tree.c (make_node_stat) <tcc_declaration>: Use FUNCTION_ALIGNMENT.
+	(build_common_builtin_nodes): Initialize init_descriptor and
+	adjust_descriptor.
+	* tree-nested.c: Include target.h.
+	(struct nesting_info): Add 'any_descr_created' field.
+	(get_descriptor_type): New function.
+	(lookup_element_for_decl): New function extracted from...
+	(create_field_for_decl): Likewise.
+	(lookup_tramp_for_decl): ...here.  Adjust.
+	(lookup_descr_for_decl): New function.
+	(convert_tramp_reference_op): Deal with descriptors.
+	(build_init_call_stmt): New function extracted from...
+	(finalize_nesting_tree_1): ...here.  Adjust and deal withdescriptors.
+	* defaults.h (FUNCTION_ALIGNMENT): Define.
+	(TRAMPOLINE_ALIGNMENT): Set to above instead of FUNCTION_BOUNDARY.
+	* config/i386/i386.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Define.
+	* config/ia64/ia64.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Likewise.
+	* config/rs6000/rs6000.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS):Likewise.
+	* config/sparc/sparc.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Likewise.
+
+2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/sparc/sparc.c (sparc_expand_vector_init): Only accept literal
 	constants in CONST_VECTORs.
 

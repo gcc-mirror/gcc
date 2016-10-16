@@ -4608,8 +4608,9 @@ expand_builtin_init_trampoline (tree exp, bool onstack)
     {
       trampolines_created = 1;
 
-      warning_at (DECL_SOURCE_LOCATION (t_func), OPT_Wtrampolines,
-		  "trampoline generated for nested function %qD", t_func);
+      if (targetm.calls.custom_function_descriptors != 0)
+	warning_at (DECL_SOURCE_LOCATION (t_func), OPT_Wtrampolines,
+		    "trampoline generated for nested function %qD", t_func);
     }
 
   return const0_rtx;
@@ -4629,6 +4630,58 @@ expand_builtin_adjust_trampoline (tree exp)
     tramp = targetm.calls.trampoline_adjust_address (tramp);
 
   return tramp;
+}
+
+/* Expand a call to the builtin descriptor initialization routine.
+   A descriptor is made up of a couple of pointers to the static
+   chain and the code entry in this order.  */
+
+static rtx
+expand_builtin_init_descriptor (tree exp)
+{
+  tree t_descr, t_func, t_chain;
+  rtx m_descr, r_descr, r_func, r_chain;
+
+  if (!validate_arglist (exp, POINTER_TYPE, POINTER_TYPE, POINTER_TYPE,
+			 VOID_TYPE))
+    return NULL_RTX;
+
+  t_descr = CALL_EXPR_ARG (exp, 0);
+  t_func = CALL_EXPR_ARG (exp, 1);
+  t_chain = CALL_EXPR_ARG (exp, 2);
+
+  r_descr = expand_normal (t_descr);
+  m_descr = gen_rtx_MEM (BLKmode, r_descr);
+  MEM_NOTRAP_P (m_descr) = 1;
+
+  r_func = expand_normal (t_func);
+  r_chain = expand_normal (t_chain);
+
+  /* Generate insns to initialize the descriptor.  */
+  emit_move_insn (adjust_address_nv (m_descr, ptr_mode, 0), r_chain);
+  emit_move_insn (adjust_address_nv (m_descr, ptr_mode,
+				     POINTER_SIZE / BITS_PER_UNIT), r_func);
+
+  return const0_rtx;
+}
+
+/* Expand a call to the builtin descriptor adjustment routine.  */
+
+static rtx
+expand_builtin_adjust_descriptor (tree exp)
+{
+  rtx tramp;
+
+  if (!validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  tramp = expand_normal (CALL_EXPR_ARG (exp, 0));
+
+  /* Unalign the descriptor to allow runtime identification.  */
+  tramp = plus_constant (ptr_mode, tramp,
+			 targetm.calls.custom_function_descriptors);
+
+  return force_operand (tramp, NULL_RTX);
 }
 
 /* Expand the call EXP to the built-in signbit, signbitf or signbitl
@@ -6329,6 +6382,11 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       return expand_builtin_init_trampoline (exp, false);
     case BUILT_IN_ADJUST_TRAMPOLINE:
       return expand_builtin_adjust_trampoline (exp);
+
+    case BUILT_IN_INIT_DESCRIPTOR:
+      return expand_builtin_init_descriptor (exp);
+    case BUILT_IN_ADJUST_DESCRIPTOR:
+      return expand_builtin_adjust_descriptor (exp);
 
     case BUILT_IN_FORK:
     case BUILT_IN_EXECL:

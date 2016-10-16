@@ -4796,6 +4796,25 @@ be returned; otherwise @var{addr} should be returned unchanged.\n\
 If this hook is not defined, @var{addr} will be used for function calls.",
  rtx, (rtx addr), NULL)
 
+DEFHOOKPOD
+(custom_function_descriptors,
+ "This hook should be defined to a power of 2 if the target will benefit\n\
+from the use of custom descriptors for nested functions instead of the\n\
+standard trampolines.  Such descriptors are created at run time on the\n\
+stack and made up of data only, but they are non-standard so the generated\n\
+code must be prepared to deal with them.  This hook should be defined to 0\n\
+if the target uses function descriptors for its standard calling sequence,\n\
+like for example HP-PA or IA-64.  Using descriptors for nested functions\n\
+eliminates the need for trampolines that reside on the stack and require\n\
+it to be made executable.\n\
+\n\
+The value of the macro is used to parameterize the run-time identification\n\
+scheme implemented to distinguish descriptors from function addresses: it\n\
+gives the number of bytes by which their address is misaligned compared\n\
+with function addresses.  The value of 1 will generally work, unless it is\n\
+already reserved by the target for another purpose, like for example on ARM.",\
+ int, -1)
+
 /* Return the number of bytes of its own arguments that a function
    pops on returning, or 0 if the function pops no arguments and the
    caller must therefore pop them all after the function returns.  */

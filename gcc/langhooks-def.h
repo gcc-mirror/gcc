@@ -123,6 +123,7 @@ extern const char *lhd_get_substring_location (const substring_loc &,
 #define LANG_HOOKS_BLOCK_MAY_FALLTHRU	hook_bool_const_tree_true
 #define LANG_HOOKS_EH_USE_CXA_END_CLEANUP	false
 #define LANG_HOOKS_DEEP_UNSHARING	false
+#define LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS	false
 #define LANG_HOOKS_RUN_LANG_SELFTESTS   lhd_do_nothing
 #define LANG_HOOKS_GET_SUBSTRING_LOCATION lhd_get_substring_location
 
@@ -327,6 +328,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_BLOCK_MAY_FALLTHRU, \
   LANG_HOOKS_EH_USE_CXA_END_CLEANUP, \
   LANG_HOOKS_DEEP_UNSHARING, \
+  LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS, \
   LANG_HOOKS_RUN_LANG_SELFTESTS, \
   LANG_HOOKS_GET_SUBSTRING_LOCATION \
 }

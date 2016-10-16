@@ -502,7 +502,7 @@ Objective-C and Objective-C++ Dialects}.
 -fverbose-asm  -fpack-struct[=@var{n}]  @gol
 -fleading-underscore  -ftls-model=@var{model} @gol
 -fstack-reuse=@var{reuse_level} @gol
--ftrapv  -fwrapv @gol
+-ftrampolines  -ftrapv  -fwrapv @gol
 -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]} @gol
 -fstrict-volatile-bitfields -fsync-libcalls}
 
@@ -12066,6 +12066,28 @@ unit, or if @option{-fpic} is not given on the command line.
 
 The default without @option{-fpic} is @samp{initial-exec}; with
 @option{-fpic} the default is @samp{global-dynamic}.
+
+@item -ftrampolines
+@opindex ftrampolines
+For targets that normally need trampolines for nested functions, always
+generate them instead of using descriptors.  Otherwise, for targets that
+do not need them, like for example HP-PA or IA-64, do nothing.
+
+A trampoline is a small piece of code that is created at run time on the
+stack when the address of a nested function is taken, and is used to call
+the nested function indirectly.  Therefore, it requires the stack to be
+made executable in order for the program to work properly.
+
+@option{-fno-trampolines} is enabled by default on a language by language
+basis to let the compiler avoid generating them, if it computes that this
+is safe, and replace them with descriptors.  Descriptors are made up of data
+only, but the generated code must be prepared to deal with them.  As of this
+writing, @option{-fno-trampolines} is enabled by default only for Ada.
+
+Moreover, code compiled with @option{-ftrampolines} and code compiled with
+@option{-fno-trampolines} are not binary compatible if nested functions are
+present.  This option must therefore be used on a program-wide basis and be
+manipulated with extreme care.
 
 @item -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]}
 @opindex fvisibility

@@ -2350,6 +2350,11 @@ ftracer
 Common Report Var(flag_tracer) Optimization
 Perform superblock formation via tail duplication.
 
+ftrampolines
+Common Report Var(flag_trampolines) Init(0)
+For targets that normally need trampolines for nested functions, always
+generate them instead of using descriptors.
+
 ; Zero means that floating-point math operations cannot generate a
 ; (user-visible) trap.  This is the case, for example, in nonstop
 ; IEEE 754 arithmetic.
