@@ -1,3 +1,9 @@
+2016-10-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/48587
+	* io/transfer.c (data_transfer_init): Improve error message,
+	remove redundant check.
+
 2016-10-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR libfortran/48587
