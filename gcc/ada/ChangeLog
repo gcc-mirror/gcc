@@ -1,3 +1,22 @@
+2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-aix.ads (Always_Compatible_Rep): Change to False.
+	* system-aix64.ads (Always_Compatible_Rep): Likewise.
+	* system-hpux-ia64.ads (Always_Compatible_Rep): Likewise.
+	* system-hpux.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-alpha.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-hppa.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-ia64.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-mips.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-mips64el.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-mipsel.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-s390.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-s390x.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-sh4.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-sparc.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-sparcv9.ads (Always_Compatible_Rep): Likewise.
+	* system-rtems.ads (Always_Compatible_Rep): Likewise.
+
 2016-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/77968
@@ -23,10 +42,9 @@
 
 2016-10-13  Javier Miranda  <miranda@adacore.com>
 
-	* sem_prag.adb
-	(Process_Compile_Time_Warning_Or_Error): Register the pragma
-	for its validation after the backend has been called only if its
-	expression has some occurrence of attributes 'size or 'alignment
+	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Register the
+	pragma for its validation after the backend has been called only if
+	its expression has some occurrence of attributes 'size or 'alignment
 	* table.ads (Release_Threshold): New formal.
 	(Release): Adding documentation of its new functionality.
 	* table.adb (Release): Extend its functionality with a
@@ -454,7 +472,7 @@
 	* system-linux-mips64el.ads (Backend_Overflow_Checks): Likewise.
 	* system-linux-mipsel.ads (Backend_Overflow_Checks): Likewise.
 	* system-linux-sparcv9.ads (Backend_Overflow_Checks): Likewise.
-	* system-rtems.ads: Likewise.
+	* system-rtems.ads (Backend_Overflow_Checks): Likewise.
 
 2016-10-11  Andris Pavenis  <andris.pavenis@iki.fi>
 
