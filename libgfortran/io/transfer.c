@@ -2606,7 +2606,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       /* This means we tried to access an external unit < 0 without
 	 having opened it first with NEWUNIT=.  */
       generate_error (&dtp->common, LIBERROR_BAD_OPTION,
-		      "Invalid unit number in statement");
+		      "Unit number is negative and unit was not already "
+		      "opened with OPEN(NEWUNIT=...)");
       return;
     }
   else if (dtp->u.p.current_unit->s == NULL)
@@ -2614,14 +2615,6 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
        st_parameter_open opp;
        unit_convert conv;
 
-      if (dtp->common.unit < 0 && !is_internal_unit (dtp))
-	{
-	  close_unit (dtp->u.p.current_unit);
-	  dtp->u.p.current_unit = NULL;
-	  generate_error (&dtp->common, LIBERROR_BAD_OPTION,
-			  "Bad unit number in statement");
-	  return;
-	}
       memset (&u_flags, '\0', sizeof (u_flags));
       u_flags.access = ACCESS_SEQUENTIAL;
       u_flags.action = ACTION_READWRITE;
