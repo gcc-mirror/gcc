@@ -12366,14 +12366,13 @@ sparc_expand_vector_init (rtx target, rtx vals)
   const machine_mode inner_mode = GET_MODE_INNER (mode);
   const int n_elts = GET_MODE_NUNITS (mode);
   int i, n_var = 0;
-  bool all_same;
+  bool all_same = true;
   rtx mem;
 
-  all_same = true;
   for (i = 0; i < n_elts; i++)
     {
       rtx x = XVECEXP (vals, 0, i);
-      if (!CONSTANT_P (x))
+      if (!(CONST_SCALAR_INT_P (x) || CONST_DOUBLE_P (x) || CONST_FIXED_P (x)))
 	n_var++;
 
       if (i > 0 && !rtx_equal_p (x, XVECEXP (vals, 0, 0)))
