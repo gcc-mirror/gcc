@@ -101,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
-	pointer __ret;
+	pointer __ret = 0;
 #if __cpp_aligned_new
 #if __cplusplus > 201402L && _GLIBCXX_HAVE_ALIGNED_ALLOC
 	if (alignof(_Tp) > alignof(std::max_align_t))

@@ -1,3 +1,12 @@
+2016-10-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make sure the return value of malloc_allocator::allocate
+	is zero-initialized so that checking it for non-zero works
+	later.
+	* include/ext/malloc_allocator.h (malloc_allocator::allocate):
+	Initialize the return value.
+	* testsuite/ext/malloc_allocator/sanity.cc: New.
+
 2016-10-14  Eelis van der Weegen  <eelis@eelis.net>
 
 	* include/bits/stl_algo.h (shuffle): Extract two random numbers from
