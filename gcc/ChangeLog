@@ -1,3 +1,19 @@
+2016-10-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c: Delete inclusion of
+	cortex-a57-fma-steering.h.
+	(aarch64_override_options): Delete call
+	to aarch64_register_fma_steering.
+	* config/aarch64/aarch64-protos.h (make_pass_fma_steering): Declare.
+	* config/aarch64/cortex-a57-fma-steering.h: Delete.
+	* config/aarch64/aarch64-passes.def: New file.
+	* config/aarch64/cortex-a57-fma-steering.c
+	(aarch64_register_fma_steering): Delete definition.
+	(make_pass_fma_steering): Remove static qualifier.
+	* config/aarch64/t-aarch64 (PASSES_EXTRA): New directive.
+	(cortex-a57-fma-steering.o): Remove dependency on
+	cortex-a57-fma-steering.h.
+
 2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* explow.c (validize_mem): Do not modify the argument in-place.

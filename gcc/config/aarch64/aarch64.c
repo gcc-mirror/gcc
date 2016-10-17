@@ -62,7 +62,6 @@
 #include "rtl-iter.h"
 #include "tm-constrs.h"
 #include "sched-int.h"
-#include "cortex-a57-fma-steering.h"
 #include "target-globals.h"
 #include "common/common-target.h"
 
@@ -8554,9 +8553,6 @@ aarch64_override_options (void)
      while processing functions with potential target attributes.  */
   target_option_default_node = target_option_current_node
       = build_target_option_node (&global_options);
-
-  aarch64_register_fma_steering ();
-
 }
 
 /* Implement targetm.override_options_after_change.  */

@@ -36,7 +36,6 @@
 #include "context.h"
 #include "tree-pass.h"
 #include "regrename.h"
-#include "cortex-a57-fma-steering.h"
 #include "aarch64-protos.h"
 
 /* For better performance, the destination of FMADD/FMSUB instructions should
@@ -1069,21 +1068,8 @@ public:
 
 /* Create a new fma steering pass instance.  */
 
-static rtl_opt_pass *
+rtl_opt_pass *
 make_pass_fma_steering (gcc::context *ctxt)
 {
   return new pass_fma_steering (ctxt);
-}
-
-/* Register the FMA steering pass to the pass manager.  */
-
-void
-aarch64_register_fma_steering ()
-{
-  opt_pass *pass_fma_steering = make_pass_fma_steering (g);
-
-  struct register_pass_info fma_steering_info
-    = { pass_fma_steering, "rnreg", 1, PASS_POS_INSERT_AFTER };
-
-  register_pass (&fma_steering_info);
 }
