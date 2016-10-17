@@ -1056,9 +1056,18 @@ template<typename _Alloc>
 
 #if __cplusplus >= 201103L
     template<typename... _Args>
+#if __cplusplus > 201402L
+      reference
+#else
       void
+#endif
       emplace_back(_Args&&... __args)
-      { push_back(bool(__args...)); }
+      {
+	push_back(bool(__args...));
+#if __cplusplus > 201402L
+	return back();
+#endif
+      }
 
     template<typename... _Args>
       iterator

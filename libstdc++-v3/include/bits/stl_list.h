@@ -1069,9 +1069,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { this->_M_insert(begin(), std::move(__x)); }
 
       template<typename... _Args>
-        void
+#if __cplusplus > 201402L
+        reference
+#else
+	void
+#endif
         emplace_front(_Args&&... __args)
-        { this->_M_insert(begin(), std::forward<_Args>(__args)...); }
+        {
+	  this->_M_insert(begin(), std::forward<_Args>(__args)...);
+#if __cplusplus > 201402L
+	  return front();
+#endif
+	}
 #endif
 
       /**
@@ -1110,9 +1119,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { this->_M_insert(end(), std::move(__x)); }
 
       template<typename... _Args>
-        void
+#if __cplusplus > 201402L
+        reference
+#else
+	void
+#endif
         emplace_back(_Args&&... __args)
-        { this->_M_insert(end(), std::forward<_Args>(__args)...); }
+        {
+	  this->_M_insert(end(), std::forward<_Args>(__args)...);
+#if __cplusplus > 201402L
+        return back();
+#endif
+	}
 #endif
 
       /**

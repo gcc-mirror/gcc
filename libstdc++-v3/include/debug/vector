@@ -478,7 +478,11 @@ namespace __debug
 	{ emplace_back(std::move(__x)); }
 
       template<typename... _Args>
+#if __cplusplus > 201402L
+	deque<_Tp, _Alloc>::reference
+#else
 	void
+#endif
 	emplace_back(_Args&&... __args)
 	{
 	  bool __realloc = this->_M_requires_reallocation(this->size() + 1);
@@ -486,6 +490,9 @@ namespace __debug
 	  if (__realloc)
 	    this->_M_invalidate_all();
 	  this->_M_update_guaranteed_capacity();
+#if __cplusplus > 201402L
+	  return back();
+#endif
 	}
 #endif
 

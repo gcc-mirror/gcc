@@ -960,7 +960,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { emplace_back(std::move(__x)); }
 
       template<typename... _Args>
+#if __cplusplus > 201402L
+        reference
+#else
 	void
+#endif
 	emplace_back(_Args&&... __args);
 #endif
 

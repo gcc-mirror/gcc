@@ -129,7 +129,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
     template<typename... _Args>
+#if __cplusplus > 201402L
+      typename deque<_Tp, _Alloc>::reference
+#else
       void
+#endif
       deque<_Tp, _Alloc>::
       emplace_front(_Args&&... __args)
       {
@@ -142,11 +146,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
 	else
 	  _M_push_front_aux(std::forward<_Args>(__args)...);
+#if __cplusplus > 201402L
+	return front();
+#endif
       }
 
   template<typename _Tp, typename _Alloc>
     template<typename... _Args>
+#if __cplusplus > 201402L
+      typename deque<_Tp, _Alloc>::reference
+#else
       void
+#endif
       deque<_Tp, _Alloc>::
       emplace_back(_Args&&... __args)
       {
@@ -160,6 +171,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
 	else
 	  _M_push_back_aux(std::forward<_Args>(__args)...);
+#if __cplusplus > 201402L
+	return back();
+#endif
       }
 #endif
 

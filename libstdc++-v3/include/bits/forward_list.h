@@ -797,10 +797,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  and references.
        */
       template<typename... _Args>
-        void
+#if __cplusplus > 201402L
+        reference
+#else
+	void
+#endif
         emplace_front(_Args&&... __args)
-        { this->_M_insert_after(cbefore_begin(),
-                                std::forward<_Args>(__args)...); }
+        {
+	  this->_M_insert_after(cbefore_begin(),
+                                std::forward<_Args>(__args)...);
+#if __cplusplus > 201402L
+	  return front();
+#endif
+	}
 
       /**
        *  @brief  Add data to the front of the %forward_list.

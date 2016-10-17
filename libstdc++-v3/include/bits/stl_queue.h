@@ -247,10 +247,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       push(value_type&& __x)
       { c.push_back(std::move(__x)); }
 
+#if __cplusplus > 201402L
+      template<typename... _Args>
+	decltype(auto)
+	emplace(_Args&&... __args)
+	{ return c.emplace_back(std::forward<_Args>(__args)...); }
+#else
       template<typename... _Args>
         void
         emplace(_Args&&... __args)
 	{ c.emplace_back(std::forward<_Args>(__args)...); }
+#endif
 #endif
 
       /**
