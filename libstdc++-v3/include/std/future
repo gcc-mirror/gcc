@@ -561,10 +561,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class _Async_state_commonV2;
 #endif
 
-    template<typename _BoundFn, typename = typename _BoundFn::result_type>
+    template<typename _BoundFn,
+	     typename _Res = decltype(std::declval<_BoundFn&>()())>
       class _Deferred_state;
 
-    template<typename _BoundFn, typename = typename _BoundFn::result_type>
+    template<typename _BoundFn,
+	     typename _Res = decltype(std::declval<_BoundFn&>()())>
       class _Async_state_impl;
 
     template<typename _Signature>

@@ -235,14 +235,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using _Indices
 	  = typename _Build_index_tuple<tuple_size<_Tuple>::value>::__type;
 
-	using result_type
-	  = decltype(std::declval<_Invoker>()._M_invoke(_Indices()));
-
-	result_type
+	auto
 	operator()()
-	noexcept(noexcept(std::declval<_Invoker>()._M_invoke(_Indices())))
+	noexcept(noexcept(std::declval<_Invoker&>()._M_invoke(_Indices())))
+	-> decltype(std::declval<_Invoker&>()._M_invoke(_Indices()))
 	{ return _M_invoke(_Indices()); }
-
       };
 
     // Alias for _Invoker<tuple<DECAY_COPY(_Tp)...>>
