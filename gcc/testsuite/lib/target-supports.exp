@@ -2571,6 +2571,9 @@ proc check_effective_target_float128x_runtime {} {
 # _FloatN and _FloatNx types, 0 otherwise.
 
 proc check_effective_target_floatn_nx_runtime {} {
+    if { [istarget powerpc*-*-aix*] } {
+	return 0
+    }
     if { [istarget powerpc*-*-*] } {
 	return [check_effective_target_base_quadfloat_support]
     }
