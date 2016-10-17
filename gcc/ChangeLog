@@ -1,3 +1,7 @@
+2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* explow.c (validize_mem): Do not modify the argument in-place.
+
 2016-10-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree-streamer.c (record_common_node): Explicitly list expected
@@ -95,7 +99,7 @@
 	(lookup_descr_for_decl): New function.
 	(convert_tramp_reference_op): Deal with descriptors.
 	(build_init_call_stmt): New function extracted from...
-	(finalize_nesting_tree_1): ...here.  Adjust and deal withdescriptors.
+	(finalize_nesting_tree_1): ...here.  Adjust and deal with descriptors.
 	* defaults.h (FUNCTION_ALIGNMENT): Define.
 	(TRAMPOLINE_ALIGNMENT): Set to above instead of FUNCTION_BOUNDARY.
 	* config/i386/i386.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Define.
