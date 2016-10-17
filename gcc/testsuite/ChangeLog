@@ -1,3 +1,8 @@
+2016-10-17  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/pr71636-1.c: New test-case.
+	* gcc.dg/pr71636-2.c: Likewise.
+
 2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/trampoline3.adb: New test.

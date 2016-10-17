@@ -1,3 +1,8 @@
+2016-10-17  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/71636
+	* match.pd (x & ((1 << b) - 1) -> x & ~(~0 << b)): New pattern.
+
 2016-10-17  Richard Biener  <rguenther@suse.de>
 
 	* gimplify.c (gimplify_function_tree): Do not move the outer

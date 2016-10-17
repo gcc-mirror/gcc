@@ -513,6 +513,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_and:c (convert? @0) (convert? (bit_not @0)))
   { build_zero_cst (type); })
 
+/* PR71636: Transform x & ((1U << b) - 1) -> x & ~(~0U << b);  */
+(simplify
+  (bit_and:c @0 (plus:s (lshift:s integer_onep @1) integer_minus_onep))
+  (if (TYPE_UNSIGNED (type))
+    (bit_and @0 (bit_not (lshift { build_all_ones_cst (type); } @1)))))
+
 /* Fold (A & ~B) - (A & B) into (A ^ B) - B.  */
 (simplify
  (minus (bit_and:cs @0 (bit_not @1)) (bit_and:cs @0 @1))
