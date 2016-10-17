@@ -30,7 +30,6 @@ template class std::deque<T, CustomPointerAlloc<T>>;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef CustomPointerAlloc<T> alloc_type;
   typedef std::deque<T, alloc_type> test_type;
   test_type v(1);

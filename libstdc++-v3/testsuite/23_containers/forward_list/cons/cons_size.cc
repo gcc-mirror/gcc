@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_list<__gnu_test::NonCopyConstructible> fl(1000);
   VERIFY( std::distance(fl.begin(), fl.end()) == 1000 );
   for(auto it = fl.begin(); it != fl.end(); ++it)

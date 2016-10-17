@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unordered_multiset<int> ums1, ums2;
   VERIFY( ums1 == ums2 );
   VERIFY( !(ums1 != ums2) );

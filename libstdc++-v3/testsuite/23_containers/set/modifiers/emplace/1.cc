@@ -41,8 +41,6 @@ struct PathPointLess
   { return __lhs.getType() < __rhs.getType(); }
 };
 
-bool test __attribute__((unused)) = true;
-
 void test01()
 {
   typedef std::set<PathPoint, PathPointLess> Set;

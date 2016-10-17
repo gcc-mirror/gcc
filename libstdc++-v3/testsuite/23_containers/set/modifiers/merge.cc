@@ -26,8 +26,6 @@ using test_type = std::set<int>;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ 1, 2, 3 };
   test_type c1 = c0, c2 = c0;
   c1.merge(c2);
@@ -47,8 +45,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ 1, 2, 3 };
   test_type c1 = c0;
   std::set<int, std::less<>> c2( c0.begin(), c0.end() );
@@ -69,8 +65,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ 1, 2, 3 };
   test_type c1 = c0;
   std::set<int, std::greater<>> c2( c0.begin(), c0.end() );
@@ -95,8 +89,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ 1, 2, 3 };
   test_type c1 = c0;
   std::multiset<int, std::greater<>> c2( c0.begin(), c0.end() );

@@ -23,8 +23,6 @@
 // libstdc++/29134
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::list<int> list_type;
   list_type l;
 

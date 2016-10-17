@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute((unused)) = true;
-
   typedef bool value_type;
   typedef __gnu_cxx::throw_allocator_limit<value_type> allocator_type;
   typedef std::vector<value_type, allocator_type> test_type;

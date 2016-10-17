@@ -24,7 +24,6 @@
 template<typename _USet>
   void test()
   {
-    bool test __attribute__((unused)) = true;
     _USet us;
     typedef typename _USet::size_type size_type;
     bool rehashed = false;

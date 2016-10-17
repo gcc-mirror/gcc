@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_test::uneq_allocator<int> alloc_type;
   typedef __gnu_debug::multiset<int, std::less<int>, alloc_type> test_type;
 

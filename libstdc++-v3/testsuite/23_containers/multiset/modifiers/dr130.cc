@@ -31,7 +31,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   multiset<int> ms0;
@@ -57,7 +56,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   multiset<int> ms0;

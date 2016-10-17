@@ -25,8 +25,6 @@
 // libstdc++/51845
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::unordered_multimap<int, int> Mmap;
   typedef Mmap::iterator       iterator;
   typedef Mmap::const_iterator const_iterator;

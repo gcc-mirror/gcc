@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::unordered_multimap<int, int> Map;
   typedef typename Map::value_type Pair;
 
@@ -56,8 +54,6 @@ struct hasher
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::unordered_multimap<int, int, hasher> Map;
   typedef typename Map::value_type Pair;
 
@@ -89,8 +85,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::unordered_multimap<int, int> Map;
   typedef typename Map::value_type Pair;
 

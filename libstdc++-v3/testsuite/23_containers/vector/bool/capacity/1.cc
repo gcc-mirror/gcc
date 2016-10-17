@@ -75,8 +75,6 @@ const unsigned N11 = sizeof(A11) / sizeof(bool);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<bool>  vec_type;
 
   vec_type v;

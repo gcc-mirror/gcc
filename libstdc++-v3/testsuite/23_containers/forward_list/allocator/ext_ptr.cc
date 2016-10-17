@@ -32,7 +32,6 @@ template class std::forward_list<T, CustomPointerAlloc<T>>;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef CustomPointerAlloc<T> alloc_type;
   typedef std::forward_list<T, alloc_type> test_type;
   test_type v;

@@ -22,8 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_test::propagating_allocator<std::pair<const int, int>,
 					    false> alloc_type;
   typedef __gnu_debug::unordered_map<int, int,

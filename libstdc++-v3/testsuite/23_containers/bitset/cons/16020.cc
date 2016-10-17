@@ -22,7 +22,6 @@
 void test01()
 {
   using __gnu_debug::bitset;
-  bool test __attribute__((unused)) = true;
 
   bitset<5> b(7);
   bitset<5> c;

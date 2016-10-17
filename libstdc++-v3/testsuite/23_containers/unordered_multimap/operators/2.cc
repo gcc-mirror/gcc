@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::pair<const int, int> Pair;
   std::unordered_multimap<int, int> umm1, umm2;
   VERIFY( umm1 == umm2 );

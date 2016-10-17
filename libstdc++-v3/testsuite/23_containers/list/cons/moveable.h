@@ -26,8 +26,6 @@ template<typename _Tp>
   void
   test_moveable()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef _Tp list_type;
     
     list_type a,b;

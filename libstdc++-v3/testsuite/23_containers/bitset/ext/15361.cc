@@ -22,7 +22,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   bitset<256> b;
   b.set(225);

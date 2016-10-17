@@ -24,8 +24,6 @@
 
 #include <array>
 
-bool test __attribute__((unused)) = true;
-
 class PathPoint
 {
 public:

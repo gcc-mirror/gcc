@@ -24,8 +24,6 @@
 void
 test01() 
 {
-  bool test __attribute__((unused)) = true;
-
   const size_t len = 5;
   typedef std::array<int, len> array_type;
   array_type a = { { 0, 1, 2, 3, 4 } };

@@ -28,8 +28,6 @@ using namespace __gnu_test;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::deque<copycounter> a;
   copycounter c(1);
   copycounter::copycount = 0;
@@ -42,8 +40,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::deque<copycounter> a;
   copycounter c(1);
   copycounter::copycount = 0;
@@ -56,8 +52,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::deque<copycounter> a(1000);
   copycounter c(1);
   copycounter::copycount = 0;
@@ -73,8 +67,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   copycounter c(1);
   std::deque<copycounter> a(10, c);
   copycounter::copycount = 0;
@@ -100,8 +92,6 @@ test04()
 void
 test05()
 {
-  bool test __attribute__((unused)) = true;
-  
   copycounter c(1);
   std::deque<copycounter> a(10, c);
   copycounter::copycount = 0;

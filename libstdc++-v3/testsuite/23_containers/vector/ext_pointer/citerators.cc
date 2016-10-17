@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> > v(7);
   VERIFY( v.cbegin() == v.begin() );
   VERIFY( v.cend() == v.end() );

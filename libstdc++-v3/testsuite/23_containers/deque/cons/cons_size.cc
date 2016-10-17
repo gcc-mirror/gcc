@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::deque<__gnu_test::NonCopyConstructible> d(1000);
   VERIFY( std::distance(d.begin(), d.end()) == 1000 );
   for(auto it = d.begin(); it != d.end(); ++it)

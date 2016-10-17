@@ -44,7 +44,6 @@ operator!=(const propagating_allocator<T, false>&,
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<T, false> alloc_type;
   typedef std::list<T, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -60,7 +59,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<T, true> alloc_type;
   typedef std::list<T, alloc_type> test_type;
   test_type v1(alloc_type(1));

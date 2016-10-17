@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<__gnu_test::NonCopyConstructible> v;
   VERIFY( std::distance(v.begin(), v.end()) == 0 );
 

@@ -21,7 +21,6 @@
 // libstdc++/17948
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef set<int>::size_type size_type;

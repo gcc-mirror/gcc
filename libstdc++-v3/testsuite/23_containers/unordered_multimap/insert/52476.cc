@@ -25,8 +25,7 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
-  
+ 
   unordered_multimap<int, int> mmap;
   vector<int> values;
 

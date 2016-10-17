@@ -27,8 +27,6 @@
 // Used to cause many Valgrind errors: LWG 526-type situation.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_list<int> fl1;
   
   fl1.push_front(1);

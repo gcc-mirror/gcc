@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::unordered_multimap<std::string, std::string> mymmap;
     std::pair<std::string, std::string> mypair{std::string("key"),

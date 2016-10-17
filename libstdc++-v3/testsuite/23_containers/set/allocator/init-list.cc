@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace __gnu_test;
 
   typedef tracker_allocator<int> alloc_type;

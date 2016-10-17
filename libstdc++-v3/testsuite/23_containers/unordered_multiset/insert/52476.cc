@@ -43,8 +43,7 @@ namespace
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
-  
+ 
   unordered_multiset<pair<int, int>, pair_hash, pair_equal_to> mset;
   vector<int> values;
 

@@ -25,7 +25,6 @@
 // libstdc++/6886
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::vector<bool>  bvec;
   int  i, num = 0;
   bvec v;

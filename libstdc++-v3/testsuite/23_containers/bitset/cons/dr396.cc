@@ -23,8 +23,6 @@
 // DR 396. what are characters zero and one.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::bitset<4> z1(std::string("bbab"), 0, std::string::npos, 'a', 'b');
   VERIFY( z1.to_string('a', 'b') == "bbab" );
 

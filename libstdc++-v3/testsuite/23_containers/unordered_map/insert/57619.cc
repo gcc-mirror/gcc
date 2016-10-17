@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::unordered_map<std::string, std::string> mymap;
     std::pair<std::string, std::string> mypair{std::string("key"),

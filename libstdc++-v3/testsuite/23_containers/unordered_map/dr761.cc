@@ -24,8 +24,7 @@
 
 // DR 761. unordered_map needs an at() member function.
 void test01() 
-{ 
-  bool test __attribute__((unused)) = true;
+{
   typedef std::unordered_map<int, double> map_type;
 
   {

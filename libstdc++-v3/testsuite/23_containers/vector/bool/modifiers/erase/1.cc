@@ -39,8 +39,6 @@ const unsigned N5 = sizeof(A5) / sizeof(bool);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<bool>  vec_type;
   typedef vec_type::iterator iterator_type;
 
@@ -79,8 +77,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<std::vector<bool> >  vec_type;
   typedef vec_type::iterator          iterator_type;
 

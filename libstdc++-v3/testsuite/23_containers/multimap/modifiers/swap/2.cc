@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef pair<const char, int> my_pair;

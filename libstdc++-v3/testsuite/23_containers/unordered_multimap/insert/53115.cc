@@ -35,7 +35,6 @@ namespace
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   std::unordered_multimap<int, int> umm;
   umm.insert(make_pair(10, 1));

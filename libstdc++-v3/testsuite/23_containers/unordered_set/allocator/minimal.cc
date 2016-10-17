@@ -46,7 +46,6 @@ template class std::unordered_set<T, hash, equal_to, SimpleAllocator<T>>;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef SimpleAllocator<T> alloc_type;
   typedef std::allocator_traits<alloc_type> traits_type;
   typedef std::unordered_set<T, hash, equal_to, alloc_type> test_type;

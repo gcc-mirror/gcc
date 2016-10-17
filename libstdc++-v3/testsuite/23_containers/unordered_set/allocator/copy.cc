@@ -39,7 +39,6 @@ using __gnu_test::propagating_allocator;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<T, false> alloc_type;
   typedef std::unordered_set<T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -51,7 +50,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<T, true> alloc_type;
   typedef std::unordered_set<T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -63,7 +61,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<T, true> alloc_type;
   typedef std::unordered_set<T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));

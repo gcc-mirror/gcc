@@ -30,8 +30,6 @@ template<template<typename _Value, typename _Hash,
 	   typename _USet>
   void test01()
   {
-    bool test __attribute__((unused)) = true;
-
     // Make sure whatever happen we restore throw allocator limit at exit.
     __gnu_cxx::limit_condition::adjustor_base adj;
 
@@ -76,8 +74,6 @@ template<template<typename _Value, typename _Hash,
 	   typename _USet>
   void test02()
   {
-    bool test __attribute__((unused)) = true;
-
     // Make sure whatever happen we restore throw allocator limit at exit.
     __gnu_cxx::limit_condition::adjustor_base adj;
 

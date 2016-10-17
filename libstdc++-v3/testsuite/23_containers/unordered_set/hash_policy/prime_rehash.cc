@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::__detail::_Prime_rehash_policy policy;
 
   for (std::size_t i = 1;;)

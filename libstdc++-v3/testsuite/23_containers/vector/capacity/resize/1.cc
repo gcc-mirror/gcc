@@ -30,7 +30,7 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   std::vector<int> v;
   try
     {

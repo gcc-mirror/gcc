@@ -40,7 +40,6 @@ template<typename _Tp>
 void
 cons01()
 {
-  bool test __attribute__((unused)) = true;
   typedef _Tp list_type;
 
   list_type list0101;

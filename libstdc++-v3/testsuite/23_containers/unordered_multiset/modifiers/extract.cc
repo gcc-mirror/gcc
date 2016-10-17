@@ -25,8 +25,6 @@ using test_type = std::unordered_multiset<int>;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   test_type c{ 1, 1, 2, 2, 3, 3 };
   test_type::node_type node;
   test_type::iterator pos;
@@ -85,8 +83,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   test_type c{ 1, 1, 2, 2, 3, 3 };
   test_type::node_type node;
   test_type::iterator pos;

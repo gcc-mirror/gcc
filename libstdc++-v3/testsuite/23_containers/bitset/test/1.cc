@@ -27,7 +27,6 @@
 void 
 test01(void)
 {
-  bool test __attribute__((unused)) = true;
   const size_t n1 = 5;
 
   // the other 22 member functions should be in here too...
@@ -42,7 +41,6 @@ test01(void)
   catch(...) {
     VERIFY( false );
   }
-  VERIFY( test );
 }
 
 int main()

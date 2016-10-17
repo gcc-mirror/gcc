@@ -49,8 +49,6 @@ struct PathPointEqual
   { return __lhs.getType() == __rhs.getType(); }
 };
 
-bool test __attribute__((unused)) = true;
-
 void test01()
 {
   typedef std::unordered_set<PathPoint, PathPointHasher, PathPointEqual> Set;

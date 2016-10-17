@@ -24,7 +24,6 @@ template<typename _Tp>
 void
 modifiers2()
 {
-  bool test __attribute__((unused)) = true;
   typedef _Tp list_type;
   typedef typename list_type::value_type value_type;
   typedef typename list_type::iterator iterator;

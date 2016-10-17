@@ -61,8 +61,6 @@ bool num_equal::_S_called_on_moved_instance = false;
 // libstdc++/51866
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   std::unordered_multiset<num, num_hash, num_equal> mset;
   mset.insert(num(1));
   mset.insert(num(2));

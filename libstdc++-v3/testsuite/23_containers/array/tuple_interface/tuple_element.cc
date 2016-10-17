@@ -23,8 +23,7 @@
 
 void
 test01() 
-{ 
-  bool test __attribute__((unused)) = true;
+{
   using std::array;
   using std::tuple_element;
   // This relies on the fact that <utility> includes <type_traits>:

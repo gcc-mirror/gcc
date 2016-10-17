@@ -42,8 +42,6 @@ bool equal_elements(const C1& c1, const C2& c2)
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ 1, 2, 3, };
   test_type c1 = c0, c2 = c0;
 
@@ -64,8 +62,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ 1, 2, 3, };
   test_type c1 = c0;
   std::unordered_set<int, hash, equal> c2( c0.begin(), c0.end() );
@@ -91,8 +87,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ 1, 2, 3, };
   test_type c1 = c0;
   std::unordered_multiset<int, hash, equal> c2( c0.begin(), c0.end() );

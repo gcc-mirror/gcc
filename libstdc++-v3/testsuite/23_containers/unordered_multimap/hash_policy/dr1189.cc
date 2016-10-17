@@ -24,9 +24,7 @@
 // DR 1189. Awkward interface for changing the number of buckets
 // in an unordered associative container
 void test01() 
-{ 
-  bool test __attribute__((unused)) = true;
-  
+{
   std::unordered_multimap<int, double> mm1;
   mm1.reserve(10);
   VERIFY( mm1.bucket_count() >= 10 );

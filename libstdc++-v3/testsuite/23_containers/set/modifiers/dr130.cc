@@ -25,7 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   set<int> s0;
@@ -47,7 +46,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   set<int> s0;

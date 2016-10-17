@@ -35,7 +35,6 @@ namespace
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   std::unordered_multiset<int> mms;
   mms.insert(10);

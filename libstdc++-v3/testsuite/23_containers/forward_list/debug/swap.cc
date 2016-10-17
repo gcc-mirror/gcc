@@ -26,7 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   std::forward_list<int> fl1{1, 3, 5};
   std::forward_list<int> fl2{2, 4, 6};
 

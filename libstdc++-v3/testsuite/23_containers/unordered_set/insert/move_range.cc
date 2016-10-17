@@ -25,8 +25,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_counter_type.h>
 
-bool test __attribute__((unused)) = true;
-
 void test01()
 {
   using namespace __gnu_test;

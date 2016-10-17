@@ -24,8 +24,6 @@
 
 #include <algorithm>
 
-bool test __attribute__((unused)) = true;
-
 // This test verifies the following:
 //   remove_if
 void

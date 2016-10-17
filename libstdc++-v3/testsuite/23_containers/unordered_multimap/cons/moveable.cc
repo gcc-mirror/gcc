@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unordered_multimap<int, int> a,b;
   a.insert(std::make_pair(2,0));
   b.insert(std::make_pair(1,0));

@@ -24,7 +24,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   std::forward_list<int> fl1{1, 3, 5};
 
   auto flit = fl1.before_begin();

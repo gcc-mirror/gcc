@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unordered_set<int> a,b;
   a.insert(2);
   b.insert(1);

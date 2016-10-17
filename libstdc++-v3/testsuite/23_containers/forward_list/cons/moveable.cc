@@ -26,8 +26,6 @@
 #include <utility>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 int main()
 {
   std::forward_list<int> a, b;

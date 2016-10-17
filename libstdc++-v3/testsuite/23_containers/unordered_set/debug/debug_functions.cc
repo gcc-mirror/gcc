@@ -23,7 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace __gnu_debug;
 
   std::unordered_set<int> u = { 0, 1, 2 };
@@ -49,7 +48,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace __gnu_debug;
 
   std::unordered_set<int> u = { 0, 1, 2 };

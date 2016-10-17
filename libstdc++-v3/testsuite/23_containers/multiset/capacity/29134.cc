@@ -23,8 +23,6 @@
 // libstdc++/29134
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::multiset<int> ms;
 
   VERIFY( ms.max_size()

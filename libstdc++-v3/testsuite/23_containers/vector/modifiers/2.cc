@@ -22,8 +22,6 @@
 #include <vector>
 #include "testsuite_hooks.h"
 
-bool test __attribute__((unused)) = true;
-
 // test the assign() function
 void
 test03()
@@ -33,7 +31,6 @@ test03()
   const int B[] = {K, K, K, K, K};
   const std::size_t N = sizeof(A) / sizeof(int);
   const std::size_t M = sizeof(B) / sizeof(int);
-  bool test __attribute__((unused)) = true;
 
   // assign from pointer range
   std::vector<int> v3;

@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const unsigned long long num0 = 0ULL;
   std::bitset<0> bs0(num0);
   VERIFY( bs0.to_ullong() == num0 );

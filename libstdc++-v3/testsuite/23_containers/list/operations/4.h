@@ -49,7 +49,6 @@ template<typename _Tp>
 void
 operations04()
 {
-  bool test __attribute__((unused)) = true;
   typedef _Tp list_type;
 
   const int A[] = {1, 2, 3, 4, 5, 6};

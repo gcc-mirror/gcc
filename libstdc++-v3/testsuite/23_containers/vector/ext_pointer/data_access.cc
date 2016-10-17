@@ -24,8 +24,7 @@
 
 // libstdc++/23578
 void test01() 
-{ 
-  bool test __attribute__((unused)) = true;
+{
   typedef std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> > vector_type;
 
   {

@@ -36,7 +36,6 @@ namespace std
 // Should use map specialization for swap.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::map<T, int> A;
   std::map<T, int> B;
   swap_calls = 0;
@@ -47,7 +46,6 @@ void test01()
 // Should use map specialization for swap.
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   map<T, int> A;
   map<T, int> B;

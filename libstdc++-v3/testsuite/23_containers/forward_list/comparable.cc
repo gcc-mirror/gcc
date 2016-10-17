@@ -25,8 +25,6 @@
 #include <forward_list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 int main()
 {
   std::forward_list<double> a = {0.0, 1.0, 2.0, 3.0, 4.0};

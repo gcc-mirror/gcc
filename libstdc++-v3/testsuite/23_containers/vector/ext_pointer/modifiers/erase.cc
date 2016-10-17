@@ -40,8 +40,6 @@ const unsigned int N5 = sizeof(A5) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<int,__gnu_cxx::_ExtPtr_allocator<int> >  vec_type;
   typedef vec_type::iterator iterator_type;
 
@@ -80,8 +78,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_cxx::_ExtPtr_allocator<int> int_alloc_type;
   typedef __gnu_cxx::_ExtPtr_allocator< std::vector<int, int_alloc_type> > vec_alloc_type;
   typedef std::vector<std::vector<int, int_alloc_type >,vec_alloc_type>  vec_type; 

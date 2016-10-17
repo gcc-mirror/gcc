@@ -33,7 +33,6 @@ namespace std
 // Should use vector specialization for swap.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::vector<T> A;
   std::vector<T> B;
   swap_calls = 0;
@@ -44,7 +43,6 @@ void test01()
 // Should use vector specialization for swap.
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   vector<T> A;
   vector<T> B;

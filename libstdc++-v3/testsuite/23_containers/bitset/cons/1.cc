@@ -25,10 +25,8 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-bool test01(void)
+void test01(void)
 {
-  bool test __attribute__((unused)) = true;
-
   // bitset()
   const size_t n1 = 5;
   std::bitset<n1> bit01;
@@ -73,7 +71,6 @@ bool test01(void)
   catch(...) {
     VERIFY( false );
   }
-  return test;
 }
 
 int main()
