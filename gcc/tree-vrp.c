@@ -685,7 +685,8 @@ get_value_range (const_tree var)
 	     anti-ranges for pointers.  Note that this is only valid with
 	     default definitions of PARM_DECLs.  */
 	  if (POINTER_TYPE_P (TREE_TYPE (sym))
-	      && nonnull_arg_p (sym))
+	      && (nonnull_arg_p (sym)
+		  || get_ptr_nonnull (var)))
 	    set_value_range_to_nonnull (vr, TREE_TYPE (sym));
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (sym)))
 	    {

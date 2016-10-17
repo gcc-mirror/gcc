@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-cp-details" } */
+/* { dg-options "-O2 -fdump-ipa-cp-details -fdump-tree-vrp1" } */
 
 static __attribute__((noinline, noclone))
 int foo (int *p)
@@ -25,3 +25,4 @@ int bar (struct st *s)
 }
 
 /* { dg-final { scan-ipa-dump "Setting nonnull for 0" "cp" } } */
+/* { dg-final { scan-tree-dump-times "if" 1 "vrp1" } } */
