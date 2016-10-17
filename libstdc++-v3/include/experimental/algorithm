@@ -68,9 +68,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __distrib_type __d{};
       _Size __sample_sz = 0;
       while (__first != __last && __sample_sz != __n)
-	__out[__sample_sz++] = *__first++;
+	{
+	  __out[__sample_sz++] = *__first;
+	  ++__first;
+	}
       for (auto __pop_sz = __sample_sz; __first != __last;
-	  ++__first, ++__pop_sz)
+	  ++__first, (void)++__pop_sz)
 	{
 	  const auto __k = __d(__g, __param_type{0, __pop_sz});
 	  if (__k < __n)
@@ -123,9 +126,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_integral<_Distance>::value,
 		    "sample size must be an integer type");
 
+      typename iterator_traits<_PopulationIterator>::difference_type __d = __n;
       return std::experimental::__sample(
 	  __first, __last, __pop_cat{}, __out, __samp_cat{},
-	  __n, std::forward<_UniformRandomNumberGenerator>(__g));
+	  __d, std::forward<_UniformRandomNumberGenerator>(__g));
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
