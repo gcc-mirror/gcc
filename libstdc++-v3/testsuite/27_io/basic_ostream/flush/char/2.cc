@@ -29,8 +29,6 @@
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_test::sync_streambuf buf;
   std::ostream os(&buf);
   

@@ -26,7 +26,6 @@ test02()
 {
   typedef std::char_traits<wchar_t>	traits_type;
 
-  bool test __attribute__((unused)) = true;
   const wchar_t str_lit01[] = L"\t\t\t    sun*ra \n"
   L"                            "
   L"and his myth science arkestra present\n"

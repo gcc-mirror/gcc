@@ -23,7 +23,6 @@
 // libstdc++/7744
 void test11()
 {
-  bool test __attribute__((unused)) = true;
   std::ios::sync_with_stdio(false);
 
   std::cout << "Type in the characters 'abc' and press <ENTER>: ";

@@ -41,8 +41,6 @@ protected:
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   Buf buf;
   std::ostream os(&buf);
 

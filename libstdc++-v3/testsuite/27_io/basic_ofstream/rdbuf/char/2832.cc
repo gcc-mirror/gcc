@@ -36,7 +36,6 @@ active_buffer(std::ios& stream)
 // libstdc++/2832
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   const char* strlit01 = "fuck war";
   const std::string str00;
   const std::string str01(strlit01);

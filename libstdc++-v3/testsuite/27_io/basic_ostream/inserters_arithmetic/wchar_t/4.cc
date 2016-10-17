@@ -24,7 +24,6 @@ int
 test04()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wstringbuf strbuf1, strbuf2;
   wostream o1(&strbuf1), o2(&strbuf2);

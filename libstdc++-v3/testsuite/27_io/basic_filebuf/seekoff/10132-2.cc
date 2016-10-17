@@ -27,7 +27,6 @@
 // libstdc++/10132, add on
 void test07()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::basic_filebuf<__gnu_test::pod_ushort> gnu_filebuf;
   
   try
@@ -37,9 +36,8 @@ void test07()
       obj.pubseekoff(2, std::ios_base::beg);
     }
   catch(std::exception& obj)
-    { 
-      test = false; 
-      VERIFY( test );
+    {
+      VERIFY( false );
     }
 }
 

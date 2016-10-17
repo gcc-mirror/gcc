@@ -25,7 +25,6 @@
 // libstdc++/16956
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef stringbuf::int_type int_type;

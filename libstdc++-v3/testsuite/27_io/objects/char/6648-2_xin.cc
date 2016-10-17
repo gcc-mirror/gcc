@@ -21,7 +21,6 @@
 
 void test09()
 {
-  bool test __attribute__((unused)) = true;
   std::cout << "Enter favorite beach: ";
   std::cin.ignore(2048, '\n');
 }

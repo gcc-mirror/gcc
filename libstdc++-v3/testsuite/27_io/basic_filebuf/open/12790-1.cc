@@ -31,7 +31,6 @@ void test01()
   using __gnu_test::pod_uchar;
   typedef basic_filebuf<pod_uchar>::traits_type traits_type;
 
-  bool test __attribute__((unused)) = true;
   const char* name = "tmp_open_12790";
 
   locale loc(locale::classic(),

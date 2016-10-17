@@ -27,8 +27,6 @@ const int times = 10;
 
 void write_rewind(std::wiostream& stream)
 {
-  bool test __attribute__((unused)) = true;
-
   for (int j = 0; j < times; j++) 
     {
       std::streampos begin = stream.tellp();
@@ -43,8 +41,6 @@ void write_rewind(std::wiostream& stream)
 
 void check_contents(std::wiostream& stream)
 {
-  bool test __attribute__((unused)) = true;
-
   stream.clear();
   stream.seekg(0, std::wios::beg);
   int i = 0;

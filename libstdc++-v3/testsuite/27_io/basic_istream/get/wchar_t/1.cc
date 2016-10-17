@@ -26,7 +26,6 @@ test03()
 {
   typedef std::char_traits<wchar_t>	traits_type;
 
-  bool test __attribute__((unused)) = true;
   const wchar_t str_lit01[] = 
   L"   sun*ra \n\t\t\t   & his arkestra, featuring john gilmore: \n"
   L"                         "

@@ -25,7 +25,6 @@ void
 test05()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   double pi = 3.14159265358979323846;
   wostringstream ostr;

@@ -118,7 +118,7 @@ namespace std
 
 void test02() 
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   // 02: Calls basic_ios::init, which may call ctype<char_type>...
   try

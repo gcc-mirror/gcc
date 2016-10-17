@@ -67,7 +67,6 @@ public:
 // libstdc++/1057
 void test04()
 {
-  bool test __attribute__((unused)) = true;
   std::wstring text = L"abcdefghijklmn";
   
   // 01

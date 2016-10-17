@@ -26,7 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::string str_01("jade cove, big sur");
   std::string str_05;
   std::stringbuf strb_01;

@@ -28,7 +28,6 @@
 void test()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   char buf[64];
   error_code e1;
@@ -41,14 +40,14 @@ void test()
     s1 = ostr.str();
 
     if (ostr.rdstate() & ios_base::eofbit) 
-      test = false;
+      VERIFY( false );
   }
-  VERIFY( test );
+
   VERIFY( find(s1.begin(), s1.end(), ':') != s1.end() );
 
   sprintf(buf, "%i", e1.value());
   s = buf;
-  VERIFY( s1.find(s) != string::npos);
+  VERIFY( s1.find(s) != string::npos );
 
   {
     ostringstream ostr;
@@ -56,14 +55,14 @@ void test()
     s2 = ostr.str();
 
     if (ostr.rdstate() & ios_base::eofbit) 
-      test = false;
+      VERIFY( false );
   }
-  VERIFY( test );
+
   VERIFY( find(s2.begin(), s2.end(), ':') != s2.end() );
 
   sprintf(buf, "%i", e2.value());
   s = buf;
-  VERIFY( s2.find(s) != string::npos);
+  VERIFY( s2.find(s) != string::npos );
 }
 
 int 

@@ -28,15 +28,12 @@
 void test04()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   istringstream istr("inside betty carter");
   ostringstream ostr;
   ostr << istr.rdbuf() << endl;
 
   if (ostr.rdstate() & ios_base::eofbit) 
-    test = false;
-
-  VERIFY( test );
+    VERIFY( false );
 }
 
 int 

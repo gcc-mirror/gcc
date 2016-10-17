@@ -25,7 +25,6 @@
 // libstdc++/10975
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   typedef wstreambuf::pos_type pos_type;
   typedef wstreambuf::off_type off_type;

@@ -23,7 +23,6 @@
 // Interactive tests: each one (run alone) must terminate upon a single '\n'.
 void test08()
 {
-  bool test __attribute__((unused)) = true;
   wchar_t buff[2048];
   std::wcout << "Enter name: ";
   std::wcin.getline(buff, 2048);

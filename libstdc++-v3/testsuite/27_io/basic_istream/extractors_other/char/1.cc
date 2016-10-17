@@ -28,7 +28,6 @@ void test01()
 {
   typedef std::ios::traits_type ctraits_type;
 
-  bool test __attribute__((unused)) = true;
   const std::string str_01;
   const std::string str_02("art taylor kickin it on DAKAR");
   std::string strtmp;

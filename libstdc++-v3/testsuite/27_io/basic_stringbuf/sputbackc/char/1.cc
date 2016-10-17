@@ -30,7 +30,6 @@ std::stringbuf strb_03(str_03, std::ios_base::out);
 // test overloaded virtual functions
 void test04() 
 {
-  bool test __attribute__((unused)) = true;
   std::string 		str_tmp, str_tmp2;
   typedef std::stringbuf::int_type int_type;
   typedef std::stringbuf::traits_type traits_type;

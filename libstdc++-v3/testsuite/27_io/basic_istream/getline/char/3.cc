@@ -32,7 +32,6 @@ test06()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   const streamsize it = 5;
   char tmp[it];
   const char* str_lit = "abcd\n";

@@ -35,17 +35,15 @@ public:
   testbuf(): std::streambuf() 
   { }
 
-  bool
+  void
   check_pointers()
-  { 
-    bool test __attribute__((unused)) = true;
+  {
     VERIFY( !this->eback() );
     VERIFY( !this->gptr() );
     VERIFY( !this->egptr() );
     VERIFY( !this->pbase() );
     VERIFY( !this->pptr() );
     VERIFY( !this->epptr() );
-    return test;
   }
 
   int_type 
@@ -84,7 +82,6 @@ void test01()
   typedef testbuf::traits_type traits_type;
   typedef testbuf::int_type int_type;
 
-  bool test __attribute__((unused)) = true;
   char lit01[52];
   std::strcpy(lit01, "chicago underground trio/possible cube on delmark");
   testbuf buf01;

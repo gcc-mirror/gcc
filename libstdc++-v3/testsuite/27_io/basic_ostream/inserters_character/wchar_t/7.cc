@@ -51,7 +51,6 @@ protected:
 void test07()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   const char* buffer = "SFPL 5th floor, outside carrol, the Asian side";
 

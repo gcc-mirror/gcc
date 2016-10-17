@@ -25,8 +25,6 @@ void test02()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
-
   int c1 = fgetc(stdin);
   int c2 = cin.rdbuf()->sputbackc(c1);
   VERIFY( c2 == c1 );

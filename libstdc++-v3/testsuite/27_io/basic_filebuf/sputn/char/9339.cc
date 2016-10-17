@@ -24,7 +24,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   filebuf fbuf01;
   int len = 35;

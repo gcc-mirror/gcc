@@ -29,7 +29,6 @@ void test03()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   char buf[512];
   const char* strlit = "how to tell a story and other essays: mark twain";
   const size_t strlitsize = std::strlen(strlit);

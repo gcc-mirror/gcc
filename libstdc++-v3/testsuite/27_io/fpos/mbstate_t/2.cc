@@ -27,8 +27,6 @@
 // 27.4.3.2 fpos requirements/invariants
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::mbstate_t state_type;
 
   std::streamoff off01;

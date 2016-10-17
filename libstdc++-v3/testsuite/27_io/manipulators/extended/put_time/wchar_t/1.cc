@@ -29,7 +29,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   locale loc_c = locale::classic();
   wostringstream oss;
   oss.imbue(loc_c);

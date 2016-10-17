@@ -25,8 +25,6 @@
 
 void test01(void)
 {
-  bool test __attribute__((unused)) = true;
-
   const std::string str01(" santa barbara ");
   std::string str04;
   std::string str05;

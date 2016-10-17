@@ -44,8 +44,6 @@ class my_filebuf
 // libstdc++/45628
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   my_filebuf q;
   q.open(name_01, std::ios_base::in | std::ios_base::out 
 	 | std::ios_base::trunc); 

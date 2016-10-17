@@ -45,7 +45,6 @@ test05()
 "aaaaaaaaaaaaa\n"
 "aaaaaaaaaaaaaa\n";
 
-  bool test __attribute__((unused)) = true;
   const std::streamsize it = 5;
   std::streamsize br = 0;
   char tmp[it];

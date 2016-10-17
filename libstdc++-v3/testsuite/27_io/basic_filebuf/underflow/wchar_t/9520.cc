@@ -28,7 +28,6 @@ void test01()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   const char* name = "tmp_9520";
 
   FILE* file = fopen(name, "w");

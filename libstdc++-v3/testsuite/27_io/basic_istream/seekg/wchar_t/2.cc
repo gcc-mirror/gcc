@@ -25,7 +25,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wistringstream ist(L"the lamb lies down on broadway");
   wios::pos_type pos = ist.tellg();

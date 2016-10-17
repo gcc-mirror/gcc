@@ -47,8 +47,6 @@ public:
 // libstdc++/9404
 void test04()
 {
-  bool test __attribute__((unused)) = true;
-
   bool over_expected;
 
   // sputc

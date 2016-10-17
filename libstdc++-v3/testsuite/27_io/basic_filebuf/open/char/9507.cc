@@ -36,7 +36,6 @@
 void test_06()
 {
   using namespace __gnu_test;
-  bool test __attribute__((unused)) = true;
   const char* name = "tmp_fifo2";
 
   signal(SIGPIPE, SIG_IGN);

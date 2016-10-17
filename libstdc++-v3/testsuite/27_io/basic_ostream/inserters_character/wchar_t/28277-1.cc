@@ -33,7 +33,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wostringstream oss_01;
   const string str_01(MAX_SIZE, 'a');

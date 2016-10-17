@@ -34,8 +34,6 @@ struct pubbuf
 // libstdc++/26250
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   pubbuf buf;
 
   VERIFY( buf.overflow(L'x') == L'x' );

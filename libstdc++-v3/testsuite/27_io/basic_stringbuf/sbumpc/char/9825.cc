@@ -27,7 +27,6 @@
 void test12()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   stringbuf sbuf;
   sbuf.sputn("crazy bees!", 11);

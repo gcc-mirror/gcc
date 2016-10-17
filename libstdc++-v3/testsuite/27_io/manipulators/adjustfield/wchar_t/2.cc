@@ -23,7 +23,6 @@
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   const std::wstring 	str_blank;
   std::wstring 	        str_tmp;
   std::wstringbuf 	strbuf;

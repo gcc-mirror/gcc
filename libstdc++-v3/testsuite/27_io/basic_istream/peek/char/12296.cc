@@ -24,7 +24,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   istringstream stream;
   VERIFY( stream.rdstate() == ios_base::goodbit );

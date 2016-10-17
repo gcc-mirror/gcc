@@ -33,8 +33,6 @@ protected:
 // libstdc++/13007
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   Buf1 buf;
   std::locale loc(std::locale("is_IS.UTF-8"));
 

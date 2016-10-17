@@ -35,17 +35,15 @@ public:
   testbuf(): std::wstreambuf() 
   { }
 
-  bool
+  void
   check_pointers()
-  { 
-    bool test __attribute__((unused)) = true;
+  {
     VERIFY( !this->eback() );
     VERIFY( !this->gptr() );
     VERIFY( !this->egptr() );
     VERIFY( !this->pbase() );
     VERIFY( !this->pptr() );
     VERIFY( !this->epptr() );
-    return test;
   }
 
   int_type 
@@ -84,8 +82,6 @@ void test02()
   typedef testbuf::traits_type traits_type;
   typedef testbuf::int_type int_type;
 
-  bool test __attribute__((unused)) = true;
-
   wchar_t lit01[] = L"chicago underground trio/possible cube on delmark";
   size_t i01 = traits_type::length(lit01);
 
@@ -95,7 +91,7 @@ void test02()
   // default ctor initializes 
   // - all pointer members to null pointers
   // - locale to current global locale
-  VERIFY( buf01.check_pointers() );
+  buf01.check_pointers();
   VERIFY( buf01.getloc() == std::locale() );
 
   // 27.5.2.2.5 Put area

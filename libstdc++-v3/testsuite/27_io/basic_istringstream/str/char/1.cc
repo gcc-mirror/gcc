@@ -24,7 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::istringstream is01;
   const std::string str00; 
   const std::string str01 = "123";

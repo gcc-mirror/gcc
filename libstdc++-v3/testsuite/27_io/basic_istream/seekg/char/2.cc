@@ -27,7 +27,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   istringstream ist("the lamb lies down on broadway");
   ios::pos_type pos = ist.tellg();

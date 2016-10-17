@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   const std::string str_02("soul eyes: john coltrane quartet");
 
   std::stringbuf isbuf_03(str_02, std::ios_base::in);

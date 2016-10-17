@@ -30,8 +30,6 @@ std::stringbuf strb_03(str_03, std::ios_base::out);
 // test member functions
 void test03() 
 {
-  bool test __attribute__((unused)) = true;
-
   //stringbuf::str()
   VERIFY( strb_01.str() == str_01 );
   VERIFY( strb_02.str() == str_02 );

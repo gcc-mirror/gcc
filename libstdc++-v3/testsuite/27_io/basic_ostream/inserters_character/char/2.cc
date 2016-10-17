@@ -29,7 +29,6 @@
 void
 test02(void) 
 {
-  bool test __attribute__((unused)) = true;
   std::string tmp;
   
   std::string str01 = "";

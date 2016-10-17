@@ -21,8 +21,6 @@
 // PR libstdc++/41037
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( std::wcerr.flags() & std::ios_base::dec );
   VERIFY( std::wcerr.flags() & std::ios_base::skipws );
   VERIFY( std::wcerr.flags() & std::ios_base::unitbuf );

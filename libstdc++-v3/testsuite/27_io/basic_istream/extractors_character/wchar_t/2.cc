@@ -23,7 +23,6 @@
 
 void test02() 
 {
-  bool test __attribute__((unused)) = true;
   std::wstring str_01;
   const std::wstring str_02(L"or coltrane playing tunji with jimmy garrison");
   const std::wstring str_03(L"coltrane");

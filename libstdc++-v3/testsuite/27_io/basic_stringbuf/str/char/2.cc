@@ -25,8 +25,6 @@
 // which didn't notice the grow.
 void test07()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringbuf strb_01;
   strb_01.sputc('s');
   strb_01.pubseekoff(0, std::ios_base::beg);

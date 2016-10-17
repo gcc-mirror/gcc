@@ -48,8 +48,6 @@ wstring prepare(wstring::size_type len, unsigned nchunks)
 
 void check(wistream& stream, const wstring& str, unsigned nchunks)
 {
-  bool test __attribute__((unused)) = true;
-
   wchar_t* chunk = new wchar_t[str.size()];
   wmemset(chunk, L'X', str.size());
 

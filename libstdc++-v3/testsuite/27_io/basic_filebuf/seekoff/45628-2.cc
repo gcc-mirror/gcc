@@ -45,8 +45,6 @@ class my_filebuf
 // libstdc++/45628
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using __gnu_test::pod_uchar;
   std::locale loc(std::locale::classic(),
 	     new std::codecvt<my_filebuf::traits_type::char_type, char,

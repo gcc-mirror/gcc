@@ -26,8 +26,6 @@
 // http://gcc.gnu.org/ml/gcc-bugs/2000-12/msg00413.html
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
-  
   using namespace std;
 
   ios::xalloc();

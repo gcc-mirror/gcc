@@ -28,7 +28,6 @@
 void test09()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wstringbuf sbuf;
   wstringbuf::int_type r = sbuf.sputbackc(L'a');

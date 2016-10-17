@@ -56,7 +56,6 @@ protected:
 // See Novell Bug 255122
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const char* name = "tmp_underflow_3.tst";

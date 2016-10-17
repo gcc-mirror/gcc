@@ -23,7 +23,6 @@
 void test03()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   const char* name = "tmp_seekoff_3";
 

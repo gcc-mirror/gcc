@@ -24,7 +24,6 @@
 
 void test02(std::wstringbuf& in, bool pass)
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   typedef wstreambuf::pos_type pos_type;
   typedef wstreambuf::off_type off_type;

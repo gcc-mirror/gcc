@@ -30,7 +30,6 @@ const char name_02[] = "ofstream_members-1.txt";
 // http://gcc.gnu.org/ml/libstdc++/2000-07/msg00004.html
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   const int more_than_max_open_files = 8200;
   
   for(int i = 0; ++i < more_than_max_open_files;)

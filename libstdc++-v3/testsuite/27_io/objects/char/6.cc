@@ -36,8 +36,6 @@ protected:
 
 void test06()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       // No-op in current code.
@@ -47,9 +45,8 @@ void test06()
     }
   catch(...)
     {
-      test = false;
+      VERIFY( false );
     }
-  VERIFY( test );
 }
 
 int main()

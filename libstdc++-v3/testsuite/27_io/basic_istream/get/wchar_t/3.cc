@@ -24,7 +24,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wstringbuf strbuf01;
   wstringbuf strbuf02;

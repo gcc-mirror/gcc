@@ -37,8 +37,6 @@ data(unsigned len)
 void
 test01(unsigned iter)
 {
-  bool test __attribute__((unused)) = true;
-
   for (unsigned n = 1; n <= iter; n *= 10)
     {
       const string str = data(n);

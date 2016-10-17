@@ -46,7 +46,6 @@ MyNP::do_falsename() const
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   const char lit[] = "1 0\n"
                      "true false\n"
                      ":  true:\n"

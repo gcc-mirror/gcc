@@ -29,7 +29,6 @@
 void test03()
 {
   using std::locale;
-  bool test __attribute__((unused)) = true;
 
   locale loc =  std::locale::classic();
   std::wstringbuf ob;
