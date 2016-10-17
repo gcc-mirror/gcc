@@ -27,13 +27,13 @@ ulsffoo##__a (float x)	\
 }
 
 #define FUNC_DEFD(__a)	\
-long			\
+long long			\
 dffoo##__a (double x)	\
 {			\
   return x * __a##.0;	\
 }			\
 			\
-unsigned long		\
+unsigned long long	\
 udffoo##__a (double x)	\
 {			\
   return x * __a##.0;	\
@@ -101,18 +101,18 @@ do								\
       __builtin_abort ();					\
     if (usffoo##__a (__b) != (unsigned int)(__b * __a))	\
       __builtin_abort ();					\
-    if (lsffoo##__a (__b) != (long)(__b * __a))		\
+    if (lsffoo##__a (__b) != (long long)(__b * __a))		\
       __builtin_abort ();					\
-    if (ulsffoo##__a (__b) != (unsigned long)(__b * __a))	\
+    if (ulsffoo##__a (__b) != (unsigned long long)(__b * __a))	\
       __builtin_abort ();					\
   } while (0)
 
 #define FUNC_TESTD(__a, __b)					\
 do								\
   {								\
-    if (dffoo##__a (__b) != (long)(__b * __a))			\
+    if (dffoo##__a (__b) != (long long)(__b * __a))		\
       __builtin_abort ();					\
-    if (udffoo##__a (__b) != (unsigned long)(__b * __a))	\
+    if (udffoo##__a (__b) != (unsigned long long)(__b * __a))	\
       __builtin_abort ();					\
     if (sdffoo##__a (__b) != (int)(__b * __a))			\
       __builtin_abort ();					\
