@@ -1,3 +1,14 @@
+2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/77995
+	Backport from mainline
+	2016-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (build_complex_type): Add second parameter with default.
+	* tree.c (build_complex_type): Add NAMED second parameter and adjust
+	recursive call.  Create a TYPE_DECL only if NAMED is true.
+	(build_common_tree_nodes): Pass true in calls to build_complex_type.
+
 2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_expand_vector_init): Only accept literal
