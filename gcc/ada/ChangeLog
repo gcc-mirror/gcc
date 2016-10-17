@@ -1,7 +1,14 @@
-2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
-	Backport from mainline
-	2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+	* system-darwin-ppc64.ads (Support_64_Bit_Divides): Delete.
+	* system-linux-armeb.ads (Support_64_Bit_Divides): Likewise.
+	* system-linux-mips.ads (Support_64_Bit_Divides): Likewise.
+	* system-linux-mips64el.ads (Support_64_Bit_Divides): Likewise.
+	* system-linux-mipsel.ads (Support_64_Bit_Divides): Likewise.
+	* system-linux-sparcv9.ads (Support_64_Bit_Divides): Likewise.
+	* system-rtems.ads (Support_64_Bit_Divides): Likewise.
+
+2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-aix.ads (Always_Compatible_Rep): Change to False.
 	* system-aix64.ads (Always_Compatible_Rep): Likewise.
