@@ -1,3 +1,8 @@
+2016-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77988
+	* gcc.dg/torture/pr77988.c: New testcase.
+
 2016-10-17  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/pr71636-1.c: New test-case.

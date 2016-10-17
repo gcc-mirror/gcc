@@ -1,3 +1,8 @@
+2016-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77988
+	* tree-vrp.c (remove_range_assertions): Use replace_uses_by.
+
 2016-10-17  Marek Polacek  <polacek@redhat.com>
 
 	* Makefile.in (C_COMMON_OBJS): Add c-family/c-attribs.o.

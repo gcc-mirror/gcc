@@ -6882,7 +6882,6 @@ remove_range_assertions (void)
     for (si = gsi_after_labels (bb), is_unreachable = -1; !gsi_end_p (si);)
       {
 	gimple *stmt = gsi_stmt (si);
-	gimple *use_stmt;
 
 	if (is_gimple_assign (stmt)
 	    && gimple_assign_rhs_code (stmt) == ASSERT_EXPR)
@@ -6890,8 +6889,6 @@ remove_range_assertions (void)
 	    tree lhs = gimple_assign_lhs (stmt);
 	    tree rhs = gimple_assign_rhs1 (stmt);
 	    tree var;
-	    use_operand_p use_p;
-	    imm_use_iterator iter;
 
 	    var = ASSERT_EXPR_VAR (rhs);
 
@@ -6927,12 +6924,7 @@ remove_range_assertions (void)
 	      }
 
 	    /* Propagate the RHS into every use of the LHS.  */
-	    FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-	      {
-		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-		  SET_USE (use_p, var);
-		update_stmt (use_stmt);
-	      }
+	    replace_uses_by (lhs, var);
 
 	    /* And finally, remove the copy, it is not needed.  */
 	    gsi_remove (&si, true);
