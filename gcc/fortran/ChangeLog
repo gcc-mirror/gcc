@@ -1,3 +1,9 @@
+2016-10-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77978
+	* match.c (gfc_match_stopcode): Fix error reporting for several
+	deficiencies in matching stop-codes.
+
 2016-10-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/61420

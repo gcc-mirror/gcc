@@ -2731,20 +2731,92 @@ gfc_match_cycle (void)
 }
 
 
-/* Match a number or character constant after an (ERROR) STOP or PAUSE
-   statement.  */
+/* Match a stop-code after an (ERROR) STOP or PAUSE statement.  The
+   requirements for a stop-code differ in the standards.
+
+Fortran 95 has
+
+   R840 stop-stmt  is STOP [ stop-code ]
+   R841 stop-code  is scalar-char-constant
+                   or digit [ digit [ digit [ digit [ digit ] ] ] ]
+
+Fortran 2003 matches Fortran 95 except R840 and R841 are now R849 and R850.
+Fortran 2008 has
+
+   R855 stop-stmt     is STOP [ stop-code ]
+   R856 allstop-stmt  is ALL STOP [ stop-code ]
+   R857 stop-code     is scalar-default-char-constant-expr
+                      or scalar-int-constant-expr
+
+For free-form source code, all standards contain a statement of the form:
+
+   A blank shall be used to separate names, constants, or labels from
+   adjacent keywords, names, constants, or labels.
+
+A stop-code is not a name, constant, or label.  So, under Fortran 95 and 2003,
+
+  STOP123
+
+is valid, but it is invalid Fortran 2008.  */
 
 static match
 gfc_match_stopcode (gfc_statement st)
 {
-  gfc_expr *e;
+  gfc_expr *e = NULL;
   match m;
+  bool f95, f03;
 
-  e = NULL;
+  /* Set f95 for -std=f95.  */
+  f95 = gfc_option.allow_std == (GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77
+				 | GFC_STD_F2008_OBS);
+
+  /* Set f03 for -std=f2003.  */
+  f03 = gfc_option.allow_std == (GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77 
+				 | GFC_STD_F2008_OBS | GFC_STD_F2003);
+
+  /* Look for a blank between STOP and the stop-code for F2008 or later.  */
+  if (gfc_current_form != FORM_FIXED && !(f95 || f03))
+    {
+      char c = gfc_peek_ascii_char ();
+
+      /* Look for end-of-statement.  There is no stop-code.  */
+      if (c == '\n' || c == '!' || c == ';')
+        goto done;
+
+      if (c != ' ')
+	{
+	  gfc_error ("Blank required in %s statement near %C",
+		     gfc_ascii_statement (st));
+	  return MATCH_ERROR;
+	}
+    }
 
   if (gfc_match_eos () != MATCH_YES)
     {
-      m = gfc_match_init_expr (&e);
+      int stopcode;
+      locus old_locus;
+
+      /* First look for the F95 or F2003 digit [...] construct.  */
+      old_locus = gfc_current_locus;
+      m = gfc_match_small_int (&stopcode);
+      if (m == MATCH_YES && (f95 || f03))
+	{
+	  if (stopcode < 0)
+	    {
+	      gfc_error ("STOP code at %C cannot be negative");
+	      return MATCH_ERROR;
+	    }
+
+	  if (stopcode > 99999)
+	    {
+	      gfc_error ("STOP code at %C contains too many digits");
+	      return MATCH_ERROR;
+	    }
+	}
+
+      /* Reset the locus and now load gfc_expr.  */
+      gfc_current_locus = old_locus;
+      m = gfc_match_expr (&e);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_NO)
@@ -2785,6 +2857,22 @@ gfc_match_stopcode (gfc_statement st)
 
   if (e != NULL)
     {
+      gfc_simplify_expr (e, 0);
+
+      /* Test for F95 and F2003 style STOP stop-code.  */
+      if (e->expr_type != EXPR_CONSTANT && (f95 || f03))
+	{
+	  gfc_error ("STOP code at %L must be a scalar CHARACTER constant or "
+		     "digit[digit[digit[digit[digit]]]]", &e->where);
+	  goto cleanup;
+	}
+
+      /* Use the machinery for an initialization expression to reduce the
+	 stop-code to a constant.  */
+      gfc_init_expr_flag = true;
+      gfc_reduce_init_expr (e);
+      gfc_init_expr_flag = false;
+
       if (!(e->ts.type == BT_CHARACTER || e->ts.type == BT_INTEGER))
 	{
 	  gfc_error ("STOP code at %L must be either INTEGER or CHARACTER type",
@@ -2794,8 +2882,7 @@ gfc_match_stopcode (gfc_statement st)
 
       if (e->rank != 0)
 	{
-	  gfc_error ("STOP code at %L must be scalar",
-		     &e->where);
+	  gfc_error ("STOP code at %L must be scalar", &e->where);
 	  goto cleanup;
 	}
 
@@ -2807,14 +2894,15 @@ gfc_match_stopcode (gfc_statement st)
 	  goto cleanup;
 	}
 
-      if (e->ts.type == BT_INTEGER
-	  && e->ts.kind != gfc_default_integer_kind)
+      if (e->ts.type == BT_INTEGER && e->ts.kind != gfc_default_integer_kind)
 	{
 	  gfc_error ("STOP code at %L must be default integer KIND=%d",
 		     &e->where, (int) gfc_default_integer_kind);
 	  goto cleanup;
 	}
     }
+
+done:
 
   switch (st)
     {
