@@ -1668,7 +1668,22 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    useful_context = true;
 	}
 
-      if (!POINTER_TYPE_P (TREE_TYPE (arg)))
+      if (POINTER_TYPE_P (TREE_TYPE (arg)))
+	{
+	  if (TREE_CODE (arg) == SSA_NAME
+	      && param_type
+	      && get_ptr_nonnull (arg))
+	    {
+	      jfunc->vr_known = true;
+	      jfunc->m_vr.type = VR_ANTI_RANGE;
+	      jfunc->m_vr.min = build_int_cst (TREE_TYPE (arg), 0);
+	      jfunc->m_vr.max = build_int_cst (TREE_TYPE (arg), 0);
+	      jfunc->m_vr.equiv = NULL;
+	    }
+	  else
+	    gcc_assert (!jfunc->vr_known);
+	}
+      else
 	{
 	  wide_int min, max;
 	  value_range_type type;
@@ -5602,27 +5617,37 @@ ipcp_update_vr (struct cgraph_node *node)
 	continue;
 
       if (vr[i].known
-	  && INTEGRAL_TYPE_P (TREE_TYPE (ddef))
-	  && !POINTER_TYPE_P (TREE_TYPE (ddef))
 	  && (vr[i].type == VR_RANGE || vr[i].type == VR_ANTI_RANGE))
 	{
 	  tree type = TREE_TYPE (ddef);
 	  unsigned prec = TYPE_PRECISION (type);
-	  if (dump_file)
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (ddef)))
 	    {
-	      fprintf (dump_file, "Setting value range of param %u ", i);
-	      fprintf (dump_file, "%s[",
-		       (vr[i].type == VR_ANTI_RANGE) ? "~" : "");
-	      print_decs (vr[i].min, dump_file);
-	      fprintf (dump_file, ", ");
-	      print_decs (vr[i].max, dump_file);
-	      fprintf (dump_file, "]\n");
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Setting value range of param %u ", i);
+		  fprintf (dump_file, "%s[",
+			   (vr[i].type == VR_ANTI_RANGE) ? "~" : "");
+		  print_decs (vr[i].min, dump_file);
+		  fprintf (dump_file, ", ");
+		  print_decs (vr[i].max, dump_file);
+		  fprintf (dump_file, "]\n");
+		}
+	      set_range_info (ddef, vr[i].type,
+			      wide_int_storage::from (vr[i].min, prec,
+						      TYPE_SIGN (type)),
+			      wide_int_storage::from (vr[i].max, prec,
+						      TYPE_SIGN (type)));
 	    }
-	  set_range_info (ddef, vr[i].type,
-			  wide_int_storage::from (vr[i].min, prec,
-						  TYPE_SIGN (type)),
-			  wide_int_storage::from (vr[i].max, prec,
-						  TYPE_SIGN (type)));
+	  else if (POINTER_TYPE_P (TREE_TYPE (ddef))
+		   && vr[i].type == VR_ANTI_RANGE
+		   && wi::eq_p (vr[i].min, 0)
+		   && wi::eq_p (vr[i].max, 0))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Setting nonnull for %u\n", i);
+	      set_ptr_nonnull (ddef);
+	    }
 	}
     }
 }

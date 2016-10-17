@@ -1,5 +1,11 @@
 2016-10-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Set value range
+	for pointer type too.
+	(ipcp_update_vr): set_ptr_nonnull for pointer.
+
+2016-10-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* tree-ssa-alias.h (pt_solution_singleton_or_null_p): Renamed from
 	pt_solution_singleton_p.
 	* tree-ssa-ccp.c (fold_builtin_alloca_with_align): Use renamed
