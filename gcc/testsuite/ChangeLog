@@ -1,3 +1,11 @@
+2016-10-17  Martin Liska  <mliska@suse.cz>
+
+	Backported from mainline
+	2016-10-13  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/77943
+	* g++.dg/tree-ssa/pr77943.C: New test.
+
 2016-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/bmaskbshuf.c: Rename to...

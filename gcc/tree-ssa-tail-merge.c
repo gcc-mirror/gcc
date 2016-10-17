@@ -237,6 +237,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-mem.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
+#include "tree-eh.h"
 
 /* Describes a group of bbs with the same successors.  The successor bbs are
    cached in succs, and the successor edge flags are cached in succ_flags.
@@ -1271,6 +1272,11 @@ find_duplicate (same_succ same_succ, basic_block bb1, basic_block bb2)
 	 same_succ_hash.  */
       if (is_tm_ending (stmt1)
 	  || is_tm_ending (stmt2))
+	return;
+
+      /* Verify EH landing pads.  */
+      if (lookup_stmt_eh_lp_fn (cfun, stmt1)
+	  != lookup_stmt_eh_lp_fn (cfun, stmt2))
 	return;
 
       if (!gimple_equal_p (same_succ, stmt1, stmt2))
