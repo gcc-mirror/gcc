@@ -4016,10 +4016,6 @@
          cheaper to have the alternate code being generated than moving
          values to iwmmxt regs and back.  */
 
-      /* If we're optimizing for size, we prefer the libgcc calls.  */
-      if (optimize_function_for_size_p (cfun))
-	FAIL;
-
       /* Expand operation using core-registers.
 	 'FAIL' would achieve the same thing, but this is a bit smarter.  */
       scratch1 = gen_reg_rtx (SImode);
@@ -4089,10 +4085,6 @@
          cheaper to have the alternate code being generated than moving
          values to iwmmxt regs and back.  */
 
-      /* If we're optimizing for size, we prefer the libgcc calls.  */
-      if (optimize_function_for_size_p (cfun))
-	FAIL;
-
       /* Expand operation using core-registers.
 	 'FAIL' would achieve the same thing, but this is a bit smarter.  */
       scratch1 = gen_reg_rtx (SImode);
@@ -4158,10 +4150,6 @@
          ends up already living in an iwmmxt register. Otherwise it's
          cheaper to have the alternate code being generated than moving
          values to iwmmxt regs and back.  */
-
-      /* If we're optimizing for size, we prefer the libgcc calls.  */
-      if (optimize_function_for_size_p (cfun))
-	FAIL;
 
       /* Expand operation using core-registers.
 	 'FAIL' would achieve the same thing, but this is a bit smarter.  */

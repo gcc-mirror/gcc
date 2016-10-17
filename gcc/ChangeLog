@@ -1,3 +1,11 @@
+2016-10-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/77308
+	* config/arm/arm.c (arm_emit_coreregs_64bit_shift): Clear the result
+	register explicitly.
+	* config/arm/arm.md (ashldi3, ashrdi3, lshrdi3): Don't FAIL if
+	optimizing for size.
+
 2016-10-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c: Delete inclusion of
