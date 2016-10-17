@@ -2507,9 +2507,7 @@ record_increment (slsr_cand_t c, widest_int increment, bool is_phi_adjust)
 	 as providing an initializer (if it does); we will revise this
 	 opinion later if it doesn't dominate all other occurrences.
          Exception:  increments of 0, 1 never need initializers;
-	 and phi adjustments don't ever provide initializers.  Note
-         that we only will see an increment of -1 here for pointer
-	 arithmetic (otherwise we will have an initializer).  */
+	 and phi adjustments don't ever provide initializers.  */
       if (c->kind == CAND_ADD
 	  && !is_phi_adjust
 	  && c->index == increment

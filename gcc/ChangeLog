@@ -1,3 +1,8 @@
+2016-10-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (record_increment): Remove
+	garbage comment.
+
 2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expmed.c (expand_shift_1): Add MAY_FAIL parameter and do not assert
