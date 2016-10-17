@@ -47,8 +47,6 @@ struct Chucky
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std;
 
   future<void> f = async(Chucky{});

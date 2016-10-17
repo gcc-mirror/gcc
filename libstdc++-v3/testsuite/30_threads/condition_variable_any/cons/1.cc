@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   try 
     {
       std::condition_variable_any c1;

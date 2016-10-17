@@ -26,7 +26,6 @@
 void test03()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   // Check time_get works with other iterators besides streambuf
   // input iterators.

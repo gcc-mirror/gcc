@@ -30,7 +30,6 @@ void test01()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   string str1, str2;
 
   // construct a locale object with the C facet

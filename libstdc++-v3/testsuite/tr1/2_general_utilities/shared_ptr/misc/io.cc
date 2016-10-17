@@ -29,8 +29,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::shared_ptr<A> p(new A);
   std::ostringstream buf;
   buf << p;

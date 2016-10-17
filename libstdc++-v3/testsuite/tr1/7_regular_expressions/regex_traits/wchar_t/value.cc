@@ -27,7 +27,6 @@
 // Tests the value() function of the regex_traits<char> class.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::tr1::regex_traits<char> t;
   VERIFY( t.value('7', 8)  == 7 );
   VERIFY( t.value('7', 10) == 7 );

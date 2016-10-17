@@ -30,8 +30,6 @@ int zero() { return 0; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::packaged_task<int()> p1(zero);
   std::future<int> f1 = p1.get_future();
 

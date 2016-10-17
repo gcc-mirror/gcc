@@ -28,8 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int&> p1;
   std::future<int&> f1 = p1.get_future();
 

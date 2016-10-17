@@ -39,8 +39,6 @@ bool ready(std::future<int>& f)
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::packaged_task<int(int)> p1(execute);
   f1 = p1.get_future();
 

@@ -23,8 +23,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const char out[] = "abc";
   char16_t in[4];
   std::codecvt_utf8<char16_t> cvt;
@@ -41,8 +39,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   const char out[] = "abc";
   char16_t in[4];
   std::codecvt_utf8<char16_t, 0x10ffff, std::little_endian> cvt;
@@ -59,8 +55,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   const char out[] = "abc";
   char32_t in[4];
   std::codecvt_utf8<char32_t> cvt;
@@ -78,8 +72,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   const char out[] = "abc";
   char32_t in[4];
   std::codecvt_utf8<char32_t, 0x10ffff, std::little_endian> cvt;

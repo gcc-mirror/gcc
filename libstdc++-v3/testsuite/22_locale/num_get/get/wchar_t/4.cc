@@ -28,7 +28,6 @@
 void test04()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   // Check num_get works with other iterators besides streambuf
   // output iterators. (As long as output_iterator requirements are met.)

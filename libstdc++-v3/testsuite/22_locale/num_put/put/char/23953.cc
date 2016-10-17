@@ -37,8 +37,6 @@ struct Punct3: numpunct<char>
 // libstdc++/23953
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   ostringstream oss1, oss2, oss3;
   string result1, result2, result3;
 

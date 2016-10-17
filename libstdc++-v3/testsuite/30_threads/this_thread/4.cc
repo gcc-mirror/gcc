@@ -32,8 +32,6 @@ namespace chr = std::chrono;
 
 void foo()
 {
-  bool test __attribute__((unused)) = true;
-
   chr::system_clock::time_point begin = chr::system_clock::now();
   chr::microseconds ms(500);
 
@@ -44,8 +42,6 @@ void foo()
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   try 
     {
       std::thread t(foo);

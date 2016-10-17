@@ -44,20 +44,17 @@ auto delay = std::chrono::milliseconds(1);
 
 tester::tester(int)
 {
-  bool test __attribute__((unused)) = true;
   VERIFY (fglobal.wait_for(delay) == std::future_status::timeout);
 }
 
 tester::tester(const tester&)
 {
-  bool test __attribute__((unused)) = true;
   // if this copy happens while a mutex is locked next line could deadlock:
   VERIFY (fglobal.wait_for(delay) == std::future_status::timeout);
 }
 
 tester& tester::operator=(const tester&)
 {
-  bool test __attribute__((unused)) = true;
   // if this copy happens while a mutex is locked next line could deadlock:
   VERIFY (fglobal.wait_for(delay) == std::future_status::timeout);
   return *this;
@@ -65,8 +62,6 @@ tester& tester::operator=(const tester&)
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   pglobal.set_value( tester(1) );
 
   VERIFY (fglobal.wait_for(delay) == std::future_status::ready);

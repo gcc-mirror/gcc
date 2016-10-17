@@ -27,7 +27,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef num_put<char> np_t;
 

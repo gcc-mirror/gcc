@@ -32,8 +32,6 @@ struct A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::auto_ptr<A> a;
   std::tr1::shared_ptr<A> p(a); // { dg-error "no match" }
 

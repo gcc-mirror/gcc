@@ -28,8 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int> p1;
   std::promise<int> p2;
   p1.set_value(1);

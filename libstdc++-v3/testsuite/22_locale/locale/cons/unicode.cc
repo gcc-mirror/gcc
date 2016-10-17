@@ -54,8 +54,6 @@ void test01()
   typedef __gnu_cxx::encoding_state	       		state_type;
   typedef codecvt<int_type, ext_type, state_type>	unicode_codecvt;
 
-  bool test __attribute__((unused)) = true;
-
   // unicode_codecvt
   locale loc01(locale::classic());
   locale loc13(locale::classic(), new unicode_codecvt);  

@@ -38,7 +38,6 @@
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc_c = locale::classic();
   locale loc_de = locale("de_DE.UTF-8");

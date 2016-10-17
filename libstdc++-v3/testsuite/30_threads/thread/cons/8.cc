@@ -45,8 +45,6 @@ struct moveable
 // same as 6, but function object is movable
 void test08()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       moveable m;

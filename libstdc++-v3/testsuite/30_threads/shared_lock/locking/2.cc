@@ -28,7 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::shared_timed_mutex mutex_type;
   typedef std::shared_lock<mutex_type> lock_type;
 
@@ -64,7 +63,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::shared_timed_mutex mutex_type;
   typedef std::shared_lock<mutex_type> lock_type;
 

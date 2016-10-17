@@ -30,7 +30,6 @@ int f1() { return 0; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   // move

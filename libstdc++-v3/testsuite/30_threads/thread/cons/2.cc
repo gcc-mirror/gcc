@@ -43,8 +43,6 @@ free_function(std::thread::id& id)
 // this_thread::get_id
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       std::thread::id id1;

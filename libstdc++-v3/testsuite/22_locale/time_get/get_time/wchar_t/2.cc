@@ -28,7 +28,6 @@
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef istreambuf_iterator<wchar_t> iterator_type;
 

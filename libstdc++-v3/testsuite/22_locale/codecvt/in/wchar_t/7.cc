@@ -51,7 +51,6 @@ void test07()
   typedef char					ext_type;
   typedef char_traits<wchar_t>			int_traits;
 
-  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "a\xc0\xff";
   const ext_type*       efrom_next;
   const int_type* 	i_lit = L"a";

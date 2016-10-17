@@ -28,7 +28,6 @@
 // default constructor.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::tr1::regex_traits<wchar_t> t;
   VERIFY( t.translate_nocase(L'A') == L'a' );
 }

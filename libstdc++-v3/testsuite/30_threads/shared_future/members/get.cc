@@ -30,8 +30,6 @@ int value = 99;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int> p1;
   const std::shared_future<int> f1(p1.get_future());
   std::shared_future<int> f2(f1);
@@ -43,8 +41,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int&> p1;
   const std::shared_future<int&> f1(p1.get_future());
   std::shared_future<int&> f2(f1);
@@ -56,8 +52,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<void> p1;
   const std::shared_future<void> f1(p1.get_future());
   std::shared_future<void> f2(f1);

@@ -31,8 +31,6 @@
 // thread default cons not joinable
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   try 
     {
       std::thread t;

@@ -40,8 +40,6 @@ struct moveable
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   moveable m;
   std::thread b(std::move(m));
   std::thread::id id_initial = b.get_id();

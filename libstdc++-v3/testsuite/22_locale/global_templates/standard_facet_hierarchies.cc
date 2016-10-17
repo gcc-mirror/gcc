@@ -24,8 +24,6 @@
 // PR libstdc++/34449
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   using std::locale;
   using std::has_facet;
   using std::use_facet;

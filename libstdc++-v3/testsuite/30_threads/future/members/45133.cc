@@ -33,8 +33,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int> p;
   std::future<int> f = p.get_future();
   p.set_value(0);
@@ -53,8 +51,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int&> p;
   std::future<int&> f = p.get_future();
   int i = 0;
@@ -74,8 +70,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<void> p;
   std::future<void> f = p.get_future();
   p.set_value();

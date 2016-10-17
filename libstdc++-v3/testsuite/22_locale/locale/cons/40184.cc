@@ -27,7 +27,6 @@ void test01()
 {
 #ifdef _GLIBCXX_USE_WCHAR_T
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale locf(locale("C"), "ja_JP.eucJP", locale::monetary);
 

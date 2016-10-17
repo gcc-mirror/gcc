@@ -27,7 +27,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   wostringstream oss;
   const num_put<wchar_t>& np = use_facet<num_put<wchar_t> >(oss.getloc());

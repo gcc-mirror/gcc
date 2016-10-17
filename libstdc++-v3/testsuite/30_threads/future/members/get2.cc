@@ -31,8 +31,6 @@ int value = 99;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int> p1;
   std::future<int> f1(p1.get_future());
 
@@ -51,8 +49,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int&> p1;
   std::future<int&> f1(p1.get_future());
 
@@ -71,8 +67,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<void> p1;
   std::future<void> f1(p1.get_future());
 

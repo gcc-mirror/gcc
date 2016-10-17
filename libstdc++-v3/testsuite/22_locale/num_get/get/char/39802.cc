@@ -27,8 +27,6 @@ void test01()
 {
   using namespace std;
   typedef istreambuf_iterator<char> iterator_type;
-  
-  bool test __attribute__((unused)) = true;
 
   stringstream ss;
   const num_get<char>& ng = use_facet<num_get<char> >(ss.getloc()); 

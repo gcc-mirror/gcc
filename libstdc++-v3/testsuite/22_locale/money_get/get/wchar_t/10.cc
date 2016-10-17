@@ -30,8 +30,6 @@ void test01()
   using namespace std;
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
-  bool test __attribute__((unused)) = true;
-
   locale loc_us = locale(ISO_8859(1,en_US));
 
   iterator_type end;

@@ -32,8 +32,6 @@ void waiter(std::shared_future<void> f) { f.wait(); }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::packaged_task<void()> p1(noop);
   std::shared_future<void> f1(p1.get_future());
   std::thread t1(waiter, f1);

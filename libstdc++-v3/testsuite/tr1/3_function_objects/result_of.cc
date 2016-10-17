@@ -40,8 +40,6 @@ struct int_result_type_and_float_result_of
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using std::tr1::result_of;
   using std::tr1::is_same;
   using namespace __gnu_test;

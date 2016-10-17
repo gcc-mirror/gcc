@@ -30,8 +30,6 @@ int iota() { static int i = 0; return i++; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::packaged_task<int()> p1(iota);
   std::future<int> f1 = p1.get_future();
 

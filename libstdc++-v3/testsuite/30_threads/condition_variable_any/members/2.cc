@@ -53,8 +53,6 @@ struct Mutex
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   try 
     {
       std::chrono::microseconds ms(500);

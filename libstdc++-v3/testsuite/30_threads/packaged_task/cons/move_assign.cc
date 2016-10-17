@@ -30,8 +30,6 @@ int gen() { return 0; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // move assign
   std::packaged_task<int()> p1;
   std::packaged_task<int()> p2(gen);

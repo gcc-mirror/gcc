@@ -39,8 +39,6 @@ void f()
 // no errors
 void test06()
 {
-  bool test __attribute__((unused)) = true;
-
   try
   {
     std::thread t(f);

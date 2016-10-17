@@ -25,8 +25,6 @@
 // libstdc++/26132
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   for (float lf = 1.0; lf < 101.0; lf *= 10.0)
     for (int size = 1; size <= 6561; size *= 3)
       {

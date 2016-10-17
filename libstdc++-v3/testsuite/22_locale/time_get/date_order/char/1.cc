@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   typedef time_base::dateorder dateorder;
   typedef istreambuf_iterator<char> iterator_type;
 

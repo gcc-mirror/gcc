@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::tr1::aligned_storage;
   using std::tr1::alignment_of;
   using namespace __gnu_test;

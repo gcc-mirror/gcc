@@ -31,8 +31,6 @@ struct B { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::shared_ptr<A> a;
   std::tr1::shared_ptr<B> b;
   a = b;                      // { dg-error "here" }

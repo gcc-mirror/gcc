@@ -25,7 +25,6 @@
 // libstdc++/29217
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   locale::global(locale(locale(), "en_US.UTF-8",

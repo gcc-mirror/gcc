@@ -27,7 +27,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::recursive_timed_mutex mutex_type;
 
   try 

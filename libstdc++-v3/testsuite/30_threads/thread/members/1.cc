@@ -30,8 +30,6 @@ void f() { }
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   try 
     {
 	std::thread t(f);

@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::tr1::xor_combine;
   using std::tr1::minstd_rand;
   using std::tr1::mt19937;

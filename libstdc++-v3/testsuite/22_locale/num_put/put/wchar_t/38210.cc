@@ -24,7 +24,6 @@
 // libstdc++/38210
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   wostringstream oss1, oss2, oss3, oss4;

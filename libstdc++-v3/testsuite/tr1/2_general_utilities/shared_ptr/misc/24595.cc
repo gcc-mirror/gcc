@@ -25,8 +25,6 @@ using std::tr1::get_deleter;
 // libstdc++/24595
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::shared_ptr<int> sp;
   VERIFY( !get_deleter<void(*)(int*)>(sp) );
 }

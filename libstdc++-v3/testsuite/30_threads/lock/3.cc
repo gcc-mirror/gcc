@@ -34,7 +34,6 @@ struct user_lock
 
   void lock()
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( !is_locked );
     is_locked = true;
   }
@@ -44,7 +43,6 @@ struct user_lock
 
   void unlock()
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( is_locked );
     is_locked = false;
   }
@@ -55,8 +53,6 @@ private:
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       std::mutex m1;

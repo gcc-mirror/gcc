@@ -143,7 +143,6 @@ void* thread_hammer(void* opaque_weak)
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
   sp_vector_t obj_pool(POOL_SIZE);
 
   for(sp_vector_t::iterator cur = obj_pool.begin(); cur != obj_pool.end(); ++cur)

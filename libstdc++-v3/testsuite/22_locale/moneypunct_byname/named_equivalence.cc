@@ -30,7 +30,6 @@ void test01()
   typedef money_base::part part;
   typedef money_base::pattern pattern;
 
-  bool test __attribute__((unused)) = true;
   string str;
 
   locale loc_de = locale(ISO_8859(15,de_DE));

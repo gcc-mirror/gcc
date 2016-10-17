@@ -32,8 +32,6 @@ void test01()
   using namespace std;
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
-  bool test __attribute__((unused)) = true;
-
   // basic construction
   locale loc_c = locale::classic();
   locale loc_hk = locale(ISO_8859(1,en_HK));

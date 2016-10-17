@@ -49,7 +49,6 @@ void test07()
   typedef wchar_t				int_type;
   typedef char					ext_type;
 
-  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "a\xc0\xff";
   int 			size = strlen(e_lit);
 

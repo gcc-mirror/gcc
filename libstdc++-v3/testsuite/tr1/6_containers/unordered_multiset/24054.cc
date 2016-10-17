@@ -24,8 +24,6 @@
 // libstdc++/24054
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::tr1::unordered_multiset<std::string> Set;
 
   Set s;

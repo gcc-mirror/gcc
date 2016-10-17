@@ -41,7 +41,6 @@ struct Derived : AbstractClass {
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::packaged_task;
 
   packaged_task<int ()> p1(f1);

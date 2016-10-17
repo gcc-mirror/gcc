@@ -26,7 +26,6 @@ class gnu_ctype: public std::ctype<char_type> { };
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   const char_type strlit00[] = L"manilla, cebu, tandag PHILIPPINES";
   const char_type strlit01[] = L"MANILLA, CEBU, TANDAG PHILIPPINES";
   const char_type strlit02[] = L"manilla, cebu, tandag philippines";

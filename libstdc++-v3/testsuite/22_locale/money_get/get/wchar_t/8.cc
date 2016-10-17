@@ -67,7 +67,6 @@ void test08()
   typedef istreambuf_iterator<wchar_t> InIt;
 
   bool intl = false;
-  bool test __attribute__((unused)) = true;
   ios_base::iostate err;
 
   locale loc_a(locale::classic(), new My_money_io_a);

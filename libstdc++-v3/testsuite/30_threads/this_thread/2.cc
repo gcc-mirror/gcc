@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   try 
     {
       std::this_thread::yield();

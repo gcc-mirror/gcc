@@ -44,8 +44,6 @@ bool ready(std::future<Obj>& f)
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<Obj> p1;
   f1 = p1.get_future();
 

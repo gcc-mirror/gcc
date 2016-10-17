@@ -44,8 +44,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   mutex m;
   unique_lock<mutex> l(m);
   future<void> f1 = async(launch::async, &work, ref(m));

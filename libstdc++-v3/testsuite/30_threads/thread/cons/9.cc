@@ -49,8 +49,6 @@ struct moveable
 // functor.
 void test09()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       // first
