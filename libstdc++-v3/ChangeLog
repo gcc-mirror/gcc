@@ -1,5 +1,15 @@
 2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline:
+	2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/72820
+	* include/std/functional (_Function_base::_Base_manager::_M_clone):
+	Qualify new operator.
+	* testsuite/20_util/function/cons/72820.cc: New test.
+
+2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/77994
 	* include/experimental/algorithm (experimental::sample): Convert size
 	argument to iterator difference type. Fix invalid use of input
