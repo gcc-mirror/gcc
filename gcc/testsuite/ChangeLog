@@ -1,3 +1,9 @@
+2016-10-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_floatn_nx_runtime): Return 0 for
+	powerpc*-ibm-aix*.
+
 2016-10-17  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.target/aarch64/aapcs64/test_align-7.c: Use long
