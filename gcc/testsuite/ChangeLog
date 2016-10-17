@@ -1,5 +1,9 @@
 2016-10-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* gcc.dg/ipa/vrp4.c: Adjust testcase.
+
+2016-10-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* gcc.dg/ipa/vrp4.c: New test.
 
 2016-10-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
