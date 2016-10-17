@@ -1,3 +1,8 @@
+2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/Wtrampolines.c: XFAIL warning on ia64-*-* and powerpc64-*-*.
+	* gnat.dg/trampoline4.adb: Minor tweak.
+
 2016-10-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/77916

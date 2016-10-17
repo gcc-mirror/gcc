@@ -28,7 +28,7 @@ void foo (void)
 
   double a (int k, pfun x1, pfun x2, pfun x3, pfun x4, pfun x5)
   {
-    double b (void)  /* { dg-warning "trampoline generated for nested function 'b'" } */
+    double b (void)  /* { dg-warning "trampoline generated for nested function 'b'" "standard descriptors" { xfail ia64-*-* powerpc64-*-* } } */
     { 
       k = k - 1;
       return a (k, b, x1, x2, x3, x4 );

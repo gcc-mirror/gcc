@@ -2666,9 +2666,6 @@ extern void debug_dispatch_window (int);
 
 #define TARGET_SUPPORTS_WIDE_INT 1
 
-/* Use custom descriptors instead of trampolines when possible.  */
-#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
-
 /*
 Local variables:
 version-control: t

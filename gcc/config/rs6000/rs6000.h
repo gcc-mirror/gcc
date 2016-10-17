@@ -2922,9 +2922,6 @@ extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
 #define TARGET_SUPPORTS_WIDE_INT 1
 
-/* Use custom descriptors instead of trampolines if not AIX or ELFv1.  */
-#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS (DEFAULT_ABI != ABI_AIX)
-
 #if (GCC_VERSION >= 3000)
 #pragma GCC poison TARGET_FLOAT128 OPTION_MASK_FLOAT128 MASK_FLOAT128
 #endif

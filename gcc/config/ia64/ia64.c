@@ -649,6 +649,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
 #define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P ia64_attribute_takes_identifier_p
 
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 0
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Returns TRUE iff the target attribute indicated by ATTR_ID takes a plain
