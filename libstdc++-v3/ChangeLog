@@ -3,6 +3,23 @@
 	Backport from mainline:
 	2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/appendix_contributing.xml (contrib.organization):
+	Replace <literallayout> with nested <variablelist> elements. Update
+	some more outdated text.
+	* doc/html/*: Regenerate.
+
+	Backport from mainline:
+	2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml (contrib.organization):
+	Describe other subdirectories and add markup. Remove outdated
+	reference to check-script target.
+
+2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline:
+	2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
 	* doc/xml/manual/status_cxx2011.xml: Correct C++11 status.
 
 2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
