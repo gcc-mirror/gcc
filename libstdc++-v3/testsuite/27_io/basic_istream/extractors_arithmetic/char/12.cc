@@ -29,10 +29,8 @@
 // libstdc++/3720
 // excess input should not cause a core dump
 template<typename T>
-bool test12_aux(bool integer_type)
+void test12_aux(bool integer_type)
 {
-  bool test __attribute__((unused)) = true;
-  
   int digits_overflow;
   if (integer_type)
     // This many digits will overflow integer types in base 10.
@@ -50,19 +48,16 @@ bool test12_aux(bool integer_type)
   T t;
   is >> t;
   VERIFY(is.fail());
-  return test;
 }
 
 bool test12()
 {
-  bool test __attribute__((unused)) = true;
-  VERIFY(test12_aux<short>(true));
-  VERIFY(test12_aux<int>(true));
-  VERIFY(test12_aux<long>(true));
-  VERIFY(test12_aux<float>(false));
-  VERIFY(test12_aux<double>(false));
-  VERIFY(test12_aux<long double>(false));
-  return test;
+  test12_aux<short>(true);
+  test12_aux<int>(true);
+  test12_aux<long>(true);
+  test12_aux<float>(false);
+  test12_aux<double>(false);
+  test12_aux<long double>(false);
 }
 
 int main()

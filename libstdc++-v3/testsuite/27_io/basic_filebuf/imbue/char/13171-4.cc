@@ -37,7 +37,6 @@ protected:
 // libstdc++/13171
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   filebuf fb;

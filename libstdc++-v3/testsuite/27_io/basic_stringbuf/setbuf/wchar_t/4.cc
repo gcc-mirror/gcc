@@ -31,7 +31,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   const unsigned max_size = MAX_SIZE;
 

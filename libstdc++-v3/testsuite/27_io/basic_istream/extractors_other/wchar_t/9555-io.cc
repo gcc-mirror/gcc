@@ -29,7 +29,6 @@ struct buf: std::wstreambuf
 template<typename T>
 void testthrow(T arg)
 {
-  bool test __attribute__((unused)) = true;
   buf b;
   std::wistream is(&b);
   is.exceptions(std::wios::badbit);

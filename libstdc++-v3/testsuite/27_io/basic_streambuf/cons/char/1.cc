@@ -26,7 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   __gnu_test::constraint_streambuf buf01;
 
   // 27.5.2.1 basic_streambuf ctors

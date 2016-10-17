@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstringbuf strbuf01;
   std::wostream strm1(&strbuf01);
   const std::wostream::sentry sentry1(strm1);

@@ -29,7 +29,6 @@
 // libstdc++/14072
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   locale loc;

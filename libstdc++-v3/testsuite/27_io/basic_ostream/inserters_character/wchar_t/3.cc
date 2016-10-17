@@ -26,7 +26,6 @@
 // right
 void test03(void) 
 {
-  bool test __attribute__((unused)) = true;
   std::wstring tmp;
 
   std::wstring str01 = L"";

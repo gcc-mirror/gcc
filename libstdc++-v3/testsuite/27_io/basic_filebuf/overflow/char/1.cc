@@ -49,7 +49,6 @@ template<typename T>
 
 void test03() 
 {
-  bool test __attribute__((unused)) = true;
   const std::string control01("11111");
   std::string test01;
 

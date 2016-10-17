@@ -31,14 +31,11 @@ class gnu_sbuf: public std::basic_streambuf<__gnu_test::pod_ushort>
 
 void test07()
 {
-  bool test __attribute__((unused)) = true;
-  
   try
     { gnu_sbuf obj; }
   catch(std::exception& obj)
     { 
-      test = false; 
-      VERIFY( test );
+      VERIFY( false );
     }
 }
 

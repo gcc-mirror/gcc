@@ -35,7 +35,6 @@ void
 test02() 
 {
   typedef std::ios_base::iostate iostate;
-  bool test __attribute__((unused)) = true;
 
   // basic_ostream<_CharT, _Traits>::operator<<(__streambuf_type* __sb)
   // filebuf-> NULL 

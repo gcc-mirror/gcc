@@ -33,7 +33,6 @@ void test01()
   typedef ios::off_type off_type;
   typedef ios::pos_type pos_type;
 
-  bool test __attribute__((unused)) = true;
   const char str_lit01[] = "wistream_seeks-1.tst";
 
   // in

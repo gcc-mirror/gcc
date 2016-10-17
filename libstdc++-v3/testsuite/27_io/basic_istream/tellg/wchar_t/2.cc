@@ -25,7 +25,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wistringstream ist(L"three sides live");
   ist.ignore(4);

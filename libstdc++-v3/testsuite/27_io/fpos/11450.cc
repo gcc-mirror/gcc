@@ -23,8 +23,6 @@
 // libstdc++/11450
 void test01()
 {
-  bool test __attribute__((unused)) = true;  
-
   std::fpos<int> p;
   VERIFY( p.state() == 0 );
   p.state(42);

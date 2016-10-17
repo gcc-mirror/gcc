@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringbuf strbuf01;
   std::ostream strm1(&strbuf01);
   const std::ostream::sentry sentry1(strm1);

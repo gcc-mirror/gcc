@@ -52,7 +52,6 @@ template<typename T>
 
 void test03() 
 {
-  bool test __attribute__((unused)) = true;
   const std::wstring control01(L"11111");
   std::wstring test01;
 

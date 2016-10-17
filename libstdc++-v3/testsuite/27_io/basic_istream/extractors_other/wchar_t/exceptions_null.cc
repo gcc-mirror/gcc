@@ -28,7 +28,6 @@ using namespace std;
 
 void test2()
 {
-  bool test __attribute__((unused)) = true;
   wistringstream stream;
   stream >> static_cast<wstreambuf*>(0);
   VERIFY( stream.rdstate() & ios_base::failbit );
@@ -36,7 +35,6 @@ void test2()
 
 void test4()
 {
-  bool test __attribute__((unused)) = true;
   wistringstream stream;
   stream.exceptions(ios_base::failbit);
 

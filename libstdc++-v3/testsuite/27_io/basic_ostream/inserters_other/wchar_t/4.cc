@@ -131,8 +131,6 @@ private:
 
 void test(const std::wstring& str, std::wstreambuf& buf)
 {
-  bool test __attribute__((unused)) = true;
-
   std::wostringstream out;
   std::wistream in(&buf);
 

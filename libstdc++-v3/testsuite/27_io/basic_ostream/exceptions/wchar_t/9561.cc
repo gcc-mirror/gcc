@@ -35,7 +35,6 @@ struct buf: std::wstreambuf
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   buf b;
   std::wostream strm(&b);

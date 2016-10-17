@@ -22,7 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   wfilebuf fb_in_out;

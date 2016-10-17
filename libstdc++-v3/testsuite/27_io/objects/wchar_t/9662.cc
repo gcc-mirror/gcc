@@ -26,8 +26,6 @@
 // on stdout.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wcout << L"Hello, ";
   VERIFY( std::fwide(stdout, 0) >= 0 );
   int ret = std::fputws(L"world!\n", stdout);

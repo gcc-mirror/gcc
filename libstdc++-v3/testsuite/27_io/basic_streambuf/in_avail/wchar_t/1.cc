@@ -37,7 +37,6 @@ void test05()
   typedef streambuf_type::off_type 	off_type;
   typedef size_t 			size_type;
 
-  bool test __attribute__((unused)) = true;
   std::streamoff  			strmof_1;
   testbuf	sb01;
 

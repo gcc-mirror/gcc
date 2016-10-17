@@ -32,8 +32,6 @@ protected:
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc = std::locale(std::locale::classic(), new Cvt);
   std::wfilebuf* fb = new std::wfilebuf;
   fb->pubimbue(loc);

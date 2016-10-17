@@ -26,8 +26,6 @@
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::wstring str_00(L"Red_Garland_Qunitet-Soul_Junction");
   wchar_t c_array[str_00.size() + 4];
 

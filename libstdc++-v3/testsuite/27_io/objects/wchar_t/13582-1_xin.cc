@@ -24,7 +24,6 @@
 // libstdc++/13582
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   ios_base::sync_with_stdio(false);

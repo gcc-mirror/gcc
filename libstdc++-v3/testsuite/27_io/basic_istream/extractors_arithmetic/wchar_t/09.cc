@@ -24,10 +24,8 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-bool test09()
+void test09()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring st(L"2.456e3-+0.567e-2");
   std::wstringbuf sb(st);
   std::wistream is(&sb);
@@ -36,10 +34,9 @@ bool test09()
   (is >> std::ws) >> f1;
   (is >> std::ws) >> c;
   (is >> std::ws) >> f2;
-  test = f1 == 2456;
+  VERIFY( f1 == 2456 );
   VERIFY( f2 == 0.00567 );
   VERIFY( c == L'-' );
-  return test;
 }
 
 int main()

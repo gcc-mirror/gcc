@@ -29,7 +29,6 @@ class mybuf : public std::basic_streambuf<char>
 
 void test11()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   char arr[10];
   mybuf sbuf;

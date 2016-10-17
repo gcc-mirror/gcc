@@ -34,7 +34,6 @@ public:
 void test15()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   OverBuf sb;
 

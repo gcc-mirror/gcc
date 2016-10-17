@@ -22,8 +22,6 @@
 
 void test06()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wostringstream os (L"foo", std::ios_base::app);
   os << L"bar";
 

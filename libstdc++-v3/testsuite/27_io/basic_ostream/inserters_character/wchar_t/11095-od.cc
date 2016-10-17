@@ -28,8 +28,6 @@
 void
 test01() 
 {
-  bool test __attribute__((unused)) = true;
-
   std::wostringstream oss_01;
 
   oss_01.width(-60);

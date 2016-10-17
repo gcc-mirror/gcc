@@ -29,7 +29,6 @@ struct buf: std::streambuf
 template<typename T>
 void testthrow(T arg)
 {
-  bool test __attribute__((unused)) = true;
   buf b;
   std::istream is(&b);
   is.exceptions(std::ios::badbit);

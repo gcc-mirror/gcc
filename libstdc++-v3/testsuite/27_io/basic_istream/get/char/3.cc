@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   stringbuf strbuf01;
   stringbuf strbuf02;

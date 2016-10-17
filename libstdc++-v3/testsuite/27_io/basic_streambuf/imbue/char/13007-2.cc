@@ -43,8 +43,6 @@ protected:
 // libstdc++/13007
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   Buf2 buf;
   std::locale loc(std::locale(ISO_8859(1,en_US)));
 

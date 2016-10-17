@@ -23,8 +23,6 @@
 
 void test01(void)
 {
-  bool test __attribute__((unused)) = true;
-
   const std::wstring str01(L" santa barbara ");
   std::wstring str04;
   std::wstring str05;

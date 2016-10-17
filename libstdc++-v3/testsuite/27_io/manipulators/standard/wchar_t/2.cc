@@ -32,7 +32,6 @@ void
 test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   wstring x(L"   this is text");
   wistringstream  sin(x);
   wostringstream  sout;

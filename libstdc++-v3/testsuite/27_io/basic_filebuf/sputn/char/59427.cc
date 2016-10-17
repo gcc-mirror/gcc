@@ -23,7 +23,6 @@
 // libstdc++/59427
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   filebuf a_f;

@@ -22,13 +22,11 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-bool test10()
+void test10()
 {
   std::wstring str_01(L"0 00 000 +0 +0 -0");
   std::wstringbuf isbuf_01(str_01);
   std::wistream is_01(&isbuf_01);
-
-  bool test __attribute__((unused)) = true;
 
   int n = 365;
   is_01 >> n;
@@ -121,7 +119,6 @@ bool test10()
   is_05.ignore();
   is_05 >> n;
   VERIFY( n == 16 );
-  return test;
 }
 
 int main()

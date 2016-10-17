@@ -28,7 +28,6 @@ void
 test01()
 {
   //  Basic test from paper.
-  bool test [[gnu::unused]] = true;
   std::wstringstream ss;
   std::wstring original = L"foolish me";
   std::wstring round_trip;
@@ -41,7 +40,6 @@ void
 test02()
 {
   //  Test skipws correctness.
-  bool test [[gnu::unused]] = true;
   std::wstringstream ss;
   ss << std::quoted(L"Hello Goodbye") << L' ' << 1 << L' ' << 2;
   std::wstring song;
@@ -56,7 +54,6 @@ void
 test03()
 {
   //  Test read of unquoted string.
-  bool test [[gnu::unused]] = true;
   std::wstringstream ss;
   ss << L"Alpha Omega";
   std::wstring testit;
@@ -68,7 +65,6 @@ auto
 test04(const std::wstring& message)
 {
   //  Test 'const basic_string&'
-  bool test [[gnu::unused]] = true;
   std::wstringstream ss;
   ss << L"**  Error: " << std::quoted(message) << L"  **";
   return ss.str();

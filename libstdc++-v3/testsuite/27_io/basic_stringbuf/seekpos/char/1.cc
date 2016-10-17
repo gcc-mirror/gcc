@@ -26,7 +26,6 @@ std::stringbuf strb_01(str_01);
 // test overloaded virtual functions
 void test04() 
 {
-  bool test __attribute__((unused)) = true;
   std::string 		str_tmp;
   typedef std::stringbuf::int_type int_type;
   typedef std::stringbuf::pos_type pos_type;

@@ -23,7 +23,6 @@
 // libstdc++/6548
 void test07()
 {
-  bool test __attribute__((unused)) = true;
   std::wcout << L"Enter 'test':";
   std::wstring s;
   std::getline(std::wcin, s, L'\n');

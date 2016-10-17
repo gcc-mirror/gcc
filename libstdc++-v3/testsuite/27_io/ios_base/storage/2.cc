@@ -39,7 +39,7 @@
 // libstdc++/3129
 void test02()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   int max = std::numeric_limits<int>::max() - 1;
   std::stringbuf        strbuf;
   std::ios              ios(&strbuf);
@@ -64,8 +64,7 @@ void test02()
     }
   catch(...)
     {
-      test = false;
-      VERIFY( test );
+      VERIFY( false );
     }
   VERIFY( v == 0 );
 
@@ -73,7 +72,7 @@ void test02()
   
   // max is different code path from max-1
   v = &test;
-  try 
+  try
     {
       v = ios.pword(std::numeric_limits<int>::max());
     }
@@ -84,8 +83,7 @@ void test02()
     }
   catch(...)
     {
-      test = false;
-      VERIFY( test );
+      VERIFY( false );
     }
   VERIFY( v == &test );
 
@@ -104,8 +102,7 @@ void test02()
     }
   catch(...)
     {
-      test = false;
-      VERIFY( test );
+      VERIFY( false );
     }
   VERIFY( l == 0 );
 
@@ -124,11 +121,9 @@ void test02()
     }
   catch(...)
     {
-      test = false;
-      VERIFY( test );
+      VERIFY( false );
     }
   VERIFY( l == 1 );
-
 }
 
 int main(void)

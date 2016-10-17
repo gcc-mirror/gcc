@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::ostringstream ssx;
   ssx << "[" << std::left << std::setfill('x') << std::setw(20) << R"("AB \"CD\" EF")" << "]";
   VERIFY( ssx.str() == R"(["AB \"CD\" EF"xxxxxx])" );

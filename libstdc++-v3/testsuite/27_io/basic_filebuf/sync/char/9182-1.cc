@@ -52,7 +52,6 @@ protected:
 void test13()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc =  locale::classic();
   loc = locale(loc, new errorcvt);

@@ -68,7 +68,6 @@ int use_standard_streams()
 
 void test05()
 {
-  bool test __attribute__((unused)) = true;
   int i = static_ob.i;
 
   VERIFY( std::wcin.iword(i) == i + 1 );

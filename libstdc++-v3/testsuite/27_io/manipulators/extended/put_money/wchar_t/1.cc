@@ -26,8 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc_de = std::locale(ISO_8859(15,de_DE));
 
   std::wostringstream oss;

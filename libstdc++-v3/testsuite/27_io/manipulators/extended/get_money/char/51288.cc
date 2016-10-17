@@ -25,8 +25,6 @@
 // libstdc++/51288
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc_us = std::locale("en_US.UTF-8");
 
   std::istringstream iss;

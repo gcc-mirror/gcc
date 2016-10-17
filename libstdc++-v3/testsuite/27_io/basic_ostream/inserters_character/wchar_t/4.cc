@@ -28,7 +28,6 @@
 void
 test04() 
 {
-  bool test __attribute__((unused)) = true;
   std::wstring str_01;
   std::wstring str_tmp;
   const int i_max=250;

@@ -26,7 +26,6 @@ void test01()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   wchar_t buf[512];
   const wchar_t* strlit = L"how to tell a story and other essays: mark twain";
   const size_t strlitsize = std::wcslen(strlit);

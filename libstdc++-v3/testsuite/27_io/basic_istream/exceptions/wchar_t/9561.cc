@@ -24,7 +24,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   __gnu_test::fail_wstreambuf b;
   std::wistream strm (&b);

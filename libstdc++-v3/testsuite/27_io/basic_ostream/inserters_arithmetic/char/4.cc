@@ -27,7 +27,6 @@ int
 test04()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   stringbuf strbuf1, strbuf2;
   ostream o1(&strbuf1), o2(&strbuf2);

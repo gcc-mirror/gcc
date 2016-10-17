@@ -39,7 +39,6 @@ protected:
 void
 test07()
 {
-  bool test __attribute__((unused)) = true;
   testbuf ob;
   std::wostream out(&ob); 
 

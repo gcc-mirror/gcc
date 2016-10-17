@@ -26,9 +26,8 @@
 // In the presence of no fmtflags, the input operator should behave
 // like strtol(x, y, 0)
 // libstdc++/90
-bool test11()
+void test11()
 {
-  bool test __attribute__((unused)) = true;
   const wchar_t* cstrlit = L"0x2a";
 
   // sanity check via 'C' library call
@@ -42,8 +41,6 @@ bool test11()
 
   VERIFY( !iss.fail() );
   VERIFY( l == i );
-
-  return test;
 }
 
 int main()

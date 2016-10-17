@@ -24,7 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   const wchar_t* lit01 = L"stereolab on the bolsinga tip";
   const std::wstring str01(lit01);
 

@@ -30,7 +30,6 @@ void test01()
   typedef wios::off_type off_type;
   typedef wios::pos_type pos_type;
 
-  bool test __attribute__((unused)) = true;
   const char str_lit01[] = "wostream_seeks-1.txt";
 
   // out

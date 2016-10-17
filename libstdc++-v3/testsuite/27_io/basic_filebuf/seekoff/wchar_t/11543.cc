@@ -120,8 +120,6 @@ namespace std
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc(std::locale::classic(),
 		  new std::codecvt<wchar_t, char, MyState>);
   std::basic_filebuf<wchar_t, MyCharTraits> fb;

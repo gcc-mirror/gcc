@@ -132,8 +132,6 @@ namespace std
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc(std::locale::classic(),
 		  new std::codecvt<char, char, MyState>);
   std::basic_filebuf<char, MyCharTraits> fb;

@@ -45,8 +45,6 @@ public:
 // libstdc++/9701 (partial)
 void test11()
 {
-  bool test __attribute__((unused)) = true;
-
   bool over_expected;
 
   // sputc

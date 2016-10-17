@@ -37,7 +37,6 @@ public:
 // mode & ios_base::out is nonzero, ..."
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef my_stringbuf::int_type    int_type;

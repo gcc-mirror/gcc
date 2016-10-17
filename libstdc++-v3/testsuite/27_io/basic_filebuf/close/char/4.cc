@@ -35,8 +35,6 @@ void test_04()
 {
   typedef std::filebuf::traits_type 	traits_type;
 
-  bool test __attribute__((unused)) = true;
-
   std::filebuf fb_01, fb_02;
   char buffer[] = "xxxxxxxxxx";
 

@@ -87,8 +87,6 @@ const wchar_t Inbuf_2::buf[] = L"Atteivlis";
 
 void test12()
 { 
-  bool test __attribute__((unused)) = true;
- 
   Outbuf_2 outbuf2;
   std::wostream os (&outbuf2);
   Inbuf_2 inbuf2;

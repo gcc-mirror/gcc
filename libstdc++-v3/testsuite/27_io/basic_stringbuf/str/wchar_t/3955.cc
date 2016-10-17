@@ -23,8 +23,6 @@
 // libstdc++/3955 -- ios_base::app overwrites from the beginning
 void test05()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wostringstream os (L"foo");
   os << L"bar";
 

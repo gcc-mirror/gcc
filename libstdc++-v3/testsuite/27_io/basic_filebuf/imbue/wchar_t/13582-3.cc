@@ -29,7 +29,6 @@
 // libstdc++/13582
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   locale loc_en(locale(ISO_8859(1,en_US)));

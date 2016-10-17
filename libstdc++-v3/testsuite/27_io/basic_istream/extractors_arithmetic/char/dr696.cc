@@ -27,7 +27,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   short s1 = 0;
   ostringstream oss1;

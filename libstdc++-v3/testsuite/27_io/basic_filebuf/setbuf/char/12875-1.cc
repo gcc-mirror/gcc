@@ -28,7 +28,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   const char* name = "tmp_setbuf4";
   static char buf[1024];

@@ -1,3 +1,855 @@
+2016-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/27_io/basic_filebuf/close/12790-1.cc: Remove 'test'
+        variables.
+	* testsuite/27_io/basic_filebuf/close/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/5.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/cons/wchar_t/10132-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/12206.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13007.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13582-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/14975-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/9322.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/12868.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13007.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13171-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/9322.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/in_avail/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/in_avail/char/9701-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/is_open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/char/2-unbuf.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/char/3599.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/char/9169.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/char/9182-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/char/9988.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/pbackfail/char/9761.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/9825.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/10132-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/45628-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/11543.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/12232.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/3-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/3-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/3-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/45628-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/11543.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/9875_seekoff.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/10132-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/3-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/3-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/3-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/9874.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/9875_seekpos.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/12875-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/12875-2.cc
+	* testsuite/27_io/basic_filebuf/setbuf/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/9425.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/59427.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/9701-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/59427.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/9339.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/9701-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sync/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sync/char/9182-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/45841.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/9027.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11544-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11544-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11603.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/45841.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/5.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/9178.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/9520.cc: Likewise.
+	* testsuite/27_io/basic_fstream/cons/1.cc: Likewise.
+	* testsuite/27_io/basic_fstream/rdbuf/char/2832.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/rdbuf/char/2832.cc: Likewise.
+	* testsuite/27_io/basic_ios/clear/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_ios/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/cons/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ios/cons/char/3.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/imbue/14072.cc: Likewise.
+	* testsuite/27_io/basic_ios/locales/char/1.cc: Likewise.
+	* testsuite/27_io/basic_iostream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_istream/cons/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/exceptions/char/9561.cc: Likewise.
+	* testsuite/27_io/basic_istream/exceptions/wchar_t/9561.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/02.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/03.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/06.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/07.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/08.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/09.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/10.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/11.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/13.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/9555-ia.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/dr696.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/pod/3983-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/01.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/02.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/03.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/06.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/07.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/08.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/09.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/10.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/11.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/12.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/13.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/
+	wchar_t/9555-ia.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	dr696.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/char/11095-i.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/char/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/char/3.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/char/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/char/9555-ic.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/pod/3983-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/
+	11095-i.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/3.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/
+	9555-ic.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/26181.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/9318-in.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/9424-in.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/9555-io.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	error_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/pod/3983-3.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/26181.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/9318-in.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/9424-in.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/9555-io.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	error_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/4.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/5.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/6.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/5.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/6.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/6360.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/7220.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/6360.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/7220.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/12296.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/6414.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/wchar_t/12296.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/wchar_t/6414.cc: Likewise.
+	* testsuite/27_io/basic_istream/putback/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/putback/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/char/6746-1.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/char/6746-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/char/8258.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/wchar_t/6746-1.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/wchar_t/6746-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/wchar_t/8258.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/8348-1.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/8348-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/fstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/sstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/8348-1.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/8348-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/fstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/sstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/pod/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/8348.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/fstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/sstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/8348.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/fstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/sstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/ws/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ws/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/rdbuf/char/2832.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/rdbuf/wchar_t/2832.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/str/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/str/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/rdbuf/char/2832.cc: Likewise.
+	* testsuite/27_io/basic_ostream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_ostream/cons/char/9827.cc: Likewise.
+	* testsuite/27_io/basic_ostream/cons/wchar_t/9827.cc: Likewise.
+	* testsuite/27_io/basic_ostream/endl/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/endl/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/ends/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/ends/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/ends/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/ends/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/exceptions/char/9561.cc: Likewise.
+	* testsuite/27_io/basic_ostream/exceptions/wchar_t/9561.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/char/exceptions_badbit_throw.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/flush/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/3.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/4402.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/5.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/6.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/7.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/9555-oa.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/pod/23875.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/3.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4402.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/5.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/6.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/7.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/
+	9555-oa.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/11095-oa.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/11095-ob.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/11095-oc.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/28277-3.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/28277-4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/6.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/8.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/9555-oc.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	11095-od.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	11095-oe.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	11095-of.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/3.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/5.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/6.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/7.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/8.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	9555-oc.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/9318-out.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/9424-out.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/9555-oo.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/error_code.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	error_failbit.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	9318-out.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	9424-out.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	9555-oo.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	error_code.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	error_failbit.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/put/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/put/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/char/2346-fstream.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/char/2346-sstream.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/2346-fstream.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/2346-sstream.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/pod/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/write/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/write/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/char/3.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/rdbuf/char/2832.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/rdbuf/wchar_t/2832.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/cons/57394.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/char/13007-1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/char/13007-2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/char/9322.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/13007-1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/13007-2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/9322.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/in_avail/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/in_avail/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/char/2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/char/3599.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/wchar_t/3599.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputbackc/char/9538.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputbackc/wchar_t/9538.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sync/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sync/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/imbue/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/imbue/char/9322.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/imbue/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/imbue/wchar_t/9322.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/in_avail/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/in_avail/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/char/26250.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/char/3599.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/char/9988.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/wchar_t/26250.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/wchar_t/3599.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/wchar_t/9988.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/pbackfail/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/pbackfail/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/pbackfail/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/pbackfail/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/char/9825.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/wchar_t/9825.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/char/10975.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/char/16956.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/10975.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/16956.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/char/29354.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/char/3.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/wchar_t/29354.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/setbuf/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/setbuf/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/setbuf/char/3.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/setbuf/char/4.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/setbuf/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/setbuf/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/setbuf/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/setbuf/wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/snextc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/snextc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/char/9425.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/wchar_t/9425.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputc/char/9404-1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputc/wchar_t/9404-1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputn/char/9404-2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputn/wchar_t/9404-2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/str/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/str/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/str/char/3.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/str/char/3955.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/str/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/str/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/str/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/str/wchar_t/3955.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sync/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sync/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/rdbuf/char/2832.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/rdbuf/wchar_t/2832.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/str/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/str/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/str/char/3.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/str/char/4.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/str/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/str/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/str/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/str/wchar_t/4.cc: Likewise.
+	* testsuite/27_io/fpos/11450.cc: Likewise.
+	* testsuite/27_io/fpos/14252.cc: Likewise.
+	* testsuite/27_io/fpos/14320-1.cc: Likewise.
+	* testsuite/27_io/fpos/14320-2.cc: Likewise.
+	* testsuite/27_io/fpos/14320-3.cc: Likewise.
+	* testsuite/27_io/fpos/14320-4.cc: Likewise.
+	* testsuite/27_io/fpos/14320-5.cc: Likewise.
+	* testsuite/27_io/fpos/14775.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/1.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/12065.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/2.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/3.cc: Likewise.
+	* testsuite/27_io/ios_base/callbacks/1.cc: Likewise.
+	* testsuite/27_io/ios_base/failure/what-1.cc: Likewise.
+	* testsuite/27_io/ios_base/failure/what-2.cc: Likewise.
+	* testsuite/27_io/ios_base/failure/what-3.cc: Likewise.
+	* testsuite/27_io/ios_base/failure/what-big.cc: Likewise.
+	* testsuite/27_io/ios_base/state/1.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/1.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/11584.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+	* testsuite/27_io/ios_base/sync_with_stdio/2.cc: Likewise.
+	* testsuite/27_io/manipulators/adjustfield/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/adjustfield/char/2.cc
+	* testsuite/27_io/manipulators/adjustfield/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/manipulators/adjustfield/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/manipulators/basefield/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/basefield/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/get_money/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/get_money/char/51288.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/get_money/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/get_money/wchar_t/51288.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/get_time/char/1.cc
+	* testsuite/27_io/manipulators/extended/get_time/char/2.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/get_time/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/get_time/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/char/51288.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/wchar_t/51288.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/put_time/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/put_time/char/2.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/put_time/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/put_time/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/char/2.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/char/dr2344.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/char/quoted.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/wchar_t/dr2344.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/wchar_t/quoted.cc: Likewise.
+	* testsuite/27_io/objects/char/1.cc: Likewise.
+	* testsuite/27_io/objects/char/10.cc: Likewise.
+	* testsuite/27_io/objects/char/3045.cc: Likewise.
+	* testsuite/27_io/objects/char/41037.cc: Likewise.
+	* testsuite/27_io/objects/char/5.cc: Likewise.
+	* testsuite/27_io/objects/char/6.cc: Likewise.
+	* testsuite/27_io/objects/char/6548_xin.cc: Likewise.
+	* testsuite/27_io/objects/char/6648-1_xin.cc: Likewise.
+	* testsuite/27_io/objects/char/6648-2_xin.cc: Likewise.
+	* testsuite/27_io/objects/char/7744_xin.cc: Likewise.
+	* testsuite/27_io/objects/char/8.cc: Likewise.
+	* testsuite/27_io/objects/char/9.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-2_xin.cc: Likewise.
+	* testsuite/27_io/objects/char/dr455.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/10.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/11.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/13.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/13582-1_xin.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/3045.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/41037.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/5.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/6548_xin.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/6648-1_xin.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/6648-2_xin.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/7744_xin.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/8.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9520.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9661-2_xin.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9662.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/dr455.cc: Likewise.
+	* testsuite/27_io/types/3.cc: Likewise.
+
 2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/77994

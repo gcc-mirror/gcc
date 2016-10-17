@@ -25,7 +25,6 @@ void
 test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   string s("john coltrane, a love supreme");
   istringstream  iss(s);

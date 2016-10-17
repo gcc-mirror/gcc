@@ -87,8 +87,6 @@ const char Inbuf_2::buf[] = "Atteivlis";
 
 void test11()
 {
-  bool test __attribute__((unused)) = true;
-
   Inbuf_2 inbuf1;
   std::istream is(&inbuf1);
   Outbuf_2 outbuf1;

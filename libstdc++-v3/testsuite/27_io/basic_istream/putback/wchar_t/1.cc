@@ -24,7 +24,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   const std::wstring str_01;
   const std::wstring str_02(L"soul eyes: john coltrane quartet");
   std::wstring strtmp;

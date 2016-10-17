@@ -26,7 +26,6 @@ using namespace std;
 
 void test5()
 {
-  bool test __attribute__((unused)) = true;
   __gnu_test::fail_wstreambuf bob;
   wostream stream(&bob);
   wstringbuf sbuf(L"Foo, bar, qux", ios_base::in);
@@ -39,7 +38,6 @@ void test5()
 
 void test7()
 {
-  bool test __attribute__((unused)) = true;
   wostringstream stream;
   __gnu_test::fail_wstreambuf bib;
 

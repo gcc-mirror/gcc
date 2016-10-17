@@ -27,8 +27,6 @@
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_test::sync_wstreambuf buf;
   std::wostream os(&buf);
   
