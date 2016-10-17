@@ -6451,6 +6451,7 @@ find_what_p_points_to (tree fndecl, tree p)
   struct ptr_info_def *pi;
   tree lookup_p = p;
   varinfo_t vi;
+  bool nonnull = get_ptr_nonnull (p);
 
   /* For parameters, get at the points-to set for the actual parm
      decl.  */
@@ -6466,6 +6467,12 @@ find_what_p_points_to (tree fndecl, tree p)
 
   pi = get_ptr_info (p);
   pi->pt = find_what_var_points_to (fndecl, vi);
+  /* Conservatively set to NULL from PTA (to true). */
+  pi->pt.null = 1;
+  /* Preserve pointer nonnull computed by VRP.  See get_ptr_nonnull
+     in gcc/tree-ssaname.c for more information.  */
+  if (nonnull)
+    set_ptr_nonnull (p);
 }
 
 
@@ -6505,6 +6512,7 @@ pt_solution_reset (struct pt_solution *pt)
 {
   memset (pt, 0, sizeof (struct pt_solution));
   pt->anything = true;
+  pt->null = true;
 }
 
 /* Set the points-to solution *PT to point only to the variables
@@ -6599,10 +6607,10 @@ pt_solution_empty_p (struct pt_solution *pt)
    return the var uid in *UID.  */
 
 bool
-pt_solution_singleton_p (struct pt_solution *pt, unsigned *uid)
+pt_solution_singleton_or_null_p (struct pt_solution *pt, unsigned *uid)
 {
   if (pt->anything || pt->nonlocal || pt->escaped || pt->ipa_escaped
-      || pt->null || pt->vars == NULL
+      || pt->vars == NULL
       || !bitmap_single_bit_set_p (pt->vars))
     return false;
 

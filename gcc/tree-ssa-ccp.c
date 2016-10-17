@@ -2135,7 +2135,7 @@ fold_builtin_alloca_with_align (gimple *stmt)
       {
 	bool singleton_p;
 	unsigned uid;
-	singleton_p = pt_solution_singleton_p (&pi->pt, &uid);
+	singleton_p = pt_solution_singleton_or_null_p (&pi->pt, &uid);
 	gcc_assert (singleton_p);
 	SET_DECL_PT_UID (var, uid);
       }

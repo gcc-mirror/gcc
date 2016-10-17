@@ -1,3 +1,8 @@
+2016-10-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.dg/torture/pr39074-2.c: Adjust testcase.
+	* gcc.dg/torture/pr39074.c: Likewise.
+
 2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/Wtrampolines.c: XFAIL warning on ia64-*-* and powerpc64-*-*.
