@@ -50833,6 +50833,9 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK ix86_hard_regno_scratch_ok
 
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-i386.h"

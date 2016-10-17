@@ -1,3 +1,15 @@
+2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Move to...
+	* config/i386/i386.c (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): ...here.
+	* config/ia64/ia64.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Move to...
+	* config/ia64/ia64.c (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): ...here.
+	* config/rs6000/rs6000.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Move to.
+	* config/rs6000/rs6000.c (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): ...here.
+	(rs6000_option_override_internal): Clear it if ABI_AIX.
+	* config/sparc/sparc.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Move to...
+	* config/sparc/sparc.c (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): ... here.
+
 2016-10-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (record_increment): Remove
