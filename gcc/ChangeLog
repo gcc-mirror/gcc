@@ -1,3 +1,22 @@
+2016-10-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* tree-ssa-alias.h (pt_solution_singleton_or_null_p): Renamed from
+	pt_solution_singleton_p.
+	* tree-ssa-ccp.c (fold_builtin_alloca_with_align): Use renamed
+	pt_solution_singleton_or_null_p from pt_solution_singleton_p.
+	* tree-ssa-structalias.c (find_what_p_points_to): Preserve
+	pointer nonnull computed by VRP.
+	Also Conservatively set pt.null to 1.
+	(pt_solution_reset): Conservatively set pt.null to 1.
+	(pt_solution_singleton_or_null_p): Renamed from
+	pt_solution_singleton_p.
+	* tree-ssanames.h (set_ptr_nonnull): Declare.
+	(get_ptr_nonnull): Likewise.
+	* tree-ssanames.c (set_ptr_nonnull): New.
+	(get_ptr_nonnull): Likewise.
+	* tree-vrp.c (vrp_finalize): Set ptr that are nonnull.
+	(evrp_dom_walker::before_dom_children): Likewise.
+
 2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.h (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Move to...

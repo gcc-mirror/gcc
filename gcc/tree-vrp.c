@@ -10601,18 +10601,24 @@ vrp_finalize (bool warn_array_bounds_p)
       {
 	tree name = ssa_name (i);
 
-      if (!name
-	  || POINTER_TYPE_P (TREE_TYPE (name))
-	  || (vr_value[i]->type == VR_VARYING)
-	  || (vr_value[i]->type == VR_UNDEFINED))
-	continue;
+	if (!name
+	    || (vr_value[i]->type == VR_VARYING)
+	    || (vr_value[i]->type == VR_UNDEFINED)
+	    || (TREE_CODE (vr_value[i]->min) != INTEGER_CST)
+	    || (TREE_CODE (vr_value[i]->max) != INTEGER_CST))
+	  continue;
 
-      if ((TREE_CODE (vr_value[i]->min) == INTEGER_CST)
-	  && (TREE_CODE (vr_value[i]->max) == INTEGER_CST)
-	  && (vr_value[i]->type == VR_RANGE
-	      || vr_value[i]->type == VR_ANTI_RANGE))
-	set_range_info (name, vr_value[i]->type, vr_value[i]->min,
-			vr_value[i]->max);
+	if (POINTER_TYPE_P (TREE_TYPE (name))
+	    && ((vr_value[i]->type == VR_RANGE
+		 && range_includes_zero_p (vr_value[i]->min,
+					   vr_value[i]->max) == 0)
+		|| (vr_value[i]->type == VR_ANTI_RANGE
+		    && range_includes_zero_p (vr_value[i]->min,
+					      vr_value[i]->max) == 1)))
+	  set_ptr_nonnull (name);
+	else if (!POINTER_TYPE_P (TREE_TYPE (name)))
+	  set_range_info (name, vr_value[i]->type, vr_value[i]->min,
+			  vr_value[i]->max);
       }
 
   substitute_and_fold (op_with_constant_singleton_value_range,
@@ -10821,17 +10827,25 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  def_operand_p def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
 	  /* Set the SSA with the value range.  */
 	  if (def_p
-	      && TREE_CODE (DEF_FROM_PTR (def_p)) == SSA_NAME
-	      && INTEGRAL_TYPE_P (TREE_TYPE (DEF_FROM_PTR (def_p))))
+	      && TREE_CODE (DEF_FROM_PTR (def_p)) == SSA_NAME)
 	    {
 	      tree def = DEF_FROM_PTR (def_p);
 	      value_range *vr = get_value_range (def);
 
-	      if ((vr->type == VR_RANGE
-		   || vr->type == VR_ANTI_RANGE)
+	      if (INTEGRAL_TYPE_P (TREE_TYPE (DEF_FROM_PTR (def_p)))
+		  && (vr->type == VR_RANGE
+		      || vr->type == VR_ANTI_RANGE)
 		  && (TREE_CODE (vr->min) == INTEGER_CST)
 		  && (TREE_CODE (vr->max) == INTEGER_CST))
 		set_range_info (def, vr->type, vr->min, vr->max);
+	      else if (POINTER_TYPE_P (TREE_TYPE (DEF_FROM_PTR (def_p)))
+		       && ((vr->type == VR_RANGE
+			    && range_includes_zero_p (vr->min,
+						      vr->max) == 0)
+			   || (vr->type == VR_ANTI_RANGE
+			       && range_includes_zero_p (vr->min,
+							 vr->max) == 1)))
+		set_ptr_nonnull (def);
 	    }
 	}
       else

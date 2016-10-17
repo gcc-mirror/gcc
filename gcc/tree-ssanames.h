@@ -88,6 +88,8 @@ extern void set_ptr_info_alignment (struct ptr_info_def *, unsigned int,
 extern void adjust_ptr_info_misalignment (struct ptr_info_def *,
 					  unsigned int);
 extern struct ptr_info_def *get_ptr_info (tree);
+extern void set_ptr_nonnull (tree);
+extern bool get_ptr_nonnull (const_tree);
 
 extern tree copy_ssa_name_fn (struct function *, tree, gimple *);
 extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
