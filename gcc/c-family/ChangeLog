@@ -1,5 +1,12 @@
 2016-10-17  Marek Polacek  <polacek@redhat.com>
 
+	* c-warn.c (find_array_ref_with_const_idx_r): Remove parameter names.
+	Return immediately when finding a match.
+	(warn_tautological_cmp): Remove a boolean variable that is no longer
+	needed.
+
+2016-10-17  Marek Polacek  <polacek@redhat.com>
+
 	* c-attribs.c: New file.
 	* c-common.c: Move attributes handling to c-attribs.c.
 	(get_nonnull_operand): No longer static.

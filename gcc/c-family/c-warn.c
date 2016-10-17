@@ -256,17 +256,14 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
    with constant indices.  */
 
 static tree
-find_array_ref_with_const_idx_r (tree *expr_p, int *walk_subtrees, void *data)
+find_array_ref_with_const_idx_r (tree *expr_p, int *, void *)
 {
   tree expr = *expr_p;
 
   if ((TREE_CODE (expr) == ARRAY_REF
        || TREE_CODE (expr) == ARRAY_RANGE_REF)
       && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST)
-    {
-      *(bool *) data = true;
-      *walk_subtrees = 0;
-    }
+    return integer_type_node;
 
   return NULL_TREE;
 }
@@ -312,10 +309,8 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
     {
       /* Don't warn about array references with constant indices;
 	 these are likely to come from a macro.  */
-      bool found = false;
-      walk_tree_without_duplicates (&lhs, find_array_ref_with_const_idx_r,
-				    &found);
-      if (found)
+      if (walk_tree_without_duplicates (&lhs, find_array_ref_with_const_idx_r,
+					NULL))
 	return;
       const bool always_true = (code == EQ_EXPR || code == LE_EXPR
 				|| code == GE_EXPR || code == UNLE_EXPR
