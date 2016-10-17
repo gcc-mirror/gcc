@@ -1,3 +1,18 @@
+2016-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (enum dwarf_calling_convention): Add new DWARF5
+	calling convention codes.
+	(enum dwarf_line_number_content_type): New.
+	(enum dwarf_location_list_entry_type): Add DWARF5 DW_LLE_*
+	codes.
+	(enum dwarf_source_language): Add new DWARF5 DW_LANG_* codes.
+	(enum dwarf_macro_record_type): Add DWARF5 DW_MACRO_* codes.
+	(enum dwarf_name_index_attribute): New.
+	(enum dwarf_range_list_entry): New.
+	(enum dwarf_unit_type): New.
+	* dwarf2.def: Add new DWARF5 DW_TAG_*, DW_FORM_*, DW_AT_*,
+	DW_OP_* and DW_ATE_* entries.
+
 2016-10-14  Pedro Alves  <palves@redhat.com>
 
 	* ansidecl.h [__cplusplus >= 201103 && GCC_VERSION < 4007] (FINAL,
