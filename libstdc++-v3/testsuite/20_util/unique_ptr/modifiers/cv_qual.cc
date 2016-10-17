@@ -86,15 +86,4 @@ test07()
   vA2.reset((A*)p);
   std::unique_ptr<const volatile A[]> cvA2;
   cvA2.reset((A*)p);
-  // Disallow conversions from user-defined pointer-like types
-  // for the array version
-  std::unique_ptr<A[]> upA3;
-  upA3.reset(p); // { dg-error "no matching function" }
-  std::unique_ptr<const A[]> cA3;
-  cA3.reset(p); // { dg-error "no matching function" }
-  std::unique_ptr<volatile A[]> vA3;
-  vA3.reset(p); // { dg-error "no matching function" }
-  std::unique_ptr<const volatile A[]> cvA3;
-  cvA3.reset(p); // { dg-error "no matching function" }
-  // { dg-error "no matching function" "" { target *-*-* } 614 }
 }

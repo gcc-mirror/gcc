@@ -21,17 +21,37 @@
 
 struct A
 {
+  virtual ~A() { }
 };
 
 struct B : A
 {
-  virtual ~B() { }
 };
 
-void test01()
+void
+test01()
 {
   std::unique_ptr<B[]> up;
-  up.reset(new A[3]);		// { dg-error "" }
+  up.reset(new A[3]);		// { dg-error "no matching function" }
+
+  std::unique_ptr<A[]> up2;
+  up2.reset(new B[3]);		// { dg-error "no matching function" }
 }
 
-// { dg-prune-output "include" }
+struct A_pointer { operator A*() const { return nullptr; } };
+
+void
+test02()
+{
+  A_pointer p;
+  // Disallow conversions from user-defined pointer-like types
+  // for the array version
+  std::unique_ptr<A[]> upA3;
+  upA3.reset(p); // { dg-error "no matching function" }
+  std::unique_ptr<const A[]> cA3;
+  cA3.reset(p); // { dg-error "no matching function" }
+  std::unique_ptr<volatile A[]> vA3;
+  vA3.reset(p); // { dg-error "no matching function" }
+  std::unique_ptr<const volatile A[]> cvA3;
+  cvA3.reset(p); // { dg-error "no matching function" }
+}

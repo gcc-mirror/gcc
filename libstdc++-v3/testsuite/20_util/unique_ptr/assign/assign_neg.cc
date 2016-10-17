@@ -48,4 +48,25 @@ test03()
   std::unique_ptr<int[2]> p2 = p1; // { dg-error "deleted" }
 }
 
+struct base_pointer { operator base*() const { return nullptr; } };
+
+template<typename T>
+struct deleter
+{
+  deleter() = default;
+  template<typename U>
+    deleter(const deleter<U>) { }
+  typedef T pointer;
+  void operator()(T) const { }
+};
+
+void
+test04()
+{
+  // Disallow conversions from incompatible deleter
+  std::unique_ptr<derived[], deleter<base_pointer>> p;
+  std::unique_ptr<base[], deleter<base*>> upA;
+  upA = std::move(p);  // { dg-error "no match" }
+}
+
 // { dg-prune-output "include" }

@@ -1,5 +1,18 @@
 2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/77987
+	* include/bits/unique_ptr.h (unique_ptr<T[], D>::reset<U>(U)): Copy
+	value to pointer of the correct type to swap, to support conversions
+	allowed by LWG 2118 / N4089.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Move test for
+	incompatible deleters from ...
+	* testsuite/20_util/unique_ptr/assign/cv_qual.cc: ... here.
+	* testsuite/20_util/unique_ptr/modifiers/cv_qual.cc: Move tests for
+	incompatible pointers to ...
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: ... here. Move
+	destructor definition to base class. Test for invalid derived-to-base
+	conversion.
+
 	* doc/xml/manual/status_cxx2017.xml: Update status.
 	* doc/html/*: Regenerate.
 	* include/bits/deque.tcc (deque::emplace_front, deque::emplace_back):
