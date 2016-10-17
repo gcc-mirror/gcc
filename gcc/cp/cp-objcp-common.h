@@ -26,9 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 					 tree, bool);
 
-extern bool cp_function_decl_explicit_p (const_tree decl);
-extern bool cp_function_decl_deleted_p (const_tree decl);
-extern int cp_function_decl_defaulted (const_tree decl);
+extern int cp_decl_dwarf_attribute (const_tree, int);
 extern void cp_common_init_ts (void);
 
 /* Lang hooks that are shared between C++ and ObjC++ are defined here.  Hooks
@@ -131,12 +129,8 @@ extern void cp_common_init_ts (void);
 #define LANG_HOOKS_TO_TARGET_CHARSET c_common_to_target_charset
 #undef LANG_HOOKS_GIMPLIFY_EXPR
 #define LANG_HOOKS_GIMPLIFY_EXPR cp_gimplify_expr
-#undef LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P
-#define LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P cp_function_decl_explicit_p
-#undef LANG_HOOKS_FUNCTION_DECL_DELETED_P
-#define LANG_HOOKS_FUNCTION_DECL_DELETED_P cp_function_decl_deleted_p
-#undef LANG_HOOKS_FUNCTION_DECL_DEFAULTED
-#define LANG_HOOKS_FUNCTION_DECL_DEFAULTED cp_function_decl_defaulted
+#undef LANG_HOOKS_DECL_DWARF_ATTRIBUTE
+#define LANG_HOOKS_DECL_DWARF_ATTRIBUTE cp_decl_dwarf_attribute
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING cxx_omp_predetermined_sharing
 #undef LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR

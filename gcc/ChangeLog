@@ -1,3 +1,22 @@
+2016-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* langhooks.h (struct lang_hooks_for_decls): Remove
+	function_decl_explicit_p, function_decl_deleted_p and
+	function_decl_defaulted hooks.  Add decl_dwarf_attribute hook.
+	* langhooks-def.h (lhd_decl_dwarf_attribute): Declare.
+	(LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P,
+	LANG_HOOKS_FUNCTION_DECL_DELETED_P,
+	LANG_HOOKS_FUNCTION_DECL_DEFAULTED): Remove.
+	(LANG_HOOKS_DECL_DWARF_ATTRIBUTE): Define.
+	(LANG_HOOKS_DECLS): Remove LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P,
+	LANG_HOOKS_FUNCTION_DECL_DELETED_P and
+	LANG_HOOKS_FUNCTION_DECL_DEFAULTED.  Add
+	LANG_HOOKS_DECL_DWARF_ATTRIBUTE.
+	* langhooks.c (lhd_decl_dwarf_attribute): New function.
+	* dwarf2out.c (gen_subprogram_die): Use
+	lang_hooks.decls.decl_dwarf_attribute instead of
+	lang_hooks.decls.function_decl_*.
+
 2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/37139

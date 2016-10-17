@@ -182,16 +182,9 @@ struct lang_hooks_for_decls
   /* Returns the chain of decls so far in the current scope level.  */
   tree (*getdecls) (void);
 
-  /* Returns true if DECL is explicit member function.  */
-  bool (*function_decl_explicit_p) (const_tree);
-
-  /* Returns true if DECL is C++11 deleted special member function.  */
-  bool (*function_decl_deleted_p) (const_tree);
-
-  /* Returns 0 if DECL is NOT a C++11 defaulted special member
-     function, 1 if it is explicitly defaulted within the class body,
-     or 2 if it is explicitly defaulted outside the class body.  */
-  int (*function_decl_defaulted) (const_tree);
+  /* Returns -1 if dwarf ATTR shouldn't be added for DECL, or the attribute
+     value otherwise.  */
+  int (*decl_dwarf_attribute) (const_tree, int);
 
   /* Returns True if the parameter is a generic parameter decl
      of a generic type, e.g a template template parameter for the C++ FE.  */

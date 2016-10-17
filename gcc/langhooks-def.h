@@ -83,6 +83,7 @@ extern bool lhd_omp_mappable_type (tree);
 
 extern const char *lhd_get_substring_location (const substring_loc &,
 					       location_t *out_loc);
+extern int lhd_decl_dwarf_attribute (const_tree, int);
 
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
@@ -214,9 +215,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_GLOBAL_BINDINGS_P global_bindings_p
 #define LANG_HOOKS_PUSHDECL	pushdecl
 #define LANG_HOOKS_GETDECLS	getdecls
-#define LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P hook_bool_const_tree_false
-#define LANG_HOOKS_FUNCTION_DECL_DELETED_P hook_bool_const_tree_false
-#define LANG_HOOKS_FUNCTION_DECL_DEFAULTED hook_int_const_tree_0
+#define LANG_HOOKS_DECL_DWARF_ATTRIBUTE lhd_decl_dwarf_attribute
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL lhd_warn_unused_global_decl
 #define LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS NULL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL	lhd_decl_ok_for_sibcall
@@ -237,9 +236,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_GLOBAL_BINDINGS_P, \
   LANG_HOOKS_PUSHDECL, \
   LANG_HOOKS_GETDECLS, \
-  LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P, \
-  LANG_HOOKS_FUNCTION_DECL_DELETED_P, \
-  LANG_HOOKS_FUNCTION_DECL_DEFAULTED, \
+  LANG_HOOKS_DECL_DWARF_ATTRIBUTE, \
   LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P, \
   LANG_HOOKS_FUNCTION_PARM_EXPANDED_FROM_PACK_P, \
   LANG_HOOKS_GET_GENERIC_FUNCTION_DECL, \
