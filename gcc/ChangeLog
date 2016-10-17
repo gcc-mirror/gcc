@@ -1,3 +1,8 @@
+2016-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-streamer.c (record_common_node): Explicitly list expected
+	tree codes.
+
 2016-10-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77988

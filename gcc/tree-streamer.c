@@ -277,12 +277,28 @@ record_common_node (struct streamer_tree_cache_d *cache, tree node)
      in the cache as hash value.  */
   streamer_tree_cache_append (cache, node, cache->nodes.length ());
 
-  if (POINTER_TYPE_P (node)
-      || TREE_CODE (node) == COMPLEX_TYPE
-      || TREE_CODE (node) == ARRAY_TYPE)
-    record_common_node (cache, TREE_TYPE (node));
-  else if (TREE_CODE (node) == RECORD_TYPE)
+  switch (TREE_CODE (node))
     {
+    case ERROR_MARK:
+    case FIELD_DECL:
+    case FIXED_POINT_TYPE:
+    case IDENTIFIER_NODE:
+    case INTEGER_CST:
+    case INTEGER_TYPE:
+    case POINTER_BOUNDS_TYPE:
+    case REAL_TYPE:
+    case TREE_LIST:
+    case VOID_CST:
+    case VOID_TYPE:
+      /* No recursive trees.  */
+      break;
+    case ARRAY_TYPE:
+    case COMPLEX_TYPE:
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      record_common_node (cache, TREE_TYPE (node));
+      break;
+    case RECORD_TYPE:
       /* The FIELD_DECLs of structures should be shared, so that every
 	 COMPONENT_REF uses the same tree node when referencing a field.
 	 Pointer equality between FIELD_DECLs is used by the alias
@@ -291,6 +307,10 @@ record_common_node (struct streamer_tree_cache_d *cache, tree node)
 	 nonoverlapping_component_refs_of_decl_p).  */
       for (tree f = TYPE_FIELDS (node); f; f = TREE_CHAIN (f))
 	record_common_node (cache, f);
+      break;
+    default:
+      /* Unexpected tree code.  */
+      gcc_unreachable ();
     }
 }
 
