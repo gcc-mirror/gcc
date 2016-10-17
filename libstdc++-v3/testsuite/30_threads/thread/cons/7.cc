@@ -44,8 +44,6 @@ struct copyable
 // same as 6, but function is copyable function object passed by reference
 void test07()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       copyable c;

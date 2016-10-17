@@ -37,8 +37,6 @@ struct nonconst : public std::unary_function<std::thread::id&, void>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   try
   {
     std::thread::id t1_id1;

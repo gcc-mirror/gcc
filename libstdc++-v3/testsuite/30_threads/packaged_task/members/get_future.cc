@@ -30,8 +30,6 @@ int& inc(int& i) { return ++i; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::packaged_task<int&(int&)> p1(inc);
   std::future<int&> f1 = p1.get_future();
 

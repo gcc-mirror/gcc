@@ -29,7 +29,6 @@ class gnu_codecvt: public ccodecvt { };
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   string str1, str2;
 

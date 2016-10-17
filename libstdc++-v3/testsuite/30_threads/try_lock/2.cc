@@ -30,8 +30,6 @@ typedef std::unique_lock<std::mutex> lock_type;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       std::mutex m1, m2, m3;
@@ -54,8 +52,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       std::mutex m1, m2, m3;
@@ -78,8 +74,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       std::mutex m1, m2, m3;

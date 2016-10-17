@@ -40,8 +40,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   // test interruption of this_thread::sleep_for() by a signal
   struct sigaction sa{ };
   sa.sa_handler = +[](int) { };
@@ -80,8 +78,6 @@ struct slow_clock
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   // test that this_thread::sleep_until() handles clock adjustments
   auto when = slow_clock::now() + std::chrono::seconds(2);
   std::this_thread::sleep_until(when);

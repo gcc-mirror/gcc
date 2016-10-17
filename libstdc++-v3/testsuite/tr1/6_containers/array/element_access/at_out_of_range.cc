@@ -28,7 +28,6 @@ test01()
 {
   const size_t len = 5;
   typedef std::tr1::array<int, len> array_type;
-  bool test __attribute__((unused)) = true;
   array_type a = { { 0, 1, 2, 3, 4 } };
 
   try

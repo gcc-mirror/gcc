@@ -27,7 +27,6 @@
 // Tests default constructor of the match_result class.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::tr1::match_results<char*> test_type;
 
   // default constructor

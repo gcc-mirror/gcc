@@ -33,7 +33,6 @@ struct My_money_io_2 : public std::moneypunct<char,false>
 void test06()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   typedef ostreambuf_iterator<char> OutIt;
 
   locale loc(locale::classic(), new My_money_io_2);

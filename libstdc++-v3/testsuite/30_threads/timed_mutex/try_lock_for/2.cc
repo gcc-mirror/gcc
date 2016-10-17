@@ -28,7 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::timed_mutex mutex_type;
   typedef std::chrono::duration<int64_t, std::pico> picoseconds;
 

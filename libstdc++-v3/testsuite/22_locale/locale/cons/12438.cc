@@ -36,8 +36,7 @@ std::locale::id MyFacet::id;
 void test01(int iters)
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
-  
+ 
   for (int i = 0; i < iters; ++i)
     {
       try

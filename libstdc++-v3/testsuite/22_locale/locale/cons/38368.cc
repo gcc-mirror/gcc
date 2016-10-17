@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc(locale("C"), ISO_8859(1,en_US), locale::collate);
   locale loc_copy(loc.name().c_str());

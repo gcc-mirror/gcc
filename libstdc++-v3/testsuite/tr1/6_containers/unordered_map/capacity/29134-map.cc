@@ -23,8 +23,6 @@
 // libstdc++/29134
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::unordered_map<int, int> um;
 
   VERIFY( (um.max_size() == std::allocator<std::tr1::__detail::_Hash_node<

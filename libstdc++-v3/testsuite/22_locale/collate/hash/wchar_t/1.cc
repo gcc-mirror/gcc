@@ -27,7 +27,6 @@ void test01()
 {
   using namespace std;
   typedef std::collate<wchar_t>::string_type string_type;
-  bool test __attribute__((unused)) = true;
 
   string_type str1(L"fffff");
   string_type str2(L"ffffffffffff");

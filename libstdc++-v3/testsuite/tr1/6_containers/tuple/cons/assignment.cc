@@ -27,8 +27,6 @@ using namespace std::tr1;
 int
 main()
 {
-  bool test __attribute__((unused)) = true;
-
   tuple<> ta;
   tuple<> tb;
   ta = tb;

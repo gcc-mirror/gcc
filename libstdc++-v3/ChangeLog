@@ -1,3 +1,891 @@
+2016-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/22_locale/classification/isblank.cc: Remove 'test'
+	variables.
+	* testsuite/22_locale/codecvt/always_noconv/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8/69703.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/8.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/9.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/char/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/1.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/2.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/3.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/collate/hash/char/1.cc: Likewise.
+	* testsuite/22_locale/collate/hash/char/2.cc: Likewise.
+	* testsuite/22_locale/collate/hash/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/collate/hash/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/2.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/28277.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/3.cc: Likewise.
+	* testsuite/22_locale/collate/transform/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/collate/transform/wchar_t/28277.cc: Likewise.
+	* testsuite/22_locale/collate/transform/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/collate_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/ctype/cons/char/1.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/1.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/2.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/3.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/9858.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/11740.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/char/1.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/char/19955.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/char/2.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/char/1.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/ctype/to/char/1.cc: Likewise.
+	* testsuite/22_locale/ctype/to/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/char/1.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/ctype_base/11844.cc: Likewise.
+	* testsuite/22_locale/facet/1.cc: Likewise.
+	* testsuite/22_locale/facet/2.cc: Likewise.
+	* testsuite/22_locale/facet/25421.cc: Likewise.
+	* testsuite/22_locale/global_templates/1.cc: Likewise.
+	* testsuite/22_locale/global_templates/standard_facet_hierarchies.cc:
+	Likewise.
+	* testsuite/22_locale/global_templates/user_facet_hierarchies.cc:
+	Likewise.
+	* testsuite/22_locale/locale/13630.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12352.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12438.cc: Likewise.
+	* testsuite/22_locale/locale/cons/2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/29217.cc: Likewise.
+	* testsuite/22_locale/locale/cons/38365.cc: Likewise.
+	* testsuite/22_locale/locale/cons/38368.cc: Likewise.
+	* testsuite/22_locale/locale/cons/4.cc: Likewise.
+	* testsuite/22_locale/locale/cons/40184.cc: Likewise.
+	* testsuite/22_locale/locale/cons/5.cc: Likewise.
+	* testsuite/22_locale/locale/cons/6.cc: Likewise.
+	* testsuite/22_locale/locale/cons/7.cc: Likewise.
+	* testsuite/22_locale/locale/cons/7222-c.cc: Likewise.
+	* testsuite/22_locale/locale/cons/7222-env.cc: Likewise.
+	* testsuite/22_locale/locale/cons/8.cc: Likewise.
+	* testsuite/22_locale/locale/cons/unicode.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/1.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/14071.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/2.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/3.cc: Likewise.
+	* testsuite/22_locale/locale/operations/1.cc: Likewise.
+	* testsuite/22_locale/locale/operations/2.cc: Likewise.
+	* testsuite/22_locale/messages/13631.cc: Likewise.
+	* testsuite/22_locale/messages/members/char/1.cc: Likewise.
+	* testsuite/22_locale/messages/members/char/2.cc: Likewise.
+	* testsuite/22_locale/messages/members/char/3.cc: Likewise.
+	* testsuite/22_locale/messages_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/1.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/10.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/11.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/11528.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/12.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/13.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/14.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/15.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/16.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/17.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/18.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/19.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/22131.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/38399.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/39168.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/4.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/5.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/6.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/7.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/8.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/10.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/11.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/11528.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/12.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/13.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/14.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/15.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/16.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/17.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/18.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/19.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/22131.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/38399.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/39168.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/8.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/12971.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/39168.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/4.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/5.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/6.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/9780-3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/12971.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/39168.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/moneypunct/40712.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/char/1.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/char/2.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/moneypunct/requirements/false/intl.cc: Likewise.
+	* testsuite/22_locale/moneypunct/requirements/true/intl.cc: Likewise.
+	* testsuite/22_locale/moneypunct_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/10.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/11.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/12.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/13.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/14.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/15.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/16.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/2.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/22131.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/23953.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/3.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/37958.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/39168.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/39802.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/4.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/5.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/6.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/7.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/8.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/9.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/10.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/11.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/12.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/13.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/14.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/15.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/16.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/22131.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/23953.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/37958.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/39168.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/39802.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/8.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/9.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/10.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/11.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/12.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/14220.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/15565.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/20909.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/20914.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/23953.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/38196.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/38210.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/4.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/5.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/6.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/7.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/8.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/9.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/9780-2.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/10.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/11.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/12.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/14220.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/15565.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/20909.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/20914.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/23953.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/38196.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/38210.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/8.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/9.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/1.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/2.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/3.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/cache_1.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/cache_2.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/pod/1.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/wchar_t/cache_1.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/wchar_t/cache_2.cc: Likewise.
+	* testsuite/22_locale/numpunct_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/time_get/date_order/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/date_order/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/12750.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/12791.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/26701.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/12750.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/12791.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/26701.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/4.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/6.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/4.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/6.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/38081-1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/38081-2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/6.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/10.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/12439_1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/12439_3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/17038.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/8.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/9.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/9780-1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/10.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/17038.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/8.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/9.cc: Likewise.
+	* testsuite/30_threads/async/42819.cc: Likewise.
+	* testsuite/30_threads/async/any.cc: Likewise.
+	* testsuite/30_threads/async/async.cc: Likewise.
+	* testsuite/30_threads/async/except.cc: Likewise.
+	* testsuite/30_threads/async/launch.cc: Likewise.
+	* testsuite/30_threads/async/sync.cc: Likewise.
+	* testsuite/30_threads/call_once/call_once1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/2.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/3.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/members/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: Likewise.
+	* testsuite/30_threads/future/members/45133.cc: Likewise.
+	* testsuite/30_threads/future/members/get.cc: Likewise.
+	* testsuite/30_threads/future/members/get2.cc: Likewise.
+	* testsuite/30_threads/future/members/share.cc: Likewise.
+	* testsuite/30_threads/future/members/valid.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/lock/1.cc: Likewise.
+	* testsuite/30_threads/lock/2.cc: Likewise.
+	* testsuite/30_threads/lock/3.cc: Likewise.
+	* testsuite/30_threads/lock/4.cc: Likewise.
+	* testsuite/30_threads/lock_guard/cons/1.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/mutex/dest/destructor_locked.cc: Likewise.
+	* testsuite/30_threads/mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/1.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/move.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/move_assign.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/at_thread_exit.cc:
+	Likewise.
+	* testsuite/30_threads/packaged_task/members/get_future.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke5.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/reset2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/swap.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/valid.cc: Likewise.
+	* testsuite/30_threads/promise/cons/move.cc: Likewise.
+	* testsuite/30_threads/promise/cons/move_assign.cc: Likewise.
+	* testsuite/30_threads/promise/members/at_thread_exit.cc: Likewise.
+	* testsuite/30_threads/promise/members/get_future.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value3.cc: Likewise.
+	* testsuite/30_threads/promise/members/swap.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/native_handle/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/3.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/45133.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get2.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/valid.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/1.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/2.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/3.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/4.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/5.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/1.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/2.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/4.cc: Likewise.
+	* testsuite/30_threads/shared_lock/modifiers/1.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/3.cc: Likewise.
+	* testsuite/30_threads/this_thread/1.cc: Likewise.
+	* testsuite/30_threads/this_thread/2.cc: Likewise.
+	* testsuite/30_threads/this_thread/3.cc: Likewise.
+	* testsuite/30_threads/this_thread/4.cc: Likewise.
+	* testsuite/30_threads/this_thread/60421.cc: Likewise.
+	* testsuite/30_threads/thread/cons/1.cc: Likewise.
+	* testsuite/30_threads/thread/cons/2.cc: Likewise.
+	* testsuite/30_threads/thread/cons/3.cc: Likewise.
+	* testsuite/30_threads/thread/cons/4.cc: Likewise.
+	* testsuite/30_threads/thread/cons/5.cc: Likewise.
+	* testsuite/30_threads/thread/cons/6.cc: Likewise.
+	* testsuite/30_threads/thread/cons/7.cc: Likewise.
+	* testsuite/30_threads/thread/cons/8.cc: Likewise.
+	* testsuite/30_threads/thread/cons/9.cc: Likewise.
+	* testsuite/30_threads/thread/cons/moveable.cc: Likewise.
+	* testsuite/30_threads/thread/members/1.cc: Likewise.
+	* testsuite/30_threads/thread/members/2.cc: Likewise.
+	* testsuite/30_threads/thread/members/3.cc: Likewise.
+	* testsuite/30_threads/thread/members/hardware_concurrency.cc: Likewise.
+	* testsuite/30_threads/thread/swap/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/dest/destructor_locked.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/3.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/try_lock/3.cc: Likewise.
+	* testsuite/30_threads/try_lock/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/5.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/enable_shared_from_this/
+	not_shared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/enable_shared_from_this/
+	not_shared2.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/enable_shared_from_this/
+	not_shared3.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/enable_shared_from_this/
+	shared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/enable_shared_from_this/
+	still_shared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/assign.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr_neg.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/
+	auto_ptr_rvalue_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/shared_ptr.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/
+	shared_ptr_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr_neg.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/copy.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/default.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/pointer.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/weak_ptr.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/dest/dest.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/misc/24595.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/misc/io.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/misc/swap.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/modifiers/reset.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/modifiers/reset_neg.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/modifiers/swap.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/modifiers/swap_neg.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/observers/bool_conv.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/observers/get.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/observers/unique.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/observers/use_count.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	default_weaktoshared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	mutex_weaktoshared.cc: Likewise.
+	* testsuite/tr1/3_function_objects/bind/all_bound.cc: Likewise.
+	* testsuite/tr1/3_function_objects/bind/mixed.cc: Likewise.
+	* testsuite/tr1/3_function_objects/bind/nested.cc: Likewise.
+	* testsuite/tr1/3_function_objects/bind/placeholders.cc: Likewise.
+	* testsuite/tr1/3_function_objects/bind/ref.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/1.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/2.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/3.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/4.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/5.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/6.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/7.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/8.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/9.cc: Likewise.
+	* testsuite/tr1/3_function_objects/reference_wrapper/invoke.cc:
+	Likewise.
+	* testsuite/tr1/3_function_objects/reference_wrapper/typedefs.cc:
+	Likewise.
+	* testsuite/tr1/3_function_objects/result_of.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/add_const/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/add_cv/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/add_pointer/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/add_reference/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/add_volatile/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/aligned_storage/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/alignment_of/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/extent/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/has_nothrow_assign/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/has_nothrow_constructor/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/has_nothrow_copy/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/has_trivial_assign/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/has_trivial_constructor/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/has_trivial_copy/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/has_trivial_destructor/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/has_virtual_destructor/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/integral_constant/
+	static_definition.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/integral_constant/
+	true_false_value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_abstract/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_arithmetic/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_array/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_base_of/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_class/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_compound/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_const/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_convertible/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_empty/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_enum/24808.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_enum/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_floating_point/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_function/24808.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_function/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_fundamental/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_integral/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_member_function_pointer/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/is_member_object_pointer/value.cc:
+	Likewise.
+	* testsuite/tr1/4_metaprogramming/is_member_pointer/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_object/24808.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_object/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_pod/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_pointer/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_polymorphic/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_reference/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_same/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_scalar/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_signed/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_union/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_unsigned/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_void/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/is_volatile/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/rank/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/remove_all_extents/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/remove_const/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/remove_cv/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/remove_extent/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/remove_pointer/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/remove_reference/value.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/remove_volatile/value.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/discard_block/operators/
+	equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/discard_block/operators/
+	not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/discard_block/operators/
+	serialize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/
+	cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/
+	cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/
+	operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/
+	operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/
+	operators/serialize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	operators/serialize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/minstd_rand.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/minstd_rand0.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/mt19937.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/random_device/cons/
+	default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/random_device/cons/
+	token.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/ranlux3.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/ranlux3_01.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/ranlux4.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/ranlux4_01.cc
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry/
+	cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry/
+	cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry/
+	operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry/
+	operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry/
+	operators/serialize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry_01/
+	cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry_01/
+	cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry_01/
+	operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry_01/
+	operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry_01/
+	operators/serialize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/uniform_int/33128.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/uniform_int/cons/
+	default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/uniform_int/cons/
+	range.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/cons/
+	default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/operators/
+	equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/operators/
+	not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/operators/
+	serialize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/check_value.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/pr56216.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_value.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/check_value.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/check_value.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	16_hermite/check_value.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/check_value.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/check_value.cc: Likewise.
+	* testsuite/tr1/6_containers/array/capacity/empty.cc: Likewise.
+	* testsuite/tr1/6_containers/array/capacity/max_size.cc: Likewise.
+	* testsuite/tr1/6_containers/array/capacity/size.cc: Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/equal.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/greater.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/
+	greater_or_equal.cc: Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/less.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/
+	less_or_equal.cc: Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/not_equal.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/element_access/at_out_of_range.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/element_access/back.cc: Likewise.
+	* testsuite/tr1/6_containers/array/element_access/data.cc: Likewise.
+	* testsuite/tr1/6_containers/array/element_access/front.cc: Likewise.
+	* testsuite/tr1/6_containers/array/iterators/end_is_one_past.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/requirements/assign.cc: Likewise.
+	* testsuite/tr1/6_containers/array/requirements/contiguous.cc: Likewise.
+	* testsuite/tr1/6_containers/array/requirements/member_swap.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/requirements/zero_sized_arrays.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/specialized_algorithms/swap.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/tuple_interface/get.cc: Likewise.
+	* testsuite/tr1/6_containers/array/tuple_interface/tuple_element.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/tuple_interface/tuple_size.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/hash/24799.cc: Likewise.
+	* testsuite/tr1/6_containers/hash/operators/size_t.cc: Likewise.
+	*
+	testsuite/tr1/6_containers/tuple/comparison_operators/comparisons.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/tuple/cons/assignment.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/cons/big_tuples.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/cons/constructor.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/creation_functions/23978.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/tuple/creation_functions/make_tuple.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/tuple/creation_functions/tie.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/element_access/get.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/tuple_size.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_map/24064.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_map/capacity/29134-map.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_map/erase/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_map/erase/24061-map.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_map/find/map1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_map/insert/24061-map.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_map/insert/array_syntax.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_map/insert/map_range.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_map/insert/map_single.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_map/swap/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_map/swap/2.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/capacity/
+	29134-multimap.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/erase/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/erase/
+	24061-multimap.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/find/multimap1.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/insert/
+	24061-multimap.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/insert/
+	multimap_range.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/insert/
+	multimap_single.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/swap/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/swap/2.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/24054.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/capacity/
+	29134-multiset.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/erase/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/erase/
+	24061-multiset.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/find/multiset1.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/insert/
+	24061-multiset.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/insert/
+	multiset_range.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/insert/
+	multiset_single.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/swap/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/swap/2.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/23465.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/26132.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/capacity/29134-set.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_set/erase/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/erase/24061-set.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/find/set1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/insert/24061-set.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_set/insert/set_range.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_set/insert/set_single.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_set/swap/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/swap/2.cc: Likewise.
+	* testsuite/tr1/6_containers/utility/pair.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/match_results/ctors/char/
+	default.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex_traits/char/
+	translate_nocase.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex_traits/char/value.cc:
+	Likewise.
+	* testsuite/tr1/7_regular_expressions/regex_traits/wchar_t/
+	translate_nocase.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex_traits/wchar_t/value.cc:
+	Likewise.
+	* testsuite/tr1/8_c_compatibility/complex/50880.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/complex/overloads_int.cc: Likewise.
+
 2016-10-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Make sure the return value of malloc_allocator::allocate

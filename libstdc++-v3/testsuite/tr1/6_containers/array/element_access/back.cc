@@ -25,8 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const size_t len = 5;
   typedef std::tr1::array<int, len> array_type;
 

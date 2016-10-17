@@ -33,8 +33,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_future<int> f;
   try
   {
@@ -50,8 +48,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_future<int&> f;
   try
   {
@@ -67,8 +63,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_future<void> f;
   try
   {

@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef num_put<wchar_t> npw_t;
 

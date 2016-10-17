@@ -38,7 +38,6 @@ struct unreliable_lock
 
   ~unreliable_lock()
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( !l.owns_lock() );
   }
 
@@ -62,7 +61,6 @@ struct unreliable_lock
 
   void unlock()
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( l.owns_lock() );
     l.unlock();
   }
@@ -75,8 +73,6 @@ int unreliable_lock::lock_on = -1;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   unreliable_lock l1, l2, l3;
 
   try
@@ -96,8 +92,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   // test behaviour when a lock is already held
   try
     {

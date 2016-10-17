@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::tr1::is_compound;
   using namespace __gnu_test;
 

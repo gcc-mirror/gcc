@@ -31,7 +31,6 @@ void test01()
   typedef codecvt_base::result			result;
   typedef codecvt<char, char, mbstate_t> 	c_codecvt;
 
-  bool test __attribute__((unused)) = true;
   const char* 		c_lit = "black pearl jasmine tea";
   const char* 	        from_next;
   int 			size = std::strlen(c_lit);

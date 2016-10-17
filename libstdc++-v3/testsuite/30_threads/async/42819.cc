@@ -45,8 +45,6 @@ int work2(int value)
 // libstdc++/42819
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( work1(1) == 3 );
   VERIFY( work2(2) == 6 );
 }

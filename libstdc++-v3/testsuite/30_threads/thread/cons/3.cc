@@ -50,8 +50,6 @@ int copyable::copy_count = 0;
 // no errors
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       std::thread::id t1_id1;

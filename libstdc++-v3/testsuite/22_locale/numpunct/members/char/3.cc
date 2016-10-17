@@ -27,8 +27,6 @@
 void test02()
 {
   using namespace std;
-  
-  bool test __attribute__((unused)) = true;
 
   locale loc_it = locale(ISO_8859(15,it_IT));
 

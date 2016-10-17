@@ -34,8 +34,6 @@ std::chrono::system_clock::time_point make_time(int i)
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int> p1;
   std::future<int> f1(p1.get_future());
 

@@ -43,7 +43,6 @@ protected:
 void test03()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   wostringstream stream;
   time_t tt = time(0);

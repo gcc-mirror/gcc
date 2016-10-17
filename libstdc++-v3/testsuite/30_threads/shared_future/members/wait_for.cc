@@ -29,8 +29,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::promise<int> p1;
   std::shared_future<int> f1(p1.get_future());
   std::shared_future<int> f2(f1);

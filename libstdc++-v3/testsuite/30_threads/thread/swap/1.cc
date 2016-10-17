@@ -31,8 +31,6 @@ void f() { }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       std::thread t1(f);
@@ -58,8 +56,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   try
     {
       std::thread t1(f);

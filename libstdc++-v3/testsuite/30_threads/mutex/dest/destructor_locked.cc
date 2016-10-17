@@ -28,7 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::mutex mutex_type;
 
   try 

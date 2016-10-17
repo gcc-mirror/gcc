@@ -51,8 +51,6 @@ struct Mutex
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   Mutex m;
   m.lock();
 

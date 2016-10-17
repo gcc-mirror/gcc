@@ -32,7 +32,6 @@ struct Punct2: std::numpunct<wchar_t>
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wostringstream oss1, oss2;
   wstring result1, result2, result3;

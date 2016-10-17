@@ -46,7 +46,6 @@ void test01()
   typedef wchar_t				int_type;
   typedef char					ext_type;
 
-  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
   int 			size = strlen(e_lit);
   ext_type* 		e_arr = new ext_type[size + 1];

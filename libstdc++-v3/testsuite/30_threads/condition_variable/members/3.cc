@@ -50,8 +50,6 @@ void func()
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique_lock<std::mutex> lock{mx};
   std::thread t{func};
   cv.wait(lock, [&]{ return counter == 2; });

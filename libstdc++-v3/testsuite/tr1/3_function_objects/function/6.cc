@@ -24,8 +24,6 @@
 
 using namespace __gnu_test;
 
-bool test __attribute__((unused)) = true;
-
 struct secret {};
 
 struct noncopyable_function_object_type

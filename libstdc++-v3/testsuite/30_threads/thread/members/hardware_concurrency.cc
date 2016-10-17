@@ -27,8 +27,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( std::thread::hardware_concurrency() >= 1 );
 
   return 0;

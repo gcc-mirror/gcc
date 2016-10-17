@@ -30,8 +30,6 @@ int f() { return 5; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using std::packaged_task;
   using std::allocator_arg;
   using __gnu_test::uneq_allocator;

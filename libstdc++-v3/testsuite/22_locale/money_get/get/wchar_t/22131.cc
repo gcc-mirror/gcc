@@ -41,8 +41,6 @@ void test01()
   using namespace std;
   typedef istreambuf_iterator<wchar_t> InIt;
 
-  bool test __attribute__((unused)) = true;
-
   locale loc(locale::classic(), new My_money_io);
 
   wstring buffer1(L"00#0#1");

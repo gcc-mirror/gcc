@@ -24,7 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::tr1::true_type;
   using std::tr1::false_type;
 

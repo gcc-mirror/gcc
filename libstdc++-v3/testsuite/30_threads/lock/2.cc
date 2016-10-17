@@ -29,8 +29,6 @@
 
 void locker(std::mutex& m1, std::mutex& m2, std::mutex& m3)
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::unique_lock<std::mutex> lock_type;
 
   lock_type l1(m1, std::defer_lock);

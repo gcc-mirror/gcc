@@ -36,8 +36,6 @@ void add_to_value(int i)
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   try 
     {
       std::call_once(value_flag, add_to_value, 2);

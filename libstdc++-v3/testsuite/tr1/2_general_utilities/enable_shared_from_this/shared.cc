@@ -27,8 +27,6 @@ struct X : public std::tr1::enable_shared_from_this<X>
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::shared_ptr<X> p(new X);
   std::tr1::shared_ptr<X>  q = p->shared_from_this();
   VERIFY( p == q );

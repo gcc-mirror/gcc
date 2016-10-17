@@ -32,8 +32,6 @@ struct A
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   const std::tr1::shared_ptr<A> p(a);
   VERIFY( p.get() == a );
@@ -45,8 +43,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   const std::tr1::shared_ptr<A> p(a);
   VERIFY( &*p == a );
@@ -59,8 +55,6 @@ test02()
 int
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   const std::tr1::shared_ptr<A> p(a);
   VERIFY( &p->i == &a->i );

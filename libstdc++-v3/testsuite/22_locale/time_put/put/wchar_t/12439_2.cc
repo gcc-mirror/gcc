@@ -30,7 +30,6 @@
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef time_put<wchar_t> tp_type;
   

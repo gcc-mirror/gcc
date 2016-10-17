@@ -29,7 +29,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   // A locale that expects grouping.
   locale loc_de = locale(ISO_8859(15,de_DE));

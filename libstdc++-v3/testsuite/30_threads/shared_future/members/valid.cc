@@ -28,8 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_future<int> f0;
 
   VERIFY( !f0.valid() );

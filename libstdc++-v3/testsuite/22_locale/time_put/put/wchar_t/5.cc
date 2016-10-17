@@ -31,8 +31,6 @@ void test05()
   typedef ostreambuf_iterator<wchar_t> iterator_type;
   typedef char_traits<wchar_t> traits;
 
-  bool test __attribute__((unused)) = true;
-
   // create "C" time objects
   const tm time1 = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
   const wchar_t* date = L"%A, the second of %B";

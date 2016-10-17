@@ -27,8 +27,6 @@ void test01()
 {
   using namespace std;
   typedef istreambuf_iterator<wchar_t> iterator_type;
-  
-  bool test __attribute__((unused)) = true;
 
   wistringstream iss;
   const num_get<wchar_t>& ng = use_facet<num_get<wchar_t> >(iss.getloc()); 

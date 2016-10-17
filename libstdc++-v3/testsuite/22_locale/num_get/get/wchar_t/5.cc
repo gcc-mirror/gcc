@@ -30,8 +30,6 @@ void test05()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
- 
   unsigned long ul;
 
   wistringstream iss;

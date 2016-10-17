@@ -28,7 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::timed_mutex mutex_type;
   typedef std::unique_lock<mutex_type> lock_type;
   typedef std::chrono::system_clock clock_type;

@@ -72,8 +72,6 @@ void test01()
   using namespace std;
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
-  bool test __attribute__((unused)) = true;
-
   // basic construction
   locale loc_01(locale::classic(), new My_money_io_01);
   locale loc_02(locale::classic(), new My_money_io_02);

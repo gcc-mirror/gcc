@@ -50,7 +50,6 @@ void test05()
   typedef char					ext_type;
   typedef char_traits<char>			ext_traits;
 
-  bool test __attribute__((unused)) = true;
   const ext_type 	e_lit[] = { '\0', '\0', 'f', '\0' };
   const int_type 	i_lit[] = { L'\0', L'\0', L'f', L'\0' };
   const int_type*       ifrom_next;

@@ -37,7 +37,6 @@ struct Punct3: numpunct<wchar_t>
 // libstdc++/23953
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef istreambuf_iterator<wchar_t> iterator_type;
   
   wistringstream iss1, iss2, iss3;

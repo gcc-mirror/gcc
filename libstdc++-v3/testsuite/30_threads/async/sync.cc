@@ -33,8 +33,6 @@ struct sum {
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace std;
 
   int a = 1;

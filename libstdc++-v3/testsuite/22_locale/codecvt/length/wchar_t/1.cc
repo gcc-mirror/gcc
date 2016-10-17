@@ -44,7 +44,6 @@ void test01()
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
   typedef char					ext_type;
 
-  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
   int 			size = strlen(e_lit);
 

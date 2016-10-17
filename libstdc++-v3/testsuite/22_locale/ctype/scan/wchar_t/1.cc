@@ -41,8 +41,6 @@ class gnu_ctype: public std::ctype<char_type> { };
 // Sanity check scan_is() and scan_not().
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const char_type *const ca = L"aaaaa";
   const char_type *const cz = L"zzzzz";
   const char_type *const cA = L"AAAAA";

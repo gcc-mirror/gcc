@@ -27,7 +27,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wostringstream oss1, oss2, oss3;
   const num_put<wchar_t>& np1 = use_facet<num_put<wchar_t> >(oss1.getloc());

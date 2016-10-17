@@ -32,7 +32,6 @@ protected:
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc(locale(), new my_moneypunct());
   wstringstream ss(L"123.455");

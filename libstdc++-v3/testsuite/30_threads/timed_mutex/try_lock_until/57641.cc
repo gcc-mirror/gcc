@@ -56,7 +56,6 @@ void f()
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   std::lock_guard<std::timed_mutex> l(mx);
   auto start = C::system_clock::now();
   std::thread t(f);

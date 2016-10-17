@@ -68,7 +68,6 @@ template<typename Tp>
   void
   test001()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -121,7 +120,6 @@ template<typename Tp>
   void
   test002()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -174,7 +172,6 @@ template<typename Tp>
   void
   test003()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -227,7 +224,6 @@ template<typename Tp>
   void
   test004()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -273,7 +269,6 @@ template<typename Tp>
   void
   test005()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -326,7 +321,6 @@ template<typename Tp>
   void
   test006()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -372,7 +366,6 @@ template<typename Tp>
   void
   test007()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -425,7 +418,6 @@ template<typename Tp>
   void
   test008()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -478,7 +470,6 @@ template<typename Tp>
   void
   test009()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -531,7 +522,6 @@ template<typename Tp>
   void
   test010()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -584,7 +574,6 @@ template<typename Tp>
   void
   test011()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -638,7 +627,6 @@ template<typename Tp>
   void
   test012()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -691,7 +679,6 @@ template<typename Tp>
   void
   test013()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -744,7 +731,6 @@ template<typename Tp>
   void
   test014()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -797,7 +783,6 @@ template<typename Tp>
   void
   test015()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -850,7 +835,6 @@ template<typename Tp>
   void
   test016()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -903,7 +887,6 @@ template<typename Tp>
   void
   test017()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -956,7 +939,6 @@ template<typename Tp>
   void
   test018()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -1009,7 +991,6 @@ template<typename Tp>
   void
   test019()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -1062,7 +1043,6 @@ template<typename Tp>
   void
   test020()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -1115,7 +1095,6 @@ template<typename Tp>
   void
   test021()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -1168,7 +1147,6 @@ template<typename Tp>
   void
   test022()
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
