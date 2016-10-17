@@ -1,3 +1,28 @@
+2016-10-17  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* dominance.c (dom_info::dom_info): Add new constructor for region
+	which is vector of basic blocks.
+	(dom_init): New method to initialize members common for both
+	constructors.
+	(dom_info::dom_info): Invoke dom_init for partial initialization.
+	(dom_info::get_idom): Add check to corner cases on basic blocks which
+	are not in region.
+	(dom_info::calc_dfs_tree): Check M_FAKE_EXIT_EDGE instead of M_REVERSE
+	to detect unreachable bbs.
+	(dom_info::calc_idoms): Likewise.
+	(compute_dom_fast_query_in_region): New function.
+	(calculate_dominance_info_for_region): Likewise.
+	(free_dominance_info_for_region): Likewise.
+	* dominance.h: Add prototypes for introduced region-based functions
+	tree-if-conv.c: (build_region): New function.
+	(if_convertible_loop_p_1): Invoke local version of post-dominators
+	calculation before basic block predication with subsequent freeing
+	post-dominator info.
+	(tree_if_conversion): Remove free of post-dominator info
+	(pass_if_conversion::execute): Delete detection of infinite loops
+	and fake edges to exit block since post-dominator calculation is
+	performed per if-converted loop only.
+
 2016-10-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR target/77308
