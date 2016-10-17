@@ -515,7 +515,6 @@ runtime_files = \
 	lfstack.c \
 	malloc.c \
 	netpoll.c \
-	rdebug.c \
 	reflect.c \
 	runtime1.c \
 	sigqueue.c \
@@ -3035,6 +3034,7 @@ TEST_PACKAGES = \
 	os/user/check \
 	path/filepath/check \
 	regexp/syntax/check \
+	runtime/debug/check \
 	runtime/pprof/check \
 	runtime/internal/atomic/check \
 	runtime/internal/sys/check \

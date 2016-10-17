@@ -465,7 +465,7 @@ void	runtime_MProf_Free(Bucket*, uintptr, bool)
   __asm__ (GOSYM_PREFIX "runtime.mProf_Free");
 void	runtime_MProf_GC(void)
   __asm__ (GOSYM_PREFIX "runtime.mProf_GC");
-void	runtime_iterate_memprof(void (*callback)(Bucket*, uintptr, Location*, uintptr, uintptr, uintptr))
+void	runtime_iterate_memprof(FuncVal* callback)
   __asm__ (GOSYM_PREFIX "runtime.iterate_memprof");
 int32	runtime_gcprocs(void);
 void	runtime_helpgc(int32 nproc);
@@ -535,7 +535,8 @@ void	runtime_gc_g_ptr(Eface*);
 void	runtime_gc_itab_ptr(Eface*);
 
 void	runtime_memorydump(void);
-int32	runtime_setgcpercent(int32);
+int32	runtime_setgcpercent(int32)
+  __asm__ (GOSYM_PREFIX "runtime.setgcpercent");
 
 // Value we use to mark dead pointers when GODEBUG=gcdead=1.
 #define PoisonGC ((uintptr)0xf969696969696969ULL)

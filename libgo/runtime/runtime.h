@@ -230,7 +230,7 @@ enum {
 };
 void	runtime_hashinit(void);
 
-void	runtime_traceback(void)
+void	runtime_traceback(int32)
   __asm__ (GOSYM_PREFIX "runtime.traceback");
 void	runtime_tracebackothers(G*)
   __asm__ (GOSYM_PREFIX "runtime.tracebackothers");
@@ -256,7 +256,6 @@ extern	int8*	runtime_goos;
 extern	int32	runtime_ncpu;
 extern 	void	(*runtime_sysargs)(int32, uint8**);
 extern	struct debugVars runtime_debug;
-extern	uintptr	runtime_maxstacksize;
 
 extern	bool	runtime_isstarted;
 extern	bool	runtime_isarchive;
@@ -411,7 +410,8 @@ void	runtime_crash(void);
 void	runtime_parsedebugvars(void)
   __asm__(GOSYM_PREFIX "runtime.parsedebugvars");
 void	_rt0_go(void);
-int32	runtime_setmaxthreads(int32);
+intgo	runtime_setmaxthreads(intgo)
+  __asm__ (GOSYM_PREFIX "runtime.setmaxthreads");
 G*	runtime_timejump(void);
 void	runtime_iterate_finq(void (*callback)(FuncVal*, void*, const FuncType*, const PtrType*));
 

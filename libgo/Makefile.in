@@ -262,7 +262,7 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	$(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo $(am__objects_3) yield.lo \
 	$(am__objects_4) go-iface.lo lfstack.lo malloc.lo netpoll.lo \
-	rdebug.lo reflect.lo runtime1.lo sigqueue.lo $(am__objects_5)
+	reflect.lo runtime1.lo sigqueue.lo $(am__objects_5)
 am_libgo_llgo_la_OBJECTS = $(am__objects_6)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -913,7 +913,6 @@ runtime_files = \
 	lfstack.c \
 	malloc.c \
 	netpoll.c \
-	rdebug.c \
 	reflect.c \
 	runtime1.c \
 	sigqueue.c \
@@ -1384,6 +1383,7 @@ TEST_PACKAGES = \
 	os/user/check \
 	path/filepath/check \
 	regexp/syntax/check \
+	runtime/debug/check \
 	runtime/pprof/check \
 	runtime/internal/atomic/check \
 	runtime/internal/sys/check \
@@ -1624,7 +1624,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parfor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/print.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rdebug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reflect.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rtems-task-variable-add.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime.Plo@am__quote@

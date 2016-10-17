@@ -130,11 +130,11 @@ runtime_dopanic(int32 unused __attribute__ ((unused)))
 		if(g != runtime_m()->g0) {
 			runtime_printf("\n");
 			runtime_goroutineheader(g);
-			runtime_traceback();
+			runtime_traceback(0);
 			runtime_printcreatedby(g);
 		} else if(t >= 2 || runtime_m()->throwing > 0) {
 			runtime_printf("\nruntime stack:\n");
-			runtime_traceback();
+			runtime_traceback(0);
 		}
 		if(!didothers) {
 			didothers = true;
