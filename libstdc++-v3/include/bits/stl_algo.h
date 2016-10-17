@@ -5730,8 +5730,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       static_assert(is_integral<_Distance>::value,
 		    "sample size must be an integer type");
 
+      typename iterator_traits<_PopulationIterator>::difference_type __d = __n;
       return std::__sample(__first, __last, __pop_cat{}, __out, __samp_cat{},
-			   __n, std::forward<_UniformRandomBitGenerator>(__g));
+			   __d, std::forward<_UniformRandomBitGenerator>(__g));
     }
 #endif // C++17
 #endif // C++14

@@ -1,3 +1,11 @@
+2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77994
+	* include/bits/stl_algo.h (sample): Convert size argument to iterator
+	difference type.
+	* include/experimental/algorithm (experimental::sample): Likewise.
+	* testsuite/25_algorithms/sample/2.cc: New test.
+
 2016-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/unordered_map/insert/57619.C: Rename to 57619.cc.
