@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_test::uneq_allocator<int> alloc_type;
   typedef __gnu_debug::forward_list<int, alloc_type> test_type;
   test_type v1(alloc_type(1));

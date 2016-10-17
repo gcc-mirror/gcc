@@ -39,7 +39,6 @@ using __gnu_test::uneq_allocator;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef uneq_allocator<T> alloc_type;
   typedef std::unordered_map<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -54,7 +53,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef uneq_allocator<T> alloc_type;
   typedef std::unordered_map<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));

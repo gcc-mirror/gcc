@@ -23,8 +23,6 @@
 void
 test01() 
 {
-  bool test __attribute__((unused)) = true;
-
   const size_t len = 0;
   typedef std::array<int, len> array_type;
 

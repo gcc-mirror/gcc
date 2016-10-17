@@ -34,7 +34,6 @@ template class std::unordered_set<T, H, E, CustomPointerAlloc<T>>;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef CustomPointerAlloc<T> alloc_type;
   typedef std::unordered_set<T, H, E, alloc_type> test_type;
   test_type v;

@@ -24,8 +24,6 @@
 
 #include <string>
 
-bool test __attribute__((unused)) = true;
-
 // This test verifies the following:
 //   insert_after single item
 //   before_begin iterator

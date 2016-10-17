@@ -39,7 +39,6 @@ void
 test_default_ctor_exception_gurantee()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -72,7 +71,6 @@ void
 test_copy_ctor_exception_gurantee()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -111,7 +109,6 @@ void
 test_assignment_operator_1()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -139,7 +136,6 @@ void
 test_assignment_operator_2()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -169,7 +165,6 @@ void
 test_assignment_operator_3()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -199,7 +194,6 @@ void
 test_assignment_operator_3_exception_guarantee()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -244,7 +238,6 @@ void
 test_fill_assign_1()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -272,7 +265,6 @@ void
 test_fill_assign_2()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -306,7 +298,6 @@ void
 test_fill_assign_3()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -341,7 +332,6 @@ void
 test_fill_assign_3_exception_guarantee()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -386,7 +376,6 @@ void
 test_fill_assign_4()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -430,7 +419,6 @@ void
 test_range_assign_2()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -460,7 +448,6 @@ void
 test_range_assign_3()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -492,7 +479,6 @@ void
 test_range_assign_4()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -525,7 +511,6 @@ void
 test_range_assign_4_exception_guarantee()
 {
   // setup
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 

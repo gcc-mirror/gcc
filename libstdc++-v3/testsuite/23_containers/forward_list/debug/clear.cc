@@ -24,7 +24,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   std::forward_list<int> fl{1, 2, 3};
 
   auto before = fl.before_begin();

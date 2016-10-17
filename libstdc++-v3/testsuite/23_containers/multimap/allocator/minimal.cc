@@ -36,7 +36,6 @@ template class std::multimap<T, U, Cmp, SimpleAllocator<std::pair<const T, U>>>;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef SimpleAllocator<std::pair<const T, U>> alloc_type;
   typedef std::allocator_traits<alloc_type> traits_type;
   typedef std::multimap<T, U, Cmp, alloc_type> test_type;

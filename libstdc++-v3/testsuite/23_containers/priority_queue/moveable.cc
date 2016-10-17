@@ -28,8 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::priority_queue<int> a,b;
   a.push(1);
   b = std::move(a);

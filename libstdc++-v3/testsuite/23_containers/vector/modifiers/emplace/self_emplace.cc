@@ -20,8 +20,6 @@
 #include <vector>
 #include "testsuite_hooks.h"
 
-bool test __attribute__((unused)) = true;
-
 void
 test01()
 {

@@ -22,8 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_test::propagating_allocator<int, false> alloc_type;
   typedef __gnu_debug::set<int, std::less<int>, alloc_type> test_type;
 

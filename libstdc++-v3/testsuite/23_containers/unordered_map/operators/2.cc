@@ -52,8 +52,6 @@ struct DefaultConstructibleType
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using __gnu_test::rvalstruct;
   using __gnu_test::counter_type;
 

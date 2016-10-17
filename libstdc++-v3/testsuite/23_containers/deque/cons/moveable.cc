@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::deque<int> a,b;
   a.push_back(1);
   b = std::move(a);

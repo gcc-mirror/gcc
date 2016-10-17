@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef unordered_map<int, int>::value_type value_type;

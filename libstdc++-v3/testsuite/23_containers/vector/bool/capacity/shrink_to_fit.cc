@@ -22,8 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<bool> vb(__CHAR_BIT__ * sizeof(unsigned long) + 1);
   vb.pop_back();
 

@@ -22,7 +22,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::unordered_set<int> us1 { 0, 1 };
   {
     std::unordered_set<int> us2(std::move(us1));

@@ -26,8 +26,6 @@ using test_type = std::multimap<int, int>;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ {1, 10}, {1, 11}, {2, 20}, {2, 21}, {3, 30}, {3, 31} };
   test_type c1 = c0, c2 = c0;
 
@@ -46,8 +44,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ {1, 10}, {1, 11}, {2, 20}, {2, 21}, {3, 30}, {3, 31} };
   test_type c1 = c0;
   std::multimap<int, int, std::less<>> c2( c0.begin(), c0.end() );
@@ -68,8 +64,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ {1, 10}, {1, 11}, {2, 20}, {2, 21}, {3, 30}, {3, 31} };
   test_type c1 = c0;
   std::multimap<int, int, std::greater<>> c2( c0.begin(), c0.end() );
@@ -90,8 +84,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ {1, 10}, {1, 11}, {2, 20}, {2, 21}, {3, 30}, {3, 31} };
   test_type c1 = c0;
   std::map<int, int, std::greater<>> c2( c0.begin(), c0.end() );

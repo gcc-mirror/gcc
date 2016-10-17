@@ -26,8 +26,6 @@ using test_type = std::multimap<int, int>;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   test_type c{ {1, 10}, { 1, 11 }, {2, 20}, { 2, 21}, {3, 30}, { 3, 31 } };
   test_type::node_type node;
   test_type::iterator pos;
@@ -97,8 +95,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   test_type c{ {1, 10}, { 1, 11 }, {2, 20}, { 2, 21}, {3, 30}, { 3, 31 } };
   test_type::node_type node;
   test_type::iterator pos;

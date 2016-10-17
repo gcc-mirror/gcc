@@ -23,8 +23,6 @@
 // libstdc++/44190
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int> v;
   v.resize(10);
   VERIFY( v.size() <= v.capacity() );

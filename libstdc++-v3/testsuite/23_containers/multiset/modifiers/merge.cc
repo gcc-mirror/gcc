@@ -26,8 +26,6 @@ using test_type = std::multiset<int>;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   test_type c0{ 1, 1, 2, 2, 3, 3 };
   test_type c1 = c0, c2 = c0;
 
@@ -46,8 +44,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   test_type c0{ 1, 1, 2, 2, 3, 3 };
   test_type c1 = c0;
   std::multiset<int, std::less<>> c2( c0.begin(), c0.end() );
@@ -88,8 +84,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   const test_type c0{ 1, 1, 2, 2, 3, 3 };
   test_type c1 = c0;
   std::set<int, std::greater<>> c2( c0.begin(), c0.end() );

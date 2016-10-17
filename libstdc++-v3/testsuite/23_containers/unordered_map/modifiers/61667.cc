@@ -20,8 +20,6 @@
 #include <unordered_map>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 void test01()
 {
   std::unordered_map<int, int> um(20);

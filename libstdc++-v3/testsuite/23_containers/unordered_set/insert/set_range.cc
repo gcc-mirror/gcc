@@ -25,8 +25,6 @@
 #include <unordered_set>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 void test01()
 {
   typedef std::unordered_set<std::string> Set;

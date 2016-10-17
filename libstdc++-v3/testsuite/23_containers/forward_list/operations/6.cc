@@ -22,8 +22,6 @@
 #include <forward_list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 //  Comparison functor.
 template<typename Num>
   class Comp

@@ -24,7 +24,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const size_t len = 3;

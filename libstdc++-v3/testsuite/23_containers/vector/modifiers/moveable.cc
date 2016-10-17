@@ -28,8 +28,6 @@ using namespace __gnu_test;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<copycounter> a;
   copycounter c(1);
   copycounter::copycount = 0;
@@ -51,8 +49,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   copycounter c(1);
   std::vector<copycounter> a(10, c), b(100, c);
   copycounter::copycount = 0;
@@ -69,8 +65,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-  
   copycounter c(1);
   std::vector<copycounter> a(10, c), b(100, c);
   copycounter::copycount = 0;
@@ -89,8 +83,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   copycounter c(1);
   std::vector<copycounter> a(10, c);
   copycounter::copycount = 0;
@@ -107,8 +99,6 @@ test04()
 void
 test05()
 {
-  bool test __attribute__((unused)) = true;
-
   copycounter c(1);
   std::vector<copycounter> a(10, c);
   copycounter::copycount = 0;

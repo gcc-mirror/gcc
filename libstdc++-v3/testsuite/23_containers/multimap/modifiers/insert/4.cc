@@ -26,7 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::rvalstruct;
 
   typedef std::multimap<rvalstruct, rvalstruct> Map;
@@ -46,7 +45,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::rvalstruct;
 
   typedef std::multimap<rvalstruct, rvalstruct> Map;

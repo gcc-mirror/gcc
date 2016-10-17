@@ -49,7 +49,6 @@ check_cap_eq_maxsize(const std::vector<bool>& x)
 // libstdc++/31370
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   int myexit = 0;
 
   try

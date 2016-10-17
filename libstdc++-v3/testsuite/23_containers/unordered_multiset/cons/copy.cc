@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   const int nb = 10000;
   std::unordered_multiset<int> ref;
   for (int i = 0; i != nb; ++i)

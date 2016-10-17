@@ -25,7 +25,6 @@
 // libstdc++/22102
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::multimap<int, int>   Mmap;
   typedef Mmap::value_type          value_type;
   typedef Mmap::iterator            iterator;

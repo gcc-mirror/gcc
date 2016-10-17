@@ -36,7 +36,6 @@ namespace std
 // Should use multimap specialization for swap.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::multimap<T, int> A;
   std::multimap<T, int> B;
   swap_calls = 0;
@@ -47,7 +46,6 @@ void test01()
 // Should use multimap specialization for swap.
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   multimap<T, int> A;
   multimap<T, int> B;

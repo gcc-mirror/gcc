@@ -29,8 +29,6 @@ struct X
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   X x;
   std::string s(x);
   std::bitset<32> b1(static_cast<const char*>(x));

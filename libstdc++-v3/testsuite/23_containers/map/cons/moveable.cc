@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::map<int, int> a,b;
   a[2]=0;
   b[1]=0;

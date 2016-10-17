@@ -24,10 +24,8 @@
 
 using namespace std;
 
-int test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef unordered_multimap<int,double> Container;
   typedef Container::const_iterator iterator;
   typedef pair<iterator,iterator> itpair;
@@ -55,8 +53,6 @@ int test01()
   VERIFY(m.count(5) == 2);
   VERIFY(m.count(42) == 1);
   VERIFY(m.count(7) == 2);
-
-  return test;
 }
 
 int main()

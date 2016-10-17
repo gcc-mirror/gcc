@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::__detail::_Power2_rehash_policy policy;
   VERIFY( policy._M_next_bkt(1) == 2 );
   VERIFY( policy._M_next_bkt(2) == 4 );
@@ -38,8 +36,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::__detail::_Power2_rehash_policy policy;
 
   for (std::size_t i = 1;;)

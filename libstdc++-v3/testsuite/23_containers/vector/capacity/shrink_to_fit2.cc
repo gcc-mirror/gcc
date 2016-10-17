@@ -25,8 +25,6 @@ using __gnu_test::propagating_allocator;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef propagating_allocator<int, true> alloc_type;
   alloc_type alloc(5);
 
@@ -40,8 +38,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef propagating_allocator<int, false> alloc_type;
   alloc_type alloc(5);
 

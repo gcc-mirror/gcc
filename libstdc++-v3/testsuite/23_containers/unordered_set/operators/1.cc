@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unordered_set<int> us1, us2;
   VERIFY( us1 == us2 );
   VERIFY( !(us1 != us2) );

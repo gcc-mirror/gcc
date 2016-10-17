@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   unordered_set<int> us0;

@@ -23,10 +23,8 @@
 
 using namespace std;
 
-int test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   set<int> m({ 1, 5, 37 });
   VERIFY(m.size() == 3);
   VERIFY(m.count(1) == 1);
@@ -48,8 +46,6 @@ int test01()
   VERIFY(m.count(102) == 1);
   VERIFY(m.count(42) == 1);
   VERIFY(m.count(1) == 0);
-
-  return test;
 }
 
 int main()

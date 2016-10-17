@@ -41,8 +41,6 @@ void testc(const std::list<short>& l)
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
 #if _GLIBCXX_USE_DUAL_ABI
   std::list<short> l;
   testm(l);

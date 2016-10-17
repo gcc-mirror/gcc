@@ -26,8 +26,6 @@ using test_type = std::map<int, int>;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   test_type c{ {1, 10}, {2, 20}, {3, 30} };
   test_type::node_type node;
   test_type::insert_return_type ins;
@@ -101,8 +99,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   test_type c{ {1, 10}, {2, 20}, {3, 30} };
   test_type::node_type node;
   test_type::insert_return_type ins;

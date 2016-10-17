@@ -24,7 +24,6 @@
 template<typename _USet>
   void test(int threshold)
   {
-    bool test __attribute__((unused)) = true;
     _USet us;
     auto nb_reserved = us.bucket_count();
     us.reserve(nb_reserved);

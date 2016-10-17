@@ -26,8 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::unordered_multimap<std::string, int> Map;
   typedef std::pair<const std::string, int> Pair;
 
@@ -44,8 +42,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::unordered_multimap<std::string, int> Map;
   typedef std::pair<const std::string, int> Pair;
 

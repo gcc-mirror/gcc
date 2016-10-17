@@ -26,7 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace __gnu_test;
 
   std::vector<throwing_move_constructor> v1;

@@ -20,9 +20,6 @@
 // 23.2.3.n forward_list xxx [lib.forward_list.xxx]
 
 #include <forward_list>
-#include <testsuite_hooks.h>
-
-bool test __attribute__((unused)) = true;
 
 // This test verifies the following:
 //   Construction from given number of default item

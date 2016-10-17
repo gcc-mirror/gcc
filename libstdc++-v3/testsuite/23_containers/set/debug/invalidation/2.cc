@@ -27,8 +27,6 @@ using std::advance;
 // Erase
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   set<int> v;
   for (int i = 0; i < 20; ++i)
     v.insert(i);

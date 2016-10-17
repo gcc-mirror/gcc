@@ -121,8 +121,6 @@ const unsigned N9 = sizeof(A9) / sizeof(bool);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<bool>  vec_type;
 
   vec_type v;

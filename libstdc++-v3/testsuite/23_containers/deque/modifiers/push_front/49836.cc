@@ -24,7 +24,6 @@
 // libstdc++/49836
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::CopyConsOnlyType;
   using __gnu_test::MoveConsOnlyType;
 

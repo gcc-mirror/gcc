@@ -25,8 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_list<double> fld;
   VERIFY(fld.empty() == true);
 

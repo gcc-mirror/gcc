@@ -46,7 +46,6 @@ get_index(std::vector<int>& v)
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   vector<int> v1, v2;
   vector<shared_ptr<vector<int> > > vs;
   vector<int> *pv3 = 0, *pv4 = 0;

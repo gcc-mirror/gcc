@@ -38,8 +38,6 @@ private:
   std::vector<double> coords;
 };
 
-bool test __attribute__((unused)) = true;
-
 void test01()
 {
   typedef std::unordered_multimap<char, std::vector<double>> MMap;

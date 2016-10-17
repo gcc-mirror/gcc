@@ -58,8 +58,6 @@ template<typename T>
   void
   test01()
   {
-    bool test __attribute__((unused)) = true;
-    
     typedef std::deque<T>                         deque_type;
     typedef typename deque_type::iterator      iterator_type;
 

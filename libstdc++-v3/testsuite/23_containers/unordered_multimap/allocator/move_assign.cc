@@ -27,7 +27,6 @@ using __gnu_test::counter_type;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<counter_type, false> alloc_type;
   typedef __gnu_test::counter_type_hasher hash;
   typedef std::unordered_multimap<counter_type, counter_type, hash,
@@ -55,7 +54,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<counter_type, true> alloc_type;
   typedef __gnu_test::counter_type_hasher hash;
   typedef std::unordered_multimap<counter_type, counter_type, hash,

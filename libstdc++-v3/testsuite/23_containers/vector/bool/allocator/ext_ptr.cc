@@ -30,7 +30,6 @@ template class std::vector<T, CustomPointerAlloc<T>>;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef CustomPointerAlloc<T> alloc_type;
   typedef std::vector<T, alloc_type> test_type;
   test_type v;

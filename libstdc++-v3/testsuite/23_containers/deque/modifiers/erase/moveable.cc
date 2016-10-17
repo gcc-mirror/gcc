@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace __gnu_test;
 
   std::deque<copycounter> a(40);

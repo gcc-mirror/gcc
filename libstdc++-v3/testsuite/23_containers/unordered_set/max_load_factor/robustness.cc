@@ -27,8 +27,6 @@ template<template<typename _Value, typename _Hash,
 	   typename _USet>
   void test()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef std::numeric_limits<std::size_t> nl_size_t;
     _USet<int, std::hash<int>, std::equal_to<int>,
 	  __gnu_cxx::throw_allocator_limit<int> > us;

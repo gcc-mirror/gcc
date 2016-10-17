@@ -26,8 +26,6 @@ using __gnu_test::uneq_allocator;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef uneq_allocator<std::pair<const int, int> > alloc_type;
   typedef __gnu_debug::map<int, int, std::less<int>, alloc_type> test_type;
 

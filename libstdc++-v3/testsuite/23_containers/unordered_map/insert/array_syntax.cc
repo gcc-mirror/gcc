@@ -26,8 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::unordered_map<std::string, int> Map;
 
   Map m;

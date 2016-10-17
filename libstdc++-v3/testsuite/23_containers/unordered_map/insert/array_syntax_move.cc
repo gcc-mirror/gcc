@@ -28,7 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::rvalstruct;
 
   typedef std::unordered_map<rvalstruct, rvalstruct> Map;

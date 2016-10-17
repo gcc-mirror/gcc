@@ -27,7 +27,6 @@ template<typename _Tp>
 void
 swap2()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef _Tp list_type;

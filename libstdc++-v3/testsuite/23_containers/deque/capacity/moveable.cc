@@ -26,8 +26,6 @@ using namespace __gnu_test;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::deque<copycounter> a;
   copycounter::copycount = 0;
   a.resize(10);

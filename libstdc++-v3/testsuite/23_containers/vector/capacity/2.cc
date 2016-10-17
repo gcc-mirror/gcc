@@ -36,7 +36,6 @@ using __gnu_test::destructor;
 void
 test_reserve()
 {
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 
@@ -66,7 +65,6 @@ test_reserve()
 void
 test_reserve_exception_guarantee()
 {
-  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_allocator<T> > X;
 

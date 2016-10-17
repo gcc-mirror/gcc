@@ -29,8 +29,6 @@ struct A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::array<A, 1> a;
   const A& aa = a.at(0);
   VERIFY(aa.valid);

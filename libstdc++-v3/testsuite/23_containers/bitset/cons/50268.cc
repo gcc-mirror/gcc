@@ -23,8 +23,6 @@
 // libstdc++/50268
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::bitset<1> b1(3ULL);
   VERIFY( b1.count() == 1ULL );
 

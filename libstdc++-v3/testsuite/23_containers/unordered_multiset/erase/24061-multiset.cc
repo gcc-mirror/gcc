@@ -40,8 +40,6 @@ namespace
 // libstdc++/24061
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   typedef std::unordered_multiset<std::string> Mset;
   typedef Mset::iterator       iterator;
   typedef Mset::const_iterator const_iterator;

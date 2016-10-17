@@ -27,8 +27,6 @@
 
 typedef std::deque<__gnu_test::object_counter>   gdeque;
 
-bool test __attribute__((unused)) = true;
-
 // see http://gcc.gnu.org/ml/libstdc++/2001-11/msg00139.html
 void
 test01()

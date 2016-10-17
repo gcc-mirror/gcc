@@ -39,8 +39,6 @@ private:
   std::vector<double> coords;
 };
 
-bool test __attribute__((unused)) = true;
-
 void test01()
 {
   typedef std::unordered_map<char, std::vector<double>> Map;

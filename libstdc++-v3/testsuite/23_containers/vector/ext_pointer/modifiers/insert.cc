@@ -25,8 +25,6 @@
 
 void test01() 
 { 
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::_ExtPtr_allocator<int> alloc;
   std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> > iv(alloc);
   VERIFY( iv.get_allocator() == alloc );

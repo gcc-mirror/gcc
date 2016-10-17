@@ -36,7 +36,6 @@ namespace std
 // Should use set specialization for swap.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::set<T> A;
   std::set<T> B;
   swap_calls = 0;
@@ -47,7 +46,6 @@ void test01()
 // Should use set specialization for swap.
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   set<T> A;
   set<T> B;

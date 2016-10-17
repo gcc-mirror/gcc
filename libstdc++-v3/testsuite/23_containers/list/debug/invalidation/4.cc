@@ -25,8 +25,6 @@
 void test04()
 {
   using std::advance;
-  
-  bool test __attribute__((unused)) = true;
 
   typedef __gnu_debug::list<int>  list_type;
 

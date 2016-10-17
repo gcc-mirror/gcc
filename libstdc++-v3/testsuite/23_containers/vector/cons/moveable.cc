@@ -28,8 +28,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int> a,b;
   a.push_back(1);
   b = std::move(a);
@@ -42,8 +40,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-  
   std::vector<bool> a,b;
   a.push_back(1);
   b = std::move(a);

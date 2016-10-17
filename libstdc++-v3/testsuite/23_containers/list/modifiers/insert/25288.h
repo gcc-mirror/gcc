@@ -24,8 +24,6 @@
 template<typename _Tp>
 void insert1()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef _Tp list_type;
   typedef typename _Tp::value_type value_type;
   typedef typename _Tp::allocator_type allocator_type;

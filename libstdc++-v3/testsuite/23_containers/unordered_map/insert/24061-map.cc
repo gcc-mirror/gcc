@@ -26,8 +26,6 @@
 // libstdc++/24061
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   typedef std::unordered_map<std::string, int> Map;
   typedef Map::iterator       iterator;
   typedef Map::const_iterator const_iterator;

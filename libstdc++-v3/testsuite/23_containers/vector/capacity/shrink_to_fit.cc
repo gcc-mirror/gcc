@@ -25,8 +25,6 @@
 // libstdc++/42573
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int> v(100);
   v.push_back(1);
   v.push_back(1);

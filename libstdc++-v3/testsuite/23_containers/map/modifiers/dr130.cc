@@ -25,7 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   map<int, int> m0;
@@ -48,7 +47,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   map<int, int> m0;

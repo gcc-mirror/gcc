@@ -36,8 +36,6 @@ template<class Cont>
   void
   my_compare(const Cont& c1, const Cont& c2)
   {
-    bool test __attribute__((unused)) = true;
-
     VERIFY( c1.size() == c2.size() );
 
     for (std::size_t i = 0; i < c1.size(); ++i)
