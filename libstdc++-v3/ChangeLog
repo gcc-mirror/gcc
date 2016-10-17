@@ -1,6 +1,14 @@
 2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline:
+	2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/propagate_const (element_type): Qualify
+	declval.
+
+2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline:
 	2016-08-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/77322
