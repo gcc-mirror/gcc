@@ -1,3 +1,14 @@
+2016-10-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/77916
+	* gimple-ssa-strength-reduction.c (create_add_on_incoming_edge):
+	Don't allow a MINUS_EXPR for pointer arithmetic for either known
+	or unknown strides.
+	(record_increment): Increments of -1 for unknown strides just use
+	a multiply initializer like other negative values.
+	(analyze_increments): Remove stopgap solution for -1 increment
+	applied to pointer arithmetic.
+
 2016-10-17  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* dominance.c (dom_info::dom_info): Add new constructor for region
