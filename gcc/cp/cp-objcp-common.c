@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "cp-objcp-common.h"
+#include "dwarf2.h"
 
 /* Special routine to get the alias set for C++.  */
 
@@ -130,45 +131,48 @@ cxx_types_compatible_p (tree x, tree y)
   return same_type_ignoring_top_level_qualifiers_p (x, y);
 }
 
-/* Return true if DECL is explicit member function.  */
-
-bool
-cp_function_decl_explicit_p (const_tree decl)
-{
-  return (decl
-	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
-	  && DECL_NONCONVERTING_P (decl));
-}
-
-/* Return true if DECL is deleted special member function.  */
-
-bool
-cp_function_decl_deleted_p (const_tree decl)
-{
-  return (decl
-	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
-	  && DECL_DELETED_FN (decl));
-}
-
-/* Returns 0 if DECL is NOT a C++11 defaulted special member function,
-   1 if it is explicitly defaulted within the class body, or 2 if it
-   is explicitly defaulted outside the class body.  */
-
+/* Return -1 if dwarf ATTR shouldn't be added for DECL, or the attribute
+   value otherwise.  */
 int
-cp_function_decl_defaulted (const_tree decl)
+cp_decl_dwarf_attribute (const_tree decl, int attr)
 {
-  if (decl
-      && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
-      && DECL_DEFAULTED_FN (decl))
-    {
-      if (DECL_DEFAULTED_IN_CLASS_P (decl))
-	return 1;
+  if (decl == NULL_TREE)
+    return -1;
 
-      if (DECL_DEFAULTED_OUTSIDE_CLASS_P (decl))
-	return 2;
+  switch (attr)
+    {
+    case DW_AT_explicit:
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
+	  && DECL_NONCONVERTING_P (decl))
+	return 1;
+      break;
+
+    case DW_AT_deleted:
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
+	  && DECL_DELETED_FN (decl))
+	return 1;
+      break;
+
+    case DW_AT_defaulted:
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
+	  && DECL_DEFAULTED_FN (decl))
+	{
+	  if (DECL_DEFAULTED_IN_CLASS_P (decl))
+	    return DW_DEFAULTED_in_class;
+
+	  if (DECL_DEFAULTED_OUTSIDE_CLASS_P (decl))
+	    return DW_DEFAULTED_out_of_class;
+	}
+      break;
+
+    default:
+      break;
     }
 
-  return 0;
+  return -1;
 }
 
 /* Stubs to keep c-opts.c happy.  */

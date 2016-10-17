@@ -693,6 +693,15 @@ lhd_get_substring_location (const substring_loc &, location_t *)
   return "unimplemented";
 }
 
+/* Default implementation of LANG_HOOKS_DECL_DWARF_ATTRIBUTE.  Don't add
+   any attributes.  */
+
+int
+lhd_decl_dwarf_attribute (const_tree, int)
+{
+  return -1;
+}
+
 /* Returns true if the current lang_hooks represents the GNU C frontend.  */
 
 bool
