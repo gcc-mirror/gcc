@@ -496,9 +496,8 @@ memory_address_addr_space (machine_mode mode, rtx x, addr_space_t as)
   return x;
 }
 
-/* If REF is a MEM with an invalid address, change it into a valid address.
-   Pass through anything else unchanged.  REF must be an unshared rtx and
-   the function may modify it in-place.  */
+/* Convert a mem ref into one with a valid memory address.
+   Pass through anything else unchanged.  */
 
 rtx
 validize_mem (rtx ref)
@@ -510,7 +509,8 @@ validize_mem (rtx ref)
 				   MEM_ADDR_SPACE (ref)))
     return ref;
 
-  return replace_equiv_address (ref, XEXP (ref, 0), true);
+  /* Don't alter REF itself, since that is probably a stack slot.  */
+  return replace_equiv_address (ref, XEXP (ref, 0));
 }
 
 /* If X is a memory reference to a member of an object block, try rewriting
