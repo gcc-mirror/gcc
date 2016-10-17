@@ -1,3 +1,7 @@
+2016-10-17  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in (C_COMMON_OBJS): Add c-family/c-attribs.o.
+
 2016-10-17  Richard Biener  <rguenther@suse.de>
 
 	* bb-reorder.c (reorder_basic_blocks_simple): Clear BB_VISITED

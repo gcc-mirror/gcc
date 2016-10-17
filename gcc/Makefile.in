@@ -1183,7 +1183,7 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
   c-family/c-cilkplus.o \
   c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o \
-  c-family/c-warn.o
+  c-family/c-attribs.o c-family/c-warn.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
