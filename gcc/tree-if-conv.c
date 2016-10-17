@@ -1309,6 +1309,38 @@ predicate_bbs (loop_p loop)
 	      && bb_predicate_gimplified_stmts (loop->latch) == NULL);
 }
 
+/* Build region by adding loop pre-header and post-header blocks.  */
+
+static vec<basic_block>
+build_region (struct loop *loop)
+{
+  vec<basic_block> region = vNULL;
+  basic_block exit_bb = NULL;
+
+  gcc_assert (ifc_bbs);
+  /* The first element is loop pre-header.  */
+  region.safe_push (loop_preheader_edge (loop)->src);
+
+  for (unsigned int i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = ifc_bbs[i];
+      region.safe_push (bb);
+      /* Find loop postheader.  */
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (loop_exit_edge_p (loop, e))
+	  {
+	      exit_bb = e->dest;
+	      break;
+	  }
+    }
+  /* The last element is loop post-header.  */
+  gcc_assert (exit_bb);
+  region.safe_push (exit_bb);
+  return region;
+}
+
 /* Return true when LOOP is if-convertible.  This is a helper function
    for if_convertible_loop_p.  REFS and DDRS are initialized and freed
    in if_convertible_loop_p.  */
@@ -1318,6 +1350,7 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 {
   unsigned int i;
   basic_block exit_bb = NULL;
+  vec<basic_block> region;
 
   if (find_data_references_in_loop (loop, refs) == chrec_dont_know)
     return false;
@@ -1370,8 +1403,15 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
 	  = new hash_map<innermost_loop_behavior_hash, data_reference_p>;
   baseref_DR_map = new hash_map<tree_operand_hash, data_reference_p>;
 
-  calculate_dominance_info (CDI_POST_DOMINATORS);
+  /* Compute post-dominator tree locally.  */
+  region = build_region (loop);
+  calculate_dominance_info_for_region (CDI_POST_DOMINATORS, region);
+
   predicate_bbs (loop);
+
+  /* Free post-dominator tree since it is not used after predication.  */
+  free_dominance_info_for_region (cfun, CDI_POST_DOMINATORS, region);
+  region.release ();
 
   for (i = 0; refs->iterate (i, &dr); i++)
     {
@@ -2752,7 +2792,6 @@ tree_if_conversion (struct loop *loop)
       free (ifc_bbs);
       ifc_bbs = NULL;
     }
-  free_dominance_info (CDI_POST_DOMINATORS);
 
   return todo;
 }
@@ -2805,22 +2844,12 @@ pass_if_conversion::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
-  /* If there are infinite loops, during CDI_POST_DOMINATORS computation
-     we can pick pretty much random bb inside of the infinite loop that
-     has the fake edge.  If we are unlucky enough, this can confuse the
-     add_to_predicate_list post-dominator check to optimize as if that
-     bb or some other one is a join block when it actually is not.
-     See PR70916.  */
-  connect_infinite_loops_to_exit ();
-
   FOR_EACH_LOOP (loop, 0)
     if (flag_tree_loop_if_convert == 1
 	|| flag_tree_loop_if_convert_stores == 1
 	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
 	    && !loop->dont_vectorize))
       todo |= tree_if_conversion (loop);
-
-  remove_fake_exit_edges ();
 
   if (flag_checking)
     {
