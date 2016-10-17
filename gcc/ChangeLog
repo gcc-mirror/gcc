@@ -1,3 +1,8 @@
+2016-10-17  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.c (gimplify_function_tree): Do not move the outer
+	binds block.
+
 2016-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* langhooks.h (struct lang_hooks_for_decls): Remove
