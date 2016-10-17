@@ -1,3 +1,13 @@
+2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-darwin-ppc64.ads (Support_64_Bit_Divides): Delete.
+	* system-linux-armeb.ads (Support_64_Bit_Divides): Likewise.
+	* system-linux-mips.ads (Support_64_Bit_Divides): Likewise.
+	* system-linux-mips64el.ads (Support_64_Bit_Divides): Likewise.
+	* system-linux-mipsel.ads (Support_64_Bit_Divides): Likewise.
+	* system-linux-sparcv9.ads (Support_64_Bit_Divides): Likewise.
+	* system-rtems.ads (Support_64_Bit_Divides): Likewise.
+
 2016-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS):Define.
