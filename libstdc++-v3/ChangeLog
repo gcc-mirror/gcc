@@ -1,5 +1,12 @@
 2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/77998
+	* include/std/future (__future_base::_Deferred_state)
+	(__future_base::_Async_state_impl): Use decltype to deduce return
+	type, instead of _Invoker::result_type.
+	* include/std/thread (thread::_Invoker::operator()): Likewise.
+	(thread::_Invoker::result_type): Remove.
+
 	PR libstdc++/77987
 	* include/bits/unique_ptr.h (unique_ptr<T[], D>::reset<U>(U)): Copy
 	value to pointer of the correct type to swap, to support conversions
