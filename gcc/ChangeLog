@@ -1,3 +1,10 @@
+2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expmed.c (expand_shift_1): Add MAY_FAIL parameter and do not assert
+	that the result is non-zero if it is true.
+	(maybe_expand_shift): New wrapper around expand_shift_1.
+	(emit_store_flag): Call maybe_expand_shift in lieu of expand_shift.
+
 2016-10-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/77916
