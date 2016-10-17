@@ -1,6 +1,14 @@
 2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline:
+	2016-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/reference_wrapper/invoke-2.cc: Fix invalid dg-do
+	directive and use effective target instead of dg-options.
+
+2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline:
 	2016-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/72820
