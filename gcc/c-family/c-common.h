@@ -808,10 +808,8 @@ extern bool check_builtin_function_arguments (location_t, vec<location_t>,
 					      tree, int, tree *);
 extern void check_function_format (tree, int, tree *);
 extern bool attribute_fallthrough_p (tree);
-extern tree handle_unused_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
-extern bool attribute_takes_identifier_p (const_tree);
 extern bool c_common_handle_option (size_t, const char *, int, int, location_t,
 				    const struct cl_option_handlers *);
 extern bool default_handle_c_option (size_t, const char *, int);
@@ -857,6 +855,7 @@ extern bool pointer_to_zero_sized_aggr_p (tree);
 extern bool bool_promoted_to_int_p (tree);
 extern tree fold_for_warn (tree);
 extern tree c_common_get_narrower (tree, int *);
+extern bool get_nonnull_operand (tree, unsigned HOST_WIDE_INT *);
 
 #define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, false, 1)
 #define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, false, 1)
@@ -1315,8 +1314,6 @@ c_tree_chain_next (tree t)
 #define TM_STMT_ATTR_ATOMIC	4
 #define TM_STMT_ATTR_RELAXED	8
 
-extern int parse_tm_stmt_attr (tree, int);
-
 /* Mask used by tm_attr_to_mask and tm_mask_to_attr.  Note that these
    are ordered specifically such that more restrictive attributes are
    at lower bit positions.  This fact is known by the C++ tm attribute
@@ -1327,10 +1324,6 @@ extern int parse_tm_stmt_attr (tree, int);
 #define TM_ATTR_PURE			4
 #define TM_ATTR_IRREVOCABLE		8
 #define TM_ATTR_MAY_CANCEL_OUTER	16
-
-extern int tm_attr_to_mask (tree);
-extern tree tm_mask_to_attr (int);
-extern tree find_tm_attribute (tree);
 
 /* A suffix-identifier value doublet that represents user-defined literals
    for C++-0x.  */
@@ -1537,6 +1530,14 @@ extern void maybe_warn_bool_compare (location_t, enum tree_code, tree, tree);
 extern bool maybe_warn_shift_overflow (location_t, tree, tree);
 extern void warn_duplicated_cond_add_or_warn (location_t, tree, vec<tree> **);
 extern bool diagnose_mismatched_attributes (tree, tree);
+
+/* In c-attribs.c.  */
+extern bool attribute_takes_identifier_p (const_tree);
+extern tree handle_unused_attribute (tree *, tree, tree, int, bool *);
+extern int parse_tm_stmt_attr (tree, int);
+extern int tm_attr_to_mask (tree);
+extern tree tm_mask_to_attr (int);
+extern tree find_tm_attribute (tree);
 
 #if CHECKING_P
 namespace selftest {
