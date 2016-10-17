@@ -204,6 +204,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-sccvn.h"
 #include "cfgloop.h"
+#include "tree-eh.h"
 
 /* Describes a group of bbs with the same successors.  The successor bbs are
    cached in succs, and the successor edge flags are cached in succ_flags.
@@ -1220,6 +1221,10 @@ merge_stmts_p (gimple *stmt1, gimple *stmt2)
      containing the stmt, when encountering the stmt f.i. in
      same_succ_hash.  */
   if (is_tm_ending (stmt1))
+    return false;
+
+  /* Verify EH landing pads.  */
+  if (lookup_stmt_eh_lp_fn (cfun, stmt1) != lookup_stmt_eh_lp_fn (cfun, stmt2))
     return false;
 
   if (is_gimple_call (stmt1)
