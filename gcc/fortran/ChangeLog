@@ -1,3 +1,10 @@
+2016-10-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/77978
+	* match.c (gfc_match_stopcode): Fix error reporting for several
+	deficiencies in matching stop-codes.
+
 2016-10-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
