@@ -1,3 +1,8 @@
+2016-09-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/77308
+	* gcc.target/arm/pr77308.c: New test.
+
 2016-10-17  David Edelsohn  <dje.gcc@gmail.com>
 
 	* lib/target-supports.exp
