@@ -47,8 +47,8 @@
 
 2016-10-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/48587
-        * gfortran.dg/negative_unit2.f90: New test.
+	PR libfortran/48587
+	* gfortran.dg/negative_unit2.f90: New test.
 
 2016-10-14  Jakub Jelinek  <jakub@redhat.com>
 
