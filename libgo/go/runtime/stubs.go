@@ -444,3 +444,19 @@ func setprofilebucket(p unsafe.Pointer, b *bucket)
 
 // Currently in proc.c.
 func tracebackothers(*g)
+
+// Temporary for gccgo until we port mgc.go.
+func setgcpercent(int32) int32
+
+//go:linkname setGCPercent runtime_debug.setGCPercent
+func setGCPercent(in int32) (out int32) {
+	return setgcpercent(in)
+}
+
+// Temporary for gccgo until we port proc.go.
+func setmaxthreads(int) int
+
+//go:linkname setMaxThreads runtime_debug.setMaxThreads
+func setMaxThreads(in int) (out int) {
+	return setmaxthreads(in)
+}

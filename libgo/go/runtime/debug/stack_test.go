@@ -50,10 +50,12 @@ func TestStack(t *testing.T) {
 		check(t, lines[n], line)
 		n++
 	}
-	frame("stack_test.go", "\tmethod.N15_runtime_debug.T: return Stack()")
-	frame("stack_test.go", "\tmethod.N15_runtime_debug.T: return t.ptrmethod()")
-	frame("stack_test.go", "\tTestStack: b := T(0).method()")
-	frame("testing/testing.go", "")
+	n++
+	frame("stack.go", "runtime_debug.Stack")
+	frame("stack_test.go", "ptrmethod")
+	frame("stack_test.go", "method")
+	frame("stack_test.go", "runtime_debug_test.TestStack")
+	frame("testing.go", "")
 }
 
 func check(t *testing.T, line, has string) {

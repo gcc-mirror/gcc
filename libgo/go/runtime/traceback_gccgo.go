@@ -67,9 +67,9 @@ func callers(skip int, locbuf []location) int {
 // traceback prints a traceback of the current goroutine.
 // This differs from the gc version, which is given pc, sp, lr and g and
 // can print a traceback of any goroutine.
-func traceback() {
+func traceback(skip int32) {
 	var locbuf [100]location
-	c := c_callers(1, &locbuf[0], int32(len(locbuf)), false)
+	c := c_callers(skip+1, &locbuf[0], int32(len(locbuf)), false)
 	printtrace(locbuf[:c], getg())
 }
 
@@ -77,7 +77,7 @@ func traceback() {
 func printtrace(locbuf []location, gp *g) {
 	for i := range locbuf {
 		if showframe(locbuf[i].function, gp) {
-			print(locbuf[i].function, "\n\t", locbuf[i].filename, ":", locbuf[i].lineno)
+			print(locbuf[i].function, "\n\t", locbuf[i].filename, ":", locbuf[i].lineno, "\n")
 		}
 	}
 }

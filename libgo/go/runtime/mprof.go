@@ -623,7 +623,7 @@ func Stack(buf []byte, all bool) int {
 		gp.m.traceback = 1
 		gp.writebuf = buf[0:0:len(buf)]
 		goroutineheader(gp)
-		traceback()
+		traceback(1)
 		if all {
 			tracebackothers(gp)
 		}
@@ -653,7 +653,7 @@ func tracealloc(p unsafe.Pointer, size uintptr, typ *_type) {
 	}
 	if gp.m.curg == nil || gp == gp.m.curg {
 		goroutineheader(gp)
-		traceback()
+		traceback(1)
 	} else {
 		goroutineheader(gp.m.curg)
 		// FIXME: Can't do traceback of other g.
@@ -669,7 +669,7 @@ func tracefree(p unsafe.Pointer, size uintptr) {
 	gp.m.traceback = 2
 	print("tracefree(", p, ", ", hex(size), ")\n")
 	goroutineheader(gp)
-	traceback()
+	traceback(1)
 	print("\n")
 	gp.m.traceback = 0
 	unlock(&tracelock)

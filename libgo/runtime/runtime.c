@@ -151,10 +151,6 @@ runtime_setdebug(struct debugVars* d) {
   runtime_debug = *d;
 }
 
-// Setting the max stack size doesn't really do anything for gccgo.
-
-uintptr runtime_maxstacksize = 1<<20; // enough until runtime.main sets it for real
-
 void memclrBytes(Slice)
      __asm__ (GOSYM_PREFIX "runtime.memclrBytes");
 
