@@ -850,6 +850,12 @@ requirements of the license of GCC.
     <listitem><para>Add additional overloads.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2062">2062</link>:
+	<emphasis>2062. Effect contradictions w/o no-throw guarantee of <code>std::function</code> swaps</emphasis>
+    </term>
+    <listitem><para>Add <code>noexcept</code> to swap functions.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2063">2063</link>:
 	<emphasis>Contradictory requirements for string move assignment</emphasis>
     </term>
