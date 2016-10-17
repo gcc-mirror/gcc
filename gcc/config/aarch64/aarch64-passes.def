@@ -1,6 +1,5 @@
-/* This file contains declarations for the FMA steering optimization
-   pass for Cortex-A57.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+/* AArch64-specific passes declarations.
+   Copyright (C) 2016 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -19,4 +18,4 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-void aarch64_register_fma_steering (void);
+INSERT_PASS_AFTER (pass_regrename, 1, pass_fma_steering);

@@ -463,4 +463,6 @@ enum aarch64_parse_opt_result aarch64_parse_extension (const char *,
 std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
 							unsigned long);
 
+rtl_opt_pass *make_pass_fma_steering (gcc::context *ctxt);
+
 #endif /* GCC_AARCH64_PROTOS_H */
