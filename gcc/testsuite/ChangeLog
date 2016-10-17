@@ -1,3 +1,9 @@
+2016-10-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61420
+	PR fortran/78013
+	* gfortran.dg/proc_ptr_49.f90: New test.
+
 2016-09-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR target/77308
@@ -895,7 +901,7 @@
 
 2016-09-29  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* c-c++-common/pr27336.c: Make dependency on 
+	* c-c++-common/pr27336.c: Make dependency on
 	-fdelete-null-pointer-checks explicit.
 	* g++.dg/cpp0x/constexpr-array-ptr10.C: Likewise.
 	* g++.dg/cpp0x/constexpr-nullptr-1.C: Likewise.
