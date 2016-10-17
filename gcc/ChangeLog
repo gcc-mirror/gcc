@@ -1,3 +1,8 @@
+2016-10-17  Richard Biener  <rguenther@suse.de>
+
+	* bb-reorder.c (reorder_basic_blocks_simple): Clear BB_VISITED
+	before using it.
+
 2016-10-17  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/71636
