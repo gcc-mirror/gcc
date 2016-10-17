@@ -3,6 +3,15 @@
 	Backport from mainline:
 	2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/functional (boyer_moore_searcher)
+	(__boyer_moore_map_base, __boyer_moore_array_base): Qualify containers
+	with _GLIBCXX_STD_C.
+
+2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline:
+	2016-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/experimental/propagate_const (element_type): Qualify
 	declval.
 
