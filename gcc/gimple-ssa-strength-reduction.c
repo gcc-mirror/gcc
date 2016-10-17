@@ -2154,35 +2154,41 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
   basis_type = TREE_TYPE (basis_name);
   lhs = make_temp_ssa_name (basis_type, NULL, "slsr");
 
+  /* Occasionally people convert integers to pointers without a 
+     cast, leading us into trouble if we aren't careful.  */
+  enum tree_code plus_code
+    = POINTER_TYPE_P (basis_type) ? POINTER_PLUS_EXPR : PLUS_EXPR;
+
   if (known_stride)
     {
       tree bump_tree;
-      enum tree_code code = PLUS_EXPR;
+      enum tree_code code = plus_code;
       widest_int bump = increment * wi::to_widest (c->stride);
-      if (wi::neg_p (bump))
+      if (wi::neg_p (bump) && !POINTER_TYPE_P (basis_type))
 	{
 	  code = MINUS_EXPR;
 	  bump = -bump;
 	}
 
-      bump_tree = wide_int_to_tree (basis_type, bump);
+      tree stride_type = POINTER_TYPE_P (basis_type) ? sizetype : basis_type;
+      bump_tree = wide_int_to_tree (stride_type, bump);
       new_stmt = gimple_build_assign (lhs, code, basis_name, bump_tree);
     }
   else
     {
       int i;
-      bool negate_incr = (!address_arithmetic_p && wi::neg_p (increment));
+      bool negate_incr = !POINTER_TYPE_P (basis_type) && wi::neg_p (increment);
       i = incr_vec_index (negate_incr ? -increment : increment);
       gcc_assert (i >= 0);
 
       if (incr_vec[i].initializer)
 	{
-	  enum tree_code code = negate_incr ? MINUS_EXPR : PLUS_EXPR;
+	  enum tree_code code = negate_incr ? MINUS_EXPR : plus_code;
 	  new_stmt = gimple_build_assign (lhs, code, basis_name,
 					  incr_vec[i].initializer);
 	}
       else if (increment == 1)
-	new_stmt = gimple_build_assign (lhs, PLUS_EXPR, basis_name, c->stride);
+	new_stmt = gimple_build_assign (lhs, plus_code, basis_name, c->stride);
       else if (increment == -1)
 	new_stmt = gimple_build_assign (lhs, MINUS_EXPR, basis_name,
 					c->stride);
@@ -2500,12 +2506,14 @@ record_increment (slsr_cand_t c, widest_int increment, bool is_phi_adjust)
       /* Optimistically record the first occurrence of this increment
 	 as providing an initializer (if it does); we will revise this
 	 opinion later if it doesn't dominate all other occurrences.
-         Exception:  increments of -1, 0, 1 never need initializers;
-	 and phi adjustments don't ever provide initializers.  */
+         Exception:  increments of 0, 1 never need initializers;
+	 and phi adjustments don't ever provide initializers.  Note
+         that we only will see an increment of -1 here for pointer
+	 arithmetic (otherwise we will have an initializer).  */
       if (c->kind == CAND_ADD
 	  && !is_phi_adjust
 	  && c->index == increment
-	  && (increment > 1 || increment < -1)
+	  && (increment > 1 || increment < 0)
 	  && (gimple_assign_rhs_code (c->cand_stmt) == PLUS_EXPR
 	      || gimple_assign_rhs_code (c->cand_stmt) == POINTER_PLUS_EXPR))
 	{
@@ -2819,11 +2827,6 @@ analyze_increments (slsr_cand_t first_dep, machine_mode mode, bool speed)
 		   && !POINTER_TYPE_P (first_dep->cand_type)))
 	incr_vec[i].cost = COST_NEUTRAL;
 
-      /* FIXME: We don't handle pointers with a -1 increment yet.
-         They are usually unprofitable anyway.  */
-      else if (incr == -1 && POINTER_TYPE_P (first_dep->cand_type))
-	incr_vec[i].cost = COST_INFINITE;
-      
       /* FORNOW: If we need to add an initializer, give up if a cast from
 	 the candidate's type to its stride's type can lose precision.
 	 This could eventually be handled better by expressly retaining the

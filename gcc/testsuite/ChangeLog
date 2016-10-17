@@ -1,3 +1,8 @@
+2016-10-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/77916
+	* gcc.dg/torture/pr77916.c: New.
+
 2016-10-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77978
