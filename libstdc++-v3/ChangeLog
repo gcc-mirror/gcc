@@ -1,5 +1,11 @@
 2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/function/77322.cc: Remove effective-target from
+	dg-do directive.
+	* testsuite/20_util/function/cons/72820.cc: Likewise.
+
+2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
 	Backport from mainline:
 	2016-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
