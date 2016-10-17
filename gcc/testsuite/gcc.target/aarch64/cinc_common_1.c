@@ -15,14 +15,14 @@ barsi (int x)
   return x > 100 ? x + 4 : x + 3;
 }
 
-long
-foodi (long x)
+long long
+foodi (long long x)
 {
   return x > 100 ? x - 2 : x - 1;
 }
 
-long
-bardi (long x)
+long long
+bardi (long long x)
 {
   return x > 100 ? x + 4 : x + 3;
 }

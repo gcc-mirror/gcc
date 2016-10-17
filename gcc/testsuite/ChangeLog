@@ -1,3 +1,14 @@
+2016-10-17  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/aarch64/aapcs64/test_align-7.c: Use long
+	long instead of long.
+	* gcc.target/aarch64/cinc_common_1.c: Likewise.
+	* gcc.target/aarch64/combine_bfi_1.c: Likewise.
+	* gcc.target/aarch64/fmul_fcvt_1.c: Likewise.
+	* gcc.target/aarch64/mult-synth_4.c: Likewise.
+	* gcc.target/aarch64/pr68102_1.c: Likewise.
+	* gcc.target/aarch64/target_attr_3.c: Likewise.
+
 2016-10-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77988
