@@ -386,19 +386,33 @@ namespace __debug
       { emplace_back(std::move(__x)); }
 
       template<typename... _Args>
+#if __cplusplus > 201402L
+	reference
+#else
 	void
+#endif
 	emplace_front(_Args&&... __args)
 	{
 	  _Base::emplace_front(std::forward<_Args>(__args)...);
 	  this->_M_invalidate_all();
+#if __cplusplus > 201402L
+	  return front();
+#endif
 	}
 
       template<typename... _Args>
+#if __cplusplus > 201402L
+	reference
+#else
 	void
+#endif
 	emplace_back(_Args&&... __args)
 	{
 	  _Base::emplace_back(std::forward<_Args>(__args)...);
 	  this->_M_invalidate_all();
+#if __cplusplus > 201402L
+	  return back();
+#endif
 	}
 
       template<typename... _Args>

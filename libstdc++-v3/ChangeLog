@@ -1,3 +1,33 @@
+2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* doc/html/*: Regenerate.
+	* include/bits/deque.tcc (deque::emplace_front, deque::emplace_back):
+	Return a reference in C++17 mode.
+	* include/bits/forward_list.h (forward_list::emplace_front): Likewise.
+	* include/bits/stl_bvector.h (vector<bool>::emplace_back): Likewise.
+	* include/bits/stl_deque.h (deque::emplace_front, deque::emplace_back):
+	Likewise.
+	* include/bits/stl_list.h (list::emplace_front, list::emplace_back):
+	Likewise.
+	* include/bits/stl_queue.h (queue::emplace): Likewise.
+	* include/bits/stl_stack.h (stack::emplace): Likewise.
+	* include/bits/stl_vector.h (vector::emplace_back): Likewise.
+	* include/bits/vector.tcc (vector::emplace_back): Likewise.
+	* include/debug/deque (__gnu_debug::deque::emplace_front)
+	(__gnu_debug::deque::emplace_back): Likewise.
+	* include/debug/vector (__gnu_debug::vector::emplace_back): Likewise.
+	* testsuite/23_containers/deque/modifiers/emplace/cxx17_return.cc:
+	New.
+	* testsuite/23_containers/forward_list/modifiers/
+	emplace_cxx17_return.cc: New.
+	* testsuite/23_containers/list/modifiers/emplace/cxx17_return.cc: New.
+	* testsuite/23_containers/queue/members/emplace_cxx17_return.cc: New.
+	* testsuite/23_containers/stack/members/emplace_cxx17_return.cc: New.
+	* testsuite/23_containers/vector/bool/emplace_cxx17_return.cc: New.
+	* testsuite/23_containers/vector/modifiers/emplace/cxx17_return.cc:
+	New.
+
 2016-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/22_locale/classification/isblank.cc: Remove 'test'

@@ -87,7 +87,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
     template<typename... _Args>
+#if __cplusplus > 201402L
+      typename vector<_Tp, _Alloc>::reference
+#else
       void
+#endif
       vector<_Tp, _Alloc>::
       emplace_back(_Args&&... __args)
       {
@@ -99,6 +103,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
 	else
 	  _M_realloc_insert(end(), std::forward<_Args>(__args)...);
+#if __cplusplus > 201402L
+	return back();
+#endif
       }
 #endif
 
