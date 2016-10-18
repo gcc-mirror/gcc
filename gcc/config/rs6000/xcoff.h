@@ -169,7 +169,7 @@
       fputs ("\t.extern .", FILE);					\
       RS6000_OUTPUT_BASENAME (FILE, buffer);				\
       putc ('\n', FILE);						\
-      fprintf(FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);		\
+      fprintf (FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);		\
     }									\
 }
 
