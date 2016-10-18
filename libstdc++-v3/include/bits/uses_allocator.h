@@ -126,9 +126,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __is_uses_allocator_predicate<is_constructible, _Tp, _Alloc, _Args...>
     { };
 
+#if __cplusplus >= 201402L
   template<typename _Tp, typename _Alloc, typename... _Args>
     constexpr bool __is_uses_allocator_constructible_v =
       __is_uses_allocator_constructible<_Tp, _Alloc, _Args...>::value;
+#endif // C++14
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     struct __is_nothrow_uses_allocator_constructible
@@ -137,9 +139,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 
+#if __cplusplus >= 201402L
   template<typename _Tp, typename _Alloc, typename... _Args>
     constexpr bool __is_nothrow_uses_allocator_constructible_v =
       __is_nothrow_uses_allocator_constructible<_Tp, _Alloc, _Args...>::value;
+#endif // C++14
 
   template<typename _Tp, typename... _Args>
     void __uses_allocator_construct_impl(__uses_alloc0 __a, _Tp* __ptr,
