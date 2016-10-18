@@ -1,3 +1,10 @@
+2016-10-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_savres_strategy): Do not select
+	{SAVE,REST}_MULTIPLE if shrink-wrapping separate components.
+	(rs6000_get_separate_components): Assert we do not have those
+	strategies selected.
+
 2016-10-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-propagate.h (substitute_and_fold): Adjust prototype.
