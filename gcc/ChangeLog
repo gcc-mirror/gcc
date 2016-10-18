@@ -1,3 +1,10 @@
+2016-10-18  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-opt/65950
+	* predict.c (is_exit_with_zero_arg): New function.
+	(tree_bb_level_predictions): Don't consider paths leading to exit(0)
+	as nottaken.
+
 2016-10-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77991
