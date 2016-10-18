@@ -631,7 +631,7 @@ process_template (struct data *d, const char *template_code)
       printf ("output_%d (rtx *operands ATTRIBUTE_UNUSED, rtx_insn *insn ATTRIBUTE_UNUSED)\n",
 	      d->code_number);
       puts ("{");
-      print_md_ptr_loc (template_code);
+      rtx_reader_ptr->print_md_ptr_loc (template_code);
       puts (template_code + 1);
       puts ("}");
     }

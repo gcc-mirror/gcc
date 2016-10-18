@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "errors.h"
+#include "statistics.h"
+#include "vec.h"
 #include "read-md.h"
 
 /* Called via traverse_enum_types.  Emit an enum definition for
@@ -59,7 +61,7 @@ main (int argc, const char **argv)
   puts ("#include \"system.h\"\n");
   puts ("#include \"insn-constants.h\"\n");
 
-  traverse_enum_types (print_enum_type, 0);
+  reader.traverse_enum_types (print_enum_type, 0);
 
   if (ferror (stdout) || fflush (stdout) || fclose (stdout))
     return FATAL_EXIT_CODE;
