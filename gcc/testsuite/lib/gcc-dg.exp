@@ -87,13 +87,13 @@ if [info exists TORTURE_OPTIONS] {
 	      { -O2 -flto -fno-use-linker-plugin -flto-partition=none } \
 	      { -O2 -flto -fuse-linker-plugin -fno-fat-lto-objects }
            ]
-           set gcc_force_conventional_output "-ffat-lto-objects"
         } else {
            set LTO_TORTURE_OPTIONS [list \
 	      { -O2 -flto -flto-partition=none } \
 	      { -O2 -flto }
            ]
         }
+        set gcc_force_conventional_output "-ffat-lto-objects"
     }
 }
 
