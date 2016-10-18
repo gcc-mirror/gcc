@@ -1,1 +1,3 @@
 SHLIB_MAPFILES += $(srcdir)/config/xtensa/libgcc-glibc.ver
+
+LIB2ADDEH_XTENSA_UNWIND_DW2_FDE = $(srcdir)/unwind-dw2-fde-dip.c

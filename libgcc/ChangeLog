@@ -1,3 +1,13 @@
+2016-10-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/t-elf (LIB2ADDEH_XTENSA_UNWIND_DW2_FDE): New
+	definition.
+	* config/xtensa/t-linux (LIB2ADDEH_XTENSA_UNWIND_DW2_FDE): New
+	definition.
+	* config/xtensa/t-windowed (LIB2ADDEH): Use
+	LIB2ADDEH_XTENSA_UNWIND_DW2_FDE defined by either xtensa/t-elf
+	or xtensa/t-linux.
+
 2016-10-18  Ding-Kai Chen  <dkchen@cadence.com>
 
 	* config/xtensa/ieee754-df.S (__recipdf2, __rsqrtdf2,
