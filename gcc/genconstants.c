@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "errors.h"
+#include "statistics.h"
+#include "vec.h"
 #include "read-md.h"
 
 /* Called via traverse_md_constants; emit a #define for
@@ -91,8 +93,8 @@ main (int argc, const char **argv)
   puts ("#ifndef GCC_INSN_CONSTANTS_H");
   puts ("#define GCC_INSN_CONSTANTS_H\n");
 
-  traverse_md_constants (print_md_constant, 0);
-  traverse_enum_types (print_enum_type, 0);
+  reader.traverse_md_constants (print_md_constant, 0);
+  reader.traverse_enum_types (print_enum_type, 0);
 
   puts ("\n#endif /* GCC_INSN_CONSTANTS_H */");
 

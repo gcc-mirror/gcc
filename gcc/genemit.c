@@ -302,7 +302,7 @@ emit_c_code (const char *code, bool can_fail_p, const char *name)
   printf ("#define DONE return (_val = get_insns (),"
 	  "end_sequence (), _val)\n");
 
-  print_md_ptr_loc (code);
+  rtx_reader_ptr->print_md_ptr_loc (code);
   printf ("%s\n", code);
 
   printf ("#undef DONE\n");

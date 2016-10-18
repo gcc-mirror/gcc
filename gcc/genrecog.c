@@ -4659,7 +4659,7 @@ print_test (output_state *os, const rtx_test &test, bool is_param,
       gcc_assert (!is_param && value == 1);
       if (invert_p)
 	printf ("!");
-      print_c_condition (test.u.string);
+      rtx_reader_ptr->print_c_condition (test.u.string);
       break;
 
     case rtx_test::ACCEPT:

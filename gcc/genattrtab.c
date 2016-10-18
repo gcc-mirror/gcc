@@ -630,7 +630,7 @@ attr_string (const char *str, int len)
   memcpy (new_str, str, len);
   new_str[len] = '\0';
   attr_hash_add_string (hashcode, new_str);
-  copy_md_ptr_loc (new_str, str);
+  rtx_reader_ptr->copy_md_ptr_loc (new_str, str);
 
   return new_str;			/* Return the new string.  */
 }
@@ -3157,7 +3157,7 @@ gen_attr (md_rtx_info *info)
   if (GET_CODE (def) == DEFINE_ENUM_ATTR)
     {
       attr->enum_name = XSTR (def, 1);
-      et = lookup_enum_type (XSTR (def, 1));
+      et = rtx_reader_ptr->lookup_enum_type (XSTR (def, 1));
       if (!et || !et->md_p)
 	error_at (info->loc, "No define_enum called `%s' defined",
 		  attr->name);
@@ -3768,14 +3768,14 @@ write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags,
       break;
 
     case MATCH_TEST:
-      fprint_c_condition (outf, XSTR (exp, 0));
+      rtx_reader_ptr->fprint_c_condition (outf, XSTR (exp, 0));
       if (flags & FLG_BITWISE)
 	fprintf (outf, " != 0");
       break;
 
     /* A random C expression.  */
     case SYMBOL_REF:
-      fprint_c_condition (outf, XSTR (exp, 0));
+      rtx_reader_ptr->fprint_c_condition (outf, XSTR (exp, 0));
       break;
 
     /* The address of the branch target.  */
@@ -4365,7 +4365,7 @@ write_attr_value (FILE *outf, struct attr_desc *attr, rtx value)
       break;
 
     case SYMBOL_REF:
-      fprint_c_condition (outf, XSTR (value, 0));
+      rtx_reader_ptr->fprint_c_condition (outf, XSTR (value, 0));
       break;
 
     case ATTR:

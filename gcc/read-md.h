@@ -107,13 +107,53 @@ class rtx_reader
 
   file_location get_current_location () const;
 
+  /* Defined in read-md.c.  */
   int read_char (void);
   void unread_char (int ch);
+  void read_name (struct md_name *name);
+  void read_escape ();
+  char *read_quoted_string ();
+  char *read_braced_string ();
+  char *read_string (int star_if_braced);
+  void read_skip_construct (int depth, file_location loc);
+
+  void set_md_ptr_loc (const void *ptr, const char *filename, int lineno);
+  const struct ptr_loc *get_md_ptr_loc (const void *ptr);
+  void copy_md_ptr_loc (const void *new_ptr, const void *old_ptr);
+  void fprint_md_ptr_loc (FILE *outf, const void *ptr);
+  void print_md_ptr_loc (const void *ptr);
+
+  struct enum_type *lookup_enum_type (const char *name);
+  void traverse_enum_types (htab_trav callback, void *info);
+
+  void handle_constants ();
+  void traverse_md_constants (htab_trav callback, void *info);
+  void handle_enum (file_location loc, bool md_p);
+
+  const char *join_c_conditions (const char *cond1, const char *cond2);
+  void fprint_c_condition (FILE *outf, const char *cond);
+  void print_c_condition (const char *cond);
+
+  /* Defined in read-rtl.c.  */
+  const char *apply_iterator_to_string (const char *string);
+  rtx copy_rtx_for_iterators (rtx original);
+  void read_conditions ();
+  void record_potential_iterator_use (struct iterator_group *group,
+				      void *ptr, const char *name);
+  struct mapping *read_mapping (struct iterator_group *group, htab_t table);
+  bool read_rtx (const char *rtx_name, vec<rtx> *rtxen);
+  rtx read_rtx_code (const char *code_name);
+  void read_rtx_operand (rtx return_rtx, int idx);
+  rtx read_nested_rtx ();
+  rtx read_rtx_variadic (rtx form);
 
   const char *get_top_level_filename () const { return m_toplevel_fname; }
   const char *get_filename () const { return m_read_md_filename; }
   int get_lineno () const { return m_read_md_lineno; }
   int get_colno () const { return m_read_md_colno; }
+
+  struct obstack *get_string_obstack () { return &m_string_obstack; }
+  htab_t get_md_constants () { return m_md_constants; }
 
  private:
   /* A singly-linked list of filenames.  */
@@ -159,6 +199,32 @@ class rtx_reader
 
   /* A pointer to the null terminator of the md include chain.  */
   file_name_list **m_last_dir_md_include_ptr;
+
+  /* Obstack used for allocating MD strings.  */
+  struct obstack m_string_obstack;
+
+  /* A table of ptr_locs, hashed on the PTR field.  */
+  htab_t m_ptr_locs;
+
+  /* An obstack for the above.  Plain xmalloc is a bit heavyweight for a
+     small structure like ptr_loc.  */
+  struct obstack m_ptr_loc_obstack;
+
+  /* A hash table of triples (A, B, C), where each of A, B and C is a condition
+     and A is equivalent to "B && C".  This is used to keep track of the source
+     of conditions that are made up of separate MD strings (such as the split
+     condition of a define_insn_and_split).  */
+  htab_t m_joined_conditions;
+
+  /* An obstack for allocating joined_conditions entries.  */
+  struct obstack m_joined_conditions_obstack;
+
+  /* A table of md_constant structures, hashed by name.  Null if no
+     constant expansion should occur.  */
+  htab_t m_md_constants;
+
+  /* A table of enum_type structures, hashed by name.  */
+  htab_t m_enum_types;
 };
 
 /* Global singleton.  */
@@ -175,7 +241,6 @@ class noop_reader : public rtx_reader
   void handle_unknown_directive (file_location, const char *);
 };
 
-extern struct obstack string_obstack;
 extern void (*include_callback) (const char *);
 
 /* Read the next character from the MD file.  */
@@ -196,12 +261,7 @@ unread_char (int ch)
 
 extern hashval_t leading_string_hash (const void *);
 extern int leading_string_eq_p (const void *, const void *);
-extern void copy_md_ptr_loc (const void *, const void *);
-extern void print_md_ptr_loc (const void *);
-extern void fprint_md_ptr_loc (FILE *, const void *);
 extern const char *join_c_conditions (const char *, const char *);
-extern void print_c_condition (const char *);
-extern void fprint_c_condition (FILE *, const char *);
 extern void message_at (file_location, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void error_at (file_location, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void fatal_at (file_location, const char *, ...) ATTRIBUTE_PRINTF_2;
@@ -210,13 +270,9 @@ extern void fatal_with_file_and_line (const char *, ...)
 extern void fatal_expected_char (int, int) ATTRIBUTE_NORETURN;
 extern int read_skip_spaces (void);
 extern void require_char_ws (char expected);
-extern void read_name (struct md_name *);
-extern char *read_quoted_string (void);
-extern char *read_string (int);
 extern int n_comma_elts (const char *);
 extern const char *scan_comma_elt (const char **);
 extern void upcase_string (char *);
-extern void traverse_md_constants (htab_trav, void *);
 extern void traverse_enum_types (htab_trav, void *);
 extern struct enum_type *lookup_enum_type (const char *);
 

@@ -19,6 +19,8 @@
 #include "system.h"
 #include "coretypes.h"
 #include "errors.h"
+#include "statistics.h"
+#include "vec.h"
 #include "read-md.h"
 
 

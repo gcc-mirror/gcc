@@ -1,3 +1,165 @@
+2016-10-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* genattrtab.c (attr_string): Use rtx_reader_ptr for call to
+	copy_md_ptr_loc.
+	(gen_attr): Use rtx_reader_ptr for lookup_enum_type call.
+	(write_test_expr): Use rtx_reader_ptr for calls to
+	fprint_c_condition.
+	(write_attr_value): Likewise.
+	* genconditions.c (write_one_condition): Use rtx_reader_ptr for
+	call to print_md_ptr_loc.
+	(write_one_condition): Likewise for calls to print_c_condition.
+	* genconstants.c: Include "statistics.h" and "vec.h".
+	(main): Update for conversion to member functions.
+	* genemit.c (emit_c_code): Use rtx_reader_ptr for
+	call to print_md_ptr_loc.
+	* genenums.c: Include "statistics.h" and "vec.h".
+	(main): Update for conversion of traverse_enum_types to a method.
+	* genmddeps.c: Include "statistics.h" and "vec.h".
+	* genoutput.c (process_template): Use rtx_reader_ptr for call to
+	print_md_ptr_loc.
+	* genpreds.c (write_predicate_subfunction): Likewise.
+	(write_predicate_expr): Likewise for calls to print_c_condition.
+	* genrecog.c (print_test): Likewise.
+	* gensupport.c (process_rtx): Likewise for calls to
+	copy_md_ptr_loc and join_c_conditions.
+	(alter_test_for_insn): Likewise for call to join_c_conditions.
+	(process_substs_on_one_elem): Likewise.
+	(gen_mnemonic_setattr): Update for move of string_obstack to a
+	field of rtx_reader.
+	(mnemonic_htab_callback): Likewise.  Fix formatting.
+	(gen_mnemonic_attr): Likewise.
+	* gentarget-def.c (def_target_insn): Use rtx_reader_ptr for calls
+	to print_c_condition.
+	* read-md.c: Include "statistics.h" and "vec.h".
+	(string_obstack): Convert this global to field "m_string_obstack"
+	of class rtx_reader.
+	(ptr_locs): Likewise, as "m_ptr_locs".
+	(ptr_loc_obstack): Likewise, as "m_ptr_loc_obstack".
+	(joined_conditions): Likewise, as "m_joined_conditions".
+	(joined_conditions_obstack): Likewise, as "m_joined_conditions_obstack".
+	(md_constants): Likewise, as "m_md_constants".
+	(enum_types): Likewise, as "m_enum_types".
+	(set_md_ptr_loc): Convert to...
+	(rtx_reader::set_md_ptr_loc): ...member function.
+	(get_md_ptr_loc): Convert to...
+	(rtx_reader::get_md_ptr_loc): ...member function.
+	(copy_md_ptr_loc): Convert to...
+	(rtx_reader::copy_md_ptr_loc): ...member function.
+	(fprint_md_ptr_loc): Convert to...
+	(rtx_reader::fprint_md_ptr_loc): ...member function.
+	(print_md_ptr_loc): Convert to...
+	(rtx_reader::print_md_ptr_loc): ...member function.
+	(join_c_conditions): Convert to...
+	(rtx_reader::join_c_conditions): ...member function.
+	(fprint_c_condition): Convert to...
+	(rtx_reader::fprint_c_condition): ...member function.
+	(print_c_condition): Convert to...
+	(rtx_reader::print_c_condition): ...member function.
+	(read_name): Convert to...
+	(rtx_reader::read_name): ...member function.
+	(read_escape): Convert to...
+	(rtx_reader::read_escape): ...member function.
+	(read_quoted_string): Convert to...
+	(rtx_reader::read_quoted_string): ...member function.
+	(read_braced_string): Convert to...
+	(rtx_reader::read_braced_string): ...member function.
+	(read_string): Convert to...
+	(rtx_reader::read_string): ...member function.
+	(read_skip_construct): Convert to...
+	(rtx_reader::read_skip_construct): ...member function.
+	(handle_constants): Convert to...
+	(rtx_reader::handle_constants): ...member function.
+	(traverse_md_constants): Convert to...
+	(rtx_reader::traverse_md_constants): ...member function.
+	(handle_enum): Convert to...
+	(rtx_reader::handle_enum): ...member function.
+	(lookup_enum_type): Convert to...
+	(rtx_reader::lookup_enum_type): ...member function.
+	(traverse_enum_types): Convert to...
+	(rtx_reader::traverse_enum_types): ...member function.
+	(rtx_reader::rtx_reader): Move initializations
+	of various former global data from rtx_reader::read_md_files to
+	here, as fields, along with the call to unlock_std_streams.
+	(rtx_reader::~rtx_reader): Clean up m_base_dir, and clean up
+	the new fields.
+	(rtx_reader::read_md_files): Move initializations of various
+	global data from here to the ctor.
+	* read-md.h (read_name): Convert to...
+	(rtx_reader::read_name): ...member function.
+	(rtx_reader::read_escape): New method decl.
+	(read_quoted_string): Convert to...
+	(rtx_reader::read_quoted_string): ...member function.
+	(rtx_reader::read_braced_string): New method decl.
+	(read_string): Convert to...
+	(rtx_reader::read_string): ...member function.
+	(rtx_reader::read_skip_construct): New method decl.
+	(rtx_reader::set_md_ptr_loc): New method decl.
+	(rtx_reader::get_md_ptr_loc): New method decl.
+	(copy_md_ptr_loc): Convert to...
+	(rtx_reader::copy_md_ptr_loc): ...member function.
+	(fprint_md_ptr_loc): Convert to...
+	(rtx_reader::fprint_md_ptr_loc): ...member function.
+	(print_md_ptr_loc): Convert to...
+	(rtx_reader::print_md_ptr_loc): ...member function.
+	(rtx_reader::lookup_enum_type): New method decl.
+	(rtx_reader::traverse_enum_types): New method decl.
+	(rtx_reader::handle_constants): New method decl.
+	(traverse_md_constants): Convert to...
+	(rtx_reader::traverse_md_constants): ...member function.
+	(rtx_reader::handle_enum): New method decl.
+	(rtx_reader::join_c_conditions): New method decl.
+	(fprint_c_condition): Convert to...
+	(rtx_reader::fprint_c_condition): ...member function.
+	(print_c_condition): Convert to...
+	(rtx_reader::print_c_condition): ...member function.
+	(rtx_reader::apply_iterator_to_string): New method decl.
+	(rtx_reader::copy_rtx_for_iterators): New method decl.
+	(rtx_reader::read_conditions): New method decl.
+	(rtx_reader::record_potential_iterator_use): New method decl.
+	(rtx_reader::read_mapping): New method decl.
+	(rtx_reader::read_rtx): New method decl.
+	(rtx_reader::read_rtx_code): New method decl.
+	(rtx_reader::read_rtx_operand): New method decl.
+	(rtx_reader::read_nested_rtx): New method decl.
+	(rtx_reader::read_rtx_variadic): New method decl.
+	(rtx_reader::get_string_obstack): New method.
+	(rtx_reader::get_md_constants): New method.
+	(string_obstack): Convert global variable decl to...
+	(rtx_reader::m_string_obstack): ...this new field.
+	(rtx_reader::m_ptr_locs): New field.
+	(rtx_reader::m_ptr_loc_obstack): New field.
+	(rtx_reader::m_joined_conditions): New field.
+	(rtx_reader::m_joined_conditions_obstack): New field.
+	(rtx_reader::m_md_constants): New field.
+	(rtx_reader::m_enum_types): New field.
+	* read-rtl.c (apply_iterator_to_string): Convert to...
+	(rtx_reader::apply_iterator_to_string): ...member function.
+	(copy_rtx_for_iterators): Convert to...
+	(rtx_reader::copy_rtx_for_iterators): ...member function.
+	(add_condition_to_string): Use rtx_reader_ptr for
+	calls join_c_conditions.
+	(apply_iterators): Use rtx_reader_ptr for calls to
+	join_c_conditions and copy_rtx_for_iterators.
+	(read_conditions): Convert to...
+	(rtx_reader::read_conditions): ...member function.
+	(record_potential_iterator_use): Convert to...
+	(rtx_reader::record_potential_iterator_use): ...member function.
+	(read_mapping): Convert to...
+	(rtx_reader::read_mapping): ...member function.
+	(read_subst_mapping): Use rtx_reader_ptr for read_string call.
+	(read_rtx): Convert to...
+	(rtx_reader::read_rtx): ...member function.
+	(read_rtx_code): Convert to...
+	(rtx_reader::read_rtx_code): ...member function.
+	(read_rtx_operand): Convert to...
+	(rtx_reader::read_rtx_operand): ...member function.  Update for move
+	of string_obstack to a field.
+	(read_nested_rtx): Convert to..
+	(rtx_reader::read_nested_rtx): ...member function.
+	(read_rtx_variadic): Convert to..
+	(rtx_reader::read_rtx_variadic): ...member function.
+
 2016-10-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-vrp.c (get_value_range): Check get_ptr_nonnull.
