@@ -386,7 +386,7 @@ clear_bb_flags (void)
 {
   basic_block bb;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
+  FOR_ALL_BB_FN (bb, cfun)
     bb->flags &= BB_FLAGS_TO_PRESERVE;
 }
 

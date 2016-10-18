@@ -1,3 +1,8 @@
+2016-10-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cfg.c (clear_bb_flags): Use FOR_ALL_BB_FN.
+	* config/nvptx/nvptx.c (nvptx_find_sese): Likewise.
+
 2016-10-18  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/altivec.h (vec_xl_len): New macro.
