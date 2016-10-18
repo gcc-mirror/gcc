@@ -1,3 +1,12 @@
+2016-10-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_symbol_ref): Move storage
+	mapping class decoration from here...
+	(rs6000_xcoff_encode_section): ...to here.
+
+	(rs6000_savres_strategy) [AIX,ELFv2]: Inline FPR save and restore
+	if shrink-wrapping and optimizing for speed.
+
 2016-10-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (evrp_dom_walker::before_dom_children): Handle
