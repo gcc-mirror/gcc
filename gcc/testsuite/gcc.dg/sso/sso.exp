@@ -18,6 +18,10 @@
 load_lib gcc-dg.exp
 load_lib torture-options.exp
 
+if { ![check_effective_target_int32] } {
+    return
+}
+
 # Initialize `dg'.
 torture-init
 dg-init
@@ -31,10 +35,6 @@ set SSO_TORTURE_OPTIONS [list \
 	{ -Og -g } ]
 
 set-torture-options $SSO_TORTURE_OPTIONS
-
-if { ![check_effective_target_int32] } {
-    return
-}
 
 # Main loop.
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" ""
