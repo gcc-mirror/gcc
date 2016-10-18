@@ -1,3 +1,8 @@
+2016-10-18  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/sso/sso.exp: Return early if not 
+	effective_target_int32.
+
 2016-10-18  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pr20318.c: Disable EVRP.
