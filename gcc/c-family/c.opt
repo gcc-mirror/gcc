@@ -295,6 +295,16 @@ Wall
 C ObjC C++ ObjC++ Warning
 Enable most warning messages.
 
+Walloca
+C ObjC C++ ObjC++ Var(warn_alloca) Warning
+Warn on any use of alloca.
+
+Walloca-larger-than=
+C ObjC C++ ObjC++ Var(warn_alloca_limit) Warning Joined RejectNegative UInteger
+-Walloca-larger-than=<number> Warn on unbounded uses of
+alloca, and on bounded uses of alloca whose bound can be larger than
+<number> bytes.
+
 Warray-bounds
 LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ; in common.opt
@@ -1029,6 +1039,12 @@ Warn about questionable usage of the macros used to retrieve variable arguments.
 Wvla
 C ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning
 Warn if a variable length array is used.
+
+Wvla-larger-than=
+C ObjC C++ ObjC++ Var(warn_vla_limit) Warning Joined RejectNegative UInteger
+-Wvla-larger-than=<number> Warn on unbounded uses of variable-length arrays, and
+on bounded uses of variable-length arrays whose bound can be
+larger than <number> bytes.
 
 Wvolatile-register-var
 C ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)

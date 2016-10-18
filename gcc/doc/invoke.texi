@@ -255,6 +255,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
+-Walloca -Walloca-larger-than=@var{n} @gol
 -Wno-aggressive-loop-optimizations -Warray-bounds -Warray-bounds=@var{n} @gol
 -Wno-attributes -Wbool-compare -Wbool-operation @gol
 -Wno-builtin-macro-redefined -Wc90-c99-compat -Wc99-c11-compat @gol
@@ -313,7 +314,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-const-variable -Wunused-const-variable=@var{n} @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wuseless-cast -Wvariadic-macros -Wvector-operation-performance @gol
--Wvla -Wvolatile-register-var  -Wwrite-strings @gol
+-Wvla -Wvla-larger-than=@var{n} -Wvolatile-register-var  -Wwrite-strings @gol
 -Wzero-as-null-pointer-constant -Whsa}
 
 @item C and Objective-C-only Warning Options
@@ -4976,6 +4977,73 @@ annotations.
 Warn about overriding virtual functions that are not marked with the override
 keyword.
 
+@item -Walloca
+@opindex Wno-alloca
+@opindex Walloca
+This option warns on all uses of @code{alloca} in the source.
+
+@item -Walloca-larger-than=@var{n}
+This option warns on calls to @code{alloca} that are not bounded by a
+controlling predicate limiting its size to @var{n} bytes, or calls to
+@code{alloca} where the bound is unknown.
+
+For example, a bounded case of @code{alloca} could be:
+
+@smallexample
+void func (size_t n)
+@{
+  void *p;
+  if (n <= 1000)
+    p = alloca (n);
+  else
+    p = malloc (n);
+  f (p);
+@}
+@end smallexample
+
+In the above example, passing @code{-Walloca=1000} would not issue a
+warning because the call to @code{alloca} is known to be at most 1000
+bytes.  However, if @code{-Walloca=500} was passed, the compiler would
+have emitted a warning.
+
+Unbounded uses, on the other hand, are uses of @code{alloca} with no
+controlling predicate verifying its size.  For example:
+
+@smallexample
+void func ()
+@{
+  void *p = alloca (n);
+  f (p);
+@}
+@end smallexample
+
+If @code{-Walloca=500} was passed, the above would trigger a warning,
+but this time because of the lack of bounds checking.
+
+Note, that even seemingly correct code involving signed integers could
+cause a warning:
+
+@smallexample
+void func (signed int n)
+@{
+  if (n < 500)
+    @{
+      p = alloca (n);
+      f (p);
+    @}
+@}
+@end smallexample
+
+In the above example, @var{n} could be negative, causing a larger than
+expected argument to be implicitly casted into the @code{alloca} call.
+
+This option also warns when @code{alloca} is used in a loop.
+
+This warning is not enabled by @option{-Wall}, and is only active when
+@option{-ftree-vrp} is active (default for @option{-O2} and above).
+
+See also @option{-Wvla-larger-than=@var{n}}.
+
 @item -Warray-bounds
 @itemx -Warray-bounds=@var{n}
 @opindex Wno-array-bounds
@@ -6172,9 +6240,25 @@ moving from a moved-from object, this warning can be disabled.
 @item -Wvla
 @opindex Wvla
 @opindex Wno-vla
-Warn if variable length array is used in the code.
+Warn if a variable-length array is used in the code.
 @option{-Wno-vla} prevents the @option{-Wpedantic} warning of
-the variable length array.
+the variable-length array.
+
+@item -Wvla-larger-than=@var{n}
+If this option is used, the compiler will warn on uses of
+variable-length arrays where the size is either unbounded, or bounded
+by an argument that can be larger than @var{n} bytes.  This is similar
+to how @option{-Walloca-larger-than=@var{n}} works, but with
+variable-length arrays.
+
+Note that GCC may optimize small variable-length arrays of a known
+value into plain arrays, so this warning may not get triggered for
+such arrays.
+
+This warning is not enabled by @option{-Wall}, and is only active when
+@option{-ftree-vrp} is active (default for @option{-O2} and above).
+
+See also @option{-Walloca-larger-than=@var{n}}.
 
 @item -Wvolatile-register-var
 @opindex Wvolatile-register-var

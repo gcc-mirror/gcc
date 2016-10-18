@@ -1298,6 +1298,7 @@ OBJS = \
 	gimple-ssa-split-paths.o \
 	gimple-ssa-strength-reduction.o \
 	gimple-ssa-sprintf.o \
+	gimple-ssa-warn-alloca.o \
 	gimple-streamer-in.o \
 	gimple-streamer-out.o \
 	gimple-walk.o \

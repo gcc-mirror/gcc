@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_build_cgraph_edges);
   NEXT_PASS (pass_sprintf_length, false);
+  NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
   TERMINATE_PASS_LIST (all_lowering_passes)
 
   /* Interprocedural optimization passes.  */
@@ -251,6 +252,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_laddress);
       NEXT_PASS (pass_lim);
       NEXT_PASS (pass_split_crit_edges);
+      NEXT_PASS (pass_walloca, false);
       NEXT_PASS (pass_pre);
       NEXT_PASS (pass_sink_code);
       NEXT_PASS (pass_sancov);

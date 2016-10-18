@@ -1,3 +1,12 @@
+2016-10-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-ssa-warn-alloca.o.
+	* passes.def: Add two instances of pass_walloca.
+	* tree-pass.h (make_pass_walloca): New.
+	* gimple-ssa-warn-alloca.c: New file.
+	* doc/invoke.texi: Document -Walloca, -Walloca-larger-than=, and
+	-Wvla-larger-than= options.
+
 2016-10-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* cfg.c (clear_bb_flags): Use FOR_ALL_BB_FN.
