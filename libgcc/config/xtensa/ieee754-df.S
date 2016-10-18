@@ -1217,8 +1217,58 @@ __muldf3:
 
 #ifdef L_divdf3
 
-	.literal_position
 	/* Division */
+
+#if XCHAL_HAVE_DFP_DIV
+
+        .text
+        .align 4
+        .global __divdf3
+        .type	__divdf3, @function
+__divdf3:
+	leaf_entry	sp, 16
+
+	wfrd		f1, xh, xl
+	wfrd		f2, yh, yl
+
+	div0.d		f3, f2
+	nexp01.d	f4, f2
+	const.d		f0, 1
+	maddn.d		f0, f4, f3
+	const.d		f5, 0
+	mov.d		f7, f2
+	mkdadj.d	f7, f1
+	maddn.d		f3, f0, f3
+	maddn.d		f5, f0, f0
+	nexp01.d	f1, f1
+	div0.d		f2, f2
+	maddn.d		f3, f5, f3
+	const.d		f5, 1
+	const.d		f0, 0
+	neg.d		f6, f1
+	maddn.d		f5, f4, f3
+	maddn.d		f0, f6, f2
+	maddn.d		f3, f5, f3
+	maddn.d		f6, f4, f0
+	const.d		f2, 1
+	maddn.d		f2, f4, f3
+	maddn.d		f0, f6, f3
+	neg.d		f1, f1
+	maddn.d		f3, f2, f3
+	maddn.d		f1, f4, f0
+	addexpm.d	f0, f7
+	addexp.d	f3, f7
+	divn.d		f0, f1, f3
+
+	rfr		xl, f0
+	rfrd		xh, f0
+
+	leaf_return
+
+#else
+
+	.literal_position
+
 __divdf3_aux:
 
 	/* Handle unusual cases (zeros, subnormals, NaNs and Infinities).
@@ -1536,6 +1586,8 @@ __divdf3:
 	slli	xh, xh, 31
 	movi	xl, 0
 	leaf_return
+
+#endif /* XCHAL_HAVE_DFP_DIV */
 
 #endif /* L_divdf3 */
 
@@ -2388,3 +2440,127 @@ __extendsfdf2:
 #endif /* L_extendsfdf2 */
 
 
+#if XCHAL_HAVE_DFP_SQRT
+#ifdef L_sqrt
+
+        .text
+        .align 4
+        .global __ieee754_sqrt
+        .type	__ieee754_sqrt, @function
+__ieee754_sqrt:
+	leaf_entry	sp, 16
+
+	wfrd		f1, xh, xl
+
+	sqrt0.d		f2, f1
+	const.d		f4, 0
+	maddn.d		f4, f2, f2
+	nexp01.d	f3, f1
+	const.d		f0, 3
+	addexp.d	f3, f0
+	maddn.d		f0, f4, f3
+	nexp01.d	f4, f1
+	maddn.d		f2, f0, f2
+	const.d		f5, 0
+	maddn.d		f5, f2, f3
+	const.d		f0, 3
+	maddn.d		f0, f5, f2
+	neg.d		f6, f4
+	maddn.d		f2, f0, f2
+	const.d		f0, 0
+	const.d		f5, 0
+	const.d		f7, 0
+	maddn.d		f0, f6, f2
+	maddn.d		f5, f2, f3
+	const.d		f3, 3
+	maddn.d		f7, f3, f2
+	maddn.d		f4, f0, f0
+	maddn.d		f3, f5, f2
+	neg.d		f2, f7
+	maddn.d		f0, f4, f2
+	maddn.d		f7, f3, f7
+	mksadj.d	f2, f1
+	nexp01.d	f1, f1
+	maddn.d		f1, f0, f0
+	neg.d		f3, f7
+	addexpm.d	f0, f2
+	addexp.d	f3, f2
+	divn.d		f0, f1, f3
+
+	rfr		xl, f0
+	rfrd		xh, f0
+
+	leaf_return
+
+#endif /* L_sqrt */
+#endif /* XCHAL_HAVE_DFP_SQRT */
+
+#if XCHAL_HAVE_DFP_RECIP
+#ifdef L_recipdf2
+	/* Reciprocal */
+
+	.align	4
+	.global	__recipdf2
+	.type	__recipdf2, @function
+__recipdf2:
+	leaf_entry	sp, 16
+
+	wfrd		f1, xh, xl
+
+	recip0.d	f0, f1
+	const.d		f2, 2
+	msub.d		f2, f1, f0
+	mul.d		f3, f1, f0
+	const.d		f4, 2
+	mul.d		f5, f0, f2
+	msub.d		f4, f3, f2
+	const.d		f2, 1
+	mul.d		f0, f5, f4
+	msub.d		f2, f1, f0
+	maddn.d		f0, f0, f2
+
+	rfr		xl, f0
+	rfrd		xh, f0
+
+	leaf_return
+
+#endif /* L_recipdf2 */
+#endif /* XCHAL_HAVE_DFP_RECIP */
+
+#if XCHAL_HAVE_DFP_RSQRT
+#ifdef L_rsqrtdf2
+	/* Reciprocal square root */
+
+	.align	4
+	.global	__rsqrtdf2
+	.type	__rsqrtdf2, @function
+__rsqrtdf2:
+	leaf_entry	sp, 16
+
+	wfrd		f1, xh, xl
+
+	rsqrt0.d	f0, f1
+	mul.d		f2, f1, f0
+	const.d		f3, 3
+	mul.d		f4, f3, f0
+	const.d		f5, 1
+	msub.d		f5, f2, f0
+	maddn.d		f0, f4, f5
+	const.d		f2, 1
+	mul.d		f4, f1, f0
+	mul.d		f5, f3, f0
+	msub.d		f2, f4, f0
+	maddn.d		f0, f5, f2
+	const.d		f2, 1
+	mul.d		f1, f1, f0
+	mul.d		f3, f3, f0
+	msub.d		f2, f1, f0
+	maddn.d		f0, f3, f2
+
+	rfr		xl, f0
+	rfrd		xh, f0
+
+	leaf_return
+
+#endif /* L_rsqrtdf2 */
+#endif /* XCHAL_HAVE_DFP_RSQRT */

@@ -885,8 +885,52 @@ __mulsf3:
 
 #ifdef L_divsf3
 
-	.literal_position
 	/* Division */
+
+#if XCHAL_HAVE_FP_DIV
+
+	.align	4
+	.global	__divsf3
+	.type	__divsf3, @function
+__divsf3:
+	leaf_entry	sp, 16
+
+	wfr		f1, a2	/* dividend */
+	wfr		f2, a3	/* divisor */
+
+	div0.s		f3, f2
+	nexp01.s	f4, f2
+	const.s		f5, 1
+	maddn.s		f5, f4, f3
+	mov.s		f6, f3
+	mov.s		f7, f2
+	nexp01.s	f2, f1
+	maddn.s		f6, f5, f6
+	const.s		f5, 1
+	const.s		f0, 0
+	neg.s		f8, f2
+	maddn.s		f5, f4, f6
+	maddn.s		f0, f8, f3
+	mkdadj.s	f7, f1
+	maddn.s		f6, f5, f6
+	maddn.s		f8, f4, f0
+	const.s		f3, 1
+	maddn.s		f3, f4, f6
+	maddn.s		f0, f8, f6
+	neg.s		f2, f2
+	maddn.s		f6, f3, f6
+	maddn.s		f2, f4, f0
+	addexpm.s	f0, f7
+	addexp.s	f6, f7
+	divn.s		f0, f2, f6
+
+	rfr		a2, f0
+
+	leaf_return
+
+#else
+
+	.literal_position
 __divsf3_aux:
 
 	/* Handle unusual cases (zeros, subnormals, NaNs and Infinities).
@@ -1111,6 +1155,8 @@ __divsf3:
 	srli	a2, a7, 31
 	slli	a2, a2, 31
 	leaf_return
+
+#endif /* XCHAL_HAVE_FP_DIV */
 
 #endif /* L_divsf3 */
 
@@ -1757,3 +1803,111 @@ __floatdisf:
 	leaf_return
 
 #endif /* L_floatdisf */
+
+#if XCHAL_HAVE_FP_SQRT
+#ifdef L_sqrtf
+	/* Square root */
+
+	.align	4
+	.global	__ieee754_sqrtf
+	.type	__ieee754_sqrtf, @function
+__ieee754_sqrtf:
+	leaf_entry	sp, 16
+
+	wfr		f1, a2
+
+	sqrt0.s		f2, f1
+	const.s		f3, 0
+	maddn.s		f3, f2, f2
+	nexp01.s	f4, f1
+	const.s		f0, 3
+	addexp.s	f4, f0
+	maddn.s		f0, f3, f4
+	nexp01.s	f3, f1
+	neg.s		f5, f3
+	maddn.s		f2, f0, f2
+	const.s		f0, 0
+	const.s		f6, 0
+	const.s		f7, 0
+	maddn.s		f0, f5, f2
+	maddn.s		f6, f2, f4
+	const.s		f4, 3
+	maddn.s		f7, f4, f2
+	maddn.s		f3, f0, f0
+	maddn.s		f4, f6, f2
+	neg.s		f2, f7
+	maddn.s		f0, f3, f2
+	maddn.s		f7, f4, f7
+	mksadj.s	f2, f1
+	nexp01.s	f1, f1
+	maddn.s		f1, f0, f0
+	neg.s		f3, f7
+	addexpm.s	f0, f2
+	addexp.s	f3, f2
+	divn.s		f0, f1, f3
+
+	rfr		a2, f0
+
+	leaf_return
+
+#endif /* L_sqrtf */
+#endif /* XCHAL_HAVE_FP_SQRT */
+
+#if XCHAL_HAVE_FP_RECIP
+#ifdef L_recipsf2
+	/* Reciprocal */
+
+	.align	4
+	.global	__recipsf2
+	.type	__recipsf2, @function
+__recipsf2:
+	leaf_entry	sp, 16
+
+	wfr		f1, a2
+
+	recip0.s	f0, f1
+	const.s		f2, 1
+	msub.s		f2, f1, f0
+	maddn.s		f0, f0, f2
+	const.s		f2, 1
+	msub.s		f2, f1, f0
+	maddn.s		f0, f0, f2
+
+	rfr		a2, f0
+
+	leaf_return
+
+#endif /* L_recipsf2 */
+#endif /* XCHAL_HAVE_FP_RECIP */
+
+#if XCHAL_HAVE_FP_RSQRT
+#ifdef L_rsqrtsf2
+	/* Reciprocal square root */
+
+	.align	4
+	.global	__rsqrtsf2
+	.type	__rsqrtsf2, @function
+__rsqrtsf2:
+	leaf_entry	sp, 16
+
+	wfr		f1, a2
+
+	rsqrt0.s	f0, f1
+	mul.s		f2, f1, f0
+	const.s		f3, 3;
+	mul.s		f4, f3, f0
+	const.s		f5, 1
+	msub.s		f5, f2, f0
+	maddn.s		f0, f4, f5
+	mul.s		f2, f1, f0
+	mul.s		f1, f3, f0
+	const.s		f3, 1
+	msub.s		f3, f2, f0
+	maddn.s		f0, f1, f3
+
+	rfr		a2, f0
+
+	leaf_return
+
+#endif /* L_rsqrtsf2 */
+#endif /* XCHAL_HAVE_FP_RSQRT */

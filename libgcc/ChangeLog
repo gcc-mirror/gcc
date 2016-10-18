@@ -1,3 +1,16 @@
+2016-10-18  Ding-Kai Chen  <dkchen@cadence.com>
+
+	* config/xtensa/ieee754-df.S (__recipdf2, __rsqrtdf2,
+	__ieee754_sqrt): New functions.
+	(__divdf3): Add implementation with new FPU instructions under
+	#if XCHAL_HAVE_DFP_DIV.
+	* config/xtensa/ieee754-sf.S (__recipsf2, __rsqrtsf2,
+	__ieee754_sqrtf): New functions.
+	(__divsf3): Add implementation with new FPU instructions under
+	#if XCHAL_HAVE_FP_DIV.
+	* config/xtensa/t-xtensa (LIB1ASMFUNCS): Add _sqrtf, _recipsf2
+	_rsqrtsf2, _sqrt, _recipdf2 and _rsqrtdf2.
+
 2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* libgcov-profiler.c: Replace MEMMODEL_* macros by their __ATOMIC_*
