@@ -380,6 +380,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->warn_num_sign_change = value;
       break;
 
+    case OPT_Walloca_larger_than_:
+      if (!value)
+	inform (loc, "-Walloca-larger-than=0 is meaningless");
+      break;
+
+    case OPT_Wvla_larger_than_:
+      if (!value)
+	inform (loc, "-Wvla-larger-than=0 is meaningless");
+      break;
+
     case OPT_Wunknown_pragmas:
       /* Set to greater than 1, so that even unknown pragmas in
 	 system headers will be warned about.  */
