@@ -2644,9 +2644,19 @@ dt_operand::gen_gimple_expr (FILE *f, int indent)
 	      /* ???  If this is a memory operation we can't (and should not)
 		 match this.  The only sensible operand types are
 		 SSA names and invariants.  */
-	      fprintf_indent (f, indent,
-			      "tree %s = TREE_OPERAND (gimple_assign_rhs1 (def), %i);\n",
-			      child_opname, i);
+	      if (e->is_generic)
+		{
+		  char opname[20];
+		  get_name (opname);
+		  fprintf_indent (f, indent,
+				  "tree %s = TREE_OPERAND (%s, %i);\n",
+				  child_opname, opname, i);
+		}
+	      else
+		fprintf_indent (f, indent,
+				"tree %s = TREE_OPERAND "
+				"(gimple_assign_rhs1 (def), %i);\n",
+				child_opname, i);
 	      fprintf_indent (f, indent,
 			      "if ((TREE_CODE (%s) == SSA_NAME\n",
 			      child_opname);
