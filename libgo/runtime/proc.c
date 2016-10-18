@@ -283,6 +283,9 @@ runtime_mcall(void (*pfn)(G*))
 {
 	M *mp;
 	G *gp;
+#ifndef USING_SPLIT_STACK
+	void *afterregs;
+#endif
 
 	// Ensure that all registers are on the stack for the garbage
 	// collector.
@@ -298,7 +301,9 @@ runtime_mcall(void (*pfn)(G*))
 #ifdef USING_SPLIT_STACK
 		__splitstack_getcontext(&g->stackcontext[0]);
 #else
-		gp->gcnextsp = &pfn;
+		// We have to point to an address on the stack that is
+		// below the saved registers.
+		gp->gcnextsp = &afterregs;
 #endif
 		gp->fromgogo = false;
 		getcontext(ucontext_arg(&gp->context[0]));
