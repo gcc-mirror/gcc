@@ -1,3 +1,9 @@
+2016-10-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/77916
+	* gimple-ssa-strength-reduction.c (analyze_increments): Reinstate
+	stopgap fix, as pointers with -1 increment are still broken.
+
 2016-10-18  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_symbol_ref): Move storage
