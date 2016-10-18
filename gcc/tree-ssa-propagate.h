@@ -75,8 +75,7 @@ extern bool update_gimple_call (gimple_stmt_iterator *, tree, int, ...);
 extern bool update_call_from_tree (gimple_stmt_iterator *, tree);
 extern void ssa_propagate (ssa_prop_visit_stmt_fn, ssa_prop_visit_phi_fn);
 extern bool stmt_makes_single_store (gimple *);
-extern bool substitute_and_fold (ssa_prop_get_value_fn, ssa_prop_fold_stmt_fn,
-				 bool);
+extern bool substitute_and_fold (ssa_prop_get_value_fn, ssa_prop_fold_stmt_fn);
 extern bool may_propagate_copy (tree, tree);
 extern bool may_propagate_copy_into_stmt (gimple *, tree);
 extern bool may_propagate_copy_into_asm (tree);

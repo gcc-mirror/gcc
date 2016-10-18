@@ -550,7 +550,7 @@ fini_copy_prop (void)
 	}
     }
 
-  bool changed = substitute_and_fold (get_value, NULL, true);
+  bool changed = substitute_and_fold (get_value, NULL);
   if (changed)
     {
       free_numbers_of_iterations_estimates (cfun);

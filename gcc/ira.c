@@ -5065,6 +5065,8 @@ ira (FILE *f)
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
 
+  clear_bb_flags ();
+
   /* Perform target specific PIC register initialization.  */
   targetm.init_pic_reg ();
 

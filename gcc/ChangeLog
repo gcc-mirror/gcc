@@ -1,5 +1,20 @@
 2016-10-18  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-propagate.h (substitute_and_fold): Adjust prototype.
+	* tree-ssa-propagate.c (ssa_prop_fini): Remove final BB_VISITED
+	clearing.
+	(substitute_and_fold_dom_walker): Adjust constructor.
+	(substitute_and_fold_dom_walker::before_dom_children): Remove
+	do_dce flag and handling (always true).
+	(substitute_and_fold): Likewise.
+	* tree-vrp.c (vrp_finalize): Adjust.
+	(execute_early_vrp): Remove final BB_VISITED clearing.
+	* tree-ssa-ccp.c (ccp_finalize): Adjust.
+	* tree-ssa-copy.c (fini_copy_prop): Likewise.
+	* ira.c (ira): Call clear_bb_flags.
+
+2016-10-18  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (dt_operand::gen_gimple_expr): Use get_name to
 	get at the operand to look at with TREE_OPERAND for generic
 	sub-nodes.
