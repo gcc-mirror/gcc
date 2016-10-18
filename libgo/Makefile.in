@@ -226,21 +226,18 @@ am__DEPENDENCIES_4 = $(am__DEPENDENCIES_2) \
 libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
 @HAVE_SYS_MMAN_H_FALSE@am__objects_1 = mem_posix_memalign.lo
 @HAVE_SYS_MMAN_H_TRUE@am__objects_1 = mem.lo
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_2 = netpoll_kqueue.lo
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@am__objects_2 = netpoll_select.lo
-@LIBGO_IS_LINUX_TRUE@am__objects_2 = netpoll_epoll.lo
-@LIBGO_IS_LINUX_FALSE@am__objects_3 = thread-sema.lo
-@LIBGO_IS_LINUX_TRUE@am__objects_3 = thread-linux.lo
-@LIBGO_IS_RTEMS_TRUE@am__objects_4 = rtems-task-variable-add.lo
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_5 = getncpu-none.lo
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@am__objects_5 = getncpu-bsd.lo
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_5 = getncpu-bsd.lo
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@am__objects_5 = getncpu-solaris.lo
-@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_5 = getncpu-irix.lo
-@LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_5 =  \
+@LIBGO_IS_LINUX_FALSE@am__objects_2 = thread-sema.lo
+@LIBGO_IS_LINUX_TRUE@am__objects_2 = thread-linux.lo
+@LIBGO_IS_RTEMS_TRUE@am__objects_3 = rtems-task-variable-add.lo
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_4 = getncpu-none.lo
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@am__objects_4 = getncpu-bsd.lo
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@am__objects_4 = getncpu-bsd.lo
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@am__objects_4 = getncpu-solaris.lo
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_4 = getncpu-irix.lo
+@LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_4 =  \
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@	getncpu-bsd.lo
-@LIBGO_IS_LINUX_TRUE@am__objects_5 = getncpu-linux.lo
-am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
+@LIBGO_IS_LINUX_TRUE@am__objects_4 = getncpu-linux.lo
+am__objects_5 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-breakpoint.lo go-caller.lo go-callers.lo \
 	go-can-convert-interface.lo go-cdiv.lo go-cgo.lo \
 	go-check-interface.lo go-construct-map.lo \
@@ -259,18 +256,18 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-unsafe-pointer.lo go-unsetenv.lo go-unwind.lo go-varargs.lo \
 	env_posix.lo heapdump.lo mcache.lo mcentral.lo \
 	$(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
-	$(am__objects_2) panic.lo parfor.lo print.lo proc.lo \
-	runtime.lo signal_unix.lo thread.lo $(am__objects_3) yield.lo \
-	$(am__objects_4) go-iface.lo lfstack.lo malloc.lo netpoll.lo \
-	reflect.lo runtime1.lo sigqueue.lo $(am__objects_5)
-am_libgo_llgo_la_OBJECTS = $(am__objects_6)
+	panic.lo parfor.lo print.lo proc.lo runtime.lo signal_unix.lo \
+	thread.lo $(am__objects_2) yield.lo $(am__objects_3) \
+	go-iface.lo lfstack.lo malloc.lo reflect.lo runtime1.lo \
+	sigqueue.lo $(am__objects_4)
+am_libgo_llgo_la_OBJECTS = $(am__objects_5)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgo_llgo_la_LDFLAGS) $(LDFLAGS) -o $@
 @GOC_IS_LLGO_TRUE@am_libgo_llgo_la_rpath = -rpath $(toolexeclibdir)
 libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
-am_libgo_la_OBJECTS = $(am__objects_6)
+am_libgo_la_OBJECTS = $(am__objects_5)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(libgo_la_LDFLAGS) \
@@ -832,9 +829,6 @@ toolexeclibgounicode_DATA = \
 @LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@runtime_getncpu_file = runtime/getncpu-irix.c
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@runtime_getncpu_file = runtime/getncpu-bsd.c
 @LIBGO_IS_LINUX_TRUE@runtime_getncpu_file = runtime/getncpu-linux.c
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_netpoll_files = runtime/netpoll_kqueue.c
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@runtime_netpoll_files = runtime/netpoll_select.c
-@LIBGO_IS_LINUX_TRUE@runtime_netpoll_files = runtime/netpoll_epoll.c
 runtime_files = \
 	runtime/go-append.c \
 	runtime/go-assert.c \
@@ -898,7 +892,6 @@ runtime_files = \
 	runtime/mgc0.c \
 	runtime/mheap.c \
 	runtime/msize.c \
-	$(runtime_netpoll_files) \
 	runtime/panic.c \
 	runtime/parfor.c \
 	runtime/print.c \
@@ -912,7 +905,6 @@ runtime_files = \
 	go-iface.c \
 	lfstack.c \
 	malloc.c \
-	netpoll.c \
 	reflect.c \
 	runtime1.c \
 	sigqueue.c \
@@ -1616,10 +1608,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgc0.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mheap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msize.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netpoll.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netpoll_epoll.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netpoll_kqueue.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netpoll_select.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/panic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parfor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/print.Plo@am__quote@
@@ -2138,27 +2126,6 @@ msize.lo: runtime/msize.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/msize.c' object='msize.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o msize.lo `test -f 'runtime/msize.c' || echo '$(srcdir)/'`runtime/msize.c
-
-netpoll_kqueue.lo: runtime/netpoll_kqueue.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT netpoll_kqueue.lo -MD -MP -MF $(DEPDIR)/netpoll_kqueue.Tpo -c -o netpoll_kqueue.lo `test -f 'runtime/netpoll_kqueue.c' || echo '$(srcdir)/'`runtime/netpoll_kqueue.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/netpoll_kqueue.Tpo $(DEPDIR)/netpoll_kqueue.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/netpoll_kqueue.c' object='netpoll_kqueue.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o netpoll_kqueue.lo `test -f 'runtime/netpoll_kqueue.c' || echo '$(srcdir)/'`runtime/netpoll_kqueue.c
-
-netpoll_select.lo: runtime/netpoll_select.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT netpoll_select.lo -MD -MP -MF $(DEPDIR)/netpoll_select.Tpo -c -o netpoll_select.lo `test -f 'runtime/netpoll_select.c' || echo '$(srcdir)/'`runtime/netpoll_select.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/netpoll_select.Tpo $(DEPDIR)/netpoll_select.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/netpoll_select.c' object='netpoll_select.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o netpoll_select.lo `test -f 'runtime/netpoll_select.c' || echo '$(srcdir)/'`runtime/netpoll_select.c
-
-netpoll_epoll.lo: runtime/netpoll_epoll.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT netpoll_epoll.lo -MD -MP -MF $(DEPDIR)/netpoll_epoll.Tpo -c -o netpoll_epoll.lo `test -f 'runtime/netpoll_epoll.c' || echo '$(srcdir)/'`runtime/netpoll_epoll.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/netpoll_epoll.Tpo $(DEPDIR)/netpoll_epoll.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/netpoll_epoll.c' object='netpoll_epoll.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o netpoll_epoll.lo `test -f 'runtime/netpoll_epoll.c' || echo '$(srcdir)/'`runtime/netpoll_epoll.c
 
 panic.lo: runtime/panic.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT panic.lo -MD -MP -MF $(DEPDIR)/panic.Tpo -c -o panic.lo `test -f 'runtime/panic.c' || echo '$(srcdir)/'`runtime/panic.c
@@ -3402,14 +3369,6 @@ malloc.c: $(srcdir)/runtime/malloc.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
-mprof.c: $(srcdir)/runtime/mprof.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
-netpoll.c: $(srcdir)/runtime/netpoll.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
 reflect.c: $(srcdir)/runtime/reflect.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
@@ -3418,16 +3377,8 @@ runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
-sema.c: $(srcdir)/runtime/sema.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
 	./goc2c --go-pkgpath os_signal $< > $@.tmp
-	mv -f $@.tmp $@
-
-time.c: $(srcdir)/runtime/time.goc goc2c
-	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 %.c: $(srcdir)/runtime/%.goc goc2c

@@ -4,23 +4,16 @@
 
 // +build plan9
 
-#include "runtime.h"
-#include "malloc.h"
+package runtime
 
 // Polls for ready network connections.
 // Returns list of goroutines that become runnable.
-G*
-runtime_netpoll(bool block)
-{
+func netpoll(block bool) (gp *g) {
 	// Implementation for platforms that do not support
 	// integrated network poller.
-	USED(block);
-	return nil;
+	return
 }
 
-void
-runtime_netpoll_scan(struct Workbuf** wbufp, void (*enqueue1)(struct Workbuf**, Obj))
-{
-	USED(wbufp);
-	USED(addroot);
+func netpollinited() bool {
+	return false
 }

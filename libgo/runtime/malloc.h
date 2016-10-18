@@ -544,4 +544,3 @@ int32	runtime_setgcpercent(int32)
 
 struct Workbuf;
 void	runtime_proc_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));
-void	runtime_netpoll_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));

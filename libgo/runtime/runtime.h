@@ -391,21 +391,8 @@ int64	runtime_tickspersecond(void)
      __asm__ (GOSYM_PREFIX "runtime.tickspersecond");
 void	runtime_blockevent(int64, int32);
 extern int64 runtime_blockprofilerate;
-void	runtime_addtimer(Timer*)
-  __asm__ (GOSYM_PREFIX "runtime.addtimer");
-bool	runtime_deltimer(Timer*)
-  __asm__ (GOSYM_PREFIX "runtime.deltimer");
-G*	runtime_netpoll(bool);
-void	runtime_netpollinit(void);
-int32	runtime_netpollopen(uintptr, PollDesc*);
-int32   runtime_netpollclose(uintptr);
-void	runtime_netpollready(G**, PollDesc*, int32);
-uintptr	runtime_netpollfd(PollDesc*);
-void	runtime_netpollarm(PollDesc*, int32);
-void**	runtime_netpolluser(PollDesc*);
-bool	runtime_netpollclosing(PollDesc*);
-void	runtime_netpolllock(PollDesc*);
-void	runtime_netpollunlock(PollDesc*);
+G*	runtime_netpoll(bool)
+  __asm__ (GOSYM_PREFIX "runtime.netpoll");
 void	runtime_crash(void);
 void	runtime_parsedebugvars(void)
   __asm__(GOSYM_PREFIX "runtime.parsedebugvars");

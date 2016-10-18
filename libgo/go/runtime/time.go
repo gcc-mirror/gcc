@@ -8,10 +8,6 @@ package runtime
 
 import "unsafe"
 
-// Export temporarily for gccgo's C code to call:
-//go:linkname addtimer runtime.addtimer
-//go:linkname deltimer runtime.deltimer
-
 // Package time knows the layout of this structure.
 // If this struct changes, adjust ../time/sleep.go:/runtimeTimer.
 // For GOOS=nacl, package syscall knows the layout of this structure.
