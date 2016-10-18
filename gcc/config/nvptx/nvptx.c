@@ -3091,17 +3091,11 @@ nvptx_find_sese (auto_vec<basic_block> &blocks, bb_pair_vec_t &regions)
   int ix;
 
   /* First clear each BB of the whole function.  */ 
-  FOR_EACH_BB_FN (block, cfun)
+  FOR_ALL_BB_FN (block, cfun)
     {
       block->flags &= ~BB_VISITED;
       BB_SET_SESE (block, 0);
     }
-  block = EXIT_BLOCK_PTR_FOR_FN (cfun);
-  block->flags &= ~BB_VISITED;
-  BB_SET_SESE (block, 0);
-  block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
-  block->flags &= ~BB_VISITED;
-  BB_SET_SESE (block, 0);
 
   /* Mark blocks in the function that are in this graph.  */
   for (ix = 0; blocks.iterate (ix, &block); ix++)
