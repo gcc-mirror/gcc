@@ -1,7 +1,13 @@
+2016-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uses_allocator.h (__is_uses_allocator_constructible_v)
+	(__is_nothrow_uses_allocator_constructible_v): Only define for C++14
+	and later.
+
 2016-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/27_io/basic_filebuf/close/12790-1.cc: Remove 'test'
-        variables.
+	variables.
 	* testsuite/27_io/basic_filebuf/close/char/1.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/close/char/12790-1.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/close/char/12790-2.cc: Likewise.
