@@ -1,5 +1,12 @@
 2016-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/shared_ptr.h (shared_ptr(shared_ptr&&)):
+	Remove const from parameter.
+	(operator<(const shared_ptr<T>&, nullptr_t)): Use correct
+	specialization of std::less.
+	* testsuite/experimental/memory/shared_ptr/comparison/comparison.cc:
+	Test comparison with nullptr and actually call test functions.
+
 	* include/bits/uses_allocator.h (__is_uses_allocator_constructible_v)
 	(__is_nothrow_uses_allocator_constructible_v): Only define for C++14
 	and later.
