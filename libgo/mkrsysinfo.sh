@@ -64,6 +64,27 @@ echo "func (ts *timespec) set_nsec(x int32) {" >> ${OUT}
 echo "	ts.tv_nsec = timespec_nsec_t(x)" >> ${OUT}
 echo "}" >> ${OUT}
 
+# Define the epollevent struct.  This needs special attention because
+# the C definition uses a union and is sometimes packed.
+if grep '^const _epoll_data_offset ' ${OUT} >/dev/null 2>&1; then
+  val=`grep '^const _epoll_data_offset ' ${OUT} | sed -e 's/const _epoll_data_offset = \(.*\)$/\1/'`
+  if test "$val" = "4"; then
+      echo 'type epollevent struct { events uint32; data [8]byte }' >> ${OUT}
+  elif test "$val" = "8"; then
+      echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte }' >> ${OUT}
+  else
+      echo 1>&2 "unknown epoll data offset value ${val}"
+      exit 1
+  fi
+fi
+# Make sure EPOLLRDHUP and EPOLL_CLOEXEC are defined.
+if ! grep '^const _EPOLLRDHUP' ${OUT} >/dev/null 2>&1; then
+  echo "const _EPOLLRDHUP = 0x2000" >> ${OUT}
+fi
+if ! grep '^const _EPOLL_CLOEXEC' ${OUT} >/dev/null 2>&1; then
+  echo "const _EPOLL_CLOEXEC = 02000000" >> ${OUT}
+fi
+
 # The semt structure, for Solaris.
 grep '^type _sem_t ' gen-sysinfo.go | \
     sed -e 's/_sem_t/semt/' >> ${OUT}
@@ -100,4 +121,15 @@ grep '^type _mac_ipaddr_t ' gen-sysinfo.go | \
 # The Solaris 12 _mactun_info_t struct.
 grep '^type _mactun_info_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
+    >> ${OUT}
+
+# The Solaris port_event_t struct.
+grep '^type _port_event_t ' gen-sysinfo.go | \
+    sed -e s'/_port_event_t/portevent/' \
+    >> ${OUT}
+
+# The *BSD kevent struct.
+grep '^type _kevent ' gen-sysinfo.go | \
+    sed -e s'/_kevent/keventt/' \
+      -e 's/ udata [^;}]*/ udata *byte/' \
     >> ${OUT}

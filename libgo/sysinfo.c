@@ -9,6 +9,7 @@
 
 #include "config.h"
 
+#include <stddef.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
@@ -48,6 +49,9 @@
 #endif
 #if defined(HAVE_SYS_EPOLL_H)
 #include <sys/epoll.h>
+#endif
+#if defined(HAVE_SYS_EVENT_H)
+#include <sys/event.h>
 #endif
 #if defined(HAVE_SYS_FILE_H)
 #include <sys/file.h>
@@ -155,6 +159,9 @@
 #if defined(HAVE_SEMAPHORE_H)
 #include <semaphore.h>
 #endif
+#if defined(HAVE_PORT_H)
+#include <port.h>
+#endif
 
 /* Constants that may only be defined as expressions on some systems,
    expressions too complex for -fdump-go-spec to handle.  These are
@@ -260,3 +267,9 @@ enum {
   NLA_HDRLEN_val = NLA_HDRLEN,
 #endif
 };
+
+#if defined(HAVE_SYS_EPOLL_H)
+enum {
+  epoll_data_offset = offsetof(struct epoll_event, data)
+};
+#endif

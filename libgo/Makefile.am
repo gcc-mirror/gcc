@@ -427,16 +427,6 @@ endif
 endif
 endif
 
-if LIBGO_IS_LINUX
-runtime_netpoll_files = runtime/netpoll_epoll.c
-else
-if LIBGO_IS_SOLARIS
-runtime_netpoll_files = runtime/netpoll_select.c
-else
-runtime_netpoll_files = runtime/netpoll_kqueue.c
-endif
-endif
-
 runtime_files = \
 	runtime/go-append.c \
 	runtime/go-assert.c \
@@ -500,7 +490,6 @@ runtime_files = \
 	runtime/mgc0.c \
 	runtime/mheap.c \
 	runtime/msize.c \
-	$(runtime_netpoll_files) \
 	runtime/panic.c \
 	runtime/parfor.c \
 	runtime/print.c \
@@ -514,7 +503,6 @@ runtime_files = \
 	go-iface.c \
 	lfstack.c \
 	malloc.c \
-	netpoll.c \
 	reflect.c \
 	runtime1.c \
 	sigqueue.c \
@@ -530,14 +518,6 @@ malloc.c: $(srcdir)/runtime/malloc.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
-mprof.c: $(srcdir)/runtime/mprof.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
-netpoll.c: $(srcdir)/runtime/netpoll.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
 reflect.c: $(srcdir)/runtime/reflect.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
@@ -546,16 +526,8 @@ runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
-sema.c: $(srcdir)/runtime/sema.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
 	./goc2c --go-pkgpath os_signal $< > $@.tmp
-	mv -f $@.tmp $@
-
-time.c: $(srcdir)/runtime/time.goc goc2c
-	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 %.c: $(srcdir)/runtime/%.goc goc2c
