@@ -3,7 +3,7 @@
    Check that VRP now gets ranges from BIT_AND_EXPRs.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-ccp -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fno-tree-ccp -fdisable-tree-evrp -fdump-tree-vrp1" } */
 
 int
 foo (int a)

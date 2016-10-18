@@ -10747,12 +10747,13 @@ evrp_dom_walker::before_dom_children (basic_block bb)
   gimple_stmt_iterator gsi;
   edge e;
   edge_iterator ei;
-  bool has_unvisived_preds = false;
+  bool has_unvisited_preds = false;
 
   FOR_EACH_EDGE (e, ei, bb->preds)
-    if (!(e->src->flags & BB_VISITED))
+    if (e->flags & EDGE_EXECUTABLE
+	&& !(e->src->flags & BB_VISITED))
       {
-	has_unvisived_preds = true;
+	has_unvisited_preds = true;
 	break;
       }
 
@@ -10762,7 +10763,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       gphi *phi = gpi.phi ();
       tree lhs = PHI_RESULT (phi);
       value_range vr_result = VR_INITIALIZER;
-      if (!has_unvisived_preds
+      if (!has_unvisited_preds
 	  && stmt_interesting_for_vrp (phi))
 	extract_range_from_phi_node (phi, &vr_result);
       else
@@ -10770,89 +10771,98 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       update_value_range (lhs, &vr_result);
     }
 
+  edge taken_edge = NULL;
+
   /* Visit all other stmts and discover any new VRs possible.  */
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
-      edge taken_edge;
       tree output = NULL_TREE;
       gimple *old_stmt = stmt;
       bool was_noreturn = (is_gimple_call (stmt)
 			   && gimple_call_noreturn_p (stmt));
 
-      /* TODO, if found taken_edge, we should visit (return it) and travel
-	 again to improve VR as done in DOM/SCCVN optimizations.  It should
-	 be done carefully as stmts might prematurely leave a BB like
-	 in EH.  */
-      if (stmt_interesting_for_vrp (stmt))
+      if (gcond *cond = dyn_cast <gcond *> (stmt))
 	{
+	  vrp_visit_cond_stmt (cond, &taken_edge);
+	  if (taken_edge)
+	    {
+	      if (taken_edge->flags & EDGE_TRUE_VALUE)
+		gimple_cond_make_true (cond);
+	      else if (taken_edge->flags & EDGE_FALSE_VALUE)
+		gimple_cond_make_false (cond);
+	      else
+		gcc_unreachable ();
+	    }
+	}
+      else if (stmt_interesting_for_vrp (stmt))
+	{
+	  edge taken_edge;
 	  value_range vr = VR_INITIALIZER;
 	  extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
 	  if (output
 	      && (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE))
-	    update_value_range (output, &vr);
+	    {
+	      update_value_range (output, &vr);
+	      vr = *get_value_range (output);
+
+
+	      /* Set the SSA with the value range.  */
+	      if (INTEGRAL_TYPE_P (TREE_TYPE (output)))
+		{
+		  if ((vr.type == VR_RANGE
+		       || vr.type == VR_ANTI_RANGE)
+		      && (TREE_CODE (vr.min) == INTEGER_CST)
+		      && (TREE_CODE (vr.max) == INTEGER_CST))
+		    set_range_info (output, vr.type, vr.min, vr.max);
+		}
+	      else if (POINTER_TYPE_P (TREE_TYPE (output))
+		       && ((vr.type == VR_RANGE
+			    && range_includes_zero_p (vr.min,
+						      vr.max) == 0)
+			   || (vr.type == VR_ANTI_RANGE
+			       && range_includes_zero_p (vr.min,
+							 vr.max) == 1)))
+		set_ptr_nonnull (output);
+	    }
 	  else
 	    set_defs_to_varying (stmt);
-
-	  /* Try folding stmts with the VR discovered.  */
-	  bool did_replace
-	    = replace_uses_in (stmt,
-			       op_with_constant_singleton_value_range);
-	  if (fold_stmt (&gsi, follow_single_use_edges)
-	      || did_replace)
-	    update_stmt (gsi_stmt (gsi));
-
-	  if (did_replace)
-	    {
-	      /* If we cleaned up EH information from the statement,
-		 remove EH edges.  */
-	      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
-		bitmap_set_bit (need_eh_cleanup, bb->index);
-
-	      /* If we turned a not noreturn call into a noreturn one
-		 schedule it for fixup.  */
-	      if (!was_noreturn
-		  && is_gimple_call (stmt)
-		  && gimple_call_noreturn_p (stmt))
-		stmts_to_fixup.safe_push (stmt);
-
-	      if (gimple_assign_single_p (stmt))
-		{
-		  tree rhs = gimple_assign_rhs1 (stmt);
-		  if (TREE_CODE (rhs) == ADDR_EXPR)
-		    recompute_tree_invariant_for_addr_expr (rhs);
-		}
-	    }
-
-	  def_operand_p def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
-	  /* Set the SSA with the value range.  */
-	  if (def_p
-	      && TREE_CODE (DEF_FROM_PTR (def_p)) == SSA_NAME)
-	    {
-	      tree def = DEF_FROM_PTR (def_p);
-	      value_range *vr = get_value_range (def);
-
-	      if (INTEGRAL_TYPE_P (TREE_TYPE (DEF_FROM_PTR (def_p)))
-		  && (vr->type == VR_RANGE
-		      || vr->type == VR_ANTI_RANGE)
-		  && (TREE_CODE (vr->min) == INTEGER_CST)
-		  && (TREE_CODE (vr->max) == INTEGER_CST))
-		set_range_info (def, vr->type, vr->min, vr->max);
-	      else if (POINTER_TYPE_P (TREE_TYPE (DEF_FROM_PTR (def_p)))
-		       && ((vr->type == VR_RANGE
-			    && range_includes_zero_p (vr->min,
-						      vr->max) == 0)
-			   || (vr->type == VR_ANTI_RANGE
-			       && range_includes_zero_p (vr->min,
-							 vr->max) == 1)))
-		set_ptr_nonnull (def);
-	    }
 	}
       else
 	set_defs_to_varying (stmt);
+
+      /* Try folding stmts with the VR discovered.  */
+      bool did_replace
+	= replace_uses_in (stmt, op_with_constant_singleton_value_range);
+      if (fold_stmt (&gsi, follow_single_use_edges)
+	  || did_replace)
+	update_stmt (gsi_stmt (gsi));
+
+      if (did_replace)
+	{
+	  /* If we cleaned up EH information from the statement,
+	     remove EH edges.  */
+	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
+	    bitmap_set_bit (need_eh_cleanup, bb->index);
+
+	  /* If we turned a not noreturn call into a noreturn one
+	     schedule it for fixup.  */
+	  if (!was_noreturn
+	      && is_gimple_call (stmt)
+	      && gimple_call_noreturn_p (stmt))
+	    stmts_to_fixup.safe_push (stmt);
+
+	  if (gimple_assign_single_p (stmt))
+	    {
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      if (TREE_CODE (rhs) == ADDR_EXPR)
+		recompute_tree_invariant_for_addr_expr (rhs);
+	    }
+	}
     }
   bb->flags |= BB_VISITED;
-  return NULL;
+
+  return taken_edge;
 }
 
 /* Restore/pop VRs valid only for BB when we leave BB.  */
