@@ -2694,7 +2694,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTC_TYPE_MASK	0x0000000f	/* Mask to isolate types */
 
 #define RS6000_BTC_MISC		0x00000000	/* No special attributes.  */
-#define RS6000_BTC_CONST	0x00000100	/* uses no global state.  */
+#define RS6000_BTC_CONST	0x00000100	/* Neither uses, nor
+						   modifies global state.  */
 #define RS6000_BTC_PURE		0x00000200	/* reads global
 						   state/mem and does
 						   not modify global state.  */

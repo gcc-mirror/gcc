@@ -1,3 +1,161 @@
+2016-10-18  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/altivec.h (vec_xl_len): New macro.
+	(vec_xst_len): New macro.
+	(vec_cmpnez): New macro.
+	(vec_cntlz_lsbb): New macro.
+	(vec_cnttz_lsbb): New macro.
+	(vec_xlx): New macro.
+	(vec_xrx): New macro.
+	(vec_all_nez): New C++ predicate template.
+	(vec_any_eqz): New C++ predicate template.
+	(vec_all_ne): Revised C++ predicate template under _ARCH_PWR9
+	conditional compilation.
+	(vec_any_eq): Revised C++ predicate template under _ARCH_PWR9
+	conditional compilation.
+	(vec_all_nez): New macro.
+	(vec_any_eqz): New macro.
+	(vec_all_ne): Revised macro under _ARCH_PWR9 conditional
+	compilation.
+	(vec_any_eq): Revised macro under _ARCH_PWR9 conditional
+	compilation.
+	* config/rs6000/vector.md (VI): Moved this mode iterator
+	definition from altivec.md to vector.md.
+	(UNSPEC_NEZ_P): New value.
+	(vector_ne_<mode>_p): New expansion for implementation of
+	vec_all_ne and vec_any_eq built-in functions.
+	(vector_nez_<mode>_p): New expansion for implementation of
+	vec_all_nez and vec_any_eqz built-in functions.
+	(vector_ne_v2di_p): New expansion for implementation of vec_all_ne
+	and vec_any_eq built-in function.
+	(cr6_test_for_zero): New commentary to explain this expansion.
+	(cr6_test_for_zero_reverse): New commentary to explain this expansion.
+	(cr6_test_for_lt): New commentary to explain this expansion.
+	(cr6_test_for_lt_reverse): New commentary to explain this
+	expansion.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	overloaded function prototypes for vec_all_ne, vec_all_nez,
+	vec_any_eq, vec_any_eqz, vec_cmpnez, vec_cntlz_lsbb,
+	vec_cnttz_lsbb, vec_xl_len, vec_xst_len, vec_xlx, and vec_xrx
+	built-in functions.
+	(altivec_resolve_overloaded_builtin): Modify the handling of
+	ALTIVEC_BUILTIN_VEC_CMPNE to use the Power9 instructions when
+	the compiler is configured to support TARGET_P9_VECTOR.
+	* config/rs6000/rs6000-builtin.def (BU_ALTIVEC_P): Add commentary
+	to explain the special processing that is given to predicate
+	built-ins introduced using this macro.
+	(BU_ALTIVEC_OVERLOAD_P): Add commentary to alert maintainers to
+	the special processing given to predicate built-ins introduced
+	using this macro.
+	(BU_VSX_P): Likewise.
+	(BU_P8V_AV_P): Likewise.
+	(BU_P9V_AV_P): Likewise.
+	(BU_P9V_AV_X): New macro.
+	(BU_P9V_64BIT_AV_X): New macro.
+	(BU_P9V_VSX_3): New macro.
+	(BU_P9V_OVERLOAD_P): New macro.
+	(LXVL): New BU_P9V_64BIT_VSX_2.
+	(VEXTUBLX): New BU_P9V_AV_2.
+	(VEXTUBRX): Likewise.
+	(VEXTUHLX): Likewise.
+	(VEXTUHRX): Likewise.
+	(VEXTUWLX): Likewise.
+	(VEXTUWRX): Likewise.
+	(STXVL): New BU_P9V_64BIT_AV_X.
+	(VCLZLSBB): New BU_P9V_AV_1.
+	(VCTZLSBB): Likewise.
+	(CMPNEB): New BU_P9V_AV_2.
+	(CMPNEH): Likewise.
+	(CMPNEW): Likewise.
+	(CMPNEF): Likewise.
+	(CMPNED): Likewise.
+	(VCMPNEB_P): New BU_P9V_AV_P.
+	(VCMPNEH_P): Likewise.
+	(VCMPNEW_P): Likewise.
+	(VCMPNED_P): Likewise.
+	(VCMPNEFP_P): Likewise.
+	(VCMPNEDP_P): Likewise.
+	(CMPNEZB): New BU_P9V_AV_2.
+	(CMPNEZH): Likewise.
+	(CMPNEZW): Likewise.
+	(VCMPNEZB_P): New BU_P9V_AV_P.
+	(VCMPNEZH_P): Likewise.
+	(VCMPNEZW_P): Likewise.
+	(LXVL): New BU_P9V_OVERLOAD_2.
+	(STXVL): New BU_P9V_OVERLOAD_3.
+	(VEXTULX): New BU_P9V_OVERLOAD_2.
+	(VEXTURX): Likewise.
+	(CMPNEZ): Likewise.
+	(VCMPNEZ_P): New BU_P9V_OVERLOAD_P.
+	(VCMPNE_P): Likewise.
+	(VCLZLSBB): New BU_P9V_OVERLOAD_1.
+	(VCTZLSBB): Likewise.
+	* config/rs6000/rs6000.c (altivec_expand_predicate_builtin): Add
+	comment to explain mode used for scratch register.
+	(altivec_expand_stxvl_builtin): New function.
+	(altivec_expand_builtin): Add case for new constant P9V_BUILTIN_STXVL.
+	(altivec_init_builtins): Add initialized variable
+	void_ftype_v16qi_pvoid_long and use this type to define the
+	built-in function __builtin_altivec_stxvl.
+	* config/rs6000/vsx.md (UNSPEC_LXVL): New value.
+	(UNSPEC_STXVL): New value.
+	(UNSPEC_VCLZLSBB): New value.
+	(UNSPEC_VCTZLSBB): New value.
+	(UNSPEC_VEXTUBLX): New value.
+	(UNSPEC_VEXTUHLX): New value.
+	(UNSPEC_VEXTUWLX): New value.
+	(UNSPEC_VEXTUBRX): New value.
+	(UNSPEC_VEXTUHRX): New value.
+	(UNSPEC_VEXTUWRX): New value.
+	(UNSPEC_VCMPNEB): New value.
+	(UNSPEC_VCMPNEZB): New value.
+	(UNSPEC_VCMPNEH): New value.
+	(UNSPEC_VCMPNEZH): New value.
+	(UNSPEC_VCMPNEW): New value.
+	(UNSPEC_VCMPNEZW): New value.
+	(*vsx_ne_<mode>_p): New insn for vector test all not equal with
+	vector of integer modes.
+	(*vsx_ne_<mode>_p): New insn for vector test all not equal with
+	vector of float or double modes.
+	(*vector_nez_<mode>_p): New insn for vector test all not equal or
+	zero.
+	(lxvl): New expand for load VSX vector with length.
+	(*lxvl): New insn for load VSX vector with length.
+	(stxvl): New expand for store VSX vector with length.
+	(*stxvl): New insn for store VSX vector with length.
+	(vcmpneb): New insn for vector of byte compare not equal.
+	(vcmpnezb): New insn for vector of byte compare not equal or zero.
+	(vcmpneh): New insn for vector of half word compare not equal.
+	(vcmpnezh): New insn for vector of half word compare not equal or
+	zero.
+	(vcmpnew): New insn for vector of word compare not equal.
+	(vcmpne<VSs>): New insn for vector of float or double compare not
+	equal.
+	(vcmpnezw): New insn for vector of word compare not equal or zero.
+	(vclzlsbb): New insn for vector count leading zero
+	least-significant bits byte.
+	(vctzlsbb): New insn for vector count trailing zero least
+	signficant bits byte.
+	(vextublx): New insn for vector extract unsigned byte left
+	indexed.
+	(vextubrx): New insn for vector extract unsigned byte right
+	indexed.
+	(vextuhlx): New insn for vector extract unsigned half word left
+	indexed.
+	(vextuhrx): New insn for vector extract unsigned half word right
+	indexed.
+	(vextuwlx): New insn for vector extract unsigned word left
+	indexed.
+	(vextuwrx): New insn for vector extract unsigned word right
+	indexed.
+	* config/rs6000/rs6000.h (RS6000_BTC_CONST): Enhance comment to
+	clarify intent of this constant.
+	* config/rs6000/altivec.md (VI): Move this mode iterator to vsx.md.
+	* doc/extend.texi (PowerPC Altivec Built-in Functions): Add
+	documentation for vec_all_nez, vec_any_eqz, vec_cmpnez,
+	vec_cntlz_lsbb, vec_cnttz_lsbb, vec_xl_len, vec_xst_len, vec_xlx,
+	and vec_xrx functions.
+
 2016-10-18  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/65950

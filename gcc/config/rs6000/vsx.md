@@ -269,6 +269,10 @@
 ;; Iterator for ISA 3.0 vector extract/insert of integer vectors
 (define_mode_iterator VSX_EXTRACT_I [V16QI V8HI V4SI])
 
+(define_mode_attr VSX_EXTRACT_WIDTH [(V16QI "b")
+		  		     (V8HI "h")
+				     (V4SI "w")])
+
 ;; Mode attribute to give the correct predicate for ISA 3.0 vector extract and
 ;; insert to validate the operand number.
 (define_mode_attr VSX_EXTRACT_PREDICATE [(V16QI "const_0_to_15_operand")
@@ -334,6 +338,22 @@
    UNSPEC_VSX_VIEXP
    UNSPEC_VSX_VTSTDC
    UNSPEC_VSX_VEC_INIT
+   UNSPEC_LXVL
+   UNSPEC_STXVL
+   UNSPEC_VCLZLSBB
+   UNSPEC_VCTZLSBB
+   UNSPEC_VEXTUBLX
+   UNSPEC_VEXTUHLX
+   UNSPEC_VEXTUWLX
+   UNSPEC_VEXTUBRX
+   UNSPEC_VEXTUHRX
+   UNSPEC_VEXTUWRX
+   UNSPEC_VCMPNEB
+   UNSPEC_VCMPNEZB
+   UNSPEC_VCMPNEH
+   UNSPEC_VCMPNEZH
+   UNSPEC_VCMPNEW
+   UNSPEC_VCMPNEZW
   ])
 
 ;; VSX moves
@@ -3223,4 +3243,262 @@
 	 UNSPEC_VSX_VTSTDC))]
   "TARGET_P9_VECTOR"
   "xvtstdc<VSs> %x0,%x1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; ISA 3.0 String Operations Support
+
+;; Compare vectors producing a vector result and a predicate, setting CR6
+;; to indicate a combined status.  This pattern matches v16qi, v8hi, and
+;; v4si modes.  It does not match v2df, v4sf, or v2di modes.  There's no
+;; need to match the v2di mode because that is expanded into v4si.
+(define_insn "*vsx_ne_<mode>_p"
+  [(set (reg:CC CR6_REGNO)
+	(unspec:CC
+	 [(ne:CC (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "v")
+		 (match_operand:VSX_EXTRACT_I 2 "gpc_reg_operand" "v"))]
+	 UNSPEC_PREDICATE))
+   (set (match_operand:VSX_EXTRACT_I 0 "gpc_reg_operand" "=v")
+	(ne:VSX_EXTRACT_I (match_dup 1)
+			  (match_dup 2)))]
+  "TARGET_P9_VECTOR"
+  "xvcmpne<VSX_EXTRACT_WIDTH>. %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Compare vectors producing a vector result and a predicate, setting CR6
+;; to indicate a combined status, for v4sf and v2df operands.
+(define_insn "*vsx_ne_<mode>_p"
+  [(set (reg:CC CR6_REGNO)
+	(unspec:CC [(ne:CC
+		     (match_operand:VSX_F 1 "vsx_register_operand" "wa")
+		     (match_operand:VSX_F 2 "vsx_register_operand" "wa"))]
+	 UNSPEC_PREDICATE))
+   (set (match_operand:VSX_F 0 "vsx_register_operand" "=wa")
+	(ne:VSX_F (match_dup 1)
+		  (match_dup 2)))]
+  "TARGET_P9_VECTOR"
+  "xvcmpne<VSs>. %x0,%x1,%x2"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "*vector_nez_<mode>_p"
+  [(set (reg:CC CR6_REGNO)
+	(unspec:CC [(unspec:VI
+		     [(match_operand:VI 1 "gpc_reg_operand" "v")
+		      (match_operand:VI 2 "gpc_reg_operand" "v")]
+		     UNSPEC_NEZ_P)]
+	 UNSPEC_PREDICATE))
+   (set (match_operand:VI 0 "gpc_reg_operand" "=v")
+	(unspec:VI [(match_dup 1)
+		    (match_dup 2)]
+	 UNSPEC_NEZ_P))]
+  "TARGET_P9_VECTOR"
+  "vcmpnez<VSX_EXTRACT_WIDTH>. %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Load VSX Vector with Length
+(define_expand "lxvl"
+  [(set (match_dup 3)
+        (match_operand:DI 2 "register_operand"))
+   (set (match_operand:V16QI 0 "vsx_register_operand")
+	(unspec:V16QI
+	 [(match_operand:DI 1 "gpc_reg_operand")
+	  (match_dup 3)]
+	 UNSPEC_LXVL))]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+{
+  operands[3] = gen_reg_rtx (DImode);
+})
+
+(define_insn "*lxvl"
+  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
+	(unspec:V16QI
+	 [(match_operand:DI 1 "gpc_reg_operand" "b")
+	  (match_operand:DI 2 "register_operand" "+r")]
+	 UNSPEC_LXVL))]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "sldi %2,%2, 56\; lxvl %x0,%1,%2"
+  [(set_attr "length" "8")
+   (set_attr "type" "vecload")])
+
+;; Store VSX Vector with Length
+(define_expand "stxvl"
+  [(set (match_dup 3)
+	(match_operand:DI 2 "register_operand"))
+   (set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand"))
+	(unspec:V16QI
+	 [(match_operand:V16QI 0 "vsx_register_operand")
+	  (match_dup 3)]
+	 UNSPEC_STXVL))]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+{
+  operands[3] = gen_reg_rtx (DImode);
+})
+
+(define_insn "*stxvl"
+  [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
+	(unspec:V16QI
+	 [(match_operand:V16QI 0 "vsx_register_operand" "wa")
+	  (match_operand:DI 2 "register_operand" "+r")]
+	 UNSPEC_STXVL))]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "sldi %2,%2\;stxvl %x0,%1,%2"
+  [(set_attr "length" "8")
+   (set_attr "type" "vecstore")])
+
+;; Vector Compare Not Equal Byte
+(define_insn "vcmpneb"
+  [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+	(unspec:V16QI [(match_operand:V16QI 1 "altivec_register_operand" "v")
+		       (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCMPNEB))]
+  "TARGET_P9_VECTOR"
+  "vcmpneb %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal or Zero Byte
+(define_insn "vcmpnezb"
+  [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+	(unspec:V16QI
+	 [(match_operand:V16QI 1 "altivec_register_operand" "v")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCMPNEZB))]
+  "TARGET_P9_VECTOR"
+  "vcmpnezb %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal Half Word
+(define_insn "vcmpneh"
+  [(set (match_operand:V8HI 0 "altivec_register_operand" "=v")
+	(unspec:V8HI [(match_operand:V8HI 1 "altivec_register_operand" "v")
+		      (match_operand:V8HI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCMPNEH))]
+  "TARGET_P9_VECTOR"
+  "vcmpneh %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal or Zero Half Word
+(define_insn "vcmpnezh"
+  [(set (match_operand:V8HI 0 "altivec_register_operand" "=v")
+	(unspec:V8HI [(match_operand:V8HI 1 "altivec_register_operand" "v")
+		      (match_operand:V8HI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCMPNEZH))]
+  "TARGET_P9_VECTOR"
+  "vcmpnezh %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal Word
+(define_insn "vcmpnew"
+  [(set (match_operand:V4SI 0 "altivec_register_operand" "=v")
+	(unspec:V4SI
+	 [(match_operand:V4SI 1 "altivec_register_operand" "v")
+	  (match_operand:V4SI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCMPNEH))]
+  "TARGET_P9_VECTOR"
+  "vcmpnew %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal Float or Double
+(define_insn "vcmpne<VSs>"
+  [(set (match_operand:<VSI> 0 "vsx_register_operand" "=wa")
+	(unspec:<VSI>
+	 [(match_operand:VSX_F 1 "vsx_register_operand" "wa")
+	  (match_operand:VSX_F 2 "vsx_register_operand" "wa")]
+	 UNSPEC_VCMPNEH))]
+  "TARGET_P9_VECTOR"
+  "xvcmpne<VSs> %x0,%x1,%x2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal or Zero Word
+(define_insn "vcmpnezw"
+  [(set (match_operand:V4SI 0 "altivec_register_operand" "=v")
+	(unspec:V4SI [(match_operand:V4SI 1 "altivec_register_operand" "v")
+		      (match_operand:V4SI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCMPNEZW))]
+  "TARGET_P9_VECTOR"
+  "vcmpnezw %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Count Leading Zero Least-Significant Bits Byte
+(define_insn "vclzlsbb"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	 [(match_operand:V16QI 1 "altivec_register_operand" "v")]
+	 UNSPEC_VCLZLSBB))]
+  "TARGET_P9_VECTOR"
+  "vclzlsbb %0,%1"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Count Trailing Zero Least-Significant Bits Byte
+(define_insn "vctzlsbb"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	 [(match_operand:V16QI 1 "altivec_register_operand" "v")]
+	 UNSPEC_VCTZLSBB))]
+  "TARGET_P9_VECTOR"
+  "vctzlsbb %0,%1"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Extract Unsigned Byte Left-Indexed
+(define_insn "vextublx"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	 [(match_operand:SI 1 "register_operand" "r")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VEXTUBLX))]
+  "TARGET_P9_VECTOR"
+  "vextublx %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Extract Unsigned Byte Right-Indexed
+(define_insn "vextubrx"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	 [(match_operand:SI 1 "register_operand" "r")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VEXTUBRX))]
+  "TARGET_P9_VECTOR"
+  "vextubrx %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Extract Unsigned Half Word Left-Indexed
+(define_insn "vextuhlx"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	 [(match_operand:SI 1 "register_operand" "r")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VEXTUHLX))]
+  "TARGET_P9_VECTOR"
+  "vextuhlx %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Extract Unsigned Half Word Right-Indexed
+(define_insn "vextuhrx"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	 [(match_operand:SI 1 "register_operand" "r")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VEXTUHRX))]
+  "TARGET_P9_VECTOR"
+  "vextuhrx %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Extract Unsigned Word Left-Indexed
+(define_insn "vextuwlx"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	 [(match_operand:SI 1 "register_operand" "r")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VEXTUWLX))]
+  "TARGET_P9_VECTOR"
+  "vextuwlx %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Extract Unsigned Word Right-Indexed
+(define_insn "vextuwrx"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	 [(match_operand:SI 1 "register_operand" "r")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VEXTUWRX))]
+  "TARGET_P9_VECTOR"
+  "vextuwrx %0,%1,%2"
   [(set_attr "type" "vecsimple")])

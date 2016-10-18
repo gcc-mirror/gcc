@@ -15137,6 +15137,139 @@ The @code{__builtin_dfp_dtstsfi_ov_dd} and
 require that the type of the @code{value} argument be
 @code{__Decimal64} and @code{__Decimal128} respectively.
 
+The following built-in functions are also available for the PowerPC family
+of processors, starting with ISA 3.0 or later
+(@option{-mcpu=power9}).  These string functions are described
+separately in order to group the descriptions closer to the function
+prototypes:
+@smallexample
+int vec_all_nez (vector signed char, vector signed char);
+int vec_all_nez (vector unsigned char, vector unsigned char);
+int vec_all_nez (vector signed short, vector signed short);
+int vec_all_nez (vector unsigned short, vector unsigned short);
+int vec_all_nez (vector signed int, vector signed int);
+int vec_all_nez (vector unsigned int, vector unsigned int);
+
+int vec_any_eqz (vector signed char, vector signed char);
+int vec_any_eqz (vector unsigned char, vector unsigned char);
+int vec_any_eqz (vector signed short, vector signed short);
+int vec_any_eqz (vector unsigned short, vector unsigned short);
+int vec_any_eqz (vector signed int, vector signed int);
+int vec_any_eqz (vector unsigned int, vector unsigned int);
+
+vector bool char vec_cmpnez (vector signed char arg1, vector signed char arg2);
+vector bool char vec_cmpnez (vector unsigned char arg1, vector unsigned char arg2);
+vector bool short vec_cmpnez (vector signed short arg1, vector signed short arg2);
+vector bool short vec_cmpnez (vector unsigned short arg1, vector unsigned short arg2);
+vector bool int vec_cmpnez (vector signed int arg1, vector signed int arg2);
+vector bool int vec_cmpnez (vector unsigned int, vector unsigned int);
+
+signed int vec_cntlz_lsbb (vector signed char);
+signed int vec_cntlz_lsbb (vector unsigned char);
+
+signed int vec_cnttz_lsbb (vector signed char);
+signed int vec_cnttz_lsbb (vector unsigned char);
+
+vector signed char vec_xl_len (signed char *addr, size_t len);
+vector unsigned char vec_xl_len (unsigned char *addr, size_t len);
+vector signed int vec_xl_len (signed int *addr, size_t len);
+vector unsigned int vec_xl_len (unsigned int *addr, size_t len);
+vector signed __int128 vec_xl_len (signed __int128 *addr, size_t len);
+vector unsigned __int128 vec_xl_len (unsigned __int128 *addr, size_t len);
+vector signed long long vec_xl_len (signed long long *addr, size_t len);
+vector unsigned long long vec_xl_len (unsigned long long *addr, size_t len);
+vector signed short vec_xl_len (signed short *addr, size_t len);
+vector unsigned short vec_xl_len (unsigned short *addr, size_t len);
+vector double vec_xl_len (double *addr, size_t len);
+vector float vec_xl_len (float *addr, size_t len);
+
+void vec_xst_len (vector signed char data, signed char *addr, size_t len);
+void vec_xst_len (vector unsigned char data, unsigned char *addr, size_t len);
+void vec_xst_len (vector signed int data, signed int *addr, size_t len);
+void vec_xst_len (vector unsigned int data, unsigned int *addr, size_t len);
+void vec_xst_len (vector unsigned __int128 data, unsigned __int128 *addr, size_t len);
+void vec_xst_len (vector signed long long data, signed long long *addr, size_t len);
+void vec_xst_len (vector unsigned long long data, unsigned long long *addr, size_t len);
+void vec_xst_len (vector signed short data, signed short *addr, size_t len);
+void vec_xst_len (vector unsigned short data, unsigned short *addr, size_t len);
+void vec_xst_len (vector signed __int128 data, signed __int128 *addr, size_t len);
+void vec_xst_len (vector double data, double *addr, size_t len);
+void vec_xst_len (vector float data, float *addr, size_t len);
+
+signed char vec_xlx (unsigned int index, vector signed char data);
+unsigned char vec_xlx (unsigned int index, vector unsigned char data);
+signed short vec_xlx (unsigned int index, vector signed short data);
+unsigned short vec_xlx (unsigned int index, vector unsigned short data);
+signed int vec_xlx (unsigned int index, vector signed int data);
+unsigned int vec_xlx (unsigned int index, vector unsigned int data);
+float vec_xlx (unsigned int index, vector float data);
+
+signed char vec_xrx (unsigned int index, vector signed char data);
+unsigned char vec_xrx (unsigned int index, vector unsigned char data);
+signed short vec_xrx (unsigned int index, vector signed short data);
+unsigned short vec_xrx (unsigned int index, vector unsigned short data);
+signed int vec_xrx (unsigned int index, vector signed int data);
+unsigned int vec_xrx (unsigned int index, vector unsigned int data);
+float vec_xrx (unsigned int index, vector float data);
+@end smallexample
+
+The @code{vec_all_nez}, @code{vec_any_eqz}, and @code{vec_cmpnez}
+perform pairwise comparisons between the elements at the same
+positions within their two vector arguments.
+The @code{vec_all_nez} function returns a
+non-zero value if and only if all pairwise comparisons are not
+equal and no element of either vector argument contains a zero.
+The @code{vec_any_eqz} function returns a
+non-zero value if and only if at least one pairwise comparison is equal
+or if at least one element of either vector argument contains a zero.
+The @code{vec_cmpnez} function returns a vector of the same type as
+its two arguments, within which each element consists of all ones to
+denote that either the corresponding elements of the incoming arguments are
+not equal or that at least one of the corresponding elements contains
+zero.  Otherwise, the element of the returned vector contains all zeros.
+
+The @code{vec_cntlz_lsbb} function returns the count of the number of
+consecutive leading byte elements (starting from position 0 within the
+supplied vector argument) for which the least-significant bit
+equals zero.  The @code{vec_cnttz_lsbb} function returns the count of
+the number of consecutive trailing byte elements (starting from
+position 15 and counting backwards within the supplied vector
+argument) for which the least-significant bit equals zero.
+
+The @code{vec_xl_len} and @code{vec_xst_len} functions require a
+64-bit environment supporting ISA 3.0 or later.  The @code{vec_xl_len}
+function loads a variable length vector from memory.  The
+@code{vec_xst_len} function stores a variable length vector to memory.
+With both the @code{vec_xl_len} and @code{vec_xst_len} functions, the
+@code{addr} argument represents the memory address to or from which
+data will be transferred, and the
+@code{len} argument represents the number of bytes to be
+transferred, as computed by the C expression @code{min((len & 0xff), 16)}.
+If this expression's value is not a multiple of the vector element's
+size, the behavior of this function is undefined.
+In the case that the underlying computer is configured to run in
+big-endian mode, the data transfer moves bytes 0 to @code{(len - 1)} of
+the corresponding vector.  In little-endian mode, the data transfer
+moves bytes @code{(16 - len)} to @code{15} of the corresponding
+vector.  For the load function, any bytes of the result vector that
+are not loaded from memory are set to zero.
+The value of the @code{addr} argument need not be aligned on a
+multiple of the vector's element size.
+
+The @code{vec_xlx} and @code{vec_xrx} functions extract the single
+element selected by the @code{index} argument from the vector
+represented by the @code{data} argument.  The @code{index} argument
+always specifies a byte offset, regardless of the size of the vector
+element.  With @code{vec_xlx}, @code{index} is the offset of the first
+byte of the element to be extracted.  With @code{vec_xrx}, @code{index}
+represents the last byte of the element to be extracted, measured
+from the right end of the vector.  In other words, the last byte of
+the element to be extracted is found at position @code{(15 - index)}.
+There is no requirement that @code{index} be a multiple of the vector
+element size.  However, if the size of the vector element added to
+@code{index} is greater than 15, the content of the returned value is
+undefined.
+
 The following built-in functions are available for the PowerPC family
 of processors when hardware decimal floating point
 (@option{-mhard-dfp}) is available:

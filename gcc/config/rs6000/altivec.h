@@ -426,6 +426,18 @@
 #define scalar_cmp_exp_eq __builtin_vec_scalar_cmp_exp_eq
 #define scalar_cmp_exp_unordered __builtin_vec_scalar_cmp_exp_unordered
 
+#ifdef _ARCH_PPC64
+#define vec_xl_len __builtin_vec_lxvl
+#define vec_xst_len __builtin_vec_stxvl
+#endif
+
+#define vec_cmpnez __builtin_vec_vcmpnez
+
+#define vec_cntlz_lsbb __builtin_vec_vclzlsbb
+#define vec_cnttz_lsbb __builtin_vec_vctzlsbb
+
+#define vec_xlx __builtin_vec_vextulx
+#define vec_xrx __builtin_vec_vexturx
 #endif
 
 /* Predicates.
@@ -489,10 +501,23 @@ __altivec_unary_pred(vec_any_numeric,
 
 __altivec_scalar_pred(vec_all_eq,
   __builtin_vec_vcmpeq_p (__CR6_LT, a1, a2))
+
+#ifndef _ARCH_PWR9
 __altivec_scalar_pred(vec_all_ne,
   __builtin_vec_vcmpeq_p (__CR6_EQ, a1, a2))
 __altivec_scalar_pred(vec_any_eq,
   __builtin_vec_vcmpeq_p (__CR6_EQ_REV, a1, a2))
+#else
+__altivec_scalar_pred(vec_all_nez,
+  __builtin_vec_vcmpnez_p (__CR6_LT, a1, a2))
+__altivec_scalar_pred(vec_any_eqz,
+  __builtin_vec_vcmpnez_p (__CR6_LT_REV, a1, a2))
+__altivec_scalar_pred(vec_all_ne,
+  __builtin_vec_vcmpne_p (__CR6_LT, a1, a2))
+__altivec_scalar_pred(vec_any_eq,
+  __builtin_vec_vcmpne_p (__CR6_LT_REV, a1, a2))
+#endif
+
 __altivec_scalar_pred(vec_any_ne,
   __builtin_vec_vcmpeq_p (__CR6_LT_REV, a1, a2))
 
@@ -552,8 +577,17 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_any_numeric(a1) __builtin_vec_vcmpeq_p (__CR6_EQ_REV, (a1), (a1))
 
 #define vec_all_eq(a1, a2) __builtin_vec_vcmpeq_p (__CR6_LT, (a1), (a2))
+
+#ifdef _ARCH_PWR9
+#define vec_all_nez(a1, a2) __builtin_vec_vcmpnez_p (__CR6_LT, (a1), (a2))
+#define vec_any_eqz(a1, a2) __builtin_vec_vcmpnez_p (__CR6_LT_REV, (a1), (a2))
+#define vec_all_ne(a1, a2) __builtin_vec_vcmpne_p (__CR6_LT, (a1), (a2))
+#define vec_any_eq(a1, a2) __builtin_vec_vcmpne_p (__CR6_LT_REV, (a1), (a2))
+#else
 #define vec_all_ne(a1, a2) __builtin_vec_vcmpeq_p (__CR6_EQ, (a1), (a2))
 #define vec_any_eq(a1, a2) __builtin_vec_vcmpeq_p (__CR6_EQ_REV, (a1), (a2))
+#endif
+
 #define vec_any_ne(a1, a2) __builtin_vec_vcmpeq_p (__CR6_LT_REV, (a1), (a2))
 
 #define vec_all_gt(a1, a2) __builtin_vec_vcmpgt_p (__CR6_LT, (a1), (a2))
