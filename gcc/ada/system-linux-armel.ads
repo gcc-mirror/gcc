@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                        (GNU-Linux/ARMEL Version)                         --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -69,8 +69,8 @@ package System is
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
-   Word_Size    : constant := 32;
-   Memory_Size  : constant := 2 ** 32;
+   Word_Size    : constant := Standard'Word_Size;
+   Memory_Size  : constant := 2 ** Word_Size;
 
    --  Address comparison
 
@@ -143,6 +143,7 @@ private
    Stack_Check_Probes        : constant Boolean := True;
    Stack_Check_Limits        : constant Boolean := False;
    Support_Aggregates        : constant Boolean := True;
+   Support_Atomic_Primitives : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
    Support_Composite_Compare : constant Boolean := True;
    Support_Long_Shifts       : constant Boolean := True;

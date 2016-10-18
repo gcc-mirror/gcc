@@ -5,9 +5,9 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                        (Solaris Sparcv9 Version)                         --
+--                          (Darwin/ARM Version)                            --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -69,8 +69,8 @@ package System is
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
-   Word_Size    : constant := 64;
-   Memory_Size  : constant := 2 ** 64;
+   Word_Size    : constant := Standard'Word_Size;
+   Memory_Size  : constant := 2 ** Word_Size;
 
    --  Address comparison
 
@@ -89,19 +89,45 @@ package System is
    --  Other System-Dependent Declarations
 
    type Bit_Order is (High_Order_First, Low_Order_First);
-   Default_Bit_Order : constant Bit_Order := High_Order_First;
+   Default_Bit_Order : constant Bit_Order := Low_Order_First;
    pragma Warnings (Off, Default_Bit_Order); -- kill constant condition warning
 
    --  Priority-related Declarations (RM D.1)
 
-   Max_Priority           : constant Positive := 30;
-   Max_Interrupt_Priority : constant Positive := 31;
+   --  The values defined here are derived from the following Darwin
+   --  sources:
+   --
+   --  Libc/pthreads/pthread.c
+   --    pthread_init calls host_info to retrieve the HOST_PRIORITY_INFO.
+   --    This file includes "pthread_internals".
+   --  Libc/pthreads/pthread_internals.h
+   --    This file includes <mach/mach.h>.
+   --  xnu/osfmk/mach/mach.h
+   --    This file includes <mach/mach_types.h>.
+   --  xnu/osfmk/mach/mach_types.h
+   --    This file includes <mach/host_info.h>.
+   --  xnu/osfmk/mach/host_info.h
+   --    This file contains the definition of the host_info_t data structure
+   --    and the function prototype for host_info.
+   --  xnu/osfmk/kern/host.c
+   --    This file defines the function host_info which sets the
+   --    priority_info field of struct host_info_t. This file includes
+   --    <kern/processor.h>.
+   --  xnu/osfmk/kern/processor.h
+   --    This file includes <kern/sched.h>.
+   --  xnu/osfmk/kern/sched.h
+   --    This file defines the values for each level of priority.
 
-   subtype Any_Priority       is Integer      range  0 .. 31;
-   subtype Priority           is Any_Priority range  0 .. 30;
-   subtype Interrupt_Priority is Any_Priority range 31 .. 31;
+   Max_Interrupt_Priority : constant Positive := 63;
+   Max_Priority           : constant Positive := Max_Interrupt_Priority - 1;
 
-   Default_Priority : constant Priority := 15;
+   subtype Any_Priority is Integer range 0 .. Max_Interrupt_Priority;
+   subtype Priority is Any_Priority range 0 .. Max_Priority;
+   subtype Interrupt_Priority is Any_Priority
+     range Priority'Last + 1 .. Max_Interrupt_Priority;
+
+   Default_Priority : constant Priority :=
+     (Priority'Last - Priority'First) / 2;
 
 private
 
