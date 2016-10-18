@@ -1,3 +1,8 @@
+2016-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77991
+	* gcc.target/i386/pr77991.c: New test.
+
 2016-10-18  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* lib/gcc-dg.exp: Set gcc_force_conventional_output whenever
@@ -5,8 +10,7 @@
 
 2016-10-18  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
-	* gcc.dg/sso/sso.exp: Return early if not 
-	effective_target_int32.
+	* gcc.dg/sso/sso.exp: Return early if not effective_target_int32.
 
 2016-10-18  Richard Biener  <rguenther@suse.de>
 
@@ -228,8 +232,8 @@
 	* g++.dg/ext/flexary18.C: New test.
 	* g++.dg/torture/pr64312.C: Add a dg-error directive to an ill-formed
 	regression test.
-        * g++.dg/compat/struct-layout-1_generate.c (subfield): Add argument.
-        Avoid generating a flexible array member in an array.
+	* g++.dg/compat/struct-layout-1_generate.c (subfield): Add argument.
+	Avoid generating a flexible array member in an array.
 
 2016-10-13  Martin Sebor  <msebor@redhat.com>
 
@@ -706,7 +710,7 @@
 	* gcc.dg/torture/pr77855.c: New testcase.
 
 2016-10-06  James Clarke  <jrtc27@jrtc27.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/other/pr77759.C: New test.
 

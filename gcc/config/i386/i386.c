@@ -16357,7 +16357,9 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  base = get_thread_pointer (tp_mode,
 				     for_mov || !TARGET_TLS_DIRECT_SEG_REFS);
 	  off = force_reg (tp_mode, off);
-	  return gen_rtx_PLUS (tp_mode, base, off);
+	  dest = gen_rtx_PLUS (tp_mode, base, off);
+	  if (tp_mode != Pmode)
+	    dest = convert_to_mode (Pmode, dest, 1);
 	}
       else
 	{
