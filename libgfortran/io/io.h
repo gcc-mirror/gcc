@@ -514,7 +514,6 @@ typedef struct st_parameter_dt
 	     large enough to hold a complex value (two reals) of the
 	     largest kind.  */
 	  char value[32];
-	  GFC_IO_INT size_used;
 	  formatted_dtio fdtio_ptr;
 	  unformatted_dtio ufdtio_ptr;
 	} p;
@@ -650,6 +649,8 @@ typedef struct gfc_unit
   /* DTIO Parent/Child procedure, 0 = parent, >0 = child level.  */
   int child_dtio;
   int last_char;
+  bool has_size;
+  GFC_IO_INT size_used;
 }
 gfc_unit;
 

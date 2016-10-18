@@ -267,8 +267,9 @@ read_sf_internal (st_parameter_dt *dtp, int * length)
 
   dtp->u.p.current_unit->bytes_left -= *length;
 
-  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used += (GFC_IO_INT) *length;
+  if (((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0) ||
+      dtp->u.p.current_unit->has_size)
+    dtp->u.p.current_unit->size_used += (GFC_IO_INT) *length;
 
   return base;
 
@@ -397,8 +398,9 @@ read_sf (st_parameter_dt *dtp, int * length)
 
   dtp->u.p.current_unit->bytes_left -= n;
 
-  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used += (GFC_IO_INT) n;
+  if (((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0) ||
+      dtp->u.p.current_unit->has_size)
+    dtp->u.p.current_unit->size_used += (GFC_IO_INT) n;
 
   /* We can't call fbuf_getptr before the loop doing fbuf_getc, because
      fbuf_getc might reallocate the buffer.  So return current pointer
@@ -478,8 +480,9 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
   source = fbuf_read (dtp->u.p.current_unit, nbytes);
   fbuf_seek (dtp->u.p.current_unit, *nbytes, SEEK_CUR);
 
-  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used += (GFC_IO_INT) *nbytes;
+  if (((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0) ||
+      dtp->u.p.current_unit->has_size)
+    dtp->u.p.current_unit->size_used += (GFC_IO_INT) *nbytes;
 
   if (norig != *nbytes)
     {
@@ -536,8 +539,9 @@ read_block_form4 (st_parameter_dt *dtp, int * nbytes)
 
   dtp->u.p.current_unit->bytes_left -= *nbytes;
 
-  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used += (GFC_IO_INT) *nbytes;
+  if (((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0) ||
+      dtp->u.p.current_unit->has_size)
+    dtp->u.p.current_unit->size_used += (GFC_IO_INT) *nbytes;
 
   return source;
 }
@@ -770,8 +774,9 @@ write_block (st_parameter_dt *dtp, int length)
 	}
     }
 
-  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used += (GFC_IO_INT) length;
+  if (((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0) ||
+      dtp->u.p.current_unit->has_size)
+    dtp->u.p.current_unit->size_used += (GFC_IO_INT) length;
 
   dtp->u.p.current_unit->strm_pos += (gfc_offset) length;
 
@@ -2596,9 +2601,6 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
     return;
 
-  if ((cf & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used = 0;  /* Initialize the count.  */
-
   dtp->u.p.current_unit = get_unit (dtp, 1);
 
   if (dtp->u.p.current_unit == NULL)
@@ -2672,6 +2674,18 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       dtp->common.flags |= (opp.common.flags & IOPARM_COMMON_MASK);
       if (dtp->u.p.current_unit == NULL)
 	return;
+    }
+
+  if (dtp->u.p.current_unit->child_dtio == 0)
+    {
+      if ((cf & IOPARM_DT_HAS_SIZE) != 0)
+	{
+	  dtp->u.p.current_unit->has_size = true;
+	  /* Initialize the count.  */
+	  dtp->u.p.current_unit->size_used = 0;
+	}
+      else
+	dtp->u.p.current_unit->has_size = false;
     }
 
   /* Check the action.  */
@@ -3772,7 +3786,7 @@ finalize_transfer (st_parameter_dt *dtp)
     return;
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size = dtp->u.p.size_used;
+    *dtp->size = dtp->u.p.current_unit->size_used;
 
   if (dtp->u.p.eor_condition)
     {
