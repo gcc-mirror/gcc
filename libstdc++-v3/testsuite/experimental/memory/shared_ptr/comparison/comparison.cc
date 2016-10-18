@@ -73,8 +73,18 @@ test02()
   return 0;
 }
 
+void
+test03()
+{
+  std::experimental::shared_ptr<A[5]> a(new A[5]);
+  VERIFY( nullptr < a );
+}
+
 int
 main()
 {
+  test01();
+  test02();
+  test03();
   return 0;
 }
