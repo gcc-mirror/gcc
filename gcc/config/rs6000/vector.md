@@ -61,6 +61,9 @@
 ;; Vector modes for 64-bit base types
 (define_mode_iterator VEC_64 [V2DI V2DF])
 
+;; Vector integer modes
+(define_mode_iterator VI [V4SI V8HI V16QI])
+
 ;; Base type from vector mode
 (define_mode_attr VEC_base [(V16QI "QI")
 			    (V8HI  "HI")
@@ -80,7 +83,8 @@
 
 ;; constants for unspec
 (define_c_enum "unspec" [UNSPEC_PREDICATE
-			 UNSPEC_REDUC])
+			 UNSPEC_REDUC
+			 UNSPEC_NEZ_P])
 
 ;; Vector reduction code iterators
 (define_code_iterator VEC_reduc [plus smin smax])
@@ -680,6 +684,75 @@
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
+;; This expansion handles the V16QI, V8HI, and V4SI modes in the
+;; implementation of the vec_all_ne and vec_any_eq built-in functions
+;; on Power9.
+(define_expand "vector_ne_<mode>_p"
+  [(parallel
+    [(set (reg:CC CR6_REGNO)
+	  (unspec:CC [(ne:CC (match_operand:VI 1 "vlogical_operand")
+			     (match_operand:VI 2 "vlogical_operand"))]
+	   UNSPEC_PREDICATE))
+     (set (match_operand:VI 0 "vlogical_operand")
+	  (ne:VI (match_dup 1)
+		 (match_dup 2)))])]
+  "TARGET_P9_VECTOR"
+  "")
+
+;; This expansion handles the V16QI, V8HI, and V4SI modes in the
+;; implementation of the vec_all_nez and vec_any_eqz built-in
+;; functions on Power9.
+(define_expand "vector_nez_<mode>_p"
+  [(parallel
+    [(set (reg:CC CR6_REGNO)
+	  (unspec:CC [(unspec:VI
+		       [(match_operand:VI 1 "vlogical_operand")
+			(match_operand:VI 2 "vlogical_operand")]
+		       UNSPEC_NEZ_P)]
+	   UNSPEC_PREDICATE))
+     (set (match_operand:VI 0 "vlogical_operand")
+	  (unspec:VI [(match_dup 1)
+		      (match_dup 2)]
+	   UNSPEC_NEZ_P))])]
+  "TARGET_P9_VECTOR"
+  "")
+
+;; This expansion handles the V4DI mode in the implementation of the
+;; vec_all_ne and vec_any_eq built-in function on Power9.
+;;
+;; Since the "xvcmpne<mode>." instruction does not support DImode,
+;; we'll use a V4SI comparison, which will set the values of the CR6
+;; flags to be the same as if we had performed a DImode comparison.
+;; (All of the entries in a V2DI vector are not equal iff all of the
+;; entries in the same vector, interpeted as V4SI are not equal, and
+;; likewise in the test for "any equal".)
+(define_expand "vector_ne_v2di_p"
+  [(parallel
+    [(set (reg:CC CR6_REGNO)
+	  (unspec:CC [(ne:CC (match_operand:V4SI 1 "vlogical_operand")
+			     (match_operand:V4SI 2 "vlogical_operand"))]
+	   UNSPEC_PREDICATE))
+     (set (match_operand:V4SI 0 "vlogical_operand")
+	  (ne:V4SI (match_dup 1)
+		   (match_dup 2)))])]
+  "TARGET_P9_VECTOR"
+  "")
+
+;; This expansion handles the V4SF and V2DF modes in the Power9
+;; implementation of the vec_all_ne and vec_any_eq built-in
+;; functions.
+(define_expand "vector_ne_<mode>_p"
+  [(parallel
+    [(set (reg:CC CR6_REGNO)
+	  (unspec:CC [(ne:CC (match_operand:VEC_F 1 "vlogical_operand")
+			     (match_operand:VEC_F 2 "vlogical_operand"))]
+	   UNSPEC_PREDICATE))
+     (set (match_operand:VEC_F 0 "vlogical_operand")
+	  (ne:VEC_F (match_dup 1)
+		    (match_dup 2)))])]
+  "TARGET_P9_VECTOR"
+  "")
+
 (define_expand "vector_gt_<mode>_p"
   [(parallel
     [(set (reg:CC CR6_REGNO)
@@ -718,6 +791,10 @@
 
 ;; AltiVec/VSX predicates.
 
+;; This expansion is triggered during expansion of predicate built-in
+;; functions (built-ins defined with the RS6000_BUILTIN_P macro) by the
+;; altivec_expand_predicate_builtin() function when the value of the
+;; integer constant first argument equals zero (aka __CR6_EQ in altivec.h).
 (define_expand "cr6_test_for_zero"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(eq:SI (reg:CC CR6_REGNO)
@@ -725,6 +802,10 @@
   "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
+;; This expansion is triggered during expansion of predicate built-in
+;; functions (built-ins defined with the RS6000_BUILTIN_P macro) by the
+;; altivec_expand_predicate_builtin() function when the value of the
+;; integer constant first argument equals one (aka __CR6_EQ_REV in altivec.h).
 (define_expand "cr6_test_for_zero_reverse"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(eq:SI (reg:CC CR6_REGNO)
@@ -735,6 +816,10 @@
   "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
+;; This expansion is triggered during expansion of predicate built-in
+;; functions (built-ins defined with the RS6000_BUILTIN_P macro) by the
+;; altivec_expand_predicate_builtin() function when the value of the
+;; integer constant first argument equals two (aka __CR6_LT in altivec.h).
 (define_expand "cr6_test_for_lt"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lt:SI (reg:CC CR6_REGNO)
@@ -742,6 +827,11 @@
   "TARGET_ALTIVEC || TARGET_VSX"
   "")
 
+;; This expansion is triggered during expansion of predicate built-in
+;; functions (built-ins defined with the RS6000_BUILTIN_P macro) by the
+;; altivec_expand_predicate_builtin() function when the value of the
+;; integer constant first argument equals three
+;; (aka __CR6_LT_REV in altivec.h).
 (define_expand "cr6_test_for_lt_reverse"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lt:SI (reg:CC CR6_REGNO)
