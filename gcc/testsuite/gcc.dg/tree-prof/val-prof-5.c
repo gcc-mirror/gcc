@@ -6,7 +6,7 @@ main()
 {
 	int i;
 	for (i = 0; i < 1000; i++)
-		if (a[i])
+		if (a[i] != 1)
 			a[i]/=b;
 		else
 			a[i]/=b;

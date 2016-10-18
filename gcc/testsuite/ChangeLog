@@ -1,3 +1,25 @@
+2016-10-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr20318.c: Disable EVRP.
+	* gcc.dg/tree-ssa/pr21001.c: Likewise.
+	* gcc.dg/tree-ssa/pr21090.c: Likewise.
+	* gcc.dg/tree-ssa/pr21294.c: Likewise.
+	* gcc.dg/tree-ssa/pr21563.c: Likewise.
+	* gcc.dg/tree-ssa/pr23744.c: Likewise.
+	* gcc.dg/tree-ssa/pr25382.c: Likewise.
+	* gcc.dg/tree-ssa/pr68431.c: Likewise.
+	* gcc.dg/tree-ssa/vrp03.c: Likewise.
+	* gcc.dg/tree-ssa/vrp06.c: Likewise.
+	* gcc.dg/tree-ssa/vrp07.c: Likewise.
+	* gcc.dg/tree-ssa/vrp09.c: Likewise.
+	* gcc.dg/tree-ssa/vrp19.c: Likewise.
+	* gcc.dg/tree-ssa/vrp20.c: Likewise.
+	* gcc.dg/tree-ssa/vrp92.c: Likewise.
+	* gcc.dg/pr68217.c: Likewise.
+	* gcc.dg/predict-9.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-5.c: Adjust.
+	* gcc.dg/predict-1.c: Likewise.
+
 2016-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/dtio_17.f90: New test.

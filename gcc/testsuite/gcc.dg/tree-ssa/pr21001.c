@@ -5,7 +5,7 @@
    range information out of the conditional.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-dominator-opts -fno-tree-fre -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fno-tree-dominator-opts -fno-tree-fre -fdisable-tree-evrp -fdump-tree-vrp1-details" } */
 
 int
 foo (int a)
