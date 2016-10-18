@@ -1,3 +1,76 @@
+2016-10-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (EXTRA_GNATRTL_NONTASKING_OBJS): Define.
+	(EXTRA_GNATRTL_TASKING_OBJS): Likewise.
+	(ARM/Android): Add atomic support.
+	(SPARC/Solaris): Simplify.
+	(x86/Solaris): Likewise.
+	(x86/Linux): Likewise.
+	(x86-64/kFreeBDS): Adjust and use system-freebsd-x86.ads
+	(x86/FreeBSD): Add s-mudido-affinity.adb.
+	(x86-64/FreeBSD): Likewise and use system-freebsd-x86.ads.
+	(s390/Linux): Simplify.
+	(PowerPC/AIX): Likewise.
+	(Cygwin/Mingw): Likewise.
+	(MIPSel/Linux): Likewise.
+	(ARM/Linux): Add atomic support.
+	(Aarch64/Linux): Use system-linux-armel.ads.
+	(SPARC/Linux): Simplify.
+	(IA-64/Linux): Minor tweak.
+	(IA-64/HP-UX): Likewise.
+	(Alpha/Linux): Likewise.
+	(x86-64/Linux): Use system-linux-x86.ads.
+	(x86/Darwin): Simplify.
+	(PowerPC/Darwin): Likewise.
+	(ARM/Darwin): Use system-darwin-arm.ads.
+	(ADA_EXCLUDE_SRCS): Minor reformatting.
+	* system-aix.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	(Support_Atomic_Primitives): Set to True.
+	* system-aix64.ads: Delete.
+	* system-darwin-arm.ads: New.
+	* system-darwin-ppc.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	(Support_Atomic_Primitives): Set to True.
+	* system-darwin-ppc64.ads: New.
+	* system-darwin-x86.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	* system-darwin-x86_64.ads: Delete.
+	* system-freebsd-x86.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	* system-freebsd-x86_64.ads: Delete.
+	* system-linux-alpha.ads (Support_Atomic_Primitives): Set to True.
+	* system-linux-armeb.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	(Support_Atomic_Primitives): Set to True.
+	* system-linux-armel.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	(Support_Atomic_Primitives): Set to True.
+	* system-linux-mips.ads: (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	* system-linux-mipsel.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	* system-linux-s390.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	(Stack_Check_Probes): Set to True.
+	* system-linux-s390x.ads: Delete.
+	* system-linux-sparc.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	* system-linux-sparcv9.ads: Delete.
+	* system-linux-x86.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	* system-linux-x86_64.ads: Delete.
+	* system-mingw-x86_64.ads: Delete.
+	* system-mingw.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	* system-solaris-sparc.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	(Support_Atomic_Primitives): Set to True.
+	* system-solaris-sparcv9.ads: Delete.
+	* system-solaris-x86.ads (Word_Size): Change to Standard'Word_Size.
+	(Memory_Size): Change to 2 ** Word_Size.
+	* system-solaris-x86_64.ads: Delete.
+
 2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-darwin-ppc64.ads (Support_64_Bit_Divides): Delete.
