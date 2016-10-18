@@ -768,170 +768,170 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // C++14 §20.8.2.2.7 //DOING
-   template<typename _Tp1, typename _Tp2>
-     bool operator==(const shared_ptr<_Tp1>& __a,
-		     const shared_ptr<_Tp2>& __b) noexcept
-     { return __a.get() == __b.get(); }
+  template<typename _Tp1, typename _Tp2>
+    bool operator==(const shared_ptr<_Tp1>& __a,
+		    const shared_ptr<_Tp2>& __b) noexcept
+    { return __a.get() == __b.get(); }
 
-   template<typename _Tp>
-     inline bool
-     operator==(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
-     { return !__a; }
+  template<typename _Tp>
+    inline bool
+    operator==(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return !__a; }
 
-   template<typename _Tp>
-     inline bool
-     operator==(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
-     { return !__a; }
+  template<typename _Tp>
+    inline bool
+    operator==(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return !__a; }
 
-   template<typename _Tp1, typename _Tp2>
-     inline bool
-     operator!=(const shared_ptr<_Tp1>& __a,
-		const shared_ptr<_Tp2>& __b) noexcept
-     { return __a.get() != __b.get(); }
-
-   template<typename _Tp>
-     inline bool
-     operator!=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
-     { return (bool)__a; }
-
-   template<typename _Tp>
-     inline bool
-     operator!=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
-     { return (bool)__a; }
-
-   template<typename _Tp1, typename _Tp2>
-     inline bool
-     operator<(const shared_ptr<_Tp1>& __a,
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator!=(const shared_ptr<_Tp1>& __a,
 	       const shared_ptr<_Tp2>& __b) noexcept
-     {
-       using __elem_t1 = typename shared_ptr<_Tp1>::element_type;
-       using __elem_t2 = typename shared_ptr<_Tp2>::element_type;
-       using _CT = common_type_t<__elem_t1*, __elem_t2*>;
-       return std::less<_CT>()(__a.get(), __b.get());
-     }
+    { return __a.get() != __b.get(); }
 
-   template<typename _Tp>
-     inline bool
-     operator<(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
-     {
-       using __elem_t = typename shared_ptr<_Tp>::element_type;
-       return std::less<__elem_t*>()(__a.get(), nullptr);
-     }
+  template<typename _Tp>
+    inline bool
+    operator!=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return (bool)__a; }
 
-   template<typename _Tp>
-     inline bool
-     operator<(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
-     {
-       using __elem_t = typename shared_ptr<_Tp>::element_type;
-       return std::less<__elem_t*>()(nullptr, __a.get());
-     }
+  template<typename _Tp>
+    inline bool
+    operator!=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return (bool)__a; }
 
-   template<typename _Tp1, typename _Tp2>
-     inline bool
-     operator<=(const shared_ptr<_Tp1>& __a,
-		const shared_ptr<_Tp2>& __b) noexcept
-     { return !(__b < __a); }
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator<(const shared_ptr<_Tp1>& __a,
+	      const shared_ptr<_Tp2>& __b) noexcept
+    {
+      using __elem_t1 = typename shared_ptr<_Tp1>::element_type;
+      using __elem_t2 = typename shared_ptr<_Tp2>::element_type;
+      using _CT = common_type_t<__elem_t1*, __elem_t2*>;
+      return std::less<_CT>()(__a.get(), __b.get());
+    }
 
-   template<typename _Tp>
-     inline bool
-     operator<=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
-     { return !(nullptr < __a); }
+  template<typename _Tp>
+    inline bool
+    operator<(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    {
+      using __elem_t = typename shared_ptr<_Tp>::element_type;
+      return std::less<__elem_t*>()(__a.get(), nullptr);
+    }
 
-   template<typename _Tp>
-     inline bool
-     operator<=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
-     { return !(__a < nullptr); }
+  template<typename _Tp>
+    inline bool
+    operator<(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    {
+      using __elem_t = typename shared_ptr<_Tp>::element_type;
+      return std::less<__elem_t*>()(nullptr, __a.get());
+    }
 
-   template<typename _Tp1, typename _Tp2>
-     inline bool
-     operator>(const shared_ptr<_Tp1>& __a,
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator<=(const shared_ptr<_Tp1>& __a,
 	       const shared_ptr<_Tp2>& __b) noexcept
-     { return (__b < __a); }
+    { return !(__b < __a); }
 
-   template<typename _Tp>
-     inline bool
-     operator>(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
-     {
-       using __elem_t = typename shared_ptr<_Tp>::element_type;
-       return std::less<__elem_t*>()(nullptr, __a.get());
-     }
+  template<typename _Tp>
+    inline bool
+    operator<=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return !(nullptr < __a); }
 
-   template<typename _Tp>
-     inline bool
-     operator>(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
-     {
-       using __elem_t = typename shared_ptr<_Tp>::element_type;
-       return std::less<__elem_t*>()(__a.get(), nullptr);
-     }
+  template<typename _Tp>
+    inline bool
+    operator<=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return !(__a < nullptr); }
 
-   template<typename _Tp1, typename _Tp2>
-     inline bool
-     operator>=(const shared_ptr<_Tp1>& __a,
-		const shared_ptr<_Tp2>& __b) noexcept
-     { return !(__a < __b); }
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator>(const shared_ptr<_Tp1>& __a,
+	      const shared_ptr<_Tp2>& __b) noexcept
+    { return (__b < __a); }
 
-   template<typename _Tp>
-     inline bool
-     operator>=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
-     { return !(__a < nullptr); }
+  template<typename _Tp>
+    inline bool
+    operator>(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    {
+      using __elem_t = typename shared_ptr<_Tp>::element_type;
+      return std::less<__elem_t*>()(nullptr, __a.get());
+    }
 
-   template<typename _Tp>
-     inline bool
-     operator>=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
-     { return !(nullptr < __a); }
+  template<typename _Tp>
+    inline bool
+    operator>(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    {
+      using __elem_t = typename shared_ptr<_Tp>::element_type;
+      return std::less<__elem_t*>()(__a.get(), nullptr);
+    }
 
-   // C++14 §20.8.2.2.8
-   template<typename _Tp>
-     inline void
-     swap(shared_ptr<_Tp>& __a, shared_ptr<_Tp>& __b) noexcept
-     { __a.swap(__b); }
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator>=(const shared_ptr<_Tp1>& __a,
+	       const shared_ptr<_Tp2>& __b) noexcept
+    { return !(__a < __b); }
 
-   // 8.2.1.3, shared_ptr casts
-   template<typename _Tp, typename _Tp1>
-     inline shared_ptr<_Tp>
-     static_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
-     {
-       using __elem_t = typename shared_ptr<_Tp>::element_type;
-       return shared_ptr<_Tp>(__r, static_cast<__elem_t*>(__r.get()));
-     }
+  template<typename _Tp>
+    inline bool
+    operator>=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return !(__a < nullptr); }
 
-   template<typename _Tp, typename _Tp1>
-     inline shared_ptr<_Tp>
-     dynamic_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
-     {
-       using __elem_t = typename shared_ptr<_Tp>::element_type;
-       if (_Tp* __p = dynamic_cast<__elem_t*>(__r.get()))
-	 return shared_ptr<_Tp>(__r, __p);
-       return shared_ptr<_Tp>();
-     }
+  template<typename _Tp>
+    inline bool
+    operator>=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return !(nullptr < __a); }
 
-   template<typename _Tp, typename _Tp1>
-     inline shared_ptr<_Tp>
-     const_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
-     {
-       using __elem_t = typename shared_ptr<_Tp>::element_type;
-       return shared_ptr<_Tp>(__r, const_cast<__elem_t*>(__r.get()));
-     }
+  // C++14 §20.8.2.2.8
+  template<typename _Tp>
+    inline void
+    swap(shared_ptr<_Tp>& __a, shared_ptr<_Tp>& __b) noexcept
+    { __a.swap(__b); }
 
-   template<typename _Tp, typename _Tp1>
-     inline shared_ptr<_Tp>
-     reinterpret_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
-     {
-       using __elem_t = typename shared_ptr<_Tp>::element_type;
-       return shared_ptr<_Tp>(__r, reinterpret_cast<__elem_t*>(__r.get()));
-     }
+  // 8.2.1.3, shared_ptr casts
+  template<typename _Tp, typename _Tp1>
+    inline shared_ptr<_Tp>
+    static_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
+    {
+      using __elem_t = typename shared_ptr<_Tp>::element_type;
+      return shared_ptr<_Tp>(__r, static_cast<__elem_t*>(__r.get()));
+    }
 
-   // C++14 §20.8.2.3
-   template<typename _Tp>
-     class weak_ptr : public __weak_ptr<_Tp>
-     {
+  template<typename _Tp, typename _Tp1>
+    inline shared_ptr<_Tp>
+    dynamic_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
+    {
+      using __elem_t = typename shared_ptr<_Tp>::element_type;
+      if (_Tp* __p = dynamic_cast<__elem_t*>(__r.get()))
+	return shared_ptr<_Tp>(__r, __p);
+      return shared_ptr<_Tp>();
+    }
+
+  template<typename _Tp, typename _Tp1>
+    inline shared_ptr<_Tp>
+    const_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
+    {
+      using __elem_t = typename shared_ptr<_Tp>::element_type;
+      return shared_ptr<_Tp>(__r, const_cast<__elem_t*>(__r.get()));
+    }
+
+  template<typename _Tp, typename _Tp1>
+    inline shared_ptr<_Tp>
+    reinterpret_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
+    {
+      using __elem_t = typename shared_ptr<_Tp>::element_type;
+      return shared_ptr<_Tp>(__r, reinterpret_cast<__elem_t*>(__r.get()));
+    }
+
+  // C++14 §20.8.2.3
+  template<typename _Tp>
+    class weak_ptr : public __weak_ptr<_Tp>
+    {
       template<typename _Tp1, typename _Res = void>
 	using _Compatible
 	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
 
       using _Base_type = __weak_ptr<_Tp>;
 
-   public:
+     public:
        constexpr weak_ptr() noexcept = default;
 
        template<typename _Tp1, typename = _Compatible<_Tp1>>
@@ -985,13 +985,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        { return shared_ptr<_Tp>(*this, std::nothrow); }
 
        friend class enable_shared_from_this<_Tp>;
-     };
+    };
 
-   // C++14 §20.8.2.3.6
-   template<typename _Tp>
-     inline void
-     swap(weak_ptr<_Tp>& __a, weak_ptr<_Tp>& __b) noexcept
-     { __a.swap(__b); }
+  // C++14 §20.8.2.3.6
+  template<typename _Tp>
+    inline void
+    swap(weak_ptr<_Tp>& __a, weak_ptr<_Tp>& __b) noexcept
+    { __a.swap(__b); }
 
   /// C++14 §20.8.2.2.10
   template<typename _Del, typename _Tp, _Lock_policy _Lp>
@@ -1009,8 +1009,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __os;
     }
 
-   // C++14 §20.8.2.4
-   template<typename _Tp = void> class owner_less;
+  // C++14 §20.8.2.4
+  template<typename _Tp = void> class owner_less;
 
    /// Partial specialization of owner_less for shared_ptr.
   template<typename _Tp>

@@ -1,5 +1,7 @@
 2016-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/shared_ptr.h: Fix indentation.
+
 	* include/experimental/bits/shared_ptr.h (shared_ptr(shared_ptr&&)):
 	Remove const from parameter.
 	(operator<(const shared_ptr<T>&, nullptr_t)): Use correct
