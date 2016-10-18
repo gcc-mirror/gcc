@@ -1,3 +1,9 @@
+2016-10-18  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (dt_operand::gen_gimple_expr): Use get_name to
+	get at the operand to look at with TREE_OPERAND for generic
+	sub-nodes.
+
 2016-10-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* genattrtab.c (attr_string): Use rtx_reader_ptr for call to
