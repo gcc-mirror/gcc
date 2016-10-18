@@ -1282,8 +1282,9 @@ read_x (st_parameter_dt *dtp, int n)
     } 
 
  done:
-  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    dtp->u.p.size_used += (GFC_IO_INT) n;
+  if (((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0) ||
+      dtp->u.p.current_unit->has_size)
+    dtp->u.p.current_unit->size_used += (GFC_IO_INT) n;
   dtp->u.p.current_unit->bytes_left -= n;
   dtp->u.p.current_unit->strm_pos += (gfc_offset) n;
 }
