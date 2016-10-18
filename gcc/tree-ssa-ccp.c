@@ -953,8 +953,7 @@ ccp_finalize (bool nonzero_p)
     }
 
   /* Perform substitutions based on the known constant values.  */
-  something_changed = substitute_and_fold (get_constant_value,
-					   ccp_fold_stmt, true);
+  something_changed = substitute_and_fold (get_constant_value, ccp_fold_stmt);
 
   free (const_val);
   const_val = NULL;

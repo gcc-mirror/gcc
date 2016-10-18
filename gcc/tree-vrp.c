@@ -10622,8 +10622,7 @@ vrp_finalize (bool warn_array_bounds_p)
 			  vr_value[i]->max);
       }
 
-  substitute_and_fold (op_with_constant_singleton_value_range,
-		       vrp_fold_stmt, true);
+  substitute_and_fold (op_with_constant_singleton_value_range, vrp_fold_stmt);
 
   if (warn_array_bounds && warn_array_bounds_p)
     check_all_array_refs ();
@@ -10954,8 +10953,6 @@ execute_early_vrp ()
   vrp_free_lattice ();
   scev_finalize ();
   loop_optimizer_finalize ();
-  FOR_EACH_BB_FN (bb, cfun)
-    bb->flags &= ~BB_VISITED;
   return 0;
 }
 

@@ -479,9 +479,6 @@ ssa_prop_fini (void)
   free (cfg_order_to_bb);
   BITMAP_FREE (ssa_edge_worklist);
   uid_to_stmt.release ();
-  basic_block bb;
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    bb->flags &= ~BB_VISITED;
 }
 
 
@@ -972,10 +969,9 @@ class substitute_and_fold_dom_walker : public dom_walker
 public:
     substitute_and_fold_dom_walker (cdi_direction direction,
 				    ssa_prop_get_value_fn get_value_fn_,
-				    ssa_prop_fold_stmt_fn fold_fn_,
-				    bool do_dce_)
+				    ssa_prop_fold_stmt_fn fold_fn_)
 	: dom_walker (direction), get_value_fn (get_value_fn_),
-      fold_fn (fold_fn_), do_dce (do_dce_), something_changed (false)
+      fold_fn (fold_fn_), something_changed (false)
     {
       stmts_to_remove.create (0);
       stmts_to_fixup.create (0);
@@ -993,7 +989,6 @@ public:
 
     ssa_prop_get_value_fn get_value_fn;
     ssa_prop_fold_stmt_fn fold_fn;
-    bool do_dce;
     bool something_changed;
     vec<gimple *> stmts_to_remove;
     vec<gimple *> stmts_to_fixup;
@@ -1012,8 +1007,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       tree res = gimple_phi_result (phi);
       if (virtual_operand_p (res))
 	continue;
-      if (do_dce
-	  && res && TREE_CODE (res) == SSA_NAME)
+      if (res && TREE_CODE (res) == SSA_NAME)
 	{
 	  tree sprime = get_value_fn (res);
 	  if (sprime
@@ -1039,8 +1033,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       /* No point propagating into a stmt we have a value for we
          can propagate into all uses.  Mark it for removal instead.  */
       tree lhs = gimple_get_lhs (stmt);
-      if (do_dce
-	  && lhs && TREE_CODE (lhs) == SSA_NAME)
+      if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	{
 	  tree sprime = get_value_fn (lhs);
 	  if (sprime
@@ -1180,8 +1173,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 
 bool
 substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
-		     ssa_prop_fold_stmt_fn fold_fn,
-		     bool do_dce)
+		     ssa_prop_fold_stmt_fn fold_fn)
 {
   gcc_assert (get_value_fn);
 
@@ -1192,7 +1184,7 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
 
   calculate_dominance_info (CDI_DOMINATORS);
   substitute_and_fold_dom_walker walker(CDI_DOMINATORS,
-					get_value_fn, fold_fn, do_dce);
+					get_value_fn, fold_fn);
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* We cannot remove stmts during the BB walk, especially not release
