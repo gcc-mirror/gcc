@@ -29218,8 +29218,10 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
 
 	  /* Clearing the out register in DImode first avoids lots
 	     of spilling and results in less stack usage.
-	     Later this redundant insn is completely removed.  */
-	  emit_insn (SET (out, const0_rtx));
+	     Later this redundant insn is completely removed.
+	     Do that only if "in" and "out" are different registers.  */
+	  if (REG_P (out) && REG_P (in) && REGNO (out) != REGNO (in))
+	    emit_insn (SET (out, const0_rtx));
 	  emit_insn (SET (out_down, LSHIFT (code, in_down, amount)));
 	  emit_insn (SET (out_down,
 			  ORR (REV_LSHIFT (code, in_up, reverse_amount),
@@ -29231,11 +29233,14 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
 	  /* Shifts by a constant greater than 31.  */
 	  rtx adj_amount = GEN_INT (INTVAL (amount) - 32);
 
-	  emit_insn (SET (out, const0_rtx));
+	  if (REG_P (out) && REG_P (in) && REGNO (out) != REGNO (in))
+	    emit_insn (SET (out, const0_rtx));
 	  emit_insn (SET (out_down, SHIFT (code, in_up, adj_amount)));
 	  if (code == ASHIFTRT)
 	    emit_insn (gen_ashrsi3 (out_up, in_up,
 				    GEN_INT (31)));
+	  else
+	    emit_insn (SET (out_up, const0_rtx));
 	}
     }
   else
