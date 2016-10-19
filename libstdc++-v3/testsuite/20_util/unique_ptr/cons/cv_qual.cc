@@ -105,7 +105,7 @@ test07()
   std::unique_ptr<const A[]> cA3(p); // { dg-error "no matching function" }
   std::unique_ptr<volatile A[]> vA3(p); // { dg-error "no matching function" }
   std::unique_ptr<const volatile A[]> cvA3(p); // { dg-error "no matching function" }
-  // { dg-error "no type" "" { target *-*-* } 445 }
+  // { dg-error "no type" "" { target *-*-* } 446 }
 }
 
 template<typename T>
