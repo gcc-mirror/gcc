@@ -1,5 +1,9 @@
 2016-10-19  Richard Biener  <rguenther@suse.de>
 
+	* domwalk.c (dom_walker::walk): Use RPO order.
+
+2016-10-19  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (evrp_dom_walker::evrp_dom_walker): Initialize
 	stmts_to_remove.
 	(evrp_dom_walker::~evrp_dom_walker): Free it.
