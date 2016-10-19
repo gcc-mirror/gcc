@@ -1,3 +1,15 @@
+2016-10-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (evrp_dom_walker::evrp_dom_walker): Initialize
+	stmts_to_remove.
+	(evrp_dom_walker::~evrp_dom_walker): Free it.
+	(evrp_dom_walker::stmts_to_remove): Add.
+	(evrp_dom_walker::before_dom_children): Mark PHIs and stmts
+	whose output we fully propagate for removal.  Propagate
+	into BB destination PHI arguments.
+	(execute_early_vrp): Remove queued stmts.  Dump value ranges
+	before stmt removal.
+
 2016-10-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* Makefile.in (OBJS): Add gimple-ssa-warn-alloca.o.

@@ -1,3 +1,7 @@
+2016-10-19  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr61839_2.c: Fix testcase.
+
 2016-10-18  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/vsu/vec-all-ne-0.c: New test.

@@ -9,8 +9,8 @@ int foo ()
   int a = -1;
   volatile unsigned b = 1U;
   int c = 1;
-  c = (a + 972195718) / (b ? 1 : 0);
-  if (c == 972195717)
+  c = (a + 972195718) / (b ? 2 : 0);
+  if (c == 486097858)
     ;
   else
     __builtin_abort ();
@@ -23,8 +23,8 @@ int bar ()
   int a = -1;
   volatile unsigned b = 1U;
   int c = 1;
-  c = (a + 972195718) % (b ? 1 : 0);
-  if (c == 972195717)
+  c = (a + 972195718) % (b ? 2 : 0);
+  if (c == 1)
     ;
   else
     __builtin_abort ();
@@ -38,7 +38,7 @@ int bar2 ()
   volatile unsigned b = 1U;
   int c = 1;
   c = (a + 972195716) % (b ? 1 : 2);
-  if (c == 972195715)
+  if (c == 0)
     ;
   else
     __builtin_abort ();
@@ -47,8 +47,8 @@ int bar2 ()
 
 
 /* Dont optimize 972195717 / 0 in function foo.  */
-/* { dg-final { scan-tree-dump-times "972195717 / _" 1  "evrp" } } */
+/* { dg-final { scan-tree-dump-times "972195717 / " 1  "evrp" } } */
 /* Dont optimize 972195717 % 0 in function bar.  */
-/* { dg-final { scan-tree-dump-times "972195717 % _" 1 "evrp" } } */
-/* Optimize in function bar2.  */
-/* { dg-final { scan-tree-dump-times "972195715 % _" 0 "evrp" } } */
+/* { dg-final { scan-tree-dump-times "972195717 % " 1 "evrp" } } */
+/* May optimize in function bar2, but EVRP doesn't perform this yet.  */
+/* { dg-final { scan-tree-dump-times "972195715 % " 0 "evrp" { xfail *-*-* } } } */

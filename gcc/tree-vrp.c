@@ -10642,12 +10642,10 @@ public:
   evrp_dom_walker ()
     : dom_walker (CDI_DOMINATORS), stack (10)
     {
-      stmts_to_fixup.create (0);
       need_eh_cleanup = BITMAP_ALLOC (NULL);
     }
   ~evrp_dom_walker ()
     {
-      stmts_to_fixup.release ();
       BITMAP_FREE (need_eh_cleanup);
     }
   virtual edge before_dom_children (basic_block);
@@ -10659,7 +10657,8 @@ public:
   /* Cond_stack holds the old VR.  */
   auto_vec<std::pair <const_tree, value_range*> > stack;
   bitmap need_eh_cleanup;
-  vec<gimple *> stmts_to_fixup;
+  auto_vec<gimple *> stmts_to_fixup;
+  auto_vec<gimple *> stmts_to_remove;
 };
 
 
@@ -10769,6 +10768,11 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       else
 	set_value_range_to_varying (&vr_result);
       update_value_range (lhs, &vr_result);
+
+      /* Mark PHIs whose lhs we fully propagate for removal.  */
+      tree val = op_with_constant_singleton_value_range (lhs);
+      if (val && may_propagate_copy (lhs, val))
+	stmts_to_remove.safe_push (phi);
     }
 
   edge taken_edge = NULL;
@@ -10806,7 +10810,6 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	      update_value_range (output, &vr);
 	      vr = *get_value_range (output);
 
-
 	      /* Set the SSA with the value range.  */
 	      if (INTEGRAL_TYPE_P (TREE_TYPE (output)))
 		{
@@ -10824,6 +10827,17 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 			       && range_includes_zero_p (vr.min,
 							 vr.max) == 1)))
 		set_ptr_nonnull (output);
+
+	      /* Mark stmts whose output we fully propagate for removal.  */
+	      tree val;
+	      if ((val = op_with_constant_singleton_value_range (output))
+		  && may_propagate_copy (output, val)
+		  && !stmt_could_throw_p (stmt)
+		  && !gimple_has_side_effects (stmt))
+		{
+		  stmts_to_remove.safe_push (stmt);
+		  continue;
+		}
 	    }
 	  else
 	    set_defs_to_varying (stmt);
@@ -10860,6 +10874,25 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	    }
 	}
     }
+
+  /* Visit BB successor PHI nodes and replace PHI args.  */
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      for (gphi_iterator gpi = gsi_start_phis (e->dest);
+	   !gsi_end_p (gpi); gsi_next (&gpi))
+	{
+	  gphi *phi = gpi.phi ();
+	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
+	  tree arg = USE_FROM_PTR (use_p);
+	  if (TREE_CODE (arg) != SSA_NAME
+	      || virtual_operand_p (arg))
+	    continue;
+	  tree val = op_with_constant_singleton_value_range (arg);
+	  if (val && may_propagate_copy (arg, val))
+	    propagate_value (use_p, val);
+	}
+    }
+ 
   bb->flags |= BB_VISITED;
 
   return taken_edge;
@@ -10941,6 +10974,34 @@ execute_early_vrp ()
   evrp_dom_walker walker;
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
+  if (dump_file)
+    {
+      fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
+      dump_all_value_ranges (dump_file);
+      fprintf (dump_file, "\n");
+    }
+
+  /* Remove stmts in reverse order to make debug stmt creation possible.  */
+  while (! walker.stmts_to_remove.is_empty ())
+    {
+      gimple *stmt = walker.stmts_to_remove.pop ();
+      if (dump_file && dump_flags & TDF_DETAILS)
+	{
+	  fprintf (dump_file, "Removing dead stmt ");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  fprintf (dump_file, "\n");
+	}
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	remove_phi_node (&gsi, true);
+      else
+	{
+	  unlink_stmt_vdef (stmt);
+	  gsi_remove (&gsi, true);
+	  release_defs (stmt);
+	}
+    }
+
   if (!bitmap_empty_p (walker.need_eh_cleanup))
     gimple_purge_all_dead_eh_edges (walker.need_eh_cleanup);
 
@@ -10954,12 +11015,6 @@ execute_early_vrp ()
       fixup_noreturn_call (stmt);
     }
 
-  if (dump_file)
-    {
-      fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
-      dump_all_value_ranges (dump_file);
-      fprintf (dump_file, "\n");
-    }
   vrp_free_lattice ();
   scev_finalize ();
   loop_optimizer_finalize ();
