@@ -1,3 +1,8 @@
+2016-10-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/78024
+	* gcc.dg/goacc/loop-processing-1.c: New file.
+
 2016-10-19  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pr61839_2.c: Fix testcase.
