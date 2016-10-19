@@ -904,7 +904,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
    is the inner type of the vectype)
 
    The computations will be emitted at the end of BB.  We also compute and
-   store upper bound of the result in BOUND.
+   store upper bound (included) of the result in BOUND.
 
    When the step of the data-ref in the loop is not 1 (as in interleaved data
    and SLP), the number of iterations of the prolog must be divided by the step
@@ -941,7 +941,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
                          "known peeling = %d.\n", npeel);
 
       iters = build_int_cst (niters_type, npeel);
-      *bound = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) + 1;
+      *bound = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
     }
   else
     {
@@ -976,7 +976,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 	iters = fold_build2 (MINUS_EXPR, type, nelements_tree, elem_misalign);
       iters = fold_build2 (BIT_AND_EXPR, type, iters, nelements_minus_1);
       iters = fold_convert (niters_type, iters);
-      *bound = nelements;
+      *bound = nelements - 1;
     }
 
   if (dump_enabled_p ())
@@ -1090,43 +1090,47 @@ vect_build_loop_niters (loop_vec_info loop_vinfo)
     }
 }
 
-/* Calculate the number of iterations under which scalar loop will be
-   preferred than vectorized loop.  NITERS_PROLOG is the number of
-   iterations of prolog loop.  If it's integer const, the integer
-   number is also passed by INT_NITERS_PROLOG.  VF is vector factor;
-   TH is the threshold for vectorized loop if CHECK_PROFITABILITY is
-   true.  This function also store upper bound of the result in BOUND.  */
+/* Calculate the number of iterations above which vectorized loop will be
+   preferred than scalar loop.  NITERS_PROLOG is the number of iterations
+   of prolog loop.  If it's integer const, the integer number is also passed
+   in INT_NITERS_PROLOG.  BOUND_PROLOG is the upper bound (included) of
+   number of iterations of prolog loop.  VFM1 is vector factor minus one.
+   If CHECK_PROFITABILITY is true, TH is the threshold below which scalar
+   (rather than vectorized) loop will be executed.  This function stores
+   upper bound (included) of the result in BOUND_SCALAR.  */
 
 static tree
 vect_gen_scalar_loop_niters (tree niters_prolog, int int_niters_prolog,
-			     int bound_prolog, int vf, int th, int *bound,
-			     bool check_profitability)
+			     int bound_prolog, int vfm1, int th,
+			     int *bound_scalar, bool check_profitability)
 {
   tree type = TREE_TYPE (niters_prolog);
   tree niters = fold_build2 (PLUS_EXPR, type, niters_prolog,
-			     build_int_cst (type, vf));
+			     build_int_cst (type, vfm1));
 
-  *bound = vf + bound_prolog;
+  *bound_scalar = vfm1 + bound_prolog;
   if (check_profitability)
     {
-      th++;
+      /* TH indicates the minimum niters of vectorized loop, while we
+	 compute the maximum niters of scalar loop.  */
+      th--;
       /* Peeling for constant times.  */
       if (int_niters_prolog >= 0)
 	{
-	  *bound = (int_niters_prolog + vf < th
-					   ? th
-					   : vf + int_niters_prolog);
-	  return build_int_cst (type, *bound);
+	  *bound_scalar = (int_niters_prolog + vfm1 < th
+			    ? th
+			    : vfm1 + int_niters_prolog);
+	  return build_int_cst (type, *bound_scalar);
 	}
-      /* Peeling for unknown times, in this case, prolog loop must
-	 execute less than bound_prolog times.  */
-      if (th >=  vf + bound_prolog - 1)
+      /* Peeling for unknown times.  Note BOUND_PROLOG is the upper
+	 bound (inlcuded) of niters of prolog loop.  */
+      if (th >=  vfm1 + bound_prolog)
 	{
-	  *bound = th;
+	  *bound_scalar = th;
 	  return build_int_cst (type, th);
 	}
-      /* Need to do runtime comparison, but bound remains the same.  */
-      else if (th > vf)
+      /* Need to do runtime comparison, but BOUND_SCALAR remains the same.  */
+      else if (th > vfm1)
 	return fold_build2 (MAX_EXPR, type, build_int_cst (type, th), niters);
     }
   return niters;
@@ -1620,7 +1624,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   tree type = TREE_TYPE (niters), guard_cond;
   basic_block guard_bb, guard_to;
   int prob_prolog, prob_vector, prob_epilog;
-  int bound_prolog = 0, bound_epilog = 0, bound = 0;
+  int bound_prolog = 0, bound_scalar = 0, bound = 0;
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   int prolog_peeling = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
   bool epilog_peeling = (LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)
@@ -1721,9 +1725,9 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 		       LOOP_VINFO_NITERSM1 (loop_vinfo), niters_prolog);
       niters = vect_build_loop_niters (loop_vinfo);
 
-      /* Prolog iterates at most bound_prolog - 1 times, latch iterates
-	 at most bound_prolog - 2 times.  */
-      record_niter_bound (prolog, bound_prolog - 2, false, true);
+      /* Prolog iterates at most bound_prolog times, latch iterates at
+	 most bound_prolog - 1 times.  */
+      record_niter_bound (prolog, bound_prolog - 1, false, true);
       delete_update_ssa ();
       adjust_vec_debug_stmts ();
       scev_reset ();
@@ -1754,16 +1758,15 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 won't be vectorized.  */
       if (skip_vector)
 	{
-	  /* Guard_cond needs is based on NITERSM1 because NITERS might
-	     overflow, so here it is niters_scalar - 1 generated.  In
-	     other words, both niters_scalar and bound_epilog are for
-	     scalar loop's latch.  */
+	  /* Additional epilogue iteration is peeled if gap exists.  */
+	  bool peel_for_gaps = LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
 	  tree t = vect_gen_scalar_loop_niters (niters_prolog, prolog_peeling,
-						bound_prolog, vf - 1, th - 1,
-						&bound_epilog,
+						bound_prolog,
+						peel_for_gaps ? vf : vf - 1,
+						th, &bound_scalar,
 						check_profitability);
-	  guard_cond = fold_build2 (LT_EXPR, boolean_type_node,
-				    nitersm1, t);
+	  /* Build guard against NITERSM1 since NITERS may overflow.  */
+	  guard_cond = fold_build2 (LT_EXPR, boolean_type_node, nitersm1, t);
 	  guard_bb = anchor;
 	  guard_to = split_edge (loop_preheader_edge (epilog));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond,
@@ -1772,7 +1775,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
 	  slpeel_update_phi_nodes_for_guard1 (first_loop, epilog, guard_e, e);
-	  scale_loop_profile (epilog, prob_vector, bound_epilog);
+	  scale_loop_profile (epilog, prob_vector, bound_scalar);
 	}
 
       tree niters_vector_mult_vf;
@@ -1807,10 +1810,10 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       else
 	slpeel_update_phi_nodes_for_lcssa (epilog);
 
-      bound = (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) ? vf * 2 : vf) - 2;
+      bound = LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) ? vf - 1 : vf - 2;
       /* We share epilog loop with scalar version loop.  */
-      bound_epilog = MAX (bound, bound_epilog - 1);
-      record_niter_bound (epilog, bound_epilog, false, true);
+      bound = MAX (bound, bound_scalar - 1);
+      record_niter_bound (epilog, bound, false, true);
 
       delete_update_ssa ();
       adjust_vec_debug_stmts ();
