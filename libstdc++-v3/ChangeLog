@@ -1,5 +1,11 @@
 2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/unique_ptr/cons/cv_qual.cc: Move negative tests
+	to new file.
+	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: New file.  Fix
+	test for incompatible deleters to not also use incompatible types.
+	Add tests for incompatible array types.
+
 	PR libstdc++/77990
 	* include/bits/unique_ptr.h (unique_ptr::unique_ptr(pointer)): Set
 	pointer member after value-initialization of tuple.
