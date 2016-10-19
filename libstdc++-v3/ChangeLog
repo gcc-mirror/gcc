@@ -1,3 +1,12 @@
+2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77990
+	* include/bits/unique_ptr.h (unique_ptr::unique_ptr(pointer)): Set
+	pointer member after value-initialization of tuple.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Adjust dg-errors.
+	* testsuite/20_util/unique_ptr/cons/77990.cc: New test.
+	* testsuite/20_util/unique_ptr/cons/cv_qual.cc: Adjust dg-error.
+
 2016-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/77987
