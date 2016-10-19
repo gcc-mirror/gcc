@@ -83,7 +83,16 @@ test02()
   VERIFY( sp.get() != 0 );
   VERIFY( sp.use_count() == 1 );
 
-  VERIFY( sp[0].shared_from_this() != nullptr );
+  bool caught = false;
+  try
+  {
+    sp[0].shared_from_this(); // should not be set for arrays
+  }
+  catch (const std::bad_weak_ptr&)
+  {
+    caught = true;
+  }
+  VERIFY( caught );
 
   sp.reset();
   VERIFY( destroyed == 5 );
