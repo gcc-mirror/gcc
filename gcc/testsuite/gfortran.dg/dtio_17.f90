@@ -61,6 +61,10 @@ PROGRAM test
   TYPE (person) :: chairman
   integer(4) :: rl, tl, kl, thesize
 
+  rl = 1
+  tl = 22
+  kl = 333
+  thesize = 9999
   chairman%name="Charlie"
   chairman%age=62
 

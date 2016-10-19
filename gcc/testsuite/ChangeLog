@@ -1,3 +1,7 @@
+2016-10-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/dtio_17.f90: Fix test.
+
 2016-10-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/Walloca-1.c: Adjust test for !lp64 targets.
