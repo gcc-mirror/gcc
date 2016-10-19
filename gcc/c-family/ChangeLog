@@ -1,4 +1,9 @@
-2016-06-16  Aldy Hernandez  <aldyh@redhat.com>
+2016-10-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (c_common_truthvalue_conversion): Warn only for signed
+	integer shift ops in boolean context.
+
+2016-10-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c.opt (Walloca): New.
 	(Walloca-larger-than=): New.
