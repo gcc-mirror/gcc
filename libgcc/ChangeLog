@@ -1,3 +1,11 @@
+2016-10-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa64-hpux-lib.h: New file.  
+	(EH_FRAME_SECTION_NAME): Rename to __LIBGCC_EH_FRAME_SECTION_NAME__.
+	(DTORS_SECTION_ASM_OP): Rename to __LIBGCC_DTORS_SECTION_ASM_OP__.
+	* config.host (tm_file): Add pa/pa64-hpux-lib.h to tm_file on
+	hppa*64*-*-hpux11*.
+
 2016-10-18  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/t-elf (LIB2ADDEH_XTENSA_UNWIND_DW2_FDE): New

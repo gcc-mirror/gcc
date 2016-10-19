@@ -543,6 +543,7 @@ hppa*64*-*-hpux11*)
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
 	tmake_file="$tmake_file pa/t-slibgcc-hpux t-slibgcc-hpux"
+	tm_file="$tm_file pa/pa64-hpux-lib.h"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
 		     libgcc_stub.a"
 	md_unwind_header=pa/hpux-unwind.h

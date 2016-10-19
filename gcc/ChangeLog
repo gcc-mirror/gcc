@@ -1,3 +1,10 @@
+2016-10-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa64-hpux.h (PA_INIT_FRAME_DUMMY_ASM_OP): Move to
+	config/pa/pa64-hpux-lib.h.
+	(PA_CRTBEGIN_HACK): Likewise.
+	(DTOR_LIST_BEGIN): Likewise.
+
 2016-10-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* config/arm/arm.c (arm_emit_coreregs_64bit_shift): Clear the result
