@@ -2825,10 +2825,6 @@ analyze_increments (slsr_cand_t first_dep, machine_mode mode, bool speed)
 		   && !POINTER_TYPE_P (first_dep->cand_type)))
 	incr_vec[i].cost = COST_NEUTRAL;
 
-      /* FIXME: Still having trouble with pointers with a -1 increment.  */
-      else if (incr == -1 && POINTER_TYPE_P (first_dep->cand_type))
-	incr_vec[i].cost = COST_INFINITE;
-
       /* FORNOW: If we need to add an initializer, give up if a cast from
 	 the candidate's type to its stride's type can lose precision.
 	 This could eventually be handled better by expressly retaining the
@@ -3115,7 +3111,7 @@ insert_initializers (slsr_cand_t c)
       if (!profitable_increment_p (i)
 	  || incr == 1
 	  || (incr == -1
-	      && gimple_assign_rhs_code (c->cand_stmt) != POINTER_PLUS_EXPR)
+	      && (!POINTER_TYPE_P (lookup_cand (c->basis)->cand_type)))
 	  || incr == 0)
 	continue;
 
