@@ -23,7 +23,6 @@
 #include <testsuite_hooks.h>
 
 struct A { };
-struct B : A { };
 
 // 8.2.1.2 shared_ptr observers [memory.smartptr.shared.obs]
 
@@ -52,7 +51,7 @@ test03()
 {
   std::experimental::shared_ptr<A[5]> p1(new A[5]);
   std::experimental::shared_ptr<A[5]> p2(p1);
-  p2.reset(new B[5]);
+  p2.reset(new A[5]);
   VERIFY( p1.use_count() == 1 );
   VERIFY( p2.use_count() == 1 );
 }

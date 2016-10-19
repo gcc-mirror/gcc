@@ -23,10 +23,9 @@
 #include <testsuite_hooks.h>
 
 struct A { };
-struct B : A { };
 struct D
 {
-  void operator()(B* p) { delete [] p; ++delete_count; }
+  void operator()(A* p) { delete [] p; ++delete_count; }
   static long delete_count;
 };
 long D::delete_count = 0;
@@ -51,7 +50,7 @@ int
 test02()
 {
   A * const a = new A[5];
-  B * const b = new B[5];
+  A * const b = new A[5];
   std::experimental::shared_ptr<A[5]> p1(a);
   std::experimental::shared_ptr<A[5]> p2(p1);
   p1.reset(b);
@@ -66,7 +65,7 @@ test03()
 {
   {
     std::experimental::shared_ptr<A[5]> p1;
-    p1.reset(new B[5], D());
+    p1.reset(new A[5], D());
   }
   VERIFY( D::delete_count == 1 );
 

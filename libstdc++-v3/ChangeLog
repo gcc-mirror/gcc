@@ -1,5 +1,38 @@
 2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/shared_ptr.h
+	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::_Compatible): Just use
+	is_convertible for non-array specialization.
+	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::_UniqCompatible): New
+	constraint for conversions from unique_ptr.
+	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::__shared_ptr): Constrain.
+	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::reset): Likewise.
+	(__sp_compatible_v): New variable template for trait.
+	(__sp_is_constructible): New trait to check shared_ptr constraints.
+	(__sp_is_constructible_v): New variable template for trait.
+	(__shared_ptr<__libfund_v1<_Tp, true>, _Lp>::_SafeConv): New
+	constraint for construction/reset, using __sp_is_constructible_v.
+	(__shared_ptr<__libfund_v1<_Tp, true>, _Lp>::_UniqCompatible): New
+	constraint for conversions from unique_ptr.
+	(__shared_ptr<__libfund_v1<_Tp, true>, _Lp>::__shared_ptr): Constrain.
+	(__shared_ptr<__libfund_v1<_Tp, true>, _Lp>::reset): Likewise.
+	(shared_ptr::_SafeConv): Constraint for checking constructors.
+	(shared_ptr(Tp1*), shared_ptr(_Tp1, _Deleter))
+	(shared_ptr(_Tp1, _Deleter, _Alloc)): Constrain with _SafeConv.
+	(shared_ptr(const weak_ptr<_Tp1>&)): Constrain with _Compatible.
+	(shared_ptr(auto_ptr<_Tp1>&&)): Fix, remove TODO.
+	* testsuite/experimental/memory/shared_ptr/cons/pointer_ctor.cc:
+	Remove tests using invalid conversions.
+	* testsuite/experimental/memory/shared_ptr/cons/pointer_ctor_neg.cc:
+	New test.
+	* testsuite/experimental/memory/shared_ptr/cons/torture.cc: New test.
+	* testsuite/experimental/memory/shared_ptr/modifiers/reset.cc: Remove
+	tests using invalid conversions.
+	* testsuite/experimental/memory/shared_ptr/modifiers/reset_neg.cc: New
+	test.
+	* testsuite/experimental/memory/shared_ptr/observers/use_count.cc:
+	Remove tests using invalid conversions.
+
 	PR libstdc++/77990
 	* include/bits/unique_ptr.h (__uniq_ptr_impl): New type to
 	encapsulate implementation details.

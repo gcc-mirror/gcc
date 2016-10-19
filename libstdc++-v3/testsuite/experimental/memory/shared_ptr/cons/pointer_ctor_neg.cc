@@ -1,6 +1,6 @@
-// { dg-do run { target c++14 } }
+// { dg-do compile { target c++14 } }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,9 +20,11 @@
 // 8.2.1 Class template shared_ptr [memory.smartptr.shared]
 
 #include <experimental/memory>
-#include <testsuite_hooks.h>
 
 struct A { };
+struct B : A { };
+struct C { };
+struct D { void operator()(B* p) const { delete[] p; } };
 
 // 8.2.1.1 shared_ptr constructors [memory.smartptr.shared.const]
 
@@ -30,35 +32,20 @@ struct A { };
 void
 test01()
 {
-  A * const a = new A;
-  std::experimental::shared_ptr<A> p(a);
-  VERIFY( p.get() == a );
-  VERIFY( p.use_count() == 1 );
+  C * const c = nullptr;
+  std::experimental::shared_ptr<A> p(c); // { dg-error "no match" }
 }
 
 void
 test02()
 {
-  A * const a = new A[5];
-  std::experimental::shared_ptr<A[5]> p(a);
-  VERIFY( p.get() == a );
-  VERIFY( p.use_count() == 1 );
+  B * const b = nullptr;
+  std::experimental::shared_ptr<A[5]> p(b); // { dg-error "no match" }
 }
 
 void
 test03()
 {
-  A * const a = new A[5];
-  std::experimental::shared_ptr<A[]> p(a);
-  VERIFY( p.get() == a );
-  VERIFY( p.use_count() == 1 );
-}
-
-int
-main()
-{
-  test01();
-  test02();
-  test03();
-  return 0;
+  B * const b = nullptr;
+  std::experimental::shared_ptr<A[]> p(b); // { dg-error "no match" }
 }
