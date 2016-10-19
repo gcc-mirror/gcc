@@ -1,5 +1,10 @@
 2016-10-19  Aldy Hernandez  <aldyh@redhat.com>
 
+	* gcc.dg/Walloca-1.c: Adjust test for !lp64 targets.
+	* gcc.dg/Walloca-2.c: Same.
+
+2016-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
 	* gcc.dg/Wvla-1.c: Rename to...
 	* gcc.dg/Wvla-larger-than-1.c: ...this.
 	* gcc.dg/Wvla-2.c: Rename to...
