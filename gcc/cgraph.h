@@ -3042,7 +3042,7 @@ cgraph_edge::binds_to_current_def_p ()
   if (callee)
     return callee->binds_to_current_def_p (caller);
   else
-    return NULL;
+    return false;
 }
 
 /* Return true if the TM_CLONE bit is set for a given FNDECL.  */

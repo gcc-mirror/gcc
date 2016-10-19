@@ -1,3 +1,8 @@
+2016-10-19  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h (cgraph_edge::binds_to_current_def_p):
+	Replace NULL with false as a return value.
+
 2016-10-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR tree-optimization/78024
