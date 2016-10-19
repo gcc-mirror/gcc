@@ -1,3 +1,9 @@
+2016-10-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/78024
+	* omp-low.c (oacc_loop_discovery): Call clear_bb_flags before, and
+	don't clear BB_VISITED after processing.
+
 2016-10-19  Richard Biener  <rguenther@suse.de>
 
 	* domwalk.c (dom_walker::walk): Use RPO order.
