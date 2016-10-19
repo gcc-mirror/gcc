@@ -248,6 +248,32 @@ streamer_tree_cache_lookup (struct streamer_tree_cache_d *cache, tree t,
 }
 
 
+/* Verify that NODE is in CACHE.  */
+
+static void
+verify_common_node_recorded (struct streamer_tree_cache_d *cache, tree node)
+{
+  /* Restrict this to flag_checking only because in general violating it is
+     harmless plus we never know what happens on all targets/frontend/flag(!)
+     combinations.  */
+  if (!flag_checking)
+    return;
+
+  if (cache->node_map)
+    gcc_assert (streamer_tree_cache_lookup (cache, node, NULL));
+  else
+    {
+      bool found = false;
+      gcc_assert (cache->nodes.exists ());
+      /* Linear search...  */
+      for (unsigned i = 0; !found && i < cache->nodes.length (); ++i)
+	if (cache->nodes[i] == node)
+	  found = true;
+      gcc_assert (found);
+    }
+}
+
+
 /* Record NODE in CACHE.  */
 
 static void
@@ -293,10 +319,14 @@ record_common_node (struct streamer_tree_cache_d *cache, tree node)
       /* No recursive trees.  */
       break;
     case ARRAY_TYPE:
-    case COMPLEX_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       record_common_node (cache, TREE_TYPE (node));
+      break;
+    case COMPLEX_TYPE:
+      /* Verify that a complex type's component type (node_type) has been
+	 handled already (and we thus don't need to recurse here).  */
+      verify_common_node_recorded (cache, TREE_TYPE (node));
       break;
     case RECORD_TYPE:
       /* The FIELD_DECLs of structures should be shared, so that every
