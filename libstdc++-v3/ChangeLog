@@ -1,5 +1,10 @@
 2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/backward/auto_ptr.h (dauto_ptr): Correct comment about
+	conversions from auto_ptr<Derived> rvalues to auto_ptr<Base>.
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Remove redundant dg-error
+	directives that only match notes, not errors.
+
 	* testsuite/experimental/memory/shared_ptr/cons/unique_ptr_ctor.cc:
 	Add tests for valid and invalid conversions.
 	* testsuite/experimental/memory/shared_ptr/cons/weak_ptr_ctor.cc:
