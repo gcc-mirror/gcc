@@ -19848,13 +19848,10 @@ public:
   {}
 
   /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_openacc; };
+
   virtual unsigned int execute (function *)
     {
-      bool gate = flag_openacc != 0;
-
-      if (!gate)
-	return 0;
-
       return execute_oacc_device_lower ();
     }
 
