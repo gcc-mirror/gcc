@@ -1,12 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Walloca -O2" } */
+/* { dg-options "-pedantic-errors -std=c89 -Wvla" } */
 
-// Make sure we don't warn on VLA with -Walloca.
-
-void f (void*);
-
-void h1 (unsigned n)
-{
-  int a [n];
-  f (a);
-}
+extern void 
+func (int i, int array[i]); /* { dg-error "ISO C90 forbids variable.* array 'array'" } */
