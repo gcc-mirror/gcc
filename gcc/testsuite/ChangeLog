@@ -1,3 +1,8 @@
+2016-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77991
+	* gcc.target/i386/pr77991.c: New test.
+
 2016-10-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backported from trunk
