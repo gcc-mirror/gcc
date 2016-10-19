@@ -479,7 +479,7 @@ namespace __debug
 
       template<typename... _Args>
 #if __cplusplus > 201402L
-	deque<_Tp, _Alloc>::reference
+	reference
 #else
 	void
 #endif
