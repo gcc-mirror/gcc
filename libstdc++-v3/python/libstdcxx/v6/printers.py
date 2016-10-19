@@ -126,7 +126,13 @@ class UniquePointerPrinter:
         self.val = val
 
     def to_string (self):
-        v = self.val['_M_t']['_M_head_impl']
+        impl_type = self.val.type.fields()[0].type.tag
+        if impl_type.startswith('std::__uniq_ptr_impl<'): # New implementation
+            v = self.val['_M_t']['_M_t']['_M_head_impl']
+        elif impl_type.startswith('std::tuple<'):
+            v = self.val['_M_t']['_M_head_impl']
+        else:
+            raise ValueError("Unsupported implementation for unique_ptr: %s" % self.val.type.fields()[0].type.tag)
         return ('std::unique_ptr<%s> containing %s' % (str(v.type.target()),
                                                        str(v)))
 

@@ -575,7 +575,12 @@ class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
         return self._elem_type.pointer()
 
     def __call__(self, obj):
-        return obj['_M_t']['_M_head_impl']
+        impl_type = obj.dereference().type.fields()[0].type.tag
+        if impl_type.startswith('std::__uniq_ptr_impl<'): # New implementation
+            return obj['_M_t']['_M_t']['_M_head_impl']
+        elif impl_type.startswith('std::tuple<'):
+            return obj['_M_t']['_M_head_impl']
+        return None
 
 class UniquePtrDerefWorker(UniquePtrGetWorker):
     def __init__(self, elem_type):

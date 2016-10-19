@@ -1,3 +1,21 @@
+2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77990
+	* include/bits/unique_ptr.h (__uniq_ptr_impl): New type to
+	encapsulate implementation details.
+	(unique_ptr::unique_ptr(_Up)): Don't copy deleter object.
+	(unique_ptr::get, unique_ptr::get_deleter, unique_ptr::release):
+	Call member functions of implementation object.
+	(unique_ptr<T[], D>): Likewise.
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter): Adjust for
+	new implementation.
+	* python/libstdcxx/v6/xmethods.py (UniquePtrGetWorker): Likewise.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Adjust dg-error
+	lines.
+	* testsuite/20_util/unique_ptr/assign/cv_qual.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/cv_qual.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/77990.cc: New test.
+
 2016-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/shared_ptr.h: Fix indentation.
