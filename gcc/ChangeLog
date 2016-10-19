@@ -1,3 +1,8 @@
+2016-10-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/arm/arm.c (arm_emit_coreregs_64bit_shift): Clear the result
+	register only if "in" and "out" are different registers.
+
 2016-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* omp-low.c (pass_oacc_device_lower::gate): New method.
