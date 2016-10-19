@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                        (GNU-Linux/ARMEL Version)                         --
+--                        (GNU-Linux/ARM Version)                           --
 --                                                                          --
 --          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
