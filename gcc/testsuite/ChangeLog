@@ -1,3 +1,14 @@
+2016-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Wvla-1.c: Rename to...
+	* gcc.dg/Wvla-larger-than-1.c: ...this.
+	* gcc.dg/Wvla-2.c: Rename to...
+	* gcc.dg/Wvla-larger-than-2.c: ...this.
+	* gcc.dg/Wvla-3.c: Rename to...
+	* gcc.dg/Walloca-11.c.: ...this.
+	* gcc.dg/wvla-[1-7].c: Rename to:
+	* gcc.dg/Wvla-[1-7].c: ...this.
+
 2016-10-19  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/78005

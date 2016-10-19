@@ -1,24 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wvla-larger-than=100 -O2" } */
+/* { dg-options "-std=c89 -Wvla" } */
 
-typedef __SIZE_TYPE__ size_t;
-
-extern void useit (char *);
-
-int num;
-
-void test_vlas (size_t num)
-{
-  char str2[num];		/* { dg-warning "unbounded use" } */
-  useit(str2);
-
-  num = 98;
-  for (int i=0; i < 1234; ++i) {
-    char str[num];	        // OK, VLA in a loop, but it is a
-				// known size *AND* the compiler takes
-				// care of cleaning up between
-				// iterations with
-				// __builtin_stack_restore.
-    useit(str);
-  }
-}
+extern void 
+func (int i, int array[i]); /* { dg-warning "ISO C90 forbids variable length array 'array'" } */
