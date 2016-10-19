@@ -350,89 +350,6 @@ do {								\
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY (TARGET_GNU_LD ? 1 : 0)
 
-/* We use DTOR_LIST_BEGIN to carry a bunch of hacks to allow us to use
-   the init and fini array sections with both the HP and GNU linkers.
-   The linkers setup the required dynamic entries in the dynamic segment
-   and the dynamic linker does the calls.  This approach avoids using
-   collect2.
-
-   The first hack is to implement __do_global_ctors_aux in crtbegin as
-   it needs to be the first entry in the init array so that it is called
-   last.  HP got the order of the init array backwards.  The DT_INIT_ARRAY
-   is supposed to be executed in the same order as the addresses appear in
-   the array.  DT_FINI_ARRAY is supposed to be executed in the opposite
-   order.
-
-   The second hack is a set of plabels to implement the effect of
-   CRT_CALL_STATIC_FUNCTION.  HP-UX 11 only supports DI_INIT_ARRAY and
-   DT_FINI_ARRAY and they put the arrays in .init and .fini, rather than
-   in .init_array and .fini_array.  The standard defines for .init and
-   .fini have the execute flag set.  So, the assembler has to be hacked
-   to munge the standard flags for these sections to make them agree
-   with what the HP linker expects.  With the GNU linker, we need to
-   used the .init_array and .fini_array sections.  So, we set up for
-   both just in case.  Once we have built the table, the linker does
-   the rest of the work.
-
-   The order is significant.  Placing __do_global_ctors_aux first in
-   the list, results in it being called last.  User specified initializers,
-   either using the linker +init command or a plabel, run before the
-   initializers specified here.  */
-
-/* We need to add frame_dummy to the initializer list if EH_FRAME_SECTION_NAME
-   is defined.  */
-#if defined(EH_FRAME_SECTION_NAME)
-#define PA_INIT_FRAME_DUMMY_ASM_OP ".dword P%frame_dummy"
-#else
-#define PA_INIT_FRAME_DUMMY_ASM_OP ""
-#endif
-
-/* The following hack sets up the .init, .init_array, .fini and
-   .fini_array sections.  */
-#define PA_CRTBEGIN_HACK \
-asm (TEXT_SECTION_ASM_OP);						\
-static void __attribute__((used))					\
-__do_global_ctors_aux (void)						\
-{									\
-  func_ptr *p = __CTOR_LIST__;						\
-  while (*(p + 1))							\
-    p++;								\
-  for (; *p != (func_ptr) -1; p--)					\
-    (*p) ();								\
-}									\
-									\
-asm (HP_INIT_ARRAY_SECTION_ASM_OP);					\
-asm (".align 8");							\
-asm (".dword P%__do_global_ctors_aux");					\
-asm (PA_INIT_FRAME_DUMMY_ASM_OP);					\
-asm (GNU_INIT_ARRAY_SECTION_ASM_OP);					\
-asm (".align 8");							\
-asm (".dword P%__do_global_ctors_aux");					\
-asm (PA_INIT_FRAME_DUMMY_ASM_OP);					\
-asm (HP_FINI_ARRAY_SECTION_ASM_OP);					\
-asm (".align 8");							\
-asm (".dword P%__do_global_dtors_aux");					\
-asm (GNU_FINI_ARRAY_SECTION_ASM_OP);					\
-asm (".align 8");							\
-asm (".dword P%__do_global_dtors_aux")
-
-/* The following two variants of DTOR_LIST_BEGIN are identical to those
-   in crtstuff.c except for the addition of the above crtbegin hack.  */
-#ifdef DTORS_SECTION_ASM_OP
-#define DTOR_LIST_BEGIN \
-asm (DTORS_SECTION_ASM_OP);						\
-STATIC func_ptr __DTOR_LIST__[1]					\
-  __attribute__ ((aligned(sizeof(func_ptr))))				\
-  = { (func_ptr) (-1) };						\
-PA_CRTBEGIN_HACK
-#else
-#define DTOR_LIST_BEGIN \
-STATIC func_ptr __DTOR_LIST__[1]					\
-  __attribute__ ((section(".dtors"), aligned(sizeof(func_ptr))))	\
-  = { (func_ptr) (-1) };						\
-PA_CRTBEGIN_HACK
-#endif
-
 /* If using HP ld do not call pxdb.  Use size as a program that does nothing
    and returns 0.  /bin/true cannot be used because it is a script without
    an interpreter.  */
@@ -442,11 +359,11 @@ PA_CRTBEGIN_HACK
    not use them in gthr-posix.h.  */
 #define GTHREAD_USE_WEAK 0
 
-/* We don't want undefined weak references to __register_frame_info,
-   __deregister_frame_info, _Jv_RegisterClasses and __cxa_finalize
-   introduced by crtbegin.o.  The GNU linker only resolves weak
-   references if they appear in a shared library.  Thus, it would be
-   impossible to create a static executable if the symbols were weak.
-   So, the best solution seems to be to make the symbols strong and
-   provide an archive library of empty stub functions.  */
+/* Support attribute weak.  However, the GNU linker only resolves weak
+   references if they appear in a shared library.  Thus, it is impossible
+   to create a static executable containing weak symbols.  This is a problem
+   for the various crt files in libgcc.  We don't want undefined weak
+   references to __register_frame_info, __deregister_frame_info and
+   __cxa_finalize introduced by crtbegin.o.  So, we provide an archive
+   library of empty stub functions to resolve these symbols.  */
 #define TARGET_ATTRIBUTE_WEAK
