@@ -1,5 +1,11 @@
 2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/unique_ptr/cons/cv_qual.cc: Move negative tests
+	to new file.
+	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: New file.  Fix
+	test for incompatible deleters to not also use incompatible types.
+	Add tests for incompatible array types.
+
 	* include/experimental/bits/shared_ptr.h
 	(__shared_ptr<__libfund_v1<_Tp, false>, _Lp>::_Compatible): Just use
 	is_convertible for non-array specialization.

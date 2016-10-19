@@ -99,30 +99,4 @@ test07()
   std::unique_ptr<const A[]> cA2((A*)p);
   std::unique_ptr<volatile A[]> vA2((A*)p);
   std::unique_ptr<const volatile A[]> cvA2((A*)p);
-  // Disallow conversions from user-defined pointer-like types
-  // for the array version
-  std::unique_ptr<A[]> upA3(p); // { dg-error "no matching function" }
-  std::unique_ptr<const A[]> cA3(p); // { dg-error "no matching function" }
-  std::unique_ptr<volatile A[]> vA3(p); // { dg-error "no matching function" }
-  std::unique_ptr<const volatile A[]> cvA3(p); // { dg-error "no matching function" }
-  // { dg-error "no type" "" { target *-*-* } 446 }
 }
-
-template<typename T>
-struct deleter
-{
-  deleter() = default;
-  template<typename U>
-    deleter(const deleter<U>) { }
-  typedef T pointer;
-  void operator()(T) const { }
-};
-
-void
-test08()
-{
-  // Disallow conversions from non-assignable deleter
-  std::unique_ptr<B[], deleter<A_pointer>> p;
-  std::unique_ptr<A[], deleter<A*>> upA(std::move(p)); // { dg-error "no matching function" }
-}
-
