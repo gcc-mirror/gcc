@@ -26,17 +26,17 @@ int destroyed = 0;
 
 struct A : std::experimental::enable_shared_from_this<A>
 {
-    ~A() { ++destroyed; }
+  ~A() { ++destroyed; }
 };
 
 // 8.2.1.1 shared_ptr constructors [memory.smartptr.shared.const]
 
 // Construction from unique_ptr<A[]>
 
-int
+void
 test01()
 {
-  std::unique_ptr<A[]> up(new A[5]);
+  std::unique_ptr<A> up(new A);
   std::experimental::shared_ptr<A> sp(std::move(up));
   VERIFY( up.get() == 0 );
   VERIFY( sp.get() != 0 );
@@ -45,14 +45,28 @@ test01()
   VERIFY( sp->shared_from_this() != nullptr );
 
   sp.reset();
-  VERIFY( destroyed == 5 );
+  VERIFY( destroyed == 1 );
+  destroyed = 0;
+}
 
-  return 0;
+void
+test02()
+{
+  std::unique_ptr<A[]> up(new A[5]);
+  std::experimental::shared_ptr<A[]> sp(std::move(up));
+  VERIFY( up.get() == 0 );
+  VERIFY( sp.get() != 0 );
+  VERIFY( sp.use_count() == 1 );
+
+  VERIFY( sp[0].shared_from_this() != nullptr );
+
+  sp.reset();
+  VERIFY( destroyed == 5 );
 }
 
 int
 main()
 {
   test01();
-  return 0;
+  test02();
 }

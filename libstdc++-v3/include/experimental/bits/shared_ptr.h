@@ -69,53 +69,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, bool = is_array<_Tp>::value>
     struct __libfund_v1 { using type = _Tp; };
 
-  // helper for _Compatible
-  template<typename _From_type, typename _To_type>
-    struct __sp_compatible
-    : is_convertible<_From_type*, _To_type*>::type
-    { };
-
-  template<size_t _Nm, typename _Tp>
-    struct __sp_compatible<_Tp[_Nm], _Tp[]>
-    : true_type
-    { };
-
-  template<size_t _Nm, typename _Tp>
-    struct __sp_compatible<_Tp[_Nm], const _Tp[]>
-    : true_type
-    { };
-
   // Partial specialization for base class of experimental::shared_ptr<T>
   // (i.e. the non-array form of experimental::shared_ptr)
   template<typename _Tp, _Lock_policy _Lp>
     class __shared_ptr<__libfund_v1<_Tp, false>, _Lp>
     : private __shared_ptr<_Tp, _Lp>
     {
-      template<typename _Tp1, typename _Res = void>
+      // For non-arrays, Y* is compatible with T* if Y* is convertible to T*.
+      template<typename _Yp, typename _Res = void>
 	using _Compatible
-	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
+	  = enable_if_t<experimental::is_convertible_v<_Yp*, _Tp*>, _Res>;
+
+      template<typename _Yp, typename _Del,
+	       typename _Ptr = typename unique_ptr<_Yp, _Del>::pointer,
+	       typename _Res = void>
+	using _UniqCompatible = enable_if_t<
+	  experimental::is_convertible_v<_Yp*, _Tp*>
+	  && experimental::is_convertible_v<_Ptr, _Tp*>,
+	  _Res>;
 
       using _Base_type = __shared_ptr<_Tp>;
 
-      _Base_type&  _M_get_base() { return *this;}
-      const _Base_type&  _M_get_base() const { return *this;}
+      _Base_type&  _M_get_base() { return *this; }
+      const _Base_type&  _M_get_base() const { return *this; }
 
     public:
       using element_type = _Tp;
 
       constexpr __shared_ptr() noexcept = default;
 
-      template<typename _Tp1>
-	explicit __shared_ptr(_Tp1* __p)
+      template<typename _Tp1, typename = _Compatible<_Tp1>>
+	explicit
+	__shared_ptr(_Tp1* __p)
 	: _Base_type(__p)
 	{ }
 
-      template<typename _Tp1, typename _Deleter>
+      template<typename _Tp1, typename _Deleter, typename = _Compatible<_Tp1>>
 	__shared_ptr(_Tp1* __p, _Deleter __d)
 	: _Base_type(__p, __d)
 	{ }
 
-      template<typename _Tp1, typename _Deleter, typename _Alloc>
+      template<typename _Tp1, typename _Deleter, typename _Alloc,
+	       typename = _Compatible<_Tp1>>
 	__shared_ptr(_Tp1* __p, _Deleter __d, _Alloc __a)
 	: _Base_type(__p, __d, __a)
 	{ }
@@ -152,21 +147,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Base_type(std::move((__r._M_get_base())))
 	{ }
 
-      template<typename _Tp1>
-	explicit __shared_ptr(const __weak_ptr<__libfund_v1<_Tp1>, _Lp>& __r)
+      template<typename _Tp1, typename = _Compatible<_Tp1>>
+	explicit
+	__shared_ptr(const __weak_ptr<__libfund_v1<_Tp1>, _Lp>& __r)
 	: _Base_type(__r._M_get_base())
 	{ }
 
-      template<typename _Tp1, typename _Del, typename
-	      = _Compatible<remove_pointer_t<
-			    typename unique_ptr<_Tp1, _Del>::pointer>>>
-	  __shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
-	  : _Base_type(std::move(__r))
-	  { }
+      template<typename _Tp1, typename _Del,
+	       typename = _UniqCompatible<_Tp1, _Del>>
+	__shared_ptr(unique_ptr<_Tp1, _Del>&& __r)
+	: _Base_type(std::move(__r))
+	{ }
 
 #if _GLIBCXX_USE_DEPRECATED
       // Postcondition: use_count() == 1 and __r.get() == 0
-      template<typename _Tp1>
+      template<typename _Tp1, typename = _Compatible<_Tp1>>
 	__shared_ptr(std::auto_ptr<_Tp1>&& __r)
         : _Base_type(std::move(__r))
 	{ }
@@ -180,7 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __shared_ptr(nullptr).swap(*this); }
 
       template<typename _Tp1>
-	void
+	_Compatible<_Tp1>
 	reset(_Tp1* __p)
 	{
 	  _GLIBCXX_DEBUG_ASSERT(__p == 0 || __p != get());
@@ -188,12 +183,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp1, typename _Deleter>
-	void
+	_Compatible<_Tp1>
 	reset(_Tp1* __p, _Deleter __d)
 	{ __shared_ptr(__p, __d).swap(*this); }
 
       template<typename _Tp1, typename _Deleter, typename _Alloc>
-	void
+	_Compatible<_Tp1>
 	reset(_Tp1* __p, _Deleter __d, _Alloc __a)
 	{ __shared_ptr(__p, __d, std::move(__a)).swap(*this); }
 
@@ -216,9 +211,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
-      template<typename _Tp1>
-	_Compatible<_Tp1, __shared_ptr&>
-	operator=(std::unique_ptr<_Tp1>&& __r)
+      template<typename _Tp1, typename _Del>
+	_UniqCompatible<_Tp1, _Del, __shared_ptr&>
+	operator=(unique_ptr<_Tp1, _Del>&& __r)
 	{
 	  _Base_type::operator=(std::move(__r));
 	  return *this;
@@ -282,6 +277,77 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend _Del* get_deleter(const __shared_ptr<_Tp1, _Lp1>&) noexcept;
     };
 
+  // Helper traits for shared_ptr of array:
+
+  // Trait that tests if Y* is compatible with T*, for shared_ptr purposes.
+  template<typename _Yp, typename _Tp>
+    struct __sp_compatible
+    : is_convertible<_Yp*, _Tp*>::type
+    { };
+
+  template<size_t _Nm, typename _Tp>
+    struct __sp_compatible<_Tp[_Nm], _Tp[]>
+    : true_type
+    { };
+
+  template<size_t _Nm, typename _Tp>
+    struct __sp_compatible<_Tp[_Nm], const _Tp[]>
+    : true_type
+    { };
+
+  template<typename _Yp, typename _Tp>
+    constexpr bool __sp_compatible_v
+      = __sp_compatible<_Yp, _Tp>::value;
+
+  // Test conversion from Y(*)[N] to U(*)[N] without forming invalid type Y[N].
+  template<typename _Up, size_t _Nm, typename _Yp, typename = void>
+    struct __sp_is_constructible_arrN
+    : false_type
+    { };
+
+  template<typename _Up, size_t _Nm, typename _Yp>
+    struct __sp_is_constructible_arrN<_Up, _Nm, _Yp, __void_t<_Yp[_Nm]>>
+    : is_convertible<_Yp(*)[_Nm], _Up(*)[_Nm]>::type
+    { };
+
+  // Test conversion from Y(*)[] to U(*)[] without forming invalid type Y[].
+  template<typename _Up, typename _Yp, typename = void>
+    struct __sp_is_constructible_arr
+    : false_type
+    { };
+
+  template<typename _Up, typename _Yp>
+    struct __sp_is_constructible_arr<_Up, _Yp, __void_t<_Yp[]>>
+    : is_convertible<_Yp(*)[], _Up(*)[]>::type
+    { };
+
+  // Trait to check if shared_ptr<T> can be constructed from Y*.
+  template<typename _Tp, typename _Yp>
+    struct __sp_is_constructible;
+
+  // When T is U[N], Y(*)[N] shall be convertible to T*;
+  template<typename _Up, size_t _Nm, typename _Yp>
+    struct __sp_is_constructible<_Up[_Nm], _Yp>
+    : __sp_is_constructible_arrN<_Up, _Nm, _Yp>::type
+    { };
+
+  // when T is U[], Y(*)[] shall be convertible to T*;
+  template<typename _Up, typename _Yp>
+    struct __sp_is_constructible<_Up[], _Yp>
+    : __sp_is_constructible_arr<_Up, _Yp>::type
+    { };
+
+  // otherwise, Y* shall be convertible to T*.
+  template<typename _Tp, typename _Yp>
+    struct __sp_is_constructible
+    : is_convertible<_Yp*, _Tp*>::type
+    { };
+
+  template<typename _Tp, typename _Yp>
+    constexpr bool __sp_is_constructible_v
+      = __sp_is_constructible<_Tp, _Yp>::value;
+
+
   // Partial specialization for base class of experimental::shared_ptr<T[N]>
   // and experimental::shared_ptr<T[]> (i.e. the array forms).
   template<typename _Tp, _Lock_policy _Lp>
@@ -299,31 +365,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ delete [] __p; }
       };
 
+      // Constraint for constructing/resetting with a pointer of type _Yp*:
+      template<typename _Yp>
+	using _SafeConv = enable_if_t<__sp_is_constructible_v<_Tp, _Yp>>;
+
+      // Constraint for constructing/assigning from smart_pointer<_Tp1>:
       template<typename _Tp1, typename _Res = void>
-	using _Compatible
-	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
+	using _Compatible = enable_if_t<__sp_compatible_v<_Tp1, _Tp>, _Res>;
+
+      // Constraint for constructing/assigning from unique_ptr<_Tp1, _Del>:
+      template<typename _Tp1, typename _Del,
+	       typename _Ptr = typename unique_ptr<_Tp1, _Del>::pointer,
+	       typename _Res = void>
+	using _UniqCompatible = enable_if_t<
+	  __sp_compatible_v<_Tp1, _Tp>
+	  && experimental::is_convertible_v<_Ptr, element_type*>,
+	  _Res>;
 
       using _Base_type = __shared_ptr<element_type>;
 
-      _Base_type&  _M_get_base() { return *this;}
-      const _Base_type&  _M_get_base() const { return *this;}
+      _Base_type&  _M_get_base() { return *this; }
+      const _Base_type&  _M_get_base() const { return *this; }
 
     public:
       constexpr __shared_ptr() noexcept
       : _Base_type()
       { }
 
-      template<typename _Tp1>
-	explicit __shared_ptr(_Tp1* __p)
+      template<typename _Tp1, typename = _SafeConv<_Tp1>>
+	explicit
+	__shared_ptr(_Tp1* __p)
 	: _Base_type(__p, _Array_deleter())
 	{ }
 
-      template<typename _Tp1, typename _Deleter>
+      template<typename _Tp1, typename _Deleter, typename = _SafeConv<_Tp1>>
 	__shared_ptr(_Tp1* __p, _Deleter __d)
 	: _Base_type(__p, __d)
 	{ }
 
-      template<typename _Tp1, typename _Deleter, typename _Alloc>
+      template<typename _Tp1, typename _Deleter, typename _Alloc,
+	       typename = _SafeConv<_Tp1>>
 	__shared_ptr(_Tp1* __p, _Deleter __d, _Alloc __a)
 	: _Base_type(__p, __d, __a)
 	{ }
@@ -360,22 +441,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Base_type(std::move((__r._M_get_base())))
 	{ }
 
-      template<typename _Tp1>
-	explicit __shared_ptr(const __weak_ptr<__libfund_v1<_Tp1>, _Lp>& __r)
+      template<typename _Tp1, typename = _Compatible<_Tp1>>
+	explicit
+	__shared_ptr(const __weak_ptr<__libfund_v1<_Tp1>, _Lp>& __r)
 	: _Base_type(__r._M_get_base())
 	{ }
 
-      template<typename _Tp1, typename _Del, typename
-	      = _Compatible<remove_pointer_t<
-			    typename unique_ptr<_Tp1, _Del>::pointer>>>
-	  __shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
-	  : _Base_type(std::move(__r))
-	  { }
+      template<typename _Tp1, typename _Del,
+	       typename = _UniqCompatible<_Tp1, _Del>>
+	__shared_ptr(unique_ptr<_Tp1, _Del>&& __r)
+	: _Base_type(std::move(__r))
+	{ }
 
 #if _GLIBCXX_USE_DEPRECATED
       // Postcondition: use_count() == 1 and __r.get() == 0
-      template<typename _Tp1>
-	__shared_ptr(std::auto_ptr<_Tp1>&& __r)
+      template<typename _Tp1, typename = _Compatible<_Tp1>>
+	__shared_ptr(auto_ptr<_Tp1>&& __r)
         : _Base_type(std::move(__r))
 	{ }
 #endif
@@ -388,7 +469,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __shared_ptr(nullptr).swap(*this); }
 
       template<typename _Tp1>
-	void
+	_SafeConv<_Tp1>
 	reset(_Tp1* __p)
 	{
 	  _GLIBCXX_DEBUG_ASSERT(__p == 0 || __p != get());
@@ -396,12 +477,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp1, typename _Deleter>
-	void
+	_SafeConv<_Tp1>
 	reset(_Tp1* __p, _Deleter __d)
 	{ __shared_ptr(__p, __d).swap(*this); }
 
       template<typename _Tp1, typename _Deleter, typename _Alloc>
-	void
+	_SafeConv<_Tp1>
 	reset(_Tp1* __p, _Deleter __d, _Alloc __a)
 	{ __shared_ptr(__p, __d, std::move(__a)).swap(*this); }
 
@@ -428,9 +509,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
-      template<typename _Tp1>
-	_Compatible<_Tp1, __shared_ptr&>
-	operator=(std::unique_ptr<_Tp1>&& __r)
+      template<typename _Tp1, typename _Del>
+	_UniqCompatible<_Tp1, _Del, __shared_ptr&>
+	operator=(unique_ptr<_Tp1, _Del>&& __r)
 	{
 	  _Base_type::operator=(std::move(__r));
 	  return *this;
@@ -439,7 +520,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
 	_Compatible<_Tp1, __shared_ptr&>
-	operator=(std::auto_ptr<_Tp1>&& __r)
+	operator=(auto_ptr<_Tp1>&& __r)
 	{
 	  _Base_type::operator=(std::move(__r));
 	  return *this;
@@ -501,11 +582,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       template<typename _Tp1, typename _Res = void>
 	using _Compatible
-	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
+	  = enable_if_t<__sp_compatible_v<_Tp1, _Tp>, _Res>;
 
       using _Base_type = __weak_ptr<remove_extent_t<_Tp>>;
 
-      _Base_type&  _M_get_base() { return *this;}
+      _Base_type&  _M_get_base() { return *this; }
       const _Base_type&  _M_get_base() const { return *this; }
 
     public:
@@ -630,26 +711,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class shared_ptr : public __shared_ptr<_Tp>
     {
-      template<typename _Tp1, typename _Res = void>
-	using _Compatible
-	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
-
       using _Base_type = __shared_ptr<_Tp>;
 
     public:
       using element_type = typename _Base_type::element_type;
 
+    private:
+      // Constraint for construction from a pointer of type _Yp*:
+      template<typename _Yp>
+	using _SafeConv = enable_if_t<__sp_is_constructible_v<_Tp, _Yp>>;
+
+      template<typename _Tp1, typename _Res = void>
+	using _Compatible
+	  = enable_if_t<__sp_compatible_v<_Tp1, _Tp>, _Res>;
+
+      template<typename _Tp1, typename _Del,
+	       typename _Ptr = typename unique_ptr<_Tp1, _Del>::pointer,
+	       typename _Res = void>
+	using _UniqCompatible = enable_if_t<
+	  __sp_compatible_v<_Tp1, _Tp>
+	  && experimental::is_convertible_v<_Ptr, element_type*>,
+	  _Res>;
+
+    public:
+
       // 8.2.1.1, shared_ptr constructors
       constexpr shared_ptr() noexcept = default;
 
-      template<typename _Tp1>
-	explicit shared_ptr(_Tp1* __p) : _Base_type(__p) { }
+      template<typename _Tp1, typename = _SafeConv<_Tp1>>
+	explicit
+	shared_ptr(_Tp1* __p) : _Base_type(__p) { }
 
-      template<typename _Tp1, typename _Deleter>
+      template<typename _Tp1, typename _Deleter, typename = _SafeConv<_Tp1>>
 	shared_ptr(_Tp1* __p, _Deleter __d)
 	: _Base_type(__p, __d) { }
 
-      template<typename _Tp1, typename _Deleter, typename _Alloc>
+      template<typename _Tp1, typename _Deleter, typename _Alloc,
+	       typename = _SafeConv<_Tp1>>
 	shared_ptr(_Tp1* __p, _Deleter __d, _Alloc __a)
 	: _Base_type(__p, __d, __a) { }
 
@@ -679,20 +777,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	shared_ptr(shared_ptr<_Tp1>&& __r) noexcept
 	: _Base_type(std::move(__r)) { }
 
-      template<typename _Tp1>
-	explicit shared_ptr(const weak_ptr<_Tp1>& __r)
+      template<typename _Tp1, typename = _Compatible<_Tp1>>
+	explicit
+	shared_ptr(const weak_ptr<_Tp1>& __r)
 	: _Base_type(__r) { }
 
 #if _GLIBCXX_USE_DEPRECATED
-      template<typename _Tp1>
+      template<typename _Tp1, typename = _Compatible<_Tp1>>
 	shared_ptr(std::auto_ptr<_Tp1>&& __r)
-	: _Base_type() { } // TODO
+	: _Base_type(std::move(__r)) { }
 #endif
 
-      template<typename _Tp1, typename _Del, typename
-	= _Compatible<remove_pointer_t<
-		      typename unique_ptr<_Tp1, _Del>::pointer>>>
-	shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
+      template<typename _Tp1, typename _Del,
+	       typename = _UniqCompatible<_Tp1, _Del>>
+	shared_ptr(unique_ptr<_Tp1, _Del>&& __r)
 	: _Base_type(std::move(__r)) { }
 
       constexpr shared_ptr(nullptr_t __p)
@@ -738,7 +836,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       template <typename _Tp1, typename _Del>
-	_Compatible<_Tp1, shared_ptr&>
+	_UniqCompatible<_Tp1, _Del, shared_ptr&>
 	operator=(unique_ptr<_Tp1, _Del>&& __r)
 	{
 	  _Base_type::operator=(std::move(__r));
@@ -752,10 +850,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       template<typename _Alloc, typename... _Args>
-      shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
-		 _Args&&... __args)
-      : _Base_type(__tag, __a, std::forward<_Args>(__args)...)
-      { }
+	shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
+		   _Args&&... __args)
+	: _Base_type(__tag, __a, std::forward<_Args>(__args)...)
+	{ }
 
       template<typename _Tp1, typename _Alloc, typename... _Args>
 	friend shared_ptr<_Tp1>
@@ -926,8 +1024,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class weak_ptr : public __weak_ptr<_Tp>
     {
       template<typename _Tp1, typename _Res = void>
-	using _Compatible
-	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
+	using _Compatible = enable_if_t<__sp_compatible_v<_Tp1, _Tp>, _Res>;
 
       using _Base_type = __weak_ptr<_Tp>;
 
@@ -1146,6 +1243,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       shared_ptr<const _Tp>
       shared_from_this() const
       { return shared_ptr<const _Tp>(this->_M_weak_this); }
+
+      weak_ptr<_Tp>
+      weak_from_this() noexcept
+      { return _M_weak_this; }
+
+      weak_ptr<const _Tp>
+      weak_from_this() const noexcept
+      { return _M_weak_this; }
 
     private:
       template<typename _Tp1>
