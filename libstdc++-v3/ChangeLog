@@ -1,5 +1,10 @@
 2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/memory/shared_ptr/cons/unique_ptr_ctor.cc:
+	Add tests for valid and invalid conversions.
+	* testsuite/experimental/memory/shared_ptr/cons/weak_ptr_ctor.cc:
+	Likewise.
+
 	* testsuite/20_util/unique_ptr/cons/cv_qual.cc: Move negative tests
 	to new file.
 	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: New file.  Fix
