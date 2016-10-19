@@ -1,5 +1,8 @@
 2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/vector (__gnu_debug::vector::emplace_back): Fix return
+	type.
+
 	* include/backward/auto_ptr.h (dauto_ptr): Correct comment about
 	conversions from auto_ptr<Derived> rvalues to auto_ptr<Base>.
 	* testsuite/20_util/auto_ptr/assign_neg.cc: Remove redundant dg-error
