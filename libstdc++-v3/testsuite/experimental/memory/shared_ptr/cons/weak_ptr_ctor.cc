@@ -23,11 +23,46 @@
 #include <testsuite_hooks.h>
 
 struct A { };
+struct B : A { };
 
 // 8.2.1.1 shared_ptr constructors [memory.smartptr.shared.const]
 
+template<typename From, typename To>
+constexpr bool constructible()
+{
+  using std::experimental::shared_ptr;
+  using std::experimental::weak_ptr;
+  using std::experimental::is_constructible_v;
+  return is_constructible_v<shared_ptr<To>, weak_ptr<From>>
+    && is_constructible_v<shared_ptr<To>, const weak_ptr<From>&>;
+}
+
+static_assert(  constructible< A,    A    >(), "A -> A compatible" );
+static_assert( !constructible< A,    A[]  >(), "A -> A[] not compatible" );
+static_assert( !constructible< A,    A[1] >(), "A -> A[1] not compatible" );
+static_assert( !constructible< A[],  A    >(), "A[] -> A not compatible" );
+static_assert(  constructible< A[],  A[]  >(), "A[] -> A[] compatible" );
+static_assert( !constructible< A[],  A[1] >(), "A[] -> A[1] not compatible" );
+static_assert( !constructible< A[1], A    >(), "A[1] -> A not compatible" );
+static_assert(  constructible< A[1], A[]  >(), "A[1] -> A[] compatible" );
+static_assert(  constructible< A[1], A[1] >(), "A[1] -> A[1] compatible" );
+static_assert( !constructible< A[2], A[1] >(), "A[2] -> A[1] not compatible" );
+
+static_assert(  constructible< B,    A    >(), "B -> A compatible" );
+static_assert( !constructible< B,    A[]  >(), "B -> A[] not compatible" );
+static_assert( !constructible< B,    A[1] >(), "B -> A[1] not compatible" );
+static_assert( !constructible< B[],  A    >(), "B[] -> A not compatible" );
+static_assert( !constructible< B[],  A[]  >(), "B[] -> A[] not compatible" );
+static_assert( !constructible< B[],  A[1] >(), "B[] -> A[1] not compatible" );
+static_assert( !constructible< B[1], A    >(), "B[] -> A not compatible" );
+static_assert( !constructible< B[1], A[]  >(), "B[] -> A[] not compatible" );
+static_assert( !constructible< B[1], A[1] >(), "B[] -> A[1] not compatible" );
+static_assert( !constructible< B[2], A[1] >(), "B[2] -> A[1] not compatible" );
+
+
+
 // Construction from weak_ptr
-int
+void
 test01()
 {
   A * a = new A[5];
@@ -39,14 +74,10 @@ test01()
   VERIFY( a3.get() == a );
   VERIFY( a2.use_count() == wa.use_count() );
   VERIFY( a3.use_count() == wa.use_count() );
-
-  return 0;
 }
-
 
 int
 main()
 {
   test01();
-  return 0;
 }
