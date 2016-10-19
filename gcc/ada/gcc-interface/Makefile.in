@@ -1222,7 +1222,7 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-linux-armel.ads
+  system.ads<system-linux-arm.ads
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
@@ -1939,7 +1939,7 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   else
     EH_MECHANISM=-arm
     LIBGNAT_TARGET_PAIRS += \
-    system.ads<system-linux-armel.ads
+    system.ads<system-linux-arm.ads
   endif
 
   TOOLS_TARGET_PAIRS =  \
@@ -1976,7 +1976,7 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   g-sercom.adb<g-sercom-linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-linux-armel.ads
+  system.ads<system-linux-arm.ads
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \

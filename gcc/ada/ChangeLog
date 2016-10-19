@@ -1,3 +1,11 @@
+2016-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-linux-armel.ads: Rename into...
+	* system-linux-arm.ads: ...this
+	* gcc-interface/Makefile.in (ARM/Android): Adjust to above renaming.
+	(ARM/Linux): Likewise.
+	(Aarch64/Linux): Likewise.
+
 2016-10-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (EXTRA_GNATRTL_NONTASKING_OBJS): Define.
