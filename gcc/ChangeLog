@@ -1,3 +1,8 @@
+2016-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* omp-low.c (pass_oacc_device_lower::gate): New method.
+	(execute): Always call execute_oacc_device_lower.
+
 2016-10-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/77916
