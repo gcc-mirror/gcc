@@ -1,3 +1,8 @@
+2016-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/77991
+	* gcc.target/i386/pr77991.c: New test.
+
 2016-10-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
@@ -81,7 +86,7 @@
 	subroutine as an actual argument when numeric argument is expected.
 
 2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
- 
+
 	Backport from trunk
 
 	PR fortran/69867
@@ -107,14 +112,14 @@
 2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
- 
+
 	PR fortran/71799
 	* gfortran.dg/pr71799.f90: New test.
 
 2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
- 
+
 	PR fortran/70006
 	* gfortran.dg/pr70006.f90: New test.
 
