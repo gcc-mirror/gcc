@@ -847,28 +847,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_pi = nullptr;
     }
 
-  // Support for enable_shared_from_this.
-
-  // Friend of __enable_shared_from_this.
-  template<_Lock_policy _Lp, typename _Tp1, typename _Tp2>
-    void
-    __enable_shared_from_this_helper(const __shared_count<_Lp>&,
-				     const __enable_shared_from_this<_Tp1,
-				     _Lp>*, const _Tp2*) noexcept;
-
-  // Friend of enable_shared_from_this.
-  template<typename _Tp1, typename _Tp2>
-    void
-    __enable_shared_from_this_helper(const __shared_count<>&,
-				     const enable_shared_from_this<_Tp1>*,
-				     const _Tp2*) noexcept;
-
-  template<_Lock_policy _Lp>
-    inline void
-    __enable_shared_from_this_helper(const __shared_count<_Lp>&, ...) noexcept
-    { }
-
-
   template<typename _Tp, _Lock_policy _Lp>
     class __shared_ptr
     {
@@ -898,7 +876,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
 	  static_assert( !is_void<_Tp1>::value, "incomplete type" );
 	  static_assert( sizeof(_Tp1) > 0, "incomplete type" );
-	  __enable_shared_from_this_helper(_M_refcount, __p, __p);
+	  _M_enable_shared_from_this_with(__p);
 	}
 
       template<typename _Tp1, typename _Deleter>
@@ -907,7 +885,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
 	  // TODO requires _Deleter CopyConstructible and __d(__p) well-formed
-	  __enable_shared_from_this_helper(_M_refcount, __p, __p);
+	  _M_enable_shared_from_this_with(__p);
 	}
 
       template<typename _Tp1, typename _Deleter, typename _Alloc>
@@ -916,7 +894,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
 	  // TODO requires _Deleter CopyConstructible and __d(__p) well-formed
-	  __enable_shared_from_this_helper(_M_refcount, __p, __p);
+	  _M_enable_shared_from_this_with(__p);
 	}
 
       template<typename _Deleter>
@@ -978,7 +956,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
 	  auto __raw = _S_raw_ptr(__r.get());
 	  _M_refcount = __shared_count<_Lp>(std::move(__r));
-	  __enable_shared_from_this_helper(_M_refcount, __raw, __raw);
+	  _M_enable_shared_from_this_with(__raw);
 	}
 
 #if _GLIBCXX_USE_DEPRECATED
@@ -1114,7 +1092,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // This relies on _Sp_counted_ptr_inplace::_M_get_deleter.
 	  void* __p = _M_refcount._M_get_deleter(typeid(__tag));
 	  _M_ptr = static_cast<_Tp*>(__p);
-	  __enable_shared_from_this_helper(_M_refcount, _M_ptr, _M_ptr);
+	  _M_enable_shared_from_this_with(_M_ptr);
 	}
 #else
       template<typename _Alloc>
@@ -1146,7 +1124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __shared_count<_Lp> __count(__ptr, __del, __del._M_alloc);
 	  _M_refcount._M_swap(__count);
 	  _M_ptr = __ptr;
-	  __enable_shared_from_this_helper(_M_refcount, _M_ptr, _M_ptr);
+	  _M_enable_shared_from_this_with(_M_ptr);
 	}
 #endif
 
@@ -1166,6 +1144,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class __weak_ptr<_Tp, _Lp>;
 
     private:
+
+      template<typename _Yp>
+	using __esft_base_t = decltype(__enable_shared_from_this_base(
+	      std::declval<const __shared_count<_Lp>&>(),
+	      std::declval<_Yp*>()));
+
+      // Detect an accessible and unambiguous enable_shared_from_this base.
+      template<typename _Yp, typename = void>
+	struct __has_esft_base
+	: false_type { };
+
+      template<typename _Yp>
+	struct __has_esft_base<_Yp, __void_t<__esft_base_t<_Yp>>>
+	: true_type { };
+
+      template<typename _Yp>
+	typename enable_if<__has_esft_base<_Yp>::value>::type
+	_M_enable_shared_from_this_with(const _Yp* __p) noexcept
+	{
+	  if (auto __base = __enable_shared_from_this_base(_M_refcount, __p))
+	    __base->_M_weak_assign(const_cast<_Yp*>(__p), _M_refcount);
+	}
+
+      template<typename _Yp>
+	typename enable_if<!__has_esft_base<_Yp>::value>::type
+	_M_enable_shared_from_this_with(const _Yp*) noexcept
+	{ }
+
       void*
       _M_get_deleter(const std::type_info& __ti) const noexcept
       { return _M_refcount._M_get_deleter(__ti); }
@@ -1579,25 +1585,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_weak_assign(_Tp1* __p, const __shared_count<_Lp>& __n) const noexcept
 	{ _M_weak_this._M_assign(__p, __n); }
 
-      template<_Lock_policy _Lp1, typename _Tp1, typename _Tp2>
-	friend void
-	__enable_shared_from_this_helper(const __shared_count<_Lp1>&,
-					 const __enable_shared_from_this<_Tp1,
-					 _Lp1>*, const _Tp2*) noexcept;
+      friend void
+      __enable_shared_from_this_base(const __shared_count<_Lp>&,
+				     const __enable_shared_from_this* __p)
+      { return __p; }
 
       mutable __weak_ptr<_Tp, _Lp>  _M_weak_this;
     };
-
-  template<_Lock_policy _Lp1, typename _Tp1, typename _Tp2>
-    inline void
-    __enable_shared_from_this_helper(const __shared_count<_Lp1>& __pn,
-				     const __enable_shared_from_this<_Tp1,
-				     _Lp1>* __pe,
-				     const _Tp2* __px) noexcept
-    {
-      if (__pe != nullptr)
-	__pe->_M_weak_assign(const_cast<_Tp2*>(__px), __pn);
-    }
 
   template<typename _Tp, _Lock_policy _Lp, typename _Alloc, typename... _Args>
     inline __shared_ptr<_Tp, _Lp>

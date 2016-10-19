@@ -311,7 +311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert( sizeof(_Tp1) > 0, "incomplete type" );
       _Tp1* __tmp = __r.get();
       _M_refcount = __shared_count<_Lp>(std::move(__r));
-      __enable_shared_from_this_helper(_M_refcount, __tmp, __tmp);
+      _M_enable_shared_from_this_with(__tmp);
     }
 
   template<typename _Tp>

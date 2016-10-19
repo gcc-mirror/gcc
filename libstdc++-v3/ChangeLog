@@ -1,5 +1,40 @@
 2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/backward/auto_ptr.h (__shared_ptr(auto_ptr&&)): Call
+	_M_enable_shared_from_this_with instead of
+	__enable_shared_from_this_helper.
+	* include/bits/shared_ptr.h (__enable_shared_from_this_helper):
+	Remove overload for std::enable_shared_from_this..
+	(__enable_shared_from_this_base): Define friend function to select a
+	std::enable_shared_from_this base class.
+	* include/bits/shared_ptr_base.h (__enable_shared_from_this_helper):
+	Remove all overloads.
+	(__shared_ptr): Change all relevant constructors to call
+	_M_enable_shared_from_this_with instead of
+	__enable_shared_from_this_helper.
+	(__shared_ptr::__efst_base_t, __shared_ptr::__has_efst_base): Helpers
+	to detect accessible and unambiguous enable_shared_from_this bases.
+	(__shared_ptr::_M_enable_shared_from_this_with): New function to
+	replace __enable_shared_from_this_helper overloads.
+	(__enable_shared_from_this_helper): Remove overload for
+	std::__enable_shared_from_this.
+	(__enable_shared_from_this_base): Define friend function to select a
+	std::__enable_shared_from_this base class.
+	* include/experimental/bits/shared_ptr.h (experimental::shared_ptr):
+	Change relevant constructors to call _M_enable_shared_from_this_with.
+	(experimental::shared_ptr::__efst_base_t)
+	(experimental::shared_ptr::__has_efst_base): Helpers to detect
+	accessible and unambiguous enable_shared_from_this bases.
+	(experimental::shared_ptr::_M_enable_shared_from_this_with): Define.
+	(experimental::__enable_shared_from_this_helper): Remove overload for
+	std::experimental::enable_shared_from_this.
+	(experimental::__expt_enable_shared_from_this_base): Define friend
+	function to select a std::experimental::enable_shared_from_this base.
+	* testsuite/experimental/memory/shared_ptr/cons/
+	enable_shared_from_this.cc: New test.
+	* testsuite/experimental/memory/shared_ptr/cons/unique_ptr_ctor.cc:
+	Adjust expected behaviour for shared_ptr<A[]>.
+
 	* include/debug/vector (__gnu_debug::vector::emplace_back): Fix return
 	type.
 
