@@ -1508,6 +1508,7 @@ OBJS = \
 	tree-ssa-loop-manip.o \
 	tree-ssa-loop-niter.o \
 	tree-ssa-loop-prefetch.o \
+	tree-ssa-loop-split.o \
 	tree-ssa-loop-unswitch.o \
 	tree-ssa-loop.o \
 	tree-ssa-math-opts.o \

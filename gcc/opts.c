@@ -530,6 +530,7 @@ static const struct default_options default_options_table[] =
        regardless of them being declared inline.  */
     { OPT_LEVELS_3_PLUS_AND_SIZE, OPT_finline_functions, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_finline_functions_called_once, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_fsplit_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
@@ -1427,6 +1428,8 @@ enable_fdo_optimizations (struct gcc_options *opts,
     opts->x_flag_ipa_bit_cp = value;
   if (!opts_set->x_flag_predictive_commoning)
     opts->x_flag_predictive_commoning = value;
+  if (!opts_set->x_flag_split_loops)
+    opts->x_flag_split_loops = value;
   if (!opts_set->x_flag_unswitch_loops)
     opts->x_flag_unswitch_loops = value;
   if (!opts_set->x_flag_gcse_after_reload)

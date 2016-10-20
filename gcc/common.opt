@@ -2576,6 +2576,10 @@ funswitch-loops
 Common Report Var(flag_unswitch_loops) Optimization
 Perform loop unswitching.
 
+fsplit-loops
+Common Report Var(flag_split_loops) Optimization
+Perform loop splitting.
+
 funwind-tables
 Common Report Var(flag_unwind_tables) Optimization
 Just generate unwind tables for exception handling.
