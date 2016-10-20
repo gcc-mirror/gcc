@@ -1,3 +1,7 @@
+2016-10-20  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update __cpp_concepts value.
+
 2016-10-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-common.c (c_common_truthvalue_conversion): Warn only for signed

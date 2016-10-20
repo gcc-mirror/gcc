@@ -940,9 +940,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_deduction_guides=201606");
 	}
       if (flag_concepts)
-	/* Use a value smaller than the 201507 specified in
-	   the TS, since we don't yet support extended auto.  */
-	cpp_define (pfile, "__cpp_concepts=201500");
+	cpp_define (pfile, "__cpp_concepts=201507");
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in
 	   the TS, since we don't yet support atomic_cancel.  */
