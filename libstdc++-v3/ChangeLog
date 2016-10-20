@@ -1,5 +1,10 @@
 2016-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/78052
+	* include/bits/allocator.h (allocator<void>::construct)
+	(allocator<void>::destroy): Define.
+	* testsuite/20_util/allocator/void.cc: New test.
+
 	* testsuite/20_util/enable_shared_from_this/56383.cc: Add tests for
 	additional ambiguous cases.
 
