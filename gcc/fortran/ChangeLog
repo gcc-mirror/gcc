@@ -1,3 +1,8 @@
+2016-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* array.c (gfc_match_array_constructor): Remove set, but unused
+	variable.
+
 2016-10-20  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* class.c (gfc_build_class_symbol): Set the kind of _len to

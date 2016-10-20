@@ -1090,7 +1090,7 @@ match
 gfc_match_array_constructor (gfc_expr **result)
 {
   gfc_constructor *c;
-  gfc_constructor_base head, new_cons;
+  gfc_constructor_base head;
   gfc_undo_change_set changed_syms;
   gfc_expr *expr;
   gfc_typespec ts;
@@ -1115,7 +1115,7 @@ gfc_match_array_constructor (gfc_expr **result)
     end_delim = " /)";
 
   where = gfc_current_locus;
-  head = new_cons = NULL;
+  head = NULL;
   seen_ts = false;
 
   /* Try to match an optional "type-spec ::"  */
