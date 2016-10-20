@@ -1,3 +1,10 @@
+2016-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78052
+	* include/bits/allocator.h (allocator<void>::construct)
+	(allocator<void>::destroy): Define.
+	* testsuite/20_util/allocator/void.cc: New test.
+
 2016-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/77990

@@ -77,6 +77,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2103. std::allocator propagate_on_container_move_assignment
       typedef true_type propagate_on_container_move_assignment;
+
+      template<typename _Up, typename... _Args>
+	void
+	construct(_Up* __p, _Args&&... __args)
+	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
+
+      template<typename _Up>
+	void
+	destroy(_Up* __p) { __p->~_Up(); }
 #endif
     };
 
