@@ -1,3 +1,11 @@
+2016-10-20  Martin Liska  <mliska@suse.cz>
+
+	PR lto/78049
+	* lto-streamer-in.c (fixup_call_stmt_edges_1): Replace value
+	comparison with STMT_UID_NOT_IN_RANGE.
+	(fixup_call_stmt_edges): Do not fixup edges of a thunk in
+	LTRANS.
+
 2016-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* compare-elim.c (conforming_compare): Accept UNSPECs.
