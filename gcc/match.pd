@@ -541,6 +541,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_ior:c (bit_and @0 INTEGER_CST@2) (bit_and (bit_not @0) INTEGER_CST@1))
  (if (wi::bit_not (@2) == @1)
   (bit_xor @0 @1)))
+
+/* PR53979: Transform ((a ^ b) | a) -> (a | b) */
+(simplify
+  (bit_ior:c (bit_xor:c @0 @1) @0)
+  (bit_ior @0 @1))
+
 /* Simplify (~X & Y) to X ^ Y if we know that (X & ~Y) is 0.  */
 #if GIMPLE
 (simplify
