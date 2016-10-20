@@ -1,3 +1,9 @@
+2016-10-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_fold_builtin): Handle IX86_BUILTIN_INFQ
+	and IX86_BUILTIN_HUGE_VALQ here ...
+	(ix86_expand_builtin): ... not here.
+
 2016-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/gty.texi (for_user): Use @item next to @findex.

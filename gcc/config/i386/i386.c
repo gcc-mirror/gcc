@@ -33323,6 +33323,15 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	    return NULL_TREE;
 	  }
 
+	case IX86_BUILTIN_INFQ:
+	case IX86_BUILTIN_HUGE_VALQ:
+	  {
+	    tree type = TREE_TYPE (TREE_TYPE (fndecl));
+	    REAL_VALUE_TYPE inf;
+	    real_inf (&inf);
+	    return build_real (type, inf);
+	  }
+
 	default:
 	  break;
 	}
@@ -36683,24 +36692,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     case IX86_BUILTIN_VEC_SET_V4HI:
     case IX86_BUILTIN_VEC_SET_V16QI:
       return ix86_expand_vec_set_builtin (exp);
-
-    case IX86_BUILTIN_INFQ:
-    case IX86_BUILTIN_HUGE_VALQ:
-      {
-	REAL_VALUE_TYPE inf;
-	rtx tmp;
-
-	real_inf (&inf);
-	tmp = const_double_from_real_value (inf, mode);
-
-	tmp = validize_mem (force_const_mem (mode, tmp));
-
-	if (target == 0)
-	  target = gen_reg_rtx (mode);
-
-	emit_move_insn (target, tmp);
-	return target;
-      }
 
     case IX86_BUILTIN_NANQ:
     case IX86_BUILTIN_NANSQ:
