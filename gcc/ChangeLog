@@ -1,3 +1,14 @@
+2016-10-20  Richard Biener  <rguenther@suse.de>
+
+	* cgraphunit.c (analyze_functions): Set node->definition to
+	false to signal symbol removal to debug_hooks->late_global_decl.
+	* ipa.c (symbol_table::remove_unreachable_nodes): When not in
+	WPA signal symbol removal to the debuginfo machinery.
+	* dwarf2out.c (dwarf2out_late_global_decl): Instead of
+	using early_finised to guard the we're called for symbol
+	removal case look at the symtabs definition flag.
+	(gen_variable_die): Remove redundant check.
+
 2016-10-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.md ("prefetch"): Add fallthrough comment.
