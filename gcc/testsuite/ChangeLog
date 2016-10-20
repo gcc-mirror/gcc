@@ -1,3 +1,9 @@
+2016-10-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/53979
+	* gcc.dg/pr53979-1.c: New test-case.
+	* gcc.dg/pr53979-2.c: Likewise.
+
 2016-10-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-c++-common/Wint-in-bool-context-2.c: New test.

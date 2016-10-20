@@ -1,3 +1,8 @@
+2016-10-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/53979
+	* match.pd ((a ^ b) | a -> a | b): New pattern.
+
 2016-10-19  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa64-hpux.h (PA_INIT_FRAME_DUMMY_ASM_OP): Move to
