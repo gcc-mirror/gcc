@@ -1,3 +1,7 @@
+2016-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/inline-var1.C (w): Initialize to 64 + 2.
+
 2016-10-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78037
