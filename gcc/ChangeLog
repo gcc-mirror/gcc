@@ -1,3 +1,12 @@
+2016-10-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (ptrs_compare_unequal): Remove code duplication.
+	Handle decls possibly not bound.
+	* tree-ssa-structalias.c (get_constraint_for_ssa_var): Add
+	nothing_id for decls that might not be bound if we are interested
+	for the address.
+	(get_constraint_for_component_ref): Deal with that.
+
 2016-10-20  Michael Matz  <matz@suse.de>
 
 	Loop splitting.

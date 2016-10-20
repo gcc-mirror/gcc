@@ -2944,6 +2944,16 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
 	  DECL_PT_UID (t) = DECL_UID (node->decl);
 	  t = node->decl;
 	}
+
+      /* If this is decl may bind to NULL note that.  */
+      if (address_p
+	  && (! node || ! node->nonzero_address ()))
+	{
+	  cexpr.var = nothing_id;
+	  cexpr.type = SCALAR;
+	  cexpr.offset = 0;
+	  results->safe_push (cexpr);
+	}
     }
 
   vi = get_vi_for_tree (t);
@@ -3213,6 +3223,12 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
   /* Pretend to take the address of the base, we'll take care of
      adding the required subset of sub-fields below.  */
   get_constraint_for_1 (t, results, true, lhs_p);
+  /* Strip off nothing_id.  */
+  if (results->length () == 2)
+    {
+      gcc_assert ((*results)[0].var == nothing_id);
+      results->unordered_remove (0);
+    }
   gcc_assert (results->length () == 1);
   struct constraint_expr &result = results->last ();
 
