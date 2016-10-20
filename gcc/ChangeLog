@@ -1,3 +1,35 @@
+2016-10-20 Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78037
+	* config/i386/bmiintrin.h (__tzcnt_u16): Call __builtin_ia32_tzcnt_u16.
+	(__tzcnt_u32, _tzcnt_u32): Call __builtin_ia32_tzcnt_u32.
+	(__tzcnt_u64, _tzcnt_u64): Call __builtin_ia32_tzcnt_u64.
+	* config/i386/lzcntintrin.h (__lzcnt_u16): Call
+	__builtin_ia32_lzcnt_u16.
+	(__lzcnt_u32, _lzcnt_u32): Call __builtin_ia32_lzcnt_u32.
+	(__lzcnt_u64, _lzcnt_u64): Call __builtin_ia32_lzcnt_u64.
+	* config/i386/i386.md (UNSPEC_LZCNT, UNSPEC_TZCNT): New unspecs.
+	(ctz<mode>2, *ctz<mode>2): Use SWI48 mode iterator.
+	(bmi_tzcnt_<mode>): New expander.
+	(*bmi_tzcnt_<mode>_falsedep_1): New define_insn_and_split pattern.
+	(*bmi_tzcnt_<mode>_falsedep, *bmi_tzcnt_<mode>): New insn patterns.
+	(clz<mode>2_lzcnt, *clz<mode>2_lzcnt): Use SWI48 mode iterator.
+	(lzcnt_<mode>): New expander.
+	(*lzcnt_<mode>_falsedep_1): New define_insn_and_split pattern.
+	(*lzcnt_<mode>_falsedep, *lzcnt_<mode>): New insn patterns.
+	* config/i386/i386-builtin-types.def (UINT_FTYPE_UINT): New.
+	(UINT64_FTYPE_UINT64): New.
+	* config/i386/i386-builtin.def (__builtin_clzs): Remove description.
+	(__builtin_ia32_lzcnt_u16): New description.
+	(__builtin_ia32_lzcnt_u32): Ditto.
+	(__builtin_ia32_lzcnt_u64): Ditto.
+	(__builtin_ctzs): Remove description.
+	(__builtin_ia32_tzcnt_u16): New description.
+	(__builtin_ia32_tzcnt_u32): Ditto.
+	(__builtin_ia32_tzcnt_u64): Ditto.
+	* config/i386/i386.c (ix86_expand_args_builtin): Handle
+	UINT_FTYPE_UINT and UINT64_FTYPE_UINT64.
+
 2016-10-20  Martin Liska  <mliska@suse.cz>
 
 	PR lto/78049
