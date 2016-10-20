@@ -1,7 +1,7 @@
-// { dg-options "-Wno-deprecated" }
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++1z } }
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,32 +18,25 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
+// 20.11.2.2.9 shared_ptr casts [util.smartptr.shared.cast]
 
 #include <memory>
-#include <testsuite_hooks.h>
+#include <testsuite_tr1.h>
 
-struct A { };
-struct B { };
+struct MyP { virtual ~MyP() { }; };
+struct MyDP : MyP { };
 
-// 20.6.6.2.3 shared_ptr assignment [util.smartptr.shared.assign]
-
-// Assignment from incompatible auto_ptr<Y>
-int
-test01()
+int main()
 {
-  std::shared_ptr<A> a;
-  std::auto_ptr<B> b;
-  a = std::move(b);                      // { dg-error "no match" }
+  using __gnu_test::check_ret_type;
+  using std::shared_ptr;
+  using std::reinterpret_pointer_cast;
 
-  return 0;
+  shared_ptr<double> spd;
+  shared_ptr<const int> spci;
+  shared_ptr<MyP> spa;
+
+  check_ret_type<shared_ptr<void> >(reinterpret_pointer_cast<void>(spd));
+  check_ret_type<shared_ptr<const short> >(reinterpret_pointer_cast<const short>(spci));
+  check_ret_type<shared_ptr<MyDP> >(reinterpret_pointer_cast<MyDP>(spa));
 }
-
-int 
-main()
-{
-  test01();
-  return 0;
-}
-
-// { dg-prune-output "cannot convert" }

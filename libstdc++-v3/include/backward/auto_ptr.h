@@ -302,7 +302,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __r.release(); }
 
   template<typename _Tp, _Lock_policy _Lp>
-  template<typename _Tp1>
+  template<typename _Tp1, typename>
     inline
     __shared_ptr<_Tp, _Lp>::__shared_ptr(std::auto_ptr<_Tp1>&& __r)
     : _M_ptr(__r.get()), _M_refcount()
@@ -315,7 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-  template<typename _Tp1>
+  template<typename _Tp1, typename>
     inline
     shared_ptr<_Tp>::shared_ptr(std::auto_ptr<_Tp1>&& __r)
     : __shared_ptr<_Tp>(std::move(__r)) { }

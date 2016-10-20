@@ -24,10 +24,28 @@
 
 struct A { };
 
+int destroyed = 0;
+struct B : A { ~B() { ++destroyed; } };
+
 // 20.7.2.2.1 shared_ptr constructors [util.smartptr.shared.const]
 
 // Construction from unique_ptr
-int
+
+template<typename From, typename To>
+constexpr bool constructible()
+{
+  using namespace std;
+  return is_constructible<shared_ptr<To>, unique_ptr<From>>::value
+    && is_constructible<shared_ptr<const To>, unique_ptr<From>>::value
+    && is_constructible<shared_ptr<const To>, unique_ptr<const From>>::value;
+}
+
+static_assert(  constructible< A,   A    >(), "A -> A compatible" );
+static_assert(  constructible< B,   A    >(), "B -> A compatible" );
+static_assert(  constructible< int, int  >(), "int -> int compatible" );
+static_assert( !constructible< int, long >(), "int -> long not compatible" );
+
+void
 test01()
 {
   std::unique_ptr<A> up(new A);
@@ -35,13 +53,24 @@ test01()
   VERIFY( up.get() == 0 );
   VERIFY( sp.get() != 0 );
   VERIFY( sp.use_count() == 1 );
+}
 
-  return 0;
+void
+test02()
+{
+  std::unique_ptr<B> b(new B);
+  std::shared_ptr<A> a(std::move(b));
+  VERIFY( b.get() == 0 );
+  VERIFY( a.get() != 0 );
+  VERIFY( a.use_count() == 1 );
+  a.reset();
+  VERIFY( destroyed == 1 );
 }
 
 int
 main()
 {
   test01();
+  test02();
   return 0;
 }

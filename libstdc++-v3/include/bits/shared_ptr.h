@@ -92,15 +92,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class shared_ptr : public __shared_ptr<_Tp>
     {
-      template<typename _Ptr>
-	using _Convertible = typename
-	  enable_if<is_convertible<_Ptr, _Tp*>::value>::type;
+      template<typename... _Args>
+	using _Constructible = typename enable_if<
+	  is_constructible<__shared_ptr<_Tp>, _Args...>::value
+	>::type;
 
-      template<typename _Ptr>
-	using _Assignable = typename
-	  enable_if<is_convertible<_Ptr, _Tp*>::value, shared_ptr&>::type;
+      template<typename _Arg>
+	using _Assignable = typename enable_if<
+	  is_assignable<__shared_ptr<_Tp>&, _Arg>::value, shared_ptr&
+	>::type;
 
     public:
+
+      using element_type = typename __shared_ptr<_Tp>::element_type;
 
 #if __cplusplus > 201402L
 # define __cpp_lib_shared_ptr_weak_type 201606
@@ -110,8 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Construct an empty %shared_ptr.
        *  @post   use_count()==0 && get()==0
        */
-      constexpr shared_ptr() noexcept
-      : __shared_ptr<_Tp>() { }
+      constexpr shared_ptr() noexcept : __shared_ptr<_Tp>() { }
 
       shared_ptr(const shared_ptr&) noexcept = default;
 
@@ -121,9 +124,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @post   use_count() == 1 && get() == __p
        *  @throw  std::bad_alloc, in which case @c delete @a __p is called.
        */
-      template<typename _Tp1>
-	explicit shared_ptr(_Tp1* __p)
-        : __shared_ptr<_Tp>(__p) { }
+      template<typename _Yp, typename = _Constructible<_Yp*>>
+	explicit
+	shared_ptr(_Yp* __p) : __shared_ptr<_Tp>(__p) { }
 
       /**
        *  @brief  Construct a %shared_ptr that owns the pointer @a __p
@@ -138,8 +141,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  __shared_ptr will release __p by calling __d(__p)
        */
-      template<typename _Tp1, typename _Deleter>
-	shared_ptr(_Tp1* __p, _Deleter __d)
+      template<typename _Yp, typename _Deleter,
+	       typename = _Constructible<_Yp*, _Deleter>>
+	shared_ptr(_Yp* __p, _Deleter __d)
         : __shared_ptr<_Tp>(__p, __d) { }
 
       /**
@@ -174,8 +178,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  __shared_ptr will release __p by calling __d(__p)
        */
-      template<typename _Tp1, typename _Deleter, typename _Alloc>
-	shared_ptr(_Tp1* __p, _Deleter __d, _Alloc __a)
+      template<typename _Yp, typename _Deleter, typename _Alloc,
+	       typename = _Constructible<_Yp*, _Deleter, _Alloc>>
+	shared_ptr(_Yp* __p, _Deleter __d, _Alloc __a)
 	: __shared_ptr<_Tp>(__p, __d, std::move(__a)) { }
 
       /**
@@ -215,8 +220,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * assert(pii.use_count() == 2);
        * @endcode
        */
-      template<typename _Tp1>
-	shared_ptr(const shared_ptr<_Tp1>& __r, _Tp* __p) noexcept
+      template<typename _Yp>
+	shared_ptr(const shared_ptr<_Yp>& __r, element_type* __p) noexcept
 	: __shared_ptr<_Tp>(__r, __p) { }
 
       /**
@@ -226,8 +231,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __r  A %shared_ptr.
        *  @post   get() == __r.get() && use_count() == __r.use_count()
        */
-      template<typename _Tp1, typename = _Convertible<_Tp1*>>
-	shared_ptr(const shared_ptr<_Tp1>& __r) noexcept
+      template<typename _Yp,
+	       typename = _Constructible<const shared_ptr<_Yp>&>>
+	shared_ptr(const shared_ptr<_Yp>& __r) noexcept
         : __shared_ptr<_Tp>(__r) { }
 
       /**
@@ -243,8 +249,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __r  A %shared_ptr rvalue.
        *  @post   *this contains the old value of @a __r, @a __r is empty.
        */
-      template<typename _Tp1, typename = _Convertible<_Tp1*>>
-	shared_ptr(shared_ptr<_Tp1>&& __r) noexcept
+      template<typename _Yp, typename = _Constructible<shared_ptr<_Yp>>>
+	shared_ptr(shared_ptr<_Yp>&& __r) noexcept
 	: __shared_ptr<_Tp>(std::move(__r)) { }
 
       /**
@@ -255,20 +261,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @throw  bad_weak_ptr when __r.expired(),
        *          in which case the constructor has no effect.
        */
-      template<typename _Tp1>
-	explicit shared_ptr(const weak_ptr<_Tp1>& __r)
+      template<typename _Yp, typename = _Constructible<const weak_ptr<_Yp>&>>
+	explicit shared_ptr(const weak_ptr<_Yp>& __r)
 	: __shared_ptr<_Tp>(__r) { }
 
 #if _GLIBCXX_USE_DEPRECATED
-      template<typename _Tp1>
-	shared_ptr(std::auto_ptr<_Tp1>&& __r);
+      template<typename _Yp, typename = _Constructible<auto_ptr<_Yp>>>
+	shared_ptr(auto_ptr<_Yp>&& __r);
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2399. shared_ptr's constructor from unique_ptr should be constrained
-      template<typename _Tp1, typename _Del, typename
-	       = _Convertible<typename unique_ptr<_Tp1, _Del>::pointer>>
-	shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
+      template<typename _Yp, typename _Del,
+	       typename = _Constructible<unique_ptr<_Yp, _Del>>>
+	shared_ptr(unique_ptr<_Yp, _Del>&& __r)
 	: __shared_ptr<_Tp>(std::move(__r)) { }
 
       /**
@@ -279,18 +285,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       shared_ptr& operator=(const shared_ptr&) noexcept = default;
 
-      template<typename _Tp1>
-	_Assignable<_Tp1*>
-	operator=(const shared_ptr<_Tp1>& __r) noexcept
+      template<typename _Yp>
+	_Assignable<const shared_ptr<_Yp>&>
+	operator=(const shared_ptr<_Yp>& __r) noexcept
 	{
 	  this->__shared_ptr<_Tp>::operator=(__r);
 	  return *this;
 	}
 
 #if _GLIBCXX_USE_DEPRECATED
-      template<typename _Tp1>
-	shared_ptr&
-	operator=(std::auto_ptr<_Tp1>&& __r)
+      template<typename _Yp>
+	_Assignable<auto_ptr<_Yp>>
+	operator=(auto_ptr<_Yp>&& __r)
 	{
 	  this->__shared_ptr<_Tp>::operator=(std::move(__r));
 	  return *this;
@@ -304,17 +310,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      template<class _Tp1>
-	_Assignable<_Tp1*>
-	operator=(shared_ptr<_Tp1>&& __r) noexcept
+      template<class _Yp>
+	_Assignable<shared_ptr<_Yp>>
+	operator=(shared_ptr<_Yp>&& __r) noexcept
 	{
 	  this->__shared_ptr<_Tp>::operator=(std::move(__r));
 	  return *this;
 	}
 
-      template<typename _Tp1, typename _Del>
-	_Assignable<typename unique_ptr<_Tp1, _Del>::pointer>
-	operator=(std::unique_ptr<_Tp1, _Del>&& __r)
+      template<typename _Yp, typename _Del>
+	_Assignable<unique_ptr<_Yp, _Del>>
+	operator=(unique_ptr<_Yp, _Del>&& __r)
 	{
 	  this->__shared_ptr<_Tp>::operator=(std::move(__r));
 	  return *this;
@@ -328,8 +334,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: __shared_ptr<_Tp>(__tag, __a, std::forward<_Args>(__args)...)
 	{ }
 
-      template<typename _Tp1, typename _Alloc, typename... _Args>
-	friend shared_ptr<_Tp1>
+      template<typename _Yp, typename _Alloc, typename... _Args>
+	friend shared_ptr<_Yp>
 	allocate_shared(const _Alloc& __a, _Args&&... __args);
 
       // This constructor is non-standard, it is used by weak_ptr::lock().
@@ -340,10 +346,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // 20.7.2.2.7 shared_ptr comparisons
-  template<typename _Tp1, typename _Tp2>
+  template<typename _Tp, typename _Up>
     inline bool
-    operator==(const shared_ptr<_Tp1>& __a,
-	       const shared_ptr<_Tp2>& __b) noexcept
+    operator==(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return __a.get() == __b.get(); }
 
   template<typename _Tp>
@@ -356,10 +361,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return !__a; }
 
-  template<typename _Tp1, typename _Tp2>
+  template<typename _Tp, typename _Up>
     inline bool
-    operator!=(const shared_ptr<_Tp1>& __a,
-	       const shared_ptr<_Tp2>& __b) noexcept
+    operator!=(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return __a.get() != __b.get(); }
 
   template<typename _Tp>
@@ -372,29 +376,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return (bool)__a; }
 
-  template<typename _Tp1, typename _Tp2>
+  template<typename _Tp, typename _Up>
     inline bool
-    operator<(const shared_ptr<_Tp1>& __a,
-	      const shared_ptr<_Tp2>& __b) noexcept
+    operator<(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     {
-      typedef typename std::common_type<_Tp1*, _Tp2*>::type _CT;
-      return std::less<_CT>()(__a.get(), __b.get());
+      using _Tp_elt = typename shared_ptr<_Tp>::element_type;
+      using _Up_elt = typename shared_ptr<_Up>::element_type;
+      using _Vp = typename common_type<_Tp_elt*, _Up_elt*>::type;
+      return less<_Vp>()(__a.get(), __b.get());
     }
 
   template<typename _Tp>
     inline bool
     operator<(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
-    { return std::less<_Tp*>()(__a.get(), nullptr); }
+    {
+      using _Tp_elt = typename shared_ptr<_Tp>::element_type;
+      return less<_Tp_elt*>()(__a.get(), nullptr);
+    }
 
   template<typename _Tp>
     inline bool
     operator<(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
-    { return std::less<_Tp*>()(nullptr, __a.get()); }
+    {
+      using _Tp_elt = typename shared_ptr<_Tp>::element_type;
+      return less<_Tp_elt*>()(nullptr, __a.get());
+    }
 
-  template<typename _Tp1, typename _Tp2>
+  template<typename _Tp, typename _Up>
     inline bool
-    operator<=(const shared_ptr<_Tp1>& __a,
-	       const shared_ptr<_Tp2>& __b) noexcept
+    operator<=(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return !(__b < __a); }
 
   template<typename _Tp>
@@ -407,26 +417,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
     { return !(__a < nullptr); }
 
-  template<typename _Tp1, typename _Tp2>
+  template<typename _Tp, typename _Up>
     inline bool
-    operator>(const shared_ptr<_Tp1>& __a,
-	      const shared_ptr<_Tp2>& __b) noexcept
+    operator>(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return (__b < __a); }
 
   template<typename _Tp>
     inline bool
     operator>(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
-    { return std::less<_Tp*>()(nullptr, __a.get()); }
+    { return nullptr < __a; }
 
   template<typename _Tp>
     inline bool
     operator>(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
-    { return std::less<_Tp*>()(__a.get(), nullptr); }
+    { return __a < nullptr; }
 
-  template<typename _Tp1, typename _Tp2>
+  template<typename _Tp, typename _Up>
     inline bool
-    operator>=(const shared_ptr<_Tp1>& __a,
-	       const shared_ptr<_Tp2>& __b) noexcept
+    operator>=(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
     { return !(__a < __b); }
 
   template<typename _Tp>
@@ -450,25 +458,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __a.swap(__b); }
 
   // 20.7.2.2.9 shared_ptr casts.
-  template<typename _Tp, typename _Tp1>
+  template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
-    static_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
-    { return shared_ptr<_Tp>(__r, static_cast<_Tp*>(__r.get())); }
-
-  template<typename _Tp, typename _Tp1>
-    inline shared_ptr<_Tp>
-    const_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
-    { return shared_ptr<_Tp>(__r, const_cast<_Tp*>(__r.get())); }
-
-  template<typename _Tp, typename _Tp1>
-    inline shared_ptr<_Tp>
-    dynamic_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
+    static_pointer_cast(const shared_ptr<_Up>& __r) noexcept
     {
-      if (_Tp* __p = dynamic_cast<_Tp*>(__r.get()))
-	return shared_ptr<_Tp>(__r, __p);
-      return shared_ptr<_Tp>();
+      using _Sp = shared_ptr<_Tp>;
+      return _Sp(__r, static_cast<typename _Sp::element_type*>(__r.get()));
     }
 
+  template<typename _Tp, typename _Up>
+    inline shared_ptr<_Tp>
+    const_pointer_cast(const shared_ptr<_Up>& __r) noexcept
+    {
+      using _Sp = shared_ptr<_Tp>;
+      return _Sp(__r, const_cast<typename _Sp::element_type*>(__r.get()));
+    }
+
+  template<typename _Tp, typename _Up>
+    inline shared_ptr<_Tp>
+    dynamic_pointer_cast(const shared_ptr<_Up>& __r) noexcept
+    {
+      using _Sp = shared_ptr<_Tp>;
+      if (auto* __p = dynamic_cast<typename _Sp::element_type*>(__r.get()))
+	return _Sp(__r, __p);
+      return _Sp();
+    }
+
+#if __cplusplus > 201402L
+  template<typename _Tp, typename _Up>
+    inline shared_ptr<_Tp>
+    reinterpret_pointer_cast(const shared_ptr<_Up>& __r) noexcept
+    {
+      using _Sp = shared_ptr<_Tp>;
+      return _Sp(__r, reinterpret_cast<typename _Sp::element_type*>(__r.get()));
+    }
+#endif
 
   /**
    *  @brief  A smart pointer with weak semantics.
@@ -478,43 +502,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class weak_ptr : public __weak_ptr<_Tp>
     {
-      template<typename _Ptr>
-	using _Convertible
-	  = typename enable_if<is_convertible<_Ptr, _Tp*>::value>::type;
+      template<typename _Arg>
+	using _Constructible = typename enable_if<
+	  is_constructible<__weak_ptr<_Tp>, _Arg>::value
+	>::type;
+
+      template<typename _Arg>
+	using _Assignable = typename enable_if<
+	  is_assignable<__weak_ptr<_Tp>&, _Arg>::value, weak_ptr&
+	>::type;
 
     public:
       constexpr weak_ptr() noexcept = default;
 
-      template<typename _Tp1, typename = _Convertible<_Tp1*>>
-	weak_ptr(const shared_ptr<_Tp1>& __r) noexcept
+      template<typename _Yp,
+	       typename = _Constructible<const shared_ptr<_Yp>&>>
+	weak_ptr(const shared_ptr<_Yp>& __r) noexcept
 	: __weak_ptr<_Tp>(__r) { }
 
       weak_ptr(const weak_ptr&) noexcept = default;
 
-      template<typename _Tp1, typename = _Convertible<_Tp1*>>
-	weak_ptr(const weak_ptr<_Tp1>& __r) noexcept
+      template<typename _Yp, typename = _Constructible<const weak_ptr<_Yp>&>>
+	weak_ptr(const weak_ptr<_Yp>& __r) noexcept
 	: __weak_ptr<_Tp>(__r) { }
 
       weak_ptr(weak_ptr&&) noexcept = default;
 
-      template<typename _Tp1, typename = _Convertible<_Tp1*>>
-	weak_ptr(weak_ptr<_Tp1>&& __r) noexcept
+      template<typename _Yp, typename = _Constructible<weak_ptr<_Yp>>>
+	weak_ptr(weak_ptr<_Yp>&& __r) noexcept
 	: __weak_ptr<_Tp>(std::move(__r)) { }
 
       weak_ptr&
       operator=(const weak_ptr& __r) noexcept = default;
 
-      template<typename _Tp1>
-	weak_ptr&
-	operator=(const weak_ptr<_Tp1>& __r) noexcept
+      template<typename _Yp>
+	_Assignable<const weak_ptr<_Yp>&>
+	operator=(const weak_ptr<_Yp>& __r) noexcept
 	{
 	  this->__weak_ptr<_Tp>::operator=(__r);
 	  return *this;
 	}
 
-      template<typename _Tp1>
-	weak_ptr&
-	operator=(const shared_ptr<_Tp1>& __r) noexcept
+      template<typename _Yp>
+	_Assignable<const shared_ptr<_Yp>&>
+	operator=(const shared_ptr<_Yp>& __r) noexcept
 	{
 	  this->__weak_ptr<_Tp>::operator=(__r);
 	  return *this;
@@ -523,9 +554,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       weak_ptr&
       operator=(weak_ptr&& __r) noexcept = default;
 
-      template<typename _Tp1>
-	weak_ptr&
-	operator=(weak_ptr<_Tp1>&& __r) noexcept
+      template<typename _Yp>
+	_Assignable<weak_ptr<_Yp>>
+	operator=(weak_ptr<_Yp>&& __r) noexcept
 	{
 	  this->__weak_ptr<_Tp>::operator=(std::move(__r));
 	  return *this;
