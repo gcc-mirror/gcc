@@ -358,6 +358,13 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
 	ptr2 = TREE_OPERAND (tem, 0);
     }
 
+  /* Canonicalize ptr vs. object.  */
+  if (TREE_CODE (ptr1) == SSA_NAME && obj2)
+    {
+      std::swap (ptr1, ptr2);
+      std::swap (obj1, obj2);
+    }
+
   if (obj1 && obj2)
     /* Other code handles this correctly, no need to duplicate it here.  */;
   else if (obj1 && TREE_CODE (ptr2) == SSA_NAME)
@@ -368,14 +375,15 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
 	 may be in fact obj1.  */
       if (!pi || pi->pt.vars_contains_restrict)
 	return false;
+      if (VAR_P (obj1)
+	  && (TREE_STATIC (obj1) || DECL_EXTERNAL (obj1)))
+	{
+	  varpool_node *node = varpool_node::get (obj1);
+	  /* If obj1 may bind to NULL give up (see below).  */
+	  if (! node || ! node->nonzero_address ())
+	    return false;
+	}
       return !pt_solution_includes (&pi->pt, obj1);
-    }
-  else if (TREE_CODE (ptr1) == SSA_NAME && obj2)
-    {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr1);
-      if (!pi || pi->pt.vars_contains_restrict)
-	return false;
-      return !pt_solution_includes (&pi->pt, obj2);
     }
 
   /* ???  We'd like to handle ptr1 != NULL and ptr1 != ptr2
