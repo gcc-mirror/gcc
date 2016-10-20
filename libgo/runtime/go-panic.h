@@ -7,24 +7,18 @@
 #ifndef LIBGO_GO_PANIC_H
 #define LIBGO_GO_PANIC_H
 
-#include "interface.h"
-
-struct String;
-struct __go_type_descriptor;
-
-extern void __go_panic (struct __go_empty_interface)
+extern void __go_panic (Eface)
   __attribute__ ((noreturn));
 
-extern void __go_print_string (struct String);
+extern void __go_print_string (String);
 
-extern struct __go_empty_interface __go_recover (void);
+extern Eface __go_recover (void);
 
 extern _Bool __go_can_recover (void *);
 
 extern void __go_makefunc_can_recover (void *retaddr);
 
-struct location;
-extern void __go_makefunc_ffi_can_recover (struct location *, int);
+extern void __go_makefunc_ffi_can_recover (Location*, int);
 
 extern void __go_makefunc_returning (void);
 

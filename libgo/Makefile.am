@@ -430,26 +430,17 @@ endif
 runtime_files = \
 	runtime/go-append.c \
 	runtime/go-assert.c \
-	runtime/go-assert-interface.c \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
-	runtime/go-can-convert-interface.c \
 	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
-	runtime/go-check-interface.c \
 	runtime/go-construct-map.c \
-	runtime/go-convert-interface.c \
 	runtime/go-copy.c \
 	runtime/go-defer.c \
 	runtime/go-deferred-recover.c \
-	runtime/go-eface-compare.c \
-	runtime/go-eface-val-compare.c \
 	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
-	runtime/go-interface-compare.c \
-	runtime/go-interface-eface-compare.c \
-	runtime/go-interface-val-compare.c \
 	runtime/go-make-slice.c \
 	runtime/go-matherr.c \
 	runtime/go-memclr.c \
@@ -466,13 +457,10 @@ runtime_files = \
 	runtime/go-runtime-error.c \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
-	runtime/go-strcmp.c \
 	runtime/go-strslice.c \
 	runtime/go-type-complex.c \
-	runtime/go-type-eface.c \
 	runtime/go-type-float.c \
 	runtime/go-type-identity.c \
-	runtime/go-type-interface.c \
 	runtime/go-type-string.c \
 	runtime/go-typedesc-equal.c \
 	runtime/go-unsafe-new.c \
@@ -500,10 +488,8 @@ runtime_files = \
 	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
-	go-iface.c \
 	lfstack.c \
 	malloc.c \
-	reflect.c \
 	runtime1.c \
 	sigqueue.c \
 	$(runtime_getncpu_file)
@@ -515,10 +501,6 @@ goc2c: goc2c.$(OBJEXT)
 	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) -o $@ $<
 
 malloc.c: $(srcdir)/runtime/malloc.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
-reflect.c: $(srcdir)/runtime/reflect.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 

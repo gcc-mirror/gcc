@@ -5,7 +5,6 @@
    license that can be found in the LICENSE file.  */
 
 #include "runtime.h"
-#include "interface.h"
 #include "go-panic.h"
 
 /* If the top of the defer stack can be recovered, then return it.
@@ -200,7 +199,7 @@ __go_makefunc_can_recover (void *retaddr)
    make the same decision.  */
 
 void
-__go_makefunc_ffi_can_recover (struct location *loc, int n)
+__go_makefunc_ffi_can_recover (Location *loc, int n)
 {
   Defer *d;
   const byte *name;
@@ -252,7 +251,7 @@ __go_makefunc_returning (void)
 /* This is only called when it is valid for the caller to recover the
    value on top of the panic stack, if there is one.  */
 
-struct __go_empty_interface
+Eface
 __go_recover ()
 {
   G *g;
@@ -262,10 +261,10 @@ __go_recover ()
 
   if (g->_panic == NULL || g->_panic->recovered)
     {
-      struct __go_empty_interface ret;
+      Eface ret;
 
-      ret.__type_descriptor = NULL;
-      ret.__object = NULL;
+      ret._type = NULL;
+      ret.data = NULL;
       return ret;
     }
   p = g->_panic;

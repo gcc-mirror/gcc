@@ -1874,7 +1874,7 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 		  case Runtime::IFACEI2T2P:
 		  case Runtime::IFACEE2T2:
 		  case Runtime::IFACEI2T2:
-		  case Runtime::CONVERT_INTERFACE:
+		  case Runtime::REQUIREITAB:
 		    // All versions of interface conversion that might result
 		    // from a type assertion.  Some of these are the result of
 		    // a tuple type assertion statement and may not be covered
@@ -2633,7 +2633,7 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 		    case Runtime::CONCATSTRING5:
 		    case Runtime::CONSTRUCT_MAP:
 		    case Runtime::INTSTRING:
-		    case Runtime::CONVERT_INTERFACE:
+		    case Runtime::REQUIREITAB:
 		      // All runtime calls that involve allocation of memory
 		      // except new.  Runtime::NEW gets lowered into an
 		      // allocation expression.

@@ -14,12 +14,9 @@ package runtime
 #include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
-#include "interface.h"
 #include "go-type.h"
 
 // Map gccgo field names to gc field names.
-// Eface aka __go_empty_interface.
-#define type __type_descriptor
 // Type aka __go_type_descriptor
 #define kind __code
 #define string __reflection
@@ -917,15 +914,15 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	const Type *fint;
 	const PtrType *ot;
 
-	if(obj.__type_descriptor == nil) {
+	if((Type*)obj._type == nil) {
 		runtime_printf("runtime.SetFinalizer: first argument is nil interface\n");
 		goto throw;
 	}
-	if((obj.__type_descriptor->kind&kindMask) != GO_PTR) {
-		runtime_printf("runtime.SetFinalizer: first argument is %S, not pointer\n", *obj.__type_descriptor->__reflection);
+	if((((Type*)obj._type)->kind&kindMask) != GO_PTR) {
+		runtime_printf("runtime.SetFinalizer: first argument is %S, not pointer\n", *((Type*)obj._type)->__reflection);
 		goto throw;
 	}
-	ot = (const PtrType*)obj.type;
+	ot = (const PtrType*)obj._type;
 	// As an implementation detail we do not run finalizers for zero-sized objects,
 	// because we use &runtime_zerobase for all such allocations.
 	if(ot->__element_type != nil && ot->__element_type->__size == 0)
@@ -937,49 +934,49 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	//		runtime.SetFinalizer(Foo, nil)
 	//	}
 	// See issue 7656.
-	if((byte*)obj.__object < runtime_mheap.arena_start || runtime_mheap.arena_used <= (byte*)obj.__object)
+	if((byte*)obj.data < runtime_mheap.arena_start || runtime_mheap.arena_used <= (byte*)obj.data)
 		return;
-	if(!runtime_mlookup(obj.__object, &base, &size, nil) || obj.__object != base) {
+	if(!runtime_mlookup(obj.data, &base, &size, nil) || obj.data != base) {
 		// As an implementation detail we allow to set finalizers for an inner byte
 		// of an object if it could come from tiny alloc (see mallocgc for details).
 		if(ot->__element_type == nil || (ot->__element_type->kind&kindNoPointers) == 0 || ot->__element_type->__size >= TinySize) {
-			runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block (%p)\n", obj.__object);
+			runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block (%p)\n", obj.data);
 			goto throw;
 		}
 	}
-	if(finalizer.__type_descriptor != nil) {
+	if((Type*)finalizer._type != nil) {
 		runtime_createfing();
-		if((finalizer.__type_descriptor->kind&kindMask) != GO_FUNC)
+		if((((Type*)finalizer._type)->kind&kindMask) != GO_FUNC)
 			goto badfunc;
-		ft = (const FuncType*)finalizer.__type_descriptor;
+		ft = (const FuncType*)finalizer._type;
 		if(ft->__dotdotdot || ft->__in.__count != 1)
 			goto badfunc;
 		fint = *(Type**)ft->__in.__values;
-		if(__go_type_descriptors_equal(fint, obj.__type_descriptor)) {
+		if(__go_type_descriptors_equal(fint, (Type*)obj._type)) {
 			// ok - same type
-		} else if((fint->kind&kindMask) == GO_PTR && (fint->__uncommon == nil || fint->__uncommon->__name == nil || obj.type->__uncommon == nil || obj.type->__uncommon->__name == nil) && __go_type_descriptors_equal(((const PtrType*)fint)->__element_type, ((const PtrType*)obj.type)->__element_type)) {
+		} else if((fint->kind&kindMask) == GO_PTR && (fint->__uncommon == nil || fint->__uncommon->__name == nil || ((Type*)obj._type)->__uncommon == nil || ((Type*)obj._type)->__uncommon->__name == nil) && __go_type_descriptors_equal(((const PtrType*)fint)->__element_type, ((const PtrType*)obj._type)->__element_type)) {
 			// ok - not same type, but both pointers,
 			// one or the other is unnamed, and same element type, so assignable.
 		} else if((fint->kind&kindMask) == GO_INTERFACE && ((const InterfaceType*)fint)->__methods.__count == 0) {
 			// ok - satisfies empty interface
-		} else if((fint->kind&kindMask) == GO_INTERFACE && __go_convert_interface_2(fint, obj.__type_descriptor, 1) != nil) {
+		} else if((fint->kind&kindMask) == GO_INTERFACE && getitab(fint, (Type*)obj._type, true) != nil) {
 			// ok - satisfies non-empty interface
 		} else
 			goto badfunc;
 
-		ot = (const PtrType*)obj.__type_descriptor;
-		if(!runtime_addfinalizer(obj.__object, *(FuncVal**)finalizer.__object, ft, ot)) {
+		ot = (const PtrType*)obj._type;
+		if(!runtime_addfinalizer(obj.data, *(FuncVal**)finalizer.data, ft, ot)) {
 			runtime_printf("runtime.SetFinalizer: finalizer already set\n");
 			goto throw;
 		}
 	} else {
 		// NOTE: asking to remove a finalizer when there currently isn't one set is OK.
-		runtime_removefinalizer(obj.__object);
+		runtime_removefinalizer(obj.data);
 	}
 	return;
 
 badfunc:
-	runtime_printf("runtime.SetFinalizer: cannot pass %S to finalizer %S\n", *obj.__type_descriptor->__reflection, *finalizer.__type_descriptor->__reflection);
+	runtime_printf("runtime.SetFinalizer: cannot pass %S to finalizer %S\n", *((Type*)obj._type)->__reflection, *((Type*)finalizer._type)->__reflection);
 throw:
 	runtime_throw("runtime.SetFinalizer");
 }

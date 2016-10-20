@@ -3894,7 +3894,7 @@ Type_case_clauses::Type_case_clause::lower(Type* switch_val_type,
       else
 	cond = Runtime::make_call((type->interface_type() == NULL
 				   ? Runtime::IFACETYPEEQ
-				   : Runtime::IFACEI2TP),
+				   : Runtime::IFACET2IP),
 				  loc, 2,
 				  Expression::make_type_descriptor(type, loc),
 				  ref);

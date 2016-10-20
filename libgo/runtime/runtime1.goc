@@ -40,7 +40,7 @@ func parForIters(desc *ParFor, tid uintptr) (start uintptr, end uintptr) {
 }
 
 func typestring(e Eface) (s String) {
-	s = *e.__type_descriptor->__reflection;
+	s = *((Type*)e._type)->__reflection;
 }
 
 func golockedOSThread() (ret bool) {

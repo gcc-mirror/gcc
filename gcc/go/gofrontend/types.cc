@@ -1710,13 +1710,13 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	case Type::TYPE_INTERFACE:
 	  if (this->interface_type()->is_empty())
 	    {
-	      hash_fnname = "__go_type_hash_empty_interface";
-	      equal_fnname = "__go_type_equal_empty_interface";
+	      hash_fnname = "runtime.nilinterhash";
+	      equal_fnname = "runtime.nilinterequal";
 	    }
 	  else
 	    {
-	      hash_fnname = "__go_type_hash_interface";
-	      equal_fnname = "__go_type_equal_interface";
+	      hash_fnname = "runtime.interhash";
+	      equal_fnname = "runtime.interequal";
 	    }
 	  break;
 
