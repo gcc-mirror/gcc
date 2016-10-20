@@ -1,3 +1,37 @@
+2016-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* compare-elim.c (conforming_compare): Accept UNSPECs.
+	(find_comparison_dom_walker::before_dom_children): Deal with
+	instructions both using and killing the flags register.
+	(equivalent_reg_at_start): New function extracted from...
+	(try_eliminate_compare): ...here.  Use it and add support for
+	registers and UNSPECs as second operand of the compare.
+	* config/visium/visium-modes.def (CCV): New.
+	* config/visium/predicates.md (visium_v_comparison_operator): New.
+	(visium_branch_operator): Deal with CCV mode.
+	* config/visium/visium.c (visium_select_cc_mode): Likewise.
+	(output_cbranch): Likewise.
+	* config/visium/visium.md (UNSPEC_{ADD,SUB,NEG}V): New constants.
+	(uaddv<mode>4): New expander.
+	(addv<mode>4): Likewise.
+	(add<mode>3_insn_set_carry): New instruction.
+	(add<mode>3_insn_set_overflow): Likewise.
+	(addsi3_insn_set_overflow): Likewise.
+	(usubv<mode>4): New expander.
+	(subv<mode>4): Likewise.
+	(sub<mode>3_insn_set_carry): New instruction.
+	(sub<mode>3_insn_set_overflow): Likewise.
+	(subsi3_insn_set_overflow): Likewise.
+	(unegv<mode>3): New expander.
+	(negv<mode>3): Likewise.
+	(neg<mode>2_insn_set_overflow): New instruction.
+	(addv_tst<mode>): Likewise.
+	(subv_tst<mode>): Likewise.
+	(negv_tst<mode>): Likewise.
+	(cbranch<mode>4_addv_insn): New splitter and instruction.
+	(cbranch<mode>4_subv_insn): Likewise.
+	(cbranch<mode>4_negv_insn): Likewise.
+
 2016-10-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (ptrs_compare_unequal): Remove code duplication.

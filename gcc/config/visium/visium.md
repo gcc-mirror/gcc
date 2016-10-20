@@ -81,6 +81,9 @@
   UNSPEC_ITOF
   UNSPEC_FTOI
   UNSPEC_NOP
+  UNSPEC_ADDV
+  UNSPEC_SUBV
+  UNSPEC_NEGV
 ])
 
 ;; UNSPEC_VOLATILE usage.
@@ -745,6 +748,27 @@
 		  (match_operand:QHI 2 "register_operand" "")))]
   "")
 
+(define_expand "uaddv<mode>4"
+  [(set (match_operand:I 0 "register_operand" "")
+	(plus:I (match_operand:I 1 "register_operand" "")
+		(match_operand:I 2 "register_operand" "")))
+   (set (pc)
+        (if_then_else (ltu (match_dup 0) (match_dup 1))
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
+  "")
+
+(define_expand "addv<mode>4"
+  [(set (match_operand:I 0 "register_operand" "")
+	(plus:I (match_operand:I 1 "register_operand" "")
+		(match_operand:I 2 "register_operand" "")))
+   (set (pc)
+        (if_then_else (ne (match_dup 0)
+			  (unspec:I [(match_dup 1) (match_dup 2)] UNSPEC_ADDV))
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
+  "")
+
 (define_insn_and_split "*add<mode>3_insn"
   [(set (match_operand:QHI 0 "register_operand" "=r")
 	(plus:QHI (match_operand:QHI 1 "register_operand" "%r")
@@ -763,6 +787,28 @@
 	(plus:QHI (match_operand:QHI 1 "register_operand" "%r")
 		  (match_operand:QHI 2 "register_operand" "r")))
    (clobber (reg:CC R_FLAGS))]
+  "reload_completed"
+  "add<s>   %0,%1,%2"
+  [(set_attr "type" "arith")])
+
+(define_insn "*add<mode>3_insn_set_carry"
+  [(set (match_operand:QHI 0 "register_operand" "=r")
+	(plus:QHI (match_operand:QHI 1 "register_operand" "%r")
+		  (match_operand:QHI 2 "register_operand" "r")))
+   (set (reg:CCC R_FLAGS)
+	(compare:CCC (plus:QHI (match_dup 1) (match_dup 2))
+		     (match_dup 1)))]
+  "reload_completed"
+  "add<s>   %0,%1,%2"
+  [(set_attr "type" "arith")])
+
+(define_insn "*add<mode>3_insn_set_overflow"
+  [(set (match_operand:QHI 0 "register_operand" "=r")
+	(plus:QHI (match_operand:QHI 1 "register_operand" "%r")
+		  (match_operand:QHI 2 "register_operand" "r")))
+   (set (reg:CCV R_FLAGS)
+	(compare:CCV (plus:QHI (match_dup 1) (match_dup 2))
+		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))]
   "reload_completed"
   "add<s>   %0,%1,%2"
   [(set_attr "type" "arith")])
@@ -816,6 +862,19 @@
    (set (reg:CCC R_FLAGS)
 	(compare:CCC (plus:SI (match_dup 1) (match_dup 2))
 		     (match_dup 1)))]
+  "reload_completed"
+  "@
+    add.l   %0,%1,%2
+    addi    %0,%2"
+  [(set_attr "type" "arith")])
+
+(define_insn "*addsi3_insn_set_overflow"
+  [(set (match_operand:SI 0 "register_operand"          "=r,r")
+	(plus:SI (match_operand:SI 1 "register_operand" "%r,0")
+		 (match_operand:SI 2 "real_add_operand" " r,J")))
+   (set (reg:CCV R_FLAGS)
+	(compare:CCV (plus:SI (match_dup 1) (match_dup 2))
+		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))]
   "reload_completed"
   "@
     add.l   %0,%1,%2
@@ -897,6 +956,34 @@
 		   (match_operand:QHI 2 "register_operand" "")))]
   "")
 
+(define_expand "usubv<mode>4"
+  [(set (match_operand:I 0 "register_operand" "")
+	(minus:I (match_operand:I 1 "reg_or_0_operand" "")
+		 (match_operand:I 2 "register_operand" "")))
+   (set (pc)
+        (if_then_else (ltu (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
+  ""
+{
+  if (operands[1] == const0_rtx)
+    {
+      emit_insn (gen_unegv<mode>3 (operands[0], operands[2], operands[3]));
+      DONE;
+    }
+})
+
+(define_expand "subv<mode>4"
+  [(set (match_operand:I 0 "register_operand" "")
+	(minus:I (match_operand:I 1 "register_operand" "")
+		 (match_operand:I 2 "register_operand" "")))
+   (set (pc)
+        (if_then_else (ne (match_dup 0)
+			  (unspec:I [(match_dup 1) (match_dup 2)] UNSPEC_SUBV))
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
+  "")
+
 (define_insn_and_split "*sub<mode>3_insn"
   [(set (match_operand:QHI 0 "register_operand" "=r")
 	(minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "rO")
@@ -915,6 +1002,27 @@
 	(minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "rO")
 		   (match_operand:QHI 2 "register_operand" "r")))
    (clobber (reg:CC R_FLAGS))]
+  "reload_completed"
+  "sub<s>   %0,%r1,%2"
+  [(set_attr "type" "arith")])
+
+(define_insn "*sub<mode>3_insn_set_carry"
+  [(set (match_operand:QHI 0 "register_operand" "=r")
+	(minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "rO")
+		   (match_operand:QHI 2 "register_operand" "r")))
+   (set (reg:CC R_FLAGS)
+	(compare:CC (match_dup 1) (match_dup 2)))]
+  "reload_completed"
+  "sub<s>   %0,%r1,%2"
+  [(set_attr "type" "arith")])
+
+(define_insn "*sub<mode>3_insn_set_overflow"
+  [(set (match_operand:QHI 0 "register_operand" "=r")
+	(minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "rO")
+		   (match_operand:QHI 2 "register_operand" "r")))
+   (set (reg:CCV R_FLAGS)
+	(compare:CCV (minus:QHI (match_dup 1) (match_dup 2))
+		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))]
   "reload_completed"
   "sub<s>   %0,%r1,%2"
   [(set_attr "type" "arith")])
@@ -970,6 +1078,19 @@
   "reload_completed"
   "@
     sub.l   %0,%r1,%2
+    subi    %0,%2"
+  [(set_attr "type" "arith")])
+
+(define_insn "*subsi3_insn_set_overflow"
+  [(set (match_operand:SI 0 "register_operand"           "=r,r")
+	(minus:SI (match_operand:SI 1 "register_operand" " r,0")
+		  (match_operand:SI 2 "real_add_operand" " r,J")))
+   (set (reg:CCV R_FLAGS)
+	(compare:CCV (minus:SI (match_dup 1) (match_dup 2))
+		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))]
+  "reload_completed"
+  "@
+    sub.l   %0,%1,%2
     subi    %0,%2"
   [(set_attr "type" "arith")])
 
@@ -1047,6 +1168,25 @@
 	(neg:I (match_operand:I 1 "register_operand" "")))]
   "")
 
+(define_expand "unegv<mode>3"
+  [(set (match_operand:I 0 "register_operand" "")
+	(neg:I (match_operand:I 1 "register_operand" "")))
+   (set (pc)
+        (if_then_else (ne (match_dup 0) (const_int 0))
+		      (label_ref (match_operand 2 ""))
+		      (pc)))]
+  "")
+
+(define_expand "negv<mode>3"
+  [(set (match_operand:I 0 "register_operand" "")
+	(neg:I (match_operand:I 1 "register_operand" "")))
+   (set (pc)
+        (if_then_else (ne (match_dup 0)
+			  (unspec:I [(match_dup 1)] UNSPEC_NEGV))
+		      (label_ref (match_operand 2 ""))
+		      (pc)))]
+  "")
+
 (define_insn_and_split "*neg<mode>2_insn"
   [(set (match_operand:I 0 "register_operand" "=r")
 	(neg:I (match_operand:I 1 "register_operand" "r")))]
@@ -1073,6 +1213,16 @@
 	(compare:CCC (not:SI (match_dup 1)) (const_int -1)))]
   "reload_completed"
   "sub.l   %0,r0,%1"
+  [(set_attr "type" "arith")])
+
+(define_insn "*neg<mode>2_insn_set_overflow"
+  [(set (match_operand:I 0 "register_operand" "=r")
+	(neg:I (match_operand:I 1 "register_operand" "r")))
+   (set (reg:CCV R_FLAGS)
+	(compare:CCV (neg:I (match_dup 1))
+		     (unspec:I [(match_dup 1)] UNSPEC_NEGV)))]
+  "reload_completed"
+  "sub<s>   %0,r0,%1"
   [(set_attr "type" "arith")])
 
 (define_expand "negdi2"
@@ -1850,6 +2000,45 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
+;; Integer overflow tests
+;;
+;; Modes QI, HI and SI are supported directly.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+
+(define_insn "*addv_tst<mode>"
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (match_operand:I 0 "register_operand" "r")
+ 		     (unspec:I [(match_operand:I 1 "register_operand" "%r")
+				(match_operand:I 2 "register_operand" "r")]
+			       UNSPEC_ADDV)))]
+  "reload_completed"
+  "add<s>   r0,%1,%2"
+  [(set_attr "type" "arith")])
+
+(define_insn "*subv_tst<mode>"
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (match_operand:I 0 "register_operand" "r")
+ 		     (unspec:I [(match_operand:I 1 "reg_or_0_operand" "rO")
+				(match_operand:I 2 "register_operand" "r")]
+			       UNSPEC_SUBV)))]
+  "reload_completed"
+  "sub<s>   r0,%r1,%2"
+  [(set_attr "type" "arith")])
+
+(define_insn "*negv_tst<mode>"
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (match_operand:I 0 "register_operand" "r")
+ 		     (unspec:I [(match_operand:I 1 "register_operand" "r")]
+			       UNSPEC_NEGV)))]
+  "reload_completed"
+  "sub<s>   r0,r0,%1"
+  [(set_attr "type" "arith")])
+
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;; Integer comparisons
 ;;
 ;; Modes QI, HI and SI are supported directly.
@@ -2121,6 +2310,65 @@
 {
   visium_split_cbranch (GET_CODE (operands[0]), operands[1], operands[2],
 			operands[3]);
+  DONE;
+}
+  [(set_attr "type" "cmp")])
+
+(define_insn_and_split "*cbranch<mode>4_addv_insn"
+  [(set (pc)
+	(if_then_else (match_operator 0 "visium_equality_comparison_operator"
+		       [(match_operand:I 1 "register_operand" "r")
+ 		        (unspec:I [(match_operand:I 2 "register_operand" "%r")
+				   (match_operand:I 3 "register_operand" "r")]
+				  UNSPEC_ADDV)])
+		      (label_ref (match_operand 4 ""))
+		      (pc)))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  visium_split_cbranch (GET_CODE (operands[0]), XEXP (operands[0], 0),
+			XEXP (operands[0], 1), operands[4]);
+  DONE;
+}
+  [(set_attr "type" "cmp")])
+
+(define_insn_and_split "*cbranch<mode>4_subv_insn"
+  [(set (pc)
+	(if_then_else (match_operator 0 "visium_equality_comparison_operator"
+		       [(match_operand:I 1 "register_operand" "r")
+ 		        (unspec:I [(match_operand:I 2 "reg_or_0_operand" "rO")
+				   (match_operand:I 3 "register_operand" "r")]
+				  UNSPEC_SUBV)])
+		      (label_ref (match_operand 4 ""))
+		      (pc)))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  visium_split_cbranch (GET_CODE (operands[0]), XEXP (operands[0], 0),
+			XEXP (operands[0], 1), operands[4]);
+  DONE;
+}
+  [(set_attr "type" "cmp")])
+
+(define_insn_and_split "*cbranch<mode>4_negv_insn"
+  [(set (pc)
+	(if_then_else (match_operator 0 "visium_equality_comparison_operator"
+		       [(match_operand:I 1 "register_operand" "r")
+ 		        (unspec:I [(match_operand:I 2 "register_operand" "r")]
+				  UNSPEC_NEGV)])
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  visium_split_cbranch (GET_CODE (operands[0]), XEXP (operands[0], 0),
+			XEXP (operands[0], 1), operands[3]);
   DONE;
 }
   [(set_attr "type" "cmp")])

@@ -1,3 +1,9 @@
+2016-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/visium/overflow8.c: New.
+	* gcc.target/visium/overflow16.c: Likewise.
+	* gcc.target/visium/overflow32: Likewise.
+
 2016-10-20  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/loop-split.c: New test.

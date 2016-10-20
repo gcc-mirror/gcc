@@ -2833,6 +2833,14 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
       && rtx_equal_p (XEXP (op0, 0), op1))
     return CCCmode;
 
+  /* This is for the {add,sub,neg}<mode>3_insn_set_overflow pattern.  */
+  if ((code == EQ || code == NE)
+      && GET_CODE (op1) == UNSPEC
+      && (XINT (op1, 1) == UNSPEC_ADDV
+	  || XINT (op1, 1) == UNSPEC_SUBV
+	  || XINT (op1, 1) == UNSPEC_NEGV))
+    return CCVmode;
+
   if (op1 != const0_rtx)
     return CCmode;
 
@@ -3101,6 +3109,8 @@ output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
     case NE:
       if (cc_mode == CCCmode)
 	cond = "cs";
+      else if (cc_mode == CCVmode)
+	cond = "os";
       else
 	cond = "ne";
       break;
@@ -3108,6 +3118,8 @@ output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
     case EQ:
       if (cc_mode == CCCmode)
 	cond = "cc";
+      else if (cc_mode == CCVmode)
+	cond = "oc";
       else
 	cond = "eq";
       break;

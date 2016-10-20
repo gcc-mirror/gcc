@@ -29,6 +29,10 @@ along with GCC; see the file COPYING3.  If not see
    instruction.  Only the =,!= and unsigned <,>= operators can be used in
    conjunction with it.
 
+   We also have a CCVmode which is used by the arithmetic instructions when
+   they explicitly set the V flag (signed overflow).  Only the =,!= operators
+   can be used in conjunction with it.
+
    We also have two modes to indicate that the condition code is set by the
    the floating-point unit.  One for comparisons which generate an exception
    if the result is unordered (CCFPEmode) and one for comparisons which never
@@ -36,5 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 
 CC_MODE (CCNZ);
 CC_MODE (CCC);
+CC_MODE (CCV);
 CC_MODE (CCFP);
 CC_MODE (CCFPE);

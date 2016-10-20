@@ -143,9 +143,19 @@ conforming_compare (rtx_insn *insn)
   if (!REG_P (dest) || REGNO (dest) != targetm.flags_regnum)
     return NULL;
 
-  if (REG_P (XEXP (src, 0))
-      && (REG_P (XEXP (src, 1)) || CONSTANT_P (XEXP (src, 1))))
+  if (!REG_P (XEXP (src, 0)))
+    return NULL;
+
+  if (CONSTANT_P (XEXP (src, 1)) || REG_P (XEXP (src, 1)))
     return src;
+
+  if (GET_CODE (XEXP (src, 1)) == UNSPEC)
+    {
+      for (int i = 0; i < XVECLEN (XEXP (src, 1), 0); i++)
+	if (!REG_P (XVECEXP (XEXP (src, 1), 0, i)))
+	  return NULL;
+      return src;
+    }
 
   return NULL;
 }
@@ -370,21 +380,24 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
 	  last_cmp_valid = true;
 	}
 
-      /* Notice if this instruction kills the flags register.  */
-      else if (bitmap_bit_p (killed, targetm.flags_regnum))
+      else
 	{
-	  /* See if this insn could be the "clobber" that eliminates
-	     a future comparison.   */
-	  last_clobber = (arithmetic_flags_clobber_p (insn) ? insn : NULL);
+	  /* Notice if this instruction uses the flags register.  */
+	  if (last_cmp)
+	    find_flags_uses_in_insn (last_cmp, insn);
 
-	  /* In either case, the previous compare is no longer valid.  */
-	  last_cmp = NULL;
-	  last_cmp_valid = false;
+	  /* Notice if this instruction kills the flags register.  */
+	  if (bitmap_bit_p (killed, targetm.flags_regnum))
+	    {
+	      /* See if this insn could be the "clobber" that eliminates
+		 a future comparison.   */
+	      last_clobber = (arithmetic_flags_clobber_p (insn) ? insn : NULL);
+
+	      /* In either case, the previous compare is no longer valid.  */
+	      last_cmp = NULL;
+	      last_cmp_valid = false;
+	    }
 	}
-
-      /* Notice if this instruction uses the flags register.  */
-      else if (last_cmp)
-	find_flags_uses_in_insn (last_cmp, insn);
 
       /* Notice if any of the inputs to the comparison have changed.  */
       if (last_cmp_valid
@@ -507,39 +520,16 @@ maybe_select_cc_mode (struct comparison *cmp, rtx a ATTRIBUTE_UNUSED,
   return flags;
 }
 
-/* Attempt to replace a comparison with a prior arithmetic insn that can
-   compute the same flags value as the comparison itself.  Return true if
-   successful, having made all rtl modifications necessary.  */
+/* Return a register RTX holding the same value at START as REG at END, or
+   NULL_RTX if there is none.  */
 
-static bool
-try_eliminate_compare (struct comparison *cmp)
+static rtx
+equivalent_reg_at_start (rtx reg, rtx_insn *end, rtx_insn *start)
 {
-  rtx_insn *insn, *bb_head;
-  rtx x, flags, in_a, cmp_src;
+  rtx_insn *bb_head = BB_HEAD (BLOCK_FOR_INSN (end));
 
-  /* We must have found an interesting "clobber" preceding the compare.  */
-  if (cmp->prev_clobber == NULL)
-    return false;
-
-  /* ??? For the moment we don't handle comparisons for which IN_B
-     is a register.  We accepted these during initial comparison 
-     recognition in order to eliminate duplicate compares.
-     An improvement here would be to handle x = a - b; if (a cmp b).  */
-  if (!CONSTANT_P (cmp->in_b))
-    return false;
-
-  /* Verify that IN_A is not clobbered in between CMP and PREV_CLOBBER.
-     Given that this target requires this pass, we can assume that most
-     insns do clobber the flags, and so the distance between the compare
-     and the clobber is likely to be small.  */
-  /* ??? This is one point at which one could argue that DF_REF_CHAIN would
-     be useful, but it is thought to be too heavy-weight a solution here.  */
-
-  in_a = cmp->in_a;
-  insn = cmp->insn;
-  bb_head = BB_HEAD (BLOCK_FOR_INSN (insn));
-  for (insn = PREV_INSN (insn);
-       insn != cmp->prev_clobber;
+  for (rtx_insn *insn = PREV_INSN (end);
+       insn != start;
        insn = PREV_INSN (insn))
     {
       const int abnormal_flags
@@ -552,13 +542,13 @@ try_eliminate_compare (struct comparison *cmp)
       /* Note that the BB_HEAD is always either a note or a label, but in
 	 any case it means that IN_A is defined outside the block.  */
       if (insn == bb_head)
-	return false;
+	return NULL_RTX;
       if (NOTE_P (insn) || DEBUG_INSN_P (insn))
 	continue;
 
       /* Find a possible def of IN_A in INSN.  */
       FOR_EACH_INSN_DEF (def, insn)
-	if (DF_REF_REGNO (def) == REGNO (in_a))
+	if (DF_REF_REGNO (def) == REGNO (reg))
 	  break;
 
       /* No definitions of IN_A; continue searching.  */
@@ -567,35 +557,87 @@ try_eliminate_compare (struct comparison *cmp)
 
       /* Bail if this is not a totally normal set of IN_A.  */
       if (DF_REF_IS_ARTIFICIAL (def))
-	return false;
+	return NULL_RTX;
       if (DF_REF_FLAGS (def) & abnormal_flags)
-	return false;
+	return NULL_RTX;
 
       /* We've found an insn between the compare and the clobber that sets
 	 IN_A.  Given that pass_cprop_hardreg has not yet run, we still find
 	 situations in which we can usefully look through a copy insn.  */
-      x = single_set (insn);
-      if (x == NULL)
-	return false;
-      in_a = SET_SRC (x);
-      if (!REG_P (in_a))
+      rtx x = single_set (insn);
+      if (x == NULL_RTX)
+	return NULL_RTX;
+      reg = SET_SRC (x);
+      if (!REG_P (reg))
+	return NULL_RTX;
+    }
+
+  return reg;
+}
+
+/* Attempt to replace a comparison with a prior arithmetic insn that can
+   compute the same flags value as the comparison itself.  Return true if
+   successful, having made all rtl modifications necessary.  */
+
+static bool
+try_eliminate_compare (struct comparison *cmp)
+{
+  rtx x, flags, in_a, in_b, cmp_src;
+
+  /* We must have found an interesting "clobber" preceding the compare.  */
+  if (cmp->prev_clobber == NULL)
+    return false;
+
+  /* Verify that IN_A is not clobbered in between CMP and PREV_CLOBBER.
+     Given that this target requires this pass, we can assume that most
+     insns do clobber the flags, and so the distance between the compare
+     and the clobber is likely to be small.  */
+  /* ??? This is one point at which one could argue that DF_REF_CHAIN would
+     be useful, but it is thought to be too heavy-weight a solution here.  */
+  in_a = equivalent_reg_at_start (cmp->in_a, cmp->insn, cmp->prev_clobber);
+  if (!in_a)
+    return false;
+
+  /* Likewise for IN_B if need be.  */
+  if (CONSTANT_P (cmp->in_b))
+    in_b = cmp->in_b;
+  else if (REG_P (cmp->in_b))
+    {
+      in_b = equivalent_reg_at_start (cmp->in_b, cmp->insn, cmp->prev_clobber);
+      if (!in_b)
 	return false;
     }
+  else if (GET_CODE (cmp->in_b) == UNSPEC)
+    {
+      const int len = XVECLEN (cmp->in_b, 0);
+      rtvec v = rtvec_alloc (len);
+      for (int i = 0; i < len; i++)
+	{
+	  rtx r = equivalent_reg_at_start (XVECEXP (cmp->in_b, 0, i),
+					   cmp->insn, cmp->prev_clobber);
+	  if (!r)
+	    return false;
+	  RTVEC_ELT (v, i) = r;
+	}
+      in_b = gen_rtx_UNSPEC (GET_MODE (cmp->in_b), v, XINT (cmp->in_b, 1));
+    }
+  else
+    gcc_unreachable ();
 
   /* We've reached PREV_CLOBBER without finding a modification of IN_A.
      Validate that PREV_CLOBBER itself does in fact refer to IN_A.  Do
      recall that we've already validated the shape of PREV_CLOBBER.  */
+  rtx insn = cmp->prev_clobber;
   x = XVECEXP (PATTERN (insn), 0, 0);
   if (rtx_equal_p (SET_DEST (x), in_a))
     cmp_src = SET_SRC (x);
 
   /* Also check operations with implicit extensions, e.g.:
      [(set (reg:DI)
-	   (zero_extend:DI (plus:SI (reg:SI)(reg:SI))))
+	   (zero_extend:DI (plus:SI (reg:SI) (reg:SI))))
       (set (reg:CCZ flags)
-	   (compare:CCZ
-	     (plus:SI (reg:SI)(reg:SI))
-	     (const_int 0)))]				*/
+	   (compare:CCZ (plus:SI (reg:SI) (reg:SI))
+			(const_int 0)))] */
   else if (REG_P (SET_DEST (x))
 	   && REG_P (in_a)
 	   && REGNO (SET_DEST (x)) == REGNO (in_a)
@@ -603,17 +645,29 @@ try_eliminate_compare (struct comparison *cmp)
 	       || GET_CODE (SET_SRC (x)) == SIGN_EXTEND)
 	   && GET_MODE (XEXP (SET_SRC (x), 0)) == GET_MODE (in_a))
     cmp_src = XEXP (SET_SRC (x), 0);
+
+  /* Also check fully redundant comparisons, e.g.:
+     [(set (reg:SI)
+	   (minus:SI (reg:SI) (reg:SI))))
+      (set (reg:CC flags)
+	   (compare:CC (reg:SI) (reg:SI)))] */
+  else if (REG_P (in_b)
+	   && GET_CODE (SET_SRC (x)) == MINUS
+	   && rtx_equal_p (XEXP (SET_SRC (x), 0), in_a)
+	   && rtx_equal_p (XEXP (SET_SRC (x), 1), in_b))
+    cmp_src = in_a;
+
   else
     return false;
 
   /* Determine if we ought to use a different CC_MODE here.  */
-  flags = maybe_select_cc_mode (cmp, cmp_src, cmp->in_b);
+  flags = maybe_select_cc_mode (cmp, cmp_src, in_b);
   if (flags == NULL)
     flags = gen_rtx_REG (cmp->orig_mode, targetm.flags_regnum);
 
   /* Generate a new comparison for installation in the setter.  */
   x = copy_rtx (cmp_src);
-  x = gen_rtx_COMPARE (GET_MODE (flags), x, cmp->in_b);
+  x = gen_rtx_COMPARE (GET_MODE (flags), x, in_b);
   x = gen_rtx_SET (flags, x);
 
   /* Succeed if the new instruction is valid.  Note that we may have started

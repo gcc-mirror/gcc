@@ -131,12 +131,16 @@
   (match_code "eq,ne"))
 
 ;; Return true if OP is a valid comparison operator for CCNZmode.
-(define_special_predicate "visium_nz_comparison_operator"
+(define_predicate "visium_nz_comparison_operator"
   (match_code "eq,ne,lt,ge"))
 
 ;; Return true if OP is a valid comparison operator for CCCmode.
-(define_special_predicate "visium_c_comparison_operator"
+(define_predicate "visium_c_comparison_operator"
   (match_code "eq,ne,ltu,geu"))
+
+;; Return true if OP is a valid comparison operator for CCVmode.
+(define_predicate "visium_v_comparison_operator"
+  (match_code "eq,ne"))
 
 ;; Return true if OP is a valid FP comparison operator.
 (define_predicate "visium_fp_comparison_operator"
@@ -155,6 +159,8 @@
       return visium_nz_comparison_operator (op, mode);
     case CCCmode:
       return visium_c_comparison_operator (op, mode);
+    case CCVmode:
+      return visium_v_comparison_operator (op, mode);
     case CCFPmode:
     case CCFPEmode:
       return visium_fp_comparison_operator (op, mode);
