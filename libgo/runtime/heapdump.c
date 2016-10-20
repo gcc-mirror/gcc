@@ -298,8 +298,8 @@ dumpgoroutine(G *gp)
 		dumpint(TagPanic);
 		dumpint((uintptr)p);
 		dumpint((uintptr)gp);
-		dumpint((uintptr)p->arg.__type_descriptor);
-		dumpint((uintptr)p->arg.__object);
+		dumpint((uintptr)p->arg._type);
+		dumpint((uintptr)p->arg.data);
 		dumpint((uintptr)0);
 		dumpint((uintptr)p->next);
 	}

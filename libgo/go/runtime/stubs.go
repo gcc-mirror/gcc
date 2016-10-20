@@ -73,7 +73,6 @@ func reflect_memclr(ptr unsafe.Pointer, n uintptr) {
 }
 
 // memmove copies n bytes from "from" to "to".
-// in memmove_*.s
 //go:noescape
 func memmove(to, from unsafe.Pointer, n uintptr)
 
@@ -81,6 +80,10 @@ func memmove(to, from unsafe.Pointer, n uintptr)
 func reflect_memmove(to, from unsafe.Pointer, n uintptr) {
 	memmove(to, from, n)
 }
+
+//go:noescape
+//extern __builtin_memcmp
+func memcmp(a, b unsafe.Pointer, size uintptr) int32
 
 // exported value for testing
 var hashLoad = loadFactor
@@ -465,4 +468,9 @@ func setMaxThreads(in int) (out int) {
 //go:nosplit
 func atomicstorep(ptr unsafe.Pointer, new unsafe.Pointer) {
 	atomic.StorepNoWB(noescape(ptr), new)
+}
+
+// Temporary for gccgo until we port mbarrier.go
+func writebarrierptr(dst *uintptr, src uintptr) {
+	*dst = src
 }

@@ -323,9 +323,8 @@ Expression::convert_interface_to_interface(Type *lhs_type, Expression* rhs,
   if (for_type_guard)
     {
       // A type assertion fails when converting a nil interface.
-      first_field =
-          Runtime::make_call(Runtime::ASSERT_INTERFACE, location, 2,
-                             lhs_type_expr, rhs_type_expr);
+      first_field = Runtime::make_call(Runtime::ASSERTITAB, location, 2,
+				       lhs_type_expr, rhs_type_expr);
     }
   else if (lhs_is_empty)
     {
@@ -337,9 +336,8 @@ Expression::convert_interface_to_interface(Type *lhs_type, Expression* rhs,
     {
       // A conversion to a non-empty interface may fail, but unlike a
       // type assertion converting nil will always succeed.
-      first_field =
-          Runtime::make_call(Runtime::CONVERT_INTERFACE, location, 2,
-                             lhs_type_expr, rhs_type_expr);
+      first_field = Runtime::make_call(Runtime::REQUIREITAB, location, 2,
+				       lhs_type_expr, rhs_type_expr);
     }
 
   // The second field is simply the object pointer.
@@ -370,7 +368,7 @@ Expression::convert_interface_to_type(Type *lhs_type, Expression* rhs,
   Expression* rhs_inter_expr = Expression::make_type_descriptor(rhs_type,
                                                                 location);
 
-  Expression* check_iface = Runtime::make_call(Runtime::CHECK_INTERFACE_TYPE,
+  Expression* check_iface = Runtime::make_call(Runtime::ASSERTI2T,
                                                location, 3, lhs_type_expr,
                                                rhs_descriptor, rhs_inter_expr);
 
@@ -1290,7 +1288,10 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
       && !no->func_declaration_value()->asm_name().empty()
       && Linemap::is_predeclared_location(no->location()))
     {
-      var_name = no->func_declaration_value()->asm_name() + "_descriptor";
+      if (no->func_declaration_value()->asm_name().substr(0, 8) != "runtime.")
+	var_name = no->func_declaration_value()->asm_name() + "_descriptor";
+      else
+	var_name = no->func_declaration_value()->asm_name() + "$descriptor";
       is_descriptor = true;
     }
   else
@@ -6196,9 +6197,18 @@ Expression::comparison(Translate_context* context, Type* result_type,
 
   if (left_type->is_string_type() && right_type->is_string_type())
     {
-      left = Runtime::make_call(Runtime::STRCMP, location, 2,
-                                left, right);
-      right = zexpr;
+      if (op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ)
+	{
+	  left = Runtime::make_call(Runtime::EQSTRING, location, 2,
+				    left, right);
+	  right = Expression::make_boolean(true, location);
+	}
+      else
+	{
+	  left = Runtime::make_call(Runtime::CMPSTRING, location, 2,
+				    left, right);
+	  right = zexpr;
+	}
     }
   else if ((left_type->interface_type() != NULL
 	    && right_type->interface_type() == NULL
@@ -6230,11 +6240,12 @@ Expression::comparison(Translate_context* context, Type* result_type,
           Expression::make_type_descriptor(right_type, location);
       left =
           Runtime::make_call((left_type->interface_type()->is_empty()
-                              ? Runtime::EMPTY_INTERFACE_VALUE_COMPARE
-                              : Runtime::INTERFACE_VALUE_COMPARE),
+                              ? Runtime::EFACEVALEQ
+                              : Runtime::IFACEVALEQ),
                              location, 3, left, descriptor,
                              pointer_arg);
-      right = zexpr;
+      go_assert(op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ);
+      right = Expression::make_boolean(true, location);
     }
   else if (left_type->interface_type() != NULL
 	   && right_type->interface_type() != NULL)
@@ -6242,25 +6253,25 @@ Expression::comparison(Translate_context* context, Type* result_type,
       Runtime::Function compare_function;
       if (left_type->interface_type()->is_empty()
 	  && right_type->interface_type()->is_empty())
-	compare_function = Runtime::EMPTY_INTERFACE_COMPARE;
+	compare_function = Runtime::EFACEEQ;
       else if (!left_type->interface_type()->is_empty()
 	       && !right_type->interface_type()->is_empty())
-	compare_function = Runtime::INTERFACE_COMPARE;
+	compare_function = Runtime::IFACEEQ;
       else
 	{
 	  if (left_type->interface_type()->is_empty())
 	    {
-	      go_assert(op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ);
 	      std::swap(left_type, right_type);
 	      std::swap(left, right);
 	    }
 	  go_assert(!left_type->interface_type()->is_empty());
 	  go_assert(right_type->interface_type()->is_empty());
-	  compare_function = Runtime::INTERFACE_EMPTY_COMPARE;
+	  compare_function = Runtime::IFACEEFACEEQ;
 	}
 
       left = Runtime::make_call(compare_function, location, 2, left, right);
-      right = zexpr;
+      go_assert(op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ);
+      right = Expression::make_boolean(true, location);
     }
 
   if (left_type->is_nil_type()

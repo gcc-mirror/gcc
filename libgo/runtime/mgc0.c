@@ -62,8 +62,6 @@
 // Slice aka __go_open_array.
 #define array __values
 #define cap __capacity
-// Iface aka __go_interface
-#define tab __methods
 // Hmap aka __go_map
 typedef struct __go_map Hmap;
 // Type aka __go_type_descriptor
@@ -907,12 +905,12 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			eface = (Eface*)(stack_top.b + pc[1]);
 			pc += 2;
 			if(Debug > 2)
-				runtime_printf("gc_eface @%p: %p %p\n", stack_top.b+pc[1], eface->__type_descriptor, eface->__object);
-			if(eface->__type_descriptor == nil)
+				runtime_printf("gc_eface @%p: %p %p\n", stack_top.b+pc[1], eface->_type, eface->data);
+			if(eface->_type == nil)
 				continue;
 
 			// eface->type
-			t = eface->__type_descriptor;
+			t = eface->_type;
 			if((const byte*)t >= arena_start && (const byte*)t < arena_used) {
 				union { const Type *tc; Type *tr; } u;
 				u.tc = t;
@@ -921,13 +919,13 @@ scanblock(Workbuf *wbuf, bool keepworking)
 					flushptrbuf(&sbuf);
 			}
 
-			// eface->__object
-			if((byte*)eface->__object >= arena_start && (byte*)eface->__object < arena_used) {
+			// eface->data
+			if((byte*)eface->data >= arena_start && (byte*)eface->data < arena_used) {
 				if(__go_is_pointer_type(t)) {
 					if((t->__code & kindNoPointers))
 						continue;
 
-					obj = eface->__object;
+					obj = eface->data;
 					if((t->__code & kindMask) == kindPtr) {
 						// Only use type information if it is a pointer-containing type.
 						// This matches the GC programs written by cmd/gc/reflect.c's
@@ -937,7 +935,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 							objti = (uintptr)((const PtrType*)t)->elem->__gc;
 					}
 				} else {
-					obj = eface->__object;
+					obj = eface->data;
 					objti = (uintptr)t->__gc;
 				}
 			}
@@ -947,7 +945,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			iface = (Iface*)(stack_top.b + pc[1]);
 			pc += 2;
 			if(Debug > 2)
-				runtime_printf("gc_iface @%p: %p/%p %p\n", stack_top.b+pc[1], iface->__methods[0], nil, iface->__object);
+				runtime_printf("gc_iface @%p: %p/%p %p\n", stack_top.b+pc[1], *(Type**)iface->tab, nil, iface->data);
 			if(iface->tab == nil)
 				continue;
 			
@@ -959,13 +957,13 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			}
 
 			// iface->data
-			if((byte*)iface->__object >= arena_start && (byte*)iface->__object < arena_used) {
-				t = (const Type*)iface->tab[0];
+			if((byte*)iface->data >= arena_start && (byte*)iface->data < arena_used) {
+				t = *(Type**)iface->tab;
 				if(__go_is_pointer_type(t)) {
 					if((t->__code & kindNoPointers))
 						continue;
 
-					obj = iface->__object;
+					obj = iface->data;
 					if((t->__code & kindMask) == kindPtr) {
 						// Only use type information if it is a pointer-containing type.
 						// This matches the GC programs written by cmd/gc/reflect.c's
@@ -975,7 +973,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 							objti = (uintptr)((const PtrType*)t)->elem->__gc;
 					}
 				} else {
-					obj = iface->__object;
+					obj = iface->data;
 					objti = (uintptr)t->__gc;
 				}
 			}
@@ -2448,8 +2446,8 @@ runfinq(void* dummy __attribute__ ((unused)))
 	fb = nil;
 	next = nil;
 	i = 0;
-	ef.__type_descriptor = nil;
-	ef.__object = nil;
+	ef._type = nil;
+	ef.data = nil;
 	
 	// force flush to memory
 	USED(&f);
@@ -2483,16 +2481,18 @@ runfinq(void* dummy __attribute__ ((unused)))
 					param = &f->arg;
 				} else if(((const InterfaceType*)fint)->__methods.__count == 0) {
 					// convert to empty interface
-					ef.__type_descriptor = (const Type*)f->ot;
-					ef.__object = f->arg;
+					// using memcpy as const_cast.
+					memcpy(&ef._type, &f->ot,
+					       sizeof ef._type);
+					ef.data = f->arg;
 					param = &ef;
 				} else {
 					// convert to interface with methods
-					iface.__methods = __go_convert_interface_2((const Type*)fint,
-										   (const Type*)f->ot,
-										   1);
-					iface.__object = f->arg;
-					if(iface.__methods == nil)
+					iface.tab = getitab(fint,
+							    (const Type*)f->ot,
+							    true);
+					iface.data = f->arg;
+					if(iface.data == nil)
 						runtime_throw("invalid type conversion in runfinq");
 					param = &iface;
 				}
@@ -2514,8 +2514,8 @@ runfinq(void* dummy __attribute__ ((unused)))
 		fb = nil;
 		next = nil;
 		i = 0;
-		ef.__type_descriptor = nil;
-		ef.__object = nil;
+		ef._type = nil;
+		ef.data = nil;
 		runtime_gc(1);	// trigger another gc to clean up the finalized objects, if possible
 	}
 }

@@ -6,7 +6,6 @@
 
 #include "runtime.h"
 #include "go-alloc.h"
-#include "interface.h"
 #include "go-panic.h"
 #include "go-type.h"
 
@@ -170,7 +169,8 @@ _cgo_panic (const char *p)
   intgo len;
   unsigned char *data;
   String *ps;
-  struct __go_empty_interface e;
+  Eface e;
+  const struct __go_type_descriptor *td;
 
   runtime_exitsyscall (0);
   len = __builtin_strlen (p);
@@ -179,8 +179,9 @@ _cgo_panic (const char *p)
   ps = alloc_saved (sizeof *ps);
   ps->str = data;
   ps->len = len;
-  e.__type_descriptor = &string_type_descriptor;
-  e.__object = ps;
+  td = &string_type_descriptor;
+  memcpy(&e._type, &td, sizeof td); /* This is a const_cast.  */
+  e.data = ps;
 
   /* We don't call runtime_entersyscall here, because normally what
      will happen is that we will walk up the stack to a Go deferred

@@ -138,11 +138,15 @@ type funcval struct {
 	// variable-size, fn-specific data here
 }
 
+// The representation of a non-empty interface.
+// See comment in iface.go for more details on this struct.
 type iface struct {
 	tab  unsafe.Pointer
 	data unsafe.Pointer
 }
 
+// The representation of an empty interface.
+// See comment in iface.go for more details on this struct.
 type eface struct {
 	_type *_type
 	data  unsafe.Pointer

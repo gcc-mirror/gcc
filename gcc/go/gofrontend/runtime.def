@@ -50,8 +50,11 @@ DEF_GO_RUNTIME(CONCATSTRING4, "runtime.concatstring4",
 DEF_GO_RUNTIME(CONCATSTRING5, "runtime.concatstring5",
 	       P2(POINTER, ARRAY5STRING), R1(STRING))
 
+// Compare two strings for equality.
+DEF_GO_RUNTIME(EQSTRING, "runtime.eqstring", P2(STRING, STRING), R1(BOOL))
+
 // Compare two strings.
-DEF_GO_RUNTIME(STRCMP, "__go_strcmp", P2(STRING, STRING), R1(INT))
+DEF_GO_RUNTIME(CMPSTRING, "runtime.cmpstring", P2(STRING, STRING), R1(INT))
 
 // Take a slice of a string.
 DEF_GO_RUNTIME(STRING_SLICE, "__go_string_slice", P3(STRING, INT, INT),
@@ -259,22 +262,27 @@ DEF_GO_RUNTIME(IFACEE2T2, "runtime.ifaceE2T2", P3(TYPE, EFACE, POINTER),
 DEF_GO_RUNTIME(IFACEI2T2, "runtime.ifaceI2T2", P3(TYPE, IFACE, POINTER),
 	       R1(BOOL))
 
-// A type assertion from one interface type to another.  This is
-// used for a type assertion.
-DEF_GO_RUNTIME(ASSERT_INTERFACE, "__go_assert_interface", P2(TYPE, TYPE), R1(POINTER))
+// Return the interface method table for the second type converted to
+// the first type which is a (possibly empty) interface type.  Panics
+// if the second type is nil (indicating a nil interface value) or if
+// the conversion is not possible.  Used for type assertions.  This is
+// like REQUIREITAB, but for type assertions.
+DEF_GO_RUNTIME(ASSERTITAB, "runtime.assertitab", P2(TYPE, TYPE), R1(POINTER))
 
-// Convert one interface type to another.  This is used for an
-// assignment.
-DEF_GO_RUNTIME(CONVERT_INTERFACE, "__go_convert_interface", P2(TYPE, TYPE),
+// Return the interface method table for the second type converted to
+// the first type, which is a non-empty interface type.  Return nil if
+// the second type is nil, indicating a nil interface value.  Panics
+// if the conversion is not possible.  Used for assignments.  This is
+// like ASSERTITAB, but for assignments.
+DEF_GO_RUNTIME(REQUIREITAB, "runtime.requireitab", P2(TYPE, TYPE),
 	       R1(POINTER))
 
 // Check whether an interface type may be converted to a
 // non-interface type.
-DEF_GO_RUNTIME(CHECK_INTERFACE_TYPE, "__go_check_interface_type",
-	       P3(TYPE, TYPE, TYPE), R0())
+DEF_GO_RUNTIME(ASSERTI2T, "runtime.assertI2T", P3(TYPE, TYPE, TYPE), R0())
 
-// Return whether we can convert an interface type to a type.
-DEF_GO_RUNTIME(IFACEI2TP, "runtime.ifaceI2Tp", P2(TYPE, TYPE), R1(BOOL))
+// Return whether we can convert a type to an interface type.
+DEF_GO_RUNTIME(IFACET2IP, "runtime.ifaceT2Ip", P2(TYPE, TYPE), R1(BOOL))
 
 // Get the type descriptor of an empty interface.
 DEF_GO_RUNTIME(EFACETYPE, "runtime.efacetype", P1(EFACE), R1(TYPE))
@@ -287,25 +295,22 @@ DEF_GO_RUNTIME(IFACETYPE, "runtime.ifacetype", P1(IFACE), R1(TYPE))
 DEF_GO_RUNTIME(IFACETYPEEQ, "runtime.ifacetypeeq", P2(TYPE, TYPE), R1(BOOL))
 
 // Compare two empty interface values.
-DEF_GO_RUNTIME(EMPTY_INTERFACE_COMPARE, "__go_empty_interface_compare",
-	       P2(EFACE, EFACE), R1(INT))
+DEF_GO_RUNTIME(EFACEEQ, "runtime.efaceeq", P2(EFACE, EFACE), R1(BOOL))
 
 // Compare an empty interface value to a non-interface value.
-DEF_GO_RUNTIME(EMPTY_INTERFACE_VALUE_COMPARE,
-	       "__go_empty_interface_value_compare",
-	       P3(EFACE, TYPE, POINTER), R1(INT))
+DEF_GO_RUNTIME(EFACEVALEQ, "runtime.efacevaleq", P3(EFACE, TYPE, POINTER),
+	       R1(BOOL))
 
 // Compare two non-empty interface values.
-DEF_GO_RUNTIME(INTERFACE_COMPARE, "__go_interface_compare",
-	       P2(IFACE, IFACE), R1(INT))
+DEF_GO_RUNTIME(IFACEEQ, "runtime.ifaceeq", P2(IFACE, IFACE), R1(BOOL))
 
 // Compare a non-empty interface value to a non-interface value.
-DEF_GO_RUNTIME(INTERFACE_VALUE_COMPARE, "__go_interface_value_compare",
-	       P3(IFACE, TYPE, POINTER), R1(INT))
+DEF_GO_RUNTIME(IFACEVALEQ, "runtime.ifacevaleq", P3(IFACE, TYPE, POINTER),
+	       R1(BOOL))
 
 // Compare a non-empty interface value to an interface value.
-DEF_GO_RUNTIME(INTERFACE_EMPTY_COMPARE, "__go_interface_empty_compare",
-	       P2(IFACE, EFACE), R1(INT))
+DEF_GO_RUNTIME(IFACEEFACEEQ, "runtime.ifaceefaceeq", P2(IFACE, EFACE),
+	       R1(BOOL))
 
 
 // Lock the printer (for print/println).

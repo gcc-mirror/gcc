@@ -25,6 +25,22 @@ type _type struct {
 	ptrToThis *_type
 }
 
+// Return whether two type descriptors are equal.
+// This is gccgo-specific, as gccgo, unlike gc, permits multiple
+// independent descriptors for a single type.
+func eqtype(t1, t2 *_type) bool {
+	switch {
+	case t1 == t2:
+		return true
+	case t1 == nil || t2 == nil:
+		return false
+	case t1.kind != t2.kind || t1.hash != t2.hash:
+		return false
+	default:
+		return *t1.string == *t2.string
+	}
+}
+
 type method struct {
 	name    *string
 	pkgPath *string

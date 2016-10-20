@@ -12,7 +12,6 @@
 #include "malloc.h"
 #include "go-alloc.h"
 #include "go-panic.h"
-#include "interface.h"
 
 /* Print the panic stack.  This is used when there is no recover.  */
 
@@ -35,7 +34,7 @@ __printpanics (Panic *p)
    function.  */
 
 void
-__go_panic (struct __go_empty_interface arg)
+__go_panic (Eface arg)
 {
   G *g;
   Panic *n;

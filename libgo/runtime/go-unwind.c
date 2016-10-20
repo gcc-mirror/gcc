@@ -67,8 +67,8 @@ __go_check_defer (_Bool *frame)
 
       n = (Panic *) __go_alloc (sizeof (Panic));
 
-      n->arg.__type_descriptor = NULL;
-      n->arg.__object = NULL;
+      n->arg._type = NULL;
+      n->arg.data = NULL;
       n->recovered = 0;
       n->isforeign = 1;
       n->next = g->_panic;
