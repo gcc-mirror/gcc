@@ -3328,7 +3328,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 					       TREE_OPERAND (expr, 0));
 
     case LSHIFT_EXPR:
-      /* We will only warn on unsigned shifts here, because the majority of
+      /* We will only warn on signed shifts here, because the majority of
 	 false positive warnings happen in code where unsigned arithmetic
 	 was used in anticipation of a possible overflow.
 	 Furthermore, if we see an unsigned type here we know that the
