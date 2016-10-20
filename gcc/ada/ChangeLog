@@ -1,3 +1,8 @@
+2016-10-20  Nicolas Roche  <roche@adacore.com>
+
+	* gcc-interface/Makefile (x86-64/Linux): Restore missing pairs.
+	(x86/Darwin): Likewise.
+
 2016-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-linux-armel.ads: Rename into...
