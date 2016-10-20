@@ -1,3 +1,7 @@
+2016-10-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (c_common_truthvalue_conversion): Fix the comment.
+
 2016-10-20  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Update __cpp_concepts value.
