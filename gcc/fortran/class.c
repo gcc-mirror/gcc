@@ -707,7 +707,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 	  if (!gfc_add_component (fclass, "_len", &c))
 	    return false;
 	  c->ts.type = BT_INTEGER;
-	  c->ts.kind = 4;
+	  c->ts.kind = gfc_charlen_int_kind;
 	  c->attr.access = ACCESS_PRIVATE;
 	  c->attr.artificial = 1;
 	}
