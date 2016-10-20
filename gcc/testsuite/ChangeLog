@@ -1,3 +1,8 @@
+2016-10-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-c++-common/wdate-time.c: Restored test case.
+	* g++.dg/warn/Wconversion-real.C: Deleted empty file.
+
 2016-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/inline-var1.C (w): Initialize to 64 + 2.
