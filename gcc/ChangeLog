@@ -1,4 +1,8 @@
-2016-10-20 Uros Bizjak  <ubizjak@gmail.com>
+2016-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/gty.texi (for_user): Use @item next to @findex.
+
+2016-10-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78037
 	* config/i386/bmiintrin.h (__tzcnt_u16): Call __builtin_ia32_tzcnt_u16.
