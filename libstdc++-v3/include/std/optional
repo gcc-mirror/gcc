@@ -568,15 +568,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return *this;
       }
 
-      template<typename _Up = _Tp,
-               enable_if_t<__and_<
-			     __not_<is_same<optional<_Tp>, decay_t<_Up>>>,
-			     is_constructible<_Tp, _Up>,
-			     __not_<__and_<is_scalar<_Tp>,
-					   is_same<_Tp, decay_t<_Up>>>>,
-			     is_assignable<_Tp&, _Up>>::value,
-			   bool> = true>
-        optional&
+      template<typename _Up = _Tp>
+        enable_if_t<__and_<
+		      __not_<is_same<optional<_Tp>, decay_t<_Up>>>,
+		      is_constructible<_Tp, _Up>,
+		      __not_<__and_<is_scalar<_Tp>,
+				    is_same<_Tp, decay_t<_Up>>>>,
+		      is_assignable<_Tp&, _Up>>::value,
+		    optional&>
         operator=(_Up&& __u)
         {
           if (this->_M_is_engaged())
@@ -587,16 +586,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           return *this;
         }
 
-      template<typename _Up,
-               enable_if_t<__and_<
-			     __not_<is_same<_Tp, _Up>>,
-			     is_constructible<_Tp, const _Up&>,
-			     is_assignable<_Tp&, _Up>,
-			     __not_<__converts_from_optional<_Tp, _Up>>,
-			     __not_<__assigns_from_optional<_Tp, _Up>>
-			     >::value,
-			   bool> = true>
-        optional&
+      template<typename _Up>
+	enable_if_t<__and_<
+		      __not_<is_same<_Tp, _Up>>,
+		      is_constructible<_Tp, const _Up&>,
+		      is_assignable<_Tp&, _Up>,
+		      __not_<__converts_from_optional<_Tp, _Up>>,
+		      __not_<__assigns_from_optional<_Tp, _Up>>
+		      >::value,
+		    optional&>
         operator=(const optional<_Up>& __u)
         {
           if (__u)
@@ -613,16 +611,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           return *this;
         }
 
-      template<typename _Up,
-	       enable_if_t<__and_<
-			     __not_<is_same<_Tp, _Up>>,
-			     is_constructible<_Tp, _Up>,
-			     is_assignable<_Tp&, _Up>,
-			     __not_<__converts_from_optional<_Tp, _Up>>,
-			     __not_<__assigns_from_optional<_Tp, _Up>>
-			     >::value,
-			   bool> = true>
-        optional&
+      template<typename _Up>
+	enable_if_t<__and_<
+		      __not_<is_same<_Tp, _Up>>,
+		      is_constructible<_Tp, _Up>,
+		      is_assignable<_Tp&, _Up>,
+		      __not_<__converts_from_optional<_Tp, _Up>>,
+		      __not_<__assigns_from_optional<_Tp, _Up>>
+		      >::value,
+		    optional&>
         operator=(optional<_Up>&& __u)
         {
           if (__u)

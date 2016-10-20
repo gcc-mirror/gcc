@@ -1,3 +1,12 @@
+2016-10-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Do the operator= SFINAE in the return type for optional,
+	not in the template parameters.
+	* include/std/optional (operator=(_Up&&)): Move SFINAE
+	from template parameters to the return type.
+	(operator=(const optional<_Up>&)): Likewise.
+	(operator=(optional<_Up>&&)): Likewise.
+
 2016-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/allocator.h: Remove trailing whitespace, tab-indent.
