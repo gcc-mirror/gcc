@@ -402,7 +402,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fsemantic-interposition -fshrink-wrap -fshrink-wrap-separate @gol
 -fsignaling-nans @gol
--fsingle-precision-constant -fsplit-ivs-in-unroller @gol
+-fsingle-precision-constant -fsplit-ivs-in-unroller -fsplit-loops@gol
 -fsplit-paths @gol
 -fsplit-wide-types -fssa-backprop -fssa-phiopt @gol
 -fstdarg-opt -fstrict-aliasing @gol
@@ -9223,6 +9223,11 @@ Enabled with @option{-O3} and/or @option{-fprofile-use}.
 @opindex fmove-loop-invariants
 Enables the loop invariant motion pass in the RTL loop optimizer.  Enabled
 at level @option{-O1}
+
+@item -fsplit-loops
+@opindex fsplit-loops
+Split a loop into two if it contains a condition that's always true
+for one side of the iteration space and false for the other.
 
 @item -funswitch-loops
 @opindex funswitch-loops

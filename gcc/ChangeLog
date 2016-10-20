@@ -1,3 +1,20 @@
+2016-10-20  Michael Matz  <matz@suse.de>
+
+	Loop splitting.
+	* common.opt (-fsplit-loops): New flag.
+	* passes.def (pass_loop_split): Add.
+	* opts.c (default_options_table): Add OPT_fsplit_loops entry at -O3.
+	(enable_fdo_optimizations): Add loop splitting.
+	* timevar.def (TV_LOOP_SPLIT): Add.
+	* tree-pass.h (make_pass_loop_split): Declare.
+	* tree-ssa-loop-manip.h (rewrite_into_loop_closed_ssa_1): Declare.
+	* tree-ssa-loop-unswitch.c: Include tree-ssa-loop-manip.h,
+	* tree-ssa-loop-split.c: New file.
+	* Makefile.in (OBJS): Add tree-ssa-loop-split.o.
+	* doc/invoke.texi (fsplit-loops): Document.
+	* doc/passes.texi (Loop optimization): Add paragraph about loop
+	splitting.
+
 2016-10-20  Richard Biener  <rguenther@suse.de>
 
 	* cgraphunit.c (analyze_functions): Set node->definition to

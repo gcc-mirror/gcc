@@ -269,6 +269,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
+	  NEXT_PASS (pass_loop_split);
 	  NEXT_PASS (pass_record_bounds);
 	  NEXT_PASS (pass_loop_distribution);
 	  NEXT_PASS (pass_copy_prop);
