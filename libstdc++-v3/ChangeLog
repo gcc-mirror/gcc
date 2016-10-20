@@ -1,5 +1,8 @@
 2016-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/allocator.h: Remove trailing whitespace, tab-indent.
+	* include/ext/new_allocator.h: Likewise.
+
 	PR libstdc++/78052
 	* include/bits/allocator.h (allocator<void>::construct)
 	(allocator<void>::destroy): Define.

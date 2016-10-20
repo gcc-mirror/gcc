@@ -75,8 +75,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef void        value_type;
 
       template<typename _Tp1>
-        struct rebind
-        { typedef allocator<_Tp1> other; };
+	struct rebind
+	{ typedef allocator<_Tp1> other; };
 
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -86,13 +86,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef true_type is_always_equal;
 
       template<typename _Up, typename... _Args>
-        void
-        construct(_Up* __p, _Args&&... __args)
+	void
+	construct(_Up* __p, _Args&&... __args)
 	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
 
       template<typename _Up>
-        void
-        destroy(_Up* __p) { __p->~_Up(); }
+	void
+	destroy(_Up* __p) { __p->~_Up(); }
 #endif
     };
 
@@ -117,8 +117,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp        value_type;
 
       template<typename _Tp1>
-        struct rebind
-        { typedef allocator<_Tp1> other; };
+	struct rebind
+	{ typedef allocator<_Tp1> other; };
 
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -134,7 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : __allocator_base<_Tp>(__a) { }
 
       template<typename _Tp1>
-        allocator(const allocator<_Tp1>&) throw() { }
+	allocator(const allocator<_Tp1>&) throw() { }
 
       ~allocator() throw() { }
 
