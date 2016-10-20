@@ -13,7 +13,7 @@ inline int var22 = foo (7);
 extern inline int var23, var22;
 inline int var23 = foo (8);
 
-static int v, w;
+static int v, w = 64 + 2;
 
 int
 foo (int x)
