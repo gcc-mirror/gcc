@@ -1208,6 +1208,7 @@ analyze_functions (bool first_time)
 	         so they effectively appear as readonly.  Show that to
 		 the debug machinery.  */
 	      TREE_READONLY (node->decl) = 1;
+	      node->definition = false;
 	      (*debug_hooks->late_global_decl) (node->decl);
 	    }
 

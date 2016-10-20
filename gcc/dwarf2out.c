@@ -21264,7 +21264,6 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   tree ultimate_origin;
   dw_die_ref var_die;
   dw_die_ref old_die = decl ? lookup_decl_die (decl) : NULL;
-  dw_die_ref origin_die = NULL;
   bool declaration = (DECL_EXTERNAL (decl_or_origin)
 		      || class_or_namespace_scope_p (context_die));
   bool specialization_p = false;
@@ -21424,7 +21423,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
     var_die = new_die (DW_TAG_variable, context_die, decl);
 
   if (origin != NULL)
-    origin_die = add_abstract_origin_attribute (var_die, origin);
+    add_abstract_origin_attribute (var_die, origin);
 
   /* Loop unrolling can create multiple blocks that refer to the same
      static variable, so we must test for the DW_AT_declaration flag.
@@ -21500,10 +21499,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	     already set.  */
 	  || (VAR_P (decl_or_origin)
 	      && TREE_STATIC (decl_or_origin)
-	      && DECL_RTL_SET_P (decl_or_origin)))
-      /* When abstract origin already has DW_AT_location attribute, no need
-	 to add it again.  */
-      && (origin_die == NULL || get_AT (origin_die, DW_AT_location) == NULL))
+	      && DECL_RTL_SET_P (decl_or_origin))))
     {
       if (early_dwarf)
 	add_pubname (decl_or_origin, var_die);
@@ -23969,11 +23965,11 @@ dwarf2out_late_global_decl (tree decl)
 
       if (die)
 	{
-	  /* We get called during the early debug phase via the symtab
-	     code invoking late_global_decl for symbols that are optimized
-	     out.  When the early phase is not finished, do not add
-	     locations.  */
-	  if (! early_dwarf_finished)
+	  /* We get called via the symtab code invoking late_global_decl
+	     for symbols that are optimized out.  Do not add locations
+	     for those.  */
+	  varpool_node *node = varpool_node::get (decl);
+	  if (! node || ! node->definition)
 	    tree_add_const_value_attribute_for_decl (die, decl);
 	  else
 	    add_location_or_const_value_attribute (die, decl, false);

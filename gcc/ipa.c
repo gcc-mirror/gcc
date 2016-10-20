@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "dbgcnt.h"
+#include "debug.h"
 
 
 /* Return true when NODE has ADDR reference.  */
@@ -622,6 +623,12 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  if (file)
 	    fprintf (file, " %s/%i", vnode->name (), vnode->order);
           vnext = next_variable (vnode);
+	  /* Signal removal to the debug machinery.  */
+	  if (! flag_wpa)
+	    {
+	      vnode->definition = false;
+	      (*debug_hooks->late_global_decl) (vnode->decl);
+	    }
 	  vnode->remove ();
 	  changed = true;
 	}
