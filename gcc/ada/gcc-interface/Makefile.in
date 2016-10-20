@@ -2274,6 +2274,9 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
 
     ifeq ($(strip $(MULTISUBDIR)),/x86_64)
       SO_OPTS += -m64
+      LIBGNAT_TARGET_PAIRS += $(X86_64_TARGET_PAIRS)
+    else
+      LIBGNAT_TARGET_PAIRS += $(X86_TARGET_PAIRS)
     endif
 
     EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
@@ -2290,6 +2293,9 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
 
     ifeq ($(strip $(MULTISUBDIR)),/i386)
       SO_OPTS += -m32
+      LIBGNAT_TARGET_PAIRS += $(X86_TARGET_PAIRS)
+    else
+      LIBGNAT_TARGET_PAIRS += $(X86_64_TARGET_PAIRS)
     endif
 
     EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
