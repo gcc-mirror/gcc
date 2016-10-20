@@ -1,3 +1,8 @@
+2016-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78037
+	* gcc.target/i386/pr78037.c: New test.
+
 2016-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/visium/overflow8.c: New.

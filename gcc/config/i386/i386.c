@@ -34317,8 +34317,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case FLOAT128_FTYPE_FLOAT128:
     case FLOAT_FTYPE_FLOAT:
     case INT_FTYPE_INT:
-    case UINT64_FTYPE_INT:
+    case UINT_FTYPE_UINT:
     case UINT16_FTYPE_UINT16:
+    case UINT64_FTYPE_INT:
+    case UINT64_FTYPE_UINT64:
     case INT64_FTYPE_INT64:
     case INT64_FTYPE_V4SF:
     case INT64_FTYPE_V2DF:
