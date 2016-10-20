@@ -1,3 +1,60 @@
+2016-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/backward/auto_ptr.h (__shared_ptr(auto_ptr&&))
+	(shared_ptr(auto_ptr&&)): Adjust template parameter lists.
+	* include/bits/shared_ptr.h (__sp_compatible_with)
+	(__sp_is_constructible): New helper traits for shared_ptr.
+	(shared_ptr::_Convertible): Replace with _Constructible.
+	(shared_ptr::_Constructible, shared_ptr::_Assignable): Forward checks
+	to base class.
+	(shared_ptr::shared_ptr, shared_ptr::operator=): Constrain template
+	with _Constructible and _Assignable.
+	(shared_ptr::shared_ptr(shared_ptr<_Tp1>, _Tp*)): Use element_type
+	instead of _Tp.
+	(operator<): Likewise.
+	(operator>): Define in terms of operator<.
+	(static_pointer_cast, const_pointer_cast, dynamic_pointer_cast): Use
+	element_type instead of _Tp.
+	(reinterpret_pointer_cast): Define for C++17.
+	(weak_ptr::_Convertible): Replace with _Constructible.
+	(weak_ptr::_Constructible, weak_ptr::_Assignable): Forward checks
+	to base class.
+	(weak_ptr::weak_ptr, weak_ptr::operator=): Constrain templates
+	with _Constructible and _Assignable.
+	* include/bits/shared_ptr_base.h (__shared_ptr::_Convertible): Replace
+	with _Compatible.
+	(__shared_ptr::_SafeConv): New constraint for incoming raw pointers.
+	(__shared_ptr::_Compatible): New constraint for converting from
+	other types of shared_ptr and weak_ptr.
+	(__shared_ptr::_Assignable): Define in terms of _Compatible.
+	(__shared_ptr::_UniqCompatible, __shared_ptr::_UniqAssignable): New
+	constraints for converting from unique_ptr.
+	(__shared_ptr::__shared_ptr, __shared_ptr::operator=): Constrain
+	template with _SaveConf, _Compatible and _Assignable. Remove
+	__glibcxx_function_requires concept checks. Add static assertion for
+	deleter expression being well-formed.
+	(__shared_ptr::__shared_ptr(__shared_ptr<_Tp1>, _Tp*))
+	(__shared_ptr::operator*, __shared_ptr::operator->)
+	(__shared_ptr::get, __shared_ptr::_M_ptr): Use element_type instead
+	of _Tp.
+	(operator<): Likewise.
+	(operator>): Define in terms of operator<.
+	(static_pointer_cast, const_pointer_cast, dynamic_pointer_cast): Use
+	element_type instead of _Tp.
+	(reinterpret_pointer_cast): Define for C++17.
+	(weak_ptr::_Convertible): Replace with _Compatible.
+	(weak_ptr::_Compatible, weak_ptr::_Assignable): New constraints for
+	conversions from other types of weak_ptr and shared_ptr.
+	(__weak_ptr::__weak_ptr, __weak_ptr::operator=): Constrain templates
+	with _Constructible and _Assignable.
+	(__weak_ptr::_M_ptr): Use element_type instead of _Tp.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc: Adjust
+	dg-error pattern.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr.cc: Test conversions.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/casts/reinterpret.cc: New test.
+
 2016-10-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Do the operator= SFINAE in the return type for optional,
