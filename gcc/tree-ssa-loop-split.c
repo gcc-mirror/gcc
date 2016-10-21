@@ -270,7 +270,7 @@ connect_loop_phis (struct loop *loop1, struct loop *loop2, edge new_e)
    falling through to LOOP2, or skipping it.  This is done by splitting
    the ex1->join edge at X in the diagram above, and inserting a condition
    whose one arm goes to pre2, resulting in this situation:
-   
+
                .------if (cond)------.
                v                     v
              pre1       .---------->pre2
@@ -284,12 +284,12 @@ connect_loop_phis (struct loop *loop1, struct loop *loop2, edge new_e)
                    |            |
                    '--->join<---'
 
-   
+
    The condition used is the exit condition of LOOP1, which effectively means
    that when the first loop exits (for whatever reason) but the real original
    exit expression is still false the second loop will be entered.
    The function returns the new edge cond->pre2.
-   
+
    This doesn't update the SSA form, see connect_loop_phis for that.  */
 
 static edge
