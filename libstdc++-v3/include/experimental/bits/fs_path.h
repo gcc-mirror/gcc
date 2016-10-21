@@ -159,6 +159,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       __p.clear();
     }
 
+    path(string_type&& __source)
+    : _M_pathname(std::move(__source))
+    { _M_split_cmpts(); }
+
     template<typename _Source,
 	     typename _Require = _Path<_Source>>
       path(_Source const& __source)
@@ -193,6 +197,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     path& operator=(const path& __p) = default;
     path& operator=(path&& __p) noexcept;
+    path& operator=(string_type&& __source);
+    path& assign(string_type&& __source);
 
     template<typename _Source>
       _Path<_Source>&
@@ -720,6 +726,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     __p.clear();
     return *this;
   }
+
+  inline path&
+  path::operator=(string_type&& __source)
+  { return *this = path(std::move(__source)); }
+
+  inline path&
+  path::assign(string_type&& __source)
+  { return *this = path(std::move(__source)); }
 
   inline path&
   path::operator+=(const path& __p)
