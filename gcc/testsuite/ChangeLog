@@ -1,3 +1,8 @@
+2016-10-21  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/71627
+	* gcc.target/avr/pr71627.c: New test
+
 2016-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/overflow-1.c: New test.

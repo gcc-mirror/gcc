@@ -715,25 +715,23 @@ find_valid_class_1 (machine_mode outer ATTRIBUTE_UNUSED,
 
   for (rclass = 1; rclass < N_REG_CLASSES; rclass++)
     {
-      int bad = 0;
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER && !bad; regno++)
-	{
-	  if (in_hard_reg_set_p (reg_class_contents[rclass], mode, regno)
-	      && !HARD_REGNO_MODE_OK (regno, mode))
-	    bad = 1;
-	}
-      
-      if (bad)
-	continue;
+      unsigned int computed_rclass_size = 0;
+
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+        {
+          if (in_hard_reg_set_p (reg_class_contents[rclass], mode, regno)
+              && (HARD_REGNO_MODE_OK (regno, mode)))
+            computed_rclass_size++;
+        }
 
       cost = register_move_cost (outer, (enum reg_class) rclass, dest_class);
 
-      if ((reg_class_size[rclass] > best_size
+      if ((computed_rclass_size > best_size
 	   && (best_cost < 0 || best_cost >= cost))
 	  || best_cost > cost)
 	{
 	  best_class = (enum reg_class) rclass;
-	  best_size = reg_class_size[rclass];
+	  best_size = computed_rclass_size;
 	  best_cost = register_move_cost (outer, (enum reg_class) rclass,
 					  dest_class);
 	}

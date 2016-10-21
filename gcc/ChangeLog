@@ -1,3 +1,10 @@
+2016-10-21  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/71627
+	* reload.c (find_valid_class_1): Allow regclass if atleast one
+	regno in regclass is ok. Compute and use rclass size based on
+	actually available regnos for mode in rclass.
+
 2016-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-modes.def (CCV): New.
