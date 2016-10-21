@@ -1,3 +1,9 @@
+2016-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/exception_ptr.h (make_exception_ptr): Qualify new.
+	* testsuite/18_support/exception_ptr/make_exception_ptr_2.cc: New
+	test.
+
 2016-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/backward/auto_ptr.h (__shared_ptr(auto_ptr&&))
