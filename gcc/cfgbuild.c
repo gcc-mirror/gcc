@@ -275,7 +275,7 @@ make_edges (basic_block min, basic_block max, int update_p)
 		  && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
 		  && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF)
 		make_label_edge (edge_cache, bb,
-				 LABEL_REF_LABEL (XEXP (SET_SRC (tmp), 2)), 0);
+				 label_ref_label (XEXP (SET_SRC (tmp), 2)), 0);
 	    }
 
 	  /* If this is a computed jump, then mark it as reaching
@@ -415,7 +415,7 @@ purge_dead_tablejump_edges (basic_block bb, rtx_jump_table_data *table)
        && SET_DEST (tmp) == pc_rtx
        && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
        && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF)
-    mark_tablejump_edge (LABEL_REF_LABEL (XEXP (SET_SRC (tmp), 2)));
+    mark_tablejump_edge (label_ref_label (XEXP (SET_SRC (tmp), 2)));
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {

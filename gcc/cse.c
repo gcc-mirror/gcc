@@ -2365,7 +2365,7 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
       /* We don't hash on the address of the CODE_LABEL to avoid bootstrap
 	 differences and differences between each stage's debugging dumps.  */
 	 hash += (((unsigned int) LABEL_REF << 7)
-		  + CODE_LABEL_NUMBER (LABEL_REF_LABEL (x)));
+		  + CODE_LABEL_NUMBER (label_ref_label (x)));
       return hash;
 
     case SYMBOL_REF:
@@ -2618,7 +2618,7 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
       return x == y;
 
     case LABEL_REF:
-      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
+      return label_ref_label (x) == label_ref_label (y);
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
@@ -3507,7 +3507,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		: lookup_as_function (folded_arg0, MINUS);
 
 	      if (y != 0 && GET_CODE (XEXP (y, 1)) == LABEL_REF
-		  && LABEL_REF_LABEL (XEXP (y, 1)) == LABEL_REF_LABEL (const_arg1))
+		  && label_ref_label (XEXP (y, 1)) == label_ref_label (const_arg1))
 		return XEXP (y, 0);
 
 	      /* Now try for a CONST of a MINUS like the above.  */
@@ -3515,7 +3515,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 			: lookup_as_function (folded_arg0, CONST))) != 0
 		  && GET_CODE (XEXP (y, 0)) == MINUS
 		  && GET_CODE (XEXP (XEXP (y, 0), 1)) == LABEL_REF
-		  && LABEL_REF_LABEL (XEXP (XEXP (y, 0), 1)) == LABEL_REF_LABEL (const_arg1))
+		  && label_ref_label (XEXP (XEXP (y, 0), 1)) == label_ref_label (const_arg1))
 		return XEXP (XEXP (y, 0), 0);
 	    }
 
@@ -3527,7 +3527,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		: lookup_as_function (folded_arg1, MINUS);
 
 	      if (y != 0 && GET_CODE (XEXP (y, 1)) == LABEL_REF
-		  && LABEL_REF_LABEL (XEXP (y, 1)) == LABEL_REF_LABEL (const_arg0))
+		  && label_ref_label (XEXP (y, 1)) == label_ref_label (const_arg0))
 		return XEXP (y, 0);
 
 	      /* Now try for a CONST of a MINUS like the above.  */
@@ -3535,7 +3535,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 			: lookup_as_function (folded_arg1, CONST))) != 0
 		  && GET_CODE (XEXP (y, 0)) == MINUS
 		  && GET_CODE (XEXP (XEXP (y, 0), 1)) == LABEL_REF
-		  && LABEL_REF_LABEL (XEXP (XEXP (y, 0), 1)) == LABEL_REF_LABEL (const_arg0))
+		  && label_ref_label (XEXP (XEXP (y, 0), 1)) == label_ref_label (const_arg0))
 		return XEXP (XEXP (y, 0), 0);
 	    }
 
@@ -6497,10 +6497,10 @@ check_for_label_ref (rtx_insn *insn)
       if (GET_CODE (x) == LABEL_REF
 	  && !LABEL_REF_NONLOCAL_P (x)
 	  && (!JUMP_P (insn)
-	      || !label_is_jump_target_p (LABEL_REF_LABEL (x), insn))
-	  && LABEL_P (LABEL_REF_LABEL (x))
-	  && INSN_UID (LABEL_REF_LABEL (x)) != 0
-	  && !find_reg_note (insn, REG_LABEL_OPERAND, LABEL_REF_LABEL (x)))
+	      || !label_is_jump_target_p (label_ref_label (x), insn))
+	  && LABEL_P (label_ref_label (x))
+	  && INSN_UID (label_ref_label (x)) != 0
+	  && !find_reg_note (insn, REG_LABEL_OPERAND, label_ref_label (x)))
 	return true;
     }
   return false;

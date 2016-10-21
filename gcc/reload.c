@@ -2318,7 +2318,7 @@ operands_match_p (rtx x, rtx y)
       return 0;
 
     case LABEL_REF:
-      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
+      return label_ref_label (x) == label_ref_label (y);
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
 
@@ -4218,17 +4218,17 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	     this instruction.  */
 	  if (GET_CODE (substitution) == LABEL_REF
 	      && !find_reg_note (insn, REG_LABEL_OPERAND,
-				 LABEL_REF_LABEL (substitution))
+				 label_ref_label (substitution))
 	      /* For a JUMP_P, if it was a branch target it must have
 		 already been recorded as such.  */
 	      && (!JUMP_P (insn)
-		  || !label_is_jump_target_p (LABEL_REF_LABEL (substitution),
+		  || !label_is_jump_target_p (label_ref_label (substitution),
 					      insn)))
 	    {
 	      add_reg_note (insn, REG_LABEL_OPERAND,
-			    LABEL_REF_LABEL (substitution));
-	      if (LABEL_P (LABEL_REF_LABEL (substitution)))
-		++LABEL_NUSES (LABEL_REF_LABEL (substitution));
+			    label_ref_label (substitution));
+	      if (LABEL_P (label_ref_label (substitution)))
+		++LABEL_NUSES (label_ref_label (substitution));
 	    }
 
 	}

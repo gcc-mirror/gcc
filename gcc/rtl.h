@@ -1767,8 +1767,19 @@ inline void rtx_jump_insn::set_jump_target (rtx_code_label *target)
 #define LABEL_REFS(LABEL) XCEXP (LABEL, 3, CODE_LABEL)
 
 /* Get the label that a LABEL_REF references.  */
-#define LABEL_REF_LABEL(LABREF) XCEXP (LABREF, 0, LABEL_REF)
+static inline rtx_insn *
+label_ref_label (const_rtx ref)
+{
+  return as_a<rtx_insn *> (XCEXP (ref, 0, LABEL_REF));
+}
 
+/* Set the label that LABEL_REF ref refers to.  */
+
+static inline void
+set_label_ref_label (rtx ref, rtx_insn *label)
+{
+  XCEXP (ref, 0, LABEL_REF) = label;
+}
 
 /* For a REG rtx, REGNO extracts the register number.  REGNO can only
    be used on RHS.  Use SET_REGNO to change the value.  */
