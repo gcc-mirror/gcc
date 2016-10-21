@@ -3783,7 +3783,14 @@ finalize_transfer (st_parameter_dt *dtp)
     }
 
   if (dtp->u.p.current_unit && (dtp->u.p.current_unit->child_dtio  > 0))
-    return;
+    {
+      if (cf & IOPARM_DT_HAS_FORMAT)
+        {
+	  free (dtp->u.p.fmt);
+	  free (dtp->format);
+	}
+      return;
+    }
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
     *dtp->size = dtp->u.p.current_unit->size_used;
@@ -3972,7 +3979,6 @@ st_read_done (st_parameter_dt *dtp)
         {
 	  free (dtp->u.p.current_unit->filename);
 	  dtp->u.p.current_unit->filename = NULL;
-	  free_format_hash_table (dtp->u.p.current_unit);
 	  free (dtp->u.p.current_unit->s);
 	  dtp->u.p.current_unit->s = NULL;
 	  if (dtp->u.p.current_unit->ls)
@@ -4043,7 +4049,6 @@ st_write_done (st_parameter_dt *dtp)
 	{
 	  free (dtp->u.p.current_unit->filename);
 	  dtp->u.p.current_unit->filename = NULL;
-	  free_format_hash_table (dtp->u.p.current_unit);
 	  free (dtp->u.p.current_unit->s);
 	  dtp->u.p.current_unit->s = NULL;
 	  if (dtp->u.p.current_unit->ls)
