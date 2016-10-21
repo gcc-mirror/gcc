@@ -1,5 +1,8 @@
 2016-10-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/78057
+	* gcc.target/i386/pr78057.c: New test.
+
 	* g++.dg/debug/dwarf2/constexpr-var-1.C: New test.
 
 2016-10-21  Paul Thomas  <pault@gcc.gnu.org>

@@ -77,6 +77,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "regrename.h"
 #include "dojump.h"
+#include "fold-const-call.h"
+#include "tree-vrp.h"
+#include "tree-ssanames.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -33332,6 +33335,40 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	    return build_real (type, inf);
 	  }
 
+	case IX86_BUILTIN_TZCNT16:
+	case IX86_BUILTIN_TZCNT32:
+	case IX86_BUILTIN_TZCNT64:
+	  gcc_assert (n_args == 1);
+	  if (TREE_CODE (args[0]) == INTEGER_CST)
+	    {
+	      tree type = TREE_TYPE (TREE_TYPE (fndecl));
+	      tree arg = args[0];
+	      if (fn_code == IX86_BUILTIN_TZCNT16)
+		arg = fold_convert (short_unsigned_type_node, arg);
+	      if (integer_zerop (arg))
+		return build_int_cst (type, TYPE_PRECISION (TREE_TYPE (arg)));
+	      else
+		return fold_const_call (CFN_CTZ, type, arg);
+	    }
+	  break;
+
+	case IX86_BUILTIN_LZCNT16:
+	case IX86_BUILTIN_LZCNT32:
+	case IX86_BUILTIN_LZCNT64:
+	  gcc_assert (n_args == 1);
+	  if (TREE_CODE (args[0]) == INTEGER_CST)
+	    {
+	      tree type = TREE_TYPE (TREE_TYPE (fndecl));
+	      tree arg = args[0];
+	      if (fn_code == IX86_BUILTIN_LZCNT16)
+		arg = fold_convert (short_unsigned_type_node, arg);
+	      if (integer_zerop (arg))
+		return build_int_cst (type, TYPE_PRECISION (TREE_TYPE (arg)));
+	      else
+		return fold_const_call (CFN_CLZ, type, arg);
+	    }
+	  break;
+
 	default:
 	  break;
 	}
@@ -33342,6 +33379,70 @@ ix86_fold_builtin (tree fndecl, int n_args,
 #endif
 
   return NULL_TREE;
+}
+
+/* Fold a MD builtin (use ix86_fold_builtin for folding into
+   constant) in GIMPLE.  */
+
+bool
+ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree fndecl = gimple_call_fndecl (stmt);
+  gcc_checking_assert (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD);
+  int n_args = gimple_call_num_args (stmt);
+  enum ix86_builtins fn_code = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
+  tree decl = NULL_TREE;
+  tree arg0;
+
+  switch (fn_code)
+    {
+    case IX86_BUILTIN_TZCNT32:
+      decl = builtin_decl_implicit (BUILT_IN_CTZ);
+      goto fold_tzcnt_lzcnt;
+
+    case IX86_BUILTIN_TZCNT64:
+      decl = builtin_decl_implicit (BUILT_IN_CTZLL);
+      goto fold_tzcnt_lzcnt;
+
+    case IX86_BUILTIN_LZCNT32:
+      decl = builtin_decl_implicit (BUILT_IN_CLZ);
+      goto fold_tzcnt_lzcnt;
+
+    case IX86_BUILTIN_LZCNT64:
+      decl = builtin_decl_implicit (BUILT_IN_CLZLL);
+      goto fold_tzcnt_lzcnt;
+
+    fold_tzcnt_lzcnt:
+      gcc_assert (n_args == 1);
+      arg0 = gimple_call_arg (stmt, 0);
+      if (TREE_CODE (arg0) == SSA_NAME && decl && gimple_call_lhs (stmt))
+	{
+	  int prec = TYPE_PRECISION (TREE_TYPE (arg0));
+	  /* If arg0 is provably non-zero, optimize into generic
+	     __builtin_c[tl]z{,ll} function the middle-end handles
+	     better.  */
+	  if (!expr_not_equal_to (arg0, wi::zero (prec)))
+	    return false;
+
+	  location_t loc = gimple_location (stmt);
+	  gimple *g = gimple_build_call (decl, 1, arg0);
+	  gimple_set_location (g, loc);
+	  tree lhs = make_ssa_name (integer_type_node);
+	  gimple_call_set_lhs (g, lhs);
+	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  g = gimple_build_assign (gimple_call_lhs (stmt), NOP_EXPR, lhs);
+	  gimple_set_location (g, loc);
+	  gsi_replace (gsi, g, true);
+	  return true;
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  return false;
 }
 
 /* Make builtins to detect cpu type and features supported.  NAME is
@@ -50530,6 +50631,9 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 
 #undef TARGET_FOLD_BUILTIN
 #define TARGET_FOLD_BUILTIN ix86_fold_builtin
+
+#undef TARGET_GIMPLE_FOLD_BUILTIN
+#define TARGET_GIMPLE_FOLD_BUILTIN ix86_gimple_fold_builtin
 
 #undef TARGET_COMPARE_VERSION_PRIORITY
 #define TARGET_COMPARE_VERSION_PRIORITY ix86_compare_version_priority
