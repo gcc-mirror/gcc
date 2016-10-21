@@ -168,6 +168,11 @@ cp_decl_dwarf_attribute (const_tree decl, int attr)
 	}
       break;
 
+    case DW_AT_const_expr:
+      if (VAR_OR_FUNCTION_DECL_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl))
+	return 1;
+      break;
+
     default:
       break;
     }

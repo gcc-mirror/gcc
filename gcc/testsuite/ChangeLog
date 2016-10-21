@@ -1,3 +1,7 @@
+2016-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/debug/dwarf2/constexpr-var-1.C: New test.
+
 2016-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69566
