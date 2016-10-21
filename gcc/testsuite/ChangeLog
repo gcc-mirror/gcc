@@ -1,3 +1,9 @@
+2016-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/overflow-1.c: New test.
+	* gcc.target/sparc/overflow-2.c: Likewise.
+	* gcc.target/sparc/overflow-3.c: Likewise.
+
 2016-10-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/pure-code/pure-code.exp: Require arm_cortex_m

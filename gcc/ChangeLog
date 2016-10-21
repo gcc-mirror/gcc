@@ -1,3 +1,50 @@
+2016-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-modes.def (CCV): New.
+	(CCXV): Likewise.
+	* config/sparc/predicates.md (v_comparison_operator): New.
+	(icc_comparison_operator): Add support for CCV/CCXV.
+	(xcc_comparison_operator): Likewise.
+	* config/sparc/sparc.c (output_cbranch): Likewise.
+	(sparc_print_operand): Likewise.
+	* config/sparc/sparc.md (UNSPEC_{ADD,SUB,NEG}V): New constants.
+	(uaddvdi4): New expander.
+	(addvdi4): Likewise.
+	(uaddvdi4_sp32): New instruction.
+	(addvdi4_sp32): Likewise.
+	(uaddvsi4): New expander.
+	(addvsi4): Likewise.
+	(cmp_ccc_plus_sltu_set): New instruction.
+	(cmp_ccv_plus): Likewise.
+	(cmp_ccxv_plus): Likewise.
+	(cmp_ccv_plus_set): Likewise.
+	(cmp_ccxv_plus_set): Likewise.
+	(cmp_ccv_plus_sltu_set): Likewise.
+	(uaddvdi4): New expander.
+	(subvdi4): Likewise.
+	(usubdi4_sp32): New instruction.
+	(subvdi4_sp32): Likewise.
+	(usubvsi4): New expander.
+	(subvsi4): Likewise.
+	(cmpsi_minus_sltu_set): New instruction.
+	(cmp_ccv_minus): Likewise.
+	(cmp_ccxv_minus): Likewise.
+	(cmp_ccv_minus_set): Likewise.
+	(cmp_ccxv_minus_set): Likewise.
+	(cmp_ccv_minus_sltu_set): Likewise.
+	(unegvdi3): New expander.
+	(negvdi3): Likewise.
+	(unegdi3_sp32): New instruction.
+	(negvdi3_sp32): Likewise.
+	(unegvsi3): New expander.
+	(negvsi3): Likewise.
+	(cmp_ccc_neg_sltu_set): New instruction.
+	(cmp_ccv_neg): Likewise.
+	(cmp_ccxv_neg): Likewise.
+	(cmp_ccv_neg_set): Likewise.
+	(cmp_ccxv_neg_set): Likewise.
+	(cmp_ccv_neg_sltu_set): Likewise.
+
 2016-10-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/78038

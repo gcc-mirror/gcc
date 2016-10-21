@@ -92,6 +92,10 @@
   UNSPEC_MUL8
   UNSPEC_MUL8SU
   UNSPEC_MULDSU
+
+  UNSPEC_ADDV
+  UNSPEC_SUBV
+  UNSPEC_NEGV
 ])
 
 (define_c_enum "unspecv" [
@@ -3714,6 +3718,51 @@
     }
 })
 
+(define_expand "uaddvdi4"
+  [(parallel [(set (reg:CCXC CC_REG)
+		   (compare:CCXC (plus:DI (match_operand:DI 1 "register_operand")
+					  (match_operand:DI 2 "arith_add_operand"))
+			         (match_dup 1)))
+	      (set (match_operand:DI 0 "register_operand")
+		   (plus:DI (match_dup 1) (match_dup 2)))])
+   (set (pc) (if_then_else (ltu (reg:CCXC CC_REG) (const_int 0))
+			   (label_ref (match_operand 3))
+			   (pc)))]
+ ""
+{
+  if (!TARGET_64BIT)
+    {
+      emit_insn (gen_uaddvdi4_sp32 (operands[0], operands[1], operands[2]));
+      rtx x = gen_rtx_LTU (VOIDmode, gen_rtx_REG (CCCmode, SPARC_ICC_REG),
+				     const0_rtx);
+      emit_jump_insn (gen_cbranchcc4 (x, XEXP (x, 0), XEXP (x, 1), operands[3]));
+      DONE;
+    }
+})
+
+(define_expand "addvdi4"
+  [(parallel [(set (reg:CCXV CC_REG)
+		   (compare:CCXV (plus:DI (match_operand:DI 1 "register_operand")
+					  (match_operand:DI 2 "arith_add_operand"))
+			         (unspec:DI [(match_dup 1) (match_dup 2)]
+					    UNSPEC_ADDV)))
+	      (set (match_operand:DI 0 "register_operand")
+		   (plus:DI (match_dup 1) (match_dup 2)))])
+   (set (pc) (if_then_else (ne (reg:CCXV CC_REG) (const_int 0))
+			   (label_ref (match_operand 3))
+			   (pc)))]
+ ""
+{
+  if (!TARGET_64BIT)
+    {
+      emit_insn (gen_addvdi4_sp32 (operands[0], operands[1], operands[2]));
+      rtx x = gen_rtx_NE (VOIDmode, gen_rtx_REG (CCVmode, SPARC_ICC_REG),
+				    const0_rtx);
+      emit_jump_insn (gen_cbranchcc4 (x, XEXP (x, 0), XEXP (x, 1), operands[3]));
+      DONE;
+    }
+})
+
 (define_insn_and_split "adddi3_sp32"
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(plus:DI (match_operand:DI 1 "register_operand" "%r")
@@ -3730,6 +3779,80 @@
    (set (match_dup 6)
 	(plus:SI (plus:SI (match_dup 7) (match_dup 8))
 		 (ltu:SI (reg:CCC CC_REG) (const_int 0))))]
+{
+  operands[3] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_lowpart (SImode, operands[2]);
+  operands[6] = gen_highpart (SImode, operands[0]);
+  operands[7] = gen_highpart_mode (SImode, DImode, operands[1]);
+  operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
+}
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "uaddvdi4_sp32"
+  [(set (reg:CCC CC_REG)
+	(compare:CCC (plus:DI (match_operand:DI 1 "register_operand" "%r")
+			      (match_operand:DI 2 "arith_double_operand" "rHI"))
+		     (match_dup 1)))
+   (set (match_operand:DI 0 "register_operand" "=&r")
+	(plus:DI (match_dup 1) (match_dup 2)))]
+  "!TARGET_ARCH64"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:CCC CC_REG)
+		   (compare:CCC (plus:SI (match_dup 4) (match_dup 5))
+				(match_dup 4)))
+	      (set (match_dup 3)
+		   (plus:SI (match_dup 4) (match_dup 5)))])
+   (parallel [(set (reg:CCC CC_REG)
+		   (compare:CCC (zero_extend:DI
+				  (plus:SI (plus:SI (match_dup 7) (match_dup 8))
+					   (ltu:SI (reg:CCC CC_REG)
+						   (const_int 0))))
+				(plus:DI (plus:DI (zero_extend:DI (match_dup 7))
+						  (zero_extend:DI (match_dup 8)))
+					 (ltu:DI (reg:CCC CC_REG)
+						 (const_int 0)))))
+	      (set (match_dup 6)
+		   (plus:SI (plus:SI (match_dup 7) (match_dup 8))
+			    (ltu:SI (reg:CCC CC_REG)
+				    (const_int 0))))])]
+{
+  operands[3] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_lowpart (SImode, operands[2]);
+  operands[6] = gen_highpart (SImode, operands[0]);
+  operands[7] = gen_highpart_mode (SImode, DImode, operands[1]);
+  operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
+}
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "addvdi4_sp32"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (plus:DI (match_operand:DI 1 "register_operand" "%r")
+			      (match_operand:DI 2 "arith_double_operand" "rHI"))
+		     (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))
+   (set (match_operand:DI 0 "register_operand" "=&r")
+	(plus:DI (match_dup 1) (match_dup 2)))]
+  "!TARGET_ARCH64"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:CCC CC_REG)
+		   (compare:CCC (plus:SI (match_dup 4) (match_dup 5))
+				(match_dup 4)))
+	      (set (match_dup 3)
+		   (plus:SI (match_dup 4) (match_dup 5)))])
+   (parallel [(set (reg:CCV CC_REG)
+		   (compare:CCV (plus:SI (plus:SI (match_dup 7) (match_dup 8))
+					 (ltu:SI (reg:CCC CC_REG)
+						 (const_int 0)))
+				(unspec:SI [(plus:SI (match_dup 7) (match_dup 8))
+					    (ltu:SI (reg:CCC CC_REG)
+						     (const_int 0))]
+					   UNSPEC_ADDV)))
+	      (set (match_dup 6)
+		   (plus:SI (plus:SI (match_dup 7) (match_dup 8))
+			    (ltu:SI (reg:CCC CC_REG) (const_int 0))))])]
 {
   operands[3] = gen_lowpart (SImode, operands[0]);
   operands[4] = gen_lowpart (SImode, operands[1]);
@@ -3796,6 +3919,31 @@
    sub\t%1, -%2, %0"
   [(set_attr "type" "*,*")
    (set_attr "fptype" "*,*")])
+
+(define_expand "uaddvsi4"
+  [(parallel [(set (reg:CCC CC_REG)
+		   (compare:CCC (plus:SI (match_operand:SI 1 "register_operand")
+					 (match_operand:SI 2 "arith_operand"))
+			        (match_dup 1)))
+	      (set (match_operand:SI 0 "register_operand")
+		   (plus:SI (match_dup 1) (match_dup 2)))])
+   (set (pc) (if_then_else (ltu (reg:CCC CC_REG) (const_int 0))
+			   (label_ref (match_operand 3))
+			   (pc)))]
+ "")
+
+(define_expand "addvsi4"
+  [(parallel [(set (reg:CCV CC_REG)
+		   (compare:CCV (plus:SI (match_operand:SI 1 "register_operand")
+					 (match_operand:SI 2 "arith_operand"))
+			        (unspec:SI [(match_dup 1) (match_dup 2)]
+					   UNSPEC_ADDV)))
+	      (set (match_operand:SI 0 "register_operand")
+		   (plus:SI (match_dup 1) (match_dup 2)))])
+   (set (pc) (if_then_else (ne (reg:CCV CC_REG) (const_int 0))
+			   (label_ref (match_operand 3))
+			   (pc)))]
+ "")
 
 (define_insn "*cmp_ccnz_plus"
   [(set (reg:CCNZ CC_REG)
@@ -3877,6 +4025,79 @@
   "addcc\t%1, %2, %0"
   [(set_attr "type" "compare")])
 
+(define_insn "*cmp_ccc_plus_sltu_set"
+  [(set (reg:CCC CC_REG)
+	(compare:CCC (zero_extend:DI
+		       (plus:SI
+			 (plus:SI (match_operand:SI 1 "register_operand" "%r")
+				  (match_operand:SI 2 "arith_operand" "rI"))
+		       (ltu:SI (reg:CCC CC_REG) (const_int 0))))
+		     (plus:DI (plus:DI (zero_extend:DI (match_dup 1))
+				       (zero_extend:DI (match_dup 2)))
+			      (ltu:DI (reg:CCC CC_REG) (const_int 0)))))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (plus:SI (match_dup 1) (match_dup 2))
+		 (ltu:SI (reg:CCC CC_REG) (const_int 0))))]
+  ""
+  "addxcc\t%1, %2, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccv_plus"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (plus:SI (match_operand:SI 0 "register_operand" "%r")
+			      (match_operand:SI 1 "arith_operand" "rI"))
+		     (unspec:SI [(match_dup 0) (match_dup 1)] UNSPEC_ADDV)))]
+  ""
+  "addcc\t%0, %1, %%g0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccxv_plus"
+  [(set (reg:CCXV CC_REG)
+	(compare:CCXV (plus:DI (match_operand:DI 0 "register_operand" "%r")
+			       (match_operand:DI 1 "arith_operand" "rI"))
+		      (unspec:DI [(match_dup 0) (match_dup 1)] UNSPEC_ADDV)))]
+  "TARGET_ARCH64"
+  "addcc\t%0, %1, %%g0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccv_plus_set"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (plus:SI (match_operand:SI 1 "register_operand" "%r")
+			      (match_operand:SI 2 "arith_operand" "rI"))
+		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "addcc\t%1, %2, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccxv_plus_set"
+  [(set (reg:CCXV CC_REG)
+	(compare:CCXV (plus:DI (match_operand:DI 1 "register_operand" "%r")
+			       (match_operand:DI 2 "arith_operand" "rI"))
+		      (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))
+   (set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI (match_dup 1) (match_dup 2)))]
+  "TARGET_ARCH64"
+  "addcc\t%1, %2, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccv_plus_sltu_set"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (plus:SI (plus:SI (match_operand:SI 1 "register_operand" "%r")
+				       (match_operand:SI 2 "arith_operand" "rI"))
+			      (ltu:SI (reg:CCC CC_REG) (const_int 0)))
+		     (unspec:SI [(plus:SI (match_dup 1) (match_dup 2))
+				 (ltu:SI (reg:CCC CC_REG) (const_int 0))]
+				UNSPEC_ADDV)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (plus:SI (match_dup 1) (match_dup 2))
+		 (ltu:SI (reg:CCC CC_REG) (const_int 0))))]
+  ""
+  "addxcc\t%1, %2, %0"
+  [(set_attr "type" "compare")])
+
+
 (define_expand "subdi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(minus:DI (match_operand:DI 1 "register_operand" "")
@@ -3886,6 +4107,56 @@
   if (!TARGET_ARCH64)
     {
       emit_insn (gen_subdi3_sp32 (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+})
+
+(define_expand "usubvdi4"
+  [(parallel [(set (reg:CCX CC_REG)
+		   (compare:CCX (match_operand:DI 1 "register_or_zero_operand")
+				(match_operand:DI 2 "arith_add_operand")))
+	      (set (match_operand:DI 0 "register_operand")
+		   (minus:DI (match_dup 1) (match_dup 2)))])
+   (set (pc) (if_then_else (ltu (reg:CCX CC_REG) (const_int 0))
+			   (label_ref (match_operand 3))
+			   (pc)))]
+ ""
+{
+  if (operands[1] == const0_rtx)
+    {
+      emit_insn (gen_unegvdi3 (operands[0], operands[2], operands[3]));
+      DONE;
+    }
+
+  if (!TARGET_64BIT)
+    {
+      emit_insn (gen_usubvdi4_sp32 (operands[0], operands[1], operands[2]));
+      rtx x = gen_rtx_LTU (VOIDmode, gen_rtx_REG (CCCmode, SPARC_ICC_REG),
+				     const0_rtx);
+      emit_jump_insn (gen_cbranchcc4 (x, XEXP (x, 0), XEXP (x, 1), operands[3]));
+      DONE;
+    }
+})
+
+(define_expand "subvdi4"
+  [(parallel [(set (reg:CCXV CC_REG)
+		   (compare:CCXV (minus:DI (match_operand:DI 1 "register_operand")
+					   (match_operand:DI 2 "arith_add_operand"))
+			         (unspec:DI [(match_dup 1) (match_dup 2)]
+					    UNSPEC_SUBV)))
+	      (set (match_operand:DI 0 "register_operand")
+		   (minus:DI (match_dup 1) (match_dup 2)))])
+   (set (pc) (if_then_else (ne (reg:CCXV CC_REG) (const_int 0))
+			   (label_ref (match_operand 3))
+			   (pc)))]
+ ""
+{
+  if (!TARGET_64BIT)
+    {
+      emit_insn (gen_subvdi4_sp32 (operands[0], operands[1], operands[2]));
+      rtx x = gen_rtx_NE (VOIDmode, gen_rtx_REG (CCVmode, SPARC_ICC_REG),
+				    const0_rtx);
+      emit_jump_insn (gen_cbranchcc4 (x, XEXP (x, 0), XEXP (x, 1), operands[3]));
       DONE;
     }
 })
@@ -3911,6 +4182,80 @@
   operands[5] = gen_lowpart (SImode, operands[2]);
   operands[6] = gen_highpart (SImode, operands[0]);
   operands[7] = gen_highpart (SImode, operands[1]);
+  operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
+}
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "usubvdi4_sp32"
+  [(set (reg:CCC CC_REG)
+	(compare:CCC (match_operand:DI 1 "register_operand" "r")
+		     (match_operand:DI 2 "arith_double_operand" "rHI")))
+   (set (match_operand:DI 0 "register_operand" "=&r")
+	(minus:DI (match_dup 1) (match_dup 2)))]
+  "!TARGET_ARCH64"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REG)
+		   (compare:CC (match_dup 4) (match_dup 5)))
+	      (set (match_dup 3)
+		   (minus:SI (match_dup 4) (match_dup 5)))])
+   (parallel [(set (reg:CCC CC_REG)
+		   (compare:CCC (zero_extend:DI
+				  (minus:SI (minus:SI (match_dup 7)
+						      (ltu:SI (reg:CC CC_REG)
+							      (const_int 0)))
+					    (match_dup 8)))
+				(minus:DI
+				  (minus:DI (zero_extend:DI (match_dup 7))
+					    (ltu:DI (reg:CC CC_REG)
+						    (const_int 0)))
+				  (zero_extend:DI (match_dup 8)))))
+	      (set (match_dup 6)
+		   (minus:SI (minus:SI (match_dup 7)
+				       (ltu:SI (reg:CC CC_REG)
+					       (const_int 0)))
+			     (match_dup 8)))])]
+{
+  operands[3] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_lowpart (SImode, operands[2]);
+  operands[6] = gen_highpart (SImode, operands[0]);
+  operands[7] = gen_highpart_mode (SImode, DImode, operands[1]);
+  operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
+}
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "subvdi4_sp32"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (minus:DI (match_operand:DI 1 "register_operand" "%r")
+			       (match_operand:DI 2 "arith_double_operand" "rHI"))
+		     (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))
+   (set (match_operand:DI 0 "register_operand" "=&r")
+	(minus:DI (match_dup 1) (match_dup 2)))]
+  "!TARGET_ARCH64"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REG)
+		   (compare:CC (match_dup 4) (match_dup 5)))
+	      (set (match_dup 3)
+		   (minus:SI (match_dup 4) (match_dup 5)))])
+   (parallel [(set (reg:CCV CC_REG)
+		   (compare:CCV (minus:SI (minus:SI (match_dup 7) (match_dup 8))
+					  (ltu:SI (reg:CC CC_REG)
+						  (const_int 0)))
+				(unspec:SI [(minus:SI (match_dup 7) (match_dup 8))
+					    (ltu:SI (reg:CC CC_REG)
+						    (const_int 0))]
+					   UNSPEC_SUBV)))
+	      (set (match_dup 6)
+		   (minus:SI (minus:SI (match_dup 7) (match_dup 8))
+			     (ltu:SI (reg:CC CC_REG) (const_int 0))))])]
+{
+  operands[3] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_lowpart (SImode, operands[2]);
+  operands[6] = gen_highpart (SImode, operands[0]);
+  operands[7] = gen_highpart_mode (SImode, DImode, operands[1]);
   operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
 }
   [(set_attr "length" "2")])
@@ -3971,6 +4316,37 @@
   [(set_attr "type" "*,*")
    (set_attr "fptype" "*,*")])
 
+(define_expand "usubvsi4"
+  [(parallel [(set (reg:CC CC_REG)
+		   (compare:CC (match_operand:SI 1 "register_or_zero_operand")
+			       (match_operand:SI 2 "arith_operand")))
+	      (set (match_operand:SI 0 "register_operand")
+		   (minus:SI (match_dup 1) (match_dup 2)))])
+   (set (pc) (if_then_else (ltu (reg:CC CC_REG) (const_int 0))
+			   (label_ref (match_operand 3))
+			   (pc)))]
+ ""
+{
+  if (operands[1] == const0_rtx)
+    {
+      emit_insn (gen_unegvsi3 (operands[0], operands[2], operands[3]));
+      DONE;
+    }
+})
+
+(define_expand "subvsi4"
+  [(parallel [(set (reg:CCV CC_REG)
+		   (compare:CCV (minus:SI (match_operand:SI 1 "register_operand")
+					  (match_operand:SI 2 "arith_operand"))
+			        (unspec:SI [(match_dup 1) (match_dup 2)]
+					   UNSPEC_SUBV)))
+	      (set (match_operand:SI 0 "register_operand")
+		   (minus:SI (match_dup 1) (match_dup 2)))])
+   (set (pc) (if_then_else (ne (reg:CCV CC_REG) (const_int 0))
+			   (label_ref (match_operand 3))
+			   (pc)))]
+ "")
+
 (define_insn "*cmp_ccnz_minus"
   [(set (reg:CCNZ CC_REG)
 	(compare:CCNZ (minus:SI (match_operand:SI 0 "register_or_zero_operand" "rJ")
@@ -4029,6 +4405,82 @@
 	(minus:DI (match_dup 1) (match_dup 2)))]
   "TARGET_ARCH64"
   "subcc\t%r1, %2, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccc_minus_sltu_set"
+  [(set (reg:CCC CC_REG)
+	(compare:CCC (zero_extend:DI
+		       (minus:SI
+			 (minus:SI
+			   (match_operand:SI 1 "register_or_zero_operand" "rJ")
+			   (ltu:SI (reg:CC CC_REG) (const_int 0)))
+			 (match_operand:SI 2 "arith_operand" "rI")))
+		     (minus:DI
+		       (minus:DI
+			 (zero_extend:DI (match_dup 1))
+			 (ltu:DI (reg:CC CC_REG) (const_int 0)))
+		       (zero_extend:DI (match_dup 2)))))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (minus:SI (match_dup 1)
+			    (ltu:SI (reg:CC CC_REG) (const_int 0)))
+		  (match_dup 2)))]
+  ""
+  "subxcc\t%r1, %2, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccv_minus"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (minus:SI (match_operand:SI 0 "register_or_zero_operand" "rJ")
+			       (match_operand:SI 1 "arith_operand" "rI"))
+		     (unspec:SI [(match_dup 0) (match_dup 1)] UNSPEC_SUBV)))]
+  ""
+  "subcc\t%r0, %1, %%g0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccxv_minus"
+  [(set (reg:CCXV CC_REG)
+	(compare:CCXV (minus:DI (match_operand:DI 0 "register_or_zero_operand" "rJ")
+			        (match_operand:DI 1 "arith_operand" "rI"))
+		      (unspec:DI [(match_dup 0) (match_dup 1)] UNSPEC_SUBV)))]
+  "TARGET_ARCH64"
+  "subcc\t%r0, %1, %%g0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccv_minus_set"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (minus:SI (match_operand:SI 1 "register_or_zero_operand" "rJ")
+			       (match_operand:SI 2 "arith_operand" "rI"))
+		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "subcc\t%r1, %2, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccxv_minus_set"
+  [(set (reg:CCXV CC_REG)
+	(compare:CCXV (minus:DI (match_operand:DI 1 "register_or_zero_operand" "rJ")
+			        (match_operand:DI 2 "arith_operand" "rI"))
+		      (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))
+   (set (match_operand:DI 0 "register_operand" "=r")
+	(minus:DI (match_dup 1) (match_dup 2)))]
+  "TARGET_ARCH64"
+  "subcc\t%r1, %2, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccv_minus_sltu_set"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (minus:SI (minus:SI (match_operand:SI 1 "register_or_zero_operand" "rJ")
+					 (match_operand:SI 2 "arith_operand" "rI"))
+			       (ltu:SI (reg:CC CC_REG) (const_int 0)))
+		     (unspec:SI [(minus:SI (match_dup 1) (match_dup 2))
+				 (ltu:SI (reg:CC CC_REG) (const_int 0))]
+				UNSPEC_SUBV)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (minus:SI (match_dup 1) (match_dup 2))
+		  (ltu:SI (reg:CC CC_REG) (const_int 0))))]
+  ""
+  "subxcc\t%1, %2, %0"
   [(set_attr "type" "compare")])
 
 
@@ -5127,6 +5579,50 @@
     }
 })
 
+(define_expand "unegvdi3"
+  [(parallel [(set (reg:CCXC CC_REG)
+		   (compare:CCXC (not:DI (match_operand:DI 1 "register_operand" ""))
+				 (const_int -1)))
+	      (set (match_operand:DI 0 "register_operand" "")
+		   (neg:DI (match_dup 1)))])
+   (set (pc)
+        (if_then_else (ltu (reg:CCXC CC_REG) (const_int 0))
+		      (label_ref (match_operand 2 ""))
+		      (pc)))]
+  ""
+{
+  if (!TARGET_64BIT)
+    {
+      emit_insn (gen_unegvdi3_sp32 (operands[0], operands[1]));
+      rtx x = gen_rtx_LTU (VOIDmode, gen_rtx_REG (CCCmode, SPARC_ICC_REG),
+				     const0_rtx);
+      emit_jump_insn (gen_cbranchcc4 (x, XEXP (x, 0), XEXP (x, 1), operands[2]));
+      DONE;
+    }
+})
+
+(define_expand "negvdi3"
+  [(parallel [(set (reg:CCXV CC_REG)
+		   (compare:CCXV (neg:DI (match_operand:DI 1 "register_operand" ""))
+				 (unspec:DI [(match_dup 1)] UNSPEC_NEGV)))
+	      (set (match_operand:DI 0 "register_operand" "")
+		   (neg:DI (match_dup 1)))])
+   (set (pc)
+        (if_then_else (ne (reg:CCXV CC_REG) (const_int 0))
+		      (label_ref (match_operand 2 ""))
+		      (pc)))]
+  ""
+{
+  if (!TARGET_64BIT)
+    {
+      emit_insn (gen_negvdi3_sp32 (operands[0], operands[1]));
+      rtx x = gen_rtx_NE (VOIDmode, gen_rtx_REG (CCVmode, SPARC_ICC_REG),
+				    const0_rtx);
+      emit_jump_insn (gen_cbranchcc4 (x, XEXP (x, 0), XEXP (x, 1), operands[2]));
+      DONE;
+    }
+})
+
 (define_insn_and_split "negdi2_sp32"
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))
@@ -5145,6 +5641,64 @@
    operands[5] = gen_lowpart (SImode, operands[1]);"
   [(set_attr "length" "2")])
 
+(define_insn_and_split "unegvdi3_sp32"
+  [(set (reg:CCC CC_REG)
+	(compare:CCC (not:DI (match_operand:DI 1 "register_operand" "r"))
+		     (const_int -1)))
+   (set (match_operand:DI 0 "register_operand" "=&r")
+	(neg:DI (match_dup 1)))]
+  "!TARGET_ARCH64"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:CCC CC_REG)
+                   (compare:CCC (not:SI (match_dup 5)) (const_int -1)))
+              (set (match_dup 4) (neg:SI (match_dup 5)))])
+   (parallel [(set (reg:CCC CC_REG)
+		   (compare:CCC (zero_extend:DI
+				  (neg:SI (plus:SI (match_dup 3)
+						   (ltu:SI (reg:CCC CC_REG)
+							   (const_int 0)))))
+				(neg:DI (plus:DI (zero_extend:DI (match_dup 3))
+						 (ltu:DI (reg:CCC CC_REG)
+							 (const_int 0))))))
+	      (set (match_dup 2) (neg:SI (plus:SI (match_dup 3)
+						  (ltu:SI (reg:CCC CC_REG)
+							  (const_int 0)))))])]
+  "operands[2] = gen_highpart (SImode, operands[0]);
+   operands[3] = gen_highpart (SImode, operands[1]);
+   operands[4] = gen_lowpart (SImode, operands[0]);
+   operands[5] = gen_lowpart (SImode, operands[1]);"
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "negvdi3_sp32"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (neg:DI (match_operand:DI 1 "register_operand" "r"))
+		     (unspec:DI [(match_dup 1)] UNSPEC_NEGV)))
+   (set (match_operand:DI 0 "register_operand" "=&r")
+	(neg:DI (match_dup 1)))]
+  "!TARGET_ARCH64"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:CCC CC_REG)
+                   (compare:CCC (not:SI (match_dup 5)) (const_int -1)))
+              (set (match_dup 4) (neg:SI (match_dup 5)))])
+   (parallel [(set (reg:CCV CC_REG)
+		   (compare:CCV (neg:SI (plus:SI (match_dup 3)
+						 (ltu:SI (reg:CCC CC_REG)
+							 (const_int 0))))
+				(unspec:SI [(plus:SI (match_dup 3)
+						     (ltu:SI (reg:CCC CC_REG)
+							     (const_int 0)))]
+					   UNSPEC_NEGV)))
+	      (set (match_dup 2) (neg:SI (plus:SI (match_dup 3)
+						  (ltu:SI (reg:CCC CC_REG)
+							  (const_int 0)))))])]
+  "operands[2] = gen_highpart (SImode, operands[0]);
+   operands[3] = gen_highpart (SImode, operands[1]);
+   operands[4] = gen_lowpart (SImode, operands[0]);
+   operands[5] = gen_lowpart (SImode, operands[1]);"
+  [(set_attr "length" "2")])
+
 (define_insn "*negdi2_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))]
@@ -5156,6 +5710,30 @@
         (neg:SI (match_operand:SI 1 "arith_operand" "rI")))]
   ""
   "sub\t%%g0, %1, %0")
+
+(define_expand "unegvsi3"
+  [(parallel [(set (reg:CCC CC_REG)
+		   (compare:CCC (not:SI (match_operand:SI 1 "arith_operand" ""))
+				(const_int -1)))
+	      (set (match_operand:SI 0 "register_operand" "")
+		   (neg:SI (match_dup 1)))])
+   (set (pc)
+        (if_then_else (ltu (reg:CCC CC_REG) (const_int 0))
+		      (label_ref (match_operand 2 ""))
+		      (pc)))]
+  "")
+
+(define_expand "negvsi3"
+  [(parallel [(set (reg:CCV CC_REG)
+		   (compare:CCV (neg:SI (match_operand:SI 1 "arith_operand" ""))
+				(unspec:SI [(match_dup 1)] UNSPEC_NEGV)))
+	      (set (match_operand:SI 0 "register_operand" "")
+		   (neg:SI (match_dup 1)))])
+   (set (pc)
+        (if_then_else (ne (reg:CCV CC_REG) (const_int 0))
+		      (label_ref (match_operand 2 ""))
+		      (pc)))]
+"")
 
 (define_insn "*cmp_ccnz_neg"
   [(set (reg:CCNZ CC_REG)
@@ -5211,6 +5789,73 @@
 	(neg:DI (match_dup 1)))]
   "TARGET_ARCH64"
   "subcc\t%%g0, %1, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccc_neg_sltu_set"
+  [(set (reg:CCC CC_REG)
+	(compare:CCC (zero_extend:DI
+		       (neg:SI (plus:SI (match_operand:SI 1 "arith_operand" "rI")
+				        (ltu:SI (reg:CCC CC_REG)
+						(const_int 0)))))
+		     (neg:DI (plus:DI (zero_extend:DI (match_dup 1))
+				      (ltu:DI (reg:CCC CC_REG)
+					      (const_int 0))))))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(neg:SI (plus:SI (match_dup 1)
+			 (ltu:SI (reg:CCC CC_REG) (const_int 0)))))]
+  ""
+  "subxcc\t%%g0, %1, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccv_neg"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (neg:SI (match_operand:SI 0 "arith_operand" "rI"))
+		     (unspec:SI [(match_dup 0)] UNSPEC_NEGV)))]
+  ""
+  "subcc\t%%g0, %0, %%g0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccxv_neg"
+  [(set (reg:CCXV CC_REG)
+	(compare:CCXV (neg:DI (match_operand:DI 0 "arith_operand" "rI"))
+		      (unspec:DI [(match_dup 0)] UNSPEC_NEGV)))]
+  "TARGET_ARCH64"
+  "subcc\t%%g0, %0, %%g0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccv_neg_set"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (neg:SI (match_operand:SI 1 "arith_operand" "rI"))
+		     (unspec:SI [(match_dup 1)] UNSPEC_NEGV)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(neg:SI (match_dup 1)))]
+  ""
+  "subcc\t%%g0, %1, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccxv_neg_set"
+  [(set (reg:CCXV CC_REG)
+	(compare:CCXV (neg:DI (match_operand:DI 1 "arith_operand" "rI"))
+		      (unspec:DI [(match_dup 1)] UNSPEC_NEGV)))
+   (set (match_operand:DI 0 "register_operand" "=r")
+	(neg:DI (match_dup 1)))]
+  "TARGET_ARCH64"
+  "subcc\t%%g0, %1, %0"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmp_ccv_neg_sltu_set"
+  [(set (reg:CCV CC_REG)
+	(compare:CCV (neg:SI (plus:SI (match_operand:SI 1 "arith_operand" "rI")
+				      (ltu:SI (reg:CCC CC_REG) (const_int 0))))
+		     (unspec:SI [(plus:SI (match_dup 1)
+				          (ltu:SI (reg:CCC CC_REG)
+						  (const_int 0)))]
+				UNSPEC_NEGV)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(neg:SI (plus:SI (match_dup 1)
+			 (ltu:SI (reg:CCC CC_REG) (const_int 0)))))]
+  ""
+  "subxcc\t%%g0, %1, %0"
   [(set_attr "type" "compare")])
 
 
