@@ -1,3 +1,8 @@
+2016-10-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_layout_frame):
+	Align FP callee-saves.
+
 2016-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/adxintrin.h (_subborrow_u32, _addcarry_u32,

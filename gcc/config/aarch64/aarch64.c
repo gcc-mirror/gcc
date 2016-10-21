@@ -2734,7 +2734,7 @@ static void
 aarch64_layout_frame (void)
 {
   HOST_WIDE_INT offset = 0;
-  int regno;
+  int regno, last_fp_reg = INVALID_REGNUM;
 
   if (reload_completed && cfun->machine->frame.laid_out)
     return;
@@ -2768,7 +2768,10 @@ aarch64_layout_frame (void)
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
 	&& !call_used_regs[regno])
-      cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
+      {
+	cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
+	last_fp_reg = regno;
+      }
 
   if (frame_pointer_needed)
     {
@@ -2792,9 +2795,21 @@ aarch64_layout_frame (void)
 	offset += UNITS_PER_WORD;
       }
 
+  HOST_WIDE_INT max_int_offset = offset;
+  offset = ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
+  bool has_align_gap = offset != max_int_offset;
+
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
       {
+	/* If there is an alignment gap between integer and fp callee-saves,
+	   allocate the last fp register to it if possible.  */
+	if (regno == last_fp_reg && has_align_gap && (offset & 8) == 0)
+	  {
+	    cfun->machine->frame.reg_offset[regno] = max_int_offset;
+	    break;
+	  }
+
 	cfun->machine->frame.reg_offset[regno] = offset;
 	if (cfun->machine->frame.wb_candidate1 == INVALID_REGNUM)
 	  cfun->machine->frame.wb_candidate1 = regno;
