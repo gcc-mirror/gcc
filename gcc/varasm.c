@@ -2983,7 +2983,7 @@ const_hash_1 (const tree exp)
 
 	  case LABEL_REF:
 	    hi = (value.offset
-		  + CODE_LABEL_NUMBER (LABEL_REF_LABEL (value.base)) * 13);
+		  + CODE_LABEL_NUMBER (label_ref_label (value.base)) * 13);
 	    break;
 
 	  default:
@@ -3172,8 +3172,8 @@ compare_constant (const tree t1, const tree t2)
 	    break;
 
 	  case LABEL_REF:
-	    ret = (CODE_LABEL_NUMBER (LABEL_REF_LABEL (value1.base))
-	           == CODE_LABEL_NUMBER (LABEL_REF_LABEL (value2.base)));
+	    ret = (CODE_LABEL_NUMBER (label_ref_label (value1.base))
+		   == CODE_LABEL_NUMBER (label_ref_label (value2.base)));
 	    break;
 
 	  default:
@@ -3611,7 +3611,7 @@ const_rtx_hash_1 (const_rtx x)
       break;
 
     case LABEL_REF:
-      h = h * 251 + CODE_LABEL_NUMBER (LABEL_REF_LABEL (x));
+      h = h * 251 + CODE_LABEL_NUMBER (label_ref_label (x));
       break;
 
     case UNSPEC:
@@ -3893,11 +3893,13 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
       /* FALLTHRU  */
 
     case LABEL_REF:
-      tmp = LABEL_REF_LABEL (tmp);
-      gcc_assert (!as_a<rtx_insn *> (tmp)->deleted ());
-      gcc_assert (!NOTE_P (tmp)
-		  || NOTE_KIND (tmp) != NOTE_INSN_DELETED);
-      break;
+      {
+	rtx_insn *insn = label_ref_label (tmp);
+	gcc_assert (!insn->deleted ());
+	gcc_assert (!NOTE_P (insn)
+		    || NOTE_KIND (insn) != NOTE_INSN_DELETED);
+	break;
+      }
 
     default:
       break;

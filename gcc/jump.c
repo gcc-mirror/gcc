@@ -284,7 +284,7 @@ maybe_propagate_label_ref (rtx_insn *jump_insn, rtx_insn *prev_nonjump_insn)
 	     CODE_LABEL in the LABEL_REF of the "set".  We can
 	     conveniently use it for the marker function, which
 	     requires a LABEL_REF wrapping.  */
-	  gcc_assert (XEXP (label_note, 0) == LABEL_REF_LABEL (SET_SRC (label_set)));
+	  gcc_assert (XEXP (label_note, 0) == label_ref_label (SET_SRC (label_set)));
 
 	  mark_jump_label_1 (label_set, jump_insn, false, true);
 
@@ -1151,7 +1151,7 @@ mark_jump_label_1 (rtx x, rtx_insn *insn, bool in_mem, bool is_target)
 
     case LABEL_REF:
       {
-	rtx label = LABEL_REF_LABEL (x);
+	rtx_insn *label = label_ref_label (x);
 
 	/* Ignore remaining references to unreachable labels that
 	   have been deleted.  */
@@ -1165,7 +1165,7 @@ mark_jump_label_1 (rtx x, rtx_insn *insn, bool in_mem, bool is_target)
 	if (LABEL_REF_NONLOCAL_P (x))
 	  break;
 
-	LABEL_REF_LABEL (x) = label;
+	set_label_ref_label (x, label);
 	if (! insn || ! insn->deleted ())
 	  ++LABEL_NUSES (label);
 
@@ -1464,7 +1464,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
   int i;
   const char *fmt;
 
-  if ((code == LABEL_REF && LABEL_REF_LABEL (x) == olabel)
+  if ((code == LABEL_REF && label_ref_label (x) == olabel)
       || x == olabel)
     {
       x = redirect_target (nlabel);
@@ -1477,7 +1477,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
   if (code == SET && SET_DEST (x) == pc_rtx
       && ANY_RETURN_P (nlabel)
       && GET_CODE (SET_SRC (x)) == LABEL_REF
-      && LABEL_REF_LABEL (SET_SRC (x)) == olabel)
+      && label_ref_label (SET_SRC (x)) == olabel)
     {
       validate_change (insn, loc, nlabel, 1);
       return;
@@ -1801,16 +1801,14 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
     case LABEL_REF:
       /* We can't assume nonlocal labels have their following insns yet.  */
       if (LABEL_REF_NONLOCAL_P (x) || LABEL_REF_NONLOCAL_P (y))
-	return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
+	return label_ref_label (x) == label_ref_label (y);
 
       /* Two label-refs are equivalent if they point at labels
 	 in the same position in the instruction stream.  */
       else
 	{
-	  rtx_insn *xi = next_nonnote_nondebug_insn
-	    (as_a<rtx_insn *> (LABEL_REF_LABEL (x)));
-	  rtx_insn *yi = next_nonnote_nondebug_insn
-	    (as_a<rtx_insn *> (LABEL_REF_LABEL (y)));
+	  rtx_insn *xi = next_nonnote_nondebug_insn (label_ref_label (x));
+	  rtx_insn *yi = next_nonnote_nondebug_insn (label_ref_label (y));
 	  while (xi && LABEL_P (xi))
 	    xi = next_nonnote_nondebug_insn (xi);
 	  while (yi && LABEL_P (yi))

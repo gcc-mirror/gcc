@@ -87,7 +87,7 @@ test_uncond_jump ()
 						 label));
   ASSERT_EQ (SET, jump_pat->code);
   ASSERT_EQ (LABEL_REF, SET_SRC (jump_pat)->code);
-  ASSERT_EQ (label, LABEL_REF_LABEL (SET_SRC (jump_pat)));
+  ASSERT_EQ (label, label_ref_label (SET_SRC (jump_pat)));
   ASSERT_EQ (PC, SET_DEST (jump_pat)->code);
 
   verify_print_pattern ("pc=L0", jump_pat);
