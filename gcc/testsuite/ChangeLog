@@ -1,3 +1,8 @@
+2016-10-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/pure-code/pure-code.exp: Require arm_cortex_m
+	effective target.
+
 2016-10-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/78038
