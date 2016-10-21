@@ -214,6 +214,7 @@ static tree tsubst_template_parm (tree, tree, tsubst_flags_t);
 static tree instantiate_alias_template (tree, tree, tsubst_flags_t);
 static bool complex_alias_template_p (const_tree tmpl);
 static tree tsubst_attributes (tree, tree, tsubst_flags_t, tree);
+static tree canonicalize_expr_argument (tree, tsubst_flags_t);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -6297,6 +6298,9 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   if (non_dep)
     expr = instantiate_non_dependent_expr_internal (expr, complain);
 
+  if (value_dependent_expression_p (expr))
+    expr = canonicalize_expr_argument (expr, complain);
+
   /* 14.3.2/5: The null pointer{,-to-member} conversion is applied
      to a non-type argument of "nullptr".  */
   if (expr == nullptr_node && TYPE_PTR_OR_PTRMEM_P (type))
@@ -6405,7 +6409,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 
       /* Notice that there are constant expressions like '4 % 0' which
 	 do not fold into integer constants.  */
-      if (TREE_CODE (expr) != INTEGER_CST)
+      if (TREE_CODE (expr) != INTEGER_CST
+	  && !value_dependent_expression_p (expr))
 	{
 	  if (complain & tf_error)
 	    {
@@ -6452,7 +6457,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	Here, we do not care about functions, as they are invalid anyway
 	for a parameter of type pointer-to-object.  */
 
-      if (DECL_P (expr) && DECL_TEMPLATE_PARM_P (expr))
+      if (value_dependent_expression_p (expr))
 	/* Non-type template parameters are OK.  */
 	;
       else if (cxx_dialect >= cxx11 && integer_zerop (expr))
@@ -6567,27 +6572,30 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    }
 	}
 
-      if (!DECL_P (expr))
+      if (!value_dependent_expression_p (expr))
 	{
-	  if (complain & tf_error)
-	    error ("%qE is not a valid template argument for type %qT "
-		   "because it is not an object with linkage",
-		   expr, type);
-	  return NULL_TREE;
-	}
+	  if (!DECL_P (expr))
+	    {
+	      if (complain & tf_error)
+		error ("%qE is not a valid template argument for type %qT "
+		       "because it is not an object with linkage",
+		       expr, type);
+	      return NULL_TREE;
+	    }
 
-      /* DR 1155 allows internal linkage in C++11 and up.  */
-      linkage_kind linkage = decl_linkage (expr);
-      if (linkage < (cxx_dialect >= cxx11 ? lk_internal : lk_external))
-	{
-	  if (complain & tf_error)
-	    error ("%qE is not a valid template argument for type %qT "
-		   "because object %qD does not have linkage",
-		   expr, type, expr);
-	  return NULL_TREE;
-	}
+	  /* DR 1155 allows internal linkage in C++11 and up.  */
+	  linkage_kind linkage = decl_linkage (expr);
+	  if (linkage < (cxx_dialect >= cxx11 ? lk_internal : lk_external))
+	    {
+	      if (complain & tf_error)
+		error ("%qE is not a valid template argument for type %qT "
+		       "because object %qD does not have linkage",
+		       expr, type, expr);
+	      return NULL_TREE;
+	    }
 
-      expr = build_nop (type, build_address (expr));
+	  expr = build_nop (type, build_address (expr));
+	}
     }
   /* [temp.arg.nontype]/5, bullet 4
 
@@ -6611,7 +6619,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	/* Null pointer values are OK in C++11.  */
 	return perform_qualification_conversions (type, expr);
 
-      expr = convert_nontype_argument_function (type, expr, complain);
+      if (!value_dependent_expression_p (expr))
+	expr = convert_nontype_argument_function (type, expr, complain);
       if (!expr || expr == error_mark_node)
 	return expr;
     }
@@ -6635,7 +6644,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  return NULL_TREE;
 	}
 
-      expr = convert_nontype_argument_function (type, expr, complain);
+      if (!value_dependent_expression_p (expr))
+	expr = convert_nontype_argument_function (type, expr, complain);
       if (!expr || expr == error_mark_node)
 	return expr;
 
@@ -6655,7 +6665,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 
       /* [temp.arg.nontype] bullet 1 says the pointer to member
          expression must be a pointer-to-member constant.  */
-      if (!check_valid_ptrmem_cst_expr (type, expr, complain))
+      if (!value_dependent_expression_p (expr)
+	  && !check_valid_ptrmem_cst_expr (type, expr, complain))
 	return error_mark_node;
 
       /* There is no way to disable standard conversions in
@@ -6690,7 +6701,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
     {
       /* [temp.arg.nontype] bullet 1 says the pointer to member
          expression must be a pointer-to-member constant.  */
-      if (!check_valid_ptrmem_cst_expr (type, expr, complain))
+      if (!value_dependent_expression_p (expr)
+	  && !check_valid_ptrmem_cst_expr (type, expr, complain))
 	return error_mark_node;
 
       expr = perform_qualification_conversions (type, expr);
@@ -6993,6 +7005,22 @@ canonicalize_type_argument (tree arg, tsubst_flags_t complain)
   return canon;
 }
 
+/* And from inside dependent non-type arguments like sizeof(Type).  */
+
+static tree
+canonicalize_expr_argument (tree arg, tsubst_flags_t complain)
+{
+  if (!arg || arg == error_mark_node)
+    return arg;
+  bool removed_attributes = false;
+  tree canon = strip_typedefs_expr (arg, &removed_attributes);
+  if (removed_attributes
+      && (complain & tf_warning))
+    warning (OPT_Wignored_attributes,
+	     "ignoring attributes in template argument %qE", arg);
+  return canon;
+}
+
 // A template declaration can be substituted for a constrained
 // template template parameter only when the argument is more
 // constrained than the parameter.
@@ -7278,7 +7306,7 @@ convert_template_argument (tree parm,
 	      val = error_mark_node;
 	    }
 	}
-      else if (!dependent_template_arg_p (orig_arg)
+      else if (!type_dependent_expression_p (orig_arg)
 	       && !uses_template_parms (t))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
@@ -7292,10 +7320,7 @@ convert_template_argument (tree parm,
 	   argument specification is valid.  */
 	val = convert_nontype_argument (t, orig_arg, complain);
       else
-	{
-	  bool removed_attr = false;
-	  val = strip_typedefs_expr (orig_arg, &removed_attr);
-	}
+	val = canonicalize_expr_argument (orig_arg, complain);
 
       if (val == NULL_TREE)
 	val = error_mark_node;
@@ -13187,8 +13212,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		return cp_build_qualified_type_real
 		  (r, cp_type_quals (t) | cp_type_quals (r), complain);
 	      }
+	    else if (code == TEMPLATE_TEMPLATE_PARM)
+	      return arg;
 	    else
-	      /* TEMPLATE_TEMPLATE_PARM or TEMPLATE_PARM_INDEX.  */
+	      /* TEMPLATE_PARM_INDEX.  */
 	      return convert_from_reference (unshare_expr (arg));
 	  }
 
@@ -18225,6 +18252,9 @@ static bool uses_deducible_template_parms (tree type);
 static bool
 deducible_expression (tree expr)
 {
+  /* Strip implicit conversions.  */
+  while (CONVERT_EXPR_P (expr))
+    expr = TREE_OPERAND (expr, 0);
   return (TREE_CODE (expr) == TEMPLATE_PARM_INDEX);
 }
 
@@ -19567,7 +19597,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
      But the only case I've seen it in so far has been array bounds, where
      signedness is the only information lost, and I think that will be
      okay.  */
-  while (TREE_CODE (parm) == NOP_EXPR)
+  while (CONVERT_EXPR_P (parm))
     parm = TREE_OPERAND (parm, 0);
 
   if (arg == error_mark_node)
@@ -20056,7 +20086,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       /* Types INTEGER_CST and MINUS_EXPR can come from array bounds.  */
       /* Type INTEGER_CST can come from ordinary constant template args.  */
     case INTEGER_CST:
-      while (TREE_CODE (arg) == NOP_EXPR)
+      while (CONVERT_EXPR_P (arg))
 	arg = TREE_OPERAND (arg, 0);
 
       if (TREE_CODE (arg) != INTEGER_CST)
