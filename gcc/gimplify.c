@@ -1192,21 +1192,24 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
     {
       if (VAR_P (t)
 	  && !is_global_var (t)
-	  && DECL_CONTEXT (t) == current_function_decl
-	  && !DECL_HARD_REGISTER (t)
-	  && !TREE_THIS_VOLATILE (t)
-	  && !DECL_HAS_VALUE_EXPR_P (t)
-	  /* Only care for variables that have to be in memory.  Others
-	     will be rewritten into SSA names, hence moved to the top-level.  */
-	  && !is_gimple_reg (t)
-	  && flag_stack_reuse != SR_NONE)
+	  && DECL_CONTEXT (t) == current_function_decl)
 	{
-	  tree clobber = build_constructor (TREE_TYPE (t), NULL);
-	  gimple *clobber_stmt;
-	  TREE_THIS_VOLATILE (clobber) = 1;
-	  clobber_stmt = gimple_build_assign (t, clobber);
-	  gimple_set_location (clobber_stmt, end_locus);
-	  gimplify_seq_add_stmt (&cleanup, clobber_stmt);
+	  if (!DECL_HARD_REGISTER (t)
+	      && !TREE_THIS_VOLATILE (t)
+	      && !DECL_HAS_VALUE_EXPR_P (t)
+	      /* Only care for variables that have to be in memory.  Others
+		 will be rewritten into SSA names, hence moved to the
+		 top-level.  */
+	      && !is_gimple_reg (t)
+	      && flag_stack_reuse != SR_NONE)
+	    {
+	      tree clobber = build_constructor (TREE_TYPE (t), NULL);
+	      gimple *clobber_stmt;
+	      TREE_THIS_VOLATILE (clobber) = 1;
+	      clobber_stmt = gimple_build_assign (t, clobber);
+	      gimple_set_location (clobber_stmt, end_locus);
+	      gimplify_seq_add_stmt (&cleanup, clobber_stmt);
+	    }
 
 	  if (flag_openacc && oacc_declare_returns != NULL)
 	    {
