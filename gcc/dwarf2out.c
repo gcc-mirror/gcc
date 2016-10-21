@@ -3066,28 +3066,11 @@ static GTY (()) vec<macinfo_entry, va_gc> *macinfo_table;
    && debug_info_level >= DINFO_LEVEL_VERBOSE \
    && !macinfo_table->is_empty ())
 
-/* Array of dies for which we should generate .debug_ranges info.  */
-static GTY ((length ("ranges_table_allocated"))) dw_ranges *ranges_table;
+/* Vector of dies for which we should generate .debug_ranges info.  */
+static GTY (()) vec<dw_ranges, va_gc> *ranges_table;
 
-/* Number of elements currently allocated for ranges_table.  */
-static GTY(()) unsigned ranges_table_allocated;
-
-/* Number of elements in ranges_table currently in use.  */
-static GTY(()) unsigned ranges_table_in_use;
-
-/* Array of pairs of labels referenced in ranges_table.  */
-static GTY ((length ("ranges_by_label_allocated")))
-     dw_ranges_by_label *ranges_by_label;
-
-/* Number of elements currently allocated for ranges_by_label.  */
-static GTY(()) unsigned ranges_by_label_allocated;
-
-/* Number of elements in ranges_by_label currently in use.  */
-static GTY(()) unsigned ranges_by_label_in_use;
-
-/* Size (in elements) of increments by which we may expand the
-   ranges_table.  */
-#define RANGES_TABLE_INCREMENT 64
+/* Vector of pairs of labels referenced in ranges_table.  */
+static GTY (()) vec<dw_ranges_by_label, va_gc> *ranges_by_label;
 
 /* Whether we have location lists that need outputting */
 static GTY(()) bool have_location_lists;
@@ -10153,21 +10136,9 @@ output_aranges (void)
 static unsigned int
 add_ranges_num (int num)
 {
-  unsigned int in_use = ranges_table_in_use;
-
-  if (in_use == ranges_table_allocated)
-    {
-      ranges_table_allocated += RANGES_TABLE_INCREMENT;
-      ranges_table = GGC_RESIZEVEC (dw_ranges, ranges_table,
-				    ranges_table_allocated);
-      memset (ranges_table + ranges_table_in_use, 0,
-	      RANGES_TABLE_INCREMENT * sizeof (dw_ranges));
-    }
-
-  ranges_table[in_use].num = num;
-  ranges_table_in_use = in_use + 1;
-
-  return in_use * 2 * DWARF2_ADDR_SIZE;
+  dw_ranges r = { num };
+  vec_safe_push (ranges_table, r);
+  return (vec_safe_length (ranges_table) - 1) * 2 * DWARF2_ADDR_SIZE;
 }
 
 /* Add a new entry to .debug_ranges corresponding to a block, or a
@@ -10188,22 +10159,10 @@ static void
 add_ranges_by_labels (dw_die_ref die, const char *begin, const char *end,
                       bool *added, bool force_direct)
 {
-  unsigned int in_use = ranges_by_label_in_use;
+  unsigned int in_use = vec_safe_length (ranges_by_label);
   unsigned int offset;
-
-  if (in_use == ranges_by_label_allocated)
-    {
-      ranges_by_label_allocated += RANGES_TABLE_INCREMENT;
-      ranges_by_label = GGC_RESIZEVEC (dw_ranges_by_label, ranges_by_label,
-				       ranges_by_label_allocated);
-      memset (ranges_by_label + ranges_by_label_in_use, 0,
-	      RANGES_TABLE_INCREMENT * sizeof (dw_ranges_by_label));
-    }
-
-  ranges_by_label[in_use].begin = begin;
-  ranges_by_label[in_use].end = end;
-  ranges_by_label_in_use = in_use + 1;
-
+  dw_ranges_by_label rbl = { begin, end };
+  vec_safe_push (ranges_by_label, rbl);
   offset = add_ranges_num (-(int)in_use - 1);
   if (!*added)
     {
@@ -10218,10 +10177,11 @@ output_ranges (void)
   unsigned i;
   static const char *const start_fmt = "Offset %#x";
   const char *fmt = start_fmt;
+  dw_ranges *r;
 
-  for (i = 0; i < ranges_table_in_use; i++)
+  FOR_EACH_VEC_SAFE_ELT (ranges_table, i, r)
     {
-      int block_num = ranges_table[i].num;
+      int block_num = r->num;
 
       if (block_num > 0)
 	{
@@ -10270,21 +10230,21 @@ output_ranges (void)
 		 function section, all we have to do is to take out
 		 the #if 0 above.  */
 	      dw2_asm_output_delta (DWARF2_ADDR_SIZE,
-				    ranges_by_label[lab_idx].begin,
+				    (*ranges_by_label)[lab_idx].begin,
 				    text_section_label,
 				    fmt, i * 2 * DWARF2_ADDR_SIZE);
 	      dw2_asm_output_delta (DWARF2_ADDR_SIZE,
-				    ranges_by_label[lab_idx].end,
+				    (*ranges_by_label)[lab_idx].end,
 				    text_section_label, NULL);
 #endif
 	    }
 	  else
 	    {
 	      dw2_asm_output_addr (DWARF2_ADDR_SIZE,
-				   ranges_by_label[lab_idx].begin,
+				   (*ranges_by_label)[lab_idx].begin,
 				   fmt, i * 2 * DWARF2_ADDR_SIZE);
 	      dw2_asm_output_addr (DWARF2_ADDR_SIZE,
-				   ranges_by_label[lab_idx].end,
+				   (*ranges_by_label)[lab_idx].end,
 				   NULL);
 	    }
 	}
@@ -21662,8 +21622,8 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 	  superblock = BLOCK_SUPERCONTEXT (chain);
 	}
       if (attr != NULL
-	  && (ranges_table[attr->dw_attr_val.v.val_offset
-			   / 2 / DWARF2_ADDR_SIZE].num
+	  && ((*ranges_table)[attr->dw_attr_val.v.val_offset
+			      / 2 / DWARF2_ADDR_SIZE].num
 	      == BLOCK_NUMBER (superblock))
 	  && BLOCK_FRAGMENT_CHAIN (superblock))
 	{
@@ -21674,10 +21634,10 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 	       chain; chain = BLOCK_FRAGMENT_CHAIN (chain))
 	    {
 	      ++supercnt;
-	      gcc_checking_assert (ranges_table[off + supercnt].num
+	      gcc_checking_assert ((*ranges_table)[off + supercnt].num
 				   == BLOCK_NUMBER (chain));
 	    }
-	  gcc_checking_assert (ranges_table[off + supercnt + 1].num == 0);
+	  gcc_checking_assert ((*ranges_table)[off + supercnt + 1].num == 0);
 	  for (chain = BLOCK_FRAGMENT_CHAIN (stmt);
 	       chain; chain = BLOCK_FRAGMENT_CHAIN (chain))
 	    ++thiscnt;
@@ -28130,7 +28090,7 @@ dwarf2out_finish (const char *)
 
       /* Add the base offset of the ranges table to the skeleton
         comp-unit DIE.  */
-      if (ranges_table_in_use)
+      if (!vec_safe_is_empty (ranges_table))
         add_AT_lineptr (main_comp_unit_die, DW_AT_GNU_ranges_base,
                         ranges_section_label);
 
@@ -28177,7 +28137,7 @@ dwarf2out_finish (const char *)
     }
 
   /* Output ranges section if necessary.  */
-  if (ranges_table_in_use)
+  if (!vec_safe_is_empty (ranges_table))
     {
       switch_to_section (debug_ranges_section);
       ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
@@ -28392,11 +28352,7 @@ dwarf2out_c_finalize (void)
   pubtype_table = NULL;
   macinfo_table = NULL;
   ranges_table = NULL;
-  ranges_table_allocated = 0;
-  ranges_table_in_use = 0;
-  ranges_by_label = 0;
-  ranges_by_label_allocated = 0;
-  ranges_by_label_in_use = 0;
+  ranges_by_label = NULL;
   have_location_lists = false;
   loclabel_num = 0;
   poc_label_num = 0;
