@@ -45,6 +45,9 @@
 	(cmp_ccxv_neg_set): Likewise.
 	(cmp_ccv_neg_sltu_set): Likewise.
 
+	* tree-ssa-loop-split.c: Remove trailing spaces.
+	* match.pd: Likewise.
+
 2016-10-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/78038
