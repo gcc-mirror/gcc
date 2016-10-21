@@ -1,3 +1,10 @@
+2016-10-21  Jeff Law  <law@redhat.com>
+
+	* PR tree-optimization/71947
+	* gcc.dg/tree-ssa/pr71947-4.c: Avoid x86 opcode.
+	* gcc.dg/tree-ssa/pr71947-5.c: Likewise.
+	* gcc.dg/tree-ssa/pr71947-6.c: Make it opt-in rather than opt-out.
+
 2016-10-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.dg/ipa/vrp5.c: New test.
