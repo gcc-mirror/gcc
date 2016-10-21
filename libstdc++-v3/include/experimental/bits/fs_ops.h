@@ -112,6 +112,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void current_path(const path& __p);
   void current_path(const path& __p, error_code& __ec) noexcept;
 
+  bool
+  equivalent(const path& __p1, const path& __p2);
+
+  bool
+  equivalent(const path& __p1, const path& __p2, error_code& __ec) noexcept;
+
   inline bool
   exists(file_status __s) noexcept
   { return status_known(__s) && __s.type() != file_type::not_found; }
@@ -122,13 +128,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   inline bool
   exists(const path& __p, error_code& __ec) noexcept
-  { return exists(status(__p, __ec)); }
-
-  bool
-  equivalent(const path& __p1, const path& __p2);
-
-  bool
-  equivalent(const path& __p1, const path& __p2, error_code& __ec) noexcept;
+  {
+    auto __s = status(__p, __ec);
+    if (status_known(__s))
+      __ec.clear();
+    return exists(__s);
+  }
 
   uintmax_t file_size(const path& __p);
   uintmax_t file_size(const path& __p, error_code& __ec) noexcept;
