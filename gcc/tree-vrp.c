@@ -10850,7 +10850,11 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	= replace_uses_in (stmt, op_with_constant_singleton_value_range);
       if (fold_stmt (&gsi, follow_single_use_edges)
 	  || did_replace)
-	update_stmt (gsi_stmt (gsi));
+	{
+	  stmt = gsi_stmt (gsi);
+	  update_stmt (stmt);
+	  did_replace = true;
+	}
 
       if (did_replace)
 	{
