@@ -1,3 +1,8 @@
+2016-10-21  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	PR preprocessor/71681
+	* files.c (remap_filename): Fix handling -remap in subdirectories.
+
 2016-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/cpplib.h (struct cpp_options): Add
