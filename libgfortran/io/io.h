@@ -514,6 +514,7 @@ typedef struct st_parameter_dt
 	     large enough to hold a complex value (two reals) of the
 	     largest kind.  */
 	  char value[32];
+	  GFC_IO_INT not_used; /* Needed for alignment. */
 	  formatted_dtio fdtio_ptr;
 	  unformatted_dtio ufdtio_ptr;
 	} p;
