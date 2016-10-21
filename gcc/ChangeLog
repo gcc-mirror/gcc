@@ -1,5 +1,20 @@
 2016-10-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (ranges_table): Change into vec<dw_ranges, va_gc> *.
+	(ranges_by_label): Change into vec<dw_ranges_by_label, va_gc> *.
+	(ranges_table_allocated, ranges_table_in_use,
+	ranges_by_label_allocated, ranges_by_label_in_use,
+	RANGES_TABLE_INCREMENT): Removed.
+	(add_ranges_num): Use vec_safe_push into ranges_table.
+	(add_ranges_by_labels): Use vec_safe_push into ranges_by_label.
+	(output_ranges): Adjust for ranges_table and ranges_by_label
+	conversion from arrays to vec.
+	(add_high_low_attributes, dwarf2out_finish): Adjust for range_table
+	conversion from arrays to vec.
+	(dwarf2out_c_finalize): Don't clear ranges_table_allocated,
+	ranges_table_in_use, ranges_by_label_allocated and
+	ranges_by_label_in_use.  Set ranges_by_label to NULL instead of 0.
+
 	* dwarf2out.c (gen_variable_die): Emit DW_AT_const_expr attribute
 	if needed.  Re-add origin_die variable and its initialization.
 
