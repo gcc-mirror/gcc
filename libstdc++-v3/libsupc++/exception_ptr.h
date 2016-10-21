@@ -187,10 +187,10 @@ namespace std
 	{
 #if __cpp_rtti && !_GLIBCXX_HAVE_CDTOR_CALLABI
           void *__e = __cxxabiv1::__cxa_allocate_exception(sizeof(_Ex));
-          (void)__cxxabiv1::__cxa_init_primary_exception(__e,
-                                           const_cast<std::type_info*>(&typeid(__ex)),
-                                           __exception_ptr::__dest_thunk<_Ex>);
-          new (__e) _Ex(__ex);
+          (void)__cxxabiv1::__cxa_init_primary_exception(
+	      __e, const_cast<std::type_info*>(&typeid(__ex)),
+	      __exception_ptr::__dest_thunk<_Ex>);
+          ::new (__e) _Ex(__ex);
           return exception_ptr(__e);
 #else
           throw __ex;
