@@ -1,3 +1,8 @@
+2016-10-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.dg/ipa/vrp5.c: New test.
+	* gcc.dg/ipa/vrp6.c: New test.
+
 2016-10-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/test_frame_17.c: New test.
