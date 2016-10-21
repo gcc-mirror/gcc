@@ -1,3 +1,8 @@
+2016-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_bind_expr): Handle oacc_declare_returns
+	even for -fstack-reuse=none, or for volatile vars etc.
+
 2016-10-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* print-rtl-function.c (flag_compact): Move extern decl to...
