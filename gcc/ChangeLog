@@ -1,3 +1,15 @@
+2016-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* print-rtl-function.c (flag_compact): Move extern decl to...
+	* print-rtl.h (flag_compact): ...here.
+	* rtl-tests.c (selftests::assert_rtl_dump_eq): New function.
+	(ASSERT_RTL_DUMP_EQ): New macro.
+	(selftest::test_dumping_regs): New function.
+	(selftest::test_dumping_insns): New function.
+	(selftest::test_uncond_jump): Add uses of ASSERT_RTL_DUMP_EQ on
+	the insns.
+	(selftest::rtl_tests_c_tests): Call the new test functions.
+
 2016-10-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Adjust.

@@ -34,8 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "emit-rtl.h"
 
-extern bool flag_compact;
-
 /* Print an "(edge-from)" or "(edge-to)" directive describing E
    to OUTFILE.  */
 
