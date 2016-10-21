@@ -171,6 +171,10 @@ dump_template_argument (cxx_pretty_printer *pp, tree arg, int flags)
       if (TREE_CODE (arg) == TREE_LIST)
 	arg = TREE_VALUE (arg);
 
+      /* Strip implicit conversions.  */
+      while (CONVERT_EXPR_P (arg))
+	arg = TREE_OPERAND (arg, 0);
+
       dump_expr (pp, arg, (flags | TFF_EXPR_IN_PARENS) & ~TFF_CLASS_KEY_OR_ENUM);
     }
 }

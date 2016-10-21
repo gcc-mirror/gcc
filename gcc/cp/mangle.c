@@ -2774,10 +2774,9 @@ write_expression (tree expr)
 {
   enum tree_code code = TREE_CODE (expr);
 
-  /* Skip NOP_EXPRs.  They can occur when (say) a pointer argument
-     is converted (via qualification conversions) to another
-     type.  */
-  while (TREE_CODE (expr) == NOP_EXPR
+  /* Skip NOP_EXPR and CONVERT_EXPR.  They can occur when (say) a pointer
+     argument is converted (via qualification conversions) to another type.  */
+  while (CONVERT_EXPR_CODE_P (code)
 	 /* Parentheses aren't mangled.  */
 	 || code == PAREN_EXPR
 	 || TREE_CODE (expr) == NON_LVALUE_EXPR)
