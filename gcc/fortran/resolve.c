@@ -8327,6 +8327,48 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 }
 
 
+/* Ensure that SELECT TYPE expressions have the correct rank and a full
+   array reference, where necessary.  The symbols are artificial and so
+   the dimension attribute and arrayspec can also be set.  In addition,
+   sometimes the expr1 arrives as BT_DERIVED, when the symbol is BT_CLASS.
+   This is corrected here as well.*/
+
+static void
+fixup_array_ref (gfc_expr **expr1, gfc_expr *expr2,
+		 int rank, gfc_ref *ref)
+{
+  gfc_ref *nref = (*expr1)->ref;
+  gfc_symbol *sym1 = (*expr1)->symtree->n.sym;
+  gfc_symbol *sym2 = expr2 ? expr2->symtree->n.sym : NULL;
+  (*expr1)->rank = rank;
+  if (sym1->ts.type == BT_CLASS)
+    {
+      if ((*expr1)->ts.type != BT_CLASS)
+	(*expr1)->ts = sym1->ts;
+
+      CLASS_DATA (sym1)->attr.dimension = 1;
+      if (CLASS_DATA (sym1)->as == NULL && sym2)
+	CLASS_DATA (sym1)->as
+		= gfc_copy_array_spec (CLASS_DATA (sym2)->as);
+    }
+  else
+    {
+      sym1->attr.dimension = 1;
+      if (sym1->as == NULL && sym2)
+	sym1->as = gfc_copy_array_spec (sym2->as);
+    }
+
+  for (; nref; nref = nref->next)
+    if (nref->next == NULL)
+      break;
+
+  if (ref && nref && nref->type != REF_ARRAY)
+    nref->next = gfc_copy_ref (ref);
+  else if (ref && !nref)
+    (*expr1)->ref = gfc_copy_ref (ref);
+}
+
+
 /* Resolve a SELECT TYPE statement.  */
 
 static void
@@ -8341,6 +8383,8 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   gfc_namespace *ns;
   int error = 0;
   int charlen = 0;
+  int rank = 0;
+  gfc_ref* ref = NULL;
 
   ns = code->ext.block.ns;
   gfc_resolve (ns);
@@ -8468,6 +8512,31 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   else
     code->ext.block.assoc = NULL;
 
+  /* Ensure that the selector rank and arrayspec are available to
+     correct expressions in which they might be missing.  */
+  if (code->expr2 && code->expr2->rank)
+    {
+      rank = code->expr2->rank;
+      for (ref = code->expr2->ref; ref; ref = ref->next)
+	if (ref->next == NULL)
+	  break;
+      if (ref && ref->type == REF_ARRAY)
+	ref = gfc_copy_ref (ref);
+
+      /* Fixup expr1 if necessary.  */
+      if (rank)
+	fixup_array_ref (&code->expr1, code->expr2, rank, ref);
+    }
+  else if (code->expr1->rank)
+    {
+      rank = code->expr1->rank;
+      for (ref = code->expr1->ref; ref; ref = ref->next)
+	if (ref->next == NULL)
+	  break;
+      if (ref && ref->type == REF_ARRAY)
+	ref = gfc_copy_ref (ref);
+    }
+
   /* Add EXEC_SELECT to switch on type.  */
   new_st = gfc_get_code (code->op);
   new_st->expr1 = code->expr1;
@@ -8533,7 +8602,12 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
       st->n.sym->assoc->target = gfc_get_variable_expr (code->expr1->symtree);
       st->n.sym->assoc->target->where = code->expr1->where;
       if (c->ts.type != BT_CLASS && c->ts.type != BT_UNKNOWN)
-	gfc_add_data_component (st->n.sym->assoc->target);
+	{
+	  gfc_add_data_component (st->n.sym->assoc->target);
+	  /* Fixup the target expression if necessary.  */
+	  if (rank)
+	    fixup_array_ref (&st->n.sym->assoc->target, NULL, rank, ref);
+	}
 
       new_st = gfc_get_code (EXEC_BLOCK);
       new_st->ext.block.ns = gfc_build_block_ns (ns);
@@ -8671,6 +8745,9 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   gfc_current_ns = ns;
   gfc_resolve_blocks (code->block, gfc_current_ns);
   gfc_current_ns = old_ns;
+
+  if (ref)
+    free (ref);
 
   resolve_select (code, true);
 }

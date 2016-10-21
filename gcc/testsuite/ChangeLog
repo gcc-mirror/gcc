@@ -1,3 +1,8 @@
+2016-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69566
+	* gfortran.dg/select_type_37.f03: New test.
+
 2016-10-21  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	PR target/71627

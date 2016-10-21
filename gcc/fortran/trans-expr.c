@@ -1033,8 +1033,13 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
 	&& e->symtree && e->symtree->n.sym->ts.type == BT_CLASS)
     {
       tmp = e->symtree->n.sym->backend_decl;
+
+      if (TREE_CODE (tmp) == FUNCTION_DECL)
+	tmp = gfc_get_fake_result_decl (e->symtree->n.sym, 0);
+
       if (DECL_LANG_SPECIFIC (tmp) && GFC_DECL_SAVED_DESCRIPTOR (tmp))
 	tmp = GFC_DECL_SAVED_DESCRIPTOR (tmp);
+
       slen = integer_zero_node;
     }
   else

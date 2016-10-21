@@ -1,3 +1,13 @@
+2016-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69566
+	* resolve.c (fixup_array_ref): New function.
+	(resolve_select_type): Gather up the rank and array reference,
+	if any, from the selector. Fix up the 'associate name' and the
+	'associate entities' as necessary.
+	* trans-expr.c (gfc_conv_class_to_class): If the symbol backend
+	decl is a FUNCTION_DECL, use the 'fake_result_decl' instead.
+
 2016-10-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* array.c (gfc_match_array_constructor): Remove set, but unused
