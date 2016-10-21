@@ -24,6 +24,7 @@
 
 
 #include <future>
+#include <functional>
 #include <testsuite_hooks.h>
 
 struct moveable

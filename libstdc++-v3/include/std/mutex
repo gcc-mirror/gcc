@@ -46,7 +46,7 @@
 # include <thread>
 #endif
 #ifndef _GLIBCXX_HAVE_TLS
-# include <functional>
+# include <bits/std_function.h>
 #endif
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1

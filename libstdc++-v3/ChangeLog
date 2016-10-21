@@ -1,5 +1,34 @@
 2016-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/Makefile.am: Add <bits/refwrap.h> and <bits/std_function.h>.
+	Order alphabetically.
+	* include/Makefile.in: Regenerate.
+	* include/bits/refwrap.h: New header.
+	(_Maybe_get_result_type,_Weak_result_type_impl, _Weak_result_type)
+	(_Reference_wrapper_base_impl, _Reference_wrapper_base)
+	(reference_wrapper, ref, cref): Move here from <functional>.
+	* include/bits/shared_ptr_base.h: Include <bits/refwrap.h> and
+	<bits/stl_function.h> instead of <functional>.
+	* include/bits/std_function.h: New header.
+	(_Maybe_unary_or_binary_function, bad_function_call)
+	(__is_location_invariant, _Nocopy_types, _Any_data)
+	(_Simple_type_wrapper, _Function_base, _Function_handler, function):
+	Move here from <functional>.
+	* include/bits/unique_ptr.h: Include <bits/stl_function.h>.
+	* include/std/functional: Include new headers and move components to
+	them.
+	* include/std/future: Include <bits/std_function.h> instead of
+	<functional>.
+	* include/std/mutex: Likewise.
+	* include/std/regex: Likewise.
+	* src/c++11/compatibility-thread-c++0x.cc: Include <functional>.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error line.
+	* testsuite/20_util/default_delete/void_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Adjust dg-error
+	lines.
+	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: Likewise.
+	* testsuite/30_threads/packaged_task/49668.cc: Include <functional>.
+
 	* libsupc++/exception_ptr.h (make_exception_ptr): Qualify new.
 	* testsuite/18_support/exception_ptr/make_exception_ptr_2.cc: New
 	test.
@@ -3582,6 +3611,7 @@
 	* include/std/future: Include <functional>.
 	* include/std/memory: Do not include <functional>.
 	* include/std/mutex: [_GLIBCXX_HAVE_TLS]: Likewise.
+	* src/c++11/compatibility-thread-c++0x.cc: Include <functional>.
 	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc: Add
 	missing includes.
 	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.

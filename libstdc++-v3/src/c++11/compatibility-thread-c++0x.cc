@@ -29,6 +29,7 @@
 
 #include <future>
 #include <mutex>
+#include <functional>
 
 #if __cplusplus < 201103L
 # error "compatibility-thread-c++0x.cc must be compiled with -std=gnu++0x"
