@@ -35,6 +35,7 @@
 #include <type_traits>
 #include <utility>
 #include <tuple>
+#include <bits/stl_function.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

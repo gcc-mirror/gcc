@@ -49,11 +49,12 @@
 #ifndef _SHARED_PTR_BASE_H
 #define _SHARED_PTR_BASE_H 1
 
-#include <functional>
 #if __cpp_rtti
 # include <typeinfo>
 #endif
 #include <bits/allocated_ptr.h>
+#include <bits/refwrap.h>
+#include <bits/stl_function.h>
 #include <ext/aligned_buffer.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

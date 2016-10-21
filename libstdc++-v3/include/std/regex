@@ -37,7 +37,6 @@
 
 #include <algorithm>
 #include <bitset>
-#include <functional>
 #ifdef _GLIBCXX_DEBUG
 # include <iosfwd>
 #endif
@@ -54,6 +53,7 @@
 #include <cstring>
 
 #include <ext/aligned_buffer.h>
+#include <bits/std_function.h>
 #include <bits/regex_constants.h>
 #include <bits/regex_error.h>
 #include <bits/regex_automaton.h>
