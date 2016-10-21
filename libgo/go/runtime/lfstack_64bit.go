@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore
-
-// +build amd64 arm64 mips64 mips64le ppc64 ppc64le s390x
+// +build amd64 arm64 mips64 mips64le ppc64 ppc64le s390x arm64be alpha mipsn64 sparc64
 
 package runtime
 
@@ -41,8 +39,8 @@ func lfstackPack(node *lfnode, cnt uintptr) uint64 {
 }
 
 func lfstackUnpack(val uint64) *lfnode {
-	if GOARCH == "amd64" {
-		// amd64 systems can place the stack above the VA hole, so we need to sign extend
+	if GOARCH == "amd64" || GOOS == "solaris" {
+		// amd64 or Solaris systems can place the stack above the VA hole, so we need to sign extend
 		// val before unpacking.
 		return (*lfnode)(unsafe.Pointer(uintptr(int64(val) >> cntBits << 3)))
 	}

@@ -67,7 +67,7 @@ typedef struct	FixAlloc	FixAlloc;
 typedef	struct	hchan		Hchan;
 typedef	struct	timer		Timer;
 typedef	struct	gcstats		GCStats;
-typedef	struct	LFNode		LFNode;
+typedef	struct	lfnode		LFNode;
 typedef	struct	ParFor		ParFor;
 typedef	struct	ParForThread	ParForThread;
 typedef	struct	cgoMal		CgoMal;
@@ -177,13 +177,6 @@ enum {
    Solaris = 0
 };
 #endif
-
-// Lock-free stack node.
-struct LFNode
-{
-	LFNode	*next;
-	uintptr	pushcnt;
-};
 
 // Parallel for descriptor.
 struct ParFor
@@ -461,7 +454,8 @@ bool	runtime_notetsleepg(Note*, int64)  // false - timeout
  */
 void	runtime_lfstackpush(uint64 *head, LFNode *node)
   __asm__ (GOSYM_PREFIX "runtime.lfstackpush");
-LFNode*	runtime_lfstackpop(uint64 *head);
+void*	runtime_lfstackpop(uint64 *head)
+  __asm__ (GOSYM_PREFIX "runtime.lfstackpop");
 
 /*
  * Parallel for over [0, n).
