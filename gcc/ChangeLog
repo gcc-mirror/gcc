@@ -1,5 +1,8 @@
 2016-10-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (gen_variable_die): Emit DW_AT_const_expr attribute
+	if needed.  Re-add origin_die variable and its initialization.
+
 	* gimplify.c (gimplify_bind_expr): Handle oacc_declare_returns
 	even for -fstack-reuse=none, or for volatile vars etc.
 

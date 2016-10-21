@@ -1,3 +1,8 @@
+2016-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-objcp-common.c (cp_decl_dwarf_attribute): Handle
+	DW_AT_const_expr.
+
 2016-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-objcp-common.h (cp_function_decl_explicit_p,
