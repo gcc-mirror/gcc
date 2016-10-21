@@ -1,3 +1,7 @@
+2016-10-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/test_frame_17.c: New test.
+
 2016-10-21  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	PR preprocessor/71681

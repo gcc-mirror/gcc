@@ -1,5 +1,18 @@
 2016-10-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_add_constant_internal):
+	Add extra argument to allow emitting the move immediate.
+	Use add/sub with positive immediate.
+	(aarch64_add_constant): Add inline function.
+	(aarch64_add_sp): Likewise.
+	(aarch64_sub_sp): Likewise.
+	(aarch64_expand_prologue): Call aarch64_sub_sp.
+	(aarch64_expand_epilogue): Call aarch64_add_sp.
+	Decide when to leave out move.
+	(aarch64_output_mi_thunk): Call aarch64_add_constant.
+
+2016-10-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_layout_frame):
 	Align FP callee-saves.
 
