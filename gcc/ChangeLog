@@ -1,5 +1,12 @@
 2016-10-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/adxintrin.h (_subborrow_u32, _addcarry_u32,
+	_addcarryx_u32, _subborrow_u64, _addcarry_u64, _addcarryx_u64):
+	Formatting fixes.
+	* config/i386/rdseedintrin.h (_rdseed16_step, _rdseed32_step,
+	_rdseed64_step): Likewise.
+	* config/i386/tbmintrin.h (__bextri_u32): Likewise.
+
 	PR target/78057
 	* config/i386/i386.c: Include fold-const-call.h, tree-vrp.h
 	and tree-ssanames.h.
