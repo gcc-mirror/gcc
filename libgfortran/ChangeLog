@@ -1,10 +1,16 @@
+2016-10-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (finalize_transfer): Free format data in child
+	procedures. (st_read_done, st_write_done): Don't free format
+	hash table.
+
 2016-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/48298
 	* io/io.h: Move size_used from dtp to unit structure. Add bool
 	has_size to unit structure.
-	* read.c (read_x): Use has_size and size_used.
-	* transfer.c (read_sf_internal,read_sf,read_block_form,
+	* io/read.c (read_x): Use has_size and size_used.
+	* io/transfer.c (read_sf_internal,read_sf,read_block_form,
 	read_block_form4): Likewise.
 	(data_transfer_init): If parent, initialize the size variables.
 	(finalize_transfer): Set the size variable using size_used in
