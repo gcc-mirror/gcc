@@ -482,6 +482,14 @@ get_defs (rtx_insn *insn, rtx reg, vec<rtx_insn *> *dest)
         return NULL;
       if (DF_REF_INSN_INFO (ref_link->ref) == NULL)
         return NULL;
+      /* As global regs are assumed to be defined at each function call
+	 dataflow can report a call_insn as being a definition of REG.
+	 But we can't do anything with that in this pass so proceed only
+	 if the instruction really sets REG in a way that can be deduced
+	 from the RTL structure.  */
+      if (global_regs[REGNO (reg)]
+	  && !set_of (reg, DF_REF_INSN (ref_link->ref)))
+	return NULL;
     }
 
   if (dest)
@@ -580,7 +588,7 @@ make_defs_and_copies_lists (rtx_insn *extend_insn, const_rtx set_pat,
 
   /* Initialize the work list.  */
   if (!get_defs (extend_insn, src_reg, &state->work_list))
-    gcc_unreachable ();
+    return false;
 
   is_insn_visited = XCNEWVEC (bool, max_insn_uid);
 
