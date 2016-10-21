@@ -1,5 +1,14 @@
 2016-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_fwd.h (perms::resolve_symlinks):
+	Replace with symlink_nofollow (LWG 2720).
+	* src/filesystem/ops.cc (permissions(const path&, perms, error_code&)):
+	Handle symlink_nofollow.
+	* testsuite/experimental/filesystem/operations/create_symlink.cc: New
+	test.
+	* testsuite/experimental/filesystem/operations/permissions.cc: Test
+	overload taking error_code.
+
 	* include/experimental/bits/fs_ops.h
 	(exists(const path&, error_code&)): Clear error if status is known
 	(LWG 2725).
