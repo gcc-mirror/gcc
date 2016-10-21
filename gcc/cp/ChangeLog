@@ -1,3 +1,7 @@
+2016-10-21  Jason Merrill  <jason@redhat.com>
+
+	* ptree.c (cxx_print_xnode) [TEMPLATE_PARM_INDEX]: Dump the decl.
+
 2016-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-objcp-common.c (cp_decl_dwarf_attribute): Handle
