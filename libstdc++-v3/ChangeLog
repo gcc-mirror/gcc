@@ -1,5 +1,12 @@
 2016-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_ops.h
+	(exists(const path&, error_code&)): Clear error if status is known
+	(LWG 2725).
+	(status(const path&, error_code&)): Handle EOVERFLOW.
+	* testsuite/experimental/filesystem/operations/exists.cc: Test
+	overload taking an error_code.
+
 	* include/experimental/bits/fs_path.h (path::path(string_type&&))
 	(path::operator=(string&&), path::assign(string_type&&)): Define
 	construction and assignment from string_type rvalues (LWG 2707).

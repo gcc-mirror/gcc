@@ -1297,7 +1297,7 @@ fs::space(const path& p, error_code& ec) noexcept
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
 fs::file_status
-fs::status(const fs::path& p, std::error_code& ec) noexcept
+fs::status(const fs::path& p, error_code& ec) noexcept
 {
   file_status status;
   stat_type st;
@@ -1307,6 +1307,10 @@ fs::status(const fs::path& p, std::error_code& ec) noexcept
       ec.assign(err, std::generic_category());
       if (is_not_found_errno(err))
 	status.type(file_type::not_found);
+#ifdef EOVERFLOW
+      else if (err == EOVERFLOW)
+	status.type(file_type::unknown);
+#endif
     }
   else
     {
