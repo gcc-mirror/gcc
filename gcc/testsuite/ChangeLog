@@ -1,3 +1,13 @@
+2016-10-21  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	PR preprocessor/71681
+	* gcc.dg/cpp/pr71681-1.c: New testcase
+	* gcc.dg/cpp/pr71681-2.c: Likewise
+	* gcc.dg/cpp/remap/header.gcc: File for added test-cases
+	* gcc.dg/cpp/remap/a/header.gcc: Likewise
+	* gcc.dg/cpp/remap/a/t_1.h: Likewise
+	* gcc.dg/cpp/remap/a/t_2.h: Likewise
+
 2016-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78057
