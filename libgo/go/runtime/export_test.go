@@ -6,6 +6,10 @@
 
 package runtime
 
+import (
+	"unsafe"
+)
+
 //var Fadd64 = fadd64
 //var Fsub64 = fsub64
 //var Fmul64 = fmul64
@@ -32,11 +36,13 @@ type LFNode struct {
 	Pushcnt uintptr
 }
 
-func lfstackpush_go(head *uint64, node *LFNode)
-func lfstackpop_go(head *uint64) *LFNode
+func LFStackPush(head *uint64, node *LFNode) {
+	lfstackpush(head, (*lfnode)(unsafe.Pointer(node)))
+}
 
-var LFStackPush = lfstackpush_go
-var LFStackPop = lfstackpop_go
+func LFStackPop(head *uint64) *LFNode {
+	return (*LFNode)(unsafe.Pointer(lfstackpop(head)))
+}
 
 type ParFor struct {
 	body   func(*ParFor, uint32)

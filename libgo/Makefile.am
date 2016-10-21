@@ -488,7 +488,6 @@ runtime_files = \
 	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
-	lfstack.c \
 	malloc.c \
 	runtime1.c \
 	sigqueue.c \

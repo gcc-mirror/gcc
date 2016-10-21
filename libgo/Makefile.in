@@ -252,8 +252,8 @@ am__objects_5 = go-append.lo go-assert.lo go-breakpoint.lo \
 	env_posix.lo heapdump.lo mcache.lo mcentral.lo \
 	$(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
 	panic.lo parfor.lo print.lo proc.lo runtime.lo signal_unix.lo \
-	thread.lo $(am__objects_2) yield.lo $(am__objects_3) \
-	lfstack.lo malloc.lo runtime1.lo sigqueue.lo $(am__objects_4)
+	thread.lo $(am__objects_2) yield.lo $(am__objects_3) malloc.lo \
+	runtime1.lo sigqueue.lo $(am__objects_4)
 am_libgo_llgo_la_OBJECTS = $(am__objects_5)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -884,7 +884,6 @@ runtime_files = \
 	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
-	lfstack.c \
 	malloc.c \
 	runtime1.c \
 	sigqueue.c \
@@ -1562,7 +1561,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unwind.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-varargs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/heapdump.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lfstack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgobegin_a-go-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgobegin_llgo_a-go-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgolibbegin_a-go-libmain.Po@am__quote@
