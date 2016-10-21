@@ -1,5 +1,13 @@
 2016-10-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/78057
+	* config/i386/i386.c: Include fold-const-call.h, tree-vrp.h
+	and tree-ssanames.h.
+	(ix86_fold_builtin): Fold IX86_BUILTIN_[LT]ZCNT{16,32,64}
+	with INTEGER_CST argument.
+	(ix86_gimple_fold_builtin): New function.
+	(TARGET_GIMPLE_FOLD_BUILTIN): Define.
+
 	* dwarf2out.c (ranges_table): Change into vec<dw_ranges, va_gc> *.
 	(ranges_by_label): Change into vec<dw_ranges_by_label, va_gc> *.
 	(ranges_table_allocated, ranges_table_in_use,
