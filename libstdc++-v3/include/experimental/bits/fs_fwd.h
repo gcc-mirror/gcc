@@ -162,7 +162,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       unknown		=  0xFFFF,
       add_perms		= 0x10000,
       remove_perms	= 0x20000,
-      resolve_symlinks	= 0x40000
+      symlink_nofollow	= 0x40000
   };
 
   constexpr perms
