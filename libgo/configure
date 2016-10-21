@@ -13841,7 +13841,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=sparc
 GOARCH_FAMILY=SPARC
-GOARCH_INT64ALIGN=4
 
 else
   GOARCH=sparc64
