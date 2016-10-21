@@ -2784,8 +2784,9 @@ select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  gcc_unreachable ();
 	}
     }
-  else if (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS
-	   || GET_CODE (x) == NEG || GET_CODE (x) == ASHIFT)
+  else if ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS
+	    || GET_CODE (x) == NEG || GET_CODE (x) == ASHIFT)
+	   && y == const0_rtx)
     {
       if (TARGET_ARCH64 && GET_MODE (x) == DImode)
 	return CCXNZmode;
@@ -2799,6 +2800,18 @@ select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	{
 	  if (TARGET_ARCH64 && GET_MODE (x) == DImode)
 	    return CCXCmode;
+	  else
+	    return CCCmode;
+	}
+
+      /* This is for the [u]addvdi4_sp32 and [u]subvdi4_sp32 patterns.  */
+      if (!TARGET_ARCH64 && GET_MODE (x) == DImode)
+	{
+	  if (GET_CODE (y) == UNSPEC
+	      && (XINT (y, 1) == UNSPEC_ADDV
+		 || XINT (y, 1) == UNSPEC_SUBV
+	         || XINT (y, 1) == UNSPEC_NEGV))
+	    return CCVmode;
 	  else
 	    return CCCmode;
 	}
@@ -7724,10 +7737,16 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
       switch (code)
 	{
 	case NE:
-	  branch = "bne";
+	  if (mode == CCVmode || mode == CCXVmode)
+	    branch = "bvs";
+	  else
+	    branch = "bne";
 	  break;
 	case EQ:
-	  branch = "be";
+	  if (mode == CCVmode || mode == CCXVmode)
+	    branch = "bvc";
+	  else
+	    branch = "be";
 	  break;
 	case GE:
 	  if (mode == CCNZmode || mode == CCXNZmode)
@@ -7794,6 +7813,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	case CCmode:
 	case CCNZmode:
 	case CCCmode:
+	case CCVmode:
 	  labelno = "%%icc, ";
 	  if (v8)
 	    labelno = "";
@@ -7801,6 +7821,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	case CCXmode:
 	case CCXNZmode:
 	case CCXCmode:
+	case CCXVmode:
 	  labelno = "%%xcc, ";
 	  gcc_assert (!v8);
 	  break;
@@ -8804,11 +8825,13 @@ sparc_print_operand (FILE *file, rtx x, int code)
 	    case CCmode:
 	    case CCNZmode:
 	    case CCCmode:
+	    case CCVmode:
 	      s = "%icc";
 	      break;
 	    case CCXmode:
 	    case CCXNZmode:
 	    case CCXCmode:
+	    case CCXVmode:
 	      s = "%xcc";
 	      break;
 	    default:
@@ -8883,10 +8906,16 @@ sparc_print_operand (FILE *file, rtx x, int code)
 	switch (GET_CODE (x))
 	  {
 	  case NE:
-	    s = "ne";
+	    if (mode == CCVmode || mode == CCXVmode)
+	      s = "vs";
+	    else
+	      s = "ne";
 	    break;
 	  case EQ:
-	    s = "e";
+	    if (mode == CCVmode || mode == CCXVmode)
+	      s = "vc";
+	    else
+	      s = "e";
 	    break;
 	  case GE:
 	    if (mode == CCNZmode || mode == CCXNZmode)

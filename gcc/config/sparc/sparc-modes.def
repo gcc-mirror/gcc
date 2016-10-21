@@ -34,6 +34,10 @@ FLOAT_MODE (TF, 16, ieee_quad_format);
    they explicitly set the C flag (unsigned overflow).  Only the unsigned
    <,>= operators can be used in conjunction with it.
 
+   We also have a CCVmode which is used by the arithmetic instructions when
+   they explicitly set the V flag (signed overflow).  Only the =,!= operators
+   can be used in conjunction with it.
+
    We also have two modes to indicate that the relevant condition code is
    in the floating-point condition code register.  One for comparisons which
    will generate an exception if the result is unordered (CCFPEmode) and
@@ -46,6 +50,8 @@ CC_MODE (CCNZ);
 CC_MODE (CCXNZ);
 CC_MODE (CCC);
 CC_MODE (CCXC);
+CC_MODE (CCV);
+CC_MODE (CCXV);
 CC_MODE (CCFP);
 CC_MODE (CCFPE);
 

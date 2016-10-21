@@ -420,6 +420,10 @@
 (define_predicate "c_comparison_operator"
   (match_code "ltu,geu"))
 
+;; Return true if OP is a valid comparison operator for CCVmode.
+(define_predicate "v_comparison_operator"
+  (match_code "eq,ne"))
+
 ;; Return true if OP is an integer comparison operator.  This allows
 ;; the use of MATCH_OPERATOR to recognize all the branch insns.
 (define_predicate "icc_comparison_operator"
@@ -436,6 +440,9 @@
     case CCCmode:
     case CCXCmode:
       return c_comparison_operator (op, mode);
+    case CCVmode:
+    case CCXVmode:
+      return v_comparison_operator (op, mode);
     default:
       return false;
     }
