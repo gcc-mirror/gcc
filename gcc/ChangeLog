@@ -1,3 +1,8 @@
+2016-10-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Create nonzero
+	value range for pointers in more cases.
+
 2016-10-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_add_constant_internal):

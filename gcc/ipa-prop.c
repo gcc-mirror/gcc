@@ -1670,9 +1670,17 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
       if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	{
+	  bool addr_nonzero = false;
+	  bool strict_overflow = false;
+
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
 	      && get_ptr_nonnull (arg))
+	    addr_nonzero = true;
+	  else if (tree_single_nonzero_warnv_p (arg, &strict_overflow))
+	    addr_nonzero = true;
+
+	  if (addr_nonzero)
 	    {
 	      jfunc->vr_known = true;
 	      jfunc->m_vr.type = VR_ANTI_RANGE;
