@@ -1101,7 +1101,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
     {
       rtx_code_label *target_label = block_label (target);
       rtx_insn *barrier;
-      rtx label;
+      rtx_insn *label;
       rtx_jump_table_data *table;
 
       emit_jump_insn_after_noloc (targetm.gen_jump (target_label), insn);
@@ -1773,7 +1773,7 @@ rtl_tidy_fallthru_edge (edge e)
       && (any_uncondjump_p (q)
 	  || single_succ_p (b)))
     {
-      rtx label;
+      rtx_insn *label;
       rtx_jump_table_data *table;
 
       if (tablejump_p (q, &label, &table))
@@ -1786,8 +1786,7 @@ rtl_tidy_fallthru_edge (edge e)
 	  PUT_CODE (label, NOTE);
 	  NOTE_KIND (label) = NOTE_INSN_DELETED_LABEL;
 	  NOTE_DELETED_LABEL_NAME (label) = name;
-	  rtx_insn *lab = safe_as_a <rtx_insn *> (label);
-	  reorder_insns (lab, lab, PREV_INSN (q));
+	  reorder_insns (label, label, PREV_INSN (q));
 	  delete_insn (table);
 	}
 

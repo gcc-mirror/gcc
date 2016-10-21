@@ -1,5 +1,15 @@
 2016-10-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Adjust.
+	(outgoing_edges_match): Likewise.
+	(try_crossjump_to_edge): Likewise.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Likewise.
+	(rtl_tidy_fallthru_edge): Likewise.
+	* rtl.h (tablejump_p): Adjust prototype.
+	* rtlanal.c (tablejump_p): Return the label as a rtx_insn *.
+
+2016-10-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* rtl.h (label_ref_label): New function.
 	(set_label_ref_label): New function.
 	(LABEL_REF_LABEL): Delete.
