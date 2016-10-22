@@ -1,3 +1,46 @@
+2016-10-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/43366
+	PR fortran/51864
+	PR fortran/57117
+	PR fortran/61337
+	PR fortran/61376
+	* primary.c (gfc_expr_attr): For transformational functions on classes
+	get the attrs from the class argument.
+	* resolve.c (resolve_ordinary_assign): Remove error message due to
+	feature implementation.  Rewrite POINTER_ASSIGNS to ordinary ones when
+	the right-hand side is scalar class object (with some restrictions).
+	* trans-array.c (trans_array_constructor): Create the temporary from
+	class' inner type, i.e., the derived type.
+	(build_class_array_ref): Add support for class array's storage of the
+	class object or the array descriptor in the decl saved descriptor.
+	(gfc_conv_expr_descriptor): When creating temporaries for class objects
+	add the class object's handle into the decl saved descriptor.
+	(structure_alloc_comps): Use the common way to get the _data component.
+	(gfc_is_reallocatable_lhs): Add notion of allocatable class objects.
+	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): Remove the only ref
+	only when the expression's type is BT_CLASS.
+	(gfc_trans_class_init_assign): Correctly handle class arrays.
+	(gfc_trans_class_assign): Joined into gfc_trans_assignment_1.
+	(gfc_conv_procedure_call): Support for class types as arguments.
+	(trans_get_upoly_len): For unlimited polymorphics retrieve the _len
+	component's tree.
+	(trans_class_vptr_len_assignment): Catch all ways to assign the _vptr
+	and _len components of a class object correctly.
+	(pointer_assignment_is_proc_pointer): Identify assignments of
+	procedure pointers.
+	(gfc_trans_pointer_assignment): Enhance support for class object pointer
+	assignments.
+	(gfc_trans_scalar_assign): Removed assert.
+	(trans_class_assignment): Assign to a class object.
+	(gfc_trans_assignment_1): Treat class objects correctly.
+	(gfc_trans_assignment): Propagate flags to trans_assignment_1.
+	* trans-stmt.c (gfc_trans_allocate): Use gfc_trans_assignment now
+	instead of copy_class_to_class.
+	* trans-stmt.h: Function prototype removed.
+	* trans.c (trans_code): Less special casing for class objects.
+	* trans.h: Added flags to gfc_trans_assignment () prototype.
+
 2016-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69566

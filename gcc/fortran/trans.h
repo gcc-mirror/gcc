@@ -699,7 +699,8 @@ tree gfc_call_realloc (stmtblock_t *, tree, tree);
 tree gfc_trans_structure_assign (tree, gfc_expr *, bool);
 
 /* Generate code for an assignment, includes scalarization.  */
-tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool, bool);
+tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool, bool, bool p = false,
+			   bool a = true);
 
 /* Generate code for a pointer assignment.  */
 tree gfc_trans_pointer_assignment (gfc_expr *, gfc_expr *);
