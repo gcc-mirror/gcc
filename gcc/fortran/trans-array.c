@@ -2292,7 +2292,8 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	type = build_pointer_type (type);
     }
   else
-    type = gfc_typenode_for_spec (&expr->ts);
+    type = gfc_typenode_for_spec (expr->ts.type == BT_CLASS
+				  ? &CLASS_DATA (expr)->ts : &expr->ts);
 
   /* See if the constructor determines the loop bounds.  */
   dynamic = false;
@@ -3036,50 +3037,57 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
   tree type;
   tree size;
   tree offset;
-  tree decl;
+  tree decl = NULL_TREE;
   tree tmp;
   gfc_expr *expr = se->ss->info->expr;
   gfc_ref *ref;
-  gfc_ref *class_ref;
+  gfc_ref *class_ref = NULL;
   gfc_typespec *ts;
 
-  if (expr == NULL
-      || (expr->ts.type != BT_CLASS
-	  && !gfc_is_alloc_class_array_function (expr)))
-    return false;
-
-  if (expr->symtree && expr->symtree->n.sym->ts.type == BT_CLASS)
-    ts = &expr->symtree->n.sym->ts;
+  if (se->expr && DECL_P (se->expr) && DECL_LANG_SPECIFIC (se->expr)
+      && GFC_DECL_SAVED_DESCRIPTOR (se->expr)
+      && GFC_CLASS_TYPE_P (TREE_TYPE (GFC_DECL_SAVED_DESCRIPTOR (se->expr))))
+    decl = se->expr;
   else
-    ts = NULL;
-  class_ref = NULL;
-
-  for (ref = expr->ref; ref; ref = ref->next)
     {
-      if (ref->type == REF_COMPONENT
-	    && ref->u.c.component->ts.type == BT_CLASS
-	    && ref->next && ref->next->type == REF_COMPONENT
-	    && strcmp (ref->next->u.c.component->name, "_data") == 0
-	    && ref->next->next
-	    && ref->next->next->type == REF_ARRAY
-	    && ref->next->next->u.ar.type != AR_ELEMENT)
+      if (expr == NULL
+	  || (expr->ts.type != BT_CLASS
+	      && !gfc_is_alloc_class_array_function (expr)
+	      && !gfc_is_class_array_ref (expr, NULL)))
+	return false;
+
+      if (expr->symtree && expr->symtree->n.sym->ts.type == BT_CLASS)
+	ts = &expr->symtree->n.sym->ts;
+      else
+	ts = NULL;
+
+      for (ref = expr->ref; ref; ref = ref->next)
 	{
-	  ts = &ref->u.c.component->ts;
-	  class_ref = ref;
-	  break;
+	  if (ref->type == REF_COMPONENT
+	      && ref->u.c.component->ts.type == BT_CLASS
+	      && ref->next && ref->next->type == REF_COMPONENT
+	      && strcmp (ref->next->u.c.component->name, "_data") == 0
+	      && ref->next->next
+	      && ref->next->next->type == REF_ARRAY
+	      && ref->next->next->u.ar.type != AR_ELEMENT)
+	    {
+	      ts = &ref->u.c.component->ts;
+	      class_ref = ref;
+	      break;
+	    }
 	}
+
+      if (ts == NULL)
+	return false;
     }
 
-  if (ts == NULL)
-    return false;
-
-  if (class_ref == NULL && expr->symtree->n.sym->attr.function
+  if (class_ref == NULL && expr && expr->symtree->n.sym->attr.function
       && expr->symtree->n.sym == expr->symtree->n.sym->result)
     {
       gcc_assert (expr->symtree->n.sym->backend_decl == current_function_decl);
       decl = gfc_get_fake_result_decl (expr->symtree->n.sym, 0);
     }
-  else if (gfc_is_alloc_class_array_function (expr))
+  else if (expr && gfc_is_alloc_class_array_function (expr))
     {
       size = NULL_TREE;
       decl = NULL_TREE;
@@ -3105,7 +3113,8 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
     }
   else if (class_ref == NULL)
     {
-      decl = expr->symtree->n.sym->backend_decl;
+      if (decl == NULL_TREE)
+	decl = expr->symtree->n.sym->backend_decl;
       /* For class arrays the tree containing the class is stored in
 	 GFC_DECL_SAVED_DESCRIPTOR of the sym's backend_decl.
 	 For all others it's sym's backend_decl directly.  */
@@ -3121,6 +3130,7 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
       class_ref->next = NULL;
       gfc_init_se (&tmpse, NULL);
       gfc_conv_expr (&tmpse, expr);
+      gfc_add_block_to_block (&se->pre, &tmpse.pre);
       decl = tmpse.expr;
       class_ref->next = ref;
     }
@@ -7094,6 +7104,28 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 						loop.from, loop.to, 0,
 						GFC_ARRAY_UNKNOWN, false);
 	  parm = gfc_create_var (parmtype, "parm");
+
+	  /* When expression is a class object, then add the class' handle to
+	     the parm_decl.  */
+	  if (expr->ts.type == BT_CLASS && expr->expr_type == EXPR_VARIABLE)
+	    {
+	      gfc_expr *class_expr = gfc_find_and_cut_at_last_class_ref (expr);
+	      gfc_se classse;
+
+	      /* class_expr can be NULL, when no _class ref is in expr.
+		 We must not fix this here with a gfc_fix_class_ref ().  */
+	      if (class_expr)
+		{
+		  gfc_init_se (&classse, NULL);
+		  gfc_conv_expr (&classse, class_expr);
+		  gfc_free_expr (class_expr);
+
+		  gcc_assert (classse.pre.head == NULL_TREE
+			      && classse.post.head == NULL_TREE);
+		  gfc_allocate_lang_decl (parm);
+		  GFC_DECL_SAVED_DESCRIPTOR (parm) = classse.expr;
+		}
+	    }
 	}
 
       offset = gfc_index_zero_node;
@@ -7255,6 +7287,13 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	      : base;
 	  gfc_conv_descriptor_offset_set (&loop.pre, parm, tmp);
 	}
+      else if (IS_CLASS_ARRAY (expr) && !se->data_not_needed
+	       && (!rank_remap || se->use_offset)
+	       && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
+	{
+	  gfc_conv_descriptor_offset_set (&loop.pre, parm,
+					 gfc_conv_descriptor_offset_get (desc));
+	}
       else if (onebased && (!rank_remap || se->use_offset)
 	  && expr->symtree
 	  && !(expr->symtree->n.sym && expr->symtree->n.sym->ts.type == BT_CLASS
@@ -7289,6 +7328,18 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  DECL_LANG_SPECIFIC (expr->symtree->n.sym->backend_decl) ?
 	    GFC_DECL_SAVED_DESCRIPTOR (expr->symtree->n.sym->backend_decl)
 	  : expr->symtree->n.sym->backend_decl;
+    }
+  else if (expr->expr_type == EXPR_ARRAY && VAR_P (desc)
+	   && IS_CLASS_ARRAY (expr))
+    {
+      tree vtype;
+      gfc_allocate_lang_decl (desc);
+      tmp = gfc_create_var (expr->ts.u.derived->backend_decl, "class");
+      GFC_DECL_SAVED_DESCRIPTOR (desc) = tmp;
+      vtype = gfc_class_vptr_get (tmp);
+      gfc_add_modify (&se->pre, vtype,
+		      gfc_build_addr_expr (TREE_TYPE (vtype),
+				      gfc_find_vtab (&expr->ts)->backend_decl));
     }
   if (!se->direct_byref || se->byref_noassign)
     {
@@ -8200,10 +8251,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      /* Allocatable CLASS components.  */
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
-	      /* Add reference to '_data' component.  */
-	      tmp = CLASS_DATA (c)->backend_decl;
-	      comp = fold_build3_loc (input_location, COMPONENT_REF,
-				      TREE_TYPE (tmp), comp, tmp, NULL_TREE);
+
+	      comp = gfc_class_data_get (comp);
 	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (comp)))
 		gfc_conv_descriptor_data_set (&fnblock, comp, null_pointer_node);
 	      else
@@ -8540,6 +8589,14 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
 
   if (!expr->ref)
     return false;
+
+  /* An allocatable class variable with no reference.  */
+  if (expr->symtree->n.sym->ts.type == BT_CLASS
+      && CLASS_DATA (expr->symtree->n.sym)->attr.allocatable
+      && expr->ref && expr->ref->type == REF_COMPONENT
+      && strcmp (expr->ref->u.c.component->name, "_data") == 0
+      && expr->ref->next == NULL)
+    return true;
 
   /* An allocatable variable.  */
   if (expr->symtree->n.sym->attr.allocatable

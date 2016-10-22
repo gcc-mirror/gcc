@@ -32,7 +32,6 @@ tree gfc_trans_assign (gfc_code *);
 tree gfc_trans_pointer_assign (gfc_code *);
 tree gfc_trans_init_assign (gfc_code *);
 tree gfc_trans_class_init_assign (gfc_code *);
-tree gfc_trans_class_assign (gfc_expr *, gfc_expr *, gfc_exec_op);
 
 /* trans-stmt.c */
 tree gfc_trans_cycle (gfc_code *);

@@ -1704,10 +1704,7 @@ trans_code (gfc_code * code, tree cond)
 	  break;
 
 	case EXEC_ASSIGN:
-	  if (code->expr1->ts.type == BT_CLASS)
-	    res = gfc_trans_class_assign (code->expr1, code->expr2, code->op);
-	  else
-	    res = gfc_trans_assign (code);
+	  res = gfc_trans_assign (code);
 	  break;
 
         case EXEC_LABEL_ASSIGN:
@@ -1715,16 +1712,7 @@ trans_code (gfc_code * code, tree cond)
           break;
 
 	case EXEC_POINTER_ASSIGN:
-	  if (code->expr1->ts.type == BT_CLASS)
-	    res = gfc_trans_class_assign (code->expr1, code->expr2, code->op);
-	  else if (UNLIMITED_POLY (code->expr2)
-		   && code->expr1->ts.type == BT_DERIVED
-		   && (code->expr1->ts.u.derived->attr.sequence
-		       || code->expr1->ts.u.derived->attr.is_bind_c))
-	    /* F2003: C717  */
-	    res = gfc_trans_class_assign (code->expr1, code->expr2, code->op);
-	  else
-	    res = gfc_trans_pointer_assign (code);
+	  res = gfc_trans_pointer_assign (code);
 	  break;
 
 	case EXEC_INIT_ASSIGN:

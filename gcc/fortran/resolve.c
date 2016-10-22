@@ -9911,10 +9911,6 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 		     "requires %<-frealloc-lhs%>", &lhs->where);
 	  return false;
 	}
-      /* See PR 43366.  */
-      gfc_error ("Assignment to an allocatable polymorphic variable at %L "
-		 "is not yet supported", &lhs->where);
-      return false;
     }
   else if (lhs->ts.type == BT_CLASS)
     {
@@ -10817,6 +10813,19 @@ start:
 	      break;
 
 	    gfc_check_pointer_assign (code->expr1, code->expr2);
+
+	    /* Assigning a class object always is a regular assign.  */
+	    if (code->expr2->ts.type == BT_CLASS
+		&& !CLASS_DATA (code->expr2)->attr.dimension
+		&& !(UNLIMITED_POLY (code->expr2)
+		     && code->expr1->ts.type == BT_DERIVED
+		     && (code->expr1->ts.u.derived->attr.sequence
+			 || code->expr1->ts.u.derived->attr.is_bind_c))
+		&& !(gfc_expr_attr (code->expr1).proc_pointer
+		     && code->expr2->expr_type == EXPR_VARIABLE
+		     && code->expr2->symtree->n.sym->attr.flavor
+			== FL_PROCEDURE))
+	      code->op = EXEC_ASSIGN;
 	    break;
 	  }
 
