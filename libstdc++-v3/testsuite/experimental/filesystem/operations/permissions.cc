@@ -121,6 +121,26 @@ test04()
   remove(p);
 }
 
+void
+test05()
+{
+  using perms = std::experimental::filesystem::perms;
+  std::error_code ec;
+
+  __gnu_test::scoped_file f;
+  auto p = perms::owner_write;
+
+  // symlink_nofollow should not give an error for non-symlinks
+  permissions(f.path, p|perms::symlink_nofollow, ec);
+  VERIFY( !ec );
+  auto st = status(f.path);
+  VERIFY( st.permissions() == p );
+  p |= perms::owner_read;
+  permissions(f.path, p|perms::symlink_nofollow, ec);
+  st = status(f.path);
+  VERIFY( st.permissions() == p );
+}
+
 int
 main()
 {
@@ -128,4 +148,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }

@@ -1097,7 +1097,8 @@ fs::permissions(const path& p, perms prms)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot set permissions", p, ec));
 }
 
-void fs::permissions(const path& p, perms prms, error_code& ec) noexcept
+void
+fs::permissions(const path& p, perms prms, error_code& ec) noexcept
 {
   const bool add = is_set(prms, perms::add_perms);
   const bool remove = is_set(prms, perms::remove_perms);
@@ -1110,27 +1111,33 @@ void fs::permissions(const path& p, perms prms, error_code& ec) noexcept
 
   prms &= perms::mask;
 
-  if (add || remove)
+  file_status st;
+  if (add || remove || nofollow)
     {
-      auto st = nofollow ? symlink_status(p, ec) : status(p, ec);
+      st = nofollow ? symlink_status(p, ec) : status(p, ec);
       if (ec)
 	return;
       auto curr = st.permissions();
       if (add)
 	prms |= curr;
-      else
+      else if (remove)
 	prms = curr & ~prms;
     }
 
+  int err = 0;
 #if _GLIBCXX_USE_FCHMODAT
-  const int flag = nofollow ? AT_SYMLINK_NOFOLLOW : 0;
+  const int flag = (nofollow && is_symlink(st)) ? AT_SYMLINK_NOFOLLOW : 0;
   if (::fchmodat(AT_FDCWD, p.c_str(), static_cast<mode_t>(prms), flag))
+    err = errno;
 #else
-  if (nofollow)
+  if (nofollow && is_symlink(st))
     ec = std::make_error_code(std::errc::operation_not_supported);
   else if (::chmod(p.c_str(), static_cast<mode_t>(prms)))
+    err = errno;
 #endif
-    ec.assign(errno, std::generic_category());
+
+  if (err)
+    ec.assign(err, std::generic_category());
   else
     ec.clear();
 }
