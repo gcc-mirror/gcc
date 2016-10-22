@@ -1,3 +1,9 @@
+2016-10-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78021
+	* gfc_compare_functions:  Strings with different lengths in
+	argument lists compare unequal.
+
 2016-10-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/43366
