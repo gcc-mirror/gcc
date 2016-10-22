@@ -1,3 +1,7 @@
+2016-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-ssa/pr71347.c: Remove XFAIL on SPARC.
+
 2016-10-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78021
@@ -5,7 +9,6 @@
 
 2016-10-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
-	Forgot to add on original commit.
 	* gfortran.dg/coarray_alloc_comp_2.f08: New test.
 
 2016-10-22  Andre Vehreschild  <vehre@gcc.gnu.org>
