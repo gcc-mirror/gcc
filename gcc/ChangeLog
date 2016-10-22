@@ -1,3 +1,23 @@
+2016-10-21  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-cores.def: Rewrite so IMP and PART are
+	integer constants.
+	* config/aarch64/driver-aarch64.c (struct aarch64_core_data): Change
+	implementer_id to unsigned char.
+	Change part_no to unsigned int.
+	(AARCH64_BIG_LITTLE): New define.
+	(INVALID_IMP): New define.
+	(INVALID_CORE): New define.
+	(cpu_data): Change the last element's implementer_id and part_no to
+	integers.
+	(valid_bL_string_p): Rewrite to ..
+	(valid_bL_core_p): this for integers instead of strings.
+	(parse_field): New function.
+	(contains_string_p): Rewrite to ...
+	(contains_core_p): this for integers and only for the part_no.
+	(host_detect_local_cpu): Rewrite handling of implementation and
+	par num to be integers; simplifying the code.
+
 2016-10-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Create nonzero

@@ -32,43 +32,46 @@
    FLAGS are the bitwise-or of the traits that apply to that core.
    This need not include flags implied by the architecture.
    COSTS is the name of the rtx_costs routine to use.
-   IMP is the implementer ID of the CPU vendor.  On a GNU/Linux system it can
-   be found in /proc/cpuinfo.
-   PART is the part number of the CPU.  On a GNU/Linux system it can be found
-   in /proc/cpuinfo.  For big.LITTLE systems this should have the form at of
-   "<big core part number>.<LITTLE core part number>".  */
+   IMP is the implementer ID of the CPU vendor.  On a GNU/Linux system it
+   can be found in /proc/cpuinfo. A partial list of implementer IDs is
+   given in the ARM Architecture Reference Manual ARMv8, for
+   ARMv8-A architecture profile.
+   PART is the part number of the CPU.  On a GNU/Linux system it can be
+   found in /proc/cpuinfo.  For big.LITTLE systems this should use the
+   macro AARCH64_BIG_LITTLE where the big part number comes as the first
+   argument to the macro and little is the second.  */
 
 /* V8 Architecture Processors.  */
 
 /* ARM ('A') cores. */
-AARCH64_CORE("cortex-a35",  cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa35, "0x41", "0xd04")
-AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa53, "0x41", "0xd03")
-AARCH64_CORE("cortex-a57",  cortexa57, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, "0x41", "0xd07")
-AARCH64_CORE("cortex-a72",  cortexa72, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, "0x41", "0xd08")
-AARCH64_CORE("cortex-a73",  cortexa73, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, "0x41", "0xd09")
+AARCH64_CORE("cortex-a35",  cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa35, 0x41, 0xd04)
+AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa53, 0x41, 0xd03)
+AARCH64_CORE("cortex-a57",  cortexa57, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, 0x41, 0xd07)
+AARCH64_CORE("cortex-a72",  cortexa72, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, 0x41, 0xd08)
+AARCH64_CORE("cortex-a73",  cortexa73, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, 0x41, 0xd09)
 
 /* Samsung ('S') cores. */
-AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, exynosm1,  "0x53", "0x001")
+AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, exynosm1,  0x53, 0x001)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   "0x51", "0x800")
+AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x51, 0x800)
 
 /* Cavium ('C') cores. */
-AARCH64_CORE("thunderx",    thunderx,  thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  "0x43", "0x0a1")
+AARCH64_CORE("thunderx",    thunderx,  thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a1)
 
 /* APM ('P') cores. */
-AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xgene1, "0x50", "0x000")
+AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xgene1, 0x50, 0x000)
 
 /* V8.1 Architecture Processors.  */
 
 /* Broadcom ('B') cores. */
-AARCH64_CORE("vulcan",  vulcan, cortexa57, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, vulcan, "0x42", "0x516")
+AARCH64_CORE("vulcan",  vulcan, cortexa57, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, vulcan, 0x42, 0x516)
 
 /* V8 big.LITTLE implementations.  */
 
-AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, "0x41", "0xd07.0xd03")
-AARCH64_CORE("cortex-a72.cortex-a53",  cortexa72cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, "0x41", "0xd08.0xd03")
-AARCH64_CORE("cortex-a73.cortex-a35",  cortexa73cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, "0x41", "0xd09.0xd04")
-AARCH64_CORE("cortex-a73.cortex-a53",  cortexa73cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, "0x41", "0xd09.0xd03")
+AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, 0x41, AARCH64_BIG_LITTLE (0xd07, 0xd03))
+AARCH64_CORE("cortex-a72.cortex-a53",  cortexa72cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, 0x41, AARCH64_BIG_LITTLE (0xd08, 0xd03))
+AARCH64_CORE("cortex-a73.cortex-a35",  cortexa73cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd09, 0xd04))
+AARCH64_CORE("cortex-a73.cortex-a53",  cortexa73cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd09, 0xd03))
 
 #undef AARCH64_CORE
