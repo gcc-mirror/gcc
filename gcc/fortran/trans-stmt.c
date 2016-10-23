@@ -2331,6 +2331,125 @@ gfc_trans_do_while (gfc_code * code)
 }
 
 
+/* Deal with the particular case of SELECT_TYPE, where the vtable
+   addresses are used for the selection. Since these are not sorted,
+   the selection has to be made by a series of if statements.  */
+
+static tree
+gfc_trans_select_type_cases (gfc_code * code)
+{
+  gfc_code *c;
+  gfc_case *cp;
+  tree tmp;
+  tree cond;
+  tree low;
+  tree high;
+  gfc_se se;
+  gfc_se cse;
+  stmtblock_t block;
+  stmtblock_t body;
+  bool def = false;
+  gfc_expr *e;
+  gfc_start_block (&block);
+
+  /* Calculate the switch expression.  */
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr_val (&se, code->expr1);
+  gfc_add_block_to_block (&block, &se.pre);
+
+  /* Generate an expression for the selector hash value, for
+     use to resolve character cases.  */
+  e = gfc_copy_expr (code->expr1->value.function.actual->expr);
+  gfc_add_hash_component (e);
+
+  TREE_USED (code->exit_label) = 0;
+
+repeat:
+  for (c = code->block; c; c = c->block)
+    {
+      cp = c->ext.block.case_list;
+
+      /* Assume it's the default case.  */
+      low = NULL_TREE;
+      high = NULL_TREE;
+      tmp = NULL_TREE;
+
+      /* Put the default case at the end.  */
+      if ((!def && !cp->low) || (def && cp->low))
+	continue;
+
+      if (cp->low && (cp->ts.type == BT_CLASS
+		      || cp->ts.type == BT_DERIVED))
+	{
+	  gfc_init_se (&cse, NULL);
+	  gfc_conv_expr_val (&cse, cp->low);
+	  gfc_add_block_to_block (&block, &cse.pre);
+	  low = cse.expr;
+	}
+      else if (cp->ts.type != BT_UNKNOWN)
+	{
+	  gcc_assert (cp->high);
+	  gfc_init_se (&cse, NULL);
+	  gfc_conv_expr_val (&cse, cp->high);
+	  gfc_add_block_to_block (&block, &cse.pre);
+	  high = cse.expr;
+	}
+
+      gfc_init_block (&body);
+
+      /* Add the statements for this case.  */
+      tmp = gfc_trans_code (c->next);
+      gfc_add_expr_to_block (&body, tmp);
+
+      /* Break to the end of the SELECT TYPE construct.  The default
+	 case just falls through.  */
+      if (!def)
+	{
+	  TREE_USED (code->exit_label) = 1;
+	  tmp = build1_v (GOTO_EXPR, code->exit_label);
+	  gfc_add_expr_to_block (&body, tmp);
+	}
+
+      tmp = gfc_finish_block (&body);
+
+      if (low != NULL_TREE)
+	{
+	  /* Compare vtable pointers.  */
+	  cond = fold_build2_loc (input_location, EQ_EXPR,
+				  TREE_TYPE (se.expr), se.expr, low);
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 cond, tmp,
+				 build_empty_stmt (input_location));
+	}
+      else if (high != NULL_TREE)
+	{
+	  /* Compare hash values for character cases.  */
+	  gfc_init_se (&cse, NULL);
+	  gfc_conv_expr_val (&cse, e);
+	  gfc_add_block_to_block (&block, &cse.pre);
+
+	  cond = fold_build2_loc (input_location, EQ_EXPR,
+				  TREE_TYPE (se.expr), high, cse.expr);
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 cond, tmp,
+				 build_empty_stmt (input_location));
+	}
+
+      gfc_add_expr_to_block (&block, tmp);
+    }
+
+  if (!def)
+    {
+      def = true;
+      goto repeat;
+    }
+
+  gfc_free_expr (e);
+
+  return gfc_finish_block (&block);
+}
+
+
 /* Translate the SELECT CASE construct for INTEGER case expressions,
    without killing all potential optimizations.  The problem is that
    Fortran allows unbounded cases, but the back-end does not, so we
@@ -2968,6 +3087,35 @@ gfc_trans_select (gfc_code * code)
   /* Build everything together.  */
   gfc_add_expr_to_block (&block, body);
   gfc_add_expr_to_block (&block, build1_v (LABEL_EXPR, exit_label));
+
+  return gfc_finish_block (&block);
+}
+
+tree
+gfc_trans_select_type (gfc_code * code)
+{
+  stmtblock_t block;
+  tree body;
+  tree exit_label;
+
+  gcc_assert (code && code->expr1);
+  gfc_init_block (&block);
+
+  /* Build the exit label and hang it in.  */
+  exit_label = gfc_build_label_decl (NULL_TREE);
+  code->exit_label = exit_label;
+
+  /* Empty SELECT constructs are legal.  */
+  if (code->block == NULL)
+    body = build_empty_stmt (input_location);
+  else
+    body = gfc_trans_select_type_cases (code);
+
+  /* Build everything together.  */
+  gfc_add_expr_to_block (&block, body);
+
+  if (TREE_USED (exit_label))
+    gfc_add_expr_to_block (&block, build1_v (LABEL_EXPR, exit_label));
 
   return gfc_finish_block (&block);
 }

@@ -1,3 +1,25 @@
+2016-10-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69834
+	* class.c (gfc_find_derived_vtab): Obtain the gsymbol for the
+	derived type's module. If the gsymbol is present and the top
+	level namespace corresponds to a module, use the gsymbol name
+	space. In the search to see if the vtable exists, try the gsym
+	namespace first.
+	* dump-parse-tree (show_code_node): Modify select case dump to
+	show select type construct.
+	* resolve.c (build_loc_call): New function.
+	(resolve_select_type): Add check for repeated type is cases.
+	Retain selector expression and use it later instead of expr1.
+	Exclude deferred length TYPE IS cases and emit error message.
+	Store the address for the vtable in the 'low' expression and
+	the hash value in the 'high' expression, for each case. Do not
+	call resolve_select.
+	* trans.c(trans_code) : Call gfc_trans_select_type.
+	* trans-stmt.c (gfc_trans_select_type_cases): New function.
+	(gfc_trans_select_type): New function.
+	* trans-stmt.h : Add prototype for gfc_trans_select_type.
+
 2016-10-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78021

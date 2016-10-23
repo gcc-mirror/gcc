@@ -1,3 +1,10 @@
+2016-10-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69834
+	* gfortran.dg/select_type_1.f03: Change error for overlapping
+	TYPE IS cases.
+	* gfortran.dg/select_type_36.f03: New test.
+
 2016-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/tree-ssa/pr71347.c: Remove XFAIL on SPARC.
