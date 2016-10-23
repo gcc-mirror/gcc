@@ -1,3 +1,8 @@
+2016-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-c.c (sparc_target_macros): Replace TARGET_64BIT
+	with TARGET_ARCH64.  Define __VIS to 0x400 if TARGET_VIS4.
+
 2016-10-21  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-cores.def: Rewrite so IMP and PART are
