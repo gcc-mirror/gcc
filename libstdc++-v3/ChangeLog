@@ -1,3 +1,11 @@
+2016-10-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/c++config (_GLIBCXX_BEGIN_NAMESPACE_ALGO)
+	(_GLIBCXX_END_NAMESPACE_ALGO): Default to respectively
+	_GLIBCXX_BEGIN_NAMESPACE_VERSION and _GLIBCXX_END_NAMESPACE_VERSION.
+	(_GLIBCXX_BEGIN_NAMESPACE_CONTAINER, _GLIBCXX_END_NAMESPACE_CONTAINER):
+	Likewise.
+
 2016-10-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/ops.cc (permissions(const path&, perms, error_code&)):
