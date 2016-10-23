@@ -253,12 +253,13 @@
 	 (symbol_ref "TARGET_SPARCLET") (const_string "sparclet")]
 	(const_string "v7"))))
 
-(define_attr "cpu_feature" "none,fpu,fpunotv9,v9,vis,vis3,vis4" (const_string "none"))
+(define_attr "cpu_feature" "none,fpu,fpunotv9,v9,vis,vis3,vis4"
+  (const_string "none"))
 
 (define_attr "enabled" ""
   (cond [(eq_attr "cpu_feature" "none") (const_int 1)
          (eq_attr "cpu_feature" "fpu") (symbol_ref "TARGET_FPU")
-	 (eq_attr "cpu_feature" "fpunotv9") (symbol_ref "TARGET_FPU && ! TARGET_V9")
+         (eq_attr "cpu_feature" "fpunotv9") (symbol_ref "TARGET_FPU && !TARGET_V9")
          (eq_attr "cpu_feature" "v9") (symbol_ref "TARGET_V9")
          (eq_attr "cpu_feature" "vis") (symbol_ref "TARGET_VIS")
          (eq_attr "cpu_feature" "vis3") (symbol_ref "TARGET_VIS3")
@@ -483,8 +484,7 @@
 	   (const_string "true")
 	] (const_string "false")))
 
-;; True if the instruction executes in the V3 pipeline, in M7 and
-;; later processors.
+;; True if the instruction executes in the V3 pipeline, in M7 and later processors.
 (define_attr "v3pipe" "false,true" (const_string "false"))
 
 (define_delay (eq_attr "type" "call")
@@ -1559,8 +1559,8 @@
    fzeros\t%0
    fones\t%0"
   [(set_attr "type" "*,*,load,store,vismv,vismv,fpmove,fpload,fpstore,visl,visl")
-   (set_attr "v3pipe" "*,*,*,*,true,true,*,*,*,true,true")
-   (set_attr "cpu_feature" "*,*,*,*,vis3,vis3,*,*,*,vis,vis")])
+   (set_attr "cpu_feature" "*,*,*,*,vis3,vis3,*,*,*,vis,vis")
+   (set_attr "v3pipe" "*,*,*,*,true,true,*,*,*,true,true")])
 
 (define_insn "*movsi_lo_sum"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1725,10 +1725,10 @@
    fzero\t%0
    fone\t%0"
   [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,fpmove,*,*,*,fpload,fpstore,visl,visl")
-   (set_attr "v3pipe" "false, false, false, false,false,false,false,false,false,false,false,false,false,false,false,false,false,false, true, true")
    (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,*,2,2,2,*,*,*,*")
    (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,*,*,*,double,double")
-   (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")])
+   (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")
+   (set_attr "v3pipe" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,true,true")])
 
 (define_insn "*movdi_insn_sp64"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,?W,b,b")
@@ -1749,9 +1749,9 @@
    fzero\t%0
    fone\t%0"
   [(set_attr "type" "*,*,load,store,vismv,vismv,fpmove,fpload,fpstore,visl,visl")
-   (set_attr "v3pipe" "*, *, *, *, *, *, *, *, *, true, true")
    (set_attr "fptype" "*,*,*,*,*,*,double,*,*,double,double")
-   (set_attr "cpu_feature" "*,*,*,*,vis3,vis3,*,*,*,vis,vis")])
+   (set_attr "cpu_feature" "*,*,*,*,vis3,vis3,*,*,*,vis,vis")
+   (set_attr "v3pipe" "*,*,*,*,*,*,*,*,*,true,true")])
 
 (define_expand "movdi_pic_label_ref"
   [(set (match_dup 3) (high:DI
@@ -2313,8 +2313,8 @@
     }
 }
   [(set_attr "type" "visl,visl,fpmove,*,*,*,vismv,vismv,fpload,load,fpstore,store")
-   (set_attr "v3pipe" "true, true, *, *, *, *, true, true, *, *, *, *")
-   (set_attr "cpu_feature" "vis,vis,fpu,*,*,*,vis3,vis3,fpu,*,fpu,*")])
+   (set_attr "cpu_feature" "vis,vis,fpu,*,*,*,vis3,vis3,fpu,*,fpu,*")
+   (set_attr "v3pipe" "true,true,*,*,*,*,true,true,*,*,*,*")])
 
 ;; The following 3 patterns build SFmode constants in integer registers.
 
@@ -2382,10 +2382,10 @@
   #
   #"
   [(set_attr "type" "visl,visl,fpmove,*,*,*,fpload,store,fpstore,load,store,*,*,*,*")
-   (set_attr "v3pipe" "true, true, *, *, *, *, *, *, *, *, *, *, *, *, *")
    (set_attr "length" "*,*,*,2,2,2,*,*,*,*,*,2,2,2,2")
    (set_attr "fptype" "double,double,double,*,*,*,*,*,*,*,*,*,*,*,*")
-   (set_attr "cpu_feature" "vis,vis,v9,fpunotv9,vis3,vis3,fpu,v9,fpu,*,*,fpu,*,*,fpu")])
+   (set_attr "cpu_feature" "vis,vis,v9,fpunotv9,vis3,vis3,fpu,v9,fpu,*,*,fpu,*,*,fpu")
+   (set_attr "v3pipe" "true,true,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 (define_insn "*movdf_insn_sp64"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,W, *r,*r,  m,*r")
@@ -2406,10 +2406,10 @@
   stx\t%r1, %0
   #"
   [(set_attr "type" "visl,visl,fpmove,vismv,vismv,load,store,*,load,store,*")
-   (set_attr "v3pipe" "true, true, *, *, *, *, *, *, *, *, *")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,2")
    (set_attr "fptype" "double,double,double,double,double,*,*,*,*,*,*")
-   (set_attr "cpu_feature" "vis,vis,fpu,vis3,vis3,fpu,fpu,*,*,*,*")])
+   (set_attr "cpu_feature" "vis,vis,fpu,vis3,vis3,fpu,fpu,*,*,*,*")
+   (set_attr "v3pipe" "true,true,*,*,*,*,*,*,*,*,*")])
 
 ;; This pattern builds DFmode constants in integer registers.
 (define_split
@@ -3088,8 +3088,8 @@
    lduw\t%1, %0
    movstouw\t%1, %0"
   [(set_attr "type" "shift,load,*")
-   (set_attr "v3pipe" "*,*,true")
-   (set_attr "cpu_feature" "*,*,vis3")])
+   (set_attr "cpu_feature" "*,*,vis3")
+   (set_attr "v3pipe" "*,*,true")])
 
 (define_insn_and_split "*zero_extendsidi2_insn_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3403,9 +3403,9 @@
   ldsw\t%1, %0
   movstosw\t%1, %0"
   [(set_attr "type" "shift,sload,*")
-   (set_attr "v3pipe" "*,*,true")
    (set_attr "us3load_type" "*,3cycle,*")
-   (set_attr "cpu_feature" "*,*,vis3")])
+   (set_attr "cpu_feature" "*,*,vis3")
+   (set_attr "v3pipe" "*,*,true")])
 
 
 ;; Special pattern for optimizing bit-field compares.  This is needed
@@ -8519,7 +8519,8 @@
 (define_mode_iterator VM64 [V1DI V2SI V4HI V8QI])
 (define_mode_iterator VMALL [V1SI V2HI V4QI V1DI V2SI V4HI V8QI])
 
-(define_mode_attr vbits [(V2SI "32") (V4HI "16") (V1SI "32s") (V2HI "16s") (V8QI "8")])
+(define_mode_attr vbits [(V2SI "32") (V4HI "16") (V1SI "32s") (V2HI "16s")
+			 (V8QI "8")])
 (define_mode_attr vconstr [(V1SI "f") (V2HI "f") (V4QI "f")
 			   (V1DI "e") (V2SI "e") (V4HI "e") (V8QI "e")])
 (define_mode_attr vfptype [(V1SI "single") (V2HI "single") (V4QI "single")
@@ -8554,8 +8555,8 @@
   movstouw\t%1, %0
   movwtos\t%1, %0"
   [(set_attr "type" "visl,visl,vismv,fpload,fpstore,store,load,store,*,vismv,vismv")
-   (set_attr "v3pipe" "true,true,true,false,false,false,false,false,false,true,true")
-   (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,*,vis3,vis3")])
+   (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,*,vis3,vis3")
+   (set_attr "v3pipe" "true,true,true,*,*,*,*,*,*,true,true")])
 
 (define_insn "*mov<VM64:mode>_insn_sp64"
   [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,e,m,m,*r, m,*r, e,*r")
@@ -8577,8 +8578,8 @@
   movxtod\t%1, %0
   mov\t%1, %0"
   [(set_attr "type" "visl,visl,vismv,fpload,fpstore,store,load,store,vismv,vismv,*")
-   (set_attr "v3pipe" "true, true, true, false, false, false, false, false, false, false, false")
-   (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,vis3,vis3,*")])
+   (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,vis3,vis3,*")
+   (set_attr "v3pipe" "true,true,true,*,*,*,*,*,*,*,*")])
 
 (define_insn "*mov<VM64:mode>_insn_sp32"
   [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,*r, f,e,m,m,U,T, o,*r")
@@ -8601,9 +8602,9 @@
   #
   #"
   [(set_attr "type" "visl,visl,vismv,*,*,fpload,fpstore,store,load,store,*,*")
-   (set_attr "v3pipe" "true, true, true, false, false, false, false, false, false, false, false, false")
    (set_attr "length" "*,*,*,2,2,*,*,*,*,*,2,2")
-   (set_attr "cpu_feature" "vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*")])
+   (set_attr "cpu_feature" "vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*")
+   (set_attr "v3pipe" "true,true,true,*,*,*,*,*,*,*,*,*")])
 
 (define_split
   [(set (match_operand:VM64 0 "memory_operand" "")
@@ -8698,8 +8699,8 @@
   "TARGET_VIS"
   "f<vlinsn><vlsuf>\t%1, %2, %0"
   [(set_attr "type" "visl")
-   (set_attr "v3pipe" "true")
-   (set_attr "fptype" "<vfptype>")])
+   (set_attr "fptype" "<vfptype>")
+   (set_attr "v3pipe" "true")])
 
 (define_insn "*not_<code><mode>3"
   [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
@@ -8708,8 +8709,8 @@
   "TARGET_VIS"
   "f<vlninsn><vlsuf>\t%1, %2, %0"
   [(set_attr "type" "visl")
-   (set_attr "v3pipe" "true")
-   (set_attr "fptype" "<vfptype>")])
+   (set_attr "fptype" "<vfptype>")
+   (set_attr "v3pipe" "true")])
 
 ;; (ior (not (op1)) (not (op2))) is the canonical form of NAND.
 (define_insn "*nand<mode>_vis"
@@ -8719,8 +8720,8 @@
   "TARGET_VIS"
   "fnand<vlsuf>\t%1, %2, %0"
   [(set_attr "type" "visl")
-   (set_attr "v3pipe" "true")
-   (set_attr "fptype" "<vfptype>")])
+   (set_attr "fptype" "<vfptype>")
+   (set_attr "v3pipe" "true")])
 
 (define_code_iterator vlnotop [ior and])
 
@@ -8731,8 +8732,8 @@
   "TARGET_VIS"
   "f<vlinsn>not1<vlsuf>\t%1, %2, %0"
   [(set_attr "type" "visl")
-   (set_attr "v3pipe" "true")
-   (set_attr "fptype" "<vfptype>")])
+   (set_attr "fptype" "<vfptype>")
+   (set_attr "v3pipe" "true")])
 
 (define_insn "*<code>_not2<mode>_vis"
   [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
@@ -8741,8 +8742,8 @@
   "TARGET_VIS"
   "f<vlinsn>not2<vlsuf>\t%1, %2, %0"
   [(set_attr "type" "visl")
-   (set_attr "v3pipe" "true")
-   (set_attr "fptype" "<vfptype>")])
+   (set_attr "fptype" "<vfptype>")
+   (set_attr "v3pipe" "true")])
 
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
@@ -8750,8 +8751,8 @@
   "TARGET_VIS"
   "fnot1<vlsuf>\t%1, %0"
   [(set_attr "type" "visl")
-   (set_attr "v3pipe" "true")
-   (set_attr "fptype" "<vfptype>")])
+   (set_attr "fptype" "<vfptype>")
+   (set_attr "v3pipe" "true")])
 
 ;; Hard to generate VIS instructions.  We have builtins for these.
 
@@ -9117,8 +9118,8 @@
   "TARGET_VIS"
   "fcmp<code><GCM:gcm_name>\t%1, %2, %0"
   [(set_attr "type" "visl")
-   (set_attr "v3pipe" "true")
-   (set_attr "fptype" "double")])
+   (set_attr "fptype" "double")
+   (set_attr "v3pipe" "true")])
 
 (define_insn "fpcmp<code>8<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")
@@ -9375,8 +9376,8 @@
   "TARGET_VIS3"
   "pdistn\t%1, %2, %0"
   [(set_attr "type" "pdistn")
-   (set_attr "v3pipe" "true")
-   (set_attr "fptype" "double")])
+   (set_attr "fptype" "double")
+   (set_attr "v3pipe" "true")])
 
 (define_insn "fmean16_vis"
   [(set (match_operand:V4HI 0 "register_operand" "=e")
