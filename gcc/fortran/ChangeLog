@@ -1,5 +1,11 @@
 2016-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/77763
+	* parse.c (parse_spec): Allow STRUCTURE in BLOCK DATA.  Sort
+	case labels.
+
+2016-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/54730
 	PR fortran/78033
 	* array.c (gfc_match_array_constructor): Remove checkpointing
