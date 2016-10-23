@@ -1,3 +1,8 @@
+2016-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-c.c (sparc_target_macros): Replace TARGET_64BIT
+	with TARGET_ARCH64.  Define __VIS to 0x400 if TARGET_VIS4.
+
 2016-10-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77991
@@ -11,7 +16,7 @@
 	2016-10-11  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-vrp.c (vrp_intersect_ranges_1): Allocate bitmap before
-	  copying.
+	copying.
 
 2016-10-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
