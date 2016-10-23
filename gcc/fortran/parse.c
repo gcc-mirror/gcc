@@ -3559,17 +3559,18 @@ loop:
     /* Fortran 2008, C1116.  */
     switch (st)
       {
-        case ST_DATA_DECL:
+	case ST_ATTR_DECL:
 	case ST_COMMON:
 	case ST_DATA:
-	case ST_TYPE:
+	case ST_DATA_DECL:
+	case ST_DERIVED_DECL:
 	case ST_END_BLOCK_DATA:
-	case ST_ATTR_DECL:
 	case ST_EQUIVALENCE:
-	case ST_PARAMETER:
 	case ST_IMPLICIT:
 	case ST_IMPLICIT_NONE:
-	case ST_DERIVED_DECL:
+	case ST_PARAMETER:
+	case ST_STRUCTURE_DECL:
+	case ST_TYPE:
 	case ST_USE:
 	  break;
 

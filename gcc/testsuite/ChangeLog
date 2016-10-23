@@ -1,3 +1,8 @@
+2016-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77763
+	* gfortran.dg/pr77763.f90
+
 2016-10-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
