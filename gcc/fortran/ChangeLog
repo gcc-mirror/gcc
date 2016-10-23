@@ -1,3 +1,10 @@
+2016-10-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/78021
+	* gfc_compare_functions:  Strings with different lengths in
+	argument lists compare unequal.
+
 2016-10-23  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from trunk
