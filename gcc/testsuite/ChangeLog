@@ -1,3 +1,9 @@
+2016-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/54730
+	PR fortran/78033
+	* gfortran.dg/pr78033.f90: New test.
+
 2016-10-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69834

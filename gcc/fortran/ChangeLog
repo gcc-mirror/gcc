@@ -1,3 +1,12 @@
+2016-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/54730
+	PR fortran/78033
+	* array.c (gfc_match_array_constructor): Remove checkpointing
+	introduced in r196416 (original fix for PR fortran/54730).  Move
+	initialization to top of function.
+	* match.c (gfc_match_type_spec): Special case matching for REAL.
+
 2016-10-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69834
