@@ -1091,13 +1091,15 @@ gfc_match_array_constructor (gfc_expr **result)
 {
   gfc_constructor *c;
   gfc_constructor_base head;
-  gfc_undo_change_set changed_syms;
   gfc_expr *expr;
   gfc_typespec ts;
   locus where;
   match m;
   const char *end_delim;
   bool seen_ts;
+
+  head = NULL;
+  seen_ts = false;
 
   if (gfc_match (" (/") == MATCH_NO)
     {
@@ -1115,12 +1117,9 @@ gfc_match_array_constructor (gfc_expr **result)
     end_delim = " /)";
 
   where = gfc_current_locus;
-  head = NULL;
-  seen_ts = false;
 
   /* Try to match an optional "type-spec ::"  */
   gfc_clear_ts (&ts);
-  gfc_new_undo_checkpoint (changed_syms);
   m = gfc_match_type_spec (&ts);
   if (m == MATCH_YES)
     {
@@ -1130,16 +1129,12 @@ gfc_match_array_constructor (gfc_expr **result)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2003, "Array constructor "
 			       "including type specification at %C"))
-	    {
-	      gfc_restore_last_undo_checkpoint ();
-	      goto cleanup;
-	    }
+	    goto cleanup;
 
 	  if (ts.deferred)
 	    {
 	      gfc_error ("Type-spec at %L cannot contain a deferred "
 			 "type parameter", &where);
-	      gfc_restore_last_undo_checkpoint ();
 	      goto cleanup;
 	    }
 
@@ -1148,24 +1143,15 @@ gfc_match_array_constructor (gfc_expr **result)
 	    {
 	      gfc_error ("Type-spec at %L cannot contain an asterisk for a "
 			 "type parameter", &where);
-	      gfc_restore_last_undo_checkpoint ();
 	      goto cleanup;
 	    }
 	}
     }
   else if (m == MATCH_ERROR)
-    {
-      gfc_restore_last_undo_checkpoint ();
-      goto cleanup;
-    }
+    goto cleanup;
 
-  if (seen_ts)
-    gfc_drop_last_undo_checkpoint ();
-  else
-    {
-      gfc_restore_last_undo_checkpoint ();
-      gfc_current_locus = where;
-    }
+  if (!seen_ts)
+    gfc_current_locus = where;
 
   if (gfc_match (end_delim) == MATCH_YES)
     {

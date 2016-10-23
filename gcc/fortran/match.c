@@ -1989,6 +1989,7 @@ gfc_match_type_spec (gfc_typespec *ts)
 {
   match m;
   locus old_locus;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
 
   gfc_clear_ts (ts);
   gfc_gobble_whitespace ();
@@ -2010,13 +2011,6 @@ gfc_match_type_spec (gfc_typespec *ts)
     {
       ts->type = BT_INTEGER;
       ts->kind = gfc_default_integer_kind;
-      goto kind_selector;
-    }
-
-  if (gfc_match ("real") == MATCH_YES)
-    {
-      ts->type = BT_REAL;
-      ts->kind = gfc_default_real_kind;
       goto kind_selector;
     }
 
@@ -2053,6 +2047,103 @@ gfc_match_type_spec (gfc_typespec *ts)
       goto kind_selector;
     }
 
+  /* REAL is a real pain because it can be a type, intrinsic subprogram,
+     or list item in a type-list of an OpenMP reduction clause.  Need to
+     differentiate REAL([KIND]=scalar-int-initialization-expr) from
+     REAL(A,[KIND]) and REAL(KIND,A).  */
+
+  m = gfc_match (" %n", name);
+  if (m == MATCH_YES && strcmp (name, "real") == 0)
+    {
+      char c;
+      gfc_expr *e;
+      locus where;
+
+      ts->type = BT_REAL;
+      ts->kind = gfc_default_real_kind;
+
+      gfc_gobble_whitespace ();
+
+      /* Prevent REAL*4, etc.  */
+      c = gfc_peek_ascii_char ();
+      if (c == '*')
+	{
+	  gfc_error ("Invalid type-spec at %C");
+	  return MATCH_ERROR;
+	}
+
+      /* Found leading colon in REAL::, a trailing ')' in for example
+	 TYPE IS (REAL), or REAL, for an OpenMP list-item.  */
+      if (c == ':' || c == ')' || (flag_openmp && c == ','))
+	return MATCH_YES;
+
+      /* Found something other than the opening '(' in REAL(...  */
+      if (c != '(')
+	return MATCH_NO;
+      else
+	gfc_next_char (); /* Burn the '('. */
+
+      /* Look for the optional KIND=. */
+      where = gfc_current_locus;
+      m = gfc_match ("%n", name);
+      if (m == MATCH_YES)
+	{
+	  gfc_gobble_whitespace ();
+	  c = gfc_next_char ();
+	  if (c == '=')
+	    {
+	      if (strcmp(name, "a") == 0)
+		return MATCH_NO;
+	      else if (strcmp(name, "kind") == 0)
+		goto found;
+	      else
+		return MATCH_ERROR;
+	    }
+	  else
+	    gfc_current_locus = where;
+	}
+      else
+	gfc_current_locus = where;
+
+found:
+
+      m = gfc_match_init_expr (&e);
+      if (m == MATCH_NO || m == MATCH_ERROR)
+	return MATCH_NO;
+
+      /* If a comma appears, it is an intrinsic subprogram. */
+      gfc_gobble_whitespace ();
+      c = gfc_peek_ascii_char ();
+      if (c == ',')
+	{
+	  gfc_free_expr (e);
+	  return MATCH_NO;
+	}
+
+      /* If ')' appears, we have REAL(initialization-expr), here check for
+	 a scalar integer initialization-expr and valid kind parameter. */
+      if (c == ')')
+	{
+	  if (e->ts.type != BT_INTEGER || e->rank > 0)
+	    {
+	      gfc_free_expr (e);
+	      return MATCH_NO;
+	    }
+
+	  gfc_next_char (); /* Burn the ')'. */
+	  ts->kind = (int) mpz_get_si (e->value.integer);
+	  if (gfc_validate_kind (BT_REAL, ts->kind , true) == -1)
+	    {
+	      gfc_error ("Invalid type-spec at %C");
+	      return MATCH_ERROR;
+	    }
+
+	  gfc_free_expr (e);
+
+	  return MATCH_YES;
+	}
+    }
+
   /* If a type is not matched, simply return MATCH_NO.  */
   gfc_current_locus = old_locus;
   return MATCH_NO;
@@ -2060,6 +2151,8 @@ gfc_match_type_spec (gfc_typespec *ts)
 kind_selector:
 
   gfc_gobble_whitespace ();
+
+  /* This prevents INTEGER*4, etc.  */
   if (gfc_peek_ascii_char () == '*')
     {
       gfc_error ("Invalid type-spec at %C");
@@ -2068,13 +2161,9 @@ kind_selector:
 
   m = gfc_match_kind_spec (ts, false);
 
+  /* No kind specifier found.  */
   if (m == MATCH_NO)
-    m = MATCH_YES;		/* No kind specifier found.  */
-
-  /* gfortran may have matched REAL(a=1), which is the keyword form of the
-     intrinsic procedure.  */
-  if (ts->type == BT_REAL && m == MATCH_ERROR)
-    m = MATCH_NO;
+    m = MATCH_YES;
 
   return m;
 }
