@@ -1,5 +1,16 @@
 2016-10-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.md (cpu_feature): Minor tweak.
+	(enabled): Likewise.
+	(movsi_insn, movdi_insn_sp32, movdi_insn_sp64, movsf_insn,
+	movdf_insn_sp32, movdf_insn_sp64, zero_extendsidi2_insn_sp64,
+	sign_extendsidi2_insn, mov<VM32:mode>_insn, mov<VM64:mode>_insn_sp64,
+	mov<VM64:mode>_insn_sp32, not_<code><mode>, nand<mode>_vis,
+	<code>_not1<mode>_vi, <code>_not2<mode>_vis, one_cmpl<mode>2,
+	fcmp<code><GCM:gcm_name>, pdistn<mode>_vis): Likewise.
+
+2016-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/sparc/sparc-c.c (sparc_target_macros): Replace TARGET_64BIT
 	with TARGET_ARCH64.  Define __VIS to 0x400 if TARGET_VIS4.
 
