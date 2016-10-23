@@ -1820,10 +1820,7 @@ trans_code (gfc_code * code, tree cond)
 	  break;
 
 	case EXEC_SELECT_TYPE:
-	  /* Do nothing. SELECT TYPE statements should be transformed into
-	  an ordinary SELECT CASE at resolution stage.
-	  TODO: Add an error message here once this is done.  */
-	  res = NULL_TREE;
+	  res = gfc_trans_select_type (code);
 	  break;
 
 	case EXEC_FLUSH:
