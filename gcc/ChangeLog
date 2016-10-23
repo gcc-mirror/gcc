@@ -1,3 +1,9 @@
+2016-10-23  Martin Sebor  <msebor@redhat.com>
+
+	PR target/77837
+	* config/rs6000/linux.h (TARGET_PRINTF_POINTER_FORMAT): Define.
+	* config/rs6000/linux64.h (TARGET_PRINTF_POINTER_FORMAT): Likewise.
+
 2016-10-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (cpu_feature): Minor tweak.
