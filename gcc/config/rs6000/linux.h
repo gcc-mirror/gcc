@@ -138,3 +138,7 @@
   || (TARGET_GLIBC_MAJOR == 2 && TARGET_GLIBC_MINOR >= 19)
 #define RS6000_GLIBC_ATOMIC_FENV 1
 #endif
+
+/* The format string to which "%p" corresponds.  */
+#undef TARGET_PRINTF_POINTER_FORMAT
+#define TARGET_PRINTF_POINTER_FORMAT linux_printf_pointer_format
