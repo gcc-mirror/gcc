@@ -1,3 +1,9 @@
+2016-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77763
+	* parse.c (parse_spec): Allow STRUCTURE in BLOCK DATA.  Sort
+	case labels.
+
 2016-10-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
