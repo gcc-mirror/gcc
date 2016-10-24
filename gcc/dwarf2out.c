@@ -22005,7 +22005,7 @@ gen_compile_unit_die (const char *filename)
     {
       add_name_attribute (die, filename);
       /* Don't add cwd for <built-in>.  */
-      if (!IS_ABSOLUTE_PATH (filename) && filename[0] != '<')
+      if (filename[0] != '<')
 	add_comp_dir_attribute (die);
     }
 
@@ -26368,20 +26368,6 @@ prune_unused_types (void)
     prune_unmark_dies (ctnode->root_die);
 }
 
-/* Set the parameter to true if there are any relative pathnames in
-   the file table.  */
-int
-file_table_relative_p (dwarf_file_data **slot, bool *p)
-{
-  struct dwarf_file_data *d = *slot;
-  if (!IS_ABSOLUTE_PATH (d->filename))
-    {
-      *p = true;
-      return 0;
-    }
-  return 1;
-}
-
 /* Helpers to manipulate hash table of comdat type units.  */
 
 struct comdat_type_hasher : nofree_ptr_hash <comdat_type_node>
@@ -28195,15 +28181,7 @@ dwarf2out_early_finish (const char *filename)
   /* Add the name for the main input file now.  We delayed this from
      dwarf2out_init to avoid complications with PCH.  */
   add_name_attribute (comp_unit_die (), remap_debug_filename (filename));
-  if (!IS_ABSOLUTE_PATH (filename) || targetm.force_at_comp_dir)
-    add_comp_dir_attribute (comp_unit_die ());
-  else if (get_AT (comp_unit_die (), DW_AT_comp_dir) == NULL)
-    {
-      bool p = false;
-      file_table->traverse<bool *, file_table_relative_p> (&p);
-      if (p)
-	add_comp_dir_attribute (comp_unit_die ());
-    }
+  add_comp_dir_attribute (comp_unit_die ());
 
   /* With LTO early dwarf was really finished at compile-time, so make
      sure to adjust the phase after annotating the LTRANS CU DIE.  */

@@ -1,3 +1,14 @@
+2016-10-24  Ximin Luo  <infinity0@pwned.gg>
+
+	PR debug/77985
+	* dwarf2out.c (file_table_relative_p): Remove.
+	(gen_compile_unit_die, dwarf2out_early_finish): Emit DW_AT_comp_dir
+	also for absolute paths.
+	* doc/tm.texi: Update.
+	* doc/tm.texi.in (SDB and DWARF) <TARGET_FORCE_AT_COMP_DIR>: Remove.
+	* target.def (force_at_comp_dir): Remove hook.
+	* config/darwin.h (TARGET_FORCE_AT_COMP_DIR): Remove define.
+
 2016-10-24  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (evrp_dom_walker::before_dom_children): Ignore
