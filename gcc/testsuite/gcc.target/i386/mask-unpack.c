@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512bw -mavx512dq -O3 -fopenmp-simd -fdump-tree-vect-details" } */
+/* { dg-options "-mavx512bw -mavx512dq -mno-stackrealign -O3 -fopenmp-simd -fdump-tree-vect-details" } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 10 "vect" } } */
 /* { dg-final { scan-assembler-not "maskmov" } } */
 

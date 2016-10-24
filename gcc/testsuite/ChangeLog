@@ -1,3 +1,14 @@
+2016-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/77483
+	* gcc.target/i386/mask-unpack.c (dg-options): Add -mno-stackrealign.
+	* gcc.target/i386/pr65105-1.c: Likewise.
+	* gcc.target/i386/pr65105-2.c: Likewise.
+	* gcc.target/i386/pr65105-3.c: Likewise.
+	* gcc.target/i386/pr65105-5.c: Likewise.
+	* gcc.target/i386/pr67761.c: Likewise.
+	* gcc.target/i386/pr70799-1.c: Likewise.
+
 2016-10-24  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/77966

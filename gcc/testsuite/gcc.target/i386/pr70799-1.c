@@ -1,6 +1,6 @@
 /* PR target/pr70799 */
 /* { dg-do compile { target { ia32 } } } */
-/* { dg-options "-O2 -march=slm" } */
+/* { dg-options "-O2 -march=slm -mno-stackrealign" } */
 /* { dg-final { scan-assembler "pxor" } } */
 /* { dg-final { scan-assembler "pcmpeqd" } } */
 /* { dg-final { scan-assembler "movdqa\[ \\t\]+.?LC0" } } */
