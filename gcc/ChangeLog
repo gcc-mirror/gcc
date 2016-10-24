@@ -1,3 +1,9 @@
+2016-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78076
+	* tree-ssa-loop-split.c (tree_ssa_split_loops): Reset aux
+	also on the loop tree root.
+
 2016-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_fold_builtin): Handle
