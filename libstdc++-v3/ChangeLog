@@ -1,5 +1,8 @@
 2016-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/ops.cc (is_empty): Fix error handling.
+	* testsuite/experimental/filesystem/operations/is_empty.cc: New test.
+
 	PR libstdc++/71337
 	* src/filesystem/ops.cc (temp_directory_path): Pass error_code
 	argument to other filesystem operations.

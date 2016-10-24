@@ -1022,20 +1022,24 @@ fs::hard_link_count(const path& p, error_code& ec) noexcept
 bool
 fs::is_empty(const path& p)
 {
-  return fs::is_directory(status(p))
-    ? fs::directory_iterator(p) == fs::directory_iterator()
-    : fs::file_size(p) == 0;
+  error_code ec;
+  bool e = is_empty(p, ec);
+  if (ec)
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot check is file is empty",
+					     p, ec));
+  return e;
 }
 
 bool
 fs::is_empty(const path& p, error_code& ec) noexcept
 {
   auto s = status(p, ec);
-  if (ec.value())
+  if (ec)
     return false;
-  return fs::is_directory(s)
+  bool empty = fs::is_directory(s)
     ? fs::directory_iterator(p, ec) == fs::directory_iterator()
     : fs::file_size(p, ec) == 0;
+  return ec ? false : empty;
 }
 
 fs::file_time_type
