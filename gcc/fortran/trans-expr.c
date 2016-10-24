@@ -1508,27 +1508,6 @@ gfc_trans_class_init_assign (gfc_code *code)
 }
 
 
-/* Return the backend_decl for the vtable of an arbitrary typespec
-   and the vtable symbol.  */
-
-tree
-gfc_get_vtable_decl (gfc_typespec *ts, gfc_symbol **vtab)
-{
-  gfc_symbol *vtable = gfc_find_vtab (ts);
-  gcc_assert (vtable != NULL);
-  if (vtab != NULL)
-    *vtab = vtable;
-  if (vtable->backend_decl == NULL_TREE)
-    return gfc_get_symbol_decl (vtable);
-  else
-    return vtable->backend_decl;
-}
-
-
-  /* Translate an assignment to a CLASS object
-     (pointer or ordinary assignment).  */
-
-
 /* End of prototype trans-class.c  */
 
 
