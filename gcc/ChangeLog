@@ -1,3 +1,11 @@
+2016-10-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (evrp_dom_walker::before_dom_children): Ignore
+	backedges when identifying the single predecessor to take
+	conditional info from.  Use SCEV to get at ranges for loop IVs.
+	* lto-streamer-out.c (lto_write_mode_table): CSE inner mode to
+	avoid false warning.
+
 2016-10-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/78093
