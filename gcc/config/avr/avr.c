@@ -85,6 +85,10 @@
 #define AVR_SYMBOL_FLAG_TINY_PM \
   (SYMBOL_FLAG_MACH_DEP << 7)
 
+/* (AVR_TINY only): Symbol has attribute absdata */
+#define AVR_SYMBOL_FLAG_TINY_ABSDATA \
+  (SYMBOL_FLAG_MACH_DEP << 8)
+
 #define TINY_ADIW(REG1, REG2, I)                                \
     "subi " #REG1 ",lo8(-(" #I "))" CR_TAB                      \
     "sbci " #REG2 ",hi8(-(" #I "))"
@@ -1791,6 +1795,28 @@ avr_mode_dependent_address_p (const_rtx addr ATTRIBUTE_UNUSED, addr_space_t as)
 }
 
 
+/* Return true if rtx X is a CONST_INT, CONST or SYMBOL_REF
+   address with the `absdata' variable attribute, i.e. respective
+   data can be read / written by LDS / STS instruction.
+   This is used only for AVR_TINY.  */
+
+static bool
+avr_address_tiny_absdata_p (rtx x, machine_mode mode)
+{
+  if (CONST == GET_CODE (x))
+    x = XEXP (XEXP (x, 0), 0);
+
+  if (SYMBOL_REF_P (x))
+    return SYMBOL_REF_FLAGS (x) & AVR_SYMBOL_FLAG_TINY_ABSDATA;
+
+  if (CONST_INT_P (x)
+      && IN_RANGE (INTVAL (x), 0, 0xc0 - GET_MODE_SIZE (mode)))
+    return true;
+
+  return false;
+}
+
+
 /* Helper function for `avr_legitimate_address_p'.  */
 
 static inline bool
@@ -1875,8 +1901,7 @@ avr_legitimate_address_p (machine_mode mode, rtx x, bool strict)
       /* avrtiny's load / store instructions only cover addresses 0..0xbf:
          IN / OUT range is 0..0x3f and LDS / STS can access 0x40..0xbf.  */
 
-      ok = (CONST_INT_P (x)
-            && IN_RANGE (INTVAL (x), 0, 0xc0 - GET_MODE_SIZE (mode)));
+      ok = avr_address_tiny_absdata_p (x, mode);
     }
 
   if (avr_log.legitimate_address_p)
@@ -1918,8 +1943,7 @@ avr_legitimize_address (rtx x, rtx oldx, machine_mode mode)
   if (AVR_TINY)
     {
       if (CONSTANT_ADDRESS_P (x)
-          && !(CONST_INT_P (x)
-               && IN_RANGE (INTVAL (x), 0, 0xc0 - GET_MODE_SIZE (mode))))
+          && ! avr_address_tiny_absdata_p (x, mode))
         {
           x = force_reg (Pmode, x);
         }
@@ -9149,6 +9173,32 @@ avr_handle_fntype_attribute (tree *node, tree name,
 }
 
 static tree
+avr_handle_absdata_attribute (tree *node, tree name, tree /* args */,
+                              int /* flags */, bool *no_add)
+{
+  location_t loc = DECL_SOURCE_LOCATION (*node);
+
+  if (AVR_TINY)
+    {
+      if (TREE_CODE (*node) != VAR_DECL
+          || (!TREE_STATIC (*node) && !DECL_EXTERNAL (*node)))
+        {
+          warning_at (loc, OPT_Wattributes, "%qE attribute only applies to"
+                      " variables in static storage", name);
+          *no_add = true;
+        }
+    }
+  else
+    {
+      warning_at (loc, OPT_Wattributes, "%qE attribute only supported"
+                  " for reduced Tiny cores", name);
+      *no_add = true;
+    }
+
+  return NULL_TREE;
+}
+
+static tree
 avr_handle_addr_attribute (tree *node, tree name, tree args,
 			   int flags ATTRIBUTE_UNUSED, bool *no_add)
 {
@@ -9218,8 +9268,8 @@ avr_eval_addr_attrib (rtx x)
       if (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_IO)
 	{
 	  attr = lookup_attribute ("io", DECL_ATTRIBUTES (decl));
-         if (!attr || !TREE_VALUE (attr))
-           attr = lookup_attribute ("io_low", DECL_ATTRIBUTES (decl));
+          if (!attr || !TREE_VALUE (attr))
+            attr = lookup_attribute ("io_low", DECL_ATTRIBUTES (decl));
 	  gcc_assert (attr);
 	}
       if (!attr || !TREE_VALUE (attr))
@@ -9254,6 +9304,8 @@ avr_attribute_table[] =
   { "io_low",    0, 1, false, false, false,  avr_handle_addr_attribute,
     false },
   { "address",   1, 1, false, false, false,  avr_handle_addr_attribute,
+    false },
+  { "absdata",   0, 0, true, false, false,  avr_handle_absdata_attribute,
     false },
   { NULL,        0, 0, false, false, false, NULL, false }
 };
@@ -9336,6 +9388,17 @@ avr_progmem_p (tree decl, tree attributes)
     return -1;
 
   return 0;
+}
+
+
+/* Return true if DECL has attribute `absdata' set.  This function should
+   only be used for AVR_TINY.  */
+
+static bool
+avr_decl_absdata_p (tree decl, tree attributes)
+{
+  return (TREE_CODE (decl) == VAR_DECL
+          && NULL_TREE != lookup_attribute ("absdata", attributes));
 }
 
 
@@ -9694,6 +9757,8 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 static void
 avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
 {
+  tree addr_attr = NULL_TREE;
+
   /* In avr_handle_progmem_attribute, DECL_INITIAL is not yet
      readily available, see PR34734.  So we postpone the warning
      about uninitialized data in program memory section until here.  */
@@ -9735,7 +9800,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
 
       tree io_low_attr = lookup_attribute ("io_low", attr);
       tree io_attr = lookup_attribute ("io", attr);
-      tree addr_attr;
+
       if (io_low_attr
 	  && TREE_VALUE (io_low_attr) && TREE_VALUE (TREE_VALUE (io_low_attr)))
 	addr_attr = io_attr;
@@ -9763,14 +9828,32 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
   if (AVR_TINY
       && decl
       && VAR_DECL == TREE_CODE (decl)
-      && -1 == avr_progmem_p (decl, DECL_ATTRIBUTES (decl))
       && MEM_P (rtl)
       && SYMBOL_REF_P (XEXP (rtl, 0)))
     {
-      /* Tag symbols for later addition of 0x4000 (AVR_TINY_PM_OFFSET).  */
-
       rtx sym = XEXP (rtl, 0);
-      SYMBOL_REF_FLAGS (sym) |= AVR_SYMBOL_FLAG_TINY_PM;
+
+      if (-1 == avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
+        {
+          // Tag symbols for later addition of 0x4000 (AVR_TINY_PM_OFFSET).
+          SYMBOL_REF_FLAGS (sym) |= AVR_SYMBOL_FLAG_TINY_PM;
+        }
+
+      if (avr_decl_absdata_p (decl, DECL_ATTRIBUTES (decl))
+          || (addr_attr
+              // If addr_attr is non-null, it has an argument.  Peek into it.
+              && TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (addr_attr))) < 0xc0))
+        {
+          // May be accessed by LDS / STS.
+          SYMBOL_REF_FLAGS (sym) |= AVR_SYMBOL_FLAG_TINY_ABSDATA;
+        }
+
+      if (-1 == avr_progmem_p (decl, DECL_ATTRIBUTES (decl))
+          && avr_decl_absdata_p (decl, DECL_ATTRIBUTES (decl)))
+        {
+          error ("%q+D has incompatible attributes %qs and %qs",
+                 decl, "progmem", "absdata");
+        }
     }
 }
 
@@ -10899,6 +10982,10 @@ avr_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
     {
       if (optimize > 0
           && io_address_operand (x, QImode))
+        cost = 2;
+
+      if (AVR_TINY
+          && avr_address_tiny_absdata_p (x, QImode))
         cost = 2;
     }
 

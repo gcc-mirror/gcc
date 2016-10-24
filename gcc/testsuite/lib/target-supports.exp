@@ -7784,6 +7784,24 @@ proc check_effective_target_aarch64_large { } {
     }
 }
 
+
+# Return 1 if this is a reduced AVR Tiny core.  Such cores have different
+# register set, instruction set, addressing capabilities and ABI.
+
+proc check_effective_target_avr_tiny { } {
+    if { [istarget avr*-*-*] } {
+        return [check_no_compiler_messages avr_tiny object {
+            #ifdef __AVR_TINY__
+            int dummy;
+            #else
+            #error target not a reduced AVR Tiny core
+            #endif
+        }]
+    } else {
+        return 0
+    }
+}
+
 # Return 1 if <fenv.h> is available with all the standard IEEE
 # exceptions and floating-point exceptions are raised by arithmetic
 # operations.  (If the target requires special options for "inexact"
