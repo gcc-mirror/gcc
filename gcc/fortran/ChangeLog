@@ -1,3 +1,9 @@
+2016-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/71895
+	* interface.c (gfc_compare_derived_types):  Convert gcc_assert()
+	to a gfc_internal_error() to prevent an ICE.
+
 2016-10-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
