@@ -1,3 +1,8 @@
+2016-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* check_GNU_style.sh (remove_testsuite): New function.
+	Use it to remove testsuite from the diff.
+
 2016-09-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* dg-extract-results.sh: Revert bogus change.
