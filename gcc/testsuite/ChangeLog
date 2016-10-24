@@ -1,3 +1,9 @@
+2016-10-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/78093
+	* lib/target-supports.exp (check_effective_target_avr_tiny): New proc.
+	* gcc.target/avr/torture/tiny-absdata-1.c: New test.
+
 2016-10-24  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/pure-code/pure-code.exp: Restore saved globals.

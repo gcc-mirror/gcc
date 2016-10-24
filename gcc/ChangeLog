@@ -1,3 +1,18 @@
+2016-10-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/78093
+	* doc/extend.texi (AVR Variable Attributes) [absdata]: Document it.
+	* config/avr/avr.c (AVR_SYMBOL_FLAG_TINY_ABSDATA): New macro.
+	(avr_address_tiny_absdata_p): New static function.
+	(avr_legitimate_address_p, avr_legitimize_address) [AVR_TINY]: Use
+	it to determine validity of constant addresses.
+	(avr_attribute_table) [absdata]: New variable attribute...
+	(avr_handle_absdata_attribute): ...and handler.
+	(avr_decl_absdata_p): New static function.
+	(avr_encode_section_info) [AVR_TINY]: Use it to add flag
+	AVR_SYMBOL_FLAG_TINY_ABSDATA to respective symbols_refs.
+	(avr_address_cost) [AVR_TINY]: absdata addresses cost 2.
+
 2016-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78076

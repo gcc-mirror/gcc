@@ -5973,6 +5973,33 @@ memory-mapped peripherals that may lie outside the io address range.
 volatile int porta __attribute__((address (0x600)));
 @end smallexample
 
+@item absdata
+@cindex @code{absdata} variable attribute, AVR
+Variables in static storage and with the @code{absdata} attribute can
+be accessed by the @code{LDS} and @code{STS} instructions which take
+absolute addresses.
+
+@itemize @bullet
+@item
+This attribute is only supported for the reduced AVR Tiny core
+like ATtiny40.
+
+@item
+You must make sure that respective data is located in the
+address range @code{0x40}@dots{}@code{0xbf} accessible by
+@code{LDS} and @code{STS}.  One way to achieve this as an
+appropriate linker description file.
+
+@item
+If the location does not fit the address range of @code{LDS}
+and @code{STS}, there is currently (Binutils 2.26) just an unspecific
+warning like
+@quotation
+@code{module.c:(.text+0x1c): warning: internal error: out of range error}
+@end quotation
+
+@end itemize
+
 @end table
 
 @node Blackfin Variable Attributes
