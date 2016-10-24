@@ -1,5 +1,18 @@
 2016-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/dir.cc (open_dir): Return same value for errors
+	whether ignored or not.
+	(_Dir::advance(error_code*, directory_options)): Return false on
+	error.
+	(directory_iterator(const path&, directory_options, error_code*)):
+	Create end iterator on error (LWG 2723).
+	(recursive_directory_iterator(const path&, directory_options,
+	error_code*)): Likewise.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Update expected behaviour on error.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Likewise.
+
 	* src/filesystem/ops.cc (close_fd): Remove.
 	(do_copy_file): Just use close(3) instead of close_fd, to prevent
 	retrying on error.

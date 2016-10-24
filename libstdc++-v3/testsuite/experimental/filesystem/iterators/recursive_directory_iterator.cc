@@ -34,7 +34,7 @@ test01()
   const auto p = __gnu_test::nonexistent_path();
   fs::recursive_directory_iterator iter(p, ec);
   VERIFY( ec );
-  VERIFY( iter != fs::recursive_directory_iterator() );
+  VERIFY( iter == fs::recursive_directory_iterator() );
 
   // Test empty directory.
   create_directory(p, fs::current_path(), ec);
@@ -60,7 +60,7 @@ test01()
   VERIFY( !ec );
   iter = fs::recursive_directory_iterator(p, ec);
   VERIFY( ec );
-  VERIFY( iter != fs::recursive_directory_iterator() );
+  VERIFY( iter == fs::recursive_directory_iterator() );
 
   // Test inaccessible directory, skipping permission denied.
   const auto opts = fs::directory_options::skip_permission_denied;

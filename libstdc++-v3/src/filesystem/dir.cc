@@ -79,8 +79,7 @@ namespace
       return (obj & bits) != Bitmask::none;
     }
 
-  // Returns {dirp, p} on success, {nullptr, p} on error.
-  // If an ignored EACCES error occurs returns {}.
+  // Returns {dirp, p} on success, {} on error (whether ignored or not).
   inline fs::_Dir
   open_dir(const fs::path& p, fs::directory_options options,
 	   std::error_code* ec)
@@ -102,7 +101,7 @@ namespace
             std::error_code(err, std::generic_category())));
 
     ec->assign(err, std::generic_category());
-    return {nullptr, p};
+    return {};
   }
 
   inline fs::file_type
@@ -169,7 +168,7 @@ fs::_Dir::advance(error_code* ec, directory_options options)
 	      "directory iterator cannot advance",
 	      std::error_code(err, std::generic_category())));
       ec->assign(err, std::generic_category());
-      return true;
+      return false;
     }
   else
     {
@@ -190,12 +189,6 @@ directory_iterator(const path& p, directory_options options, error_code* ec)
       auto sp = std::make_shared<fs::_Dir>(std::move(dir));
       if (sp->advance(ec, options))
 	_M_dir.swap(sp);
-    }
-  else if (!dir.path.empty())
-    {
-      // An error occurred, we need a non-empty shared_ptr so that *this will
-      // not compare equal to the end iterator.
-      _M_dir.reset(static_cast<fs::_Dir*>(nullptr));
     }
 }
 
@@ -270,10 +263,6 @@ recursive_directory_iterator(const path& p, directory_options options,
 	      std::error_code(err, std::generic_category())));
 
       ec->assign(err, std::generic_category());
-
-      // An error occurred, we need a non-empty shared_ptr so that *this will
-      // not compare equal to the end iterator.
-      _M_dirs.reset(static_cast<_Dir_stack*>(nullptr));
     }
 }
 
