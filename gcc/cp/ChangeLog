@@ -1,3 +1,12 @@
+2016-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* cxx-pretty-print.c (pp_cxx_check_constraint): Use VAR_P (x)
+	instead of TREE_CODE (x) == VAR_DECL.
+	* constraint.cc (get_concept_definition): Likewise.
+	(finish_shorthand_constraint): Likewise.
+	* init.c (warn_placement_new_too_small): Likewise.
+	* cp-gimplify.c (cp_genericize_r): Likewise.
+
 2016-10-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/77656
