@@ -1,8 +1,9 @@
 #! /bin/sh
+#! -*- coding:utf-8; mode:shell-script; -*-
 
-# Download some prerequisites needed by gcc.
-# Run this from the top level of the gcc source tree and the gcc
-# build will do the right thing.
+# Download some prerequisites needed by GCC.
+# Run this from the top level of the GCC source tree and the GCC build will do
+# the right thing.  Run it with the `--help` option for more information.
 #
 # (C) 2010-2016 Free Software Foundation
 #
@@ -19,42 +20,196 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
-# If you want to disable Graphite loop optimizations while building GCC,
-# DO NOT set GRAPHITE_LOOP_OPT as yes so that the isl package will not
-# be downloaded.
-GRAPHITE_LOOP_OPT=yes
 
-if [ ! -e gcc/BASE-VER ] ; then
-	echo "You must run this script in the top level GCC source directory."
-	exit 1
+program='download_prerequisites'
+version='(unversioned)'
+
+# MAINTAINERS: If you update the package versions below, please
+# remember to also update the files `contrib/prerequisites.sha512` and
+# `contrib/prerequisites.md5` with the new checksums.
+
+gmp='gmp-6.1.0.tar.bz2'
+mpfr='mpfr-3.1.4.tar.bz2'
+mpc='mpc-1.0.3.tar.gz'
+isl='isl-0.16.1.tar.bz2'
+
+base_url='ftp://gcc.gnu.org/pub/gcc/infrastructure/'
+
+echo_archives() {
+    echo "${gmp}"
+    echo "${mpfr}"
+    echo "${mpc}"
+    if [ ${graphite} -gt 0 ]; then echo "${isl}"; fi
+}
+
+graphite=1
+verify=1
+force=0
+chksum='sha512'
+directory='.'
+
+helptext="usage: ${program} [OPTION...]
+
+Downloads some prerequisites needed by GCC.  Run this from the top level of the
+GCC source tree and the GCC build will do the right thing.
+
+The following options are available:
+
+ --directory=DIR  download and unpack packages into DIR instead of '.'
+ --force          download again overwriting existing packages
+ --no-force       do not download existing packages again (default)
+ --isl            download ISL, needed for Graphite loop optimizations (default)
+ --graphite       same as --isl
+ --no-isl         don't download ISL
+ --no-graphite    same as --no-isl
+ --verify         verify package integrity after download (default)
+ --no-verify      don't verify package integrity
+ --sha512         use SHA512 checksum to verify package integrity (default)
+ --md5            use MD5 checksum to verify package integrity
+ --help           show this text and exit
+ --version        show version information and exit
+"
+
+versiontext="${program} ${version}
+Copyright (C) 2016 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+
+die() {
+    echo "error: $@" >&2
+    exit 1
+}
+
+for arg in "$@"
+do
+    case "${arg}" in
+        --help)
+            echo "${helptext}"
+            exit
+            ;;
+        --version)
+            echo "${versiontext}"
+            exit
+            ;;
+    esac
+done
+unset arg
+
+argnext=
+for arg in "$@"
+do
+    if [ "x${argnext}" = x ]
+    then
+        case "${arg}" in
+            --directory)
+                argnext='directory'
+                ;;
+            --directory=*)
+                directory="${arg#--directory=}"
+                ;;
+            --force)
+                force=1
+                ;;
+            --no-force)
+                force=0
+                ;;
+            --isl|--graphite)
+                graphite=1
+                ;;
+            --no-isl|--no-graphite)
+                graphite=0
+                ;;
+            --verify)
+                verify=1
+                ;;
+            --no-verify)
+                verify=0
+                ;;
+            --sha512)
+                chksum='sha512'
+                verify=1
+                ;;
+            --md5)
+                chksum='md5'
+                verify=1
+                ;;
+            -*)
+                die "unknown option: ${arg}"
+                ;;
+            *)
+                die "too many arguments"
+                ;;
+        esac
+    else
+        case "${arg}" in
+            -*)
+                die "Missing argument for option --${argnext}"
+                ;;
+        esac
+        case "${argnext}" in
+            directory)
+                directory="${arg}"
+                ;;
+            *)
+                die "The impossible has happened"
+                ;;
+        esac
+        argnext=
+    fi
+done
+[ "x${argnext}" = x ] || die "Missing argument for option --${argnext}"
+unset arg argnext
+
+[ -e ./gcc/BASE-VER ]                                                         \
+    || die "You must run this script in the top-level GCC source directory"
+
+[ -d "${directory}" ]                                                         \
+    || die "No such directory: ${directory}"
+
+for ar in $(echo_archives)
+do
+    if [ ${force} -gt 0 ]; then rm -f "${directory}/${ar}"; fi
+    [ -e "${directory}/${ar}" ]                                               \
+        || wget --no-verbose -O "${directory}/${ar}" "${base_url}${ar}"       \
+        || die "Cannot download ${ar} from ${base_url}"
+done
+unset ar
+
+if [ ${verify} -gt 0 ]
+then
+    chksumfile="contrib/prerequisites.${chksum}"
+    [ -r "${chksumfile}" ] || die "No checksums available"
+    for ar in $(echo_archives)
+    do
+        grep "${ar}" "${chksumfile}"                                          \
+            | ( cd "${directory}" && "${chksum}sum" --check )                 \
+            || die "Cannot verify integrity of possibly corrupted file ${ar}"
+    done
+    unset chksumfile
 fi
+unset ar
 
-# Necessary to build GCC.
-MPFR=mpfr-3.1.4
-GMP=gmp-6.1.0
-MPC=mpc-1.0.3
+for ar in $(echo_archives)
+do
+    package="${ar%.tar*}"
+    if [ ${force} -gt 0 ]; then rm -rf "${directory}/${package}"; fi
+    [ -e "${directory}/${package}" ]                                          \
+        || ( cd "${directory}" && tar -xf "${ar}" )                           \
+        || die "Cannot extract package from ${ar}"
+    unset package
+done
+unset ar
 
-wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$MPFR.tar.bz2 || exit 1
-tar xjf $MPFR.tar.bz2 || exit 1
-if test -L mpfr; then rm -f mpfr; fi
-ln -sf $MPFR mpfr || exit 1
+for ar in $(echo_archives)
+do
+    target="${directory}/${ar%.tar*}/"
+    linkname="${ar%-*}"
+    if [ ${force} -gt 0 ]; then rm -f "${linkname}"; fi
+    [ -e "${linkname}" ]                                                      \
+        || ln -s "${target}" "${linkname}"                                    \
+        || die "Cannot create symbolic link ${linkname} --> ${target}"
+    unset target linkname
+done
+unset ar
 
-wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$GMP.tar.bz2 || exit 1
-tar xjf $GMP.tar.bz2  || exit 1
-if test -L gmp; then rm -f gmp; fi
-ln -sf $GMP gmp || exit 1
-
-wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$MPC.tar.gz || exit 1
-tar xzf $MPC.tar.gz || exit 1
-if test -L mpc; then rm -f mpc; fi
-ln -sf $MPC mpc || exit 1
-
-# Necessary to build GCC with the Graphite loop optimizations.
-if [ "$GRAPHITE_LOOP_OPT" = "yes" ] ; then
-  ISL=isl-0.16.1
-
-  wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$ISL.tar.bz2 || exit 1
-  tar xjf $ISL.tar.bz2  || exit 1
-  if test -L isl; then rm -f isl; fi
-  ln -sf $ISL isl || exit 1
-fi
+echo "All prerequisites downloaded successfully."
