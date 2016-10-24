@@ -227,9 +227,26 @@ gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
 	  if ((args1->expr == NULL) ^ (args2->expr == NULL))
 	    return -2;
 
-	  if (args1->expr != NULL && args2->expr != NULL
-	      && gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
-	    return -2;
+	  if (args1->expr != NULL && args2->expr != NULL)
+	    {
+	      gfc_expr *e1, *e2;
+	      e1 = args1->expr;
+	      e2 = args2->expr;
+
+	      if (gfc_dep_compare_expr (e1, e2) != 0)
+		return -2;
+
+	      /* Special case: String arguments which compare equal can have
+		 different lengths, which makes them different in calls to
+		 procedures.  */
+	      
+	      if (e1->expr_type == EXPR_CONSTANT
+		  && e1->ts.type == BT_CHARACTER
+		  && e2->expr_type == EXPR_CONSTANT
+		  && e2->ts.type == BT_CHARACTER
+		  && e1->value.character.length != e2->value.character.length)
+		return -2;
+	    }
 
 	  args1 = args1->next;
 	  args2 = args2->next;
