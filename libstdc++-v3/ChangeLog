@@ -1,5 +1,11 @@
 2016-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/71337
+	* src/filesystem/ops.cc (temp_directory_path): Pass error_code
+	argument to other filesystem operations.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Add testcase for inaccessible directory.
+
 	* src/filesystem/dir.cc (open_dir): Return same value for errors
 	whether ignored or not.
 	(_Dir::advance(error_code*, directory_options)): Return false on

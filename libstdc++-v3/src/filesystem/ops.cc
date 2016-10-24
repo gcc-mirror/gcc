@@ -1428,12 +1428,17 @@ fs::path fs::temp_directory_path(error_code& ec)
   for (auto e = env; tmpdir == nullptr && *e != nullptr; ++e)
     tmpdir = ::getenv(*e);
   path p = tmpdir ? tmpdir : "/tmp";
-  if (exists(p) && is_directory(p))
+  auto st = status(p, ec);
+  if (!ec)
     {
-      ec.clear();
-      return p;
+      if (is_directory(st))
+	{
+	  ec.clear();
+	  return p;
+	}
+      else
+	ec = std::make_error_code(std::errc::not_a_directory);
     }
-  ec = std::make_error_code(std::errc::not_a_directory);
   return {};
 #endif
 }
