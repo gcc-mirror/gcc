@@ -495,7 +495,7 @@ gfc_finish_decl (tree decl)
   gcc_assert (TREE_CODE (decl) == PARM_DECL
 	      || DECL_INITIAL (decl) == NULL_TREE);
 
-  if (TREE_CODE (decl) != VAR_DECL)
+  if (!VAR_P (decl))
     return;
 
   if (DECL_SIZE (decl) == NULL_TREE
@@ -1020,7 +1020,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 
   if (TYPE_NAME (type) != NULL_TREE
       && GFC_TYPE_ARRAY_UBOUND (type, as->rank - 1) != NULL_TREE
-      && TREE_CODE (GFC_TYPE_ARRAY_UBOUND (type, as->rank - 1)) == VAR_DECL)
+      && VAR_P (GFC_TYPE_ARRAY_UBOUND (type, as->rank - 1)))
     {
       tree gtype = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
 
@@ -1050,8 +1050,10 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	     can be tracked by VTA.  Also set DECL_NAMELESS, so that
 	     the artificial lbound.N or ubound.N DECL_NAME doesn't
 	     end up in debug info.  */
-	  if (lbound && TREE_CODE (lbound) == VAR_DECL
-	      && DECL_ARTIFICIAL (lbound) && DECL_IGNORED_P (lbound))
+	  if (lbound
+	      && VAR_P (lbound)
+	      && DECL_ARTIFICIAL (lbound)
+	      && DECL_IGNORED_P (lbound))
 	    {
 	      if (DECL_NAME (lbound)
 		  && strstr (IDENTIFIER_POINTER (DECL_NAME (lbound)),
@@ -1059,8 +1061,10 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 		DECL_NAMELESS (lbound) = 1;
 	      DECL_IGNORED_P (lbound) = 0;
 	    }
-	  if (ubound && TREE_CODE (ubound) == VAR_DECL
-	      && DECL_ARTIFICIAL (ubound) && DECL_IGNORED_P (ubound))
+	  if (ubound
+	      && VAR_P (ubound)
+	      && DECL_ARTIFICIAL (ubound)
+	      && DECL_IGNORED_P (ubound))
 	    {
 	      if (DECL_NAME (ubound)
 		  && strstr (IDENTIFIER_POINTER (DECL_NAME (ubound)),
@@ -1514,8 +1518,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	    length = gfc_create_string_length (sym);
 	  else
 	    length = sym->ts.u.cl->backend_decl;
-	  if (TREE_CODE (length) == VAR_DECL
-	      && DECL_FILE_SCOPE_P (length))
+	  if (VAR_P (length) && DECL_FILE_SCOPE_P (length))
 	    {
 	      /* Add the string length to the same context as the symbol.  */
 	      if (DECL_CONTEXT (sym->backend_decl) == current_function_decl)
@@ -1630,7 +1633,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     {
       if (sym->attr.associate_var
 	  && sym->ts.u.cl->backend_decl
-	  && TREE_CODE (sym->ts.u.cl->backend_decl) == VAR_DECL)
+	  && VAR_P (sym->ts.u.cl->backend_decl))
 	length = gfc_index_zero_node;
       else
 	length = gfc_create_string_length (sym);
@@ -2924,8 +2927,7 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
 	length = gfc_create_string_length (sym);
       else
 	length = sym->ts.u.cl->backend_decl;
-      if (TREE_CODE (length) == VAR_DECL
-	  && DECL_CONTEXT (length) == NULL_TREE)
+      if (VAR_P (length) && DECL_CONTEXT (length) == NULL_TREE)
 	gfc_add_decl_to_function (length);
     }
 
@@ -4123,7 +4125,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
 	  /* An automatic character length, pointer array result.  */
 	  if (proc_sym->ts.type == BT_CHARACTER
-		&& TREE_CODE (proc_sym->ts.u.cl->backend_decl) == VAR_DECL)
+	      && VAR_P (proc_sym->ts.u.cl->backend_decl))
 	    {
 	      tmp = NULL;
 	      if (proc_sym->ts.deferred)
@@ -4176,7 +4178,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
 	    }
-	  else if (TREE_CODE (proc_sym->ts.u.cl->backend_decl) == VAR_DECL)
+	  else if (VAR_P (proc_sym->ts.u.cl->backend_decl))
 	    gfc_trans_dummy_character (proc_sym, proc_sym->ts.u.cl, block);
 	}
       else
@@ -4843,8 +4845,7 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 		  && strcmp (st->n.sym->module, use_stmt->module_name) == 0)
 		{
 		  gcc_assert (DECL_EXTERNAL (entry->namespace_decl)
-			      || (TREE_CODE (st->n.sym->backend_decl)
-				  != VAR_DECL));
+			      || !VAR_P (st->n.sym->backend_decl));
 		  decl = copy_node (st->n.sym->backend_decl);
 		  DECL_CONTEXT (decl) = entry->namespace_decl;
 		  DECL_EXTERNAL (decl) = 1;
@@ -5385,7 +5386,7 @@ generate_local_decl (gfc_symbol * sym)
       if (sym->attr.dummy && !sym->attr.referenced
 	    && sym->ts.type == BT_CHARACTER
 	    && sym->ts.u.cl->backend_decl != NULL
-	    && TREE_CODE (sym->ts.u.cl->backend_decl) == VAR_DECL)
+	    && VAR_P (sym->ts.u.cl->backend_decl))
 	{
 	  sym->attr.referenced = 1;
 	  gfc_get_symbol_decl (sym);

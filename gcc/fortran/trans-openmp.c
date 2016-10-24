@@ -143,9 +143,7 @@ gfc_omp_predetermined_sharing (tree decl)
      variables at all (they can't be redefined), but they can nevertheless appear
      in parallel/task regions and for default(none) purposes treat them as shared.
      For vtables likely the same handling is desirable.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      && TREE_READONLY (decl)
-      && TREE_STATIC (decl))
+  if (VAR_P (decl) && TREE_READONLY (decl) && TREE_STATIC (decl))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
@@ -1156,7 +1154,7 @@ gfc_omp_disregard_value_expr (tree decl, bool shared)
       tree value = DECL_VALUE_EXPR (decl);
 
       if (TREE_CODE (value) == COMPONENT_REF
-	  && TREE_CODE (TREE_OPERAND (value, 0)) == VAR_DECL
+	  && VAR_P (TREE_OPERAND (value, 0))
 	  && GFC_DECL_COMMON_OR_EQUIV (TREE_OPERAND (value, 0)))
 	{
 	  /* If variable in COMMON or EQUIVALENCE is privatized, return
@@ -1192,7 +1190,7 @@ gfc_omp_private_debug_clause (tree decl, bool shared)
       tree value = DECL_VALUE_EXPR (decl);
 
       if (TREE_CODE (value) == COMPONENT_REF
-	  && TREE_CODE (TREE_OPERAND (value, 0)) == VAR_DECL
+	  && VAR_P (TREE_OPERAND (value, 0))
 	  && GFC_DECL_COMMON_OR_EQUIV (TREE_OPERAND (value, 0)))
 	return shared;
     }
@@ -3001,7 +2999,7 @@ gfc_trans_omp_atomic (gfc_code *code)
   lhsaddr = save_expr (lhsaddr);
   if (TREE_CODE (lhsaddr) != SAVE_EXPR
       && (TREE_CODE (lhsaddr) != ADDR_EXPR
-	  || TREE_CODE (TREE_OPERAND (lhsaddr, 0)) != VAR_DECL))
+	  || !VAR_P (TREE_OPERAND (lhsaddr, 0))))
     {
       /* Make sure LHS is simple enough so that goa_lhs_expr_p can recognize
 	 it even after unsharing function body.  */
@@ -3233,7 +3231,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
       dovar_decl = dovar;
 
       /* Special case simple loops.  */
-      if (TREE_CODE (dovar) == VAR_DECL)
+      if (VAR_P (dovar))
 	{
 	  if (integer_onep (step))
 	    simple = 1;

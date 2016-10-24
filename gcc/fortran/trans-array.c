@@ -2373,7 +2373,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 			     offsetvar, gfc_index_one_node);
       tmp = gfc_evaluate_now (tmp, &outer_loop->pre);
       gfc_conv_descriptor_ubound_set (&loop->pre, desc, gfc_rank_cst[0], tmp);
-      if (*loop_ubound0 && TREE_CODE (*loop_ubound0) == VAR_DECL)
+      if (*loop_ubound0 && VAR_P (*loop_ubound0))
 	gfc_add_modify (&outer_loop->pre, *loop_ubound0, tmp);
       else
 	*loop_ubound0 = tmp;
@@ -2860,7 +2860,7 @@ trans_array_bound_check (gfc_se * se, gfc_ss *ss, tree index, int n,
   name = ss->info->expr->symtree->n.sym->name;
   gcc_assert (name != NULL);
 
-  if (TREE_CODE (descriptor) == VAR_DECL)
+  if (VAR_P (descriptor))
     name = IDENTIFIER_POINTER (DECL_NAME (descriptor));
 
   /* If upper bound is present, include both bounds in the error message.  */
@@ -3104,7 +3104,7 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
 	      else
 		type = NULL_TREE;
 	    }
-	  if (TREE_CODE (tmp) == VAR_DECL)
+	  if (VAR_P (tmp))
 	    break;
 	}
 
@@ -5096,8 +5096,9 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 
   /* Set the dtype before the alloc, because registration of coarrays needs
      it initialized.  */
-  if (expr->ts.type == BT_CHARACTER && expr->ts.deferred
-      && TREE_CODE (expr->ts.u.cl->backend_decl) == VAR_DECL)
+  if (expr->ts.type == BT_CHARACTER
+      && expr->ts.deferred
+      && VAR_P (expr->ts.u.cl->backend_decl))
     {
       type = gfc_typenode_for_spec (&expr->ts);
       tmp = gfc_conv_descriptor_dtype (descriptor);
@@ -5968,7 +5969,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
   /* Don't actually allocate space for Cray Pointees.  */
   if (sym->attr.cray_pointee)
     {
-      if (TREE_CODE (GFC_TYPE_ARRAY_OFFSET (type)) == VAR_DECL)
+      if (VAR_P (GFC_TYPE_ARRAY_OFFSET (type)))
 	gfc_add_modify (&init, GFC_TYPE_ARRAY_OFFSET (type), offset);
 
       gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
@@ -6001,7 +6002,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
     }
 
   /* Set offset of the array.  */
-  if (TREE_CODE (GFC_TYPE_ARRAY_OFFSET (type)) == VAR_DECL)
+  if (VAR_P (GFC_TYPE_ARRAY_OFFSET (type)))
     gfc_add_modify (&init, GFC_TYPE_ARRAY_OFFSET (type), offset);
 
   /* Automatic arrays should not have initializers.  */
@@ -6054,14 +6055,14 @@ gfc_trans_g77_array (gfc_symbol * sym, gfc_wrapped_block * block)
   gfc_start_block (&init);
 
   if (sym->ts.type == BT_CHARACTER
-      && TREE_CODE (sym->ts.u.cl->backend_decl) == VAR_DECL)
+      && VAR_P (sym->ts.u.cl->backend_decl))
     gfc_conv_string_length (sym->ts.u.cl, NULL, &init);
 
   /* Evaluate the bounds of the array.  */
   gfc_trans_array_bounds (type, sym, &offset, &init);
 
   /* Set the offset.  */
-  if (TREE_CODE (GFC_TYPE_ARRAY_OFFSET (type)) == VAR_DECL)
+  if (VAR_P (GFC_TYPE_ARRAY_OFFSET (type)))
     gfc_add_modify (&init, GFC_TYPE_ARRAY_OFFSET (type), offset);
 
   /* Set the pointer itself if we aren't using the parameter directly.  */
@@ -6160,7 +6161,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
   gfc_start_block (&init);
 
   if (sym->ts.type == BT_CHARACTER
-      && TREE_CODE (sym->ts.u.cl->backend_decl) == VAR_DECL)
+      && VAR_P (sym->ts.u.cl->backend_decl))
     gfc_conv_string_length (sym->ts.u.cl, NULL, &init);
 
   checkparm = (as->type == AS_EXPLICIT
@@ -6384,7 +6385,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
   gfc_trans_array_cobounds (type, &init, sym);
 
   /* Set the offset.  */
-  if (TREE_CODE (GFC_TYPE_ARRAY_OFFSET (type)) == VAR_DECL)
+  if (VAR_P (GFC_TYPE_ARRAY_OFFSET (type)))
     gfc_add_modify (&init, GFC_TYPE_ARRAY_OFFSET (type), offset);
 
   gfc_trans_vla_type_sizes (sym, &init);
@@ -8977,7 +8978,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tmp = gfc_conv_descriptor_offset (desc);
   gfc_add_modify (&fblock, tmp, offset);
   if (linfo->saved_offset
-      && TREE_CODE (linfo->saved_offset) == VAR_DECL)
+      && VAR_P (linfo->saved_offset))
     gfc_add_modify (&fblock, linfo->saved_offset, tmp);
 
   /* Now set the deltas for the lhs.  */
@@ -8988,8 +8989,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
       tmp = fold_build2_loc (input_location, MINUS_EXPR,
 			     gfc_array_index_type, tmp,
 			     loop->from[dim]);
-      if (linfo->delta[dim]
-	  && TREE_CODE (linfo->delta[dim]) == VAR_DECL)
+      if (linfo->delta[dim] && VAR_P (linfo->delta[dim]))
 	gfc_add_modify (&fblock, linfo->delta[dim], tmp);
     }
 
@@ -8998,7 +8998,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
     {
       if (expr2->ts.deferred)
 	{
-	  if (TREE_CODE (expr2->ts.u.cl->backend_decl) == VAR_DECL)
+	  if (VAR_P (expr2->ts.u.cl->backend_decl))
 	    tmp = expr2->ts.u.cl->backend_decl;
 	  else
 	    tmp = rss->info->string_length;
@@ -9016,7 +9016,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 	}
 
       if (expr1->ts.u.cl->backend_decl
-	  && TREE_CODE (expr1->ts.u.cl->backend_decl) == VAR_DECL)
+	  && VAR_P (expr1->ts.u.cl->backend_decl))
 	gfc_add_modify (&fblock, expr1->ts.u.cl->backend_decl, tmp);
       else
 	gfc_add_modify (&fblock, lss->info->string_length, tmp);
@@ -9182,8 +9182,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   gfc_add_expr_to_block (&fblock, tmp);
 
   /* Make sure that the scalarizer data pointer is updated.  */
-  if (linfo->data
-      && TREE_CODE (linfo->data) == VAR_DECL)
+  if (linfo->data && VAR_P (linfo->data))
     {
       tmp = gfc_conv_descriptor_data_get (desc);
       gfc_add_modify (&fblock, linfo->data, tmp);
@@ -9227,8 +9226,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   gfc_set_backend_locus (&sym->declared_at);
   gfc_init_block (&init);
 
-  gcc_assert (TREE_CODE (sym->backend_decl) == VAR_DECL
-		|| TREE_CODE (sym->backend_decl) == PARM_DECL);
+  gcc_assert (VAR_P (sym->backend_decl)
+	      || TREE_CODE (sym->backend_decl) == PARM_DECL);
 
   if (sym->ts.type == BT_CHARACTER
       && !INTEGER_CST_P (sym->ts.u.cl->backend_decl))

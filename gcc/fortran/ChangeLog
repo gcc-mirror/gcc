@@ -1,3 +1,28 @@
+2016-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax): Use VAR_P (x)
+	instead of TREE_CODE (x) == VAR_DECL.
+	* trans-expr.c (gfc_class_vptr_get, gfc_class_len_get,
+	gfc_class_len_or_zero_get, gfc_get_vptr_from_expr,
+	gfc_conv_string_length, conv_base_obj_fcn_val,
+	gfc_conv_procedure_call, gfc_trans_assignment_1): Likewise.
+	* trans-openmp.c (gfc_omp_predetermined_sharing,
+	gfc_omp_disregard_value_expr, gfc_omp_private_debug_clause,
+	gfc_trans_omp_atomic, gfc_trans_omp_do): Likewise.
+	* trans-io.c (nml_get_addr_expr): Likewise.
+	* trans-decl.c (gfc_finish_decl, gfc_build_qualified_array,
+	gfc_get_symbol_decl, gfc_get_fake_result_decl,
+	gfc_trans_deferred_vars, gfc_trans_use_stmts,
+	generate_local_decl): Likewise.
+	* trans-array.c (trans_array_constructor, trans_array_bound_check,
+	build_class_array_ref, gfc_array_init_size,
+	gfc_trans_auto_array_allocation, gfc_trans_g77_array,
+	gfc_trans_dummy_array_bias, gfc_alloc_allocatable_for_assignment,
+	gfc_trans_deferred_array): Likewise.
+	* trans.c (gfc_build_array_ref): Likewise.  Use
+	VAR_OR_FUNCTION_DECL_P (x) instead of TREE_CODE (x) == VAR_DECL
+	|| TREE_CODE (x) == FUNCTION_DECL.
+
 2016-10-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77763

@@ -1573,10 +1573,10 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
   else
     decl = c->backend_decl;
 
-  gcc_assert (decl && ((TREE_CODE (decl) == FIELD_DECL
-		     || TREE_CODE (decl) == VAR_DECL
-		     || TREE_CODE (decl) == PARM_DECL)
-		     || TREE_CODE (decl) == COMPONENT_REF));
+  gcc_assert (decl && (TREE_CODE (decl) == FIELD_DECL
+		       || VAR_P (decl)
+		       || TREE_CODE (decl) == PARM_DECL
+		       || TREE_CODE (decl) == COMPONENT_REF));
 
   tmp = decl;
 
