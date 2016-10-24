@@ -335,7 +335,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
      references.  */
   if (type && TREE_CODE (type) == ARRAY_TYPE
       && TYPE_MAXVAL (TYPE_DOMAIN (type)) != NULL_TREE
-      && (TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == VAR_DECL
+      && (VAR_P (TYPE_MAXVAL (TYPE_DOMAIN (type)))
 	  || TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == INDIRECT_REF)
       && decl
       && (TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == INDIRECT_REF
@@ -356,9 +356,8 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
      subreference, use the span that is stored with the backend decl
      and reference the element with pointer arithmetic.  */
   if ((decl && (TREE_CODE (decl) == FIELD_DECL
-		|| TREE_CODE (decl) == VAR_DECL
-		|| TREE_CODE (decl) == PARM_DECL
-		|| TREE_CODE (decl) == FUNCTION_DECL)
+		|| VAR_OR_FUNCTION_DECL_P (decl)
+		|| TREE_CODE (decl) == PARM_DECL)
        && ((GFC_DECL_SUBREF_ARRAY_P (decl)
 	    && !integer_zerop (GFC_DECL_SPAN (decl)))
 	   || GFC_DECL_CLASS (decl)

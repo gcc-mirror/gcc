@@ -3653,7 +3653,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
   if (TREE_TYPE (args[0]) != type)
     args[0] = convert (type, args[0]);
   /* Only evaluate the argument once.  */
-  if (TREE_CODE (args[0]) != VAR_DECL && !TREE_CONSTANT (args[0]))
+  if (!VAR_P (args[0]) && !TREE_CONSTANT (args[0]))
     args[0] = gfc_evaluate_now (args[0], &se->pre);
 
   mvar = gfc_create_var (type, "M");
@@ -3677,7 +3677,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	cond = NULL_TREE;
 
 	/* Only evaluate the argument once.  */
-	if (TREE_CODE (val) != VAR_DECL && !TREE_CONSTANT (val))
+	if (!VAR_P (val) && !TREE_CONSTANT (val))
 	  val = gfc_evaluate_now (val, &se->pre);
       }
 
