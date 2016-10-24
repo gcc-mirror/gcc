@@ -33369,6 +33369,88 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	    }
 	  break;
 
+	case IX86_BUILTIN_BEXTR32:
+	case IX86_BUILTIN_BEXTR64:
+	case IX86_BUILTIN_BEXTRI32:
+	case IX86_BUILTIN_BEXTRI64:
+	  gcc_assert (n_args == 2);
+	  if (tree_fits_uhwi_p (args[1]))
+	    {
+	      unsigned HOST_WIDE_INT res = 0;
+	      unsigned int prec = TYPE_PRECISION (TREE_TYPE (args[0]));
+	      unsigned int start = tree_to_uhwi (args[1]);
+	      unsigned int len = (start & 0xff00) >> 8;
+	      start &= 0xff;
+	      if (start >= prec || len == 0)
+		res = 0;
+	      else if (!tree_fits_uhwi_p (args[0]))
+		break;
+	      else
+		res = tree_to_uhwi (args[0]) >> start;
+	      if (len > prec)
+		len = prec;
+	      if (len < HOST_BITS_PER_WIDE_INT)
+		res &= (HOST_WIDE_INT_1U << len) - 1;
+	      return build_int_cstu (TREE_TYPE (TREE_TYPE (fndecl)), res);
+	    }
+	  break;
+
+	case IX86_BUILTIN_BZHI32:
+	case IX86_BUILTIN_BZHI64:
+	  gcc_assert (n_args == 2);
+	  if (tree_fits_uhwi_p (args[1]))
+	    {
+	      unsigned int idx = tree_to_uhwi (args[1]) & 0xff;
+	      if (idx >= TYPE_PRECISION (TREE_TYPE (args[0])))
+		return args[0];
+	      if (!tree_fits_uhwi_p (args[0]))
+		break;
+	      unsigned HOST_WIDE_INT res = tree_to_uhwi (args[0]);
+	      res &= ~(HOST_WIDE_INT_M1U << idx);
+	      return build_int_cstu (TREE_TYPE (TREE_TYPE (fndecl)), res);
+	    }
+	  break;
+
+	case IX86_BUILTIN_PDEP32:
+	case IX86_BUILTIN_PDEP64:
+	  gcc_assert (n_args == 2);
+	  if (tree_fits_uhwi_p (args[0]) && tree_fits_uhwi_p (args[1]))
+	    {
+	      unsigned HOST_WIDE_INT src = tree_to_uhwi (args[0]);
+	      unsigned HOST_WIDE_INT mask = tree_to_uhwi (args[1]);
+	      unsigned HOST_WIDE_INT res = 0;
+	      unsigned HOST_WIDE_INT m, k = 1;
+	      for (m = 1; m; m <<= 1)
+		if ((mask & m) != 0)
+		  {
+		    if ((src & k) != 0)
+		      res |= m;
+		    k <<= 1;
+		  }
+	      return build_int_cstu (TREE_TYPE (TREE_TYPE (fndecl)), res);
+	    }
+	  break;
+
+	case IX86_BUILTIN_PEXT32:
+	case IX86_BUILTIN_PEXT64:
+	  gcc_assert (n_args == 2);
+	  if (tree_fits_uhwi_p (args[0]) && tree_fits_uhwi_p (args[1]))
+	    {
+	      unsigned HOST_WIDE_INT src = tree_to_uhwi (args[0]);
+	      unsigned HOST_WIDE_INT mask = tree_to_uhwi (args[1]);
+	      unsigned HOST_WIDE_INT res = 0;
+	      unsigned HOST_WIDE_INT m, k = 1;
+	      for (m = 1; m; m <<= 1)
+		if ((mask & m) != 0)
+		  {
+		    if ((src & m) != 0)
+		      res |= k;
+		    k <<= 1;
+		  }
+	      return build_int_cstu (TREE_TYPE (TREE_TYPE (fndecl)), res);
+	    }
+	  break;
+
 	default:
 	  break;
 	}
@@ -33393,7 +33475,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   int n_args = gimple_call_num_args (stmt);
   enum ix86_builtins fn_code = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
   tree decl = NULL_TREE;
-  tree arg0;
+  tree arg0, arg1;
 
   switch (fn_code)
     {
@@ -33432,6 +33514,41 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  gimple_call_set_lhs (g, lhs);
 	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 	  g = gimple_build_assign (gimple_call_lhs (stmt), NOP_EXPR, lhs);
+	  gimple_set_location (g, loc);
+	  gsi_replace (gsi, g, true);
+	  return true;
+	}
+      break;
+
+    case IX86_BUILTIN_BZHI32:
+    case IX86_BUILTIN_BZHI64:
+      gcc_assert (n_args == 2);
+      arg1 = gimple_call_arg (stmt, 1);
+      if (tree_fits_uhwi_p (arg1) && gimple_call_lhs (stmt))
+	{
+	  unsigned int idx = tree_to_uhwi (arg1) & 0xff;
+	  arg0 = gimple_call_arg (stmt, 0);
+	  if (idx < TYPE_PRECISION (TREE_TYPE (arg0)))
+	    break;
+	  location_t loc = gimple_location (stmt);
+	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
+	  gimple_set_location (g, loc);
+	  gsi_replace (gsi, g, true);
+	  return true;
+	}
+      break;
+
+    case IX86_BUILTIN_PDEP32:
+    case IX86_BUILTIN_PDEP64:
+    case IX86_BUILTIN_PEXT32:
+    case IX86_BUILTIN_PEXT64:
+      gcc_assert (n_args == 2);
+      arg1 = gimple_call_arg (stmt, 1);
+      if (integer_all_onesp (arg1) && gimple_call_lhs (stmt))
+	{
+	  location_t loc = gimple_location (stmt);
+	  arg0 = gimple_call_arg (stmt, 0);
+	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, true);
 	  return true;

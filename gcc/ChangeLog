@@ -1,3 +1,11 @@
+2016-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_fold_builtin): Handle
+	IX86_BUILTIN_BEXTR{,I}{32,64}, IX86_BUILTIN_BZHI{32,64},
+	IX86_BUILTIN_PDEP{32,64} and IX86_BUILTIN_PEXT{32,64}.
+	(ix86_gimple_fold_builtin): Handle IX86_BUILTIN_BZHI{32,64},
+	IX86_BUILTIN_PDEP{32,64} and IX86_BUILTIN_PEXT{32,64}.
+
 2016-10-24  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/77966
