@@ -10693,12 +10693,29 @@ edge
 evrp_dom_walker::before_dom_children (basic_block bb)
 {
   tree op0 = NULL_TREE;
+  edge_iterator ei;
+  edge e;
 
   push_value_range (NULL_TREE, NULL);
-  if (single_pred_p (bb))
+
+  edge pred_e = NULL;
+  FOR_EACH_EDGE (e, ei, bb->preds)
     {
-      edge e = single_pred_edge (bb);
-      gimple *stmt = last_stmt (e->src);
+      /* Ignore simple backedges from this to allow recording conditions
+	 in loop headers.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	continue;
+      if (! pred_e)
+	pred_e = e;
+      else
+	{
+	  pred_e = NULL;
+	  break;
+	}
+    }
+  if (pred_e)
+    {
+      gimple *stmt = last_stmt (pred_e->src);
       if (stmt
 	  && gimple_code (stmt) == GIMPLE_COND
 	  && (op0 = gimple_cond_lhs (stmt))
@@ -10715,7 +10732,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	    op1 = drop_tree_overflow (op1);
 
 	  /* If condition is false, invert the cond.  */
-	  if (e->flags & EDGE_FALSE_VALUE)
+	  if (pred_e->flags & EDGE_FALSE_VALUE)
 	    code = invert_tree_comparison (gimple_cond_code (stmt),
 					   HONOR_NANS (op0));
 	  /* Add VR when (OP0 CODE OP1) condition is true.  */
@@ -10743,11 +10760,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
     }
 
   /* Visit PHI stmts and discover any new VRs possible.  */
-  gimple_stmt_iterator gsi;
-  edge e;
-  edge_iterator ei;
   bool has_unvisited_preds = false;
-
   FOR_EACH_EDGE (e, ei, bb->preds)
     if (e->flags & EDGE_EXECUTABLE
 	&& !(e->src->flags & BB_VISITED))
@@ -10761,12 +10774,26 @@ evrp_dom_walker::before_dom_children (basic_block bb)
     {
       gphi *phi = gpi.phi ();
       tree lhs = PHI_RESULT (phi);
+      if (virtual_operand_p (lhs))
+	continue;
       value_range vr_result = VR_INITIALIZER;
+      bool interesting = stmt_interesting_for_vrp (phi);
       if (!has_unvisited_preds
-	  && stmt_interesting_for_vrp (phi))
+	  && interesting)
 	extract_range_from_phi_node (phi, &vr_result);
       else
-	set_value_range_to_varying (&vr_result);
+	{
+	  set_value_range_to_varying (&vr_result);
+	  /* When we have an unvisited executable predecessor we can't
+	     use PHI arg ranges which may be still UNDEFINED but have
+	     to use VARYING for them.  But we can still resort to
+	     SCEV for loop header PHIs.  */
+	  struct loop *l;
+	  if (interesting
+	      && (l = loop_containing_stmt (phi))
+	      && l->header == gimple_bb (phi))
+	    adjust_range_with_scev (&vr_result, l, phi, lhs);
+	}
       update_value_range (lhs, &vr_result);
 
       /* Mark PHIs whose lhs we fully propagate for removal.  */
@@ -10778,7 +10805,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
   edge taken_edge = NULL;
 
   /* Visit all other stmts and discover any new VRs possible.  */
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+       !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
       tree output = NULL_TREE;

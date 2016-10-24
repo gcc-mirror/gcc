@@ -1,3 +1,9 @@
+2016-10-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/cunroll-13.c: Disable EVRP.
+	* gcc.dg/tree-ssa/pr21458.c: Likewise.
+	* gcc.dg/tree-ssa/pr21458-2.c: New testcase for EVRP.
+
 2016-10-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/78093
