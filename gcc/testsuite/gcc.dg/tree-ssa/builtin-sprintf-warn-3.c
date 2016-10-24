@@ -175,9 +175,9 @@ void test_sprintf_chk_range_schar (signed char *a)
   T ( 3, "%i",  R (  0, 100));  /* { dg-warning "may write a terminating nul past the end of the destination" } */
 
   /* The following call may write as few as 3 bytes and as many as 5.
-     It's judgment call how best to diagnose it to make the potential
+     It's a judgment call how best to diagnose it to make the potential
      problem clear.  */
-  T ( 3, "%i%i", R (1, 10), R (9, 10));   /* { dg-warning ".%i. directive writing between 1 and 2 bytes into a region of size 1" } */
+  T ( 3, "%i%i", R (1, 10), R (9, 10));   /* { dg-warning "may write a terminating nul past the end|.%i. directive writing between 1 and 2 bytes into a region of size 1" } */
 
   T ( 4, "%i%i", R (10, 11), R (12, 13));   /* { dg-warning "nul past the end" } */
 
@@ -187,7 +187,7 @@ void test_sprintf_chk_range_schar (signed char *a)
   T ( 6, "%i_%i_%i", R (0, 9), R (0, 9), R (0, 10));  /* { dg-warning "may write a terminating nul past the end" } */
   T ( 6, "%i_%i_%i", R (0, 9), R (0, 10), R (0, 9));  /* { dg-warning "may write a terminating nul past the end" } */
   T ( 6, "%i_%i_%i", R (0, 10), R (0, 9), R (0, 9));  /* { dg-warning "may write a terminating nul past the end" } */
-  T ( 6, "%i_%i_%i", R (0, 9), R (0, 10), R (0, 10)); /* { dg-warning ".%i. directive writing between 1 and 2 bytes into a region of size 1" } */
+  T ( 6, "%i_%i_%i", R (0, 9), R (0, 10), R (0, 10)); /* { dg-warning "may write a terminating nul past the end|.%i. directive writing between 1 and 2 bytes into a region of size 1" } */
 }
 
 void test_sprintf_chk_range_uchar (unsigned char *a, unsigned char *b)

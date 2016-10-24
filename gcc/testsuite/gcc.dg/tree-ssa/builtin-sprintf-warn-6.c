@@ -88,5 +88,5 @@ void fllong (long j, char *p)
   if (k > 999)
     return;
 
-  snprintf (p, 4, "%3llu", k);   /* { dg-bogus "" "unsigned long long" { xfail *-*-* } } */
+  snprintf (p, 4, "%3llu", k);   /* { dg-bogus "" "unsigned long long" { xfail lp64 } } */
 }

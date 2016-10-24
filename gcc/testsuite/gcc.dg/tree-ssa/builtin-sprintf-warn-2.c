@@ -47,10 +47,13 @@ void test_s_const (void)
   T (1, "%*ls",  0, L"\0");
   T (1, "%*ls",  1, L"");       /* { dg-warning "nul past the end" } */
 
-  T (1, "%ls",      L"1");      /* { dg-warning "nul past the end" } */
+  T (1, "%ls",      L"1");      /* { dg-warning "directive writing between 1 and 6 bytes into a region of size 1" } */
   T (1, "%.0ls",    L"1");
   T (2, "%.0ls",    L"1");
   T (2, "%.1ls",    L"1");
+  T (2, "%.2ls",    L"1");      /* { dg-warning "nul past the end" } */
+  T (2, "%.3ls",    L"1");      /* { dg-warning "directive writing between 1 and 3 bytes into a region of size 2" } */
+  T (2, "%.2ls",    L"12");     /* { dg-warning "nul past the end" } */
 
   /* The "%.2ls" directive below will write at a minimum 1 byte (because
      L"1" is known and can be assumed to convert to at least one multibyte
@@ -64,6 +67,12 @@ void test_s_const (void)
   T (2, "%.0ls",    L"1");
   T (2, "%.1ls",    L"1");
   T (3, "%.2ls",    L"1");
+  T (3, "%.2ls",    L"12");
+  T (3, "%.3ls",    L"12");     /* { dg-warning "nul past the end" } */
+  T (4, "%.3ls",    L"123");
+  T (4, "%.4ls",    L"123");    /* { dg-warning "nul past the end" } */
+  T (4, "%.5ls",    L"123");    /* { dg-warning "directive writing between 3 and 5 bytes into a region of size 4" } */
+  T (4, "%.6ls",    L"123");    /* { dg-warning "directive writing between 3 and 6 bytes into a region of size 4" } */
 }
 
 
@@ -86,7 +95,9 @@ void test_s_nonconst (const char *s, const wchar_t *ws, struct Arrays *a)
   T (1, "%.0s", s);
   T (1, "%.1s", s);             /* { dg-warning "writing a terminating nul" } */
 
-  T (1, "%ls",  ws);            /* { dg-warning "writing a terminating nul" } */
+  T (1, "%.0ls",  ws);
+  T (1, "%.1ls",  ws);          /* { dg-warning "writing a terminating nul" } */
+  T (1, "%ls",    ws);          /* { dg-warning "writing a terminating nul" } */
 
   /* Verify that the size of the array is used in lieu of its length.
      The minus sign disables GCC's sprintf to strcpy transformation.  */
