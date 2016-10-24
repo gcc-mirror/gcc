@@ -3327,6 +3327,11 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	return c_common_truthvalue_conversion (location,
 					       TREE_OPERAND (expr, 0));
 
+    case MULT_EXPR:
+      warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
+		  "%<*%> in boolean context, suggest %<&&%> instead");
+      break;
+
     case LSHIFT_EXPR:
       /* We will only warn on signed shifts here, because the majority of
 	 false positive warnings happen in code where unsigned arithmetic
@@ -3336,7 +3341,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
 	  && !TYPE_UNSIGNED (TREE_TYPE (expr)))
 	warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
-		    "<< in boolean context, did you mean '<' ?");
+		    "%<<<%> in boolean context, did you mean %<<%> ?");
       break;
 
     case COND_EXPR:
