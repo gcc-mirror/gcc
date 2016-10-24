@@ -1,3 +1,19 @@
+2016-10-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-10-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/77916
+	* gimple-ssa-strength-reduction.c (create_add_on_incoming_edge):
+	Don't allow a MINUS_EXPR for pointer arithmetic for either known
+	or unknown strides.
+	(record_increment): Increments of -1 for unknown strides just use
+	a multiply initializer like other negative values.
+	(analyze_increments): Remove stopgap solution for -1 increment
+	applied to pointer arithmetic.
+	(insert_initializers): Requirement of initializer for -1 should be
+	based on pointer-typedness of the candidate basis.
+
 2016-10-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/77991
