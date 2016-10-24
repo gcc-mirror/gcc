@@ -1,3 +1,8 @@
+2016-10-24  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/77966
+	* opts.c (finish_options): Skip conditionally.
+
 2016-10-23  Martin Sebor  <msebor@redhat.com>
 
 	PR target/77837

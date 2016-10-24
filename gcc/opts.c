@@ -973,7 +973,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     opts->x_flag_delete_null_pointer_checks = 0;
 
   /* Aggressive compiler optimizations may cause false negatives.  */
-  if (opts->x_flag_sanitize)
+  if (opts->x_flag_sanitize & ~(SANITIZE_LEAK | SANITIZE_UNREACHABLE))
     {
       opts->x_flag_aggressive_loop_optimizations = 0;
       opts->x_flag_strict_overflow = 0;
