@@ -191,16 +191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Copy the state of another object.
     any& operator=(const any& __rhs)
     {
-      if (__rhs.empty())
-	clear();
-      else if (this != &__rhs)
-	{
-	  if (!empty())
-	    _M_manager(_Op_destroy, this, nullptr);
-	  _Arg __arg;
-	  __arg._M_any = this;
-	  __rhs._M_manager(_Op_clone, &__rhs, &__arg);
-	}
+      *this = any(__rhs);
       return *this;
     }
 
@@ -215,8 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	clear();
       else if (this != &__rhs)
 	{
-	  if (!empty())
-	    _M_manager(_Op_destroy, this, nullptr);
+	  clear();
 	  _Arg __arg;
 	  __arg._M_any = this;
 	  __rhs._M_manager(_Op_xfer, &__rhs, &__arg);
@@ -485,7 +475,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__ptr->~_Tp();
 	break;
       case _Op_xfer:
-	::new(&__arg->_M_any->_M_storage._M_buffer) _Tp(*__ptr);
+	::new(&__arg->_M_any->_M_storage._M_buffer) _Tp
+	  (std::move(*const_cast<_Tp*>(__ptr)));
 	__ptr->~_Tp();
 	__arg->_M_any->_M_manager = __any->_M_manager;
 	const_cast<any*>(__any)->_M_manager = nullptr;
