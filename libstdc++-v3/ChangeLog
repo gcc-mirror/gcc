@@ -1,5 +1,9 @@
 2016-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/ops.cc (close_fd): Remove.
+	(do_copy_file): Just use close(3) instead of close_fd, to prevent
+	retrying on error.
+
 	* src/filesystem/ops.cc (do_copy_file): Return an error if either
 	source or destination is not a regular file.
 	(copy): Update comment to refer to LWG 2681. Implement 2682 and 2683

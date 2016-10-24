@@ -308,17 +308,6 @@ namespace
     return fs::file_time_type{seconds{s} + ns};
   }
 
-  // Returns true if the file descriptor was successfully closed,
-  // otherwise returns false and the reason will be in errno.
-  inline bool
-  close_fd(int fd)
-  {
-    while (::close(fd))
-      if (errno != EINTR)
-	return false;
-    return true;
-  }
-
   bool
   do_copy_file(const fs::path& from, const fs::path& to,
 	       fs::copy_options option,
@@ -405,8 +394,8 @@ namespace
       }
 
     struct CloseFD {
-      ~CloseFD() { if (fd != -1) close_fd(fd); }
-      bool close() { return close_fd(std::exchange(fd, -1)); }
+      ~CloseFD() { if (fd != -1) ::close(fd); }
+      bool close() { return ::close(std::exchange(fd, -1)) == 0; }
       int fd;
     };
 
