@@ -424,6 +424,15 @@ typedef struct st_parameter_dt
   CHARACTER2 (advance);
   CHARACTER1 (internal_unit);
   CHARACTER2 (namelist_name);
+  GFC_INTEGER_4 *id;
+  GFC_IO_INT pos;
+  CHARACTER1 (asynchronous);
+  CHARACTER2 (blank);
+  CHARACTER1 (decimal);
+  CHARACTER2 (delim);
+  CHARACTER1 (pad);
+  CHARACTER2 (round);
+  CHARACTER1 (sign);
   /* Private part of the structure.  The compiler just needs
      to reserve enough space.  */
   union
@@ -440,7 +449,8 @@ typedef struct st_parameter_dt
 	  unit_blank blank_status;
 	  unit_sign sign_status;
 	  int scale_factor;
-	  int max_pos; /* Maximum righthand column written to.  */
+	  /* Maximum righthand column written to.  */
+	  int max_pos;
 	  /* Number of skips + spaces to be done for T and X-editing.  */
 	  int skips;
 	  /* Number of spaces to be done for T and X-editing.  */
@@ -494,8 +504,7 @@ typedef struct st_parameter_dt
 	     are an unsigned char, EOF, or EOF - 1 used to mark the
 	     field as not valid.  */
 	  int last_char; /* No longer used, moved to gfc_unit.  */
-	  char nml_delim;
-
+	  int nml_delim;
 	  int repeat_count;
 	  int saved_length;
 	  int saved_used;
@@ -523,15 +532,6 @@ typedef struct st_parameter_dt
 	 must be smaller or equal to this array.  */
       char pad[16 * sizeof (char *) + 32 * sizeof (int)];
     } u;
-  GFC_INTEGER_4 *id;
-  GFC_IO_INT pos;
-  CHARACTER1 (asynchronous);
-  CHARACTER2 (blank);
-  CHARACTER1 (decimal);
-  CHARACTER2 (delim);
-  CHARACTER1 (pad);
-  CHARACTER2 (round);
-  CHARACTER1 (sign);
 }
 st_parameter_dt;
 

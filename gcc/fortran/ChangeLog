@@ -1,3 +1,10 @@
+2016-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/77828
+	* ioparm.def: Reorder dt parameters to match libgfortran.
+	* libgfortran.h: Swap definitions of GFC_INTERNAL_UNIT and
+	GFC_INTERNAL_UNIT4.
+
 2016-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/71895
