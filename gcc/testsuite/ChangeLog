@@ -1,3 +1,14 @@
+2016-10-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77735
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Add test cases.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-2.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Adjust/relax.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-4.c: Add test cases.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-6.c: XFAIL for LP64 only.
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Add test cases.
+
 2016-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/71491

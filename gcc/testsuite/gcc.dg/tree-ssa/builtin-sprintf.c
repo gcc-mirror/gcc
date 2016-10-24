@@ -359,23 +359,27 @@ test_x (unsigned char uc, unsigned short us, unsigned ui)
 }
 
 static void __attribute__ ((noinline, noclone))
-test_a_double (void)
+test_a_double (double d)
 {
-  EQL ( 6,  7, "%a",   0.0);        /* 0x0p+0 */
-  EQL ( 6,  7, "%a",   1.0);        /* 0x8p-3 */
-  EQL ( 6,  7, "%a",   2.0);        /* 0x8p-2 */
-
+  EQL ( 6,  7, "%.0a", 0.0);        /* 0x0p+0 */
+  EQL ( 6,  7, "%.0a", 1.0);        /* 0x8p-3 */
+  EQL ( 6,  7, "%.0a", 2.0);        /* 0x8p-2 */
   EQL ( 8,  9, "%.1a", 3.0);        /* 0xc.0p-2 */
-  EQL ( 9, 10, "%.2a", 4.0);        /* 0xa.00p-1 */
+  EQL ( 9, 10, "%.2a", 4.0);        /* 0x8.00p-1 */
+  EQL (10, 11, "%.3a", 5.0);        /* 0xa.000p-1 */
+
+	                            /* d is in [ 0, -DBL_MAX ] */
+  RNG ( 6, 10, 11, "%.0a", d);      /* 0x0p+0 ... -0x2p+1023 */
+  RNG ( 6, 12, 13, "%.1a", d);      /* 0x0p+0 ... -0x2.0p+1023 */
+  RNG ( 6, 13, 14, "%.2a", d);      /* 0x0p+0 ... -0x2.00p+1023 */
 }
 
 static void __attribute__ ((noinline, noclone))
 test_a_long_double (void)
 {
-  EQL ( 6,  7, "%La",   0.0L);      /* 0x0p+0 */
-  EQL ( 6,  7, "%La",   1.0L);      /* 0x8p-3 */
-  EQL ( 6,  7, "%La",   2.0L);      /* 0x8p-2 */
-
+  EQL ( 6,  7, "%.0La", 0.0L);      /* 0x0p+0 */
+  EQL ( 6,  7, "%.0La", 1.0L);      /* 0x8p-3 */
+  EQL ( 6,  7, "%.0La", 2.0L);      /* 0x8p-2 */
   EQL ( 8,  9, "%.1La", 3.0L);      /* 0xc.0p-2 */
   EQL ( 9, 10, "%.2La", 4.0L);      /* 0xa.00p-1 */
 }
@@ -525,7 +529,7 @@ int main (void)
   test_d_i (0xdeadbeef, 0xdeadbeefL);
   test_x ('?', 0xdead, 0xdeadbeef);
 
-  test_a_double ();
+  test_a_double (0.0);
   test_e_double ();
   test_f_double ();
 

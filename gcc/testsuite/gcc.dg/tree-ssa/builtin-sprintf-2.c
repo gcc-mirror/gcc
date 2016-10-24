@@ -1,5 +1,5 @@
 /* Test to verify that the return value of calls to __builtin_sprintf
-   is not folded if the call has undefined behavior even if it would
+   is not folded if the call isn't fully specified, even if it would
    otherwise produce a known number of bytes on output, and that if
    the return value is in a known range the range is not made
    available to subsequent passes and doesn't affect branching and
@@ -22,7 +22,8 @@ char buf8k [8192];
 #define CAT(a, b)      concat (a, b)
 
 #define EQL(expect, size, fmt, ...)					\
-  void CAT (test_on_line_, __LINE__)(void)				\
+  void __attribute__ ((noinline, noclone))				\
+  CAT (test_on_line_, __LINE__)(void)					\
   {									\
     if (!LINE || LINE == __LINE__)					\
       {									\
@@ -37,7 +38,8 @@ char buf8k [8192];
    to the formatted function is not treated as a constant or made available
    to subsequent optimization passes.  */
 #define RNG(min, max, size, fmt, ...)					\
-  void CAT (test_on_line_, __LINE__)(void)				\
+  void __attribute__ ((noinline, noclone))				\
+  CAT (test_on_line_, __LINE__)(void)					\
   {									\
     if (!LINE || LINE == __LINE__)					\
       {									\
@@ -51,6 +53,9 @@ char buf8k [8192];
 extern int i;
 extern long li;
 extern char *str;
+
+extern double d;
+extern long double ld;
 
 /* Verify that overflowing the destination object disables the return
    value optimization.  */
@@ -78,7 +83,15 @@ enum { imax2 = (INT_MAX / 2) * 2 };
 EQL (imax2, -1, "%*c%*c", INT_MAX / 2, 'x', INT_MAX / 2, 'y');
 
 /* Verify that range information for calls that overflow the destination
-   isn't available.  */
+   isn't available.
+
+     +-- lower bound of the tested range
+     |   +-- upper bound of the tested range
+     |   |   +-- size of destination buffer
+     |   |   |  +-- format string
+     |   |   |  |       +-- argument(s)
+     |   |   |  |       |
+     V   V   V  V       V  */
 RNG (0,  0,  0, "%hhi", i)
 RNG (0,  0,  1, "%hhi", i)
 RNG (0,  1,  1, "%hhi", i)
@@ -190,10 +203,35 @@ RNG (0, 10, 10, "%i", i)
 
 #endif
 
+/* Verify that the output of a "%a" directive with no precision is not
+   considered constant or within a known range (the number of digits
+   after the decimal point is unspecified in this case).  The hardcoded
+   ranges correspond to Glibc values.  */
+RNG (6,  6,  7, "%a",       0.0)    /* Glibc output: "0x0p+0"  */
+RNG (6,  6,  7, "%a",       d)
+RNG (6,  6,  7, "%.4096a",  d)
+
+RNG (6,  6,  7, "%La",      0.0L)   /* Glibc output: "0x0p+0"  */
+RNG (6,  6,  7, "%La",      ld)
+RNG (6,  6,  7, "%.4096La", ld)
+
+/* Verify that the result of formatting an unknown string isn't optimized
+   into a non-negative range.  The string could be longer that 4,095 bytes,
+   resulting in the formatting function having undefined behavior (and
+   returning a negative value as Glibc can for some directives).  */
+RNG (0,  INT_MAX, -1, "%-s", str);
+
 /* Verify the result of a conditional expression involving a string
    literal and an unknown string isn't optimized.  */
 RNG (0,  1,   4, "%-s", i ? str : "123");
 RNG (0,  1,   4, "%-s", i ? "123" : str);
+
+/* Verfy that the output involving wide strings is not optimized
+   (the output is actually bounded by a function of MB_LEN_MAX
+   which should be at least 6 to accommodate UTF-8 but this isn't
+   implemented yet).  */
+RNG (0,  5,   7, "%ls",   L"1");
+RNG (0,  6,   8, "%s%ls", "1", L"2");
 
 /* Verify that no call to abort has been eliminated and that each call
    is at the beginning of a basic block (and thus the result of a branch).
@@ -214,5 +252,5 @@ RNG (0,  1,   4, "%-s", i ? "123" : str);
 
 */
 
-/* { dg-final { scan-tree-dump-times ">:\n *__builtin_abort" 105 "optimized" { target { ilp32 || lp64 } } } } */
-/* { dg-final { scan-tree-dump-times ">:\n *__builtin_abort" 74 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } } */
+/* { dg-final { scan-tree-dump-times ">:\n *__builtin_abort" 114 "optimized" { target { ilp32 || lp64 } } } } */
+/* { dg-final { scan-tree-dump-times ">:\n *__builtin_abort" 83 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } } */

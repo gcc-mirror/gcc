@@ -1,3 +1,25 @@
+2016-10-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77735
+	* builtins.c (string_length): New function.
+	(c_strlen): Use string_length.  Correctly handle wide strings.
+	* gimple-ssa-sprintf.c (target_max_value, target_size_max): New
+	functions.
+	(target_int_max): Call target_max_value.
+	(format_result::knownrange): New data member.
+	(fmtresult::fmtresult): Define default constructor.
+	(format_integer): Use it and set format_result::knownrange.
+	Handle global constants.
+	(format_floating_max): Add third argument.
+	(format_floating): Recompute maximum value for %a for each argument.
+	(get_string_length): Use fmtresult default ctor.
+	(format_string): Set format_result::knownrange.
+	(format_directive): Check format_result::knownrange.
+	(add_bytes): Same.  Correct caret placement in diagnostics.
+	(pass_sprintf_length::compute_format_length): Set
+	format_result::knownrange.
+	(pass_sprintf_length::handle_gimple_call): Use target_size_max.
+
 2016-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_in_large_data_p, ix86_expand_builtin): Use

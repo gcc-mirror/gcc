@@ -503,9 +503,44 @@ get_pointer_alignment (tree exp)
   return align;
 }
 
-/* Compute the length of a C string.  TREE_STRING_LENGTH is not the right
-   way, because it could contain a zero byte in the middle.
-   TREE_STRING_LENGTH is the size of the character array, not the string.
+/* Return the number of non-zero elements in the sequence
+   [ PTR, PTR + MAXELTS ) where each element's size is ELTSIZE bytes.
+   ELTSIZE must be a power of 2 less than 8.  Used by c_strlen.  */
+
+static unsigned
+string_length (const void *ptr, unsigned eltsize, unsigned maxelts)
+{
+  gcc_checking_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
+
+  unsigned n;
+
+  if (eltsize == 1)
+    {
+      /* Optimize the common case of plain char.  */
+      for (n = 0; n < maxelts; n++)
+	{
+	  const char *elt = (const char*) ptr + n;
+	  if (!*elt)
+	    break;
+	}
+    }
+  else
+    {
+      for (n = 0; n < maxelts; n++)
+	{
+	  const char *elt = (const char*) ptr + n * eltsize;
+	  if (!memcmp (elt, "\0\0\0\0", eltsize))
+	    break;
+	}
+    }
+  return n;
+}
+
+/* Compute the length of a null-terminated character string or wide
+   character string handling character sizes of 1, 2, and 4 bytes.
+   TREE_STRING_LENGTH is not the right way because it evaluates to
+   the size of the character array in bytes (as opposed to characters)
+   and because it can contain a zero byte in the middle.
 
    ONLY_VALUE should be nonzero if the result is not going to be emitted
    into the instruction stream and zero if it is going to be expanded.
@@ -526,12 +561,6 @@ get_pointer_alignment (tree exp)
 tree
 c_strlen (tree src, int only_value)
 {
-  tree offset_node;
-  HOST_WIDE_INT offset;
-  int max;
-  const char *ptr;
-  location_t loc;
-
   STRIP_NOPS (src);
   if (TREE_CODE (src) == COND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
@@ -548,25 +577,36 @@ c_strlen (tree src, int only_value)
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
     return c_strlen (TREE_OPERAND (src, 1), only_value);
 
-  loc = EXPR_LOC_OR_LOC (src, input_location);
+  location_t loc = EXPR_LOC_OR_LOC (src, input_location);
 
-  src = string_constant (src, &offset_node);
+  /* Offset from the beginning of the string in bytes.  */
+  tree byteoff;
+  src = string_constant (src, &byteoff);
   if (src == 0)
     return NULL_TREE;
 
-  max = TREE_STRING_LENGTH (src) - 1;
-  ptr = TREE_STRING_POINTER (src);
+  /* Determine the size of the string element.  */
+  unsigned eltsize
+    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (src))));
 
-  if (offset_node && TREE_CODE (offset_node) != INTEGER_CST)
+  /* Set MAXELTS to sizeof (SRC) / sizeof (*SRC) - 1, the maximum possible
+     length of SRC.  */
+  unsigned maxelts = TREE_STRING_LENGTH (src) / eltsize - 1;
+
+  /* PTR can point to the byte representation of any string type, including
+     char* and wchar_t*.  */
+  const char *ptr = TREE_STRING_POINTER (src);
+
+  if (byteoff && TREE_CODE (byteoff) != INTEGER_CST)
     {
       /* If the string has an internal zero byte (e.g., "foo\0bar"), we can't
 	 compute the offset to the following null if we don't know where to
 	 start searching for it.  */
-      int i;
-
-      for (i = 0; i < max; i++)
-	if (ptr[i] == 0)
+      if (string_length (ptr, eltsize, maxelts) < maxelts)
+	{
+	  /* Return when an embedded null character is found.  */
 	  return NULL_TREE;
+	}
 
       /* We don't know the starting offset, but we do know that the string
 	 has no internal zero bytes.  We can assume that the offset falls
@@ -575,27 +615,31 @@ c_strlen (tree src, int only_value)
 	 and return that.  This would perhaps not be valid if we were dealing
 	 with named arrays in addition to literal string constants.  */
 
-      return size_diffop_loc (loc, size_int (max), offset_node);
+      return size_diffop_loc (loc, size_int (maxelts * eltsize), byteoff);
     }
+
+  /* Offset from the beginning of the string in elements.  */
+  HOST_WIDE_INT eltoff;
 
   /* We have a known offset into the string.  Start searching there for
      a null character if we can represent it as a single HOST_WIDE_INT.  */
-  if (offset_node == 0)
-    offset = 0;
-  else if (! tree_fits_shwi_p (offset_node))
-    offset = -1;
+  if (byteoff == 0)
+    eltoff = 0;
+  else if (! tree_fits_shwi_p (byteoff))
+    eltoff = -1;
   else
-    offset = tree_to_shwi (offset_node);
+    eltoff = tree_to_shwi (byteoff) / eltsize;
 
   /* If the offset is known to be out of bounds, warn, and call strlen at
      runtime.  */
-  if (offset < 0 || offset > max)
+  if (eltoff < 0 || eltoff > maxelts)
     {
      /* Suppress multiple warnings for propagated constant strings.  */
       if (only_value != 2
 	  && !TREE_NO_WARNING (src))
         {
-          warning_at (loc, 0, "offset outside bounds of constant string");
+	  warning_at (loc, 0, "offset %qwi outside bounds of constant string",
+		      eltoff);
           TREE_NO_WARNING (src) = 1;
         }
       return NULL_TREE;
@@ -605,9 +649,12 @@ c_strlen (tree src, int only_value)
      constructed with build_string will have nulls appended, we win even
      if we get handed something like (char[4])"abcd".
 
-     Since OFFSET is our starting index into the string, no further
+     Since ELTOFF is our starting index into the string, no further
      calculation is needed.  */
-  return ssize_int (strlen (ptr + offset));
+  unsigned len = string_length (ptr + eltoff * eltsize, eltsize,
+				maxelts - eltoff);
+
+  return ssize_int (len);
 }
 
 /* Return a constant integer corresponding to target reading

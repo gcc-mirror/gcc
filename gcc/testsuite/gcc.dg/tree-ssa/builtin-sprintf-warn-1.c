@@ -37,6 +37,18 @@ typedef __WINT_TYPE__ wint_t;
 
 typedef unsigned char UChar;
 
+/* Constants used to verify the pass can determine their values even
+   without optimization.  */
+const int cst0   =  0;
+const int cst1   =  1;
+const int cst10  = 10;
+
+/* Initialized global variables used to verify that the pass doesn't
+   use their initial values (they could be modified by calls to other
+   functions).  */
+int var0  =  0;
+int var10 = 10;
+
 const char s0[] = "";
 const char s1[] = "1";
 const char s2[] = "12";
@@ -372,6 +384,13 @@ void test_sprintf_chk_s_const (void)
   T (3, "%.0ls",    L"1");
   T (3, "%.1ls",    L"1");
   T (3, "%.2ls",    L"1");
+  T (3, "%ls",      L"12");
+
+  T (3, "%ls",      L"123");    /* { dg-warning "nul past the end" } */
+  T (3, "%.0ls",    L"123");
+  T (3, "%.1ls",    L"123");
+  T (3, "%.2ls",    L"123");
+  T (3, "%.3ls",    L"123");    /* { dg-warning "nul past the end" } */
 }
 
 /* Exercise the "%hhd", "%hhi", "%hho", "%hhu", and "%hhx" directives
@@ -382,7 +401,9 @@ void test_sprintf_chk_hh_const (void)
   T (-1, "%hhd",        0);
 
   T (1, "%hhd",         0);     /* { dg-warning "nul past the end" } */
+  T (1, "%hhd",      cst0);     /* { dg-warning "nul past the end" } */
   T (1, "%hhd",         1);     /* { dg-warning "nul past the end" } */
+  T (1, "%hhd",      cst1);     /* { dg-warning "nul past the end" } */
   T (1, "%hhd",        -1);     /* { dg-warning "into a region" } */
   T (1, "%+hhd",        0);     /* { dg-warning "into a region" } */
   T (1, "%+hhd",        1);     /* { dg-warning "into a region" } */
@@ -402,6 +423,7 @@ void test_sprintf_chk_hh_const (void)
   T (2, "%+hhi",        9);     /* { dg-warning "nul past the end" } */
   T (2, "%-hhi",        9);
   T (2, "%hhi",        10);     /* { dg-warning "nul past the end" } */
+  T (2, "%hhi",     cst10);     /* { dg-warning "nul past the end" } */
   T (2, "%hhi",        -1);     /* { dg-warning "nul past the end" } */
   T (2, "% hhi",       -1);     /* { dg-warning "nul past the end" } */
   T (2, "%+hhi",       -1);     /* { dg-warning "nul past the end" } */
@@ -863,6 +885,35 @@ void test_sprintf_chk_z_const (void)
   T ( 2, "%zu",        (size_t)10); /* { dg-warning "nul past the end" } */
 }
 
+void test_sprintf_chk_a_const (void)
+{
+  T (-1, "%a",  0.0);
+  T (-1, "%la", 0.0);
+
+  /* The least number of bytes on output is 6 for "0x0p+0".  When precision
+     is missing the number of digits after the decimal point isn't fully
+     specified by C (it seems like a defect).  */
+  T (0, "%a",   0.0);          /* { dg-warning "into a region" } */
+  T (0, "%la",  0.0);          /* { dg-warning "into a region" } */
+  T (1, "%a",   0.0);          /* { dg-warning "into a region" } */
+  T (2, "%a",   0.0);          /* { dg-warning "into a region" } */
+  T (3, "%a",   0.0);          /* { dg-warning "into a region" } */
+  T (4, "%a",   0.0);          /* { dg-warning "into a region" } */
+  T (5, "%a",   0.0);          /* { dg-warning "into a region" } */
+  T (6, "%a",   0.0);          /* { dg-warning "writing a terminating nul" } */
+  T (7, "%a",   0.0);
+
+  T (0, "%.0a",   0.0);          /* { dg-warning "into a region" } */
+  T (0, "%.0la",  0.0);          /* { dg-warning "into a region" } */
+  T (1, "%.0a",   0.0);          /* { dg-warning "into a region" } */
+  T (2, "%.0a",   0.0);          /* { dg-warning "into a region" } */
+  T (3, "%.0a",   0.0);          /* { dg-warning "into a region" } */
+  T (4, "%.0a",   0.0);          /* { dg-warning "into a region" } */
+  T (5, "%.0a",   0.0);          /* { dg-warning "into a region" } */
+  T (6, "%.0a",   0.0);          /* { dg-warning "writing a terminating nul" } */
+  T (7, "%.0a",   0.0);
+}
+
 void test_sprintf_chk_e_const (void)
 {
   T (-1, "%E",   0.0);
@@ -893,20 +944,23 @@ void test_sprintf_chk_e_const (void)
   T ( 6, "%.0e", 1.0);
 
   /* The actual output of the following directives depends on the rounding
-     mode.  Verify that the warning correctly reflects that.  */
-  T (12, "%e",  9.999999e+99);  /* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%e",  9.9999994e+99); /* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%e",  9.9999995e+99); /* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%e",  9.9999996e+99); /* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%e",  9.9999997e+99); /* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%e",  9.9999998e+99); /* { dg-warning "directive writing between 12 and 13 bytes" } */
+     mode.  Verify that the warning correctly reflects that.  At level 1,
+     since the minimum number of bytes output by the directive fits the
+     space the directive itself isn't diagnosed but the terminating nul
+     is.  The directive is diagnosed at level 2.  */
+  T (12, "%e",  9.999999e+99);  /* { dg-warning "terminating nul" } */
+  T (12, "%e",  9.9999994e+99); /* { dg-warning "terminating nul" } */
+  T (12, "%e",  9.9999995e+99); /* { dg-warning "terminating nul" } */
+  T (12, "%e",  9.9999996e+99); /* { dg-warning "terminating nul" } */
+  T (12, "%e",  9.9999997e+99); /* { dg-warning "terminating nul" } */
+  T (12, "%e",  9.9999998e+99); /* { dg-warning "terminating nul" } */
 
-  T (12, "%Le", 9.9999994e+99L);/* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%Le", 9.9999995e+99L);/* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%Le", 9.9999996e+99L);/* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%Le", 9.9999997e+99L);/* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%Le", 9.9999998e+99L);/* { dg-warning "directive writing between 12 and 13 bytes" } */
-  T (12, "%Le", 9.9999999e+99L);/* { dg-warning "directive writing between 12 and 13 bytes" } */
+  T (12, "%Le", 9.9999994e+99L);/* { dg-warning "terminating nul" } */
+  T (12, "%Le", 9.9999995e+99L);/* { dg-warning "terminating nul" } */
+  T (12, "%Le", 9.9999996e+99L);/* { dg-warning "terminating nul" } */
+  T (12, "%Le", 9.9999997e+99L);/* { dg-warning "terminating nul" } */
+  T (12, "%Le", 9.9999998e+99L);/* { dg-warning "terminating nul" } */
+  T (12, "%Le", 9.9999999e+99L);/* { dg-warning "terminating nul" } */
 }
 
 /* At -Wformat-length level 1 unknown numbers are assumed to have
@@ -936,12 +990,14 @@ void test_sprintf_chk_hh_nonconst (int a)
 {
   T (-1, "%hhd",        a);
 
-  T (0, "%hhd",         a);     /* { dg-warning "into a region" } */
+  T (0, "%hhd",         a);     /* { dg-warning ".%hhd. directive writing between 1 and . bytes into a region of size 0" } */
+  T (0, "%hhi",      var0);     /* { dg-warning "into a region" } */
   T (0, "%hhi",         a);     /* { dg-warning "into a region" } */
   T (0, "%hhu",         a);     /* { dg-warning "into a region" } */
   T (0, "%hhx",         a);     /* { dg-warning "into a region" } */
 
   T (1, "%hhd",         a);     /* { dg-warning "nul past the end" } */
+  T (1, "%hhd",      var0);     /* { dg-warning "nul past the end" } */
   T (1, "%hhi",         a);     /* { dg-warning "nul past the end" } */
   T (1, "%hhu",         a);     /* { dg-warning "nul past the end" } */
   T (1, "%hhx",         a);     /* { dg-warning "nul past the end" } */
@@ -954,19 +1010,23 @@ void test_sprintf_chk_hh_nonconst (int a)
   T (1, "%-hhi",        a);     /* { dg-warning "nul past the end" } */
 
   T (2, "%hhd",         a);
+  T (2, "%hhd",      var0);
+  T (2, "%hhd",     var10);
   T (2, "%hhi",         a);
   T (2, "%hho",         a);
   T (2, "%hhu",         a);
   T (2, "%hhx",         a);
 
   T (2, "% hhd",        a);     /* { dg-warning "nul past the end" } */
+  T (2, "% hhd",     var0);     /* { dg-warning "nul past the end" } */
+  T (2, "% hhd",    var10);     /* { dg-warning "nul past the end" } */
   T (2, "% hhi",        a);     /* { dg-warning "nul past the end" } */
   T (2, "% hho",        a);     /* { dg-warning ". . flag used with .%o." } */
   T (2, "% hhu",        a);     /* { dg-warning ". . flag used with .%u." } */
   T (2, "% hhx",        a);     /* { dg-warning ". . flag used with .%x." } */
 
-  T (2, "#%hho",        a);     /* { dg-warning "nul past the end" } */
-  T (2, "#%hhx",        a);     /* { dg-warning "nul past the end" } */
+  T (2, "%#hho",        a);     /* { dg-warning "nul past the end" } */
+  T (2, "%#hhx",        a);     /* { dg-warning ".%#hhx. directive writing between 3 and . bytes into a region of size 2" } */
 
   T (3, "%2hhd",        a);
   T (3, "%2hhi",        a);
@@ -1086,8 +1146,7 @@ void test_sprintf_chk_e_nonconst (double d)
   T ( 1, "%e",          d);           /* { dg-warning "into a region" } */
   T ( 2, "%e",          d);           /* { dg-warning "into a region" } */
   T ( 3, "%e",          d);           /* { dg-warning "into a region" } */
-  T (12, "%e",          d);           /* { dg-warning "past the end" } */
-  T (12, "%e",          d);           /* { dg-warning "past the end" } */
+  T (12, "%e",          d);           /* { dg-warning "nul past the end" } */
   T (13, "%E",          d);           /* 1.000000E+00 */
   T (13, "%e",          d);
   T (14, "%E",          d);
