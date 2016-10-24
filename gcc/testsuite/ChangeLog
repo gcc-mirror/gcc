@@ -1,3 +1,8 @@
+2016-10-24  Kugan Vivekanandarajah  <kuganvi@linaro.org>
+
+	* gcc.target/aarch64/test_frame_common.h: Add noclone attribute
+	such that cloned verions of tested functions are not created.
+
 2016-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/71895
