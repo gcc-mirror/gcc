@@ -1,3 +1,11 @@
+2016-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/bmi2-pext-1.c: New test.
+	* gcc.target/i386/bmi2-pdep-1.c: New test.
+	* gcc.target/i386/bmi2-bzhi-3.c: New test.
+	* gcc.target/i386/tbm-bextri-1.c: New test.
+	* gcc.target/i386/bmi-bextr-6.c: New test.
+
 2016-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/77483
