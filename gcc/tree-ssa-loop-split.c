@@ -592,7 +592,7 @@ tree_ssa_split_loops (void)
   bool changed = false;
 
   gcc_assert (scev_initialized_p ());
-  FOR_EACH_LOOP (loop, 0)
+  FOR_EACH_LOOP (loop, LI_INCLUDE_ROOT)
     loop->aux = NULL;
 
   /* Go through all loops starting from innermost.  */
@@ -631,7 +631,7 @@ tree_ssa_split_loops (void)
 	}
     }
 
-  FOR_EACH_LOOP (loop, 0)
+  FOR_EACH_LOOP (loop, LI_INCLUDE_ROOT)
     loop->aux = NULL;
 
   if (changed)
