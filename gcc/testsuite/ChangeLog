@@ -1,5 +1,11 @@
 2016-10-24  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/71491
+	* gcc.dg/vect/slp-43.c: Adjust for !vect_hw_misalign.
+	* gcc.dg/vect/slp-45.c: Likewise.
+
+2016-10-24  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/cunroll-13.c: Disable EVRP.
 	* gcc.dg/tree-ssa/pr21458.c: Likewise.
 	* gcc.dg/tree-ssa/pr21458-2.c: New testcase for EVRP.
