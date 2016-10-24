@@ -81,7 +81,17 @@ if [ $nfiles -eq 1 ]; then
 else
     format="-nH"
 fi
+
+# Remove the testsuite part of the diff.  We don't care about GNU style
+# in testcases and the dg-* directives give too many false positives.
+remove_testsuite ()
+{
+  awk 'BEGIN{testsuite=0} /^(.*:)?([1-9][0-9]*:)?\+\+\+ / && ! /testsuite\//{testsuite=0} \
+       {if (!testsuite) print} /^(.*:)?([1-9][0-9]*:)?\+\+\+ (.*\/)?testsuite\//{testsuite=1}'
+}
+
 grep $format '^+' $files \
+    | remove_testsuite \
     | grep -v ':+++' \
     > $inp
 
@@ -160,8 +170,9 @@ col (){
 	fi
 
 	# Don't reuse $inp, which may be generated using -H and thus contain a
-	# file prefix.
-	grep -n '^+' $f \
+	# file prefix.  Re-remove the testsuite since we're not using $inp.
+	cat $f | remove_testsuite \
+	    | grep -n '^+' \
 	    | grep -v ':+++' \
 	    > $tmp
 
@@ -174,11 +185,10 @@ col (){
 	# Expand tabs to spaces according to tab positions.
 	# Keep long lines, make short lines empty.  Print the part past 80 chars
 	# in red.
-        # Don't complain about dg-xxx directives in tests.
 	cat "$tmp" \
 	    | sed 's/^[0-9]*:+//' \
 	    | expand \
-	    | awk '$0 !~ /{[[:space:]]*dg-(error|warning|message)[[:space:]]/ { \
+	    | awk '{ \
 		     if (length($0) > 80) \
 		       printf "%s\033[1;31m%s\033[0m\n", \
 			      substr($0,1,80), \
