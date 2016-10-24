@@ -361,6 +361,11 @@ namespace
 	  from_st = &st2;
       }
     f = make_file_status(*from_st);
+    if (!is_regular_file(f))
+      {
+	ec = std::make_error_code(std::errc::not_supported);
+	return false;
+      }
 
     using opts = fs::copy_options;
 
@@ -390,6 +395,11 @@ namespace
 	else if (!is_set(option, opts::overwrite_existing))
 	  {
 	    ec = std::make_error_code(std::errc::file_exists);
+	    return false;
+	  }
+	else if (!is_regular_file(t))
+	  {
+	    ec = std::make_error_code(std::errc::not_supported);
 	    return false;
 	  }
       }
@@ -489,7 +499,8 @@ fs::copy(const path& from, const path& to, copy_options options,
 
   file_status f, t;
   stat_type from_st, to_st;
-  // N4099 doesn't check copy_symlinks here, but I think that's a defect.
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2681. filesystem::copy() cannot copy symlinks
   if (use_lstat || copy_symlinks
       ? ::lstat(from.c_str(), &from_st)
       : ::stat(from.c_str(), &from_st))
@@ -556,6 +567,10 @@ fs::copy(const path& from, const path& to, copy_options options,
 	  do_copy_file(from, to, options, &from_st, ptr,  ec);
 	}
     }
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2682. filesystem::copy() won't create a symlink to a directory
+  else if (is_directory(f) && create_symlinks)
+    ec = std::make_error_code(errc::is_a_directory);
   else if (is_directory(f) && (is_set(options, copy_options::recursive)
 			       || options == copy_options::none))
     {
@@ -568,7 +583,10 @@ fs::copy(const path& from, const path& to, copy_options options,
       for (const directory_entry& x : directory_iterator(from))
 	copy(x.path(), to/x.path().filename(), options, ec);
     }
-  // "Otherwise no effects." (should ec.clear() be called?)
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2683. filesystem::copy() says "no effects"
+  else
+    ec.clear();
 }
 
 bool
@@ -1168,6 +1186,7 @@ fs::path fs::read_symlink(const path& p, error_code& ec)
       ec.assign(errno, std::generic_category());
       return {};
     }
+  ec.clear();
   return path{buf.data(), buf.data()+len};
 #else
   ec = std::make_error_code(std::errc::not_supported);

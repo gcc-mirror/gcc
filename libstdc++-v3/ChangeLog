@@ -1,3 +1,15 @@
+2016-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops.cc (do_copy_file): Return an error if either
+	source or destination is not a regular file.
+	(copy): Update comment to refer to LWG 2681. Implement 2682 and 2683
+	resolutions.
+	(read_symlink): Add missing ec.clear().
+	* testsuite/experimental/filesystem/operations/copy.cc: Update
+	expected behaviour for copying directories with create_symlinks.
+	Verify that error_code arguments are cleared if there's no error.
+	* testsuite/experimental/filesystem/operations/read_symlink.cc: New.
+
 2016-10-24  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Cross-port exception-safety and move fixes of std::any to
