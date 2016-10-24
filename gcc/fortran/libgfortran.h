@@ -70,8 +70,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Special unit numbers used to convey certain conditions.  Numbers -4
    thru -9 available.  NEWUNIT values start at -10.  */
-#define GFC_INTERNAL_UNIT4 -1    /* KIND=4 Internal Unit.  */
-#define GFC_INTERNAL_UNIT  -2    /* KIND=1 Internal Unit.  */
+#define GFC_INTERNAL_UNIT  -1    /* KIND=1 Internal Unit.  */
+#define GFC_INTERNAL_UNIT4 -2    /* KIND=4 Internal Unit.  */
 #define GFC_INVALID_UNIT   -3
 
 /* Possible values for the CONVERT I/O specifier.  */

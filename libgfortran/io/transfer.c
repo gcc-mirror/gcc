@@ -3026,20 +3026,13 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	  return;
 	}
 
-      /* TODO: This is required to maintain compatibility between
-         4.3 and 4.4 runtime. Remove when ABI changes from 4.3 */
-
-      if (is_stream_io (dtp))
-        dtp->u.p.current_unit->strm_pos = dtp->rec;
-
-      /* TODO: Un-comment this code when ABI changes from 4.3.
       if (dtp->u.p.current_unit->flags.access == ACCESS_STREAM)
        {
          generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
                      "Record number not allowed for stream access "
                      "data transfer");
          return;
-       }  */
+       }
     }
 
   /* Bugware for badly written mixed C-Fortran I/O.  */

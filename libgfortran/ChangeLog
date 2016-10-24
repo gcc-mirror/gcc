@@ -1,3 +1,12 @@
+2016-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/77828
+	* io/io.h (st_parameter_dt): Reorder for readability and sanity.
+	* io/transfer.c (data_transfer_init): Remove TODO and enable the
+	runtime error message, rec= specifier not allowed in STREAM
+	access.
+	* libtool-version: Bump major version of libgfortran to 4.
+
 2016-10-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/78055
