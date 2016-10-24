@@ -49,6 +49,10 @@ set LTO_TORTURE_OPTIONS [add_fat_objects ${LTO_TORTURE_OPTIONS}]
 gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] \
 	"" $DEFAULT_CFLAGS
 
+# Restore global values
+set dg-do-what-default ${saved-dg-do-what-default}
+set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}
+
 # All done.
 dg-finish
 }
