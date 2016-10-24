@@ -1,3 +1,9 @@
+2016-10-24  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (c_common_truthvalue_conversion): Warn for
+	multiplications in boolean context.  Fix the quoting of '<<' and '<'
+	in the shift warning.
+
 2016-10-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-common.c (c_common_truthvalue_conversion): Fix the comment.

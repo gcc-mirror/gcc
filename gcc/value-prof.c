@@ -1878,12 +1878,12 @@ stringop_block_profile (gimple *stmt, unsigned int *expected_align,
   else
     {
       gcov_type count;
-      int alignment;
+      unsigned int alignment;
 
       count = histogram->hvalue.counters[0];
       alignment = 1;
       while (!(count & alignment)
-	     && (alignment * 2 * BITS_PER_UNIT))
+	     && (alignment <= UINT_MAX / 2 / BITS_PER_UNIT))
 	alignment <<= 1;
       *expected_align = alignment * BITS_PER_UNIT;
       gimple_remove_histogram_value (cfun, stmt, histogram);
