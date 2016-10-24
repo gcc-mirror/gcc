@@ -1,5 +1,8 @@
 2016-10-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* cp-objcp-common.c (cp_decl_dwarf_attribute): Handle DW_AT_reference
+	and DW_AT_rvalue_reference.
+
 	* cxx-pretty-print.c (pp_cxx_check_constraint): Use VAR_P (x)
 	instead of TREE_CODE (x) == VAR_DECL.
 	* constraint.cc (get_concept_definition): Likewise.

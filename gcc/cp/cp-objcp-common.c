@@ -173,6 +173,32 @@ cp_decl_dwarf_attribute (const_tree decl, int attr)
 	return 1;
       break;
 
+    case DW_AT_reference:
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+	  && FUNCTION_REF_QUALIFIED (TREE_TYPE (decl))
+	  && !FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (decl)))
+	return 1;
+      if ((TREE_CODE (decl) == FUNCTION_TYPE
+	   || TREE_CODE (decl) == METHOD_TYPE)
+	  && FUNCTION_REF_QUALIFIED (decl)
+	  && !FUNCTION_RVALUE_QUALIFIED (decl))
+	return 1;
+      break;
+
+    case DW_AT_rvalue_reference:
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+	  && FUNCTION_REF_QUALIFIED (TREE_TYPE (decl))
+	  && FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (decl)))
+	return 1;
+      if ((TREE_CODE (decl) == FUNCTION_TYPE
+	   || TREE_CODE (decl) == METHOD_TYPE)
+	  && FUNCTION_REF_QUALIFIED (decl)
+	  && FUNCTION_RVALUE_QUALIFIED (decl))
+	return 1;
+      break;
+
     default:
       break;
     }
