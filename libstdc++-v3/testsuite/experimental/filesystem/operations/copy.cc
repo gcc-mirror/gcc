@@ -22,7 +22,6 @@
 // 15.3 Copy [fs.op.copy]
 
 #include <experimental/filesystem>
-#include <fstream>
 #include <testsuite_fs.h>
 #include <testsuite_hooks.h>
 
@@ -43,14 +42,25 @@ test01()
   fs::copy(".", ".", fs::copy_options::none, ec);
   VERIFY( ec );
 
-  std::ofstream{p.native()};
+  __gnu_test::scoped_file f(p);
   VERIFY( fs::is_directory(".") );
   VERIFY( fs::is_regular_file(p) );
   ec.clear();
   fs::copy(".", p, fs::copy_options::none, ec);
   VERIFY( ec );
 
-  remove(p, ec);
+  auto to = __gnu_test::nonexistent_path();
+  ec.clear();
+  auto opts = fs::copy_options::create_symlinks;
+  fs::copy("/", to, opts, ec);
+  VERIFY( ec == std::make_error_code(std::errc::is_a_directory) );
+  VERIFY( !exists(to) );
+
+  ec.clear();
+  opts != fs::copy_options::recursive;
+  fs::copy("/", to, opts, ec);
+  VERIFY( ec == std::make_error_code(std::errc::is_a_directory) );
+  VERIFY( !exists(to) );
 }
 
 // Test is_symlink(f) case.
@@ -59,29 +69,35 @@ test02()
 {
   auto from = __gnu_test::nonexistent_path();
   auto to = __gnu_test::nonexistent_path();
-  std::error_code ec;
+  std::error_code ec, bad = std::make_error_code(std::errc::invalid_argument);
 
+  ec = bad;
   fs::create_symlink(".", from, ec);
   VERIFY( !ec );
   VERIFY( fs::exists(from) );
 
+  ec = bad;
   fs::copy(from, to, fs::copy_options::skip_symlinks, ec);
   VERIFY( !ec );
   VERIFY( !fs::exists(to) );
 
+  ec = bad;
   fs::copy(from, to, fs::copy_options::skip_symlinks, ec);
   VERIFY( !ec );
   VERIFY( !fs::exists(to) );
 
+  ec = bad;
   fs::copy(from, to,
            fs::copy_options::skip_symlinks|fs::copy_options::copy_symlinks,
            ec);
   VERIFY( !ec );
   VERIFY( !fs::exists(to) );
 
+  ec = bad;
   fs::copy(from, to, fs::copy_options::copy_symlinks, ec);
   VERIFY( !ec );
   VERIFY( fs::exists(to) );
+  VERIFY( is_symlink(to) );
 
   fs::copy(from, to, fs::copy_options::copy_symlinks, ec);
   VERIFY( ec );
@@ -129,10 +145,10 @@ void
 test05()
 {
   auto to = __gnu_test::nonexistent_path();
-  std::error_code ec;
+  std::error_code ec = std::make_error_code(std::errc::invalid_argument);
 
-  fs::copy("/", to, fs::copy_options::create_symlinks, ec);
-  VERIFY( !ec );
+  fs::copy("/", to, fs::copy_options::copy_symlinks, ec);
+  VERIFY( !ec );  // Previous value should be cleared (LWG 2683)
 }
 
 int
