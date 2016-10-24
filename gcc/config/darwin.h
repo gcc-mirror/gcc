@@ -424,8 +424,6 @@ extern GTY(()) int darwin_ms_struct;
 
 #define TARGET_WANT_DEBUG_PUB_SECTIONS true
 
-#define TARGET_FORCE_AT_COMP_DIR true
-
 /* When generating stabs debugging, use N_BINCL entries.  */
 
 #define DBX_USE_BINCL
