@@ -20662,6 +20662,21 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      if (defaulted != -1)
 		add_AT_unsigned (subr_die, DW_AT_defaulted, defaulted);
 	    }
+
+	  /* If this is a C++11 non-static member function with & ref-qualifier
+	     then generate a DW_AT_reference attribute.  */
+	  if ((dwarf_version >= 5 || !dwarf_strict)
+	      && lang_hooks.decls.decl_dwarf_attribute (decl,
+							DW_AT_reference) == 1)
+	    add_AT_flag (subr_die, DW_AT_reference, 1);
+
+	  /* If this is a C++11 non-static member function with &&
+	     ref-qualifier then generate a DW_AT_reference attribute.  */
+	  if ((dwarf_version >= 5 || !dwarf_strict)
+	      && lang_hooks.decls.decl_dwarf_attribute (decl,
+							DW_AT_rvalue_reference)
+		 == 1)
+	    add_AT_flag (subr_die, DW_AT_rvalue_reference, 1);
 	}
     }
   /* Tag abstract instances with DW_AT_inline.  */
