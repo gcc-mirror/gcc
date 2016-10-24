@@ -615,7 +615,8 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
   if (derived1 == derived2)
     return 1;
 
-  gcc_assert (derived1 && derived2);
+  if (!derived1 || !derived2)
+    gfc_internal_error ("gfc_compare_derived_types: invalid derived type");
 
   /* Compare UNION types specially.  */
   if (derived1->attr.flavor == FL_UNION || derived2->attr.flavor == FL_UNION)

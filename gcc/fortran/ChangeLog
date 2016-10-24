@@ -1,3 +1,9 @@
+2016-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/71895
+	* interface.c (gfc_compare_derived_types):  Convert gcc_assert()
+	to a gfc_internal_error() to prevent an ICE.
+
 2016-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_minmax): Use VAR_P (x)
