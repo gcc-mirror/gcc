@@ -2362,7 +2362,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
      to placement new is not checked since it's unknown what it might
      point to.  */
   if (TREE_CODE (oper) == PARM_DECL
-      || TREE_CODE (oper) == VAR_DECL
+      || VAR_P (oper)
       || TREE_CODE (oper) == COMPONENT_REF)
     return;
 
@@ -2435,13 +2435,13 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
     {
       tree op0 = oper;
       while (TREE_CODE (op0 = TREE_OPERAND (op0, 0)) == COMPONENT_REF);
-      if (TREE_CODE (op0) == VAR_DECL)
+      if (VAR_P (op0))
 	var_decl = op0;
       oper = TREE_OPERAND (oper, 1);
     }
 
   if ((addr_expr || !POINTER_TYPE_P (TREE_TYPE (oper)))
-      && (TREE_CODE (oper) == VAR_DECL
+      && (VAR_P (oper)
 	  || TREE_CODE (oper) == FIELD_DECL
 	  || TREE_CODE (oper) == PARM_DECL))
     {
@@ -2455,7 +2455,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
       /* Treat members of unions and members of structs uniformly, even
 	 though the size of a member of a union may be viewed as extending
 	 to the end of the union itself (it is by __builtin_object_size).  */
-      if ((TREE_CODE (oper) == VAR_DECL || use_obj_size)
+      if ((VAR_P (oper) || use_obj_size)
 	  && DECL_SIZE_UNIT (oper)
 	  && tree_fits_uhwi_p (DECL_SIZE_UNIT (oper)))
 	{

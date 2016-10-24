@@ -1350,7 +1350,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   else if (TREE_CODE (stmt) == DECL_EXPR)
     {
       tree d = DECL_EXPR_DECL (stmt);
-      if (TREE_CODE (d) == VAR_DECL)
+      if (VAR_P (d))
 	gcc_assert (CP_DECL_THREAD_LOCAL_P (d) == DECL_THREAD_LOCAL_P (d));
     }
   else if (TREE_CODE (stmt) == OMP_PARALLEL

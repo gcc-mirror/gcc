@@ -509,7 +509,7 @@ get_variable_initializer (tree var)
 tree
 get_concept_definition (tree decl)
 {
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     return get_variable_initializer (decl);
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     return get_returned_expression (decl);
@@ -1286,10 +1286,8 @@ finish_shorthand_constraint (tree decl, tree constr)
      the constraint an expansion. */
   tree check;
   tree tmpl = DECL_TI_TEMPLATE (con);
-  if (TREE_CODE (con) == VAR_DECL)
-    {
-      check = build_concept_check (tmpl, arg, args);
-    }
+  if (VAR_P (con))
+    check = build_concept_check (tmpl, arg, args);
   else
     {
       tree ovl = build_overload (tmpl, NULL_TREE);
