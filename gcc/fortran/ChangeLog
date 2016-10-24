@@ -1,3 +1,12 @@
+2016-10-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/61420
+	PR fortran/78013
+	* resolve.c (resolve_variable): Obtain the typespec for a
+	variable expression, when the variable is a function result
+	that is a procedure pointer.
+
 2016-10-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
@@ -20,7 +29,7 @@
 	PR fortran/77391
 	* resolve.c (deferred_requirements): New function to check F2008:C402.
 	(resolve_fl_variable,resolve_fl_parameter): Use it.
- 
+
 2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
@@ -45,7 +54,7 @@
 	subroutine as an actual argument when numeric argument is expected.
 
 2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
- 
+
 	Backport of trunk
 
 	PR fortran/69867
@@ -66,7 +75,7 @@
 2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from trunk
- 
+
 	PR fortran/68566
 	* check.c (gfc_check_reshape): Check for constant expression.
 
@@ -79,7 +88,7 @@
 	not ICE.
 
 2016-09-30  Steven G. Kargl  <kargl@gcc.gnu.org>
- 
+
 	Backport from trunk
 
 	PR fortran/70006
@@ -123,7 +132,7 @@
 	Backport from trunk
 	PR fortran/69514
 	* array.c (gfc_match_array_constructor):  If type-spec is present,
-	walk the array constructor performing possible conversions for 
+	walk the array constructor performing possible conversions for
 	numeric types.
 
 2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
@@ -134,7 +143,7 @@
 	gfc_reduce_init_expr().
 
 	PR fortran/77612
-	* decl.c (char_len_param_value): Check parent namespace for 
+	* decl.c (char_len_param_value): Check parent namespace for
 	seen_implicit_none.
 
 2016-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
