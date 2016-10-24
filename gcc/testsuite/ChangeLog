@@ -1,3 +1,20 @@
+2016-10-24  Bernd Edlinge  <bernd.edlinger@hotmail.de>
+
+	Backport from mainline r240313, r240355, r240573
+	2016-09-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR tree-optimization/77550
+	* g++.dg/pr77550.C: New test.
+
+	2016-09-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* g++.dg/pr77550.C: Use __SIZE_TYPE__.
+
+	2016-09-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/77748
+	* g++.dg/pr77550.C: Avoid undefined behavior.
+
 2016-10-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/71895
