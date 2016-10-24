@@ -1,5 +1,19 @@
 2016-10-24  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Cross-port exception-safety and move fixes of std::any to
+	std::experimental::any.
+	* include/experimental/any (operator=(const any&)):
+	Make strongly exception-safe.
+	(operator=(any&&)): clear() unconditionally in the case where
+	rhs has a value.
+	(_Manager_internal<_Tp>::_S_manage): Move in _Op_xfer, don't copy.
+	* testsuite/experimental/any/assign/2.cc: Adjust.
+	* testsuite/experimental/any/assign/exception.cc: New.
+	* testsuite/experimental/any/cons/2.cc: Adjust.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Ajust.
+
+2016-10-24  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Cross-port the latest resolution of LWG2756 and some
 	bug-fixes to experimental::optional.
 	PR libstdc++/77288
