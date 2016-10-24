@@ -1,3 +1,26 @@
+2016-10-24  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Cross-port the latest resolution of LWG2756 and some
+	bug-fixes to experimental::optional.
+	PR libstdc++/77288
+	PR libstdc++/77727
+	* include/experimental/optional (_Optional_base):
+	Remove constructors that take a _Tp.
+	(__is_optional_impl, __is_optional): Remove.
+	(__converts_from_optional): New.
+	(optional(_Up&&)): Fix constraints, call base with in_place.
+	(optional(const optional<_Up>&)): Fix constraints, use emplace.
+	(optional(optional<_Up>&&)): Likewise.
+	(operator=(_Up&&)): Fix constraints.
+	(operator=(const optional<_Up>&)): Likewise.
+	(operator=(optional<_Up>&&)): Likewise.
+	(emplace(_Args&&...)): Constrain.
+	(emplace(initializer_list<_Up>, _Args&&...)): Likewise.
+	* testsuite/experimental/optional/77288.cc: New.
+	* testsuite/experimental/optional/assignment/5.cc: Adjust.
+	* testsuite/experimental/optional/cons/77727.cc: New.
+	* testsuite/experimental/optional/cons/value.cc: Adjust.
+
 2016-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_vector.h (vector::_M_data_ptr, vector::data):
