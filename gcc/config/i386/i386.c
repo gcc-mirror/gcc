@@ -7134,10 +7134,10 @@ ix86_in_large_data_p (tree exp)
     return false;
 
   /* Automatic variables are never large data.  */
-  if (TREE_CODE (exp) == VAR_DECL && !is_global_var (exp))
+  if (VAR_P (exp) && !is_global_var (exp))
     return false;
 
-  if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
+  if (VAR_P (exp) && DECL_SECTION_NAME (exp))
     {
       const char *section = DECL_SECTION_NAME (exp);
       if (strcmp (section, ".ldata") == 0
@@ -36686,7 +36686,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  target = gen_reg_rtx (Pmode);
 
 	arg0 = CALL_EXPR_ARG (exp, 0);
-	gcc_assert (TREE_CODE (arg0) == VAR_DECL);
+	gcc_assert (VAR_P (arg0));
 
 	name = DECL_ASSEMBLER_NAME (arg0);
 	symbol = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (name));
