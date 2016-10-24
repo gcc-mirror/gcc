@@ -1,3 +1,8 @@
+2016-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (vector::_M_data_ptr, vector::data):
+	Change return type of non-standard C++98 extension to match C++11.
+
 2016-10-22  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/c++config (_GLIBCXX_BEGIN_NAMESPACE_ALGO)
