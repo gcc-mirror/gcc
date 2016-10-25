@@ -1,3 +1,8 @@
+2016-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78102
+	* gcc.target/i386/pr78102.c: New test.
+
 2016-10-25  Fritz Reese <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_logical_xor_1.f90: New test.

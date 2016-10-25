@@ -11286,7 +11286,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
     {
       tree ifexp = build2 (ops->code, ops->type, arg0, arg1);
       if (VECTOR_BOOLEAN_TYPE_P (ops->type)
-	  && expand_vec_cmp_expr_p (TREE_TYPE (arg0), ops->type))
+	  && expand_vec_cmp_expr_p (TREE_TYPE (arg0), ops->type, ops->code))
 	return expand_vec_cmp_expr (ops->type, ifexp, target);
       else
 	{

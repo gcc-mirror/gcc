@@ -1,3 +1,33 @@
+2016-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78102
+	* optabs.def (vcondeq_optab, vec_cmpeq_optab): New optabs.
+	* optabs.c (expand_vec_cond_expr): For comparison codes
+	EQ_EXPR and NE_EXPR, attempt vcondeq_optab as fallback.
+	(expand_vec_cmp_expr): For comparison codes
+	EQ_EXPR and NE_EXPR, attempt vec_cmpeq_optab as fallback.
+	* optabs-tree.h (expand_vec_cmp_expr_p, expand_vec_cond_expr_p):
+	Add enum tree_code argument.
+	* optabs-query.h (get_vec_cmp_eq_icode, get_vcond_eq_icode): New
+	inline functions.
+	* optabs-tree.c (expand_vec_cmp_expr_p): Add CODE argument.  For
+	CODE EQ_EXPR or NE_EXPR, attempt to use vec_cmpeq_optab as
+	fallback.
+	(expand_vec_cond_expr_p): Add CODE argument.  For CODE EQ_EXPR or
+	NE_EXPR, attempt to use vcondeq_optab as fallback.
+	* tree-vect-generic.c (expand_vector_comparison,
+	expand_vector_divmod, expand_vector_condition): Adjust
+	expand_vec_cmp_expr_p and expand_vec_cond_expr_p callers.
+	* tree-vect-stmts.c (vectorizable_condition,
+	vectorizable_comparison): Likewise.
+	* tree-vect-patterns.c (vect_recog_mixed_size_cond_pattern,
+	check_bool_pattern, search_type_for_mask_1): Likewise.
+	* expr.c (do_store_flag): Likewise.
+	* doc/md.texi (@code{vec_cmpeq@var{m}@var{n}},
+	@code{vcondeq@var{m}@var{n}}): Document.
+	* config/i386/sse.md (vec_cmpeqv2div2di, vcondeq<VI8F_128:mode>v2di):
+	New expanders.
+
 2016-10-25  Jeff Law  <law@redhat.com>
 
 	* config/v850/v850.c (v850_handle_data_area_attribute): Fix fallthru

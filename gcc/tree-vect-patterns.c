@@ -3073,7 +3073,7 @@ vect_recog_mixed_size_cond_pattern (vec<gimple *> *stmts, tree *type_in,
   if (vectype == NULL_TREE)
     return NULL;
 
-  if (expand_vec_cond_expr_p (vectype, comp_vectype))
+  if (expand_vec_cond_expr_p (vectype, comp_vectype, TREE_CODE (cond_expr)))
     return NULL;
 
   if (itype == NULL_TREE)
@@ -3088,7 +3088,7 @@ vect_recog_mixed_size_cond_pattern (vec<gimple *> *stmts, tree *type_in,
   if (vecitype == NULL_TREE)
     return NULL;
 
-  if (!expand_vec_cond_expr_p (vecitype, comp_vectype))
+  if (!expand_vec_cond_expr_p (vecitype, comp_vectype, TREE_CODE (cond_expr)))
     return NULL;
 
   if (GET_MODE_BITSIZE (TYPE_MODE (type)) > cmp_mode_size)
@@ -3195,7 +3195,7 @@ check_bool_pattern (tree var, vec_info *vinfo, hash_set<gimple *> &stmts)
 
 	  tree mask_type = get_mask_type_for_scalar_type (TREE_TYPE (rhs1));
 	  if (mask_type
-	      && expand_vec_cmp_expr_p (comp_vectype, mask_type))
+	      && expand_vec_cmp_expr_p (comp_vectype, mask_type, rhs_code))
 	    return false;
 
 	  if (TREE_CODE (TREE_TYPE (rhs1)) != INTEGER_TYPE)
@@ -3209,7 +3209,7 @@ check_bool_pattern (tree var, vec_info *vinfo, hash_set<gimple *> &stmts)
 	    }
 	  else
 	    vecitype = comp_vectype;
-	  if (! expand_vec_cond_expr_p (vecitype, comp_vectype))
+	  if (! expand_vec_cond_expr_p (vecitype, comp_vectype, rhs_code))
 	    return false;
 	}
       else
@@ -3537,7 +3537,7 @@ search_type_for_mask_1 (tree var, vec_info *vinfo,
 
 	  mask_type = get_mask_type_for_scalar_type (TREE_TYPE (rhs1));
 	  if (!mask_type
-	      || !expand_vec_cmp_expr_p (comp_vectype, mask_type))
+	      || !expand_vec_cmp_expr_p (comp_vectype, mask_type, rhs_code))
 	    {
 	      res = NULL_TREE;
 	      break;

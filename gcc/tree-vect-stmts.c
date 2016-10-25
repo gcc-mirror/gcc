@@ -7710,7 +7710,8 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!vec_stmt)
     {
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
-      return expand_vec_cond_expr_p (vectype, comp_vectype);
+      return expand_vec_cond_expr_p (vectype, comp_vectype,
+				     TREE_CODE (cond_expr));
     }
 
   /* Transform.  */
@@ -8013,7 +8014,7 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
       vect_model_simple_cost (stmt_info, ncopies * (1 + (bitop2 != NOP_EXPR)),
 			      dts, NULL, NULL);
       if (bitop1 == NOP_EXPR)
-	return expand_vec_cmp_expr_p (vectype, mask_type);
+	return expand_vec_cmp_expr_p (vectype, mask_type, code);
       else
 	{
 	  machine_mode mode = TYPE_MODE (vectype);
