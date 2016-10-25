@@ -300,6 +300,7 @@ sem_function::get_hash (void)
 	 (cl_target_option_hash
 	   (TREE_TARGET_OPTION (DECL_FUNCTION_SPECIFIC_TARGET (decl))));
       if (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))
+	hstate.add_wide_int
 	 (cl_optimization_hash
 	   (TREE_OPTIMIZATION (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))));
       hstate.add_flag (DECL_CXX_CONSTRUCTOR_P (decl));
