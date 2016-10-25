@@ -1,3 +1,7 @@
+2016-10-25  Jeff Law  <law@redhat.com>
+
+	* config/m68k/m68k.c (m68k_get_reloc_decoration): Add gcc_unreachable.
+
 2016-10-25  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/78106
