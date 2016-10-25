@@ -2681,6 +2681,20 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
 
   if (base)
     {
+      if (ss_info->expr->ts.type == BT_CHARACTER && !ss_info->expr->ts.deferred
+	  && ss_info->expr->ts.u.cl->length == NULL)
+	{
+	  /* Emit a DECL_EXPR for the variable sized array type in
+	     GFC_TYPE_ARRAY_DATAPTR_TYPE so the gimplification of its type
+	     sizes works correctly.  */
+	  tree arraytype = TREE_TYPE (
+		GFC_TYPE_ARRAY_DATAPTR_TYPE (TREE_TYPE (info->descriptor)));
+	  if (! TYPE_NAME (arraytype))
+	    TYPE_NAME (arraytype) = build_decl (UNKNOWN_LOCATION, TYPE_DECL,
+						NULL_TREE, arraytype);
+	  gfc_add_expr_to_block (block, build1 (DECL_EXPR, arraytype,
+						TYPE_NAME (arraytype)));
+	}
       /* Also the data pointer.  */
       tmp = gfc_conv_array_data (se.expr);
       /* If this is a variable or address of a variable we use it directly.
@@ -3143,9 +3157,22 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
 
   size = gfc_class_vtab_size_get (decl);
 
+  /* For unlimited polymorphic entities then _len component needs to be
+     multiplied with the size.  If no _len component is present, then
+     gfc_class_len_or_zero_get () return a zero_node.  */
+  tmp = gfc_class_len_or_zero_get (decl);
+  if (!integer_zerop (tmp))
+    size = fold_build2 (MULT_EXPR, TREE_TYPE (index),
+			fold_convert (TREE_TYPE (index), size),
+			fold_build2 (MAX_EXPR, TREE_TYPE (index),
+				     fold_convert (TREE_TYPE (index), tmp),
+				     fold_convert (TREE_TYPE (index),
+						   integer_one_node)));
+  else
+    size = fold_convert (TREE_TYPE (index), size);
+
   /* Build the address of the element.  */
   type = TREE_TYPE (TREE_TYPE (base));
-  size = fold_convert (TREE_TYPE (index), size);
   offset = fold_build2_loc (input_location, MULT_EXPR,
 			    gfc_array_index_type,
 			    index, size);

@@ -1,3 +1,17 @@
+2016-10-25  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/72770
+	* class.c (find_intrinsic_vtab): No longer encode the string length
+	into vtype's name and use the char's kind for the size instead of
+	the string_length time the size.
+	* trans-array.c (gfc_conv_ss_descriptor): For deferred length char
+	arrays the dynamically sized type needs to be declared.
+	(build_class_array_ref): Address the i-th array element by multiplying
+	it with the _vptr->_size and the _len to make sure char arrays are
+	addressed correctly.
+	* trans-expr.c (gfc_conv_intrinsic_to_class): Made comment more
+	precise.
+
 2016-10-25  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* intrinsic.texi (cosd): New mathop.

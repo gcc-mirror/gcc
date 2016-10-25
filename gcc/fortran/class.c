@@ -2515,11 +2515,6 @@ find_intrinsic_vtab (gfc_typespec *ts)
   gfc_namespace *ns;
   gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL;
   gfc_symbol *copy = NULL, *src = NULL, *dst = NULL;
-  int charlen = 0;
-
-  if (ts->type == BT_CHARACTER && !ts->deferred && ts->u.cl && ts->u.cl->length
-      && ts->u.cl->length->expr_type == EXPR_CONSTANT)
-    charlen = mpz_get_si (ts->u.cl->length->value.integer);
 
   /* Find the top-level namespace.  */
   for (ns = gfc_current_ns; ns; ns = ns->parent)
@@ -2530,12 +2525,10 @@ find_intrinsic_vtab (gfc_typespec *ts)
     {
       char name[GFC_MAX_SYMBOL_LEN+1], tname[GFC_MAX_SYMBOL_LEN+1];
 
-      if (ts->type == BT_CHARACTER)
-	sprintf (tname, "%s_%d_%d", gfc_basic_typename (ts->type),
-		 charlen, ts->kind);
-      else
-	sprintf (tname, "%s_%d_", gfc_basic_typename (ts->type), ts->kind);
-
+      /* Encode all types as TYPENAME_KIND_ including especially character
+	 arrays, whose length is now consistently stored in the _len component
+	 of the class-variable.  */
+      sprintf (tname, "%s_%d_", gfc_basic_typename (ts->type), ts->kind);
       sprintf (name, "__vtab_%s", tname);
 
       /* Look for the vtab symbol in the top-level namespace only.  */
@@ -2600,9 +2593,8 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
 						 NULL,
 						 ts->type == BT_CHARACTER
-						 && charlen == 0 ?
-						   ts->kind :
-						   (int)gfc_element_size (e));
+						 ? ts->kind
+						 : (int)gfc_element_size (e));
 	      gfc_free_expr (e);
 
 	      /* Add component _extends.  */
