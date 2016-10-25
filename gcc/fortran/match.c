@@ -1622,6 +1622,9 @@ gfc_match_if (gfc_statement *if_type)
   match ("where", match_simple_where, ST_WHERE)
   match ("write", gfc_match_write, ST_WRITE)
 
+  if (flag_dec)
+    match ("type", gfc_match_print, ST_WRITE)
+
   /* The gfc_match_assignment() above may have returned a MATCH_NO
      where the assignment was to a named constant.  Check that
      special case here.  */

@@ -1466,6 +1466,7 @@ compatibility extensions along with those enabled by @option{-std=legacy}.
 * AUTOMATIC and STATIC attributes::
 * Extended math intrinsics::
 * Form feed as whitespace::
+* TYPE as an alias for PRINT::
 @end menu
 
 @node Old-style kind specifications
@@ -2520,6 +2521,21 @@ ASCII 0xC) at the beginning of lines for formatted output to line printers,
 though the Fortran standard does not mention this. GNU Fortran supports the
 interpretation of form feed characters in source as whitespace for
 compatibility.
+
+@node TYPE as an alias for PRINT
+@subsection TYPE as an alias for PRINT
+@cindex type alias print
+For compatibility, GNU Fortran will interpret @code{TYPE} statements as
+@code{PRINT} statements with the flag @option{-fdec}.  With this flag asserted,
+the following two examples are equivalent:
+
+@smallexample
+TYPE *, 'hello world'
+@end smallexample
+
+@smallexample
+PRINT *, 'hello world'
+@end smallexample
 
 
 @node Extensions not implemented in GNU Fortran

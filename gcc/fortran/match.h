@@ -214,6 +214,7 @@ match gfc_match_union (void);
 match gfc_match_structure_decl (void);
 match gfc_match_derived_decl (void);
 match gfc_match_final_decl (void);
+match gfc_match_type (gfc_statement *);
 
 match gfc_match_implicit_none (void);
 match gfc_match_implicit (void);

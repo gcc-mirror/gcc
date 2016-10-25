@@ -1,5 +1,13 @@
 2016-10-25  Fritz Reese <fritzoreese@gmail.com>
 
+	* decl.c (gfc_match_type): New function.
+	* match.h (gfc_match_type): New function.
+	* match.c (gfc_match_if): Special case for one-line IFs.
+	* gfortran.texi: Update documentation.
+	* parse.c (decode_statement): Invoke gfc_match_type.
+
+2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+
 	* gfortran.texi: Document.
 	* gfortran.h (gfc_is_whitespace): Include form feed ('\f').
 
