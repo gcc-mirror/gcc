@@ -678,6 +678,7 @@ vax_address_cost_1 (rtx addr)
     {
     case PRE_DEC:
       predec = 1;
+      /* FALLTHRU */
     case REG:
     case SUBREG:
     case POST_INC:
@@ -1084,6 +1085,7 @@ vax_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
 	    case NEG:
 	      if (GET_MODE_CLASS (GET_MODE (exp)) == MODE_FLOAT)
 		break;
+	      /* FALLTHRU */
 	    case AND:
 	    case IOR:
 	    case XOR:
