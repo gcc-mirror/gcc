@@ -1,4 +1,10 @@
+2016-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal-fn.def (LAUNDER): New internal function.
+	* internal-fn.c (expand_LAUNDER): New function.
+
 2016-10-25  Georg-Johann Lay  <avr@gjlay.de>
+	    Pitchumani Sivanupandi  <pitchumani.sivanupandi@microchip.com>
 
 	New avr target pass to work around performance loss by PR fix.
 
@@ -18,7 +24,7 @@
 	(avr_optimize_casesi): New functions.
 
 2016-10-25  Georg-Johann Lay  <avr@gjlay.de>
-	    Pitchumani Sivanupandi <pitchumani.sivanupandi@microchip.com>
+	    Pitchumani Sivanupandi  <pitchumani.sivanupandi@microchip.com>
 
 	PR target/71676
 	PR target/71678

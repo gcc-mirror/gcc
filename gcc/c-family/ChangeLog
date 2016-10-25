@@ -1,3 +1,8 @@
+2016-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum rid): Add RID_BUILTIN_LAUNDER.
+	* c-common.c (c_common_reswords): Add __builtin_launder.
+
 2016-10-24  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-common.c (c_common_truthvalue_conversion): Warn for

@@ -2207,6 +2207,19 @@ expand_ATOMIC_COMPARE_EXCHANGE (internal_fn, gcall *call)
   expand_ifn_atomic_compare_exchange (call);
 }
 
+/* Expand LAUNDER to assignment, lhs = arg0.  */
+
+static void
+expand_LAUNDER (internal_fn, gcall *call)
+{
+  tree lhs = gimple_call_lhs (call);
+
+  if (!lhs)
+    return;
+
+  expand_assignment (lhs, gimple_call_arg (call, 0), false);
+}
+
 /* Expand a call to FN using the operands in STMT.  FN has a single
    output operand and NARGS input operands.  */
 

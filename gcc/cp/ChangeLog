@@ -1,3 +1,12 @@
+2016-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (finish_builtin_launder): Declare.
+	* parser.c (cp_parser_postfix_expression): Handle RID_BUILTIN_LAUNDER.
+	* semantics.c (finish_builtin_launder): New function.
+	* pt.c (tsubst_copy_and_build): Handle instantiation of IFN_LAUNDER.
+	* constexpr.c (cxx_eval_internal_function): Handle IFN_LAUNDER.
+	(potential_constant_expression_1): Likewise.
+
 2016-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-objcp-common.c (cp_decl_dwarf_attribute): Handle DW_AT_reference

@@ -1,11 +1,17 @@
+2016-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/launder1.C: New test.
+	* g++.dg/cpp1z/launder2.C: New test.
+
 2016-10-25  Georg-Johann Lay  <avr@gjlay.de>
+	    Pitchumani Sivanupandi  <pitchumani.sivanupandi@microchip.com>
 
 	PR target/71676
 	PR target/71678
 	* gcc.target/avr/pr71676-2.c: New test.
 
 2016-10-25  Georg-Johann Lay  <avr@gjlay.de>
-	    Pitchumani Sivanupandi <pitchumani.sivanupandi@microchip.com>
+	    Pitchumani Sivanupandi  <pitchumani.sivanupandi@microchip.com>
 
 	PR target/71676
 	PR target/71678

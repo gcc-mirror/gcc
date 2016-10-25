@@ -16599,19 +16599,19 @@ tsubst_copy_and_build (tree t,
 	tree ret;
 
 	function = CALL_EXPR_FN (t);
-	if (function == NULL_TREE)
-	  {
-	    /* If you hit this assert, it means that you're trying to tsubst
-	       an internal function with arguments.  This isn't yet supported,
-	       so you need to build another internal call with the tsubsted
-	       arguments after the arguments have been tsubsted down below.  */
-	    gcc_assert (call_expr_nargs (t) == 0);
-	    RETURN (t);
-	  }
+	/* Internal function with no arguments.  */
+	if (function == NULL_TREE && call_expr_nargs (t) == 0)
+	  RETURN (t);
+
 	/* When we parsed the expression, we determined whether or
 	   not Koenig lookup should be performed.  */
 	koenig_p = KOENIG_LOOKUP_P (t);
-	if (TREE_CODE (function) == SCOPE_REF)
+	if (function == NULL_TREE)
+	  {
+	    koenig_p = false;
+	    qualified_p = false;
+	  }
+	else if (TREE_CODE (function) == SCOPE_REF)
 	  {
 	    qualified_p = true;
 	    function = tsubst_qualified_id (function, args, complain, in_decl,
@@ -16709,7 +16709,8 @@ tsubst_copy_and_build (tree t,
 	    && !any_type_dependent_arguments_p (call_args))
 	  function = perform_koenig_lookup (function, call_args, tf_none);
 
-	if (identifier_p (function)
+	if (function != NULL_TREE
+	    && identifier_p (function)
 	    && !any_type_dependent_arguments_p (call_args))
 	  {
 	    if (koenig_p && (complain & tf_warning_or_error))
@@ -16721,7 +16722,10 @@ tsubst_copy_and_build (tree t,
 			    (function, args, complain, in_decl, true,
 			     integral_constant_expression_p));
 		if (unq == error_mark_node)
-		  RETURN (error_mark_node);
+		  {
+		    release_tree_vector (call_args);
+		    RETURN (error_mark_node);
+		  }
 
 		if (unq != function)
 		  {
@@ -16774,14 +16778,40 @@ tsubst_copy_and_build (tree t,
 	  }
 
 	/* Remember that there was a reference to this entity.  */
-	if (DECL_P (function)
+	if (function != NULL_TREE
+	    && DECL_P (function)
 	    && !mark_used (function, complain) && !(complain & tf_error))
-	  RETURN (error_mark_node);
+	  {
+	    release_tree_vector (call_args);
+	    RETURN (error_mark_node);
+	  }
 
 	/* Put back tf_decltype for the actual call.  */
 	complain |= decltype_flag;
 
-	if (TREE_CODE (function) == OFFSET_REF)
+	if (function == NULL_TREE)
+	  switch (CALL_EXPR_IFN (t))
+	    {
+	    case IFN_LAUNDER:
+	      gcc_assert (nargs == 1);
+	      if (vec_safe_length (call_args) != 1)
+		{
+		  error_at (EXPR_LOC_OR_LOC (t, input_location),
+			    "wrong number of arguments to "
+			    "%<__builtin_launder%>");
+		  ret = error_mark_node;
+		}
+	      else
+		ret = finish_builtin_launder (EXPR_LOC_OR_LOC (t,
+							       input_location),
+					      (*call_args)[0], complain);
+	      break;
+
+	    default:
+	      /* Unsupported internal function with arguments.  */
+	      gcc_unreachable ();
+	    }
+	else if (TREE_CODE (function) == OFFSET_REF)
 	  ret = build_offset_ref_call_from_tree (function, &call_args,
 						 complain);
 	else if (TREE_CODE (function) == COMPONENT_REF)
