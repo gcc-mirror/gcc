@@ -1597,7 +1597,7 @@ Common Report Var(flag_ipa_icf_functions) Optimization
 Perform Identical Code Folding for functions.
 
 fipa-icf-variables
-Common Report Var(flag_ipa_icf_variables)
+Common Report Var(flag_ipa_icf_variables) Optimization
 Perform Identical Code Folding for variables.
 
 fipa-reference
