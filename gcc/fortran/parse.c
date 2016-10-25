@@ -413,6 +413,12 @@ decode_statement (void)
   gfc_undo_symbols ();
   gfc_current_locus = old_locus;
 
+  /* Try to match TYPE as an alias for PRINT.  */
+  if (gfc_match_type (&st) == MATCH_YES)
+    return st;
+  gfc_undo_symbols ();
+  gfc_current_locus = old_locus;
+
   match (NULL, gfc_match_do, ST_DO);
   match (NULL, gfc_match_block, ST_BLOCK);
   match (NULL, gfc_match_associate, ST_ASSOCIATE);
