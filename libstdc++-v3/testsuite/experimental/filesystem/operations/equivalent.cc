@@ -20,28 +20,51 @@
 // { dg-require-filesystem-ts "" }
 
 #include <experimental/filesystem>
-#include <testsuite_hooks.h>
 #include <testsuite_fs.h>
+#include <testsuite_hooks.h>
 
 namespace fs = std::experimental::filesystem;
+
 
 void
 test01()
 {
-  auto p = __gnu_test::nonexistent_path();
+  auto p1 = __gnu_test::nonexistent_path();
+  auto p2 = __gnu_test::nonexistent_path();
   std::error_code ec;
+  bool result;
 
-  read_symlink(p, ec);
+  result = equivalent(p1, p2, ec);
   VERIFY( ec );
+  VERIFY( !result );
+  const auto bad_ec = ec;
 
-  fs::path tgt = ".";
-  create_symlink(tgt, p);
-
-  auto result = read_symlink(p, ec);
+  __gnu_test::scoped_file f1(p1);
+  result = equivalent(p1, p2, ec);
   VERIFY( !ec );
-  VERIFY( result == tgt );
+  VERIFY( !result );
 
-  remove(p);
+  __gnu_test::scoped_file f2(p2);
+  ec = bad_ec;
+  result = equivalent(p1, p2, ec);
+  VERIFY( !ec );
+  VERIFY( !result );
+
+  auto p3 = __gnu_test::nonexistent_path();
+  create_hard_link(p1, p3, ec);
+  if (ec)
+    return;  // hard links not supported
+  __gnu_test::scoped_file f3(p3, __gnu_test::scoped_file::adopt_file);
+
+  ec = bad_ec;
+  result = equivalent(p1, p3, ec);
+  VERIFY( !ec );
+  VERIFY( result );
+
+  ec = bad_ec;
+  result = equivalent(p2, p3, ec);
+  VERIFY( !ec );
+  VERIFY( !result );
 }
 
 int

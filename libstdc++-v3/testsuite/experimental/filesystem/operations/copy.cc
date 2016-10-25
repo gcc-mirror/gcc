@@ -128,6 +128,9 @@ test03()
   fs::copy(from, to);
   VERIFY( fs::exists(to) );
   VERIFY( fs::file_size(to) == fs::file_size(from) );
+
+  remove(from);
+  remove(to);
 }
 
 // Test is_directory(f) case.
@@ -138,6 +141,37 @@ test04()
   auto to = __gnu_test::nonexistent_path();
   std::error_code ec;
 
+  create_directories(from/"a/b/c");
+
+  {
+    __gnu_test::scoped_file f(to);
+    copy(from, to, ec);
+    VERIFY( ec );
+  }
+
+  __gnu_test::scoped_file f1(from/"a/f1");
+  std::ofstream{f1.path} << "file one";
+  __gnu_test::scoped_file f2(from/"a/b/f2");
+  std::ofstream{f2.path} << "file two";
+
+  copy(from, to, ec);
+  VERIFY( !ec );
+  VERIFY( exists(to) && is_empty(to) );
+  remove(to);
+
+  copy(from, to, fs::copy_options::recursive, ec);
+  VERIFY( !ec );
+  VERIFY( exists(to) && !is_empty(to) );
+  VERIFY( is_regular_file(to/"a/f1") && !is_empty(to/"a/f1") );
+  VERIFY( file_size(from/"a/f1") == file_size(to/"a/f1") );
+  VERIFY( is_regular_file(to/"a/b/f2") && !is_empty(to/"a/b/f2") );
+  VERIFY( file_size(from/"a/b/f2") == file_size(to/"a/b/f2") );
+  VERIFY( is_directory(to/"a/b/c") && is_empty(to/"a/b/c") );
+
+  f1.path.clear();
+  f2.path.clear();
+  remove_all(from, ec);
+  remove_all(to, ec);
 }
 
 // Test no-op cases.

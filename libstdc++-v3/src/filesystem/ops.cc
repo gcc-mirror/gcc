@@ -350,6 +350,8 @@ namespace
 	  from_st = &st2;
       }
     f = make_file_status(*from_st);
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 2712. copy_file() has a number of unspecified error conditions
     if (!is_regular_file(f))
       {
 	ec = std::make_error_code(std::errc::not_supported);
@@ -360,8 +362,13 @@ namespace
 
     if (exists(t))
       {
-	if (!is_other(t) && !is_other(f)
-	    && to_st->st_dev == from_st->st_dev
+	if (!is_regular_file(t))
+	  {
+	    ec = std::make_error_code(std::errc::not_supported);
+	    return false;
+	  }
+
+	if (to_st->st_dev == from_st->st_dev
 	    && to_st->st_ino == from_st->st_ino)
 	  {
 	    ec = std::make_error_code(std::errc::file_exists);
@@ -912,7 +919,7 @@ fs::equivalent(const path& p1, const path& p2)
 {
   error_code ec;
   auto result = equivalent(p1, p2, ec);
-  if (ec.value())
+  if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot check file equivalence",
 	  p1, p2, ec));
   return result;
@@ -922,25 +929,42 @@ bool
 fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
 {
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
+  int err = 0;
+  file_status s1, s2;
   stat_type st1, st2;
-  if (::stat(p1.c_str(), &st1) == 0 && ::stat(p2.c_str(), &st2) == 0)
+  if (::stat(p1.c_str(), &st1) == 0)
+    s1 = make_file_status(st1);
+  else if (is_not_found_errno(errno))
+    s1.type(file_type::not_found);
+  else
+    err = errno;
+
+  if (::stat(p2.c_str(), &st2) == 0)
+    s2 = make_file_status(st2);
+  else if (is_not_found_errno(errno))
+    s2.type(file_type::not_found);
+  else
+    err = errno;
+
+  if (exists(s1) && exists(s2))
     {
-      file_status s1 = make_file_status(st1);
-      file_status s2 = make_file_status(st2);
       if (is_other(s1) && is_other(s2))
 	{
 	  ec = std::make_error_code(std::errc::not_supported);
 	  return false;
 	}
       ec.clear();
+      if (is_other(s1) || is_other(s2))
+	return false;
       return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
     }
-  else if (is_not_found_errno(errno))
-    {
-      ec = std::make_error_code(std::errc::no_such_file_or_directory);
-      return false;
-    }
-  ec.assign(errno, std::generic_category());
+  else if (!exists(s1) && !exists(s2))
+    ec = std::make_error_code(std::errc::no_such_file_or_directory);
+  else if (err)
+    ec.assign(err, std::generic_category());
+  else
+    ec.clear();
+  return false;
 #else
   ec = std::make_error_code(std::errc::not_supported);
 #endif

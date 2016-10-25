@@ -107,7 +107,7 @@ namespace __gnu_test
 
     scoped_file(path_type p, adopt_file_t) : path(p) { }
 
-    ~scoped_file() { remove(path); }
+    ~scoped_file() { if (!path.empty()) remove(path); }
 
     path_type path;
   };
