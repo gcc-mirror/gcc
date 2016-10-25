@@ -1,3 +1,13 @@
+2016-10-25  Georg-Johann Lay  <avr@gjlay.de>
+	    Pitchumani Sivanupandi <pitchumani.sivanupandi@microchip.com>
+
+	PR target/71676
+	PR target/71678
+	* gcc.target/avr/pr71676-1.c: New test.
+	* gcc.target/avr/pr71676-3.c: New test.
+	* gcc.target/avr/pr71676.c: New test.
+	* gcc.target/avr/pr71678.c: New test.
+
 2016-10-24  Kugan Vivekanandarajah  <kuganvi@linaro.org>
 
 	* gcc.target/aarch64/test_frame_common.h: Add noclone attribute

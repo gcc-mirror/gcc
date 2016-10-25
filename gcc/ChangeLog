@@ -1,3 +1,10 @@
+2016-10-25  Georg-Johann Lay  <avr@gjlay.de>
+	    Pitchumani Sivanupandi <pitchumani.sivanupandi@microchip.com>
+
+	PR target/71676
+	PR target/71678
+	* config/avr/avr.md (casesi): Rewrite avoiding subregs of SI.
+
 2016-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (gen_subprogram_die): Add DW_AT_reference or
