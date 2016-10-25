@@ -1,4 +1,9 @@
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/78106
+	* gcc.dg/asan/pr78106.c: Add -ffat-lto-objects to dg-options.
+
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_bitwise_ops_1.f90: New test.
 	* gfortran.dg/dec_bitwise_ops_2.f90: New test.
@@ -21,23 +26,23 @@
 	PR target/78102
 	* gcc.target/i386/pr78102.c: New test.
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_logical_xor_1.f90: New test.
 	* gfortran.dg/dec_logical_xor_2.f90: New test.
 	* gfortran.dg/dec_logical_xor_3.f03: New test.
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_loc_rval_1.f90: New test.
 	* gfortran.dg/dec_loc_rval_2.f90: New test.
 	* gfortran.dg/dec_loc_rval_3.f03: New test.
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_type_print.f90: New testcase.
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/feed_1.f90: New test.
 	* gfortran.dg/feed_2.f90: New test.
@@ -684,7 +689,7 @@
 	* g++.dg/concepts/decl-diagnose.C (struct X): Expect also error about
 	uninitialized const.
 
-2016-10-13  Sandra Loosemore <sandra@codesourcery.com>
+2016-10-13  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/arm/scd42-1.c: Skip if -mcpu incompatible with
 	Xscale is specified, not just -march.
