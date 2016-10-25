@@ -1,3 +1,9 @@
+2016-10-25  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/78106
+	* sanopt.c (imm_dom_path_with_freeing_call): Handle gasm
+	statements as they can also contain possibly a freeing call.
+
 2016-10-25  H.J. Lu  <hongjiu.lu@intel.com>
 	    Martin Liska  <mliska@suse.cz>
 

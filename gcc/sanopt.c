@@ -211,8 +211,12 @@ imm_dom_path_with_freeing_call (basic_block bb, basic_block dom)
       for (gsi = gsi_start_bb (e->src); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
+	  gasm *asm_stmt;
 
-	  if (is_gimple_call (stmt) && !nonfreeing_call_p (stmt))
+	  if ((is_gimple_call (stmt) && !nonfreeing_call_p (stmt))
+	      || ((asm_stmt = dyn_cast <gasm *> (stmt))
+		  && (gimple_asm_clobbers_memory_p (asm_stmt)
+		      || gimple_asm_volatile_p (asm_stmt))))
 	    {
 	      pred_info->has_freeing_call_p = true;
 	      break;
