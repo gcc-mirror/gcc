@@ -1467,6 +1467,7 @@ compatibility extensions along with those enabled by @option{-std=legacy}.
 * Extended math intrinsics::
 * Form feed as whitespace::
 * TYPE as an alias for PRINT::
+* %LOC as an rvalue::
 @end menu
 
 @node Old-style kind specifications
@@ -2535,6 +2536,26 @@ TYPE *, 'hello world'
 
 @smallexample
 PRINT *, 'hello world'
+@end smallexample
+
+@node %LOC as an rvalue
+@subsection %LOC as an rvalue
+@cindex LOC
+Normally @code{%LOC} is allowed only in parameter lists.  However the intrinsic
+function @code{LOC} does the same thing, and is usable as the right-hand-side of
+assignments. For compatibility, GNU Fortran supports the use of @code{%LOC} as
+an alias for the builtin @code{LOC} with @option{-std=legacy}.  With this
+feature enabled the following two examples are equivalent:
+
+@smallexample
+integer :: i, l
+l = %loc(i)
+call sub(l)
+@end smallexample
+
+@smallexample
+integer :: i
+call sub(%loc(i))
 @end smallexample
 
 
