@@ -1,3 +1,8 @@
+2016-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (wi::fits_to_tree_p): Accept only 0 and 1 for boolean types.
+	* tree.c (int_fits_type_p): Likewise.  Adjust head comment.
+
 2016-10-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* ggc-tests.c (forcibly_ggc_collect): Rename to...

@@ -5295,6 +5295,11 @@ template <typename T>
 bool
 wi::fits_to_tree_p (const T &x, const_tree type)
 {
+  /* Short-circuit boolean types since various transformations assume that
+     they can only take values 0 and 1.  */
+  if (TREE_CODE (type) == BOOLEAN_TYPE)
+    return eq_p (x, 0) || eq_p (x, 1);
+
   if (TYPE_SIGN (type) == UNSIGNED)
     return eq_p (x, zext (x, TYPE_PRECISION (type)));
   else

@@ -1,3 +1,10 @@
+2016-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt59.adb: New test.
+	* gnat.dg/opt59_pkg.ad[sb]: New helper.
+
+	* gnat.dg/opt60.adb: New test.
+
 2016-10-25  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/72770
