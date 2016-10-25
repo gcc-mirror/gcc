@@ -1,3 +1,7 @@
+2016-10-25  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* intrinsic.texi (cosd): New mathop.
+
 2016-10-25  Fritz Reese <fritzoreese@gmail.com>
 
 	* match.c (gfc_match_intrinsic_op): Match ".XOR." with -std=legacy.
