@@ -1,8 +1,14 @@
 2016-10-25  Fritz Reese <fritzoreese@gmail.com>
 
+	* gfortran.dg/dec_logical_xor_1.f90: New test.
+	* gfortran.dg/dec_logical_xor_2.f90: New test.
+	* gfortran.dg/dec_logical_xor_3.f03: New test.
+
+2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+
 	* gfortran.dg/dec_loc_rval_1.f90: New test.
 	* gfortran.dg/dec_loc_rval_2.f90: New test.
-	* gfortran.dg/dec_loc_rval_3.f90: New test.
+	* gfortran.dg/dec_loc_rval_3.f03: New test.
 
 2016-10-25  Fritz Reese <fritzoreese@gmail.com>
 
