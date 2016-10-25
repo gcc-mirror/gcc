@@ -80,6 +80,12 @@ selftest::run_tests ()
   /* Run any lang-specific selftests.  */
   lang_hooks.run_lang_selftests ();
 
+  /* Force a GC at the end of the selftests, to shake out GC-related
+     issues.  For example, if any GC-managed items have buggy (or missing)
+     finalizers, this last collection will ensure that things that were
+     failed to be finalized can be detected by valgrind.  */
+  forcibly_ggc_collect ();
+
   /* Finished running tests.  */
   long finish_time = get_run_time ();
   long elapsed_time = finish_time - start_time;

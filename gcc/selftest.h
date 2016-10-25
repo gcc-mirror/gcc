@@ -153,6 +153,11 @@ for_each_line_table_case (void (*testcase) (const line_table_case &));
 
 extern char *read_file (const location &loc, const char *path);
 
+/* A helper function for writing tests that interact with the
+   garbage collector.  */
+
+extern void forcibly_ggc_collect ();
+
 /* Declarations for specific families of tests (by source file), in
    alphabetical order.  */
 extern void bitmap_c_tests ();

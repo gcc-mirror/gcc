@@ -1,3 +1,20 @@
+2016-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* ggc-tests.c (forcibly_ggc_collect): Rename to...
+	(selftest::forcibly_ggc_collect): ...this, and remove "static".
+	(test_basic_struct): Update for above renaming.
+	(test_length): Likewise.
+	(test_union): Likewise.
+	(test_finalization): Likewise.
+	(test_deletable_global): Likewise.
+	(test_inheritance): Likewise.
+	(test_chain_next): Likewise.
+	(test_user_struct): Likewise.
+	(test_tree_marking): Likewise.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::forcibly_ggc_collect at the end of the selftests.
+	* selftest.h (selftest::forcibly_ggc_collect): New decl.
+
 2016-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78102
