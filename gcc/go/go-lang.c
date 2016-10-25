@@ -373,10 +373,9 @@ go_langhook_type_for_mode (machine_mode mode, int unsignedp)
       return NULL_TREE;
     }
 
-  // FIXME: This static_cast should be in machmode.h.
-  enum mode_class mc = static_cast<enum mode_class>(GET_MODE_CLASS(mode));
+  enum mode_class mc = GET_MODE_CLASS (mode);
   if (mc == MODE_INT)
-    return go_langhook_type_for_size(GET_MODE_BITSIZE(mode), unsignedp);
+    return go_langhook_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
   else if (mc == MODE_FLOAT)
     {
       switch (GET_MODE_BITSIZE (mode))

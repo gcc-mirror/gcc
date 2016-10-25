@@ -1,3 +1,8 @@
+2016-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* go-lang.c (go_langhook_type_for_mode): Remove redundant cast
+	from result of GET_MODE_CLASS.  Minor formatting fixes.
+
 2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* go-backend.c: Include memmodel.h.
