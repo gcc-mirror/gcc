@@ -1,4 +1,23 @@
 2016-10-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	New avt target pass to work around performance loss by PR fix.
+
+	PR target/71676
+	PR target/71678
+	* config/avr/avr.md (casesi_<mode>_sequence) [qi,hi]: New insn.
+	(*cmp<mode>) [qi,qq,uqq,hi,hq,uhq,ha,uha]: Rename to cmp<mode>3.
+	* config/avr/predicates.md (extend_operator): New.
+	* config/avr/avr-passes.def (avr_pass_casesi): Register new pass.
+	* config/avr/avr-protos.h (avr_casei_sequence_check_operands)
+	(make_avr_pass_casesi): New prototypes.
+	* config/avr/avr.c (print-rtl.h): Include it.
+	(pass_data avr_pass_data_casesi): Data for new pass.
+	(avr_pass_casesi): New class implementing rtl_opt_pass .avr-casesi.
+	(make_avr_pass_casesi, avr_parallel_insn_from_insns)
+	(avr_is_casesi_sequence, avr_casei_sequence_check_operands)
+	(avr_optimize_casesi): New functions.
+
+2016-10-25  Georg-Johann Lay  <avr@gjlay.de>
 	    Pitchumani Sivanupandi <pitchumani.sivanupandi@microchip.com>
 
 	PR target/71676
