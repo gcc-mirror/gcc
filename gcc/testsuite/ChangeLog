@@ -1,3 +1,8 @@
+2016-10-25  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/78041
+	* gcc.target/arm/pr78041.c: New test.
+
 2016-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/launder1.C: New test.
