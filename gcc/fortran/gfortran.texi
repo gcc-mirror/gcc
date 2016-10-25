@@ -1465,6 +1465,7 @@ compatibility extensions along with those enabled by @option{-std=legacy}.
 * Type variants for integer intrinsics::
 * AUTOMATIC and STATIC attributes::
 * Extended math intrinsics::
+* Form feed as whitespace::
 @end menu
 
 @node Old-style kind specifications
@@ -2509,6 +2510,16 @@ have more accurate builtin versions. These functions convert their arguments
 and then multiplying it by a constant radian-to-degree (or degree-to-radian)
 factor, as appropriate. The factor is computed at compile-time as 180/pi (or
 pi/180).
+
+@node Form feed as whitespace
+@subsection Form feed as whitespace
+@cindex form feed whitespace
+
+Historically, legacy compilers allowed insertion of form feed characters ('\f',
+ASCII 0xC) at the beginning of lines for formatted output to line printers,
+though the Fortran standard does not mention this. GNU Fortran supports the
+interpretation of form feed characters in source as whitespace for
+compatibility.
 
 
 @node Extensions not implemented in GNU Fortran

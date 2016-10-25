@@ -1,5 +1,10 @@
 2016-10-25  Fritz Reese <fritzoreese@gmail.com>
 
+	* gfortran.texi: Document.
+	* gfortran.h (gfc_is_whitespace): Include form feed ('\f').
+
+2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+
 	* invoke.texi, gfortran.texi: Touch up documentation of -fdec.
 	* gfortran.h (gfc_option): Move flag_dec_structure out of gfc_option.
 	* decl.c (match_record_decl, gfc_match_decl_type_spec,
@@ -10,6 +15,7 @@
 	* lang.opt (fdec): Use Fortran Var to create flag_dec.
 	* options.c (set_dec_flags): With -fdec enable -fcray-pointer,
 	-fd-lines-as-comments (default), -fdollar-ok, and legacy std flags.
+
 2016-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/77828
