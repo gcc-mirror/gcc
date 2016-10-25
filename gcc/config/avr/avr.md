@@ -5154,45 +5154,46 @@
 
 
 (define_expand "casesi"
-  [(parallel [(set (match_dup 6)
-                   (minus:HI (subreg:HI (match_operand:SI 0 "register_operand" "") 0)
-                             (match_operand:HI 1 "register_operand" "")))
+  [(parallel [(set (match_dup 5)
+                   (plus:SI (match_operand:SI 0 "register_operand")
+                            (match_operand:SI 1 "const_int_operand")))
               (clobber (scratch:QI))])
    (parallel [(set (cc0)
-                   (compare (match_dup 6)
-                            (match_operand:HI 2 "register_operand" "")))
-              (clobber (match_scratch:QI 9 ""))])
+                   (compare (match_dup 5)
+                            (match_operand:SI 2 "const_int_operand")))
+              (clobber (scratch:QI))])
 
    (set (pc)
         (if_then_else (gtu (cc0)
                            (const_int 0))
-                      (label_ref (match_operand 4 "" ""))
+                      (label_ref (match_operand 4))
                       (pc)))
 
-   (set (match_dup 10)
-        (match_dup 7))
+   (set (match_dup 7)
+        (match_dup 6))
 
    (parallel [(set (pc)
-                   (unspec:HI [(match_dup 10)] UNSPEC_INDEX_JMP))
+                   (unspec:HI [(match_dup 7)] UNSPEC_INDEX_JMP))
               (use (label_ref (match_dup 3)))
-              (clobber (match_dup 10))
+              (clobber (match_dup 7))
               (clobber (match_dup 8))])]
   ""
   {
-    operands[6] = gen_reg_rtx (HImode);
+    operands[1] = simplify_unary_operation (NEG, SImode, operands[1], SImode);
+    operands[5] = gen_reg_rtx (SImode);
+    operands[6] = simplify_gen_subreg (HImode, operands[5], SImode, 0);
 
     if (AVR_HAVE_EIJMP_EICALL)
       {
-        operands[7] = operands[6];
+        operands[7] = gen_rtx_REG (HImode, REG_Z);
         operands[8] = all_regs_rtx[24];
-        operands[10] = gen_rtx_REG (HImode, REG_Z);
       }
     else
       {
-        operands[7] = gen_rtx_PLUS (HImode, operands[6],
+        operands[6] = gen_rtx_PLUS (HImode, operands[6],
                                     gen_rtx_LABEL_REF (VOIDmode, operands[3]));
+        operands[7] = gen_reg_rtx (HImode);
         operands[8] = const0_rtx;
-        operands[10] = operands[6];
       }
   })
 
