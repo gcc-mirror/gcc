@@ -34,11 +34,13 @@
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, Dl, DL, Do, Dv, Dy, Di, Dt, Dp, Dz
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
 ;; in Thumb-2 state: Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py
+;; in all states: Pf
 
 ;; The following memory constraints have been used:
-;; in ARM/Thumb-2 state: Q, Uh, Ut, Uv, Uy, Un, Um, Us
+;; in ARM/Thumb-2 state: Uh, Ut, Uv, Uy, Un, Um, Us
 ;; in ARM state: Uq
 ;; in Thumb state: Uu, Uw
+;; in all states: Q
 
 
 (define_register_constraint "t" "TARGET_32BIT ? VFP_LO_REGS : NO_REGS"
@@ -179,6 +181,13 @@
   "@internal In Thumb-1 state a constant in the range 256 to +510"
   (and (match_code "const_int")
        (match_test "TARGET_THUMB1 && ival >= 256 && ival <= 510")))
+
+(define_constraint "Pf"
+  "Memory models except relaxed, consume or release ones."
+  (and (match_code "const_int")
+       (match_test "!is_mm_relaxed (memmodel_from_int (ival))
+		    && !is_mm_consume (memmodel_from_int (ival))
+		    && !is_mm_release (memmodel_from_int (ival))")))
 
 (define_constraint "Ps"
   "@internal In Thumb-2 state a constant in the range -255 to +255"
@@ -407,7 +416,7 @@
 
 (define_memory_constraint "Q"
  "@internal
-  In ARM/Thumb-2 state an address that is a single base register."
+  An address that is a single base register."
  (and (match_code "mem")
       (match_test "REG_P (XEXP (op, 0))")))
 
