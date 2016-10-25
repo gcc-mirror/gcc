@@ -1,5 +1,9 @@
 2016-10-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* files.c (destroy_cpp_file): Free file->path.
+
+2016-10-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* include/line-map.h (line_maps::~line_maps): New dtor.
 	(location_adhoc_data_fini): Delete decl.
 	* line-map.c (line_maps::~line_maps): New dtor.

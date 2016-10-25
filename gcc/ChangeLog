@@ -1,5 +1,15 @@
 2016-10-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* input.c (fcache::file_patch): Add comment about lifetime.
+	(selftest::cpp_reader_ptr): New class.
+	(selftest::lexer_test): Convert m_parser from cpp_reader *
+	to a cpp_reader_ptr, and move m_tempfile to after it.
+	(selftest::lexer_test::lexer_test): Update for above reordering.
+	(lexer_test::~lexer_test): Move cleanup of m_parser to
+	cpp_reader_ptr's dtor.
+
+2016-10-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* toplev.c (toplev::main): Remove call to
 	location_adhoc_data_fini.
 

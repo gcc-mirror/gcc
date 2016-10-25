@@ -63,6 +63,10 @@ struct fcache
      array.  */
   unsigned use_count;
 
+  /* The file_path is the key for identifying a particular file in
+     the cache.
+     For libcpp-using code, the underlying buffer for this field is
+     owned by the corresponding _cpp_file within the cpp_reader.  */
   const char *file_path;
 
   FILE *fp;
@@ -1918,6 +1922,29 @@ class lexer_test_options
   virtual void apply (lexer_test &) = 0;
 };
 
+/* Wrapper around an cpp_reader *, which calls cpp_finish and cpp_destroy
+   in its dtor.
+
+   This is needed by struct lexer_test to ensure that the cleanup of the
+   cpp_reader happens *after* the cleanup of the temp_source_file.  */
+
+class cpp_reader_ptr
+{
+ public:
+  cpp_reader_ptr (cpp_reader *ptr) : m_ptr (ptr) {}
+
+  ~cpp_reader_ptr ()
+  {
+    cpp_finish (m_ptr, NULL);
+    cpp_destroy (m_ptr);
+  }
+
+  operator cpp_reader * () const { return m_ptr; }
+
+ private:
+  cpp_reader *m_ptr;
+};
+
 /* A struct for writing lexer tests.  */
 
 struct lexer_test
@@ -1928,9 +1955,16 @@ struct lexer_test
 
   const cpp_token *get_token ();
 
-  temp_source_file m_tempfile;
+  /* The ordering of these fields matters.
+     The line_table_test must be first, since the cpp_reader_ptr
+     uses it.
+     The cpp_reader must be cleaned up *after* the temp_source_file
+     since the filenames in input.c's input cache are owned by the
+     cpp_reader; in particular, when ~temp_source_file evicts the
+     filename the filenames must still be alive.  */
   line_table_test m_ltt;
-  cpp_reader *m_parser;
+  cpp_reader_ptr m_parser;
+  temp_source_file m_tempfile;
   string_concat_db m_concats;
 };
 
@@ -1998,11 +2032,11 @@ ebcdic_execution_charset *ebcdic_execution_charset::s_singleton;
    start parsing the tempfile.  */
 
 lexer_test::lexer_test (const line_table_case &case_, const char *content,
-			lexer_test_options *options) :
+			lexer_test_options *options)
+: m_ltt (case_),
+  m_parser (cpp_create_reader (CLK_GNUC99, NULL, line_table)),
   /* Create a tempfile and write the text to it.  */
   m_tempfile (SELFTEST_LOCATION, ".c", content),
-  m_ltt (case_),
-  m_parser (cpp_create_reader (CLK_GNUC99, NULL, line_table)),
   m_concats ()
 {
   if (options)
@@ -2026,9 +2060,6 @@ lexer_test::~lexer_test ()
   tok = cpp_get_token_with_location (m_parser, &loc);
   ASSERT_NE (tok, NULL);
   ASSERT_EQ (tok->type, CPP_EOF);
-
-  cpp_finish (m_parser, NULL);
-  cpp_destroy (m_parser);
 }
 
 /* Get the next token from m_parser.  */

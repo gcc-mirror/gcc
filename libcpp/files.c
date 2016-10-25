@@ -1132,6 +1132,7 @@ destroy_cpp_file (_cpp_file *file)
 {
   free ((void *) file->buffer_start);
   free ((void *) file->name);
+  free ((void *) file->path);
   free (file);
 }
 
