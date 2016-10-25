@@ -1,5 +1,9 @@
 2016-10-25  Jeff Law  <law@redhat.com>
 
+	* config/v850/v850.c (v850_handle_data_area_attribute): Fix fallthru
+	comment.
+	(v850_output_aligned_bss): Add missing break.
+
 	* config/m68k/m68k.c (m68k_get_reloc_decoration): Add gcc_unreachable.
 
 2016-10-25  Martin Liska  <mliska@suse.cz>
