@@ -1,3 +1,10 @@
+2016-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (maybe_constant_init): Pull out TARGET_EXPR_INITIAL.
+	(cxx_eval_outermost_constant_expr): Don't return a CONSTRUCTOR
+	with CONSTRUCTOR_NO_IMPLICIT_ZERO.
+	(cxx_eval_call_expression): Clear CONSTRUCTOR_NO_IMPLICIT_ZERO.
+
 2016-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_postfix_expression): Adding missing break;.
