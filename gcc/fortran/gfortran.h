@@ -60,7 +60,7 @@ not after.
 #define MAX_SUBRECORD_LENGTH 2147483639   /* 2**31-9 */
 
 
-#define gfc_is_whitespace(c) ((c==' ') || (c=='\t'))
+#define gfc_is_whitespace(c) ((c==' ') || (c=='\t') || (c=='\f'))
 
 /* Macros to check for groups of structure-like types and flavors since
    derived types, structures, maps, unions are often treated similarly. */
