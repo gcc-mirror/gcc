@@ -236,12 +236,15 @@ comment lines.
 DEC compatibility mode. Enables extensions and other features that mimic
 the default behavior of older compilers (such as DEC).
 These features are non-standard and should be avoided at all costs.
-For details on GNU Fortran's implementation of these extensions see the 
+For details on GNU Fortran's implementation of these extensions see the
 full documentation.
 
 Other flags enabled by this switch are:
 @option{-fdollar-ok} @option{-fcray-pointer} @option{-fdec-structure}
-@option{-fdec-intrinsic-ints} @option{-fdec-static}
+@option{-fdec-intrinsic-ints} @option{-fdec-static} @option{-fdec-math}
+
+If @option{-fd-lines-as-code}/@option{-fd-lines-as-comments} are unset, then
+@option{-fdec} also sets @option{-fd-lines-as-comments}.
 
 @item -fdec-structure
 @opindex @code{fdec-structure}

@@ -1,3 +1,15 @@
+2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+
+	* invoke.texi, gfortran.texi: Touch up documentation of -fdec.
+	* gfortran.h (gfc_option): Move flag_dec_structure out of gfc_option.
+	* decl.c (match_record_decl, gfc_match_decl_type_spec,
+	gfc_match_structure_decl): Ditto.
+	* match.c (gfc_match_member_sep): Ditto.
+	* options.c (gfc_handle_option): Ditto.
+	* lang.opt (fdec-structure): Use Fortran Var for flag_dec_structure.
+	* lang.opt (fdec): Use Fortran Var to create flag_dec.
+	* options.c (set_dec_flags): With -fdec enable -fcray-pointer,
+	-fd-lines-as-comments (default), -fdollar-ok, and legacy std flags.
 2016-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/77828

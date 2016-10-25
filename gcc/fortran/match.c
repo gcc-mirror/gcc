@@ -159,7 +159,7 @@ gfc_match_member_sep(gfc_symbol *sym)
     return MATCH_YES;
 
   /* Beware ye who enter here.  */
-  if (!gfc_option.flag_dec_structure || !sym)
+  if (!flag_dec_structure || !sym)
     return MATCH_NO;
 
   tsym = NULL;

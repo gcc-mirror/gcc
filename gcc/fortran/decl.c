@@ -2929,7 +2929,7 @@ match_record_decl (char *name)
     m = gfc_match (" record /");
     if (m == MATCH_YES)
       {
-          if (!gfc_option.flag_dec_structure)
+          if (!flag_dec_structure)
             {
                 gfc_current_locus = old_loc;
                 gfc_error ("RECORD at %C is an extension, enable it with "
@@ -2942,7 +2942,7 @@ match_record_decl (char *name)
       }
 
   gfc_current_locus = old_loc;
-  if (gfc_option.flag_dec_structure
+  if (flag_dec_structure
       && (gfc_match (" record% ") == MATCH_YES
           || gfc_match (" record%t") == MATCH_YES))
     gfc_error ("Structure name expected after RECORD at %C");
@@ -3145,7 +3145,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     {
       /* Match nested STRUCTURE declarations; only valid within another
 	 structure declaration.  */
-      if (gfc_option.flag_dec_structure
+      if (flag_dec_structure
 	  && (gfc_current_state () == COMP_STRUCTURE
 	      || gfc_current_state () == COMP_MAP))
 	{
@@ -8654,7 +8654,7 @@ gfc_match_structure_decl (void)
     match m;
     locus where;
 
-    if(!gfc_option.flag_dec_structure)
+    if(!flag_dec_structure)
       {
           gfc_error ("STRUCTURE at %C is a DEC extension, enable with "
                      "-fdec-structure");

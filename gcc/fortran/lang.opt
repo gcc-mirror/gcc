@@ -421,7 +421,7 @@ Fortran RejectNegative
 Treat lines with 'D' in column one as comments.
 
 fdec
-Fortran
+Fortran Var(flag_dec)
 Enable all DEC language extensions.
 
 fdec-intrinsic-ints
@@ -433,7 +433,7 @@ Fortran Var(flag_dec_math)
 Enable legacy math intrinsics for compatibility.
 
 fdec-structure
-Fortran
+Fortran Var(flag_dec_structure)
 Enable support for DEC STRUCTURE/RECORD.
 
 fdec-static
