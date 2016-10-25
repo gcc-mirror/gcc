@@ -47,15 +47,27 @@ set_default_std_flags (void)
 }
 
 
-/* Set all the DEC extension flags. */
+/* Set all the DEC extension flags.  */
 
 static void
 set_dec_flags (int value)
 {
-    gfc_option.flag_dec_structure  = value;
-    flag_dec_intrinsic_ints = value;
-    flag_dec_static = value;
-    flag_dec_math = value;
+  /* Allow legacy code without warnings.  */
+  gfc_option.allow_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
+    | GFC_STD_GNU | GFC_STD_LEGACY;
+  gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
+
+  /* Set -fd-lines-as-comments by default.  */
+  if (value && gfc_current_form != FORM_FREE && gfc_option.flag_d_lines == -1)
+    gfc_option.flag_d_lines = 0;
+
+  /* Set other DEC compatibility extensions.  */
+  flag_dollar_ok |= value;
+  flag_cray_pointer |= value;
+  flag_dec_structure |= value;
+  flag_dec_intrinsic_ints |= value;
+  flag_dec_static |= value;
+  flag_dec_math |= value;
 }
 
 
@@ -729,7 +741,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fdec_structure:
-      gfc_option.flag_dec_structure = 1;
+      flag_dec_structure = 1;
       break;
     }
 

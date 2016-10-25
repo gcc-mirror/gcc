@@ -1437,7 +1437,8 @@ purely for backward compatibility with legacy compilers.  By default,
 extensions, but to warn about the use of the latter.  Specifying
 either @option{-std=f95}, @option{-std=f2003} or @option{-std=f2008}
 disables both types of extensions, and @option{-std=legacy} allows both
-without warning.
+without warning.  The special compile flag @option{-fdec} enables additional
+compatibility extensions along with those enabled by @option{-std=legacy}.
 
 @menu
 * Old-style kind specifications::

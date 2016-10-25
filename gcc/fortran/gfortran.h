@@ -2549,8 +2549,6 @@ typedef struct
   int flag_init_character;
   char flag_init_character_value;
 
-  int flag_dec_structure;
-
   int fpe;
   int fpe_summary;
   int rtcheck;
