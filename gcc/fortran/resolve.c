@@ -3522,6 +3522,88 @@ compare_shapes (gfc_expr *op1, gfc_expr *op2)
   return t;
 }
 
+/* Convert a logical operator to the corresponding bitwise intrinsic call.
+   For example A .AND. B becomes IAND(A, B).  */
+static gfc_expr *
+logical_to_bitwise (gfc_expr *e)
+{
+  gfc_expr *tmp, *op1, *op2;
+  gfc_isym_id isym;
+  gfc_actual_arglist *args = NULL;
+
+  gcc_assert (e->expr_type == EXPR_OP);
+
+  isym = GFC_ISYM_NONE;
+  op1 = e->value.op.op1;
+  op2 = e->value.op.op2;
+
+  switch (e->value.op.op)
+    {
+    case INTRINSIC_NOT:
+      isym = GFC_ISYM_NOT;
+      break;
+    case INTRINSIC_AND:
+      isym = GFC_ISYM_IAND;
+      break;
+    case INTRINSIC_OR:
+      isym = GFC_ISYM_IOR;
+      break;
+    case INTRINSIC_NEQV:
+      isym = GFC_ISYM_IEOR;
+      break;
+    case INTRINSIC_EQV:
+      /* "Bitwise eqv" is just the complement of NEQV === IEOR.
+	 Change the old expression to NEQV, which will get replaced by IEOR,
+	 and wrap it in NOT.  */
+      tmp = gfc_copy_expr (e);
+      tmp->value.op.op = INTRINSIC_NEQV;
+      tmp = logical_to_bitwise (tmp);
+      isym = GFC_ISYM_NOT;
+      op1 = tmp;
+      op2 = NULL;
+      break;
+    default:
+      gfc_internal_error ("logical_to_bitwise(): Bad intrinsic");
+    }
+
+  /* Inherit the original operation's operands as arguments.  */
+  args = gfc_get_actual_arglist ();
+  args->expr = op1;
+  if (op2)
+    {
+      args->next = gfc_get_actual_arglist ();
+      args->next->expr = op2;
+    }
+
+  /* Convert the expression to a function call.  */
+  e->expr_type = EXPR_FUNCTION;
+  e->value.function.actual = args;
+  e->value.function.isym = gfc_intrinsic_function_by_id (isym);
+  e->value.function.name = e->value.function.isym->name;
+  e->value.function.esym = NULL;
+
+  /* Make up a pre-resolved function call symtree if we need to.  */
+  if (!e->symtree || !e->symtree->n.sym)
+    {
+      gfc_symbol *sym;
+      gfc_get_ha_sym_tree (e->value.function.isym->name, &e->symtree);
+      sym = e->symtree->n.sym;
+      sym->result = sym;
+      sym->attr.flavor = FL_PROCEDURE;
+      sym->attr.function = 1;
+      sym->attr.elemental = 1;
+      sym->attr.pure = 1;
+      sym->attr.referenced = 1;
+      gfc_intrinsic_symbol (sym);
+      gfc_commit_symbol (sym);
+    }
+
+  args->name = e->value.function.isym->formal->name;
+  if (e->value.function.isym->formal->next)
+    args->next->name = e->value.function.isym->formal->next->name;
+
+  return e;
+}
 
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
@@ -3628,6 +3710,20 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
+      /* Logical ops on integers become bitwise ops with -fdec.  */
+      else if (flag_dec
+	       && (op1->ts.type == BT_INTEGER || op2->ts.type == BT_INTEGER))
+	{
+	  e->ts.type = BT_INTEGER;
+	  e->ts.kind = gfc_kind_max (op1, op2);
+	  if (op1->ts.type != e->ts.type || op1->ts.kind != e->ts.kind)
+	    gfc_convert_type (op1, &e->ts, 1);
+	  if (op2->ts.type != e->ts.type || op2->ts.kind != e->ts.kind)
+	    gfc_convert_type (op2, &e->ts, 1);
+	  e = logical_to_bitwise (e);
+	  return resolve_function (e);
+	}
+
       sprintf (msg, _("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
@@ -3635,6 +3731,15 @@ resolve_operator (gfc_expr *e)
       goto bad_op;
 
     case INTRINSIC_NOT:
+      /* Logical ops on integers become bitwise ops with -fdec.  */
+      if (flag_dec && op1->ts.type == BT_INTEGER)
+	{
+	  e->ts.type = BT_INTEGER;
+	  e->ts.kind = op1->ts.kind;
+	  e = logical_to_bitwise (e);
+	  return resolve_function (e);
+	}
+
       if (op1->ts.type == BT_LOGICAL)
 	{
 	  e->ts.type = BT_LOGICAL;

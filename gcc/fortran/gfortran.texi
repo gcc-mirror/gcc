@@ -1469,6 +1469,7 @@ compatibility extensions along with those enabled by @option{-std=legacy}.
 * TYPE as an alias for PRINT::
 * %LOC as an rvalue::
 * .XOR. operator::
+* Bitwise logical operators::
 @end menu
 
 @node Old-style kind specifications
@@ -2566,6 +2567,43 @@ call sub(%loc(i))
 GNU Fortran supports @code{.XOR.} as a logical operator with @code{-std=legacy}
 for compatibility with legacy code. @code{.XOR.} is equivalent to
 @code{.NEQV.}. That is, the output is true if and only if the inputs differ.
+
+@node Bitwise logical operators
+@subsection Bitwise logical operators
+@cindex logical, bitwise
+
+With @option{-fdec}, GNU Fortran relaxes the type constraints on
+logical operators to allow integer operands, and performs the corresponding
+bitwise operation instead.  This flag is for compatibility only, and should be
+avoided in new code.  Consider:
+
+@smallexample
+  INTEGER :: i, j
+  i = z'33'
+  j = z'cc'
+  print *, i .AND. j
+@end smallexample
+
+In this example, compiled with @option{-fdec}, GNU Fortran will
+replace the @code{.AND.} operation with a call to the intrinsic
+@code{@ref{IAND}} function, yielding the bitwise-and of @code{i} and @code{j}.
+
+Note that this conversion will occur if at least one operand is of integral
+type.  As a result, a logical operand will be converted to an integer when the
+other operand is an integer in a logical operation.  In this case,
+@code{.TRUE.} is converted to @code{1} and @code{.FALSE.} to @code{0}.
+
+Here is the mapping of logical operator to bitwise intrinsic used with
+@option{-fdec}:
+
+@multitable @columnfractions .25 .25 .5
+@headitem Operator @tab Intrinsic @tab Bitwise operation
+@item @code{.NOT.} @tab @code{@ref{NOT}} @tab complement
+@item @code{.AND.} @tab @code{@ref{IAND}} @tab intersection
+@item @code{.OR.} @tab @code{@ref{IOR}} @tab union
+@item @code{.NEQV.} @tab @code{@ref{IEOR}} @tab exclusive or
+@item @code{.EQV.} @tab @code{@ref{NOT}(@ref{IEOR})} @tab complement of exclusive or
+@end multitable
 
 
 @node Extensions not implemented in GNU Fortran
