@@ -13598,6 +13598,13 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       return false;
     }
 
+  /* If an allocatable component derived type is of the same type as
+     the enclosing derived type, we need a vtable generating so that
+     the __deallocate procedure is created.  */
+  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+       && c->ts.u.derived == sym && c->attr.allocatable == 1)
+    gfc_find_vtab (&c->ts);
+
   /* Ensure that all the derived type components are put on the
      derived type list; even in formal namespaces, where derived type
      pointer components might not have been declared.  */

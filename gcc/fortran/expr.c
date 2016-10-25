@@ -3249,7 +3249,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
   if (rvalue->is_boz && lvalue->ts.type != BT_INTEGER
       && lvalue->symtree->n.sym->attr.data
       && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L used to "
-			  "initialize non-integer variable %qs", 
+			  "initialize non-integer variable %qs",
 			  &rvalue->where, lvalue->symtree->n.sym->name))
     return false;
   else if (rvalue->is_boz && !lvalue->symtree->n.sym->attr.data
@@ -3378,7 +3378,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	    }
 
 	  if (!gfc_notify_std (GFC_STD_F2003, "Bounds specification "
-			       "for %qs in pointer assignment at %L", 
+			       "for %qs in pointer assignment at %L",
 			       lvalue->symtree->n.sym->name, &lvalue->where))
 	    return false;
 
@@ -4144,6 +4144,7 @@ gfc_has_default_initializer (gfc_symbol *der)
     if (gfc_bt_struct (c->ts.type))
       {
         if (!c->attr.pointer && !c->attr.proc_pointer
+	     && !(c->attr.allocatable && der == c->ts.u.derived)
 	     && gfc_has_default_initializer (c->ts.u.derived))
 	  return true;
 	if (c->attr.pointer && c->initializer)
@@ -4196,7 +4197,7 @@ gfc_default_initializer (gfc_typespec *ts)
 }
 
 
-/* Get or generate an expression for a default initializer of a derived type. 
+/* Get or generate an expression for a default initializer of a derived type.
    If -finit-derived is specified, generate default initialization expressions
    for components that lack them when generate is set.  */
 
@@ -5318,13 +5319,13 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 		{
 		  gfc_constructor *c, *n;
 		  gfc_expr *ec, *en;
-		  
+
 		  for (c = gfc_constructor_first (arr->value.constructor);
 		       c != NULL; c = gfc_constructor_next (c))
 		    {
 		      if (c == NULL || c->iterator != NULL)
 			continue;
-		      
+
 		      ec = c->expr;
 
 		      for (n = gfc_constructor_next (c); n != NULL;
@@ -5332,7 +5333,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 			{
 			  if (n->iterator != NULL)
 			    continue;
-			  
+
 			  en = n->expr;
 			  if (gfc_dep_compare_expr (ec, en) == 0)
 			    {
@@ -5349,6 +5350,6 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 		    }
 		}
 	    }
-  
+
   return true;
 }

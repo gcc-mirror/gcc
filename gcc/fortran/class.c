@@ -1347,6 +1347,8 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
   block->next->resolved_sym = fini->proc_tree->n.sym;
   block->next->ext.actual = gfc_get_actual_arglist ();
   block->next->ext.actual->expr = gfc_lval_expr_from_sym (array);
+  block->next->ext.actual->next = gfc_get_actual_arglist ();
+  block->next->ext.actual->next->expr = gfc_copy_expr (size_expr);
 
   /* ELSE.  */
 
@@ -2191,6 +2193,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
   gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL, *def_init = NULL;
   gfc_symbol *copy = NULL, *src = NULL, *dst = NULL;
   gfc_gsymbol *gsym = NULL;
+  gfc_symbol *dealloc = NULL, *arg = NULL;
 
   /* Find the top-level namespace.  */
   for (ns = gfc_current_ns; ns; ns = ns->parent)
@@ -2255,6 +2258,20 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	    {
 	      gfc_component *c;
 	      gfc_symbol *parent = NULL, *parent_vtab = NULL;
+	      bool rdt = false;
+
+	      /* Is this a derived type with recursive allocatable
+		 components?  */
+	      c = (derived->attr.unlimited_polymorphic
+		   || derived->attr.abstract) ?
+		  NULL : derived->components;
+	      for (; c; c= c->next)
+		if (c->ts.type == BT_DERIVED
+		    && c->ts.u.derived == derived)
+		  {
+		    rdt = true;
+		    break;
+		  }
 
 	      gfc_get_symbol (name, ns, &vtype);
 	      if (!gfc_add_flavor (&vtype->attr, FL_DERIVED, NULL,
@@ -2427,6 +2444,66 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      c->tb->ppc = 1;
 	      generate_finalization_wrapper (derived, ns, tname, c);
 
+	      /* Add component _deallocate.  */
+	      if (!gfc_add_component (vtype, "_deallocate", &c))
+		goto cleanup;
+	      c->attr.proc_pointer = 1;
+	      c->attr.access = ACCESS_PRIVATE;
+	      c->tb = XCNEW (gfc_typebound_proc);
+	      c->tb->ppc = 1;
+	      if (derived->attr.unlimited_polymorphic
+		  || derived->attr.abstract
+		  || !rdt)
+		c->initializer = gfc_get_null_expr (NULL);
+	      else
+		{
+		  /* Set up namespace.  */
+		  gfc_namespace *sub_ns = gfc_get_namespace (ns, 0);
+
+		  sub_ns->sibling = ns->contained;
+		  ns->contained = sub_ns;
+		  sub_ns->resolved = 1;
+		  /* Set up procedure symbol.  */
+		  sprintf (name, "__deallocate_%s", tname);
+		  gfc_get_symbol (name, sub_ns, &dealloc);
+		  sub_ns->proc_name = dealloc;
+		  dealloc->attr.flavor = FL_PROCEDURE;
+		  dealloc->attr.subroutine = 1;
+		  dealloc->attr.pure = 1;
+		  dealloc->attr.artificial = 1;
+		  dealloc->attr.if_source = IFSRC_DECL;
+
+		  if (ns->proc_name->attr.flavor == FL_MODULE)
+		    dealloc->module = ns->proc_name->name;
+		  gfc_set_sym_referenced (dealloc);
+		  /* Set up formal argument.  */
+		  gfc_get_symbol ("arg", sub_ns, &arg);
+		  arg->ts.type = BT_DERIVED;
+		  arg->ts.u.derived = derived;
+		  arg->attr.flavor = FL_VARIABLE;
+		  arg->attr.dummy = 1;
+		  arg->attr.artificial = 1;
+		  arg->attr.intent = INTENT_INOUT;
+		  arg->attr.dimension = 1;
+		  arg->attr.allocatable = 1;
+		  arg->as = gfc_get_array_spec();
+		  arg->as->type = AS_ASSUMED_SHAPE;
+		  arg->as->rank = 1;
+		  arg->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind,
+							NULL, 1);
+		  gfc_set_sym_referenced (arg);
+		  dealloc->formal = gfc_get_formal_arglist ();
+		  dealloc->formal->sym = arg;
+		  /* Set up code.  */
+		  sub_ns->code = gfc_get_code (EXEC_DEALLOCATE);
+		  sub_ns->code->ext.alloc.list = gfc_get_alloc ();
+		  sub_ns->code->ext.alloc.list->expr
+				= gfc_lval_expr_from_sym (arg);
+		  /* Set initializer.  */
+		  c->initializer = gfc_lval_expr_from_sym (dealloc);
+		  c->ts.interface = dealloc;
+		}
+
 	      /* Add procedure pointers for type-bound procedures.  */
 	      if (!derived->attr.unlimited_polymorphic)
 		add_procs_to_declared_vtab (derived, vtype);
@@ -2456,6 +2533,10 @@ cleanup:
 	gfc_commit_symbol (src);
       if (dst)
 	gfc_commit_symbol (dst);
+      if (dealloc)
+	gfc_commit_symbol (dealloc);
+      if (arg)
+	gfc_commit_symbol (arg);
     }
   else
     gfc_undo_symbols ();

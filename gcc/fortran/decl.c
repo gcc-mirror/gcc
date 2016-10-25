@@ -1858,8 +1858,17 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
       && current_ts.u.derived == gfc_current_block ()
       && current_attr.pointer == 0)
     {
+      if (current_attr.allocatable
+	  && !gfc_notify_std(GFC_STD_F2008, "Component at %C "
+			     "must have the POINTER attribute"))
+	{
+	  return false;
+	}
+      else if (current_attr.allocatable == 0)
+	{
       gfc_error ("Component at %C must have the POINTER attribute");
       return false;
+    }
     }
 
   if (gfc_current_block ()->attr.pointer && (*as)->rank != 0)
@@ -4842,6 +4851,10 @@ gfc_match_data_decl (void)
     {
 
       if (current_attr.pointer && gfc_comp_struct (gfc_current_state ()))
+	goto ok;
+
+      if (current_attr.allocatable && gfc_current_state () == COMP_DERIVED
+	  && current_ts.u.derived == gfc_current_block ())
 	goto ok;
 
       gfc_find_symbol (current_ts.u.derived->name,
