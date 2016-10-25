@@ -1,6 +1,6 @@
 2016-10-25  Georg-Johann Lay  <avr@gjlay.de>
 
-	New avt target pass to work around performance loss by PR fix.
+	New avr target pass to work around performance loss by PR fix.
 
 	PR target/71676
 	PR target/71678
