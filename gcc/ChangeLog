@@ -1,3 +1,23 @@
+2016-10-25  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/constraints.md (Q constraint): Document its use for
+	Thumb-1.
+	(Pf constraint): New constraint for relaxed, consume or relaxed memory
+	models.
+	* config/arm/sync.md (atomic_load<mode>): Add new ARMv8-M Baseline only
+	alternatives to allow any register when memory model matches Pf and
+	thus lda is used, but only low registers otherwise.  Use unpredicated
+	output template for Thumb-1 targets.
+	(atomic_store<mode>): Likewise for stl.
+	(arm_load_exclusive<mode>): Add new ARMv8-M Baseline only alternative
+	whose output template does not have predication.
+	(arm_load_acquire_exclusive<mode>): Likewise.
+	(arm_load_exclusivesi): Likewise.
+	(arm_load_acquire_exclusivesi): Likewise.
+	(arm_store_release_exclusive<mode>): Likewise.
+	(arm_store_exclusive<mode>): Use unpredicated output template for
+	Thumb-1 targets.
+
 2016-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* internal-fn.def (LAUNDER): New internal function.
