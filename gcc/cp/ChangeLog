@@ -1,5 +1,7 @@
 2016-10-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_postfix_expression): Adding missing break;.
+
 	* cp-tree.h (finish_builtin_launder): Declare.
 	* parser.c (cp_parser_postfix_expression): Handle RID_BUILTIN_LAUNDER.
 	* semantics.c (finish_builtin_launder): New function.
