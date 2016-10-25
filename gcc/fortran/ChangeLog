@@ -1,3 +1,9 @@
+2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+
+	* gfortran.texi: Document.
+	* resolve.c (logical_to_bitwise): New function.
+	* resolve.c (resolve_operator): Wrap operands with logical_to_bitwise.
+
 2016-10-25  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/72770
