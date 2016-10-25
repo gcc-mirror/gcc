@@ -1,5 +1,6 @@
 2016-10-24  Moritz Klammler  <moritz@glammler.eu>
 
+	PR other/61439
 	* download_prerequisites: Conditionally verify checksums of
 	downloaded pacakges.  Add help text.  
 	* prerequisites.md5: New file.
