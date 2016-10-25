@@ -2122,7 +2122,7 @@ v850_handle_data_area_attribute (tree* node,
 	  *no_add_attrs = true;
 	}
 
-      /* Drop through.  */
+      /* FALLTHRU */
 
     case FUNCTION_DECL:
       area = v850_get_data_area (decl);
@@ -2477,6 +2477,7 @@ v850_output_aligned_bss (FILE * file,
 
     case DATA_AREA_TDA:
       switch_to_section (tdata_section);
+      break;
       
     default:
       switch_to_section (bss_section);
