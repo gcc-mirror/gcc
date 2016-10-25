@@ -9449,4 +9449,26 @@ finish_binary_fold_expr (tree expr1, tree expr2, int op)
   return error_mark_node;
 }
 
+/* Finish __builtin_launder (arg).  */
+
+tree
+finish_builtin_launder (location_t loc, tree arg, tsubst_flags_t complain)
+{
+  tree orig_arg = arg;
+  if (!type_dependent_expression_p (arg))
+    arg = decay_conversion (arg, complain);
+  if (error_operand_p (arg))
+    return error_mark_node;
+  if (!type_dependent_expression_p (arg)
+      && TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
+    {
+      error_at (loc, "non-pointer argument to %<__builtin_launder%>");
+      return error_mark_node;
+    }
+  if (processing_template_decl)
+    arg = orig_arg;
+  return build_call_expr_internal_loc (loc, IFN_LAUNDER,
+				       TREE_TYPE (arg), 1, arg);
+}
+
 #include "gt-cp-semantics.h"

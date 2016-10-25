@@ -1330,6 +1330,10 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
       opcode = MULT_EXPR;
       break;
 
+    case IFN_LAUNDER:
+      return cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, 0),
+					   false, non_constant_p, overflow_p);
+
     default:
       if (!ctx->quiet)
 	error_at (EXPR_LOC_OR_LOC (t, input_location),
@@ -4920,6 +4924,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 		case IFN_ADD_OVERFLOW:
 		case IFN_SUB_OVERFLOW:
 		case IFN_MUL_OVERFLOW:
+		case IFN_LAUNDER:
 		  bail = false;
 
 		default:

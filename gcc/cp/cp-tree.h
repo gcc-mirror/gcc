@@ -6494,6 +6494,8 @@ extern bool generic_lambda_fn_p			(tree);
 extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);
 extern bool lambda_static_thunk_p		(tree);
+extern tree finish_builtin_launder		(location_t, tree,
+						 tsubst_flags_t);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
