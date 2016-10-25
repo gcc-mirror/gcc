@@ -860,7 +860,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
     {
       ctree = gfc_class_len_get (var);
       /* When the actual arg is a char array, then set the _len component of the
-       unlimited polymorphic entity, too.  */
+	 unlimited polymorphic entity to the length of the string.  */
       if (e->ts.type == BT_CHARACTER)
 	{
 	  /* Start with parmse->string_length because this seems to be set to a

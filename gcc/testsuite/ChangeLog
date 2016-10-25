@@ -1,3 +1,9 @@
+2016-10-25  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/72770
+	* gfortran.dg/alloc_comp_class_5.f03: Added test again that caused
+	this pr.
+
 2016-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78102
