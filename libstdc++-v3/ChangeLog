@@ -1,3 +1,20 @@
+2016-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops.cc (do_copy_file): Report an error if source or
+	destination is not a regular file (LWG 2712).
+	(equivalent): Fix error handling and result when only one file exists.
+	* testsuite/experimental/filesystem/operations/copy.cc: Remove files
+	created by tests. Test copying directories.
+	* testsuite/experimental/filesystem/operations/copy_file.cc: Remove
+	files created by tests.
+	* testsuite/experimental/filesystem/operations/equivalent.cc: New.
+	* testsuite/experimental/filesystem/operations/is_empty.cc: New.
+	* testsuite/experimental/filesystem/operations/read_symlink.cc: Remove
+	file created by test.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: New.
+	* testsuite/util/testsuite_fs.h (~scoped_file): Only try to remove
+	file if path is non-empty, to support removal by other means.
+
 2016-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/ops.cc (is_empty): Fix error handling.
