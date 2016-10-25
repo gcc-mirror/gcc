@@ -356,8 +356,8 @@ expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
                           tree op1, enum tree_code code)
 {
   tree t;
-  if (!expand_vec_cmp_expr_p (TREE_TYPE (op0), type)
-      && !expand_vec_cond_expr_p (type, TREE_TYPE (op0)))
+  if (!expand_vec_cmp_expr_p (TREE_TYPE (op0), type, code)
+      && !expand_vec_cond_expr_p (type, TREE_TYPE (op0), code))
     t = expand_vector_piecewise (gsi, do_compare, type,
 				 TREE_TYPE (TREE_TYPE (op0)), op0, op1, code);
   else
@@ -630,7 +630,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 		}
 	    }
 	  if (addend == NULL_TREE
-	      && expand_vec_cond_expr_p (type, type))
+	      && expand_vec_cond_expr_p (type, type, LT_EXPR))
 	    {
 	      tree zero, cst, cond, mask_type;
 	      gimple *stmt;
@@ -878,7 +878,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
       comp_inner_type = TREE_TYPE (TREE_TYPE (a1));
     }
 
-  if (expand_vec_cond_expr_p (type, TREE_TYPE (a1)))
+  if (expand_vec_cond_expr_p (type, TREE_TYPE (a1), TREE_CODE (a)))
     return;
 
   /* TODO: try and find a smaller vector type.  */

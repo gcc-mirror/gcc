@@ -5636,7 +5636,12 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 
   icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
   if (icode == CODE_FOR_nothing)
-    return 0;
+    {
+      if (tcode == EQ_EXPR || tcode == NE_EXPR)
+	icode = get_vcond_eq_icode (mode, cmp_op_mode);
+      if (icode == CODE_FOR_nothing)
+	return 0;
+    }
 
   comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 4);
   rtx_op1 = expand_normal (op1);
@@ -5675,7 +5680,12 @@ expand_vec_cmp_expr (tree type, tree exp, rtx target)
 
   icode = get_vec_cmp_icode (vmode, mask_mode, unsignedp);
   if (icode == CODE_FOR_nothing)
-    return 0;
+    {
+      if (tcode == EQ_EXPR || tcode == NE_EXPR)
+	icode = get_vec_cmp_eq_icode (vmode, mask_mode);
+      if (icode == CODE_FOR_nothing)
+	return 0;
+    }
 
   comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 2);
   create_output_operand (&ops[0], target, mask_mode);

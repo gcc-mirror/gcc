@@ -2652,6 +2652,18 @@
   DONE;
 })
 
+(define_expand "vec_cmpeqv2div2di"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(match_operator:V2DI 1 ""
+	  [(match_operand:V2DI 2 "register_operand")
+	   (match_operand:V2DI 3 "vector_operand")]))]
+  "TARGET_SSE4_1"
+{
+  bool ok = ix86_expand_int_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
 (define_expand "vcond<V_512:mode><VF_512:mode>"
   [(set (match_operand:V_512 0 "register_operand")
 	(if_then_else:V_512
@@ -11153,6 +11165,21 @@
 	  (match_operand:VI8F_128 1 "general_operand")
 	  (match_operand:VI8F_128 2 "general_operand")))]
   "TARGET_SSE4_2"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcondeq<VI8F_128:mode>v2di"
+  [(set (match_operand:VI8F_128 0 "register_operand")
+	(if_then_else:VI8F_128
+	  (match_operator 3 ""
+	    [(match_operand:V2DI 4 "vector_operand")
+	     (match_operand:V2DI 5 "general_operand")])
+	  (match_operand:VI8F_128 1)
+	  (match_operand:VI8F_128 2)))]
+  "TARGET_SSE4_1"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);

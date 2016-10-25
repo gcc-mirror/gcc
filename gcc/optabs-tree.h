@@ -38,8 +38,8 @@ enum optab_subtype
 optab optab_for_tree_code (enum tree_code, const_tree, enum optab_subtype);
 bool supportable_convert_operation (enum tree_code, tree, tree, tree *,
 				    enum tree_code *);
-bool expand_vec_cmp_expr_p (tree, tree);
-bool expand_vec_cond_expr_p (tree, tree);
+bool expand_vec_cmp_expr_p (tree, tree, enum tree_code);
+bool expand_vec_cond_expr_p (tree, tree, enum tree_code);
 void init_tree_optimization_optabs (tree);
 
 #endif
