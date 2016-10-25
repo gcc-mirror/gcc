@@ -1100,6 +1100,11 @@ fs::last_write_time(const path& p __attribute__((__unused__)),
   auto s = chrono::duration_cast<chrono::seconds>(d);
 #if _GLIBCXX_USE_UTIMENSAT
   auto ns = chrono::duration_cast<chrono::nanoseconds>(d - s);
+  if (ns < ns.zero()) // tv_nsec must be non-negative and less than 10e9.
+    {
+      --s;
+      ns += chrono::seconds(1);
+    }
   struct ::timespec ts[2];
   ts[0].tv_sec = 0;
   ts[0].tv_nsec = UTIME_OMIT;

@@ -1,5 +1,11 @@
 2016-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/ops.cc
+	(last_write_time(const path&, file_time_type, error_code&)): Handle
+	negative times correctly.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Test writing file times.
+
 	* src/filesystem/ops.cc (do_copy_file): Report an error if source or
 	destination is not a regular file (LWG 2712).
 	(equivalent): Fix error handling and result when only one file exists.
