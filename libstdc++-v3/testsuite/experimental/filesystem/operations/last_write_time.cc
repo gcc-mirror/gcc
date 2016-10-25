@@ -35,6 +35,8 @@
 void
 test01()
 {
+  // read times
+
   using time_type = std::experimental::filesystem::file_time_type;
 
   auto p = __gnu_test::nonexistent_path();
@@ -103,8 +105,46 @@ test01()
 #endif
 }
 
+void
+test02()
+{
+  // write times
+
+  using time_type = std::experimental::filesystem::file_time_type;
+
+  __gnu_test::scoped_file f;
+  std::error_code ec;
+  time_type time;
+
+  time = last_write_time(f.path);
+  last_write_time(f.path, time, ec);
+  VERIFY( !ec );
+  VERIFY( last_write_time(f.path) == time );
+
+  time -= std::chrono::milliseconds(1000 * 60 * 10 + 15);
+  last_write_time(f.path, time, ec);
+  VERIFY( !ec );
+  VERIFY( last_write_time(f.path) == time );
+
+  time += std::chrono::milliseconds(1000 * 60 * 20 + 15);
+  last_write_time(f.path, time, ec);
+  VERIFY( !ec );
+  VERIFY( last_write_time(f.path) == time );
+
+  time = time_type();
+  last_write_time(f.path, time, ec);
+  VERIFY( !ec );
+  VERIFY( last_write_time(f.path) == time );
+
+  time -= std::chrono::milliseconds(1000 * 60 * 10 + 15);
+  last_write_time(f.path, time, ec);
+  VERIFY( !ec );
+  VERIFY( last_write_time(f.path) == time );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }
