@@ -960,6 +960,19 @@ gfc_match_intrinsic_op (gfc_intrinsic_op *result)
 	    }
 	  break;
 
+	case 'x':
+	  if (gfc_next_ascii_char () == 'o'
+	      && gfc_next_ascii_char () == 'r'
+	      && gfc_next_ascii_char () == '.')
+	    {
+              if (!gfc_notify_std (GFC_STD_LEGACY, ".XOR. operator at %C"))
+                return MATCH_ERROR;
+	      /* Matched ".xor." - equivalent to ".neqv.".  */
+	      *result = INTRINSIC_NEQV;
+	      return MATCH_YES;
+	    }
+	  break;
+
 	default:
 	  break;
 	}

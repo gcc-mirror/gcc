@@ -1,7 +1,12 @@
 2016-10-25  Fritz Reese <fritzoreese@gmail.com>
 
-        * primary.c (gfc_match_rvalue): Match %LOC as LOC with -std=legacy.
-        * gfortran.texi: Document.
+	* match.c (gfc_match_intrinsic_op): Match ".XOR." with -std=legacy.
+	* gfortran.texi: Document.
+
+2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+
+	* primary.c (gfc_match_rvalue): Match %LOC as LOC with -std=legacy.
+	* gfortran.texi: Document.
 
 2016-10-25  Fritz Reese <fritzoreese@gmail.com>
 

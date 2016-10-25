@@ -1468,6 +1468,7 @@ compatibility extensions along with those enabled by @option{-std=legacy}.
 * Form feed as whitespace::
 * TYPE as an alias for PRINT::
 * %LOC as an rvalue::
+* .XOR. operator::
 @end menu
 
 @node Old-style kind specifications
@@ -2558,6 +2559,14 @@ integer :: i
 call sub(%loc(i))
 @end smallexample
 
+@node .XOR. operator
+@subsection .XOR. operator
+@cindex operators, xor
+
+GNU Fortran supports @code{.XOR.} as a logical operator with @code{-std=legacy}
+for compatibility with legacy code. @code{.XOR.} is equivalent to
+@code{.NEQV.}. That is, the output is true if and only if the inputs differ.
+
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
@@ -2582,7 +2591,6 @@ code that uses them running with the GNU Fortran compiler.
 * Variable FORMAT expressions::
 @c * Q edit descriptor::
 @c * TYPE and ACCEPT I/O Statements::
-@c * .XOR. operator::
 @c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
 @c * Omitted arguments in procedure call::
 * Alternate complex function syntax::
