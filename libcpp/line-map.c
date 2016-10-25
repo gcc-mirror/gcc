@@ -57,6 +57,14 @@ static source_location linemap_macro_loc_to_exp_point (struct line_maps *,
 extern unsigned num_expanded_macros_counter;
 extern unsigned num_macro_tokens_counter;
 
+/* Destructor for class line_maps.
+   Ensure non-GC-managed memory is released.  */
+
+line_maps::~line_maps ()
+{
+  htab_delete (location_adhoc_data_map.htab);
+}
+
 /* Hash function for location_adhoc_data hashtable.  */
 
 static hashval_t
@@ -331,13 +339,6 @@ get_pure_location (line_maps *set, source_location loc)
   const line_map_ordinary *ordmap = linemap_check_ordinary (map);
 
   return loc & ~((1 << ordmap->m_range_bits) - 1);
-}
-
-/* Finalize the location_adhoc_data structure.  */
-void
-location_adhoc_data_fini (struct line_maps *set)
-{
-  htab_delete (set->location_adhoc_data_map.htab);
 }
 
 /* Initialize a line map set.  */

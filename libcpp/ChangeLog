@@ -1,3 +1,10 @@
+2016-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (line_maps::~line_maps): New dtor.
+	(location_adhoc_data_fini): Delete decl.
+	* line-map.c (line_maps::~line_maps): New dtor.
+	(location_adhoc_data_fini): Delete.
+
 2016-10-21  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	PR preprocessor/71681
