@@ -699,6 +699,8 @@ struct GTY(()) location_adhoc_data_map {
 
 /* A set of chronological line_map structures.  */
 struct GTY(()) line_maps {
+
+  ~line_maps ();
   
   maps_info_ordinary info_ordinary;
 
@@ -977,7 +979,6 @@ LINEMAPS_LAST_ALLOCATED_MACRO_MAP (const line_maps *set)
   return (line_map_macro *)LINEMAPS_LAST_ALLOCATED_MAP (set, true);
 }
 
-extern void location_adhoc_data_fini (struct line_maps *);
 extern source_location get_combined_adhoc_loc (struct line_maps *,
 					       source_location,
 					       source_range,

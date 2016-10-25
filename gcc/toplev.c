@@ -2169,7 +2169,6 @@ toplev::main (int argc, char **argv)
   diagnostic_finish (global_dc);
 
   finalize_plugins ();
-  location_adhoc_data_fini (line_table);
 
   after_memory_report = true;
 
