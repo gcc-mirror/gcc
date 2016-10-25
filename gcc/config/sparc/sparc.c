@@ -1384,13 +1384,13 @@ sparc_option_override (void)
 
 #ifndef SPARC_BI_ARCH
   /* Check for unsupported architecture size.  */
-  if (! TARGET_64BIT != DEFAULT_ARCH32_P)
+  if (!TARGET_64BIT != DEFAULT_ARCH32_P)
     error ("%s is not supported by this configuration",
 	   DEFAULT_ARCH32_P ? "-m64" : "-m32");
 #endif
 
   /* We force all 64bit archs to use 128 bit long double */
-  if (TARGET_64BIT && ! TARGET_LONG_DOUBLE_128)
+  if (TARGET_ARCH64 && !TARGET_LONG_DOUBLE_128)
     {
       error ("-mlong-double-64 not allowed with -m64");
       target_flags |= MASK_LONG_DOUBLE_128;
@@ -11739,7 +11739,7 @@ sparc_file_end (void)
 static const char *
 sparc_mangle_type (const_tree type)
 {
-  if (!TARGET_64BIT
+  if (TARGET_ARCH32
       && TYPE_MAIN_VARIANT (type) == long_double_type_node
       && TARGET_LONG_DOUBLE_128)
     return "g";

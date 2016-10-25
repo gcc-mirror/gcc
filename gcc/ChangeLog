@@ -1,3 +1,16 @@
+2016-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc (sparc*-*-solaris2*): Adjust.
+	(sparc64-*-linux*): Likewise.
+	* config/sparc/default-64.h: Rename to...
+	* config/sparc/default64.h: ...this.
+	* config/sparc/sparc.c (sparc_option_override): Replace TARGET_64BIT
+	with TARGET_ARCH64.
+	(sparc_mangle_type): Replace !TARGET_64BIT with TARGET_ARCH32.
+	* config/sparc/sparc.h: Minor tweaks.
+	* config/sparc/sparc.md: Replace !TARGET_64BIT and !TARGET_ARCH64 with
+	TARGET_ARCH32 throughout.  Minor various tweaks throughout.
+
 2016-10-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c (fcache::file_patch): Add comment about lifetime.
