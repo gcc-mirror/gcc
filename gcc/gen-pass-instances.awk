@@ -90,7 +90,7 @@ function adjust_linenos(above, increment,	p, i)
 {
   for (p in pass_lines)
     if (pass_lines[p] >= above)
-      pass_lines[p] += pass_lines[p];
+      pass_lines[p] += increment;
   if (increment > 0)
     for (i = lineno - 1; i >= above; i--)
       lines[i + increment] = lines[i];
@@ -100,16 +100,18 @@ function adjust_linenos(above, increment,	p, i)
   lineno += increment;
 }
 
-function insert_remove_pass(line, fnname)
+function insert_remove_pass(line, fnname,	arg3)
 {
   parse_line($0, fnname);
   pass_name = args[1];
   if (pass_name == "PASS")
     return 1;
   pass_num = args[2] + 0;
-  new_line = prefix "NEXT_PASS (" args[3];
+  arg3 = args[3];
+  sub(/^[ \t]*/, "", arg3);
+  new_line = prefix "NEXT_PASS (" arg3;
   if (args[4])
-    new_line = new_line ", " args[4];
+    new_line = new_line "," args[4];
   new_line = new_line ")" postfix;
   if (!pass_lines[pass_name, pass_num])
     {
@@ -218,7 +220,7 @@ END {
 	    printf "NEXT_PASS";
 	  printf " (%s, %s", pass_name, pass_num;
 	  if (with_arg)
-	    printf ", %s", with_arg;
+	    printf ",%s", with_arg;
 	  printf ")%s\n", postfix;
 	}
       else
