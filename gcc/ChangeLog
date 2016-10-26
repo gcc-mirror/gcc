@@ -41,6 +41,9 @@
 
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/microblaze/microblaze.c (tls_mentioned_p): Avoid
+	fallthru.
+
 	* config/arc/arc.c (acr_print_operand): Adjust fallthru comment.
 	(check_if_valid_sleep_operand): Add missing fallthru comment.
 	(arc_register_move_cost): Increase buffer size.
