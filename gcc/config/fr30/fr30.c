@@ -688,7 +688,8 @@ fr30_print_operand (FILE *file, rtx x, int code)
 	  break;
 	}
 
-      /* Fall through.  Let output_addr_const deal with it.  */
+      /* FALLTHRU */
+      /* Let output_addr_const deal with it.  */
     default:
       output_addr_const (file, x);
       break;
