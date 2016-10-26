@@ -37,7 +37,7 @@
 extern __inline unsigned short __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __tzcnt_u16 (unsigned short __X)
 {
-  return __builtin_ctzs (__X);
+  return __builtin_ia32_tzcnt_u16 (__X);
 }
 
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -97,13 +97,13 @@ _blsr_u32 (unsigned int __X)
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __tzcnt_u32 (unsigned int __X)
 {
-  return __builtin_ctz (__X);
+  return __builtin_ia32_tzcnt_u32 (__X);
 }
 
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _tzcnt_u32 (unsigned int __X)
 {
-  return __builtin_ctz (__X);
+  return __builtin_ia32_tzcnt_u32 (__X);
 }
 
 
@@ -165,13 +165,13 @@ _blsr_u64 (unsigned long long __X)
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __tzcnt_u64 (unsigned long long __X)
 {
-  return __builtin_ctzll (__X);
+  return __builtin_ia32_tzcnt_u64 (__X);
 }
 
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _tzcnt_u64 (unsigned long long __X)
 {
-  return __builtin_ctzll (__X);
+  return __builtin_ia32_tzcnt_u64 (__X);
 }
 
 #endif /* __x86_64__  */
