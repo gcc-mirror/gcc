@@ -48,7 +48,11 @@ aligned_alloc (std::size_t al, std::size_t sz)
   return nullptr;
 }
 #elif _GLIBCXX_HAVE_MEMALIGN
+#if _GLIBCXX_HOSTED
 #include <malloc.h>
+#else
+extern "C" void *memalign(std::size_t boundary, std::size_t size);
+#endif
 #define aligned_alloc memalign
 #else
 // The C library doesn't provide any aligned allocation functions, declare

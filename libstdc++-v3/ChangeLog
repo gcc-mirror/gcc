@@ -1,3 +1,9 @@
+2016-10-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR libstdc++/78110
+	* libsupc++/new_opa.cc: Don't include <malloc.h> in a free standing
+	environment.  Declare memalign directly in that case.
+
 2016-10-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/filesystem/iterators/pop.cc: Remove
