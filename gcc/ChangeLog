@@ -1,3 +1,26 @@
+2016-10-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (arm_expand_compare_and_swap): Add new bdst local
+	variable.  Add the new parameter to the insn generator.  Set that
+	parameter to be CC flag for 32-bit targets, bval otherwise.  Set the
+	return value from the negation of that parameter for Thumb-1, keeping
+	the logic unchanged otherwise except for using bdst as the destination
+	register of the compare_and_swap insn.
+	(arm_split_compare_and_swap): Add explanation about how is the value
+	returned to the function comment.  Rename scratch variable to
+	neg_bval.  Adapt initialization of variables holding operands to the
+	new operand numbers.  Use return register to hold result of store
+	exclusive for Thumb-1, scratch register otherwise.  Construct the
+	appropriate cbranch for Thumb-1 targets, keeping the logic unchanged
+	for 32-bit targets.  Guard Z flag setting to restrict to 32bit targets.
+	Use gen_cbranchsi4 rather than hand-written conditional branch to loop
+	for strongly ordered compare_and_swap.
+	* config/arm/predicates.md (cc_register_operand): New predicate.
+	* config/arm/sync.md (atomic_compare_and_swap<mode>_1): Use a
+	match_operand with the new predicate to accept either the CC flag or a
+	destination register for the boolean return value, restricting it to
+	CC flag only via constraint.  Adapt operand numbers accordingly.
+
 2016-10-26  Jeff Law  <law@redhat.com>
 
 	* config/frv/frv.c (comparison_string): Do not fall through after
