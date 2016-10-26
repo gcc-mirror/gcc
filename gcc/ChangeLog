@@ -1,3 +1,13 @@
+2016-10-26  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/78060
+	PR tree-optimization/78061
+	PR tree-optimization/78088
+	* tree-ssa-loop-split.c (easy_exit_values): New function.
+	(tree_ssa_split_loops): Use it.
+	(compute_new_first_bound): Change order of operations,
+	fix invalid use of types.
+
 2016-10-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	gen-pass-instances.awk is sensitive to the order in which
