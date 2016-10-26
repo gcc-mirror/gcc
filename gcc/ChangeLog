@@ -1,3 +1,44 @@
+2016-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* print-rtl-function.c (print_rtx_function): Rewrite in terms of
+	class rtx_writer.
+	* print-rtl.c (outfile): Delete global.
+	(sawclose): Likewise.
+	(indent): Likewise.
+	(in_call_function_usage): Likewise.
+	(flag_compact): Likewise.
+	(flag_simple): Likewise.
+	(rtx_writer::rtx_writer): New ctor.
+	(print_rtx_operand_code_0): Convert to...
+	(rtx_writer::print_rtx_operand_code_0): ...this.
+	(print_rtx_operand_code_e): Convert to...
+	(rtx_writer::print_rtx_operand_code_e): ...this.
+	(print_rtx_operand_codes_E_and_V): Convert to...
+	(rtx_writer::print_rtx_operand_codes_E_and_V): ...this.
+	(print_rtx_operand_code_i): Convert to...
+	(rtx_writer::print_rtx_operand_code_i): ...this.
+	(print_rtx_operand_code_r): Convert to...
+	(rtx_writer::print_rtx_operand_code_r): ...this.
+	(print_rtx_operand_code_u): Convert to...
+	(rtx_writer::print_rtx_operand_code_u): ...this.
+	(print_rtx_operand): Convert to...
+	(rtx_writer::print_rtx_operand): ...this.
+	(print_rtx): Convert to...
+	(rtx_writer::print_rtx): ...this.
+	(print_inline_rtx): Rewrite in terms of class rtx_writer.
+	(debug_rtx): Likewise.
+	(print_rtl): Convert to...
+	(rtx_writer::print_rtl): ...this.
+	(print_rtl): Reimplement in terms of class rtx_writer.
+	(print_rtl_single): Rewrite in terms of class rtx_writer.
+	(print_rtl_single_with_indent): Convert to..
+	(rtx_writer::print_rtl_single_with_indent): ...this.
+	(print_simple_rtl): Rewrite in terms of class rtx_writer.
+	* print-rtl.h (flag_compact): Delete decl.
+	(class rtx_writer): New class.
+	* rtl-tests.c (selftest::assert_rtl_dump_eq): Rewrite in terms of
+	class rtx_writer.
+
 2016-10-26  Jeff Law  <law@redhat.com>
 
 	* config/arc/arc.c (acr_print_operand): Adjust fallthru comment.
