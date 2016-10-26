@@ -312,6 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     }
 
     void pop();
+    void pop(error_code&);
 
     void disable_recursion_pending() { _M_pending = false; }
 

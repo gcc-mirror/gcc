@@ -364,19 +364,33 @@ fs::recursive_directory_iterator::increment(error_code& ec) noexcept
 }
 
 void
-fs::recursive_directory_iterator::pop()
+fs::recursive_directory_iterator::pop(error_code& ec)
 {
   if (!_M_dirs)
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	  "cannot pop non-dereferenceable recursive directory iterator",
-	  std::make_error_code(errc::invalid_argument)));
+    {
+      ec = std::make_error_code(errc::invalid_argument);
+      return;
+    }
 
   do {
     _M_dirs->pop();
     if (_M_dirs->empty())
       {
 	_M_dirs.reset();
+	ec.clear();
 	return;
       }
-  } while (!_M_dirs->top().advance(nullptr, _M_options));
+  } while (!_M_dirs->top().advance(&ec, _M_options));
+}
+
+void
+fs::recursive_directory_iterator::pop()
+{
+  error_code ec;
+  pop(ec);
+  if (ec)
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error(_M_dirs
+	  ? "recursive directory iterator cannot pop"
+	  : "non-dereferenceable recursive directory iterator cannot pop",
+	  ec));
 }
