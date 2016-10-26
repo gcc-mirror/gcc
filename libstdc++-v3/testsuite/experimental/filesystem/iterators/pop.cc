@@ -78,13 +78,11 @@ test03()
   create_directories(p / "d1/d2/d3");
   create_directories(p / "d1/d2/e3");
   create_directories(p / "d1/e2/d3");
-  create_directories(p / "e1");
-  __gnu_test::scoped_file f(p / "d1/d2/d3/f");
-  for (int i = 0; i < 4; ++i)
+  for (int i = 0; i < 3; ++i)
   {
     fs::recursive_directory_iterator dir(p);
     std::advance(dir, i);
-    int expected_depth = std::min(i, 3); // fourth entry is a file, not dir
+    int expected_depth = i;
     VERIFY( dir.depth() == expected_depth );
     __builtin_printf("%d %d %s\n", i, dir.depth(), dir->path().c_str());
     dir.pop(ec);
@@ -102,7 +100,6 @@ test03()
     if (dir != end(dir))
       VERIFY( dir.depth() == (i -1) );
   }
-  f.path.clear();
   remove_all(p, ec);
 }
 
