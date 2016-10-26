@@ -35,6 +35,8 @@
 
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/fr30/fr30.c (fr30_print_operand): Adjust fallthru comment.
+
 	* config/frv/frv.c (comparison_string): Do not fall through after
 	an error.
 
