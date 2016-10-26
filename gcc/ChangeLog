@@ -1,5 +1,8 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/cr16/cr16.c (cr16_print_operand): Add missing fallthru
+	comment.  Add gcc_unreachable for path that should never happen.
+
 	* config/epiphany/epiphany.c (epiphany_print_operand): Adjust
 	fallthru comment.
 
