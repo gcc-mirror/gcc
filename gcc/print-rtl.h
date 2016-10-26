@@ -50,7 +50,7 @@ class rtx_writer
   bool m_simple;
 
   /* If true, use compact dump format:
-     - INSN_UIDs are omitted, except for jumps and CODE_LABELs,
+     - PREV/NEXT_INSN UIDs are omitted
      - INSN_CODEs are omitted,
      - register numbers are omitted for hard and virtual regs, and
        non-virtual pseudos are offset relative to the first such reg, and

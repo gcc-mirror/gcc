@@ -1,3 +1,13 @@
+2016-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* print-rtl.c (rtx_writer::print_rtx_operand_code_u): Print
+	INSN_UIDs for all insns in compact mode.
+	(rtx_writer::print_rtx): Likewise.
+	* print-rtl.h (rtx_writer::flag_compact): Update comment.
+	* rtl-tests.c (selftest::test_dumping_insns): Update expected
+	output to include INSN_UID.
+	(selftest::test_uncond_jump): Likewise.
+
 2016-10-26  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* haifa-sched.c (call_used_regs_num): Rename to...
