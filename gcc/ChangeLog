@@ -1,5 +1,8 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/microblaze/microblaze.c (microblaze_function_arg): Adjust
+	fallthru comment.
+
 	* config/msp430/msp430.c (msp430_legitimate_address_p): Adjust
 	fallthru comment.
 

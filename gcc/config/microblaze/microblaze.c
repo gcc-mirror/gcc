@@ -1553,7 +1553,7 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
     default:
       gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
 	  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
-      /* Drops through.  */
+      /* FALLTHRU */
     case BLKmode:
       regbase = GP_ARG_FIRST;
       break;
