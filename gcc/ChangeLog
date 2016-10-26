@@ -1,3 +1,8 @@
+2016-10-26  Jeff Law  <law@redhat.com>
+
+	* config/epiphany/epiphany.c (epiphany_print_operand): Adjust
+	fallthru comment.
+
 2016-10-26  Jakub Jelinek  <jakub@redhat.com>
 	    Martin Liska  <mliska@suse.cz>
 
