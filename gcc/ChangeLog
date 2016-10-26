@@ -1,3 +1,12 @@
+2016-10-26  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* haifa-sched.c (call_used_regs_num): Rename to...
+	(call_saved_regs_num): ...this.
+	(fixed_regs_num): New variable.
+	(sched_pressure_start_bb): Subtract out fixed_regs. Scale call_saved
+	regs not call_used.
+	(alloc_global_sched_pressure_data): Compute call_saved and fixed regs.
+
 2016-10-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* print-rtl-function.c (print_rtx_function): Rewrite in terms of
