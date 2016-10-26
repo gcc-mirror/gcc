@@ -65,9 +65,8 @@ assert_rtl_dump_eq (const location &loc, const char *expected_dump, rtx x)
 {
   named_temp_file tmp_out (".rtl");
   FILE *outfile = fopen (tmp_out.get_filename (), "w");
-  flag_compact = true;
-  print_rtl (outfile, x);
-  flag_compact = false;
+  rtx_writer w (outfile, 0, false, true);
+  w.print_rtl (x);
   fclose (outfile);
 
   char *dump = read_file (SELFTEST_LOCATION, tmp_out.get_filename ());

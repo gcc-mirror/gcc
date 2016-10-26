@@ -189,7 +189,7 @@ can_have_basic_block_p (const rtx_insn *insn)
 DEBUG_FUNCTION void
 print_rtx_function (FILE *outfile, function *fn, bool compact)
 {
-  flag_compact = compact;
+  rtx_writer w (outfile, 0, false, compact);
 
   tree fdecl = fn->decl;
 
@@ -213,7 +213,7 @@ print_rtx_function (FILE *outfile, function *fn, bool compact)
 	  curr_bb = insn_bb;
 	  begin_any_block (outfile, curr_bb);
 	}
-      print_rtl_single_with_indent (outfile, insn, curr_bb ? 6 : 4);
+      w.print_rtl_single_with_indent (insn, curr_bb ? 6 : 4);
     }
   end_any_block (outfile, curr_bb);
   fprintf (outfile, "  ) ;; insn-chain\n");
@@ -221,11 +221,9 @@ print_rtx_function (FILE *outfile, function *fn, bool compact)
   /* Additional RTL state.  */
   fprintf (outfile, "  (crtl\n");
   fprintf (outfile, "    (return_rtx \n");
-  print_rtl_single_with_indent (outfile, crtl->return_rtx, 6);
+  w.print_rtl_single_with_indent (crtl->return_rtx, 6);
   fprintf (outfile, "    ) ;; return_rtx\n");
   fprintf (outfile, "  ) ;; crtl\n");
 
   fprintf (outfile, ") ;; function \"%s\"\n", dname);
-
-  flag_compact = false;
 }

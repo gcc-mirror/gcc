@@ -20,7 +20,44 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_PRINT_RTL_H
 #define GCC_PRINT_RTL_H
 
-extern bool flag_compact;
+/* A class for writing rtx to a FILE *.  */
+
+class rtx_writer
+{
+ public:
+  rtx_writer (FILE *outfile, int ind, bool simple, bool compact);
+
+  void print_rtx (const_rtx in_rtx);
+  void print_rtl (const_rtx rtx_first);
+  int print_rtl_single_with_indent (const_rtx x, int ind);
+
+ private:
+  void print_rtx_operand_code_0 (const_rtx in_rtx, int idx);
+  void print_rtx_operand_code_e (const_rtx in_rtx, int idx);
+  void print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx);
+  void print_rtx_operand_code_i (const_rtx in_rtx, int idx);
+  void print_rtx_operand_code_r (const_rtx in_rtx);
+  void print_rtx_operand_code_u (const_rtx in_rtx, int idx);
+  void print_rtx_operand (const_rtx in_rtx, int idx);
+
+ private:
+  FILE *m_outfile;
+  int m_sawclose;
+  int m_indent;
+  bool m_in_call_function_usage;
+
+  /* True means use simplified format without flags, modes, etc.  */
+  bool m_simple;
+
+  /* If true, use compact dump format:
+     - INSN_UIDs are omitted, except for jumps and CODE_LABELs,
+     - INSN_CODEs are omitted,
+     - register numbers are omitted for hard and virtual regs, and
+       non-virtual pseudos are offset relative to the first such reg, and
+       printed with a '%' sigil e.g. "%0" for (LAST_VIRTUAL_REGISTER + 1),
+     - insn names are prefixed with "c" (e.g. "cinsn", "cnote", etc).  */
+  bool m_compact;
+};
 
 #ifdef BUFSIZ
 extern void print_rtl (FILE *, const_rtx);
