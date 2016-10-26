@@ -16,6 +16,10 @@
 
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/sh/sh.c (output_branch): Add missing fallthru comments.
+	(gen_shl_and): Likewise.
+	* config/sh/sh.md (movsicc): Add missing fallthru comments.
+
 	* config/mips/mips.c (mips16_constant_cost): Add missing
 	fallthru comments.
 	(mips16_build_call_stub): Increase buffer size.  Adjust
