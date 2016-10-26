@@ -1,5 +1,7 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/nios2/nios2.c (nios2_rtx_costs): Avoid fallthru.
+
 	* config/rl78/rl78.c (rl78_calculate_death_notes): Add fallthru
 	comment.
 	(rl78_asm_ctor_dtor): Increase buffer size.
