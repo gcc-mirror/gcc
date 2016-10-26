@@ -4290,6 +4290,7 @@ dnl
   AC_CACHE_VAL(glibcxx_cv_realpath, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [
+       #include <limits.h>
        #include <stdlib.h>
        #include <unistd.h>
       ],
