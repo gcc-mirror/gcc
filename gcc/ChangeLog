@@ -1,5 +1,8 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/m32c/m32c.c (encode_pattern_1): Add fallthru comment.
+	(m32c_legitimate_address_p): Likewise.
+
 	* config/m32r/m32r.c (m32r_print_operand): Adjust fallthru comment.
 
 	* config/mcore/mcore.c (mcore_gen_compare): Adjust fallthru comments.
