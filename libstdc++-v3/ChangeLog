@@ -1,5 +1,10 @@
 2016-10-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/dir.cc (recursive_directory_iterator::increment):
+	Reset state on error.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Check state after increment error.
+
 	PR libstdc++/78111
 	* src/filesystem/ops.cc (canonical): Set error for non-existent path.
 
