@@ -2688,7 +2688,7 @@ comparison_string (enum rtx_code code, rtx op0)
   bool is_nz_p = GET_MODE (op0) == CC_NZmode;
   switch (code)
     {
-    default:  output_operand_lossage ("bad condition code");
+    default:  output_operand_lossage ("bad condition code"); return "";
     case EQ:  return "eq";
     case NE:  return "ne";
     case LT:  return is_nz_p ? "n" : "lt";

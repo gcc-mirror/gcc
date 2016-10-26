@@ -1,5 +1,8 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/frv/frv.c (comparison_string): Do not fall through after
+	an error.
+
 	* config/iq2000/iq2000.c (iq2000_function_arg): Adjust fallthru
 	comment.
 	(expand_one_builtin): Add missing break.
