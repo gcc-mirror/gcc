@@ -1,5 +1,9 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/rl78/rl78.c (rl78_calculate_death_notes): Add fallthru
+	comment.
+	(rl78_asm_ctor_dtor): Increase buffer size.
+
 	* config/stormy16/stormy16.c (xstormy16_asm_output_destrutor): Increase
 	buffer size.
 	(xstormy16_asm_output_constructor): Likewise.
