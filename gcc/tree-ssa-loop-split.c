@@ -190,13 +190,40 @@ find_or_create_guard_phi (struct loop *loop, tree guard_iv, affine_iv * /*iv*/)
   return NULL;
 }
 
+/* Returns true if the exit values of all loop phi nodes can be
+   determined easily (i.e. that connect_loop_phis can determine them).  */
+
+static bool
+easy_exit_values (struct loop *loop)
+{
+  edge exit = single_exit (loop);
+  edge latch = loop_latch_edge (loop);
+  gphi_iterator psi;
+
+  /* Currently we regard the exit values as easy if they are the same
+     as the value over the backedge.  Which is the case if the definition
+     of the backedge value dominates the exit edge.  */
+  for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
+    {
+      gphi *phi = psi.phi ();
+      tree next = PHI_ARG_DEF_FROM_EDGE (phi, latch);
+      basic_block bb;
+      if (TREE_CODE (next) == SSA_NAME
+	  && (bb = gimple_bb (SSA_NAME_DEF_STMT (next)))
+	  && !dominated_by_p (CDI_DOMINATORS, exit->src, bb))
+	return false;
+    }
+
+  return true;
+}
+
 /* This function updates the SSA form after connect_loops made a new
    edge NEW_E leading from LOOP1 exit to LOOP2 (via in intermediate
    conditional).  I.e. the second loop can now be entered either
    via the original entry or via NEW_E, so the entry values of LOOP2
    phi nodes are either the original ones or those at the exit
    of LOOP1.  Insert new phi nodes in LOOP2 pre-header reflecting
-   this.  */
+   this.  The loops need to fulfill easy_exit_values().  */
 
 static void
 connect_loop_phis (struct loop *loop1, struct loop *loop2, edge new_e)
@@ -383,37 +410,37 @@ compute_new_first_bound (gimple_seq *stmts, struct tree_niter_desc *niter,
 			    TREE_TYPE (controlbase),
 			    controlbase, controlstep);
 
-  /* Compute beg-guard_init.  */
+  /* Compute end-beg.  */
+  gimple_seq stmts2;
+  tree end = force_gimple_operand (niter->bound, &stmts2,
+					true, NULL_TREE);
+  gimple_seq_add_seq_without_update (stmts, stmts2);
   if (POINTER_TYPE_P (TREE_TYPE (enddiff)))
     {
-      tree tem = gimple_convert (stmts, sizetype, guard_init);
+      tree tem = gimple_convert (stmts, sizetype, enddiff);
       tem = gimple_build (stmts, NEGATE_EXPR, sizetype, tem);
       enddiff = gimple_build (stmts, POINTER_PLUS_EXPR,
 			      TREE_TYPE (enddiff),
-			      enddiff, tem);
+			      end, tem);
     }
   else
     enddiff = gimple_build (stmts, MINUS_EXPR, TREE_TYPE (enddiff),
-			    enddiff, guard_init);
+			    end, enddiff);
 
-  /* Compute end-(beg-guard_init).  */
-  gimple_seq stmts2;
-  tree newbound = force_gimple_operand (niter->bound, &stmts2,
-					true, NULL_TREE);
-  gimple_seq_add_seq_without_update (stmts, stmts2);
-
-  if (POINTER_TYPE_P (TREE_TYPE (enddiff))
-      || POINTER_TYPE_P (TREE_TYPE (newbound)))
+  /* Compute guard_init + (end-beg).  */
+  tree newbound;
+  enddiff = gimple_convert (stmts, TREE_TYPE (guard_init), enddiff);
+  if (POINTER_TYPE_P (TREE_TYPE (guard_init)))
     {
       enddiff = gimple_convert (stmts, sizetype, enddiff);
       enddiff = gimple_build (stmts, NEGATE_EXPR, sizetype, enddiff);
       newbound = gimple_build (stmts, POINTER_PLUS_EXPR,
-			       TREE_TYPE (newbound),
-			       newbound, enddiff);
+			       TREE_TYPE (guard_init),
+			       guard_init, enddiff);
     }
   else
-    newbound = gimple_build (stmts, MINUS_EXPR, TREE_TYPE (enddiff),
-			     newbound, enddiff);
+    newbound = gimple_build (stmts, PLUS_EXPR, TREE_TYPE (guard_init),
+			     guard_init, enddiff);
 
   /* Depending on the direction of the IVs the new bound for the first
      loop is the minimum or maximum of old bound and border.
@@ -449,7 +476,6 @@ compute_new_first_bound (gimple_seq *stmts, struct tree_niter_desc *niter,
 			       build_int_cst (type2, addbound));
     }
 
-  newbound = gimple_convert (stmts, TREE_TYPE (border), newbound);
   tree newend = gimple_build (stmts, minmax, TREE_TYPE (border),
 			      border, newbound);
   return newend;
@@ -615,6 +641,7 @@ tree_ssa_split_loops (void)
 	     original exit before.  */
 	  && empty_block_p (loop->latch)
 	  && !optimize_loop_for_size_p (loop)
+	  && easy_exit_values (loop)
 	  && number_of_iterations_exit (loop, single_exit (loop), &niter,
 					false, true)
 	  && niter.cmp != ERROR_MARK

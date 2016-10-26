@@ -1,3 +1,9 @@
+2016-10-26  Michael Matz  <matz@suse.de>
+
+	* g++.dg/pr78060.C: New test.
+	* gfortran.dg/pr78061.f: New test.
+	* g++.dg/pr78088.C: New test.
+
 2016-10-26  Fritz Reese <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_io_1.f90: New test.
