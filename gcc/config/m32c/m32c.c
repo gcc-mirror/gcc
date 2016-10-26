@@ -176,6 +176,7 @@ encode_pattern_1 (rtx x)
       break;
     case MEM:
       *patternp++ = 'm';
+      /* FALLTHRU */
     case CONST:
       encode_pattern_1 (XEXP (x, 0));
       break;
@@ -1696,6 +1697,7 @@ m32c_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	case SP_REGNO:
 	  if (TARGET_A16 && GET_MODE (x) == SImode)
 	    return 0;
+	  /* FALLTHRU */
 	case A0_REGNO:
 	  return 1;
 
