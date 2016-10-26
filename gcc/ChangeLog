@@ -1,5 +1,8 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/h8300/h8300.c (h8300_print_operand): Adjust FALLTHRU
+	comment to silence warning.
+
 	* config/spu/spu.c (spu_sched_reorder): Add missing fallthru comment.
 	(spu_legitimate_address_p): Fix logic error and add missing fallthru
 	comment.

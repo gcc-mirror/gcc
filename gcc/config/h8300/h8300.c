@@ -1741,10 +1741,12 @@ h8300_print_operand (FILE *file, rtx x, int code)
 		      break;
 		    }
 
-		  /* Fall through.  We should not get here if we are
-		     processing bit operations on H8/300 or H8/300H
-		     because 'U' constraint does not allow bit
-		     operations on the tiny area on these machines.  */
+		  /* FALLTHRU */
+
+		  /* We should not get here if we are processing bit
+		     operations on H8/300 or H8/300H because 'U'
+		     constraint does not allow bit operations on the
+		     tiny area on these machines.  */
 
 		case 'X':
 		case 'T':
