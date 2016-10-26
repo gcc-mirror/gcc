@@ -1,3 +1,10 @@
+2016-10-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/78108
+	* gfortran.dg/submodule_18.f08: New test.
+	* gfortran.dg/submodule_19.f08: New test.
+
 2016-10-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/bmi-6.c: XFAIL.
