@@ -1059,6 +1059,9 @@
 	    (const_string "multiple")))]
 )
 
+;; Changes to the constraints of this pattern must be propagated to those of
+;; atomic compare_and_swap splitters in sync.md.  These must be at least as
+;; strict as the constraints here and aim to be as permissive.
 (define_insn "cbranchsi4_insn"
   [(set (pc) (if_then_else
 	      (match_operator 0 "arm_comparison_operator"
@@ -1120,6 +1123,9 @@
    (set_attr "type" "multiple")]
 )
 
+;; Changes to the constraints of this pattern must be propagated to those of
+;; atomic compare_and_swap splitters in sync.md.  These must be at least as
+;; strict as the constraints here and aim to be as permissive.
 (define_insn "cbranchsi4_scratch"
   [(set (pc) (if_then_else
 	      (match_operator 4 "arm_comparison_operator"
