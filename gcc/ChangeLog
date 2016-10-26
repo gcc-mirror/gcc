@@ -1,5 +1,9 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/stormy16/stormy16.c (xstormy16_asm_output_destrutor): Increase
+	buffer size.
+	(xstormy16_asm_output_constructor): Likewise.
+
 	* config/pa/pa.c (pa_asm_output_mi_thunk): Increase buffer
 	size.
 

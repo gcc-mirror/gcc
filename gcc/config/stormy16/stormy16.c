@@ -1618,7 +1618,7 @@ static void
 xstormy16_asm_out_destructor (rtx symbol, int priority)
 {
   const char *section = ".dtors";
-  char buf[16];
+  char buf[18];
 
   /* ??? This only works reliably with the GNU linker.  */
   if (priority != DEFAULT_INIT_PRIORITY)
@@ -1640,7 +1640,7 @@ static void
 xstormy16_asm_out_constructor (rtx symbol, int priority)
 {
   const char *section = ".ctors";
-  char buf[16];
+  char buf[18];
 
   /* ??? This only works reliably with the GNU linker.  */
   if (priority != DEFAULT_INIT_PRIORITY)
