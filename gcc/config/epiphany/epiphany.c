@@ -1354,7 +1354,8 @@ epiphany_print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "%s0x%08lx", IMMEDIATE_PREFIX, l);
 	  break;
 	}
-      /* Fall through.  Let output_addr_const deal with it.  */
+      /* FALLTHRU */
+      /* Let output_addr_const deal with it.  */
     case CONST_INT:
       fprintf(file,"%s",IMMEDIATE_PREFIX);
       if (code == 'C' || code == 'X')
