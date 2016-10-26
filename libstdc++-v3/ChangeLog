@@ -1,3 +1,21 @@
+2016-10-26  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement uniform_inside_sphere_distribution extension.
+	* include/ext/random: Implement uniform_inside_sphere_distribution.
+	* include/ext/random.tcc: Ditto.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/
+	cons/default.cc: New.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/
+	cons/parms.cc: New.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/
+	operators/equal.cc: New.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/
+	operators/generate.cc: New.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/
+	operators/inequal.cc: New.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/
+	operators/serialize.cc: New.
+
 2016-10-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/fs_dir.h (recursive_directory_iterator):
