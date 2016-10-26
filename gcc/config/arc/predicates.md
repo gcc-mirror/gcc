@@ -266,6 +266,7 @@
     case SYMBOL_REF :
       if (SYMBOL_REF_TLS_MODEL (op))
 	return 0;
+      return 1;
     case LABEL_REF :
       return 1;
     case CONST :
