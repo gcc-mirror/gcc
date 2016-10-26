@@ -1,5 +1,8 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/pa/pa.c (pa_asm_output_mi_thunk): Increase buffer
+	size.
+
 	* config/h8300/h8300.c (h8300_print_operand): Adjust FALLTHRU
 	comment to silence warning.
 
