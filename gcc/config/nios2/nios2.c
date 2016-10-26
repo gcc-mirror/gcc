@@ -1493,6 +1493,7 @@ nios2_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
           *total = COSTS_N_INSNS (1);
           return true;
 	}
+      return false;
 
       default:
         return false;
