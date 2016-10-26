@@ -1,5 +1,11 @@
 2016-10-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_dir.h (recursive_directory_iterator):
+	Overload pop (LWG 2706).
+	* src/filesystem/dir.cc (recursive_directory_iterator::pop): Define
+	new overload.
+	* testsuite/experimental/filesystem/iterators/pop.cc: New test.
+
 	* src/filesystem/dir.cc (recursive_directory_iterator::increment):
 	Reset state on error.
 	* testsuite/experimental/filesystem/iterators/
