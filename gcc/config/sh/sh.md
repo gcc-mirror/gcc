@@ -1509,6 +1509,7 @@
       case LT: case LE: case LEU: case LTU:
 	if (GET_MODE_CLASS (GET_MODE (op0)) != MODE_INT)
 	  break;
+	/* FALLTHRU */
       case NE:
 	new_code = reverse_condition (code);
 	break;
