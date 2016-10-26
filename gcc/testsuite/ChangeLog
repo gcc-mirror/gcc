@@ -1,3 +1,9 @@
+2016-10-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78108
+	* gfortran.dg/submodule_18.f08: New test.
+	* gfortran.dg/submodule_19.f08: New test.
+
 2016-10-26  Michael Matz  <matz@suse.de>
 
 	* g++.dg/pr78060.C: New test.

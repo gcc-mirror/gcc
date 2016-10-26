@@ -12797,7 +12797,17 @@ resolve_typebound_intrinsic_op (gfc_symbol* derived, gfc_intrinsic_op op,
 	  && p->access != ACCESS_PRIVATE && derived->ns == gfc_current_ns)
 	{
 	  gfc_interface *head, *intr;
-	  if (!gfc_check_new_interface (derived->ns->op[op], target_proc, p->where))
+
+	  /* Preempt 'gfc_check_new_interface' for submodules, where the
+	     mechanism for handling module procedures winds up resolving
+	     operator interfaces twice and would otherwise cause an error.  */
+	  for (intr = derived->ns->op[op]; intr; intr = intr->next)
+	    if (intr->sym == target_proc
+		&& target_proc->attr.used_in_submodule)
+	      return true;
+
+	  if (!gfc_check_new_interface (derived->ns->op[op],
+					target_proc, p->where))
 	    return false;
 	  head = derived->ns->op[op];
 	  intr = gfc_get_interface ();
