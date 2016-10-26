@@ -1,5 +1,7 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/m32r/m32r.c (m32r_print_operand): Adjust fallthru comment.
+
 	* config/mcore/mcore.c (mcore_gen_compare): Adjust fallthru comments.
 
 	* config/microblaze/microblaze.c (microblaze_function_arg): Adjust
