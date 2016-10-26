@@ -1,3 +1,19 @@
+2016-10-26  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/78056
+	* config/rs6000/rs6000.c (spe_init_builtins): Modify loops to not
+	define builtin functions from the bdesc_spe_predicates or
+	bdesc_spe_evsel arrays if the builtin mask is not compatible with
+	the current compiler configuration.
+	(paired_init_builtins): Modify loop to not define define builtin
+	functions from the bdesc_paried_preds array if the builtin mask is
+	not compatible with the current compiler configuration.
+	(altivec_init_builtins): Modify loops to not define the
+	__builtin_altivec_stxvl function nor the builtin functions from
+	the bdesc_dst or bdesc_altivec_preds, or bdesc_abs arrays if the
+	builtin mask is not compatible with the current compiler
+	configuration.
+
 2016-10-26  Jeff Law  <law@redhat.com>
 
 	* config/mips/mips.c (mips16_constant_cost): Add missing

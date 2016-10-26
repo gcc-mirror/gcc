@@ -16923,6 +16923,7 @@ spe_init_builtins (void)
   tree pushort_type_node = build_pointer_type (short_unsigned_type_node);
   const struct builtin_description *d;
   size_t i;
+  HOST_WIDE_INT builtin_mask = rs6000_builtin_mask;
 
   tree v2si_ftype_4_v2si
     = build_function_type_list (opaque_V2SI_type_node,
@@ -17063,6 +17064,15 @@ spe_init_builtins (void)
   for (i = 0; i < ARRAY_SIZE (bdesc_spe_predicates); ++i, d++)
     {
       tree type;
+      HOST_WIDE_INT mask = d->mask;
+
+      if ((mask & builtin_mask) != mask)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "spe_init_builtins, skip predicate %s\n",
+		     d->name);
+	  continue;
+	}
 
       switch (insn_data[d->icode].operand[1].mode)
 	{
@@ -17084,6 +17094,15 @@ spe_init_builtins (void)
   for (i = 0; i < ARRAY_SIZE (bdesc_spe_evsel); ++i, d++)
     {
       tree type;
+      HOST_WIDE_INT mask = d->mask;
+
+      if ((mask & builtin_mask) != mask)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "spe_init_builtins, skip evsel %s\n",
+		     d->name);
+	  continue;
+	}
 
       switch (insn_data[d->icode].operand[1].mode)
 	{
@@ -17106,6 +17125,7 @@ paired_init_builtins (void)
 {
   const struct builtin_description *d;
   size_t i;
+  HOST_WIDE_INT builtin_mask = rs6000_builtin_mask;
 
    tree int_ftype_int_v2sf_v2sf
     = build_function_type_list (integer_type_node,
@@ -17141,6 +17161,15 @@ paired_init_builtins (void)
   for (i = 0; i < ARRAY_SIZE (bdesc_paired_preds); ++i, d++)
     {
       tree type;
+      HOST_WIDE_INT mask = d->mask;
+
+      if ((mask & builtin_mask) != mask)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "paired_init_builtins, skip predicate %s\n",
+		     d->name);
+	  continue;
+	}
 
       if (TARGET_DEBUG_BUILTIN)
 	fprintf (stderr, "paired pred #%d, insn = %s [%d], mode = %s\n",
@@ -17167,6 +17196,7 @@ altivec_init_builtins (void)
   size_t i;
   tree ftype;
   tree decl;
+  HOST_WIDE_INT builtin_mask = rs6000_builtin_mask;
 
   tree pvoid_type_node = build_pointer_type (void_type_node);
 
@@ -17500,13 +17530,25 @@ altivec_init_builtins (void)
   def_builtin ("__builtin_vec_stvrx",  void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVRX);
   def_builtin ("__builtin_vec_stvrxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVRXL);
 
-  def_builtin ("__builtin_altivec_stxvl", void_ftype_v16qi_pvoid_long,
-	       P9V_BUILTIN_STXVL);
+  if (TARGET_P9_VECTOR)
+    def_builtin ("__builtin_altivec_stxvl", void_ftype_v16qi_pvoid_long,
+		 P9V_BUILTIN_STXVL);
 
   /* Add the DST variants.  */
   d = bdesc_dst;
   for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
-    def_builtin (d->name, void_ftype_pcvoid_int_int, d->code);
+    {
+      HOST_WIDE_INT mask = d->mask;
+
+      if ((mask & builtin_mask) != mask)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "altivec_init_builtins, skip dst %s\n",
+		     d->name);
+	  continue;
+	}
+      def_builtin (d->name, void_ftype_pcvoid_int_int, d->code);
+    }
 
   /* Initialize the predicates.  */
   d = bdesc_altivec_preds;
@@ -17514,6 +17556,15 @@ altivec_init_builtins (void)
     {
       machine_mode mode1;
       tree type;
+      HOST_WIDE_INT mask = d->mask;
+
+      if ((mask & builtin_mask) != mask)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "altivec_init_builtins, skip predicate %s\n",
+		     d->name);
+	  continue;
+	}
 
       if (rs6000_overloaded_builtin_p (d->code))
 	mode1 = VOIDmode;
@@ -17556,6 +17607,15 @@ altivec_init_builtins (void)
     {
       machine_mode mode0;
       tree type;
+      HOST_WIDE_INT mask = d->mask;
+
+      if ((mask & builtin_mask) != mask)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "altivec_init_builtins, skip abs %s\n",
+		     d->name);
+	  continue;
+	}
 
       mode0 = insn_data[d->icode].operand[0].mode;
 
