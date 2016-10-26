@@ -1,3 +1,13 @@
+2016-10-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	gen-pass-instances.awk is sensitive to the order in which
+	passes are added; passes that appear later have to be added first.
+
+	PR target/71676
+	PR target/71678
+	* config/avr/avr-passes.def: Swap order of directives for
+	gen-pass-instances.awk.
+
 2016-10-25  Jeff Law  <law@redhat.com>
 
 	* config/vax/vax.c (vad_address_cost_1): Add missing FALLTHRU comment.
