@@ -1545,7 +1545,7 @@ msp430_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
     case REG:
       if (!reg_ok_for_addr (x, strict))
 	return false;
-      /* else... */
+      /* FALLTHRU */
     case CONST:
     case SYMBOL_REF:
     case CONST_INT:
