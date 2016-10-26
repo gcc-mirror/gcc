@@ -2894,6 +2894,7 @@ spu_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 	  case TYPE_LOAD:
 	  case TYPE_STORE:
 	    pipe_ls = i;
+	    /* FALLTHRU */
 	  case TYPE_LNOP:
 	  case TYPE_SHUF:
 	  case TYPE_BR:
@@ -3532,8 +3533,9 @@ spu_legitimate_address_p (machine_mode mode,
 
     case SUBREG:
       x = XEXP (x, 0);
-      if (REG_P (x))
+      if (!REG_P (x))
 	return 0;
+      /* FALLTHRU */
 
     case REG:
       return INT_REG_OK_FOR_BASE_P (x, reg_ok_strict);
