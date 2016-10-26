@@ -1,3 +1,8 @@
+2016-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78111
+	* src/filesystem/ops.cc (canonical): Set error for non-existent path.
+
 2016-10-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Include <limits.h>

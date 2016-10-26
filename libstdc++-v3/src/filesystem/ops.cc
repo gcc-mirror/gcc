@@ -142,7 +142,11 @@ fs::canonical(const path& p, const path& base, error_code& ec)
 #endif
 
   if (!exists(pa, ec))
-    return result;
+    {
+      if (!ec)
+	ec = make_error_code(std::errc::no_such_file_or_directory);
+      return result;
+    }
   // else: we know there are (currently) no unresolvable symlink loops
 
   result = pa.root_path();
