@@ -1,3 +1,11 @@
+2016-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gen-pass-instances.awk (adjust_linenos): INcrement pass_lines[p]
+	by increment rather than double it.
+	(insert_remove_pass): Strip leading whitespace from args[3].  Don't
+	emit a space before args[4].
+	(END): Don't emit a space before with_arg.
+
 2016-10-26  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/sync.md (atomic_compare_and_swap<mode>_1): Add new ARMv8-M
