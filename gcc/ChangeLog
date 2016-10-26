@@ -1,5 +1,7 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/mcore/mcore.c (mcore_gen_compare): Adjust fallthru comments.
+
 	* config/microblaze/microblaze.c (microblaze_function_arg): Adjust
 	fallthru comment.
 
