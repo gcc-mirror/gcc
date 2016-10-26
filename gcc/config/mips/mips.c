@@ -3828,9 +3828,11 @@ mips16_constant_cost (int code, HOST_WIDE_INT x)
       /* Like LE, but reject the always-true case.  */
       if (x == -1)
 	return -1;
+      /* FALLTHRU */
     case LE:
       /* We add 1 to the immediate and use SLT.  */
       x += 1;
+      /* FALLTHRU */
     case XOR:
       /* We can use CMPI for an xor with an unsigned 16-bit X.  */
     case LT:
@@ -7439,7 +7441,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
   if (GET_CODE (fn) != SYMBOL_REF
       || !call_insn_operand (fn, VOIDmode))
     {
-      char buf[30];
+      char buf[32];
       rtx stub_fn, addr;
       rtx_insn *insn;
       bool lazy_p;
@@ -7635,7 +7637,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	    case DCmode:
 	      mips_output_64bit_xfer ('f', GP_RETURN + (8 / UNITS_PER_WORD),
 				      FP_REG_FIRST + 2);
-	      /* Fall though.  */
+	      /* FALLTHRU */
  	    case DFmode:
 	    case V2SFmode:
 	      gcc_assert (TARGET_PAIRED_SINGLE_FLOAT

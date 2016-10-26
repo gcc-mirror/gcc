@@ -1,3 +1,10 @@
+2016-10-26  Jeff Law  <law@redhat.com>
+
+	* config/mips/mips.c (mips16_constant_cost): Add missing
+	fallthru comments.
+	(mips16_build_call_stub): Increase buffer size.  Adjust
+	fallthru comment.
+
 2016-10-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* print-rtl.c (rtx_writer::print_rtx_operand_code_u): Print
