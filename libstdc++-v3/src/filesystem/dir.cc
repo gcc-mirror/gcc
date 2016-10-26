@@ -343,7 +343,10 @@ fs::recursive_directory_iterator::increment(error_code& ec) noexcept
     {
       _Dir dir = open_dir(top.entry.path(), _M_options, &ec);
       if (ec)
-	return *this;
+	{
+	  _M_dirs.reset();
+	  return *this;
+	}
       if (dir.dirp)
 	  _M_dirs->push(std::move(dir));
     }

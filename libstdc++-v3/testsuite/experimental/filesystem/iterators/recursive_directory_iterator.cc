@@ -81,6 +81,7 @@ test01()
   VERIFY( iter->path() == p/"d1/d2" );
   iter.increment(ec);  // should fail to recurse into p/d1/d2
   VERIFY( ec );
+  VERIFY( iter == fs::recursive_directory_iterator() );
 
   // Test inaccessible sub-directory, skipping permission denied.
   iter = fs::recursive_directory_iterator(p, opts, ec);
