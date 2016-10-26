@@ -1470,6 +1470,7 @@ compatibility extensions along with those enabled by @option{-std=legacy}.
 * %LOC as an rvalue::
 * .XOR. operator::
 * Bitwise logical operators::
+* Extended I/O specifiers::
 @end menu
 
 @node Old-style kind specifications
@@ -2605,6 +2606,95 @@ Here is the mapping of logical operator to bitwise intrinsic used with
 @item @code{.EQV.} @tab @code{@ref{NOT}(@ref{IEOR})} @tab complement of exclusive or
 @end multitable
 
+@node Extended I/O specifiers
+@subsection Extended I/O specifiers
+@cindex @code{CARRIAGECONTROL}
+@cindex @code{READONLY}
+@cindex @code{SHARE}
+@cindex @code{SHARED}
+@cindex @code{NOSHARED}
+@cindex I/O specifiers
+
+GNU Fortran supports the additional legacy I/O specifiers
+@code{CARRIAGECONTROL}, @code{READONLY}, and @code{SHARE} with the
+compile flag @option{-fdec}, for compatibility.
+
+@table @code
+@item CARRIAGECONTROL
+The @code{CARRIAGECONTROL} specifier allows a user to control line
+termination settings between output records for an I/O unit. The specifier has
+no meaning for readonly files. When @code{CARRAIGECONTROL} is specified upon
+opening a unit for formatted writing, the exact @code{CARRIAGECONTROL} setting
+determines what characters to write between output records. The syntax is:
+
+@smallexample
+OPEN(..., CARRIAGECONTROL=cc)
+@end smallexample
+
+Where @emph{cc} is a character expression that evaluates to one of the
+following values:
+
+@multitable @columnfractions .2 .8
+@item @code{'LIST'} @tab One line feed between records (default)
+@item @code{'FORTRAN'} @tab Legacy interpretation of the first character (see below)
+@item @code{'NONE'} @tab No separator between records
+@end multitable
+
+With @code{CARRIAGECONTROL='FORTRAN'}, when a record is written, the first
+character of the input record is not written, and instead determines the output
+record separator as follows:
+
+@multitable @columnfractions .3 .3 .4
+@headitem Leading character @tab Meaning @tab Output separating character(s)
+@item @code{'+'} @tab Overprinting @tab Carriage return only
+@item @code{'-'} @tab New line @tab Line feed and carriage return
+@item @code{'0'} @tab Skip line @tab Two line feeds and carriage return
+@item @code{'1'} @tab New page @tab Form feed and carriage return
+@item @code{'$'} @tab Prompting @tab Line feed (no carriage return)
+@item @code{CHAR(0)} @tab Overprinting (no advance) @tab None
+@end multitable
+
+@item READONLY
+The @code{READONLY} specifier may be given upon opening a unit, and is
+equivalent to specifying @code{ACTION='READ'}, except that the file may not be
+deleted on close (i.e. @code{CLOSE} with @code{STATUS="DELETE"}). The syntax
+is:
+
+@smallexample
+@code{OPEN(..., READONLY)}
+@end smallexample
+
+@item SHARE
+The @code{SHARE} specifier allows system-level locking on a unit upon opening
+it for controlled access from multiple processes/threads. The @code{SHARE}
+specifier has several forms:
+
+@smallexample
+OPEN(..., SHARE=sh)
+OPEN(..., SHARED)
+OPEN(..., NOSHARED)
+@end smallexample
+
+Where @emph{sh} in the first form is a character expression that evaluates to
+a value as seen in the table below. The latter two forms are aliases
+for particular values of @emph{sh}:
+
+@multitable @columnfractions .3 .3 .4
+@headitem Explicit form @tab Short form @tab Meaning
+@item @code{SHARE='DENYRW'} @tab @code{NOSHARED} @tab Exclusive (write) lock
+@item @code{SHARE='DENYNONE'} @tab @code{SHARED} @tab Shared (read) lock
+@end multitable
+
+In general only one process may hold an exclusive (write) lock for a given file
+at a time, whereas many processes may hold shared (read) locks for the same
+file.
+
+The behavior of locking may vary with your operating system. On POSIX systems,
+locking is implemented with @code{fcntl}. Consult your corresponding operating
+system's manual pages for further details. Locking via @code{SHARE=} is not
+supported on other systems.
+
+@end table
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
@@ -2629,7 +2719,7 @@ code that uses them running with the GNU Fortran compiler.
 * Variable FORMAT expressions::
 @c * Q edit descriptor::
 @c * TYPE and ACCEPT I/O Statements::
-@c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
+@c * DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
 @c * Omitted arguments in procedure call::
 * Alternate complex function syntax::
 * Volatile COMMON blocks::

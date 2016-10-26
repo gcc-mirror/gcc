@@ -141,6 +141,9 @@ internal_proto(compare_file_filename);
 extern gfc_unit *find_file (const char *file, gfc_charlen_type file_len);
 internal_proto(find_file);
 
+extern int close_share (gfc_unit *);
+internal_proto(close_share);
+
 extern int file_exists (const char *file, gfc_charlen_type file_len);
 internal_proto(file_exists);
 

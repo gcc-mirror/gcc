@@ -1,3 +1,14 @@
+2016-10-26  Fritz Reese <fritzoreese@gmail.com>
+
+	* frontend-passes.c (gfc_code_walker): Add SHARE and CARRIAGECONTROL.
+	* io.c (gfc_free_open, gfc_resolve_open, gfc_match_open): Ditto.
+	* gfortran.h (gfc_open): Add SHARE, CARRIAGECONTROL, and READONLY.
+	* io.c (io_tag, match_open_element): Ditto.
+	* ioparm.def: Ditto.
+	* trans-io.c (gfc_trans_open): Ditto.
+	* io.c (match_dec_etag, match_dec_ftag): New functions.
+	* gfortran.texi: Document.
+
 2016-10-25  Fritz Reese <fritzoreese@gmail.com>
 
 	* gfortran.texi: Document.

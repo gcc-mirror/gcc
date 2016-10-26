@@ -52,6 +52,21 @@ static const st_option action_opt[] =
   { NULL, 0}
 };
 
+static const st_option share_opt[] =
+{
+  { "denyrw", SHARE_DENYRW },
+  { "denynone", SHARE_DENYNONE },
+  { NULL, 0}
+};
+
+static const st_option cc_opt[] =
+{
+  { "list", CC_LIST },
+  { "fortran", CC_FORTRAN },
+  { "none", CC_NONE },
+  { NULL, 0}
+};
+
 static const st_option blank_opt[] =
 {
   { "null", BLANK_NULL},
@@ -195,6 +210,14 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
     generate_error (&opp->common, LIBERROR_BAD_OPTION,
 		    "Cannot change ACTION parameter in OPEN statement");
 
+  if (flags->share != SHARE_UNSPECIFIED && u->flags.share != flags->share)
+    generate_error (&opp->common, LIBERROR_BAD_OPTION,
+		    "Cannot change SHARE parameter in OPEN statement");
+
+  if (flags->cc != CC_UNSPECIFIED && u->flags.cc != flags->cc)
+    generate_error (&opp->common, LIBERROR_BAD_OPTION,
+		  "Cannot change CARRIAGECONTROL parameter in OPEN statement");
+
   /* Status must be OLD if present.  */
 
   if (flags->status != STATUS_UNSPECIFIED && flags->status != STATUS_OLD &&
@@ -329,6 +352,16 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 
   if (flags->status == STATUS_UNSPECIFIED)
     flags->status = STATUS_UNKNOWN;
+
+  if (flags->cc == CC_UNSPECIFIED)
+    flags->cc = flags->form == FORM_UNFORMATTED ? CC_NONE : CC_LIST;
+  else if (flags->form == FORM_UNFORMATTED && flags->cc != CC_NONE)
+    {
+      generate_error (&opp->common, LIBERROR_OPTION_CONFLICT,
+	  "CARRIAGECONTROL parameter conflicts with UNFORMATTED form in "
+	  "OPEN statement");
+      goto fail;
+    }
 
   /* Checks.  */
 
@@ -695,6 +728,7 @@ st_open (st_parameter_open *opp)
   library_start (&opp->common);
 
   /* Decode options.  */
+  flags.readonly = !(cf & IOPARM_OPEN_HAS_READONLY) ? 0 : opp->readonly;
 
   flags.access = !(cf & IOPARM_OPEN_HAS_ACCESS) ? ACCESS_UNSPECIFIED :
     find_option (&opp->common, opp->access, opp->access_len,
@@ -703,6 +737,14 @@ st_open (st_parameter_open *opp)
   flags.action = !(cf & IOPARM_OPEN_HAS_ACTION) ? ACTION_UNSPECIFIED :
     find_option (&opp->common, opp->action, opp->action_len,
 		 action_opt, "Bad ACTION parameter in OPEN statement");
+
+  flags.cc = !(cf & IOPARM_OPEN_HAS_CC) ? CC_UNSPECIFIED :
+    find_option (&opp->common, opp->cc, opp->cc_len,
+		 cc_opt, "Bad CARRIAGECONTROL parameter in OPEN statement");
+
+  flags.share = !(cf & IOPARM_OPEN_HAS_SHARE) ? SHARE_UNSPECIFIED :
+    find_option (&opp->common, opp->share, opp->share_len,
+		 share_opt, "Bad SHARE parameter in OPEN statement");
 
   flags.blank = !(cf & IOPARM_OPEN_HAS_BLANK) ? BLANK_UNSPECIFIED :
     find_option (&opp->common, opp->blank, opp->blank_len,
@@ -791,6 +833,11 @@ st_open (st_parameter_open *opp)
       && flags.access == ACCESS_DIRECT)
     generate_error (&opp->common, LIBERROR_BAD_OPTION,
 		    "Cannot use POSITION with direct access files");
+
+  if (flags.readonly
+      && flags.action != ACTION_UNSPECIFIED && flags.action != ACTION_READ)
+    generate_error (&opp->common, LIBERROR_BAD_OPTION,
+		    "ACTION conflicts with READONLY in OPEN statement");
 
   if (flags.access == ACCESS_APPEND)
     {

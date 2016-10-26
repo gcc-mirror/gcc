@@ -1,3 +1,31 @@
+2016-10-26  Fritz Reese  <fritzoreese@gmail.com>
+
+	* libgfortran.h (IOPARM_OPEN_HAS_READONLY, IOPARM_OPEN_HAS_SHARE,
+	IOPARM_OPEN_HAS_CC): New for READONLY, SHARE, and CARRIAGECONTROL.
+	* io/close.c (st_close): Support READONLY.
+	* io/io.h (st_parameter_open, unit_flags): Support SHARE,
+	CARRIAGECONTROL, and READONLY.
+	* io/open.c (st_open): Ditto.
+	* io/transfer.c (data_transfer_init): Ditto.
+	* io/io.h (st_parameter_dt): New member 'cc' for CARRIAGECONTROL.
+	* io/write.c (write_check_cc, write_cc): New functions for
+	CARRIAGECONTROL.
+	* io/transfer.c (next_record_cc): Ditto.
+	* io/file_pos.c (st_endfile): Support SHARE and CARRIAGECONTROL.
+	* io/io.h (st_parameter_inquire): Ditto.
+	* io/open.c (edit_modes, new_unit): Ditto.
+	* io/inquire.c (inquire_via_unit, inquire_via_filename): Ditto.
+	* io/io.h (unit_share, unit_cc, cc_fortran, IOPARM_INQUIRE_HAS_SHARE,
+	IOPARM_INQUIRE_HAS_CC): New for SHARE and CARRIAGECONTROL.
+	* io/open.c (share_opt, cc_opt): Ditto.
+	* io/read.c (read_x): Support CARRIAGECONTROL.
+	* io/transfer.c (read_sf, next_record_r, next_record_w): Ditto.
+	* io/write.c (list_formatted_write_scalar, write_a): Ditto.
+	* io/unix.h (close_share): New prototype.
+	* io/unix.c (open_share, close_share): New functions to handle SHARE.
+	* io/unix.c (open_external): Handle READONLY. Call open_share.
+	* io/close.c (st_close): Call close_share.
+
 2016-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/77828

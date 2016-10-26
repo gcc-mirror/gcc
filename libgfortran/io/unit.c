@@ -652,6 +652,8 @@ init_units (void)
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
       u->flags.round = ROUND_UNSPECIFIED;
+      u->flags.share = SHARE_UNSPECIFIED;
+      u->flags.cc = CC_LIST;
 
       u->recl = options.default_recl;
       u->endfile = NO_ENDFILE;
@@ -681,6 +683,8 @@ init_units (void)
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
       u->flags.round = ROUND_UNSPECIFIED;
+      u->flags.share = SHARE_UNSPECIFIED;
+      u->flags.cc = CC_LIST;
 
       u->recl = options.default_recl;
       u->endfile = AT_ENDFILE;
@@ -709,6 +713,8 @@ init_units (void)
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
       u->flags.round = ROUND_UNSPECIFIED;
+      u->flags.share = SHARE_UNSPECIFIED;
+      u->flags.cc = CC_LIST;
 
       u->recl = options.default_recl;
       u->endfile = AT_ENDFILE;

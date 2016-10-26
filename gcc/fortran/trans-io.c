@@ -1123,6 +1123,14 @@ gfc_trans_open (gfc_code * code)
     mask |= set_parameter_ref (&block, &post_block, var, IOPARM_open_newunit,
 			       p->newunit);
 
+  if (p->cc)
+    mask |= set_string (&block, &post_block, var, IOPARM_open_cc, p->cc);
+
+  if (p->share)
+    mask |= set_string (&block, &post_block, var, IOPARM_open_share, p->share);
+
+  mask |= set_parameter_const (&block, var, IOPARM_open_readonly, p->readonly);
+
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
   if (p->unit)
@@ -1449,6 +1457,13 @@ gfc_trans_inquire (gfc_code * code)
   if (p->iqstream)
     mask2 |= set_string (&block, &post_block, var, IOPARM_inquire_iqstream,
 			 p->iqstream);
+
+  if (p->share)
+    mask2 |= set_string (&block, &post_block, var, IOPARM_inquire_share,
+			 p->share);
+
+  if (p->cc)
+    mask2 |= set_string (&block, &post_block, var, IOPARM_inquire_cc, p->cc);
 
   if (mask2)
     mask |= set_parameter_const (&block, var, IOPARM_inquire_flags2, mask2);

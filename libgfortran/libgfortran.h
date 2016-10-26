@@ -609,6 +609,7 @@ st_parameter_common;
 
 #define IOPARM_COMMON_MASK              ((1 << 7) - 1)
 
+/* Make sure to keep in sync with io/io.h (st_parameter_open).  */
 #define IOPARM_OPEN_HAS_RECL_IN         (1 << 7)
 #define IOPARM_OPEN_HAS_FILE            (1 << 8)
 #define IOPARM_OPEN_HAS_STATUS          (1 << 9)
@@ -626,6 +627,9 @@ st_parameter_common;
 #define IOPARM_OPEN_HAS_SIGN		(1 << 21)
 #define IOPARM_OPEN_HAS_ASYNCHRONOUS	(1 << 22)
 #define IOPARM_OPEN_HAS_NEWUNIT		(1 << 23)
+#define IOPARM_OPEN_HAS_READONLY	(1 << 24)
+#define IOPARM_OPEN_HAS_CC              (1 << 25)
+#define IOPARM_OPEN_HAS_SHARE           (1 << 26)
 
 /* library start function and end macro.  These can be expanded if needed
    in the future.  cmp is st_parameter_common *cmp  */

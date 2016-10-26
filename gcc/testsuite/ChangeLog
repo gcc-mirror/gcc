@@ -1,3 +1,12 @@
+2016-10-26  Fritz Reese <fritzoreese@gmail.com>
+
+	* gfortran.dg/dec_io_1.f90: New test.
+	* gfortran.dg/dec_io_2.f90: New test.
+	* gfortran.dg/dec_io_3.f90: New test.
+	* gfortran.dg/dec_io_4.f90: New test.
+	* gfortran.dg/dec_io_5.f90: New test.
+	* gfortran.dg/dec_io_6.f90: New test.
+
 2016-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/78106
