@@ -1,3 +1,12 @@
+2016-10-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_map.h (map()): Make default.
+	* include/bits/stl_multimap.h (multimap()): Likewise.
+	* include/bits/stl_multiset.h (multiset()): Likewise.
+	* include/bits/stl_set.h (set()): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree_impl()): Add conditional noexcept.
+	(_Rb_tree()): Make default.
+
 2016-10-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR libstdc++/78110

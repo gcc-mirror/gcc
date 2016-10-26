@@ -147,11 +147,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Default constructor creates no elements.
        */
-      set()
-      _GLIBCXX_NOEXCEPT_IF(
-	  is_nothrow_default_constructible<allocator_type>::value
-	  && is_nothrow_default_constructible<key_compare>::value)
-      : _M_t() { }
+#if __cplusplus < 201103L
+      set() : _M_t() { }
+#else
+      set() = default;
+#endif
 
       /**
        *  @brief  Creates a %set with no elements.

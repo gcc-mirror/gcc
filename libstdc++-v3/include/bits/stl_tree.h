@@ -602,10 +602,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         struct _Rb_tree_impl : public _Node_allocator
         {
 	  _Key_compare		_M_key_compare;
-	  _Rb_tree_node_base 	_M_header;
-	  size_type 		_M_node_count; // Keeps track of size of tree.
+	  _Rb_tree_node_base	_M_header;
+	  size_type		_M_node_count; // Keeps track of size of tree.
 
 	  _Rb_tree_impl()
+	  _GLIBCXX_NOEXCEPT_IF(
+	    is_nothrow_default_constructible<_Node_allocator>::value
+	    && is_nothrow_default_constructible<_Key_compare>::value)
 	  : _Node_allocator(), _M_key_compare(), _M_header(),
 	    _M_node_count(0)
 	  { _M_initialize(); }
@@ -639,7 +642,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    this->_M_header._M_parent = 0;
 	    this->_M_header._M_left = &this->_M_header;
 	    this->_M_header._M_right = &this->_M_header;
-	  }	    
+	  }
 	};
 
       _Rb_tree_impl<_Compare> _M_impl;
@@ -831,7 +834,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       // allocation/deallocation
+#if __cplusplus < 201103L
       _Rb_tree() { }
+#else
+      _Rb_tree() = default;
+#endif
 
       _Rb_tree(const _Compare& __comp,
 	       const allocator_type& __a = allocator_type())

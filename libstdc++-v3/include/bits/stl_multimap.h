@@ -164,11 +164,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Default constructor creates no elements.
        */
-      multimap()
-      _GLIBCXX_NOEXCEPT_IF(
-	  is_nothrow_default_constructible<allocator_type>::value
-	  && is_nothrow_default_constructible<key_compare>::value)
-      : _M_t() { }
+#if __cplusplus < 201103L
+      multimap() : _M_t() { }
+#else
+      multimap() = default;
+#endif
 
       /**
        *  @brief  Creates a %multimap with no elements.
