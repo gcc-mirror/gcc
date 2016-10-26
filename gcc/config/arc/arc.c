@@ -3459,7 +3459,8 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "0x%08lx", l);
 	  break;
 	}
-      /* Fall through.  Let output_addr_const deal with it.  */
+      /* FALLTHRU */
+      /* Let output_addr_const deal with it.  */
     default :
       if (flag_pic
 	  || (GET_CODE (x) == CONST
@@ -6197,6 +6198,7 @@ check_if_valid_sleep_operand (rtx *operands, int opno)
     case CONST_INT :
 	if( UNSIGNED_INT6 (INTVAL (operands[opno])))
 	    return true;
+    /* FALLTHRU */
     default:
 	fatal_error (input_location,
 		     "operand for sleep instruction must be an unsigned 6 bit compile-time constant");
@@ -7284,7 +7286,7 @@ arc_register_move_cost (machine_mode,
 int
 arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
 {
-  char format[32];
+  char format[35];
 
   int match = operands_match_p (operands[0], operands[1]);
   int match2 = operands_match_p (operands[0], operands[2]);

@@ -4891,6 +4891,7 @@
        case 4: return \"br%d0%* %1, %B2, %^%l3\";
        case 8: if (!brcc_nolimm_operator (operands[0], VOIDmode))
 		 return \"br%d0%* %1, %B2, %^%l3\";
+       /* FALLTHRU */
        case 6: case 10:
        case 12:return \"cmp%? %1, %B2\\n\\tb%d0%* %^%l3%&;br%d0 out of range\";
        default: fprintf (stderr, \"unexpected length %d\\n\", get_attr_length (insn)); fflush (stderr); gcc_unreachable ();

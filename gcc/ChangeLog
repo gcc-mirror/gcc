@@ -1,5 +1,12 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/arc/arc.c (acr_print_operand): Adjust fallthru comment.
+	(check_if_valid_sleep_operand): Add missing fallthru comment.
+	(arc_register_move_cost): Increase buffer size.
+	* config/arc/arc.md (cbranch4si_scratch): Add missing fallthru
+	comment.
+	* config/arc/predicates.md (move_str_operand): Avoid fallthru.
+
 	* config/cr16/cr16.c (cr16_print_operand): Add missing fallthru
 	comment.  Add gcc_unreachable for path that should never happen.
 
