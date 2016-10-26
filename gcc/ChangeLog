@@ -1,5 +1,8 @@
 2016-10-26  Jeff Law  <law@redhat.com>
 
+	* config/msp430/msp430.c (msp430_legitimate_address_p): Adjust
+	fallthru comment.
+
 	* config/nios2/nios2.c (nios2_rtx_costs): Avoid fallthru.
 
 	* config/rl78/rl78.c (rl78_calculate_death_notes): Add fallthru
