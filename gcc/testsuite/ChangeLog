@@ -1,3 +1,13 @@
+2016-10-26  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/78056
+	* gcc.target/powerpc/vsu/vec-any-eqz-7.c (test_any_equal): Change
+	expected error message.
+	* gcc.target/powerpc/vsu/vec-xst-len-12.c (store_data): Change
+	expected error message.
+	* gcc.target/powerpc/vsu/vec-all-nez-7.c
+	(test_all_not_equal_and_not_zero): Change expected error message.
+
 2016-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/77973
