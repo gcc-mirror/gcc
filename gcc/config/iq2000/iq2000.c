@@ -1244,7 +1244,7 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
       gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
 		  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
 
-      /* Drops through.  */
+      /* FALLTHRU */
     case BLKmode:
       if (type != NULL_TREE && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
 	cum->arg_words += (cum->arg_words & 1);
@@ -2620,6 +2620,7 @@ expand_one_builtin (enum insn_code icode, rtx target, tree exp,
     {
     case 0:
 	pat = GEN_FCN (icode) (target);
+	break;
     case 1:
       if (target)
 	pat = GEN_FCN (icode) (target, op[0]);
