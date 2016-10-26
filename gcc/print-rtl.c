@@ -423,8 +423,8 @@ rtx_writer::print_rtx_operand_code_r (const_rtx in_rtx)
 void
 rtx_writer::print_rtx_operand_code_u (const_rtx in_rtx, int idx)
 {
-  /* Don't print insn UIDs in compact mode, apart from in LABEL_REFs.  */
-  if (m_compact && GET_CODE (in_rtx) != LABEL_REF)
+  /* Don't print insn UIDs for PREV/NEXT_INSN in compact mode.  */
+  if (m_compact && INSN_CHAIN_CODE_P (GET_CODE (in_rtx)) && idx < 2)
     return;
 
   if (XEXP (in_rtx, idx) != NULL)
@@ -672,10 +672,8 @@ rtx_writer::print_rtx (const_rtx in_rtx)
     idx = 5;
 #endif
 
-  /* For insns, print the INSN_UID.
-     In compact mode, we only print the INSN_UID of CODE_LABELs.  */
-  if (INSN_CHAIN_CODE_P (GET_CODE (in_rtx))
-      && (!m_compact || GET_CODE (in_rtx) == CODE_LABEL))
+  /* For insns, print the INSN_UID.  */
+  if (INSN_CHAIN_CODE_P (GET_CODE (in_rtx)))
     {
       if (flag_dump_unnumbered)
 	fprintf (m_outfile, " #");
