@@ -66,6 +66,8 @@ st_close (st_parameter_close *clp)
   u = find_unit (clp->common.unit);
   if (u != NULL)
     {
+      if (close_share (u) < 0)
+	generate_error (&clp->common, LIBERROR_OS, "Problem in CLOSE");
       if (u->flags.status == STATUS_SCRATCH)
 	{
 	  if (status == CLOSE_KEEP)
@@ -78,13 +80,19 @@ st_close (st_parameter_close *clp)
       else
 	{
 	  if (status == CLOSE_DELETE)
-            {
+	    {
+	      if (u->flags.readonly)
+		generate_warning (&clp->common, "STATUS set to DELETE on CLOSE"
+				  " but file protected by READONLY specifier");
+	      else
+		{
 #if HAVE_UNLINK_OPEN_FILE
-	      remove (u->filename);
+		  remove (u->filename);
 #else
-	      path = strdup (u->filename);
+		  path = strdup (u->filename);
 #endif
-            }
+		}
+	    }
 	}
 
       close_unit (u);

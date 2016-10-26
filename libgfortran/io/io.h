@@ -269,8 +269,34 @@ typedef enum
 unit_async;
 
 typedef enum
+{ SHARE_DENYRW, SHARE_DENYNONE,
+  SHARE_UNSPECIFIED
+}
+unit_share;
+
+typedef enum
+{ CC_LIST, CC_FORTRAN, CC_NONE,
+  CC_UNSPECIFIED
+}
+unit_cc;
+
+/* End-of-record types for CC_FORTRAN.  */
+typedef enum
+{ CCF_DEFAULT=0x0,
+  CCF_OVERPRINT=0x1,
+  CCF_ONE_LF=0x2,
+  CCF_TWO_LF=0x4,
+  CCF_PAGE_FEED=0x8,
+  CCF_PROMPT=0x10,
+  CCF_OVERPRINT_NOA=0x20,
+} /* 6 bits */
+cc_fortran;
+
+typedef enum
 { SIGN_S, SIGN_SS, SIGN_SP }
 unit_sign_s;
+
+/* Make sure to keep st_parameter_* in sync with gcc/fortran/ioparm.def.  */
 
 #define CHARACTER1(name) \
 	      char * name; \
@@ -299,6 +325,9 @@ typedef struct
   CHARACTER1 (sign);
   CHARACTER2 (asynchronous);
   GFC_INTEGER_4 *newunit;
+  GFC_INTEGER_4 readonly;
+  CHARACTER2 (cc);
+  CHARACTER1 (share);
 }
 st_parameter_open;
 
@@ -352,6 +381,8 @@ st_parameter_filepos;
 #define IOPARM_INQUIRE_HAS_SIZE		(1 << 6)
 #define IOPARM_INQUIRE_HAS_ID		(1 << 7)
 #define IOPARM_INQUIRE_HAS_IQSTREAM	(1 << 8)
+#define IOPARM_INQUIRE_HAS_SHARE	(1 << 9)
+#define IOPARM_INQUIRE_HAS_CC		(1 << 10)
 
 typedef struct
 {
@@ -386,6 +417,8 @@ typedef struct
   GFC_IO_INT *size;
   GFC_INTEGER_4 *id;
   CHARACTER1 (iqstream);
+  CHARACTER2 (share);
+  CHARACTER1 (cc);
 }
 st_parameter_inquire;
 
@@ -526,6 +559,21 @@ typedef struct st_parameter_dt
 	  GFC_IO_INT not_used; /* Needed for alignment. */
 	  formatted_dtio fdtio_ptr;
 	  unformatted_dtio ufdtio_ptr;
+	  /* With CC_FORTRAN, the first character of a record determines the
+	     style of record end (and start) to use. We must mark down the type
+	     when we write first in write_a so we remember the end type later in
+	     next_record_w.  */
+	  struct
+	    {
+	      unsigned type : 6; /* See enum cc_fortran.  */
+	      unsigned len  : 2; /* Always 0, 1, or 2.  */
+	      /* The union is updated after start-of-record is written.  */
+	      union
+		{
+		  char start; /* Output character for start of record.  */
+		  char end;   /* Output character for end of record.  */
+		} u;
+	    } cc;
 	} p;
       /* This pad size must be equal to the pad_size declared in
 	 trans-io.c (gfc_build_io_library_fndecls).  The above structure
@@ -571,6 +619,9 @@ typedef struct
   unit_round round;
   unit_sign sign;
   unit_async async;
+  unit_share share;
+  unit_cc cc;
+  int readonly;
 }
 unit_flags;
 

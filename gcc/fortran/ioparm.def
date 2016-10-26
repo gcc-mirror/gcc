@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* Make sure to keep in sync with libgfortran/io/io.h (st_parameter_*).  */
 #ifndef IOPARM_common_libreturn_mask
 #define IOPARM_common_libreturn_mask	3
 #define IOPARM_common_libreturn_ok	0
@@ -50,6 +51,9 @@ IOPARM (open,    round,		1 << 20, char2)
 IOPARM (open,    sign,		1 << 21, char1)
 IOPARM (open,    asynchronous,	1 << 22, char2)
 IOPARM (open,    newunit,	1 << 23, pint4)
+IOPARM (open,    readonly,	1 << 24, int4)
+IOPARM (open,    cc,		1 << 25, char2)
+IOPARM (open,    share,		1 << 26, char1)
 IOPARM (close,   common,	0,	 common)
 IOPARM (close,   status,	1 << 7,  char1)
 IOPARM (filepos, common,	0,	 common)
@@ -88,6 +92,8 @@ IOPARM (inquire, pending,	1 << 5,  pint4)
 IOPARM (inquire, size,		1 << 6,  pintio)
 IOPARM (inquire, id,		1 << 7,  pint4)
 IOPARM (inquire, iqstream,	1 << 8,  char1)
+IOPARM (inquire, share,		1 << 9,  char2)
+IOPARM (inquire, cc,		1 << 10, char1)
 IOPARM (wait,    common,	0,	 common)
 IOPARM (wait,    id,		1 << 7,  pint4)
 IOPARM (dt,      common,	0,	 common)
