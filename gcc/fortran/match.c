@@ -5882,6 +5882,7 @@ gfc_match_select_type (void)
   char name[GFC_MAX_SYMBOL_LEN];
   bool class_array;
   gfc_symbol *sym;
+  gfc_namespace *ns = gfc_current_ns;
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)
@@ -5891,10 +5892,11 @@ gfc_match_select_type (void)
   if (m != MATCH_YES)
     return m;
 
+  gfc_current_ns = gfc_build_block_ns (ns);
   m = gfc_match (" %n => %e", name, &expr2);
   if (m == MATCH_YES)
     {
-      expr1 = gfc_get_expr();
+      expr1 = gfc_get_expr ();
       expr1->expr_type = EXPR_VARIABLE;
       if (gfc_get_sym_tree (name, NULL, &expr1->symtree, false))
 	{
@@ -5916,7 +5918,11 @@ gfc_match_select_type (void)
     {
       m = gfc_match (" %e ", &expr1);
       if (m != MATCH_YES)
-	return m;
+	{
+	  std::swap (ns, gfc_current_ns);
+	  gfc_free_namespace (ns);
+	  return m;
+	}
     }
 
   m = gfc_match (" )%t");
@@ -5932,19 +5938,19 @@ gfc_match_select_type (void)
      allowed by the standard.
      TODO: see if it is sufficient to exclude component and substring
      references.  */
-  class_array = expr1->expr_type == EXPR_VARIABLE
-		  && expr1->ts.type == BT_CLASS
-		  && CLASS_DATA (expr1)
-		  && (strcmp (CLASS_DATA (expr1)->name, "_data") == 0)
-		  && (CLASS_DATA (expr1)->attr.dimension
-		      || CLASS_DATA (expr1)->attr.codimension)
-		  && expr1->ref
-		  && expr1->ref->type == REF_ARRAY
-		  && expr1->ref->next == NULL;
+  class_array = (expr1->expr_type == EXPR_VARIABLE
+		 && expr1->ts.type == BT_CLASS
+		 && CLASS_DATA (expr1)
+		 && (strcmp (CLASS_DATA (expr1)->name, "_data") == 0)
+		 && (CLASS_DATA (expr1)->attr.dimension
+		     || CLASS_DATA (expr1)->attr.codimension)
+		 && expr1->ref
+		 && expr1->ref->type == REF_ARRAY
+		 && expr1->ref->next == NULL);
 
   /* Check for F03:C811.  */
   if (!expr2 && (expr1->expr_type != EXPR_VARIABLE
-		  || (!class_array && expr1->ref != NULL)))
+		 || (!class_array && expr1->ref != NULL)))
     {
       gfc_error ("Selector in SELECT TYPE at %C is not a named variable; "
 		 "use associate-name=>");
@@ -5958,12 +5964,16 @@ gfc_match_select_type (void)
   new_st.ext.block.ns = gfc_current_ns;
 
   select_type_push (expr1->symtree->n.sym);
+  gfc_current_ns = ns;
 
   return MATCH_YES;
 
 cleanup:
   gfc_free_expr (expr1);
   gfc_free_expr (expr2);
+  gfc_undo_symbols ();
+  std::swap (ns, gfc_current_ns);
+  gfc_free_namespace (ns);
   return m;
 }
 

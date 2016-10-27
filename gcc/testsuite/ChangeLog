@@ -1,9 +1,13 @@
 2016-10-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/78026
+	* gfortran.dg/gomp/pr78026.f03: New test.
+	* gfortran.dg/select_type_38.f03: New test.
+
 	PR middle-end/78025
 	* g++.dg/gomp/declare-simd-7.C: New test.
 
-2016-10-27  Fritz Reese <fritzoreese@gmail.com>
+2016-10-27  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_init_1.f90: Remove -fdump-tree-original.
 	* gfortran.dg/dec_init_2.f90: Likewise.
@@ -14,7 +18,7 @@
 
 	* gcc.dg/fold-narrowbopcst-1.c: New test.
 
-2016-10-27  Fritz Reese <fritzoreese@gmail.com>
+2016-10-27  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_io_5.f90: Don't use "test.txt", and use
 	dg-shouldfail/dg-output instead of XFAIL.
@@ -70,7 +74,7 @@
 	* gfortran.dg/pr78061.f: New test.
 	* g++.dg/pr78088.C: New test.
 
-2016-10-26  Fritz Reese <fritzoreese@gmail.com>
+2016-10-26  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_io_1.f90: New test.
 	* gfortran.dg/dec_io_2.f90: New test.

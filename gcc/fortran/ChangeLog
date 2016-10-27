@@ -1,4 +1,17 @@
-2016-10-27  Fritz Reese <fritzoreese@gmail.com>
+2016-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/78026
+	* parse.c (decode_statement): Don't create namespace for possible
+	select type here and destroy it afterwards.
+	(parse_select_type_block): Set gfc_current_ns to new_st.ext.block.ns.
+	(parse_executable, gfc_parse_file): Formatting fixes.
+	* match.c (gfc_match_select_type): Create namespace for select type
+	here, only after matching select type.  Formatting fixes.  Free that
+	namespace if not returning MATCH_YES, after gfc_undo_symbols,
+	otherwise remember it in new_st.ext.block.ns and switch to parent
+	namespace anyway.
+
+2016-10-27  Fritz Reese  <fritzoreese@gmail.com>
 
 	* expr.c (generate_union_initializer, get_union_initializer): New.
 	* expr.c (component_initializer): Consider BT_UNION specially.
@@ -21,7 +34,7 @@
 	suppress the error and return if the same procedure symbol
 	is added more than once to the interface.
 
-2016-10-26  Fritz Reese <fritzoreese@gmail.com>
+2016-10-26  Fritz Reese  <fritzoreese@gmail.com>
 
 	* frontend-passes.c (gfc_code_walker): Add SHARE and CARRIAGECONTROL.
 	* io.c (gfc_free_open, gfc_resolve_open, gfc_match_open): Ditto.
@@ -32,7 +45,7 @@
 	* io.c (match_dec_etag, match_dec_ftag): New functions.
 	* gfortran.texi: Document.
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.texi: Document.
 	* resolve.c (logical_to_bitwise): New function.
@@ -56,17 +69,17 @@
 
 	* intrinsic.texi (cosd): New mathop.
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* match.c (gfc_match_intrinsic_op): Match ".XOR." with -std=legacy.
 	* gfortran.texi: Document.
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* primary.c (gfc_match_rvalue): Match %LOC as LOC with -std=legacy.
 	* gfortran.texi: Document.
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* decl.c (gfc_match_type): New function.
 	* match.h (gfc_match_type): New function.
@@ -74,12 +87,12 @@
 	* gfortran.texi: Update documentation.
 	* parse.c (decode_statement): Invoke gfc_match_type.
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.texi: Document.
 	* gfortran.h (gfc_is_whitespace): Include form feed ('\f').
 
-2016-10-25  Fritz Reese <fritzoreese@gmail.com>
+2016-10-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	* invoke.texi, gfortran.texi: Touch up documentation of -fdec.
 	* gfortran.h (gfc_option): Move flag_dec_structure out of gfc_option.
