@@ -248,15 +248,15 @@
   [(set_attr "arch" "32,v8mb,v8mb,v8mb")])
 
 (define_insn_and_split "atomic_exchange<mode>"
-  [(set (match_operand:QHSD 0 "s_register_operand" "=&r")	;; output
-	(match_operand:QHSD 1 "mem_noofs_operand" "+Ua"))	;; memory
+  [(set (match_operand:QHSD 0 "s_register_operand" "=&r,&r")	;; output
+	(match_operand:QHSD 1 "mem_noofs_operand" "+Ua,Ua"))	;; memory
    (set (match_dup 1)
 	(unspec_volatile:QHSD
-	  [(match_operand:QHSD 2 "s_register_operand" "r")	;; input
+	  [(match_operand:QHSD 2 "s_register_operand" "r,r")	;; input
 	   (match_operand:SI 3 "const_int_operand" "")]		;; model
 	  VUNSPEC_ATOMIC_XCHG))
    (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:SI 4 "=&r"))]
+   (clobber (match_scratch:SI 4 "=&r,&l"))]
   "<sync_predtab>"
   "#"
   "&& reload_completed"
@@ -265,7 +265,11 @@
     arm_split_atomic_op (SET, operands[0], NULL, operands[1],
 			 operands[2], operands[3], operands[4]);
     DONE;
-  })
+  }
+  [(set_attr "arch" "32,v8mb")])
+
+;; The following mode and code attribute are defined here because they are
+;; specific to atomics and are not needed anywhere else.
 
 (define_mode_attr atomic_op_operand
   [(QI "reg_or_int_operand")
@@ -276,16 +280,24 @@
 (define_mode_attr atomic_op_str
   [(QI "rn") (HI "rn") (SI "rn") (DI "r")])
 
+(define_code_attr thumb1_atomic_op_str
+  [(ior "l,l") (xor "l,l") (and "l,l") (plus "lIJL,r") (minus "lPd,lPd")])
+
+(define_code_attr thumb1_atomic_newop_str
+  [(ior "&l,&l") (xor "&l,&l") (and "&l,&l") (plus "&l,&r") (minus "&l,&l")])
+
+;; Constraints of this pattern must be at least as strict as those of the non
+;; atomic operations in thumb1.md and aim to be as permissive.
 (define_insn_and_split "atomic_<sync_optab><mode>"
-  [(set (match_operand:QHSD 0 "mem_noofs_operand" "+Ua")
+  [(set (match_operand:QHSD 0 "mem_noofs_operand" "+Ua,Ua,Ua")
 	(unspec_volatile:QHSD
 	  [(syncop:QHSD (match_dup 0)
-	     (match_operand:QHSD 1 "<atomic_op_operand>" "<atomic_op_str>"))
+	     (match_operand:QHSD 1 "<atomic_op_operand>" "<atomic_op_str>,<thumb1_atomic_op_str>"))
 	   (match_operand:SI 2 "const_int_operand")]		;; model
 	  VUNSPEC_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:QHSD 3 "=&r"))
-   (clobber (match_scratch:SI 4 "=&r"))]
+   (clobber (match_scratch:QHSD 3 "=&r,<thumb1_atomic_newop_str>"))
+   (clobber (match_scratch:SI 4 "=&r,&l,&l"))]
   "<sync_predtab>"
   "#"
   "&& reload_completed"
@@ -294,19 +306,22 @@
     arm_split_atomic_op (<CODE>, NULL, operands[3], operands[0],
 			 operands[1], operands[2], operands[4]);
     DONE;
-  })
+  }
+  [(set_attr "arch" "32,v8mb,v8mb")])
 
+;; Constraints of this pattern must be at least as strict as those of the non
+;; atomic NANDs in thumb1.md and aim to be as permissive.
 (define_insn_and_split "atomic_nand<mode>"
-  [(set (match_operand:QHSD 0 "mem_noofs_operand" "+Ua")
+  [(set (match_operand:QHSD 0 "mem_noofs_operand" "+Ua,Ua")
 	(unspec_volatile:QHSD
 	  [(not:QHSD
 	     (and:QHSD (match_dup 0)
-	       (match_operand:QHSD 1 "<atomic_op_operand>" "<atomic_op_str>")))
+	       (match_operand:QHSD 1 "<atomic_op_operand>" "<atomic_op_str>,l")))
 	   (match_operand:SI 2 "const_int_operand")]		;; model
 	  VUNSPEC_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:QHSD 3 "=&r"))
-   (clobber (match_scratch:SI 4 "=&r"))]
+   (clobber (match_scratch:QHSD 3 "=&r,&l"))
+   (clobber (match_scratch:SI 4 "=&r,&l"))]
   "<sync_predtab>"
   "#"
   "&& reload_completed"
@@ -315,20 +330,38 @@
     arm_split_atomic_op (NOT, NULL, operands[3], operands[0],
 			 operands[1], operands[2], operands[4]);
     DONE;
-  })
+  }
+  [(set_attr "arch" "32,v8mb")])
 
+;; 3 alternatives are needed to represent constraints after split from
+;; thumb1_addsi3: (i) case where operand1 and destination can be in different
+;; registers, (ii) case where they are in the same low register and (iii) case
+;; when they are in the same register without restriction on the register.  We
+;; disparage slightly alternatives that require copying the old value into the
+;; register for the new value (see bind_old_new in arm_split_atomic_op).
+(define_code_attr thumb1_atomic_fetch_op_str
+  [(ior "l,l,l") (xor "l,l,l") (and "l,l,l") (plus "lL,?IJ,?r") (minus "lPd,lPd,lPd")])
+
+(define_code_attr thumb1_atomic_fetch_newop_str
+  [(ior "&l,&l,&l") (xor "&l,&l,&l") (and "&l,&l,&l") (plus "&l,&l,&r") (minus "&l,&l,&l")])
+
+(define_code_attr thumb1_atomic_fetch_oldop_str
+  [(ior "&r,&r,&r") (xor "&r,&r,&r") (and "&r,&r,&r") (plus "&l,&r,&r") (minus "&l,&l,&l")])
+
+;; Constraints of this pattern must be at least as strict as those of the non
+;; atomic operations in thumb1.md and aim to be as permissive.
 (define_insn_and_split "atomic_fetch_<sync_optab><mode>"
-  [(set (match_operand:QHSD 0 "s_register_operand" "=&r")
-	(match_operand:QHSD 1 "mem_noofs_operand" "+Ua"))
+  [(set (match_operand:QHSD 0 "s_register_operand" "=&r,<thumb1_atomic_fetch_oldop_str>")
+	(match_operand:QHSD 1 "mem_noofs_operand" "+Ua,Ua,Ua,Ua"))
    (set (match_dup 1)
 	(unspec_volatile:QHSD
 	  [(syncop:QHSD (match_dup 1)
-	     (match_operand:QHSD 2 "<atomic_op_operand>" "<atomic_op_str>"))
+	     (match_operand:QHSD 2 "<atomic_op_operand>" "<atomic_op_str>,<thumb1_atomic_fetch_op_str>"))
 	   (match_operand:SI 3 "const_int_operand")]		;; model
 	  VUNSPEC_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:QHSD 4 "=&r"))
-   (clobber (match_scratch:SI 5 "=&r"))]
+   (clobber (match_scratch:QHSD 4 "=&r,<thumb1_atomic_fetch_newop_str>"))
+   (clobber (match_scratch:SI 5 "=&r,&l,&l,&l"))]
   "<sync_predtab>"
   "#"
   "&& reload_completed"
@@ -337,21 +370,24 @@
     arm_split_atomic_op (<CODE>, operands[0], operands[4], operands[1],
 			 operands[2], operands[3], operands[5]);
     DONE;
-  })
+  }
+  [(set_attr "arch" "32,v8mb,v8mb,v8mb")])
 
+;; Constraints of this pattern must be at least as strict as those of the non
+;; atomic NANDs in thumb1.md and aim to be as permissive.
 (define_insn_and_split "atomic_fetch_nand<mode>"
-  [(set (match_operand:QHSD 0 "s_register_operand" "=&r")
-	(match_operand:QHSD 1 "mem_noofs_operand" "+Ua"))
+  [(set (match_operand:QHSD 0 "s_register_operand" "=&r,&r")
+	(match_operand:QHSD 1 "mem_noofs_operand" "+Ua,Ua"))
    (set (match_dup 1)
 	(unspec_volatile:QHSD
 	  [(not:QHSD
 	     (and:QHSD (match_dup 1)
-	       (match_operand:QHSD 2 "<atomic_op_operand>" "<atomic_op_str>")))
+	       (match_operand:QHSD 2 "<atomic_op_operand>" "<atomic_op_str>,l")))
 	   (match_operand:SI 3 "const_int_operand")]		;; model
 	  VUNSPEC_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:QHSD 4 "=&r"))
-   (clobber (match_scratch:SI 5 "=&r"))]
+   (clobber (match_scratch:QHSD 4 "=&r,&l"))
+   (clobber (match_scratch:SI 5 "=&r,&l"))]
   "<sync_predtab>"
   "#"
   "&& reload_completed"
@@ -360,20 +396,23 @@
     arm_split_atomic_op (NOT, operands[0], operands[4], operands[1],
 			 operands[2], operands[3], operands[5]);
     DONE;
-  })
+  }
+  [(set_attr "arch" "32,v8mb")])
 
+;; Constraints of this pattern must be at least as strict as those of the non
+;; atomic operations in thumb1.md and aim to be as permissive.
 (define_insn_and_split "atomic_<sync_optab>_fetch<mode>"
-  [(set (match_operand:QHSD 0 "s_register_operand" "=&r")
+  [(set (match_operand:QHSD 0 "s_register_operand" "=&r,<thumb1_atomic_newop_str>")
 	(syncop:QHSD
-	  (match_operand:QHSD 1 "mem_noofs_operand" "+Ua")
-	  (match_operand:QHSD 2 "<atomic_op_operand>" "<atomic_op_str>")))
+	  (match_operand:QHSD 1 "mem_noofs_operand" "+Ua,Ua,Ua")
+	  (match_operand:QHSD 2 "<atomic_op_operand>" "<atomic_op_str>,<thumb1_atomic_op_str>")))
    (set (match_dup 1)
 	(unspec_volatile:QHSD
 	  [(match_dup 1) (match_dup 2)
 	   (match_operand:SI 3 "const_int_operand")]		;; model
 	  VUNSPEC_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:SI 4 "=&r"))]
+   (clobber (match_scratch:SI 4 "=&r,&l,&l"))]
   "<sync_predtab>"
   "#"
   "&& reload_completed"
@@ -382,21 +421,24 @@
     arm_split_atomic_op (<CODE>, NULL, operands[0], operands[1],
 			 operands[2], operands[3], operands[4]);
     DONE;
-  })
+  }
+  [(set_attr "arch" "32,v8mb,v8mb")])
 
+;; Constraints of this pattern must be at least as strict as those of the non
+;; atomic NANDs in thumb1.md and aim to be as permissive.
 (define_insn_and_split "atomic_nand_fetch<mode>"
-  [(set (match_operand:QHSD 0 "s_register_operand" "=&r")
+  [(set (match_operand:QHSD 0 "s_register_operand" "=&r,&l")
 	(not:QHSD
 	  (and:QHSD
-	    (match_operand:QHSD 1 "mem_noofs_operand" "+Ua")
-	    (match_operand:QHSD 2 "<atomic_op_operand>" "<atomic_op_str>"))))
+	    (match_operand:QHSD 1 "mem_noofs_operand" "+Ua,Ua")
+	    (match_operand:QHSD 2 "<atomic_op_operand>" "<atomic_op_str>,l"))))
    (set (match_dup 1)
 	(unspec_volatile:QHSD
 	  [(match_dup 1) (match_dup 2)
 	   (match_operand:SI 3 "const_int_operand")]		;; model
 	  VUNSPEC_ATOMIC_OP))
    (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:SI 4 "=&r"))]
+   (clobber (match_scratch:SI 4 "=&r,&l"))]
   "<sync_predtab>"
   "#"
   "&& reload_completed"
@@ -405,7 +447,8 @@
     arm_split_atomic_op (NOT, NULL, operands[0], operands[1],
 			 operands[2], operands[3], operands[4]);
     DONE;
-  })
+  }
+  [(set_attr "arch" "32,v8mb")])
 
 (define_insn "arm_load_exclusive<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")

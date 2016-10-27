@@ -1,3 +1,32 @@
+2016-10-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (arm_split_atomic_op): Add function comment.  Add
+	logic to to decide whether to copy over old value to register for new
+	value.
+	* config/arm/sync.md: Add comments explaning why mode and code
+	attribute are not defined in iterators.md
+	(thumb1_atomic_op_str): New code attribute.
+	(thumb1_atomic_newop_str): Likewise.
+	(thumb1_atomic_fetch_op_str): Likewise.
+	(thumb1_atomic_fetch_newop_str): Likewise.
+	(thumb1_atomic_fetch_oldop_str): Likewise.
+	(atomic_exchange<mode>): Add new ARMv8-M Baseline only alternatives to
+	mirror the more restrictive constraints of the Thumb-1 insns after
+	split compared to Thumb-2 counterpart insns.
+	(atomic_<sync_optab><mode>): Likewise.  Add comment to keep constraints
+	in sync with non atomic version.
+	(atomic_nand<mode>): Likewise.
+	(atomic_fetch_<sync_optab><mode>): Likewise.
+	(atomic_fetch_nand<mode>): Likewise.
+	(atomic_<sync_optab>_fetch<mode>): Likewise.
+	(atomic_nand_fetch<mode>): Likewise.
+	* config/arm/thumb1.md (thumb1_addsi3): Add comment to keep contraint
+	in sync with atomic version.
+	(thumb1_subsi3_insn): Likewise.
+	(thumb1_andsi3_insn): Likewise.
+	(thumb1_iorsi3_insn): Likewise.
+	(thumb1_xorsi3_insn): Likewise.
+
 2016-10-27  Nick Clifton  <nickc@redhat.com>
 
 	* plugin.c (register_plugin_info): Produce an error message if the
