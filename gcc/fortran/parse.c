@@ -295,7 +295,6 @@ static bool in_specification_block;
 static gfc_statement
 decode_statement (void)
 {
-  gfc_namespace *ns;
   gfc_statement st;
   locus old_locus;
   match m = MATCH_NO;
@@ -424,12 +423,7 @@ decode_statement (void)
   match (NULL, gfc_match_associate, ST_ASSOCIATE);
   match (NULL, gfc_match_critical, ST_CRITICAL);
   match (NULL, gfc_match_select, ST_SELECT_CASE);
-
-  gfc_current_ns = gfc_build_block_ns (gfc_current_ns);
   match (NULL, gfc_match_select_type, ST_SELECT_TYPE);
-  ns = gfc_current_ns;
-  gfc_current_ns = gfc_current_ns->parent;
-  gfc_free_namespace (ns);
 
   /* General statement matching: Instead of testing every possible
      statement, we eliminate most possibilities by peeking at the
@@ -4103,6 +4097,7 @@ parse_select_type_block (void)
   gfc_code *cp;
   gfc_state_data s;
 
+  gfc_current_ns = new_st.ext.block.ns;
   accept_statement (ST_SELECT_TYPE);
 
   cp = gfc_state_stack->tail;
@@ -5188,7 +5183,7 @@ parse_executable (gfc_statement st)
 	  break;
 
 	case ST_SELECT_TYPE:
-	  parse_select_type_block();
+	  parse_select_type_block ();
 	  break;
 
 	case ST_DO:
@@ -6027,12 +6022,11 @@ loop:
       prog_locus = gfc_current_locus;
 
       push_state (&s, COMP_PROGRAM, gfc_new_block);
-      main_program_symbol(gfc_current_ns, gfc_new_block->name);
+      main_program_symbol (gfc_current_ns, gfc_new_block->name);
       accept_statement (st);
       add_global_program ();
       parse_progunit (ST_NONE);
       goto prog_units;
-      break;
 
     case ST_SUBROUTINE:
       add_global_procedure (true);
@@ -6040,7 +6034,6 @@ loop:
       accept_statement (st);
       parse_progunit (ST_NONE);
       goto prog_units;
-      break;
 
     case ST_FUNCTION:
       add_global_procedure (false);
@@ -6048,7 +6041,6 @@ loop:
       accept_statement (st);
       parse_progunit (ST_NONE);
       goto prog_units;
-      break;
 
     case ST_BLOCK_DATA:
       push_state (&s, COMP_BLOCK_DATA, gfc_new_block);
@@ -6083,7 +6075,6 @@ loop:
       main_program_symbol (gfc_current_ns, "MAIN__");
       parse_progunit (st);
       goto prog_units;
-      break;
     }
 
   /* Handle the non-program units.  */
@@ -6132,14 +6123,12 @@ prog_units:
   pop_state ();
   goto loop;
 
-  done:
-
+done:
   /* Do the resolution.  */
   resolve_all_program_units (gfc_global_ns_list);
 
   /* Do the parse tree dump.  */
-  gfc_current_ns
-	= flag_dump_fortran_original ? gfc_global_ns_list : NULL;
+  gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;
 
   for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
     if (!gfc_current_ns->proc_name
