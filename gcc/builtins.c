@@ -1140,8 +1140,8 @@ expand_builtin_nonlocal_goto (tree exp)
 	 to targets with a nonlocal_goto pattern; they are free
 	 to implement it in their own way.  Note also that this is
 	 a no-op if the GP register is a global invariant.)  */
-      if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
-	  && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
+      unsigned regnum = PIC_OFFSET_TABLE_REGNUM;
+      if (regnum != INVALID_REGNUM && fixed_regs[regnum])
 	emit_use (pic_offset_table_rtx);
 
       emit_indirect_jump (r_label);
