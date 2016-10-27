@@ -1,5 +1,11 @@
 2016-10-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.h (TARGET_HAVE_LDREX): Define for ARMv8-M Baseline.
+	(TARGET_HAVE_LDREXBH): Likewise.
+	(TARGET_HAVE_LDACQ): Likewise.
+
+2016-10-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (arm_split_atomic_op): Add function comment.  Add
 	logic to to decide whether to copy over old value to register for new
 	value.
