@@ -1,3 +1,8 @@
+2016-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* oacc-init.c (goacc_new_thread): Use sizeof of the appropriate
+	size when allocating new thread.
+
 2016-09-14  Marek Polacek  <polacek@redhat.com>
 
 	* testsuite/libgomp.c++/atomic-3.C: Use -Wno-deprecated.
