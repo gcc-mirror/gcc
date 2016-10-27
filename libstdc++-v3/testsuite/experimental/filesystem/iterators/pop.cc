@@ -84,14 +84,10 @@ test03()
     std::advance(dir, i);
     int expected_depth = i;
     VERIFY( dir.depth() == expected_depth );
-    __builtin_printf("%d %d %s\n", i, dir.depth(), dir->path().c_str());
     dir.pop(ec);
     VERIFY( !ec );
     if (dir != end(dir))
-    {
-    __builtin_printf("%d %d %s\n", i, dir.depth(), dir->path().c_str());
       VERIFY( dir.depth() == (expected_depth - 1) );
-    }
 
     dir = fs::recursive_directory_iterator(p);
     std::advance(dir, i);

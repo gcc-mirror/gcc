@@ -1,3 +1,15 @@
+2016-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Use end() function to get end iterator.
+	* testsuite/experimental/filesystem/iterators/pop.cc: Remove printf
+	statements that were present for debugging.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Use end() function to get end
+	iterator.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Only require file timestamps to be accurate to one second.
+
 2016-10-26  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_map.h (map()): Make default.
