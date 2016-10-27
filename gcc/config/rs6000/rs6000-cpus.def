@@ -58,7 +58,8 @@
 				 | OPTION_MASK_HTM			\
 				 | OPTION_MASK_QUAD_MEMORY		\
   				 | OPTION_MASK_QUAD_MEMORY_ATOMIC	\
-				 | OPTION_MASK_UPPER_REGS_SF)
+				 | OPTION_MASK_UPPER_REGS_SF		\
+				 | OPTION_MASK_VSX_SMALL_INTEGER)
 
 /* Add ISEL back into ISA 3.0, since it is supposed to be a win.  Do not add
    P9_MINMAX until the hardware that supports it is available.  Do not add
@@ -138,6 +139,7 @@
 				 | OPTION_MASK_UPPER_REGS_DF		\
 				 | OPTION_MASK_UPPER_REGS_SF		\
 				 | OPTION_MASK_VSX			\
+				 | OPTION_MASK_VSX_SMALL_INTEGER	\
 				 | OPTION_MASK_VSX_TIMODE)
 
 #endif

@@ -1,3 +1,74 @@
+2016-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/constraints.md (wH constraint): Add new
+	constraints for allowing 32-bit integers (and eventually 8/16-bit
+	integers) into the vector registers.
+	(wI constraint): Likewise.
+	(wJ constraint): Likewise.
+	(wK constraint): Likewise.
+	* config/rs6000/rs6000-cpus.def (ISA_2_7_MASKS_SERVER): Add
+	-mvsx-small-integer as a default option for ISA 2.07
+	(i.e. power8).
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.opt (-mvsx-small-integer): Add new debug
+	switch to turn off small integer support in vector registers.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Eliminate
+	test for -mupper-regs-di, since it is already done with the
+	reg_add[mode].scalar_in_vsx_p.  Add support for the switch
+	-mvsx-small-integer.
+	(rs6000_debug_reg_global): Add support for wH, wI, wJ, and wK
+	constraints.
+	(rs6000_setup_reg_addr_masks): Likewise.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_option_override_internal): Add consistency checks for
+	-mvsx-small-integer.
+	(rs6000_secondary_reload_simple_move): SImode is a simple move if
+	-mvsx-small-integer.
+	(rs6000_secondary_reload): Use std::swap.
+	(rs6000_preferred_reload_class): Don't prefer FLOAT_REGS over
+	VSX_REGS for small integers in vector registers, since there is no
+	D-FORM address mode for such types.
+	(rs6000_register_move_cost): Use FIRST_FPR_REGNO instead of 32.
+	(rs6000_opt_masks): Add -mvsx-small-integer.
+	* config/rs6000/vsx.md (VSINT_84): Add SImode for small integer
+	support.
+	(VSX_EXTRACT_I2): Clone VSX_EXTRACT_I, but drop V4SI since SImode
+	extracts can be done on ISA 2.07.
+	(vsx_extract_<mode>): Add support for small integers in vsx
+	registers.
+	(vsx_extract_<mode>_p9): Use 'v' instead of VSX_EX, since we no
+	longer support V4SImode in this pattern.
+	(vsx_extract_si): New insn to support extraction of SImode in ISA
+	2.07 using either xxextractuw or vspltw.
+	(vsx_extract_<mode>_p8): Use 'v' instead of VSX_EX, since we no
+	longer support V4SImode in this pattern.
+	* config/rs6000/rs6000.h (enum rs6000_reg_class_enum): Add wH, wI,
+	wJ, and wK constraints.
+	* config/rs6000/rs6000.md (f32_sv): Use correct instruction for
+	storing SDmode with VSX instructions.
+	(zero_extendsi<mode>2): Reorder pattern, so RLDICL comes after the
+	GPR load and before the FPR and VSX loads.  Remove ??, ! from the
+	constraints.  Add MFVSRWZ and XXEXTRACTUW instructions to support
+	small integers in vector registers.
+	(extendsi<mode>2): Reorder pattern, so EXTSW comes after the GPR
+	load and before the FPR and VSX loads.  Remove ??, ! from the
+	constraints.  Add VEXTSW2D support for small integers in vector
+	registers.
+	(lfiwax): Remove ! constraint.  Add VEXTSW2D support for small
+	integers in vector registers.
+	(floatsi<mode>2_lfiwax): If -mvsx-small-integer issue a normal
+	move instead of using an UNSPEC.
+	(lfiwzx): Remove ! constraint.  Add XXEXTRACTUW support for small
+	integers in vector registers.
+	(floatunssi<mode>2_lfiwzx): If -mvsx-small-integer issue a normal
+	move instead of using an UNSPEC.
+	(movsi_internal1): Add support for -mvsx-small-integer.  Align
+	columns so that it is more readable.
+	(SImode splitter for ISA 3.0 constants): Add splitter for
+	-128..127 constants that can easily be constructed on ISA 3.0.
+	* doc/md.texi (PowerPC Constraints): Document wH, wI, wJ, and wK
+	constraints.
+
 2016-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/78025

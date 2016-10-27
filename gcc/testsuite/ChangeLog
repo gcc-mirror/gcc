@@ -1,3 +1,9 @@
+2016-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-simode.c: New test.
+	* gcc.target/powerpc/vsx-simode2.c: Likewise.
+	* gcc.target/powerpc/vsx-simode3.c: Likewise.
+
 2016-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/78026
