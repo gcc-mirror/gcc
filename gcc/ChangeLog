@@ -1,3 +1,8 @@
+2016-10-27  Bin Cheng  <bin.cheng@arm.com>
+
+	* match.pd ((convert (op:s (convert@2 @0) (convert?@3 @1)))): Add
+	support for constant operand for OP.
+
 2016-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (gen_member_die): Only reparent_child instead of
