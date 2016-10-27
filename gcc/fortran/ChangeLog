@@ -1,3 +1,9 @@
+2016-10-26  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/78092
+	* trans-intrinsic.c (gfc_conv_intrinsic_sizeof):  Fix reference to an
+	array element of type CLASS.
+
 2016-10-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78108
