@@ -1,5 +1,18 @@
 2016-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/ext/random/uniform_inside_sphere_distribution/cons/
+	default.cc: Fix effective target selector.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/cons/
+	parms.cc: Likewise.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/operators/
+	generate.cc: Likewise.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/operators/
+	serialize.cc: Likewise.
+
 	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
 	Use end() function to get end iterator.
 	* testsuite/experimental/filesystem/iterators/pop.cc: Remove printf
