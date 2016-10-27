@@ -1337,6 +1337,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_MIN_VALUE (type)
        && operand_equal_p (@1, TYPE_MIN_VALUE (type), OEP_ONLY_CONST))
    @0)))
+
+/* (convert (minmax ((convert (x) c)))) -> minmax (x c) if x is promoted
+   and the outer convert demotes the expression back to x's type.  */
+(for minmax (min max)
+ (simplify
+  (convert (minmax@0 (convert @1) INTEGER_CST@2))
+  (if (types_match (@1, type) && int_fits_type_p (@2, type)
+       && TYPE_SIGN (TREE_TYPE (@0)) == TYPE_SIGN (type)
+       && TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type))
+   (minmax @1 (convert @2)))))
+
 (for minmax (FMIN FMAX)
  /* If either argument is NaN, return the other one.  Avoid the
     transformation if we get (and honor) a signalling NaN.  */

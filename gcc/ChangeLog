@@ -1,3 +1,8 @@
+2016-10-27  Bin Cheng  <bin.cheng@arm.com>
+
+	* match.pd ((convert1 (minmax ((convert2 (x) c)))) -> minmax (x c)):
+	New pattern.
+
 2016-10-26  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/78056
