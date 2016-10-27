@@ -8726,7 +8726,7 @@
 (define_code_attr vlinsn [(ior "or") (and "and") (xor "xor")])
 (define_code_attr vlninsn [(ior "nor") (and "nand") (xor "xnor")])
 
-(define_insn "*<vlop:code><VL:mode>3"
+(define_insn "<vlop:code><VL:mode>3"
   [(set (match_operand:VL 0 "register_operand" "=<vconstr>")
 	(vlop:VL (match_operand:VL 1 "register_operand" "<vconstr>")
 		 (match_operand:VL 2 "register_operand" "<vconstr>")))]
