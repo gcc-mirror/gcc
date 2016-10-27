@@ -252,6 +252,7 @@ check in changes outside of the parts of the compiler they maintain.
 			Reviewers
 
 aarch64 port		James Greenhalgh	<james.greenhalgh@arm.com>
+arc port		Andrew Burgess		<andrew.burgess@embecosm.com>
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 arm port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
 C front end		Marek Polacek		<polacek@redhat.com>
@@ -334,6 +335,7 @@ Julian Brown					<julian@codesourcery.com>
 Christian Bruel					<christian.bruel@st.com>
 Iain Buclaw					<ibuclaw@gdcproject.org>
 Kevin Buettner					<kevinb@redhat.com>
+Andrew Burgess					<andrew.burgess@embecosm.com>
 Adam Butcher					<adam@jessamine.co.uk>
 Andrew Cagney					<cagney@gnu.org>
 Daniel Carrera					<dcarrera@gmail.com>
