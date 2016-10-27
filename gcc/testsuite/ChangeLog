@@ -1,3 +1,7 @@
+2016-10-27  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/fold-narrowbopcst-1.c: New test.
+
 2016-10-27  Fritz Reese <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_io_5.f90: Don't use "test.txt", and use
