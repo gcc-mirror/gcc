@@ -21,42 +21,39 @@ subroutine dummy(i1,r1,c1,l1,i2,r2,c2,l2)
   if ( r1 .ne. 0.0 .or. r2 .ne. 0.0 ) call abort()
 end subroutine
 
-structure /s3/
-  union
-    map
-      integer m11
-      real m12
-      character m13
-      logical m14
-    end map
-    map
-      logical m21
-      character m22
-      real m23
-      integer m24
-    end map
-  end union
-end structure
+subroutine sub
+  structure /s1/
+    integer i
+  end structure
 
-structure /s2/
-  integer i2
-  real r2
-  character c2
-  logical l2
-end structure
+  structure /s2/
+    union
+      map
+        integer m11
+        real m12
+        character m13
+        logical m14
+      end map
+      map
+        logical m21
+        character m22
+        real m23
+        integer m24
+      end map
+      map
+        character(32) s
+        record /s1/ r
+      end map
+    end union
+  end structure
+  record /s2/ x
+  call dummy (x.m11, x.m12, x.m13, x.m14, x.m24, x.m23, x.m22, x.m21)
+  print *, x.r.i
+  if ( x.r.i .ne. 0 ) then
+    call abort ()
+  endif
+end subroutine
 
-structure /s1/
-  logical l1
-  real r1
-  character c1
-  integer i1
-  record /s2/ y
-end structure
-
-record /s1/ x
-record /s3/ y
-
-call dummy (x.i1, x.r1, x.c1, x.l1, x.y.i2, x.y.r2, x.y.c2, x.y.l2)
-call dummy (y.m11, y.m12, y.m13, y.m14, y.m24, y.m23, y.m22, y.m21)
+call sub
 
 end

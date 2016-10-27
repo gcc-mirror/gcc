@@ -1158,6 +1158,12 @@ resolve_structure_cons (gfc_expr *expr, int init)
       if (!cons->expr)
 	continue;
 
+      /* Unions use an EXPR_NULL contrived expression to tell the translation
+         phase to generate an initializer of the appropriate length.
+         Ignore it here.  */
+      if (cons->expr->ts.type == BT_UNION && cons->expr->expr_type == EXPR_NULL)
+        continue;
+
       if (!gfc_resolve_expr (cons->expr))
 	{
 	  t = false;

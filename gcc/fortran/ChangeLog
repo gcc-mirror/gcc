@@ -1,3 +1,13 @@
+2016-10-27  Fritz Reese <fritzoreese@gmail.com>
+
+	* expr.c (generate_union_initializer, get_union_initializer): New.
+	* expr.c (component_initializer): Consider BT_UNION specially.
+	* resolve.c (resolve_structure_cons): Hack for BT_UNION.
+	* trans-expr.c (gfc_trans_subcomponent_assign): Ditto.
+	* trans-expr.c (gfc_conv_union_initializer): New.
+	* trans-expr.c (gfc_conv_structure): Replace UNION handling code with
+	new function gfc_conv_union_initializer.
+
 2016-10-26  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/78092
