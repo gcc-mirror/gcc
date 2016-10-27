@@ -6708,7 +6708,9 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 					TREE_OPERAND (argse.expr, 0), 0)))
 		  || GFC_DECL_CLASS (TREE_OPERAND (argse.expr, 0)))))
 	byte_size = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
-      else if (arg->rank > 0)
+      else if (arg->rank > 0
+	       || (arg->rank == 0
+		   && arg->ref && arg->ref->type == REF_COMPONENT))
 	/* The scalarizer added an additional temp.  To get the class' vptr
 	   one has to look at the original backend_decl.  */
 	byte_size = gfc_class_vtab_size_get (

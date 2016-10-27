@@ -1,3 +1,8 @@
+2016-10-26  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/78092
+	* gfortran.dg/pr78092.f90: New test.
+
 2016-10-26  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/78056
