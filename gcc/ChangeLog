@@ -1,3 +1,8 @@
+2016-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (gen_member_die): Only reparent_child instead of
+	splice_child_die if child doesn't have DW_AT_specification attribute.
+
 2016-10-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.h (TARGET_HAVE_LDREX): Define for ARMv8-M Baseline.
