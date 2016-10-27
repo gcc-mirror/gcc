@@ -1,3 +1,8 @@
+2016-10-27  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/fold-convmaxconv-1.c: New test.
+	* gcc.dg/fold-convminconv-1.c: New test.
+
 2016-10-26  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/78092
