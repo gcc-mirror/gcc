@@ -22624,7 +22624,8 @@ gen_member_die (tree type, dw_die_ref context_die)
 	  /* Handle inline static data members, which only have in-class
 	     declarations.  */
 	  if (child->die_tag == DW_TAG_variable
-	      && child->die_parent == comp_unit_die ())
+	      && child->die_parent == comp_unit_die ()
+	      && get_AT (child, DW_AT_specification) == NULL)
 	    {
 	      reparent_child (child, context_die);
 	      child->die_tag = DW_TAG_member;
