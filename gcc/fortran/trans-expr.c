@@ -7315,7 +7315,29 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
 			fold_convert (TREE_TYPE (tmp), se.expr));
       gfc_add_block_to_block (&block, &se.post);
     }
-  else if (gfc_bt_struct (expr->ts.type) && expr->ts.f90_type != BT_VOID)
+  else if (expr->ts.type == BT_UNION)
+    {
+      tree tmp;
+      gfc_constructor *c = gfc_constructor_first (expr->value.constructor);
+      /* We mark that the entire union should be initialized with a contrived
+         EXPR_NULL expression at the beginning.  */
+      if (c->n.component == NULL && c->expr->expr_type == EXPR_NULL)
+        {
+          tmp = build2_loc (input_location, MODIFY_EXPR, void_type_node,
+		            dest, build_constructor (TREE_TYPE (dest), NULL));
+	  gfc_add_expr_to_block (&block, tmp);
+          c = gfc_constructor_next (c);
+        }
+      /* The following constructor expression, if any, represents a specific
+         map intializer, as given by the user.  */
+      if (c != NULL && c->expr != NULL)
+        {
+          gcc_assert (expr->expr_type == EXPR_STRUCTURE);
+	  tmp = gfc_trans_structure_assign (dest, expr, expr->symtree != NULL);
+	  gfc_add_expr_to_block (&block, tmp);
+        }
+    }
+  else if (expr->ts.type == BT_DERIVED && expr->ts.f90_type != BT_VOID)
     {
       if (expr->expr_type != EXPR_STRUCTURE)
 	{
@@ -7457,6 +7479,43 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init)
   return gfc_finish_block (&block);
 }
 
+void
+gfc_conv_union_initializer (vec<constructor_elt, va_gc> *v,
+                            gfc_component *un, gfc_expr *init)
+{
+  gfc_constructor *ctor;
+
+  if (un->ts.type != BT_UNION || un == NULL || init == NULL)
+    return;
+
+  ctor = gfc_constructor_first (init->value.constructor);
+
+  if (ctor == NULL || ctor->expr == NULL)
+    return;
+
+  gcc_assert (init->expr_type == EXPR_STRUCTURE);
+
+  /* If we have an 'initialize all' constructor, do it first.  */
+  if (ctor->expr->expr_type == EXPR_NULL)
+    {
+      tree union_type = TREE_TYPE (un->backend_decl);
+      tree val = build_constructor (union_type, NULL);
+      CONSTRUCTOR_APPEND_ELT (v, un->backend_decl, val);
+      ctor = gfc_constructor_next (ctor);
+    }
+
+  /* Add the map initializer on top.  */
+  if (ctor != NULL && ctor->expr != NULL)
+    {
+      gcc_assert (ctor->expr->expr_type == EXPR_STRUCTURE);
+      tree val = gfc_conv_initializer (ctor->expr, &un->ts,
+                                       TREE_TYPE (un->backend_decl),
+                                       un->attr.dimension, un->attr.pointer,
+                                       un->attr.proc_pointer);
+      CONSTRUCTOR_APPEND_ELT (v, un->backend_decl, val);
+    }
+}
+
 /* Build an expression for a constructor. If init is nonzero then
    this is part of a static variable initializer.  */
 
@@ -7483,24 +7542,6 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       tmp = gfc_trans_structure_assign (se->expr, expr, expr->symtree != NULL);
       gfc_add_expr_to_block (&se->pre, tmp);
       return;
-    }
-
-  /* Though unions appear to have multiple map components, they must only
-     have a single initializer since each map overlaps. TODO: squash map
-     constructors?  */
-  if (expr->ts.type == BT_UNION)
-    {
-      c = gfc_constructor_first (expr->value.constructor);
-      cm = c->n.component;
-      val = gfc_conv_initializer (c->expr, &expr->ts,
-                                  TREE_TYPE (cm->backend_decl),
-                                  cm->attr.dimension, cm->attr.pointer,
-                                  cm->attr.proc_pointer);
-      val = unshare_expr_without_location (val);
-
-      /* Append it to the constructor list.  */
-      CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
-      goto finish;
     }
 
   cm = expr->ts.u.derived->components;
@@ -7537,6 +7578,8 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl,
 				fold_convert (TREE_TYPE (cm->backend_decl),
 					      integer_zero_node));
+      else if (cm->ts.type == BT_UNION)
+        gfc_conv_union_initializer (v, cm, c->expr);
       else
 	{
 	  val = gfc_conv_initializer (c->expr, &cm->ts,
@@ -7549,7 +7592,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
 	}
     }
-finish:
+
   se->expr = build_constructor (type, v);
   if (init)
     TREE_CONSTANT (se->expr) = 1;
