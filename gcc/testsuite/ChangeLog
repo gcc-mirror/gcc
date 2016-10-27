@@ -1,3 +1,16 @@
+2016-10-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/atomic-comp-swap-release-acquire-3.c: New test.
+	* gcc.target/arm/atomic-op-acq_rel-3.c: Likewise.
+	* gcc.target/arm/atomic-op-acquire-3.c: Likewise.
+	* gcc.target/arm/atomic-op-char-3.c: Likewise.
+	* gcc.target/arm/atomic-op-consume-3.c: Likewise.
+	* gcc.target/arm/atomic-op-int-3.c: Likewise.
+	* gcc.target/arm/atomic-op-relaxed-3.c: Likewise.
+	* gcc.target/arm/atomic-op-release-3.c: Likewise.
+	* gcc.target/arm/atomic-op-seq_cst-3.c: Likewise.
+	* gcc.target/arm/atomic-op-short-3.c: Likewise.
+
 2016-10-27  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/fold-convmaxconv-1.c: New test.
