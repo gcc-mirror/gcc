@@ -1,3 +1,8 @@
+2016-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78025
+	* g++.dg/gomp/declare-simd-7.C: New test.
+
 2016-10-27  Fritz Reese <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_init_1.f90: Remove -fdump-tree-original.
