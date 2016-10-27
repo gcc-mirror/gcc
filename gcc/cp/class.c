@@ -1094,6 +1094,11 @@ add_method (tree type, tree method, tree using_decl)
       if (TREE_CODE (fn) != TREE_CODE (method))
 	continue;
 
+      /* Two using-declarations can coexist, we'll complain about ambiguity in
+	 overload resolution.  */
+      if (using_decl && TREE_CODE (fns) == OVERLOAD && OVL_USED (fns))
+	continue;
+
       /* [over.load] Member function declarations with the
 	 same name and the same parameter types cannot be
 	 overloaded if any of them is a static member
