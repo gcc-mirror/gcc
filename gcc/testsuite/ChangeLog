@@ -1,3 +1,9 @@
+2016-10-27  Fritz Reese <fritzoreese@gmail.com>
+
+	* gfortran.dg/dec_io_5.f90: Don't use "test.txt", and use
+	dg-shouldfail/dg-output instead of XFAIL.
+	* gfortran.dg/dec_io_6.f90: Likewise.
+
 2016-10-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/atomic-comp-swap-release-acquire-3.c: New test.
