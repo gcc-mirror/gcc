@@ -664,3 +664,7 @@ Enable using IEEE 128-bit floating point instructions.
 mfloat128-convert
 Target Undocumented Mask(FLOAT128_CVT) Var(rs6000_isa_flags)
 Enable default conversions between __float128 & long double.
+
+mvsx-small-integer
+Target Report Mask(VSX_SMALL_INTEGER) Var(rs6000_isa_flags)
+Enable small integers to be in VSX registers.

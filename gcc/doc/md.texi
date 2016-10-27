@@ -3125,6 +3125,18 @@ Memory operand suitable for power9 fusion load/stores.
 @item wG
 Memory operand suitable for TOC fusion memory references.
 
+@item wH
+Altivec register if @option{-mvsx-small-integer}.
+
+@item wI
+Floating point register if @option{-mvsx-small-integer}.
+
+@item wJ
+FP register if @option{-mvsx-small-integer} and @option{-mpower9-vector}.
+
+@item wK
+Altivec register if @option{-mvsx-small-integer} and @option{-mpower9-vector}.
+
 @item wL
 Int constant that is the element number that the MFVSRLD instruction.
 targets.
