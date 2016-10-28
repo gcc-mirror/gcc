@@ -1,3 +1,9 @@
+2016-10-28  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	PR middle-end/72747
+	* gimplify.c (gimplify_init_constructor): Move emit of constructor
+	assignment to earlier in the if/else logic.
+
 2016-10-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/78128

@@ -1,3 +1,9 @@
+2016-10-26  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	PR middle-end/72747
+	* c-c++-common/pr72747-1.c: New test.
+	* c-c++-common/pr72747-2.c: Likewise.
+
 2016-10-28  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/oscbreak-1.c: New test.
