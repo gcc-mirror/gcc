@@ -44,6 +44,9 @@
 #include <bits/stl_algobase.h>
 #include <bits/quoted_string.h>
 #include <bits/locale_conv.h>
+#if __cplusplus == 201402L
+# include <experimental/string_view>
+#endif
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 # define _GLIBCXX_FILESYSTEM_IS_WINDOWS 1
@@ -60,6 +63,12 @@ inline namespace v1
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
+
+#if __cplusplus == 201402L
+  using std::experimental::basic_string_view;
+#elif __cplusplus > 201402L
+  using std::basic_string_view;
+#endif
 
   /**
    * @ingroup filesystem
@@ -86,6 +95,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     template<typename _CharT, typename _Traits, typename _Alloc>
       static __is_encoded_char<_CharT>
       __is_path_src(const basic_string<_CharT, _Traits, _Alloc>&, int);
+
+#if __cplusplus >= 201402L
+    template<typename _CharT, typename _Traits>
+      static __is_encoded_char<_CharT>
+      __is_path_src(const basic_string_view<_CharT, _Traits>&, int);
+#endif
 
     template<typename _Unknown>
       static std::false_type
@@ -129,6 +144,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       static const _CharT*
       _S_range_end(const basic_string<_CharT, _Traits, _Alloc>& __str)
       { return __str.data() + __str.size(); }
+
+#if __cplusplus >= 201402L
+    template<typename _CharT, typename _Traits>
+      static const _CharT*
+      _S_range_begin(const basic_string_view<_CharT, _Traits>& __str)
+      { return __str.data(); }
+
+    template<typename _CharT, typename _Traits>
+      static const _CharT*
+      _S_range_end(const basic_string_view<_CharT, _Traits>& __str)
+      { return __str.data() + __str.size(); }
+#endif
 
     template<typename _Tp,
 	     typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
@@ -243,6 +270,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path& operator+=(const string_type& __x);
     path& operator+=(const value_type* __x);
     path& operator+=(value_type __x);
+#if __cplusplus >= 201402L
+    path& operator+=(basic_string_view<value_type> __x);
+#endif
 
     template<typename _Source>
       _Path<_Source>&
@@ -311,6 +341,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     int compare(const path& __p) const noexcept;
     int compare(const string_type& __s) const;
     int compare(const value_type* __s) const;
+#if __cplusplus >= 201402L
+    int compare(const basic_string_view<value_type> __s) const;
+#endif
 
     // decomposition
 
@@ -768,6 +801,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return *this;
   }
 
+#if __cplusplus >= 201402L
+  inline path&
+  path::operator+=(basic_string_view<value_type> __x)
+  {
+    _M_pathname.append(__x.data(), __x.size());
+    _M_split_cmpts();
+    return *this;
+  }
+#endif
+
   template<typename _CharT>
     inline path::_Path<_CharT*, _CharT*>&
     path::operator+=(_CharT __x)
@@ -908,6 +951,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   inline int
   path::compare(const value_type* __s) const { return compare(path(__s)); }
+
+#if __cplusplus >= 201402L
+  inline int
+  path::compare(basic_string_view<value_type> __s) const
+  { return compare(path(__s)); }
+#endif
 
   inline path
   path::filename() const { return empty() ? path() : *--end(); }
