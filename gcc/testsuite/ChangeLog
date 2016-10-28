@@ -1,3 +1,7 @@
+2016-10-28  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/target-attribute/tattr-m64-33.c: New test.
+
 2016-10-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/77919

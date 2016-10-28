@@ -22221,10 +22221,18 @@ The default is to not print debug information.
 @opindex march
 Generate code that runs on @var{cpu-type}, which is the name of a
 system representing a certain processor type.  Possible values for
-@var{cpu-type} are @samp{z900}, @samp{z990}, @samp{z9-109},
-@samp{z9-ec}, @samp{z10}, @samp{z196}, @samp{zEC12}, and @samp{z13}.
-The default is @option{-march=z900}.  @samp{g5} and @samp{g6} are
-deprecated and will be removed with future releases.
+@var{cpu-type} are @samp{z900}/@samp{arch5}, @samp{z990}/@samp{arch6},
+@samp{z9-109}, @samp{z9-ec}/@samp{arch7}, @samp{z10}/@samp{arch8},
+@samp{z196}/@samp{arch9}, @samp{zEC12}, @samp{z13}/@samp{arch11}, and
+@samp{native}.
+
+The default is @option{-march=z900}.  @samp{g5}/@samp{arch3} and
+@samp{g6} are deprecated and will be removed with future releases.
+
+Specifying @samp{native} as cpu type can be used to select the best
+architecture option for the host processor.
+@option{-march=native} has no effect if GCC does not recognize the
+processor.
 
 @item -mtune=@var{cpu-type}
 @opindex mtune
