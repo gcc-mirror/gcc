@@ -1,5 +1,9 @@
 2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* doc/sourcebuild.texi (Ada Tests): Remove mention of gcc chapter.
+ 
+2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* target.def (min_arithmetic_precision): New hook.
 	* doc/tm.texi.in (Misc): Add TARGET_MIN_ARITHMETIC_PRECISION.
 	* doc/tm.texi: Regenerate.
