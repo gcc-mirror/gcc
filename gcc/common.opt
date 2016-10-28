@@ -1463,6 +1463,10 @@ fstrict-volatile-bitfields
 Common Report Var(flag_strict_volatile_bitfields) Init(-1) Optimization
 Force bitfield accesses to match their type width.
 
+fstore-merging
+Common Report Var(flag_store_merging) Optimization
+Merge adjacent stores.
+
 fguess-branch-probability
 Common Report Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities.

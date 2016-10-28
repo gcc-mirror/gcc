@@ -405,7 +405,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsingle-precision-constant -fsplit-ivs-in-unroller -fsplit-loops@gol
 -fsplit-paths @gol
 -fsplit-wide-types -fssa-backprop -fssa-phiopt @gol
--fstdarg-opt -fstrict-aliasing @gol
+-fstdarg-opt -fstore-merging -fstrict-aliasing @gol
 -fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch @gol
 -ftree-coalesce-vars -ftree-copy-prop -ftree-dce -ftree-dominator-opts @gol
@@ -416,8 +416,8 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-vectorize @gol
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-partial-pre -ftree-pta @gol
 -ftree-reassoc -ftree-sink -ftree-slsr -ftree-sra @gol
--ftree-switch-conversion -ftree-tail-merge -ftree-ter @gol
--ftree-vectorize -ftree-vrp -funconstrained-commons @gol
+-ftree-switch-conversion -ftree-tail-merge @gol
+-ftree-ter -ftree-vectorize -ftree-vrp -funconstrained-commons @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-math-optimizations -funswitch-loops @gol
 -fipa-ra -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
@@ -6753,6 +6753,7 @@ compilation time.
 -fsplit-wide-types @gol
 -fssa-backprop @gol
 -fssa-phiopt @gol
+-fstore-merging @gol
 -ftree-bit-ccp @gol
 -ftree-ccp @gol
 -ftree-ch @gol
@@ -8094,6 +8095,13 @@ enabled by default at @option{-O} and higher.
 Perform scalar replacement of aggregates.  This pass replaces structure
 references with scalars to prevent committing structures to memory too
 early.  This flag is enabled by default at @option{-O} and higher.
+
+@item -fstore-merging
+@opindex fstore-merging
+Perform merging of narrow stores to consecutive memory addresses.  This pass
+merges contiguous stores of immediate values narrower than a word into fewer
+wider stores to reduce the number of instructions.  This is enabled by default
+at @option{-O} and higher.
 
 @item -ftree-ter
 @opindex ftree-ter
@@ -9572,6 +9580,14 @@ avoid quadratic behavior in tree tail merging.  The default value is 10.
 @item max-tail-merge-iterations
 The maximum amount of iterations of the pass over the function.  This is used to
 limit compilation time in tree tail merging.  The default value is 2.
+
+@item store-merging-allow-unaligned
+Allow the store merging pass to introduce unaligned stores if it is legal to
+do so.  The default value is 1.
+
+@item max-stores-to-merge
+The maximum number of stores to attempt to merge into wider stores in the store
+merging pass.  The minimum value is 2 and the default is 64.
 
 @item max-unrolled-insns
 The maximum number of instructions that a loop may have to be unrolled.

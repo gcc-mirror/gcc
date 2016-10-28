@@ -1,3 +1,24 @@
+2016-10-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Jakub Jelinek  <jakub@redhat.com>
+            Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/22141
+	PR rtl-optimization/23684
+	* gcc.c-torture/execute/pr22141-1.c: New test.
+	* gcc.c-torture/execute/pr22141-2.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_1.c: Adjust for -fstore-merging.
+	* gcc.target/aarch64/ldp_stp_4.c: Likewise.
+	* gcc.dg/store_merging_1.c: New test.
+	* gcc.dg/store_merging_2.c: Likewise.
+	* gcc.dg/store_merging_3.c: Likewise.
+	* gcc.dg/store_merging_4.c: Likewise.
+	* gcc.dg/store_merging_5.c: Likewise.
+	* gcc.dg/store_merging_6.c: Likewise.
+	* gcc.dg/store_merging_7.c: Likewise.
+	* gcc.target/i386/pr22141.c: Likewise.
+	* gcc.target/i386/pr34012.c: Add -fno-store-merging to dg-options.
+	* g++.dg/init/new17.C: Likewise.
+
 2016-10-26  Will Schmidt <will_schmidt@vnet.ibm.com>
 
 	PR middle-end/72747
