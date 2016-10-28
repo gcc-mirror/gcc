@@ -78,7 +78,7 @@ if grep '^const _epoll_data_offset ' ${OUT} >/dev/null 2>&1; then
   fi
 fi
 # Make sure EPOLLET is positive.
-if grep '^const _EPOLLET = [0-9]' gen-sysinfo.go; then
+if grep '^const _EPOLLET = [0-9]' gen-sysinfo.go > /dev/null 2>&1; then
   echo "const _EPOLLETpos = _EPOLLET" >> ${OUT}
 else
   echo "const _EPOLLETpos = 0x80000000" >> ${OUT}
