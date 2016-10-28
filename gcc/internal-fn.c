@@ -847,56 +847,68 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 	delete_insns_since (last);
       }
 
-    rtx_code_label *sub_check = gen_label_rtx ();
-    int pos_neg = 3;
-
     /* Compute the operation.  On RTL level, the addition is always
        unsigned.  */
     res = expand_binop (mode, code == PLUS_EXPR ? add_optab : sub_optab,
 			op0, op1, NULL_RTX, false, OPTAB_LIB_WIDEN);
 
-    /* If we can prove one of the arguments (for MINUS_EXPR only
+    /* If we can prove that one of the arguments (for MINUS_EXPR only
        the second operand, as subtraction is not commutative) is always
        non-negative or always negative, we can do just one comparison
-       and conditional jump instead of 2 at runtime, 3 present in the
-       emitted code.  If one of the arguments is CONST_INT, all we
-       need is to make sure it is op1, then the first
-       do_compare_rtx_and_jump will be just folded.  Otherwise try
-       to use range info if available.  */
-    if (code == PLUS_EXPR && CONST_INT_P (op0))
-      std::swap (op0, op1);
-    else if (CONST_INT_P (op1))
-      ;
-    else if (code == PLUS_EXPR && TREE_CODE (arg0) == SSA_NAME)
+       and conditional jump.  */
+    int pos_neg = get_range_pos_neg (arg1);
+    if (code == PLUS_EXPR)
       {
-        pos_neg = get_range_pos_neg (arg0);
-        if (pos_neg != 3)
-	  std::swap (op0, op1);
-      }
-    if (pos_neg == 3 && !CONST_INT_P (op1) && TREE_CODE (arg1) == SSA_NAME)
-      pos_neg = get_range_pos_neg (arg1);
-
-    /* If the op1 is negative, we have to use a different check.  */
-    if (pos_neg == 3)
-      do_compare_rtx_and_jump (op1, const0_rtx, LT, false, mode, NULL_RTX,
-			       NULL, sub_check, PROB_EVEN);
-
-    /* Compare the result of the operation with one of the operands.  */
-    if (pos_neg & 1)
-      do_compare_rtx_and_jump (res, op0, code == PLUS_EXPR ? GE : LE,
-			       false, mode, NULL_RTX, NULL, done_label,
-			       PROB_VERY_LIKELY);
-
-    /* If we get here, we have to print the error.  */
-    if (pos_neg == 3)
-      {
-	emit_jump (do_error);
-	emit_label (sub_check);
+	int pos_neg0 = get_range_pos_neg (arg0);
+	if (pos_neg0 != 3 && pos_neg == 3)
+	  {
+	    std::swap (op0, op1);
+	    pos_neg = pos_neg0;
+	  }
       }
 
-    /* We have k = a + b for b < 0 here.  k <= a must hold.  */
-    if (pos_neg & 2)
-      do_compare_rtx_and_jump (res, op0, code == PLUS_EXPR ? LE : GE,
+    /* Addition overflows if and only if the two operands have the same sign,
+       and the result has the opposite sign.  Subtraction overflows if and
+       only if the two operands have opposite sign, and the subtrahend has
+       the same sign as the result.  Here 0 is counted as positive.  */
+    if (pos_neg == 3)
+      {
+	/* Compute op0 ^ op1 (operands have opposite sign).  */
+        rtx op_xor = expand_binop (mode, xor_optab, op0, op1, NULL_RTX, false,
+				   OPTAB_LIB_WIDEN);
+
+	/* Compute res ^ op1 (result and 2nd operand have opposite sign).  */
+	rtx res_xor = expand_binop (mode, xor_optab, res, op1, NULL_RTX, false,
+				    OPTAB_LIB_WIDEN);
+
+	rtx tem;
+	if (code == PLUS_EXPR)
+	  {
+	    /* Compute (res ^ op1) & ~(op0 ^ op1).  */
+	    tem = expand_unop (mode, one_cmpl_optab, op_xor, NULL_RTX, false);
+	    tem = expand_binop (mode, and_optab, res_xor, tem, NULL_RTX, false,
+				OPTAB_LIB_WIDEN);
+	  }
+	else
+	  {
+	    /* Compute (op0 ^ op1) & ~(res ^ op1).  */
+	    tem = expand_unop (mode, one_cmpl_optab, res_xor, NULL_RTX, false);
+	    tem = expand_binop (mode, and_optab, op_xor, tem, NULL_RTX, false,
+				OPTAB_LIB_WIDEN);
+	  }
+
+	/* No overflow if the result has bit sign cleared.  */
+	do_compare_rtx_and_jump (tem, const0_rtx, GE, false, mode, NULL_RTX,
+				 NULL, done_label, PROB_VERY_LIKELY);
+      }
+
+    /* Compare the result of the operation with the first operand.
+       No overflow for addition if second operand is positive and result
+       is larger or second operand is negative and result is smaller.
+       Likewise for subtraction with sign of second operand flipped.  */
+    else
+      do_compare_rtx_and_jump (res, op0,
+			       (pos_neg == 1) ^ (code == MINUS_EXPR) ? GE : LE,
 			       false, mode, NULL_RTX, NULL, done_label,
 			       PROB_VERY_LIKELY);
   }

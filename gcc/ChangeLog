@@ -1,3 +1,10 @@
+2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dojump.c (do_jump_by_parts_greater_rtx): Invert probability when
+	swapping the arms of the branch.
+	* internal-fn.c (expand_addsub_overflow): Use a straight-line code
+	sequence for the generic signed-signed-signed case.
+
 2016-10-28  Jeff Law  <law@redhat.com>
 
 	* config/bfin/bfin.c (bfin_legitimate_address_p): Add missing
