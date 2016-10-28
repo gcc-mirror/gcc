@@ -1,5 +1,13 @@
 2016-10-28  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_adjust_loop_scan_osc): New function.
+	(s390_adjust_loops): New function.
+	(s390_reorg): Invoke s390_adjust_loops.
+	* config/s390/s390.md: (UNSPEC_OSC_BREAK): New constant.
+	("osc_break"): New insn definition.
+
+2016-10-28  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.opt: Support alternate cpu level naming (archXX).
 	* config.gcc: Support alternate archXX cpu levels with
 	--with-arch= and --with-tune=.
