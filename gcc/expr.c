@@ -10421,7 +10421,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (GET_CODE (op0) == CONCAT && !must_force_mem)
 	  {
 	    if (bitpos == 0
-		&& bitsize == GET_MODE_BITSIZE (GET_MODE (op0)))
+		&& bitsize == GET_MODE_BITSIZE (GET_MODE (op0))
+		&& COMPLEX_MODE_P (mode1))
 	      {
 		if (reversep)
 		  op0 = flip_storage_order (GET_MODE (op0), op0);

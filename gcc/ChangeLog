@@ -1,5 +1,9 @@
 2016-10-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/77919
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Force CONCAT into
+	MEM if mode1 is not a complex mode.
+
 	PR rtl-optimization/78132
 	* ree.c (combine_reaching_defs): Give up if copy_needed and
 	!HARD_REGNO_MODE_OK (REGNO (src_reg), dst_mode).
