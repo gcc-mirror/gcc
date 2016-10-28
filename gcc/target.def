@@ -5941,6 +5941,24 @@ comparison code or operands.",
  void, (int *code, rtx *op0, rtx *op1, bool op0_preserve_value),
  default_canonicalize_comparison)
 
+DEFHOOK
+(min_arithmetic_precision,
+ "On some RISC architectures with 64-bit registers, the processor also\n\
+maintains 32-bit condition codes that make it possible to do real 32-bit\n\
+arithmetic, although the operations are performed on the full registers.\n\
+\n\
+On such architectures, defining this hook to 32 tells the compiler to try\n\
+using 32-bit arithmetical operations setting the condition codes instead\n\
+of doing full 64-bit arithmetic.\n\
+\n\
+More generally, define this hook on RISC architectures if you want the\n\
+compiler to try using arithmetical operations setting the condition codes\n\
+with a precision lower than the word precision.\n\
+\n\
+You need not define this hook if @code{WORD_REGISTER_OPERATIONS} is not\n\
+defined to 1.",
+ unsigned int, (void), default_min_arithmetic_precision)
+
 DEFHOOKPOD
 (atomic_test_and_set_trueval,
  "This value should be set if the result written by\

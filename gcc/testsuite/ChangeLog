@@ -1,3 +1,9 @@
+2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/overflow-3.c: Replace and move old one to...
+	* gcc.target/sparc/overflow-4.c: ...here.
+	* gcc.target/sparc/overflow-5.c: New test.
+
 2016-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Kugan Vivekanandarajah  <kuganv@linaro.org>
 	    Jim Wilson  <jim.wilson@linaro.org>
