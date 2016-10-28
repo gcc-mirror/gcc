@@ -11106,9 +11106,10 @@ recog_for_combine_1 (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
    Return whether anything was so changed.  */
 
 static bool
-change_zero_ext (rtx *src)
+change_zero_ext (rtx pat)
 {
   bool changed = false;
+  rtx *src = &SET_SRC (pat);
 
   subrtx_ptr_iterator::array_type array;
   FOR_EACH_SUBRTX_PTR (iter, array, src, NONCONST)
@@ -11140,6 +11141,14 @@ change_zero_ext (rtx *src)
 	  size = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
 	  x = SUBREG_REG (XEXP (x, 0));
 	}
+      else if (GET_CODE (x) == ZERO_EXTEND
+	       && SCALAR_INT_MODE_P (mode)
+	       && REG_P (XEXP (x, 0))
+	       && HARD_REGISTER_P (XEXP (x, 0)))
+	{
+	  size = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
+	  x = gen_rtx_REG (mode, REGNO (XEXP (x, 0)));
+	}
       else
 	continue;
 
@@ -11147,6 +11156,44 @@ change_zero_ext (rtx *src)
       x = gen_rtx_AND (mode, x, immed_wide_int_const (mask, mode));
 
       SUBST (**iter, x);
+      changed = true;
+    }
+
+  if (changed)
+    FOR_EACH_SUBRTX_PTR (iter, array, src, NONCONST)
+      {
+	rtx x = **iter;
+	if (COMMUTATIVE_ARITH_P (x)
+	    && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
+	  {
+	    rtx tem = XEXP (x, 0);
+	    SUBST (XEXP (x, 0), XEXP (x, 1));
+	    SUBST (XEXP (x, 1), tem);
+	  }
+      }
+
+  rtx *dst = &SET_DEST (pat);
+  if (GET_CODE (*dst) == ZERO_EXTRACT
+      && REG_P (XEXP (*dst, 0))
+      && CONST_INT_P (XEXP (*dst, 1))
+      && CONST_INT_P (XEXP (*dst, 2)))
+    {
+      rtx reg = XEXP (*dst, 0);
+      int width = INTVAL (XEXP (*dst, 1));
+      int offset = INTVAL (XEXP (*dst, 2));
+      machine_mode mode = GET_MODE (reg);
+      int reg_width = GET_MODE_PRECISION (mode);
+      if (BITS_BIG_ENDIAN)
+	offset = reg_width - width - offset;
+
+      wide_int mask = wi::shifted_mask (offset, width, true, reg_width);
+      rtx x = gen_rtx_AND (mode, reg, immed_wide_int_const (mask, mode));
+      rtx y = simplify_gen_binary (ASHIFT, mode, SET_SRC (pat),
+				   GEN_INT (offset));
+      rtx z = simplify_gen_binary (IOR, mode, x, y);
+      SUBST (SET_DEST (pat), reg);
+      SUBST (SET_SRC (pat), z);
+
       changed = true;
     }
 
@@ -11172,7 +11219,7 @@ change_zero_ext (rtx *src)
 static int
 recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
 {
-  rtx pat = PATTERN (insn);
+  rtx pat = *pnewpat;
   int insn_code_number = recog_for_combine_1 (pnewpat, insn, pnotes);
   if (insn_code_number >= 0 || check_asm_operands (pat))
     return insn_code_number;
@@ -11181,7 +11228,7 @@ recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
   bool changed = false;
 
   if (GET_CODE (pat) == SET)
-    changed = change_zero_ext (&SET_SRC (pat));
+    changed = change_zero_ext (pat);
   else if (GET_CODE (pat) == PARALLEL)
     {
       int i;
@@ -11189,7 +11236,7 @@ recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
 	{
 	  rtx set = XVECEXP (pat, 0, i);
 	  if (GET_CODE (set) == SET)
-	    changed |= change_zero_ext (&SET_SRC (set));
+	    changed |= change_zero_ext (set);
 	}
     }
 
