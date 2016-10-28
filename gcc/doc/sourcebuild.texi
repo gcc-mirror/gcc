@@ -2490,10 +2490,6 @@ The tests are organized by directory, each directory corresponding to
 a chapter of the Ada Reference Manual.  So for example, @file{c9} corresponds
 to chapter 9, which deals with tasking features of the language.
 
-There is also an extra chapter called @file{gcc} containing a template for
-creating new executable tests, although this is deprecated in favor of
-the @file{gnat.dg} testsuite.
-
 The tests are run using two @command{sh} scripts: @file{run_acats} and
 @file{run_all.sh}.  To run the tests using a simulator or a cross
 target, see the small
