@@ -385,7 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_convert(_Iter __first, _Iter __last)
       {
 	using __value_type = typename std::iterator_traits<_Iter>::value_type;
-	return _Cvt<__value_type>::_S_convert(__first, __last);
+	return _Cvt<remove_cv_t<__value_type>>::_S_convert(__first, __last);
       }
 
     template<typename _InputIterator>
@@ -393,10 +393,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_convert(_InputIterator __src, __null_terminated)
       {
 	using _Tp = typename std::iterator_traits<_InputIterator>::value_type;
-	std::basic_string<_Tp> __tmp;
-	while (*__src != _Tp{})
-	  __tmp.push_back(*__src++);
-	return _S_convert(__tmp.data(), __tmp.data() + __tmp.size());
+	std::basic_string<remove_cv_t<_Tp>> __tmp;
+	for (; *__src != _Tp{}; ++__src)
+	  __tmp.push_back(*__src);
+	return _S_convert(__tmp.c_str(), __tmp.c_str() + __tmp.size());
       }
 
     static string_type
@@ -570,6 +570,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<>
     struct path::__is_encoded_char<char32_t> : std::true_type
     { using value_type = char32_t; };
+
+  template<typename _Tp>
+    struct path::__is_encoded_char<const _Tp> : __is_encoded_char<_Tp> { };
 
   struct path::_Cmpt : path
   {

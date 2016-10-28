@@ -1,5 +1,15 @@
 2016-10-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_path.h
+	(path::_S_convert<_Iter>(_Iter, _Iter)): Remove cv-qualifiers from
+	iterator's value_type.
+	(path::_S_convert<_Iter>(_Iter __first, __null_terminated)): Likewise.
+	Do not use operation not supported by input iterators.
+	(path::__is_path_iter_src): Add partial specialization for const
+	encoded character types.
+	* testsuite/experimental/filesystem/path/construct/range.cc: Test
+	construction from input iterators with const value types.
+
 	* doc/xml/manual/status_cxx2017.xml: Update status.
 	* doc/html/*: Regenerate.
 	* include/std/type_traits (has_unique_object_representations): Guard
