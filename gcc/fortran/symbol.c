@@ -4861,7 +4861,7 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
       && !is_union1 && !is_union2)
     return (ts1->type == ts2->type);
 
-  if ((is_derived1 && is_derived2) || (is_union1 && is_union1))
+  if ((is_derived1 && is_derived2) || (is_union1 && is_union2))
     return gfc_compare_derived_types (ts1->u.derived, ts2->u.derived);
 
   if (is_derived1 && is_class2)
