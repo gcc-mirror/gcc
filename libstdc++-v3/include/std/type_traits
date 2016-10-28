@@ -3041,6 +3041,14 @@ template <typename _Base, typename _Derived>
 template <typename _From, typename _To>
   constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 
+#ifdef __has_builtin
+# if !__has_builtin(__has_unique_object_representations)
+// Try not to break non-GNU compilers that don't support the built-in:
+#  define _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP 1
+# endif
+#endif
+
+#ifndef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606
   /// has_unique_object_representations
   template<typename _Tp>
@@ -3049,6 +3057,8 @@ template <typename _From, typename _To>
       remove_cv_t<remove_all_extents_t<_Tp>>
       )>
     { };
+#endif
+#undef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
 
 #endif // C++17
 

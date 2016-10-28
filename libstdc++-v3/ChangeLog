@@ -1,3 +1,14 @@
+2016-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* doc/html/*: Regenerate.
+	* include/std/type_traits (has_unique_object_representations): Guard
+	with __has_builtin check.
+	* libsupc++/new (launder): Define for C++17.
+	* testsuite/18_support/launder/1.cc: New test.
+	* testsuite/18_support/launder/requirements.cc: New test.
+	* testsuite/18_support/launder/requirements_neg.cc: New test.
+
 2016-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libstdc++/70975
