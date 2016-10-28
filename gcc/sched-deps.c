@@ -3502,6 +3502,31 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
       if (!deps->readonly)
 	deps->last_args_size = insn;
     }
+
+  /* We must not mix prologue and epilogue insns.  See PR78029.  */
+  if (prologue_contains (insn))
+    {
+      add_dependence_list (insn, deps->last_epilogue, true, REG_DEP_ANTI, true);
+      if (!deps->readonly)
+	{
+	  if (deps->last_logue_was_epilogue)
+	    free_INSN_LIST_list (&deps->last_prologue);
+	  deps->last_prologue = alloc_INSN_LIST (insn, deps->last_prologue);
+	  deps->last_logue_was_epilogue = false;
+	}
+    }
+
+  if (epilogue_contains (insn))
+    {
+      add_dependence_list (insn, deps->last_prologue, true, REG_DEP_ANTI, true);
+      if (!deps->readonly)
+	{
+	  if (!deps->last_logue_was_epilogue)
+	    free_INSN_LIST_list (&deps->last_epilogue);
+	  deps->last_epilogue = alloc_INSN_LIST (insn, deps->last_epilogue);
+	  deps->last_logue_was_epilogue = true;
+	}
+    }
 }
 
 /* Return TRUE if INSN might not always return normally (e.g. call exit,
@@ -3907,6 +3932,9 @@ init_deps (struct deps_desc *deps, bool lazy_reg_last)
   deps->in_post_call_group_p = not_post_call;
   deps->last_debug_insn = 0;
   deps->last_args_size = 0;
+  deps->last_prologue = 0;
+  deps->last_epilogue = 0;
+  deps->last_logue_was_epilogue = false;
   deps->last_reg_pending_barrier = NOT_A_BARRIER;
   deps->readonly = 0;
 }
