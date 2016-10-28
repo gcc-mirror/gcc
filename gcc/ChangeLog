@@ -1,3 +1,9 @@
+2016-10-28  Jeff Law  <law@redhat.com>
+
+	* config/bfin/bfin.c (bfin_legitimate_address_p): Add missing
+	fallthru comment.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+
 2016-10-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78029
