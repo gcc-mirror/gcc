@@ -237,23 +237,22 @@ libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_4 =  \
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@	getncpu-bsd.lo
 @LIBGO_IS_LINUX_TRUE@am__objects_4 = getncpu-linux.lo
-am__objects_5 = go-append.lo go-assert.lo go-breakpoint.lo \
-	go-caller.lo go-callers.lo go-cdiv.lo go-cgo.lo \
-	go-construct-map.lo go-copy.lo go-defer.lo \
-	go-deferred-recover.lo go-ffi.lo go-fieldtrack.lo \
-	go-make-slice.lo go-matherr.lo go-memclr.lo go-memcmp.lo \
-	go-memequal.lo go-memmove.lo go-nanotime.lo go-now.lo \
-	go-new.lo go-nosys.lo go-panic.lo go-recover.lo \
-	go-reflect-call.lo go-runtime-error.lo go-setenv.lo \
-	go-signal.lo go-strslice.lo go-type-complex.lo \
-	go-type-float.lo go-type-identity.lo go-type-string.lo \
-	go-typedesc-equal.lo go-unsafe-new.lo go-unsafe-newarray.lo \
-	go-unsafe-pointer.lo go-unsetenv.lo go-unwind.lo go-varargs.lo \
-	env_posix.lo heapdump.lo mcache.lo mcentral.lo \
-	$(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
-	panic.lo parfor.lo print.lo proc.lo runtime.lo signal_unix.lo \
-	thread.lo $(am__objects_2) yield.lo $(am__objects_3) malloc.lo \
-	runtime1.lo sigqueue.lo $(am__objects_4)
+am__objects_5 = go-assert.lo go-breakpoint.lo go-caller.lo \
+	go-callers.lo go-cdiv.lo go-cgo.lo go-construct-map.lo \
+	go-defer.lo go-deferred-recover.lo go-ffi.lo go-fieldtrack.lo \
+	go-matherr.lo go-memclr.lo go-memcmp.lo go-memequal.lo \
+	go-memmove.lo go-nanotime.lo go-now.lo go-new.lo go-nosys.lo \
+	go-panic.lo go-recover.lo go-reflect-call.lo \
+	go-runtime-error.lo go-setenv.lo go-signal.lo go-strslice.lo \
+	go-type-complex.lo go-type-float.lo go-type-identity.lo \
+	go-type-string.lo go-typedesc-equal.lo go-unsafe-new.lo \
+	go-unsafe-newarray.lo go-unsafe-pointer.lo go-unsetenv.lo \
+	go-unwind.lo go-varargs.lo env_posix.lo heapdump.lo mcache.lo \
+	mcentral.lo $(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo \
+	msize.lo panic.lo parfor.lo print.lo proc.lo runtime.lo \
+	signal_unix.lo thread.lo $(am__objects_2) yield.lo \
+	$(am__objects_3) malloc.lo runtime1.lo sigqueue.lo \
+	$(am__objects_4)
 am_libgo_llgo_la_OBJECTS = $(am__objects_5)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -824,7 +823,6 @@ toolexeclibgounicode_DATA = \
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@runtime_getncpu_file = runtime/getncpu-bsd.c
 @LIBGO_IS_LINUX_TRUE@runtime_getncpu_file = runtime/getncpu-linux.c
 runtime_files = \
-	runtime/go-append.c \
 	runtime/go-assert.c \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
@@ -832,12 +830,10 @@ runtime_files = \
 	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-construct-map.c \
-	runtime/go-copy.c \
 	runtime/go-defer.c \
 	runtime/go-deferred-recover.c \
 	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
-	runtime/go-make-slice.c \
 	runtime/go-matherr.c \
 	runtime/go-memclr.c \
 	runtime/go-memcmp.c \
@@ -1519,7 +1515,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-none.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-solaris.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-append.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-assert.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-breakpoint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-caller.Plo@am__quote@
@@ -1527,12 +1522,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-cdiv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-cgo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-construct-map.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-copy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-defer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-deferred-recover.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-fieldtrack.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-make-slice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-matherr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-memclr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-memcmp.Plo@am__quote@
@@ -1650,13 +1643,6 @@ libgolibbegin_a-go-libmain.obj: runtime/go-libmain.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgolibbegin_a_CFLAGS) $(CFLAGS) -c -o libgolibbegin_a-go-libmain.obj `if test -f 'runtime/go-libmain.c'; then $(CYGPATH_W) 'runtime/go-libmain.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-libmain.c'; fi`
 
-go-append.lo: runtime/go-append.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-append.lo -MD -MP -MF $(DEPDIR)/go-append.Tpo -c -o go-append.lo `test -f 'runtime/go-append.c' || echo '$(srcdir)/'`runtime/go-append.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-append.Tpo $(DEPDIR)/go-append.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-append.c' object='go-append.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-append.lo `test -f 'runtime/go-append.c' || echo '$(srcdir)/'`runtime/go-append.c
-
 go-assert.lo: runtime/go-assert.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-assert.lo -MD -MP -MF $(DEPDIR)/go-assert.Tpo -c -o go-assert.lo `test -f 'runtime/go-assert.c' || echo '$(srcdir)/'`runtime/go-assert.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-assert.Tpo $(DEPDIR)/go-assert.Plo
@@ -1706,13 +1692,6 @@ go-construct-map.lo: runtime/go-construct-map.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-construct-map.lo `test -f 'runtime/go-construct-map.c' || echo '$(srcdir)/'`runtime/go-construct-map.c
 
-go-copy.lo: runtime/go-copy.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-copy.lo -MD -MP -MF $(DEPDIR)/go-copy.Tpo -c -o go-copy.lo `test -f 'runtime/go-copy.c' || echo '$(srcdir)/'`runtime/go-copy.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-copy.Tpo $(DEPDIR)/go-copy.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-copy.c' object='go-copy.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-copy.lo `test -f 'runtime/go-copy.c' || echo '$(srcdir)/'`runtime/go-copy.c
-
 go-defer.lo: runtime/go-defer.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-defer.lo -MD -MP -MF $(DEPDIR)/go-defer.Tpo -c -o go-defer.lo `test -f 'runtime/go-defer.c' || echo '$(srcdir)/'`runtime/go-defer.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-defer.Tpo $(DEPDIR)/go-defer.Plo
@@ -1740,13 +1719,6 @@ go-fieldtrack.lo: runtime/go-fieldtrack.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-fieldtrack.c' object='go-fieldtrack.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-fieldtrack.lo `test -f 'runtime/go-fieldtrack.c' || echo '$(srcdir)/'`runtime/go-fieldtrack.c
-
-go-make-slice.lo: runtime/go-make-slice.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-make-slice.lo -MD -MP -MF $(DEPDIR)/go-make-slice.Tpo -c -o go-make-slice.lo `test -f 'runtime/go-make-slice.c' || echo '$(srcdir)/'`runtime/go-make-slice.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-make-slice.Tpo $(DEPDIR)/go-make-slice.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-make-slice.c' object='go-make-slice.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-make-slice.lo `test -f 'runtime/go-make-slice.c' || echo '$(srcdir)/'`runtime/go-make-slice.c
 
 go-matherr.lo: runtime/go-matherr.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-matherr.lo -MD -MP -MF $(DEPDIR)/go-matherr.Tpo -c -o go-matherr.lo `test -f 'runtime/go-matherr.c' || echo '$(srcdir)/'`runtime/go-matherr.c

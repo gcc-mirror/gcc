@@ -428,7 +428,6 @@ endif
 endif
 
 runtime_files = \
-	runtime/go-append.c \
 	runtime/go-assert.c \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
@@ -436,12 +435,10 @@ runtime_files = \
 	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-construct-map.c \
-	runtime/go-copy.c \
 	runtime/go-defer.c \
 	runtime/go-deferred-recover.c \
 	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
-	runtime/go-make-slice.c \
 	runtime/go-matherr.c \
 	runtime/go-memclr.c \
 	runtime/go-memcmp.c \

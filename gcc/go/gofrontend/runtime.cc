@@ -425,9 +425,9 @@ Runtime::name_to_code(const std::string& name)
   else if (name == "close")
     code = Runtime::CLOSE;
   else if (name == "copy")
-    code = Runtime::COPY;
+    code = Runtime::SLICECOPY;
   else if (name == "append")
-    code = Runtime::APPEND;
+    code = Runtime::GROWSLICE;
   else if (name == "delete")
     code = Runtime::MAPDELETE;
   else

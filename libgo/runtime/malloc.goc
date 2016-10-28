@@ -81,7 +81,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		// All 0-length allocations use this pointer.
 		// The language does not require the allocations to
 		// have distinct values.
-		return &runtime_zerobase;
+		return runtime_getZerobase();
 	}
 
 	g = runtime_g();
@@ -881,7 +881,7 @@ func new(typ *Type) (ret *uint8) {
 }
 
 static void*
-cnew(const Type *typ, intgo n, int32 objtyp)
+runtime_docnew(const Type *typ, intgo n, int32 objtyp)
 {
 	if((objtyp&(PtrSize-1)) != objtyp)
 		runtime_throw("runtime: invalid objtyp");
@@ -894,13 +894,13 @@ cnew(const Type *typ, intgo n, int32 objtyp)
 void*
 runtime_cnew(const Type *typ)
 {
-	return cnew(typ, 1, TypeInfo_SingleObject);
+	return runtime_docnew(typ, 1, TypeInfo_SingleObject);
 }
 
 void*
 runtime_cnewarray(const Type *typ, intgo n)
 {
-	return cnew(typ, n, TypeInfo_Array);
+	return runtime_docnew(typ, n, TypeInfo_Array);
 }
 
 func GC() {

@@ -234,7 +234,8 @@ enum
 /*
  * external data
  */
-extern	uintptr runtime_zerobase;
+extern	uintptr* runtime_getZerobase(void)
+  __asm__(GOSYM_PREFIX "runtime.getZerobase");
 extern	G**	runtime_allg;
 extern	uintptr runtime_allglen;
 extern	G*	runtime_lastg;

@@ -284,20 +284,19 @@ Node::op_format() const
 		  op << "panic";
 		  break;
 
-		case Runtime::APPEND:
+		case Runtime::GROWSLICE:
 		  op << "append";
 		  break;
 
-		case Runtime::COPY:
+		case Runtime::SLICECOPY:
+		case Runtime::SLICESTRINGCOPY:
+		case Runtime::TYPEDSLICECOPY:
 		  op << "copy";
 		  break;
 
 		case Runtime::MAKECHAN:
 		case Runtime::MAKEMAP:
-		case Runtime::MAKESLICE1:
-		case Runtime::MAKESLICE2:
-		case Runtime::MAKESLICE1BIG:
-		case Runtime::MAKESLICE2BIG:
+		case Runtime::MAKESLICE:
 		  op << "make";
 		  break;
 
@@ -419,10 +418,7 @@ Node::is_big(Escape_context* context) const
 	  Func_expression* fn = call->fn()->func_expression();
 	  if (fn != NULL
 	      && fn->is_runtime_function()
-	      && (fn->runtime_code() == Runtime::MAKESLICE1
-		  || fn->runtime_code() == Runtime::MAKESLICE2
-		  || fn->runtime_code() == Runtime::MAKESLICE1BIG
-		  || fn->runtime_code() == Runtime::MAKESLICE2BIG))
+	      && fn->runtime_code() == Runtime::MAKESLICE)
 	    {
 	      // Second argument is length.
 	      Expression_list::iterator p = call->args()->begin();
@@ -1201,13 +1197,25 @@ Escape_analysis_assign::expression(Expression** pexpr)
 		}
 		break;
 
-	      case Runtime::APPEND:
+	      case Runtime::GROWSLICE:
 		{
-		  // Unlike gc/esc.go, a call to append has already had its
-		  // varargs lowered into a slice of arguments.
-		  // The content of the appended slice leaks.
-		  Node* appended = Node::make_node(call->args()->back());
-		  this->assign_deref(this->context_->sink(), appended);
+		  // The contents being appended leak.
+		  if (call->is_varargs())
+		    {
+		      Node* appended = Node::make_node(call->args()->back());
+		      this->assign_deref(this->context_->sink(), appended);
+		    }
+		  else
+		    {
+		      for (Expression_list::const_iterator pa =
+			     call->args()->begin();
+			   pa != call->args()->end();
+			   ++pa)
+			{
+			  Node* arg = Node::make_node(*pa);
+			  this->assign(this->context_->sink(), arg);
+			}
+		    }
 
 		  if (debug_level > 2)
 		    go_error_at((*pexpr)->location(),
@@ -1219,7 +1227,9 @@ Escape_analysis_assign::expression(Expression** pexpr)
 		}
 		break;
 
-	      case Runtime::COPY:
+	      case Runtime::SLICECOPY:
+	      case Runtime::SLICESTRINGCOPY:
+	      case Runtime::TYPEDSLICECOPY:
 		{
 		  // Lose track of the copied content.
 		  Node* copied = Node::make_node(call->args()->back());
@@ -1229,10 +1239,7 @@ Escape_analysis_assign::expression(Expression** pexpr)
 
 	      case Runtime::MAKECHAN:
 	      case Runtime::MAKEMAP:
-	      case Runtime::MAKESLICE1:
-	      case Runtime::MAKESLICE2:
-	      case Runtime::MAKESLICE1BIG:
-	      case Runtime::MAKESLICE2BIG:
+	      case Runtime::MAKESLICE:
 	      case Runtime::SLICEBYTETOSTRING:
 	      case Runtime::SLICERUNETOSTRING:
 	      case Runtime::STRINGTOSLICEBYTE:
@@ -1829,7 +1836,7 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 	      {
 		switch (fe->runtime_code())
 		  {
-		  case Runtime::APPEND:
+		  case Runtime::GROWSLICE:
 		    {
 		      // Append returns the first argument.
 		      // The subsequent arguments are already leaked because
@@ -1841,10 +1848,7 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 
 		  case Runtime::MAKECHAN:
 		  case Runtime::MAKEMAP:
-		  case Runtime::MAKESLICE1:
-		  case Runtime::MAKESLICE2:
-		  case Runtime::MAKESLICE1BIG:
-		  case Runtime::MAKESLICE2BIG:
+		  case Runtime::MAKESLICE:
 		    // DST = make(...).
 		  case Runtime::SLICEBYTETOSTRING:
 		    // DST = string([]byte{...}).
@@ -2608,7 +2612,7 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 		{
 		  switch (func->runtime_code())
 		    {
-		    case Runtime::APPEND:
+		    case Runtime::GROWSLICE:
 		      {
 			// Propagate escape information to appendee.
 			Expression* appendee = call->args()->front();
@@ -2618,10 +2622,7 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 
 		    case Runtime::MAKECHAN:
 		    case Runtime::MAKEMAP:
-		    case Runtime::MAKESLICE1:
-		    case Runtime::MAKESLICE2:
-		    case Runtime::MAKESLICE1BIG:
-		    case Runtime::MAKESLICE2BIG:
+		    case Runtime::MAKESLICE:
 		    case Runtime::SLICEBYTETOSTRING:
 		    case Runtime::SLICERUNETOSTRING:
 		    case Runtime::STRINGTOSLICEBYTE:
