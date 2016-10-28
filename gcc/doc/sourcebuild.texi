@@ -1675,6 +1675,10 @@ and @code{MOVT} instructions available.
 ARM target generates Thumb-1 code for @code{-mthumb} with
 @code{CBZ} and @code{CBNZ} instructions available.
 
+@item arm_divmod_simode
+ARM target for which divmod transform is disabled, if it supports hardware
+div instruction.
+
 @end table
 
 @subsubsection AArch64-specific attributes
@@ -1848,6 +1852,13 @@ Target requires a command line argument to enable a SIMD instruction set.
 
 @item pie_copyreloc
 The x86-64 target linker supports PIE with copy reloc.
+
+@item divmod
+Target supporting hardware divmod insn or divmod libcall.
+
+@item divmod_simode
+Target supporting hardware divmod insn or divmod libcall for SImode.
+
 @end table
 
 @subsubsection Environment attributes

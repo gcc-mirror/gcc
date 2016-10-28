@@ -2232,6 +2232,53 @@ expand_LAUNDER (internal_fn, gcall *call)
   expand_assignment (lhs, gimple_call_arg (call, 0), false);
 }
 
+/* Expand DIVMOD() using:
+ a) optab handler for udivmod/sdivmod if it is available.
+ b) If optab_handler doesn't exist, generate call to
+    target-specific divmod libfunc.  */
+
+static void
+expand_DIVMOD (internal_fn, gcall *call_stmt)
+{
+  tree lhs = gimple_call_lhs (call_stmt);
+  tree arg0 = gimple_call_arg (call_stmt, 0);
+  tree arg1 = gimple_call_arg (call_stmt, 1);
+
+  gcc_assert (TREE_CODE (TREE_TYPE (lhs)) == COMPLEX_TYPE);
+  tree type = TREE_TYPE (TREE_TYPE (lhs));
+  machine_mode mode = TYPE_MODE (type);
+  bool unsignedp = TYPE_UNSIGNED (type);
+  optab tab = (unsignedp) ? udivmod_optab : sdivmod_optab;
+
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+
+  rtx quotient, remainder, libfunc;
+
+  /* Check if optab_handler exists for divmod_optab for given mode.  */
+  if (optab_handler (tab, mode) != CODE_FOR_nothing)
+    {
+      quotient = gen_reg_rtx (mode);
+      remainder = gen_reg_rtx (mode);
+      expand_twoval_binop (tab, op0, op1, quotient, remainder, unsignedp);
+    }
+
+  /* Generate call to divmod libfunc if it exists.  */
+  else if ((libfunc = optab_libfunc (tab, mode)) != NULL_RTX)
+    targetm.expand_divmod_libfunc (libfunc, mode, op0, op1,
+				   &quotient, &remainder);
+
+  else
+    gcc_unreachable ();
+
+  /* Wrap the return value (quotient, remainder) within COMPLEX_EXPR.  */
+  expand_expr (build2 (COMPLEX_EXPR, TREE_TYPE (lhs),
+		       make_tree (TREE_TYPE (arg0), quotient),
+		       make_tree (TREE_TYPE (arg1), remainder)),
+	      target, VOIDmode, EXPAND_NORMAL);
+}
+
 /* Expand a call to FN using the operands in STMT.  FN has a single
    output operand and NARGS input operands.  */
 

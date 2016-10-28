@@ -1,3 +1,24 @@
+2016-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Jim Wilson  <jim.wilson@linaro.org>
+
+	PR tree-optimization/43721
+	* lib/target-supports.exp (check_effective_target_divmod): New.
+	(check_effective_target_divmod_simode): Likewise.
+	(check_effective_target_arm_divmod_simode): Likewise.
+	* gcc.dg/divmod-1-simode.c: New test.
+	* gcc.dg/divmod-1.c: Likewise.
+	* gcc.dg/divmod-2-simode.c: Likewise.
+	* gcc.dg/divmod-2.c: Likewise.
+	* gcc.dg/divmod-3-simode.c: Likewise.
+	* gcc.dg/divmod-3.c: Likewise.
+	* gcc.dg/divmod-4-simode.c: Likewise.
+	* gcc.dg/divmod-4.c: Likewise.
+	* gcc.dg/divmod-5.c: Likewise.
+	* gcc.dg/divmod-6-simode.c: Likewise.
+	* gcc.dg/divmod-6.c: Likewise.
+	* gcc.dg/divmod-7.c: Likewise.
+
 2016-10-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             Jakub Jelinek  <jakub@redhat.com>
             Andrew Pinski  <pinskia@gmail.com>

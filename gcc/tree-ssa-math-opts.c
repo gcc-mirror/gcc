@@ -112,6 +112,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
+#include "optabs-libfuncs.h"
+#include "tree-eh.h"
+#include "targhooks.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a
@@ -184,6 +187,9 @@ static struct
 
   /* Number of fp fused multiply-add ops inserted.  */
   int fmas_inserted;
+
+  /* Number of divmod calls inserted.  */
+  int divmod_calls_inserted;
 } widen_mul_stats;
 
 /* The instance of "struct occurrence" representing the highest
@@ -3793,6 +3799,213 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
   return true;
 }
 
+/* Return true if target has support for divmod.  */
+
+static bool
+target_supports_divmod_p (optab divmod_optab, optab div_optab, machine_mode mode) 
+{
+  /* If target supports hardware divmod insn, use it for divmod.  */
+  if (optab_handler (divmod_optab, mode) != CODE_FOR_nothing)
+    return true;
+
+  /* Check if libfunc for divmod is available.  */
+  rtx libfunc = optab_libfunc (divmod_optab, mode);
+  if (libfunc != NULL_RTX)
+    {
+      /* If optab_handler exists for div_optab, perhaps in a wider mode,
+	 we don't want to use the libfunc even if it exists for given mode.  */ 
+      for (machine_mode div_mode = mode;
+	   div_mode != VOIDmode;
+	   div_mode = GET_MODE_WIDER_MODE (div_mode))
+	if (optab_handler (div_optab, div_mode) != CODE_FOR_nothing)
+	  return false;
+
+      return targetm.expand_divmod_libfunc != NULL;
+    }
+  
+  return false; 
+}
+
+/* Check if stmt is candidate for divmod transform.  */
+
+static bool
+divmod_candidate_p (gassign *stmt)
+{
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+  enum machine_mode mode = TYPE_MODE (type);
+  optab divmod_optab, div_optab;
+
+  if (TYPE_UNSIGNED (type))
+    {
+      divmod_optab = udivmod_optab;
+      div_optab = udiv_optab;
+    }
+  else
+    {
+      divmod_optab = sdivmod_optab;
+      div_optab = sdiv_optab;
+    }
+
+  tree op1 = gimple_assign_rhs1 (stmt);
+  tree op2 = gimple_assign_rhs2 (stmt);
+
+  /* Disable the transform if either is a constant, since division-by-constant
+     may have specialized expansion.  */
+  if (CONSTANT_CLASS_P (op1) || CONSTANT_CLASS_P (op2))
+    return false;
+
+  /* Exclude the case where TYPE_OVERFLOW_TRAPS (type) as that should
+     expand using the [su]divv optabs.  */
+  if (TYPE_OVERFLOW_TRAPS (type))
+    return false;
+  
+  if (!target_supports_divmod_p (divmod_optab, div_optab, mode)) 
+    return false;
+
+  return true;
+}
+
+/* This function looks for:
+   t1 = a TRUNC_DIV_EXPR b;
+   t2 = a TRUNC_MOD_EXPR b;
+   and transforms it to the following sequence:
+   complex_tmp = DIVMOD (a, b);
+   t1 = REALPART_EXPR(a);
+   t2 = IMAGPART_EXPR(b);
+   For conditions enabling the transform see divmod_candidate_p().
+
+   The pass has three parts:
+   1) Find top_stmt which is trunc_div or trunc_mod stmt and dominates all
+      other trunc_div_expr and trunc_mod_expr stmts.
+   2) Add top_stmt and all trunc_div and trunc_mod stmts dominated by top_stmt
+      to stmts vector.
+   3) Insert DIVMOD call just before top_stmt and update entries in
+      stmts vector to use return value of DIMOVD (REALEXPR_PART for div,
+      IMAGPART_EXPR for mod).  */
+
+static bool
+convert_to_divmod (gassign *stmt)
+{
+  if (stmt_can_throw_internal (stmt)
+      || !divmod_candidate_p (stmt))
+    return false;
+
+  tree op1 = gimple_assign_rhs1 (stmt);
+  tree op2 = gimple_assign_rhs2 (stmt);
+  
+  imm_use_iterator use_iter;
+  gimple *use_stmt;
+  auto_vec<gimple *> stmts; 
+
+  gimple *top_stmt = stmt; 
+  basic_block top_bb = gimple_bb (stmt);
+
+  /* Part 1: Try to set top_stmt to "topmost" stmt that dominates
+     at-least stmt and possibly other trunc_div/trunc_mod stmts
+     having same operands as stmt.  */
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, op1)
+    {
+      if (is_gimple_assign (use_stmt)
+	  && (gimple_assign_rhs_code (use_stmt) == TRUNC_DIV_EXPR
+	      || gimple_assign_rhs_code (use_stmt) == TRUNC_MOD_EXPR)
+	  && operand_equal_p (op1, gimple_assign_rhs1 (use_stmt), 0)
+	  && operand_equal_p (op2, gimple_assign_rhs2 (use_stmt), 0))
+	{
+	  if (stmt_can_throw_internal (use_stmt))
+	    continue;
+
+	  basic_block bb = gimple_bb (use_stmt);
+
+	  if (bb == top_bb)
+	    {
+	      if (gimple_uid (use_stmt) < gimple_uid (top_stmt))
+		top_stmt = use_stmt;
+	    }
+	  else if (dominated_by_p (CDI_DOMINATORS, top_bb, bb))
+	    {
+	      top_bb = bb;
+	      top_stmt = use_stmt;
+	    }
+	}
+    }
+
+  tree top_op1 = gimple_assign_rhs1 (top_stmt);
+  tree top_op2 = gimple_assign_rhs2 (top_stmt);
+
+  stmts.safe_push (top_stmt);
+  bool div_seen = (gimple_assign_rhs_code (top_stmt) == TRUNC_DIV_EXPR);
+
+  /* Part 2: Add all trunc_div/trunc_mod statements domianted by top_bb
+     to stmts vector. The 2nd loop will always add stmt to stmts vector, since
+     gimple_bb (top_stmt) dominates gimple_bb (stmt), so the
+     2nd loop ends up adding at-least single trunc_mod_expr stmt.  */  
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, top_op1)
+    {
+      if (is_gimple_assign (use_stmt)
+	  && (gimple_assign_rhs_code (use_stmt) == TRUNC_DIV_EXPR
+	      || gimple_assign_rhs_code (use_stmt) == TRUNC_MOD_EXPR)
+	  && operand_equal_p (top_op1, gimple_assign_rhs1 (use_stmt), 0)
+	  && operand_equal_p (top_op2, gimple_assign_rhs2 (use_stmt), 0))
+	{
+	  if (use_stmt == top_stmt
+	      || stmt_can_throw_internal (use_stmt)
+	      || !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), top_bb))
+	    continue;
+
+	  stmts.safe_push (use_stmt);
+	  if (gimple_assign_rhs_code (use_stmt) == TRUNC_DIV_EXPR)
+	    div_seen = true;
+	}
+    }
+
+  if (!div_seen)
+    return false;
+
+  /* Part 3: Create libcall to internal fn DIVMOD:
+     divmod_tmp = DIVMOD (op1, op2).  */
+
+  gcall *call_stmt = gimple_build_call_internal (IFN_DIVMOD, 2, op1, op2);
+  tree res = make_temp_ssa_name (build_complex_type (TREE_TYPE (op1)),
+				 call_stmt, "divmod_tmp");
+  gimple_call_set_lhs (call_stmt, res);
+
+  /* Insert the call before top_stmt.  */
+  gimple_stmt_iterator top_stmt_gsi = gsi_for_stmt (top_stmt);
+  gsi_insert_before (&top_stmt_gsi, call_stmt, GSI_SAME_STMT);
+
+  widen_mul_stats.divmod_calls_inserted++;		
+
+  /* Update all statements in stmts vector:
+     lhs = op1 TRUNC_DIV_EXPR op2 -> lhs = REALPART_EXPR<divmod_tmp>
+     lhs = op1 TRUNC_MOD_EXPR op2 -> lhs = IMAGPART_EXPR<divmod_tmp>.  */
+
+  for (unsigned i = 0; stmts.iterate (i, &use_stmt); ++i)
+    {
+      tree new_rhs;
+
+      switch (gimple_assign_rhs_code (use_stmt))
+	{
+	  case TRUNC_DIV_EXPR:
+	    new_rhs = fold_build1 (REALPART_EXPR, TREE_TYPE (op1), res);
+	    break;
+
+	  case TRUNC_MOD_EXPR:
+	    new_rhs = fold_build1 (IMAGPART_EXPR, TREE_TYPE (op1), res);
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	}
+
+      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+      gimple_assign_set_rhs_from_tree (&gsi, new_rhs);
+      update_stmt (use_stmt);
+    }
+
+  return true; 
+}    
 
 /* Find integer multiplications where the operands are extended from
    smaller types, and replace the MULT_EXPR with a WIDEN_MULT_EXPR
@@ -3837,6 +4050,8 @@ pass_optimize_widening_mul::execute (function *fun)
   bool cfg_changed = false;
 
   memset (&widen_mul_stats, 0, sizeof (widen_mul_stats));
+  calculate_dominance_info (CDI_DOMINATORS);
+  renumber_gimple_stmt_uids ();
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -3868,6 +4083,10 @@ pass_optimize_widening_mul::execute (function *fun)
 		case MINUS_EXPR:
 		  if (!convert_plusminus_to_widen (&gsi, stmt, code))
 		    match_uaddsub_overflow (&gsi, stmt, code);
+		  break;
+
+		case TRUNC_MOD_EXPR:
+		  convert_to_divmod (as_a<gassign *> (stmt));
 		  break;
 
 		default:;
@@ -3916,6 +4135,8 @@ pass_optimize_widening_mul::execute (function *fun)
 			    widen_mul_stats.maccs_inserted);
   statistics_counter_event (fun, "fused multiply-adds inserted",
 			    widen_mul_stats.fmas_inserted);
+  statistics_counter_event (fun, "divmod calls inserted",
+			    widen_mul_stats.divmod_calls_inserted);
 
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
