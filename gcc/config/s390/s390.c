@@ -13502,6 +13502,155 @@ s390_z10_optimize_cmp (rtx_insn *insn)
   return insn_added_p;
 }
 
+/* Number of INSNs to be scanned backward in the last BB of the loop
+   and forward in the first BB of the loop.  This usually should be a
+   bit more than the number of INSNs which could go into one
+   group.  */
+#define S390_OSC_SCAN_INSN_NUM 5
+
+/* Scan LOOP for static OSC collisions and return true if a osc_break
+   should be issued for this loop.  */
+static bool
+s390_adjust_loop_scan_osc (struct loop* loop)
+
+{
+  HARD_REG_SET modregs, newregs;
+  rtx_insn *insn, *store_insn = NULL;
+  rtx set;
+  struct s390_address addr_store, addr_load;
+  subrtx_iterator::array_type array;
+  int insn_count;
+
+  CLEAR_HARD_REG_SET (modregs);
+
+  insn_count = 0;
+  FOR_BB_INSNS_REVERSE (loop->latch, insn)
+    {
+      if (!INSN_P (insn) || INSN_CODE (insn) <= 0)
+	continue;
+
+      insn_count++;
+      if (insn_count > S390_OSC_SCAN_INSN_NUM)
+	return false;
+
+      find_all_hard_reg_sets (insn, &newregs, true);
+      IOR_HARD_REG_SET (modregs, newregs);
+
+      set = single_set (insn);
+      if (!set)
+	continue;
+
+      if (MEM_P (SET_DEST (set))
+	  && s390_decompose_address (XEXP (SET_DEST (set), 0), &addr_store))
+	{
+	  store_insn = insn;
+	  break;
+	}
+    }
+
+  if (store_insn == NULL_RTX)
+    return false;
+
+  insn_count = 0;
+  FOR_BB_INSNS (loop->header, insn)
+    {
+      if (!INSN_P (insn) || INSN_CODE (insn) <= 0)
+	continue;
+
+      if (insn == store_insn)
+	return false;
+
+      insn_count++;
+      if (insn_count > S390_OSC_SCAN_INSN_NUM)
+	return false;
+
+      find_all_hard_reg_sets (insn, &newregs, true);
+      IOR_HARD_REG_SET (modregs, newregs);
+
+      set = single_set (insn);
+      if (!set)
+	continue;
+
+      /* An intermediate store disrupts static OSC checking
+	 anyway.  */
+      if (MEM_P (SET_DEST (set))
+	  && s390_decompose_address (XEXP (SET_DEST (set), 0), NULL))
+	return false;
+
+      FOR_EACH_SUBRTX (iter, array, SET_SRC (set), NONCONST)
+	if (MEM_P (*iter)
+	    && s390_decompose_address (XEXP (*iter, 0), &addr_load)
+	    && rtx_equal_p (addr_load.base, addr_store.base)
+	    && rtx_equal_p (addr_load.indx, addr_store.indx)
+	    && rtx_equal_p (addr_load.disp, addr_store.disp))
+	  {
+	    if ((addr_load.base != NULL_RTX
+		 && TEST_HARD_REG_BIT (modregs, REGNO (addr_load.base)))
+		|| (addr_load.indx != NULL_RTX
+		    && TEST_HARD_REG_BIT (modregs, REGNO (addr_load.indx))))
+	      return true;
+	  }
+    }
+  return false;
+}
+
+/* Look for adjustments which can be done on simple innermost
+   loops.  */
+static void
+s390_adjust_loops ()
+{
+  struct loop *loop = NULL;
+
+  df_analyze ();
+  compute_bb_for_insn ();
+
+  /* Find the loops.  */
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+    {
+      if (dump_file)
+	{
+	  flow_loop_dump (loop, dump_file, NULL, 0);
+	  fprintf (dump_file, ";;  OSC loop scan Loop: ");
+	}
+      if (loop->latch == NULL
+	  || pc_set (BB_END (loop->latch)) == NULL_RTX
+	  || !s390_adjust_loop_scan_osc (loop))
+	{
+	  if (dump_file)
+	    {
+	      if (loop->latch == NULL)
+		fprintf (dump_file, " muliple backward jumps\n");
+	      else
+		{
+		  fprintf (dump_file, " header insn: %d latch insn: %d ",
+			   INSN_UID (BB_HEAD (loop->header)),
+			   INSN_UID (BB_END (loop->latch)));
+		  if (pc_set (BB_END (loop->latch)) == NULL_RTX)
+		    fprintf (dump_file, " loop does not end with jump\n");
+		  else
+		    fprintf (dump_file, " not instrumented\n");
+		}
+	    }
+	}
+      else
+	{
+	  rtx_insn *new_insn;
+
+	  if (dump_file)
+	    fprintf (dump_file, " adding OSC break insn: ");
+	  new_insn = emit_insn_before (gen_osc_break (),
+				       BB_END (loop->latch));
+	  INSN_ADDRESSES_NEW (new_insn, -1);
+	}
+    }
+
+  loop_optimizer_finalize ();
+
+  df_finish_pass (false);
+}
+
 /* Perform machine-dependent processing.  */
 
 static void
@@ -13509,6 +13658,9 @@ s390_reorg (void)
 {
   bool pool_overflow = false;
   int hw_before, hw_after;
+
+  if (s390_tune == PROCESSOR_2964_Z13)
+    s390_adjust_loops ();
 
   /* Make sure all splits have been performed; splits after
      machine_dependent_reorg might confuse insn length counts.  */
