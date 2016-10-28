@@ -253,11 +253,18 @@ func typedmemmove(typ *_type, dst, src unsafe.Pointer) {
 	memmove(dst, src, typ.size)
 }
 
-// Here for gccgo unless and until we port slice.go.
-type slice struct {
-	array unsafe.Pointer
-	len   int
-	cap   int
+// Temporary for gccgo until we port mbarrier.go.
+//go:linkname typedslicecopy runtime.typedslicecopy
+func typedslicecopy(typ *_type, dst, src slice) int {
+	n := dst.len
+	if n > src.len {
+		n = src.len
+	}
+	if n == 0 {
+		return 0
+	}
+	memmove(dst.array, src.array, uintptr(n)*typ.size)
+	return n
 }
 
 // Here for gccgo until we port malloc.go.
@@ -473,4 +480,12 @@ func atomicstorep(ptr unsafe.Pointer, new unsafe.Pointer) {
 // Temporary for gccgo until we port mbarrier.go
 func writebarrierptr(dst *uintptr, src uintptr) {
 	*dst = src
+}
+
+// Temporary for gccgo until we port malloc.go
+var zerobase uintptr
+
+//go:linkname getZerobase runtime.getZerobase
+func getZerobase() *uintptr {
+	return &zerobase
 }

@@ -87,12 +87,7 @@ DEF_GO_RUNTIME(COMPLEX128_DIV, "__go_complex128_div",
 	       P2(COMPLEX128, COMPLEX128), R1(COMPLEX128))
 
 // Make a slice.
-DEF_GO_RUNTIME(MAKESLICE1, "__go_make_slice1", P2(TYPE, UINTPTR), R1(SLICE))
-DEF_GO_RUNTIME(MAKESLICE2, "__go_make_slice2", P3(TYPE, UINTPTR, UINTPTR),
-	       R1(SLICE))
-DEF_GO_RUNTIME(MAKESLICE1BIG, "__go_make_slice1_big", P2(TYPE, UINT64),
-	       R1(SLICE))
-DEF_GO_RUNTIME(MAKESLICE2BIG, "__go_make_slice2_big", P3(TYPE, UINT64, UINT64),
+DEF_GO_RUNTIME(MAKESLICE, "runtime.makeslice", P3(TYPE, INT64, INT64),
 	       R1(SLICE))
 
 
@@ -211,11 +206,20 @@ DEF_GO_RUNTIME(CLOSE, "runtime.closechan", P1(CHAN), R0())
 
 
 // Copy.
-DEF_GO_RUNTIME(COPY, "__go_copy", P3(POINTER, POINTER, UINTPTR), R0())
+DEF_GO_RUNTIME(SLICECOPY, "runtime.slicecopy", P3(SLICE, SLICE, UINTPTR),
+	       R1(INT))
 
-// Append.
-DEF_GO_RUNTIME(APPEND, "__go_append", P4(SLICE, POINTER, UINTPTR, UINTPTR),
-	       R1(SLICE))
+// Copy from string.
+DEF_GO_RUNTIME(SLICESTRINGCOPY, "runtime.slicestringcopy", P2(SLICE, STRING),
+	       R1(INT))
+
+// Copy of value containing pointers.
+DEF_GO_RUNTIME(TYPEDSLICECOPY, "runtime.typedslicecopy",
+	       P3(TYPE, SLICE, SLICE), R1(INT))
+
+
+// Grow a slice for append.
+DEF_GO_RUNTIME(GROWSLICE, "runtime.growslice", P3(TYPE, SLICE, INT), R1(SLICE))
 
 
 // Register roots (global variables) for the garbage collector.
