@@ -537,6 +537,17 @@ struct deps_desc
   /* The last insn bearing REG_ARGS_SIZE that we've seen.  */
   rtx_insn *last_args_size;
 
+  /* A list of all prologue insns we have seen without intervening epilogue
+     insns, and one of all epilogue insns we have seen without intervening
+     prologue insns.  This is used to prevent mixing prologue and epilogue
+     insns.  See PR78029.  */
+  rtx_insn_list *last_prologue;
+  rtx_insn_list *last_epilogue;
+
+  /* Whether the last *logue insn was an epilogue insn or a prologue insn
+     instead.  */
+  bool last_logue_was_epilogue;
+
   /* The maximum register number for the following arrays.  Before reload
      this is max_reg_num; after reload it is FIRST_PSEUDO_REGISTER.  */
   int max_reg;

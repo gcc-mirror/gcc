@@ -1,3 +1,20 @@
+2016-10-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78029
+	* function.c (prologue_contains, epilogue_contains): New functions.
+	(record_prologue_seq, record_epilogue_seq): New functions.
+	* function.h (prologue_contains, epilogue_contains,
+	record_prologue_seq, record_epilogue_seq): New declarations.
+	* sched-deps.c (sched_analyze_insn): Make dependencies to prevent
+	mixing prologue and epilogue insns.
+	(init_deps): Initialize the new fields in struct deps_desc.
+	* sched-int.h (struct deps_desc): New fields last_prologue,
+	last_epilogue, and last_logue_was_epilogue.
+	* shrink-wrap.c (emit_common_heads_for_components): Record all
+	emitted prologue and epilogue insns.
+	(emit_common_tails_for_components): Ditto.
+	(insert_prologue_epilogue_for_components): Ditto.
+
 2016-10-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/22141

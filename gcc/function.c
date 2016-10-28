@@ -5752,6 +5752,18 @@ contains (const_rtx insn, hash_table<insn_cache_hasher> *hash)
 }
 
 int
+prologue_contains (const_rtx insn)
+{
+  return contains (insn, prologue_insn_hash);
+}
+
+int
+epilogue_contains (const_rtx insn)
+{
+  return contains (insn, epilogue_insn_hash);
+}
+
+int
 prologue_epilogue_contains (const_rtx insn)
 {
   if (contains (insn, prologue_insn_hash))
@@ -5761,6 +5773,17 @@ prologue_epilogue_contains (const_rtx insn)
   return 0;
 }
 
+void
+record_prologue_seq (rtx_insn *seq)
+{
+  record_insns (seq, NULL, &prologue_insn_hash);
+}
+
+void
+record_epilogue_seq (rtx_insn *seq)
+{
+  record_insns (seq, NULL, &epilogue_insn_hash);
+}
 
 /* Set JUMP_LABEL for a return insn.  */
 
