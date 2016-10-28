@@ -1,3 +1,8 @@
+2016-10-28  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/71891
+	* symbol.c (gfc_type_compatible): Fix typo.
+
 2016-10-26  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/78092
