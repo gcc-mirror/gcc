@@ -176,6 +176,41 @@ inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 //@}
 } // extern "C++"
 
+#if __cplusplus > 201402L
+#ifdef __has_builtin
+# if !__has_builtin(__builtin_launder)
+// Try not to break non-GNU compilers that don't support the built-in:
+#  define _GLIBCXX_NO_BUILTIN_LAUNDER 1
+# endif
+#endif
+
+#ifndef _GLIBCXX_NO_BUILTIN_LAUNDER
+namespace std
+{
+#define __cpp_lib_launder 201606
+  /// Pointer optimization barrier [ptr.launder]
+  template<typename _Tp>
+    constexpr _Tp*
+    launder(_Tp* __p) noexcept
+    { return __builtin_launder(__p); }
+
+  // The program is ill-formed if T is a function type or
+  // (possibly cv-qualified) void.
+
+  template<typename _Ret, typename... _Args>
+    void launder(_Ret (*)(_Args...)) = delete;
+  template<typename _Ret, typename... _Args>
+    void launder(_Ret (*)(_Args......)) = delete;
+
+  void launder(void*) = delete;
+  void launder(const void*) = delete;
+  void launder(volatile void*) = delete;
+  void launder(const volatile void*) = delete;
+}
+#endif // _GLIBCXX_NO_BUILTIN_LAUNDER
+#undef _GLIBCXX_NO_BUILTIN_LAUNDER
+#endif // C++17
+
 #pragma GCC visibility pop
 
 #endif
