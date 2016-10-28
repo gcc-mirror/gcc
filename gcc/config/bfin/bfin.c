@@ -2718,6 +2718,7 @@ bfin_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	&& REG_P (XEXP (x, 0))
 	&& bfin_valid_reg_p (REGNO (XEXP (x, 0)), strict, mode, POST_INC))
       return true;
+    break;
   case PRE_DEC:
     if (LEGITIMATE_MODE_FOR_AUTOINC_P (mode)
 	&& XEXP (x, 0) == stack_pointer_rtx
