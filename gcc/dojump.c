@@ -703,6 +703,7 @@ do_jump_by_parts_greater_rtx (machine_mode mode, int unsignedp, rtx op0,
       if_false_label = drop_through_label;
       drop_through_if_true = false;
       drop_through_if_false = true;
+      prob = inv (prob);
     }
 
   /* Compare a word at a time, high order first.  */
