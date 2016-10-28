@@ -344,14 +344,17 @@ c_pretty_printer::simple_type_specifier (tree t)
       else
 	{
 	  int prec = TYPE_PRECISION (t);
+	  tree common_t;
 	  if (ALL_FIXED_POINT_MODE_P (TYPE_MODE (t)))
-	    t = c_common_type_for_mode (TYPE_MODE (t), TYPE_SATURATING (t));
+	    common_t = c_common_type_for_mode (TYPE_MODE (t),
+					       TYPE_SATURATING (t));
 	  else
-	    t = c_common_type_for_mode (TYPE_MODE (t), TYPE_UNSIGNED (t));
-	  if (TYPE_NAME (t))
+	    common_t = c_common_type_for_mode (TYPE_MODE (t),
+					       TYPE_UNSIGNED (t));
+	  if (common_t && TYPE_NAME (common_t))
 	    {
-	      simple_type_specifier (t);
-	      if (TYPE_PRECISION (t) != prec)
+	      simple_type_specifier (common_t);
+	      if (TYPE_PRECISION (common_t) != prec)
 		{
 		  pp_colon (this);
 		  pp_decimal_int (this, prec);
