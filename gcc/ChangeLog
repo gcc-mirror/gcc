@@ -1,3 +1,24 @@
+2016-10-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/22141
+	* Makefile.in (OBJS): Add gimple-ssa-store-merging.o.
+	* common.opt (fstore-merging): New Optimization option.
+	* opts.c (default_options_table): Add entry for
+	OPT_ftree_store_merging.
+	* fold-const.h (can_native_encode_type_p): Declare prototype.
+	* fold-const.c (can_native_encode_type_p): Define.
+	* params.def (PARAM_STORE_MERGING_ALLOW_UNALIGNED): Define.
+	(PARAM_MAX_STORES_TO_MERGE): Likewise.
+	* timevar.def (TV_GIMPLE_STORE_MERGING): New timevar.
+	* passes.def: Insert pass_tree_store_merging.
+	* tree-pass.h (make_pass_store_merging): Declare extern
+	prototype.
+	* gimple-ssa-store-merging.c: New file.
+	* doc/invoke.texi (Optimization Options): Document
+	-fstore-merging.
+	(--param documentation): Document store-merging-allow-unaligned
+	and max-stores-to-merge.
+
 2016-10-28  Will Schmidt <will_schmidt@vnet.ibm.com>
 
 	PR middle-end/72747

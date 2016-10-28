@@ -7516,6 +7516,26 @@ can_native_interpret_type_p (tree type)
     }
 }
 
+/* Return true iff a constant of type TYPE is accepted by
+   native_encode_expr.  */
+
+bool
+can_native_encode_type_p (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE:
+    case REAL_TYPE:
+    case FIXED_POINT_TYPE:
+    case COMPLEX_TYPE:
+    case VECTOR_TYPE:
+    case POINTER_TYPE:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* Fold a VIEW_CONVERT_EXPR of a constant expression EXPR to type
    TYPE at compile-time.  If we're unable to perform the conversion
    return NULL_TREE.  */
