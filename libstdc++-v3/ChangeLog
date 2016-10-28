@@ -1,5 +1,14 @@
 2016-10-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_path.h (__is_path_src)
+	(_S_range_begin, _S_range_end): Overload to treat string_view as a
+	Source object.
+	(path::operator+=, path::compare): Overload for basic_string_view.
+	* testsuite/experimental/filesystem/path/construct/string_view.cc:
+	New test.
+	* testsuite/experimental/filesystem/path/construct/
+	string_view_cxx17.cc: New test.
+
 	* include/experimental/bits/fs_path.h
 	(path::_S_convert<_Iter>(_Iter, _Iter)): Remove cv-qualifiers from
 	iterator's value_type.
