@@ -1,3 +1,10 @@
+2016-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78128
+	PR middle-end/71002
+	* fold-const.c (make_bit_field_ref): Only adjust alias set
+	when the original alias set was zero.
+
 2016-10-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

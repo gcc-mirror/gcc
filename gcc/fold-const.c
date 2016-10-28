@@ -3787,11 +3787,11 @@ make_bit_field_ref (location_t loc, tree inner, tree orig_inner, tree type,
 {
   tree result, bftype;
 
-  if (get_alias_set (inner) != get_alias_set (orig_inner))
+  alias_set_type iset = get_alias_set (orig_inner);
+  if (iset == 0 && get_alias_set (inner) != iset)
     inner = fold_build2 (MEM_REF, TREE_TYPE (inner),
 			 build_fold_addr_expr (inner),
-			 build_int_cst
-			  (reference_alias_ptr_type (orig_inner), 0));
+			 build_int_cst (ptr_type_node, 0));
 
   if (bitpos == 0 && !reversep)
     {
