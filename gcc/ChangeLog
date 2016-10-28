@@ -1,3 +1,12 @@
+2016-10-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/71847
+	* combine.c (change_zero_ext): Handle zero_ext of hard registers.
+	Swap commutative operands in new RTL if needed.  Handle zero_ext
+	in the set_dest.
+	(recog_for_combine): Pass *pnewpat to change_zero_ext instead of
+	PATTERN (insn).
+
 2016-10-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Kugan Vivekanandarajah  <kuganv@linaro.org>
 	    Jim Wilson  <jim.wilson@linaro.org>
