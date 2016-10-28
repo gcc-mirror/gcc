@@ -1,3 +1,8 @@
+2016-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/78132
+	* gcc.target/i386/pr78132.c: New test.
+
 2016-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/vect/pr71264.c: XFAIL on SPARC.

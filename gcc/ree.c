@@ -788,6 +788,11 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       machine_mode dst_mode = GET_MODE (SET_DEST (PATTERN (cand->insn)));
       rtx src_reg = get_extended_src_reg (SET_SRC (PATTERN (cand->insn)));
 
+      /* Ensure we can use the src_reg in dst_mode (needed for
+	 the (set (reg1) (reg2)) insn mentioned above).  */
+      if (!HARD_REGNO_MODE_OK (REGNO (src_reg), dst_mode))
+	return false;
+
       /* Ensure the number of hard registers of the copy match.  */
       if (HARD_REGNO_NREGS (REGNO (src_reg), dst_mode)
 	  != HARD_REGNO_NREGS (REGNO (src_reg), GET_MODE (src_reg)))
