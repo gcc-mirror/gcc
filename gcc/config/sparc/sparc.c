@@ -648,6 +648,7 @@ static reg_class_t sparc_secondary_reload (bool, rtx, reg_class_t,
 static machine_mode sparc_cstore_mode (enum insn_code icode);
 static void sparc_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool sparc_fixed_condition_code_regs (unsigned int *, unsigned int *);
+static unsigned int sparc_min_arithmetic_precision (void);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -865,6 +866,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS sparc_fixed_condition_code_regs
+
+#undef TARGET_MIN_ARITHMETIC_PRECISION
+#define TARGET_MIN_ARITHMETIC_PRECISION sparc_min_arithmetic_precision
 
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
@@ -2747,6 +2751,14 @@ sparc_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
   *p1 = SPARC_ICC_REG;
   *p2 = SPARC_FCC_REG;
   return true;
+}
+
+/* Implement TARGET_MIN_ARITHMETIC_PRECISION.  */
+
+static unsigned int
+sparc_min_arithmetic_precision (void)
+{
+  return 32;
 }
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,

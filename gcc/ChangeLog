@@ -1,3 +1,15 @@
+2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* target.def (min_arithmetic_precision): New hook.
+	* doc/tm.texi.in (Misc): Add TARGET_MIN_ARITHMETIC_PRECISION.
+	* doc/tm.texi: Regenerate.
+	* internal-fn.c (expand_arith_overflow): Adjust handling of target
+	dependent support by means of TARGET_MIN_ARITHMETIC_PRECISION.
+	* targhooks.c (default_min_arithmetic_precision): New function.
+	* targhooks.h (default_min_arithmetic_precision): Declare.
+	* config/sparc/sparc.c (TARGET_MIN_ARITHMETIC_PRECISION): Define.
+	(sparc_min_arithmetic_precision): New function.
+
 2016-10-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/71847
@@ -13,7 +25,7 @@
 
 	PR tree-optimization/43721
 	* target.def: New hook expand_divmod_libfunc.
-	* doc/tm.texi.in: Add hook for TARGET_EXPAND_DIVMOD_LIBFUNC
+	* doc/tm.texi.in: Add hook for TARGET_EXPAND_DIVMOD_LIBFUNC.
 	* doc/tm.texi: Regenerate.
 	* internal-fn.def: Add new entry for DIVMOD ifn.
 	* internal-fn.c (expand_DIVMOD): New.
@@ -23,10 +35,9 @@
 	(target_supports_divmod_p): New.
 	(divmod_candidate_p): Likewise.
 	(convert_to_divmod): Likewise.
-	(pass_optimize_widening_mul::execute): Call
-	calculate_dominance_info(), renumber_gimple_stmt_uids() at
-	beginning of function. Call convert_to_divmod()
-	and record stats for divmod.
+	(pass_optimize_widening_mul::execute): Call calculate_dominance_info,
+	renumber_gimple_stmt_uids at beginning of function. Call
+	convert_to_divmod and record stats for divmod.
 	* config/arm/arm.c (arm_expand_divmod_libfunc): Override hook
 	TARGET_EXPAND_DIVMOD_LIBFUNC.
 	* doc/sourcebuild.texi: Add items for arm_divmod_simode, divmod,

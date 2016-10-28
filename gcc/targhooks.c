@@ -2127,4 +2127,12 @@ default_max_noce_ifcvt_seq_cost (edge e)
     return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (3);
 }
 
+/* Default implementation of TARGET_MIN_ARITHMETIC_PRECISION.  */
+
+unsigned int
+default_min_arithmetic_precision (void)
+{
+  return WORD_REGISTER_OPERATIONS ? BITS_PER_WORD : BITS_PER_UNIT;
+}
+
 #include "gt-targhooks.h"

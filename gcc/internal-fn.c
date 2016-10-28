@@ -1836,12 +1836,11 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
 	  return;
 	}
 
-      /* For sub-word operations, if target doesn't have them, start
-	 with precres widening right away, otherwise do it only
-	 if the most simple cases can't be used.  */
-      if (WORD_REGISTER_OPERATIONS
-	  && orig_precres == precres
-	  && precres < BITS_PER_WORD)
+      /* For operations with low precision, if target doesn't have them, start
+	 with precres widening right away, otherwise do it only if the most
+	 simple cases can't be used.  */
+      const int min_precision = targetm.min_arithmetic_precision ();
+      if (orig_precres == precres && precres < min_precision)
 	;
       else if ((uns0_p && uns1_p && unsr_p && prec0 <= precres
 		&& prec1 <= precres)
@@ -1876,7 +1875,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
       /* For sub-word operations, retry with a wider type first.  */
       if (orig_precres == precres && precop <= BITS_PER_WORD)
 	{
-	  int p = WORD_REGISTER_OPERATIONS ? BITS_PER_WORD : precop;
+	  int p = MAX (min_precision, precop);
 	  enum machine_mode m = smallest_mode_for_size (p, MODE_INT);
 	  tree optype = build_nonstandard_integer_type (GET_MODE_PRECISION (m),
 							uns0_p && uns1_p

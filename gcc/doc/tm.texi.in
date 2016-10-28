@@ -7577,6 +7577,8 @@ smaller than a word are always performed on the entire register.
 Most RISC machines have this property and most CISC machines do not.
 @end defmac
 
+@hook TARGET_MIN_ARITHMETIC_PRECISION
+
 @defmac LOAD_EXTEND_OP (@var{mem_mode})
 Define this macro to be a C expression indicating when insns that read
 memory in @var{mem_mode}, an integral mode narrower than a word, set the
