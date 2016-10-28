@@ -1,3 +1,9 @@
+2016-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/77773
+	* c-pretty-print.c (simple_type_specifier): Do not dereference `t'
+	if NULL.
+
 2016-09-27  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
