@@ -62,6 +62,7 @@
 #include "builtins.h"
 #include "tm-constrs.h"
 #include "rtl-iter.h"
+#include "optabs-libfuncs.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -304,6 +305,7 @@ static section *arm_function_section (tree, enum node_frequency, bool, bool);
 static bool arm_asm_elf_flags_numeric (unsigned int flags, unsigned int *num);
 static unsigned int arm_elf_section_type_flags (tree decl, const char *name,
 						int reloc);
+static void arm_expand_divmod_libfunc (rtx, machine_mode, rtx, rtx, rtx *, rtx *);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -738,6 +740,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS arm_elf_section_type_flags
+
+#undef TARGET_EXPAND_DIVMOD_LIBFUNC
+#define TARGET_EXPAND_DIVMOD_LIBFUNC arm_expand_divmod_libfunc
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -30843,6 +30848,35 @@ arm_elf_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_ARM_PURECODE;
 
   return flags;
+}
+
+/* Generate call to __aeabi_[mode]divmod (op0, op1).  */
+
+static void
+arm_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
+			   rtx op0, rtx op1,
+			   rtx *quot_p, rtx *rem_p)
+{
+  if (mode == SImode)
+    gcc_assert (!TARGET_IDIV);
+
+  machine_mode libval_mode = smallest_mode_for_size (2 * GET_MODE_BITSIZE (mode),
+						     MODE_INT);
+
+  rtx libval = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
+					libval_mode, 2,
+					op0, GET_MODE (op0),
+					op1, GET_MODE (op1));
+
+  rtx quotient = simplify_gen_subreg (mode, libval, libval_mode, 0);
+  rtx remainder = simplify_gen_subreg (mode, libval, libval_mode,
+				       GET_MODE_SIZE (mode));
+
+  gcc_assert (quotient);
+  gcc_assert (remainder);
+
+  *quot_p = quotient;
+  *rem_p = remainder;
 }
 
 #include "gt-arm.h"

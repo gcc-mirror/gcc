@@ -7096,6 +7096,11 @@ This is firstly introduced on ARM/AArch64 targets, please refer to
 the hook implementation for how different fusion types are supported.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_EXPAND_DIVMOD_LIBFUNC (rtx @var{libfunc}, machine_mode @var{mode}, rtx @var{op0}, rtx @var{op1}, rtx *@var{quot}, rtx *@var{rem})
+Define this hook for enabling divmod transform if the port does not have
+hardware divmod insn but defines target-specific divmod libfuncs.
+@end deftypefn
+
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
 @c the above section title is WAY too long.  maybe cut the part between

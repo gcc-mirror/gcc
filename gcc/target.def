@@ -5055,6 +5055,15 @@ Normally, this is not needed.",
  bool, (const_tree field, machine_mode mode),
  default_member_type_forces_blk)
 
+/* See tree-ssa-math-opts.c:divmod_candidate_p for conditions
+   that gate the divod transform.  */
+DEFHOOK
+(expand_divmod_libfunc,
+ "Define this hook for enabling divmod transform if the port does not have\n\
+hardware divmod insn but defines target-specific divmod libfuncs.", 
+ void, (rtx libfunc, machine_mode mode, rtx op0, rtx op1, rtx *quot, rtx *rem),
+ NULL)
+
 /* Return the class for a secondary reload, and fill in extra information.  */
 DEFHOOK
 (secondary_reload,

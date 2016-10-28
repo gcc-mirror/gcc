@@ -8091,3 +8091,41 @@ proc check_effective_target_profile_update_atomic {} {
 	int main (void) { return 0; }
     } "-fprofile-update=atomic -fprofile-generate"]
 }
+
+#For versions of ARM architectures that have hardware div insn,
+#disable the divmod transform
+
+proc check_effective_target_arm_divmod_simode { } {
+    return [check_no_compiler_messages arm_divmod assembly {
+	#ifdef __ARM_ARCH_EXT_IDIV__
+	#error has div insn
+	#endif
+	int i;
+    }]
+}
+
+# Return 1 if target supports divmod hardware insn or divmod libcall.
+
+proc check_effective_target_divmod { } {
+    #TODO: Add checks for all targets that have either hardware divmod insn
+    # or define libfunc for divmod.
+    if { [istarget arm*-*-*]
+	 || [istarget x86_64-*-*] } {
+	return 1
+    }
+    return 0
+}
+
+# Return 1 if target supports divmod for SImode. The reason for
+# separating this from check_effective_target_divmod is that
+# some versions of ARM architecture define div instruction
+# only for simode, and for these archs, we do not want to enable
+# divmod transform for simode.
+
+proc check_effective_target_divmod_simode { } {
+    if { [istarget arm*-*-*] } {
+	return [check_effective_target_arm_divmod_simode]
+    }
+
+    return [check_effective_target_divmod]
+}
