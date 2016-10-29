@@ -1130,7 +1130,7 @@ imm_store_chain_info::output_merged_store (tree base, merged_store_group *group)
       location_t loc = get_location_for_stmts (split_store->orig_stmts);
 
       tree int_type = build_nonstandard_integer_type (try_size, UNSIGNED);
-      SET_TYPE_ALIGN (int_type, align);
+      int_type = build_aligned_type (int_type, align);
       tree addr = build_fold_addr_expr (base);
       tree dest = fold_build2 (MEM_REF, int_type, addr,
 			       build_int_cst (offset_type, try_pos));
