@@ -336,7 +336,7 @@ do {								\
 #undef INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP ""
 #undef FINI_SECTION_ASM_OP
-#define FINI_SECTION_ASM_OP
+#define FINI_SECTION_ASM_OP ""
 
 /* We are using array initializers and don't want calls in the INIT
    and FINI sections.  */

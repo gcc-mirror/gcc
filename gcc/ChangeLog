@@ -1,3 +1,7 @@
+2016-10-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa64-hpux.h (FINI_SECTION_ASM_OP): Define to null string.
+
 2016-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78148
