@@ -295,17 +295,19 @@ typedef struct GTY(()) machine_function
 /* No data type wants to be aligned rounder than this.  The long double
    type has 16-byte alignment on the 64-bit target even though it was never
    implemented in hardware.  The software implementation only needs 8-byte
-   alignment.  This is to match the HP compilers.  */
+   alignment.  This matches the biggest alignment of the HP compilers.  */
 #define BIGGEST_ALIGNMENT (2 * BITS_PER_WORD)
 
 /* Alignment, in bits, a C conformant malloc implementation has to provide.
    The HP-UX malloc implementation provides a default alignment of 8 bytes.
-   This can be increased with mallopt.  The glibc implementation also provides
-   8-byte alignment.  Note that this isn't enough for various POSIX types such
-   as pthread_mutex_t.  However, since we no longer need the 16-byte alignment
-   for atomic operations, we ignore the nominal alignment specified for these
-   types.  The same is true for long double on 64-bit HP-UX.  */
-#define MALLOC_ABI_ALIGNMENT (64)
+   It should be 16 bytes on the 64-bit target since long double has 16-byte
+   alignment.  It can be increased with mallopt but it's non critical since
+   long double was never implemented in hardware.  The glibc implementation
+   currently provides 8-byte alignment.  It should be 16 bytes since various
+   POSIX types such as pthread_mutex_t require 16-byte alignment.  Again,
+   this is non critical since 16-byte alignment is no longer needed for
+   atomic operations.  */
+#define MALLOC_ABI_ALIGNMENT (TARGET_SOM ? 64 : 128)
 
 /* Get around hp-ux assembler bug, and make strcpy of constants fast.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)		\
