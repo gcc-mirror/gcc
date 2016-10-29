@@ -1,3 +1,8 @@
+2016-10-28  Jeff Law  <law@redhat.com>
+
+	* config/vax/vax.h (REGNO_REG_CLASS): Access the REGNO argument.
+	* config/spu/spu.h (REGNO_REG_CLASS): Likewise.
+
 2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/sourcebuild.texi (Ada Tests): Remove mention of gcc chapter.

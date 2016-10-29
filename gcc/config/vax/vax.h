@@ -226,7 +226,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) ALL_REGS
+#define REGNO_REG_CLASS(REGNO) ((void)(REGNO), ALL_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
 
