@@ -1,3 +1,10 @@
+2016-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78148
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::output_merged_store): Use build_aligned_type
+	instead of SET_TYPE_ALIGN on shared integral type.
+
 2016-10-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.h (BIGGEST_ALIGNMENT): Adjust comment.
