@@ -1,5 +1,8 @@
 2016-10-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/77919
+	* g++.dg/torture/pr77919-2.C: New test.
+
 	PR target/78148
 	* gcc.dg/pr78148.c: New test.
 

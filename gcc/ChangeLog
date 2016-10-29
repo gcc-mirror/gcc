@@ -1,3 +1,11 @@
+2016-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/77919
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Only avoid forcing
+	into memory if both modes are complex and their inner modes have the
+	same precision.  If the two modes are different complex modes, convert
+	each part separately and generate a new CONCAT.
+
 2016-10-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa64-hpux.h (FINI_SECTION_ASM_OP): Define to null string.
