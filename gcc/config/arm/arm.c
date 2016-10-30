@@ -30155,9 +30155,9 @@ arm_const_not_ok_for_debug_p (rtx p)
 	      && GET_CODE (XEXP (p, 0)) == SYMBOL_REF
 	      && (decl_op0 = SYMBOL_REF_DECL (XEXP (p, 0))))
 	    {
-	      if ((TREE_CODE (decl_op1) == VAR_DECL
+	      if ((VAR_P (decl_op1)
 		   || TREE_CODE (decl_op1) == CONST_DECL)
-		  && (TREE_CODE (decl_op0) == VAR_DECL
+		  && (VAR_P (decl_op0)
 		      || TREE_CODE (decl_op0) == CONST_DECL))
 		return (get_variable_section (decl_op1, false)
 			!= get_variable_section (decl_op0, false));
