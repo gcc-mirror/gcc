@@ -3232,30 +3232,63 @@ class Composite_literal_expression : public Parser_expression
   std::vector<bool> key_path_;
 };
 
-// Construct a struct.
+// Helper/mixin class for struct and array construction expressions;
+// encapsulates a list of values plus an optional traversal order
+// recording the order in which the values should be visited.
 
-class Struct_construction_expression : public Expression
+class Ordered_value_list
 {
  public:
-  Struct_construction_expression(Type* type, Expression_list* vals,
-				 Location location)
-    : Expression(EXPRESSION_STRUCT_CONSTRUCTION, location),
-      type_(type), vals_(vals), traverse_order_(NULL)
+  Ordered_value_list(Expression_list* vals)
+      : vals_(vals), traverse_order_(NULL)
   { }
-
-  // Set the traversal order, used to ensure that we implement the
-  // order of evaluation rules.  Takes ownership of the argument.
-  void
-  set_traverse_order(std::vector<int>* traverse_order)
-  { this->traverse_order_ = traverse_order; }
-
-  // Return whether this is a constant initializer.
-  bool
-  is_constant_struct() const;
 
   Expression_list*
   vals() const
   { return this->vals_; }
+
+  int
+  traverse_vals(Traverse* traverse);
+
+  // Get the traversal order (may be NULL)
+  std::vector<unsigned long>*
+  traverse_order()
+  { return traverse_order_; }
+
+  // Set the traversal order, used to ensure that we implement the
+  // order of evaluation rules.  Takes ownership of the argument.
+  void
+  set_traverse_order(std::vector<unsigned long>* traverse_order)
+  { this->traverse_order_ = traverse_order; }
+
+ private:
+  // The list of values, in order of the fields in the struct or in
+  // order of indices in an array. A NULL value of vals_ means that
+  // all fields/slots should be zero-initialized; a single NULL entry
+  // in the list means that the corresponding field or array slot
+  // should be zero-initialized.
+  Expression_list* vals_;
+  // If not NULL, the order in which to traverse vals_.  This is used
+  // so that we implement the order of evaluation rules correctly.
+  std::vector<unsigned long>* traverse_order_;
+};
+
+// Construct a struct.
+
+class Struct_construction_expression : public Expression,
+				       public Ordered_value_list
+{
+ public:
+  Struct_construction_expression(Type* type, Expression_list* vals,
+				 Location location)
+      : Expression(EXPRESSION_STRUCT_CONSTRUCTION, location),
+	Ordered_value_list(vals),
+	type_(type)
+  { }
+
+ // Return whether this is a constant initializer.
+  bool
+  is_constant_struct() const;
 
  protected:
   int
@@ -3279,12 +3312,12 @@ class Struct_construction_expression : public Expression
   {
     Struct_construction_expression* ret =
       new Struct_construction_expression(this->type_,
-					 (this->vals_ == NULL
+					 (this->vals() == NULL
 					  ? NULL
-					  : this->vals_->copy()),
+					  : this->vals()->copy()),
 					 this->location());
-    if (this->traverse_order_ != NULL)
-      ret->set_traverse_order(this->traverse_order_);
+    if (this->traverse_order() != NULL)
+      ret->set_traverse_order(this->traverse_order());
     return ret;
   }
 
@@ -3303,19 +3336,14 @@ class Struct_construction_expression : public Expression
  private:
   // The type of the struct to construct.
   Type* type_;
-  // The list of values, in order of the fields in the struct.  A NULL
-  // entry means that the field should be zero-initialized.
-  Expression_list* vals_;
-  // If not NULL, the order in which to traverse vals_.  This is used
-  // so that we implement the order of evaluation rules correctly.
-  std::vector<int>* traverse_order_;
 };
 
 // Construct an array.  This class is not used directly; instead we
 // use the child classes, Fixed_array_construction_expression and
 // Slice_construction_expression.
 
-class Array_construction_expression : public Expression
+class Array_construction_expression : public Expression,
+				      public Ordered_value_list
 {
  protected:
   Array_construction_expression(Expression_classification classification,
@@ -3323,7 +3351,8 @@ class Array_construction_expression : public Expression
 				const std::vector<unsigned long>* indexes,
 				Expression_list* vals, Location location)
     : Expression(classification, location),
-      type_(type), indexes_(indexes), vals_(vals)
+      Ordered_value_list(vals),
+      type_(type), indexes_(indexes)
   { go_assert(indexes == NULL || indexes->size() == vals->size()); }
 
  public:
@@ -3334,12 +3363,7 @@ class Array_construction_expression : public Expression
   // Return the number of elements.
   size_t
   element_count() const
-  { return this->vals_ == NULL ? 0 : this->vals_->size(); }
-
-  // The list of values.
-  Expression_list*
-  vals() const
-  { return this->vals_; }
+  { return this->vals() == NULL ? 0 : this->vals()->size(); }
 
 protected:
   virtual int
@@ -3385,8 +3409,6 @@ protected:
   // The list of indexes into the array, one for each value.  This may
   // be NULL, in which case the indexes start at zero and increment.
   const std::vector<unsigned long>* indexes_;
-  // The list of values.  This may be NULL if there are no values.
-  Expression_list* vals_;
 };
 
 // Construct a fixed array.
