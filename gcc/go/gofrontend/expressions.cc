@@ -12202,12 +12202,10 @@ Expression::make_allocation(Type* type, Location location)
   return new Allocation_expression(type, location);
 }
 
-// Class Struct_construction_expression.
-
-// Traversal.
+// Class Ordered_value_list.
 
 int
-Struct_construction_expression::do_traverse(Traverse* traverse)
+Ordered_value_list::traverse_vals(Traverse* traverse)
 {
   if (this->vals_ != NULL)
     {
@@ -12218,8 +12216,8 @@ Struct_construction_expression::do_traverse(Traverse* traverse)
 	}
       else
 	{
-	  for (std::vector<int>::const_iterator p =
-		 this->traverse_order_->begin();
+	  for (std::vector<unsigned long>::const_iterator p =
+		   this->traverse_order_->begin();
 	       p != this->traverse_order_->end();
 	       ++p)
 	    {
@@ -12229,6 +12227,18 @@ Struct_construction_expression::do_traverse(Traverse* traverse)
 	    }
 	}
     }
+  return TRAVERSE_CONTINUE;
+}
+
+// Class Struct_construction_expression.
+
+// Traversal.
+
+int
+Struct_construction_expression::do_traverse(Traverse* traverse)
+{
+  if (this->traverse_vals(traverse) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
   if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
@@ -12239,10 +12249,10 @@ Struct_construction_expression::do_traverse(Traverse* traverse)
 bool
 Struct_construction_expression::is_constant_struct() const
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return true;
-  for (Expression_list::const_iterator pv = this->vals_->begin();
-       pv != this->vals_->end();
+  for (Expression_list::const_iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
        ++pv)
     {
       if (*pv != NULL
@@ -12270,10 +12280,10 @@ Struct_construction_expression::is_constant_struct() const
 bool
 Struct_construction_expression::do_is_immutable() const
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return true;
-  for (Expression_list::const_iterator pv = this->vals_->begin();
-       pv != this->vals_->end();
+  for (Expression_list::const_iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
        ++pv)
     {
       if (*pv != NULL && !(*pv)->is_immutable())
@@ -12287,15 +12297,15 @@ Struct_construction_expression::do_is_immutable() const
 void
 Struct_construction_expression::do_determine_type(const Type_context*)
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return;
   const Struct_field_list* fields = this->type_->struct_type()->fields();
-  Expression_list::const_iterator pv = this->vals_->begin();
+  Expression_list::const_iterator pv = this->vals()->begin();
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
        ++pf, ++pv)
     {
-      if (pv == this->vals_->end())
+      if (pv == this->vals()->end())
 	return;
       if (*pv != NULL)
 	{
@@ -12305,7 +12315,7 @@ Struct_construction_expression::do_determine_type(const Type_context*)
     }
   // Extra values are an error we will report elsewhere; we still want
   // to determine the type to avoid knockon errors.
-  for (; pv != this->vals_->end(); ++pv)
+  for (; pv != this->vals()->end(); ++pv)
     (*pv)->determine_type_no_context();
 }
 
@@ -12314,24 +12324,24 @@ Struct_construction_expression::do_determine_type(const Type_context*)
 void
 Struct_construction_expression::do_check_types(Gogo*)
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return;
 
   Struct_type* st = this->type_->struct_type();
-  if (this->vals_->size() > st->field_count())
+  if (this->vals()->size() > st->field_count())
     {
       this->report_error(_("too many expressions for struct"));
       return;
     }
 
   const Struct_field_list* fields = st->fields();
-  Expression_list::const_iterator pv = this->vals_->begin();
+  Expression_list::const_iterator pv = this->vals()->begin();
   int i = 0;
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
        ++pf, ++pv, ++i)
     {
-      if (pv == this->vals_->end())
+      if (pv == this->vals()->end())
 	{
 	  this->report_error(_("too few expressions for struct"));
 	  break;
@@ -12355,7 +12365,7 @@ Struct_construction_expression::do_check_types(Gogo*)
 	  this->set_is_error();
 	}
     }
-  go_assert(pv == this->vals_->end());
+  go_assert(pv == this->vals()->end());
 }
 
 // Flatten a struct construction expression.  Store the values into
@@ -12365,7 +12375,7 @@ Expression*
 Struct_construction_expression::do_flatten(Gogo*, Named_object*,
 					   Statement_inserter* inserter)
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return this;
 
   // If this is a constant struct, we don't need temporaries.
@@ -12373,8 +12383,8 @@ Struct_construction_expression::do_flatten(Gogo*, Named_object*,
     return this;
 
   Location loc = this->location();
-  for (Expression_list::iterator pv = this->vals_->begin();
-       pv != this->vals_->end();
+  for (Expression_list::iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
        ++pv)
     {
       if (*pv != NULL)
@@ -12404,18 +12414,18 @@ Struct_construction_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
 
   Btype* btype = this->type_->get_backend(gogo);
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return gogo->backend()->zero_expression(btype);
 
   const Struct_field_list* fields = this->type_->struct_type()->fields();
-  Expression_list::const_iterator pv = this->vals_->begin();
+  Expression_list::const_iterator pv = this->vals()->begin();
   std::vector<Bexpression*> init;
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
        ++pf)
     {
       Btype* fbtype = pf->type()->get_backend(gogo);
-      if (pv == this->vals_->end())
+      if (pv == this->vals()->end())
         init.push_back(gogo->backend()->zero_expression(fbtype));
       else if (*pv == NULL)
 	{
@@ -12441,8 +12451,8 @@ Struct_construction_expression::do_export(Export* exp) const
 {
   exp->write_c_string("convert(");
   exp->write_type(this->type_);
-  for (Expression_list::const_iterator pv = this->vals_->begin();
-       pv != this->vals_->end();
+  for (Expression_list::const_iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
        ++pv)
     {
       exp->write_c_string(", ");
@@ -12460,7 +12470,7 @@ Struct_construction_expression::do_dump_expression(
 {
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << "{";
-  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->dump_expression_list(this->vals());
   ast_dump_context->ostream() << "}";
 }
 
@@ -12481,8 +12491,7 @@ Expression::make_struct_composite_literal(Type* type, Expression_list* vals,
 int
 Array_construction_expression::do_traverse(Traverse* traverse)
 {
-  if (this->vals_ != NULL
-      && this->vals_->traverse(traverse) == TRAVERSE_EXIT)
+  if (this->traverse_vals(traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
@@ -12494,15 +12503,15 @@ Array_construction_expression::do_traverse(Traverse* traverse)
 bool
 Array_construction_expression::is_constant_array() const
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return true;
 
   // There are no constant constructors for interfaces.
   if (this->type_->array_type()->element_type()->interface_type() != NULL)
     return false;
 
-  for (Expression_list::const_iterator pv = this->vals_->begin();
-       pv != this->vals_->end();
+  for (Expression_list::const_iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
        ++pv)
     {
       if (*pv != NULL
@@ -12519,10 +12528,10 @@ Array_construction_expression::is_constant_array() const
 bool
 Array_construction_expression::do_is_immutable() const
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return true;
-  for (Expression_list::const_iterator pv = this->vals_->begin();
-       pv != this->vals_->end();
+  for (Expression_list::const_iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
        ++pv)
     {
       if (*pv != NULL && !(*pv)->is_immutable())
@@ -12536,11 +12545,11 @@ Array_construction_expression::do_is_immutable() const
 void
 Array_construction_expression::do_determine_type(const Type_context*)
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return;
   Type_context subcontext(this->type_->array_type()->element_type(), false);
-  for (Expression_list::const_iterator pv = this->vals_->begin();
-       pv != this->vals_->end();
+  for (Expression_list::const_iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
        ++pv)
     {
       if (*pv != NULL)
@@ -12553,14 +12562,14 @@ Array_construction_expression::do_determine_type(const Type_context*)
 void
 Array_construction_expression::do_check_types(Gogo*)
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return;
 
   Array_type* at = this->type_->array_type();
   int i = 0;
   Type* element_type = at->element_type();
-  for (Expression_list::const_iterator pv = this->vals_->begin();
-       pv != this->vals_->end();
+  for (Expression_list::const_iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
        ++pv, ++i)
     {
       if (*pv != NULL
@@ -12581,7 +12590,7 @@ Expression*
 Array_construction_expression::do_flatten(Gogo*, Named_object*,
 					   Statement_inserter* inserter)
 {
-  if (this->vals_ == NULL)
+  if (this->vals() == NULL)
     return this;
 
   // If this is a constant array, we don't need temporaries.
@@ -12589,8 +12598,8 @@ Array_construction_expression::do_flatten(Gogo*, Named_object*,
     return this;
 
   Location loc = this->location();
-  for (Expression_list::iterator pv = this->vals_->begin();
-       pv != this->vals_->end();
+  for (Expression_list::iterator pv = this->vals()->begin();
+       pv != this->vals()->end();
        ++pv)
     {
       if (*pv != NULL)
@@ -12623,14 +12632,14 @@ Array_construction_expression::get_constructor(Translate_context* context,
   std::vector<unsigned long> indexes;
   std::vector<Bexpression*> vals;
   Gogo* gogo = context->gogo();
-  if (this->vals_ != NULL)
+  if (this->vals() != NULL)
     {
       size_t i = 0;
       std::vector<unsigned long>::const_iterator pi;
       if (this->indexes_ != NULL)
 	pi = this->indexes_->begin();
-      for (Expression_list::const_iterator pv = this->vals_->begin();
-	   pv != this->vals_->end();
+      for (Expression_list::const_iterator pv = this->vals()->begin();
+	   pv != this->vals()->end();
 	   ++pv, ++i)
 	{
 	  if (this->indexes_ != NULL)
@@ -12670,13 +12679,13 @@ Array_construction_expression::do_export(Export* exp) const
 {
   exp->write_c_string("convert(");
   exp->write_type(this->type_);
-  if (this->vals_ != NULL)
+  if (this->vals() != NULL)
     {
       std::vector<unsigned long>::const_iterator pi;
       if (this->indexes_ != NULL)
 	pi = this->indexes_->begin();
-      for (Expression_list::const_iterator pv = this->vals_->begin();
-	   pv != this->vals_->end();
+      for (Expression_list::const_iterator pv = this->vals()->begin();
+	   pv != this->vals()->end();
 	   ++pv)
 	{
 	  exp->write_c_string(", ");
@@ -12717,10 +12726,10 @@ Array_construction_expression::do_dump_expression(
   this->dump_slice_storage_expression(ast_dump_context);
   ast_dump_context->ostream() << "{" ;
   if (this->indexes_ == NULL)
-    ast_dump_context->dump_expression_list(this->vals_);
+    ast_dump_context->dump_expression_list(this->vals());
   else
     {
-      Expression_list::const_iterator pv = this->vals_->begin();
+      Expression_list::const_iterator pv = this->vals()->begin();
       for (std::vector<unsigned long>::const_iterator pi =
 	     this->indexes_->begin();
 	   pi != this->indexes_->end();
@@ -13349,7 +13358,7 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 
   size_t field_count = st->field_count();
   std::vector<Expression*> vals(field_count);
-  std::vector<int>* traverse_order = new(std::vector<int>);
+  std::vector<unsigned long>* traverse_order = new(std::vector<unsigned long>);
   Expression_list::const_iterator p = this->vals_->begin();
   Expression* external_expr = NULL;
   const Named_object* external_no = NULL;
@@ -13481,7 +13490,7 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
                     type->named_type()->message_name().c_str());
 
       vals[index] = val;
-      traverse_order->push_back(index);
+      traverse_order->push_back(static_cast<unsigned long>(index));
     }
 
   if (!this->all_are_names_)
@@ -13512,15 +13521,16 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
   return ret;
 }
 
-// Used to sort an index/value array.
+// Index/value/traversal-order triple.
 
-class Index_value_compare
-{
- public:
-  bool
-  operator()(const std::pair<unsigned long, Expression*>& a,
-	     const std::pair<unsigned long, Expression*>& b)
-  { return a.first < b.first; }
+struct IVT_triple {
+  unsigned long index;
+  unsigned long traversal_order;
+  Expression* expr;
+  IVT_triple(unsigned long i, unsigned long to, Expression *e)
+      : index(i), traversal_order(to), expr(e) { }
+  bool operator<(const IVT_triple& other) const
+  { return this->index < other.index; }
 };
 
 // Lower an array composite literal.
@@ -13624,35 +13634,45 @@ Composite_literal_expression::lower_array(Type* type)
       indexes = NULL;
     }
 
+  std::vector<unsigned long>* traverse_order = NULL;
   if (indexes_out_of_order)
     {
-      typedef std::vector<std::pair<unsigned long, Expression*> > V;
+      typedef std::vector<IVT_triple> V;
 
       V v;
       v.reserve(indexes->size());
       std::vector<unsigned long>::const_iterator pi = indexes->begin();
+      unsigned long torder = 0;
       for (Expression_list::const_iterator pe = vals->begin();
 	   pe != vals->end();
-	   ++pe, ++pi)
-	v.push_back(std::make_pair(*pi, *pe));
+	   ++pe, ++pi, ++torder)
+	v.push_back(IVT_triple(*pi, torder, *pe));
 
-      std::sort(v.begin(), v.end(), Index_value_compare());
+      std::sort(v.begin(), v.end());
 
       delete indexes;
       delete vals;
+
       indexes = new std::vector<unsigned long>();
       indexes->reserve(v.size());
       vals = new Expression_list();
       vals->reserve(v.size());
+      traverse_order = new std::vector<unsigned long>();
+      traverse_order->reserve(v.size());
 
       for (V::const_iterator p = v.begin(); p != v.end(); ++p)
 	{
-	  indexes->push_back(p->first);
-	  vals->push_back(p->second);
+	  indexes->push_back(p->index);
+	  vals->push_back(p->expr);
+	  traverse_order->push_back(p->traversal_order);
 	}
     }
 
-  return this->make_array(type, indexes, vals);
+  Expression* ret = this->make_array(type, indexes, vals);
+  Array_construction_expression* ace = ret->array_literal();
+  if (ace != NULL && traverse_order != NULL)
+    ace->set_traverse_order(traverse_order);
+  return ret;
 }
 
 // Actually build the array composite literal. This handles
