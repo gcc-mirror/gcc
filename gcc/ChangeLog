@@ -78,6 +78,7 @@
 	divmod_simode.
 
 2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* dojump.c (do_jump_by_parts_greater_rtx): Invert probability when
 	swapping the arms of the branch.
