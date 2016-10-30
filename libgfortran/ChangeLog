@@ -1,3 +1,9 @@
+2016-10-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78123
+	* io/transfer.c (formatted_transfer_scalar_read): Clear seen_eor
+	only if we have tabbed to left of current position.
+
 2016-10-26  Fritz Reese  <fritzoreese@gmail.com>
 
 	* libgfortran.h (IOPARM_OPEN_HAS_READONLY, IOPARM_OPEN_HAS_SHARE,
