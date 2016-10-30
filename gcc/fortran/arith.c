@@ -2072,11 +2072,11 @@ gfc_int2real (gfc_expr *src, int kind)
 
   if (warn_conversion
       && wprecision_int_real (src->value.integer, result->value.real))
-    gfc_warning_now (OPT_Wconversion, "Change of value in conversion "
-		     "from %qs to %qs at %L",
-		     gfc_typename (&src->ts),
-		     gfc_typename (&result->ts),
-		     &src->where);
+    gfc_warning (OPT_Wconversion, "Change of value in conversion "
+		 "from %qs to %qs at %L",
+		 gfc_typename (&src->ts),
+		 gfc_typename (&result->ts),
+		 &src->where);
 
   return result;
 }
