@@ -1,3 +1,12 @@
+2016-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/67219
+	* arith.c (gfc_int2real):  Change gfc_warning_now
+	to gfc_warning.
+	* primary.c (match_complex_constant):  If there
+	is no comma, throw away any warning which might have
+	been issued by gfc_int2real.
+
 2016-10-28  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/71891

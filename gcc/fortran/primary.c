@@ -1353,6 +1353,10 @@ match_complex_constant (gfc_expr **result)
 
   if (gfc_match_char (',') == MATCH_NO)
     {
+      /* It is possible that gfc_int2real issued a warning when
+	 converting an integer to real.  Throw this away here.  */
+
+      gfc_clear_warning ();
       gfc_pop_error (&old_error);
       m = MATCH_NO;
       goto cleanup;
