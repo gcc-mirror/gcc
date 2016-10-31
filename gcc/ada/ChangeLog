@@ -1,3 +1,8 @@
+2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/misc.c (gnat_get_array_descr_info): Clear rank
+	field.
+
 2016-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Make-lang.in (lang_checks_parallelized): New target.

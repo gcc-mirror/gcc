@@ -241,9 +241,9 @@ struct GTY((chain_next ("%h.dw_loc_next"))) dw_loc_descr_node {
   /* Used to distinguish DW_OP_addr with a direct symbol relocation
      from DW_OP_addr with a dtp-relative symbol relocation.  */
   unsigned int dtprel : 1;
-  /* For DW_OP_pick operations: true iff. it targets a DWARF prodecure
-     argument.  In this case, it needs to be relocated according to the current
-     frame offset.  */
+  /* For DW_OP_pick, DW_OP_dup and DW_OP_over operations: true iff.
+     it targets a DWARF prodecure argument.  In this case, it needs to be
+     relocated according to the current frame offset.  */
   unsigned int frame_offset_rel : 1;
   int dw_loc_addr;
   dw_val_node dw_loc_oprnd1;
@@ -329,6 +329,7 @@ struct array_descr_info
   tree allocated;
   tree associated;
   tree stride;
+  tree rank;
   bool stride_in_bits;
   struct array_descr_dimen
     {

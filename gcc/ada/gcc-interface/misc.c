@@ -898,6 +898,7 @@ gnat_get_array_descr_info (const_tree const_type,
     }
 
   info->ndimensions = i;
+  info->rank = NULL_TREE;
 
   /* Too many dimensions?  Give up generating proper description: yield instead
      nested arrays.  Note that in this case, this hook is invoked once on each

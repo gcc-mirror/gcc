@@ -1,5 +1,28 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.h (struct dw_loc_descr_node): Adjust comment
+	for frame_offset_rel bit.
+	(struct array_descr_info): Add rank field.
+	* dwarf2out.c (struct loc_descr_context): Add placeholder_arg
+	and placeholder_seen fields.
+	(resolve_args_picking_1): Handle also frame_offset_rel DW_OP_dup
+	and DW_OP_over.  Optimize DW_OP_pick 0 into DW_OP_dup and
+	DW_OP_pick 1 into DW_OP_over.
+	(function_to_dwarf_procedure, type_byte_size, field_byte_offset,
+	gen_variant_part): Clear placeholder_{arg,seen}.
+	(loc_list_from_tree_1): Drop const from context argument.
+	Handle integral PLACEHOLDER_EXPR if context->placeholder_arg.
+	(loc_list_for_address_of_addr_expr_of_indirect_ref,
+	loc_list_from_tree, loc_descriptor_from_tree): Drop const from
+	context argument.
+	(add_scalar_info): Drop const from context argument.  Handle
+	context->placeholder_arg.
+	(add_bound_info): Drop const from context argument.
+	(gen_descr_array_type_die): Drop const from ctx variable.
+	Initialize placeholder_arg and placeholder_seen.  Add DW_AT_rank
+	attribute and use a single DW_TAG_generic_subrange instead of
+	7 DW_TAG_subrange_type for assumed rank arrays.
+
 	* dwarf2out.h (enum dw_val_class): Add dw_val_class_loclistsptr.
 	* dwarf2out.c (struct dw_loc_list_struct): Change emitted field
 	from bool to 1-bit uchar bitfield.  Add num_assigned and

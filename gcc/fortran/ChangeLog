@@ -1,3 +1,9 @@
+2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-types.c (gfc_get_array_descr_info): For -gdwarf-5 or
+	-gno-strict-dwarf, handle assumed rank arrays the way dwarf2out
+	expects.
+
 2016-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/67219
