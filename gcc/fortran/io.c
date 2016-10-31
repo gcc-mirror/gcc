@@ -601,7 +601,7 @@ check_format (bool is_input)
   const char *unexpected_end	  = _("Unexpected end of format string");
   const char *zero_width	  = _("Zero width in format descriptor");
 
-  const char *error;
+  const char *error = NULL;
   format_token t, u;
   int level;
   int repeat;
@@ -867,27 +867,31 @@ data_desc:
 	goto fail;
       if (t == FMT_POSINT)
 	break;
-
-      switch (gfc_notification_std (GFC_STD_GNU))
+      if (mode != MODE_FORMAT)
+	format_locus.nextc += format_string_pos;
+      if (t == FMT_ZERO)
 	{
-	  case WARNING:
-	    if (mode != MODE_FORMAT)
-	      format_locus.nextc += format_string_pos;
-	    gfc_warning (0, "Extension: Missing positive width after L "
-			 "descriptor at %L", &format_locus);
-	    saved_token = t;
-	    break;
-
-	  case ERROR:
-	    error = posint_required;
-	    goto syntax;
-
-	  case SILENT:
-	    saved_token = t;
-	    break;
-
-	  default:
-	    gcc_unreachable ();
+	  switch (gfc_notification_std (GFC_STD_GNU))
+	    {
+	      case WARNING:
+		gfc_warning (0, "Extension: Zero width after L "
+			     "descriptor at %L", &format_locus);
+		break;
+	      case ERROR:
+		gfc_error ("Extension: Zero width after L "
+			     "descriptor at %L", &format_locus);
+		goto fail;
+	      case SILENT:
+		break;
+	      default:
+		gcc_unreachable ();
+	    }
+	}
+      else
+	{
+	  saved_token = t;
+	  gfc_notify_std (GFC_STD_GNU, "Missing positive width after "
+			  "L descriptor at %L", &format_locus);
 	}
       break;
 
