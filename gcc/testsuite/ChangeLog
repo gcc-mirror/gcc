@@ -1,3 +1,15 @@
+2016-10-31  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Add tests for a const member and a reference member for launder.
+	* g++.dg/cpp1z/launder3.C: New.
+	* g++.dg/cpp1z/launder4.C: Likewise.
+	* g++.dg/cpp1z/launder5.C: Likewise.
+	* g++.dg/cpp1z/launder5.cc: Likewise.
+	* g++.dg/cpp1z/launder5.h: Likewise.
+	* g++.dg/cpp1z/launder6.C: Likewise.
+	* g++.dg/cpp1z/launder6.cc: Likewise.
+	* g++.dg/cpp1z/launder6.h: Likewise.
+
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77948
