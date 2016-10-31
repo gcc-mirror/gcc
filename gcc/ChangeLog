@@ -1,5 +1,47 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.h (enum dw_val_class): Add dw_val_class_loclistsptr.
+	* dwarf2out.c (struct dw_loc_list_struct): Change emitted field
+	from bool to 1-bit uchar bitfield.  Add num_assigned and
+	offset_emitted bitfields.
+	(dw_val_equal_p): Compare v.val_lbl_id rather than v.val_unsigned
+	for dw_val_class_lineptr and dw_val_class_macptr.  Handle
+	dw_val_class_loclistsptr.
+	(new_addr_loc_descr): Fix up formatting.
+	(DEBUG_LOCLISTS_SECTION, DEBUG_DWO_LOCLISTS_SECTION): Define.
+	(add_AT_low_high_pc): Fix up formatting.
+	(add_AT_loclistsptr): New function.
+	(AT_lbl): Allow dw_val_class_loclistsptr.
+	(print_dw_val, attr_checksum, attr_checksum_ordered, same_dw_val_p):
+	Handle dw_val_class_loclistsptr.
+	(loc_list_idx): New variable.
+	(output_loclists_offsets, assign_location_list_indexes): New
+	functions.
+	(size_of_die): For dw_val_class_loc_list -gsplit-dwarf -gdwarf-5
+	add size_of_uleb128 of the index.  Drop never used
+	dwarf_split_debug_info AT_index handling.  Handle
+	dw_val_class_loclistsptr.
+	(value_format): Return DW_FORM_loclistsx for dw_val_class_loc_list
+	if -gsplit-dwarf -gdwarf-5.  Handle dw_val_class_loclistsptr.
+	(output_loc_list): Handle DWARF 5 .debug_loclists* format.
+	(output_loc_list_offset): Handle -gsplit-dwarf -gdwarf-5
+	DW_FORM_loclistx indexes.
+	(output_attr_index_or_value): Fix up formatting.  Don't handle
+	dw_val_class_loc_list here.
+	(output_die): Formatting fixes.  Handle dw_val_class_loclistsptr.
+	For dw_val_class_loc_list call output_loc_list_offset rather than
+	output_attr_index_or_value.
+	(init_sections_and_labels): For -gdwarf-5 use .debug_loclists
+	or .debug_loclists.dwo section name for debug_loc_section.
+	(resolve_addr_in_expr): Formatting fix.
+	(index_location_lists): Likewise.
+	(dwarf2out_finish): If there are any location lists, for
+	-gsplit-dwarf -gdwarf-5 add DW_AT_loclists_base attribute.  Call
+	index_location_lists only if have_location_lists.  Call
+	assign_location_list_indexes for -gsplit-dwarf -gdwarf-5.  Emit
+	.debug_loclists{,.dwo} section header for -gdwarf-5, for -gdwarf-5
+	-gsplit-dwarf also emit offset table.
+
 	* dwarf2out.c (DWARF_LARGEST_DATA_FORM_BITS): Define.
 	(size_of_die, value_format, output_die): Use
 	DW_FORM_data16 for 128-bit dw_val_class_const_double or

@@ -147,6 +147,7 @@ enum dw_val_class
   dw_val_class_lineptr,
   dw_val_class_str,
   dw_val_class_macptr,
+  dw_val_class_loclistsptr,
   dw_val_class_file,
   dw_val_class_data8,
   dw_val_class_decl_ref,
