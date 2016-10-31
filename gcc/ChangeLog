@@ -1,3 +1,15 @@
+2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (dwarf2out_define, dwarf2out_undef, output_macinfo_op,
+	optimize_macinfo_range, save_macinfo_strings): Replace
+	DW_MACRO_GNU_* constants with corresponding DW_MACRO_* constants.
+	(output_macinfo): Likewise.  Emit .debug_macro* rather than
+	.debug_macinfo* even for -gstrict-dwarf -gdwarf-5.
+	(init_sections_and_labels): Use .debug_macro* labels rather than
+	.debug_macinfo* labels even for -gstrict-dwarf -gdwarf-5.
+	(dwarf2out_finish): Use DW_AT_macros instead of DW_AT_macro_info
+	or DW_AT_GNU_macros for -gdwarf-5.
+
 2016-10-31  Waldemar Brodkorb  <wbx@openadk.org>
 
 	* config/microblaze/linux.h (UCLIBC_DYNAMIC_LINKER): Define.
@@ -504,7 +516,7 @@
 
 2016-10-26  Jakub Jelinek  <jakub@redhat.com>
 
-	* gen-pass-instances.awk (adjust_linenos): INcrement pass_lines[p]
+	* gen-pass-instances.awk (adjust_linenos): Increment pass_lines[p]
 	by increment rather than double it.
 	(insert_remove_pass): Strip leading whitespace from args[3].  Don't
 	emit a space before args[4].
