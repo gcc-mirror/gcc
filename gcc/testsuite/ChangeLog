@@ -1,3 +1,10 @@
+2016-10-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/71902
+	* gfortran.dg/dependency_47.f90:  New test.
+	* gfortran.dg/dependency_49.f90:  New test.
+
 2016-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
