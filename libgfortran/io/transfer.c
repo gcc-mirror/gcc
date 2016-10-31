@@ -1434,7 +1434,8 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
               dtp->u.p.current_unit->bytes_left -= dtp->u.p.sf_seen_eor;
               dtp->u.p.skips -= dtp->u.p.sf_seen_eor;
 	      bytes_used = pos;
-	      dtp->u.p.sf_seen_eor = 0;
+	      if (dtp->u.p.pending_spaces == 0)
+	        dtp->u.p.sf_seen_eor = 0;
 	    }
 	  if (dtp->u.p.skips < 0)
 	    {
