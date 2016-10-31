@@ -14251,7 +14251,12 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
           temp = new_addr_loc_descr (rtl, dtprel_true);
 
-	  mem_loc_result = new_loc_descr (DW_OP_GNU_push_tls_address, 0, 0);
+	  /* We check for DWARF 5 here because gdb did not implement
+	     DW_OP_form_tls_address until after 7.12.  */
+	  mem_loc_result = new_loc_descr ((dwarf_version >= 5
+					   ? DW_OP_form_tls_address
+					   : DW_OP_GNU_push_tls_address),
+					  0, 0);
 	  add_loc_descr (&mem_loc_result, temp);
 
 	  break;
@@ -16137,7 +16142,6 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_piece:
 	case DW_OP_deref_size:
 	case DW_OP_nop:
-	case DW_OP_form_tls_address:
 	case DW_OP_bit_piece:
 	case DW_OP_implicit_value:
 	case DW_OP_stack_value:
@@ -16272,6 +16276,7 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_deref_type:
 	case DW_OP_convert:
 	case DW_OP_reinterpret:
+	case DW_OP_form_tls_address:
 	case DW_OP_GNU_push_tls_address:
 	case DW_OP_GNU_uninit:
 	case DW_OP_GNU_encoded_addr:
@@ -16615,8 +16620,11 @@ loc_list_from_tree_1 (tree loc, int want_address,
 		  operand shouldn't be.  */
 	      if (DECL_EXTERNAL (loc) && !targetm.binds_local_p (loc))
 		return 0;
-             dtprel = dtprel_true;
-             tls_op = DW_OP_GNU_push_tls_address;
+	      dtprel = dtprel_true;
+	      /* We check for DWARF 5 here because gdb did not implement
+		 DW_OP_form_tls_address until after 7.12.  */
+	      tls_op = (dwarf_version >= 5 ? DW_OP_form_tls_address
+			: DW_OP_GNU_push_tls_address);
 	    }
 	  else
 	    {

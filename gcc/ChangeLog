@@ -1,3 +1,11 @@
+2016-10-31  Tom Tromey  <tom@tromey.com>
+
+	PR debug/77315:
+	* dwarf2out.c (mem_loc_descriptor): Use DW_OP_form_tls_address.
+	(resolve_args_picking_1): Move DW_OP_form_tls_address case next to
+	DW_OP_GNU_push_tls_address case.
+	(loc_list_from_tree_1): Use DW_OP_form_tls_address.
+
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.h (struct dw_loc_descr_node): Adjust comment
