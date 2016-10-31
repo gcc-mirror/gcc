@@ -1,3 +1,8 @@
+2016-10-31  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences): Skip
+	unnecessary data dependence check after visited store stmt.
+
 2016-10-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/71915
