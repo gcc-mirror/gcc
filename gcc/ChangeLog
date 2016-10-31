@@ -45,13 +45,6 @@
 
 	* config/microblaze/linux.h (UCLIBC_DYNAMIC_LINKER): Define.
 
-2016-10-31  Jakub Jelinek  <jakub@redhat.com>
-
-	PR c++/77886
-	* pt.c (tsubst_expr) <case CASE_LABEL_EXPR> Copy over
-	FALLTHROUGH_LABEL_P flag to the new LABEL_DECL.
-	(tsubst_expr) <case LABEL_EXPR>: Likewise.
-
 2016-09-11  Le-Chun Wu  <lcwu@google.com>
 	    Mark Wielaard  <mjw@redhat.com>
 
