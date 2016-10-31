@@ -3452,9 +3452,9 @@ struct loc_descr_context;
 static void add_loc_descr_to_each (dw_loc_list_ref list, dw_loc_descr_ref ref);
 static void add_loc_list (dw_loc_list_ref *ret, dw_loc_list_ref list);
 static dw_loc_list_ref loc_list_from_tree (tree, int,
-					   const struct loc_descr_context *);
+					   struct loc_descr_context *);
 static dw_loc_descr_ref loc_descriptor_from_tree (tree, int,
-						  const struct loc_descr_context *);
+						  struct loc_descr_context *);
 static HOST_WIDE_INT ceiling (HOST_WIDE_INT, unsigned int);
 static tree field_type (const_tree);
 static unsigned int simple_type_align_in_bits (const_tree);
@@ -3479,9 +3479,9 @@ static void add_name_attribute (dw_die_ref, const char *);
 static void add_gnat_descriptive_type_attribute (dw_die_ref, tree, dw_die_ref);
 static void add_comp_dir_attribute (dw_die_ref);
 static void add_scalar_info (dw_die_ref, enum dwarf_attribute, tree, int,
-			     const struct loc_descr_context *);
+			     struct loc_descr_context *);
 static void add_bound_info (dw_die_ref, enum dwarf_attribute, tree,
-			    const struct loc_descr_context *);
+			    struct loc_descr_context *);
 static void add_subscript_info (dw_die_ref, tree, bool);
 static void add_byte_size_attribute (dw_die_ref, tree);
 static inline void add_bit_offset_attribute (dw_die_ref, tree,
@@ -15791,7 +15791,7 @@ cst_pool_loc_descr (tree loc)
 
 static dw_loc_list_ref
 loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev,
-						   const loc_descr_context *context)
+						   loc_descr_context *context)
 {
   tree obj, offset;
   HOST_WIDE_INT bitsize, bitpos, bytepos;
@@ -15925,6 +15925,11 @@ struct loc_descr_context
   /* Information about the DWARF procedure we are currently generating. NULL if
      we are not generating a DWARF procedure.  */
   struct dwarf_procedure_info *dpi;
+  /* True if integral PLACEHOLDER_EXPR stands for the first argument passed
+     by consumer.  Used for DW_TAG_generic_subrange attributes.  */
+  bool placeholder_arg;
+  /* True if PLACEHOLDER_EXPR has been seen.  */
+  bool placeholder_seen;
 };
 
 /* DWARF procedures generation
@@ -16034,8 +16039,23 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 
       /* If needed, relocate the picking offset with respect to the frame
 	 offset. */
-      if (l->dw_loc_opc == DW_OP_pick && l->frame_offset_rel)
+      if (l->frame_offset_rel)
 	{
+	  unsigned HOST_WIDE_INT off;
+	  switch (l->dw_loc_opc)
+	    {
+	    case DW_OP_pick:
+	      off = l->dw_loc_oprnd1.v.val_unsigned;
+	      break;
+	    case DW_OP_dup:
+	      off = 0;
+	      break;
+	    case DW_OP_over:
+	      off = 1;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
 	  /* frame_offset_ is the size of the current stack frame, including
 	     incoming arguments. Besides, the arguments are pushed
 	     right-to-left.  Thus, in order to access the Nth argument from
@@ -16046,11 +16066,27 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	     The targetted argument number (N) is already set as the operand,
 	     and the number of temporaries can be computed with:
 	       frame_offsets_ - dpi->args_count */
-	  l->dw_loc_oprnd1.v.val_unsigned += frame_offset_ - dpi->args_count;
+	  off += frame_offset_ - dpi->args_count;
 
 	  /* DW_OP_pick handles only offsets from 0 to 255 (inclusive)...  */
-	  if (l->dw_loc_oprnd1.v.val_unsigned > 255)
+	  if (off > 255)
 	    return false;
+
+	  if (off == 0)
+	    {
+	      l->dw_loc_opc = DW_OP_dup;
+	      l->dw_loc_oprnd1.v.val_unsigned = 0;
+	    }
+	  else if (off == 1)
+	    {
+	      l->dw_loc_opc = DW_OP_over;
+	      l->dw_loc_oprnd1.v.val_unsigned = 0;
+	    }
+	  else
+	    {
+	      l->dw_loc_opc = DW_OP_pick;
+	      l->dw_loc_oprnd1.v.val_unsigned = off;
+	    }
 	}
 
       /* Update frame_offset according to the effect the current operation has
@@ -16353,6 +16389,8 @@ function_to_dwarf_procedure (tree fndecl)
   ctx.context_type = NULL_TREE;
   ctx.base_decl = NULL_TREE;
   ctx.dpi = &dpi;
+  ctx.placeholder_arg = false;
+  ctx.placeholder_seen = false;
   dpi.fndecl = fndecl;
   dpi.args_count = list_length (DECL_ARGUMENTS (fndecl));
   loc_body = loc_descriptor_from_tree (tree_body, 0, &ctx);
@@ -16415,7 +16453,7 @@ function_to_dwarf_procedure (tree fndecl)
 
 static dw_loc_list_ref
 loc_list_from_tree_1 (tree loc, int want_address,
-		      const struct loc_descr_context *context)
+		      struct loc_descr_context *context)
 {
   dw_loc_descr_ref ret = NULL, ret1 = NULL;
   dw_loc_list_ref list_ret = NULL, list_ret1 = NULL;
@@ -16460,6 +16498,18 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	    }
 	  else
 	    return NULL;
+	}
+      /* For DW_TAG_generic_subrange attributes, PLACEHOLDER_EXPR stands for
+	 the single argument passed by consumer.  */
+      else if (context != NULL
+	       && context->placeholder_arg
+	       && INTEGRAL_TYPE_P (TREE_TYPE (loc))
+	       && want_address == 0)
+	{
+	  ret = new_loc_descr (DW_OP_pick, 0, 0);
+	  ret->frame_offset_rel = 1;
+	  context->placeholder_seen = true;
+	  break;
 	}
       else
 	expansion_failed (loc, NULL_RTX,
@@ -17214,7 +17264,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
 
 static dw_loc_list_ref
 loc_list_from_tree (tree loc, int want_address,
-		    const struct loc_descr_context *context)
+		    struct loc_descr_context *context)
 {
   dw_loc_list_ref result = loc_list_from_tree_1 (loc, want_address, context);
 
@@ -17228,7 +17278,7 @@ loc_list_from_tree (tree loc, int want_address,
 /* Same as above but return only single location expression.  */
 static dw_loc_descr_ref
 loc_descriptor_from_tree (tree loc, int want_address,
-			  const struct loc_descr_context *context)
+			  struct loc_descr_context *context)
 {
   dw_loc_list_ref ret = loc_list_from_tree (loc, want_address, context);
   if (!ret)
@@ -17314,6 +17364,8 @@ type_byte_size (const_tree type, HOST_WIDE_INT *cst_size)
   ctx.context_type = const_cast<tree> (type);
   ctx.base_decl = NULL_TREE;
   ctx.dpi = NULL;
+  ctx.placeholder_arg = false;
+  ctx.placeholder_seen = false;
 
   type = TYPE_MAIN_VARIANT (type);
   tree_size = TYPE_SIZE_UNIT (type);
@@ -17493,7 +17545,9 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
   struct loc_descr_context loc_ctx = {
     ctx->struct_type, /* context_type */
     NULL_TREE,	      /* base_decl */
-    NULL	      /* dpi */
+    NULL,	      /* dpi */
+    false,	      /* placeholder_arg */
+    false	      /* placeholder_seen */
   };
   loc_result = loc_list_from_tree (tree_result, 0, &loc_ctx);
 
@@ -18886,12 +18940,12 @@ add_comp_dir_attribute (dw_die_ref die)
 
 static void
 add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
-		 int forms, const struct loc_descr_context *context)
+		 int forms, struct loc_descr_context *context)
 {
   dw_die_ref context_die, decl_die;
   dw_loc_list_ref list;
-
   bool strip_conversions = true;
+  bool placeholder_seen = false;
 
   while (strip_conversions)
     switch (TREE_CODE (value))
@@ -18986,6 +19040,11 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
     return;
 
   list = loc_list_from_tree (value, 2, context);
+  if (context && context->placeholder_arg)
+    {
+      placeholder_seen = context->placeholder_seen;
+      context->placeholder_seen = false;
+    }
   if (list == NULL || single_element_loc_list_p (list))
     {
       /* If this attribute is not a reference nor constant, it is
@@ -18994,6 +19053,14 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
       dw_loc_list_ref list2 = loc_list_from_tree (value, 0, context);
       if (list2 && single_element_loc_list_p (list2))
 	{
+	  if (placeholder_seen)
+	    {
+	      struct dwarf_procedure_info dpi;
+	      dpi.fndecl = NULL_TREE;
+	      dpi.args_count = 1;
+	      if (!resolve_args_picking (list2->expr, 1, &dpi))
+		return;
+	    }
 	  add_AT_loc (die, attr, list2->expr);
 	  return;
 	}
@@ -19001,7 +19068,9 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 
   /* If that failed to give a single element location list, fall back to
      outputting this as a reference... still if permitted.  */
-  if (list == NULL || (forms & dw_scalar_form_reference) == 0)
+  if (list == NULL
+      || (forms & dw_scalar_form_reference) == 0
+      || placeholder_seen)
     return;
 
   if (current_function_decl == 0)
@@ -19064,7 +19133,7 @@ lower_bound_default (void)
 
 static void
 add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr,
-		tree bound, const struct loc_descr_context *context)
+		tree bound, struct loc_descr_context *context)
 {
   int dflt;
 
@@ -19095,7 +19164,8 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr,
 	   encodings, GDB isn't ready yet to handle proper DWARF description
 	   for self-referencial subrange bounds: let GNAT encodings do the
 	   magic in such a case.  */
-	if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+	if (is_ada ()
+	    && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
 	    && contains_placeholder_p (bound))
 	  return;
 
@@ -20121,7 +20191,9 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
 {
   const dw_die_ref scope_die = scope_die_for (type, context_die);
   const dw_die_ref array_die = new_die (DW_TAG_array_type, scope_die, type);
-  const struct loc_descr_context context = { type, info->base_decl, NULL };
+  struct loc_descr_context context = { type, info->base_decl, NULL,
+				       false, false };
+  enum dwarf_tag subrange_tag = DW_TAG_subrange_type;
   int dim;
 
   add_name_attribute (array_die, type_tag (type));
@@ -20169,13 +20241,23 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
 	  add_scalar_info (array_die, attr, info->stride, forms, &context);
 	}
     }
+  if (dwarf_version >= 5)
+    {
+      if (info->rank)
+	{
+	  add_scalar_info (array_die, DW_AT_rank, info->rank,
+			   dw_scalar_form_constant
+			   | dw_scalar_form_exprloc, &context);
+	  subrange_tag = DW_TAG_generic_subrange;
+	  context.placeholder_arg = true;
+	}
+    }
 
   add_gnat_descriptive_type_attribute (array_die, type, context_die);
 
   for (dim = 0; dim < info->ndimensions; dim++)
     {
-      dw_die_ref subrange_die
-	= new_die (DW_TAG_subrange_type, array_die, NULL);
+      dw_die_ref subrange_die = new_die (subrange_tag, array_die, NULL);
 
       if (info->dimen[dim].bounds_type)
 	add_type_attribute (subrange_die,
@@ -23104,7 +23186,9 @@ gen_variant_part (tree variant_part_decl, struct vlr_context *vlr_ctx,
   struct loc_descr_context ctx = {
     vlr_ctx->struct_type, /* context_type */
     NULL_TREE,		  /* base_decl */
-    NULL		  /* dpi */
+    NULL,		  /* dpi */
+    false,		  /* placeholder_arg */
+    false		  /* placeholder_seen */
   };
 
   /* The FIELD_DECL node in STRUCT_TYPE that acts as the discriminant, or
