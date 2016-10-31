@@ -1,4 +1,5 @@
 /* { dg-lto-do link } */
+/* { dg-skip-if "Needs gettimeofday" { "avr-*-*" } } */
 
 extern int printf (const char *__restrict __format, ...);
 typedef long int __time_t;
