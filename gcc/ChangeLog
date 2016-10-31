@@ -1,3 +1,15 @@
+2016-09-11  Le-Chun Wu  <lcwu@google.com>
+	    Mark Wielaard  <mjw@redhat.com>
+
+	* common.opt (Wshadow=global): New option. Default for -Wshadow.
+	(Wshadow=local): New option.
+	(Wshadow-local): Hidden alias for -Wshadow=local.
+	(Wshadow=compatible-local): New option.
+	(Wshadow-compatible-local): Hidden alias for
+	-Wshadow=compatible-local.
+	* doc/invoke.texi: Document Wshadow=global, Wshadow=local and
+	Wshadow=compatible-local.
+
 2016-10-31  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-slp.c (vect_get_and_check_slp_defs): New parameter SWAP.
