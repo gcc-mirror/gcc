@@ -1,3 +1,14 @@
+2016-10-30  Le-Chun Wu  <lcwu@google.com>
+	    Mark Wielaard  <mjw@redhat.com>
+
+	* gcc.dg/Wshadow-compatible-local-1.c: New test.
+	* gcc.dg/Wshadow-local-1.c: Likewise.
+	* gcc.dg/Wshadow-local-2.c: Likewise.
+	* g++.dg/warn/Wshadow-compatible-local-1.C: Likewise.
+	* g++.dg/warn/Wshadow-local-1.C: Likewise.
+	* g++.dg/warn/Wshadow-local-2.C: Likewise.
+
+
 2016-10-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/71915

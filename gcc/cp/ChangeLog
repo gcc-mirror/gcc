@@ -1,3 +1,10 @@
+2016-09-11  Le-Chun Wu  <lcwu@google.com>
+	    Mark Wielaard  <mjw@redhat.com>
+
+	* name-lookup.c (pushdecl_maybe_friend): When emitting a
+	shadowing warning, use the code corresponding to the
+	given -Wshadow= variant.
+
 2016-10-26  Jason Merrill  <jason@redhat.com>
 
 	* class.c (add_method): Allow using-declarations to coexist.

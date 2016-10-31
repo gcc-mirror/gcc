@@ -1,3 +1,9 @@
+2016-09-11  Le-Chun Wu  <lcwu@google.com>
+	    Mark Wielaard  <mjw@redhat.com>
+
+	* c-decl.c (warn_if_shadowing): Use the warning code corresponding
+	to the given -Wshadow= variant.
+
 2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* c-typeck.c: Include memmodel.h.

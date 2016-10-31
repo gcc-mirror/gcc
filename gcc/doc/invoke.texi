@@ -293,6 +293,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wno-pragmas -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
+-Wshadow=global, -Wshadow=local, -Wshadow=compatible-local @gol
 -Wshift-overflow -Wshift-overflow=@var{n} @gol
 -Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value @gol
 -Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
@@ -5321,12 +5322,55 @@ variable, parameter, type, class member (in C++), or instance variable
 (in Objective-C) or whenever a built-in function is shadowed. Note
 that in C++, the compiler warns if a local variable shadows an
 explicit typedef, but not if it shadows a struct/class/enum.
+Same as @option{-Wshadow=global}.
 
 @item -Wno-shadow-ivar @r{(Objective-C only)}
 @opindex Wno-shadow-ivar
 @opindex Wshadow-ivar
 Do not warn whenever a local variable shadows an instance variable in an
 Objective-C method.
+
+@item -Wshadow=global
+@opindex Wshadow=local
+The default for @option{-Wshadow}. Warns for any (global) shadowing.
+
+@item -Wshadow=local
+@opindex Wshadow=local
+Warn when a local variable shadows another local variable or parameter.
+This warning is enabled by @option{-Wshadow=global}.
+
+@item -Wshadow=compatible-local
+@opindex Wshadow=compatible-local
+Warn when a local variable shadows another local variable or parameter
+whose type is compatible with that of the shadowing variable. In C++,
+type compatibility here means the type of the shadowing variable can be
+converted to that of the shadowed variable. The creation of this flag
+(in addition to @option{-Wshadow=local}) is based on the idea that when
+a local variable shadows another one of incompatible type, it is most
+likely intentional, not a bug or typo, as shown in the following example:
+
+@smallexample
+@group
+for (SomeIterator i = SomeObj.begin(); i != SomeObj.end(); ++i)
+@{
+  for (int i = 0; i < N; ++i)
+  @{
+    ...
+  @}
+  ...
+@}
+@end group
+@end smallexample
+
+Since the two variable @code{i} in the example above have incompatible types,
+enabling only @option{-Wshadow=compatible-local} will not emit a warning.
+Because their types are incompatible, if a programmer accidentally uses one
+in place of the other, type checking will catch that and emit an error or
+warning. So not warning (about shadowing) in this case will not lead to
+undetected bugs. Use of this flag instead of @option{-Wshadow=local} can
+possibly reduce the number of warnings triggered by intentional shadowing.
+
+This warning is enabled by @option{-Wshadow=local}.
 
 @item -Wlarger-than=@var{len}
 @opindex Wlarger-than=@var{len}
