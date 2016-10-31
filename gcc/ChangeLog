@@ -1,3 +1,9 @@
+2016-10-31  Jan Kratochvil  <jan.kratochvil@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (DWARF_COMPILE_UNIT_HEADER_SIZE): Adjust for -gdwarf-5.
+	(DWARF_COMDAT_TYPE_UNIT_HEADER_SIZE): Likewise.
+
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (dwarf_AT): Handle DW_AT_dwo_name.

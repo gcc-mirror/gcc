@@ -2983,12 +2983,15 @@ skeleton_chain_node;
 
 /* Fixed size portion of the DWARF compilation unit header.  */
 #define DWARF_COMPILE_UNIT_HEADER_SIZE \
-  (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE + 3)
+  (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE			\
+   + (dwarf_version >= 5						\
+      ? 4 + DWARF_TYPE_SIGNATURE_SIZE + DWARF_OFFSET_SIZE : 3))
 
 /* Fixed size portion of the DWARF comdat type unit header.  */
 #define DWARF_COMDAT_TYPE_UNIT_HEADER_SIZE \
-  (DWARF_COMPILE_UNIT_HEADER_SIZE + DWARF_TYPE_SIGNATURE_SIZE \
-   + DWARF_OFFSET_SIZE)
+  (DWARF_COMPILE_UNIT_HEADER_SIZE					\
+   + (dwarf_version >= 5						\
+      ? 0 : DWARF_TYPE_SIGNATURE_SIZE + DWARF_OFFSET_SIZE))
 
 /* Fixed size portion of public names info.  */
 #define DWARF_PUBNAMES_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 2)
