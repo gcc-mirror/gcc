@@ -1,5 +1,23 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (dwarf_op): Renamed to ...
+	(dwarf_OP): ... this.
+	(convert_descriptor_to_mode, scompare_loc_descriptor,
+	minmax_loc_descriptor, typed_binop, mem_loc_descriptor,
+	implicit_ptr_descriptor, optimize_one_addr_into_implicit_ptr): Adjust
+	callers.
+	(dwarf_AT, dwarf_TAG): New functions.
+	(check_die): Disallow DW_AT_call_all_calls next to
+	DW_AT_GNU_all_call_sites.
+	(gen_call_site_die): Use dwarf_TAG and dwarf_AT with DWARF 5 tag
+	and attributes instead of the corresponding GNU tag and attributes.
+	(gen_subprogram_die): Likewise.  Emit call site information even
+	for -gdwarf-5 -gstrict-dwarf.  Replace DW_AT_GNU_defaulted with
+	DW_AT_defaulted in comment.
+	(resolve_addr): Handle DW_AT_call_origin attribute on
+	DW_TAG_call_site DIE like DW_AT_abstract_origin on
+	DW_TAG_GNU_call_site DIE.
+
 	* dwarf2out.c (dwarf_op): New function.
 	(size_of_loc_descr): Handle DW_OP_{implicit_pointer,entry_value},
 	DW_OP_{const,regval,deref}_type and DW_OP_{convert,reinterpret}.
