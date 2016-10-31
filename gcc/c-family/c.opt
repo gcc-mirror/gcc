@@ -1705,7 +1705,7 @@ C ObjC C++ ObjC++ Joined
 -femit-struct-debug-detailed=<spec-list>	Detailed reduced debug info for structs.
 
 fext-numeric-literals
-C++ ObjC++
+C++ ObjC++ Var(flag_ext_numeric_literals) Init(1)
 Interpret imaginary, fixed-point, or other gnu number suffix as the corresponding
 number literal rather than a user-defined number literal.
 

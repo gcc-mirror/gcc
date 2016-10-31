@@ -1,5 +1,13 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77948
+	* g++.dg/cpp0x/pr77948-1.C: New test.
+	* g++.dg/cpp0x/pr77948-2.C: New test.
+	* g++.dg/cpp0x/pr77948-3.C: New test.
+	* g++.dg/cpp0x/pr77948-4.C: New test.
+	* g++.dg/cpp0x/pr77948-5.C: New test.
+	* g++.dg/cpp0x/pr77948-6.C: New test.
+
 	PR tree-optimization/77860
 	* gcc.dg/pr77860.c: New test.
 

@@ -1,3 +1,12 @@
+2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77948
+	* c.opt (fext-numeric-literals): Add Var and Init.
+	* c-opts.c (c_common_handle_option): Don't clear
+	cpp_opts->ext_numeric_literals for -std=c++{11,14,1z}.
+	(c_common_post_options): Clear it here if not set
+	explicitly.
+
 2016-10-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR debug/77773
