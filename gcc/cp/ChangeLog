@@ -1,5 +1,10 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/78089
+	* parser.c (cp_parser_postfix_expression): Replace return statement in
+	the first switch with setting postfix_expression to the return
+	expression and break;.
+
 	PR c++/77886
 	* g++.dg/warn/Wimplicit-fallthrough-2.C: New test.
 
