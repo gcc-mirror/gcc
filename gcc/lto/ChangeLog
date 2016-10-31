@@ -1,3 +1,9 @@
+2016-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR lto/78129
+	* lto.c (do_whole_program_analysis): Bail out after errors
+	from WPA analysis.
+
 2016-09-21  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* lto-partition.c: Include tree-vrp.h.
