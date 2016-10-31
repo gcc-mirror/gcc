@@ -1,5 +1,10 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (DWARF_LARGEST_DATA_FORM_BITS): Define.
+	(size_of_die, value_format, output_die): Use
+	DW_FORM_data16 for 128-bit dw_val_class_const_double or
+	dw_val_class_wide_int.
+
 	* dwarf2out.c (dwarf_op): Renamed to ...
 	(dwarf_OP): ... this.
 	(convert_descriptor_to_mode, scompare_loc_descriptor,
