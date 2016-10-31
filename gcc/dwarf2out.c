@@ -1637,6 +1637,11 @@ dwarf_AT (enum dwarf_attribute at)
 	return DW_AT_GNU_all_tail_call_sites;
       break;
 
+    case DW_AT_dwo_name:
+      if (dwarf_version < 5)
+	return DW_AT_GNU_dwo_name;
+      break;
+
     default:
       break;
     }
@@ -2761,7 +2766,8 @@ const struct gcc_debug_hooks dwarf2_lineno_debug_hooks =
    -fno-debug-types-section.  It is more efficient to put them in a
    separate comdat sections since the linker will then be able to
    remove duplicates.  But not all tools support .debug_types sections
-   yet.  */
+   yet.  For Dwarf V5 or higher .debug_types doesn't exist any more,
+   it is DW_UT_type unit type in .debug_info section.  */
 
 #define use_debug_types (dwarf_version >= 4 && flag_debug_types_section)
 
@@ -3410,8 +3416,8 @@ static void output_abbrev_section (void);
 static void output_die_abbrevs (unsigned long, dw_die_ref);
 static void output_die_symbol (dw_die_ref);
 static void output_die (dw_die_ref);
-static void output_compilation_unit_header (void);
-static void output_comp_unit (dw_die_ref, int);
+static void output_compilation_unit_header (enum dwarf_unit_type);
+static void output_comp_unit (dw_die_ref, int, const unsigned char *);
 static void output_comdat_type_unit (comdat_type_node *);
 static const char *dwarf2_name (tree, int);
 static void add_pubname (tree, dw_die_ref);
@@ -5213,6 +5219,7 @@ new_die (enum dwarf_tag tag_value, dw_die_ref parent_die, tree t)
 	  /* These are allowed because they're generated while
 	     breaking out COMDAT units late.  */
 	  && tag_value != DW_TAG_type_unit
+	  && tag_value != DW_TAG_skeleton_unit
 	  && !early_dwarf
 	  /* Allow nested functions to live in limbo because they will
 	     only temporarily live there, as decls_for_scope will fix
@@ -7241,7 +7248,8 @@ is_symbol_die (dw_die_ref c)
 static inline bool
 is_cu_die (dw_die_ref c)
 {
-  return c && c->die_tag == DW_TAG_compile_unit;
+  return c && (c->die_tag == DW_TAG_compile_unit
+	       || c->die_tag == DW_TAG_skeleton_unit);
 }
 
 /* Returns true iff C is a unit DIE of some sort.  */
@@ -7251,7 +7259,8 @@ is_unit_die (dw_die_ref c)
 {
   return c && (c->die_tag == DW_TAG_compile_unit
 	       || c->die_tag == DW_TAG_partial_unit
-	       || c->die_tag == DW_TAG_type_unit);
+	       || c->die_tag == DW_TAG_type_unit
+	       || c->die_tag == DW_TAG_skeleton_unit);
 }
 
 /* Returns true iff C is a namespace DIE.  */
@@ -7536,7 +7545,8 @@ contains_subprogram_definition (dw_die_ref die)
 }
 
 /* Return non-zero if this is a type DIE that should be moved to a
-   COMDAT .debug_types section.  */
+   COMDAT .debug_types section or .debug_info section with DW_UT_*type
+   unit type.  */
 
 static int
 should_move_die_to_comdat (dw_die_ref die)
@@ -8053,8 +8063,9 @@ copy_dwarf_procs_ref_in_dies (dw_die_ref die,
 							copied_dwarf_procs));
 }
 
-/* Traverse the DIE and set up additional .debug_types sections for each
-   type worthy of being placed in a COMDAT section.  */
+/* Traverse the DIE and set up additional .debug_types or .debug_info
+   DW_UT_*type sections for each type worthy of being placed in a COMDAT
+   section.  */
 
 static void
 break_out_comdat_types (dw_die_ref die)
@@ -10153,12 +10164,8 @@ output_die (dw_die_ref die)
    .debug_info section, and precedes the DIE descriptions.  */
 
 static void
-output_compilation_unit_header (void)
+output_compilation_unit_header (enum dwarf_unit_type ut)
 {
-  /* We don't support actual DWARFv5 units yet, we just use some
-     DWARFv5 draft DIE tags in DWARFv4 format.  */
-  int ver = dwarf_version < 5 ? dwarf_version : 4;
-
   if (!XCOFF_DEBUGGING_INFO)
     {
       if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
@@ -10169,17 +10176,33 @@ output_compilation_unit_header (void)
 			   "Length of Compilation Unit Info");
     }
 
-  dw2_asm_output_data (2, ver, "DWARF version number");
+  dw2_asm_output_data (2, dwarf_version, "DWARF version number");
+  if (dwarf_version >= 5)
+    {
+      const char *name;
+      switch (ut)
+	{
+	case DW_UT_compile: name = "DW_UT_compile"; break;
+	case DW_UT_type: name = "DW_UT_type"; break;
+	case DW_UT_split_compile: name = "DW_UT_split_compile"; break;
+	case DW_UT_split_type: name = "DW_UT_split_type"; break;
+	default: gcc_unreachable ();
+	}
+      dw2_asm_output_data (1, ut, name);
+      dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
+    }
   dw2_asm_output_offset (DWARF_OFFSET_SIZE, abbrev_section_label,
 			 debug_abbrev_section,
 			 "Offset Into Abbrev. Section");
-  dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
+  if (dwarf_version < 5)
+    dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
 }
 
 /* Output the compilation unit DIE and its children.  */
 
 static void
-output_comp_unit (dw_die_ref die, int output_if_empty)
+output_comp_unit (dw_die_ref die, int output_if_empty,
+		  const unsigned char *dwo_id)
 {
   const char *secname, *oldsym;
   char *tmp;
@@ -10231,7 +10254,20 @@ output_comp_unit (dw_die_ref die, int output_if_empty)
     }
 
   /* Output debugging information.  */
-  output_compilation_unit_header ();
+  output_compilation_unit_header (dwo_id
+				  ? DW_UT_split_compile : DW_UT_compile);
+  if (dwarf_version >= 5)
+    {
+      if (dwo_id != NULL)
+	for (int i = 0; i < 8; i++)
+	  dw2_asm_output_data (1, dwo_id[i], i == 0 ? "DWO id" : NULL);
+      else
+	/* Hope all the padding will be removed for DWARF 5 final for
+	   DW_AT_compile and DW_AT_partial.  */
+	dw2_asm_output_data (8, 0, "Padding 1");
+
+      dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, "Padding 2");
+    }
   output_die (die);
 
   /* Leave the marks on the main CU, so we can check them in
@@ -10300,7 +10336,7 @@ add_top_level_skeleton_die_attrs (dw_die_ref die)
   const char *dwo_file_name = concat (aux_base_name, ".dwo", NULL);
   const char *comp_dir = comp_dir_string ();
 
-  add_skeleton_AT_string (die, DW_AT_GNU_dwo_name, dwo_file_name);
+  add_skeleton_AT_string (die, dwarf_AT (DW_AT_dwo_name), dwo_file_name);
   if (comp_dir != NULL)
     add_skeleton_AT_string (die, DW_AT_comp_dir, comp_dir);
   add_AT_pubnames (die);
@@ -10310,12 +10346,9 @@ add_top_level_skeleton_die_attrs (dw_die_ref die)
 /* Output skeleton debug sections that point to the dwo file.  */
 
 static void
-output_skeleton_debug_sections (dw_die_ref comp_unit)
+output_skeleton_debug_sections (dw_die_ref comp_unit,
+				const unsigned char *dwo_id)
 {
-  /* We don't support actual DWARFv5 units yet, we just use some
-     DWARFv5 draft DIE tags in DWARFv4 format.  */
-  int ver = dwarf_version < 5 ? dwarf_version : 4;
-
   /* These attributes will be found in the full debug_info section.  */
   remove_AT (comp_unit, DW_AT_producer);
   remove_AT (comp_unit, DW_AT_language);
@@ -10335,11 +10368,24 @@ output_skeleton_debug_sections (dw_die_ref comp_unit)
                        - DWARF_INITIAL_LENGTH_SIZE
                        + size_of_die (comp_unit),
                       "Length of Compilation Unit Info");
-  dw2_asm_output_data (2, ver, "DWARF version number");
+  dw2_asm_output_data (2, dwarf_version, "DWARF version number");
+  if (dwarf_version >= 5)
+    {
+      dw2_asm_output_data (1, DW_UT_skeleton, "DW_UT_skeleton");
+      dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
+    }
   dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_skeleton_abbrev_section_label,
-                         debug_abbrev_section,
+			 debug_skeleton_abbrev_section,
                          "Offset Into Abbrev. Section");
-  dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
+  if (dwarf_version < 5)
+    dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
+  else
+    {
+      for (int i = 0; i < 8; i++)
+	dw2_asm_output_data (1, dwo_id[i], i == 0 ? "DWO id" : NULL);
+
+      dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, "Padding 2");
+    }
 
   comp_unit->die_abbrev = SKELETON_COMP_DIE_ABBREV;
   output_die (comp_unit);
@@ -10380,13 +10426,20 @@ output_comdat_type_unit (comdat_type_node *node)
   calc_die_sizes (node->root_die);
 
 #if defined (OBJECT_FORMAT_ELF)
-  if (!dwarf_split_debug_info)
+  if (dwarf_version >= 5)
+    {
+      if (!dwarf_split_debug_info)
+	secname = ".debug_info";
+      else
+	secname = ".debug_info.dwo";
+    }
+  else if (!dwarf_split_debug_info)
     secname = ".debug_types";
   else
     secname = ".debug_types.dwo";
 
   tmp = XALLOCAVEC (char, 4 + DWARF_TYPE_SIGNATURE_SIZE * 2);
-  sprintf (tmp, "wt.");
+  sprintf (tmp, dwarf_version >= 5 ? "wi." : "wt.");
   for (i = 0; i < DWARF_TYPE_SIGNATURE_SIZE; i++)
     sprintf (tmp + 3 + i * 2, "%02x", node->signature[i] & 0xff);
   comdat_key = get_identifier (tmp);
@@ -10395,7 +10448,8 @@ output_comdat_type_unit (comdat_type_node *node)
                                  comdat_key);
 #else
   tmp = XALLOCAVEC (char, 18 + DWARF_TYPE_SIGNATURE_SIZE * 2);
-  sprintf (tmp, ".gnu.linkonce.wt.");
+  sprintf (tmp, (dwarf_version >= 5
+		 ? ".gnu.linkonce.wi." : ".gnu.linkonce.wt."));
   for (i = 0; i < DWARF_TYPE_SIGNATURE_SIZE; i++)
     sprintf (tmp + 17 + i * 2, "%02x", node->signature[i] & 0xff);
   secname = tmp;
@@ -10403,7 +10457,8 @@ output_comdat_type_unit (comdat_type_node *node)
 #endif
 
   /* Output debugging information.  */
-  output_compilation_unit_header ();
+  output_compilation_unit_header (dwarf_split_debug_info
+				  ? DW_UT_split_type : DW_UT_type);
   output_signature (node->signature, "Type Signature");
   dw2_asm_output_data (DWARF_OFFSET_SIZE, node->type_die->die_offset,
 		       "Offset to Type DIE");
@@ -28844,6 +28899,7 @@ dwarf2out_finish (const char *)
 {
   comdat_type_node *ctnode;
   dw_die_ref main_comp_unit_die;
+  unsigned char checksum[16];
 
   /* Flush out any latecomers to the limbo party.  */
   flush_limbo_die_list ();
@@ -28889,6 +28945,8 @@ dwarf2out_finish (const char *)
     {
       limbo_die_node *cu;
       main_comp_unit_die = gen_compile_unit_die (NULL);
+      if (dwarf_version >= 5)
+	main_comp_unit_die->die_tag = DW_TAG_skeleton_unit;
       cu = limbo_die_list;
       gcc_assert (cu->die == main_comp_unit_die);
       limbo_die_list = limbo_die_list->next;
@@ -29020,7 +29078,7 @@ dwarf2out_finish (const char *)
   /* Output all of the compilation units.  We put the main one last so that
      the offsets are available to output_pubnames.  */
   for (node = cu_die_list; node; node = node->next)
-    output_comp_unit (node->die, 0);
+    output_comp_unit (node->die, 0, NULL);
 
   hash_table<comdat_type_hasher> comdat_type_table (100);
   for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
@@ -29054,7 +29112,6 @@ dwarf2out_finish (const char *)
   if (dwarf_split_debug_info)
     {
       int mark;
-      unsigned char checksum[16];
       struct md5_ctx ctx;
 
       /* Compute a checksum of the comp_unit to use as the dwo_id.  */
@@ -29064,10 +29121,13 @@ dwarf2out_finish (const char *)
       unmark_all_dies (comp_unit_die ());
       md5_finish_ctx (&ctx, checksum);
 
-      /* Use the first 8 bytes of the checksum as the dwo_id,
-        and add it to both comp-unit DIEs.  */
-      add_AT_data8 (main_comp_unit_die, DW_AT_GNU_dwo_id, checksum);
-      add_AT_data8 (comp_unit_die (), DW_AT_GNU_dwo_id, checksum);
+      if (dwarf_version < 5)
+	{
+	  /* Use the first 8 bytes of the checksum as the dwo_id,
+	     and add it to both comp-unit DIEs.  */
+	  add_AT_data8 (main_comp_unit_die, DW_AT_GNU_dwo_id, checksum);
+	  add_AT_data8 (comp_unit_die (), DW_AT_GNU_dwo_id, checksum);
+	}
 
       /* Add the base offset of the ranges table to the skeleton
         comp-unit DIE.  */
@@ -29082,10 +29142,11 @@ dwarf2out_finish (const char *)
 
   /* Output the main compilation unit if non-empty or if .debug_macinfo
      or .debug_macro will be emitted.  */
-  output_comp_unit (comp_unit_die (), have_macinfo);
+  output_comp_unit (comp_unit_die (), have_macinfo,
+		    dwarf_split_debug_info ? checksum : NULL);
 
   if (dwarf_split_debug_info && info_section_emitted)
-    output_skeleton_debug_sections (main_comp_unit_die);
+    output_skeleton_debug_sections (main_comp_unit_die, checksum);
 
   /* Output the abbreviation table.  */
   if (vec_safe_length (abbrev_die_table) != 1)
