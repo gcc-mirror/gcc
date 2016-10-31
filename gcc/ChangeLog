@@ -1,5 +1,18 @@
 2016-10-31  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): New parameter SWAP.
+	Check slp defs for COND_EXPR by swapping/inverting operands if the
+	new parameter SWAP indicates so.
+	(vect_build_slp_tree_1): New parameter SWAP.  Check COND_EXPR stmt
+	is isomorphic to the first stmt via swapping/inverting.  Store swap
+	information in the new parameter SWAP.
+	(vect_build_slp_tree): New local array SWAP and pass it to function
+	vect_build_slp_tree_1.  Cleanup result handling code for function
+	call to vect_get_and_check_slp_defs.  Skip operand swapping if the
+	order of operands has been fixed as indicated by SWAP[i].
+
+2016-10-31  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences): Skip
 	unnecessary data dependence check after visited store stmt.
 

@@ -207,14 +207,20 @@ vect_get_place_in_interleaving_chain (gimple *stmt, gimple *first_stmt)
 
 /* Get the defs for the rhs of STMT (collect them in OPRNDS_INFO), check that
    they are of a valid type and that they match the defs of the first stmt of
-   the SLP group (stored in OPRNDS_INFO).  If there was a fatal error
-   return -1, if the error could be corrected by swapping operands of the
-   operation return 1, if everything is ok return 0.  */
+   the SLP group (stored in OPRNDS_INFO).  This function tries to match stmts
+   by swapping operands of STMT when possible.  Non-zero *SWAP indicates swap
+   is required for cond_expr stmts.  Specifically, *SWAP is 1 if STMT is cond
+   and operands of comparison need to be swapped; *SWAP is 2 if STMT is cond
+   and code of comparison needs to be inverted.  If there is any operand swap
+   in this function, *SWAP is set to non-zero value.
+   If there was a fatal error return -1; if the error could be corrected by
+   swapping operands of father node of this one, return 1; if everything is
+   ok return 0.  */
 
-static int 
-vect_get_and_check_slp_defs (vec_info *vinfo,
+static int
+vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
 			     gimple *stmt, unsigned stmt_num,
-                             vec<slp_oprnd_info> *oprnds_info)
+			     vec<slp_oprnd_info> *oprnds_info)
 {
   tree oprnd;
   unsigned int i, number_of_oprnds;
@@ -237,11 +243,12 @@ vect_get_and_check_slp_defs (vec_info *vinfo,
     {
       enum tree_code code = gimple_assign_rhs_code (stmt);
       number_of_oprnds = gimple_num_ops (stmt) - 1;
+      /* Swap can only be done for cond_expr if asked to, otherwise we
+	 could result in different comparison code to the first stmt.  */
       if (gimple_assign_rhs_code (stmt) == COND_EXPR
 	  && COMPARISON_CLASS_P (gimple_assign_rhs1 (stmt)))
 	{
 	  first_op_cond = true;
-	  commutative = true;
 	  number_of_oprnds++;
 	}
       else
@@ -250,20 +257,24 @@ vect_get_and_check_slp_defs (vec_info *vinfo,
   else
     return -1;
 
-  bool swapped = false;
+  bool swapped = (*swap != 0);
+  gcc_assert (!swapped || first_op_cond);
   for (i = 0; i < number_of_oprnds; i++)
     {
 again:
       if (first_op_cond)
 	{
-	  if (i == 0 || i == 1)
-	    oprnd = TREE_OPERAND (gimple_op (stmt, first_op_idx),
-				  swapped ? !i : i);
+	  /* Map indicating how operands of cond_expr should be swapped.  */
+	  int maps[3][4] = {{0, 1, 2, 3}, {1, 0, 2, 3}, {0, 1, 3, 2}};
+	  int *map = maps[*swap];
+
+	  if (i < 2)
+	    oprnd = TREE_OPERAND (gimple_op (stmt, first_op_idx), map[i]);
 	  else
-	    oprnd = gimple_op (stmt, first_op_idx + i - 1);
+	    oprnd = gimple_op (stmt, map[i]);
 	}
       else
-        oprnd = gimple_op (stmt, first_op_idx + (swapped ? !i : i));
+	oprnd = gimple_op (stmt, first_op_idx + (swapped ? !i : i));
 
       oprnd_info = (*oprnds_info)[i];
 
@@ -431,9 +442,25 @@ again:
       if (first_op_cond)
 	{
 	  tree cond = gimple_assign_rhs1 (stmt);
-	  swap_ssa_operands (stmt, &TREE_OPERAND (cond, 0),
-			     &TREE_OPERAND (cond, 1));
-	  TREE_SET_CODE (cond, swap_tree_comparison (TREE_CODE (cond)));
+	  enum tree_code code = TREE_CODE (cond);
+
+	  /* Swap.  */
+	  if (*swap == 1)
+	    {
+	      swap_ssa_operands (stmt, &TREE_OPERAND (cond, 0),
+				 &TREE_OPERAND (cond, 1));
+	      TREE_SET_CODE (cond, swap_tree_comparison (code));
+	    }
+	  /* Invert.  */
+	  else
+	    {
+	      swap_ssa_operands (stmt, gimple_assign_rhs2_ptr (stmt),
+				 gimple_assign_rhs3_ptr (stmt));
+	      bool honor_nans = HONOR_NANS (TREE_OPERAND (cond, 0));
+	      code = invert_tree_comparison (TREE_CODE (cond), honor_nans);
+	      gcc_assert (code != ERROR_MARK);
+	      TREE_SET_CODE (cond, code);
+	    }
 	}
       else
 	swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
@@ -446,6 +473,7 @@ again:
 	}
     }
 
+  *swap = swapped;
   return 0;
 }
 
@@ -455,10 +483,17 @@ again:
    true if they are, otherwise return false and indicate in *MATCHES
    which stmts are not isomorphic to the first one.  If MATCHES[0]
    is false then this indicates the comparison could not be
-   carried out or the stmts will never be vectorized by SLP.  */
+   carried out or the stmts will never be vectorized by SLP.
+
+   Note COND_EXPR is possibly ismorphic to another one after swapping its
+   operands.  Set SWAP[i] to 1 if stmt I is COND_EXPR and isomorphic to
+   the first stmt by swapping the two operands of comparison; set SWAP[i]
+   to 2 if stmt I is isormorphic to the first stmt by inverting the code
+   of comparison.  Take A1 >= B1 ? X1 : Y1 as an exmple, it can be swapped
+   to (B1 <= A1 ? X1 : Y1); or be inverted to (A1 < B1) ? Y1 : X1.  */
 
 static bool
-vect_build_slp_tree_1 (vec_info *vinfo,
+vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		       vec<gimple *> stmts, unsigned int group_size,
 		       unsigned nops, unsigned int *max_nunits,
 		       bool *matches, bool *two_operators)
@@ -482,6 +517,7 @@ vect_build_slp_tree_1 (vec_info *vinfo,
   /* For every stmt in NODE find its def stmt/s.  */
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
+      swap[i] = 0;
       matches[i] = false;
 
       if (dump_enabled_p ())
@@ -782,26 +818,44 @@ vect_build_slp_tree_1 (vec_info *vinfo,
 	      return false;
 	    }
 
-          if (rhs_code == COND_EXPR)
-            {
-              tree cond_expr = gimple_assign_rhs1 (stmt);
+	  if (rhs_code == COND_EXPR)
+	    {
+	      tree cond_expr = gimple_assign_rhs1 (stmt);
+	      enum tree_code cond_code = TREE_CODE (cond_expr);
+	      enum tree_code swap_code = ERROR_MARK;
+	      enum tree_code invert_code = ERROR_MARK;
 
 	      if (i == 0)
 		first_cond_code = TREE_CODE (cond_expr);
-              else if (first_cond_code != TREE_CODE (cond_expr))
-                {
-                  if (dump_enabled_p ())
-                    {
-                      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+	      else if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
+		{
+		  bool honor_nans = HONOR_NANS (TREE_OPERAND (cond_expr, 0));
+		  swap_code = swap_tree_comparison (cond_code);
+		  invert_code = invert_tree_comparison (cond_code, honor_nans);
+		}
+
+	      if (first_cond_code == cond_code)
+		;
+	      /* Isomorphic can be achieved by swapping.  */
+	      else if (first_cond_code == swap_code)
+		swap[i] = 1;
+	      /* Isomorphic can be achieved by inverting.  */
+	      else if (first_cond_code == invert_code)
+		swap[i] = 2;
+	      else
+		{
+		  if (dump_enabled_p ())
+		    {
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				       "Build SLP failed: different"
 				       " operation");
-                      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+		      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
 					stmt, 0);
-                    }
+		    }
 		  /* Mismatch.  */
 		  continue;
 		}
-            }
+	    }
 	}
 
       matches[i] = true;
@@ -885,7 +939,8 @@ vect_build_slp_tree (vec_info *vinfo,
     return NULL;
 
   bool two_operators = false;
-  if (!vect_build_slp_tree_1 (vinfo,
+  unsigned char *swap = XALLOCAVEC (unsigned char, group_size);
+  if (!vect_build_slp_tree_1 (vinfo, swap,
 			      stmts, group_size, nops,
 			      &this_max_nunits, matches, &two_operators))
     return NULL;
@@ -905,18 +960,12 @@ vect_build_slp_tree (vec_info *vinfo,
   slp_oprnd_info oprnd_info;
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
-      switch (vect_get_and_check_slp_defs (vinfo, stmt, i, &oprnds_info))
-	{
-	case 0:
-	  break;
-	case -1:
-	  matches[0] = false;
-	  vect_free_oprnd_info (oprnds_info);
-	  return NULL;
-	case 1:
-	  matches[i] = false;
-	  break;
-	}
+      int res = vect_get_and_check_slp_defs (vinfo, &swap[i],
+					     stmt, i, &oprnds_info);
+      if (res != 0)
+	matches[(res == -1) ? 0 : i] = false;
+      if (!matches[0])
+	break;
     }
   for (i = 0; i < group_size; ++i)
     if (!matches[i])
@@ -1040,7 +1089,8 @@ vect_build_slp_tree (vec_info *vinfo,
 	     operand order already.  */
 	  for (j = 0; j < group_size; ++j)
 	    if (!matches[j]
-		&& STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmts[j])) != 0)
+		&& (swap[j] != 0
+		    || STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmts[j]))))
 	      {
 		if (dump_enabled_p ())
 		  {
