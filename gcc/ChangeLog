@@ -1,5 +1,32 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.h (enum dw_val_class): Add dw_val_class_const_implicit,
+	dw_val_class_unsigned_const_implicit and dw_val_class_file_implicit.
+	(struct dw_val_node): Add val_file_implicit field.
+	* dwarf2out.c (dw_val_equal_p, print_dw_val, attr_checksum,
+	attr_checksum_ordered, same_dw_val_p, size_of_die, value_format,
+	output_die): Handle dw_val_class_const_implicit,
+	dw_val_class_unsigned_const_implicit and dw_val_class_file_implicit.
+	(abbrev_die_table): Change into va_gc vec.
+	(abbrev_die_table_allocated, abbrev_die_table_in_use,
+	ABBREV_DIE_TABLE_INCREMENT): Remove.
+	(AT_int, AT_unsigned, AT_file): Allow dw_val_class_*_implicit.
+	(abbrev_opt_start, abbrev_usage_count, sorted_abbrev_dies): New
+	variables.
+	(build_abbrev_table): Adjust for abbrev_die_table being a va_gc vec.
+	If abbrev_opt_start, fill in abbrev_usage_count and abbrev_dies
+	vectors.
+	(die_abbrev_cmp, optimize_implicit_const, optimize_abbrev_table): New
+	functions.
+	(output_die_abbrevs): For DW_FORM_implicit_const emit sleb128 with
+	the implicit value.
+	(output_abbrev_section): Adjust for abbrev_die_table being a va_gc
+	vec.
+	(output_comp_unit): Initialize abbrev_opt_start if emitting the main
+	unit.  Call optimize_abbrev_table.
+	(dwarf2out_init, dwarf2out_finish, dwarf2out_c_finalize): Adjust for
+	abbrev_die_table being a va_gc vec.
+
 	PR tree-optimization/77860
 	* tree-ssa-reassoc.c (eliminate_using_constants): Handle
 	also integral complex and vector constants.

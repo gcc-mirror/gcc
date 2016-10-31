@@ -153,7 +153,10 @@ enum dw_val_class
   dw_val_class_vms_delta,
   dw_val_class_high_pc,
   dw_val_class_discr_value,
-  dw_val_class_discr_list
+  dw_val_class_discr_list,
+  dw_val_class_const_implicit,
+  dw_val_class_unsigned_const_implicit,
+  dw_val_class_file_implicit
 };
 
 /* Describe a floating point constant value, or a vector constant value.  */
@@ -198,7 +201,8 @@ struct GTY(()) dw_val_node {
       dw_loc_list_ref GTY ((tag ("dw_val_class_loc_list"))) val_loc_list;
       dw_loc_descr_ref GTY ((tag ("dw_val_class_loc"))) val_loc;
       HOST_WIDE_INT GTY ((default)) val_int;
-      unsigned HOST_WIDE_INT GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
+      unsigned HOST_WIDE_INT
+	GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
       double_int GTY ((tag ("dw_val_class_const_double"))) val_double;
       wide_int_ptr GTY ((tag ("dw_val_class_wide_int"))) val_wide;
       dw_vec_const GTY ((tag ("dw_val_class_vec"))) val_vec;
@@ -212,6 +216,8 @@ struct GTY(()) dw_val_node {
       char * GTY ((tag ("dw_val_class_lbl_id"))) val_lbl_id;
       unsigned char GTY ((tag ("dw_val_class_flag"))) val_flag;
       struct dwarf_file_data * GTY ((tag ("dw_val_class_file"))) val_file;
+      struct dwarf_file_data *
+	GTY ((tag ("dw_val_class_file_implicit"))) val_file_implicit;
       unsigned char GTY ((tag ("dw_val_class_data8"))) val_data8[8];
       tree GTY ((tag ("dw_val_class_decl_ref"))) val_decl_ref;
       struct dw_val_vms_delta_union
