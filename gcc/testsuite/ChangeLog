@@ -1,3 +1,8 @@
+2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77860
+	* gcc.dg/pr77860.c: New test.
+
 2016-10-31  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/lto/pr60449_0.c: Skip for avr.
@@ -11,7 +16,6 @@
 	* g++.dg/warn/Wshadow-compatible-local-1.C: Likewise.
 	* g++.dg/warn/Wshadow-local-1.C: Likewise.
 	* g++.dg/warn/Wshadow-local-2.C: Likewise.
-
 
 2016-10-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 

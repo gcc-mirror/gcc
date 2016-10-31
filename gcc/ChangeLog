@@ -1,5 +1,9 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/77860
+	* tree-ssa-reassoc.c (eliminate_using_constants): Handle
+	also integral complex and vector constants.
+
 	* dwarf2out.c (dwarf2out_define, dwarf2out_undef, output_macinfo_op,
 	optimize_macinfo_range, save_macinfo_strings): Replace
 	DW_MACRO_GNU_* constants with corresponding DW_MACRO_* constants.
