@@ -1,5 +1,23 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (dwarf_op): New function.
+	(size_of_loc_descr): Handle DW_OP_{implicit_pointer,entry_value},
+	DW_OP_{const,regval,deref}_type and DW_OP_{convert,reinterpret}.
+	(output_loc_operands, output_loc_operands_raw): Likewise.
+	(resolve_args_picking_1, prune_unused_types_walk_loc_descr,
+	mark_base_types, hash_loc_operands, compare_loc_operands): Likewise.
+	(resolve_addr_in_expr): Likewise.  Only punt for !dwarf_strict
+	if dwarf_version < 5.
+	(convert_descriptor_to_mode): Use dwarf_op (DW_OP_xxx) instead of
+	DW_OP_GNU_xxx.
+	(scompare_loc_descriptor, ucompare_loc_descriptor,
+	minmax_loc_descriptor, typed_binop, mem_loc_descriptor,
+	implicit_ptr_descriptor, optimize_one_addr_into_implicit_ptr,
+	optimize_location_into_implicit_ptr): Likewise.  Only punt for
+	!dwarf_strict if dwarf_version < 5.
+	(string_cst_pool_decl): Adjust comment.
+	(non_dwarf_expression): Handle DW_OP_implicit_pointer.
+
 	* dwarf2out.h (enum dw_val_class): Add dw_val_class_const_implicit,
 	dw_val_class_unsigned_const_implicit and dw_val_class_file_implicit.
 	(struct dw_val_node): Add val_file_implicit field.
