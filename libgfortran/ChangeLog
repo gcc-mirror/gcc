@@ -1,3 +1,10 @@
+2016-10-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/54679
+	* io/format.c (parse_format_list): Adjust checks for FMT_L to
+	treat a zero width as an extension, giving warnings or error
+	as appropriate. Improve messages.
+
 2016-10-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/78123
