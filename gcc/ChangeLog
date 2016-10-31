@@ -1,3 +1,9 @@
+2016-10-31  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/driver-aarch64.c (host_detect_local_cpu):
+	Rewrite handling of part num to handle the case where
+	multiple implementers share the same part num.
+
 2016-10-31  Jan Kratochvil  <jan.kratochvil@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
