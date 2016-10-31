@@ -1,3 +1,20 @@
+2016-10-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* common.opt (fira-select): New.  Choose the selection algorithm
+	by default.
+	* ira-costs.c (struct op_info, op_infos, insn_selection): New.
+	(insn_selections): New.
+	(CONST_POOL_OK_P, SMALL_REGISTER_CLASS_P, general_constant_p):
+	New.
+	(insn_constraints, setup_insn_alt): New.
+	(record_address_regs): Forward declaration.
+	(define_op_cost_from_alt): New.
+	(scan_one_insn): Call setup_insn_alt and define_op_cost_from_alt
+	for the selection algorithm.
+	(find_costs_and_classes): Release insn_constraints and
+	insn_selections.  Don't reuse already calculated pseudo classes
+	for the selection algorithm.
+
 2016-10-26  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/78060

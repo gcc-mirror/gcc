@@ -1655,6 +1655,10 @@ Common Report Var(flag_ira_loop_pressure) Optimization
 Use IRA based register pressure calculation
 in RTL loop optimizations.
 
+fira-select
+Common Report Var(flag_ira_select) Init(1)
+Pseudo-register class calculations based on insn alternative selection.
+
 fira-share-save-slots
 Common Report Var(flag_ira_share_save_slots) Init(1) Optimization
 Share slots for saving different hard registers.

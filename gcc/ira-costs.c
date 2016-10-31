@@ -478,6 +478,928 @@ copy_cost (rtx x, machine_mode mode, reg_class_t rclass, bool to_p,
 
 
 
+/* Some insn operand info after choosing an insn alternative.  */
+struct op_info
+{
+  /* Flags of that insn alternative permits the operand to be in
+     memory or an address.  */
+  bool allows_mem_p;
+  bool allows_addr_p;
+  /* Class of the operand permitted by the insn alternative.  It is an
+     approximation.  The accuracy can be improved if we have a set of
+     register classes.  Does we need such accuracy?  The question is
+     open.  */
+  enum reg_class op_class;
+};
+
+/* Container of the above info about the insn operands.  */
+static vec<struct op_info> op_infos;
+
+/* Info about selected alternative of the insns.  We could use set of
+   alternatives here.  Does it worth spent time for keeping and
+   processing more one alternative?  The question is open.  */
+struct insn_selection
+{
+  /* Number of the selcted alternative.  */
+  int alt;
+  /* Start index of the insn operands info in op_infos.  */
+  int op_info_start;
+};
+
+/* Container of the above info about the selected insns
+   alternative.  */
+static vec<struct insn_selection> insn_selections;
+
+/* True if X is a constant that can be forced into the constant pool.
+   MODE is the mode of the operand, or VOIDmode if not known.  */
+#define CONST_POOL_OK_P(MODE, X)		\
+  ((MODE) != VOIDmode				\
+   && CONSTANT_P (X)				\
+   && GET_CODE (X) != HIGH			\
+   && !targetm.cannot_force_const_mem (MODE, X))
+
+/* True if C is a non-empty register class that has too few registers
+   to be safely used as a reload target class.	*/
+#define SMALL_REGISTER_CLASS_P(C)					\
+  (reg_class_size [(C)] == 1						\
+   || (reg_class_size [(C)] >= 1 && targetm.class_likely_spilled_p (C)))
+
+static inline bool
+general_constant_p (rtx x)
+{
+  return CONSTANT_P (x) && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (x));
+}
+
+/* A container used for quick access to operand constraints for given
+   alternative.  Use preferred pseudo reg classes from the previous
+   pass when it is possible.  */
+static vec<const char *> insn_constraints;
+
+/* Choose INSN alternative and setup corresponding elements of
+   INSN_SELECTIONS and OP_INFOS.  */
+static void
+setup_insn_alt (rtx_insn *insn)
+{
+  bool ok_p = false;
+  int nop, best_overall, overall, nalt, i, m, len, uid;
+  /* LOSERS counts the operands that don't fit this alternative and
+     would require loading.  */
+  int best_losers, losers;
+  /* REJECT is a count of how undesirable this alternative says it is
+     if any reloading is required.  If the alternative matches exactly
+     then REJECT is ignored, but otherwise it gets this much counted
+     against it in addition to the reloading needed.  */
+  int reject;
+  enum reg_class curr_alt[MAX_RECOG_OPERANDS];
+  enum reg_class goal_op_alt[MAX_RECOG_OPERANDS];
+  bool curr_alt_win[MAX_RECOG_OPERANDS];
+  bool curr_alt_offmemok[MAX_RECOG_OPERANDS];
+  bool goal_alt_offmemok[MAX_RECOG_OPERANDS];
+  bool curr_alt_addrok[MAX_RECOG_OPERANDS];
+  bool goal_alt_addrok[MAX_RECOG_OPERANDS];
+  int curr_alt_matches[MAX_RECOG_OPERANDS];
+  rtx op;
+  /* The register when the operand is a subreg of register, otherwise the
+     operand itself.  */
+  rtx no_subreg_reg_operand[MAX_RECOG_OPERANDS];
+  /* The register if the operand is a register or subreg of register,
+     otherwise NULL.  */
+  rtx operand_reg[MAX_RECOG_OPERANDS];
+  enum op_type operand_type[MAX_RECOG_OPERANDS];
+  int hard_regno[MAX_RECOG_OPERANDS];
+  bool curr_swapped, goal_alt_swapped = false;
+  bool early_clobber_p[MAX_RECOG_OPERANDS];
+  int best_reload_nregs = 0, reload_nregs;
+  bool costly_p, addrok;
+  enum reg_class cl;
+  enum constraint_num cn;
+  enum machine_mode curr_operand_mode[MAX_RECOG_OPERANDS];
+  enum machine_mode mode;
+  int goal_alt_number = -1;
+  int commutative = -1;
+  bool no_input_reloads_p, no_output_reloads_p;
+  rtx set;
+  const char *p;
+
+  uid = INSN_UID (insn);
+  len = insn_selections.length ();
+  if (len <= uid)
+    {
+      insn_selections.safe_grow (uid + 1);
+      for (i = len; i <= uid; i++)
+	insn_selections[i].alt = -1;
+    }
+  if (!NONDEBUG_INSN_P (insn))
+    {
+      insn_selections[INSN_UID (insn)].alt = -1;
+      return;
+    }
+  if ((set = single_set (insn)) != NULL_RTX)
+    {
+      rtx dest = SET_DEST (set);
+      rtx src = SET_SRC (set);
+
+      if (GET_CODE (dest) == SUBREG)
+	dest = SUBREG_REG (dest);
+      if (GET_CODE (src) == SUBREG)
+	src = SUBREG_REG (src);
+      if (((REG_P (dest) && REGNO (dest) >= FIRST_PSEUDO_REGISTER)
+	   || MEM_P (dest))
+	  && ((REG_P (src) && REGNO (src) >= FIRST_PSEUDO_REGISTER)
+	      || MEM_P (src)))
+	{
+	  if (ira_dump_file != NULL)
+	    fprintf (ira_dump_file, "insn %d is move -- ignore\n", INSN_UID (insn));
+	  insn_selections[INSN_UID (insn)].alt = -1;
+	  return;
+	}
+    }
+  no_input_reloads_p = no_output_reloads_p = false;
+  /* JUMP_INSNs and CALL_INSNs are not allowed to have any output
+     reloads; neither are insns that SET cc0.  Insns that use CC0 are
+     not allowed to have any input reloads.  */
+  if (JUMP_P (insn) || CALL_P (insn))
+    no_output_reloads_p = true;
+#ifdef HAVE_cc0
+  if (reg_referenced_p (cc0_rtx, PATTERN (insn)))
+    no_input_reloads_p = true;
+  if (reg_set_p (cc0_rtx, PATTERN (insn)))
+    no_output_reloads_p = true;
+#endif
+  insn_constraints.truncate (0);
+  insn_constraints.safe_grow_cleared (recog_data.n_operands
+				      * recog_data.n_alternatives + 1);
+  best_losers = best_overall = INT_MAX;
+  for (curr_swapped = false;;curr_swapped = true)
+    {
+      /* Calculate some data common for all alternatives to speed up the
+	 function.  */
+      for (nop = 0; nop < recog_data.n_operands; nop++)
+	{
+	  operand_type[nop] = OP_IN;
+	  op = no_subreg_reg_operand[nop] = recog_data.operand[nop];
+	  operand_reg[nop] = op;
+	  hard_regno[nop] = -1;
+	  if (GET_CODE (operand_reg[nop]) == SUBREG)
+	    operand_reg[nop] = SUBREG_REG (operand_reg[nop]);
+	  if (REG_P (operand_reg[nop]))
+	    {
+	      no_subreg_reg_operand[nop] = operand_reg[nop];
+	      if (REGNO (operand_reg[nop]) < FIRST_PSEUDO_REGISTER)
+		hard_regno[nop] = REGNO (operand_reg[nop]);
+	    }
+	  else
+	    operand_reg[nop] = NULL_RTX;
+	  for (nalt = 0, p = recog_data.constraints[nop];
+	       nalt < recog_data.n_alternatives;
+	       nalt++)
+	    {
+	      insn_constraints[nop * recog_data.n_alternatives + nalt] = p;
+	      while (*p && *p != ',')
+		p++;
+	      if (*p)
+		p++;
+	    }
+	  mode = GET_MODE (recog_data.operand[nop]);
+	  curr_operand_mode[nop] = mode;
+	}
+      
+      alternative_mask enabled = get_enabled_alternatives (insn);
+      /* The constraints are made of several alternatives. Each operand's
+	 constraint looks like foo,bar,... with commas separating the
+	 alternatives.  The first alternatives for all operands go
+	 together, the second alternatives go together, etc.
+	 
+	 First loop over alternatives.  */
+      for (nalt = 0; nalt < recog_data.n_alternatives; nalt++)
+	{
+	  /* Loop over operands for one constraint alternative.  */
+	  if (!TEST_BIT (enabled, nalt))
+	    continue;
+	  
+	  overall = losers = reject = reload_nregs = 0;
+	  
+	  for (nop = 0; nop < recog_data.n_operands; nop++)
+	    {
+	      int len, c, this_alternative_matches;
+	      bool win, did_match, offmemok;
+	      /* false => this operand can be reloaded somehow for this
+		 alternative.  */
+	      bool badop;
+	      /* true => this operand can be reloaded if the alternative
+		 allows regs.  */
+	      bool winreg;
+	      /* True if a constant forced into memory would be OK for
+		 this operand.  */
+	      bool constmemok;
+	      enum reg_class this_alternative, this_costly_alternative;
+	      bool this_alternative_win;
+	      bool this_alternative_offmemok;
+	      bool scratch_p;
+	      enum machine_mode mode;
+
+	      p = insn_constraints[nop * recog_data.n_alternatives + nalt];
+	      if (*p == 0 || *p == ',')
+		{
+		  /* Fast track for no constraints at all.	*/
+		  curr_alt[nop] = NO_REGS;
+		  curr_alt_win[nop] = true;
+		  curr_alt_offmemok[nop] = false;
+		  curr_alt_addrok[nop] = false;
+		  curr_alt_matches[nop] = -1;
+		  continue;
+		}
+	      
+	      op = no_subreg_reg_operand[nop];
+	      mode = curr_operand_mode[nop];
+	      
+	      win = did_match = winreg = offmemok = constmemok = addrok = false;
+	      badop = true;
+	      
+	      early_clobber_p[nop] = false;
+	      
+	      this_costly_alternative = this_alternative = NO_REGS;
+	      this_alternative_win = false;
+	      this_alternative_offmemok = false;
+	      this_alternative_matches = -1;
+	      scratch_p = GET_CODE (no_subreg_reg_operand[nop]) == SCRATCH;
+	      
+	      /* Scan this alternative's specs for this operand; set WIN
+		 if the operand fits any letter in this alternative.
+		 Otherwise, clear BADOP if this operand could fit some
+		 letter after reloads, or set WINREG if this operand could
+		 fit after reloads provided the constraint allows some
+		 registers.	 */
+	      costly_p = false;
+	      do
+		{
+		  switch ((c = *p, len = CONSTRAINT_LEN (c, p)), c)
+		    {
+		    case '\0':
+		      len = 0;
+		      break;
+		    case ',':
+		      c = '\0';
+		      break;
+		    case '=':
+		      operand_type[nop] = OP_OUT;
+		      break;
+		    case '+':
+		      operand_type[nop] = OP_INOUT;
+		      break;
+		    case ' ': case '\t':
+		      break;
+		    case '*':
+		      /* Ignore the next letter for this pass.  */
+		      c = *++p;
+		      len = CONSTRAINT_LEN (c, p);
+		      break;
+		    case '^':
+		    case '?':
+		      reject += 6;
+		      break;
+		    case '!':
+		      reject += 600;
+		      break;
+		    case '%':
+		      /* We only support one commutative marker, the first
+			 one.  We already set commutative above.  */
+		      if (commutative < 0)
+			commutative = nop;
+		      break;
+		    case '&':
+		      early_clobber_p[nop] = true;
+		      break;
+		      
+		    case '#':
+		      /* Ignore rest of this alternative.  */
+		      do
+			p++;
+		      while (*p && *p != ',');
+		      c = '\0';
+		      break;
+		      
+		    case '0':  case '1':  case '2':	 case '3':  case '4':
+		    case '5':  case '6':  case '7':	 case '8':  case '9':
+		      {
+			char *end;
+			bool match_p;
+			
+			m = strtoul (p, &end, 10);
+			p = end;
+			len = 0;
+			ira_assert (nop > m);
+			
+			this_alternative_matches = m;
+			/* We are supposed to match a previous
+			   operand.  If we do, we win if that one did.
+			   If we do not, count both of the operands as
+			   losers.  (This is too conservative, since
+			   most of the time only a single reload insn
+			   will be needed to make the two operands
+			   win.  As a result, this alternative may be
+			   rejected when it is actually
+			   desirable.)  */
+			match_p = false;
+			if (rtx_equal_p (recog_data.operand[nop],
+					 recog_data.operand[m]))
+			  {
+			    /* We should reject matching of an early
+			       clobber operand if the matching operand is
+			       not dying in the insn.  */
+			    if (! early_clobber_p[m]
+				|| operand_reg[nop] == NULL_RTX
+				|| (find_regno_note (insn, REG_DEAD,
+						     REGNO (op))
+				    || REGNO (op) == REGNO (operand_reg[m])))
+			      match_p = true;
+			  }
+			if (match_p)
+			  {
+			    /* If we are matching a non-offsettable
+			       address where an offsettable address
+			       was expected, then we must reject this
+			       combination, because we can't reload
+			       it.  */
+			    if (curr_alt_offmemok[m]
+				&& MEM_P (recog_data.operand[m])
+				&& curr_alt[m] == NO_REGS && ! curr_alt_win[m])
+			      continue;
+			    
+			  }
+			else
+			  {
+			    /* Operands don't match.  Both operands must
+			       allow a reload register, otherwise we
+			       cannot make them match.  */
+			    if (curr_alt[m] == NO_REGS)
+			      break;
+			    /* Retroactively mark the operand we had to
+			       match as a loser, if it wasn't already and
+			       it wasn't matched to a register constraint
+			       (e.g it might be matched by memory). */
+			    if (curr_alt_win[m] && operand_reg[m] == NULL_RTX)
+			      {
+				losers++;
+				reload_nregs
+				  += (ira_reg_class_max_nregs[curr_alt[m]]
+				      [GET_MODE (recog_data.operand[m])]);
+			      }
+			    
+			    /* We prefer no matching alternatives because
+			       it gives more freedom in RA.	 */
+			    if (operand_reg[nop] == NULL_RTX
+				|| (find_regno_note (insn, REG_DEAD,
+						     REGNO (operand_reg[nop]))
+				    == NULL_RTX))
+			      reject += 2;
+			  }
+			/* If we have to reload this operand and some
+			   previous operand also had to match the same
+			   thing as this operand, we don't know how to do
+			   that.  */
+			if (!match_p || !curr_alt_win[m])
+			  {
+			    for (i = 0; i < nop; i++)
+			      if (curr_alt_matches[i] == m)
+				break;
+			    if (i < nop)
+			      break;
+			  }
+			else
+			  did_match = true;
+			
+			/* This can be fixed with reloads if the operand
+			   we are supposed to match can be fixed with
+			   reloads. */
+			badop = false;
+			this_alternative = curr_alt[m];
+			winreg = this_alternative != NO_REGS;
+			break;
+		      }
+
+		    case 'g':
+		      if (MEM_P (op) || general_constant_p (op))
+			win = true;
+		      /* Drop through into 'r' case.  */
+		      cl = GENERAL_REGS;
+		      goto reg;
+
+		    default:
+		      cn = lookup_constraint (p);
+		      switch (get_constraint_type (cn))
+			{
+			case CT_REGISTER:
+			  cl = reg_class_for_constraint (cn);
+			  if (cl != NO_REGS)
+			    goto reg;
+			  break;
+			  
+			case CT_CONST_INT:
+			  if (CONST_INT_P (op)
+			      && insn_const_int_ok_for_constraint (INTVAL (op), cn))
+			    win = true;
+			  break;
+
+			case CT_MEMORY:
+			  if (constraint_satisfied_p (op, cn))
+			    win = true;
+
+			  /* If we didn't already win, we can reload
+			     constants via force_const_mem or put the
+			     pseudo value into memory, or make other
+			     memory by reloading the address like for
+			     'o'.  */
+			  if (CONST_POOL_OK_P (mode, op)
+			      || MEM_P (op) || REG_P (op))
+			    badop = false;
+			  constmemok = true;
+			  offmemok = true;
+			  break;
+
+			case CT_ADDRESS:
+			  /* If we didn't already win, we can reload
+			     the address into a base register.  */
+			  if (constraint_satisfied_p (op, cn))
+			    win = true;
+			  cl = base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
+					       ADDRESS, SCRATCH);
+			  badop = false;
+			  addrok = true;
+			  goto reg;
+
+			case CT_FIXED_FORM:
+			  if (constraint_satisfied_p (op, cn))
+			    win = true;
+			  break;
+
+			case CT_SPECIAL_MEMORY:
+			  if (constraint_satisfied_p (op, cn))
+			    win = true;
+			  break;
+			}
+		      break;
+		      
+		    reg:
+		      this_alternative
+			= reg_class_subunion[this_alternative][cl];
+		      if (costly_p)
+			this_costly_alternative
+			  = (reg_class_subunion
+			     [this_costly_alternative][cl]);
+		      if (mode == BLKmode)
+			break;
+		      winreg = true;
+		      if (hard_regno[nop] >= 0)
+			{
+			  if (in_hard_reg_set_p (reg_class_contents[this_alternative],
+						 mode, hard_regno[nop]))
+			    win = true;
+			}
+		      else if ((pref == NULL && REG_P (op)) || scratch_p)
+			win = true;
+		      else if (pref != NULL &&  REG_P (op)
+			       && REGNO (op) >= FIRST_PSEUDO_REGISTER
+			       && pref[COST_INDEX (REGNO (op))] != NO_REGS
+			       && (ira_class_subset_p
+				   [pref[COST_INDEX (REGNO (op))]][this_alternative]))
+			win = true;
+		      break;
+		    }
+		  if (c != ' ' && c != '\t')
+		    costly_p = c == '*';
+		}
+	      while ((p += len), c);
+	      
+	      /* Record which operands fit this alternative.  */
+	      if (win)
+		{
+		  this_alternative_win = true;
+		  if (operand_reg[nop] != NULL_RTX || scratch_p)
+		    {
+		      if (this_costly_alternative == this_alternative
+			  || (hard_regno[nop] >= 0
+			      && in_hard_reg_set_p (reg_class_contents
+						    [this_costly_alternative],
+						    mode, hard_regno[nop]))
+			  || (pref != NULL &&  REG_P (op)
+			      && REGNO (op) >= FIRST_PSEUDO_REGISTER
+			      && (ira_class_subset_p
+				  [pref[COST_INDEX (REGNO (op))]]
+				  [this_costly_alternative])))
+			reject++;
+		    }
+		}
+	      else if (did_match)
+		;
+	      else
+		{
+		  int const_to_mem = 0;
+		  bool no_regs_p;
+		  
+		  /* If this alternative asks for a specific reg class, see if there
+		     is at least one allocatable register in that class.  */
+		  no_regs_p
+		    = (this_alternative == NO_REGS
+		       || (hard_reg_set_subset_p
+			   (reg_class_contents[this_alternative],
+			    ira_no_alloc_regs)));
+		  
+		  /* For asms, verify that the class for this alternative is possible
+		     for the mode that is specified.  */
+		  if (!no_regs_p && INSN_CODE (insn) < 0)
+		    {
+		      int i;
+		      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+			if (HARD_REGNO_MODE_OK (i, mode)
+			    && in_hard_reg_set_p (reg_class_contents[this_alternative],
+						  mode, i))
+			  break;
+		      if (i == FIRST_PSEUDO_REGISTER)
+			winreg = false;
+		    }
+		  
+		  /* If this operand accepts a register, and if the
+		     register class has at least one allocatable register,
+		     then this operand can be reloaded.  */
+		  if (winreg && !no_regs_p)
+		    badop = false;
+		  
+		  if (badop)
+		    goto fail;
+		  
+		  this_alternative_offmemok = offmemok;
+		  if (this_costly_alternative != NO_REGS)
+		    reject++;
+		  /* If the operand is dying, has a matching constraint,
+		     and satisfies constraints of the matched operand
+		     which failed to satisfy the own constraints, we do
+		     not need to generate a reload insn for this
+		     operand.  */
+		  if (!(this_alternative_matches >= 0
+			&& !curr_alt_win[this_alternative_matches]
+			&& REG_P (op)
+			&& find_regno_note (insn, REG_DEAD, REGNO (op))
+			&& ((hard_regno[nop] >= 0
+			     && in_hard_reg_set_p (reg_class_contents
+						   [curr_alt[this_alternative_matches]],
+						   mode, hard_regno[nop]))
+			    || pref == NULL
+			    || (REGNO (op) >= FIRST_PSEUDO_REGISTER
+				&& pref[COST_INDEX (REGNO (op))] != NO_REGS
+				&& (ira_class_subset_p
+				    [pref[COST_INDEX (REGNO (op))]]
+				    [curr_alt[this_alternative_matches]])))))
+		    losers++;
+		  /* If this is a constant that is reloaded into the
+		     desired class by copying it to memory first, count
+		     that as another reload.  This is consistent with
+		     other code and is required to avoid choosing another
+		     alternative when the constant is moved into memory.
+		     Note that the test here is precisely the same as in
+		     the code below that calls force_const_mem.  */
+		  if (CONST_POOL_OK_P (mode, op)
+		      && ((targetm.preferred_reload_class
+			   (op, this_alternative) == NO_REGS)
+			  || no_input_reloads_p))
+		    {
+		      const_to_mem = 1;
+		      if (! no_regs_p)
+			losers++;
+		    }
+		  
+		  /* Alternative loses if it requires a type of reload not
+		     permitted for this insn.  We can always reload
+		     objects with a REG_UNUSED note.  */
+		  if ((operand_type[nop] != OP_IN
+		       && no_output_reloads_p
+		       && ! find_reg_note (insn, REG_UNUSED, op))
+		      || (operand_type[nop] != OP_OUT
+			  && no_input_reloads_p && ! const_to_mem))
+		    goto fail;
+		  
+		  /* Check strong discouragement of reload of non-constant
+		     into class THIS_ALTERNATIVE.  */
+		  if (! CONSTANT_P (op) && ! no_regs_p
+		      && (targetm.preferred_reload_class
+			  (op, this_alternative) == NO_REGS
+			  || (operand_type[nop] == OP_OUT
+			      && (targetm.preferred_output_reload_class
+				  (op, this_alternative) == NO_REGS))))
+		    reject += 600;
+		  
+		  if (! (MEM_P (op) && offmemok)
+		      && ! (const_to_mem && constmemok))
+		    {
+		      /* We prefer to reload pseudos over reloading
+			 other things, since such reloads may be able
+			 to be eliminated later.  So bump REJECT in
+			 other cases.  Don't do this in the case where
+			 we are forcing a constant into memory and it
+			 will then win since we don't want to have a
+			 different alternative match then.  */
+		      if (! (scratch_p
+			     || (REG_P (op) && REGNO (op) >= FIRST_PSEUDO_REGISTER)))
+			reject += 2;
+		      
+		      if (! no_regs_p)
+			reload_nregs
+			  += ira_reg_class_max_nregs[this_alternative][mode];
+		      
+		      if (SMALL_REGISTER_CLASS_P (this_alternative))
+			reject += 3;
+		    }
+		  
+		  /* We are trying to spill pseudo into memory.  It is
+		     usually more costly than moving to a hard
+		     register although it might takes the same number
+		     of reloads.  */
+		  if (no_regs_p && (REG_P (op) || scratch_p))
+		    reject += 3;
+		  
+		  /* Input reloads can be inherited more often than
+		     output reloads can be removed, so penalize output
+		     reloads.  */
+		  if (! (REG_P (op) || scratch_p) || operand_type[nop] != OP_IN)
+		    reject++;
+		}
+	      
+	      if (early_clobber_p[nop] && ! scratch_p)
+		reject++;
+	      
+	      /* ??? We check early clobbers after processing all
+		 operands (see loop below) and there we update the
+		 costs more.  Should we update the cost (may be
+		 approximately) here because of early clobber register
+		 reloads or it is a rare or non-important thing to be
+		 worth to do it.  */
+	      overall = losers * 6 + reject;
+	      if ((best_losers == 0 || losers != 0) && best_overall < overall)
+		goto fail;
+	      
+	      curr_alt[nop] = this_alternative;
+	      curr_alt_win[nop] = this_alternative_win;
+	      curr_alt_offmemok[nop] = this_alternative_offmemok;
+	      curr_alt_addrok[nop] = addrok;
+	      curr_alt_matches[nop] = this_alternative_matches;
+	      
+	      if (this_alternative_matches >= 0
+		  && !did_match && !this_alternative_win)
+		curr_alt_win[this_alternative_matches] = false;
+	    }
+	  ok_p = true;
+	  /* If this alternative can be made to work by reloading, and
+	     it needs less reloading than the others checked so far,
+	     record it as the chosen goal for reloading.  */
+	  if ((best_losers != 0 && losers == 0)
+	      || (((best_losers == 0 && losers == 0)
+		   || (best_losers != 0 && losers != 0))
+		  && (best_overall > overall
+		      || (best_overall == overall
+			  /* If the cost of the reloads is the same,
+			     prefer alternative which requires minimal
+			     number of reload regs.  */
+		      && (reload_nregs < best_reload_nregs
+			  || (reload_nregs == best_reload_nregs
+			      && nalt < goal_alt_number))))))
+	    {
+	      goal_alt_swapped = curr_swapped;
+	      for (nop = 0; nop < recog_data.n_operands; nop++)
+		{
+		  goal_op_alt[nop] = curr_alt[nop];
+		  goal_alt_offmemok[nop] = curr_alt_offmemok[nop];
+		  goal_alt_addrok[nop] = curr_alt_addrok[nop];
+		  if ((m = curr_alt_matches[nop]) >= 0)
+		    {
+		      goal_op_alt[nop] = reg_class_subunion[curr_alt[m]][curr_alt[nop]];
+		      if (curr_alt_offmemok[m])
+			goal_alt_offmemok[nop] = true;
+		    }
+		}
+	      best_overall = overall;
+	      best_losers = losers;
+	      best_reload_nregs = reload_nregs;
+	      goal_alt_number = nalt;
+	    }
+	  if (losers == 0)
+	    /* Everything is satisfied.  Do not process alternatives
+	       anymore.  */
+	    break;
+	fail:
+	  ;
+	}
+      if (commutative < 0)
+	break;
+      if (curr_swapped)
+	break;
+      op = recog_data.operand[commutative];
+      recog_data.operand[commutative] = recog_data.operand[commutative + 1];
+      recog_data.operand[commutative + 1] = op;
+    }
+  if (curr_swapped)
+    {
+      op = recog_data.operand[commutative];
+      recog_data.operand[commutative] = recog_data.operand[commutative + 1];
+      recog_data.operand[commutative + 1] = op;
+    }
+  if (! ok_p)
+    goal_alt_number = 0;
+  if (ira_dump_file != NULL)
+    {
+      fprintf (ira_dump_file, "insn %u", uid);
+      if (INSN_CODE (insn) >= 0
+          && (p = get_insn_name (INSN_CODE (insn))) != NULL)
+        fprintf (ira_dump_file, " {%s}", p);
+      fprintf (ira_dump_file, " will use alt %d%s:", goal_alt_number,
+	       goal_alt_swapped ? " with swap" : "" );
+    }
+  len = op_infos.length ();
+  if (insn_selections[uid].alt >= 0 && insn_selections[uid].alt != goal_alt_number)
+    fprintf (stderr, "change alt %d to %d in insn %d\n",
+	     insn_selections[uid].alt, goal_alt_number, uid);
+  insn_selections[uid].alt = goal_alt_number;
+  insn_selections[uid].op_info_start = len;
+  op_infos.safe_grow (len + recog_data.n_operands);
+  for (nop = 0; nop < recog_data.n_operands; nop++)
+    {
+      op_infos[len + nop].op_class = goal_op_alt[nop];
+      op_infos[len + nop].allows_mem_p = goal_alt_offmemok[nop];
+      op_infos[len + nop].allows_addr_p = goal_alt_addrok[nop];
+      if (ira_dump_file != NULL)
+	{
+	  p = insn_constraints[nop * recog_data.n_alternatives + goal_alt_number];
+	  if (p == NULL || *p == '\0')
+	    continue;
+	  fprintf (ira_dump_file, "  (%d) ", nop);
+	  for (; *p != '\0' && *p != ',' && *p != '#'; p++)
+	    fputc (*p, ira_dump_file);
+	}
+    }
+  if (ira_dump_file != NULL)
+    fprintf (ira_dump_file, "\n");
+}
+
+static void
+record_address_regs (enum machine_mode mode, addr_space_t as, rtx x,
+		     int context, enum rtx_code outer_code,
+		     enum rtx_code index_code, int scale);
+
+/* Update reg classes and memory costs of pseudos after choosing
+   alternative ISEL of INSN.  Don't update memory costs if
+   IGNORE_MEM_COST_P is TRUE.  */
+static void
+define_op_cost_from_alt (rtx_insn *insn, const struct insn_selection &isel, bool ignore_mem_cost_p)
+{
+  int nop, op_start, regno, other_regno;
+  rtx set;
+
+  ira_assert (isel.alt >= 0);
+  op_start = isel.op_info_start;
+  for (nop = 0; nop < recog_data.n_operands; nop++)
+    {
+      rtx op = recog_data.operand[nop];
+      int k, add_cost, regno;
+      bool in_p, out_p, allows_mem_p;
+      enum machine_mode mode;
+      struct costs *pp;
+      int *pp_costs;
+      cost_classes_t cost_classes_ptr;
+      enum reg_class *cost_classes;
+      enum reg_class op_class, cost_class;
+      move_table *move_in_cost, *move_out_cost;
+
+      if (GET_CODE (op) == SUBREG)
+	op = SUBREG_REG (op);
+      op_class = op_infos[op_start + nop].op_class;
+      if (MEM_P (op))
+	record_address_regs (GET_MODE (op), MEM_ADDR_SPACE (op),
+			     XEXP (op, 0), 0, MEM, SCRATCH, frequency * 2);
+      else if (op_infos[op_start + nop].allows_addr_p)
+	record_address_regs (VOIDmode, ADDR_SPACE_GENERIC,
+			     op, 0, ADDRESS, SCRATCH, frequency * 2);
+  
+      if (! REG_P (op) || (regno = REGNO (op)) < FIRST_PSEUDO_REGISTER)
+	continue;
+      
+      op_class = op_infos[op_start + nop].op_class;
+      mode = GET_MODE (op); /* ??? smallest mode for paradoxical subreg */
+      pp = COSTS (costs, COST_INDEX (regno));
+      cost_classes_ptr = regno_cost_classes[regno];
+      cost_classes = cost_classes_ptr->classes;
+      pp_costs = pp->cost;
+      in_p = recog_data.operand_type[nop] != OP_OUT;
+      out_p = recog_data.operand_type[nop] != OP_IN;
+      ira_init_register_move_cost_if_necessary (mode);
+      if (! in_p)
+	{
+	  ira_assert (out_p);
+	  move_out_cost = ira_may_move_out_cost[mode];
+	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+	    {
+	      cost_class = cost_classes[k];
+	      add_cost = move_out_cost[op_class][cost_class] * frequency;
+	      if (INT_MAX - add_cost < pp_costs[k])
+		pp_costs[k] = INT_MAX;
+	      else 
+		pp_costs[k] += add_cost;
+	    }
+	}
+      else if (! out_p)
+	{
+	  ira_assert (in_p);
+	  move_in_cost = ira_may_move_in_cost[mode];
+	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+	    {
+	      cost_class = cost_classes[k];
+	      add_cost = move_in_cost[cost_class][op_class] * frequency;
+	      if (INT_MAX - add_cost < pp_costs[k])
+		pp_costs[k] = INT_MAX;
+	      else 
+		pp_costs[k] += add_cost;
+	    }
+	}
+      else
+	{
+	  move_in_cost = ira_may_move_in_cost[mode];
+	  move_out_cost = ira_may_move_out_cost[mode];
+	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+	    {
+	      cost_class = cost_classes[k];
+	      add_cost = (move_in_cost[cost_class][op_class]
+			  + move_out_cost[op_class][cost_class]) * frequency;
+	      if (INT_MAX - add_cost < pp_costs[k])
+		pp_costs[k] = INT_MAX;
+	      else 
+		pp_costs[k] += add_cost;
+	    }
+	}
+      
+      if (!ignore_mem_cost_p)
+	{
+	  allows_mem_p = op_infos[op_start + nop].allows_mem_p;
+	  /* If the alternative actually allows memory, make things a bit
+	     cheaper since we won't need an extra insn to load it.  */
+	  add_cost = ((out_p ? ira_memory_move_cost[mode][op_class][0] : 0)
+		      + (in_p ? ira_memory_move_cost[mode][op_class][1] : 0)
+		      - allows_mem_p) * frequency;
+	  if (INT_MAX - add_cost < pp->mem_cost)
+	    pp->mem_cost = INT_MAX;
+	  else 
+	    pp->mem_cost += add_cost;
+	}
+    }
+  if ((set = single_set (insn)) != NULL_RTX)
+    {
+      rtx dest = SET_DEST (set);
+      rtx src = SET_SRC (set);
+
+      dest = SET_DEST (set);
+      src = SET_SRC (set);
+      if (REG_P (src) && REG_P (dest)
+	  && find_regno_note (insn, REG_DEAD, REGNO (src))
+	  && (((regno = REGNO (src)) >= FIRST_PSEUDO_REGISTER
+	       && (other_regno = REGNO (dest)) < FIRST_PSEUDO_REGISTER)
+	      || ((regno = REGNO (dest)) >= FIRST_PSEUDO_REGISTER
+		  && (other_regno = REGNO (src)) < FIRST_PSEUDO_REGISTER)))
+	{
+	  struct costs *pp = COSTS (costs, COST_INDEX (regno));
+	  int *pp_costs = pp->cost;
+	  enum machine_mode mode = GET_MODE (src);
+	  cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
+	  enum reg_class *cost_classes = cost_classes_ptr->classes;
+	  reg_class_t rclass;
+	  int k, nr;
+	  
+	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+	    {
+	      rclass = cost_classes[k];
+	      if (TEST_HARD_REG_BIT (reg_class_contents[rclass], other_regno)
+		  && (reg_class_size[(int) rclass]
+		      == ira_reg_class_max_nregs [(int) rclass][(int) mode]))
+		{
+		  if (reg_class_size[rclass] == 1)
+		    pp_costs[k] -= frequency;
+		  else
+		    {
+		      for (nr = 0;
+			   nr < hard_regno_nregs[other_regno][mode];
+			   nr++)
+			if (! TEST_HARD_REG_BIT (reg_class_contents[rclass],
+						 other_regno + nr))
+			  break;
+		      
+		      if (nr == hard_regno_nregs[other_regno][mode])
+			pp_costs[k] -= frequency;
+		    }
+		}
+	    }
+	}
+    }
+}
+
+
+
+
 /* Record the cost of using memory or hard registers of various
    classes for the operands in INSN.
 
@@ -1430,6 +2352,10 @@ scan_one_insn (rtx_insn *insn)
   counted_mem = false;
   set = single_set (insn);
   extract_insn (insn);
+  if (flag_ira_select
+      && (insn_selections.length () <= (size_t) INSN_UID (insn)
+	  || insn_selections [INSN_UID (insn)].alt < 0))
+    setup_insn_alt (insn);
 
   /* If this insn loads a parameter from its stack slot, then it
      represents a savings, rather than a cost, if the parameter is
@@ -1469,41 +2395,45 @@ scan_one_insn (rtx_insn *insn)
       counted_mem = true;
     }
 
-  record_operand_costs (insn, pref);
-
-  /* Now add the cost for each operand to the total costs for its
-     allocno.  */
-  for (i = 0; i < recog_data.n_operands; i++)
-    if (REG_P (recog_data.operand[i])
-	&& REGNO (recog_data.operand[i]) >= FIRST_PSEUDO_REGISTER)
-      {
-	int regno = REGNO (recog_data.operand[i]);
-	struct costs *p = COSTS (costs, COST_INDEX (regno));
-	struct costs *q = op_costs[i];
-	int *p_costs = p->cost, *q_costs = q->cost;
-	cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
-	int add_cost;
-
-	/* If the already accounted for the memory "cost" above, don't
-	   do so again.  */
-	if (!counted_mem)
+  if (flag_ira_select && insn_selections [INSN_UID (insn)].alt >= 0)
+    define_op_cost_from_alt (insn, insn_selections [INSN_UID (insn)], counted_mem);
+  else
+    {
+      record_operand_costs (insn, pref);
+      
+      /* Now add the cost for each operand to the total costs for its
+	 allocno.  */
+      for (i = 0; i < recog_data.n_operands; i++)
+	if (REG_P (recog_data.operand[i])
+	    && REGNO (recog_data.operand[i]) >= FIRST_PSEUDO_REGISTER)
 	  {
-	    add_cost = q->mem_cost;
-	    if (add_cost > 0 && INT_MAX - add_cost < p->mem_cost)
-	      p->mem_cost = INT_MAX;
-	    else
-	      p->mem_cost += add_cost;
+	    int regno = REGNO (recog_data.operand[i]);
+	    struct costs *p = COSTS (costs, COST_INDEX (regno));
+	    struct costs *q = op_costs[i];
+	    int *p_costs = p->cost, *q_costs = q->cost;
+	    cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
+	    int add_cost;
+	    
+	    /* If the already accounted for the memory "cost" above, don't
+	       do so again.  */
+	    if (!counted_mem)
+	      {
+		add_cost = q->mem_cost;
+		if (add_cost > 0 && INT_MAX - add_cost < p->mem_cost)
+		  p->mem_cost = INT_MAX;
+		else
+		  p->mem_cost += add_cost;
+	      }
+	    for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+	      {
+		add_cost = q_costs[k];
+		if (add_cost > 0 && INT_MAX - add_cost < p_costs[k])
+		  p_costs[k] = INT_MAX;
+		else
+		  p_costs[k] += add_cost;
+	      }
 	  }
-	for (k = cost_classes_ptr->num - 1; k >= 0; k--)
-	  {
-	    add_cost = q_costs[k];
-	    if (add_cost > 0 && INT_MAX - add_cost < p_costs[k])
-	      p_costs[k] = INT_MAX;
-	    else
-	      p_costs[k] += add_cost;
-	  }
-      }
-
+    }
   return insn;
 }
 
@@ -1620,9 +2550,11 @@ find_costs_and_classes (FILE *dump_file)
   regno_best_class
     = (enum reg_class *) ira_allocate (max_reg_num ()
 				       * sizeof (enum reg_class));
+  insn_constraints.release ();
+  insn_selections.release ();
   for (i = max_reg_num () - 1; i >= FIRST_PSEUDO_REGISTER; i--)
     regno_best_class[i] = NO_REGS;
-  if (!resize_reg_info () && allocno_p
+  if (!resize_reg_info () && allocno_p && ! flag_ira_select
       && pseudo_classes_defined_p && flag_expensive_optimizations)
     {
       ira_allocno_t a;
