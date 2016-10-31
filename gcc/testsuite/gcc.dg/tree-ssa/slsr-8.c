@@ -4,7 +4,7 @@
 /* { dg-options "-O3 -fdump-tree-optimized" } */
 
 int*
-f (int s, int *c)
+f (int s, int *c, int *d)
 {
   int a1, a2, a3, *x1, *x2, *x3;
 
@@ -14,10 +14,15 @@ f (int s, int *c)
   x2 = c - a2;
   a3 = 6 * s;
   x3 = c - a3;
-  return x1 ? x2 : x3;
+  return x1 == d ? x2 : x3;
 }
 
+/* Note that since some branch prediction heuristics changed, the
+   calculations of x2 and x3 are pushed downward into the legs
+   of the conditional, changing the code presented to SLSR.
+   However, this proves to be a useful test for introducing an
+   initializer with a cast, so we'll keep it as is.  */
+
 /* There are 4 ' * ' instances in the decls (since "int * iftmp.0;" is
-   added), 1 parm, 2 in the code.  The second one in the code can be
-   a widening mult.  */
-/* { dg-final { scan-tree-dump-times " w?\\* " 7 "optimized" } } */
+   added), 2 parms, 3 in the code.  */
+/* { dg-final { scan-tree-dump-times " \\* " 9 "optimized" } } */
