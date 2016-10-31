@@ -17,5 +17,5 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-  INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_align_insns);
   INSERT_PASS_AFTER (pass_convert_to_eh_region_ranges, 1, pass_handle_trap_shadows);
+  INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_align_insns);
