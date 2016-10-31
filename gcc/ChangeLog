@@ -1,6 +1,31 @@
+2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (debug_line_str_section): New variable.
+	(debug_line_str_hash): Likewise.
+	(DEBUG_LINE_STR_SECTION): Define.
+	(set_indirect_string): Handle DW_FORM_line_strp like
+	DW_FORM_strp.
+	(find_string_form): Fix up formatting.
+	(size_of_die): Handle DW_FORM_line_strp like DW_FORM_strp.
+	Fix up indentation.
+	(output_die): Handle DW_FORM_line_strp.
+	(DWARF5_USE_DEBUG_LINE_STR): Define.
+	(output_line_string): New function.
+	(output_file_names): Add -gdwarf-5 support.
+	(output_line_info): Likewise.
+	(init_sections_and_labels): Initialize debug_line_str_section.
+	(output_indirect_string): Change 2nd argument from void *
+	to enum dwarf_form form, compare with form rather than
+	DW_FORM_strp.
+	(output_indirect_strings): Pass DW_FORM_strp to
+	output_indirect_string traversion.
+	(dwarf2out_finish): Output .debug_line_str strings.
+	(dwarf2out_c_finalize): Clear debug_line_str_section and
+	debug_line_str_hash.
+
 2016-10-31  Tom Tromey  <tom@tromey.com>
 
-	PR debug/77315:
+	PR debug/77315
 	* dwarf2out.c (mem_loc_descriptor): Use DW_OP_form_tls_address.
 	(resolve_args_picking_1): Move DW_OP_form_tls_address case next to
 	DW_OP_GNU_push_tls_address case.
