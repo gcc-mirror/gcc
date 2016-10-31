@@ -1,3 +1,36 @@
+2016-10-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/71915
+	PR tree-optimization/71490
+	* gimple-ssa-strength-reduction.c (struct slsr_cand_d): Add
+	stride_type field.
+	(find_basis_for_base_expr): Require stride types to match when
+	seeking a basis.
+	(alloc_cand_and_find_basis): Record the stride type.
+	(slsr_process_phi): Pass stride type to alloc_cand_and_find_basis.
+	(backtrace_base_for_ref): Pass types to legal_cast_p_1 rather than
+	the expressions having those types.
+	(slsr_process_ref): Pass stride type to alloc_cand_and_find_basis.
+	(create_mul_ssa_cand): Likewise.
+	(create_mul_imm_cand): Likewise.
+	(create_add_ssa_cand): Likewise.
+	(create_add_imm_cand): Likewise.
+	(legal_cast_p_1): Change interface to accept types rather than the
+	expressions having those types.
+	(legal_cast_p): Pass types to legal_cast_p_1.
+	(slsr_process_cast): Pass stride type to
+	alloc_cand_and_find_basis.
+	(slsr_process_copy): Likewise.
+	(dump_candidate): Display stride type when a cast exists.
+	(create_add_on_incoming_edge): Introduce a cast when necessary for
+	the stride type.
+	(analyze_increments): Change the code checking for invalid casts
+	to rely on the stride type, and update the documentation and
+	example.  Change the code checking for pointer multiplies to rely
+	on the stride type.
+	(insert_initializers): Introduce a cast when necessary for the
+	stride type.  Use the stride type for the type of the initializer.
+
 2016-10-30  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* config/arm/arm.c (arm_const_not_ok_for_debug_p): Use VAR_P.
