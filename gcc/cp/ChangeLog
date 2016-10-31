@@ -1,3 +1,8 @@
+2016-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77886
+	* g++.dg/warn/Wimplicit-fallthrough-2.C: New test.
+
 2016-09-11  Le-Chun Wu  <lcwu@google.com>
 	    Mark Wielaard  <mjw@redhat.com>
 
