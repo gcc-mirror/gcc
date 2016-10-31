@@ -1276,7 +1276,13 @@ typedef struct GTY(()) dw_loc_list_struct {
   bool resolved_addr;
   /* True if this list has been replaced by dw_loc_next.  */
   bool replaced;
-  bool emitted;
+  /* True if it has been emitted into .debug_loc* / .debug_loclists*
+     section.  */
+  unsigned char emitted : 1;
+  /* True if hash field is index rather than hash value.  */
+  unsigned char num_assigned : 1;
+  /* True if .debug_loclists.dwo offset has been emitted for it already.  */
+  unsigned char offset_emitted : 1;
   /* True if the range should be emitted even if begin and end
      are the same.  */
   bool force;
@@ -1366,8 +1372,6 @@ dw_val_equal_p (dw_val_node *a, dw_val_node *b)
     case dw_val_class_unsigned_const_implicit:
     case dw_val_class_const_implicit:
     case dw_val_class_range_list:
-    case dw_val_class_lineptr:
-    case dw_val_class_macptr:
       /* These are all HOST_WIDE_INT, signed or unsigned.  */
       return a->v.val_unsigned == b->v.val_unsigned;
 
@@ -1380,6 +1384,9 @@ dw_val_equal_p (dw_val_node *a, dw_val_node *b)
     case dw_val_class_fde_ref:
       return a->v.val_fde_index == b->v.val_fde_index;
     case dw_val_class_lbl_id:
+    case dw_val_class_lineptr:
+    case dw_val_class_macptr:
+    case dw_val_class_loclistsptr:
     case dw_val_class_high_pc:
       return strcmp (a->v.val_lbl_id, b->v.val_lbl_id) == 0;
     case dw_val_class_str:
@@ -3310,6 +3317,8 @@ static inline rtx AT_addr (dw_attr_node *);
 static void add_AT_lbl_id (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_lineptr (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_macptr (dw_die_ref, enum dwarf_attribute, const char *);
+static void add_AT_loclistsptr (dw_die_ref, enum dwarf_attribute,
+				const char *);
 static void add_AT_offset (dw_die_ref, enum dwarf_attribute,
 			   unsigned HOST_WIDE_INT);
 static void add_AT_range_list (dw_die_ref, enum dwarf_attribute,
@@ -3610,8 +3619,8 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
   ref->dtprel = dtprel;
   if (dwarf_split_debug_info)
     ref->dw_loc_oprnd1.val_entry
-        = add_addr_table_entry (addr,
-                                dtprel ? ate_kind_rtx_dtprel : ate_kind_rtx);
+      = add_addr_table_entry (addr,
+			      dtprel ? ate_kind_rtx_dtprel : ate_kind_rtx);
   else
     ref->dw_loc_oprnd1.val_entry = NULL;
 
@@ -3661,6 +3670,12 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 #endif
 #ifndef DEBUG_DWO_LOC_SECTION
 #define DEBUG_DWO_LOC_SECTION  ".debug_loc.dwo"
+#endif
+#ifndef DEBUG_LOCLISTS_SECTION
+#define DEBUG_LOCLISTS_SECTION	".debug_loclists"
+#endif
+#ifndef DEBUG_DWO_LOCLISTS_SECTION
+#define DEBUG_DWO_LOCLISTS_SECTION  ".debug_loclists.dwo"
 #endif
 #ifndef DEBUG_PUBNAMES_SECTION
 #define DEBUG_PUBNAMES_SECTION	\
@@ -4165,7 +4180,7 @@ add_AT_low_high_pc (dw_die_ref die, const char *lbl_low, const char *lbl_high,
   attr.dw_attr_val.v.val_lbl_id = lbl_id;
   if (dwarf_split_debug_info && !force_direct)
     attr.dw_attr_val.val_entry
-        = add_addr_table_entry (lbl_id, ate_kind_label);
+      = add_addr_table_entry (lbl_id, ate_kind_label);
   else
     attr.dw_attr_val.val_entry = NULL;
   add_dwarf_attr (die, &attr);
@@ -4180,7 +4195,7 @@ add_AT_low_high_pc (dw_die_ref die, const char *lbl_low, const char *lbl_high,
   if (attr.dw_attr_val.val_class == dw_val_class_lbl_id
       && dwarf_split_debug_info && !force_direct)
     attr.dw_attr_val.val_entry
-        = add_addr_table_entry (lbl_id, ate_kind_label);
+      = add_addr_table_entry (lbl_id, ate_kind_label);
   else
     attr.dw_attr_val.val_entry = NULL;
   add_dwarf_attr (die, &attr);
@@ -4715,6 +4730,22 @@ add_AT_lineptr (dw_die_ref die, enum dwarf_attribute attr_kind,
 }
 
 /* Add a section offset attribute value to a DIE, an offset into the
+   debug_loclists section.  */
+
+static inline void
+add_AT_loclistsptr (dw_die_ref die, enum dwarf_attribute attr_kind,
+		    const char *label)
+{
+  dw_attr_node attr;
+
+  attr.dw_attr = attr_kind;
+  attr.dw_attr_val.val_class = dw_val_class_loclistsptr;
+  attr.dw_attr_val.val_entry = NULL;
+  attr.dw_attr_val.v.val_lbl_id = xstrdup (label);
+  add_dwarf_attr (die, &attr);
+}
+
+/* Add a section offset attribute value to a DIE, an offset into the
    debug_macinfo section.  */
 
 static inline void
@@ -4796,6 +4827,7 @@ AT_lbl (dw_attr_node *a)
   gcc_assert (a && (AT_class (a) == dw_val_class_lbl_id
 		    || AT_class (a) == dw_val_class_lineptr
 		    || AT_class (a) == dw_val_class_macptr
+		    || AT_class (a) == dw_val_class_loclistsptr
 		    || AT_class (a) == dw_val_class_high_pc));
   return a->dw_attr_val.v.val_lbl_id;
 }
@@ -5795,6 +5827,7 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
+    case dw_val_class_loclistsptr:
     case dw_val_class_high_pc:
       fprintf (outfile, "label: %s", val->v.val_lbl_id);
       break;
@@ -6187,6 +6220,7 @@ attr_checksum (dw_attr_node *at, struct md5_ctx *ctx, int *mark)
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
+    case dw_val_class_loclistsptr:
     case dw_val_class_high_pc:
       break;
 
@@ -6482,6 +6516,7 @@ attr_checksum_ordered (enum dwarf_tag tag, dw_attr_node *at,
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
+    case dw_val_class_loclistsptr:
     case dw_val_class_high_pc:
       break;
 
@@ -6978,6 +7013,7 @@ same_dw_val_p (const dw_val_node *v1, const dw_val_node *v2, int *mark)
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
+    case dw_val_class_loclistsptr:
     case dw_val_class_high_pc:
       return 1;
 
@@ -8259,6 +8295,59 @@ output_location_lists (dw_die_ref die)
   FOR_EACH_CHILD (die, c, output_location_lists (c));
 }
 
+/* During assign_location_list_indexes and output_loclists_offset the
+   current index, after it the number of assigned indexes (i.e. how
+   large the .debug_loclists* offset table should be).  */
+static unsigned int loc_list_idx;
+
+/* Output all location list offsets for the DIE and its children.  */
+
+static void
+output_loclists_offsets (dw_die_ref die)
+{
+  dw_die_ref c;
+  dw_attr_node *a;
+  unsigned ix;
+
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
+    if (AT_class (a) == dw_val_class_loc_list)
+      {
+	dw_loc_list_ref l = AT_loc_list (a);
+	if (l->offset_emitted)
+	  continue;
+	dw2_asm_output_delta (DWARF_OFFSET_SIZE, l->ll_symbol,
+			      loc_section_label, NULL);
+	gcc_assert (l->hash == loc_list_idx);
+	loc_list_idx++;
+	l->offset_emitted = true;
+      }
+
+  FOR_EACH_CHILD (die, c, output_loclists_offsets (c));
+}
+
+/* Recursively set indexes of location lists.  */
+
+static void
+assign_location_list_indexes (dw_die_ref die)
+{
+  dw_die_ref c;
+  dw_attr_node *a;
+  unsigned ix;
+
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
+    if (AT_class (a) == dw_val_class_loc_list)
+      {
+	dw_loc_list_ref list = AT_loc_list (a);
+	if (!list->num_assigned)
+	  {
+	    list->num_assigned = true;
+	    list->hash = loc_list_idx++;
+	  }
+      }
+
+  FOR_EACH_CHILD (die, c, assign_location_list_indexes (c));
+}
+
 /* We want to limit the number of external references, because they are
    larger than local references: a relocation takes multiple words, and
    even a sig8 reference is always eight bytes, whereas a local reference
@@ -8728,11 +8817,11 @@ size_of_die (dw_die_ref die)
 	  }
 	  break;
 	case dw_val_class_loc_list:
-          if (dwarf_split_debug_info && AT_index (a) != NOT_INDEXED)
-            {
-              gcc_assert (AT_index (a) != NO_INDEX_ASSIGNED);
-              size += size_of_uleb128 (AT_index (a));
-            }
+	  if (dwarf_split_debug_info && dwarf_version >= 5)
+	    {
+	      gcc_assert (AT_loc_list (a)->num_assigned);
+	      size += size_of_uleb128 (AT_loc_list (a)->hash);
+	    }
           else
             size += DWARF_OFFSET_SIZE;
 	  break;
@@ -8820,7 +8909,8 @@ size_of_die (dw_die_ref die)
 	  break;
 	case dw_val_class_lineptr:
 	case dw_val_class_macptr:
-          size += DWARF_OFFSET_SIZE;
+	case dw_val_class_loclistsptr:
+	  size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_str:
           form = AT_string_form (a);
@@ -9085,8 +9175,13 @@ value_format (dw_attr_node *a)
 	default:
 	  gcc_unreachable ();
 	}
-    case dw_val_class_range_list:
     case dw_val_class_loc_list:
+      if (dwarf_split_debug_info
+	  && dwarf_version >= 5
+	  && AT_loc_list (a)->num_assigned)
+	return DW_FORM_loclistx;
+      /* FALLTHRU */
+    case dw_val_class_range_list:
       if (dwarf_version >= 4)
 	return DW_FORM_sec_offset;
       /* FALLTHRU */
@@ -9215,6 +9310,7 @@ value_format (dw_attr_node *a)
               ? DW_FORM_addr : DW_FORM_GNU_addr_index);
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
+    case dw_val_class_loclistsptr:
       return dwarf_version >= 4 ? DW_FORM_sec_offset : DW_FORM_data;
     case dw_val_class_str:
       return AT_string_form (a);
@@ -9392,13 +9488,17 @@ gen_llsym (dw_loc_list_ref list)
 static void
 output_loc_list (dw_loc_list_ref list_head)
 {
-  dw_loc_list_ref curr = list_head;
-
   if (list_head->emitted)
     return;
   list_head->emitted = true;
 
   ASM_OUTPUT_LABEL (asm_out_file, list_head->ll_symbol);
+
+  dw_loc_list_ref curr = list_head;
+#ifdef HAVE_AS_LEB128
+  const char *last_section = NULL;
+  const char *base_label = NULL;
+#endif
 
   /* Walk the location list, and output each range + expression.  */
   for (curr = list_head; curr != NULL; curr = curr->dw_loc_next)
@@ -9414,23 +9514,142 @@ output_loc_list (dw_loc_list_ref list_head)
 	 in a single range are unlikely very useful.  */
       if (size > 0xffff)
 	continue;
-      if (dwarf_split_debug_info)
-        {
-          dw2_asm_output_data (1, DW_LLE_GNU_start_length_entry,
-                               "Location list start/length entry (%s)",
-                               list_head->ll_symbol);
-          dw2_asm_output_data_uleb128 (curr->begin_entry->index,
-                                       "Location list range start index (%s)",
-                                       curr->begin);
-          /* The length field is 4 bytes.  If we ever need to support
-            an 8-byte length, we can add a new DW_LLE code or fall back
-            to DW_LLE_GNU_start_end_entry.  */
-          dw2_asm_output_delta (4, curr->end, curr->begin,
-                                "Location list range length (%s)",
-                                list_head->ll_symbol);
-        }
+      if (dwarf_version >= 5)
+	{
+	  if (dwarf_split_debug_info)
+	    {
+	      /* For -gsplit-dwarf, emit DW_LLE_starx_length, which has
+		 uleb128 index into .debug_addr and uleb128 length.  */
+	      dw2_asm_output_data (1, DW_LLE_startx_length,
+				   "DW_LLE_startx_length (%s)",
+				   list_head->ll_symbol);
+	      dw2_asm_output_data_uleb128 (curr->begin_entry->index,
+					   "Location list range start index "
+					   "(%s)", curr->begin);
+	      /* FIXME: This will ICE ifndef HAVE_AS_LEB128.
+		 For that case we probably need to emit DW_LLE_startx_endx,
+		 but we'd need 2 .debug_addr entries rather than just one.  */
+	      dw2_asm_output_delta_uleb128 (curr->end, curr->begin,
+					    "Location list length (%s)",
+					    list_head->ll_symbol);
+	    }
+#ifdef HAVE_AS_LEB128
+	  else if (!have_multiple_function_sections)
+	    {
+	      /* If all code is in .text section, the base address is
+		 already provided by the CU attributes.  Use
+		 DW_LLE_offset_pair where both addresses are uleb128 encoded
+		 offsets against that base.  */
+	      dw2_asm_output_data (1, DW_LLE_offset_pair,
+				   "DW_LLE_offset_pair (%s)",
+				   list_head->ll_symbol);
+	      dw2_asm_output_delta_uleb128 (curr->begin, curr->section,
+					    "Location list begin address (%s)",
+					    list_head->ll_symbol);
+	      dw2_asm_output_delta_uleb128 (curr->end, curr->section,
+					    "Location list end address (%s)",
+					    list_head->ll_symbol);
+	    }
+	  else
+	    {
+	      /* Otherwise, find out how many consecutive entries could share
+		 the same base entry.  If just one, emit DW_LLE_start_length,
+		 otherwise emit DW_LLE_base_address for the base address
+		 followed by a series of DW_LLE_offset_pair.  */
+	      if (last_section == NULL || curr->section != last_section)
+		{
+		  dw_loc_list_ref curr2;
+		  for (curr2 = curr->dw_loc_next; curr2 != NULL;
+		       curr2 = curr2->dw_loc_next)
+		    {
+		      if (strcmp (curr2->begin, curr2->end) == 0
+			  && !curr2->force)
+			continue;
+		      if ((unsigned long) size_of_locs (curr2->expr) > 0xffff)
+			continue;
+		      break;
+		    }
+		  if (curr2 == NULL || curr->section != curr2->section)
+		    last_section = NULL;
+		  else
+		    {
+		      last_section = curr->section;
+		      base_label = curr->begin;
+		      dw2_asm_output_data (1, DW_LLE_base_address,
+					   "DW_LLE_base_address (%s)",
+					   list_head->ll_symbol);
+		      dw2_asm_output_addr (DWARF2_ADDR_SIZE, base_label,
+					   "Base address (%s)",
+					   list_head->ll_symbol);
+		    }
+		}
+	      /* Only one entry with the same base address.  Use
+		 DW_LLE_start_length with absolute address and uleb128
+		 length.  */
+	      if (last_section == NULL)
+		{
+		  dw2_asm_output_data (1, DW_LLE_start_length,
+				       "DW_LLE_start_length (%s)",
+				       list_head->ll_symbol);
+		  dw2_asm_output_addr (DWARF2_ADDR_SIZE, curr->begin,
+				       "Location list begin address (%s)",
+				       list_head->ll_symbol);
+		  dw2_asm_output_delta_uleb128 (curr->end, curr->begin,
+						"Location list length "
+						"(%s)", list_head->ll_symbol);
+		}
+	      /* Otherwise emit DW_LLE_offset_pair, relative to above emitted
+		 DW_LLE_base_address.  */
+	      else
+		{
+		  dw2_asm_output_data (1, DW_LLE_offset_pair,
+				       "DW_LLE_offset_pair (%s)",
+				       list_head->ll_symbol);
+		  dw2_asm_output_delta_uleb128 (curr->begin, base_label,
+						"Location list begin address "
+						"(%s)", list_head->ll_symbol);
+		  dw2_asm_output_delta_uleb128 (curr->end, base_label,
+						"Location list end address "
+						"(%s)", list_head->ll_symbol);
+		}
+	    }
+#else
+	  /* The assembler does not support .uleb128 directive.  Emit
+	     DW_LLE_start_end with a pair of absolute addresses.  */
+	  else
+	    {
+	      dw2_asm_output_data (1, DW_LLE_start_end,
+				   "DW_LLE_start_end (%s)",
+				   list_head->ll_symbol);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, curr->begin,
+				   "Location list begin address (%s)",
+				   list_head->ll_symbol);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, curr->end,
+				   "Location list end address (%s)",
+				   list_head->ll_symbol);
+	    }
+#endif
+	}
+      else if (dwarf_split_debug_info)
+	{
+	  /* For -gsplit-dwarf -gdwarf-{2,3,4} emit index into .debug_addr
+	     and 4 byte length.  */
+	  dw2_asm_output_data (1, DW_LLE_GNU_start_length_entry,
+			       "Location list start/length entry (%s)",
+			       list_head->ll_symbol);
+	  dw2_asm_output_data_uleb128 (curr->begin_entry->index,
+				       "Location list range start index (%s)",
+				       curr->begin);
+	  /* The length field is 4 bytes.  If we ever need to support
+	     an 8-byte length, we can add a new DW_LLE code or fall back
+	     to DW_LLE_GNU_start_end_entry.  */
+	  dw2_asm_output_delta (4, curr->end, curr->begin,
+				"Location list range length (%s)",
+				list_head->ll_symbol);
+	}
       else if (!have_multiple_function_sections)
 	{
+	  /* Pair of relative addresses against start of text section.  */
 	  dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->begin, curr->section,
 				"Location list begin address (%s)",
 				list_head->ll_symbol);
@@ -9440,6 +9659,7 @@ output_loc_list (dw_loc_list_ref list_head)
 	}
       else
 	{
+	  /* Pair of absolute addresses.  */
 	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, curr->begin,
 			       "Location list begin address (%s)",
 			       list_head->ll_symbol);
@@ -9455,18 +9675,22 @@ output_loc_list (dw_loc_list_ref list_head)
       output_loc_sequence (curr->expr, -1);
     }
 
-  if (dwarf_split_debug_info)
+  /* And finally list termination.  */
+  if (dwarf_version >= 5)
+    dw2_asm_output_data (1, DW_LLE_end_of_list,
+			 "DW_LLE_end_of_list (%s)", list_head->ll_symbol);
+  else if (dwarf_split_debug_info)
     dw2_asm_output_data (1, DW_LLE_GNU_end_of_list_entry,
-                         "Location list terminator (%s)",
-                         list_head->ll_symbol);
+			 "Location list terminator (%s)",
+			 list_head->ll_symbol);
   else
     {
       dw2_asm_output_data (DWARF2_ADDR_SIZE, 0,
-                           "Location list terminator begin (%s)",
-                           list_head->ll_symbol);
+			   "Location list terminator begin (%s)",
+			   list_head->ll_symbol);
       dw2_asm_output_data (DWARF2_ADDR_SIZE, 0,
-                           "Location list terminator end (%s)",
-                           list_head->ll_symbol);
+			   "Location list terminator end (%s)",
+			   list_head->ll_symbol);
     }
 }
 
@@ -9500,12 +9724,19 @@ output_loc_list_offset (dw_attr_node *a)
   char *sym = AT_loc_list (a)->ll_symbol;
 
   gcc_assert (sym);
-  if (dwarf_split_debug_info)
-    dw2_asm_output_delta (DWARF_OFFSET_SIZE, sym, loc_section_label,
-                          "%s", dwarf_attr_name (a->dw_attr));
-  else
+  if (!dwarf_split_debug_info)
     dw2_asm_output_offset (DWARF_OFFSET_SIZE, sym, debug_loc_section,
                            "%s", dwarf_attr_name (a->dw_attr));
+  else if (dwarf_version >= 5)
+    {
+      gcc_assert (AT_loc_list (a)->num_assigned);
+      dw2_asm_output_data_uleb128 (AT_loc_list (a)->hash, "%s (%s)",
+				   dwarf_attr_name (a->dw_attr),
+				   sym);
+    }
+  else
+    dw2_asm_output_delta (DWARF_OFFSET_SIZE, sym, loc_section_label,
+			  "%s", dwarf_attr_name (a->dw_attr));
 }
 
 /* Output an attribute's index or value appropriately.  */
@@ -9522,18 +9753,15 @@ output_attr_index_or_value (dw_attr_node *a)
     }
   switch (AT_class (a))
     {
-      case dw_val_class_addr:
-        dw2_asm_output_addr_rtx (DWARF2_ADDR_SIZE, AT_addr (a), "%s", name);
-        break;
-      case dw_val_class_high_pc:
-      case dw_val_class_lbl_id:
-        dw2_asm_output_addr (DWARF2_ADDR_SIZE, AT_lbl (a), "%s", name);
-        break;
-      case dw_val_class_loc_list:
-        output_loc_list_offset (a);
-        break;
-      default:
-        gcc_unreachable ();
+    case dw_val_class_addr:
+      dw2_asm_output_addr_rtx (DWARF2_ADDR_SIZE, AT_addr (a), "%s", name);
+      break;
+    case dw_val_class_high_pc:
+    case dw_val_class_lbl_id:
+      dw2_asm_output_addr (DWARF2_ADDR_SIZE, AT_lbl (a), "%s", name);
+      break;
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -9738,7 +9966,7 @@ output_die (dw_die_ref die)
 	  break;
 
 	case dw_val_class_loc_list:
-          output_attr_index_or_value (a);
+	  output_loc_list_offset (a);
 	  break;
 
 	case dw_val_class_die_ref:
@@ -9746,8 +9974,8 @@ output_die (dw_die_ref die)
 	    {
 	      if (AT_ref (a)->comdat_type_p)
 	        {
-		  comdat_type_node *type_node =
-	            AT_ref (a)->die_id.die_type_node;
+		  comdat_type_node *type_node
+		    = AT_ref (a)->die_id.die_type_node;
 
 	          gcc_assert (type_node);
 	          output_signature (type_node->signature, name);
@@ -9801,7 +10029,7 @@ output_die (dw_die_ref die)
 	  break;
 
 	case dw_val_class_lbl_id:
-          output_attr_index_or_value (a);
+	  output_attr_index_or_value (a);
 	  break;
 
 	case dw_val_class_lineptr:
@@ -9812,6 +10040,11 @@ output_die (dw_die_ref die)
 	case dw_val_class_macptr:
 	  dw2_asm_output_offset (DWARF_OFFSET_SIZE, AT_lbl (a),
 				 debug_macinfo_section, "%s", name);
+	  break;
+
+	case dw_val_class_loclistsptr:
+	  dw2_asm_output_offset (DWARF_OFFSET_SIZE, AT_lbl (a),
+				 debug_loc_section, "%s", name);
 	  break;
 
 	case dw_val_class_str:
@@ -26023,7 +26256,9 @@ init_sections_and_labels (void)
                                         SECTION_DEBUG, NULL);
       debug_abbrev_section = get_section (DEBUG_ABBREV_SECTION,
                                           SECTION_DEBUG, NULL);
-      debug_loc_section = get_section (DEBUG_LOC_SECTION,
+      debug_loc_section = get_section (dwarf_version >= 5
+				       ? DEBUG_LOCLISTS_SECTION
+				       : DEBUG_LOC_SECTION,
                                        SECTION_DEBUG, NULL);
       debug_macinfo_section_name
 	= (dwarf_strict && dwarf_version < 5)
@@ -26059,7 +26294,9 @@ init_sections_and_labels (void)
                                                NULL);
       ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_info_section_label,
                                    DEBUG_SKELETON_INFO_SECTION_LABEL, 0);
-      debug_loc_section = get_section (DEBUG_DWO_LOC_SECTION,
+      debug_loc_section = get_section (dwarf_version >= 5
+				       ? DEBUG_DWO_LOCLISTS_SECTION
+				       : DEBUG_DWO_LOC_SECTION,
                                        SECTION_DEBUG | SECTION_EXCLUDE, NULL);
       debug_str_dwo_section = get_section (DEBUG_STR_DWO_SECTION,
                                            DEBUG_STR_DWO_SECTION_FLAGS, NULL);
@@ -27160,8 +27397,8 @@ resolve_addr_in_expr (dw_loc_descr_ref loc)
             if (!resolve_one_addr (&rtl))
               return false;
             remove_addr_table_entry (loc->dw_loc_oprnd1.val_entry);
-            loc->dw_loc_oprnd1.val_entry =
-                add_addr_table_entry (rtl, ate_kind_rtx);
+	    loc->dw_loc_oprnd1.val_entry
+	      = add_addr_table_entry (rtl, ate_kind_rtx);
           }
 	break;
       case DW_OP_const4u:
@@ -28248,8 +28485,7 @@ index_location_lists (dw_die_ref die)
               continue;
 
             curr->begin_entry
-                = add_addr_table_entry (xstrdup (curr->begin),
-                                        ate_kind_label);
+	      = add_addr_table_entry (xstrdup (curr->begin), ate_kind_label);
           }
       }
 
@@ -28458,12 +28694,18 @@ dwarf2out_finish (const char *)
 
   if (dwarf_split_debug_info)
     {
-      /* optimize_location_lists calculates the size of the lists,
-         so index them first, and assign indices to the entries.
-         Although optimize_location_lists will remove entries from
-         the table, it only does so for duplicates, and therefore
-         only reduces ref_counts to 1.  */
-      index_location_lists (comp_unit_die ());
+      if (have_location_lists)
+	{
+	  if (dwarf_version >= 5)
+	    add_AT_loclistsptr (comp_unit_die (), DW_AT_loclists_base,
+				loc_section_label);
+	  /* optimize_location_lists calculates the size of the lists,
+	     so index them first, and assign indices to the entries.
+	     Although optimize_location_lists will remove entries from
+	     the table, it only does so for duplicates, and therefore
+	     only reduces ref_counts to 1.  */
+	  index_location_lists (comp_unit_die ());
+	}
 
       if (addr_index_table != NULL)
         {
@@ -28474,8 +28716,14 @@ dwarf2out_finish (const char *)
         }
     }
 
+  loc_list_idx = 0;
   if (have_location_lists)
-    optimize_location_lists (comp_unit_die ());
+    {
+      optimize_location_lists (comp_unit_die ());
+      /* And finally assign indexes to the entries for -gsplit-dwarf.  */
+      if (dwarf_version >= 5 && dwarf_split_debug_info)
+	assign_location_list_indexes (comp_unit_die ());
+    }
 
   save_macinfo_strings ();
 
@@ -28573,10 +28821,38 @@ dwarf2out_finish (const char *)
   /* Output location list section if necessary.  */
   if (have_location_lists)
     {
+      char l1[MAX_ARTIFICIAL_LABEL_BYTES];
+      char l2[MAX_ARTIFICIAL_LABEL_BYTES];
       /* Output the location lists info.  */
       switch_to_section (debug_loc_section);
+      if (dwarf_version >= 5)
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_LOC_SECTION_LABEL, 1);
+	  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_LOC_SECTION_LABEL, 2);
+	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	    dw2_asm_output_data (4, 0xffffffff,
+				 "Initial length escape value indicating "
+				 "64-bit DWARF extension");
+	  dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
+			    "Length of Location Lists");
+	  ASM_OUTPUT_LABEL (asm_out_file, l1);
+	  dw2_asm_output_data (2, dwarf_version, "DWARF Version");
+	  dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Address Size");
+	  dw2_asm_output_data (1, 0, "Segment Size");
+	  dw2_asm_output_data (4, dwarf_split_debug_info ? loc_list_idx : 0,
+			       "Offset Entry Count");
+	}
       ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
+      if (dwarf_version >= 5 && dwarf_split_debug_info)
+	{
+	  unsigned int save_loc_list_idx = loc_list_idx;
+	  loc_list_idx = 0;
+	  output_loclists_offsets (comp_unit_die ());
+	  gcc_assert (save_loc_list_idx == loc_list_idx);
+	}
       output_location_lists (comp_unit_die ());
+      if (dwarf_version >= 5)
+	ASM_OUTPUT_LABEL (asm_out_file, l2);
     }
 
   output_pubtables ();
