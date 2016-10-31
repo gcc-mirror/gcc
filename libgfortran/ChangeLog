@@ -1,3 +1,10 @@
+2016-10-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/78123
+	* io/transfer.c (formatted_transfer_scalar_read): Clear seen_eor
+	only if we have tabbed to left of current position.
+
 2016-09-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
