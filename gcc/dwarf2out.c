@@ -167,6 +167,7 @@ static GTY(()) section *debug_loc_section;
 static GTY(()) section *debug_pubnames_section;
 static GTY(()) section *debug_pubtypes_section;
 static GTY(()) section *debug_str_section;
+static GTY(()) section *debug_line_str_section;
 static GTY(()) section *debug_str_dwo_section;
 static GTY(()) section *debug_str_offsets_section;
 static GTY(()) section *debug_ranges_section;
@@ -225,6 +226,8 @@ struct indirect_string_hasher : ggc_ptr_hash<indirect_string_node>
 
 static GTY (()) hash_table<indirect_string_hasher> *debug_str_hash;
 
+static GTY (()) hash_table<indirect_string_hasher> *debug_line_str_hash;
+
 /* With split_debug_info, both the comp_dir and dwo_name go in the
    main object file, rather than the dwo, similar to the force_direct
    parameter elsewhere but with additional complications:
@@ -232,8 +235,8 @@ static GTY (()) hash_table<indirect_string_hasher> *debug_str_hash;
    1) The string is needed in both the main object file and the dwo.
    That is, the comp_dir and dwo_name will appear in both places.
 
-   2) Strings can use three forms: DW_FORM_string, DW_FORM_strp or
-   DW_FORM_GNU_str_index.
+   2) Strings can use four forms: DW_FORM_string, DW_FORM_strp,
+   DW_FORM_line_strp or DW_FORM_GNU_str_index.
 
    3) GCC chooses the form to use late, depending on the size and
    reference count.
@@ -3702,6 +3705,9 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 #ifndef DEBUG_RANGES_SECTION
 #define DEBUG_RANGES_SECTION	".debug_ranges"
 #endif
+#ifndef DEBUG_LINE_STR_SECTION
+#define DEBUG_LINE_STR_SECTION  ".debug_line_str"
+#endif
 
 /* Standard ELF section names for compiled code and data.  */
 #ifndef TEXT_SECTION_NAME
@@ -4281,7 +4287,9 @@ set_indirect_string (struct indirect_string_node *node)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   /* Already indirect is a no op.  */
-  if (node->form == DW_FORM_strp || node->form == DW_FORM_GNU_str_index)
+  if (node->form == DW_FORM_strp
+      || node->form == DW_FORM_line_strp
+      || node->form == DW_FORM_GNU_str_index)
     {
       gcc_assert (node->label);
       return;
@@ -4325,7 +4333,7 @@ find_string_form (struct indirect_string_node *node)
      single module.  */
   if (DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET
       || ((debug_str_section->common.flags & SECTION_MERGE) == 0
-      && (len - DWARF_OFFSET_SIZE) * node->refcount <= len))
+	  && (len - DWARF_OFFSET_SIZE) * node->refcount <= len))
     return node->form = DW_FORM_string;
 
   set_indirect_string (node);
@@ -8914,10 +8922,10 @@ size_of_die (dw_die_ref die)
 	  break;
 	case dw_val_class_str:
           form = AT_string_form (a);
-          if (form == DW_FORM_strp)
+	  if (form == DW_FORM_strp || form == DW_FORM_line_strp)
 	    size += DWARF_OFFSET_SIZE;
-         else if (form == DW_FORM_GNU_str_index)
-            size += size_of_uleb128 (AT_index (a));
+	  else if (form == DW_FORM_GNU_str_index)
+	    size += size_of_uleb128 (AT_index (a));
 	  else
 	    size += strlen (a->dw_attr_val.v.val_str->str) + 1;
 	  break;
@@ -10053,6 +10061,11 @@ output_die (dw_die_ref die)
                                    a->dw_attr_val.v.val_str->label,
                                    debug_str_section,
                                    "%s: \"%s\"", name, AT_string (a));
+	  else if (a->dw_attr_val.v.val_str->form == DW_FORM_line_strp)
+	    dw2_asm_output_offset (DWARF_OFFSET_SIZE,
+				   a->dw_attr_val.v.val_str->label,
+				   debug_line_str_section,
+				   "%s: \"%s\"", name, AT_string (a));
           else if (a->dw_attr_val.v.val_str->form == DW_FORM_GNU_str_index)
             dw2_asm_output_data_uleb128 (AT_index (a),
                                          "%s: \"%s\"", name, AT_string (a));
@@ -10885,6 +10898,15 @@ output_ranges (void)
     }
 }
 
+/* Non-zero if .debug_line_str should be used for .debug_line section
+   strings or strings that are likely shareable with those.  */
+#define DWARF5_USE_DEBUG_LINE_STR \
+  (!DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET		\
+   && (DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) != 0		\
+   /* FIXME: there is no .debug_line_str.dwo section,		\
+      for -gsplit-dwarf we should use DW_FORM_strx instead.  */	\
+   && !dwarf_split_debug_info)
+
 /* Data structure containing information about input files.  */
 struct file_info
 {
@@ -10997,6 +11019,37 @@ file_name_acquire (dwarf_file_data **slot, file_name_acquire_data *fnad)
   return 1;
 }
 
+/* Helper function for output_file_names.  Emit a FORM encoded
+   string STR, with assembly comment start ENTRY_KIND and
+   index IDX */
+
+static void
+output_line_string (enum dwarf_form form, const char *str,
+		    const char *entry_kind, unsigned int idx)
+{
+  switch (form)
+    {
+    case DW_FORM_string:
+      dw2_asm_output_nstring (str, -1, "%s: %#x", entry_kind, idx);
+      break;
+    case DW_FORM_line_strp:
+      if (!debug_line_str_hash)
+	debug_line_str_hash
+	  = hash_table<indirect_string_hasher>::create_ggc (10);
+
+      struct indirect_string_node *node;
+      node = find_AT_string_in_table (str, debug_line_str_hash);
+      set_indirect_string (node);
+      node->form = form;
+      dw2_asm_output_offset (DWARF_OFFSET_SIZE, node->label,
+			     debug_line_str_section, "%s: %#x: \"%s\"",
+			     entry_kind, 0, node->str);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Output the directory table and the file name table.  We try to minimize
    the total amount of memory needed.  A heuristic is used to avoid large
    slowdowns with many input files.  */
@@ -11017,8 +11070,18 @@ output_file_names (void)
 
   if (!last_emitted_file)
     {
-      dw2_asm_output_data (1, 0, "End directory table");
-      dw2_asm_output_data (1, 0, "End file name table");
+      if (dwarf_version >= 5)
+	{
+	  dw2_asm_output_data (1, 0, "Directory entry format count");
+	  dw2_asm_output_data_uleb128 (0, "Directories count");
+	  dw2_asm_output_data (1, 0, "File name entry format count");
+	  dw2_asm_output_data_uleb128 (0, "File names count");
+	}
+      else
+	{
+	  dw2_asm_output_data (1, 0, "End directory table");
+	  dw2_asm_output_data (1, 0, "End file name table");
+	}
       return;
     }
 
@@ -11141,13 +11204,52 @@ output_file_names (void)
 
   /* Emit the directory name table.  */
   idx_offset = dirs[0].length > 0 ? 1 : 0;
-  for (i = 1 - idx_offset; i < ndirs; i++)
-    dw2_asm_output_nstring (dirs[i].path,
-			    dirs[i].length
-			     - !DWARF2_DIR_SHOULD_END_WITH_SEPARATOR,
-			    "Directory Entry: %#x", i + idx_offset);
+  enum dwarf_form str_form = DW_FORM_string;
+  enum dwarf_form idx_form = DW_FORM_udata;
+  if (dwarf_version >= 5)
+    {
+      const char *comp_dir = comp_dir_string ();
+      if (comp_dir == NULL)
+	comp_dir = "";
+      dw2_asm_output_data (1, 1, "Directory entry format count");
+      if (DWARF5_USE_DEBUG_LINE_STR)
+	str_form = DW_FORM_line_strp;
+      dw2_asm_output_data_uleb128 (DW_LNCT_path, "DW_LNCT_path");
+      dw2_asm_output_data_uleb128 (str_form, get_DW_FORM_name (str_form));
+      dw2_asm_output_data_uleb128 (ndirs + idx_offset, "Directories count");
+      if (str_form == DW_FORM_string)
+	{
+	  dw2_asm_output_nstring (comp_dir, -1, "Directory Entry: %#x", 0);
+	  for (i = 1 - idx_offset; i < ndirs; i++)
+	    dw2_asm_output_nstring (dirs[i].path,
+				    dirs[i].length
+				    - !DWARF2_DIR_SHOULD_END_WITH_SEPARATOR,
+				    "Directory Entry: %#x", i + idx_offset);
+	}
+      else
+	{
+	  output_line_string (str_form, comp_dir, "Directory Entry", 0);
+	  for (i = 1 - idx_offset; i < ndirs; i++)
+	    {
+	      const char *str
+		= ggc_alloc_string (dirs[i].path,
+				    dirs[i].length
+				    - !DWARF2_DIR_SHOULD_END_WITH_SEPARATOR);
+	      output_line_string (str_form, str, "Directory Entry",
+				  (unsigned) i + idx_offset);
+	    }
+	}
+    }
+  else
+    {
+      for (i = 1 - idx_offset; i < ndirs; i++)
+	dw2_asm_output_nstring (dirs[i].path,
+				dirs[i].length
+				- !DWARF2_DIR_SHOULD_END_WITH_SEPARATOR,
+				"Directory Entry: %#x", i + idx_offset);
 
-  dw2_asm_output_data (1, 0, "End directory table");
+      dw2_asm_output_data (1, 0, "End directory table");
+    }
 
   /* We have to emit them in the order of emitted_number since that's
      used in the debug info generation.  To do this efficiently we
@@ -11155,6 +11257,70 @@ output_file_names (void)
   backmap = XALLOCAVEC (int, numfiles);
   for (i = 0; i < numfiles; i++)
     backmap[files[i].file_idx->emitted_number - 1] = i;
+
+  if (dwarf_version >= 5)
+    {
+      const char *filename0 = get_AT_string (comp_unit_die (), DW_AT_name);
+      if (filename0 == NULL)
+	filename0 = "";
+      /* DW_LNCT_directory_index can use DW_FORM_udata, DW_FORM_data1 and
+	 DW_FORM_data2.  Choose one based on the number of directories
+	 and how much space would they occupy in each encoding.
+	 If we have at most 256 directories, all indexes fit into
+	 a single byte, so DW_FORM_data1 is most compact (if there
+	 are at most 128 directories, DW_FORM_udata would be as
+	 compact as that, but not shorter and slower to decode).  */
+      if (ndirs + idx_offset <= 256)
+	idx_form = DW_FORM_data1;
+      /* If there are more than 65536 directories, we have to use
+	 DW_FORM_udata, DW_FORM_data2 can't refer to them.
+	 Otherwise, compute what space would occupy if all the indexes
+	 used DW_FORM_udata - sum - and compare that to how large would
+	 be DW_FORM_data2 encoding, and pick the more efficient one.  */
+      else if (ndirs + idx_offset <= 65536)
+	{
+	  unsigned HOST_WIDE_INT sum = 1;
+	  for (i = 0; i < numfiles; i++)
+	    {
+	      int file_idx = backmap[i];
+	      int dir_idx = dirs[files[file_idx].dir_idx].dir_idx;
+	      sum += size_of_uleb128 (dir_idx);
+	    }
+	  if (sum >= HOST_WIDE_INT_UC (2) * (numfiles + 1))
+	    idx_form = DW_FORM_data2;
+	}
+#ifdef VMS_DEBUGGING_INFO
+      dw2_asm_output_data (1, 4, "File name entry format count");
+#else
+      dw2_asm_output_data (1, 2, "File name entry format count");
+#endif
+      dw2_asm_output_data_uleb128 (DW_LNCT_path, "DW_LNCT_path");
+      dw2_asm_output_data_uleb128 (str_form, get_DW_FORM_name (str_form));
+      dw2_asm_output_data_uleb128 (DW_LNCT_directory_index,
+				   "DW_LNCT_directory_index");
+      dw2_asm_output_data_uleb128 (idx_form, get_DW_FORM_name (idx_form));
+#ifdef VMS_DEBUGGING_INFO
+      dw2_asm_output_data_uleb128 (DW_LNCT_timestamp, "DW_LNCT_timestamp");
+      dw2_asm_output_data_uleb128 (DW_FORM_udata, "DW_FORM_udata");
+      dw2_asm_output_data_uleb128 (DW_LNCT_size, "DW_LNCT_size");
+      dw2_asm_output_data_uleb128 (DW_FORM_udata, "DW_FORM_udata");
+#endif
+      dw2_asm_output_data_uleb128 (numfiles + 1, "File names count");
+
+      output_line_string (str_form, filename0, "File Entry", 0);
+
+      /* Include directory index.  */
+      if (dwarf_version >= 5 && idx_form != DW_FORM_udata)
+	dw2_asm_output_data (idx_form == DW_FORM_data1 ? 1 : 2,
+			     0, NULL);
+      else
+	dw2_asm_output_data_uleb128 (0, NULL);
+
+#ifdef VMS_DEBUGGING_INFO
+      dw2_asm_output_data_uleb128 (0, NULL);
+      dw2_asm_output_data_uleb128 (0, NULL);
+#endif
+    }
 
   /* Now write all the file names.  */
   for (i = 0; i < numfiles; i++)
@@ -11171,38 +11337,47 @@ output_file_names (void)
       int ver;
       long long cdt;
       long siz;
-      int maxfilelen = strlen (files[file_idx].path)
-			       + dirs[dir_idx].length
-			       + MAX_VMS_VERSION_LEN + 1;
+      int maxfilelen = (strlen (files[file_idx].path)
+			+ dirs[dir_idx].length
+			+ MAX_VMS_VERSION_LEN + 1);
       char *filebuf = XALLOCAVEC (char, maxfilelen);
 
       vms_file_stats_name (files[file_idx].path, 0, 0, 0, &ver);
       snprintf (filebuf, maxfilelen, "%s;%d",
 	        files[file_idx].path + dirs[dir_idx].length, ver);
 
-      dw2_asm_output_nstring
-	(filebuf, -1, "File Entry: %#x", (unsigned) i + 1);
+      output_line_string (str_form, filebuf, "File Entry", (unsigned) i + 1);
 
       /* Include directory index.  */
-      dw2_asm_output_data_uleb128 (dir_idx + idx_offset, NULL);
+      if (dwarf_version >= 5 && idx_form != DW_FORM_udata)
+	dw2_asm_output_data (idx_form == DW_FORM_data1 ? 1 : 2,
+			     dir_idx + idx_offset, NULL);
+      else
+	dw2_asm_output_data_uleb128 (dir_idx + idx_offset, NULL);
 
       /* Modification time.  */
-      dw2_asm_output_data_uleb128
-        ((vms_file_stats_name (files[file_idx].path, &cdt, 0, 0, 0) == 0)
-	  ? cdt : 0,
-	 NULL);
+      dw2_asm_output_data_uleb128 ((vms_file_stats_name (files[file_idx].path,
+							 &cdt, 0, 0, 0) == 0)
+				   ? cdt : 0, NULL);
 
       /* File length in bytes.  */
-      dw2_asm_output_data_uleb128
-        ((vms_file_stats_name (files[file_idx].path, 0, &siz, 0, 0) == 0)
-      	  ? siz : 0,
-	 NULL);
+      dw2_asm_output_data_uleb128 ((vms_file_stats_name (files[file_idx].path,
+							 0, &siz, 0, 0) == 0)
+				   ? siz : 0, NULL);
 #else
-      dw2_asm_output_nstring (files[file_idx].path + dirs[dir_idx].length, -1,
-			      "File Entry: %#x", (unsigned) i + 1);
+      output_line_string (str_form,
+			  files[file_idx].path + dirs[dir_idx].length,
+			  "File Entry", (unsigned) i + 1);
 
       /* Include directory index.  */
-      dw2_asm_output_data_uleb128 (dir_idx + idx_offset, NULL);
+      if (dwarf_version >= 5 && idx_form != DW_FORM_udata)
+	dw2_asm_output_data (idx_form == DW_FORM_data1 ? 1 : 2,
+			     dir_idx + idx_offset, NULL);
+      else
+	dw2_asm_output_data_uleb128 (dir_idx + idx_offset, NULL);
+
+      if (dwarf_version >= 5)
+	continue;
 
       /* Modification time.  */
       dw2_asm_output_data_uleb128 (0, NULL);
@@ -11212,7 +11387,8 @@ output_file_names (void)
 #endif /* VMS_DEBUGGING_INFO */
     }
 
-  dw2_asm_output_data (1, 0, "End file name table");
+  if (dwarf_version < 5)
+    dw2_asm_output_data (1, 0, "End file name table");
 }
 
 
@@ -11336,8 +11512,6 @@ output_line_info (bool prologue_only)
   static unsigned int generation;
   char l1[MAX_ARTIFICIAL_LABEL_BYTES], l2[MAX_ARTIFICIAL_LABEL_BYTES];
   char p1[MAX_ARTIFICIAL_LABEL_BYTES], p2[MAX_ARTIFICIAL_LABEL_BYTES];
-  /* We don't support DWARFv5 line tables yet.  */
-  int ver = dwarf_version < 5 ? dwarf_version : 4;
   bool saw_one = false;
   int opc;
 
@@ -11357,7 +11531,12 @@ output_line_info (bool prologue_only)
 
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
-  dw2_asm_output_data (2, ver, "DWARF Version");
+  dw2_asm_output_data (2, dwarf_version, "DWARF Version");
+  if (dwarf_version >= 5)
+    {
+      dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Address Size");
+      dw2_asm_output_data (1, 0, "Segment Size");
+    }
   dw2_asm_output_delta (DWARF_OFFSET_SIZE, p2, p1, "Prolog Length");
   ASM_OUTPUT_LABEL (asm_out_file, p1);
 
@@ -11371,7 +11550,7 @@ output_line_info (bool prologue_only)
      and don't let the target override.  */
   dw2_asm_output_data (1, 1, "Minimum Instruction Length");
 
-  if (ver >= 4)
+  if (dwarf_version >= 4)
     dw2_asm_output_data (1, DWARF_LINE_DEFAULT_MAX_OPS_PER_INSN,
 			 "Maximum Operations Per Instruction");
   dw2_asm_output_data (1, DWARF_LINE_DEFAULT_IS_STMT_START,
@@ -26409,6 +26588,10 @@ init_sections_and_labels (void)
 					SECTION_DEBUG, NULL);
   debug_str_section = get_section (DEBUG_STR_SECTION,
 				   DEBUG_STR_SECTION_FLAGS, NULL);
+  if (!dwarf_split_debug_info && !DWARF2_ASM_LINE_DEBUG_INFO)
+    debug_line_str_section = get_section (DEBUG_LINE_STR_SECTION,
+					  DEBUG_STR_SECTION_FLAGS, NULL);
+
   debug_ranges_section = get_section (DEBUG_RANGES_SECTION,
 				      SECTION_DEBUG, NULL);
   debug_frame_section = get_section (DEBUG_FRAME_SECTION,
@@ -26583,12 +26766,12 @@ output_index_string (indirect_string_node **h, unsigned int *cur_idx)
    htab_traverse.  Emit one queued .debug_str string.  */
 
 int
-output_indirect_string (indirect_string_node **h, void *)
+output_indirect_string (indirect_string_node **h, enum dwarf_form form)
 {
   struct indirect_string_node *node = *h;
 
   node->form = find_string_form (node);
-  if (node->form == DW_FORM_strp && node->refcount > 0)
+  if (node->form == form && node->refcount > 0)
     {
       ASM_OUTPUT_LABEL (asm_out_file, node->label);
       assemble_string (node->str, strlen (node->str) + 1);
@@ -26604,13 +26787,15 @@ output_indirect_strings (void)
 {
   switch_to_section (debug_str_section);
   if (!dwarf_split_debug_info)
-    debug_str_hash->traverse<void *, output_indirect_string> (NULL);
+    debug_str_hash->traverse<enum dwarf_form,
+			     output_indirect_string> (DW_FORM_strp);
   else
     {
       unsigned int offset = 0;
       unsigned int cur_idx = 0;
 
-      skeleton_debug_str_hash->traverse<void *, output_indirect_string> (NULL);
+      skeleton_debug_str_hash->traverse<enum dwarf_form,
+					output_indirect_string> (DW_FORM_strp);
 
       switch_to_section (debug_str_offsets_section);
       debug_str_hash->traverse_noresize
@@ -28998,6 +29183,13 @@ dwarf2out_finish (const char *)
   /* If we emitted any indirect strings, output the string table too.  */
   if (debug_str_hash || skeleton_debug_str_hash)
     output_indirect_strings ();
+  if (debug_line_str_hash)
+    {
+      switch_to_section (debug_line_str_section);
+      const enum dwarf_form form = DW_FORM_line_strp;
+      debug_line_str_hash->traverse<enum dwarf_form,
+				    output_indirect_string> (form);
+    }
 }
 
 /* Perform any cleanups needed after the early debug generation pass
@@ -29020,6 +29212,34 @@ dwarf2out_early_finish (const char *filename)
      dwarf2out_init to avoid complications with PCH.  */
   add_name_attribute (comp_unit_die (), remap_debug_filename (filename));
   add_comp_dir_attribute (comp_unit_die ());
+
+  /* When emitting DWARF5 .debug_line_str, move DW_AT_name and
+     DW_AT_comp_dir into .debug_line_str section.  */
+  if (!DWARF2_ASM_LINE_DEBUG_INFO
+      && dwarf_version >= 5
+      && DWARF5_USE_DEBUG_LINE_STR)
+    {
+      for (int i = 0; i < 2; i++)
+	{
+	  dw_attr_node *a = get_AT (comp_unit_die (),
+				    i ? DW_AT_comp_dir : DW_AT_name);
+	  if (a == NULL
+	      || AT_class (a) != dw_val_class_str
+	      || strlen (AT_string (a)) + 1 <= DWARF_OFFSET_SIZE)
+	    continue;
+
+	  if (! debug_line_str_hash)
+	    debug_line_str_hash
+	      = hash_table<indirect_string_hasher>::create_ggc (10);
+
+	  struct indirect_string_node *node
+	    = find_AT_string_in_table (AT_string (a), debug_line_str_hash);
+	  set_indirect_string (node);
+	  node->form = DW_FORM_line_strp;
+	  a->dw_attr_val.v.val_str->refcount--;
+	  a->dw_attr_val.v.val_str = node;
+	}
+    }
 
   /* With LTO early dwarf was really finished at compile-time, so make
      sure to adjust the phase after annotating the LTRANS CU DIE.  */
@@ -29126,12 +29346,14 @@ dwarf2out_c_finalize (void)
   debug_pubnames_section = NULL;
   debug_pubtypes_section = NULL;
   debug_str_section = NULL;
+  debug_line_str_section = NULL;
   debug_str_dwo_section = NULL;
   debug_str_offsets_section = NULL;
   debug_ranges_section = NULL;
   debug_frame_section = NULL;
   fde_vec = NULL;
   debug_str_hash = NULL;
+  debug_line_str_hash = NULL;
   skeleton_debug_str_hash = NULL;
   dw2_string_counter = 0;
   have_multiple_function_sections = false;
