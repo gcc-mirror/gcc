@@ -1517,6 +1517,12 @@ loc_list_plus_const (dw_loc_list_ref list_head, HOST_WIDE_INT offset)
 #define DWARF_REF_SIZE	\
   (dwarf_version == 2 ? DWARF2_ADDR_SIZE : DWARF_OFFSET_SIZE)
 
+/* The number of bits that can be encoded by largest DW_FORM_dataN.
+   In DWARF4 and earlier it is DW_FORM_data8 with 64 bits, in DWARF5
+   DW_FORM_data16 with 128 bits.  */
+#define DWARF_LARGEST_DATA_FORM_BITS \
+  (dwarf_version >= 5 ? 128 : 64)
+
 /* Utility inline function for construction of ops that were GNU extension
    before DWARF 5.  */
 static inline enum dwarf_location_atom
@@ -8755,14 +8761,14 @@ size_of_die (dw_die_ref die)
 	  break;
 	case dw_val_class_const_double:
 	  size += HOST_BITS_PER_DOUBLE_INT / HOST_BITS_PER_CHAR;
-	  if (HOST_BITS_PER_WIDE_INT >= 64)
+	  if (HOST_BITS_PER_WIDE_INT >= DWARF_LARGEST_DATA_FORM_BITS)
 	    size++; /* block */
 	  break;
 	case dw_val_class_wide_int:
 	  size += (get_full_len (*a->dw_attr_val.v.val_wide)
 		   * HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR);
-	  if (get_full_len (*a->dw_attr_val.v.val_wide) * HOST_BITS_PER_WIDE_INT
-	      > 64)
+	  if (get_full_len (*a->dw_attr_val.v.val_wide)
+	      * HOST_BITS_PER_WIDE_INT > DWARF_LARGEST_DATA_FORM_BITS)
 	    size++; /* block */
 	  break;
 	case dw_val_class_vec:
@@ -9147,6 +9153,9 @@ value_format (dw_attr_node *a)
 	case 32:
 	  return DW_FORM_data8;
 	case 64:
+	  if (dwarf_version >= 5)
+	    return DW_FORM_data16;
+	  /* FALLTHRU */
 	default:
 	  return DW_FORM_block1;
 	}
@@ -9161,6 +9170,10 @@ value_format (dw_attr_node *a)
 	  return DW_FORM_data4;
 	case 64:
 	  return DW_FORM_data8;
+	case 128:
+	  if (dwarf_version >= 5)
+	    return DW_FORM_data16;
+	  /* FALLTHRU */
 	default:
 	  return DW_FORM_block1;
 	}
@@ -9634,7 +9647,7 @@ output_die (dw_die_ref die)
 	  {
 	    unsigned HOST_WIDE_INT first, second;
 
-	    if (HOST_BITS_PER_WIDE_INT >= 64)
+	    if (HOST_BITS_PER_WIDE_INT >= DWARF_LARGEST_DATA_FORM_BITS)
 	      dw2_asm_output_data (1,
 				   HOST_BITS_PER_DOUBLE_INT
 				   / HOST_BITS_PER_CHAR,
@@ -9663,9 +9676,9 @@ output_die (dw_die_ref die)
 	    int i;
 	    int len = get_full_len (*a->dw_attr_val.v.val_wide);
 	    int l = HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR;
-	    if (len * HOST_BITS_PER_WIDE_INT > 64)
-	      dw2_asm_output_data (1, get_full_len (*a->dw_attr_val.v.val_wide) * l,
-				   NULL);
+	    if (len * HOST_BITS_PER_WIDE_INT > DWARF_LARGEST_DATA_FORM_BITS)
+	      dw2_asm_output_data (1, get_full_len (*a->dw_attr_val.v.val_wide)
+				      * l, NULL);
 
 	    if (WORDS_BIG_ENDIAN)
 	      for (i = len - 1; i >= 0; --i)
