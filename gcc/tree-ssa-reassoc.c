@@ -924,7 +924,7 @@ eliminate_using_constants (enum tree_code opcode,
   tree type = TREE_TYPE (oelast->op);
 
   if (oelast->rank == 0
-      && (INTEGRAL_TYPE_P (type) || FLOAT_TYPE_P (type)))
+      && (ANY_INTEGRAL_TYPE_P (type) || FLOAT_TYPE_P (type)))
     {
       switch (opcode)
 	{
