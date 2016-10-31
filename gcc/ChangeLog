@@ -1,5 +1,27 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (dwarf_AT): Handle DW_AT_dwo_name.
+	(use_debug_types): Adjust comment for DWARF5 DW_UT_type units.
+	(new_die): Handle DW_TAG_skeleton_unit like DW_TAG_compile_unit.
+	(is_cu_die, is_unit_die): Likewise.
+	(should_move_die_to_comdat, break_out_comdat_types): Adjust
+	comments for DWARF5 DW_UT_type units.
+	(output_compilation_unit_header): Add UT argument, output
+	start of DWARF5 .debug_info section header.
+	(output_comp_unit): Add dwo_id argument.  Adjust
+	output_compilation_unit_header caller, for DW_UT_split_compile
+	emit dwo_id field, otherwise padding1.  Emit padding2 field.
+	(add_top_level_skeleton_die_attrs): Add DW_AT_dwo_name
+	rather than DW_AT_GNU_dwo_name attr for -gdwarf-5.
+	(output_skeleton_debug_sections): Add dwo_id argument, for
+	-gdwarf-5 emit DWARF 5 DW_UT_skeleton header.
+	(output_comdat_type_unit): For -gdwarf-5 emit .debug_info
+	DW_UT_type or DW_UT_split_type units rather than .debug_types.
+	(dwarf2out_finish): Use DW_TAG_skeleton_unit rather than
+	DW_TAG_compile_unit for skeleton unit die.  Don't add
+	DW_AT_GNU_dwo_id attributes for -gdwarf-5, instead pass checksum
+	address to output_comp_unit and output_skeleton_debug_sections.
+
 	* dwarf2out.c (debug_line_str_section): New variable.
 	(debug_line_str_hash): Likewise.
 	(DEBUG_LINE_STR_SECTION): Define.
