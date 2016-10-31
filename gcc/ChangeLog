@@ -1,3 +1,7 @@
+2016-10-31  Waldemar Brodkorb  <wbx@openadk.org>
+
+	* config/microblaze/linux.h (UCLIBC_DYNAMIC_LINKER): Define.
+
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77886
