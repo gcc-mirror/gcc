@@ -583,6 +583,7 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 	  if (!dr_b)
 	    return false;
 
+	  bool dependent = false;
 	  /* If we run into a store of this same instance (we've just
 	     marked those) then delay dependence checking until we run
 	     into the last store because this is where it will have
@@ -599,22 +600,21 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 		    = STMT_VINFO_DATA_REF (vinfo_for_stmt (store));
 		  ddr_p ddr = initialize_data_dependence_relation
 				(dr_a, store_dr, vNULL);
-		  if (vect_slp_analyze_data_ref_dependence (ddr))
-		    {
-		      free_dependence_relation (ddr);
-		      return false;
-		    }
+		  dependent = vect_slp_analyze_data_ref_dependence (ddr);
 		  free_dependence_relation (ddr);
+		  if (dependent)
+		    break;
 		}
 	    }
-
-	  ddr_p ddr = initialize_data_dependence_relation (dr_a, dr_b, vNULL);
-	  if (vect_slp_analyze_data_ref_dependence (ddr))
+	  else
 	    {
+	      ddr_p ddr = initialize_data_dependence_relation (dr_a,
+							       dr_b, vNULL);
+	      dependent = vect_slp_analyze_data_ref_dependence (ddr);
 	      free_dependence_relation (ddr);
-	      return false;
 	    }
-	  free_dependence_relation (ddr);
+	  if (dependent)
+	    return false;
 	}
     }
   return true;
