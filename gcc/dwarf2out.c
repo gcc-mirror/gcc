@@ -3511,7 +3511,7 @@ static void add_prototyped_attribute (dw_die_ref, tree);
 static dw_die_ref add_abstract_origin_attribute (dw_die_ref, tree);
 static void add_pure_or_virtual_attribute (dw_die_ref, tree);
 static void add_src_coords_attributes (dw_die_ref, tree);
-static void add_name_and_src_coords_attributes (dw_die_ref, tree);
+static void add_name_and_src_coords_attributes (dw_die_ref, tree, bool = false);
 static void add_discr_value (dw_die_ref, dw_discr_value *);
 static void add_discr_list (dw_die_ref, dw_discr_list_ref);
 static inline dw_discr_list_ref AT_discr_list (dw_attr_node *);
@@ -20056,7 +20056,8 @@ add_linkage_name (dw_die_ref die, tree decl)
    given decl, but only if it actually has a name.  */
 
 static void
-add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
+add_name_and_src_coords_attributes (dw_die_ref die, tree decl,
+				    bool no_linkage_name)
 {
   tree decl_name;
 
@@ -20069,7 +20070,8 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
       if (! DECL_ARTIFICIAL (decl))
 	add_src_coords_attributes (die, decl);
 
-      add_linkage_name (die, decl);
+      if (!no_linkage_name)
+	add_linkage_name (die, decl);
     }
 
 #ifdef VMS_DEBUGGING_INFO
@@ -22451,6 +22453,22 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   bool declaration = (DECL_EXTERNAL (decl_or_origin)
 		      || class_or_namespace_scope_p (context_die));
   bool specialization_p = false;
+  bool no_linkage_name = false;
+
+  /* While C++ inline static data members have definitions inside of the
+     class, force the first DIE to be a declaration, then let gen_member_die
+     reparent it to the class context and call gen_variable_die again
+     to create the outside of the class DIE for the definition.  */
+  if (!declaration
+      && old_die == NULL
+      && decl
+      && DECL_CONTEXT (decl)
+      && TYPE_P (DECL_CONTEXT (decl))
+      && lang_hooks.decls.decl_dwarf_attribute (decl, DW_AT_inline) != -1)
+    {
+      declaration = true;
+      no_linkage_name = true;
+    }
 
   ultimate_origin = decl_ultimate_origin (decl_or_origin);
   if (decl || ultimate_origin)
@@ -22638,7 +22656,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	}
     }
   else
-    add_name_and_src_coords_attributes (var_die, decl);
+    add_name_and_src_coords_attributes (var_die, decl, no_linkage_name);
 
   if ((origin == NULL && !specialization_p)
       || (origin != NULL
@@ -22698,9 +22716,18 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
       && lang_hooks.decls.decl_dwarf_attribute (decl_or_origin,
 						DW_AT_const_expr) == 1
       && !get_AT (var_die, DW_AT_const_expr)
-      && (origin_die == NULL || get_AT (origin_die, DW_AT_const_expr) == NULL)
       && !specialization_p)
     add_AT_flag (var_die, DW_AT_const_expr, 1);
+
+  if (!dwarf_strict)
+    {
+      int inl = lang_hooks.decls.decl_dwarf_attribute (decl_or_origin,
+						       DW_AT_inline);
+      if (inl != -1
+	  && !get_AT (var_die, DW_AT_inline)
+	  && !specialization_p)
+	add_AT_unsigned (var_die, DW_AT_inline, inl);
+    }
 }
 
 /* Generate a DIE to represent a named constant.  */
@@ -23858,6 +23885,19 @@ gen_member_die (tree type, dw_die_ref context_die)
 	{
 	  vlr_ctx.variant_part_offset = NULL_TREE;
 	  gen_decl_die (member, NULL, &vlr_ctx, context_die);
+	}
+
+      /* For C++ inline static data members emit immediately a DW_TAG_variable
+	 DIE that will refer to that DW_TAG_member through
+	 DW_AT_specification.  */
+      if (TREE_STATIC (member)
+	  && (lang_hooks.decls.decl_dwarf_attribute (member, DW_AT_inline)
+	      != -1))
+	{
+	  int old_extern = DECL_EXTERNAL (member);
+	  DECL_EXTERNAL (member) = 0;
+	  gen_decl_die (member, NULL, NULL, comp_unit_die ());
+	  DECL_EXTERNAL (member) = old_extern;
 	}
     }
 
