@@ -1,3 +1,24 @@
+2016-10-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (VSX_EXTRACT_FL): New iterator for all
+	binary floating point types supported by the hardware except for
+	double.
+	(vsx_xvcvsxwdp_df): Provide scalar result alternative to the
+	vector instruction for optimizing extracting a SImode from a
+	V4SImode vector and converting it to floating point.
+	(vsx_xvcvuxwdp_df): Likewise.
+	(vsx_extract_si): On ISA 3.0, allow extract target and temporary
+	registers to be any VSX register.  Move stores to the end of the
+	constraints.
+	(vsx_extract_si_<uns>float_df): New combiner pattern and splitter
+	to optimize extracting a SImode from a V4SImode vector and
+	converting it to a binary floating point type supported by the
+	hardware.  Use the vector converts instead of extracting the
+	element, sign extending it, and then converting it to double.
+	Other floating point types  than double first convert to double,
+	then the double is converted to that type.
+	(vsx_extract_si_<uns>float_<mode>): Likewise.
+
 2016-10-31  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/driver-aarch64.c (host_detect_local_cpu):
