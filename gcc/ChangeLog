@@ -1,3 +1,9 @@
+2016-11-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/78166
+	* config/pa/pa.md: Add new shift/add patterns to handle
+	(plus (mult (reg) (mem_shadd_operand)) (reg)) source operand.
+
 2016-11-01  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa-protos.h
