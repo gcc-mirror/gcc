@@ -1,3 +1,8 @@
+2016-10-31  Mark Wielaard  <mjw@redhat.com>
+
+	* cplus-dem.c (ada_demangle): Initialize demangled to NULL and
+	XDELETEVEC demangled when unknown.
+
 2016-09-19  Andrew Stubbs  <ams@codesourcery.com>
 
 	* pex-win32.c (argv_to_cmdline): Quote zero-length parameters.
