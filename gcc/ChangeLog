@@ -1,3 +1,7 @@
+2016-11-01  Fritz Reese  <fritzoreese@gmail.com>
+
+	* gcc/combine.c (simplify_compare_const): Add gcc_fallthrough.
+
 2016-11-01  Bilyan Borisov  <bilyan.borisov@arm.com>
 	    Tamar Christina <tamar.christina@arm.com>
 
