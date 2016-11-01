@@ -1,3 +1,7 @@
+2016-11-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/pr70937.f90: require-effective-target lto.
+
 2016-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/69544
