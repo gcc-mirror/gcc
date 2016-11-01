@@ -11052,7 +11052,9 @@ output_rnglists (void)
   dw_ranges *r;
   char l1[MAX_ARTIFICIAL_LABEL_BYTES];
   char l2[MAX_ARTIFICIAL_LABEL_BYTES];
+#ifdef HAVE_AS_LEB128
   char basebuf[MAX_ARTIFICIAL_LABEL_BYTES];
+#endif
 
   switch_to_section (debug_ranges_section);
   ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
@@ -11085,9 +11087,9 @@ output_rnglists (void)
 				ranges_base_label, NULL);
     }
 
-  unsigned int len = vec_safe_length (ranges_table);
   const char *lab = "";
 #ifdef HAVE_AS_LEB128
+  unsigned int len = vec_safe_length (ranges_table);
   const char *base = NULL;
 #endif
   FOR_EACH_VEC_SAFE_ELT (ranges_table, i, r)
