@@ -1757,6 +1757,10 @@ extern void protected_set_expr_location (tree, location_t);
 /* True if BLOCK has the same ranges as its BLOCK_SUPERCONTEXT.  */
 #define BLOCK_SAME_RANGE(NODE) (BLOCK_CHECK (NODE)->base.u.bits.nameless_flag)
 
+/* True if BLOCK appears in cold section.  */
+#define BLOCK_IN_COLD_SECTION_P(NODE) \
+  (BLOCK_CHECK (NODE)->base.u.bits.atomic_flag)
+
 /* An index number for this block.  These values are not guaranteed to
    be unique across functions -- whether or not they are depends on
    the debugging output format in use.  */

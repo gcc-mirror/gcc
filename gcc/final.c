@@ -2323,6 +2323,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	      /* Mark this block as output.  */
 	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
+	      BLOCK_IN_COLD_SECTION_P (NOTE_BLOCK (insn)) = in_cold_section_p;
 	    }
 	  if (write_symbols == DBX_DEBUG
 	      || write_symbols == SDB_DEBUG)
@@ -2355,6 +2356,8 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	      if (!DECL_IGNORED_P (current_function_decl))
 		debug_hooks->end_block (high_block_linenum, n);
+	      gcc_assert (BLOCK_IN_COLD_SECTION_P (NOTE_BLOCK (insn))
+			  == in_cold_section_p);
 	    }
 	  if (write_symbols == DBX_DEBUG
 	      || write_symbols == SDB_DEBUG)

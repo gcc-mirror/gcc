@@ -1,6 +1,46 @@
+2016-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (BLOCK_IN_COLD_SECTION_P): Define.
+	* final.c (final_scan_insn): Set BLOCK_IN_COLD_SECTION_P.
+	* dwarf2out.c (rnglist_idx): New variable.
+	(struct dw_ranges): Add label, idx and maybe_new_sec fields.
+	(DEBUG_RNGLISTS_SECTION): Define.
+	(ranges_base_label): New variable.
+	(size_of_die) <case dw_val_class_range_list>: If using
+	DW_FORM_rnglistx, count size of uleb128 of range list index.
+	(value_format) <case dw_val_class_range_list>: For
+	-gdwarf-5 -gsplit-dwarf return DW_FORM_rnglistx.
+	(output_range_list_offset): Handle -gdwarf-5 .debug_rnglists
+	offsets.  Multiply dwarf < 5 offsets by 2 * DWARF_ADDR_SIZE.
+	(add_ranges_num): Remove useless prototype.  Don't multiply
+	by 2 * DWARF2_ADDR_SIZE.  Add maybe_new_sec argument, adjust
+	for new fields added to dw_ranges struct.
+	(add_ranges): Add maybe_new_sec argument and pass it
+	through to add_ranges_num.
+	(note_rnglist_head): New function.
+	(add_ranges_by_labels): Pass true as maybe_new_sec to
+	add_ranges_num, call note_rnglist_head on the head of the list.
+	(output_ranges): Add function comment.  Switch to
+	.debug_ranges section here and emit .Ldebug_ranges0 label.
+	(index_rnglists, output_rnglists): New functions.
+	(gen_subprogram_die): Formatting fixes.
+	(add_high_low_attributes): Don't divide offsets
+	by 2 * DWARF2_ADDR_SIZE.  Call note_rnglist_head on the
+	first list element or when pointing into the middle of
+	a list.  Pass true as second argument to add_ranges on the
+	first block fragment after cold/hot section switch.
+	(init_sections_and_labels): For -gdwarf-5 use .debug_rnglists
+	section instead of .debug_ranges.  Initialize
+	ranges_base_label if -gdwarf-5 -gsplit-dwarf.
+	(dwarf2out_finish): For -gdwarf-5 -gsplit-dwarf call
+	index_rnglists and add DW_AT_rnglists_base attr.  Don't switch
+	to dwarf_ranges_section here or emit .Ldebug_ranges0 label.
+	Call output_rnglists for -gdwarf-5.
+	(dwarf2out_c_finalize): Clear rnglist_idx.
+
 2016-11-01  Fritz Reese  <fritzoreese@gmail.com>
 
-	* gcc/combine.c (simplify_compare_const): Add gcc_fallthrough.
+	* combine.c (simplify_compare_const): Add gcc_fallthrough.
 
 2016-11-01  Bilyan Borisov  <bilyan.borisov@arm.com>
 	    Tamar Christina <tamar.christina@arm.com>
@@ -2250,7 +2290,7 @@
 
 2016-10-14  Catherine Moore  <clm@codesourcery.com>
 
-	* gcc/config/mips/mips.c (mips_prepare_pch_save): Initialize
+	* config/mips/mips.c (mips_prepare_pch_save): Initialize
 	micromips_globals to zero.
 
 2016-10-14  Richard Biener  <rguenther@suse.de>
@@ -5401,8 +5441,8 @@
 	(arm_elf_section_type_flags): New.
 	* config/arm/elf.h (JUMP_TABLES_IN_TEXT_SECTION): Disable
 	for -mpure-code.
-	* gcc/doc/texi (TARGET_ASM_ELF_FLAGS_NUMERIC): New.
-	* gcc/doc/texi.in (TARGET_ASM_ELF_FLAGS_NUMERIC): Likewise.
+	* doc/texi (TARGET_ASM_ELF_FLAGS_NUMERIC): New.
+	* doc/texi.in (TARGET_ASM_ELF_FLAGS_NUMERIC): Likewise.
 
 2016-09-22  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -6667,7 +6707,7 @@
 	* genmatch.c (parser::parse_expr): Increase buffer size to guarantee
 	it fits the output of the formatted function regardless of its
 	arguments.
-	* gcc/genmodes.c (parser::parse_expr): Same.
+	* genmodes.c (parser::parse_expr): Same.
 	* gimplify.c (gimplify_asm_expr): Same.
 	* passes.c (pass_manager::register_one_dump_file): Same.
 	* print-tree.c (print_node): Same.
@@ -6878,7 +6918,7 @@
 
 2016-08-30  Tamar Christina  <tamar.christina@arm.com>
 
-	* gcc/config/aarch64/aarch64-simd.md
+	* config/aarch64/aarch64-simd.md
 	(aarch64_ld2<mode>_dreg_le): New.
 	(aarch64_ld2<mode>_dreg_be): New.
 	(aarch64_ld2<mode>_dreg): Removed.
@@ -10344,7 +10384,7 @@
 
 2016-07-20  Georg-Johann Lay  <avr@gjlay.de>
 
-	* gcc/config/avr.c (avr_legitimize_address) [AVR_TINY]: Force
+	* config/avr.c (avr_legitimize_address) [AVR_TINY]: Force
 	constant addresses outside [0,0xc0] into a register.
 	(avr_out_movhi_r_mr_reg_no_disp_tiny): Pass insn.  And handle
 	cases where the base address register is unused after.
@@ -10766,7 +10806,7 @@
 
 2016-07-14  Alan Modra  <amodra@gmail.com>
 
-	* gcc/config/rs6000/altivec.md (altivec_mov<mode>): Disparage
+	* config/rs6000/altivec.md (altivec_mov<mode>): Disparage
 	gpr alternatives.  Correct '*' placement on Y,r alternative.
 	Add '*' on operand 1 of r,r alternative.
 
