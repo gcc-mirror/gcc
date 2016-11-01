@@ -924,7 +924,8 @@ BUILDPACKAGE = \
 # How to build a .gox file from a .lo file.
 BUILDGOX = \
 	f=`echo $< | sed -e 's/.lo$$/.o/'`; \
-	$(OBJCOPY) -j .go_export $$f $@.tmp && mv -f $@.tmp $@
+	$(OBJCOPY) -j .go_export $$f $@.tmp; \
+	$(SHELL) $(srcdir)/mvifdiff.sh $@.tmp `echo $@ | sed -e 's/s-gox/gox/'`
 
 GOTESTFLAGS =
 GOBENCH = 
@@ -1022,8 +1023,10 @@ $(1).lo:
 $(1)/check: $$(CHECK_DEPS)
 	@$$(CHECK)
 .PHONY: $(1)/check
-$(1).gox: $(1).lo
+$(1).gox: $(1).s-gox; @true
+$(1).s-gox: $(1).lo
 	$$(BUILDGOX)
+	$$(STAMP) $$@
 endef
 
 # This line expands PACKAGE_template once for each package name listed
