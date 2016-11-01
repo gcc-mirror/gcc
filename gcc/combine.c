@@ -11414,6 +11414,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
 	  const_op -= 1;
 	  code = LE;
 	  /* ... fall through to LE case below.  */
+	  gcc_fallthrough ();
 	}
       else
 	break;
@@ -11443,6 +11444,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
 	  const_op -= 1;
 	  code = GT;
 	  /* ... fall through to GT below.  */
+	  gcc_fallthrough ();
 	}
       else
 	break;
