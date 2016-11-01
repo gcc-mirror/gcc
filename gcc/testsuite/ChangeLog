@@ -1,3 +1,10 @@
+2016-11-01  Bilyan Borisov  <bilyan.borisov@arm.com>
+
+	* gcc.target/arm/simd/vmaxnm_f32_1.c: New.
+	* gcc.target/arm/simd/vmaxnmq_f32_1.c: Likewise.
+	* gcc.target/arm/simd/vminnm_f32_1.c: Likewise.
+	* gcc.target/arm/simd/vminnmq_f32_1.c: Likewise.
+
 2016-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp: Normalize order of i?86 and x86_64 targets.

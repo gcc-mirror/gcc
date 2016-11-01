@@ -87,6 +87,9 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 		      ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB)
 		       || TARGET_ARM_ARCH_ISA_THUMB >=2));
 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_NUMERIC_MAXMIN",
+		      TARGET_ARM_ARCH >= 8 && TARGET_NEON && TARGET_FPU_ARMV8);
+
   def_or_undef_macro (pfile, "__ARM_FEATURE_SIMD32", TARGET_INT_SIMD);
 
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",

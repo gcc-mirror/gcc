@@ -2956,6 +2956,34 @@ vmaxq_f32 (float32x4_t __a, float32x4_t __b)
   return (float32x4_t)__builtin_neon_vmaxfv4sf (__a, __b);
 }
 
+#pragma GCC push_options
+#pragma GCC target ("fpu=neon-fp-armv8")
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vmaxnm_f32 (float32x2_t a, float32x2_t b)
+{
+  return (float32x2_t)__builtin_neon_vmaxnmv2sf (a, b);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vmaxnmq_f32 (float32x4_t a, float32x4_t b)
+{
+  return (float32x4_t)__builtin_neon_vmaxnmv4sf (a, b);
+}
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vminnm_f32 (float32x2_t a, float32x2_t b)
+{
+  return (float32x2_t)__builtin_neon_vminnmv2sf (a, b);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vminnmq_f32 (float32x4_t a, float32x4_t b)
+{
+  return (float32x4_t)__builtin_neon_vminnmv4sf (a, b);
+}
+#pragma GCC pop_options
+
+
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vmaxq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
