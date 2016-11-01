@@ -1,3 +1,8 @@
+2016-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/69544
+	* gfortran.dg/where_5.f90:  New test.
+
 2016-11-01  Bilyan Borisov  <bilyan.borisov@arm.com>
 
 	* gcc.target/arm/simd/vmaxnm_f32_1.c: New.

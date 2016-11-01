@@ -1,3 +1,9 @@
+2016-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/69544
+	* match.c (gfc_match_where):  Fill in locus for assigment
+	in simple WHERE statement.
+
 2016-10-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/54679
