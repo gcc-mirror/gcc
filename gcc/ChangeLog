@@ -1,3 +1,16 @@
+2016-11-01  Bilyan Borisov  <bilyan.borisov@arm.com>
+	    Tamar Christina <tamar.christina@arm.com>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): New macro definition.
+	* config/arm/arm_neon.h (vmaxnm_f32): New intrinsinc.
+	(vmaxnmq_f32): Likewise.
+	(vminnm_f32): Likewise.
+	(vminnmq_f32): Likewise.
+	* config/arm/arm_neon_builtins.def (vmaxnm): New builtin.
+	(vminnm): Likewise.
+	* config/arm/neon.md (neon_<fmaxmin_op><mode>, VCVTF): New
+	expander.
+
 2016-10-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (VSX_EXTRACT_FL): New iterator for all
