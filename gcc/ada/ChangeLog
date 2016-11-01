@@ -1,7 +1,6 @@
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
-	* gcc-interface/misc.c (gnat_get_array_descr_info): Clear rank
-	field.
+	* gcc-interface/misc.c (gnat_get_array_descr_info): Clear rank field.
 
 2016-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -10,7 +9,7 @@
 
 2016-10-20  Nicolas Roche  <roche@adacore.com>
 
-	* gcc-interface/Makefile (x86-64/Linux): Restore missing pairs.
+	* gcc-interface/Makefile (x86-64/Darwin): Restore missing pairs.
 	(x86/Darwin): Likewise.
 
 2016-10-19  Eric Botcazou  <ebotcazou@adacore.com>
