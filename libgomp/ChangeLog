@@ -1,3 +1,8 @@
+2016-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* hashtab.h: Use standard GPLv3 with runtime exception
+	boilerplate.
+
 2016-10-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* oacc-init.c (goacc_new_thread): Use sizeof of the appropriate
