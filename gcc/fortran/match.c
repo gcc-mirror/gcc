@@ -6219,6 +6219,7 @@ match_simple_where (void)
 
   c->next = XCNEW (gfc_code);
   *c->next = new_st;
+  c->next->loc = gfc_current_locus;
   gfc_clear_new_st ();
 
   new_st.op = EXEC_WHERE;
