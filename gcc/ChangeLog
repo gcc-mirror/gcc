@@ -1,3 +1,27 @@
+2016-11-01  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa-protos.h
+	(xtensa_use_return_instruction_p): New prototype.
+	* config/xtensa/xtensa.c (xtensa_current_frame_size,
+	xtensa_callee_save_size): Remove.
+	(struct machine_function): Add new fields: current_frame_size,
+	callee_save_size, frame_laid_out and epilogue_done.
+	(compute_frame_size, xtensa_expand_prologue,
+	xtensa_expand_epilogue): Replace xtensa_callee_save_size with
+	cfun->machine->callee_save_size and xtensa_current_frame_size
+	with cfun->machine->current_frame_size.
+	(compute_frame_size): Update cfun->machine->frame_laid_out and
+	don't update frame layout after reload completion.
+	(xtensa_expand_epilogue): Set cfun->machine->epilogue_done
+	instead of zeroing xtensa_current_frame_size.
+	(xtensa_use_return_instruction_p): New function.
+	* config/xtensa/xtensa.h (xtensa_current_frame_size): Remove
+	declaration.
+	(INITIAL_ELIMINATION_OFFSET): Use return value of
+	compute_frame_size instead of xtensa_current_frame_size value.
+	* config/xtensa/xtensa.md ("return" pattern): Use new predicate
+	function xtensa_use_return_instruction_p instead of inline code.
+
 2016-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (BLOCK_IN_COLD_SECTION_P): Define.
