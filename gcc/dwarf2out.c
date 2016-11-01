@@ -22451,7 +22451,6 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   tree ultimate_origin;
   dw_die_ref var_die;
   dw_die_ref old_die = decl ? lookup_decl_die (decl) : NULL;
-  dw_die_ref origin_die = NULL;
   bool declaration = (DECL_EXTERNAL (decl_or_origin)
 		      || class_or_namespace_scope_p (context_die));
   bool specialization_p = false;
@@ -22627,7 +22626,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
     var_die = new_die (DW_TAG_variable, context_die, decl);
 
   if (origin != NULL)
-    origin_die = add_abstract_origin_attribute (var_die, origin);
+    add_abstract_origin_attribute (var_die, origin);
 
   /* Loop unrolling can create multiple blocks that refer to the same
      static variable, so we must test for the DW_AT_declaration flag.
