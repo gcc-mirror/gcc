@@ -1,3 +1,8 @@
+2016-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (gen_variable_die): Remove again origin_die variable
+	and its initialization.
+
 2016-11-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* dwarf2out.c (output_rnglists): Wrap basebuf, len in
