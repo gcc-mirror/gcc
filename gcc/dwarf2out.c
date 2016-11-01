@@ -277,6 +277,9 @@ static void dwarf2out_note_section_used (void);
    personality CFI.  */
 static GTY(()) rtx current_unit_personality;
 
+/* .debug_rnglists next index.  */
+static unsigned int rnglist_idx;
+
 /* Data and reference forms for relocatable data.  */
 #define DW_FORM_data (DWARF_OFFSET_SIZE == 8 ? DW_FORM_data8 : DW_FORM_data4)
 #define DW_FORM_ref (DWARF_OFFSET_SIZE == 8 ? DW_FORM_ref8 : DW_FORM_ref4)
@@ -2907,9 +2910,15 @@ pubname_entry;
 
 
 struct GTY(()) dw_ranges {
+  const char *label;
   /* If this is positive, it's a block number, otherwise it's a
      bitwise-negated index into dw_ranges_by_label.  */
   int num;
+  /* Index for the range list for DW_FORM_rnglistx.  */
+  unsigned int idx : 31;
+  /* True if this range might be possibly in a different section
+     from previous entry.  */
+  unsigned int maybe_new_sec : 1;
 };
 
 /* A structure to hold a macinfo entry.  */
@@ -3429,8 +3438,7 @@ static void add_pubname_string (const char *, dw_die_ref);
 static void add_pubtype (tree, dw_die_ref);
 static void output_pubnames (vec<pubname_entry, va_gc> *);
 static void output_aranges (void);
-static unsigned int add_ranges_num (int);
-static unsigned int add_ranges (const_tree);
+static unsigned int add_ranges (const_tree, bool = false);
 static void add_ranges_by_labels (dw_die_ref, const char *, const char *,
                                   bool *, bool);
 static void output_ranges (void);
@@ -3714,6 +3722,9 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 #ifndef DEBUG_RANGES_SECTION
 #define DEBUG_RANGES_SECTION	".debug_ranges"
 #endif
+#ifndef DEBUG_RNGLISTS_SECTION
+#define DEBUG_RNGLISTS_SECTION	".debug_rnglists"
+#endif
 #ifndef DEBUG_LINE_STR_SECTION
 #define DEBUG_LINE_STR_SECTION  ".debug_line_str"
 #endif
@@ -3797,6 +3808,7 @@ static char debug_skeleton_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char macinfo_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char loc_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char ranges_section_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
+static char ranges_base_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 
 #ifndef TEXT_END_LABEL
 #define TEXT_END_LABEL		"Letext"
@@ -8848,7 +8860,14 @@ size_of_die (dw_die_ref die)
             size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_range_list:
-          size += DWARF_OFFSET_SIZE;
+	  if (value_format (a) == DW_FORM_rnglistx)
+	    {
+	      gcc_assert (rnglist_idx);
+	      dw_ranges *r = &(*ranges_table)[a->dw_attr_val.v.val_offset];
+	      size += size_of_uleb128 (r->idx);
+	    }
+	  else
+	    size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_const:
 	  size += size_of_sleb128 (AT_int (a));
@@ -9204,6 +9223,18 @@ value_format (dw_attr_node *a)
 	return DW_FORM_loclistx;
       /* FALLTHRU */
     case dw_val_class_range_list:
+      /* For range lists in DWARF 5, use DW_FORM_rnglistx from .debug_info.dwo
+	 but in .debug_info use DW_FORM_sec_offset, which is shorter if we
+	 care about sizes of .debug* sections in shared libraries and
+	 executables and don't take into account relocations that affect just
+	 relocatable objects - for DW_FORM_rnglistx we'd have to emit offset
+	 table in the .debug_rnglists section.  */
+      if (dwarf_split_debug_info
+	  && dwarf_version >= 5
+	  && AT_class (a) == dw_val_class_range_list
+	  && rnglist_idx
+	  && a->dw_attr_val.val_entry != RELOCATED_OFFSET)
+	return DW_FORM_rnglistx;
       if (dwarf_version >= 4)
 	return DW_FORM_sec_offset;
       /* FALLTHRU */
@@ -9716,9 +9747,9 @@ output_loc_list (dw_loc_list_ref list_head)
     }
 }
 
-/* Output a range_list offset into the debug_range section.  Emit a
-   relocated reference if val_entry is NULL, otherwise, emit an
-   indirect reference.  */
+/* Output a range_list offset into the .debug_ranges or .debug_rnglists
+   section.  Emit a relocated reference if val_entry is NULL, otherwise,
+   emit an indirect reference.  */
 
 static void
 output_range_list_offset (dw_attr_node *a)
@@ -9727,14 +9758,31 @@ output_range_list_offset (dw_attr_node *a)
 
   if (a->dw_attr_val.val_entry == RELOCATED_OFFSET)
     {
-      char *p = strchr (ranges_section_label, '\0');
-      sprintf (p, "+" HOST_WIDE_INT_PRINT_HEX, a->dw_attr_val.v.val_offset);
-      dw2_asm_output_offset (DWARF_OFFSET_SIZE, ranges_section_label,
-                             debug_ranges_section, "%s", name);
-      *p = '\0';
+      if (dwarf_version >= 5)
+	{
+	  dw_ranges *r = &(*ranges_table)[a->dw_attr_val.v.val_offset];
+	  dw2_asm_output_offset (DWARF_OFFSET_SIZE, r->label,
+				 debug_ranges_section, "%s", name);
+	}
+      else
+	{
+	  char *p = strchr (ranges_section_label, '\0');
+	  sprintf (p, "+" HOST_WIDE_INT_PRINT_HEX,
+		   a->dw_attr_val.v.val_offset * 2 * DWARF2_ADDR_SIZE);
+	  dw2_asm_output_offset (DWARF_OFFSET_SIZE, ranges_section_label,
+				 debug_ranges_section, "%s", name);
+	  *p = '\0';
+	}
+    }
+  else if (dwarf_version >= 5)
+    {
+      dw_ranges *r = &(*ranges_table)[a->dw_attr_val.v.val_offset];
+      gcc_assert (rnglist_idx);
+      dw2_asm_output_data_uleb128 (r->idx, "%s", name);
     }
   else
-    dw2_asm_output_data (DWARF_OFFSET_SIZE, a->dw_attr_val.v.val_offset,
+    dw2_asm_output_data (DWARF_OFFSET_SIZE,
+			 a->dw_attr_val.v.val_offset * 2 * DWARF2_ADDR_SIZE,
                          "%s (offset from %s)", name, ranges_section_label);
 }
 
@@ -10829,24 +10877,36 @@ output_aranges (void)
   dw2_asm_output_data (DWARF2_ADDR_SIZE, 0, NULL);
 }
 
-/* Add a new entry to .debug_ranges.  Return the offset at which it
-   was placed.  */
+/* Add a new entry to .debug_ranges.  Return its index into
+   ranges_table vector.  */
 
 static unsigned int
-add_ranges_num (int num)
+add_ranges_num (int num, bool maybe_new_sec)
 {
-  dw_ranges r = { num };
+  dw_ranges r = { NULL, num, 0, maybe_new_sec };
   vec_safe_push (ranges_table, r);
-  return (vec_safe_length (ranges_table) - 1) * 2 * DWARF2_ADDR_SIZE;
+  return vec_safe_length (ranges_table) - 1;
 }
 
 /* Add a new entry to .debug_ranges corresponding to a block, or a
-   range terminator if BLOCK is NULL.  */
+   range terminator if BLOCK is NULL.  MAYBE_NEW_SEC is true if
+   this entry might be in a different section from previous range.  */
 
 static unsigned int
-add_ranges (const_tree block)
+add_ranges (const_tree block, bool maybe_new_sec)
 {
-  return add_ranges_num (block ? BLOCK_NUMBER (block) : 0);
+  return add_ranges_num (block ? BLOCK_NUMBER (block) : 0, maybe_new_sec);
+}
+
+/* Note that (*rnglist_table)[offset] is either a head of a rnglist
+   chain, or middle entry of a chain that will be directly referred to.  */
+
+static void
+note_rnglist_head (unsigned int offset)
+{
+  if (dwarf_version < 5 || (*ranges_table)[offset].label)
+    return;
+  (*ranges_table)[offset].label = gen_internal_sym ("LLRL");
 }
 
 /* Add a new entry to .debug_ranges corresponding to a pair of labels.
@@ -10862,13 +10922,16 @@ add_ranges_by_labels (dw_die_ref die, const char *begin, const char *end,
   unsigned int offset;
   dw_ranges_by_label rbl = { begin, end };
   vec_safe_push (ranges_by_label, rbl);
-  offset = add_ranges_num (-(int)in_use - 1);
+  offset = add_ranges_num (-(int)in_use - 1, true);
   if (!*added)
     {
       add_AT_range_list (die, DW_AT_ranges, offset, force_direct);
       *added = true;
+      note_rnglist_head (offset);
     }
 }
+
+/* Emit .debug_ranges section.  */
 
 static void
 output_ranges (void)
@@ -10878,6 +10941,8 @@ output_ranges (void)
   const char *fmt = start_fmt;
   dw_ranges *r;
 
+  switch_to_section (debug_ranges_section);
+  ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
   FOR_EACH_VEC_SAFE_ELT (ranges_table, i, r)
     {
       int block_num = r->num;
@@ -10964,6 +11029,177 @@ output_ranges (void)
    /* FIXME: there is no .debug_line_str.dwo section,		\
       for -gsplit-dwarf we should use DW_FORM_strx instead.  */	\
    && !dwarf_split_debug_info)
+
+/* Assign .debug_rnglists indexes.  */
+
+static void
+index_rnglists (void)
+{
+  unsigned i;
+  dw_ranges *r;
+
+  FOR_EACH_VEC_SAFE_ELT (ranges_table, i, r)
+    if (r->label)
+      r->idx = rnglist_idx++;
+}
+
+/* Emit .debug_rnglists section.  */
+
+static void
+output_rnglists (void)
+{
+  unsigned i;
+  dw_ranges *r;
+  char l1[MAX_ARTIFICIAL_LABEL_BYTES];
+  char l2[MAX_ARTIFICIAL_LABEL_BYTES];
+  char basebuf[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  switch_to_section (debug_ranges_section);
+  ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
+  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_RANGES_SECTION_LABEL, 2);
+  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_RANGES_SECTION_LABEL, 3);
+  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+    dw2_asm_output_data (4, 0xffffffff,
+			 "Initial length escape value indicating "
+			 "64-bit DWARF extension");
+  dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
+			"Length of Range Lists");
+  ASM_OUTPUT_LABEL (asm_out_file, l1);
+  dw2_asm_output_data (2, dwarf_version, "DWARF Version");
+  dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Address Size");
+  dw2_asm_output_data (1, 0, "Segment Size");
+  /* Emit the offset table only for -gsplit-dwarf.  If we don't care
+     about relocation sizes and primarily care about the size of .debug*
+     sections in linked shared libraries and executables, then
+     the offset table plus corresponding DW_FORM_rnglistx uleb128 indexes
+     into it are usually larger than just DW_FORM_sec_offset offsets
+     into the .debug_rnglists section.  */
+  dw2_asm_output_data (4, dwarf_split_debug_info ? rnglist_idx : 0,
+		       "Offset Entry Count");
+  if (dwarf_split_debug_info)
+    {
+      ASM_OUTPUT_LABEL (asm_out_file, ranges_base_label);
+      FOR_EACH_VEC_SAFE_ELT (ranges_table, i, r)
+	if (r->label)
+	  dw2_asm_output_delta (DWARF_OFFSET_SIZE, r->label,
+				ranges_base_label, NULL);
+    }
+
+  unsigned int len = vec_safe_length (ranges_table);
+  const char *lab = "";
+#ifdef HAVE_AS_LEB128
+  const char *base = NULL;
+#endif
+  FOR_EACH_VEC_SAFE_ELT (ranges_table, i, r)
+    {
+      int block_num = r->num;
+
+      if (r->label)
+	{
+	  ASM_OUTPUT_LABEL (asm_out_file, r->label);
+	  lab = r->label;
+	}
+#ifdef HAVE_AS_LEB128
+      if (r->label || r->maybe_new_sec)
+	base = NULL;
+#endif
+      if (block_num > 0)
+	{
+	  char blabel[MAX_ARTIFICIAL_LABEL_BYTES];
+	  char elabel[MAX_ARTIFICIAL_LABEL_BYTES];
+
+	  ASM_GENERATE_INTERNAL_LABEL (blabel, BLOCK_BEGIN_LABEL, block_num);
+	  ASM_GENERATE_INTERNAL_LABEL (elabel, BLOCK_END_LABEL, block_num);
+
+#ifdef HAVE_AS_LEB128
+	  /* If all code is in the text section, then the compilation
+	     unit base address defaults to DW_AT_low_pc, which is the
+	     base of the text section.  */
+	  if (!have_multiple_function_sections)
+	    {
+	      dw2_asm_output_data (1, DW_RLE_offset_pair,
+				   "DW_RLE_offset_pair (%s)", lab);
+	      dw2_asm_output_delta_uleb128 (blabel, text_section_label,
+					    "Range begin address (%s)", lab);
+	      dw2_asm_output_delta_uleb128 (elabel, text_section_label,
+					    "Range end address (%s)", lab);
+	      continue;
+	    }
+	  if (base == NULL)
+	    {
+	      dw_ranges *r2 = NULL;
+	      if (i < len - 1)
+		r2 = &(*ranges_table)[i + 1];
+	      if (r2
+		  && r2->num != 0
+		  && r2->label == NULL
+		  && !r2->maybe_new_sec)
+		{
+		  dw2_asm_output_data (1, DW_RLE_base_address,
+				       "DW_RLE_base_address (%s)", lab);
+		  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+				       "Base address (%s)", lab);
+		  strcpy (basebuf, blabel);
+		  base = basebuf;
+		}
+	    }
+	  if (base)
+	    {
+	      dw2_asm_output_data (1, DW_RLE_offset_pair,
+				   "DW_RLE_offset_pair (%s)", lab);
+	      dw2_asm_output_delta_uleb128 (blabel, base,
+					    "Range begin address (%s)", lab);
+	      dw2_asm_output_delta_uleb128 (elabel, base,
+					    "Range end address (%s)", lab);
+	      continue;
+	    }
+	  dw2_asm_output_data (1, DW_RLE_start_length,
+			       "DW_RLE_start_length (%s)", lab);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+			       "Range begin address (%s)", lab);
+	  dw2_asm_output_delta_uleb128 (elabel, blabel,
+					"Range length (%s)", lab);
+#else
+	  dw2_asm_output_data (1, DW_RLE_start_end,
+			       "DW_RLE_start_end (%s)", lab);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+			       "Range begin address (%s)", lab);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, elabel,
+			       "Range end address (%s)", lab);
+#endif
+	}
+
+      /* Negative block_num stands for an index into ranges_by_label.  */
+      else if (block_num < 0)
+	{
+	  int lab_idx = - block_num - 1;
+	  const char *blabel = (*ranges_by_label)[lab_idx].begin;
+	  const char *elabel = (*ranges_by_label)[lab_idx].end;
+
+	  if (!have_multiple_function_sections)
+	    gcc_unreachable ();
+#ifdef HAVE_AS_LEB128
+	  dw2_asm_output_data (1, DW_RLE_start_length,
+			       "DW_RLE_start_length (%s)", lab);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+			       "Range begin address (%s)", lab);
+	  dw2_asm_output_delta_uleb128 (elabel, blabel,
+					"Range length (%s)", lab);
+#else
+	  dw2_asm_output_data (1, DW_RLE_start_end,
+			       "DW_RLE_start_end (%s)", lab);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+			       "Range begin address (%s)", lab);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, elabel,
+			       "Range end address (%s)", lab);
+#endif
+	}
+      else
+	dw2_asm_output_data (1, DW_RLE_end_of_list,
+			     "DW_RLE_end_of_list (%s)", lab);
+    }
+  ASM_OUTPUT_LABEL (asm_out_file, l2);
+}
 
 /* Data structure containing information about input files.  */
 struct file_info
@@ -21740,11 +21976,11 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		     alignment offset.  */
 		  bool range_list_added = false;
 		  add_ranges_by_labels (subr_die, fde->dw_fde_begin,
-                                        fde->dw_fde_end, &range_list_added,
-                                        false);
+					fde->dw_fde_end, &range_list_added,
+					false);
 		  add_ranges_by_labels (subr_die, fde->dw_fde_second_begin,
 					fde->dw_fde_second_end,
-                                       &range_list_added, false);
+					&range_list_added, false);
 		  if (range_list_added)
 		    add_ranges (NULL);
 		}
@@ -22609,13 +22845,11 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 	  superblock = BLOCK_SUPERCONTEXT (chain);
 	}
       if (attr != NULL
-	  && ((*ranges_table)[attr->dw_attr_val.v.val_offset
-			      / 2 / DWARF2_ADDR_SIZE].num
+	  && ((*ranges_table)[attr->dw_attr_val.v.val_offset].num
 	      == BLOCK_NUMBER (superblock))
 	  && BLOCK_FRAGMENT_CHAIN (superblock))
 	{
-	  unsigned long off = attr->dw_attr_val.v.val_offset
-			      / 2 / DWARF2_ADDR_SIZE;
+	  unsigned long off = attr->dw_attr_val.v.val_offset;
 	  unsigned long supercnt = 0, thiscnt = 0;
 	  for (chain = BLOCK_FRAGMENT_CHAIN (superblock);
 	       chain; chain = BLOCK_FRAGMENT_CHAIN (chain))
@@ -22629,19 +22863,22 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 	       chain; chain = BLOCK_FRAGMENT_CHAIN (chain))
 	    ++thiscnt;
 	  gcc_assert (supercnt >= thiscnt);
-	  add_AT_range_list (die, DW_AT_ranges,
-                             ((off + supercnt - thiscnt)
-                              * 2 * DWARF2_ADDR_SIZE),
-                             false);
+	  add_AT_range_list (die, DW_AT_ranges, off + supercnt - thiscnt,
+			     false);
+	  note_rnglist_head (off + supercnt - thiscnt);
 	  return;
 	}
 
-      add_AT_range_list (die, DW_AT_ranges, add_ranges (stmt), false);
+      unsigned int offset = add_ranges (stmt, true);
+      add_AT_range_list (die, DW_AT_ranges, offset, false);
+      note_rnglist_head (offset);
 
+      bool prev_in_cold = BLOCK_IN_COLD_SECTION_P (stmt);
       chain = BLOCK_FRAGMENT_CHAIN (stmt);
       do
 	{
-	  add_ranges (chain);
+	  add_ranges (chain, prev_in_cold != BLOCK_IN_COLD_SECTION_P (chain));
+	  prev_in_cold = BLOCK_IN_COLD_SECTION_P (chain);
 	  chain = BLOCK_FRAGMENT_CHAIN (chain);
 	}
       while (chain);
@@ -26650,7 +26887,9 @@ init_sections_and_labels (void)
     debug_line_str_section = get_section (DEBUG_LINE_STR_SECTION,
 					  DEBUG_STR_SECTION_FLAGS, NULL);
 
-  debug_ranges_section = get_section (DEBUG_RANGES_SECTION,
+  debug_ranges_section = get_section (dwarf_version >= 5
+				      ? DEBUG_RNGLISTS_SECTION
+				      : DEBUG_RANGES_SECTION,
 				      SECTION_DEBUG, NULL);
   debug_frame_section = get_section (DEBUG_FRAME_SECTION,
 				     SECTION_DEBUG, NULL);
@@ -26663,6 +26902,9 @@ init_sections_and_labels (void)
 			       DEBUG_LINE_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
 			       DEBUG_RANGES_SECTION_LABEL, 0);
+  if (dwarf_version >= 5 && dwarf_split_debug_info)
+    ASM_GENERATE_INTERNAL_LABEL (ranges_base_label,
+				 DEBUG_RANGES_SECTION_LABEL, 1);
   ASM_GENERATE_INTERNAL_LABEL (debug_addr_section_label,
                                DEBUG_ADDR_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
@@ -29117,6 +29359,9 @@ dwarf2out_finish (const char *)
       int mark;
       struct md5_ctx ctx;
 
+      if (dwarf_version >= 5 && !vec_safe_is_empty (ranges_table))
+	index_rnglists ();
+
       /* Compute a checksum of the comp_unit to use as the dwo_id.  */
       md5_init_ctx (&ctx);
       mark = 0;
@@ -29135,8 +29380,14 @@ dwarf2out_finish (const char *)
       /* Add the base offset of the ranges table to the skeleton
         comp-unit DIE.  */
       if (!vec_safe_is_empty (ranges_table))
-        add_AT_lineptr (main_comp_unit_die, DW_AT_GNU_ranges_base,
-                        ranges_section_label);
+	{
+	  if (dwarf_version >= 5)
+	    add_AT_lineptr (main_comp_unit_die, DW_AT_rnglists_base,
+			    ranges_base_label);
+	  else
+	    add_AT_lineptr (main_comp_unit_die, DW_AT_GNU_ranges_base,
+			    ranges_section_label);
+	}
 
       switch_to_section (debug_addr_section);
       ASM_OUTPUT_LABEL (asm_out_file, debug_addr_section_label);
@@ -29212,9 +29463,10 @@ dwarf2out_finish (const char *)
   /* Output ranges section if necessary.  */
   if (!vec_safe_is_empty (ranges_table))
     {
-      switch_to_section (debug_ranges_section);
-      ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
-      output_ranges ();
+      if (dwarf_version >= 5)
+	output_rnglists ();
+      else
+	output_ranges ();
     }
 
   /* Have to end the macro section.  */
@@ -29453,6 +29705,7 @@ dwarf2out_c_finalize (void)
   macinfo_table = NULL;
   ranges_table = NULL;
   ranges_by_label = NULL;
+  rnglist_idx = 0;
   have_location_lists = false;
   loclabel_num = 0;
   poc_label_num = 0;
