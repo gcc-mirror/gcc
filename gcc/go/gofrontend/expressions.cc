@@ -7193,7 +7193,7 @@ Builtin_call_expression::do_lower(Gogo*, Named_object* function,
 	   pa != this->args()->end();
 	   ++pa)
 	{
-	  if (!(*pa)->is_variable())
+	  if (!(*pa)->is_variable() && !(*pa)->is_constant())
 	    {
 	      Temporary_statement* temp =
 		Statement::make_temporary(NULL, *pa, loc);
