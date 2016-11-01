@@ -1,3 +1,14 @@
+2016-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (add_name_and_src_coords_attributes): Add NO_LINKAGE_NAME
+	argument, don't call add_linkage_name if it is true.
+	(gen_variable_die): For C++ inline static data members, consider the
+	initial call when old_die is NULL to be declaration and call
+	add_name_and_src_coords_attributes in that case with true as
+	NO_LINKAGE_NAME.  Add DW_AT_inline attribute if needed.
+	(gen_member_die): For C++ inline static data members, emit a
+	definition DIE right away in DW_TAG_compile_unit context.
+
 2016-11-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/78166

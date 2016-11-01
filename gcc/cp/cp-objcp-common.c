@@ -199,6 +199,16 @@ cp_decl_dwarf_attribute (const_tree decl, int attr)
 	return 1;
       break;
 
+    case DW_AT_inline:
+      if (VAR_P (decl) && DECL_INLINE_VAR_P (decl))
+	{
+	  if (DECL_VAR_DECLARED_INLINE_P (decl))
+	    return DW_INL_declared_inlined;
+	  else
+	    return DW_INL_inlined;
+	}
+      break;
+
     default:
       break;
     }
