@@ -1,3 +1,20 @@
+2016-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp: Normalize order of i?86 and x86_64 targets.
+	Whitespace fixes.
+	(check_effective_target_vect_cmdline_needed): Check
+	is-effective-target ia32 for x86 targets.
+	(check_effective_target_vect_simd_clones): Simplify condition.
+	(check_effective_target_vect_double): Ditto.
+	(check_effective_target_vect_aligned_arrays): Check
+	is-effective-target ia32 for x86 targets.  Simplify condition.
+	(check_effective_target_vect_multiple_sizes): Simplify condition.
+	(check_effective_target_sqrt_insn): Add i?86-*-* target.
+	(check_effective_target_sync_int_128): Simplify condition.
+	(check_effective_target_sync_int_128_runtime): Ditto.
+	(check_effective_target_sync_long_long_runtime): Ditto.
+	(check_effective_target_divmod): Add i?86-*-* target.
+
 2016-10-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vsx-extract-4.c: New test.
