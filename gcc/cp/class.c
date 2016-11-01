@@ -1299,6 +1299,16 @@ alter_access (tree t, tree fdecl, tree access)
   return 0;
 }
 
+/* Return the access node for DECL's access in its enclosing class.  */
+
+tree
+declared_access (tree decl)
+{
+  return (TREE_PRIVATE (decl) ? access_private_node
+	  : TREE_PROTECTED (decl) ? access_protected_node
+	  : access_public_node);
+}
+
 /* Process the USING_DECL, which is a member of T.  */
 
 static void
@@ -1306,10 +1316,7 @@ handle_using_decl (tree using_decl, tree t)
 {
   tree decl = USING_DECL_DECLS (using_decl);
   tree name = DECL_NAME (using_decl);
-  tree access
-    = TREE_PRIVATE (using_decl) ? access_private_node
-    : TREE_PROTECTED (using_decl) ? access_protected_node
-    : access_public_node;
+  tree access = declared_access (using_decl);
   tree flist = NULL_TREE;
   tree old_value;
 

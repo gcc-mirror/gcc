@@ -1,3 +1,7 @@
+2016-11-01  Jason Merrill  <jason@redhat.com>
+
+	* class.c (declared_access): Split out from handle_using_decl.
+
 2016-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/78089
