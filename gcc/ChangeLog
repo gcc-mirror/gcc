@@ -1,3 +1,9 @@
+2016-11-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_crypto_sha1hv4si):
+	New pattern.
+	(aarch64_be_crypto_sha1hv4si): New pattern.
+
 2016-11-02  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.md (add<mode>3): Remove
