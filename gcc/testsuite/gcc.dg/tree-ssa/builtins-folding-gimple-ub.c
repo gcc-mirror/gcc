@@ -17,6 +17,10 @@ main (void)
   if (__builtin_memchr (foo1, 'x', 1000)) /* Not folded away.  */
     __builtin_abort ();
 
+  /* STRNCMP.  */
+  if (strncmp ("a", "b", -1)) /* { dg-warning "implicit declaration of function" } */
+    __builtin_abort ();
+
   return 0;
 }
 
