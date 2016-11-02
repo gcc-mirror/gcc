@@ -1,5 +1,9 @@
 2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* reorg.c (relax_delay_slots): Split up the trial variable.
+
+2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/arc/arc.c (arc_emit_call_tls_get_addr): Make the type
 	of variables rtx_insn *.
 	* config/arm/arm.c (arm_call_tls_get_addr): Likewise.
