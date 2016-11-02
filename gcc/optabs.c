@@ -1712,8 +1712,9 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	{
 	  if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
 	    {
-	      temp = emit_move_insn (target ? target : product, product);
-	      set_dst_reg_note (temp,
+	      rtx_insn *move = emit_move_insn (target ? target : product,
+					       product);
+	      set_dst_reg_note (move,
 				REG_EQUAL,
 				gen_rtx_fmt_ee (MULT, mode,
 						copy_rtx (op0),

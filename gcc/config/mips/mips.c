@@ -3396,10 +3396,11 @@ static GTY(()) rtx mips_tls_symbol;
    (either global dynamic or local dynamic).  V0 is an RTX for the
    return value location.  */
 
-static rtx
+static rtx_insn *
 mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
 {
-  rtx insn, loc, a0;
+  rtx loc, a0;
+  rtx_insn *insn;
 
   a0 = gen_rtx_REG (Pmode, GP_ARG_FIRST);
 
@@ -3455,7 +3456,7 @@ mips_get_tp (void)
 static rtx
 mips_legitimize_tls_address (rtx loc)
 {
-  rtx dest, insn, v0, tp, tmp1, tmp2, eqv, offset;
+  rtx dest, v0, tp, tmp1, tmp2, eqv, offset;
   enum tls_model model;
 
   model = SYMBOL_REF_TLS_MODEL (loc);
@@ -3468,33 +3469,37 @@ mips_legitimize_tls_address (rtx loc)
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
-      v0 = gen_rtx_REG (Pmode, GP_RETURN);
-      insn = mips_call_tls_get_addr (loc, SYMBOL_TLSGD, v0);
-      dest = gen_reg_rtx (Pmode);
-      emit_libcall_block (insn, dest, v0, loc);
-      break;
+      {
+	v0 = gen_rtx_REG (Pmode, GP_RETURN);
+	rtx_insn *insn = mips_call_tls_get_addr (loc, SYMBOL_TLSGD, v0);
+	dest = gen_reg_rtx (Pmode);
+	emit_libcall_block (insn, dest, v0, loc);
+	break;
+      }
 
     case TLS_MODEL_LOCAL_DYNAMIC:
-      v0 = gen_rtx_REG (Pmode, GP_RETURN);
-      insn = mips_call_tls_get_addr (loc, SYMBOL_TLSLDM, v0);
-      tmp1 = gen_reg_rtx (Pmode);
+      {
+	v0 = gen_rtx_REG (Pmode, GP_RETURN);
+	rtx_insn *insn = mips_call_tls_get_addr (loc, SYMBOL_TLSLDM, v0);
+	tmp1 = gen_reg_rtx (Pmode);
 
-      /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
-	 share the LDM result with other LD model accesses.  */
-      eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
-			    UNSPEC_TLS_LDM);
-      emit_libcall_block (insn, tmp1, v0, eqv);
+	/* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+	   share the LDM result with other LD model accesses.  */
+	eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+			      UNSPEC_TLS_LDM);
+	emit_libcall_block (insn, tmp1, v0, eqv);
 
-      offset = mips_unspec_address (loc, SYMBOL_DTPREL);
-      if (mips_split_p[SYMBOL_DTPREL])
-	{
-	  tmp2 = mips_unspec_offset_high (NULL, tmp1, loc, SYMBOL_DTPREL);
-	  dest = gen_rtx_LO_SUM (Pmode, tmp2, offset);
-	}
-      else
-	dest = expand_binop (Pmode, add_optab, tmp1, offset,
-			     0, 0, OPTAB_DIRECT);
-      break;
+	offset = mips_unspec_address (loc, SYMBOL_DTPREL);
+	if (mips_split_p[SYMBOL_DTPREL])
+	  {
+	    tmp2 = mips_unspec_offset_high (NULL, tmp1, loc, SYMBOL_DTPREL);
+	    dest = gen_rtx_LO_SUM (Pmode, tmp2, offset);
+	  }
+	else
+	  dest = expand_binop (Pmode, add_optab, tmp1, offset,
+			       0, 0, OPTAB_DIRECT);
+	break;
+      }
 
     case TLS_MODEL_INITIAL_EXEC:
       tp = mips_get_tp ();
