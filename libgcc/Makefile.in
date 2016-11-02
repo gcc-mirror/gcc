@@ -255,10 +255,6 @@ LIB2FUNCS_ST = _eprintf __gcc_bcmp
 # List of functions not to build from libgcc2.c.
 LIB2FUNCS_EXCLUDE =
 
-# These might cause a divide overflow trap and so are compiled with
-# unwinder info.
-LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
-
 # List of extra C and assembler files to add to static and shared libgcc2.
 # Assembler files should have names ending in `.S'.
 LIB2ADD = 
@@ -455,7 +451,8 @@ endif
 
 # These might cause a divide overflow trap and so are compiled with
 # unwinder info.
-LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
+LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _divmoddi4 \
+		    _udivdi3 _umoddi3 _udivmoddi4 _udiv_w_sdiv
 
 # Remove any objects from lib2funcs and LIB2_DIVMOD_FUNCS that are
 # defined as optimized assembly code in LIB1ASMFUNCS or as C code

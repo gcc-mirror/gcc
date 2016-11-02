@@ -1938,3 +1938,9 @@ GCC_4.7.0 {
 %inherit GCC_4.8.0 GCC_4.7.0
 GCC_4.8.0 {
 }
+
+%inherit GCC_7.0.0 GCC_4.8.0
+GCC_7.0.0 {
+  __PFX__divmoddi4
+  __PFX__divmodti4
+}
