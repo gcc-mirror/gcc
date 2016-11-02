@@ -863,6 +863,9 @@ ada.stagefeedback: stagefeedback-start
 	-$(MV) ada/stamp-* stagefeedback/ada
 
 lang_checks += check-gnat
+lang_checks_parallelized += check-gnat
+# For description see the check_$lang_parallelize comment in gcc/Makefile.in.
+check_gnat_parallelize = 1000
 
 check-ada: check-acats check-gnat
 check-ada-subtargets: check-acats-subtargets check-gnat-subtargets
