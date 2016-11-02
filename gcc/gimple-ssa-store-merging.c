@@ -140,19 +140,17 @@ struct store_immediate_info
 {
   unsigned HOST_WIDE_INT bitsize;
   unsigned HOST_WIDE_INT bitpos;
-  tree val;
-  tree dest;
   gimple *stmt;
   unsigned int order;
-  store_immediate_info (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT, tree,
-			tree, gimple *, unsigned int);
+  store_immediate_info (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+			gimple *, unsigned int);
 };
 
 store_immediate_info::store_immediate_info (unsigned HOST_WIDE_INT bs,
-					    unsigned HOST_WIDE_INT bp, tree v,
-					    tree d, gimple *st,
+					    unsigned HOST_WIDE_INT bp,
+					    gimple *st,
 					    unsigned int ord)
-  : bitsize (bs), bitpos (bp), val (v), dest (d), stmt (st), order (ord)
+  : bitsize (bs), bitpos (bp), stmt (st), order (ord)
 {
 }
 
@@ -557,7 +555,7 @@ merged_store_group::merged_store_group (store_immediate_info *info)
   /* VAL has memory allocated for it in apply_stores once the group
      width has been finalized.  */
   val = NULL;
-  align = get_object_alignment (info->dest);
+  align = get_object_alignment (gimple_assign_lhs (info->stmt));
   stores.create (1);
   stores.safe_push (info);
   last_stmt = info->stmt;
@@ -654,14 +652,16 @@ merged_store_group::apply_stores ()
   FOR_EACH_VEC_ELT (stores, i, info)
     {
       unsigned int pos_in_buffer = info->bitpos - start;
-      bool ret = encode_tree_to_bitpos (info->val, val, info->bitsize,
-					 pos_in_buffer, buf_size);
+      bool ret = encode_tree_to_bitpos (gimple_assign_rhs1 (info->stmt),
+					val, info->bitsize,
+					pos_in_buffer, buf_size);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  if (ret)
 	    {
 	      fprintf (dump_file, "After writing ");
-	      print_generic_expr (dump_file, info->val, 0);
+	      print_generic_expr (dump_file,
+				  gimple_assign_rhs1 (info->stmt), 0);
 	      fprintf (dump_file, " of size " HOST_WIDE_INT_PRINT_DEC
 			" at position %d the merged region contains:\n",
 			info->bitsize, pos_in_buffer);
@@ -680,13 +680,15 @@ merged_store_group::apply_stores ()
 
 struct imm_store_chain_info
 {
+  tree base_addr;
   auto_vec<struct store_immediate_info *> m_store_info;
   auto_vec<merged_store_group *> m_merged_store_groups;
 
-  bool terminate_and_process_chain (tree);
+  imm_store_chain_info (tree b_a) : base_addr (b_a) {}
+  bool terminate_and_process_chain ();
   bool coalesce_immediate_stores ();
-  bool output_merged_store (tree, merged_store_group *);
-  bool output_merged_stores (tree);
+  bool output_merged_store (merged_store_group *);
+  bool output_merged_stores ();
 };
 
 const pass_data pass_data_tree_store_merging = {
@@ -722,8 +724,9 @@ private:
   hash_map<tree_operand_hash, struct imm_store_chain_info *> m_stores;
 
   bool terminate_and_process_all_chains ();
-  bool terminate_all_aliasing_chains (tree, tree, bool, gimple *);
-  bool terminate_and_release_chain (tree);
+  bool terminate_all_aliasing_chains (tree, imm_store_chain_info **,
+				      bool, gimple *);
+  bool terminate_and_release_chain (imm_store_chain_info *);
 }; // class pass_store_merging
 
 /* Terminate and process all recorded chains.  Return true if any changes
@@ -736,7 +739,7 @@ pass_store_merging::terminate_and_process_all_chains ()
     = m_stores.begin ();
   bool ret = false;
   for (; iter != m_stores.end (); ++iter)
-    ret |= terminate_and_release_chain ((*iter).first);
+    ret |= terminate_and_release_chain ((*iter).second);
 
   return ret;
 }
@@ -750,7 +753,9 @@ pass_store_merging::terminate_and_process_all_chains ()
    If that is the case we have to terminate any chain anchored at BASE.  */
 
 bool
-pass_store_merging::terminate_all_aliasing_chains (tree dest, tree base,
+pass_store_merging::terminate_all_aliasing_chains (tree dest,
+						   imm_store_chain_info
+						     **chain_info,
 						   bool var_offset_p,
 						   gimple *stmt)
 {
@@ -760,44 +765,38 @@ pass_store_merging::terminate_all_aliasing_chains (tree dest, tree base,
   if (!gimple_vuse (stmt))
     return false;
 
-  struct imm_store_chain_info **chain_info = NULL;
-
   /* Check if the assignment destination (BASE) is part of a store chain.
      This is to catch non-constant stores to destinations that may be part
      of a chain.  */
-  if (base)
+  if (chain_info)
     {
-      chain_info = m_stores.get (base);
-      if (chain_info)
+      /* We have a chain at BASE and we're writing to [BASE + <variable>].
+	 This can interfere with any of the stores so terminate
+	 the chain.  */
+      if (var_offset_p)
 	{
-	  /* We have a chain at BASE and we're writing to [BASE + <variable>].
-	     This can interfere with any of the stores so terminate
-	     the chain.  */
-	  if (var_offset_p)
+	  terminate_and_release_chain (*chain_info);
+	  ret = true;
+	}
+      /* Otherwise go through every store in the chain to see if it
+	 aliases with any of them.  */
+      else
+	{
+	  struct store_immediate_info *info;
+	  unsigned int i;
+	  FOR_EACH_VEC_ELT ((*chain_info)->m_store_info, i, info)
 	    {
-	      terminate_and_release_chain (base);
-	      ret = true;
-	    }
-	  /* Otherwise go through every store in the chain to see if it
-	     aliases with any of them.  */
-	  else
-	    {
-	      struct store_immediate_info *info;
-	      unsigned int i;
-	      FOR_EACH_VEC_ELT ((*chain_info)->m_store_info, i, info)
+	      if (stmt_may_clobber_ref_p (info->stmt, dest))
 		{
-		  if (refs_may_alias_p (info->dest, dest))
+		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
-		      if (dump_file && (dump_flags & TDF_DETAILS))
-			{
-			  fprintf (dump_file,
-				   "stmt causes chain termination:\n");
-			  print_gimple_stmt (dump_file, stmt, 0, 0);
-			}
-		      terminate_and_release_chain (base);
-		      ret = true;
-		      break;
+		      fprintf (dump_file,
+			       "stmt causes chain termination:\n");
+		      print_gimple_stmt (dump_file, stmt, 0, 0);
 		    }
+		  terminate_and_release_chain (*chain_info);
+		  ret = true;
+		  break;
 		}
 	    }
 	}
@@ -814,11 +813,16 @@ pass_store_merging::terminate_all_aliasing_chains (tree dest, tree base,
       if (chain_info && (*chain_info) == (*iter).second)
 	continue;
 
-      tree key = (*iter).first;
-      if (ref_maybe_used_by_stmt_p (stmt, key)
-	  || stmt_may_clobber_ref_p (stmt, key))
+      /* We can't use the base object here as that does not reliably exist.
+	 Build a ao_ref from the base object address (if we know the
+	 minimum and maximum offset and the maximum size we could improve
+	 things here).  */
+      ao_ref chain_ref;
+      ao_ref_init_from_ptr_and_size (&chain_ref, (*iter).first, NULL_TREE);
+      if (ref_maybe_used_by_stmt_p (stmt, &chain_ref)
+	  || stmt_may_clobber_ref_p_1 (stmt, &chain_ref))
 	{
-	  terminate_and_release_chain (key);
+	  terminate_and_release_chain ((*iter).second);
 	  ret = true;
 	}
     }
@@ -831,19 +835,11 @@ pass_store_merging::terminate_all_aliasing_chains (tree dest, tree base,
    entry is removed after the processing in any case.  */
 
 bool
-pass_store_merging::terminate_and_release_chain (tree base)
+pass_store_merging::terminate_and_release_chain (imm_store_chain_info *chain_info)
 {
-  struct imm_store_chain_info **chain_info = m_stores.get (base);
-
-  if (!chain_info)
-    return false;
-
-  gcc_assert (*chain_info);
-
-  bool ret = (*chain_info)->terminate_and_process_chain (base);
-  delete *chain_info;
-  m_stores.remove (base);
-
+  bool ret = chain_info->terminate_and_process_chain ();
+  m_stores.remove (chain_info->base_addr);
+  delete chain_info;
   return ret;
 }
 
@@ -880,7 +876,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	  fprintf (dump_file, "Store %u:\nbitsize:" HOST_WIDE_INT_PRINT_DEC
 			      " bitpos:" HOST_WIDE_INT_PRINT_DEC " val:\n",
 		   i, info->bitsize, info->bitpos);
-	  print_generic_expr (dump_file, info->val, 0);
+	  print_generic_expr (dump_file, gimple_assign_rhs1 (info->stmt), 0);
 	  fprintf (dump_file, "\n------------\n");
 	}
 
@@ -1103,7 +1099,7 @@ split_group (merged_store_group *group,
    return true.  */
 
 bool
-imm_store_chain_info::output_merged_store (tree base, merged_store_group *group)
+imm_store_chain_info::output_merged_store (merged_store_group *group)
 {
   unsigned HOST_WIDE_INT start_byte_pos = group->start / BITS_PER_UNIT;
 
@@ -1141,8 +1137,7 @@ imm_store_chain_info::output_merged_store (tree base, merged_store_group *group)
 
       tree int_type = build_nonstandard_integer_type (try_size, UNSIGNED);
       int_type = build_aligned_type (int_type, align);
-      tree addr = build_fold_addr_expr (base);
-      tree dest = fold_build2 (MEM_REF, int_type, addr,
+      tree dest = fold_build2 (MEM_REF, int_type, base_addr,
 			       build_int_cst (offset_type, try_pos));
 
       tree src = native_interpret_expr (int_type,
@@ -1213,14 +1208,14 @@ imm_store_chain_info::output_merged_store (tree base, merged_store_group *group)
    successful.  Return true iff any changes were made.  */
 
 bool
-imm_store_chain_info::output_merged_stores (tree base)
+imm_store_chain_info::output_merged_stores ()
 {
   unsigned int i;
   merged_store_group *merged_store;
   bool ret = false;
   FOR_EACH_VEC_ELT (m_merged_store_groups, i, merged_store)
     {
-      if (output_merged_store (base, merged_store))
+      if (output_merged_store (merged_store))
 	{
 	  unsigned int j;
 	  store_immediate_info *store;
@@ -1250,7 +1245,7 @@ imm_store_chain_info::output_merged_stores (tree base)
    Return true if any changes were made.  */
 
 bool
-imm_store_chain_info::terminate_and_process_chain (tree base)
+imm_store_chain_info::terminate_and_process_chain ()
 {
   /* Process store chain.  */
   bool ret = false;
@@ -1258,7 +1253,7 @@ imm_store_chain_info::terminate_and_process_chain (tree base)
     {
       ret = coalesce_immediate_stores ();
       if (ret)
-	ret = output_merged_stores (base);
+	ret = output_merged_stores ();
     }
 
   /* Delete all the entries we allocated ourselves.  */
@@ -1381,28 +1376,29 @@ pass_store_merging::execute (function *fun)
 		   other so we can't track chains on them.  */
 			     || TREE_THIS_VOLATILE (base_addr);
 
+	      /* We do not want to rewrite TARGET_MEM_REFs.  */
+	      if (TREE_CODE (base_addr) == TARGET_MEM_REF)
+		invalid = true;
 	      /* In some cases get_inner_reference may return a
 		 MEM_REF [ptr + byteoffset].  For the purposes of this pass
 		 canonicalize the base_addr to MEM_REF [ptr] and take
 		 byteoffset into account in the bitpos.  This occurs in
 		 PR 23684 and this way we can catch more chains.  */
-	      if (TREE_CODE (base_addr) == MEM_REF
-		  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (base_addr, 0))))
+	      else if (TREE_CODE (base_addr) == MEM_REF)
 		{
 		  offset_int bit_off, byte_off = mem_ref_offset (base_addr);
 		  bit_off = byte_off << LOG2_BITS_PER_UNIT;
 		  bit_off += bitpos;
 		  if (!wi::neg_p (bit_off) && wi::fits_shwi_p (bit_off))
-		    {
-		      bitpos = bit_off.to_shwi ();
-		      base_addr = build2 (MEM_REF, TREE_TYPE (base_addr),
-					  TREE_OPERAND (base_addr, 0),
-					  build_zero_cst (TREE_TYPE (
-					  TREE_OPERAND (base_addr, 1))));
-		    }
+		    bitpos = bit_off.to_shwi ();
 		  else
 		    invalid = true;
+		  base_addr = TREE_OPERAND (base_addr, 0);
 		}
+	      /* get_inner_reference returns the base object, get at its
+	         address now.  */
+	      else
+		base_addr = build_fold_addr_expr (base_addr);
 
 	      struct imm_store_chain_info **chain_info
 		= m_stores.get (base_addr);
@@ -1413,7 +1409,7 @@ pass_store_merging::execute (function *fun)
 		  if (chain_info)
 		    {
 		      info = new store_immediate_info (
-			bitsize, bitpos, rhs, lhs, stmt,
+			bitsize, bitpos, stmt,
 			(*chain_info)->m_store_info.length ());
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			{
@@ -1432,17 +1428,17 @@ pass_store_merging::execute (function *fun)
 			    fprintf (dump_file,
 				 "Reached maximum number of statements"
 				 " to merge:\n");
-			  terminate_and_release_chain (base_addr);
+			  terminate_and_release_chain (*chain_info);
 			}
 		      continue;
 		    }
 
 		  /* Store aliases any existing chain?  */
-		  terminate_all_aliasing_chains (lhs, base_addr, false, stmt);
+		  terminate_all_aliasing_chains (lhs, chain_info, false, stmt);
 		  /* Start a new chain.  */
 		  struct imm_store_chain_info *new_chain
-		    = new imm_store_chain_info;
-		  info = new store_immediate_info (bitsize, bitpos, rhs, lhs,
+		    = new imm_store_chain_info (base_addr);
+		  info = new store_immediate_info (bitsize, bitpos,
 						   stmt, 0);
 		  new_chain->m_store_info.safe_push (info);
 		  m_stores.put (base_addr, new_chain);
@@ -1457,13 +1453,13 @@ pass_store_merging::execute (function *fun)
 		    }
 		}
 	      else
-		terminate_all_aliasing_chains (lhs, base_addr,
+		terminate_all_aliasing_chains (lhs, chain_info,
 					       offset != NULL_TREE, stmt);
 
 	      continue;
 	    }
 
-	  terminate_all_aliasing_chains (NULL_TREE, NULL_TREE, false, stmt);
+	  terminate_all_aliasing_chains (NULL_TREE, NULL, false, stmt);
 	}
       terminate_and_process_all_chains ();
     }

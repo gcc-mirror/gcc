@@ -1,3 +1,23 @@
+2016-11-02  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-store-merging.c (struct store_immediate_info): Remove
+	redundant val and dest members.
+	(store_immediate_info::store_immediate_info): Adjust.
+	(merged_store_group::merged_store_group): Adjust.
+	(merged_store_group::apply_stores): Likewise.
+	(struct imm_store_chain_info): Add base_addr field.
+	(imm_store_chain_info::imm_store_chain_info): New constructor.
+	(imm_store_chain_info::terminate_and_process_chain): Do not pass base.
+	(imm_store_chain_info::output_merged_store): Likewise.  Use
+	addr_base which is already the address.
+	(imm_store_chain_info::output_merged_stores): Likewise.
+	(pass_tree_store_merging::terminate_all_aliasing_chains): Take
+	imm_store_chain_info instead of base.  Fix alias check.
+	(pass_tree_store_merging::terminate_and_release_chain): Likewise.
+	(imm_store_chain_info::coalesce_immediate_stores): Adjust.
+	(pass_store_merging::execute): Refuse to operate on TARGET_MEM_REF.
+	use the address of the base and adjust for other changes.
+
 2016-11-02  Martin Liska  <mliska@suse.cz>
 
 	* fold-const-call.c (host_size_t_cst_p): Test whether
