@@ -1,3 +1,8 @@
+2016-11-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/78162
+	* gcc.c-torture/compile/pr78162.c: New test.
+
 2016-11-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78035
