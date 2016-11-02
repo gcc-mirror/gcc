@@ -5705,6 +5705,26 @@
   [(set_attr "type" "crypto_sha1_fast")]
 )
 
+(define_insn "aarch64_crypto_sha1hv4si"
+  [(set (match_operand:SI 0 "register_operand" "=w")
+	(unspec:SI [(vec_select:SI (match_operand:V4SI 1 "register_operand" "w")
+		     (parallel [(const_int 0)]))]
+	 UNSPEC_SHA1H))]
+  "TARGET_SIMD && TARGET_CRYPTO && !BYTES_BIG_ENDIAN"
+  "sha1h\\t%s0, %s1"
+  [(set_attr "type" "crypto_sha1_fast")]
+)
+
+(define_insn "aarch64_be_crypto_sha1hv4si"
+  [(set (match_operand:SI 0 "register_operand" "=w")
+	(unspec:SI [(vec_select:SI (match_operand:V4SI 1 "register_operand" "w")
+		     (parallel [(const_int 3)]))]
+	 UNSPEC_SHA1H))]
+  "TARGET_SIMD && TARGET_CRYPTO && BYTES_BIG_ENDIAN"
+  "sha1h\\t%s0, %s1"
+  [(set_attr "type" "crypto_sha1_fast")]
+)
+
 (define_insn "aarch64_crypto_sha1su1v4si"
   [(set (match_operand:V4SI 0 "register_operand" "=w")
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
