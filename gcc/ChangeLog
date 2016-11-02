@@ -1,5 +1,11 @@
 2016-11-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR tree-optimization/78162
+	* gimple-ssa-store-merging.c (execute): Mark stores with bitpos < 0
+	as invalid.
+
+2016-11-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_register_saved_on_entry): Add
 	function comment.
 	(aarch64_next_callee_save): Likewise.

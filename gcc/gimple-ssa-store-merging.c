@@ -1361,7 +1361,7 @@ pass_store_merging::execute (function *fun)
 				       &unsignedp, &reversep, &volatilep);
 	      /* As a future enhancement we could handle stores with the same
 		 base and offset.  */
-	      bool invalid = offset || reversep
+	      bool invalid = offset || reversep || bitpos < 0
 			     || ((bitsize > MAX_BITSIZE_MODE_ANY_INT)
 				  && (TREE_CODE (rhs) != INTEGER_CST))
 			     || !rhs_valid_for_store_merging_p (rhs)
