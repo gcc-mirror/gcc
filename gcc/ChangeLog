@@ -1,3 +1,8 @@
+2016-11-02  Cesar Philippidis  <cesar@codesourcery.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (PTX_GANG_DEFAULT): Set to zero.
+
 2016-11-02  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (xtensa_output_integer_literal_parts):
