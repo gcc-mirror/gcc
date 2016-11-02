@@ -1,3 +1,8 @@
+2016-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_gc_sections_available): Use
+	-print-prog-name=ld to determine linker used.
+
 2016-11-02  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/builtins-folding-gimple-ub.c (main): Add
