@@ -1362,6 +1362,10 @@ fimplicit-templates
 C++ ObjC++ Var(flag_implicit_templates) Init(1)
 Emit implicit instantiations of templates.
 
+fnew-inheriting-ctors
+C++ ObjC++ Var(flag_new_inheriting_ctors) Init(1)
+Implement C++17 inheriting constructor semantics.
+
 ffriend-injection
 C++ ObjC++ Var(flag_friend_injection)
 Inject friend functions into enclosing namespace.

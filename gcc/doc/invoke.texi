@@ -199,6 +199,7 @@ in the following sections.
 -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  -fms-extensions @gol
+-fnew-inheriting-ctors @gol
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
@@ -2220,6 +2221,10 @@ Version 10, which first appeared in G++ 6.1, adds mangling of
 attributes that affect type identity, such as ia32 calling convention
 attributes (e.g. @samp{stdcall}).
 
+Version 11, which first appeared in G++ 7, corrects the mangling of
+sizeof... expressions.  It also implies
+@option{-fnew-inheriting-ctors}.
+
 See also @option{-Wabi}.
 
 @item -fabi-compat-version=@var{n}
@@ -2412,6 +2417,13 @@ errors if these functions are not inlined everywhere they are called.
 @opindex fms-extensions
 Disable Wpedantic warnings about constructs used in MFC, such as implicit
 int and getting a pointer to member function via non-standard syntax.
+
+@item -fnew-inheriting-ctors
+@opindex fnew-inheriting-ctors
+Enable the P0136 adjustment to the semantics of C++11 constructor
+inheritance.  This is part of C++17 but also considered to be a Defect
+Report against C++11 and C++14.  This flag is enabled by default
+unless @option{-fabi-version=10} or lower is specified.
 
 @item -fno-nonansi-builtins
 @opindex fno-nonansi-builtins

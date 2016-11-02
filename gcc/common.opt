@@ -907,7 +907,8 @@ Driver Undocumented
 ;     identity, such as ia32 calling convention attributes (stdcall, etc.)
 ;     Default in G++ 6 (set in c_common_post_options).
 ;
-; 11: The version of the ABI that corrects mangling of sizeof... expressions.
+; 11: The version of the ABI that corrects mangling of sizeof... expressions
+;     and introduces new inheriting constructor handling.
 ;     Default in G++ 7.
 ;
 ; Additional positive integers will be assigned as new versions of

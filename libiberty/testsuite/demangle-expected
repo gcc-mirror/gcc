@@ -4592,3 +4592,7 @@ __t2m05B500000000000000000_
 
 __10%0__S4_0T0T0
 %0<>::%0(%0<>)
+
+# Inheriting constructor
+_ZN1DCI11BEi
+D::B(int)

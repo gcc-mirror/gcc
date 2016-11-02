@@ -1617,6 +1617,13 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
             pp_cxx_requires_clause (pp, reqs);
 
       dump_substitution (pp, t, template_parms, template_args, flags);
+
+      if (tree base = DECL_INHERITED_CTOR_BASE (t))
+	{
+	  pp_cxx_ws_string (pp, "[inherited from");
+	  dump_type (pp, base, TFF_PLAIN_IDENTIFIER);
+	  pp_character (pp, ']');
+	}
     }
   else if (template_args)
     {
