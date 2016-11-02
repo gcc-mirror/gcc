@@ -1,5 +1,15 @@
 2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config/alpha/alpha.c (alpha_legitimize_address_1): Split up
+	variables so some can be rtx_insn *.
+	(alpha_emit_xfloating_libcall): Likewise.
+	* config/mips/mips.c (mips_call_tls_get_addr): Likewise.
+	(mips_legitimize_tls_address): Likewise.
+	* optabs.c (expand_binop): Likewise.
+	* reload1.c (gen_reload): Likewise.
+
+2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* reorg.c (relax_delay_slots): Split up the trial variable.
 
 2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

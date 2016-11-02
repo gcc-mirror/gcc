@@ -1017,7 +1017,8 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
       && GET_MODE_SIZE (mode) <= UNITS_PER_WORD
       && symbolic_operand (x, Pmode))
     {
-      rtx r0, r16, eqv, tga, tp, insn, dest, seq;
+      rtx r0, r16, eqv, tga, tp, dest, seq;
+      rtx_insn *insn;
 
       switch (tls_symbolic_operand_type (x))
 	{
@@ -1025,66 +1026,70 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	  break;
 
 	case TLS_MODEL_GLOBAL_DYNAMIC:
-	  start_sequence ();
+	  {
+	    start_sequence ();
 
-	  r0 = gen_rtx_REG (Pmode, 0);
-	  r16 = gen_rtx_REG (Pmode, 16);
-	  tga = get_tls_get_addr ();
-	  dest = gen_reg_rtx (Pmode);
-	  seq = GEN_INT (alpha_next_sequence_number++);
+	    r0 = gen_rtx_REG (Pmode, 0);
+	    r16 = gen_rtx_REG (Pmode, 16);
+	    tga = get_tls_get_addr ();
+	    dest = gen_reg_rtx (Pmode);
+	    seq = GEN_INT (alpha_next_sequence_number++);
 
-	  emit_insn (gen_movdi_er_tlsgd (r16, pic_offset_table_rtx, x, seq));
-	  insn = gen_call_value_osf_tlsgd (r0, tga, seq);
-	  insn = emit_call_insn (insn);
-	  RTL_CONST_CALL_P (insn) = 1;
-	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
+	    emit_insn (gen_movdi_er_tlsgd (r16, pic_offset_table_rtx, x, seq));
+	    rtx val = gen_call_value_osf_tlsgd (r0, tga, seq);
+	    insn = emit_call_insn (val);
+	    RTL_CONST_CALL_P (insn) = 1;
+	    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
 
-          insn = get_insns ();
-	  end_sequence ();
+	    insn = get_insns ();
+	    end_sequence ();
 
-	  emit_libcall_block (insn, dest, r0, x);
-	  return dest;
+	    emit_libcall_block (insn, dest, r0, x);
+	    return dest;
+	  }
 
 	case TLS_MODEL_LOCAL_DYNAMIC:
-	  start_sequence ();
+	  {
+	    start_sequence ();
 
-	  r0 = gen_rtx_REG (Pmode, 0);
-	  r16 = gen_rtx_REG (Pmode, 16);
-	  tga = get_tls_get_addr ();
-	  scratch = gen_reg_rtx (Pmode);
-	  seq = GEN_INT (alpha_next_sequence_number++);
+	    r0 = gen_rtx_REG (Pmode, 0);
+	    r16 = gen_rtx_REG (Pmode, 16);
+	    tga = get_tls_get_addr ();
+	    scratch = gen_reg_rtx (Pmode);
+	    seq = GEN_INT (alpha_next_sequence_number++);
 
-	  emit_insn (gen_movdi_er_tlsldm (r16, pic_offset_table_rtx, seq));
-	  insn = gen_call_value_osf_tlsldm (r0, tga, seq);
-	  insn = emit_call_insn (insn);
-	  RTL_CONST_CALL_P (insn) = 1;
-	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
+	    emit_insn (gen_movdi_er_tlsldm (r16, pic_offset_table_rtx, seq));
+	    rtx val = gen_call_value_osf_tlsldm (r0, tga, seq);
+	    insn = emit_call_insn (val);
+	    RTL_CONST_CALL_P (insn) = 1;
+	    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
 
-          insn = get_insns ();
-	  end_sequence ();
+	    insn = get_insns ();
+	    end_sequence ();
 
-	  eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
-				UNSPEC_TLSLDM_CALL);
-	  emit_libcall_block (insn, scratch, r0, eqv);
+	    eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+				  UNSPEC_TLSLDM_CALL);
+	    emit_libcall_block (insn, scratch, r0, eqv);
 
-	  eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), UNSPEC_DTPREL);
-	  eqv = gen_rtx_CONST (Pmode, eqv);
+	    eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), UNSPEC_DTPREL);
+	    eqv = gen_rtx_CONST (Pmode, eqv);
 
-	  if (alpha_tls_size == 64)
-	    {
-	      dest = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (dest, eqv));
-	      emit_insn (gen_adddi3 (dest, dest, scratch));
-	      return dest;
-	    }
-	  if (alpha_tls_size == 32)
-	    {
-	      insn = gen_rtx_HIGH (Pmode, eqv);
-	      insn = gen_rtx_PLUS (Pmode, scratch, insn);
-	      scratch = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (scratch, insn));
-	    }
-	  return gen_rtx_LO_SUM (Pmode, scratch, eqv);
+	    if (alpha_tls_size == 64)
+	      {
+		dest = gen_reg_rtx (Pmode);
+		emit_insn (gen_rtx_SET (dest, eqv));
+		emit_insn (gen_adddi3 (dest, dest, scratch));
+		return dest;
+	      }
+	    if (alpha_tls_size == 32)
+	      {
+		rtx temp = gen_rtx_HIGH (Pmode, eqv);
+		temp = gen_rtx_PLUS (Pmode, scratch, temp);
+		scratch = gen_reg_rtx (Pmode);
+		emit_insn (gen_rtx_SET (scratch, temp));
+	      }
+	    return gen_rtx_LO_SUM (Pmode, scratch, eqv);
+	  }
 
 	case TLS_MODEL_INITIAL_EXEC:
 	  eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), UNSPEC_TPREL);
@@ -1106,10 +1111,10 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	  emit_insn (gen_get_thread_pointerdi (tp));
 	  if (alpha_tls_size == 32)
 	    {
-	      insn = gen_rtx_HIGH (Pmode, eqv);
-	      insn = gen_rtx_PLUS (Pmode, tp, insn);
+	      rtx temp = gen_rtx_HIGH (Pmode, eqv);
+	      temp = gen_rtx_PLUS (Pmode, tp, temp);
 	      tp = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (tp, insn));
+	      emit_insn (gen_rtx_SET (tp, temp));
 	    }
 	  return gen_rtx_LO_SUM (Pmode, tp, eqv);
 
@@ -3059,7 +3064,7 @@ static void
 alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
 			      int noperands, rtx equiv)
 {
-  rtx usage = NULL_RTX, tmp, reg;
+  rtx usage = NULL_RTX, reg;
   int regno = 16, i;
 
   start_sequence ();
@@ -3109,9 +3114,9 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
       gcc_unreachable ();
     }
 
-  tmp = gen_rtx_MEM (QImode, func);
-  tmp = emit_call_insn (gen_call_value (reg, tmp, const0_rtx,
-					const0_rtx, const0_rtx));
+  rtx mem = gen_rtx_MEM (QImode, func);
+  rtx_insn *tmp = emit_call_insn (gen_call_value (reg, mem, const0_rtx,
+						  const0_rtx, const0_rtx));
   CALL_INSN_FUNCTION_USAGE (tmp) = usage;
   RTL_CONST_CALL_P (tmp) = 1;
 
