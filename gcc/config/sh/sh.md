@@ -3044,7 +3044,7 @@
   "&& 1"
   [(const_int 0)]
 {
-  rtx prev_set_t_insn = NULL_RTX;
+  rtx_insn *prev_set_t_insn = NULL;
 
   if (!arith_reg_operand (operands[3], SImode))
     {
@@ -3105,7 +3105,7 @@
 		 && ! reg_referenced_p (get_t_reg_rtx (),
 					PATTERN (prev_set_t_insn))))
 	    {
-	      prev_set_t_insn = NULL_RTX;
+	      prev_set_t_insn = NULL;
 	      tmp_t_reg = gen_reg_rtx (SImode);
 	      emit_insn (gen_move_insn (tmp_t_reg, get_t_reg_rtx ()));
 	    } 
@@ -3174,7 +3174,7 @@
   if (INTVAL (operands[2]) > 1)
     {
       const rtx shift_count = GEN_INT (INTVAL (operands[2]) - 1);
-      rtx prev_set_t_insn = NULL_RTX;
+      rtx_insn *prev_set_t_insn = NULL;
       rtx tmp_t_reg = NULL_RTX;
 
       /* If we're going to emit a shift sequence that clobbers the T_REG,
@@ -3205,7 +3205,7 @@
 		 && ! reg_referenced_p (get_t_reg_rtx (),
 					PATTERN (prev_set_t_insn))))
 	    {
-	      prev_set_t_insn = NULL_RTX;
+	      prev_set_t_insn = NULL;
 	      tmp_t_reg = gen_reg_rtx (SImode);
 	      emit_insn (gen_move_insn (tmp_t_reg, get_t_reg_rtx ()));
 	    } 
@@ -4518,7 +4518,7 @@
   "TARGET_SH1 && ! TARGET_ZDCBRANCH"
   [(const_int 0)]
 {
-  rtx skip_neg_label = gen_label_rtx ();
+  rtx_code_label *skip_neg_label = gen_label_rtx ();
 
   emit_move_insn (operands[0], operands[1]);
 
@@ -4545,7 +4545,7 @@
   "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
-  rtx skip_neg_label = gen_label_rtx ();
+  rtx_code_label *skip_neg_label = gen_label_rtx ();
 
   emit_move_insn (operands[0], operands[1]);
 
@@ -7456,7 +7456,7 @@
   [(match_operand 0 "" "") (match_operand 1 "" "")]
   ""
 {
-  rtx gotoffsym, insn;
+  rtx gotoffsym;
   rtx t = (!can_create_pseudo_p ()
 	   ? operands[0]
 	   : gen_reg_rtx (GET_MODE (operands[0])));
@@ -7467,7 +7467,7 @@
   gotoffsym = gen_sym2GOTOFF (operands[1]);
   PUT_MODE (gotoffsym, Pmode);
   emit_move_insn (t, gotoffsym);
-  insn = emit_move_insn (operands[0], gen_rtx_PLUS (Pmode, t, picreg));
+  rtx_insn *insn = emit_move_insn (operands[0], gen_rtx_PLUS (Pmode, t, picreg));
 
   set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
@@ -8825,7 +8825,7 @@
   "&& 1"
   [(const_int 0)]
 {
-  rtx skip_label = gen_label_rtx ();
+  rtx_code_label *skip_label = gen_label_rtx ();
   emit_move_insn (operands[0], operands[1]);
 
   rtx cmp_val = operands[2];

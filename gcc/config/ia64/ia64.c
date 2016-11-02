@@ -1803,7 +1803,7 @@ ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
       };
       int magic;
       enum rtx_code ncode;
-      rtx ret, insns;
+      rtx ret;
       
       gcc_assert (cmptf_libfunc && GET_MODE (*op1) == TFmode);
       switch (code)
@@ -1842,7 +1842,7 @@ ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
       emit_insn (gen_rtx_SET (cmp, gen_rtx_fmt_ee (ncode, BImode,
 						   ret, const0_rtx)));
 
-      insns = get_insns ();
+      rtx_insn *insns = get_insns ();
       end_sequence ();
 
       emit_libcall_block (insns, cmp, cmp,

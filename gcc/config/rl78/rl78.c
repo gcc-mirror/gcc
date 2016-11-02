@@ -2949,7 +2949,7 @@ move_to_acc (int opno, rtx before)
 }
 
 static void
-force_into_acc (rtx src, rtx before)
+force_into_acc (rtx src, rtx_insn *before)
 {
   machine_mode mode = GET_MODE (src);
   rtx move;

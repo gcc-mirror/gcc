@@ -7594,7 +7594,7 @@ static void
 frv_reorder_packet (void)
 {
   unsigned int cursor[NUM_GROUPS];
-  rtx insns[ARRAY_SIZE (frv_unit_groups)];
+  rtx_insn *insns[ARRAY_SIZE (frv_unit_groups)];
   unsigned int unit, to, from;
   enum frv_insn_group group;
   struct frv_packet_group *packet_group;

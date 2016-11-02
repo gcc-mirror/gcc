@@ -214,7 +214,7 @@ static void leaf_renumber_regs (rtx_insn *);
 static int alter_cond (rtx);
 #endif
 #ifndef ADDR_VEC_ALIGN
-static int final_addr_vec_align (rtx);
+static int final_addr_vec_align (rtx_insn *);
 #endif
 static int align_fuzz (rtx, rtx, int, unsigned);
 static void collect_fn_hard_reg_usage (void);
@@ -513,7 +513,7 @@ default_jump_align_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
 
 #ifndef ADDR_VEC_ALIGN
 static int
-final_addr_vec_align (rtx addr_vec)
+final_addr_vec_align (rtx_insn *addr_vec)
 {
   int align = GET_MODE_SIZE (GET_MODE (PATTERN (addr_vec)));
 

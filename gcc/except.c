@@ -909,7 +909,7 @@ assign_filter_values (void)
    first instruction of some existing BB and return the newly
    produced block.  */
 static basic_block
-emit_to_new_bb_before (rtx_insn *seq, rtx insn)
+emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
 {
   rtx_insn *last;
   basic_block bb;

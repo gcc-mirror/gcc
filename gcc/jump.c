@@ -62,7 +62,7 @@ static void init_label_info (rtx_insn *);
 static void mark_all_labels (rtx_insn *);
 static void mark_jump_label_1 (rtx, rtx_insn *, bool, bool);
 static void mark_jump_label_asm (rtx, rtx_insn *);
-static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
+static void redirect_exp_1 (rtx *, rtx, rtx, rtx_insn *);
 static int invert_exp_1 (rtx, rtx_insn *);
 
 /* Worker for rebuild_jump_labels and rebuild_jump_labels_chain.  */
@@ -1457,7 +1457,7 @@ redirect_target (rtx x)
    NLABEL as a return.  Accrue modifications into the change group.  */
 
 static void
-redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
+redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx_insn *insn)
 {
   rtx x = *loc;
   RTX_CODE code = GET_CODE (x);
