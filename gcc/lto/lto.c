@@ -3099,6 +3099,10 @@ do_whole_program_analysis (void)
 
   execute_ipa_pass_list (g->get_passes ()->all_regular_ipa_passes);
 
+  /* When WPA analysis raises errors, do not bother to output anything.  */
+  if (seen_error ())
+    return;
+
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Optimized ");
