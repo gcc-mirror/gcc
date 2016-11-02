@@ -125,6 +125,7 @@
 #include "tree-cfg.h"
 #include "tree-eh.h"
 #include "target.h"
+#include "gimplify-me.h"
 
 /* The maximum size (in bits) of the stores this pass should generate.  */
 #define MAX_STORE_BITSIZE (BITS_PER_WORD)
@@ -1127,6 +1128,8 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
   unsigned int i;
   bool fail = false;
 
+  tree addr = force_gimple_operand_1 (unshare_expr (base_addr), &seq,
+				      is_gimple_mem_ref_addr, NULL_TREE);
   FOR_EACH_VEC_ELT (split_stores, i, split_store)
     {
       unsigned HOST_WIDE_INT try_size = split_store->size;
@@ -1137,7 +1140,7 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 
       tree int_type = build_nonstandard_integer_type (try_size, UNSIGNED);
       int_type = build_aligned_type (int_type, align);
-      tree dest = fold_build2 (MEM_REF, int_type, base_addr,
+      tree dest = fold_build2 (MEM_REF, int_type, addr,
 			       build_int_cst (offset_type, try_pos));
 
       tree src = native_interpret_expr (int_type,
@@ -1366,15 +1369,10 @@ pass_store_merging::execute (function *fun)
 				       &unsignedp, &reversep, &volatilep);
 	      /* As a future enhancement we could handle stores with the same
 		 base and offset.  */
-	      bool invalid = offset || reversep || bitpos < 0
+	      bool invalid = reversep
 			     || ((bitsize > MAX_BITSIZE_MODE_ANY_INT)
 				  && (TREE_CODE (rhs) != INTEGER_CST))
-			     || !rhs_valid_for_store_merging_p (rhs)
-		/* An access may not be volatile itself but base_addr may be
-		   a volatile decl i.e. MEM[&volatile-decl].  The hashing for
-		   tree_operand_hash won't consider such stores equal to each
-		   other so we can't track chains on them.  */
-			     || TREE_THIS_VOLATILE (base_addr);
+			     || !rhs_valid_for_store_merging_p (rhs);
 
 	      /* We do not want to rewrite TARGET_MEM_REFs.  */
 	      if (TREE_CODE (base_addr) == TARGET_MEM_REF)
@@ -1398,7 +1396,32 @@ pass_store_merging::execute (function *fun)
 	      /* get_inner_reference returns the base object, get at its
 	         address now.  */
 	      else
-		base_addr = build_fold_addr_expr (base_addr);
+		{
+		  if (bitpos < 0)
+		    invalid = true;
+		  base_addr = build_fold_addr_expr (base_addr);
+		}
+
+	      if (! invalid
+		  && offset != NULL_TREE)
+		{
+		  /* If the access is variable offset then a base
+		     decl has to be address-taken to be able to
+		     emit pointer-based stores to it.
+		     ???  We might be able to get away with
+		     re-using the original base up to the first
+		     variable part and then wrapping that inside
+		     a BIT_FIELD_REF.  */
+		  tree base = get_base_address (base_addr);
+		  if (! base
+		      || (DECL_P (base)
+			  && ! TREE_ADDRESSABLE (base)))
+		    invalid = true;
+		  else
+		    base_addr = build2 (POINTER_PLUS_EXPR,
+					TREE_TYPE (base_addr),
+					base_addr, offset);
+		}
 
 	      struct imm_store_chain_info **chain_info
 		= m_stores.get (base_addr);
