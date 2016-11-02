@@ -1,3 +1,47 @@
+2016-11-02  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78047
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Initialize
+	fake field at offset zero conservatively regarding to may_have_pointers.
+
+	2016-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77879
+	* tree-ssa-structalias.c (handle_const_call): Properly handle
+	NRV return slots.
+	(handle_pure_call): Likewise.
+
+	2016-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77839
+	* tree-ssa-sccvn.c (set_ssa_val_to): Forbid value -> constant value
+	lattice transition.
+
+	2016-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77745
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	When removing redundant stores make sure to check compatibility
+	of the TBAA state for downstream accesses.
+	* tree-ssa-sccvn.c (visit_reference_op_store): Likewise for when
+	value-numbering virtual operands for store matches.
+
+	2016-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77648
+	* tree-ssa-structalias.c (process_constraint): Handle all DEREF
+	with complex RHS.
+	(make_transitive_closure_constraints): Adjust comment.
+	(make_any_offset_constraints): New function.
+	(handle_rhs_call): Make sure to first expand a pointer to all
+	subfields before transitively closing it.
+	(handle_const_call): Likewise.  Properly expand returned
+	pointers as well.
+	(handle_pure_call): Likewise.
+
 2016-11-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/78166

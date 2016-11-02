@@ -3017,7 +3017,7 @@ process_constraint (constraint_t t)
       process_constraint (new_constraint (tmplhs, rhs));
       process_constraint (new_constraint (lhs, tmplhs));
     }
-  else if (rhs.type == ADDRESSOF && lhs.type == DEREF)
+  else if ((rhs.type != SCALAR || rhs.offset != 0) && lhs.type == DEREF)
     {
       /* Split into tmp = &rhs, *lhs = tmp */
       struct constraint_expr tmplhs;
@@ -3740,11 +3740,28 @@ make_transitive_closure_constraints (varinfo_t vi)
 {
   struct constraint_expr lhs, rhs;
 
-  /* VAR = *VAR;  */
+  /* VAR = *(VAR + UNKNOWN);  */
   lhs.type = SCALAR;
   lhs.var = vi->id;
   lhs.offset = 0;
   rhs.type = DEREF;
+  rhs.var = vi->id;
+  rhs.offset = UNKNOWN_OFFSET;
+  process_constraint (new_constraint (lhs, rhs));
+}
+
+/* Add constraints to that the solution of VI has all subvariables added.  */
+
+static void
+make_any_offset_constraints (varinfo_t vi)
+{
+  struct constraint_expr lhs, rhs;
+
+  /* VAR = VAR + UNKNOWN;  */
+  lhs.type = SCALAR;
+  lhs.var = vi->id;
+  lhs.offset = 0;
+  rhs.type = SCALAR;
   rhs.var = vi->id;
   rhs.offset = UNKNOWN_OFFSET;
   process_constraint (new_constraint (lhs, rhs));
@@ -3895,15 +3912,12 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	   && (flags & EAF_NOESCAPE))
 	{
 	  varinfo_t uses = get_call_use_vi (stmt);
+	  varinfo_t tem = new_var_info (NULL_TREE, "callarg", true);
+	  make_constraint_to (tem->id, arg);
+	  make_any_offset_constraints (tem);
 	  if (!(flags & EAF_DIRECT))
-	    {
-	      varinfo_t tem = new_var_info (NULL_TREE, "callarg", true);
-	      make_constraint_to (tem->id, arg);
-	      make_transitive_closure_constraints (tem);
-	      make_copy_constraint (uses, tem->id);
-	    }
-	  else
-	    make_constraint_to (uses->id, arg);
+	    make_transitive_closure_constraints (tem);
+	  make_copy_constraint (uses, tem->id);
 	  returns_uses = true;
 	}
       else if (flags & EAF_NOESCAPE)
@@ -3913,6 +3927,7 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  varinfo_t clobbers = get_call_clobber_vi (stmt);
 	  varinfo_t tem = new_var_info (NULL_TREE, "callarg", true);
 	  make_constraint_to (tem->id, arg);
+	  make_any_offset_constraints (tem);
 	  if (!(flags & EAF_DIRECT))
 	    make_transitive_closure_constraints (tem);
 	  make_copy_constraint (uses, tem->id);
@@ -3938,7 +3953,7 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
   if (returns_uses)
     {
       rhsc.var = get_call_use_vi (stmt)->id;
-      rhsc.offset = 0;
+      rhsc.offset = UNKNOWN_OFFSET;
       rhsc.type = SCALAR;
       results->safe_push (rhsc);
     }
@@ -4041,30 +4056,58 @@ handle_const_call (gcall *stmt, vec<ce_s> *results)
 {
   struct constraint_expr rhsc;
   unsigned int k;
+  bool need_uses = false;
 
   /* Treat nested const functions the same as pure functions as far
      as the static chain is concerned.  */
   if (gimple_call_chain (stmt))
     {
       varinfo_t uses = get_call_use_vi (stmt);
-      make_transitive_closure_constraints (uses);
       make_constraint_to (uses->id, gimple_call_chain (stmt));
+      need_uses = true;
+    }
+
+  /* And if we applied NRV the address of the return slot escapes as well.  */
+  if (gimple_call_return_slot_opt_p (stmt)
+      && gimple_call_lhs (stmt) != NULL_TREE
+      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
+    {
+      varinfo_t uses = get_call_use_vi (stmt);
+      auto_vec<ce_s> tmpc;
+      get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
+      make_constraints_to (uses->id, tmpc);
+      need_uses = true;
+    }
+
+  if (need_uses)
+    {
+      varinfo_t uses = get_call_use_vi (stmt);
+      make_any_offset_constraints (uses);
+      make_transitive_closure_constraints (uses);
       rhsc.var = uses->id;
       rhsc.offset = 0;
       rhsc.type = SCALAR;
       results->safe_push (rhsc);
     }
 
-  /* May return arguments.  */
+  /* May return offsetted arguments.  */
+  varinfo_t tem = NULL;
+  if (gimple_call_num_args (stmt) != 0)
+    tem = new_var_info (NULL_TREE, "callarg", true);
   for (k = 0; k < gimple_call_num_args (stmt); ++k)
     {
       tree arg = gimple_call_arg (stmt, k);
       auto_vec<ce_s> argc;
-      unsigned i;
-      struct constraint_expr *argp;
       get_constraint_for_rhs (arg, &argc);
-      FOR_EACH_VEC_ELT (argc, i, argp)
-	results->safe_push (*argp);
+      make_constraints_to (tem->id, argc);
+    }
+  if (tem)
+    {
+      ce_s ce;
+      ce.type = SCALAR;
+      ce.var = tem->id;
+      ce.offset = UNKNOWN_OFFSET;
+      results->safe_push (ce);
     }
 
   /* May return addresses of globals.  */
@@ -4091,6 +4134,7 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
       if (!uses)
 	{
 	  uses = get_call_use_vi (stmt);
+	  make_any_offset_constraints (uses);
 	  make_transitive_closure_constraints (uses);
 	}
       make_constraint_to (uses->id, arg);
@@ -4102,9 +4146,26 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
       if (!uses)
 	{
 	  uses = get_call_use_vi (stmt);
+	  make_any_offset_constraints (uses);
 	  make_transitive_closure_constraints (uses);
 	}
       make_constraint_to (uses->id, gimple_call_chain (stmt));
+    }
+
+  /* And if we applied NRV the address of the return slot.  */
+  if (gimple_call_return_slot_opt_p (stmt)
+      && gimple_call_lhs (stmt) != NULL_TREE
+      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
+    {
+      if (!uses)
+	{
+	  uses = get_call_use_vi (stmt);
+	  make_any_offset_constraints (uses);
+	  make_transitive_closure_constraints (uses);
+	}
+      auto_vec<ce_s> tmpc;
+      get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
+      make_constraints_to (uses->id, tmpc);
     }
 
   /* Pure functions may return call-used and nonlocal memory.  */
@@ -5484,7 +5545,7 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
 		&& offset + foff != 0)
 	      {
 		fieldoff_s e
-		  = {0, offset + foff, false, false, false, false, NULL_TREE};
+		  = {0, offset + foff, false, false, true, false, NULL_TREE};
 		pair = fieldstack->safe_push (e);
 	      }
 

@@ -3103,6 +3103,23 @@ set_ssa_val_to (tree from, tree to)
 	    }
 	  return false;
 	}
+      else if (currval != VN_TOP
+	       && ! is_gimple_min_invariant (currval)
+	       && is_gimple_min_invariant (to))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Forcing VARYING instead of changing "
+		       "value number of ");
+	      print_generic_expr (dump_file, from, 0);
+	      fprintf (dump_file, " from ");
+	      print_generic_expr (dump_file, currval, 0);
+	      fprintf (dump_file, " (non-constant) to ");
+	      print_generic_expr (dump_file, to, 0);
+	      fprintf (dump_file, " (constant)\n");
+	    }
+	  to = from;
+	}
       else if (TREE_CODE (to) == SSA_NAME
 	       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (to))
 	to = from;
@@ -3482,13 +3499,21 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
      Otherwise, the vdefs for the store are used when inserting into
      the table, since the store generates a new memory state.  */
 
-  result = vn_reference_lookup (lhs, vuse, VN_NOWALK, NULL, false);
-
+  result = vn_reference_lookup (lhs, vuse, VN_NOWALK, &vnresult, false);
   if (result)
     {
       if (TREE_CODE (result) == SSA_NAME)
 	result = SSA_VAL (result);
       resultsame = expressions_equal_p (result, op);
+      if (resultsame)
+	{
+	  /* If the TBAA state isn't compatible for downstream reads
+	     we cannot value-number the VDEFs the same.  */
+	  alias_set_type set = get_alias_set (lhs);
+	  if (vnresult->set != set
+	      && ! alias_set_subset_of (set, vnresult->set))
+	    resultsame = false;
+	}
     }
 
   if ((!result || !resultsame)
