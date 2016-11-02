@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void delete_insn (rtx);
 extern bool delete_insn_and_edges (rtx_insn *);
-extern void delete_insn_chain (rtx, rtx, bool);
+extern void delete_insn_chain (rtx, rtx_insn *, bool);
 extern basic_block create_basic_block_structure (rtx_insn *, rtx_insn *,
 						 rtx_note *, basic_block);
 extern void compute_bb_for_insn (void);

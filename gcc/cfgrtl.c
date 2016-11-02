@@ -240,17 +240,15 @@ delete_insn_and_edges (rtx_insn *insn)
    insns that cannot be removed to NULL.  */
 
 void
-delete_insn_chain (rtx start, rtx finish, bool clear_bb)
+delete_insn_chain (rtx start, rtx_insn *finish, bool clear_bb)
 {
-  rtx_insn *prev, *current;
-
   /* Unchain the insns one by one.  It would be quicker to delete all of these
      with a single unchaining, rather than one at a time, but we need to keep
      the NOTE's.  */
-  current = safe_as_a <rtx_insn *> (finish);
+  rtx_insn *current = finish;
   while (1)
     {
-      prev = PREV_INSN (current);
+      rtx_insn *prev = PREV_INSN (current);
       if (NOTE_P (current) && !can_delete_note_p (as_a <rtx_note *> (current)))
 	;
       else
