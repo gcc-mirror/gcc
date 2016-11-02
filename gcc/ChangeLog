@@ -1,5 +1,23 @@
 2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config/rl78/rl78.c (gen-and_emit_move): Change argument type
+	to rtx_insn *.
+	(transcode_memory_rtx): Likewise.
+	(move_to_acc): Likewise.
+	(move_from_acc): Likewise.
+	(move_acc_to_reg): Likewise.
+	(move_to_x): Likewise.
+	(move_to_hl): Likewise.
+	(move_to_de): Likewise.
+	* config/rs6000/rs6000.c (emit_frame_save): Likewise.
+	(rs6000_emit_savres_rtx): Likewise.
+	(rs6000_emit_prologue): Likewise.
+	* reorg.c (update_reg_unused_notes): Likewise.
+	* rtl.h (remove_note): Adjust prototype.
+	* rtlanal.c (remove_note): Make argument type rtx_insn *.
+
+2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/alpha/alpha.c (alpha_legitimize_address_1): Split up
 	variables so some can be rtx_insn *.
 	(alpha_emit_xfloating_libcall): Likewise.

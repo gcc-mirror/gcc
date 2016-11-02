@@ -226,7 +226,7 @@ static void update_block (rtx_insn *, rtx_insn *);
 static int reorg_redirect_jump (rtx_jump_insn *, rtx);
 static void update_reg_dead_notes (rtx_insn *, rtx_insn *);
 static void fix_reg_dead_note (rtx_insn *, rtx);
-static void update_reg_unused_notes (rtx, rtx);
+static void update_reg_unused_notes (rtx_insn *, rtx);
 static void fill_simple_delay_slots (int);
 static void fill_slots_from_thread (rtx_jump_insn *, rtx, rtx, rtx,
 				    int, int, int, int,
@@ -1805,7 +1805,7 @@ fix_reg_dead_note (rtx_insn *start_insn, rtx stop_insn)
    does.  */
 
 static void
-update_reg_unused_notes (rtx insn, rtx redundant_insn)
+update_reg_unused_notes (rtx_insn *insn, rtx redundant_insn)
 {
   rtx link, next;
 
