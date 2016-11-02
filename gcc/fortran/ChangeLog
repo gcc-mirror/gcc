@@ -1,3 +1,11 @@
+2016-11-02  Fritz O. Reese <fritzoreese@gmail.com>
+
+	* lang.opt, invoke.texi: New argument -Wargument-mismatch.
+	* interface.c (compare_parameter, compare_actual_formal,
+	gfc_check_typebound_override, argument_rank_mismatch): Control argument
+	mismatch warnings with -Wargument-mismatch.
+	* resolve.c (resolve_structure_cons, resolve_global_procedure): Ditto.
+
 2016-11-02  Fritz Reese <fritzoreese@gmail.com>
 
 	* gfortran.h (gfc_error): New declaration for gfc_error with 'opt'.

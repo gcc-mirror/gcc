@@ -141,7 +141,7 @@ by type.  Explanations are in the following sections.
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to request or suppress errors
 and warnings}.
-@gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds
+@gccoptlist{-Waliasing -Wall -Wampersand -Wargument-mismatch -Warray-bounds
 -Wc-binding-type -Wcharacter-truncation @gol
 -Wconversion -Wfunction-elimination -Wimplicit-interface @gol
 -Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only -Wintrinsics-std @gol
@@ -820,6 +820,15 @@ given with @option{-Wampersand}, @option{-pedantic}, @option{-std=f95},
 given in a continued character constant, GNU Fortran assumes continuation
 at the first non-comment, non-whitespace character after the ampersand
 that initiated the continuation.
+
+@item -Wargument-mismatch
+@opindex @code{Wargument-mismatch}
+@cindex warnings, argument mismatch
+@cindex warnings, parameter mismatch
+@cindex warnings, interface mismatch
+Warn about type, rank, and other mismatches between formal parameters and actual
+arguments to functions and subroutines.  These warnings are recommended and
+thus enabled by default.
 
 @item -Warray-temporaries
 @opindex @code{Warray-temporaries}
