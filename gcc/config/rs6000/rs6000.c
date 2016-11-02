@@ -27634,6 +27634,9 @@ rs6000_get_separate_components (void)
   if (WORLD_SAVE_P (info))
     return NULL;
 
+  if (TARGET_SPE_ABI)
+    return NULL;
+
   sbitmap components = sbitmap_alloc (32);
   bitmap_clear (components);
 

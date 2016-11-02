@@ -1,3 +1,9 @@
+2016-11-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/78168
+	* config/r6000/rs6000.c (rs6000_get_separate_components): Return
+	NULL if TARGET_SPE_ABI.
+
 2016-11-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): Don't forget to
