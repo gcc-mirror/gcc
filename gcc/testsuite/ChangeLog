@@ -1,3 +1,14 @@
+2016-11-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/simd/vmaxnm_f32_1.c (dg-require-effective-target):
+	Check for arm_v8_neon_hw.
+	* gcc.target/arm/simd/vmaxnmq_f32_1.c (dg-require-effective-target):
+	Likewise.
+	* gcc.target/arm/simd/vminnm_f32_1.c (dg-require-effective-target):
+	Likewise.
+	* gcc.target/arm/simd/vminnmq_f32_1.c(dg-require-effective-target):
+	Likewise.
+
 2016-11-02  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/store_merging_8.c: New testcase.
