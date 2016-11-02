@@ -1,3 +1,11 @@
+2016-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.in (LIB2_DIVMOD_FUNCS): Add _divmoddi4.
+	* libgcc2.c (__divmoddi4): New function.
+	* libgcc2.h (__divmoddi4): Declare.
+	* libgcc-std.ver.in (GCC_7.0.0): New. Add __PFX_divmoddi4
+	and __PFX_divmodti4.
+
 2016-10-24  Florian Weimer  <fweimer@redhat.com>
 
 	PR libgcc/78064
@@ -5,7 +13,7 @@
 
 2016-10-19  John David Anglin  <danglin@gcc.gnu.org>
 
-	* config/pa/pa64-hpux-lib.h: New file.  
+	* config/pa/pa64-hpux-lib.h: New file.
 	(EH_FRAME_SECTION_NAME): Rename to __LIBGCC_EH_FRAME_SECTION_NAME__.
 	(DTORS_SECTION_ASM_OP): Rename to __LIBGCC_DTORS_SECTION_ASM_OP__.
 	* config.host (tm_file): Add pa/pa64-hpux-lib.h to tm_file on
@@ -358,7 +366,7 @@
 
 2016-06-23  Jakub Sejdak  <jakub.sejdak@phoesys.com>
 
-   * config.host: Add suport for arm*-*-phoenix* targets.
+	* config.host: Add suport for arm*-*-phoenix* targets.
 
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
