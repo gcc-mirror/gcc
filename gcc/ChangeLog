@@ -1,3 +1,12 @@
+2016-11-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (evrp_dom_walker::before_dom_children): Call
+	infer_value_range on stmt ops and update value-ranges.
+	Dump visited stmts and blocks.
+	(evrp_dom_walker::push_value_range): Dump changes.
+	(evrp_dom_walker::pop_value_range): Likewise.
+	(evrp_dom_walker::try_find_new_range): Avoid noop changes.
+
 2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* emit-rtl.c (prev_nonnote_insn_bb): Change argument type to

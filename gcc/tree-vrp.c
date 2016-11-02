@@ -10650,17 +10650,16 @@ public:
     }
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
-  void push_value_range (const_tree var, value_range *vr);
-  value_range *pop_value_range (const_tree var);
+  void push_value_range (tree var, value_range *vr);
+  value_range *pop_value_range (tree var);
   value_range *try_find_new_range (tree op, tree_code code, tree limit);
 
   /* Cond_stack holds the old VR.  */
-  auto_vec<std::pair <const_tree, value_range*> > stack;
+  auto_vec<std::pair <tree, value_range*> > stack;
   bitmap need_eh_cleanup;
   auto_vec<gimple *> stmts_to_fixup;
   auto_vec<gimple *> stmts_to_remove;
 };
-
 
 /*  Find new range for OP such that (OP CODE LIMIT) is true.  */
 
@@ -10679,6 +10678,10 @@ evrp_dom_walker::try_find_new_range (tree op, tree_code code, tree limit)
      PUSH old value in the stack with the old VR.  */
   if (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
     {
+      if (old_vr->type == vr.type
+	  && vrp_operand_equal_p (old_vr->min, vr.min)
+	  && vrp_operand_equal_p (old_vr->max, vr.max))
+	return NULL;
       value_range *new_vr = vrp_value_range_pool.allocate ();
       *new_vr = vr;
       return new_vr;
@@ -10696,7 +10699,10 @@ evrp_dom_walker::before_dom_children (basic_block bb)
   edge_iterator ei;
   edge e;
 
-  push_value_range (NULL_TREE, NULL);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Visiting BB%d\n", bb->index);
+
+  stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
 
   edge pred_e = NULL;
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -10723,6 +10729,11 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)))
 	      || POINTER_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)))))
 	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Visiting controlling predicate ");
+	      print_gimple_stmt (dump_file, stmt, 0, 0);
+	    }
 	  /* Entering a new scope.  Try to see if we can find a VR
 	     here.  */
 	  tree op1 = gimple_cond_rhs (stmt);
@@ -10778,6 +10789,11 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	continue;
       value_range vr_result = VR_INITIALIZER;
       bool interesting = stmt_interesting_for_vrp (phi);
+      if (interesting && dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Visiting PHI node ");
+	  print_gimple_stmt (dump_file, phi, 0, 0);
+	}
       if (!has_unvisited_preds
 	  && interesting)
 	extract_range_from_phi_node (phi, &vr_result);
@@ -10814,6 +10830,12 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       bool was_noreturn = (is_gimple_call (stmt)
 			   && gimple_call_noreturn_p (stmt));
 
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Visiting stmt ");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	}
+
       if (gcond *cond = dyn_cast <gcond *> (stmt))
 	{
 	  vrp_visit_cond_stmt (cond, &taken_edge);
@@ -10825,6 +10847,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 		gimple_cond_make_false (cond);
 	      else
 		gcc_unreachable ();
+	      update_stmt (stmt);
 	    }
 	}
       else if (stmt_interesting_for_vrp (stmt))
@@ -10872,6 +10895,55 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
       else
 	set_defs_to_varying (stmt);
+
+      /* See if we can derive a range for any of STMT's operands.  */
+      tree op;
+      ssa_op_iter i;
+      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+	{
+	  tree value;
+	  enum tree_code comp_code;
+
+	  /* If OP is used in such a way that we can infer a value
+	     range for it, and we don't find a previous assertion for
+	     it, create a new assertion location node for OP.  */
+	  if (infer_value_range (stmt, op, &comp_code, &value))
+	    {
+	      /* If we are able to infer a nonzero value range for OP,
+		 then walk backwards through the use-def chain to see if OP
+		 was set via a typecast.
+		 If so, then we can also infer a nonzero value range
+		 for the operand of the NOP_EXPR.  */
+	      if (comp_code == NE_EXPR && integer_zerop (value))
+		{
+		  tree t = op;
+		  gimple *def_stmt = SSA_NAME_DEF_STMT (t);
+		  while (is_gimple_assign (def_stmt)
+			 && CONVERT_EXPR_CODE_P
+			      (gimple_assign_rhs_code (def_stmt))
+			 && TREE_CODE
+			      (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
+			 && POINTER_TYPE_P
+			      (TREE_TYPE (gimple_assign_rhs1 (def_stmt))))
+		    {
+		      t = gimple_assign_rhs1 (def_stmt);
+		      def_stmt = SSA_NAME_DEF_STMT (t);
+
+		      /* Add VR when (T COMP_CODE value) condition is
+			 true.  */
+		      value_range *op_range
+			= try_find_new_range (t, comp_code, value);
+		      if (op_range)
+			push_value_range (t, op_range);
+		    }
+		}
+	      /* Add VR when (OP COMP_CODE value) condition is true.  */
+	      value_range *op_range = try_find_new_range (op,
+							  comp_code, value);
+	      if (op_range)
+		push_value_range (op, op_range);
+	    }
+	}
 
       /* Try folding stmts with the VR discovered.  */
       bool did_replace
@@ -10938,42 +11010,44 @@ evrp_dom_walker::after_dom_children (basic_block bb ATTRIBUTE_UNUSED)
   gcc_checking_assert (!stack.is_empty ());
   while (stack.last ().first != NULL_TREE)
     pop_value_range (stack.last ().first);
-  pop_value_range (stack.last ().first);
+  stack.pop ();
 }
 
 /* Push the Value Range of VAR to the stack and update it with new VR.  */
 
 void
-evrp_dom_walker::push_value_range (const_tree var, value_range *vr)
+evrp_dom_walker::push_value_range (tree var, value_range *vr)
 {
-  if (vr != NULL)
+  if (SSA_NAME_VERSION (var) >= num_vr_values)
+    return;
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      unsigned ver = SSA_NAME_VERSION (var);
-      gcc_checking_assert (vr_value);
-      stack.safe_push (std::make_pair (var, vr_value[ver]));
-
-      if (ver < num_vr_values)
-	vr_value[ver] = vr;
+      fprintf (dump_file, "pushing new range for ");
+      print_generic_expr (dump_file, var, 0);
+      fprintf (dump_file, ": ");
+      dump_value_range (dump_file, vr);
+      fprintf (dump_file, "\n");
     }
-  else
-    stack.safe_push (std::make_pair (var, vr));
+  stack.safe_push (std::make_pair (var, get_value_range (var)));
+  vr_value[SSA_NAME_VERSION (var)] = vr;
 }
 
 /* Pop the Value Range from the vrp_stack and update VAR with it.  */
 
 value_range *
-evrp_dom_walker::pop_value_range (const_tree var)
+evrp_dom_walker::pop_value_range (tree var)
 {
   value_range *vr = stack.last ().second;
-  if (vr != NULL)
+  gcc_checking_assert (var == stack.last ().first);
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      unsigned ver = SSA_NAME_VERSION (var);
-      gcc_checking_assert (var == stack.last ().first);
-      gcc_checking_assert (vr_value);
-
-      if (ver < num_vr_values)
-	vr_value[ver] = vr;
+      fprintf (dump_file, "popping range for ");
+      print_generic_expr (dump_file, var, 0);
+      fprintf (dump_file, ", restoring ");
+      dump_value_range (dump_file, vr);
+      fprintf (dump_file, "\n");
     }
+  vr_value[SSA_NAME_VERSION (var)] = vr;
   stack.pop ();
   return vr;
 }
