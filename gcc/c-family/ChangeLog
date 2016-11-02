@@ -1,5 +1,8 @@
 2016-11-01  Jason Merrill  <jason@redhat.com>
 
+	* c-cppbuiltin.c (c_cpp_builtins): Update
+	__cpp_inheriting_constructors.
+
 	* c.opt (-fnew-inheriting-ctors): New.
 	* c-opts.c: Default to on for ABI 11+.
 
