@@ -1,3 +1,9 @@
+2016-11-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/inline-var-1.C: XFAIL AIX.
+	* g++.dg/debug/dwarf2/ref-2.C: XFAIL AIX.
+	* g++.dg/debug/dwarf2/constexpr-var-1.C: XFAIL AIX.
+
 2016-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_gc_sections_available): Use
