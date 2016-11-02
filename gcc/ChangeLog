@@ -1,3 +1,10 @@
+2016-11-02  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_output_integer_literal_parts):
+	New function.
+	(xtensa_output_literal): Use xtensa_output_integer_literal_parts
+	to format MODE_INT and MODE_PARTIAL_INT literals.
+
 2016-11-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/78168
