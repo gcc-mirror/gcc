@@ -26996,8 +26996,8 @@ output_probe_stack_range (rtx reg1, rtx reg2)
    pointer.  That fails when saving regs off r1, and sched moves the
    r31 setup past the reg saves.  */
 
-static rtx
-rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
+static rtx_insn *
+rs6000_frame_related (rtx_insn *insn, rtx reg, HOST_WIDE_INT val,
 		      rtx reg2, rtx repl2)
 {
   rtx repl;
@@ -27161,11 +27161,11 @@ gen_frame_store (rtx reg, rtx frame_reg, int offset)
 /* Save a register into the frame, and emit RTX_FRAME_RELATED_P notes.
    Save REGNO into [FRAME_REG + OFFSET] in mode MODE.  */
 
-static rtx
+static rtx_insn *
 emit_frame_save (rtx frame_reg, machine_mode mode,
 		 unsigned int regno, int offset, HOST_WIDE_INT frame_reg_to_sp)
 {
-  rtx reg, insn;
+  rtx reg;
 
   /* Some cases that need register indexed addressing.  */
   gcc_checking_assert (!((TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
@@ -27176,7 +27176,7 @@ emit_frame_save (rtx frame_reg, machine_mode mode,
 			     && !SPE_CONST_OFFSET_OK (offset))));
 
   reg = gen_rtx_REG (mode, regno);
-  insn = emit_insn (gen_frame_store (reg, frame_reg, offset));
+  rtx_insn *insn = emit_insn (gen_frame_store (reg, frame_reg, offset));
   return rs6000_frame_related (insn, frame_reg, frame_reg_to_sp,
 			       NULL_RTX, NULL_RTX);
 }
@@ -27444,7 +27444,7 @@ ptr_regno_for_savres (int sel)
    out-of-line register save/restore routine, and emit the insn
    or jump_insn as appropriate.  */
 
-static rtx
+static rtx_insn *
 rs6000_emit_savres_rtx (rs6000_stack_t *info,
 			rtx frame_reg_rtx, int save_area_offset, int lr_offset,
 			machine_mode reg_mode, int sel)
@@ -27454,7 +27454,8 @@ rs6000_emit_savres_rtx (rs6000_stack_t *info,
   int reg_size = GET_MODE_SIZE (reg_mode);
   rtx sym;
   rtvec p;
-  rtx par, insn;
+  rtx par;
+  rtx_insn *insn;
 
   offset = 0;
   start_reg = ((sel & SAVRES_REG) == SAVRES_GPR
@@ -27854,7 +27855,7 @@ rs6000_emit_prologue (void)
   rtx frame_reg_rtx = sp_reg_rtx;
   unsigned int cr_save_regno;
   rtx cr_save_rtx = NULL_RTX;
-  rtx insn;
+  rtx_insn *insn;
   int strategy;
   int using_static_chain_p = (cfun->static_chain_decl != NULL_TREE
 			      && df_regs_ever_live_p (STATIC_CHAIN_REGNUM)
@@ -28360,12 +28361,12 @@ rs6000_emit_prologue (void)
 	  if (regno == INVALID_REGNUM)
 	    break;
 
-	  insn
+	  rtx set
 	    = gen_frame_store (gen_rtx_REG (reg_mode, regno),
 			       sp_reg_rtx,
 			       info->ehrd_offset + sp_off + reg_size * (int) i);
-	  RTVEC_ELT (p, i) = insn;
-	  RTX_FRAME_RELATED_P (insn) = 1;
+	  RTVEC_ELT (p, i) = set;
+	  RTX_FRAME_RELATED_P (set) = 1;
 	}
 
       insn = emit_insn (gen_blockage ());
@@ -28377,7 +28378,8 @@ rs6000_emit_prologue (void)
   if (TARGET_AIX && crtl->calls_eh_return)
     {
       rtx tmp_reg, tmp_reg_si, hi, lo, compare_result, toc_save_done, jump;
-      rtx save_insn, join_insn, note;
+      rtx join_insn, note;
+      rtx_insn *save_insn;
       long toc_restore_insn;
 
       tmp_reg = gen_rtx_REG (Pmode, 11);
