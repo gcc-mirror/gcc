@@ -1,3 +1,7 @@
+2016-11-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/store_merging_8.c: New testcase.
+
 2016-11-02  Fritz O. Reese <fritzoreese@gmail.com>
 
 	* gfortran.dg/warn_argument_mismatch_1.f90: New test.

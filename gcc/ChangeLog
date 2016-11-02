@@ -1,3 +1,13 @@
+2016-11-02  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-store-merging.c: Include gimplify-me.h.
+	(imm_store_chain_info::output_merged_stores): Force base_addr
+	to be proper GIMPLE for a MEM_REF address.
+	(pass_store_merging::execute): Restrict negative bitpos
+	handling to non-MEM_REF bases.  Remove TREE_THIS_VOLATILE
+	check.  Take into account non-NULL_TREE offset if the base
+	is already addressable.
+
 2016-11-26  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_crypto_sha1hv4si):
