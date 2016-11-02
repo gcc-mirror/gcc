@@ -1,5 +1,11 @@
 2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* cfgrtl.c (delete_insn_chain): Change argument type to rtx_insn *
+	and adjust for that.
+	* cfgrtl.h (delete_insn_chain): Adjust prototype.
+
+2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/rl78/rl78.c (gen-and_emit_move): Change argument type
 	to rtx_insn *.
 	(transcode_memory_rtx): Likewise.
