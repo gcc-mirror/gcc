@@ -1,3 +1,8 @@
+2016-11-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): Don't forget to
+	clear padding bits even when they're less than a byte.
+
 2016-11-02  Richard Biener  <rguenther@suse.de>
 
 	* gimple-ssa-store-merging.c: Include gimplify-me.h.
