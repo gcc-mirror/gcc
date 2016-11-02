@@ -431,7 +431,8 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
      contain a sign bit due to sign-extension).  */
   unsigned int padding
     = byte_size - ROUND_UP (bitlen, BITS_PER_UNIT) / BITS_PER_UNIT - 1;
-  if (padding != 0)
+  if (padding != 0
+      || bitlen % BITS_PER_UNIT != 0)
     {
       /* On big-endian the padding is at the 'front' so just skip the initial
 	 bytes.  */
