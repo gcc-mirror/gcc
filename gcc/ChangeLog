@@ -1,3 +1,18 @@
+2016-11-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_register_saved_on_entry): Add
+	function comment.
+	(aarch64_next_callee_save): Likewise.
+	(aarch64_pushwb_single_reg): Likewise.
+	(aarch64_gen_storewb_pair): Likewise.
+	(aarch64_push_regs): Likewise.
+	(aarch64_gen_loadwb_pair): Likewise.
+	(aarch64_pop_regs): Likewise.
+	(aarch64_gen_store_pair): Likewise.
+	(aarch64_gen_load_pair): Likewise.
+	(aarch64_save_callee_saves): Likewise.
+	(aarch64_restore_callee_saves): Likewise.
+
 2016-11-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78035

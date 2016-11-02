@@ -2936,11 +2936,17 @@ aarch64_layout_frame (void)
   cfun->machine->frame.laid_out = true;
 }
 
+/* Return true if the register REGNO is saved on entry to
+   the current function.  */
+
 static bool
 aarch64_register_saved_on_entry (int regno)
 {
   return cfun->machine->frame.reg_offset[regno] >= 0;
 }
+
+/* Return the next register up from REGNO up to LIMIT for the callee
+   to save.  */
 
 static unsigned
 aarch64_next_callee_save (unsigned regno, unsigned limit)
@@ -2949,6 +2955,9 @@ aarch64_next_callee_save (unsigned regno, unsigned limit)
     regno ++;
   return regno;
 }
+
+/* Push the register number REGNO of mode MODE to the stack with write-back
+   adjusting the stack by ADJUSTMENT.  */
 
 static void
 aarch64_pushwb_single_reg (machine_mode mode, unsigned regno,
@@ -2965,6 +2974,10 @@ aarch64_pushwb_single_reg (machine_mode mode, unsigned regno,
   insn = emit_move_insn (mem, reg);
   RTX_FRAME_RELATED_P (insn) = 1;
 }
+
+/* Generate and return an instruction to store the pair of registers
+   REG and REG2 of mode MODE to location BASE with write-back adjusting
+   the stack location BASE by ADJUSTMENT.  */
 
 static rtx
 aarch64_gen_storewb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
@@ -2985,6 +2998,9 @@ aarch64_gen_storewb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
     }
 }
 
+/* Push registers numbered REGNO1 and REGNO2 to the stack, adjusting the
+   stack pointer by ADJUSTMENT.  */
+
 static void
 aarch64_push_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment)
 {
@@ -3004,6 +3020,9 @@ aarch64_push_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment)
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
+/* Load the pair of register REG, REG2 of mode MODE from stack location BASE,
+   adjusting it by ADJUSTMENT afterwards.  */
+
 static rtx
 aarch64_gen_loadwb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
 			 HOST_WIDE_INT adjustment)
@@ -3020,6 +3039,10 @@ aarch64_gen_loadwb_pair (machine_mode mode, rtx base, rtx reg, rtx reg2,
       gcc_unreachable ();
     }
 }
+
+/* Pop the two registers numbered REGNO1, REGNO2 from the stack, adjusting it
+   afterwards by ADJUSTMENT and writing the appropriate REG_CFA_RESTORE notes
+   into CFI_OPS.  */
 
 static void
 aarch64_pop_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment,
@@ -3045,6 +3068,9 @@ aarch64_pop_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment,
     }
 }
 
+/* Generate and return a store pair instruction of mode MODE to store
+   register REG1 to MEM1 and register REG2 to MEM2.  */
+
 static rtx
 aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
 			rtx reg2)
@@ -3061,6 +3087,9 @@ aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
       gcc_unreachable ();
     }
 }
+
+/* Generate and regurn a load pair isntruction of mode MODE to load register
+   REG1 from MEM1 and register REG2 from MEM2.  */
 
 static rtx
 aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
@@ -3079,6 +3108,9 @@ aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
     }
 }
 
+/* Emit code to save the callee-saved registers from register number START
+   to LIMIT to the stack at the location starting at offset START_OFFSET,
+   skipping any write-back candidates if SKIP_WB is true.  */
 
 static void
 aarch64_save_callee_saves (machine_mode mode, HOST_WIDE_INT start_offset,
@@ -3136,6 +3168,11 @@ aarch64_save_callee_saves (machine_mode mode, HOST_WIDE_INT start_offset,
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 }
+
+/* Emit code to restore the callee registers of mode MODE from register
+   number START up to and including LIMIT.  Restore from the stack offset
+   START_OFFSET, skipping any write-back candidates if SKIP_WB is true.
+   Write the appropriate REG_CFA_RESTORE notes into CFI_OPS.  */
 
 static void
 aarch64_restore_callee_saves (machine_mode mode,
