@@ -1,3 +1,12 @@
+2016-11-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/69544
+	PR fortran/78178
+	* match.c (match_simple_where):  Fill in locus for assigment
+	in simple WHERE statement.
+	(gfc_match_where):  Likewise.
+
 2016-10-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
