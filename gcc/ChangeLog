@@ -1,3 +1,8 @@
+2016-11-02  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (add<mode>3): Remove
+	redundant code.  Don't split frame based additions.
+
 2016-11-02  Richard Biener  <rguenther@suse.de>
 
 	* gimple-ssa-store-merging.c (struct store_immediate_info): Remove

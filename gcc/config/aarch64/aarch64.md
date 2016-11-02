@@ -1605,25 +1605,12 @@
 	      (match_operand:GPI 2 "aarch64_pluslong_operand" "")))]
   ""
 {
-  if (aarch64_pluslong_strict_immedate (operands[2], <MODE>mode))
-    {
-      /* Give CSE the opportunity to share this constant across additions.  */
-      if (!cse_not_expected && can_create_pseudo_p ())
-        operands[2] = force_reg (<MODE>mode, operands[2]);
-
-      /* Split will refuse to operate on a modification to the stack pointer.
-	 Aid the prologue and epilogue expanders by splitting this now.  */
-      else if (reload_completed && operands[0] == stack_pointer_rtx)
-	{
-	  HOST_WIDE_INT i = INTVAL (operands[2]);
-	  HOST_WIDE_INT s = (i >= 0 ? i & 0xfff : -(-i & 0xfff));
-	  emit_insn (gen_rtx_SET (operands[0],
-				  gen_rtx_PLUS (<MODE>mode, operands[1],
-						GEN_INT (i - s))));
-	  operands[1] = operands[0];
-	  operands[2] = GEN_INT (s);
-	}
-    }
+  /* If the constant is too large for a single instruction and isn't frame
+     based, split off the immediate so it is available for CSE.  */
+  if (!aarch64_plus_immediate (operands[2], <MODE>mode)
+      && can_create_pseudo_p ()
+      && !REGNO_PTR_FRAME_P (REGNO (operands[1])))
+    operands[2] = force_reg (<MODE>mode, operands[2]);
 })
 
 (define_insn "*add<mode>3_aarch64"
