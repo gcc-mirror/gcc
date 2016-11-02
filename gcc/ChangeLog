@@ -1,5 +1,11 @@
 2016-11-02  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78047
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Initialize
+	fake field at offset zero conservatively regarding to may_have_pointers.
+
+2016-11-02  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (evrp_dom_walker::before_dom_children): Call
 	infer_value_range on stmt ops and update value-ranges.
 	Dump visited stmts and blocks.
