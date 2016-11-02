@@ -1,3 +1,7 @@
+2016-11-02  Fritz O. Reese <fritzoreese@gmail.com>
+
+	* gfortran.dg/warn_argument_mismatch_1.f90: New test.
+
 2016-11-02  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/debug/dwarf2/prod-options.c: XFAIL AIX.
