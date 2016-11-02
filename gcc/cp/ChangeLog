@@ -1,3 +1,49 @@
+2016-11-01  Jason Merrill  <jason@redhat.com>
+
+	Implement P0136R1, Rewording inheriting constructors.
+	* call.c (enum rejection_reason_code): Add rr_inherited_ctor.
+	(inherited_ctor_rejection): New.
+	(add_function_candidate): Reject inherited ctors for copying.
+	(enforce_access): Use strip_inheriting_ctors.
+	(print_z_candidate): Likewise.  Handle rr_inherited_ctor.
+	(convert_like_real): Avoid copying inheriting ctor parameters.
+	(build_over_call): Likewise.  A base ctor inheriting from vbase
+	has no parms.  Sorry about varargs.
+	(joust): A local constructor beats inherited with the same convs.
+	* class.c (add_method): Handle hiding inheriting ctors.
+	(one_inherited_ctor): Handle new semantics.
+	(add_implicitly_declared_members): Pass using_decl down.
+	(build_clone): A base ctor inheriting from vbase has no parms.
+	* cp-tree.h (DECL_INHERITED_CTOR): Store this instead of the base.
+	(SET_DECL_INHERITED_CTOR): Likewise.
+	(DECL_INHERITED_CTOR_BASE): Adjust.
+	* constexpr.c: Adjust.
+	* error.c (dump_function_decl): Decorate inheriting ctors.
+	* init.c (emit_mem_initializers): Suppress access control in
+	inheriting ctor.
+	* mangle.c (write_special_name_constructor): Handle new inheriting
+	ctor mangling.
+	* method.c (strip_inheriting_ctors, inherited_ctor_binfo)
+	(ctor_omit_inherited_parms, binfo_inherited_from): New.
+	(synthesized_method_walk): Use binfo_inherited_from.  Suppress
+	access control in inheriting ctor.
+	(deduce_inheriting_ctor): Deleted if ambiguous ctor inheritance.
+	(maybe_explain_implicit_delete): Explain ambigous ctor inheritance.
+	(add_one_base_init, do_build_copy_constructor): Adjust.
+	(locate_fn_flags, explain_implicit_non_constexpr): Adjust.
+	(implicitly_declare_fn): Adjust.
+	(get_inherited_ctor): Remove.
+	* name-lookup.c (do_class_using_decl): Check for indirect ctor
+	inheritance.
+	* optimize.c (cdtor_comdat_group): Adjust for new mangling.
+	(maybe_clone_body): Handle omitted parms in base clone.
+	(maybe_thunk_body): Don't thunk if base clone omits parms.
+	* pt.c (tsubst_decl): Adjust.
+	(instantiate_template_1): Suppress access control in inheriting
+	ctor.
+	(fn_type_unification): Do deduction with inherited ctor.
+	* tree.c (special_function_p): Adjust.
+
 2016-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-objcp-common.c (cp_decl_dwarf_attribute): Handle DW_AT_inline.

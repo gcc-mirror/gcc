@@ -2730,12 +2730,21 @@ struct GTY(()) lang_decl {
   (LANG_DECL_FN_CHECK (NODE)->context = (THUNKS))
 
 /* If NODE, a FUNCTION_DECL, is a C++11 inheriting constructor, then this
-   is the base it inherits from.  */
-#define DECL_INHERITED_CTOR_BASE(NODE) \
-  (DECL_CONSTRUCTOR_P (NODE) ? LANG_DECL_FN_CHECK (NODE)->context : NULL_TREE)
+   is the constructor it inherits from.  */
+#define DECL_INHERITED_CTOR(NODE) \
+  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_CONSTRUCTOR_P (NODE) \
+   ? LANG_DECL_FN_CHECK (NODE)->context : NULL_TREE)
+
+/* And this is the base that constructor comes from.  */
+#define DECL_INHERITED_CTOR_BASE(NODE)			\
+  (DECL_INHERITED_CTOR (NODE)				\
+   ? DECL_CONTEXT (flag_new_inheriting_ctors		\
+		   ? strip_inheriting_ctors (NODE)	\
+		   : DECL_INHERITED_CTOR (NODE))	\
+   : NULL_TREE)
 
 /* Set the inherited base.  */
-#define SET_DECL_INHERITED_CTOR_BASE(NODE,INH) \
+#define SET_DECL_INHERITED_CTOR(NODE,INH) \
   (LANG_DECL_FN_CHECK (NODE)->context = (INH))
 
 /* Nonzero if NODE is a thunk, rather than an ordinary function.  */
@@ -6036,7 +6045,9 @@ extern tree get_copy_ctor			(tree, tsubst_flags_t);
 extern tree get_copy_assign			(tree);
 extern tree get_default_ctor			(tree);
 extern tree get_dtor				(tree, tsubst_flags_t);
-extern tree get_inherited_ctor			(tree);
+extern tree strip_inheriting_ctors		(tree);
+extern tree inherited_ctor_binfo		(tree);
+extern bool ctor_omit_inherited_parms		(tree);
 extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);

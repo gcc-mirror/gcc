@@ -1,3 +1,7 @@
+2016-11-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_ctor_dtor_name): Handle inheriting constructor.
+
 2016-10-31  Mark Wielaard  <mjw@redhat.com>
 
 	* cplus-dem.c (ada_demangle): Initialize demangled to NULL and

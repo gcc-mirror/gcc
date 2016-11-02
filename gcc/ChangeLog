@@ -1,3 +1,8 @@
+2016-11-01  Jason Merrill  <jason@redhat.com>
+
+	* tree-inline.c (copy_tree_body_r): Only copy the taken branch of
+	a COND_EXPR with constant condition.
+
 2016-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (gen_variable_die): Remove again origin_die variable

@@ -3421,6 +3421,12 @@ do_class_using_decl (tree scope, tree name)
 	      return NULL_TREE;
 	    }
 	}
+      else if (name == ctor_identifier
+	       && BINFO_INHERITANCE_CHAIN (BINFO_INHERITANCE_CHAIN (binfo)))
+	{
+	  error ("cannot inherit constructors from indirect base %qT", scope);
+	  return NULL_TREE;
+	}
       else if (!name_dependent_p)
 	{
 	  decl = lookup_member (binfo, name, 0, false, tf_warning_or_error);

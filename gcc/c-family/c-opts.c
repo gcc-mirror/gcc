@@ -902,6 +902,12 @@ c_common_post_options (const char **pfilename)
   if (flag_abi_version == 0)
     flag_abi_version = 11;
 
+  /* By default, enable the new inheriting constructor semantics along with ABI
+     11.  New and old should coexist fine, but it is a change in what
+     artificial symbols are generated.  */
+  if (!global_options_set.x_flag_new_inheriting_ctors)
+    flag_new_inheriting_ctors = abi_version_at_least (11);
+
   if (cxx_dialect >= cxx11)
     {
       /* If we're allowing C++0x constructs, don't warn about C++98

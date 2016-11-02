@@ -1786,18 +1786,25 @@ write_identifier (const char *identifier)
 static void
 write_special_name_constructor (const tree ctor)
 {
+  write_char ('C');
+  bool new_inh = (flag_new_inheriting_ctors
+		  && DECL_INHERITED_CTOR (ctor));
+  if (new_inh)
+    write_char ('I');
   if (DECL_BASE_CONSTRUCTOR_P (ctor))
-    write_string ("C2");
+    write_char ('2');
   /* This is the old-style "[unified]" constructor.
      In some cases, we may emit this function and call
      it from the clones in order to share code and save space.  */
   else if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (ctor))
-    write_string ("C4");
+    write_char ('4');
   else
     {
       gcc_assert (DECL_COMPLETE_CONSTRUCTOR_P (ctor));
-      write_string ("C1");
+      write_char ('1');
     }
+  if (new_inh)
+    write_type (DECL_INHERITED_CTOR_BASE (ctor));
 }
 
 /* Handle destructor productions of non-terminal <special-name>.

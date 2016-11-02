@@ -171,13 +171,13 @@ is_valid_constexpr_fn (tree fun, bool complain)
 {
   bool ret = true;
 
-  if (DECL_INHERITED_CTOR_BASE (fun)
+  if (DECL_INHERITED_CTOR (fun)
       && TREE_CODE (fun) == TEMPLATE_DECL)
     {
       ret = false;
       if (complain)
 	error ("inherited constructor %qD is not constexpr",
-	       get_inherited_ctor (fun));
+	       DECL_INHERITED_CTOR (fun));
     }
   else
     {

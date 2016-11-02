@@ -2168,6 +2168,13 @@ d_ctor_dtor_name (struct d_info *di)
     case 'C':
       {
 	enum gnu_v3_ctor_kinds kind;
+	int inheriting = 0;
+
+	if (d_peek_next_char (di) == 'I')
+	  {
+	    inheriting = 1;
+	    d_advance (di, 1);
+	  }
 
 	switch (d_peek_next_char (di))
 	  {
@@ -2189,7 +2196,12 @@ d_ctor_dtor_name (struct d_info *di)
 	  default:
 	    return NULL;
 	  }
+
 	d_advance (di, 2);
+
+	if (inheriting)
+	  cplus_demangle_type (di);
+
 	return d_make_ctor (di, kind, di->last_name);
       }
 
