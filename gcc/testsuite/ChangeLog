@@ -1,5 +1,11 @@
 2016-11-02  David Edelsohn  <dje.gcc@gmail.com>
 
+	* gcc.dg/debug/dwarf2/prod-options.c: XFAIL AIX.
+	* gcc.dg/debug/dwarf2/pr71855.c: XFAIL AIX.
+	* gcc.dg/addr_equal_1.c: XFAIL AIX.
+	* gcc.dg/pr65779.c: XFAIL AIX.
+	* gcc.dg/pr70405.c: XFAIL AIX.
+
 	* g++.dg/debug/dwarf2/inline-var-1.C: XFAIL AIX.
 	* g++.dg/debug/dwarf2/ref-2.C: XFAIL AIX.
 	* g++.dg/debug/dwarf2/constexpr-var-1.C: XFAIL AIX.
