@@ -2535,13 +2535,32 @@ xtensa_output_addr_const_extra (FILE *fp, rtx x)
   return false;
 }
 
+static void
+xtensa_output_integer_literal_parts (FILE *file, rtx x, int size)
+{
+  if (size > 4 && !(size & (size - 1)))
+    {
+      rtx first, second;
+
+      split_double (x, &first, &second);
+      xtensa_output_integer_literal_parts (file, first, size / 2);
+      fputs (", ", file);
+      xtensa_output_integer_literal_parts (file, second, size / 2);
+    }
+  else if (size == 4)
+    {
+      output_addr_const (file, x);
+    }
+  else
+    {
+      gcc_unreachable();
+    }
+}
 
 void
 xtensa_output_literal (FILE *file, rtx x, machine_mode mode, int labelno)
 {
   long value_long[2];
-  int size;
-  rtx first, second;
 
   fprintf (file, "\t.literal .LC%u, ", (unsigned) labelno);
 
@@ -2580,25 +2599,8 @@ xtensa_output_literal (FILE *file, rtx x, machine_mode mode, int labelno)
 
     case MODE_INT:
     case MODE_PARTIAL_INT:
-      size = GET_MODE_SIZE (mode);
-      switch (size)
-	{
-	case 4:
-	  output_addr_const (file, x);
-	  fputs ("\n", file);
-	  break;
-
-	case 8:
-	  split_double (x, &first, &second);
-	  output_addr_const (file, first);
-	  fputs (", ", file);
-	  output_addr_const (file, second);
-	  fputs ("\n", file);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
+      xtensa_output_integer_literal_parts (file, x, GET_MODE_SIZE (mode));
+      fputs ("\n", file);
       break;
 
     default:
