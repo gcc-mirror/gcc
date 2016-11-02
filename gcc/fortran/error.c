@@ -67,7 +67,7 @@ gfc_push_suppress_errors (void)
 }
 
 static void
-gfc_error (const char *gmsgid, va_list ap)  ATTRIBUTE_GCC_GFC(1,0);
+gfc_error (int opt, const char *gmsgid, va_list ap)  ATTRIBUTE_GCC_GFC(2,0);
 
 static bool
 gfc_warning (int opt, const char *gmsgid, va_list ap) ATTRIBUTE_GCC_GFC(2,0);
@@ -902,7 +902,7 @@ gfc_notify_std (int std, const char *gmsgid, ...)
   if (warning)
     gfc_warning (0, buffer, argp);
   else
-    gfc_error (buffer, argp);
+    gfc_error (0, buffer, argp);
   va_end (argp);
 
   return (warning && !warnings_are_errors) ? true : false;
@@ -1233,7 +1233,7 @@ gfc_warning_check (void)
 /* Issue an error.  */
 
 static void
-gfc_error (const char *gmsgid, va_list ap)
+gfc_error (int opt, const char *gmsgid, va_list ap)
 {
   va_list argp;
   va_copy (argp, ap);
@@ -1241,7 +1241,7 @@ gfc_error (const char *gmsgid, va_list ap)
 
   if (warnings_not_errors)
     {
-      gfc_warning (/*opt=*/0, gmsgid, argp);
+      gfc_warning (opt, gmsgid, argp);
       va_end (argp);
       return;
     }
@@ -1289,11 +1289,21 @@ gfc_error (const char *gmsgid, va_list ap)
 
 
 void
+gfc_error (int opt, const char *gmsgid, ...)
+{
+  va_list argp;
+  va_start (argp, gmsgid);
+  gfc_error (opt, gmsgid, argp);
+  va_end (argp);
+}
+
+
+void
 gfc_error (const char *gmsgid, ...)
 {
   va_list argp;
   va_start (argp, gmsgid);
-  gfc_error (gmsgid, argp);
+  gfc_error (0, gmsgid, argp);
   va_end (argp);
 }
 

@@ -2730,6 +2730,7 @@ bool gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
 void gfc_clear_warning (void);
 void gfc_warning_check (void);
 
+void gfc_error (int opt, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 void gfc_error (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_fatal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
