@@ -4840,7 +4840,8 @@ s390_emit_tls_call_insn (rtx result_reg, rtx tls_call)
 static rtx
 legitimize_tls_address (rtx addr, rtx reg)
 {
-  rtx new_rtx, tls_call, temp, base, r2, insn;
+  rtx new_rtx, tls_call, temp, base, r2;
+  rtx_insn *insn;
 
   if (GET_CODE (addr) == SYMBOL_REF)
     switch (tls_symbolic_operand (addr))
@@ -13280,7 +13281,7 @@ static bool
 s390_fix_long_loop_prediction (rtx_insn *insn)
 {
   rtx set = single_set (insn);
-  rtx code_label, label_ref, new_label;
+  rtx code_label, label_ref;
   rtx_insn *uncond_jump;
   rtx_insn *cur_insn;
   rtx tmp;
@@ -13317,7 +13318,7 @@ s390_fix_long_loop_prediction (rtx_insn *insn)
     if (!cur_insn || JUMP_P (cur_insn) || LABEL_P (cur_insn))
       return false;
 
-  new_label = gen_label_rtx ();
+  rtx_code_label *new_label = gen_label_rtx ();
   uncond_jump = emit_jump_insn_after (
 		  gen_rtx_SET (pc_rtx,
 			       gen_rtx_LABEL_REF (VOIDmode, code_label)),

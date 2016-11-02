@@ -3163,7 +3163,7 @@ mn10300_bundle_liw (void)
    Insert a SETLB insn just before LABEL.  */
 
 static void
-mn10300_insert_setlb_lcc (rtx label, rtx branch)
+mn10300_insert_setlb_lcc (rtx_insn *label, rtx branch)
 {
   rtx lcc, comparison, cmp_reg;
 

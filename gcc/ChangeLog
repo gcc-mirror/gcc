@@ -1,3 +1,30 @@
+2016-11-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config/arc/arc.c (arc_emit_call_tls_get_addr): Make the type
+	of variables rtx_insn *.
+	* config/arm/arm.c (arm_call_tls_get_addr): Likewise.
+	(legitimize_tls_address): Likewise.
+	* config/bfin/bfin.c (hwloop_optimize): Likewise.
+	(bfin_gen_bundles): Likewise.
+	* config/c6x/c6x.c (reorg_split_calls): Likewise.
+	(c6x_reorg): Likewise.
+	* config/frv/frv.c (frv_reorder_packet): Likewise.
+	* config/i386/i386.c (ix86_split_idivmod): Likewise.
+	* config/ia64/ia64.c (ia64_expand_compare): Likewise.
+	* config/m32c/m32c.c (m32c_prepare_shift): Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+	* config/rl78/rl78.c: Likewise.
+	* config/s390/s390.c (s390_fix_long_loop_prediction): Likewise.
+	* config/sh/sh-mem.cc (sh_expand_cmpstr): Likewise.
+	(sh_expand_cmpnstr): Likewise.
+	(sh_expand_strlen): Likewise.
+	(sh_expand_setmem): Likewise.
+	* config/sh/sh.md: Likewise.
+	* emit-rtl.c (emit_pattern_before): Likewise.
+	* except.c: Likewise.
+	* final.c: Likewise.
+	* jump.c: Likewise.
+
 2016-11-01  Jason Merrill  <jason@redhat.com>
 
 	* tree-inline.c (copy_tree_body_r): Only copy the taken branch of

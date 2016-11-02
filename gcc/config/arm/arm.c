@@ -7905,10 +7905,10 @@ load_tls_operand (rtx x, rtx reg)
   return reg;
 }
 
-static rtx
+static rtx_insn *
 arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 {
-  rtx insns, label, labelno, sum;
+  rtx label, labelno, sum;
 
   gcc_assert (reloc != TLS_DESCSEQ);
   start_sequence ();
@@ -7932,7 +7932,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 				     LCT_PURE, /* LCT_CONST?  */
 				     Pmode, 1, reg, Pmode);
 
-  insns = get_insns ();
+  rtx_insn *insns = get_insns ();
   end_sequence ();
 
   return insns;
@@ -7964,7 +7964,8 @@ arm_tls_descseq_addr (rtx x, rtx reg)
 rtx
 legitimize_tls_address (rtx x, rtx reg)
 {
-  rtx dest, tp, label, labelno, sum, insns, ret, eqv, addend;
+  rtx dest, tp, label, labelno, sum, ret, eqv, addend;
+  rtx_insn *insns;
   unsigned int model = SYMBOL_REF_TLS_MODEL (x);
 
   switch (model)

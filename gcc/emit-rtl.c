@@ -4813,7 +4813,7 @@ emit_pattern_before (rtx pattern, rtx uncast_before, bool skip_debug_insns,
 				       insnp, make_raw);
   else
     return emit_pattern_before_noloc (pattern, before,
-                                      insnp ? before : NULL_RTX,
+				      insnp ? before : NULL_RTX,
                                       NULL, make_raw);
 }
 

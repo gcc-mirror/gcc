@@ -4856,7 +4856,7 @@ find_last_same_clock (rtx_insn *insn)
    the SEQUENCEs that represent execute packets.  */
 
 static void
-reorg_split_calls (rtx *call_labels)
+reorg_split_calls (rtx_insn **call_labels)
 {
   unsigned int reservation_mask = 0;
   rtx_insn *insn = get_insns ();
@@ -4878,7 +4878,7 @@ reorg_split_calls (rtx *call_labels)
 
       if (returning_call_p (insn))
 	{
-	  rtx label = gen_label_rtx ();
+	  rtx_code_label *label = gen_label_rtx ();
 	  rtx labelref = gen_rtx_LABEL_REF (Pmode, label);
 	  rtx reg = gen_rtx_REG (SImode, RETURN_ADDR_REGNO);
 
@@ -5029,7 +5029,7 @@ reorg_split_calls (rtx *call_labels)
    scheduling was run earlier.  */
 
 static void
-reorg_emit_nops (rtx *call_labels)
+reorg_emit_nops (rtx_insn **call_labels)
 {
   bool first;
   rtx last_call;
@@ -5921,7 +5921,6 @@ static void
 c6x_reorg (void)
 {
   basic_block bb;
-  rtx *call_labels;
   bool do_selsched = (c6x_flag_schedule_insns2 && flag_selective_scheduling2
 		      && !maybe_skip_selective_scheduling ());
 
@@ -5967,7 +5966,7 @@ c6x_reorg (void)
     }
   sched_no_dce = false;
 
-  call_labels = XCNEWVEC (rtx, get_max_uid () + 1);
+  rtx_insn **call_labels = XCNEWVEC (rtx_insn *, get_max_uid () + 1);
 
   reorg_split_calls (call_labels);
 

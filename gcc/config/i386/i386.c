@@ -20376,7 +20376,8 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
 		    bool signed_p)
 {
   rtx_code_label *end_label, *qimode_label;
-  rtx insn, div, mod;
+  rtx div, mod;
+  rtx_insn *insn;
   rtx scratch, tmp0, tmp1, tmp2;
   rtx (*gen_divmod4_1) (rtx, rtx, rtx, rtx);
   rtx (*gen_zero_extend) (rtx, rtx);
