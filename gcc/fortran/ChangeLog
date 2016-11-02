@@ -1,3 +1,9 @@
+2016-11-02  Fritz Reese <fritzoreese@gmail.com>
+
+	* gfortran.h (gfc_error): New declaration for gfc_error with 'opt'.
+	* error.c (gfc_error): Add optional 'opt' argument.
+	* error.c (gfc_notify_std): Call fully-qualified gfc_error.
+
 2016-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78178
