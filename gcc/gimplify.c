@@ -4120,24 +4120,23 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   if (ret == GS_ERROR)
     return GS_ERROR;
-  else if (want_value)
+  /* If we have gimplified both sides of the initializer but have
+     not emitted an assignment, do so now.  */
+  if (*expr_p)
+    {
+      tree lhs = TREE_OPERAND (*expr_p, 0);
+      tree rhs = TREE_OPERAND (*expr_p, 1);
+      gassign *init = gimple_build_assign (lhs, rhs);
+      gimplify_seq_add_stmt (pre_p, init);
+    }
+  if (want_value)
     {
       *expr_p = object;
       return GS_OK;
     }
   else
     {
-      /* If we have gimplified both sides of the initializer but have
-	 not emitted an assignment, do so now.  */
-      if (*expr_p)
-	{
-	  tree lhs = TREE_OPERAND (*expr_p, 0);
-	  tree rhs = TREE_OPERAND (*expr_p, 1);
-	  gassign *init = gimple_build_assign (lhs, rhs);
-	  gimplify_seq_add_stmt (pre_p, init);
-	  *expr_p = NULL;
-	}
-
+      *expr_p = NULL;
       return GS_ALL_DONE;
     }
 }
