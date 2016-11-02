@@ -1,3 +1,11 @@
+2016-11-02  Cesar Philippidis  <cesar@codesourcery.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Interrogate board attributes
+	to determine default geometry.
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Set gang
+	dimension.
+
 2016-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* hashtab.h: Use standard GPLv3 with runtime exception

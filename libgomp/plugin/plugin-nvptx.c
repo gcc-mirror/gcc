@@ -45,6 +45,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
+#include <errno.h>
 
 static const char *
 cuda_error (CUresult r)
@@ -932,9 +933,88 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
   if (seen_zero)
     {
+      /* See if the user provided GOMP_OPENACC_DIM environment
+	 variable to specify runtime defaults. */
+      static int default_dims[GOMP_DIM_MAX];
+
+      pthread_mutex_lock (&ptx_dev_lock);
+      if (!default_dims[0])
+	{
+	  /* We only read the environment variable once.  You can't
+	     change it in the middle of execution.  The syntax  is
+	     the same as for the -fopenacc-dim compilation option.  */
+	  const char *env_var = getenv ("GOMP_OPENACC_DIM");
+	  if (env_var)
+	    {
+	      const char *pos = env_var;
+
+	      for (i = 0; *pos && i != GOMP_DIM_MAX; i++)
+		{
+		  if (i && *pos++ != ':')
+		    break;
+		  if (*pos != ':')
+		    {
+		      const char *eptr;
+
+		      errno = 0;
+		      long val = strtol (pos, (char **)&eptr, 10);
+		      if (errno || val < 0 || (unsigned)val != val)
+			break;
+		      default_dims[i] = (int)val;
+		      pos = eptr;
+		    }
+		}
+	    }
+
+	  int warp_size, block_size, dev_size, cpu_size;
+	  CUdevice dev = nvptx_thread()->ptx_dev->dev;
+	  /* 32 is the default for known hardware.  */
+	  int gang = 0, worker = 32, vector = 32;
+	  CUdevice_attribute cu_tpb, cu_ws, cu_mpc, cu_tpm;
+
+	  cu_tpb = CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK;
+	  cu_ws = CU_DEVICE_ATTRIBUTE_WARP_SIZE;
+	  cu_mpc = CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT;
+	  cu_tpm  = CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR;
+
+	  if (cuDeviceGetAttribute (&block_size, cu_tpb, dev) == CUDA_SUCCESS
+	      && cuDeviceGetAttribute (&warp_size, cu_ws, dev) == CUDA_SUCCESS
+	      && cuDeviceGetAttribute (&dev_size, cu_mpc, dev) == CUDA_SUCCESS
+	      && cuDeviceGetAttribute (&cpu_size, cu_tpm, dev)  == CUDA_SUCCESS)
+	    {
+	      GOMP_PLUGIN_debug (0, " warp_size=%d, block_size=%d,"
+				 " dev_size=%d, cpu_size=%d\n",
+				 warp_size, block_size, dev_size, cpu_size);
+	      gang = (cpu_size / block_size) * dev_size;
+	      worker = block_size / warp_size;
+	      vector = warp_size;
+	    }
+
+	  /* There is no upper bound on the gang size.  The best size
+	     matches the hardware configuration.  Logical gangs are
+	     scheduled onto physical hardware.  To maximize usage, we
+	     should guess a large number.  */
+	  if (default_dims[GOMP_DIM_GANG] < 1)
+	    default_dims[GOMP_DIM_GANG] = gang ? gang : 1024;
+	  /* The worker size must not exceed the hardware.  */
+	  if (default_dims[GOMP_DIM_WORKER] < 1
+	      || (default_dims[GOMP_DIM_WORKER] > worker && gang))
+	    default_dims[GOMP_DIM_WORKER] = worker;
+	  /* The vector size must exactly match the hardware.  */
+	  if (default_dims[GOMP_DIM_VECTOR] < 1
+	      || (default_dims[GOMP_DIM_VECTOR] != vector && gang))
+	    default_dims[GOMP_DIM_VECTOR] = vector;
+
+	  GOMP_PLUGIN_debug (0, " default dimensions [%d,%d,%d]\n",
+			     default_dims[GOMP_DIM_GANG],
+			     default_dims[GOMP_DIM_WORKER],
+			     default_dims[GOMP_DIM_VECTOR]);
+	}
+      pthread_mutex_unlock (&ptx_dev_lock);
+
       for (i = 0; i != GOMP_DIM_MAX; i++)
-       if (!dims[i])
-         dims[i] = /* TODO */ 32;
+	if (!dims[i])
+	  dims[i] = default_dims[i];
     }
 
   /* This reserves a chunk of a pre-allocated page of memory mapped on both
@@ -954,8 +1034,8 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 		    mapnum * sizeof (void *));
   GOMP_PLUGIN_debug (0, "  %s: kernel %s: launch"
 		     " gangs=%u, workers=%u, vectors=%u\n",
-		     __FUNCTION__, targ_fn->launch->fn,
-		     dims[0], dims[1], dims[2]);
+		     __FUNCTION__, targ_fn->launch->fn, dims[GOMP_DIM_GANG],
+		     dims[GOMP_DIM_WORKER], dims[GOMP_DIM_VECTOR]);
 
   // OpenACC		CUDA
   //
