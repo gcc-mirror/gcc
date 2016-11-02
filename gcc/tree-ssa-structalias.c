@@ -39,6 +39,8 @@
 #include "tree-dfa.h"
 #include "params.h"
 #include "gimple-walk.h"
+#include "varasm.h"
+
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the
@@ -6360,6 +6362,13 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt,
 		  && fndecl
 		  && ! auto_var_in_fn_p (vi->decl, fndecl)))
 	    pt->vars_contains_nonlocal = true;
+
+	  /* If we have a variable that is interposable record that fact
+	     for pointer comparison simplification.  */
+	  if (VAR_P (vi->decl)
+	      && (TREE_STATIC (vi->decl) || DECL_EXTERNAL (vi->decl))
+	      && ! decl_binds_to_current_def_p (vi->decl))
+	    pt->vars_contains_interposable = true;
 	}
 
       else if (TREE_CODE (vi->decl) == FUNCTION_DECL
@@ -7592,7 +7601,8 @@ make_pass_build_ealias (gcc::context *ctxt)
 
 /* IPA PTA solutions for ESCAPED.  */
 struct pt_solution ipa_escaped_pt
-  = { true, false, false, false, false, false, false, false, false, NULL };
+  = { true, false, false, false, false,
+      false, false, false, false, false, NULL };
 
 /* Associate node with varinfo DATA. Worker for
    cgraph_for_symbol_thunks_and_aliases.  */

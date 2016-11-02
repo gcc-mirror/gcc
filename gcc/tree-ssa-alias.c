@@ -32,12 +32,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "alias.h"
 #include "fold-const.h"
-
 #include "langhooks.h"
 #include "dumpfile.h"
 #include "tree-eh.h"
 #include "tree-dfa.h"
 #include "ipa-reference.h"
+#include "varasm.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -373,14 +373,18 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
       /* We may not use restrict to optimize pointer comparisons.
          See PR71062.  So we have to assume that restrict-pointed-to
 	 may be in fact obj1.  */
-      if (!pi || pi->pt.vars_contains_restrict)
+      if (!pi
+	  || pi->pt.vars_contains_restrict
+	  || pi->pt.vars_contains_interposable)
 	return false;
       if (VAR_P (obj1)
 	  && (TREE_STATIC (obj1) || DECL_EXTERNAL (obj1)))
 	{
 	  varpool_node *node = varpool_node::get (obj1);
 	  /* If obj1 may bind to NULL give up (see below).  */
-	  if (! node || ! node->nonzero_address ())
+	  if (! node
+	      || ! node->nonzero_address ()
+	      || ! decl_binds_to_current_def_p (obj1))
 	    return false;
 	}
       return !pt_solution_includes (&pi->pt, obj1);
@@ -553,7 +557,12 @@ dump_points_to_solution (FILE *file, struct pt_solution *pt)
 	      comma = ", ";
 	    }
 	  if (pt->vars_contains_restrict)
-	    fprintf (file, "%srestrict", comma);
+	    {
+	      fprintf (file, "%srestrict", comma);
+	      comma = ", ";
+	    }
+	  if (pt->vars_contains_interposable)
+	    fprintf (file, "%sinterposable", comma);
 	  fprintf (file, ")");
 	}
     }

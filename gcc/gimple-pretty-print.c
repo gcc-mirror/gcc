@@ -728,6 +728,12 @@ pp_points_to_solution (pretty_printer *buffer, struct pt_solution *pt)
 	    {
 	      pp_string (buffer, comma);
 	      pp_string (buffer, "restrict");
+	      comma = ", ";
+	    }
+	  if (pt->vars_contains_interposable)
+	    {
+	      pp_string (buffer, comma);
+	      pp_string (buffer, "interposable");
 	    }
 	  pp_string (buffer, ")");
 	}
