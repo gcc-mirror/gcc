@@ -1,3 +1,7 @@
+2016-11-02  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* gcc.c-torture/compile/20001226-1.c: Don't xfail on xtensa.
+
 2016-11-01  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/arm/simd/vmaxnm_f32_1.c (dg-require-effective-target):
