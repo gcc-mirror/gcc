@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "tm.h" /* For C[LT]Z_DEFINED_AT_ZERO.  */
 #include "builtins.h"
+#include "gimple-expr.h"
 
 /* Functions that test for certain constant types, abstracting away the
    decision about whether to check for overflow.  */
@@ -57,7 +58,8 @@ complex_cst_p (tree t)
 static inline bool
 host_size_t_cst_p (tree t, size_t *size_out)
 {
-  if (integer_cst_p (t)
+  if (types_compatible_p (size_type_node, TREE_TYPE (t))
+      && integer_cst_p (t)
       && wi::min_precision (t, UNSIGNED) <= sizeof (size_t) * CHAR_BIT)
     {
       *size_out = tree_to_uhwi (t);

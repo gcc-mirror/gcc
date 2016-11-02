@@ -1,3 +1,8 @@
+2016-11-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/builtins-folding-gimple-ub.c (main): Add
+	test case.
+
 2016-11-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR tree-optimization/78170
