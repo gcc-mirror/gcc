@@ -1,11 +1,11 @@
 // { dg-do compile }
 // { dg-options "-O -std=c++1z -g -dA -gno-strict-dwarf" }
 // { dg-require-weak "" }
-// { dg-final { scan-assembler-times "0x3\[^\n\r]* DW_AT_inline" 6 } }
-// { dg-final { scan-assembler-times "0x1\[^\n\r]* DW_AT_inline" 2 } }
-// { dg-final { scan-assembler-times " DW_AT_declaration" 6 } }
-// { dg-final { scan-assembler-times " DW_AT_specification" 6 } }
-// { dg-final { scan-assembler-times " DW_AT_\[^\n\r]*linkage_name" 7 } }
+// { dg-final { scan-assembler-times "0x3\[^\n\r]* DW_AT_inline" 6 { xfail *-*-aix* } } }
+// { dg-final { scan-assembler-times "0x1\[^\n\r]* DW_AT_inline" 2 { xfail *-*-aix* } } }
+// { dg-final { scan-assembler-times " DW_AT_declaration" 6 { xfail *-*-aix* } } }
+// { dg-final { scan-assembler-times " DW_AT_specification" 6 { xfail *-*-aix* } } }
+// { dg-final { scan-assembler-times " DW_AT_\[^\n\r]*linkage_name" 7 { xfail *-*-aix* } } }
 
 inline int a;
 struct S
