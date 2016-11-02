@@ -1,3 +1,11 @@
+2016-11-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp111.c: New testcase.
+	* gcc.dg/tree-ssa/pr20702.c: Disable EVRP.
+	* gcc.dg/tree-ssa/pr21086.c: Likewise.
+	* gcc.dg/tree-ssa/pr58480.c: Likewise.
+	* gcc.dg/tree-ssa/vrp08.c: Likewise.
+
 2016-11-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/pr70937.f90: require-effective-target lto.
