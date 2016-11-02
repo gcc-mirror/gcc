@@ -50572,8 +50572,43 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 {
   return as != ADDR_SPACE_GENERIC;
 }
-#undef TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
-#define TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID ix86_addr_space_zero_address_valid
+
+static void
+ix86_init_libfuncs (void)
+{
+  if (TARGET_64BIT)
+    {
+      set_optab_libfunc (sdivmod_optab, TImode, "__divmodti4");
+      set_optab_libfunc (udivmod_optab, TImode, "__udivmodti4");
+    }
+  else
+    {
+      set_optab_libfunc (sdivmod_optab, DImode, "__divmoddi4");
+      set_optab_libfunc (udivmod_optab, DImode, "__udivmoddi4");
+    }
+
+#if TARGET_MACHO
+  darwin_rename_builtins ();
+#endif
+}
+
+/* Generate call to __divmoddi4.  */
+
+static void
+ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
+			    rtx op0, rtx op1,
+			    rtx *quot_p, rtx *rem_p)
+{
+  rtx rem = assign_386_stack_local (mode, SLOT_TEMP);
+
+  rtx quot = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
+				    mode, 3,
+				    op0, GET_MODE (op0),
+				    op1, GET_MODE (op1),
+				    XEXP (rem, 0), Pmode);
+  *quot_p = quot;
+  *rem_p = rem;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_RETURN_IN_MEMORY
@@ -50958,11 +50993,6 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE ix86_conditional_register_usage
 
-#if TARGET_MACHO
-#undef TARGET_INIT_LIBFUNCS
-#define TARGET_INIT_LIBFUNCS darwin_rename_builtins
-#endif
-
 #undef TARGET_LOOP_UNROLL_ADJUST
 #define TARGET_LOOP_UNROLL_ADJUST ix86_loop_unroll_adjust
 
@@ -51052,6 +51082,15 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
+
+#undef TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
+#define TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID ix86_addr_space_zero_address_valid
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS ix86_init_libfuncs
+
+#undef TARGET_EXPAND_DIVMOD_LIBFUNC
+#define TARGET_EXPAND_DIVMOD_LIBFUNC ix86_expand_divmod_libfunc
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
