@@ -1,5 +1,11 @@
 2016-11-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR tree-optimization/78170
+	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): Truncate padding
+	introduced by native_encode_expr on little-endian as well.
+
+2016-11-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR tree-optimization/78162
 	* gimple-ssa-store-merging.c (execute): Mark stores with bitpos < 0
 	as invalid.
