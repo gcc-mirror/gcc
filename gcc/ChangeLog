@@ -1,3 +1,11 @@
+2016-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_init_libfuncs): New.  Call
+	darwin_rename_builtins here.
+	(ix86_expand_divmod_libfunc): New.
+	(TARGET_INIT_LIBFUNCS): Unconditionally define to ix86_init_libfuncs.
+	(TARGET_EXPAND_DIVMOD_LIBFUNC): Define.
+
 2016-11-02  Cesar Philippidis  <cesar@codesourcery.com>
 	    Nathan Sidwell  <nathan@acm.org>
 
@@ -651,7 +659,7 @@
 2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/sourcebuild.texi (Ada Tests): Remove mention of gcc chapter.
- 
+
 2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* target.def (min_arithmetic_precision): New hook.
@@ -698,7 +706,7 @@
 	divmod_simode.
 
 2016-10-28  Eric Botcazou  <ebotcazou@adacore.com>
-            Segher Boessenkool  <segher@kernel.crashing.org>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* dojump.c (do_jump_by_parts_greater_rtx): Invert probability when
 	swapping the arms of the branch.
