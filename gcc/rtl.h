@@ -2858,7 +2858,7 @@ extern rtx_call_insn *last_call_insn (void);
 extern rtx_insn *previous_insn (rtx_insn *);
 extern rtx_insn *next_insn (rtx_insn *);
 extern rtx_insn *prev_nonnote_insn (rtx_insn *);
-extern rtx_insn *prev_nonnote_insn_bb (rtx);
+extern rtx_insn *prev_nonnote_insn_bb (rtx_insn *);
 extern rtx_insn *next_nonnote_insn (rtx_insn *);
 extern rtx_insn *next_nonnote_insn_bb (rtx_insn *);
 extern rtx_insn *prev_nondebug_insn (rtx_insn *);
