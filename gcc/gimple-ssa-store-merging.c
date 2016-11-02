@@ -432,13 +432,23 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
      contain a sign bit due to sign-extension).  */
   unsigned int padding
     = byte_size - ROUND_UP (bitlen, BITS_PER_UNIT) / BITS_PER_UNIT - 1;
-  if (BYTES_BIG_ENDIAN)
+  if (padding != 0)
     {
-      tmpbuf += padding;
+      /* On big-endian the padding is at the 'front' so just skip the initial
+	 bytes.  */
+      if (BYTES_BIG_ENDIAN)
+	tmpbuf += padding;
+
       byte_size -= padding;
       if (bitlen % BITS_PER_UNIT != 0)
-	clear_bit_region_be (tmpbuf, BITS_PER_UNIT - 1,
-			     BITS_PER_UNIT - (bitlen % BITS_PER_UNIT));
+	{
+	  if (BYTES_BIG_ENDIAN)
+	    clear_bit_region_be (tmpbuf, BITS_PER_UNIT - 1,
+				 BITS_PER_UNIT - (bitlen % BITS_PER_UNIT));
+	  else
+	    clear_bit_region (tmpbuf, bitlen,
+			      byte_size * BITS_PER_UNIT - bitlen);
+	}
     }
 
   /* Clear the bit region in PTR where the bits from TMPBUF will be
