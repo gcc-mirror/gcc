@@ -1,5 +1,22 @@
 2016-11-02  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78035
+	PR tree-optimization/77964
+	* gimple-pretty-print.c (pp_points_to_solution): Print
+	vars_contains_interposable.
+	* tree-ssa-alias.c: Include varasm.h.
+	(ptrs_compare_unequal): Check vars_contains_interposable and
+	decl_binds_to_current_def_p.
+	(dump_points_to_solution): Dump vars_contains_interposable.
+	* tree-ssa-alias.h (struct pt_solution): Add vars_contains_interposable
+	flag.
+	* tree-ssa-structalias.c: Include varasm.h.
+	(set_uids_in_ptset): Record whether vars contains a
+	not decl_binds_to_current_def_p variable in vars_contains_interposable.
+	(ipa_escaped_pt): Update initializer.
+
+2016-11-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/78047
 	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Initialize
 	fake field at offset zero conservatively regarding to may_have_pointers.
