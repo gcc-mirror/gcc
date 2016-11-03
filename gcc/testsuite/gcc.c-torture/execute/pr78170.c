@@ -1,3 +1,5 @@
+/* { dg-require-effective-target int32plus } */
+
 /* PR tree-optimization/78170.
    Check that sign-extended store to a bitfield
    doesn't overwrite other fields.  */
