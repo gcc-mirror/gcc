@@ -13234,7 +13234,7 @@ aarch64_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 }
 
 static rtx
-aarch64_gen_ccmp_first (rtx *prep_seq, rtx *gen_seq,
+aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
 			int code, tree treeop0, tree treeop1)
 {
   machine_mode op_mode, cmp_mode, cc_mode = CCmode;
@@ -13308,8 +13308,8 @@ aarch64_gen_ccmp_first (rtx *prep_seq, rtx *gen_seq,
 }
 
 static rtx
-aarch64_gen_ccmp_next (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code,
-		       tree treeop0, tree treeop1, int bit_code)
+aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
+		       int cmp_code, tree treeop0, tree treeop1, int bit_code)
 {
   rtx op0, op1, target;
   machine_mode op_mode, cmp_mode, cc_mode = CCmode;
@@ -13318,7 +13318,7 @@ aarch64_gen_ccmp_next (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code,
   struct expand_operand ops[6];
   int aarch64_cond;
 
-  push_to_sequence ((rtx_insn*) *prep_seq);
+  push_to_sequence (*prep_seq);
   expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
 
   op_mode = GET_MODE (op0);
@@ -13384,7 +13384,7 @@ aarch64_gen_ccmp_next (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code,
   create_fixed_operand (&ops[4], prev);
   create_fixed_operand (&ops[5], GEN_INT (aarch64_cond));
 
-  push_to_sequence ((rtx_insn*) *gen_seq);
+  push_to_sequence (*gen_seq);
   if (!maybe_expand_insn (icode, 6, ops))
     {
       end_sequence ();
