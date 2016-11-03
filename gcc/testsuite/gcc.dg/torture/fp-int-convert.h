@@ -53,6 +53,8 @@ do {								\
   TEST_I_F_VAL (U, F, HVAL1U (P, U), P_OK (P, U));		\
   TEST_I_F_VAL (U, F, HVAL1U (P, U) + 1, P_OK (P, U));		\
   TEST_I_F_VAL (U, F, HVAL1U (P, U) - 1, P_OK (P, U));		\
+  TEST_I_F_VAL (I, F, WVAL0S (I), 1);				\
+  TEST_I_F_VAL (I, F, -WVAL0S (I), 1);				\
 } while (0)
 
 #define P_OK(P, T) ((P) >= sizeof(T) * CHAR_BIT)
@@ -74,6 +76,7 @@ do {								\
 			 ? (S)1						 \
 			 : (((S)1 << (sizeof(S) * CHAR_BIT - 2))	 \
 			    + ((S)3 << (sizeof(S) * CHAR_BIT - 2 - P))))
+#define WVAL0S(S) (S)((S)1 << (sizeof(S) * CHAR_BIT / 2 - 1))
 
 #define TEST_I_F_VAL(IT, FT, VAL, PREC_OK)		\
 do {							\

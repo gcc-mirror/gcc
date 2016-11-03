@@ -1,3 +1,9 @@
+2016-11-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR libgcc/78067
+	* libgcc2.c (__floatdisf, __floatdidf): Avoid undefined results from
+	count_leading_zeros.
+
 2016-11-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* Makefile.in (LIB2_DIVMOD_FUNCS): Add _divmoddi4.
