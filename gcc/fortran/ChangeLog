@@ -1,3 +1,9 @@
+2016-11-03  Fritz O. Reese <fritzoreese@gmail.com>
+
+	* decl.c (gfc_match_parameter): Allow omitted '()' with -std=legacy.
+	* parse.c (decode_statement): Match "parameter" before assignments.
+	* gfortran.texi: Document.
+
 2016-11-02  Fritz O. Reese <fritzoreese@gmail.com>
 
 	* lang.opt, invoke.texi: New argument -Wargument-mismatch.

@@ -1471,6 +1471,7 @@ compatibility extensions along with those enabled by @option{-std=legacy}.
 * .XOR. operator::
 * Bitwise logical operators::
 * Extended I/O specifiers::
+* Legacy PARAMETER statements::
 @end menu
 
 @node Old-style kind specifications
@@ -2695,6 +2696,23 @@ system's manual pages for further details. Locking via @code{SHARE=} is not
 supported on other systems.
 
 @end table
+
+@node Legacy PARAMETER statements
+@subsection Legacy PARAMETER statements
+@cindex PARAMETER
+
+For compatibility, GNU Fortran supports legacy PARAMETER statements without
+parentheses with @option{-std=legacy}.  A warning is emitted if used with
+@option{-std=gnu}, and an error is acknowledged with a real Fortran standard
+flag (@option{-std=f95}, etc...).  These statements take the following form:
+
+@smallexample
+implicit real (E)
+parameter e = 2.718282
+real c
+parameter c = 3.0e8
+@end smallexample
+
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
