@@ -1,4 +1,11 @@
-2016-11-02  Will Schmidt <will_schmidt@vnet.ibm.com>
+2016-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2016-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* explow.c (validize_mem): Do not modify the argument in-place.
+
+2016-11-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	Backport from trunk
 	2016-10-26  Will Schmidt <will_schmidt@vnet.ibm.com>
