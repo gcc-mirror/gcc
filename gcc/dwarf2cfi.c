@@ -1236,7 +1236,7 @@ dwarf2out_frame_debug_cfa_register (rtx set)
   reg_save (sregno, dregno, 0);
 }
 
-/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_EXPRESSION note. */
+/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_EXPRESSION note.  */
 
 static void
 dwarf2out_frame_debug_cfa_expression (rtx set)
@@ -1266,6 +1266,29 @@ dwarf2out_frame_debug_cfa_expression (rtx set)
      and, as above, we could manage flushing for epilogues.  */
   add_cfi (cfi);
   update_row_reg_save (cur_row, regno, cfi);
+}
+
+/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_VAL_EXPRESSION
+   note.  */
+
+static void
+dwarf2out_frame_debug_cfa_val_expression (rtx set)
+{
+  rtx dest = SET_DEST (set);
+  gcc_assert (REG_P (dest));
+
+  rtx span = targetm.dwarf_register_span (dest);
+  gcc_assert (!span);
+
+  rtx src = SET_SRC (set);
+  dw_cfi_ref cfi = new_cfi ();
+  cfi->dw_cfi_opc = DW_CFA_val_expression;
+  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = dwf_regno (dest);
+  cfi->dw_cfi_oprnd2.dw_cfi_loc
+    = mem_loc_descriptor (src, GET_MODE (src),
+			  GET_MODE (dest), VAR_INIT_STATUS_INITIALIZED);
+  add_cfi (cfi);
+  update_row_reg_save (cur_row, dwf_regno (dest), cfi);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_RESTORE note.  */
@@ -2034,10 +2057,16 @@ dwarf2out_frame_debug (rtx_insn *insn)
 	break;
 
       case REG_CFA_EXPRESSION:
+      case REG_CFA_VAL_EXPRESSION:
 	n = XEXP (note, 0);
 	if (n == NULL)
 	  n = single_set (insn);
-	dwarf2out_frame_debug_cfa_expression (n);
+
+	if (REG_NOTE_KIND (note) == REG_CFA_EXPRESSION)
+	  dwarf2out_frame_debug_cfa_expression (n);
+	else
+	  dwarf2out_frame_debug_cfa_val_expression (n);
+
 	handled_one = true;
 	break;
 
@@ -3016,7 +3045,8 @@ output_cfa_loc (dw_cfi_ref cfi, int for_eh)
   dw_loc_descr_ref loc;
   unsigned long size;
 
-  if (cfi->dw_cfi_opc == DW_CFA_expression)
+  if (cfi->dw_cfi_opc == DW_CFA_expression
+      || cfi->dw_cfi_opc == DW_CFA_val_expression)
     {
       unsigned r =
 	DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
@@ -3042,7 +3072,8 @@ output_cfa_loc_raw (dw_cfi_ref cfi)
   dw_loc_descr_ref loc;
   unsigned long size;
 
-  if (cfi->dw_cfi_opc == DW_CFA_expression)
+  if (cfi->dw_cfi_opc == DW_CFA_expression
+      || cfi->dw_cfi_opc == DW_CFA_val_expression)
     {
       unsigned r =
 	DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
@@ -3189,6 +3220,7 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 
 	case DW_CFA_def_cfa_expression:
 	case DW_CFA_expression:
+	case DW_CFA_val_expression:
 	  output_cfa_loc (cfi, for_eh);
 	  break;
 
@@ -3303,16 +3335,13 @@ output_cfi_directive (FILE *f, dw_cfi_ref cfi)
       break;
 
     case DW_CFA_def_cfa_expression:
-      if (f != asm_out_file)
-	{
-	  fprintf (f, "\t.cfi_def_cfa_expression ...\n");
-	  break;
-	}
-      /* FALLTHRU */
     case DW_CFA_expression:
+    case DW_CFA_val_expression:
       if (f != asm_out_file)
 	{
-	  fprintf (f, "\t.cfi_cfa_expression ...\n");
+	  fprintf (f, "\t.cfi_%scfa_%sexpression ...\n",
+		   cfi->dw_cfi_opc == DW_CFA_def_cfa_expression ? "def_" : "",
+		   cfi->dw_cfi_opc == DW_CFA_val_expression ? "val_" : "");
 	  break;
 	}
       fprintf (f, "\t.cfi_escape %#x,", cfi->dw_cfi_opc);

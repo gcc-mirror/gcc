@@ -1,3 +1,17 @@
+2016-11-03  Jiong Wang  <jiong.wang@arm.com>
+
+	* reg-notes.def (CFA_VAL_EXPRESSION): New entry.
+	* dwarf2cfi.c (dwarf2out_frame_debug_cfa_val_expression): New function.
+	(dwarf2out_frame_debug): Support REG_CFA_VAL_EXPRESSION.
+	(output_cfa_loc): Support DW_CFA_val_expression.
+	(output_cfa_loc_raw): Likewise.
+	(output_cfi): Likewise.
+	(output_cfi_directive): Likewise.
+	* dwarf2out.c (dw_cfi_oprnd1_desc): Support DW_CFA_val_expression.
+	(dw_cfi_oprnd2_desc): Likewise.
+	(mem_loc_descriptor): Recognize new pattern generated for value
+	expression.
+
 2016-11-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78186
