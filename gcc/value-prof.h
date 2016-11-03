@@ -96,15 +96,14 @@ bool check_ic_target (gcall *, struct cgraph_node *);
 
 
 /* In tree-profile.c.  */
-extern void gimple_init_edge_profiler (void);
+extern void gimple_init_gcov_profiler (void);
 extern void gimple_gen_edge_profiler (int, edge);
 extern void gimple_gen_interval_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_pow2_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_one_value_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ic_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ic_func_profiler (void);
-extern void gimple_gen_time_profiler (unsigned, unsigned,
-                                      gimple_stmt_iterator &);
+extern void gimple_gen_time_profiler (unsigned, unsigned);
 extern void gimple_gen_average_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ior_profiler (histogram_value, unsigned, unsigned);
 extern void stream_out_histogram_value (struct output_block *, histogram_value);
