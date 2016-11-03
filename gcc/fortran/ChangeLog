@@ -1,3 +1,12 @@
+2016-11-03  Fritz Reese <fritzoreese@gmail.com>
+
+	* gfortran.texi: Document.
+	* gfortran.h (gfc_dt): New field default_exp.
+	* primary.c (match_real_constant): Default exponent with -fdec.
+	* io.c (match_io): Set dt.default_exp with -fdec.
+	* ioparm.def (IOPARM_dt_default_exp): New.
+	* trans-io.c (build_dt): Set IOPARM_dt_default_exp with -fdec.
+
 2016-11-03  Fritz O. Reese <fritzoreese@gmail.com>
 
 	* decl.c (gfc_match_parameter): Allow omitted '()' with -std=legacy.

@@ -483,7 +483,7 @@ backup:
 static match
 match_real_constant (gfc_expr **result, int signflag)
 {
-  int kind, count, seen_dp, seen_digits, is_iso_c;
+  int kind, count, seen_dp, seen_digits, is_iso_c, default_exponent;
   locus old_loc, temp_loc;
   char *p, *buffer, c, exp_char;
   gfc_expr *e;
@@ -494,6 +494,7 @@ match_real_constant (gfc_expr **result, int signflag)
 
   e = NULL;
 
+  default_exponent = 0;
   count = 0;
   seen_dp = 0;
   seen_digits = 0;
@@ -575,8 +576,14 @@ match_real_constant (gfc_expr **result, int signflag)
 
   if (!ISDIGIT (c))
     {
-      gfc_error ("Missing exponent in real number at %C");
-      return MATCH_ERROR;
+      /* With -fdec, default exponent to 0 instead of complaining.  */
+      if (flag_dec)
+	default_exponent = 1;
+      else
+	{
+	  gfc_error ("Missing exponent in real number at %C");
+	  return MATCH_ERROR;
+	}
     }
 
   while (ISDIGIT (c))
@@ -597,8 +604,8 @@ done:
   gfc_current_locus = old_loc;
   gfc_gobble_whitespace ();
 
-  buffer = (char *) alloca (count + 1);
-  memset (buffer, '\0', count + 1);
+  buffer = (char *) alloca (count + default_exponent + 1);
+  memset (buffer, '\0', count + default_exponent + 1);
 
   p = buffer;
   c = gfc_next_ascii_char ();
@@ -621,6 +628,8 @@ done:
 
       c = gfc_next_ascii_char ();
     }
+  if (default_exponent)
+    *p++ = '0';
 
   kind = get_kind (&is_iso_c);
   if (kind == -1)

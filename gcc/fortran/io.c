@@ -4167,6 +4167,10 @@ get_io_list:
 	goto syntax;
     }
 
+  /* See if we want to use defaults for missing exponents in real transfers.  */
+  if (flag_dec)
+    dt->default_exp = 1;
+
   /* A full IO statement has been matched.  Check the constraints.  spec_end is
      supplied for cases where no locus is supplied.  */
   m = check_io_constraints (k, dt, io_code, &spec_end);

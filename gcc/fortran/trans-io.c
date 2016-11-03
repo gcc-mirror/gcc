@@ -1911,6 +1911,9 @@ build_dt (tree function, gfc_code * code)
       if (dt->udtio)
 	mask |= IOPARM_dt_dtio;
 
+      if (dt->default_exp)
+	mask |= IOPARM_dt_default_exp;
+
       if (dt->namelist)
 	{
 	  if (dt->format_expr || dt->format_label)

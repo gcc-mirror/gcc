@@ -1087,7 +1087,13 @@ exponent:
      the d parameter before explict conversion takes place.  */
 
   if (w == 0)
-    goto bad_float;
+    {
+      /* Extension: allow default exponent of 0 when omitted.  */
+      if (dtp->common.flags & IOPARM_DT_DEFAULT_EXP)
+	goto done;
+      else
+	goto bad_float;
+    }
 
   if (dtp->u.p.blank_status == BLANK_UNSPECIFIED)
     {
