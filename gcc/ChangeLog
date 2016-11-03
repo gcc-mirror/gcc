@@ -1,3 +1,24 @@
+2016-11-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (arm-wrs-vxworks): Set target_cpu_cname.
+	(arm*-freebsd*): Likewise.
+	(arm*-*-netbsdelf*): Likewise.
+	(arm*-*-linux*): Likewise.
+	(arm*-*-uclinux*eabi*): Likewise.
+	(arm*-*-phoenix*): Likewise.
+	(arm*-*-eabi*, arm*-*-symbianelf*, arm*-*-rtems*): Likewise.
+	(arm*-*-*): Don't clobber target_cpu_cname when --with-cpu is not
+	specified.  Default to arm6 if target_cpu_cname is not set.
+	* arm/arm.c (arm_option_override): Simplify logic.  Assert that the
+	default cpu has been correctly configured.
+	* arm/arm.h (TARGET_CPU_DEFAULT): Delete.
+	(target_cpus): Delete TARGET_CPU_generic, add TARGET_CPU_num_cores.
+	* arm/freebsd.h (SUBTARGET_CPU_DEFAULT): Delete.
+	* arm/linux-eabi.h (SUBTARGET_CPU_DEFAULT): Delete.
+	* arm/linux-elf.h (SUBTARGET_CPU_DEFAULT): Delete.
+	* arm/symbian.h (SUBTARGET_CPU_DEFAULT): Delete.
+	* arm/unknown-elf.h (SUBTARGET_CPU_DEFAULT): Delete.
+
 2016-11-03  Jiong Wang  <jiong.wang@arm.com>
 
 	* reg-notes.def (CFA_VAL_EXPRESSION): New entry.

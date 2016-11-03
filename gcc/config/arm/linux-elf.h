@@ -45,8 +45,6 @@
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (TARGET_ENDIAN_DEFAULT)
 
-#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm6
-
 #define SUBTARGET_EXTRA_LINK_SPEC " -m " TARGET_LINKER_EMULATION " -p"
 
 /* We do not have any MULTILIB_OPTIONS specified, so there are no
