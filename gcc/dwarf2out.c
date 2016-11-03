@@ -525,6 +525,7 @@ dw_cfi_oprnd1_desc (enum dwarf_call_frame_info cfi)
     case DW_CFA_def_cfa_register:
     case DW_CFA_register:
     case DW_CFA_expression:
+    case DW_CFA_val_expression:
       return dw_cfi_oprnd_reg_num;
 
     case DW_CFA_def_cfa_offset:
@@ -558,6 +559,7 @@ dw_cfi_oprnd2_desc (enum dwarf_call_frame_info cfi)
       return dw_cfi_oprnd_reg_num;
 
     case DW_CFA_expression:
+    case DW_CFA_val_expression:
       return dw_cfi_oprnd_loc;
 
     default:
@@ -15364,6 +15366,46 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case CONST_STRING:
       resolve_one_addr (&rtl);
       goto symref;
+
+    /* RTL sequences inside PARALLEL record a series of DWARF operations for
+       the expression.  An UNSPEC rtx represents a raw DWARF operation,
+       new_loc_descr is called for it to build the operation directly.
+       Otherwise mem_loc_descriptor is called recursively.  */
+    case PARALLEL:
+      {
+	int index = 0;
+	dw_loc_descr_ref exp_result = NULL;
+
+	for (; index < XVECLEN (rtl, 0); index++)
+	  {
+	    rtx elem = XVECEXP (rtl, 0, index);
+	    if (GET_CODE (elem) == UNSPEC)
+	      {
+		/* Each DWARF operation UNSPEC contain two operands, if
+		   one operand is not used for the operation, const0_rtx is
+		   passed.  */
+		gcc_assert (XVECLEN (elem, 0) == 2);
+
+		HOST_WIDE_INT dw_op = XINT (elem, 1);
+		HOST_WIDE_INT oprnd1 = INTVAL (XVECEXP (elem, 0, 0));
+		HOST_WIDE_INT oprnd2 = INTVAL (XVECEXP (elem, 0, 1));
+		exp_result
+		  = new_loc_descr ((enum dwarf_location_atom) dw_op, oprnd1,
+				   oprnd2);
+	      }
+	    else
+	      exp_result
+		= mem_loc_descriptor (elem, mode, mem_mode,
+				      VAR_INIT_STATUS_INITIALIZED);
+
+	    if (!mem_loc_result)
+	      mem_loc_result = exp_result;
+	    else
+	      add_loc_descr (&mem_loc_result, exp_result);
+	  }
+
+	break;
+      }
 
     default:
       if (flag_checking)
