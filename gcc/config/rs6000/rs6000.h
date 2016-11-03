@@ -442,14 +442,15 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    point.  KFmode was added as a way to represent IEEE 128-bit floating point,
    even if the default for long double is the IBM long double format.
    Similarly IFmode is the IBM long double format even if the default is IEEE
-   128-bit.  */
+   128-bit.  Don't allow IFmode if -msoft-float.  */
 #define FLOAT128_IEEE_P(MODE)						\
   ((TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
    || ((MODE) == KFmode) || ((MODE) == KCmode))
 
 #define FLOAT128_IBM_P(MODE)						\
   ((!TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
-   || ((MODE) == IFmode) || ((MODE) == ICmode))
+   || (TARGET_HARD_FLOAT && TARGET_FPRS					\
+       && ((MODE) == IFmode) || ((MODE) == ICmode)))
 
 /* Helper macros to say whether a 128-bit floating point type can go in a
    single vector register, or whether it needs paired scalar values.  */
