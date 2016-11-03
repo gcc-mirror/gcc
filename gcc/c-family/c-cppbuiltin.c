@@ -907,7 +907,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  if (!flag_new_inheriting_ctors)
 	    cpp_define (pfile, "__cpp_inheriting_constructors=200802");
 	  else
-	    cpp_define (pfile, "__cpp_inheriting_constructors=201606");
+	    cpp_define (pfile, "__cpp_inheriting_constructors=201511");
 	  cpp_define (pfile, "__cpp_ref_qualifiers=200710");
 	  cpp_define (pfile, "__cpp_alias_templates=200704");
 	}
