@@ -1225,6 +1225,27 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
 		swap_ssa_operands (stmt,
 				   gimple_assign_rhs1_ptr (stmt),
 				   gimple_assign_rhs2_ptr (stmt));
+	      else if (code == COND_EXPR
+		       && CONSTANT_CLASS_P (gimple_assign_rhs2 (stmt)))
+		{
+		  tree cond_expr = gimple_assign_rhs1 (stmt);
+		  enum tree_code cond_code = TREE_CODE (cond_expr);
+
+		  if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
+		    {
+		      bool honor_nans = HONOR_NANS (TREE_OPERAND (cond_expr,
+								  0));
+		      cond_code = invert_tree_comparison (cond_code,
+							  honor_nans);
+		      if (cond_code != ERROR_MARK)
+			{
+			  TREE_SET_CODE (cond_expr, cond_code);
+			  swap_ssa_operands (stmt,
+					     gimple_assign_rhs2_ptr (stmt),
+					     gimple_assign_rhs3_ptr (stmt));
+			}
+		    }
+		}
 	    }
 
 	  /* Free stmt_vec_info.  */
@@ -3006,38 +3027,56 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
       && (code == COND_EXPR
 	  || !def2 || gimple_nop_p (def2)
 	  || !flow_bb_inside_loop_p (loop, gimple_bb (def2))
-          || (def2 && flow_bb_inside_loop_p (loop, gimple_bb (def2))
- 	      && (is_gimple_assign (def2)
+	  || (def2 && flow_bb_inside_loop_p (loop, gimple_bb (def2))
+	      && (is_gimple_assign (def2)
 		  || is_gimple_call (def2)
-	          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
-                      == vect_induction_def
- 	          || (gimple_code (def2) == GIMPLE_PHI
+		  || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
+		       == vect_induction_def
+		  || (gimple_code (def2) == GIMPLE_PHI
 		      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
-                          == vect_internal_def
+			   == vect_internal_def
 		      && !is_loop_header_bb_p (gimple_bb (def2)))))))
     {
-      if (check_reduction
-	  && orig_code != MINUS_EXPR)
-        {
+      if (check_reduction && orig_code != MINUS_EXPR)
+	{
+	  /* Check if we can swap operands (just for simplicity - so that
+	     the rest of the code can assume that the reduction variable
+	     is always the last (second) argument).  */
 	  if (code == COND_EXPR)
 	    {
-	      /* No current known use where this case would be useful.  */
-	      if (dump_enabled_p ())
-		report_vect_op (MSG_NOTE, def_stmt,
-				"detected reduction: cannot currently swap "
-				"operands for cond_expr");
-	      return NULL;
+	      /* Swap cond_expr by inverting the condition.  */
+	      tree cond_expr = gimple_assign_rhs1 (def_stmt);
+	      enum tree_code invert_code = ERROR_MARK;
+	      enum tree_code cond_code = TREE_CODE (cond_expr);
+
+	      if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
+		{
+		  bool honor_nans = HONOR_NANS (TREE_OPERAND (cond_expr, 0));
+		  invert_code = invert_tree_comparison (cond_code, honor_nans);
+		}
+	      if (invert_code != ERROR_MARK)
+		{
+		  TREE_SET_CODE (cond_expr, invert_code);
+		  swap_ssa_operands (def_stmt,
+				     gimple_assign_rhs2_ptr (def_stmt),
+				     gimple_assign_rhs3_ptr (def_stmt));
+		}
+	      else
+		{
+		  if (dump_enabled_p ())
+		    report_vect_op (MSG_NOTE, def_stmt,
+				    "detected reduction: cannot swap operands "
+				    "for cond_expr");
+		  return NULL;
+		}
 	    }
+	  else
+	    swap_ssa_operands (def_stmt, gimple_assign_rhs1_ptr (def_stmt),
+			       gimple_assign_rhs2_ptr (def_stmt));
 
-          /* Swap operands (just for simplicity - so that the rest of the code
-	     can assume that the reduction variable is always the last (second)
-	     argument).  */
-          if (dump_enabled_p ())
+	  if (dump_enabled_p ())
 	    report_vect_op (MSG_NOTE, def_stmt,
-	  	            "detected reduction: need to swap operands: ");
-
-          swap_ssa_operands (def_stmt, gimple_assign_rhs1_ptr (def_stmt),
- 			     gimple_assign_rhs2_ptr (def_stmt));
+			    "detected reduction: need to swap operands: ");
 
 	  if (CONSTANT_CLASS_P (gimple_assign_rhs1 (def_stmt)))
 	    LOOP_VINFO_OPERANDS_SWAPPED (loop_info) = true;
