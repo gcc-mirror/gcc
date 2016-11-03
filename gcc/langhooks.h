@@ -162,6 +162,10 @@ struct lang_hooks_for_types
      for the debugger about scale factor, etc.  */
   bool (*get_fixed_point_type_info) (const_tree,
 				     struct fixed_point_type_info *);
+
+  /* Returns -1 if dwarf ATTR shouldn't be added for TYPE, or the attribute
+     value otherwise.  */
+  int (*type_dwarf_attribute) (const_tree, int);
 };
 
 /* Language hooks related to decls and the symbol table.  */

@@ -84,6 +84,7 @@ extern bool lhd_omp_mappable_type (tree);
 extern const char *lhd_get_substring_location (const substring_loc &,
 					       location_t *out_loc);
 extern int lhd_decl_dwarf_attribute (const_tree, int);
+extern int lhd_type_dwarf_attribute (const_tree, int);
 
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
@@ -186,6 +187,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE lhd_enum_underlying_base_type
 #define LANG_HOOKS_GET_DEBUG_TYPE	NULL
 #define LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO NULL
+#define LANG_HOOKS_TYPE_DWARF_ATTRIBUTE	lhd_type_dwarf_attribute
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -208,7 +210,8 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE, \
   LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE, \
   LANG_HOOKS_GET_DEBUG_TYPE, \
-  LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO \
+  LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO, \
+  LANG_HOOKS_TYPE_DWARF_ATTRIBUTE \
 }
 
 /* Declaration hooks.  */

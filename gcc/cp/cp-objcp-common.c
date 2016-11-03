@@ -131,6 +131,19 @@ cxx_types_compatible_p (tree x, tree y)
   return same_type_ignoring_top_level_qualifiers_p (x, y);
 }
 
+/* Return a type to use in the debug info instead of TYPE, or NULL_TREE to
+   keep TYPE.  */
+
+tree
+cp_get_debug_type (const_tree type)
+{
+  if (TYPE_PTRMEMFUNC_P (type) && !typedef_variant_p (type))
+    return build_offset_type (TYPE_PTRMEMFUNC_OBJECT_TYPE (type),
+			      TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type)));
+
+  return NULL_TREE;
+}
+
 /* Return -1 if dwarf ATTR shouldn't be added for DECL, or the attribute
    value otherwise.  */
 int
@@ -179,11 +192,6 @@ cp_decl_dwarf_attribute (const_tree decl, int attr)
 	  && FUNCTION_REF_QUALIFIED (TREE_TYPE (decl))
 	  && !FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (decl)))
 	return 1;
-      if ((TREE_CODE (decl) == FUNCTION_TYPE
-	   || TREE_CODE (decl) == METHOD_TYPE)
-	  && FUNCTION_REF_QUALIFIED (decl)
-	  && !FUNCTION_RVALUE_QUALIFIED (decl))
-	return 1;
       break;
 
     case DW_AT_rvalue_reference:
@@ -191,11 +199,6 @@ cp_decl_dwarf_attribute (const_tree decl, int attr)
 	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
 	  && FUNCTION_REF_QUALIFIED (TREE_TYPE (decl))
 	  && FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (decl)))
-	return 1;
-      if ((TREE_CODE (decl) == FUNCTION_TYPE
-	   || TREE_CODE (decl) == METHOD_TYPE)
-	  && FUNCTION_REF_QUALIFIED (decl)
-	  && FUNCTION_RVALUE_QUALIFIED (decl))
 	return 1;
       break;
 
@@ -207,6 +210,39 @@ cp_decl_dwarf_attribute (const_tree decl, int attr)
 	  else
 	    return DW_INL_inlined;
 	}
+      break;
+
+    default:
+      break;
+    }
+
+  return -1;
+}
+
+/* Return -1 if dwarf ATTR shouldn't be added for TYPE, or the attribute
+   value otherwise.  */
+int
+cp_type_dwarf_attribute (const_tree type, int attr)
+{
+  if (type == NULL_TREE)
+    return -1;
+
+  switch (attr)
+    {
+    case DW_AT_reference:
+      if ((TREE_CODE (type) == FUNCTION_TYPE
+	   || TREE_CODE (type) == METHOD_TYPE)
+	  && FUNCTION_REF_QUALIFIED (type)
+	  && !FUNCTION_RVALUE_QUALIFIED (type))
+	return 1;
+      break;
+
+    case DW_AT_rvalue_reference:
+      if ((TREE_CODE (type) == FUNCTION_TYPE
+	   || TREE_CODE (type) == METHOD_TYPE)
+	  && FUNCTION_REF_QUALIFIED (type)
+	  && FUNCTION_RVALUE_QUALIFIED (type))
+	return 1;
       break;
 
     default:

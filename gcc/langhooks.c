@@ -702,6 +702,15 @@ lhd_decl_dwarf_attribute (const_tree, int)
   return -1;
 }
 
+/* Default implementation of LANG_HOOKS_TYPE_DWARF_ATTRIBUTE.  Don't add
+   any attributes.  */
+
+int
+lhd_type_dwarf_attribute (const_tree, int)
+{
+  return -1;
+}
+
 /* Returns true if the current lang_hooks represents the GNU C frontend.  */
 
 bool

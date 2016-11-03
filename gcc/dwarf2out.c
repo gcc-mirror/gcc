@@ -12573,8 +12573,20 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	 copy was created to help us keep track of typedef names) and
 	 that copy might have a different TYPE_UID from the original
 	 ..._TYPE node.  */
-      if (TREE_CODE (type) != VECTOR_TYPE
-	  && TREE_CODE (type) != ARRAY_TYPE)
+      if (TREE_CODE (type) == FUNCTION_TYPE
+	  || TREE_CODE (type) == METHOD_TYPE)
+	{
+	  /* For function/method types, can't just use type_main_variant here,
+	     because that can have different ref-qualifiers for C++,
+	     but try to canonicalize.  */
+	  tree main = TYPE_MAIN_VARIANT (type);
+	  for (tree t = main; t; t = TYPE_NEXT_VARIANT (t))
+	    if (check_base_type (t, main) && check_lang_type (t, type))
+	      return lookup_type_die (t);
+	  return lookup_type_die (type);
+	}
+      else if (TREE_CODE (type) != VECTOR_TYPE
+	       && TREE_CODE (type) != ARRAY_TYPE)
 	return lookup_type_die (type_main_variant (type));
       else
 	/* Vectors have the debugging information in the type,
@@ -23147,20 +23159,31 @@ gen_reference_type_die (tree type, dw_die_ref context_die)
 }
 #endif
 
-/* Generate a DIE for a pointer to a member type.  */
+/* Generate a DIE for a pointer to a member type.  TYPE can be an
+   OFFSET_TYPE, for a pointer to data member, or a RECORD_TYPE, for a
+   pointer to member function.  */
 
 static void
 gen_ptr_to_mbr_type_die (tree type, dw_die_ref context_die)
 {
-  dw_die_ref ptr_die
-    = new_die (DW_TAG_ptr_to_member_type,
-	       scope_die_for (type, context_die), type);
+  if (lookup_type_die (type))
+    return;
+
+  dw_die_ref ptr_die = new_die (DW_TAG_ptr_to_member_type,
+				scope_die_for (type, context_die), type);
 
   equate_type_number_to_die (type, ptr_die);
   add_AT_die_ref (ptr_die, DW_AT_containing_type,
 		  lookup_type_die (TYPE_OFFSET_BASETYPE (type)));
   add_type_attribute (ptr_die, TREE_TYPE (type), TYPE_UNQUALIFIED, false,
 		      context_die);
+
+  if (TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE
+      && TREE_CODE (TREE_TYPE (type)) != METHOD_TYPE)
+    {
+      dw_loc_descr_ref op = new_loc_descr (DW_OP_plus, 0, 0);
+      add_AT_loc (ptr_die, DW_AT_use_location, op);
+    }
 }
 
 static char *producer_string;
@@ -24095,6 +24118,13 @@ gen_subroutine_type_die (tree type, dw_die_ref context_die)
 
   if (get_AT (subr_die, DW_AT_name))
     add_pubtype (type, subr_die);
+  if ((dwarf_version >= 5 || !dwarf_strict)
+      && lang_hooks.types.type_dwarf_attribute (type, DW_AT_reference) != -1)
+    add_AT_flag (subr_die, DW_AT_reference, 1);
+  if ((dwarf_version >= 5 || !dwarf_strict)
+      && lang_hooks.types.type_dwarf_attribute (type,
+						DW_AT_rvalue_reference) != -1)
+    add_AT_flag (subr_die, DW_AT_rvalue_reference, 1);
 }
 
 /* Generate a DIE for a type definition.  */
@@ -24316,13 +24346,36 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       return;
     }
 
+  if (lang_hooks.types.get_debug_type)
+    {
+      tree debug_type = lang_hooks.types.get_debug_type (type);
+
+      if (debug_type != NULL_TREE && debug_type != type)
+	{
+	  gen_type_die_with_usage (debug_type, context_die, usage);
+	  return;
+	}
+    }
+
   /* We are going to output a DIE to represent the unqualified version
      of this type (i.e. without any const or volatile qualifiers) so
      get the main variant (i.e. the unqualified version) of this type
      now.  (Vectors and arrays are special because the debugging info is in the
-     cloned type itself).  */
-  if (TREE_CODE (type) != VECTOR_TYPE
-      && TREE_CODE (type) != ARRAY_TYPE)
+     cloned type itself.  Similarly function/method types can contain extra
+     ref-qualification).  */
+  if (TREE_CODE (type) == FUNCTION_TYPE
+      || TREE_CODE (type) == METHOD_TYPE)
+    {
+      /* For function/method types, can't use type_main_variant here,
+	 because that can have different ref-qualifiers for C++,
+	 but try to canonicalize.  */
+      tree main = TYPE_MAIN_VARIANT (type);
+      for (tree t = main; t; t = TYPE_NEXT_VARIANT (t))
+	if (check_base_type (t, main) && check_lang_type (t, type))
+	  type = t;
+    }
+  else if (TREE_CODE (type) != VECTOR_TYPE
+	   && TREE_CODE (type) != ARRAY_TYPE)
     type = type_main_variant (type);
 
   /* If this is an array type with hidden descriptor, handle it first.  */
@@ -24373,18 +24426,18 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       /* For these types, all that is required is that we output a DIE (or a
 	 set of DIEs) to represent the "basis" type.  */
       gen_type_die_with_usage (TREE_TYPE (type), context_die,
-				DINFO_USAGE_IND_USE);
+			       DINFO_USAGE_IND_USE);
       break;
 
     case OFFSET_TYPE:
       /* This code is used for C++ pointer-to-data-member types.
 	 Output a description of the relevant class type.  */
       gen_type_die_with_usage (TYPE_OFFSET_BASETYPE (type), context_die,
-					DINFO_USAGE_IND_USE);
+			       DINFO_USAGE_IND_USE);
 
       /* Output a description of the type of the object pointed to.  */
       gen_type_die_with_usage (TREE_TYPE (type), context_die,
-					DINFO_USAGE_IND_USE);
+			       DINFO_USAGE_IND_USE);
 
       /* Now output a DIE to represent this pointer-to-data-member type
 	 itself.  */
@@ -24394,14 +24447,14 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     case FUNCTION_TYPE:
       /* Force out return type (in case it wasn't forced out already).  */
       gen_type_die_with_usage (TREE_TYPE (type), context_die,
-					DINFO_USAGE_DIR_USE);
+			       DINFO_USAGE_DIR_USE);
       gen_subroutine_type_die (type, context_die);
       break;
 
     case METHOD_TYPE:
       /* Force out return type (in case it wasn't forced out already).  */
       gen_type_die_with_usage (TREE_TYPE (type), context_die,
-					DINFO_USAGE_DIR_USE);
+			       DINFO_USAGE_DIR_USE);
       gen_subroutine_type_die (type, context_die);
       break;
 

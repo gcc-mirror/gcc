@@ -1,3 +1,30 @@
+2016-11-03  Jakub Jelinek  <jakub@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR debug/28767
+	PR debug/56974
+	* langhooks.h (struct lang_hooks_for_types): Add type_dwarf_attribute
+	langhook.
+	* langhooks.c (lhd_type_dwarf_attribute): New function.
+	* langhooks-def.h (lhd_type_dwarf_attribute): Declare.
+	(LANG_HOOKS_TYPE_DWARF_ATTRIBUTE): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add
+	LANG_HOOKS_TYPE_DWARF_ATTRIBUTE.
+	(check_qualified_type, check_aligned_type): Call it.
+	* dwarf2out.c (modified_type_die): Don't use type_main_variant
+	for FUNCTION_TYPE or METHOD_TYPE, instead walk over variants with
+	check_base_type and check_lang_type.
+	(gen_ptr_to_mbr_type_die): If lookup_type_die is already non-NULL,
+	return early.  For pointer-to-data-member add DW_AT_use_location
+	attribute.
+	(gen_subroutine_type_die): Add DW_AT_{,rvalue_}reference attribute
+	if needed.
+	(gen_type_die_with_usage): Don't use type_main_variant
+	for FUNCTION_TYPE or METHOD_TYPE, instead walk over variants with
+	check_base_type and check_lang_type.  Formatting fixes. Call
+	get_debug_type langhook.
+
 2016-11-03  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (check_lang_type): New.
