@@ -1,5 +1,10 @@
 2016-11-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
+	PR target/78192
+	* config/rs6000/vsx.md (vsx_extract_<mode>_di): The element number
+	has already been adjusted for endianness, so don't adjust it any
+	further.
+
 	PR target/77993
 	* config/rs6000/rs6000.h (FLOAT128_IBM_P): Do not allow IFmode or
 	ICmode unless we have standard PowerPC floating point.
