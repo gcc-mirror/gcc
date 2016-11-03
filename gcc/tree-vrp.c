@@ -717,6 +717,23 @@ get_value_range (const_tree var)
   return vr;
 }
 
+/* Set value-ranges of all SSA names defined by STMT to varying.  */
+
+static void
+set_defs_to_varying (gimple *stmt)
+{
+  ssa_op_iter i;
+  tree def;
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, i, SSA_OP_DEF)
+    {
+      value_range *vr = get_value_range (def);
+      /* Avoid writing to vr_const_varying get_value_range may return.  */
+      if (vr->type != VR_VARYING)
+	set_value_range_to_varying (vr);
+    }
+}
+
+
 /* Return true, if VAL1 and VAL2 are equal values for VRP purposes.  */
 
 static inline bool
@@ -6988,10 +7005,7 @@ vrp_initialize (void)
 	    prop_set_simulate_again (stmt, true);
 	  else if (!stmt_interesting_for_vrp (stmt))
 	    {
-	      ssa_op_iter i;
-	      tree def;
-	      FOR_EACH_SSA_TREE_OPERAND (def, stmt, i, SSA_OP_DEF)
-		set_value_range_to_varying (get_value_range (def));
+	      set_defs_to_varying (stmt);
 	      prop_set_simulate_again (stmt, false);
 	    }
 	  else
@@ -7938,9 +7952,6 @@ vrp_visit_switch_stmt (gswitch *stmt, edge *taken_edge_p)
 static enum ssa_prop_result
 vrp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 {
-  tree def;
-  ssa_op_iter iter;
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "\nVisiting statement:\n");
@@ -7958,8 +7969,7 @@ vrp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 
   /* All other statements produce nothing of interest for VRP, so mark
      their outputs varying and prevent further simulation.  */
-  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
-    set_value_range_to_varying (get_value_range (def));
+  set_defs_to_varying (stmt);
 
   return SSA_PROP_VARYING;
 }

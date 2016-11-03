@@ -1,3 +1,11 @@
+2016-11-03  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77768
+	* gcc.dg/torture/pr77768.c: New testcase.
+
 2016-11-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
