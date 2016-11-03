@@ -1,3 +1,9 @@
+2016-11-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/no_profile_instrument_function-attr-1.c: Update scanned
+	output.
+	* gcc.dg/tree-prof/time-profiler-3.c: New test.
+
 2016-11-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR libgcc/78067

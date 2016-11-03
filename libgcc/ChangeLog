@@ -1,3 +1,8 @@
+2016-11-03  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c (__gcov_time_profiler): Remove.
+	(__gcov_time_profiler_atomic): Likewise.
+
 2016-11-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR libgcc/78067
