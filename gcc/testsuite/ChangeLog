@@ -1,3 +1,9 @@
+2016-11-03  Fritz Reese <fritzoreese@gmail.com>
+
+	* gfortran.dg/dec_exp_1.f90: New test.
+	* gfortran.dg/dec_exp_2.f90: Likewise.
+	* gfortran.dg/dec_exp_3.f90: Likewise.
+
 2016-11-03  Fritz O. Reese <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_parameter_1.f: New test.

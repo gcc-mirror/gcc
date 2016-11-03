@@ -1472,6 +1472,7 @@ compatibility extensions along with those enabled by @option{-std=legacy}.
 * Bitwise logical operators::
 * Extended I/O specifiers::
 * Legacy PARAMETER statements::
+* Default exponents::
 @end menu
 
 @node Old-style kind specifications
@@ -2712,6 +2713,14 @@ parameter e = 2.718282
 real c
 parameter c = 3.0e8
 @end smallexample
+
+@node Default exponents
+@subsection Default exponents
+@cindex exponent
+
+For compatibility, GNU Fortran supports a default exponent of zero in real
+constants with @option{-fdec}.  For example, @code{9e} would be
+interpreted as @code{9e0}, rather than an error.
 
 
 @node Extensions not implemented in GNU Fortran
