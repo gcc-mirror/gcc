@@ -120,7 +120,7 @@ struct lang_hooks_for_types
   /* Return TRUE if TYPE1 and TYPE2 are identical for type hashing purposes.
      Called only after doing all language independent checks.
      At present, this function is only called when both TYPE1 and TYPE2 are
-     FUNCTION_TYPEs.  */
+     FUNCTION_TYPE or METHOD_TYPE.  */
   bool (*type_hash_eq) (const_tree, const_tree);
 
   /* Return TRUE if TYPE uses a hidden descriptor and fills in information

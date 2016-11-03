@@ -1980,7 +1980,8 @@ static bool
 cp_check_qualified_type (const_tree cand, const_tree base, int type_quals,
 			 cp_ref_qualifier rqual, tree raises)
 {
-  return (check_qualified_type (cand, base, type_quals)
+  return (TYPE_QUALS (cand) == type_quals
+	  && check_base_type (cand, base)
 	  && comp_except_specs (raises, TYPE_RAISES_EXCEPTIONS (cand),
 				ce_exact)
 	  && type_memfn_rqual (cand) == rqual);
@@ -4080,9 +4081,7 @@ cp_build_type_attribute_variant (tree type, tree attributes)
 }
 
 /* Return TRUE if TYPE1 and TYPE2 are identical for type hashing purposes.
-   Called only after doing all language independent checks.  Only
-   to check TYPE_RAISES_EXCEPTIONS for FUNCTION_TYPE, the rest is already
-   compared in type_hash_eq.  */
+   Called only after doing all language independent checks.  */
 
 bool
 cxx_type_hash_eq (const_tree typea, const_tree typeb)
@@ -4090,6 +4089,8 @@ cxx_type_hash_eq (const_tree typea, const_tree typeb)
   gcc_assert (TREE_CODE (typea) == FUNCTION_TYPE
 	      || TREE_CODE (typea) == METHOD_TYPE);
 
+  if (type_memfn_rqual (typea) != type_memfn_rqual (typeb))
+    return false;
   return comp_except_specs (TYPE_RAISES_EXCEPTIONS (typea),
 			    TYPE_RAISES_EXCEPTIONS (typeb), ce_exact);
 }

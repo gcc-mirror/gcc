@@ -1,3 +1,10 @@
+2016-11-03  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (cp_check_qualified_type): Call check_base_type instead
+	of check_qualified_type.
+	(cxx_type_hash_eq): Check ref-qualifiers.
+	* typeck.c (apply_memfn_quals): No need to mess with TYPE_CANONICAL.
+
 2016-11-01  Jason Merrill  <jason@redhat.com>
 
 	Implement P0136R1, Rewording inheriting constructors.

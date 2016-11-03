@@ -4214,6 +4214,11 @@ extern tree merge_dllimport_decl_attributes (tree, tree);
 /* Handle a "dllimport" or "dllexport" attribute.  */
 extern tree handle_dll_attribute (tree *, tree, tree, int, bool *);
 
+/* Returns true iff CAND and BASE have equivalent language-specific
+   qualifiers.  */
+
+extern bool check_lang_type (const_tree cand, const_tree base);
+
 /* Returns true iff unqualified CAND and BASE are equivalent.  */
 
 extern bool check_base_type (const_tree cand, const_tree base);
