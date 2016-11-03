@@ -1,10 +1,22 @@
-2016-11-03  Fritz Reese <fritzoreese@gmail.com>
+2016-11-03  Jakub Jelinek  <jakub@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR debug/28767
+	PR debug/56974
+	* g++.dg/debug/dwarf2/ptrdmem-1.C: New test.
+	* g++.dg/debug/dwarf2/ref-3.C: New test.
+	* g++.dg/debug/dwarf2/ref-4.C: New test.
+	* g++.dg/debug/dwarf2/refqual-1.C: New test.
+	* g++.dg/debug/dwarf2/refqual-2.C: New test.
+
+2016-11-03  Fritz Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_exp_1.f90: New test.
 	* gfortran.dg/dec_exp_2.f90: Likewise.
 	* gfortran.dg/dec_exp_3.f90: Likewise.
 
-2016-11-03  Fritz O. Reese <fritzoreese@gmail.com>
+2016-11-03  Fritz O. Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_parameter_1.f: New test.
 	* gfortran.dg/dec_parameter_2.f90: Likewise.
@@ -45,7 +57,7 @@
 
 	* gcc.dg/store_merging_8.c: New testcase.
 
-2016-11-02  Fritz O. Reese <fritzoreese@gmail.com>
+2016-11-02  Fritz O. Reese  <fritzoreese@gmail.com>
 
 	* gfortran.dg/warn_argument_mismatch_1.f90: New test.
 
@@ -272,7 +284,7 @@
 	* gcc.target/i386/pr34012.c: Add -fno-store-merging to dg-options.
 	* g++.dg/init/new17.C: Likewise.
 
-2016-10-26  Will Schmidt <will_schmidt@vnet.ibm.com>
+2016-10-26  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	PR middle-end/72747
 	* c-c++-common/pr72747-1.c: New test.
@@ -348,7 +360,7 @@
 	* gcc.dg/fold-convmaxconv-1.c: New test.
 	* gcc.dg/fold-convminconv-1.c: New test.
 
-2016-10-26  Steven G. Kargl <kargl@gcc.gnu.org>
+2016-10-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78092
 	* gfortran.dg/pr78092.f90: New test.
@@ -13340,6 +13352,7 @@
 2016-01-28  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* gcc.dg/declare-simd.c: New test.
+
 2016-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69466

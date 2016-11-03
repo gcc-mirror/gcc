@@ -1,3 +1,20 @@
+2016-11-03  Jakub Jelinek  <jakub@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR debug/28767
+	PR debug/56974
+	* tree.c (cp_check_qualified_type): Use check_base_type and
+	TYPE_QUALS comparison instead of check_qualified_type.
+	(cxx_type_hash_eq): Return false if type_memfn_rqual don't match.
+	* cp-objcp-common.c (cp_get_debug_type): New function.
+	(cp_decl_dwarf_attribute): Don't handle types here.
+	(cp_type_dwarf_attribute): New function.
+	* cp-objcp-common.h (cp_get_debug_type, cp_type_dwarf_attribute):
+	Declare.
+	(LANG_HOOKS_GET_DEBUG_TYPE, LANG_HOOKS_TYPE_DWARF_ATTRIBUTE):
+	Define.
+
 2016-11-03  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (cp_check_qualified_type): Call check_base_type instead
