@@ -1,3 +1,8 @@
+2016-11-03  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop.c (destroy_loop_vec_info): Handle cond_expr.
+	(vect_is_simple_reduction): Swap cond_reduction by inversion.
+
 2016-11-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_init_libfuncs): New.  Call
