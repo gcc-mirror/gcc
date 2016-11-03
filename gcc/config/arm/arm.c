@@ -3104,17 +3104,7 @@ arm_option_override (void)
       arm_feature_set sought = ARM_FSET_EMPTY;;
 
       arm_selected_cpu = &all_cores[TARGET_CPU_DEFAULT];
-      if (!arm_selected_cpu->name)
-	{
-#ifdef SUBTARGET_CPU_DEFAULT
-	  /* Use the subtarget default CPU if none was specified by
-	     configure.  */
-	  arm_selected_cpu = &all_cores[SUBTARGET_CPU_DEFAULT];
-#endif
-	  /* Default to ARM6.  */
-	  if (!arm_selected_cpu->name)
-	    arm_selected_cpu = &all_cores[arm6];
-	}
+      gcc_assert (arm_selected_cpu->name);
 
       sel = arm_selected_cpu;
       insn_flags = sel->flags;
