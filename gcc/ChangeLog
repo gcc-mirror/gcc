@@ -1,3 +1,8 @@
+2016-11-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* rtlanal.c (nonzero_bits1): Fix WORD_REGISTER_OPERATIONS condition.
+	Move comments into more natural position.
+
 2016-11-03  Vineet Gupta  <vgupta@synopsys.com>
 
 	* config/arc/arc.h (SIZE_TYPE): Define as unsigned int.
