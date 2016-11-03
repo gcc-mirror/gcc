@@ -1049,6 +1049,7 @@ arm-wrs-vxworks)
 	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
 	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
+	target_cpu_cname="arm6"
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h"
@@ -1061,10 +1062,14 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tm_file="${tm_file} arm/bpabi.h arm/freebsd.h arm/aout.h arm/arm.h"
 	case $target in
 	armv6*-*-freebsd*)
+	    target_cpu_cname="arm1176jzfs"
 	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv6=1"
             if test $fbsd_major -ge 11; then
                tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
             fi
+	    ;;
+	*)
+	    target_cpu_cname="arm9"
 	    ;;
 	esac
 	with_tls=${with_tls:-gnu}
@@ -1073,6 +1078,7 @@ arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm"
+	target_cpu_cname="arm6"
 	;;
 arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
@@ -1084,6 +1090,7 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	esac
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
 	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
+	target_cpu_cname="arm10tdmi"
 	# Define multilib configuration for arm-linux-androideabi.
 	case ${target} in
 	*-androideabi)
@@ -1098,6 +1105,7 @@ arm*-*-uclinux*eabi*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h glibc-stdint.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi"
 	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
+	target_cpu_cname="arm7tdmi"
 	# The EABI requires the use of __cxa_atexit.
 	default_use_cxa_atexit=yes
 	;;
@@ -1106,6 +1114,7 @@ arm*-*-phoenix*)
 	tm_file="${tm_file} newlib-stdint.h phoenix.h"
 	tm_file="${tm_file} arm/aout.h arm/arm.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-bpabi arm/t-phoenix"
+	target_cpu_cname="arm7tdmi"
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	case ${target} in
@@ -1115,6 +1124,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	default_use_cxa_atexit=yes
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/bpabi.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf"
+	target_cpu_cname="arm7tdmi"
 	case ${target} in
 	arm*-*-eabi*)
 	  tm_file="$tm_file newlib-stdint.h"
@@ -1130,6 +1140,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	  # We do not include t-bpabi for Symbian OS because the system
 	  # provides its own implementation of the BPABI functions.
 	  tmake_file="${tmake_file} arm/t-symbian"
+	  target_cpu_cname="arm10tdmi"
 	  ;;
 	esac
 	tm_file="${tm_file} arm/aout.h vxworks-dummy.h arm/arm.h"
@@ -3638,8 +3649,10 @@ case "${target}" in
 				${srcdir}/config/arm/arm-cores.def | \
 				sed -e 's/^[^,]*,[ 	]*//' | \
 				sed -e 's/,.*$//'`
-			  eval "target_${which}_cname=$new_val"
-			echo "For $val real value is $new_val"
+			  if [ x"$val" != x ] ; then
+				eval "target_${which}_cname=$new_val"
+				echo "For $val real value is $new_val"
+			  fi
 			  true
 			else
 			  echo "Unknown CPU used in --with-$which=$val" 1>&2
@@ -4313,7 +4326,7 @@ case ${target} in
 	arm*-*-*)
 		if test x$target_cpu_cname = x
 		then
-			target_cpu_default2=TARGET_CPU_generic
+			target_cpu_default2=TARGET_CPU_arm6
 		else
 			target_cpu_default2=TARGET_CPU_$target_cpu_cname
 		fi
