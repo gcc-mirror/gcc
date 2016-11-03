@@ -1,3 +1,19 @@
+2016-11-03  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77768
+	* tree-ssa-sccvn.c (visit_reference_op_store): Properly deal
+	with stores to a place we know has a constant value.
+	* tree-vrp.c (set_defs_to_varying): New helper avoiding
+	writing to vr_const_varying.
+	(vrp_initialize): Call it.
+	(vrp_visit_stmt): Likewise.
+	(evrp_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Handle stores to readonly memory when removing redundant stores.
+
 2016-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
