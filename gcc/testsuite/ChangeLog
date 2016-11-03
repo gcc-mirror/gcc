@@ -1,3 +1,10 @@
+2016-11-03  Fritz O. Reese <fritzoreese@gmail.com>
+
+	* gfortran.dg/dec_parameter_1.f: New test.
+	* gfortran.dg/dec_parameter_2.f90: Likewise.
+	* gfortran.dg/dec_parameter_3.f90: Likewise.
+	* gfortran.dg/dec_parameter_4.f90: Likewise.
+
 2016-11-03  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/no_profile_instrument_function-attr-1.c: Update scanned

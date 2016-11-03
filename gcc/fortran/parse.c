@@ -352,6 +352,9 @@ decode_statement (void)
     }
   gfc_matching_function = false;
 
+  /* Legacy parameter statements are ambiguous with assignments so try parameter
+     first.  */
+  match ("parameter", gfc_match_parameter, ST_PARAMETER);
 
   /* Match statements whose error messages are meant to be overwritten
      by something better.  */
@@ -528,7 +531,6 @@ decode_statement (void)
 
     case 'p':
       match ("print", gfc_match_print, ST_WRITE);
-      match ("parameter", gfc_match_parameter, ST_PARAMETER);
       match ("pause", gfc_match_pause, ST_PAUSE);
       match ("pointer", gfc_match_pointer, ST_ATTR_DECL);
       if (gfc_match_private (&st) == MATCH_YES)
