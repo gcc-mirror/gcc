@@ -1,3 +1,8 @@
+2016-11-03  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Correct
+	__cpp_inheriting_constructors.
+
 2016-11-01  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Update
