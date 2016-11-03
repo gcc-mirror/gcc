@@ -1674,6 +1674,11 @@ FUNC (DWtype u)
     hi = -(UWtype) hi;
 
   UWtype count, shift;
+#if !defined (COUNT_LEADING_ZEROS_0) || COUNT_LEADING_ZEROS_0 != W_TYPE_SIZE
+  if (hi == 0)
+    count = W_TYPE_SIZE;
+  else
+#endif
   count_leading_zeros (count, hi);
 
   /* No leading bits means u == minimum.  */
