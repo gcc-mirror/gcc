@@ -6497,6 +6497,21 @@ set_type_quals (tree type, int type_quals)
   TYPE_ADDR_SPACE (type) = DECODE_QUAL_ADDR_SPACE (type_quals);
 }
 
+/* Returns true iff CAND and BASE have equivalent language-specific
+   qualifiers.  */
+
+bool
+check_lang_type (const_tree cand, const_tree base)
+{
+  if (lang_hooks.types.type_hash_eq == NULL)
+    return true;
+  /* type_hash_eq currently only applies to these types.  */
+  if (TREE_CODE (cand) != FUNCTION_TYPE
+      && TREE_CODE (cand) != METHOD_TYPE)
+    return true;
+  return lang_hooks.types.type_hash_eq (cand, base);
+}
+
 /* Returns true iff unqualified CAND and BASE are equivalent.  */
 
 bool
@@ -6517,7 +6532,8 @@ bool
 check_qualified_type (const_tree cand, const_tree base, int type_quals)
 {
   return (TYPE_QUALS (cand) == type_quals
-	  && check_base_type (cand, base));
+	  && check_base_type (cand, base)
+	  && check_lang_type (cand, base));
 }
 
 /* Returns true iff CAND is equivalent to BASE with ALIGN.  */
@@ -6532,7 +6548,8 @@ check_aligned_type (const_tree cand, const_tree base, unsigned int align)
 	  /* Check alignment.  */
 	  && TYPE_ALIGN (cand) == align
 	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
-				   TYPE_ATTRIBUTES (base)));
+				   TYPE_ATTRIBUTES (base))
+	  && check_lang_type (cand, base));
 }
 
 /* This function checks to see if TYPE matches the size one of the built-in 
