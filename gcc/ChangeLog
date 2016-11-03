@@ -1,3 +1,9 @@
+2016-11-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78186
+	* combine.c (change_zero_ext): Mask the RHS of a zero_extract as
+	well, when converting to IOR.
+
 2016-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (vec_interleave_lowv8qi): Delete.

@@ -11190,6 +11190,9 @@ change_zero_ext (rtx pat)
       rtx x = gen_rtx_AND (mode, reg, immed_wide_int_const (mask, mode));
       rtx y = simplify_gen_binary (ASHIFT, mode, SET_SRC (pat),
 				   GEN_INT (offset));
+      wide_int mask2 = wi::shifted_mask (offset, width, false, reg_width);
+      y = simplify_gen_binary (AND, mode, y,
+			       immed_wide_int_const (mask2, mode));
       rtx z = simplify_gen_binary (IOR, mode, x, y);
       SUBST (SET_DEST (pat), reg);
       SUBST (SET_SRC (pat), z);
