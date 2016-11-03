@@ -8844,34 +8844,6 @@
  [(set_attr "type" "fga")
   (set_attr "fptype" "double")])
 
-(define_insn "vec_interleave_lowv8qi"
-  [(set (match_operand:V8QI 0 "register_operand" "=e")
-        (vec_select:V8QI
-          (vec_concat:V16QI (match_operand:V8QI 1 "register_operand" "f")
-                            (match_operand:V8QI 2 "register_operand" "f"))
-          (parallel [(const_int 0) (const_int 8)
-                     (const_int 1) (const_int 9)
-                     (const_int 2) (const_int 10)
-		     (const_int 3) (const_int 11)])))]
- "TARGET_VIS"
- "fpmerge\t%L1, %L2, %0"
- [(set_attr "type" "fga")
-  (set_attr "fptype" "double")])
-
-(define_insn "vec_interleave_highv8qi"
-  [(set (match_operand:V8QI 0 "register_operand" "=e")
-        (vec_select:V8QI
-          (vec_concat:V16QI (match_operand:V8QI 1 "register_operand" "f")
-                            (match_operand:V8QI 2 "register_operand" "f"))
-          (parallel [(const_int 4) (const_int 12)
-                     (const_int 5) (const_int 13)
-                     (const_int 6) (const_int 14)
-		     (const_int 7) (const_int 15)])))]
- "TARGET_VIS"
- "fpmerge\t%H1, %H2, %0"
- [(set_attr "type" "fga")
-  (set_attr "fptype" "double")])
-
 ;; Partitioned multiply instructions
 (define_insn "fmul8x16_vis"
   [(set (match_operand:V4HI 0 "register_operand" "=e")

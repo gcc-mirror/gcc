@@ -1,3 +1,8 @@
+2016-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.md (vec_interleave_lowv8qi): Delete.
+	(vec_interleave_highv8qi): Likewise.
+
 2016-11-03  Martin Liska  <mliska@suse.cz>
 
 	* profile.c (instrument_values): Fix coding style.
