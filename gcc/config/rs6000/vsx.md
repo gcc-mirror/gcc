@@ -2586,11 +2586,10 @@
 	  (parallel [(match_operand:QI 2 "<VSX_EXTRACT_PREDICATE>" "n")]))))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
 {
-  int element = INTVAL (operands[2]);
+  /* Note, the element number has already been adjusted for endianness, so we
+     don't have to adjust it here.  */
   int unit_size = GET_MODE_UNIT_SIZE (<MODE>mode);
-  int offset = ((VECTOR_ELT_ORDER_BIG)
-		? unit_size * element
-		: unit_size * (GET_MODE_NUNITS (<MODE>mode) - 1 - element));
+  HOST_WIDE_INT offset = unit_size * INTVAL (operands[2]);
 
   operands[2] = GEN_INT (offset);
   if (unit_size == 4)
