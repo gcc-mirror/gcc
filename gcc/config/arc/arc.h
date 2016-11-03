@@ -409,8 +409,8 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 0
 
-#define SIZE_TYPE "long unsigned int"
-#define PTRDIFF_TYPE "long int"
+#define SIZE_TYPE "unsigned int"
+#define PTRDIFF_TYPE "int"
 #define WCHAR_TYPE "int"
 #define WCHAR_TYPE_SIZE 32
 
