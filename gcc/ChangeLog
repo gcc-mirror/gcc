@@ -1,3 +1,9 @@
+2016-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77834
+	* alias.c (nonoverlapping_memrefs_p): Return 0 if exprx or expry
+	doesn't have rtl set.
+
 2016-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (gimple-ssa.h): New #include.
