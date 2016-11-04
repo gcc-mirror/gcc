@@ -1,3 +1,8 @@
+2016-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77834
+	* gcc.dg/pr77834.c: New test.
+
 2016-11-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67980
