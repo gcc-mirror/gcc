@@ -1,3 +1,9 @@
+2016-11-04  Bin Cheng  <bin.cheng@arm.com>
+
+	* fold-const.c (fold_cond_expr_with_comparison): Remove call
+	to pedantic_non_lvalue_loc.  Remove useless code for lvalue
+	where cond_expr can't be a lvalue.
+
 2016-11-04  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_process_double_reg_moves): Use
