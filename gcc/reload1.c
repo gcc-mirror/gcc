@@ -2819,18 +2819,16 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 
 	  if (MEM_P (new_rtx)
 	      && ((x_size < new_size
-#if WORD_REGISTER_OPERATIONS
-		   /* On these machines, combine can create rtl of the form
+		   /* On RISC machines, combine can create rtl of the form
 		      (set (subreg:m1 (reg:m2 R) 0) ...)
 		      where m1 < m2, and expects something interesting to
 		      happen to the entire word.  Moreover, it will use the
 		      (reg:m2 R) later, expecting all bits to be preserved.
 		      So if the number of words is the same, preserve the
 		      subreg so that push_reload can see it.  */
-		   && ! ((x_size - 1) / UNITS_PER_WORD
-			 == (new_size -1 ) / UNITS_PER_WORD)
-#endif
-		   )
+		   && !(WORD_REGISTER_OPERATIONS
+			&& (x_size - 1) / UNITS_PER_WORD
+			   == (new_size -1 ) / UNITS_PER_WORD))
 		  || x_size == new_size)
 	      )
 	    return adjust_address_nv (new_rtx, GET_MODE (x), SUBREG_BYTE (x));

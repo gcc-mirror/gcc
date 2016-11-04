@@ -41,10 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 
-#ifndef LOAD_EXTEND_OP
-#define LOAD_EXTEND_OP(M) UNKNOWN
-#endif
-
 static int reload_cse_noop_set_p (rtx);
 static bool reload_cse_simplify (rtx_insn *, rtx);
 static void reload_cse_regs_1 (void);

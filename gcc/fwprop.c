@@ -1051,9 +1051,7 @@ free_load_extend (rtx src, rtx_insn *insn)
   df_ref def, use;
 
   reg = XEXP (src, 0);
-#ifdef LOAD_EXTEND_OP
   if (LOAD_EXTEND_OP (GET_MODE (reg)) != GET_CODE (src))
-#endif
     return false;
 
   FOR_EACH_INSN_USE (use, insn)

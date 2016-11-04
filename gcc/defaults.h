@@ -1259,6 +1259,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define WORD_REGISTER_OPERATIONS 0
 #endif
 
+#ifndef LOAD_EXTEND_OP
+#define LOAD_EXTEND_OP(M) UNKNOWN
+#endif
+
 #ifndef CONSTANT_ALIGNMENT
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) ALIGN
 #endif

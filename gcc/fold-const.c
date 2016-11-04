@@ -80,10 +80,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "selftest.h"
 
-#ifndef LOAD_EXTEND_OP
-#define LOAD_EXTEND_OP(M) UNKNOWN
-#endif
-
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
 int folding_initializer = 0;
