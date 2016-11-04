@@ -1176,7 +1176,8 @@ proc mips-dg-options { args } {
 		       || [mips_have_test_option_p options "-mpaired-single"]
 		       || [mips_have_test_option_p options "-mnan=legacy"]
 		       || [mips_have_test_option_p options "-mabs=legacy"]
-		       || [mips_have_test_option_p options "!HAS_LSA"]) } {
+		       || [mips_have_test_option_p options "!HAS_LSA"]
+		       || [mips_have_test_option_p options "-mbranch-likely"]) } {
 	    if { $gp_size == 32 } {
 		mips_make_test_option options "-mips32r5"
 	    } else {
@@ -1345,6 +1346,7 @@ proc mips-dg-options { args } {
 	    mips_make_test_option options "-mno-paired-single"
 	    mips_make_test_option options "-mnan=2008"
 	    mips_make_test_option options "-mabs=2008"
+	    mips_make_test_option options "-mno-branch-likely"
 	}
 	if { [regexp {^-march=(octeon|loongson)} $arch] } {
 	    mips_make_test_option options "-mno-micromips"
