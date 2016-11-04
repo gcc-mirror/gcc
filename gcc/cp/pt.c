@@ -15437,15 +15437,27 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       if (IF_STMT_CONSTEXPR_P (t) && integer_zerop (tmp))
 	/* Don't instantiate the THEN_CLAUSE. */;
       else
-	RECUR (THEN_CLAUSE (t));
+	{
+	  bool inhibit = integer_zerop (fold_non_dependent_expr (tmp));
+	  if (inhibit)
+	    ++c_inhibit_evaluation_warnings;
+	  RECUR (THEN_CLAUSE (t));
+	  if (inhibit)
+	    --c_inhibit_evaluation_warnings;
+	}
       finish_then_clause (stmt);
 
       if (IF_STMT_CONSTEXPR_P (t) && integer_nonzerop (tmp))
 	/* Don't instantiate the ELSE_CLAUSE. */;
       else if (ELSE_CLAUSE (t))
 	{
+	  bool inhibit = integer_nonzerop (fold_non_dependent_expr (tmp));
 	  begin_else_clause (stmt);
+	  if (inhibit)
+	    ++c_inhibit_evaluation_warnings;
 	  RECUR (ELSE_CLAUSE (t));
+	  if (inhibit)
+	    --c_inhibit_evaluation_warnings;
 	  finish_else_clause (stmt);
 	}
 
