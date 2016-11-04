@@ -1,3 +1,11 @@
+2016-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (gimple-ssa.h): New #include.
+	(TARGET_GIMPLE_FOLD_BUILTIN): Define as
+	rs6000_gimple_fold_builtin.
+	(rs6000_gimple_fold_builtin): New function.  Add handling for
+	early expansion of vector addition builtins.
+
 2016-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.h (copy_blkmode_from_reg): Delete.

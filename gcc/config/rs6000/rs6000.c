@@ -56,6 +56,7 @@
 #include "sched-int.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
+#include "gimple-ssa.h"
 #include "gimple-walk.h"
 #include "intl.h"
 #include "params.h"
@@ -1632,6 +1633,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_FOLD_BUILTIN
 #define TARGET_FOLD_BUILTIN rs6000_fold_builtin
+#undef TARGET_GIMPLE_FOLD_BUILTIN
+#define TARGET_GIMPLE_FOLD_BUILTIN rs6000_gimple_fold_builtin
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN rs6000_expand_builtin
@@ -16389,6 +16392,46 @@ rs6000_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 #else
   return NULL_TREE;
 #endif
+}
+
+/* Fold a machine-dependent built-in in GIMPLE.  (For folding into
+   a constant, use rs6000_fold_builtin.)  */
+
+bool
+rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree fndecl = gimple_call_fndecl (stmt);
+  gcc_checking_assert (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD);
+  enum rs6000_builtins fn_code
+    = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
+  tree arg0, arg1, lhs;
+
+  switch (fn_code)
+    {
+    /* Flavors of vec_add.  We deliberately don't expand
+       P8V_BUILTIN_VADDUQM as it gets lowered from V1TImode to
+       TImode, resulting in much poorer code generation.  */
+    case ALTIVEC_BUILTIN_VADDUBM:
+    case ALTIVEC_BUILTIN_VADDUHM:
+    case ALTIVEC_BUILTIN_VADDUWM:
+    case P8V_BUILTIN_VADDUDM:
+    case ALTIVEC_BUILTIN_VADDFP:
+    case VSX_BUILTIN_XVADDDP:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, PLUS_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+    default:
+      break;
+    }
+
+  return false;
 }
 
 /* Expand an expression EXP that calls a built-in function,
