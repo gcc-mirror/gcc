@@ -11839,3 +11839,7 @@ All and all it does not take long to convert ports that the
 maintainer is familiar with.
 
 @end defmac
+
+@deftypefn {Target Hook} void TARGET_RUN_TARGET_SELFTESTS (void)
+If selftests are enabled, run any selftests for this target.
+@end deftypefn

@@ -80,6 +80,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const-call.h"
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
+#include "selftest.h"
+#include "selftest-rtl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -50610,6 +50612,33 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   *rem_p = rem;
 }
 
+/* Target-specific selftests.  */
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Verify that hard regs are dumped as expected (in compact mode).  */
+
+static void
+ix86_test_dumping_hard_regs ()
+{
+  ASSERT_RTL_DUMP_EQ ("(reg:SI ax)", gen_raw_REG (SImode, 0));
+  ASSERT_RTL_DUMP_EQ ("(reg:SI dx)", gen_raw_REG (SImode, 1));
+}
+
+/* Run all target-specific selftests.  */
+
+static void
+ix86_run_selftests (void)
+{
+  ix86_test_dumping_hard_regs ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY ix86_return_in_memory
@@ -51091,6 +51120,11 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
 
 #undef TARGET_EXPAND_DIVMOD_LIBFUNC
 #define TARGET_EXPAND_DIVMOD_LIBFUNC ix86_expand_divmod_libfunc
+
+#if CHECKING_P
+#undef TARGET_RUN_TARGET_SELFTESTS
+#define TARGET_RUN_TARGET_SELFTESTS selftest::ix86_run_selftests
+#endif /* #if CHECKING_P */
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

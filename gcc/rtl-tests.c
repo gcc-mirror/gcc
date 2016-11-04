@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgbuild.h"
 #include "print-rtl.h"
 #include "selftest.h"
+#include "selftest-rtl.h"
 #include "function.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
@@ -60,7 +61,7 @@ verify_print_pattern (const char *expected, rtx pat)
 /* Verify that X is dumped as EXPECTED_DUMP, using compact mode.
    Use LOC as the effective location when reporting errors.  */
 
-static void
+void
 assert_rtl_dump_eq (const location &loc, const char *expected_dump, rtx x)
 {
   named_temp_file tmp_out (".rtl");
@@ -74,18 +75,13 @@ assert_rtl_dump_eq (const location &loc, const char *expected_dump, rtx x)
   free (dump);
 }
 
-/* Verify that RTX is dumped as EXPECTED_DUMP, using compact mode.  */
-
-#define ASSERT_RTL_DUMP_EQ(EXPECTED_DUMP, RTX) \
-  assert_rtl_dump_eq (SELFTEST_LOCATION, (EXPECTED_DUMP), (RTX))
-
 /* Verify that regs are dumped as expected (in compact mode).  */
 
 static void
 test_dumping_regs ()
 {
   /* Dumps of hard regs contain a target-specific name, so we don't test
-     it here.  */
+     it here; this can be tested in target-specific selftests.  */
 
   /* Test dumping of virtual regs.  The various virtual regs are inited as
      Pmode, so this is target-specific.  The tests below assume DImode, so

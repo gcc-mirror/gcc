@@ -6156,6 +6156,12 @@ HOOK_VECTOR_END (mode_switching)
 #include "target-insns.def"
 #undef DEF_TARGET_INSN
 
+DEFHOOK
+(run_target_selftests,
+ "If selftests are enabled, run any selftests for this target.",
+ void, (void),
+ NULL)
+
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)
 
