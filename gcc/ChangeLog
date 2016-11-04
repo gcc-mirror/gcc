@@ -1,3 +1,20 @@
+2016-11-04  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_process_double_reg_moves): Use
+	gen_dexcl_2op call.
+	* config/arc/arc.md (movsi_insn): Disable unsupported move
+	instructions for ARCv2 cores.
+	(movdi): Use prepare_move_operands.
+	(movsf, movdf): Use move_dest_operand predicate.
+	* config/arc/constraints.md (Chs): Enable when barrel shifter is
+	present.
+	* config/arc/fpu.md (divsf3): Change to divsf3_fpu.
+	* config/arc/fpx.md (dexcl_3op_peep2_insn): Dx data register is
+	also a destination.
+	(dexcl_3op_peep2_insn_nores): Likewise.
+	* config/arc/arc.h (SHIFT_COUNT_TRUNCATED): Define to one.
+	(LINK_COMMAND_SPEC): Remove.
+
 2016-11-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/78185

@@ -256,7 +256,8 @@
  "@internal
   constant for a highpart that can be checked with a shift (asr.f 0,rn,m)"
   (and (match_code "const_int")
-       (match_test "IS_POWEROF2_P (-ival)")))
+       (match_test "IS_POWEROF2_P (-ival)")
+       (match_test "TARGET_BARREL_SHIFTER")))
 
 (define_constraint "Clo"
  "@internal

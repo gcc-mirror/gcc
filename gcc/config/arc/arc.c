@@ -9020,10 +9020,7 @@ arc_process_double_reg_moves (rtx *operands)
       rtx srcLow  = simplify_gen_subreg (SImode, src, DFmode,
 					TARGET_BIG_ENDIAN ? 4 : 0);
 
-      emit_insn (gen_rtx_UNSPEC_VOLATILE (Pmode,
-					  gen_rtvec (3, dest, srcHigh, srcLow),
-					  VUNSPEC_ARC_DEXCL_NORES));
-
+      emit_insn (gen_dexcl_2op (dest, srcHigh, srcLow));
     }
   else
     gcc_unreachable ();

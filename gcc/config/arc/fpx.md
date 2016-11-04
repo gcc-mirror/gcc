@@ -168,28 +168,26 @@
 (set_attr "type" "lr")]
 )
 
-
 (define_insn "*dexcl_3op_peep2_insn"
   [(set (match_operand:SI 0 "dest_reg_operand" "=r") ; not register_operand, to accept SUBREG
-		   (unspec_volatile:SI [
-		   			(match_operand:DF 1 "arc_double_register_operand" "D")
-					(match_operand:SI 2 "shouldbe_register_operand" "r")  ; r1
-					(match_operand:SI 3 "shouldbe_register_operand" "r") ; r0
-					] VUNSPEC_ARC_DEXCL ))
-  ]
+	(unspec_volatile:SI
+	 [(match_operand:SI 1 "shouldbe_register_operand" "r") ; r1
+	  (match_operand:SI 2 "shouldbe_register_operand" "r") ; r0
+	  ] VUNSPEC_ARC_DEXCL ))
+   (clobber (match_operand:DF 3 "arc_double_register_operand" "=&D"))]
   "TARGET_DPFP"
-  "dexcl%F1 %0, %2, %3"
+  "dexcl%F3 %0, %1, %2"
   [(set_attr "type" "move")
    (set_attr "length" "4")]
 )
 
 ;; version which will not overwrite operand0
-(define_insn "*dexcl_3op_peep2_insn_nores"
-  [   (unspec_volatile:SI [
-		   			(match_operand:DF 0 "arc_double_register_operand" "D")
-					(match_operand:SI 1 "shouldbe_register_operand" "r")  ; r1
-					(match_operand:SI 2 "shouldbe_register_operand" "r") ; r0
-					] VUNSPEC_ARC_DEXCL_NORES )
+(define_insn "dexcl_2op"
+  [(set (match_operand:DF 0 "arc_double_register_operand" "=D")
+	(unspec_volatile:DF
+	 [(match_operand:SI 1 "shouldbe_register_operand" "r") ; r1
+	  (match_operand:SI 2 "shouldbe_register_operand" "r") ; r0
+	  ] VUNSPEC_ARC_DEXCL_NORES))
   ]
   "TARGET_DPFP"
   "dexcl%F0 0, %1, %2"
