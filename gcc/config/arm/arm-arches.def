@@ -69,7 +69,7 @@ ARM_ARCH ("armv8.2-a", cortexa53,  8A,
 ARM_ARCH ("armv8.2-a+fp16", cortexa53,  8A,
 	  ARM_FSET_MAKE (FL_CO_PROC | FL_CRC32 | FL_FOR_ARCH8A,
 			 FL2_FOR_ARCH8_2A | FL2_FP16INST))
-ARM_ARCH("armv8-m.base", cortexm0, 8M_BASE,
+ARM_ARCH("armv8-m.base", cortexm23, 8M_BASE,
 	 ARM_FSET_MAKE_CPU1 (			      FL_FOR_ARCH8M_BASE))
 ARM_ARCH("armv8-m.main", cortexm7, 8M_MAIN,
 	 ARM_FSET_MAKE_CPU1(FL_CO_PROC |	      FL_FOR_ARCH8M_MAIN))

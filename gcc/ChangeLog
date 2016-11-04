@@ -1,3 +1,16 @@
+2016-11-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-arches.def (armv8-m.base): Set Cortex-M23 as
+	representative core for this architecture.
+	* config/arm/arm-cores.def (cortex-m23): Define new processor.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* config/arm/arm.c (arm_v6m_tune): Add Cortex-M23 to the list of cores
+	this tuning parameters apply to in the comment.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add Cortex-M23 to the list of
+	valid -mcpu options.
+	* doc/invoke.texi (ARM Options): Document new Cortex-M23 processor.
+
 2016-11-04  Bin Cheng  <bin.cheng@arm.com>
 
 	* fold-const.c (fold_cond_expr_with_comparison): Remove call
