@@ -1,5 +1,10 @@
 2016-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* expr.h (copy_blkmode_from_reg): Delete.
+	* expr.c (copy_blkmode_from_reg): Make static.
+
+2016-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* defaults.h (LOAD_EXTEND_OP): Define if not already defined.
 	* combine.c (LOAD_EXTEND_OP): Delete.
 	(simplify_comparison): Fix comment about LOAD_EXTEND_OP.
