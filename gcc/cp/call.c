@@ -7193,6 +7193,9 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum,
 
   /* See through clones.  */
   fn = DECL_ORIGIN (fn);
+  /* And inheriting ctors.  */
+  if (flag_new_inheriting_ctors)
+    fn = strip_inheriting_ctors (fn);
 
   /* Detect recursion.  */
   FOR_EACH_VEC_SAFE_ELT (default_arg_context, i, t)
