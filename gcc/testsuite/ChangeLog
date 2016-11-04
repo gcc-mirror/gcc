@@ -1,3 +1,18 @@
+2016-11-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/71973
+	* g++.dg/cpp1y/lambda-generic-udt.C: Fix builtin function declaration.
+	* g++.dg/init/new15.C: Likewise.
+	* g++.dg/ipa/inline-1.C: Likewise.
+	* g++.dg/ipa/inline-2.C: Likewise.
+	* g++.dg/lto/20080908-1_0.C: Likewise.
+	* g++.dg/tc1/dr20.C: Likewise.
+	* g++.dg/tree-ssa/inline-1.C: Likewise.
+	* g++.dg/tree-ssa/inline-2.C: Likewise.
+	* g++.old-deja/g++.law/except1.C: Likewise.
+	* g++.old-deja/g++.other/vbase5.C: Likewise.
+	* obj-c++.dg/lto/trivial-1_0.mm: Likewise.
+
 2016-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/78210
