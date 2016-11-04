@@ -2591,7 +2591,7 @@ maybe_emit_group_store (rtx x, tree type)
 
    This is used on targets that return BLKmode values in registers.  */
 
-void
+static void
 copy_blkmode_from_reg (rtx target, rtx srcreg, tree type)
 {
   unsigned HOST_WIDE_INT bytes = int_size_in_bytes (type);
