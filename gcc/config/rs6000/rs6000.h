@@ -450,7 +450,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define FLOAT128_IBM_P(MODE)						\
   ((!TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
    || (TARGET_HARD_FLOAT && TARGET_FPRS					\
-       && ((MODE) == IFmode) || ((MODE) == ICmode)))
+       && ((MODE) == IFmode || (MODE) == ICmode)))
 
 /* Helper macros to say whether a 128-bit floating point type can go in a
    single vector register, or whether it needs paired scalar values.  */
