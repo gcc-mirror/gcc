@@ -1,3 +1,9 @@
+2016-11-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR bootstrap/78188
+	PR c++/71848
+	* ipa-comdats.c (pass_ipa_comdats::gate): Require HAVE_COMDAT_GROUP.
+
 2016-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77834
