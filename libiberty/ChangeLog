@@ -1,3 +1,14 @@
+2016-11-02  Mark Wielaard  <mjw@redhat.com>
+
+	* cplus-dem.c (demangle_signature): Move fall through comment.
+	(demangle_fund_type): Add fall through comment between 'G' and 'I'.
+	* hashtab.c (iterative_hash): Add fall through comments.
+	* regex.c (regex_compile): Add Fall through comment after '+'/'?'.
+	(byte_re_match_2_internal): Add Fall through comment after jump_n.
+	Change "Note fall through" to "Fall through".
+	(common_op_match_null_string_p): Return false after set_number_at
+	instead of fall through.
+
 2016-11-01  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_ctor_dtor_name): Handle inheriting constructor.
