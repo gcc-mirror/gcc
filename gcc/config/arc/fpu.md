@@ -193,11 +193,13 @@
    (set_attr "type" "fpu")])
 
 ;; Division
-(define_insn "divsf3"
+(define_insn "*divsf3_fpu"
   [(set (match_operand:SF 0 "register_operand"         "=r,r,r,r,r")
 	(div:SF (match_operand:SF 1 "nonmemory_operand" "0,r,0,r,F")
 		(match_operand:SF 2 "nonmemory_operand" "r,r,F,F,r")))]
-  "TARGET_FP_SP_SQRT"
+  "TARGET_FP_SP_SQRT
+   && (register_operand (operands[1], SFmode)
+       || register_operand (operands[2], SFmode))"
   "fsdiv%? %0,%1,%2"
   [(set_attr "length" "4,4,8,8,8")
    (set_attr "iscompact" "false")
