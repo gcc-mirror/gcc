@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-mem.h"
 #include "gimple-fold.h"
 #include "tree-scalar-evolution.h"
+#include "tree-ssa-loop-niter.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 
@@ -2369,8 +2370,16 @@ fill_always_executed_in_1 (struct loop *loop, sbitmap contains_call)
 	    break;
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (!flow_bb_inside_loop_p (loop, e->dest))
-	      break;
+	    {
+	      /* If there is an exit from this BB.  */
+	      if (!flow_bb_inside_loop_p (loop, e->dest))
+		break;
+	      /* Or we enter a possibly non-finite loop.  */
+	      if (flow_loop_nested_p (bb->loop_father,
+				      e->dest->loop_father)
+		  && ! finite_loop_p (e->dest->loop_father))
+		break;
+	    }
 	  if (e)
 	    break;
 
