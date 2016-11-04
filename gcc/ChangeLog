@@ -1,3 +1,22 @@
+2016-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/i386/i386.c: Include "selftest.h" and "selftest-rtl.h".
+	(selftest::ix86_test_dumping_hard_regs): New function.
+	(selftest::ix86_run_selftests): New function.
+	(TARGET_RUN_TARGET_SELFTESTS): When CHECKING_P, wire this up to
+	selftest::ix86_run_selftests.
+	* doc/tm.texi.in (TARGET_RUN_TARGET_SELFTESTS): New.
+	* doc/tm.texi: Regenerate
+	* selftest-rtl.h: New file.
+	* rtl-tests.c: Include "selftest-rtl.h".
+	(selftest::assert_rtl_dump_eq): Make non-static.
+	(ASSERT_RTL_DUMP_EQ): Move to selftest-rtl.h.
+	(selftest::test_dumping_regs): Update comment.
+	* selftest-run-tests.c: Include "target.h".
+	(selftest::run_tests): If non-NULL, call
+	targetm.run_target_selftests.
+	* target.def (run_target_selftests): New hook.
+
 2016-11-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-arches.def (armv8-m.main+dsp): Set Cortex-M33 as
