@@ -1,4 +1,4 @@
-2016-11-04  Toma Tobacu  <toma.tobacu@imgtec.com>
+2016-11-04  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.target/mips/mips.exp (mips-dg-options): Downgrade to R5
 	for -mbranch-likely, infer -mno-branch-likely for R6.
