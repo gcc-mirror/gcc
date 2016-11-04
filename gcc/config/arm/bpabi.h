@@ -97,7 +97,7 @@
    |march=armv8.2-a+fp16				\
    |march=armv8-m.base|mcpu=cortex-m23			\
    |march=armv8-m.main					\
-   |march=armv8-m.main+dsp				\
+   |march=armv8-m.main+dsp|mcpu=cortex-m33		\
    :%{!r:--be8}}}"
 #else
 #define BE8_LINK_SPEC \
@@ -136,7 +136,7 @@
    |march=armv8.2-a+fp16				\
    |march=armv8-m.base|mcpu=cortex-m23			\
    |march=armv8-m.main					\
-   |march=armv8-m.main+dsp				\
+   |march=armv8-m.main+dsp|mcpu=cortex-m33		\
    :%{!r:--be8}}}"
 #endif
 
