@@ -43,10 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "rtl-iter.h"
 
-#ifndef LOAD_EXTEND_OP
-#define LOAD_EXTEND_OP(M) UNKNOWN
-#endif
-
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
    have the same value at the current scan point, and replacing

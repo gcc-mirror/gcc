@@ -1064,7 +1064,6 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	       || MEM_P (SUBREG_REG (in)))
 	      && ((GET_MODE_PRECISION (inmode)
 		   > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
-#ifdef LOAD_EXTEND_OP
 		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
 		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
 			  <= UNITS_PER_WORD)
@@ -1072,15 +1071,12 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 			  > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
 		      && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (in)))
 		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != UNKNOWN)
-#endif
-#if WORD_REGISTER_OPERATIONS
-		  || ((GET_MODE_PRECISION (inmode)
-		       < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
+		  || (WORD_REGISTER_OPERATIONS
+		      && (GET_MODE_PRECISION (inmode)
+			  < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
 		      && ((GET_MODE_SIZE (inmode) - 1) / UNITS_PER_WORD ==
 			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) - 1)
-			   / UNITS_PER_WORD)))
-#endif
-		  ))
+			   / UNITS_PER_WORD)))))
 	  || (REG_P (SUBREG_REG (in))
 	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
 	      /* The case where out is nonzero
@@ -1111,13 +1107,14 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 #endif
       inloc = &SUBREG_REG (in);
       in = *inloc;
-#if ! defined (LOAD_EXTEND_OP)
+
       if (!WORD_REGISTER_OPERATIONS
+	  && LOAD_EXTEND_OP (GET_MODE (in)) == UNKNOWN
 	  && MEM_P (in))
 	/* This is supposed to happen only for paradoxical subregs made by
 	   combine.c.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
 	gcc_assert (GET_MODE_SIZE (GET_MODE (in)) <= GET_MODE_SIZE (inmode));
-#endif
+
       inmode = GET_MODE (in);
     }
 
@@ -1175,14 +1172,12 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	       || MEM_P (SUBREG_REG (out)))
 	      && ((GET_MODE_PRECISION (outmode)
 		   > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
-#if WORD_REGISTER_OPERATIONS
-		  || ((GET_MODE_PRECISION (outmode)
-		       < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
+		  || (WORD_REGISTER_OPERATIONS
+		      && (GET_MODE_PRECISION (outmode)
+			  < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
 		      && ((GET_MODE_SIZE (outmode) - 1) / UNITS_PER_WORD ==
 			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) - 1)
-			   / UNITS_PER_WORD)))
-#endif
-		  ))
+			   / UNITS_PER_WORD)))))
 	  || (REG_P (SUBREG_REG (out))
 	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
 	      /* The case of a word mode subreg
@@ -3139,24 +3134,21 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 		      || ((MEM_P (operand)
 			   || (REG_P (operand)
 			       && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
-#if !WORD_REGISTER_OPERATIONS
-			  && (((GET_MODE_BITSIZE (GET_MODE (operand))
-				< BIGGEST_ALIGNMENT)
-			       && (GET_MODE_SIZE (operand_mode[i])
-				   > GET_MODE_SIZE (GET_MODE (operand))))
+			  && (WORD_REGISTER_OPERATIONS
+			      || ((GET_MODE_BITSIZE (GET_MODE (operand))
+				   < BIGGEST_ALIGNMENT)
+				 && (GET_MODE_SIZE (operand_mode[i])
+				     > GET_MODE_SIZE (GET_MODE (operand))))
 			      || BYTES_BIG_ENDIAN
-#ifdef LOAD_EXTEND_OP
-			      || (GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
+			      || ((GET_MODE_SIZE (operand_mode[i])
+				   <= UNITS_PER_WORD)
 				  && (GET_MODE_SIZE (GET_MODE (operand))
 				      <= UNITS_PER_WORD)
 				  && (GET_MODE_SIZE (operand_mode[i])
 				      > GET_MODE_SIZE (GET_MODE (operand)))
 				  && INTEGRAL_MODE_P (GET_MODE (operand))
-				  && LOAD_EXTEND_OP (GET_MODE (operand)) != UNKNOWN)
-#endif
-			      )
-#endif
-			  )
+				  && LOAD_EXTEND_OP (GET_MODE (operand))
+				     != UNKNOWN)))
 		      )
 		    force_reload = 1;
 		}

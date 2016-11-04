@@ -1,3 +1,19 @@
+2016-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* defaults.h (LOAD_EXTEND_OP): Define if not already defined.
+	* combine.c (LOAD_EXTEND_OP): Delete.
+	(simplify_comparison): Fix comment about LOAD_EXTEND_OP.
+	* cse.c (LOAD_EXTEND_OP): Delete.
+	* fold-const.c (LOAD_EXTEND_OP): Likewise.
+	* fwprop.c (free_load_extend): Remove #ifdef LOAD_EXTEND_OP/#endif.
+	* postreload.c (LOAD_EXTEND_OP): Delete.
+	* reload.c (push_reload): Remove #ifdef LOAD_EXTEND_OP/#endif.
+	Convert conditional compilation based on WORD_REGISTER_OPERATIONS.
+	(find_reloads): Likewise.
+	* reload1.c (eliminate_regs_1): Likewise.
+	* rtlanal.c (nonzero_bits1): Remove #ifdef LOAD_EXTEND_OP/#endif.
+	(num_sign_bit_copies1): Likewise.
+
 2016-11-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/i386/i386.c: Include "selftest.h" and "selftest-rtl.h".
