@@ -1931,15 +1931,36 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
     }
 
   /* For associate names, we may not yet know whether they are arrays or not.
-     Thus if we have one and parentheses follow, we have to assume that it
-     actually is one for now.  The final decision will be made at
-     resolution time, of course.  */
-  if (sym->assoc && gfc_peek_ascii_char () == '('
-      && !(sym->assoc->dangling && sym->assoc->st
+     If the selector expression is unambiguously an array; eg. a full array
+     or an array section, then the associate name must be an array and we can
+     fix it now. Otherwise, if parentheses follow and it is not a character
+     type, we have to assume that it actually is one for now.  The final
+     decision will be made at resolution, of course.  */
+  if (sym->assoc
+      && gfc_peek_ascii_char () == '('
+      && sym->ts.type != BT_CLASS
+      && !sym->attr.dimension)
+    {
+      if ((!sym->assoc->dangling
+	   && sym->assoc->target
+	   && sym->assoc->target->ref
+	   && sym->assoc->target->ref->type == REF_ARRAY
+	   && (sym->assoc->target->ref->u.ar.type == AR_FULL
+	       || sym->assoc->target->ref->u.ar.type == AR_SECTION))
+	  ||
+	   (!(sym->assoc->dangling || sym->ts.type == BT_CHARACTER)
+	    && sym->assoc->st
 	   && sym->assoc->st->n.sym
-	   && sym->assoc->st->n.sym->attr.dimension == 0)
-      && sym->ts.type != BT_CLASS)
+	    && sym->assoc->st->n.sym->attr.dimension == 0))
+	{
     sym->attr.dimension = 1;
+	  if (sym->as == NULL && sym->assoc
+	      && sym->assoc->st
+	      && sym->assoc->st->n.sym
+	      && sym->assoc->st->n.sym->as)
+	    sym->as = gfc_copy_array_spec (sym->assoc->st->n.sym->as);
+	}
+    }
 
   if ((equiv_flag && gfc_peek_ascii_char () == '(')
       || gfc_peek_ascii_char () == '[' || sym->attr.codimension
