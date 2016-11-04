@@ -1,5 +1,5 @@
 /* { dg-lto-do run }  */
-extern "C" { extern void *memcpy (void *, const void *, unsigned); }
+extern "C" { extern void *memcpy (void *, const void *, __SIZE_TYPE__); }
 
 inline int
 bci (const float &source)
