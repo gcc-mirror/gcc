@@ -1,3 +1,11 @@
+2016-11-05  Martin Sebor  <msebor@redhat.com>
+
+	Backport from trunk.
+	PR c/71115
+	* c-typeck.c (error_init): Use
+	expansion_point_location_if_in_system_header.
+	(warning_init): Same.
+
 2016-08-22  Release Manager
 
 	* GCC 6.2.0 released.

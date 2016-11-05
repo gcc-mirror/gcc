@@ -1,5 +1,13 @@
 2016-11-05  Martin Sebor  <msebor@redhat.com>
 
+	Backport from trunk.
+	PR c/71115
+	* gcc.dg/init-excess-2.c: New test.
+	* gcc.dg/Woverride-init-1.c: Adjust.
+	* gcc.dg/Woverride-init-2.c: Same.
+
+2016-11-05  Martin Sebor  <msebor@redhat.com>
+
 	PR c++/78039
 	* g++.dg/ext/flexary18.C: New test.
 	* g++.dg/ext/flexary19.C: New test.
