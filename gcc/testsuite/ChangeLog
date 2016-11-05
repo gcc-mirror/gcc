@@ -1,3 +1,9 @@
+2016-11-05  Janus Weil  <janus@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/69495
+	* gfortran.dg/elemental_optional_args_6.f90: Use -Wpedantic flag.
+
 2016-11-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67564
