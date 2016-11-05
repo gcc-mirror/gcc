@@ -6960,7 +6960,20 @@ diagnose_flexarrays (tree t, const flexmems_t *fmem)
 	  location_t loc = DECL_SOURCE_LOCATION (fmem->array);
 	  diagd = true;
 
-	  error_at (loc, msg, fmem->array, t);
+	  /* For compatibility with GCC 6.2 and 6.1 reject with an error
+	     a flexible array member of a plain struct that's followed
+	     by another member only if they are both members of the same
+	     struct.  Otherwise, issue just a pedantic warning.  See bug
+	     71921 for details.  */
+	  if (fmem->after[0]
+	      && (!TYPE_BINFO (t)
+		  || 0 == BINFO_N_BASE_BINFOS (TYPE_BINFO (t)))
+	      && DECL_CONTEXT (fmem->array) != DECL_CONTEXT (fmem->after[0])
+	      && !ANON_AGGR_TYPE_P (DECL_CONTEXT (fmem->array))
+	      && !ANON_AGGR_TYPE_P (DECL_CONTEXT (fmem->after[0])))
+	    pedwarn (loc, OPT_Wpedantic, msg, fmem->array, t);
+	  else
+	    error_at (loc, msg, fmem->array, t);
 
 	  /* In the unlikely event that the member following the flexible
 	     array member is declared in a different class, or the member
