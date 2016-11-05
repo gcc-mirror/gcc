@@ -1091,6 +1091,12 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
 	tmp = integer_zero_node;
       gfc_add_modify (&parmse->pre, ctree,
 		      fold_convert (TREE_TYPE (ctree), tmp));
+
+      /* Return the len component, except in the case of scalarized array
+	references, where the dynamic type cannot change.  */
+      if (!elemental && full_array && copyback)
+	  gfc_add_modify (&parmse->post, tmp,
+			  fold_convert (TREE_TYPE (tmp), ctree));
     }
 
   if (optional)
