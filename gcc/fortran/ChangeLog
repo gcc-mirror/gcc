@@ -1,4 +1,10 @@
-2016-04-19  Paul Thomas  <pault@gcc.gnu.org>
+2016-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67564
+	* trans-expr.c (gfc_conv_class_to_class): Return _len component
+	of unlimited polymorphic entities.
+
+2016-11-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/64933
 	* primary.c (gfc_match_varspec): If selector expression is
