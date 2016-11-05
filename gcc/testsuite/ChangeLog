@@ -1,3 +1,8 @@
+2016-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/78188
+	* g++.dg/ipa/pr78188.C: New test.
+
 2016-11-05  Janus Weil  <janus@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
