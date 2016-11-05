@@ -1,3 +1,7 @@
+2016-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/move_alloc_17.f03: New test.
+
 2016-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/78188
