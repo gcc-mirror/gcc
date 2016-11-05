@@ -749,8 +749,10 @@ Check the code for syntax errors, but do not actually compile it.  This
 will generate module files for each module present in the code, but no
 other output file.
 
-@item -pedantic
+@item -Wpedantic
+@itemx -pedantic
 @opindex @code{pedantic}
+@opindex @code{Wpedantic}
 Issue warnings for uses of extensions to Fortran 95.
 @option{-pedantic} also applies to C-language constructs where they
 occur in GNU Fortran source files, such as use of @samp{\e} in a

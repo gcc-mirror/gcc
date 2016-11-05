@@ -2140,7 +2140,8 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	  && (set_by_optional || arg->expr->rank != rank)
 	  && !(isym && isym->id == GFC_ISYM_CONVERSION))
 	{
-	  gfc_warning (0, "%qs at %L is an array and OPTIONAL; IF IT IS "
+	  gfc_warning (OPT_Wpedantic,
+		       "%qs at %L is an array and OPTIONAL; IF IT IS "
 		       "MISSING, it cannot be the actual argument of an "
 		       "ELEMENTAL procedure unless there is a non-optional "
 		       "argument with the same rank (12.4.1.5)",
@@ -3811,7 +3812,8 @@ resolve_operator (gfc_expr *e)
 		  else
 		    msg = "Inequality comparison for %s at %L";
 
-		  gfc_warning (0, msg, gfc_typename (&op1->ts), &op1->where);
+		  gfc_warning (OPT_Wcompare_reals, msg,
+			       gfc_typename (&op1->ts), &op1->where);
 		}
 	    }
 
@@ -15393,12 +15395,13 @@ warn_unused_fortran_label (gfc_st_label *label)
   switch (label->referenced)
     {
     case ST_LABEL_UNKNOWN:
-      gfc_warning (0, "Label %d at %L defined but not used", label->value,
-		   &label->where);
+      gfc_warning (OPT_Wunused_label, "Label %d at %L defined but not used",
+		   label->value, &label->where);
       break;
 
     case ST_LABEL_BAD_TARGET:
-      gfc_warning (0, "Label %d at %L defined but cannot be used",
+      gfc_warning (OPT_Wunused_label,
+		   "Label %d at %L defined but cannot be used",
 		   label->value, &label->where);
       break;
 

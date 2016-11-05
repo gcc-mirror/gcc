@@ -1,3 +1,16 @@
+2016-11-05  Janus Weil  <janus@gcc.gnu.org>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR fortran/69495
+	* invoke.texi: Mention -Wpedantic as an alias of -pedantic.
+	* check.c (gfc_check_transfer): Mention responsible flag in warning
+	message.
+	* frontend-passes.c (do_warn_function_elimination): Ditto.
+	* resolve.c (resolve_elemental_actual): Ditto.
+	(resolve_operator): Ditto.
+	(warn_unused_fortran_label): Ditto.
+	* trans-common.c (translate_common): Ditto.
+
 2016-11-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67564

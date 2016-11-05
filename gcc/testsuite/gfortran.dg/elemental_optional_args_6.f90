@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-Wpedantic" }
 !
 ! PR fortran/53692
 !
