@@ -4997,8 +4997,10 @@ This option warns on all uses of @code{alloca} in the source.
 
 @item -Walloca-larger-than=@var{n}
 This option warns on calls to @code{alloca} that are not bounded by a
-controlling predicate limiting its size to @var{n} bytes, or calls to
-@code{alloca} where the bound is unknown.
+controlling predicate limiting its argument of integer type to at most
+@var{n} bytes, or calls to @code{alloca} where the bound is unknown.
+Arguments of non-integer types are considered unbounded even if they
+appear to be constrained to the expected range.
 
 For example, a bounded case of @code{alloca} could be:
 
@@ -5014,13 +5016,13 @@ void func (size_t n)
 @}
 @end smallexample
 
-In the above example, passing @code{-Walloca=1000} would not issue a
-warning because the call to @code{alloca} is known to be at most 1000
-bytes.  However, if @code{-Walloca=500} was passed, the compiler would
-have emitted a warning.
+In the above example, passing @code{-Walloca-larger-than=1000} would not
+issue a warning because the call to @code{alloca} is known to be at most
+1000 bytes.  However, if @code{-Walloca-larger-than=500} were passed,
+the compiler would emit a warning.
 
 Unbounded uses, on the other hand, are uses of @code{alloca} with no
-controlling predicate verifying its size.  For example:
+controlling predicate constraining its integer argument.  For example:
 
 @smallexample
 void func ()
@@ -5030,8 +5032,8 @@ void func ()
 @}
 @end smallexample
 
-If @code{-Walloca=500} was passed, the above would trigger a warning,
-but this time because of the lack of bounds checking.
+If @code{-Walloca-larger-than=500} were passed, the above would trigger
+a warning, but this time because of the lack of bounds checking.
 
 Note, that even seemingly correct code involving signed integers could
 cause a warning:
@@ -5048,7 +5050,7 @@ void func (signed int n)
 @end smallexample
 
 In the above example, @var{n} could be negative, causing a larger than
-expected argument to be implicitly casted into the @code{alloca} call.
+expected argument to be implicitly cast into the @code{alloca} call.
 
 This option also warns when @code{alloca} is used in a loop.
 
