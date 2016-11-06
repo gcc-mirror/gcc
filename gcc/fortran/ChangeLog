@@ -1,3 +1,26 @@
+2016-11-06  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* expr.c (is_non_empty_structure_constructor): New function to detect
+	non-empty structure constructor.
+	(gfc_has_default_initializer): Analyse initializers.
+	* resolve.c (cond_init): Removed.
+	(resolve_allocate_expr): Removed dead code.  Moved invariant code out
+	of the loop over all objects to allocate.
+	(resolve_allocate_deallocate): Added the invariant code remove from
+	resolve_allocate_expr.
+	* trans-array.c (gfc_array_allocate): Removed nullify of structure
+	components in favour of doing this in gfc_trans_allocate for both
+	scalars and arrays in the same place.
+	* trans-expr.c (gfc_trans_init_assign): Always using _vptr->copy for
+	class objects.
+	* trans-stmt.c (allocate_get_initializer): Get the initializer
+	expression for object allocated.
+	(gfc_trans_allocate): Nullify a derived type only, when no SOURCE=
+	or MOLD= is present preventing duplicate work.  Moved the creation
+	of the init-expression here to prevent code for conditions that
+	can not occur on freshly allocated object, like checking for the need
+	to free allocatable components.
+
 2016-11-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78221

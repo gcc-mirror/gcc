@@ -1,3 +1,8 @@
+2016-11-06  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/allocate_with_source_14.f03: Fixed number mallocs
+	occuring.
+
 2016-11-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78221

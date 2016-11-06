@@ -4131,6 +4131,26 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
 }
 
 
+/* Check whether an expression is a structure constructor and whether it has
+   other values than NULL.  */
+
+bool
+is_non_empty_structure_constructor (gfc_expr * e)
+{
+  if (e->expr_type != EXPR_STRUCTURE)
+    return false;
+
+  gfc_constructor *cons = gfc_constructor_first (e->value.constructor);
+  while (cons)
+    {
+      if (!cons->expr || cons->expr->expr_type != EXPR_NULL)
+	return true;
+      cons = gfc_constructor_next (cons);
+    }
+  return false;
+}
+
+
 /* Check for default initializer; sym->value is not enough
    as it is also set for EXPR_NULL of allocatables.  */
 
@@ -4145,7 +4165,9 @@ gfc_has_default_initializer (gfc_symbol *der)
       {
         if (!c->attr.pointer && !c->attr.proc_pointer
 	     && !(c->attr.allocatable && der == c->ts.u.derived)
-	     && gfc_has_default_initializer (c->ts.u.derived))
+	     && ((c->initializer
+		  && is_non_empty_structure_constructor (c->initializer))
+		 || gfc_has_default_initializer (c->ts.u.derived)))
 	  return true;
 	if (c->attr.pointer && c->initializer)
 	  return true;

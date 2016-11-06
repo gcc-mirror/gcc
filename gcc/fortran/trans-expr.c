@@ -10042,7 +10042,7 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 tree
 gfc_trans_init_assign (gfc_code * code)
 {
-  return gfc_trans_assignment (code->expr1, code->expr2, true, false);
+  return gfc_trans_assignment (code->expr1, code->expr2, true, false, true);
 }
 
 tree

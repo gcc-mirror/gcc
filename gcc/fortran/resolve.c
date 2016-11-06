@@ -7048,35 +7048,6 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
   return true;
 }
 
-static void
-cond_init (gfc_code *code, gfc_expr *e, int pointer, gfc_expr *init_e)
-{
-  gfc_code *block;
-  gfc_expr *cond;
-  gfc_code *init_st;
-  gfc_expr *e_to_init = gfc_expr_to_initialize (e);
-
-  cond = pointer
-    ? gfc_build_intrinsic_call (gfc_current_ns, GFC_ISYM_ASSOCIATED,
-	"associated", code->loc, 2, gfc_copy_expr (e_to_init), NULL)
-    : gfc_build_intrinsic_call (gfc_current_ns, GFC_ISYM_ALLOCATED,
-	"allocated", code->loc, 1, gfc_copy_expr (e_to_init));
-
-  init_st = gfc_get_code (EXEC_INIT_ASSIGN);
-  init_st->loc = code->loc;
-  init_st->expr1 = e_to_init;
-  init_st->expr2 = init_e;
-
-  block = gfc_get_code (EXEC_IF);
-  block->loc = code->loc;
-  block->block = gfc_get_code (EXEC_IF);
-  block->block->loc = code->loc;
-  block->block->expr1 = cond;
-  block->block->next = init_st;
-  block->next = code->next;
-
-  code->next = block;
-}
 
 /* Resolve the expression in an ALLOCATE statement, doing the additional
    checks to see whether the expression is OK or not.  The expression must
@@ -7327,34 +7298,6 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
       /* We have to zero initialize the integer variable.  */
       code->expr3 = gfc_get_int_expr (gfc_default_integer_kind, &e->where, 0);
     }
-  else if (!code->expr3)
-    {
-      /* Set up default initializer if needed.  */
-      gfc_typespec ts;
-      gfc_expr *init_e;
-
-      if (gfc_bt_struct (code->ext.alloc.ts.type))
-	ts = code->ext.alloc.ts;
-      else
-	ts = e->ts;
-
-      if (ts.type == BT_CLASS)
-	ts = ts.u.derived->components->ts;
-
-      if (gfc_bt_struct (ts.type) && (init_e = gfc_default_initializer (&ts)))
-	cond_init (code, e, pointer, init_e);
-    }
-  else if (code->expr3->mold && code->expr3->ts.type == BT_DERIVED)
-    {
-      /* Default initialization via MOLD (non-polymorphic).  */
-      gfc_expr *rhs = gfc_default_initializer (&code->expr3->ts);
-      if (rhs != NULL)
-	{
-	  gfc_resolve_expr (rhs);
-	  gfc_free_expr (code->expr3);
-	  code->expr3 = rhs;
-	}
-    }
 
   if (e->ts.type == BT_CLASS && !unlimited && !UNLIMITED_POLY (code->expr3))
     {
@@ -7366,10 +7309,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
       else if (code->ext.alloc.ts.type == BT_DERIVED)
 	ts = code->ext.alloc.ts;
 
+      /* Finding the vtab also publishes the type's symbol.  Therefore this
+	 statement is necessary.  */
       gfc_find_derived_vtab (ts.u.derived);
-
-      if (dimension)
-	e = gfc_expr_to_initialize (e);
     }
   else if (unlimited && !UNLIMITED_POLY (code->expr3))
     {
@@ -7383,10 +7325,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 
       gcc_assert (ts);
 
+      /* Finding the vtab also publishes the type's symbol.  Therefore this
+	 statement is necessary.  */
       gfc_find_vtab (ts);
-
-      if (dimension)
-	e = gfc_expr_to_initialize (e);
     }
 
   if (dimension == 0 && codimension == 0)
@@ -7690,6 +7631,22 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
   if (strcmp (fcn, "ALLOCATE") == 0)
     {
       bool arr_alloc_wo_spec = false;
+
+      /* Resolving the expr3 in the loop over all objects to allocate would
+	 execute loop invariant code for each loop item.  Therefore do it just
+	 once here.  */
+      if (code->expr3 && code->expr3->mold
+	  && code->expr3->ts.type == BT_DERIVED)
+	{
+	  /* Default initialization via MOLD (non-polymorphic).  */
+	  gfc_expr *rhs = gfc_default_initializer (&code->expr3->ts);
+	  if (rhs != NULL)
+	    {
+	      gfc_resolve_expr (rhs);
+	      gfc_free_expr (code->expr3);
+	      code->expr3 = rhs;
+	    }
+	}
       for (a = code->ext.alloc.list; a; a = a->next)
 	resolve_allocate_expr (a->expr, code, &arr_alloc_wo_spec);
 
