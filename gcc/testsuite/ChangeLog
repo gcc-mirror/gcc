@@ -1,3 +1,7 @@
+2016-11-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/Wtrampolines.c: XFAIL AIX.
+
 2016-11-06  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* gfortran.dg/allocate_with_source_14.f03: Fixed number mallocs
