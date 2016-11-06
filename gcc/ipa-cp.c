@@ -1070,12 +1070,6 @@ ipcp_bits_lattice::meet_with (ipcp_bits_lattice& other, unsigned precision,
 	return set_to_bottom ();
     }
 
-  else if (code == NOP_EXPR)
-    {
-      adjusted_value = other.m_value;
-      adjusted_mask = other.m_mask;
-    }
-
   else
     return set_to_bottom ();
 
