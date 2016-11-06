@@ -1,3 +1,8 @@
+2016-11-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78226
+	resolve.c (build_loc_call): Add location to return value.
+
 2016-11-06  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* expr.c (is_non_empty_structure_constructor): New function to detect
