@@ -8457,6 +8457,7 @@ build_loc_call (gfc_expr *sym_expr)
   loc_call->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_LOC);
   loc_call->value.function.actual = gfc_get_actual_arglist ();
   loc_call->value.function.actual->expr = sym_expr;
+  loc_call->where = sym_expr->where;
   return loc_call;
 }
 
