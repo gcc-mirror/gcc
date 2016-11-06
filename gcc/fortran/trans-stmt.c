@@ -5450,13 +5450,41 @@ gfc_trans_exit (gfc_code * code)
 }
 
 
+/* Get the initializer expression for the code and expr of an allocate.
+   When no initializer is needed return NULL.  */
+
+static gfc_expr *
+allocate_get_initializer (gfc_code * code, gfc_expr * expr)
+{
+  if (!gfc_bt_struct (expr->ts.type) && expr->ts.type != BT_CLASS)
+    return NULL;
+
+  /* An explicit type was given in allocate ( T:: object).  */
+  if (code->ext.alloc.ts.type == BT_DERIVED
+      && (code->ext.alloc.ts.u.derived->attr.alloc_comp
+	  || gfc_has_default_initializer (code->ext.alloc.ts.u.derived)))
+    return gfc_default_initializer (&code->ext.alloc.ts);
+
+  if (gfc_bt_struct (expr->ts.type)
+      && (expr->ts.u.derived->attr.alloc_comp
+	  || gfc_has_default_initializer (expr->ts.u.derived)))
+    return gfc_default_initializer (&expr->ts);
+
+  if (expr->ts.type == BT_CLASS
+      && (CLASS_DATA (expr)->ts.u.derived->attr.alloc_comp
+	  || gfc_has_default_initializer (CLASS_DATA (expr)->ts.u.derived)))
+    return gfc_default_initializer (&CLASS_DATA (expr)->ts);
+
+  return NULL;
+}
+
 /* Translate the ALLOCATE statement.  */
 
 tree
 gfc_trans_allocate (gfc_code * code)
 {
   gfc_alloc *al;
-  gfc_expr *expr, *e3rhs = NULL;
+  gfc_expr *expr, *e3rhs = NULL, *init_expr;
   gfc_se se, se_sz;
   tree tmp;
   tree parm;
@@ -6080,14 +6108,6 @@ gfc_trans_allocate (gfc_code * code)
 				      label_finish, expr, 0);
 	  else
 	    gfc_allocate_using_malloc (&se.pre, se.expr, memsz, stat);
-
-	  if (al->expr->ts.type == BT_DERIVED
-	      && expr->ts.u.derived->attr.alloc_comp)
-	    {
-	      tmp = build_fold_indirect_ref_loc (input_location, se.expr);
-	      tmp = gfc_nullify_alloc_comp (expr->ts.u.derived, tmp, 0);
-	      gfc_add_expr_to_block (&se.pre, tmp);
-	    }
 	}
       else
 	{
@@ -6217,6 +6237,8 @@ gfc_trans_allocate (gfc_code * code)
 			    fold_convert (TREE_TYPE (al_len),
 					  integer_zero_node));
 	}
+
+      init_expr = NULL;
       if (code->expr3 && !code->expr3->mold && e3_is != E3_MOLD)
 	{
 	  /* Initialization via SOURCE block (or static default initializer).
@@ -6244,6 +6266,23 @@ gfc_trans_allocate (gfc_code * code)
 	  ini->expr1 = gfc_find_and_cut_at_last_class_ref (expr);
 	  tmp = gfc_trans_class_init_assign (ini);
 	  gfc_free_statements (ini);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+      else if ((init_expr = allocate_get_initializer (code, expr)))
+	{
+	  /* Use class_init_assign to initialize expr.  */
+	  gfc_code *ini;
+	  int realloc_lhs = flag_realloc_lhs;
+	  ini = gfc_get_code (EXEC_INIT_ASSIGN);
+	  ini->expr1 = gfc_expr_to_initialize (expr);
+	  ini->expr2 = init_expr;
+	  flag_realloc_lhs = 0;
+	  tmp= gfc_trans_init_assign (ini);
+	  flag_realloc_lhs = realloc_lhs;
+	  gfc_free_statements (ini);
+	  /* Init_expr is freeed by above free_statements, just need to null
+	     it here.  */
+	  init_expr = NULL;
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
