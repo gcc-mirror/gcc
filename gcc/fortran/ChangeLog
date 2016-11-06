@@ -1,3 +1,9 @@
+2016-11-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78221
+	* arith.c (gfc_complex2real):  Change gfc_warning_now to
+	gfc_warning.
+
 2016-11-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	* check.c (gfc_check_move_alloc): Introduce error to prevent
