@@ -1,3 +1,8 @@
+2016-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/77822
+	* g++.dg/torture/pr77822.C: New test.
+
 2016-11-07  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/asan/force-inline-opt0-1.c: Disable
