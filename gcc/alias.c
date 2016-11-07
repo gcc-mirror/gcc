@@ -2755,6 +2755,14 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
       || TREE_CODE (expry) == CONST_DECL)
     return 1;
 
+  /* If one decl is known to be a function or label in a function and
+     the other is some kind of data, they can't overlap.  */
+  if ((TREE_CODE (exprx) == FUNCTION_DECL
+       || TREE_CODE (exprx) == LABEL_DECL)
+      != (TREE_CODE (expry) == FUNCTION_DECL
+	  || TREE_CODE (expry) == LABEL_DECL))
+    return 1;
+
   /* If either of the decls doesn't have DECL_RTL set (e.g. marked as
      living in multiple places), we can't tell anything.  Exception
      are FUNCTION_DECLs for which we can create DECL_RTL on demand.  */
@@ -2804,7 +2812,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 
   /* Offset based disambiguation not appropriate for loop invariant */
   if (loop_invariant)
-    return 0;              
+    return 0;
 
   /* Offset based disambiguation is OK even if we do not know that the
      declarations are necessarily different

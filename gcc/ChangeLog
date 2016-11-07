@@ -1,3 +1,9 @@
+2016-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77834
+	* alias.c (nonoverlapping_memrefs_p): If one decl is
+	FUNCTION_DECL or LABEL_DECL and the other is not, return 1.
+
 2016-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR target/78229
