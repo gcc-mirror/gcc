@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "selftest.h"
 #include "gimple-pretty-print.h"
+#include "asan.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -2629,6 +2630,8 @@ nonfreeing_call_p (gimple *call)
       {
       case IFN_ABNORMAL_DISPATCHER:
         return true;
+      case IFN_ASAN_MARK:
+	return tree_to_uhwi (gimple_call_arg (call, 0)) == ASAN_MARK_UNCLOBBER;
       default:
 	if (gimple_call_flags (call) & ECF_LEAF)
 	  return true;

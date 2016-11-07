@@ -986,6 +986,9 @@ fsanitize-recover
 Common Report
 This switch is deprecated; use -fsanitize-recover= instead.
 
+fsanitize-address-use-after-scope
+Common Driver Report Var(flag_sanitize_address_use_after_scope) Init(0)
+
 fsanitize-undefined-trap-on-error
 Common Driver Report Var(flag_sanitize_undefined_trap_on_error) Init(0)
 Use trap instead of a library function for undefined behavior sanitization.

@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "diagnostic.h"
 #include "intl.h"
-
+#include "asan.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -1626,6 +1626,13 @@ warn_for_unused_label (tree label)
 	warning (OPT_Wunused_label, "label %q+D defined but not used", label);
       else
 	warning (OPT_Wunused_label, "label %q+D declared but not defined", label);
+    }
+  else if (asan_sanitize_use_after_scope ())
+    {
+      if (asan_used_labels == NULL)
+	asan_used_labels = new hash_set<tree> (16);
+
+      asan_used_labels->add (label);
     }
 }
 

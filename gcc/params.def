@@ -1168,6 +1168,12 @@ DEFPARAM (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD,
          "in function becomes greater or equal to this number.",
          7000, 0, INT_MAX)
 
+DEFPARAM (PARAM_USE_AFTER_SCOPE_DIRECT_EMISSION_THRESHOLD,
+	 "use-after-scope-direct-emission-threshold",
+	 "Use direct poisoning/unpoisoning intructions for variables "
+	 "smaller or equal to this number.",
+	 256, 0, INT_MAX)
+
 DEFPARAM (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS,
 	  "uninit-control-dep-attempts",
 	  "Maximum number of nested calls to search for control dependencies "
