@@ -1,3 +1,8 @@
+2016-11-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config.gcc (powerpc*-*-*, rs6000*-*-*): Remove setting of
+	INCLUDE_EXTRA_SPEC for Advance Toolchain builds.
+
 2016-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (div<mode>3): Expand using rs6000_emit_swdiv
