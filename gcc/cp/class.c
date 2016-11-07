@@ -8177,10 +8177,14 @@ resolve_address_of_overloaded_function (tree target_type,
 	  if (DECL_ANTICIPATED (fn))
 	    continue;
 
+	  /* In C++17 we need the noexcept-qualifier to compare types.  */
+	  if (flag_noexcept_type)
+	    maybe_instantiate_noexcept (fn);
+
 	  /* See if there's a match.  */
 	  tree fntype = static_fn_type (fn);
 	  if (same_type_p (target_fn_type, fntype)
-	      || can_convert_tx_safety (target_fn_type, fntype))
+	      || fnptr_conv_p (target_fn_type, fntype))
 	    matches = tree_cons (fn, NULL_TREE, matches);
 	}
     }
@@ -8257,10 +8261,14 @@ resolve_address_of_overloaded_function (tree target_type,
 	      require_deduced_type (instantiation);
 	    }
 
+	  /* In C++17 we need the noexcept-qualifier to compare types.  */
+	  if (flag_noexcept_type)
+	    maybe_instantiate_noexcept (instantiation);
+
 	  /* See if there's a match.  */
 	  tree fntype = static_fn_type (instantiation);
 	  if (same_type_p (target_fn_type, fntype)
-	      || can_convert_tx_safety (target_fn_type, fntype))
+	      || fnptr_conv_p (target_fn_type, fntype))
 	    matches = tree_cons (instantiation, fn, matches);
 	}
 
@@ -8423,6 +8431,8 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t complain)
     {
       tree fntype = non_reference (lhstype);
       if (same_type_p (fntype, TREE_TYPE (rhs)))
+	return rhs;
+      if (fnptr_conv_p (fntype, TREE_TYPE (rhs)))
 	return rhs;
       if (flag_ms_extensions
 	  && TYPE_PTRMEMFUNC_P (fntype)

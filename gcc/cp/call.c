@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 enum conversion_kind {
   ck_identity,
   ck_lvalue,
-  ck_tsafe,
+  ck_fnptr,
   ck_qual,
   ck_std,
   ck_ptr,
@@ -771,6 +771,7 @@ build_conv (conversion_kind code, tree type, conversion *from)
       break;
 
     case ck_qual:
+    case ck_fnptr:
       if (rank < cr_exact)
 	rank = cr_exact;
       break;
@@ -1285,18 +1286,6 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	  conv = build_conv (ck_ptr, from, conv);
 	  conv->base_p = true;
 	}
-      else if (tx_safe_fn_type_p (from_pointee))
-	{
-	  /* A prvalue of type "pointer to transaction_safe function" can be
-	     converted to a prvalue of type "pointer to function". */
-	  tree unsafe = tx_unsafe_fn_variant (from_pointee);
-	  if (same_type_p (unsafe, to_pointee))
-	    {
-	      from_pointee = unsafe;
-	      from = build_pointer_type (unsafe);
-	      conv = build_conv (ck_tsafe, from, conv);
-	    }
-	}
 
       if (same_type_p (from, to))
 	/* OK */;
@@ -1310,6 +1299,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       else if (expr && string_conv_p (to, expr, 0))
 	/* converting from string constant to char *.  */
 	conv = build_conv (ck_qual, to, conv);
+      else if (fnptr_conv_p (to, from))
+	conv = build_conv (ck_fnptr, to, conv);
       /* Allow conversions among compatible ObjC pointer types (base
 	 conversions have been already handled above).  */
       else if (c_dialect_objc ()
@@ -1332,18 +1323,29 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       tree fbase = class_of_this_parm (fromfn);
       tree tbase = class_of_this_parm (tofn);
 
-      if (!DERIVED_FROM_P (fbase, tbase)
-	  || !same_type_p (static_fn_type (fromfn),
-			   static_fn_type (tofn)))
+      if (!DERIVED_FROM_P (fbase, tbase))
 	return NULL;
 
-      from = build_memfn_type (fromfn,
-                               tbase,
-                               cp_type_quals (tbase),
-                               type_memfn_rqual (tofn));
-      from = build_ptrmemfunc_type (build_pointer_type (from));
-      conv = build_conv (ck_pmem, from, conv);
-      conv->base_p = true;
+      tree fstat = static_fn_type (fromfn);
+      tree tstat = static_fn_type (tofn);
+      if (same_type_p (tstat, fstat)
+	  || fnptr_conv_p (tstat, fstat))
+	/* OK */;
+      else
+	return NULL;
+
+      if (!same_type_p (fbase, tbase))
+	{
+	  from = build_memfn_type (fstat,
+				   tbase,
+				   cp_type_quals (tbase),
+				   type_memfn_rqual (tofn));
+	  from = build_ptrmemfunc_type (build_pointer_type (from));
+	  conv = build_conv (ck_pmem, from, conv);
+	  conv->base_p = true;
+	}
+      if (fnptr_conv_p (tstat, fstat))
+	conv = build_conv (ck_fnptr, to, conv);
     }
   else if (tcode == BOOLEAN_TYPE)
     {
@@ -1441,10 +1443,14 @@ reference_compatible_p (tree t1, tree t2)
 {
   /* [dcl.init.ref]
 
-     "cv1 T1" is reference compatible with "cv2 T2" if T1 is
-     reference-related to T2 and cv1 is the same cv-qualification as,
-     or greater cv-qualification than, cv2.  */
-  return (reference_related_p (t1, t2)
+     "cv1 T1" is reference compatible with "cv2 T2" if
+       * T1 is reference-related to T2 or
+       * T2 is "noexcept function" and T1 is "function", where the
+         function types are otherwise the same,
+     and cv1 is the same cv-qualification as, or greater cv-qualification
+     than, cv2.  */
+  return ((reference_related_p (t1, t2)
+	   || fnptr_conv_p (t1, t2))
 	  && at_least_as_qualified_p (t1, t2));
 }
 
@@ -1478,7 +1484,7 @@ direct_reference_binding (tree type, conversion *conv)
      either an identity conversion or, if the conversion function
      returns an entity of a type that is a derived class of the
      parameter type, a derived-to-base conversion.  */
-  if (!same_type_ignoring_top_level_qualifiers_p (t, conv->type))
+  if (is_properly_derived_from (conv->type, t))
     {
       /* Represent the derived-to-base conversion.  */
       conv = build_conv (ck_base, t, conv);
@@ -1591,7 +1597,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
      [8.5.3/5 dcl.init.ref] is changed to also require direct bindings for
      const and rvalue references to rvalues of compatible class type.
      We should also do direct bindings for non-class xvalues.  */
-  if (related_p && gl_kind)
+  if ((related_p || compatible_p) && gl_kind)
     {
       /* [dcl.init.ref]
 
@@ -6978,9 +6984,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     case ck_lvalue:
       return decay_conversion (expr, complain);
 
-    case ck_tsafe:
+    case ck_fnptr:
       /* ??? Should the address of a transaction-safe pointer point to the TM
-	 clone, and this conversion look up the primary function?  */
+        clone, and this conversion look up the primary function?  */
       return build_nop (totype, expr);
 
     case ck_qual:
@@ -8863,10 +8869,15 @@ is_subseq (conversion *ics1, conversion *ics2)
 
       ics2 = next_conversion (ics2);
 
+      while (ics2->kind == ck_rvalue
+	     || ics2->kind == ck_lvalue)
+	ics2 = next_conversion (ics2);
+
       if (ics2->kind == ics1->kind
 	  && same_type_p (ics2->type, ics1->type)
-	  && same_type_p (next_conversion (ics2)->type,
-			  next_conversion (ics1)->type))
+	  && (ics1->kind == ck_identity
+	      || same_type_p (next_conversion (ics2)->type,
+			      next_conversion (ics1)->type)))
 	return true;
     }
 }

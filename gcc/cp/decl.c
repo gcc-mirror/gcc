@@ -73,8 +73,6 @@ static int check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (tree, tree, bool);
 static int member_function_or_else (tree, tree, enum overload_flags);
-static void bad_specifiers (tree, enum bad_spec_place, int, int, int, int,
-			    int);
 static void check_for_uninitialized_const_var (tree);
 static tree local_variable_p_walkfn (tree *, int *, void *);
 static const char *tag_name (enum tag_types);
@@ -226,6 +224,9 @@ struct GTY((for_user)) named_label_entry {
    (Zero if we are at namespace scope, one inside the body of a
    function, two inside the body of a function in a local class, etc.)  */
 int function_depth;
+
+/* Whether the exception-specifier is part of a function type (i.e. C++17).  */
+bool flag_noexcept_type;
 
 /* States indicating how grokdeclarator() should handle declspecs marked
    with __attribute__((deprecated)).  An object declared as
@@ -4044,6 +4045,8 @@ cxx_init_decl_processing (void)
   std_node = current_namespace;
   pop_namespace ();
 
+  flag_noexcept_type = (cxx_dialect >= cxx1z);
+
   c_common_nodes_and_builtins ();
 
   integer_two_node = build_int_cst (NULL_TREE, 2);
@@ -7842,6 +7845,7 @@ bad_specifiers (tree object,
   if (friendp)
     error ("%q+D declared as a friend", object);
   if (raises
+      && !flag_noexcept_type
       && (TREE_CODE (object) == TYPE_DECL
 	  || (!TYPE_PTRFN_P (TREE_TYPE (object))
 	      && !TYPE_REFFN_P (TREE_TYPE (object))
@@ -10477,6 +10481,9 @@ grokdeclarator (const cp_declarator *declarator,
 		 The optional attribute-specifier-seq appertains to
 		 the function type.  */
 	      decl_attributes (&type, attrs, 0);
+
+	    if (raises)
+	      type = build_exception_variant (type, raises);
 	  }
 	  break;
 

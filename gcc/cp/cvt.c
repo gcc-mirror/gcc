@@ -1932,9 +1932,84 @@ tx_unsafe_fn_variant (tree t)
 /* Return true iff FROM can convert to TO by a transaction-safety
    conversion.  */
 
-bool
+static bool
 can_convert_tx_safety (tree to, tree from)
 {
   return (flag_tm && tx_safe_fn_type_p (from)
 	  && same_type_p (to, tx_unsafe_fn_variant (from)));
+}
+
+/* Return true iff FROM can convert to TO by dropping noexcept.  */
+
+static bool
+noexcept_conv_p (tree to, tree from)
+{
+  if (!flag_noexcept_type)
+    return false;
+
+  tree t = non_reference (to);
+  tree f = from;
+  if (TYPE_PTRMEMFUNC_P (t)
+      && TYPE_PTRMEMFUNC_P (f))
+    {
+      t = TYPE_PTRMEMFUNC_FN_TYPE (t);
+      f = TYPE_PTRMEMFUNC_FN_TYPE (f);
+    }
+  if (TREE_CODE (t) == POINTER_TYPE
+      && TREE_CODE (f) == POINTER_TYPE)
+    {
+      t = TREE_TYPE (t);
+      f = TREE_TYPE (f);
+    }
+  tree_code code = TREE_CODE (f);
+  if (TREE_CODE (t) != code)
+    return false;
+  if (code != FUNCTION_TYPE && code != METHOD_TYPE)
+    return false;
+  if (!type_throw_all_p (t)
+      || type_throw_all_p (f))
+    return false;
+  tree v = build_exception_variant (f, NULL_TREE);
+  return same_type_p (t, v);
+}
+
+/* Return true iff FROM can convert to TO by a function pointer conversion.  */
+
+bool
+fnptr_conv_p (tree to, tree from)
+{
+  tree t = non_reference (to);
+  tree f = from;
+  if (TYPE_PTRMEMFUNC_P (t)
+      && TYPE_PTRMEMFUNC_P (f))
+    {
+      t = TYPE_PTRMEMFUNC_FN_TYPE (t);
+      f = TYPE_PTRMEMFUNC_FN_TYPE (f);
+    }
+  if (TREE_CODE (t) == POINTER_TYPE
+      && TREE_CODE (f) == POINTER_TYPE)
+    {
+      t = TREE_TYPE (t);
+      f = TREE_TYPE (f);
+    }
+
+  return (noexcept_conv_p (t, f)
+	  || can_convert_tx_safety (t, f));
+}
+
+/* Return FN with any NOP_EXPRs that represent function pointer
+   conversions stripped.  */
+
+tree
+strip_fnptr_conv (tree fn)
+{
+  while (TREE_CODE (fn) == NOP_EXPR)
+    {
+      tree op = TREE_OPERAND (fn, 0);
+      if (fnptr_conv_p (TREE_TYPE (fn), TREE_TYPE (op)))
+	fn = op;
+      else
+	break;
+    }
+  return fn;
 }

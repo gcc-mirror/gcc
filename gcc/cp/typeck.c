@@ -647,6 +647,14 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
 	return objc_common_type (t1, t2);
     }
 
+  /* if T1 or T2 is "pointer to noexcept function" and the other type is
+     "pointer to function", where the function types are otherwise the same,
+     "pointer to function" */
+  if (fnptr_conv_p (t1, t2))
+    return t1;
+  if (fnptr_conv_p (t2, t1))
+    return t2;
+
   /* [expr.eq] permits the application of a pointer conversion to
      bring the pointers to a common type.  */
   if (TYPE_PTR_P (t1) && TYPE_PTR_P (t2)
@@ -709,22 +717,6 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
               }
           return error_mark_node;
         }
-    }
-  else if (TYPE_PTR_P (t1) && TYPE_PTR_P (t2)
-	   && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (t1))
-	   && TREE_CODE (TREE_TYPE (t2)) == TREE_CODE (TREE_TYPE (t1)))
-    {
-      /* ...if T1 is "pointer to transaction_safe function" and T2 is "pointer
-	 to function", where the function types are otherwise the same, T2, and
-	 vice versa.... */
-      tree f1 = TREE_TYPE (t1);
-      tree f2 = TREE_TYPE (t2);
-      bool safe1 = tx_safe_fn_type_p (f1);
-      bool safe2 = tx_safe_fn_type_p (f2);
-      if (safe1 && !safe2)
-	t1 = build_pointer_type (tx_unsafe_fn_variant (f1));
-      else if (safe2 && !safe1)
-	t2 = build_pointer_type (tx_unsafe_fn_variant (f2));
     }
 
   return composite_pointer_type_r (t1, t2, operation, complain);
@@ -1020,6 +1012,7 @@ comp_except_types (tree a, tree b, bool exact)
 
 /* Return true if TYPE1 and TYPE2 are equivalent exception specifiers.
    If EXACT is ce_derived, T2 can be stricter than T1 (according to 15.4/5).
+   If EXACT is ce_type, the C++17 type compatibility rules apply.
    If EXACT is ce_normal, the compatibility rules in 15.4/3 apply.
    If EXACT is ce_exact, the specs must be exactly the same. Exception lists
    are unordered, but we've already filtered out duplicates. Most lists will
@@ -1038,8 +1031,13 @@ comp_except_specs (const_tree t1, const_tree t2, int exact)
   /* First handle noexcept.  */
   if (exact < ce_exact)
     {
+      if (exact == ce_type
+	  && (canonical_eh_spec (CONST_CAST_TREE (t1))
+	      == canonical_eh_spec (CONST_CAST_TREE (t2))))
+	return true;
+
       /* noexcept(false) is compatible with no exception-specification,
-	 and stricter than any spec.  */
+	 and less strict than any spec.  */
       if (t1 == noexcept_false_spec)
 	return t2 == NULL_TREE || exact == ce_derived;
       /* Even a derived noexcept(false) is compatible with no
@@ -1222,10 +1220,17 @@ structural_comptypes (tree t1, tree t2, int strict)
     return false;
   /* Need to check this before TYPE_MAIN_VARIANT.
      FIXME function qualifiers should really change the main variant.  */
-  if ((TREE_CODE (t1) == FUNCTION_TYPE
-       || TREE_CODE (t1) == METHOD_TYPE)
-      && type_memfn_rqual (t1) != type_memfn_rqual (t2))
-    return false;
+  if (TREE_CODE (t1) == FUNCTION_TYPE
+      || TREE_CODE (t1) == METHOD_TYPE)
+    {
+      if (type_memfn_rqual (t1) != type_memfn_rqual (t2))
+	return false;
+      if (flag_noexcept_type
+	  && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (t1),
+				 TYPE_RAISES_EXCEPTIONS (t2),
+				 ce_type))
+	return false;
+    }
 
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type

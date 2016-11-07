@@ -380,6 +380,12 @@
 #  error "__cpp_capture_star_this != 201603"
 #endif
 
+#ifndef __cpp_noexcept_function_type
+#  error "__cpp_noexcept_function_type"
+#elif __cpp_noexcept_function_type != 201510
+#  error "__cpp_noexcept_function_type != 201510"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)

@@ -449,7 +449,9 @@ enum demangle_component_type
   /* A transaction-safe function type.  */
   DEMANGLE_COMPONENT_TRANSACTION_SAFE,
   /* A cloned function.  */
-  DEMANGLE_COMPONENT_CLONE
+  DEMANGLE_COMPONENT_CLONE,
+  DEMANGLE_COMPONENT_NOEXCEPT,
+  DEMANGLE_COMPONENT_THROW_SPEC
 };
 
 /* Types which are only used internally.  */

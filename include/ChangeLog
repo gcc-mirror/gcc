@@ -1,3 +1,8 @@
+2016-11-07  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_NOEXCEPT, DEMANGLE_COMPONENT_THROW_SPEC.
+
 2016-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (enum dwarf_calling_convention): Add new DWARF5

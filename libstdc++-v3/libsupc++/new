@@ -197,10 +197,10 @@ namespace std
   // The program is ill-formed if T is a function type or
   // (possibly cv-qualified) void.
 
-  template<typename _Ret, typename... _Args>
-    void launder(_Ret (*)(_Args...)) = delete;
-  template<typename _Ret, typename... _Args>
-    void launder(_Ret (*)(_Args......)) = delete;
+  template<typename _Ret, typename... _Args _GLIBCXX_NOEXCEPT_PARM>
+    void launder(_Ret (*)(_Args...) _GLIBCXX_NOEXCEPT_QUAL) = delete;
+  template<typename _Ret, typename... _Args _GLIBCXX_NOEXCEPT_PARM>
+    void launder(_Ret (*)(_Args......) _GLIBCXX_NOEXCEPT_QUAL) = delete;
 
   void launder(void*) = delete;
   void launder(const void*) = delete;

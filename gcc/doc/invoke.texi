@@ -5574,6 +5574,11 @@ enabled by @option{-Wall}.
 Warn about C++ constructs whose meaning differs between ISO C++ 2011
 and ISO C++ 2014.  This warning is enabled by @option{-Wall}.
 
+@item -Wc++1z-compat @r{(C++ and Objective-C++ only)}
+@opindex Wc++1z-compat
+Warn about C++ constructs whose meaning differs between ISO C++ 2014
+and the forthoming ISO C++ 2017(?).  This warning is enabled by @option{-Wall}.
+
 @item -Wcast-qual
 @opindex Wcast-qual
 @opindex Wno-cast-qual

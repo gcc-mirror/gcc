@@ -458,100 +458,100 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_function
     : public false_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...)>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) &>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) & _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) &&>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) && _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......)>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) &>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) & _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) &&>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) && _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) const>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) const _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) const &>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) const & _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) const &&>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) const && _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) const>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) const _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) const &>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) const & _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) const &&>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) const && _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) volatile>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) volatile _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) volatile &>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) volatile & _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) volatile &&>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) volatile && _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) volatile>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) volatile _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) volatile &>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) volatile & _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) volatile &&>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) volatile && _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) const volatile>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) const volatile _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) const volatile &>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) const volatile & _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes...) const volatile &&>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes...) const volatile && _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) const volatile>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) const volatile _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) const volatile &>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) const volatile & _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct is_function<_Res(_ArgTypes......) const volatile &&>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct is_function<_Res(_ArgTypes......) const volatile && _GLIBCXX_NOEXCEPT_QUAL>
     : public true_type { };
 
 #define __cpp_lib_is_null_pointer 201309
