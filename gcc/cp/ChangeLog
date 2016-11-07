@@ -1,3 +1,8 @@
+2016-11-07  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (push_tinst_level_loc): Add template instantiations to the
+	announce_function stream.
+
 2016-11-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67980
