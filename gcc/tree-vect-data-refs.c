@@ -773,10 +773,25 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   base = ref;
   while (handled_component_p (base))
     base = TREE_OPERAND (base, 0);
+  unsigned int base_alignment;
+  unsigned HOST_WIDE_INT base_bitpos;
+  get_object_alignment_1 (base, &base_alignment, &base_bitpos);
+  /* As data-ref analysis strips the MEM_REF down to its base operand
+     to form DR_BASE_ADDRESS and adds the offset to DR_INIT we have to
+     adjust things to make base_alignment valid as the alignment of
+     DR_BASE_ADDRESS.  */
   if (TREE_CODE (base) == MEM_REF)
-    base = build2 (MEM_REF, TREE_TYPE (base), base_addr,
-		   build_int_cst (TREE_TYPE (TREE_OPERAND (base, 1)), 0));
-  unsigned int base_alignment = get_object_alignment (base);
+    {
+      base_bitpos -= mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
+      base_bitpos &= (base_alignment - 1);
+    }
+  if (base_bitpos != 0)
+    base_alignment = base_bitpos & -base_bitpos;
+  /* Also look at the alignment of the base address DR analysis
+     computed.  */
+  unsigned int base_addr_alignment = get_pointer_alignment (base_addr);
+  if (base_addr_alignment > base_alignment)
+    base_alignment = base_addr_alignment;
 
   if (base_alignment >= TYPE_ALIGN (TREE_TYPE (vectype)))
     DR_VECT_AUX (dr)->base_element_aligned = true;

@@ -1,3 +1,8 @@
+2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78189
+	* g++.dg/torture/pr78189.C: New testcase.
+
 2016-11-06  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/Wtrampolines.c: XFAIL AIX.
