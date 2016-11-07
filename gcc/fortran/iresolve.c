@@ -1044,15 +1044,19 @@ gfc_resolve_extends_type_of (gfc_expr *f, gfc_expr *a, gfc_expr *mo)
     gfc_add_vptr_component (a);
   else if (a->ts.type == BT_DERIVED)
     {
+      locus where;
+
       vtab = gfc_find_derived_vtab (a->ts.u.derived);
       /* Clear the old expr.  */
       gfc_free_ref_list (a->ref);
+      where = a->where;
       memset (a, '\0', sizeof (gfc_expr));
       /* Construct a new one.  */
       a->expr_type = EXPR_VARIABLE;
       st = gfc_find_symtree (vtab->ns->sym_root, vtab->name);
       a->symtree = st;
       a->ts = vtab->ts;
+      a->where = where;
     }
 
   /* Replace the second argument with the corresponding vtab.  */
@@ -1060,8 +1064,11 @@ gfc_resolve_extends_type_of (gfc_expr *f, gfc_expr *a, gfc_expr *mo)
     gfc_add_vptr_component (mo);
   else if (mo->ts.type == BT_DERIVED)
     {
+      locus where;
+
       vtab = gfc_find_derived_vtab (mo->ts.u.derived);
       /* Clear the old expr.  */
+      where = mo->where;
       gfc_free_ref_list (mo->ref);
       memset (mo, '\0', sizeof (gfc_expr));
       /* Construct a new one.  */
@@ -1069,6 +1076,7 @@ gfc_resolve_extends_type_of (gfc_expr *f, gfc_expr *a, gfc_expr *mo)
       st = gfc_find_symtree (vtab->ns->sym_root, vtab->name);
       mo->symtree = st;
       mo->ts = vtab->ts;
+      mo->where = where;
     }
 
   f->ts.type = BT_LOGICAL;

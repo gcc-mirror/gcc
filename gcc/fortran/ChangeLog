@@ -1,6 +1,16 @@
 2016-11-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78226
+	* expr.c (gfc_generate_initializer):  Add where to EXPR_NULL
+	statement.
+	* iresolve.c (gfc_resolve_extends_type_of):  Add where to
+	both arguments of the function.
+	* resolve.c (resolve_select_type):  Add where to the
+	second argument of the new statement.
+
+2016-11-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78226
 	* match.c (gfc_match_select_type):  Add where for expr1.
 	* resolve.c (resolev_select_type): Add where for expr1 of new
 	statement.
