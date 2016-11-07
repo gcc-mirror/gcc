@@ -1,3 +1,9 @@
+2016-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (div<mode>3): Expand using rs6000_emit_swdiv
+	if appropriate.
+	* config/rs6000/vector.md (div<mode>3): Ditto.
+
 2016-11-06  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure.ac (.hidden): Change to conftest_s string. Provide string

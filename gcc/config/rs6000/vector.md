@@ -248,7 +248,15 @@
 	(div:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")
 		   (match_operand:VEC_F 2 "vfloat_operand" "")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
-  "")
+{
+  if (RS6000_RECIP_AUTO_RE_P (<MODE>mode)
+      && can_create_pseudo_p () && flag_finite_math_only
+      && !flag_trapping_math && flag_reciprocal_math)
+    {
+      rs6000_emit_swdiv (operands[0], operands[1], operands[2], true);
+      DONE;
+    }
+})
 
 (define_expand "neg<mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
