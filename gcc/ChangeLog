@@ -1,3 +1,9 @@
+2016-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78227
+	* config/i386/i386.c (ix86_expand_sse_cmp): Force dest into
+	cmp_mode argument even for -O0 if cmp_mode != mode and maskcmp.
+
 2016-11-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR middle-end/35691
