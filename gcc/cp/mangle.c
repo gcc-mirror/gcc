@@ -114,6 +114,9 @@ struct GTY(()) globals {
   /* True if the mangling will be different in a future version of the
      ABI.  */
   bool need_abi_warning;
+
+  /* True if the mangling will be different in C++17 mode.  */
+  bool need_cxx1z_warning;
 };
 
 static GTY (()) globals G;
@@ -344,6 +347,43 @@ dump_substitution_candidates (void)
     }
 }
 
+/* <exception-spec> ::=
+      Do  -- non-throwing exception specification
+      DO <expression> E  -- computed (instantiation-dependent) noexcept
+      Dw <type>* E  -- throw (types)  */
+
+static void
+write_exception_spec (tree spec)
+{
+
+  if (!spec || spec == noexcept_false_spec)
+    /* Nothing.  */
+    return;
+
+  if (!flag_noexcept_type)
+    {
+      G.need_cxx1z_warning = true;
+      return;
+    }
+
+  if (nothrow_spec_p (spec))
+    write_string ("Do");
+  else if (TREE_PURPOSE (spec))
+    {
+      gcc_assert (uses_template_parms (TREE_PURPOSE (spec)));
+      write_string ("DO");
+      write_expression (TREE_PURPOSE (spec));
+      write_char ('E');
+    }
+  else
+    {
+      write_string ("Dw");
+      for (tree t = spec; t; t = TREE_CHAIN (t))
+	write_type (TREE_VALUE (t));
+      write_char ('E');
+    }
+}
+
 /* Both decls and types can be substitution candidates, but sometimes
    they refer to the same thing.  For instance, a TYPE_DECL and
    RECORD_TYPE for the same class refer to the same thing, and should
@@ -375,7 +415,15 @@ canonicalize_for_substitution (tree node)
 					cp_type_quals (node));
       if (TREE_CODE (node) == FUNCTION_TYPE
 	  || TREE_CODE (node) == METHOD_TYPE)
-	node = build_ref_qualified_type (node, type_memfn_rqual (orig));
+	{
+	  node = build_ref_qualified_type (node, type_memfn_rqual (orig));
+	  tree r = canonical_eh_spec (TYPE_RAISES_EXCEPTIONS (orig));
+	  if (flag_noexcept_type)
+	    node = build_exception_variant (node, r);
+	  else
+	    /* Set the warning flag if appropriate.  */
+	    write_exception_spec (r);
+	}
     }
   return node;
 }
@@ -777,9 +825,11 @@ write_encoding (const tree decl)
     {
       tree fn_type;
       tree d;
+      bool tmpl = decl_is_template_id (decl, NULL);
 
-      if (decl_is_template_id (decl, NULL))
+      if (tmpl)
 	{
+	  ++processing_template_decl;
 	  fn_type = get_mostly_instantiated_function_type (decl);
 	  /* FN_TYPE will not have parameter types for in-charge or
 	     VTT parameters.  Therefore, we pass NULL_TREE to
@@ -796,6 +846,9 @@ write_encoding (const tree decl)
       write_bare_function_type (fn_type,
 				mangle_return_type_p (decl),
 				d);
+
+      if (tmpl)
+	--processing_template_decl;
     }
 }
 
@@ -2064,7 +2117,11 @@ write_type (tree type)
       type = TYPE_MAIN_VARIANT (type);
       if (TREE_CODE (type) == FUNCTION_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE)
-	type = build_ref_qualified_type (type, type_memfn_rqual (type_orig));
+	{
+	  type = build_ref_qualified_type (type, type_memfn_rqual (type_orig));
+	  type = build_exception_variant (type,
+					  TYPE_RAISES_EXCEPTIONS (type_orig));
+	}
 
       /* According to the C++ ABI, some library classes are passed the
 	 same as the scalar type of their single member and use the same
@@ -2588,6 +2645,8 @@ write_function_type (const tree type)
       tree this_type = class_of_this_parm (type);
       write_CV_qualifiers_for_type (this_type);
     }
+
+  write_exception_spec (TYPE_RAISES_EXCEPTIONS (type));
 
   if (tx_safe_fn_type_p (type))
     write_string ("Dx");
@@ -3775,6 +3834,12 @@ mangle_decl (const tree decl)
       id = get_mangled_id (decl);
     }
   SET_DECL_ASSEMBLER_NAME (decl, id);
+
+  if (G.need_cxx1z_warning)
+    warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc__1z_compat,
+		"mangled name for %qD will change in C++17 because the "
+		"exception specification is part of a function type",
+		decl);
 
   if (id != DECL_NAME (decl)
       /* Don't do this for a fake symbol we aren't going to emit anyway.  */

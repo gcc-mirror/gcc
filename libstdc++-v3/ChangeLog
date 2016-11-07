@@ -1,3 +1,14 @@
+2016-11-07  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_NOEXCEPT_PARM)
+	(_GLIBCXX_NOEXCEPT_QUAL): New.
+	* include/std/type_traits (is_function): Use them.
+	* libsubc++/new (launder): Likewise.
+	* libsupc++/cxxabi.h (__pbase_type_info::__masks): Add
+	__noexcept_mask.
+	* libsupc++/pbase_type_info.cc (__do_catch): Handle function
+	pointer conversion.
+
 2016-11-07  François Dumont  <fdumont@gcc.gnu.org>
 
 	* config/abi/pre/gnu-versioned-namespace.ver: Export C++17 new of

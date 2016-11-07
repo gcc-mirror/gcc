@@ -1,3 +1,13 @@
+2016-11-07  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (is_fnqual_component_type): New.
+	(d_encoding, d_print_comp_inner, d_print_mod_list): Use it.
+	(FNQUAL_COMPONENT_CASE): New.
+	(d_make_comp, has_return_type, d_print_comp_inner)
+	(d_print_function_type): Use it.
+	(next_is_type_qual): New.
+	(d_cv_qualifiers, d_print_mod): Handle noexcept and throw-spec.
+
 2016-11-02  Mark Wielaard  <mjw@redhat.com>
 
 	* cplus-dem.c (demangle_signature): Move fall through comment.

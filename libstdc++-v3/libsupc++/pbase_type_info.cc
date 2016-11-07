@@ -80,12 +80,13 @@ __do_catch (const type_info *thr_type,
 
   unsigned tflags = thrown_type->__flags;
 
-  bool throw_tx = (tflags & __transaction_safe_mask);
-  bool catch_tx = (__flags & __transaction_safe_mask);
-  if (throw_tx && !catch_tx)
-    /* Catch can perform a transaction-safety conversion.  */
-    tflags &= ~__transaction_safe_mask;
-  if (catch_tx && !throw_tx)
+  const unsigned fqual_mask = __transaction_safe_mask|__noexcept_mask;
+  unsigned throw_fqual = (tflags & fqual_mask);
+  unsigned catch_fqual = (__flags & fqual_mask);
+  if (throw_fqual & ~catch_fqual)
+    /* Catch can perform a function pointer conversion.  */
+    tflags &= catch_fqual;
+  if (catch_fqual & ~throw_fqual)
     /* But not the reverse.  */
     return false;
   

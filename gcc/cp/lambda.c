@@ -1029,6 +1029,9 @@ maybe_add_lambda_conv_op (tree type)
   tree stattype = build_function_type (fn_result, FUNCTION_ARG_CHAIN (callop));
   stattype = (cp_build_type_attribute_variant
 	      (stattype, TYPE_ATTRIBUTES (optype)));
+  if (flag_noexcept_type
+      && TYPE_NOTHROW_P (TREE_TYPE (callop)))
+    stattype = build_exception_variant (stattype, noexcept_true_spec);
 
   /* First build up the conversion op.  */
 

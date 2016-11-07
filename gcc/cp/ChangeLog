@@ -1,5 +1,52 @@
 2016-11-07  Jason Merrill  <jason@redhat.com>
 
+	Implement P0012R1, Make exception specifications part of the type
+	system.
+	* cp-tree.h (enum tsubst_flags): Add tf_fndecl_type.
+	(flag_noexcept_type, ce_type): New.
+	* call.c (build_conv): Add ck_fnptr.
+	(enum conversion_kind): Change ck_tsafe to ck_fnptr.
+	(convert_like_real): Likewise.
+	(standard_conversion): Likewise.  Allow function pointer
+	conversions for pointers to member functions.
+	(reference_compatible_p): Allow function pointer conversions.
+	(direct_reference_binding): Likewise.
+	(reference_binding): Reference-compatible is no longer a subset of
+	reference-related.
+	(is_subseq): Also strip ck_lvalue after next_conversion.
+	* class.c (instantiate_type): Check fnptr_conv_p.
+	(resolve_address_of_overloaded_function): Likewise.
+	* cvt.c (can_convert_tx_safety): Now static.
+	(noexcept_conv_p, fnptr_conv_p, strip_fnptr_conv): New.
+	* decl.c (flag_noexcept_type): Define.
+	(cxx_init_decl_processing): Set it.
+	(bad_specifiers): Check it.
+	(grokdeclarator) [cdk_function]: Add exception-spec to type here.
+	* lambda.c (maybe_add_lambda_conv_op): Add exception-spec to
+	returned pointer.
+	* mangle.c (struct globals): Add need_cxx1z_warning.
+	(mangle_decl): Check it.
+	(write_exception_spec): New.
+	(write_function_type): Call it.
+	(canonicalize_for_substitution): Handle exception spec.
+	(write_type): Likewise.
+	(write_encoding): Set processing_template_decl across mangling of
+	partially-instantiated type.
+	* pt.c (determine_specialization): Pass tf_fndecl_type.
+	(tsubst_decl, fn_type_unification): Likewise.
+	(tsubst): Strip tf_fndecl_type, pass it to
+	tsubst_exception_specification.
+	(convert_nontype_argument_function): Handle function pointer
+	conversion.
+	(convert_nontype_argument): Likewise.
+	(unify, for_each_template_parm_r): Walk into noexcept-specifier.
+	* rtti.c (ptr_initializer): Encode noexcept.
+	* tree.c (canonical_eh_spec): New.
+	(build_exception_variant): Use it.
+	* typeck.c (composite_pointer_type): Handle fnptr conversion.
+	(comp_except_specs): Compare canonical EH specs.
+	(structural_comptypes): Call it.
+
 	* call.c (standard_conversion): Reorganize pointer conversions.
 	* pt.c (convert_nontype_argument_function): Convert to ref here.
 	(convert_nontype_argument): Not here.
