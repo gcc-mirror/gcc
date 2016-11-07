@@ -1,5 +1,13 @@
 2016-11-07  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78218
+	* gimple-ssa-store-merging.c
+	(pass_store_merging::terminate_all_aliasing_chains):
+	Drop unused argument, fix alias check to also consider uses.
+	(pass_store_merging::execute): Adjust.
+
+2016-11-07  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/78228
 	* tree-ssa-phiopt.c (abs_replacement): Avoid introducing
 	undefined behavior.

@@ -726,7 +726,7 @@ private:
   hash_map<tree_operand_hash, struct imm_store_chain_info *> m_stores;
 
   bool terminate_and_process_all_chains ();
-  bool terminate_all_aliasing_chains (tree, imm_store_chain_info **,
+  bool terminate_all_aliasing_chains (imm_store_chain_info **,
 				      bool, gimple *);
   bool terminate_and_release_chain (imm_store_chain_info *);
 }; // class pass_store_merging
@@ -755,8 +755,7 @@ pass_store_merging::terminate_and_process_all_chains ()
    If that is the case we have to terminate any chain anchored at BASE.  */
 
 bool
-pass_store_merging::terminate_all_aliasing_chains (tree dest,
-						   imm_store_chain_info
+pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
 						     **chain_info,
 						   bool var_offset_p,
 						   gimple *stmt)
@@ -788,7 +787,10 @@ pass_store_merging::terminate_all_aliasing_chains (tree dest,
 	  unsigned int i;
 	  FOR_EACH_VEC_ELT ((*chain_info)->m_store_info, i, info)
 	    {
-	      if (stmt_may_clobber_ref_p (info->stmt, dest))
+	      if (ref_maybe_used_by_stmt_p (stmt,
+					    gimple_assign_lhs (info->stmt))
+		  || stmt_may_clobber_ref_p (stmt,
+					     gimple_assign_lhs (info->stmt)))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
@@ -1458,7 +1460,7 @@ pass_store_merging::execute (function *fun)
 		    }
 
 		  /* Store aliases any existing chain?  */
-		  terminate_all_aliasing_chains (lhs, chain_info, false, stmt);
+		  terminate_all_aliasing_chains (chain_info, false, stmt);
 		  /* Start a new chain.  */
 		  struct imm_store_chain_info *new_chain
 		    = new imm_store_chain_info (base_addr);
@@ -1477,13 +1479,13 @@ pass_store_merging::execute (function *fun)
 		    }
 		}
 	      else
-		terminate_all_aliasing_chains (lhs, chain_info,
+		terminate_all_aliasing_chains (chain_info,
 					       offset != NULL_TREE, stmt);
 
 	      continue;
 	    }
 
-	  terminate_all_aliasing_chains (NULL_TREE, NULL, false, stmt);
+	  terminate_all_aliasing_chains (NULL, false, stmt);
 	}
       terminate_and_process_all_chains ();
     }
