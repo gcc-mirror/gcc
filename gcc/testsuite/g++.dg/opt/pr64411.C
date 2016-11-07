@@ -1,5 +1,6 @@
-/* { dg-do compile } */
-/* { dg-options "-Os -mcmodel=medium -fPIC -fschedule-insns -fselective-scheduling" } */
+// PR target/64411
+// { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } }
+// { dg-options "-Os -mcmodel=medium -fPIC -fschedule-insns -fselective-scheduling" }
 
 typedef __SIZE_TYPE__ size_t;
 
