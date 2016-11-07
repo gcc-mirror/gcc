@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-additional-options "-mno-vsx" } */
+/* { dg-options "-maltivec -mno-vsx" } */
 
 #include <altivec.h>
 
