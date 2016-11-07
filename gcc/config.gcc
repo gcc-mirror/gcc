@@ -4137,16 +4137,6 @@ case "${target}" in
 			(at="/opt/$with_advance_toolchain"
 			 echo "/* Use Advance Toolchain $at */"
 			 echo
-			 echo "#ifndef USE_AT_INCLUDE_FILES"
-			 echo "#define USE_AT_INCLUDE_FILES 1"
-			 echo "#endif"
-			 echo
-			 echo "#if USE_AT_INCLUDE_FILES"
-			 echo "#undef  INCLUDE_EXTRA_SPEC"
-			 echo "#define INCLUDE_EXTRA_SPEC" \
-			      "\"-isystem $at/include\""
-			 echo "#endif"
-			 echo
 			 echo "#undef  LINK_OS_EXTRA_SPEC32"
 			 echo "#define LINK_OS_EXTRA_SPEC32" \
 			      "\"%(link_os_new_dtags)" \
