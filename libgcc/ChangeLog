@@ -1,3 +1,11 @@
+2016-11-07  Florian Weimer  <fweimer@redhat.com>
+
+	Backport from mainline
+	2016-10-24  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/78064
+	* unwind-c.c: Include auto-target.h.
+
 2016-09-28  Joseph Myers  <joseph@codesourcery.com>
 
 	Backport from mainline
