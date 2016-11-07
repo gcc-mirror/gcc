@@ -1,3 +1,10 @@
+2016-11-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/35691
+	* match.pd: Add following two patterns:
+	(x == 0 & y == 0) -> (x | typeof(x)(y)) == 0.
+	(x != 0 | y != 0) -> (x | typeof(x)(y)) != 0.
+
 2016-11-07  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* emit-rtl.c (emit_copy_of_insn_after): Duplicate notes in order.
