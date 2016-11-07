@@ -1457,7 +1457,9 @@ same_type_ignoring_top_level_qualifiers_p (tree type1, tree type2)
   if (type1 == error_mark_node || type2 == error_mark_node)
     return false;
 
-  return same_type_p (TYPE_MAIN_VARIANT (type1), TYPE_MAIN_VARIANT (type2));
+  type1 = cp_build_qualified_type (type1, TYPE_UNQUALIFIED);
+  type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);
+  return same_type_p (type1, type2);
 }
 
 /* Returns 1 if TYPE1 is at least as qualified as TYPE2.  */

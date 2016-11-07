@@ -1,5 +1,14 @@
 2016-11-07  Jason Merrill  <jason@redhat.com>
 
+	* call.c (standard_conversion): Reorganize pointer conversions.
+	* pt.c (convert_nontype_argument_function): Convert to ref here.
+	(convert_nontype_argument): Not here.
+	(convert_template_argument): Add original type to error message.
+	(RECUR_AND_CHECK_FAILURE): Remove trailing semicolon.
+	(unify): Compare function-qualifiers.
+	* typeck.c (same_type_ignoring_top_level_qualifiers_p): Use
+	cp_build_qualified_type rather than TYPE_MAIN_VARIANT.
+
 	* pt.c (push_tinst_level_loc): Add template instantiations to the
 	announce_function stream.
 

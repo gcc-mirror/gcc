@@ -1212,19 +1212,40 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       tree to_pointee;
       tree from_pointee;
 
+      if (tcode == POINTER_TYPE)
+	{
+	  to_pointee = TREE_TYPE (to);
+	  from_pointee = TREE_TYPE (from);
+
+	  /* Since this is the target of a pointer, it can't have function
+	     qualifiers, so any TYPE_QUALS must be for attributes const or
+	     noreturn.  Strip them.  */
+	  if (TREE_CODE (to_pointee) == FUNCTION_TYPE
+	      && TYPE_QUALS (to_pointee))
+	    to_pointee = build_qualified_type (to_pointee, TYPE_UNQUALIFIED);
+	  if (TREE_CODE (from_pointee) == FUNCTION_TYPE
+	      && TYPE_QUALS (from_pointee))
+	    from_pointee = build_qualified_type (from_pointee, TYPE_UNQUALIFIED);
+	}
+      else
+	{
+	  to_pointee = TYPE_PTRMEM_POINTED_TO_TYPE (to);
+	  from_pointee = TYPE_PTRMEM_POINTED_TO_TYPE (from);
+	}
+
       if (tcode == POINTER_TYPE
-	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (from),
-							TREE_TYPE (to)))
+	  && same_type_ignoring_top_level_qualifiers_p (from_pointee,
+							to_pointee))
 	;
-      else if (VOID_TYPE_P (TREE_TYPE (to))
+      else if (VOID_TYPE_P (to_pointee)
 	       && !TYPE_PTRDATAMEM_P (from)
-	       && TREE_CODE (TREE_TYPE (from)) != FUNCTION_TYPE)
+	       && TREE_CODE (from_pointee) != FUNCTION_TYPE)
 	{
 	  tree nfrom = TREE_TYPE (from);
 	  /* Don't try to apply restrict to void.  */
 	  int quals = cp_type_quals (nfrom) & ~TYPE_QUAL_RESTRICT;
-	  from = build_pointer_type
-	    (cp_build_qualified_type (void_type_node, quals));
+	  from_pointee = cp_build_qualified_type (void_type_node, quals);
+	  from = build_pointer_type (from_pointee);
 	  conv = build_conv (ck_ptr, from, conv);
 	}
       else if (TYPE_PTRDATAMEM_P (from))
@@ -1234,18 +1255,16 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 
 	  if (DERIVED_FROM_P (fbase, tbase)
 	      && (same_type_ignoring_top_level_qualifiers_p
-		  (TYPE_PTRMEM_POINTED_TO_TYPE (from),
-		   TYPE_PTRMEM_POINTED_TO_TYPE (to))))
+		  (from_pointee, to_pointee)))
 	    {
-	      from = build_ptrmem_type (tbase,
-					TYPE_PTRMEM_POINTED_TO_TYPE (from));
+	      from = build_ptrmem_type (tbase, from_pointee);
 	      conv = build_conv (ck_pmem, from, conv);
 	    }
 	  else if (!same_type_p (fbase, tbase))
 	    return NULL;
 	}
-      else if (CLASS_TYPE_P (TREE_TYPE (from))
-	       && CLASS_TYPE_P (TREE_TYPE (to))
+      else if (CLASS_TYPE_P (from_pointee)
+	       && CLASS_TYPE_P (to_pointee)
 	       /* [conv.ptr]
 
 		  An rvalue of type "pointer to cv D," where D is a
@@ -1257,36 +1276,26 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 		  that necessitates this conversion is ill-formed.
 		  Therefore, we use DERIVED_FROM_P, and do not check
 		  access or uniqueness.  */
-	       && DERIVED_FROM_P (TREE_TYPE (to), TREE_TYPE (from)))
+	       && DERIVED_FROM_P (to_pointee, from_pointee))
 	{
-	  from =
-	    cp_build_qualified_type (TREE_TYPE (to),
-				     cp_type_quals (TREE_TYPE (from)));
-	  from = build_pointer_type (from);
+	  from_pointee
+	    = cp_build_qualified_type (to_pointee,
+				       cp_type_quals (from_pointee));
+	  from = build_pointer_type (from_pointee);
 	  conv = build_conv (ck_ptr, from, conv);
 	  conv->base_p = true;
 	}
-      else if (tx_safe_fn_type_p (TREE_TYPE (from)))
+      else if (tx_safe_fn_type_p (from_pointee))
 	{
 	  /* A prvalue of type "pointer to transaction_safe function" can be
 	     converted to a prvalue of type "pointer to function". */
-	  tree unsafe = tx_unsafe_fn_variant (TREE_TYPE (from));
-	  if (same_type_p (unsafe, TREE_TYPE (to)))
+	  tree unsafe = tx_unsafe_fn_variant (from_pointee);
+	  if (same_type_p (unsafe, to_pointee))
 	    {
+	      from_pointee = unsafe;
 	      from = build_pointer_type (unsafe);
 	      conv = build_conv (ck_tsafe, from, conv);
 	    }
-	}
-
-      if (tcode == POINTER_TYPE)
-	{
-	  to_pointee = TREE_TYPE (to);
-	  from_pointee = TREE_TYPE (from);
-	}
-      else
-	{
-	  to_pointee = TYPE_PTRMEM_POINTED_TO_TYPE (to);
-	  from_pointee = TYPE_PTRMEM_POINTED_TO_TYPE (from);
 	}
 
       if (same_type_p (from, to))
