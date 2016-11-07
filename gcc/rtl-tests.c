@@ -122,7 +122,7 @@ test_dumping_insns ()
   /* Labels.  */
   rtx_insn *label = gen_label_rtx ();
   CODE_LABEL_NUMBER (label) = 42;
-  ASSERT_RTL_DUMP_EQ ("(clabel 0 42 \"\")\n", label);
+  ASSERT_RTL_DUMP_EQ ("(clabel 0 42)\n", label);
 
   LABEL_NAME (label)= "some_label";
   ASSERT_RTL_DUMP_EQ ("(clabel 0 42 (\"some_label\"))\n", label);
@@ -176,8 +176,7 @@ test_uncond_jump ()
   ASSERT_TRUE (control_flow_insn_p (jump_insn));
 
   ASSERT_RTL_DUMP_EQ ("(cjump_insn 1 (set (pc)\n"
-		      "        (label_ref 0))\n"
-		      "     (nil))\n",
+		      "        (label_ref 0)))\n",
 		      jump_insn);
 }
 

@@ -564,6 +564,43 @@ rtx_writer::print_rtx_operand (const_rtx in_rtx, int idx)
     }
 }
 
+/* Subroutine of rtx_writer::print_rtx.
+   In compact mode, determine if operand IDX of IN_RTX is interesting
+   to dump, or (if in a trailing position) it can be omitted.  */
+
+bool
+rtx_writer::operand_has_default_value_p (const_rtx in_rtx, int idx)
+{
+  const char *format_ptr = GET_RTX_FORMAT (GET_CODE (in_rtx));
+
+  switch (format_ptr[idx])
+    {
+    case 'e':
+    case 'u':
+      return XEXP (in_rtx, idx) == NULL_RTX;
+
+    case 's':
+      return XSTR (in_rtx, idx) == NULL;
+
+    case '0':
+      switch (GET_CODE (in_rtx))
+	{
+	case JUMP_INSN:
+	  /* JUMP_LABELs are always omitted in compact mode, so treat
+	     any value here as omittable, so that earlier operands can
+	     potentially be omitted also.  */
+	  return m_compact;
+
+	default:
+	  return false;
+
+	}
+
+    default:
+      return false;
+    }
+}
+
 /* Print IN_RTX onto m_outfile.  This is the recursive part of printing.  */
 
 void
@@ -681,9 +718,18 @@ rtx_writer::print_rtx (const_rtx in_rtx)
 	fprintf (m_outfile, " %d", INSN_UID (in_rtx));
     }
 
+  /* Determine which is the final operand to print.
+     In compact mode, skip trailing operands that have the default values
+     e.g. trailing "(nil)" values.  */
+  int limit = GET_RTX_LENGTH (GET_CODE (in_rtx));
+  if (m_compact)
+    while (limit > idx && operand_has_default_value_p (in_rtx, limit - 1))
+      limit--;
+
   /* Get the format string and skip the first elements if we have handled
      them already.  */
-  for (; idx < GET_RTX_LENGTH (GET_CODE (in_rtx)); idx++)
+
+  for (; idx < limit; idx++)
     print_rtx_operand (in_rtx, idx);
 
   switch (GET_CODE (in_rtx))

@@ -1,3 +1,16 @@
+2016-11-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* print-rtl.c (rtx_writer::operand_has_default_value_p): New
+	method.
+	(rtx_writer::print_rtx): In compact mode, omit trailing operands
+	that have the default values.
+	* print-rtl.h (rtx_writer::operand_has_default_value_p): New
+	method.
+	* rtl-tests.c (selftest::test_dumping_insns): Remove empty
+	label string from expected dump.
+	(seltest::test_uncond_jump): Remove trailing "(nil)" for REG_NOTES
+	from expected dump.
+
 2016-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77834

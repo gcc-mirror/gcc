@@ -39,6 +39,7 @@ class rtx_writer
   void print_rtx_operand_code_r (const_rtx in_rtx);
   void print_rtx_operand_code_u (const_rtx in_rtx, int idx);
   void print_rtx_operand (const_rtx in_rtx, int idx);
+  bool operand_has_default_value_p (const_rtx in_rtx, int idx);
 
  private:
   FILE *m_outfile;
