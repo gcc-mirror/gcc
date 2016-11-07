@@ -1,3 +1,28 @@
+2016-11-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure.ac (.hidden): Change to conftest_s string. Provide string
+	for AIX assembler.
+	(gcc_cv_ld_hidden): Yes for AIX.
+	* configure: Regenerate.
+
+	* dwarf2asm.c (USE_LINKONCE_INDIRECT): Don't set for AIX (XCOFF).
+
+	* config/rs6000/rs6000-protos.h (rs6000_asm_weaken_decl): Declare
+	(rs6000_xcoff_asm_output_aligned_decl_common): Declare.
+	* config/rs6000/xcoff.h (TARGET_ASM_GLOBALIZE_DECL_NAME): Define.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): Define.
+	(ASM_OUTPUT_ALIGNED_COMMON): Delete.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Change clog rename
+	from #if to if.
+	(rs6000_xcoff_visibility): New.
+	(rs6000_xcoff_declare_function_name): Add visibility support.
+	(rs6000_xcoff_asm_globalize_decl_name): New.
+	(rs6000_xcoff_asm_output_aligned_decl_common): New.
+	(rs6000_asm_weaken_decl): New.
+	(rs6000_code_end): Disable HIDDEN_LINKONCE on XCOFF.
+	config/rs6000/rs6000.h (ASM_WEAKEN_DECL): Change definition to
+	reference function.
+
 2016-11-06  Jack Howarth  <howarth.at.gcc@gmail.com>
 
 	PR driver/78206
