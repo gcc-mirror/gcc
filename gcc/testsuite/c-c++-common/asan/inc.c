@@ -16,5 +16,6 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "ASAN_" 1 "asan0" } }  */
+/* { dg-final { scan-tree-dump-times "ASAN_" 4 "asan0" } }  */
 /* { dg-final { scan-tree-dump "ASAN_CHECK \\(.*, 4\\);" "asan0" } }  */
+/* { dg-final { scan-tree-dump "ASAN_CHECK \\(.*, 8\\);" "asan0" } }  */
