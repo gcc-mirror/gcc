@@ -1,3 +1,19 @@
+2016-11-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	* lib/scanasm.exp (hidden-scan-for): Add XCOFF support.
+
+	* gfortran.dg/implicit_class_1.f90: Skip on AIX.
+	* gcc.dg/visibility-14.c: XFAIL AIX.
+	* gcc.dg/visibility-15.c: XFAIL AIX.
+	* gcc.dg/visibility-16.c: XFAIL AIX.
+	* gcc.dg/visibility-17.c: XFAIL AIX.
+	* gcc.dg/visibility-18.c: XFAIL AIX.
+	* gcc.dg/visibility-19.c: XFAIL AIX.
+	* g++.dg/ext/visibility/anon1.C: XFAIL AIX.
+	* g++.dg/ext/visibility/anon2.C: XFAIL AIX.
+	* g++.dg/ext/visibility/pragma-override1.C: XFAIL AIX.
+	* g++.dg/ext/visibility/pragma-override2.C: XFAIL AIX.
+
 2016-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78227
