@@ -1,6 +1,6 @@
 2016-11-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR fortran/78826
+	PR fortran/78226
 	* match.c (gfc_match_select_type):  Add where for expr1.
 	* resolve.c (resolev_select_type): Add where for expr1 of new
 	statement.
