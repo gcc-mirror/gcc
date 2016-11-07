@@ -6168,17 +6168,19 @@ emit_copy_of_insn_after (rtx_insn *insn, rtx_insn *after)
      which may be duplicated by the basic block reordering code.  */
   RTX_FRAME_RELATED_P (new_rtx) = RTX_FRAME_RELATED_P (insn);
 
+  /* Locate the end of existing REG_NOTES in NEW_RTX.  */
+  rtx *ptail = &REG_NOTES (new_rtx);
+  while (*ptail != NULL_RTX)
+    ptail = &XEXP (*ptail, 1);
+
   /* Copy all REG_NOTES except REG_LABEL_OPERAND since mark_jump_label
      will make them.  REG_LABEL_TARGETs are created there too, but are
      supposed to be sticky, so we copy them.  */
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
       {
-	if (GET_CODE (link) == EXPR_LIST)
-	  add_reg_note (new_rtx, REG_NOTE_KIND (link),
-			copy_insn_1 (XEXP (link, 0)));
-	else
-	  add_shallow_copy_of_reg_note (new_rtx, link);
+	*ptail = duplicate_reg_note (link);
+	ptail = &XEXP (*ptail, 1);
       }
 
   INSN_CODE (new_rtx) = INSN_CODE (insn);

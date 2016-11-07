@@ -5762,6 +5762,11 @@ create_copy_of_insn_rtx (rtx insn_rtx)
   res = create_insn_rtx_from_pattern (copy_rtx (PATTERN (insn_rtx)),
                                       NULL_RTX);
 
+  /* Locate the end of existing REG_NOTES in NEW_RTX.  */
+  rtx *ptail = &REG_NOTES (res);
+  while (*ptail != NULL_RTX)
+    ptail = &XEXP (*ptail, 1);
+
   /* Copy all REG_NOTES except REG_EQUAL/REG_EQUIV and REG_LABEL_OPERAND
      since mark_jump_label will make them.  REG_LABEL_TARGETs are created
      there too, but are supposed to be sticky, so we copy them.  */
@@ -5770,11 +5775,8 @@ create_copy_of_insn_rtx (rtx insn_rtx)
 	&& REG_NOTE_KIND (link) != REG_EQUAL
 	&& REG_NOTE_KIND (link) != REG_EQUIV)
       {
-	if (GET_CODE (link) == EXPR_LIST)
-	  add_reg_note (res, REG_NOTE_KIND (link),
-			copy_insn_1 (XEXP (link, 0)));
-	else
-	  add_reg_note (res, REG_NOTE_KIND (link), XEXP (link, 0));
+	*ptail = duplicate_reg_note (link);
+	ptail = &XEXP (*ptail, 1);
       }
 
   return res;

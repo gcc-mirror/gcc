@@ -2304,6 +2304,20 @@ add_shallow_copy_of_reg_note (rtx_insn *insn, rtx note)
     add_reg_note (insn, REG_NOTE_KIND (note), XEXP (note, 0));
 }
 
+/* Duplicate NOTE and return the copy.  */
+rtx
+duplicate_reg_note (rtx note)
+{
+  reg_note kind = REG_NOTE_KIND (note);
+
+  if (GET_CODE (note) == INT_LIST)
+    return gen_rtx_INT_LIST ((machine_mode) kind, XINT (note, 0), NULL_RTX);
+  else if (GET_CODE (note) == EXPR_LIST)
+    return alloc_reg_note (kind, copy_insn_1 (XEXP (note, 0)), NULL_RTX);
+  else
+    return alloc_reg_note (kind, XEXP (note, 0), NULL_RTX);
+}
+
 /* Remove register note NOTE from the REG_NOTES of INSN.  */
 
 void
