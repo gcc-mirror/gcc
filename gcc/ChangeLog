@@ -1,3 +1,15 @@
+2016-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/77822
+	* config/aarch64/aarch64.md (*tb<optab><mode>1): Use
+	aarch64_simd_shift_imm_<mode> predicate for operand 1.
+	(<optab>, ANY_EXTRACT): Use tighter predicates on operands 2 and 3
+	to restrict them to an appropriate range and add FAIL check if the
+	region they specify is out of range.  Delete useless constraint
+	strings.
+	(*<optab><mode>, ANY_EXTRACT): Add appropriate predicates on operands
+	2 and 3 to restrict their range and add pattern predicate.
+
 2016-11-07  Martin Liska  <mliska@suse.cz>
 
 	* asan.c (enum asan_check_flags): Move the enum to header file.
