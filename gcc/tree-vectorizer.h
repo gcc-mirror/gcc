@@ -1166,7 +1166,7 @@ extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 extern void vect_free_slp_instance (slp_instance);
 extern bool vect_transform_slp_perm_load (slp_tree, vec<tree> ,
                                           gimple_stmt_iterator *, int,
-                                          slp_instance, bool);
+                                          slp_instance, bool, unsigned *);
 extern bool vect_slp_analyze_operations (vec<slp_instance> slp_instances,
 					 void *);
 extern bool vect_schedule_slp (vec_info *);

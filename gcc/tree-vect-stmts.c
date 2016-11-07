@@ -6978,8 +6978,11 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    }
 	}
       if (slp_perm)
-	vect_transform_slp_perm_load (slp_node, dr_chain, gsi, vf,
-				      slp_node_instance, false);
+	{
+	  unsigned n_perms;
+	  vect_transform_slp_perm_load (slp_node, dr_chain, gsi, vf,
+					slp_node_instance, false, &n_perms);
+	}
       return true;
     }
 
@@ -7497,8 +7500,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       if (slp_perm)
         {
+	  unsigned n_perms;
           if (!vect_transform_slp_perm_load (slp_node, dr_chain, gsi, vf,
-                                             slp_node_instance, false))
+                                             slp_node_instance, false,
+					     &n_perms))
             {
               dr_chain.release ();
               return false;
