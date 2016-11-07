@@ -1,6 +1,6 @@
-/* PR target/pr65105 */
-/* { dg-do run { target { ia32 } } } */
-/* { dg-options "-O2 -march=slm" } */
+// PR target/65105
+// { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } }
+// { dg-options "-O2 -march=slm" }
 
 struct s {
   long long l1, l2, l3, l4, l5;

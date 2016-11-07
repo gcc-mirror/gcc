@@ -1,3 +1,19 @@
+2016-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/71529
+	* gcc.target/i386/pr71529.C: Moved to ...
+	* g++.dg/opt/pr71529.C: ... here.  New test.  Guard for i?86/x86_64.
+
+	PR target/64411
+	* gcc.target/i386/pr64411.C: Moved to ...
+	* g++.dg/opt/pr64411.C: ... here.  New test.  Guard for i?86/x86_64
+	lp64.
+
+	PR target/65105
+	* gcc.target/i386/pr65105-4.C: Moved to ...
+	* g++.dg/opt/pr65105-4.C: ... here.  New test.  Guard for i?86/x86_64.
+	Run into compile test rather than execute test.
+
 2016-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR target/78229
