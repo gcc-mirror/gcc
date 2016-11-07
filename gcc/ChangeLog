@@ -1,5 +1,17 @@
 2016-11-07  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/37150
+	* tree-vectorizer.h (vect_transform_slp_perm_load): Add n_perms
+	parameter.
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Adjust.
+	(vect_analyze_slp_cost_1): Account for the real number of
+	permutations emitted and for dead loads.
+	(vect_transform_slp_perm_load): Add n_perms parameter counting
+	the number of emitted permutations.
+	* tree-vect-stmts.c (vectorizable_load): Adjust.
+
+2016-11-07  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/78189
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Fix
 	alignment computation.

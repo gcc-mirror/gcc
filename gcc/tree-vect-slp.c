@@ -1461,8 +1461,9 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 	    {
 	      /* Verify the permutation can be generated.  */
 	      vec<tree> tem;
+	      unsigned n_perms;
 	      if (!vect_transform_slp_perm_load (node, tem, NULL,
-						 1, slp_instn, true))
+						 1, slp_instn, true, &n_perms))
 		{
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION,
 				   vect_location,
@@ -1475,11 +1476,13 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
     }
 
   /* For loop vectorization verify we can generate the permutation.  */
+  unsigned n_perms;
   FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
     if (node->load_permutation.exists ()
 	&& !vect_transform_slp_perm_load
 	      (node, vNULL, NULL,
-	       SLP_INSTANCE_UNROLLING_FACTOR (slp_instn), slp_instn, true))
+	       SLP_INSTANCE_UNROLLING_FACTOR (slp_instn), slp_instn, true,
+	       &n_perms))
       return false;
 
   return true;
@@ -1548,14 +1551,38 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 	      stmt = GROUP_FIRST_ELEMENT (stmt_info);
 	      stmt_info = vinfo_for_stmt (stmt);
 	      /* Record the cost for the permutation.  */
-	      record_stmt_cost (body_cost_vec, ncopies_for_cost, vec_perm,
+	      unsigned n_perms;
+	      vect_transform_slp_perm_load (node, vNULL, NULL,
+					    ncopies_for_cost, instance, true,
+					    &n_perms);
+	      record_stmt_cost (body_cost_vec, n_perms, vec_perm,
 				stmt_info, 0, vect_body);
-	      /* And adjust the number of loads performed.  */
 	      unsigned nunits
 		= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
-	      ncopies_for_cost
-	        = (GROUP_SIZE (stmt_info) - GROUP_GAP (stmt_info)
-		   + nunits - 1) / nunits;
+	      /* And adjust the number of loads performed.  This handles
+	         redundancies as well as loads that are later dead.  */
+	      auto_sbitmap perm (GROUP_SIZE (stmt_info));
+	      bitmap_clear (perm);
+	      for (i = 0; i < SLP_TREE_LOAD_PERMUTATION (node).length (); ++i)
+		bitmap_set_bit (perm, SLP_TREE_LOAD_PERMUTATION (node)[i]);
+	      ncopies_for_cost = 0;
+	      bool load_seen = false;
+	      for (i = 0; i < GROUP_SIZE (stmt_info); ++i)
+		{
+		  if (i % nunits == 0)
+		    {
+		      if (load_seen)
+			ncopies_for_cost++;
+		      load_seen = false;
+		    }
+		  if (bitmap_bit_p (perm, i))
+		    load_seen = true;
+		}
+	      if (load_seen)
+		ncopies_for_cost++;
+	      gcc_assert (ncopies_for_cost
+			  <= (GROUP_SIZE (stmt_info) - GROUP_GAP (stmt_info)
+			      + nunits - 1) / nunits);
 	      ncopies_for_cost *= SLP_INSTANCE_UNROLLING_FACTOR (instance);
 	    }
 	  /* Record the cost for the vector loads.  */
@@ -3402,7 +3429,8 @@ vect_create_mask_and_perm (gimple *stmt,
 bool
 vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
                               gimple_stmt_iterator *gsi, int vf,
-                              slp_instance slp_node_instance, bool analyze_only)
+                              slp_instance slp_node_instance, bool analyze_only,
+			      unsigned *n_perms)
 {
   gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0];
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -3457,6 +3485,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   int first_vec_index = -1;
   int second_vec_index = -1;
   bool noop_p = true;
+  *n_perms = 0;
 
   for (int j = 0; j < unroll_factor; j++)
     {
@@ -3512,6 +3541,9 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 		    }
 		  return false;
 		}
+
+	      if (! noop_p)
+		++*n_perms;
 
 	      if (!analyze_only)
 		{
