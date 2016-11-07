@@ -1,5 +1,10 @@
 2016-11-07  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78218
+	* gcc.dg/torture/pr78218.c: New testcase.
+
+2016-11-07  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/78228
 	* gcc.dg/tree-ssa/phi-opt-15.c: New testcase.
 
