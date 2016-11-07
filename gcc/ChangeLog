@@ -1,5 +1,11 @@
 2016-11-07  Richard Biener  <rguenther@suse.de>
 
+	PR target/78229
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Do not adjust
+	EH info.
+
+2016-11-07  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/78218
 	* gimple-ssa-store-merging.c
 	(pass_store_merging::terminate_all_aliasing_chains):
