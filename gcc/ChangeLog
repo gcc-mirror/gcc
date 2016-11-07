@@ -1,3 +1,10 @@
+2016-11-07  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* target.def (compute_pressure_classes): New target hook.
+	* doc/tm.texi.in: Document it.
+	* doc/tm.texi: Regenerate.
+	* ira.c (setup_pressure_classes): Call target hook if defined.
+
 2016-11-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* print-rtl.c (rtx_writer::operand_has_default_value_p): New

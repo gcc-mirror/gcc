@@ -5039,6 +5039,16 @@ DEFHOOK
   machine_mode, (enum insn_code icode),
   default_cstore_mode)
 
+/* This target hook allows the backend to compute the register pressure
+   classes to use.  */
+DEFHOOK
+(compute_pressure_classes,
+ "A target hook which lets a backend compute the set of pressure classes to\
+  be used by those optimization passes which take register pressure into\
+  account, as opposed to letting IRA compute them.  It returns the number of\
+  register classes stored in the array @var{pressure_classes}.",
+ int, (enum reg_class *pressure_classes), NULL)
+
 /* True if a structure, union or array with MODE containing FIELD should
    be accessed using BLKmode.  */
 DEFHOOK

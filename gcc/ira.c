@@ -792,78 +792,85 @@ setup_pressure_classes (void)
   HARD_REG_SET temp_hard_regset2;
   bool insert_p;
 
-  n = 0;
-  for (cl = 0; cl < N_REG_CLASSES; cl++)
-    {
-      if (ira_class_hard_regs_num[cl] == 0)
-	continue;
-      if (ira_class_hard_regs_num[cl] != 1
-	  /* A register class without subclasses may contain a few
-	     hard registers and movement between them is costly
-	     (e.g. SPARC FPCC registers).  We still should consider it
-	     as a candidate for a pressure class.  */
-	  && alloc_reg_class_subclasses[cl][0] < cl)
+  if (targetm.compute_pressure_classes)
+    n = targetm.compute_pressure_classes (pressure_classes);
+  else
+    { 
+      n = 0;
+      for (cl = 0; cl < N_REG_CLASSES; cl++)
 	{
-	  /* Check that the moves between any hard registers of the
-	     current class are not more expensive for a legal mode
-	     than load/store of the hard registers of the current
-	     class.  Such class is a potential candidate to be a
-	     register pressure class.  */
-	  for (m = 0; m < NUM_MACHINE_MODES; m++)
+	  if (ira_class_hard_regs_num[cl] == 0)
+	    continue;
+	  if (ira_class_hard_regs_num[cl] != 1
+	      /* A register class without subclasses may contain a few
+		 hard registers and movement between them is costly
+		 (e.g. SPARC FPCC registers).  We still should consider it
+		 as a candidate for a pressure class.  */
+	      && alloc_reg_class_subclasses[cl][0] < cl)
 	    {
-	      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-	      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-	      AND_COMPL_HARD_REG_SET (temp_hard_regset,
-				      ira_prohibited_class_mode_regs[cl][m]);
-	      if (hard_reg_set_empty_p (temp_hard_regset))
+	      /* Check that the moves between any hard registers of the
+		 current class are not more expensive for a legal mode
+		 than load/store of the hard registers of the current
+		 class.  Such class is a potential candidate to be a
+		 register pressure class.  */
+	      for (m = 0; m < NUM_MACHINE_MODES; m++)
+		{
+		  COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
+		  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+		  AND_COMPL_HARD_REG_SET (temp_hard_regset,
+					  ira_prohibited_class_mode_regs[cl][m]);
+		  if (hard_reg_set_empty_p (temp_hard_regset))
+		    continue;
+		  ira_init_register_move_cost_if_necessary ((machine_mode) m);
+		  cost = ira_register_move_cost[m][cl][cl];
+		  if (cost <= ira_max_memory_move_cost[m][cl][1]
+		      || cost <= ira_max_memory_move_cost[m][cl][0])
+		    break;
+		}
+	      if (m >= NUM_MACHINE_MODES)
 		continue;
-	      ira_init_register_move_cost_if_necessary ((machine_mode) m);
-	      cost = ira_register_move_cost[m][cl][cl];
-	      if (cost <= ira_max_memory_move_cost[m][cl][1]
-		  || cost <= ira_max_memory_move_cost[m][cl][0])
-		break;
 	    }
-	  if (m >= NUM_MACHINE_MODES)
-	    continue;
-	}
-      curr = 0;
-      insert_p = true;
-      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-      /* Remove so far added pressure classes which are subset of the
-	 current candidate class.  Prefer GENERAL_REGS as a pressure
-	 register class to another class containing the same
-	 allocatable hard registers.  We do this because machine
-	 dependent cost hooks might give wrong costs for the latter
-	 class but always give the right cost for the former class
-	 (GENERAL_REGS).  */
-      for (i = 0; i < n; i++)
-	{
-	  cl2 = pressure_classes[i];
-	  COPY_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl2]);
-	  AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
-	  if (hard_reg_set_subset_p (temp_hard_regset, temp_hard_regset2)
-	      && (! hard_reg_set_equal_p (temp_hard_regset, temp_hard_regset2)
-		  || cl2 == (int) GENERAL_REGS))
+	  curr = 0;
+	  insert_p = true;
+	  COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
+	  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+	  /* Remove so far added pressure classes which are subset of the
+	     current candidate class.  Prefer GENERAL_REGS as a pressure
+	     register class to another class containing the same
+	     allocatable hard registers.  We do this because machine
+	     dependent cost hooks might give wrong costs for the latter
+	     class but always give the right cost for the former class
+	     (GENERAL_REGS).  */
+	  for (i = 0; i < n; i++)
 	    {
+	      cl2 = pressure_classes[i];
+	      COPY_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl2]);
+	      AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
+	      if (hard_reg_set_subset_p (temp_hard_regset, temp_hard_regset2)
+		  && (! hard_reg_set_equal_p (temp_hard_regset,
+					      temp_hard_regset2)
+		      || cl2 == (int) GENERAL_REGS))
+		{
+		  pressure_classes[curr++] = (enum reg_class) cl2;
+		  insert_p = false;
+		  continue;
+		}
+	      if (hard_reg_set_subset_p (temp_hard_regset2, temp_hard_regset)
+		  && (! hard_reg_set_equal_p (temp_hard_regset2,
+					      temp_hard_regset)
+		      || cl == (int) GENERAL_REGS))
+		continue;
+	      if (hard_reg_set_equal_p (temp_hard_regset2, temp_hard_regset))
+		insert_p = false;
 	      pressure_classes[curr++] = (enum reg_class) cl2;
-	      insert_p = false;
-	      continue;
 	    }
-	  if (hard_reg_set_subset_p (temp_hard_regset2, temp_hard_regset)
-	      && (! hard_reg_set_equal_p (temp_hard_regset2, temp_hard_regset)
-		  || cl == (int) GENERAL_REGS))
-	    continue;
-	  if (hard_reg_set_equal_p (temp_hard_regset2, temp_hard_regset))
-	    insert_p = false;
-	  pressure_classes[curr++] = (enum reg_class) cl2;
+	  /* If the current candidate is a subset of a so far added
+	     pressure class, don't add it to the list of the pressure
+	     classes.  */
+	  if (insert_p)
+	    pressure_classes[curr++] = (enum reg_class) cl;
+	  n = curr;
 	}
-      /* If the current candidate is a subset of a so far added
-	 pressure class, don't add it to the list of the pressure
-	 classes.  */
-      if (insert_p)
-	pressure_classes[curr++] = (enum reg_class) cl;
-      n = curr;
     }
 #ifdef ENABLE_IRA_CHECKING
   {
