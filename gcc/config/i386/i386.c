@@ -37664,7 +37664,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 	  g = gimple_build_assign (gimple_call_lhs (stmt), NOP_EXPR, lhs);
 	  gimple_set_location (g, loc);
-	  gsi_replace (gsi, g, true);
+	  gsi_replace (gsi, g, false);
 	  return true;
 	}
       break;
