@@ -1,3 +1,8 @@
+2016-11-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Export C++17 new of
+	over-aligned types symbols.
+
 2016-10-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/fs_path.h (__is_path_src)
