@@ -868,18 +868,6 @@ union_stack_vars (size_t a, size_t b)
     }
 }
 
-/* Return true if the current function should have its stack frame
-   protected by address sanitizer.  */
-
-static inline bool
-asan_sanitize_stack_p (void)
-{
-  return ((flag_sanitize & SANITIZE_ADDRESS)
-	  && ASAN_STACK
-	  && !lookup_attribute ("no_sanitize_address",
-				DECL_ATTRIBUTES (current_function_decl)));
-}
-
 /* A subroutine of expand_used_vars.  Binpack the variables into
    partitions constrained by the interference graph.  The overall
    algorithm used is as follows:
@@ -941,7 +929,8 @@ partition_stack_vars (void)
 	     sizes, as the shorter vars wouldn't be adequately protected.
 	     Don't do that for "large" (unsupported) alignment objects,
 	     those aren't protected anyway.  */
-	  if (asan_sanitize_stack_p () && isize != jsize
+	  if ((asan_sanitize_stack_p ())
+	      && isize != jsize
 	      && ialign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	    break;
 
@@ -1128,7 +1117,8 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
       if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
 	  base = virtual_stack_vars_rtx;
-	  if (asan_sanitize_stack_p () && pred)
+	  if ((asan_sanitize_stack_p ())
+	      && pred)
 	    {
 	      HOST_WIDE_INT prev_offset
 		= align_base (frame_offset,

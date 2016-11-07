@@ -237,6 +237,15 @@ expand_ASAN_CHECK (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* This should get expanded in the sanopt pass.  */
+
+static void
+expand_ASAN_MARK (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+
 /* This should get expanded in the tsan pass.  */
 
 static void

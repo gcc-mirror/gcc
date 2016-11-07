@@ -732,6 +732,9 @@ pass_sanopt::execute (function *fun)
 		case IFN_ASAN_CHECK:
 		  no_next = asan_expand_check_ifn (&gsi, use_calls);
 		  break;
+		case IFN_ASAN_MARK:
+		  no_next = asan_expand_mark_ifn (&gsi);
+		  break;
 		default:
 		  break;
 		}

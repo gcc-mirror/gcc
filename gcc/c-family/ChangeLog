@@ -1,3 +1,8 @@
+2016-11-07  Martin Liska  <mliska@suse.cz>
+
+	* c-warn.c (warn_for_unused_label): Save all labels used
+	in goto or in &label.
+
 2016-11-03  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Correct

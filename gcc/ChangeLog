@@ -1,3 +1,58 @@
+2016-11-07  Martin Liska  <mliska@suse.cz>
+
+	* asan.c (enum asan_check_flags): Move the enum to header file.
+	(asan_init_shadow_ptr_types): Make type creation more generic.
+	(shadow_mem_size): New function.
+	(asan_emit_stack_protection): Use newly added ASAN_SHADOW_GRANULARITY.
+	Rewritten stack unpoisoning code.
+	(build_shadow_mem_access): Add new argument return_address.
+	(instrument_derefs): Instrument local variables if use after scope
+	sanitization is enabled.
+	(asan_store_shadow_bytes): New function.
+	(asan_expand_mark_ifn): Likewise.
+	(asan_sanitize_stack_p): Moved from asan_sanitize_stack_p.
+	* asan.h (enum asan_mark_flags): Moved here from asan.c
+	(asan_protect_stack_decl): Protect all declaration that need
+	to live in memory.
+	(asan_sanitize_use_after_scope): New function.
+	(asan_no_sanitize_address_p): Likewise.
+	* cfgexpand.c (partition_stack_vars): Consider
+	asan_sanitize_use_after_scope in condition.
+	(expand_stack_vars): Likewise.
+	* common.opt (-fsanitize-address-use-after-scope): New option.
+	* doc/invoke.texi (use-after-scope-direct-emission-threshold):
+	Explain the parameter.
+	* flag-types.h (enum sanitize_code): Define SANITIZE_USE_AFTER_SCOPE.
+	* gimplify.c (build_asan_poison_call_expr): New function.
+	(asan_poison_variable): Likewise.
+	(gimplify_bind_expr): Generate poisoning/unpoisoning for local
+	variables that have address taken.
+	(gimplify_decl_expr): Likewise.
+	(gimplify_target_expr): Likewise for C++ temporaries.
+	(sort_by_decl_uid): New function.
+	(gimplify_expr): Unpoison all variables for a label we can jump
+	from outside of a scope.
+	(gimplify_switch_expr): Unpoison variables defined in the switch
+	context.
+	(gimplify_function_tree): Clear asan_poisoned_variables.
+	(asan_poison_variables): New function.
+	(warn_switch_unreachable_r): Handle IFN_ASAN_MARK.
+	* internal-fn.c (expand_ASAN_MARK): New function.
+	* internal-fn.def (ASAN_MARK): Declare.
+	* opts.c (finish_options): Handle -fstack-reuse if
+	-fsanitize-address-use-after-scope is enabled.
+	(common_handle_option): Enable address sanitization if
+	-fsanitize-address-use-after-scope is enabled.
+	* params.def (PARAM_USE_AFTER_SCOPE_DIRECT_EMISSION_THRESHOLD):
+	New parameter.
+	* params.h: Likewise.
+	* sancov.c (pass_sanopt::execute): Handle IFN_ASAN_MARK.
+	* sanitizer.def: Define __asan_poison_stack_memory and
+	__asan_unpoison_stack_memory functions.
+	* asan.c (asan_mark_poison_p): New function.
+	(transform_statements): Handle asan_mark_poison_p calls.
+	* gimple.c (nonfreeing_call_p): Handle IFN_ASAN_MARK.
+
 2016-11-07  Tamar Christina  <tamar.christina@arm.com>
 
 	PR driver/78196
