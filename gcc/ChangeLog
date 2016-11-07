@@ -1,3 +1,9 @@
+2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78228
+	* tree-ssa-phiopt.c (abs_replacement): Avoid introducing
+	undefined behavior.
+
 2016-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/77822
