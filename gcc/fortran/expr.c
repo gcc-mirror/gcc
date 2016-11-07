@@ -4367,6 +4367,7 @@ gfc_generate_initializer (gfc_typespec *ts, bool generate)
 	{
 	  ctor->expr = gfc_get_expr ();
 	  ctor->expr->expr_type = EXPR_NULL;
+	  ctor->expr->where = init->where;
 	  ctor->expr->ts = comp->ts;
 	}
 

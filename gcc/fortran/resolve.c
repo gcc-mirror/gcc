@@ -8863,6 +8863,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  st = gfc_find_symtree (vtab->ns->sym_root, vtab->name);
 	  new_st->expr1->value.function.actual->next = gfc_get_actual_arglist ();
 	  new_st->expr1->value.function.actual->next->expr = gfc_get_variable_expr (st);
+	  new_st->expr1->value.function.actual->next->expr->where = code->loc;
 	  new_st->next = body->next;
 	}
 	if (default_case->next)
