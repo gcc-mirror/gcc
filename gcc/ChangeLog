@@ -1,5 +1,10 @@
 2016-11-07  Bernd Schmidt  <bschmidt@redhat.com>
 
+	* emit-rtl.c (emit_copy_of_insn_after): Duplicate notes in order.
+	* sel-sched-ir.c (create_copy_of_insn_rtx): Likewise.
+	* rtl.h (duplicate_reg_notes): Declare.
+	* rtlanal.c (duplicate_reg_note): New function.
+
 	PR rtl-optimization/77309
 	* combine.c (make_compound_operation): Allow EQ for IN_CODE, and
 	don't assume an equality comparison for plain COMPARE.
