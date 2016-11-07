@@ -1,5 +1,9 @@
 2016-11-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/77834
+	* dse.c (dse_step5): Call scan_reads even if just
+	insn_info->frame_read.  Improve and fix dump file messages.
+
 	PR target/78227
 	* config/i386/i386.c (ix86_expand_sse_cmp): Force dest into
 	cmp_mode argument even for -O0 if cmp_mode != mode and maskcmp.
