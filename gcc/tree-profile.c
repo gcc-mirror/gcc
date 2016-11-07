@@ -489,8 +489,9 @@ gimple_gen_time_profiler (unsigned tag, unsigned base)
   /* Emit: counters[0] = ++__gcov_time_profiler_counter.  */
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
     {
-      tree ptr = make_temp_ssa_name (type, NULL, "time_profiler_counter_ptr");
-      tree addr = build1 (ADDR_EXPR, build_pointer_type (type),
+      tree ptr = make_temp_ssa_name (build_pointer_type (type), NULL,
+				     "time_profiler_counter_ptr");
+      tree addr = build1 (ADDR_EXPR, TREE_TYPE (ptr),
 			  tree_time_profiler_counter);
       gassign *assign = gimple_build_assign (ptr, NOP_EXPR, addr);
       gsi_insert_before (&gsi, assign, GSI_NEW_STMT);

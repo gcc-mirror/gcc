@@ -1,3 +1,8 @@
+2016-11-07  Martin Liska  <mliska@suse.cz>
+
+	* tree-profile.c (gimple_gen_time_profiler): Set proper type
+	to time_profiler_counter_ptr.
+
 2016-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/37150
