@@ -22662,6 +22662,15 @@ fi
 # ld, we don't know its patchlevel version, so we set the baseline at 2.13
 # to be safe.
 # The gcc_GAS_CHECK_FEATURE call just sets a cache variable.
+case "${target}" in
+  *-*-aix*)
+    conftest_s='	.globl foobar,hidden'
+    ;;
+  *)
+    conftest_s='	.hidden foobar
+foobar:'
+    ;;
+esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .hidden" >&5
 $as_echo_n "checking assembler for .hidden... " >&6; }
 if test "${gcc_cv_as_hidden+set}" = set; then :
@@ -22674,8 +22683,7 @@ else
   then gcc_cv_as_hidden=yes
 fi
   elif test x$gcc_cv_as != x; then
-    $as_echo '	.hidden foobar
-foobar:' > conftest.s
+    $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
@@ -22809,6 +22817,9 @@ else
     fi
   else
     case "${target}" in
+      *-*-aix[789]*)
+        gcc_cv_ld_hidden=yes
+        ;;
       *-*-darwin*)
 	# Darwin ld has some visibility support.
 	gcc_cv_ld_hidden=yes

@@ -187,8 +187,13 @@ extern rtx rs6000_libcall_value (machine_mode);
 extern rtx rs6000_va_arg (tree, tree);
 extern int function_ok_for_sibcall (tree);
 extern int rs6000_reg_parm_stack_space (tree, bool);
+extern void rs6000_asm_weaken_decl (FILE *, tree, const char *, const char *);
 extern void rs6000_xcoff_declare_function_name (FILE *, const char *, tree);
 extern void rs6000_xcoff_declare_object_name (FILE *, const char *, tree);
+extern void rs6000_xcoff_asm_output_aligned_decl_common (FILE *, tree,
+							 const char *,
+							 unsigned HOST_WIDE_INT,
+							 unsigned HOST_WIDE_INT);
 extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 extern bool rs6000_elf_in_small_data_p (const_tree);
 #ifdef ARGS_SIZE_RTX

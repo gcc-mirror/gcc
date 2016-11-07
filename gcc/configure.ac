@@ -2537,10 +2537,17 @@ gcc_GAS_CHECK_FEATURE([.nsubspa comdat], gcc_cv_as_nsubspa_comdat,
 # ld, we don't know its patchlevel version, so we set the baseline at 2.13
 # to be safe.
 # The gcc_GAS_CHECK_FEATURE call just sets a cache variable.
+case "${target}" in
+  *-*-aix*)
+    conftest_s='	.globl foobar,hidden'
+    ;;
+  *)
+    conftest_s='	.hidden foobar
+foobar:'
+    ;;
+esac
 gcc_GAS_CHECK_FEATURE([.hidden], gcc_cv_as_hidden,
- [elf,2,13,0],,
-[	.hidden foobar
-foobar:])
+ [elf,2,13,0],, [$conftest_s])
 case "${target}" in
   *-*-darwin*)
     # Darwin as has some visibility support, though with a different syntax.
@@ -2649,6 +2656,9 @@ else
     fi
   else
     case "${target}" in
+      *-*-aix[789]*)
+        gcc_cv_ld_hidden=yes
+        ;;
       *-*-darwin*)
 	# Darwin ld has some visibility support.
 	gcc_cv_ld_hidden=yes

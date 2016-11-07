@@ -2282,35 +2282,8 @@ extern int toc_initialized;
 
 #if RS6000_WEAK
 /* Used in lieu of ASM_WEAKEN_LABEL.  */
-#define	ASM_WEAKEN_DECL(FILE, DECL, NAME, VAL)			 	\
-  do									\
-    {									\
-      fputs ("\t.weak\t", (FILE));					\
-      RS6000_OUTPUT_BASENAME ((FILE), (NAME)); 				\
-      if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL			\
-	  && DEFAULT_ABI == ABI_AIX && DOT_SYMBOLS)			\
-	{								\
-	  if (TARGET_XCOFF)						\
-	    fputs ("[DS]", (FILE));					\
-	  fputs ("\n\t.weak\t.", (FILE));				\
-	  RS6000_OUTPUT_BASENAME ((FILE), (NAME)); 			\
-	}								\
-      fputc ('\n', (FILE));						\
-      if (VAL)								\
-	{								\
-	  ASM_OUTPUT_DEF ((FILE), (NAME), (VAL));			\
-	  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL		\
-	      && DEFAULT_ABI == ABI_AIX && DOT_SYMBOLS)			\
-	    {								\
-	      fputs ("\t.set\t.", (FILE));				\
-	      RS6000_OUTPUT_BASENAME ((FILE), (NAME));			\
-	      fputs (",.", (FILE));					\
-	      RS6000_OUTPUT_BASENAME ((FILE), (VAL));			\
-	      fputc ('\n', (FILE));					\
-	    }								\
-	}								\
-    }									\
-  while (0)
+#define        ASM_WEAKEN_DECL(FILE, DECL, NAME, VAL) \
+  rs6000_asm_weaken_decl ((FILE), (DECL), (NAME), (VAL))
 #endif
 
 #if HAVE_GAS_WEAKREF
