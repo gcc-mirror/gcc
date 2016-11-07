@@ -1,3 +1,8 @@
+2016-11-06  Jack Howarth  <howarth.at.gcc@gmail.com>
+
+	PR driver/78206
+	* incpath.c: (remove_dup(): Also silently ignore EPERM.
+
 2016-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR target/78229
