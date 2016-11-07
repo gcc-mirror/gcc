@@ -3,6 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-options "-maltivec -mvsx -mpower8-vector" } */
 
 #include <altivec.h>
 

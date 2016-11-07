@@ -1,5 +1,17 @@
 2016-11-07  David Edelsohn  <dje.gcc@gmail.com>
 
+	* gcc.target/powerpc/fold-vec-add-1.c: Add dg-options -maltivec.
+	* gcc.target/powerpc/fold-vec-add-2.c: Add dg-options -maltivec.
+	* gcc.target/powerpc/fold-vec-add-3.c: Add dg-options -maltivec.
+	* gcc.target/powerpc/fold-vec-add-4.c: Add dg-options -maltivec
+	-mvsx -mpower8-vector.
+	* gcc.target/powerpc/fold-vec-add-5.c: Add dg-options -maltivec -mno-vsx.
+	* gcc.target/powerpc/fold-vec-add-6.c: Add dg-options -maltivec -mvsx.
+	* gcc.target/powerpc/fold-vec-add-7.c: Add dg-options -maltivec
+	-mvsx -mpower8-vector.
+
+2016-11-07  David Edelsohn  <dje.gcc@gmail.com>
+
 	* lib/scanasm.exp (hidden-scan-for): Add XCOFF support.
 
 	* gfortran.dg/implicit_class_1.f90: Skip on AIX.
