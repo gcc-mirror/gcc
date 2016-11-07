@@ -2369,10 +2369,10 @@ gfc_complex2real (gfc_expr *src, int kind)
       /* See if we discarded an imaginary part.  */
       if (mpfr_cmp_si (mpc_imagref (src->value.complex), 0) != 0)
 	{
-	  gfc_warning_now (w, "Non-zero imaginary part discarded "
-			   "in conversion from %qs to %qs at %L",
-			   gfc_typename(&src->ts), gfc_typename (&result->ts),
-			   &src->where);
+	  gfc_warning (w, "Non-zero imaginary part discarded "
+		       "in conversion from %qs to %qs at %L",
+		       gfc_typename(&src->ts), gfc_typename (&result->ts),
+		       &src->where);
 	  did_warn = true;
 	}
 
