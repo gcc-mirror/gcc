@@ -1879,7 +1879,10 @@ rest.cross: specs
 # Specify a dummy input file to placate the driver.
 # Specify -nostdinc to work around missing WIND_BASE environment variable
 # required for *-wrs-vxworks-* targets.
-SELFTEST_FLAGS = -nostdinc -x c /dev/null -S -fself-test
+# Specify -o /dev/null so the output of -S is discarded. More importantly
+# It does not try to create a file with the name "null.s" on POSIX and
+# "nul.s" on Windows. Because on Windows "nul" is a reserved file name.
+SELFTEST_FLAGS = -nostdinc -x c /dev/null -S -fself-test -o /dev/null
 
 # Run the selftests during the build once we have a driver and a cc1,
 # so that self-test failures are caught as early as possible.

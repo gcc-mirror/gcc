@@ -1,3 +1,8 @@
+2016-11-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR driver/78196
+	* Makefile.in (SELFTEST_FLAGS): Added -o /dev/null.
+
 2016-11-07  Martin Liska  <mliska@suse.cz>
 
 	* tree-profile.c (gimple_gen_time_profiler): Set proper type
