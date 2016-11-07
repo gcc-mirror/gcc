@@ -1,3 +1,8 @@
+2016-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	* tree.c (verify_type_variant): Use pointer comparison to check that
+	TYPE_SIZE_UNIT match.
+
 2016-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77834

@@ -13289,12 +13289,10 @@ verify_type_variant (const_tree t, tree tv)
 	verify_variant_match (TYPE_SIZE);
       if (TREE_CODE (TYPE_SIZE_UNIT (t)) != PLACEHOLDER_EXPR
 	  && TREE_CODE (TYPE_SIZE_UNIT (tv)) != PLACEHOLDER_EXPR
-	  && TYPE_SIZE_UNIT (t) != TYPE_SIZE_UNIT (tv)
-	  /* FIXME: ideally we should compare pointer equality, but java FE
-	     produce variants where size is INTEGER_CST of different type (int
-	     wrt size_type) during libjava biuld.  */
-	  && !operand_equal_p (TYPE_SIZE_UNIT (t), TYPE_SIZE_UNIT (tv), 0))
+	  && TYPE_SIZE_UNIT (t) != TYPE_SIZE_UNIT (tv))
 	{
+	  gcc_assert (!operand_equal_p (TYPE_SIZE_UNIT (t),
+					TYPE_SIZE_UNIT (tv), 0));
 	  error ("type variant has different TYPE_SIZE_UNIT");
 	  debug_tree (tv);
 	  error ("type variant's TYPE_SIZE_UNIT");
