@@ -1,3 +1,8 @@
+2016-11-06  Jack Howarth  <howarth.at.gcc@gmail.com>
+
+	PR driver/78206
+	* incpath.c: (remove_dup(): Also silently ignore EPERM.
+
 2016-11-07  Martin Jambor  <mjambor@suse.cz>
 
 	* tree.c (verify_type_variant): Use pointer comparison to check that
