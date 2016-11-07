@@ -1,3 +1,33 @@
+2016-11-07  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/force-inline-opt0-1.c: Disable
+	-f-sanitize-address-use-after-scope.
+	* c-c++-common/asan/inc.c: Change number of expected ASAN_CHECK
+	internal fn calls.
+	* g++.dg/asan/use-after-scope-1.C: New test.
+	* g++.dg/asan/use-after-scope-2.C: Likewise.
+	* g++.dg/asan/use-after-scope-3.C: Likewise.
+	* g++.dg/asan/use-after-scope-types-1.C: Likewise.
+	* g++.dg/asan/use-after-scope-types-2.C: Likewise.
+	* g++.dg/asan/use-after-scope-types-3.C: Likewise.
+	* g++.dg/asan/use-after-scope-types-4.C: Likewise.
+	* g++.dg/asan/use-after-scope-types-5.C: Likewise.
+	* g++.dg/asan/use-after-scope-types.h: Likewise.
+	* gcc.dg/asan/use-after-scope-1.c: Likewise.
+	* gcc.dg/asan/use-after-scope-2.c: Likewise.
+	* gcc.dg/asan/use-after-scope-3.c: Likewise.
+	* gcc.dg/asan/use-after-scope-4.c: Likewise.
+	* gcc.dg/asan/use-after-scope-5.c: Likewise.
+	* gcc.dg/asan/use-after-scope-6.c: Likewise.
+	* gcc.dg/asan/use-after-scope-7.c: Likewise.
+	* gcc.dg/asan/use-after-scope-8.c: Likewise.
+	* gcc.dg/asan/use-after-scope-9.c: Likewise.
+	* gcc.dg/asan/use-after-scope-switch-1.c: Likewise.
+	* gcc.dg/asan/use-after-scope-switch-2.c: Likewise.
+	* gcc.dg/asan/use-after-scope-switch-3.c: Likewise.
+	* gcc.dg/asan/use-after-scope-goto-1.c: Likewise.
+	* gcc.dg/asan/use-after-scope-goto-2.c: Likewise.
+
 2016-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78189

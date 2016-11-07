@@ -2,6 +2,7 @@
    (before and after inlining) */
 
 /* { dg-do compile } */
+/* { dg-options "-fno-sanitize-address-use-after-scope" } */
 /* { dg-final { scan-assembler-not "__asan_report_load" } } */
 
 __attribute__((always_inline))
