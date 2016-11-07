@@ -9170,6 +9170,13 @@ push_tinst_level_loc (tree d, location_t loc)
   if (limit_bad_template_recursion (d))
     return false;
 
+  /* When not -quiet, dump template instantiations other than functions, since
+     announce_function will take care of those.  */
+  if (!quiet_flag
+      && TREE_CODE (d) != TREE_LIST
+      && TREE_CODE (d) != FUNCTION_DECL)
+    fprintf (stderr, " %s", decl_as_string (d, TFF_DECL_SPECIFIERS));
+
   new_level = ggc_alloc<tinst_level> ();
   new_level->decl = d;
   new_level->locus = loc;
