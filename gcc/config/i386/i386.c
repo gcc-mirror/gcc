@@ -33537,7 +33537,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  location_t loc = gimple_location (stmt);
 	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
 	  gimple_set_location (g, loc);
-	  gsi_replace (gsi, g, true);
+	  gsi_replace (gsi, g, false);
 	  return true;
 	}
       break;
@@ -33554,7 +33554,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  arg0 = gimple_call_arg (stmt, 0);
 	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
 	  gimple_set_location (g, loc);
-	  gsi_replace (gsi, g, true);
+	  gsi_replace (gsi, g, false);
 	  return true;
 	}
       break;

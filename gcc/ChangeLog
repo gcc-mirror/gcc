@@ -1,3 +1,9 @@
+2016-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78229
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Do not adjust                                                                             
+	EH info even for bzhi and pdep/pext.
+
 2016-11-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config.gcc (powerpc*-*-*, rs6000*-*-*): Remove setting of
