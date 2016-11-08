@@ -165,12 +165,6 @@ static void arm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 static bool arm_have_conditional_execution (void);
 static bool arm_cannot_force_const_mem (machine_mode, rtx);
 static bool arm_legitimate_constant_p (machine_mode, rtx);
-static bool arm_rtx_costs_1 (rtx, enum rtx_code, int*, bool);
-static bool arm_size_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *);
-static bool arm_slowmul_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
-static bool arm_fastmul_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
-static bool arm_xscale_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
-static bool arm_9e_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
 static bool arm_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int arm_address_cost (rtx, machine_mode, addr_space_t, bool);
 static int arm_register_move_cost (machine_mode, reg_class_t, reg_class_t);
@@ -1703,7 +1697,6 @@ const struct cpu_cost_table v7m_extra_costs =
 
 const struct tune_params arm_slowmul_tune =
 {
-  arm_slowmul_rtx_costs,
   &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1726,7 +1719,6 @@ const struct tune_params arm_slowmul_tune =
 
 const struct tune_params arm_fastmul_tune =
 {
-  arm_fastmul_rtx_costs,
   &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1752,7 +1744,6 @@ const struct tune_params arm_fastmul_tune =
 
 const struct tune_params arm_strongarm_tune =
 {
-  arm_fastmul_rtx_costs,
   &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1775,7 +1766,6 @@ const struct tune_params arm_strongarm_tune =
 
 const struct tune_params arm_xscale_tune =
 {
-  arm_xscale_rtx_costs,
   &generic_extra_costs,			/* Insn extra costs.  */
   xscale_sched_adjust_cost,
   arm_default_branch_cost,
@@ -1798,7 +1788,6 @@ const struct tune_params arm_xscale_tune =
 
 const struct tune_params arm_9e_tune =
 {
-  arm_9e_rtx_costs,
   &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1821,7 +1810,6 @@ const struct tune_params arm_9e_tune =
 
 const struct tune_params arm_marvell_pj4_tune =
 {
-  arm_9e_rtx_costs,
   &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1844,7 +1832,6 @@ const struct tune_params arm_marvell_pj4_tune =
 
 const struct tune_params arm_v6t2_tune =
 {
-  arm_9e_rtx_costs,
   &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1869,7 +1856,6 @@ const struct tune_params arm_v6t2_tune =
 /* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
 const struct tune_params arm_cortex_tune =
 {
-  arm_9e_rtx_costs,
   &generic_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1892,7 +1878,6 @@ const struct tune_params arm_cortex_tune =
 
 const struct tune_params arm_cortex_a8_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa8_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1915,7 +1900,6 @@ const struct tune_params arm_cortex_a8_tune =
 
 const struct tune_params arm_cortex_a7_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa7_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1938,7 +1922,6 @@ const struct tune_params arm_cortex_a7_tune =
 
 const struct tune_params arm_cortex_a15_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa15_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1961,7 +1944,6 @@ const struct tune_params arm_cortex_a15_tune =
 
 const struct tune_params arm_cortex_a35_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa53_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -1984,7 +1966,6 @@ const struct tune_params arm_cortex_a35_tune =
 
 const struct tune_params arm_cortex_a53_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa53_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -2007,7 +1988,6 @@ const struct tune_params arm_cortex_a53_tune =
 
 const struct tune_params arm_cortex_a57_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa57_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -2030,7 +2010,6 @@ const struct tune_params arm_cortex_a57_tune =
 
 const struct tune_params arm_exynosm1_tune =
 {
-  arm_9e_rtx_costs,
   &exynosm1_extra_costs,
   NULL,						/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -2053,7 +2032,6 @@ const struct tune_params arm_exynosm1_tune =
 
 const struct tune_params arm_xgene1_tune =
 {
-  arm_9e_rtx_costs,
   &xgene1_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -2076,7 +2054,6 @@ const struct tune_params arm_xgene1_tune =
 
 const struct tune_params arm_qdf24xx_tune =
 {
-  arm_9e_rtx_costs,
   &qdf24xx_extra_costs,
   NULL,                                         /* Scheduler cost adjustment.  */
   arm_default_branch_cost,
@@ -2102,7 +2079,6 @@ const struct tune_params arm_qdf24xx_tune =
 
 const struct tune_params arm_cortex_a5_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa5_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_cortex_a5_branch_cost,
@@ -2125,7 +2101,6 @@ const struct tune_params arm_cortex_a5_tune =
 
 const struct tune_params arm_cortex_a9_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa9_extra_costs,
   cortex_a9_sched_adjust_cost,
   arm_default_branch_cost,
@@ -2148,7 +2123,6 @@ const struct tune_params arm_cortex_a9_tune =
 
 const struct tune_params arm_cortex_a12_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa12_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -2171,7 +2145,6 @@ const struct tune_params arm_cortex_a12_tune =
 
 const struct tune_params arm_cortex_a73_tune =
 {
-  arm_9e_rtx_costs,
   &cortexa57_extra_costs,
   NULL,						/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -2201,7 +2174,6 @@ const struct tune_params arm_cortex_a73_tune =
 
 const struct tune_params arm_v7m_tune =
 {
-  arm_9e_rtx_costs,
   &v7m_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_cortex_m_branch_cost,
@@ -2226,7 +2198,6 @@ const struct tune_params arm_v7m_tune =
 
 const struct tune_params arm_cortex_m7_tune =
 {
-  arm_9e_rtx_costs,
   &v7m_extra_costs,
   NULL,					/* Sched adj cost.  */
   arm_cortex_m7_branch_cost,
@@ -2252,7 +2223,6 @@ const struct tune_params arm_cortex_m7_tune =
    cortex-m23.  */
 const struct tune_params arm_v6m_tune =
 {
-  arm_9e_rtx_costs,
   &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
@@ -2275,7 +2245,6 @@ const struct tune_params arm_v6m_tune =
 
 const struct tune_params arm_fa726te_tune =
 {
-  arm_9e_rtx_costs,
   &generic_extra_costs,				/* Insn extra costs.  */
   fa726te_sched_adjust_cost,
   arm_default_branch_cost,
@@ -8474,621 +8443,6 @@ thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
     }
 }
 
-static inline bool
-arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
-{
-  machine_mode mode = GET_MODE (x);
-  enum rtx_code subcode;
-  rtx operand;
-  enum rtx_code code = GET_CODE (x);
-  *total = 0;
-
-  switch (code)
-    {
-    case MEM:
-      /* Memory costs quite a lot for the first word, but subsequent words
-	 load at the equivalent of a single insn each.  */
-      *total = COSTS_N_INSNS (2 + ARM_NUM_REGS (mode));
-      return true;
-
-    case DIV:
-    case MOD:
-    case UDIV:
-    case UMOD:
-      if (TARGET_HARD_FLOAT && mode == SFmode)
-	*total = COSTS_N_INSNS (2);
-      else if (TARGET_HARD_FLOAT && mode == DFmode && !TARGET_VFP_SINGLE)
-	*total = COSTS_N_INSNS (4);
-      else
-	*total = COSTS_N_INSNS (20);
-      return false;
-
-    case ROTATE:
-      if (REG_P (XEXP (x, 1)))
-	*total = COSTS_N_INSNS (1); /* Need to subtract from 32 */
-      else if (!CONST_INT_P (XEXP (x, 1)))
-	*total = rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-
-      /* Fall through */
-    case ROTATERT:
-      if (mode != SImode)
-	{
-	  *total += COSTS_N_INSNS (4);
-	  return true;
-	}
-
-      /* Fall through */
-    case ASHIFT: case LSHIFTRT: case ASHIFTRT:
-      *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-      if (mode == DImode)
-	{
-	  *total += COSTS_N_INSNS (3);
-	  return true;
-	}
-
-      *total += COSTS_N_INSNS (1);
-      /* Increase the cost of complex shifts because they aren't any faster,
-         and reduce dual issue opportunities.  */
-      if (arm_tune_cortex_a9
-	  && outer != SET && !CONST_INT_P (XEXP (x, 1)))
-	++*total;
-
-      return true;
-
-    case MINUS:
-      if (mode == DImode)
-	{
-	  *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-	  if (CONST_INT_P (XEXP (x, 0))
-	      && const_ok_for_arm (INTVAL (XEXP (x, 0))))
-	    {
-	      *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-	      return true;
-	    }
-
-	  if (CONST_INT_P (XEXP (x, 1))
-	      && const_ok_for_arm (INTVAL (XEXP (x, 1))))
-	    {
-	      *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-	      return true;
-	    }
-
-	  return false;
-	}
-
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  if (TARGET_HARD_FLOAT
-	      && (mode == SFmode
-		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
-	    {
-	      *total = COSTS_N_INSNS (1);
-	      if (CONST_DOUBLE_P (XEXP (x, 0))
-		  && arm_const_double_rtx (XEXP (x, 0)))
-		{
-		  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-		  return true;
-		}
-
-	      if (CONST_DOUBLE_P (XEXP (x, 1))
-		  && arm_const_double_rtx (XEXP (x, 1)))
-		{
-		  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-		  return true;
-		}
-
-	      return false;
-	    }
-	  *total = COSTS_N_INSNS (20);
-	  return false;
-	}
-
-      *total = COSTS_N_INSNS (1);
-      if (CONST_INT_P (XEXP (x, 0))
-	  && const_ok_for_arm (INTVAL (XEXP (x, 0))))
-	{
-	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-	  return true;
-	}
-
-      subcode = GET_CODE (XEXP (x, 1));
-      if (subcode == ASHIFT || subcode == ASHIFTRT
-	  || subcode == LSHIFTRT
-	  || subcode == ROTATE || subcode == ROTATERT)
-	{
-	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 1), 0), mode, subcode, 0, speed);
-	  return true;
-	}
-
-      /* A shift as a part of RSB costs no more than RSB itself.  */
-      if (GET_CODE (XEXP (x, 0)) == MULT
-	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
-	{
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, code, 0, speed);
-	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-	  return true;
-	}
-
-      if (subcode == MULT
-	  && power_of_two_operand (XEXP (XEXP (x, 1), 1), SImode))
-	{
-	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 1), 0), mode, subcode, 0, speed);
-	  return true;
-	}
-
-      if (GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == RTX_COMPARE
-	  || GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == RTX_COMM_COMPARE)
-	{
-	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), mode, code,
-						 0, speed);
-	  if (REG_P (XEXP (XEXP (x, 1), 0))
-	      && REGNO (XEXP (XEXP (x, 1), 0)) != CC_REGNUM)
-	    *total += COSTS_N_INSNS (1);
-
-	  return true;
-	}
-
-      /* Fall through */
-
-    case PLUS:
-      if (code == PLUS && arm_arch6 && mode == SImode
-	  && (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-	      || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND))
-	{
-	  *total = COSTS_N_INSNS (1);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), VOIDmode,
-			      GET_CODE (XEXP (x, 0)), 0, speed);
-	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-	  return true;
-	}
-
-      /* MLA: All arguments must be registers.  We filter out
-	 multiplication by a power of two, so that we fall down into
-	 the code below.  */
-      if (GET_CODE (XEXP (x, 0)) == MULT
-	  && !power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
-	{
-	  /* The cost comes from the cost of the multiply.  */
-	  return false;
-	}
-
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  if (TARGET_HARD_FLOAT
-	      && (mode == SFmode
-		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
-	    {
-	      *total = COSTS_N_INSNS (1);
-	      if (CONST_DOUBLE_P (XEXP (x, 1))
-		  && arm_const_double_rtx (XEXP (x, 1)))
-		{
-		  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-		  return true;
-		}
-
-	      return false;
-	    }
-
-	  *total = COSTS_N_INSNS (20);
-	  return false;
-	}
-
-      if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == RTX_COMPARE
-	  || GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == RTX_COMM_COMPARE)
-	{
-	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 1), mode, code,
-						 1, speed);
-	  if (REG_P (XEXP (XEXP (x, 0), 0))
-	      && REGNO (XEXP (XEXP (x, 0), 0)) != CC_REGNUM)
-	    *total += COSTS_N_INSNS (1);
-	  return true;
-	}
-
-      /* Fall through */
-
-    case AND: case XOR: case IOR:
-
-      /* Normally the frame registers will be spilt into reg+const during
-	 reload, so it is a bad idea to combine them with other instructions,
-	 since then they might not be moved outside of loops.  As a compromise
-	 we allow integration with ops that have a constant as their second
-	 operand.  */
-      if (REG_OR_SUBREG_REG (XEXP (x, 0))
-	  && ARM_FRAME_RTX (REG_OR_SUBREG_RTX (XEXP (x, 0)))
-	  && !CONST_INT_P (XEXP (x, 1)))
-	*total = COSTS_N_INSNS (1);
-
-      if (mode == DImode)
-	{
-	  *total += COSTS_N_INSNS (2);
-	  if (CONST_INT_P (XEXP (x, 1))
-	      && const_ok_for_op (INTVAL (XEXP (x, 1)), code))
-	    {
-	      *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-	      return true;
-	    }
-
-	  return false;
-	}
-
-      *total += COSTS_N_INSNS (1);
-      if (CONST_INT_P (XEXP (x, 1))
-	  && const_ok_for_op (INTVAL (XEXP (x, 1)), code))
-	{
-	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-	  return true;
-	}
-      subcode = GET_CODE (XEXP (x, 0));
-      if (subcode == ASHIFT || subcode == ASHIFTRT
-	  || subcode == LSHIFTRT
-	  || subcode == ROTATE || subcode == ROTATERT)
-	{
-	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, subcode, 0, speed);
-	  return true;
-	}
-
-      if (subcode == MULT
-	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
-	{
-	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, subcode, 0, speed);
-	  return true;
-	}
-
-      if (subcode == UMIN || subcode == UMAX
-	  || subcode == SMIN || subcode == SMAX)
-	{
-	  *total = COSTS_N_INSNS (3);
-	  return true;
-	}
-
-      return false;
-
-    case MULT:
-      /* This should have been handled by the CPU specific routines.  */
-      gcc_unreachable ();
-
-    case TRUNCATE:
-      if (arm_arch3m && mode == SImode
-	  && GET_CODE (XEXP (x, 0)) == LSHIFTRT
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
-	  && (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0))
-	      == GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)))
-	  && (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == ZERO_EXTEND
-	      || GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SIGN_EXTEND))
-	{
-	  *total = rtx_cost (XEXP (XEXP (x, 0), 0), VOIDmode, LSHIFTRT,
-			     0, speed);
-	  return true;
-	}
-      *total = COSTS_N_INSNS (2); /* Plus the cost of the MULT */
-      return false;
-
-    case NEG:
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  if (TARGET_HARD_FLOAT
-	      && (mode == SFmode
-		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
-	    {
-	      *total = COSTS_N_INSNS (1);
-	      return false;
-	    }
-	  *total = COSTS_N_INSNS (2);
-	  return false;
-	}
-
-      /* Fall through */
-    case NOT:
-      *total = COSTS_N_INSNS (ARM_NUM_REGS(mode));
-      if (mode == SImode && code == NOT)
-	{
-	  subcode = GET_CODE (XEXP (x, 0));
-	  if (subcode == ASHIFT || subcode == ASHIFTRT
-	      || subcode == LSHIFTRT
-	      || subcode == ROTATE || subcode == ROTATERT
-	      || (subcode == MULT
-		  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode)))
-	    {
-	      *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, subcode,
-				  0, speed);
-	      /* Register shifts cost an extra cycle.  */
-	      if (!CONST_INT_P (XEXP (XEXP (x, 0), 1)))
-		*total += COSTS_N_INSNS (1) + rtx_cost (XEXP (XEXP (x, 0), 1),
-							mode, subcode,
-							1, speed);
-	      return true;
-	    }
-	}
-
-      return false;
-
-    case IF_THEN_ELSE:
-      if (GET_CODE (XEXP (x, 1)) == PC || GET_CODE (XEXP (x, 2)) == PC)
-	{
-	  *total = COSTS_N_INSNS (4);
-	  return true;
-	}
-
-      operand = XEXP (x, 0);
-
-      if (!((GET_RTX_CLASS (GET_CODE (operand)) == RTX_COMPARE
-	     || GET_RTX_CLASS (GET_CODE (operand)) == RTX_COMM_COMPARE)
-	    && REG_P (XEXP (operand, 0))
-	    && REGNO (XEXP (operand, 0)) == CC_REGNUM))
-	*total += COSTS_N_INSNS (1);
-      *total += rtx_cost (XEXP (x, 1), VOIDmode, code, 1, speed);
-      *total += rtx_cost (XEXP (x, 2), VOIDmode, code, 2, speed);
-      return true;
-
-    case NE:
-      if (mode == SImode && XEXP (x, 1) == const0_rtx)
-	{
-	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), mode, code,
-						 0, speed);
-	  return true;
-	}
-      goto scc_insn;
-
-    case GE:
-      if ((!REG_P (XEXP (x, 0)) || REGNO (XEXP (x, 0)) != CC_REGNUM)
-	  && mode == SImode && XEXP (x, 1) == const0_rtx)
-	{
-	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), mode, code,
-						 0, speed);
-	  return true;
-	}
-      goto scc_insn;
-
-    case LT:
-      if ((!REG_P (XEXP (x, 0)) || REGNO (XEXP (x, 0)) != CC_REGNUM)
-	  && mode == SImode && XEXP (x, 1) == const0_rtx)
-	{
-	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), mode, code,
-						 0, speed);
-	  return true;
-	}
-      goto scc_insn;
-
-    case EQ:
-    case GT:
-    case LE:
-    case GEU:
-    case LTU:
-    case GTU:
-    case LEU:
-    case UNORDERED:
-    case ORDERED:
-    case UNEQ:
-    case UNGE:
-    case UNLT:
-    case UNGT:
-    case UNLE:
-    scc_insn:
-      /* SCC insns.  In the case where the comparison has already been
-	 performed, then they cost 2 instructions.  Otherwise they need
-	 an additional comparison before them.  */
-      *total = COSTS_N_INSNS (2);
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) == CC_REGNUM)
-	{
-	  return true;
-	}
-
-      /* Fall through */
-    case COMPARE:
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) == CC_REGNUM)
-	{
-	  *total = 0;
-	  return true;
-	}
-
-      *total += COSTS_N_INSNS (1);
-      if (CONST_INT_P (XEXP (x, 1))
-	  && const_ok_for_op (INTVAL (XEXP (x, 1)), code))
-	{
-	  *total += rtx_cost (XEXP (x, 0), VOIDmode, code, 0, speed);
-	  return true;
-	}
-
-      subcode = GET_CODE (XEXP (x, 0));
-      if (subcode == ASHIFT || subcode == ASHIFTRT
-	  || subcode == LSHIFTRT
-	  || subcode == ROTATE || subcode == ROTATERT)
-	{
-	  mode = GET_MODE (XEXP (x, 0));
-	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, subcode, 0, speed);
-	  return true;
-	}
-
-      if (subcode == MULT
-	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
-	{
-	  mode = GET_MODE (XEXP (x, 0));
-	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, subcode, 0, speed);
-	  return true;
-	}
-
-      return false;
-
-    case UMIN:
-    case UMAX:
-    case SMIN:
-    case SMAX:
-      *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-      if (!CONST_INT_P (XEXP (x, 1))
-	  || !const_ok_for_arm (INTVAL (XEXP (x, 1))))
-	*total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
-      return true;
-
-    case ABS:
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  if (TARGET_HARD_FLOAT
-	      && (mode == SFmode
-		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
-	    {
-	      *total = COSTS_N_INSNS (1);
-	      return false;
-	    }
-	  *total = COSTS_N_INSNS (20);
-	  return false;
-	}
-      *total = COSTS_N_INSNS (1);
-      if (mode == DImode)
-	*total += COSTS_N_INSNS (3);
-      return false;
-
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-      *total = 0;
-      if (GET_MODE_CLASS (mode) == MODE_INT)
-	{
-	  rtx op = XEXP (x, 0);
-	  machine_mode opmode = GET_MODE (op);
-
-	  if (mode == DImode)
-	    *total += COSTS_N_INSNS (1);
-
-	  if (opmode != SImode)
-	    {
-	      if (MEM_P (op))
-		{
-		  /* If !arm_arch4, we use one of the extendhisi2_mem
-		     or movhi_bytes patterns for HImode.  For a QImode
-		     sign extension, we first zero-extend from memory
-		     and then perform a shift sequence.  */
-		  if (!arm_arch4 && (opmode != QImode || code == SIGN_EXTEND))
-		    *total += COSTS_N_INSNS (2);
-		}
-	      else if (arm_arch6)
-		*total += COSTS_N_INSNS (1);
-
-	      /* We don't have the necessary insn, so we need to perform some
-		 other operation.  */
-	      else if (TARGET_ARM && code == ZERO_EXTEND && mode == QImode)
-		/* An and with constant 255.  */
-		*total += COSTS_N_INSNS (1);
-	      else
-		/* A shift sequence.  Increase costs slightly to avoid
-		   combining two shifts into an extend operation.  */
-		*total += COSTS_N_INSNS (2) + 1;
-	    }
-
-	  return false;
-	}
-
-      switch (GET_MODE (XEXP (x, 0)))
-	{
-	case V8QImode:
-	case V4HImode:
-	case V2SImode:
-	case V4QImode:
-	case V2HImode:
-	  *total = COSTS_N_INSNS (1);
-	  return false;
-
-	default:
-	  gcc_unreachable ();
-	}
-      gcc_unreachable ();
-
-    case ZERO_EXTRACT:
-    case SIGN_EXTRACT:
-      mode = GET_MODE (XEXP (x, 0));
-      *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-      return true;
-
-    case CONST_INT:
-      if (const_ok_for_arm (INTVAL (x))
-	  || const_ok_for_arm (~INTVAL (x)))
-	*total = COSTS_N_INSNS (1);
-      else
-	*total = COSTS_N_INSNS (arm_gen_constant (SET, mode, NULL_RTX,
-						  INTVAL (x), NULL_RTX,
-						  NULL_RTX, 0, 0));
-      return true;
-
-    case CONST:
-    case LABEL_REF:
-    case SYMBOL_REF:
-      *total = COSTS_N_INSNS (3);
-      return true;
-
-    case HIGH:
-      *total = COSTS_N_INSNS (1);
-      return true;
-
-    case LO_SUM:
-      *total = COSTS_N_INSNS (1);
-      *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-      return true;
-
-    case CONST_DOUBLE:
-      if (TARGET_HARD_FLOAT && vfp3_const_double_rtx (x)
-	  && (mode == SFmode || !TARGET_VFP_SINGLE))
-	*total = COSTS_N_INSNS (1);
-      else
-	*total = COSTS_N_INSNS (4);
-      return true;
-
-    case SET:
-      /* The vec_extract patterns accept memory operands that require an
-	 address reload.  Account for the cost of that reload to give the
-	 auto-inc-dec pass an incentive to try to replace them.  */
-      if (TARGET_NEON && MEM_P (SET_DEST (x))
-	  && GET_CODE (SET_SRC (x)) == VEC_SELECT)
-	{
-	  mode = GET_MODE (SET_DEST (x));
-	  *total = rtx_cost (SET_DEST (x), mode, code, 0, speed);
-	  if (!neon_vector_mem_operand (SET_DEST (x), 2, true))
-	    *total += COSTS_N_INSNS (1);
-	  return true;
-	}
-      /* Likewise for the vec_set patterns.  */
-      if (TARGET_NEON && GET_CODE (SET_SRC (x)) == VEC_MERGE
-	  && GET_CODE (XEXP (SET_SRC (x), 0)) == VEC_DUPLICATE
-	  && MEM_P (XEXP (XEXP (SET_SRC (x), 0), 0)))
-	{
-	  rtx mem = XEXP (XEXP (SET_SRC (x), 0), 0);
-	  mode = GET_MODE (SET_DEST (x));
-	  *total = rtx_cost (mem, mode, code, 0, speed);
-	  if (!neon_vector_mem_operand (mem, 2, true))
-	    *total += COSTS_N_INSNS (1);
-	  return true;
-	}
-      return false;
-
-    case UNSPEC:
-      /* We cost this as high as our memory costs to allow this to
-	 be hoisted from loops.  */
-      if (XINT (x, 1) == UNSPEC_PIC_UNIFIED)
-	{
-	  *total = COSTS_N_INSNS (2 + ARM_NUM_REGS (mode));
-	}
-      return true;
-
-    case CONST_VECTOR:
-      if (TARGET_NEON
-	  && TARGET_HARD_FLOAT
-	  && outer == SET
-	  && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode))
-	  && neon_immediate_valid_for_move (x, mode, NULL, NULL))
-	*total = COSTS_N_INSNS (1);
-      else
-	*total = COSTS_N_INSNS (4);
-      return true;
-
-    default:
-      *total = COSTS_N_INSNS (4);
-      return false;
-    }
-}
-
 /* Estimates the size cost of thumb1 instructions.
    For now most of the code is copied from thumb1_rtx_costs. We need more
    fine grain tuning when we have more related test cases.  */
@@ -9248,245 +8602,6 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
     }
 }
 
-/* RTX costs when optimizing for size.  */
-static bool
-arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
-		    int *total)
-{
-  machine_mode mode = GET_MODE (x);
-  if (TARGET_THUMB1)
-    {
-      *total = thumb1_size_rtx_costs (x, code, outer_code);
-      return true;
-    }
-
-  /* FIXME: This makes no attempt to prefer narrow Thumb-2 instructions.  */
-  switch (code)
-    {
-    case MEM:
-      /* A memory access costs 1 insn if the mode is small, or the address is
-	 a single register, otherwise it costs one insn per word.  */
-      if (REG_P (XEXP (x, 0)))
-	*total = COSTS_N_INSNS (1);
-      else if (flag_pic
-	       && GET_CODE (XEXP (x, 0)) == PLUS
-	       && will_be_in_index_register (XEXP (XEXP (x, 0), 1)))
-	/* This will be split into two instructions.
-	   See arm.md:calculate_pic_address.  */
-	*total = COSTS_N_INSNS (2);
-      else
-	*total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-      return true;
-
-    case DIV:
-    case MOD:
-    case UDIV:
-    case UMOD:
-      /* Needs a libcall, so it costs about this.  */
-      *total = COSTS_N_INSNS (2);
-      return false;
-
-    case ROTATE:
-      if (mode == SImode && REG_P (XEXP (x, 1)))
-	{
-	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), mode, code,
-						 0, false);
-	  return true;
-	}
-      /* Fall through */
-    case ROTATERT:
-    case ASHIFT:
-    case LSHIFTRT:
-    case ASHIFTRT:
-      if (mode == DImode && CONST_INT_P (XEXP (x, 1)))
-	{
-	  *total = COSTS_N_INSNS (3) + rtx_cost (XEXP (x, 0), mode, code,
-						 0, false);
-	  return true;
-	}
-      else if (mode == SImode)
-	{
-	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), mode, code,
-						 0, false);
-	  /* Slightly disparage register shifts, but not by much.  */
-	  if (!CONST_INT_P (XEXP (x, 1)))
-	    *total += 1 + rtx_cost (XEXP (x, 1), mode, code, 1, false);
-	  return true;
-	}
-
-      /* Needs a libcall.  */
-      *total = COSTS_N_INSNS (2);
-      return false;
-
-    case MINUS:
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
-	  && (mode == SFmode || !TARGET_VFP_SINGLE))
-	{
-	  *total = COSTS_N_INSNS (1);
-	  return false;
-	}
-
-      if (mode == SImode)
-	{
-	  enum rtx_code subcode0 = GET_CODE (XEXP (x, 0));
-	  enum rtx_code subcode1 = GET_CODE (XEXP (x, 1));
-
-	  if (subcode0 == ROTATE || subcode0 == ROTATERT || subcode0 == ASHIFT
-	      || subcode0 == LSHIFTRT || subcode0 == ASHIFTRT
-	      || subcode1 == ROTATE || subcode1 == ROTATERT
-	      || subcode1 == ASHIFT || subcode1 == LSHIFTRT
-	      || subcode1 == ASHIFTRT)
-	    {
-	      /* It's just the cost of the two operands.  */
-	      *total = 0;
-	      return false;
-	    }
-
-	  *total = COSTS_N_INSNS (1);
-	  return false;
-	}
-
-      *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-      return false;
-
-    case PLUS:
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
-	  && (mode == SFmode || !TARGET_VFP_SINGLE))
-	{
-	  *total = COSTS_N_INSNS (1);
-	  return false;
-	}
-
-      /* A shift as a part of ADD costs nothing.  */
-      if (GET_CODE (XEXP (x, 0)) == MULT
-	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
-	{
-	  *total = COSTS_N_INSNS (TARGET_THUMB2 ? 2 : 1);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, code, 0, false);
-	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, false);
-	  return true;
-	}
-
-      /* Fall through */
-    case AND: case XOR: case IOR:
-      if (mode == SImode)
-	{
-	  enum rtx_code subcode = GET_CODE (XEXP (x, 0));
-
-	  if (subcode == ROTATE || subcode == ROTATERT || subcode == ASHIFT
-	      || subcode == LSHIFTRT || subcode == ASHIFTRT
-	      || (code == AND && subcode == NOT))
-	    {
-	      /* It's just the cost of the two operands.  */
-	      *total = 0;
-	      return false;
-	    }
-	}
-
-      *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-      return false;
-
-    case MULT:
-      *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-      return false;
-
-    case NEG:
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
-	  && (mode == SFmode || !TARGET_VFP_SINGLE))
-	{
-	  *total = COSTS_N_INSNS (1);
-	  return false;
-	}
-
-      /* Fall through */
-    case NOT:
-      *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-
-      return false;
-
-    case IF_THEN_ELSE:
-      *total = 0;
-      return false;
-
-    case COMPARE:
-      if (cc_register (XEXP (x, 0), VOIDmode))
-	* total = 0;
-      else
-	*total = COSTS_N_INSNS (1);
-      return false;
-
-    case ABS:
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
-	  && (mode == SFmode || !TARGET_VFP_SINGLE))
-	*total = COSTS_N_INSNS (1);
-      else
-	*total = COSTS_N_INSNS (1 + ARM_NUM_REGS (mode));
-      return false;
-
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-      return arm_rtx_costs_1 (x, outer_code, total, 0);
-
-    case CONST_INT:
-      if (const_ok_for_arm (INTVAL (x)))
-	/* A multiplication by a constant requires another instruction
-	   to load the constant to a register.  */
-	*total = COSTS_N_INSNS ((outer_code == SET || outer_code == MULT)
-				? 1 : 0);
-      else if (const_ok_for_arm (~INTVAL (x)))
-	*total = COSTS_N_INSNS (outer_code == AND ? 0 : 1);
-      else if (const_ok_for_arm (-INTVAL (x)))
-	{
-	  if (outer_code == COMPARE || outer_code == PLUS
-	      || outer_code == MINUS)
-	    *total = 0;
-	  else
-	    *total = COSTS_N_INSNS (1);
-	}
-      else
-	*total = COSTS_N_INSNS (2);
-      return true;
-
-    case CONST:
-    case LABEL_REF:
-    case SYMBOL_REF:
-      *total = COSTS_N_INSNS (2);
-      return true;
-
-    case CONST_DOUBLE:
-      *total = COSTS_N_INSNS (4);
-      return true;
-
-    case CONST_VECTOR:
-      if (TARGET_NEON
-	  && TARGET_HARD_FLOAT
-	  && outer_code == SET
-	  && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode))
-	  && neon_immediate_valid_for_move (x, mode, NULL, NULL))
-	*total = COSTS_N_INSNS (1);
-      else
-	*total = COSTS_N_INSNS (4);
-      return true;
-
-    case HIGH:
-    case LO_SUM:
-      /* We prefer constant pool entries to MOVW/MOVT pairs, so bump the
-	 cost of these slightly.  */
-      *total = COSTS_N_INSNS (1) + 1;
-      return true;
-
-    case SET:
-      return false;
-
-    default:
-      if (mode != VOIDmode)
-	*total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-      else
-	*total = COSTS_N_INSNS (4); /* How knows?  */
-      return false;
-    }
-}
-
 /* Helper function for arm_rtx_costs.  If the operand is a valid shift
    operand, then return the operand that is being shifted.  If the shift
    is not by a constant, then set SHIFT_REG to point to the operand.
@@ -9610,7 +8725,7 @@ arm_unspec_cost (rtx x, enum rtx_code /* outer_code */, bool speed_p, int *cost)
    flags are live or not, and thus no realistic way to determine what
    the size will eventually be.  */
 static bool
-arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
+arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		   const struct cpu_cost_table *extra_cost,
 		   int *cost, bool speed_p)
 {
@@ -11293,41 +10408,20 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
 #undef HANDLE_NARROW_SHIFT_ARITH
 
-/* RTX costs when optimizing for size.  */
+/* RTX costs entry point.  */
+
 static bool
 arm_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	       int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
   bool result;
   int code = GET_CODE (x);
+  gcc_assert (current_tune->insn_extra_cost);
 
-  if (TARGET_OLD_RTX_COSTS
-      || (!current_tune->insn_extra_cost && !TARGET_NEW_GENERIC_COSTS))
-    {
-      /* Old way.  (Deprecated.)  */
-      if (!speed)
-	result = arm_size_rtx_costs (x, (enum rtx_code) code,
-				     (enum rtx_code) outer_code, total);
-      else
-	result = current_tune->rtx_costs (x,  (enum rtx_code) code,
-					  (enum rtx_code) outer_code, total,
-					  speed);
-    }
-  else
-    {
-    /* New way.  */
-      if (current_tune->insn_extra_cost)
-        result =  arm_new_rtx_costs (x, (enum rtx_code) code,
-				     (enum rtx_code) outer_code,
-				     current_tune->insn_extra_cost,
-				     total, speed);
-    /* TARGET_NEW_GENERIC_COSTS && !TARGET_OLD_RTX_COSTS
-       && current_tune->insn_extra_cost != NULL  */
-      else
-        result =  arm_new_rtx_costs (x, (enum rtx_code) code,
-				    (enum rtx_code) outer_code,
-				    &generic_extra_costs, total, speed);
-    }
+  result =  arm_rtx_costs_internal (x, (enum rtx_code) code,
+				(enum rtx_code) outer_code,
+				current_tune->insn_extra_cost,
+				total, speed);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -11338,305 +10432,6 @@ arm_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
   return result;
 }
 
-/* RTX costs for cores with a slow MUL implementation.  Thumb-2 is not
-   supported on any "slowmul" cores, so it can be ignored.  */
-
-static bool
-arm_slowmul_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
-		       int *total, bool speed)
-{
-  machine_mode mode = GET_MODE (x);
-
-  if (TARGET_THUMB)
-    {
-      *total = thumb1_rtx_costs (x, code, outer_code);
-      return true;
-    }
-
-  switch (code)
-    {
-    case MULT:
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT
-	  || mode == DImode)
-	{
-	  *total = COSTS_N_INSNS (20);
-	  return false;
-	}
-
-      if (CONST_INT_P (XEXP (x, 1)))
-	{
-	  unsigned HOST_WIDE_INT i = (INTVAL (XEXP (x, 1))
-				      & (unsigned HOST_WIDE_INT) 0xffffffff);
-	  int cost, const_ok = const_ok_for_arm (i);
-	  int j, booth_unit_size;
-
-	  /* Tune as appropriate.  */
-	  cost = const_ok ? 4 : 8;
-	  booth_unit_size = 2;
-	  for (j = 0; i && j < 32; j += booth_unit_size)
-	    {
-	      i >>= booth_unit_size;
-	      cost++;
-	    }
-
-	  *total = COSTS_N_INSNS (cost);
-	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
-	  return true;
-	}
-
-      *total = COSTS_N_INSNS (20);
-      return false;
-
-    default:
-      return arm_rtx_costs_1 (x, outer_code, total, speed);;
-    }
-}
-
-
-/* RTX cost for cores with a fast multiply unit (M variants).  */
-
-static bool
-arm_fastmul_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
-		       int *total, bool speed)
-{
-  machine_mode mode = GET_MODE (x);
-
-  if (TARGET_THUMB1)
-    {
-      *total = thumb1_rtx_costs (x, code, outer_code);
-      return true;
-    }
-
-  /* ??? should thumb2 use different costs?  */
-  switch (code)
-    {
-    case MULT:
-      /* There is no point basing this on the tuning, since it is always the
-	 fast variant if it exists at all.  */
-      if (mode == DImode
-	  && (GET_CODE (XEXP (x, 0)) == GET_CODE (XEXP (x, 1)))
-	  && (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-	      || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND))
-	{
-	  *total = COSTS_N_INSNS(2);
-	  return false;
-	}
-
-
-      if (mode == DImode)
-	{
-	  *total = COSTS_N_INSNS (5);
-	  return false;
-	}
-
-      if (CONST_INT_P (XEXP (x, 1)))
-	{
-	  unsigned HOST_WIDE_INT i = (INTVAL (XEXP (x, 1))
-				      & (unsigned HOST_WIDE_INT) 0xffffffff);
-	  int cost, const_ok = const_ok_for_arm (i);
-	  int j, booth_unit_size;
-
-	  /* Tune as appropriate.  */
-	  cost = const_ok ? 4 : 8;
-	  booth_unit_size = 8;
-	  for (j = 0; i && j < 32; j += booth_unit_size)
-	    {
-	      i >>= booth_unit_size;
-	      cost++;
-	    }
-
-	  *total = COSTS_N_INSNS(cost);
-	  return false;
-	}
-
-      if (mode == SImode)
-	{
-	  *total = COSTS_N_INSNS (4);
-	  return false;
-	}
-
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  if (TARGET_HARD_FLOAT
-	      && (mode == SFmode
-		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
-	    {
-	      *total = COSTS_N_INSNS (1);
-	      return false;
-	    }
-	}
-
-      /* Requires a lib call */
-      *total = COSTS_N_INSNS (20);
-      return false;
-
-    default:
-      return arm_rtx_costs_1 (x, outer_code, total, speed);
-    }
-}
-
-
-/* RTX cost for XScale CPUs.  Thumb-2 is not supported on any xscale cores,
-   so it can be ignored.  */
-
-static bool
-arm_xscale_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
-		      int *total, bool speed)
-{
-  machine_mode mode = GET_MODE (x);
-
-  if (TARGET_THUMB)
-    {
-      *total = thumb1_rtx_costs (x, code, outer_code);
-      return true;
-    }
-
-  switch (code)
-    {
-    case COMPARE:
-      if (GET_CODE (XEXP (x, 0)) != MULT)
-	return arm_rtx_costs_1 (x, outer_code, total, speed);
-
-      /* A COMPARE of a MULT is slow on XScale; the muls instruction
-	 will stall until the multiplication is complete.  */
-      *total = COSTS_N_INSNS (3);
-      return false;
-
-    case MULT:
-      /* There is no point basing this on the tuning, since it is always the
-	 fast variant if it exists at all.  */
-      if (mode == DImode
-	  && (GET_CODE (XEXP (x, 0)) == GET_CODE (XEXP (x, 1)))
-	  && (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-	      || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND))
-	{
-	  *total = COSTS_N_INSNS (2);
-	  return false;
-	}
-
-
-      if (mode == DImode)
-	{
-	  *total = COSTS_N_INSNS (5);
-	  return false;
-	}
-
-      if (CONST_INT_P (XEXP (x, 1)))
-	{
-	  /* If operand 1 is a constant we can more accurately
-	     calculate the cost of the multiply.  The multiplier can
-	     retire 15 bits on the first cycle and a further 12 on the
-	     second.  We do, of course, have to load the constant into
-	     a register first.  */
-	  unsigned HOST_WIDE_INT i = INTVAL (XEXP (x, 1));
-	  /* There's a general overhead of one cycle.  */
-	  int cost = 1;
-	  unsigned HOST_WIDE_INT masked_const;
-
-	  if (i & 0x80000000)
-	    i = ~i;
-
-	  i &= (unsigned HOST_WIDE_INT) 0xffffffff;
-
-	  masked_const = i & 0xffff8000;
-	  if (masked_const != 0)
-	    {
-	      cost++;
-	      masked_const = i & 0xf8000000;
-	      if (masked_const != 0)
-		cost++;
-	    }
-	  *total = COSTS_N_INSNS (cost);
-	  return false;
-	}
-
-      if (mode == SImode)
-	{
-	  *total = COSTS_N_INSNS (3);
-	  return false;
-	}
-
-      /* Requires a lib call */
-      *total = COSTS_N_INSNS (20);
-      return false;
-
-    default:
-      return arm_rtx_costs_1 (x, outer_code, total, speed);
-    }
-}
-
-
-/* RTX costs for 9e (and later) cores.  */
-
-static bool
-arm_9e_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
-		  int *total, bool speed)
-{
-  machine_mode mode = GET_MODE (x);
-
-  if (TARGET_THUMB1)
-    {
-      switch (code)
-	{
-	case MULT:
-	  /* Small multiply: 32 cycles for an integer multiply inst.  */
-	  if (arm_arch6m && arm_m_profile_small_mul)
-	    *total = COSTS_N_INSNS (32);
-	  else
-	    *total = COSTS_N_INSNS (3);
-	  return true;
-
-	default:
-	  *total = thumb1_rtx_costs (x, code, outer_code);
-	  return true;
-	}
-    }
-
-  switch (code)
-    {
-    case MULT:
-      /* There is no point basing this on the tuning, since it is always the
-	 fast variant if it exists at all.  */
-      if (mode == DImode
-	  && (GET_CODE (XEXP (x, 0)) == GET_CODE (XEXP (x, 1)))
-	  && (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-	      || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND))
-	{
-	  *total = COSTS_N_INSNS (2);
-	  return false;
-	}
-
-
-      if (mode == DImode)
-	{
-	  *total = COSTS_N_INSNS (5);
-	  return false;
-	}
-
-      if (mode == SImode)
-	{
-	  *total = COSTS_N_INSNS (2);
-	  return false;
-	}
-
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  if (TARGET_HARD_FLOAT
-	      && (mode == SFmode
-		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
-	    {
-	      *total = COSTS_N_INSNS (1);
-	      return false;
-	    }
-	}
-
-      *total = COSTS_N_INSNS (20);
-      return false;
-
-    default:
-      return arm_rtx_costs_1 (x, outer_code, total, speed);
-    }
-}
 /* All address computations that can be done are free, but rtx cost returns
    the same for practically all of them.  So we weight the different types
    of address here in the order (most pref first):

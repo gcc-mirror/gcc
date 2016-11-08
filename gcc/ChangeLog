@@ -1,5 +1,29 @@
 2016-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.opt (mold-rtx-costs): Delete.
+	(mnew-generic-costs): Delete.
+	* config/arm/arm-protos.h (struct tune_params): Delete rtx_costs field.
+	* config/arm/arm.c (arm_rtx_costs_1): Delete.
+	(arm_size_rtx_costs): Likewise.
+	(arm_slowmul_rtx_costs): Likewise.
+	(arm_fastmul_rtx_costs): Likewise.
+	(arm_xscale_rtx_costs): Likewise.
+	(arm_9e_rtx_costs): Likewise.
+	(arm_slowmul_tune, arm_fastmul_tune, arm_strongarm_tune,
+	arm_xscale_tune, arm_9e_tune, arm_v6t2_tune, arm_cortex_tune,
+	arm_cortex_a8_tune, arm_cortex_a7_tune, arm_cortex_a15_tune,
+	arm_cortex_a53_tune, arm_cortex_a57_tune, arm_cortex_a9_tune,
+	arm_cortex_a12_tune, arm_v7m_tune, arm_v6m_tune, arm_fa726te_tune
+	arm_cortex_a5_tune, arm_xgene1_tune, arm_marvell_pj4_tune,
+	arm_cortex_a35_tune, arm_exynosm1_tune, arm_cortex_a73_tune,
+	arm_cortex_m7_tune):
+	Delete rtx_costs field.
+	(arm_new_rtx_costs): Rename to...
+	(arm_rtx_costs_internal): ... This.
+	(arm_rtx_costs): Remove old way of doing rtx costs.
+
+2016-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.c (arm_slowmul_tune): Use generic_extra_costs.
 	(arm_fastmul_tune): Likewise.
 	(arm_strongarm_tune): Likewise.
