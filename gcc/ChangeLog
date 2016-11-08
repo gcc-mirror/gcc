@@ -1,5 +1,18 @@
 2016-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gimple-ssa-store-merging.c: Include selftest.h
+	(verify_array_eq): New function.
+	(verify_shift_bytes_in_array): Likewise.
+	(verify_shift_bytes_in_array_right): Likewise.
+	(verify_clear_bit_region): Likewise.
+	(verify_clear_bit_region_be): Likewise.
+	(store_merging_c_tests): Likewise.
+	* selftest.h (store_merging_c_tests): Declare prototype.
+	* selftest-run-tests.c (selftest::run_tests): Run
+	store_merging_c_tests.
+
+2016-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.opt (mold-rtx-costs): Delete.
 	(mnew-generic-costs): Delete.
 	* config/arm/arm-protos.h (struct tune_params): Delete rtx_costs field.

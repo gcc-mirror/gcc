@@ -126,6 +126,7 @@
 #include "tree-eh.h"
 #include "target.h"
 #include "gimplify-me.h"
+#include "selftest.h"
 
 /* The maximum size (in bits) of the stores this pass should generate.  */
 #define MAX_STORE_BITSIZE (BITS_PER_WORD)
@@ -1501,3 +1502,141 @@ make_pass_store_merging (gcc::context *ctxt)
 {
   return new pass_store_merging (ctxt);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for store merging helpers.  */
+
+/* Assert that all elements of the byte arrays X and Y, both of length N
+   are equal.  */
+
+static void
+verify_array_eq (unsigned char *x, unsigned char *y, unsigned int n)
+{
+  for (unsigned int i = 0; i < n; i++)
+    {
+      if (x[i] != y[i])
+	{
+	  fprintf (stderr, "Arrays do not match.  X:\n");
+	  dump_char_array (stderr, x, n);
+	  fprintf (stderr, "Y:\n");
+	  dump_char_array (stderr, y, n);
+	}
+      ASSERT_EQ (x[i], y[i]);
+    }
+}
+
+/* Test shift_bytes_in_array and that it carries bits across between
+   bytes correctly.  */
+
+static void
+verify_shift_bytes_in_array (void)
+{
+   /* byte 1   | byte 0
+      00011111 | 11100000.  */
+  unsigned char orig[2] = { 0xe0, 0x1f };
+  unsigned char in[2];
+  memcpy (in, orig, sizeof orig);
+
+  unsigned char expected[2] = { 0x80, 0x7f };
+  shift_bytes_in_array (in, sizeof (in), 2);
+  verify_array_eq (in, expected, sizeof (in));
+
+  memcpy (in, orig, sizeof orig);
+  memcpy (expected, orig, sizeof orig);
+  /* Check that shifting by zero doesn't change anything.  */
+  shift_bytes_in_array (in, sizeof (in), 0);
+  verify_array_eq (in, expected, sizeof (in));
+
+}
+
+/* Test shift_bytes_in_array_right and that it carries bits across between
+   bytes correctly.  */
+
+static void
+verify_shift_bytes_in_array_right (void)
+{
+   /* byte 1   | byte 0
+      00011111 | 11100000.  */
+  unsigned char orig[2] = { 0x1f, 0xe0};
+  unsigned char in[2];
+  memcpy (in, orig, sizeof orig);
+  unsigned char expected[2] = { 0x07, 0xf8};
+  shift_bytes_in_array_right (in, sizeof (in), 2);
+  verify_array_eq (in, expected, sizeof (in));
+
+  memcpy (in, orig, sizeof orig);
+  memcpy (expected, orig, sizeof orig);
+  /* Check that shifting by zero doesn't change anything.  */
+  shift_bytes_in_array_right (in, sizeof (in), 0);
+  verify_array_eq (in, expected, sizeof (in));
+}
+
+/* Test clear_bit_region that it clears exactly the bits asked and
+   nothing more.  */
+
+static void
+verify_clear_bit_region (void)
+{
+  /* Start with all bits set and test clearing various patterns in them.  */
+  unsigned char orig[3] = { 0xff, 0xff, 0xff};
+  unsigned char in[3];
+  unsigned char expected[3];
+  memcpy (in, orig, sizeof in);
+
+  /* Check zeroing out all the bits.  */
+  clear_bit_region (in, 0, 3 * BITS_PER_UNIT);
+  expected[0] = expected[1] = expected[2] = 0;
+  verify_array_eq (in, expected, sizeof in);
+
+  memcpy (in, orig, sizeof in);
+  /* Leave the first and last bits intact.  */
+  clear_bit_region (in, 1, 3 * BITS_PER_UNIT - 2);
+  expected[0] = 0x1;
+  expected[1] = 0;
+  expected[2] = 0x80;
+  verify_array_eq (in, expected, sizeof in);
+}
+
+/* Test verify_clear_bit_region_be that it clears exactly the bits asked and
+   nothing more.  */
+
+static void
+verify_clear_bit_region_be (void)
+{
+  /* Start with all bits set and test clearing various patterns in them.  */
+  unsigned char orig[3] = { 0xff, 0xff, 0xff};
+  unsigned char in[3];
+  unsigned char expected[3];
+  memcpy (in, orig, sizeof in);
+
+  /* Check zeroing out all the bits.  */
+  clear_bit_region_be (in, BITS_PER_UNIT - 1, 3 * BITS_PER_UNIT);
+  expected[0] = expected[1] = expected[2] = 0;
+  verify_array_eq (in, expected, sizeof in);
+
+  memcpy (in, orig, sizeof in);
+  /* Leave the first and last bits intact.  */
+  clear_bit_region_be (in, BITS_PER_UNIT - 2, 3 * BITS_PER_UNIT - 2);
+  expected[0] = 0x80;
+  expected[1] = 0;
+  expected[2] = 0x1;
+  verify_array_eq (in, expected, sizeof in);
+}
+
+
+/* Run all of the selftests within this file.  */
+
+void
+store_merging_c_tests (void)
+{
+  verify_shift_bytes_in_array ();
+  verify_shift_bytes_in_array_right ();
+  verify_clear_bit_region ();
+  verify_clear_bit_region_be ();
+}
+
+} // namespace selftest
+#endif /* CHECKING_P.  */
