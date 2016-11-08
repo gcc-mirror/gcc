@@ -1,3 +1,8 @@
+2016-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70799
+	* gcc.target/i386/pr70799-2.c: New test.
+
 2016-11-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/77596
@@ -48,7 +53,7 @@
 	* gcc.dg/store_merging_1.c: Require store_merge.
 	* gcc.dg/store_merging_2.c: Likewise.
 	* gcc.dg/store_merging_4.c: Likewise.
-	* gcc.dg/store_merging_5.c: Likewise. 
+	* gcc.dg/store_merging_5.c: Likewise.
 	* gcc.dg/store_merging_6.c: Likewise.
 	* gcc.dg/store_merging_7.c: Likewise.
 	* gcc.dg/store_merging_8.c: Likewise.
@@ -532,8 +537,8 @@
 	* gcc.dg/divmod-7.c: Likewise.
 
 2016-10-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            Jakub Jelinek  <jakub@redhat.com>
-            Andrew Pinski  <pinskia@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/22141
 	PR rtl-optimization/23684
