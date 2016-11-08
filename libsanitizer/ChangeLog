@@ -1,5 +1,11 @@
 2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
+	* sanitizer_common/sanitizer_stacktrace.cc (GetCanonicFrame): Assume we
+	compiled code with GCC when extracting the caller PC for ARM if no
+	valid frame pointer is available.
+
+2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
 	PR sanitizer/63958
 	Reapply:
 	2014-10-14  David S. Miller  <davem@davemloft.net>
