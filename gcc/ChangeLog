@@ -1,3 +1,9 @@
+2016-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/78234
+	* gimple-ssa-store-merging.c (clear_bit_region): Fix off-by-one error
+	in start != 0 case.
+
 2016-11-08  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/78242
