@@ -1,3 +1,8 @@
+2016-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78224
+	* g++.dg/torture/pr78224.C: New testcase.
+
 2016-11-08  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/store_merging_1.c: Require store_merge.
