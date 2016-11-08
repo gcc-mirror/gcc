@@ -37,7 +37,7 @@ dg-init
 
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
-	"" $DEFAULT_TRADCPPFLAGS
+	"-I$srcdir/$subdir/" $DEFAULT_TRADCPPFLAGS
 
 # All done.
 dg-finish
