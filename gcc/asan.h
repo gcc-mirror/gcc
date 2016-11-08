@@ -120,6 +120,10 @@ asan_intercepted_p (enum built_in_function fcode)
 	 || fcode == BUILT_IN_STRNCASECMP
 	 || fcode == BUILT_IN_STRNCAT
 	 || fcode == BUILT_IN_STRNCMP
+	 || fcode == BUILT_IN_STRCSPN
+	 || fcode == BUILT_IN_STRPBRK
+	 || fcode == BUILT_IN_STRSPN
+	 || fcode == BUILT_IN_STRSTR
 	 || fcode == BUILT_IN_STRNCPY;
 }
 
