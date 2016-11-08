@@ -1,3 +1,7 @@
+2016-11-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lex.c (search_line_fast): New implementation for AArch64.
+
 2016-10-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* files.c (destroy_cpp_file): Free file->path.
