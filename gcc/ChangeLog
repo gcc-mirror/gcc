@@ -1,3 +1,7 @@
+2016-11-08  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/t-aarch64 (aarch64-c.o): Depend on TARGET_H.
+
 2016-11-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78205
