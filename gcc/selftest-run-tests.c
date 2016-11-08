@@ -82,6 +82,8 @@ selftest::run_tests ()
   if (targetm.run_target_selftests)
     targetm.run_target_selftests ();
 
+  store_merging_c_tests ();
+
   /* Run any lang-specific selftests.  */
   lang_hooks.run_lang_selftests ();
 
