@@ -337,7 +337,7 @@ clear_bit_region (unsigned char *ptr, unsigned int start,
   else if (start != 0)
     {
       clear_bit_region (ptr, start, BITS_PER_UNIT - start);
-      clear_bit_region (ptr + 1, 0, len - (BITS_PER_UNIT - start) + 1);
+      clear_bit_region (ptr + 1, 0, len - (BITS_PER_UNIT - start));
     }
   /* Whole bytes need to be cleared.  */
   else if (start == 0 && len > BITS_PER_UNIT)
