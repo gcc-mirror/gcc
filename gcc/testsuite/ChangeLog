@@ -1,5 +1,9 @@
 2016-11-08  Bin Cheng  <bin.cheng@arm.com>
 
+	* gcc.dg/vect/pr56541.c: Xfail on !vect_cond_mixed targets.
+
+2016-11-08  Bin Cheng  <bin.cheng@arm.com>
+
 	* gcc.dg/tree-ssa/pr71347.c: Drop xfail.
 
 2016-11-08  Bin Cheng  <bin.cheng@arm.com>
