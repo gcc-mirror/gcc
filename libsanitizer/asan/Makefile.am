@@ -19,6 +19,8 @@ asan_files = \
 	asan_activation.cc \
 	asan_allocator.cc \
 	asan_debugging.cc \
+	asan_descriptions.cc \
+	asan_errors.cc \
 	asan_fake_stack.cc \
 	asan_flags.cc \
 	asan_globals.cc \
@@ -28,6 +30,7 @@ asan_files = \
 	asan_malloc_linux.cc \
 	asan_malloc_mac.cc \
 	asan_malloc_win.cc \
+	asan_memory_profile.cc \
 	asan_new_delete.cc \
 	asan_poisoning.cc \
 	asan_posix.cc \

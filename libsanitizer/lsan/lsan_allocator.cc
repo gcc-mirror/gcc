@@ -41,10 +41,17 @@ typedef SizeClassAllocator32<0, SANITIZER_MMAP_RANGE_SIZE,
     PrimaryAllocator;
 #else
 static const uptr kMaxAllowedMallocSize = 8UL << 30;
-static const uptr kAllocatorSpace = 0x600000000000ULL;
-static const uptr kAllocatorSize = 0x40000000000ULL; // 4T.
-typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize,
-        sizeof(ChunkMetadata), DefaultSizeClassMap> PrimaryAllocator;
+
+struct AP64 {  // Allocator64 parameters. Deliberately using a short name.
+  static const uptr kSpaceBeg = 0x600000000000ULL;
+  static const uptr kSpaceSize =  0x40000000000ULL; // 4T.
+  static const uptr kMetadataSize = sizeof(ChunkMetadata);
+  typedef DefaultSizeClassMap SizeClassMap;
+  typedef NoOpMapUnmapCallback MapUnmapCallback;
+  static const uptr kFlags = 0;
+};
+
+typedef SizeClassAllocator64<AP64> PrimaryAllocator;
 #endif
 typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
 typedef LargeMmapAllocator<> SecondaryAllocator;
@@ -97,11 +104,13 @@ void *Allocate(const StackTrace &stack, uptr size, uptr alignment,
     memset(p, 0, size);
   RegisterAllocation(stack, p, size);
   if (&__sanitizer_malloc_hook) __sanitizer_malloc_hook(p, size);
+  RunMallocHooks(p, size);
   return p;
 }
 
 void Deallocate(void *p) {
   if (&__sanitizer_free_hook) __sanitizer_free_hook(p);
+  RunFreeHooks(p);
   RegisterDeallocation(p);
   allocator.Deallocate(&cache, p);
 }

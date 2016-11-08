@@ -41,10 +41,7 @@ ASAN_FLAG(
     "If set, uses custom wrappers and replacements for libc string functions "
     "to find more errors.")
 ASAN_FLAG(bool, replace_intrin, true,
-          "If set, uses custom wrappers for memset/memcpy/memmove intinsics.")
-ASAN_FLAG(bool, mac_ignore_invalid_free, false,
-          "Ignore invalid free() calls to work around some bugs. Used on OS X "
-          "only.")
+          "If set, uses custom wrappers for memset/memcpy/memmove intrinsics.")
 ASAN_FLAG(bool, detect_stack_use_after_return, false,
           "Enables stack-use-after-return checking at run-time.")
 ASAN_FLAG(int, min_uar_stack_size_log, 16, // We can't do smaller anyway.
@@ -78,6 +75,8 @@ ASAN_FLAG(bool, print_stats, false,
           "Print various statistics after printing an error message or if "
           "atexit=1.")
 ASAN_FLAG(bool, print_legend, true, "Print the legend for the shadow bytes.")
+ASAN_FLAG(bool, print_scariness, false,
+          "Print the scariness score. Experimental.")
 ASAN_FLAG(bool, atexit, false,
           "If set, prints ASan exit stats even after program terminates "
           "successfully.")
@@ -97,15 +96,15 @@ ASAN_FLAG(bool, poison_array_cookie, true,
           "Poison (or not) the array cookie after operator new[].")
 
 // Turn off alloc/dealloc mismatch checker on Mac and Windows for now.
-// https://code.google.com/p/address-sanitizer/issues/detail?id=131
-// https://code.google.com/p/address-sanitizer/issues/detail?id=309
+// https://github.com/google/sanitizers/issues/131
+// https://github.com/google/sanitizers/issues/309
 // TODO(glider,timurrrr): Fix known issues and enable this back.
 ASAN_FLAG(bool, alloc_dealloc_mismatch,
-          (SANITIZER_MAC == 0) && (SANITIZER_WINDOWS == 0),
+          !SANITIZER_MAC && !SANITIZER_WINDOWS && !SANITIZER_ANDROID,
           "Report errors on malloc/delete, new/free, new/delete[], etc.")
 
 ASAN_FLAG(bool, new_delete_type_mismatch, true,
-          "Report errors on mismatch betwen size of new and delete.")
+          "Report errors on mismatch between size of new and delete.")
 ASAN_FLAG(
     bool, strict_init_order, false,
     "If true, assume that dynamic initializers can never access globals from "
@@ -124,8 +123,8 @@ ASAN_FLAG(
     "The bigger the value the harder we try.")
 ASAN_FLAG(
     bool, detect_container_overflow, true,
-    "If true, honor the container overflow  annotations. "
-    "See https://code.google.com/p/address-sanitizer/wiki/ContainerOverflow")
+    "If true, honor the container overflow annotations. See "
+    "https://github.com/google/sanitizers/wiki/AddressSanitizerContainerOverflow")
 ASAN_FLAG(int, detect_odr_violation, 2,
           "If >=2, detect violation of One-Definition-Rule (ODR); "
           "If ==1, detect ODR-violation only if the two variables "
@@ -136,3 +135,5 @@ ASAN_FLAG(const char *, suppressions, "", "Suppressions file name.")
 ASAN_FLAG(bool, halt_on_error, true,
           "Crash the program after printing the first error report "
           "(WARNING: USE AT YOUR OWN RISK!)")
+ASAN_FLAG(bool, use_odr_indicator, false,
+          "Use special ODR indicator symbol for ODR violation detection")

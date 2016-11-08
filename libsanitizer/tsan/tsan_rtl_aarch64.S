@@ -1,6 +1,4 @@
 #include "sanitizer_common/sanitizer_asm.h"
-
-.section .bss
 .type	__tsan_pointer_chk_guard, %object
 .size	__tsan_pointer_chk_guard, 8
 __tsan_pointer_chk_guard:
