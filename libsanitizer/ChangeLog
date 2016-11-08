@@ -1,5 +1,11 @@
 2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
+	* asan/asan_globals.cc (RegisterGlobal): Do not call
+	CheckODRViolationViaPoisoning.
+	(CheckODRViolationViaPoisoning): Remove.
+
+2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
 	* sanitizer_common/sanitizer_stacktrace.cc (GetCanonicFrame): Assume we
 	compiled code with GCC when extracting the caller PC for ARM if no
 	valid frame pointer is available.
