@@ -6548,18 +6548,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
 	slp_perm = true;
 
-      /* ???  The following is overly pessimistic (as well as the loop
-         case above) in the case we can statically determine the excess
-	 elements loaded are within the bounds of a decl that is accessed.
-	 Likewise for BB vectorizations using masked loads is a possibility.  */
-      if (bb_vinfo && slp_perm && group_size % nunits != 0)
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "BB vectorization with gaps at the end of a load "
-			   "is not supported\n");
-	  return false;
-	}
-
       /* Invalidate assumptions made by dependence analysis when vectorization
 	 on the unrolled body effectively re-orders stmts.  */
       if (!PURE_SLP_STMT (stmt_info)

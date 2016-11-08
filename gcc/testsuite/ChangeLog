@@ -1,5 +1,10 @@
 2016-11-08  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78205
+	* gcc.dg/vect/bb-slp-pr78205.c: New testcase.
+
+2016-11-08  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/78224
 	* g++.dg/torture/pr78224.C: New testcase.
 

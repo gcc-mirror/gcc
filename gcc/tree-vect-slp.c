@@ -1459,6 +1459,25 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 	    SLP_TREE_LOAD_PERMUTATION (node).release ();
 	  else
 	    {
+	      stmt_vec_info group_info
+		= vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (node)[0]);
+	      group_info = vinfo_for_stmt (GROUP_FIRST_ELEMENT (group_info));
+	      unsigned nunits
+		= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (group_info));
+	      unsigned k, maxk = 0;
+	      FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (node), j, k)
+		if (k > maxk)
+		  maxk = k;
+	      /* In BB vectorization we may not actually use a loaded vector
+		 accessing elements in excess of GROUP_SIZE.  */
+	      if (maxk >= (GROUP_SIZE (group_info) & ~(nunits - 1)))
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "BB vectorization with gaps at the end of "
+				   "a load is not supported\n");
+		  return false;
+		}
+
 	      /* Verify the permutation can be generated.  */
 	      vec<tree> tem;
 	      unsigned n_perms;
