@@ -1704,7 +1704,7 @@ const struct cpu_cost_table v7m_extra_costs =
 const struct tune_params arm_slowmul_tune =
 {
   arm_slowmul_rtx_costs,
-  NULL,					/* Insn extra costs.  */
+  &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1727,7 +1727,7 @@ const struct tune_params arm_slowmul_tune =
 const struct tune_params arm_fastmul_tune =
 {
   arm_fastmul_rtx_costs,
-  NULL,					/* Insn extra costs.  */
+  &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1753,7 +1753,7 @@ const struct tune_params arm_fastmul_tune =
 const struct tune_params arm_strongarm_tune =
 {
   arm_fastmul_rtx_costs,
-  NULL,					/* Insn extra costs.  */
+  &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1776,7 +1776,7 @@ const struct tune_params arm_strongarm_tune =
 const struct tune_params arm_xscale_tune =
 {
   arm_xscale_rtx_costs,
-  NULL,					/* Insn extra costs.  */
+  &generic_extra_costs,			/* Insn extra costs.  */
   xscale_sched_adjust_cost,
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1799,7 +1799,7 @@ const struct tune_params arm_xscale_tune =
 const struct tune_params arm_9e_tune =
 {
   arm_9e_rtx_costs,
-  NULL,					/* Insn extra costs.  */
+  &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1822,7 +1822,7 @@ const struct tune_params arm_9e_tune =
 const struct tune_params arm_marvell_pj4_tune =
 {
   arm_9e_rtx_costs,
-  NULL,					/* Insn extra costs.  */
+  &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1845,7 +1845,7 @@ const struct tune_params arm_marvell_pj4_tune =
 const struct tune_params arm_v6t2_tune =
 {
   arm_9e_rtx_costs,
-  NULL,					/* Insn extra costs.  */
+  &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -2253,7 +2253,7 @@ const struct tune_params arm_cortex_m7_tune =
 const struct tune_params arm_v6m_tune =
 {
   arm_9e_rtx_costs,
-  NULL,					/* Insn extra costs.  */
+  &generic_extra_costs,			/* Insn extra costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
@@ -2276,7 +2276,7 @@ const struct tune_params arm_v6m_tune =
 const struct tune_params arm_fa726te_tune =
 {
   arm_9e_rtx_costs,
-  NULL,					/* Insn extra costs.  */
+  &generic_extra_costs,				/* Insn extra costs.  */
   fa726te_sched_adjust_cost,
   arm_default_branch_cost,
   &arm_default_vec_cost,
