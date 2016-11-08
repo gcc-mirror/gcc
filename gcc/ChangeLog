@@ -1,3 +1,8 @@
+2016-11-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	* dwarf2asm.c (USE_LINKONCE_INDIRECT): Test XCOFF_DEBUGGING_INFO
+	at runtime.
+
 2016-11-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70799
