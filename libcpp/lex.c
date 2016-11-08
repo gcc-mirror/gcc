@@ -752,6 +752,101 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   }
 }
 
+#elif defined (__ARM_NEON) && defined (__ARM_64BIT_STATE)
+#include "arm_neon.h"
+
+/* This doesn't have to be the exact page size, but no system may use
+   a size smaller than this.  ARMv8 requires a minimum page size of
+   4k.  The impact of being conservative here is a small number of
+   cases will take the slightly slower entry path into the main
+   loop.  */
+
+#define AARCH64_MIN_PAGE_SIZE 4096
+
+static const uchar *
+search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
+{
+  const uint8x16_t repl_nl = vdupq_n_u8 ('\n');
+  const uint8x16_t repl_cr = vdupq_n_u8 ('\r');
+  const uint8x16_t repl_bs = vdupq_n_u8 ('\\');
+  const uint8x16_t repl_qm = vdupq_n_u8 ('?');
+  const uint8x16_t xmask = (uint8x16_t) vdupq_n_u64 (0x8040201008040201ULL);
+
+#ifdef __AARCH64EB
+  const int16x8_t shift = {8, 8, 8, 8, 0, 0, 0, 0};
+#else
+  const int16x8_t shift = {0, 0, 0, 0, 8, 8, 8, 8};
+#endif
+
+  unsigned int found;
+  const uint8_t *p;
+  uint8x16_t data;
+  uint8x16_t t;
+  uint16x8_t m;
+  uint8x16_t u, v, w;
+
+  /* Align the source pointer.  */
+  p = (const uint8_t *)((uintptr_t)s & -16);
+
+  /* Assuming random string start positions, with a 4k page size we'll take
+     the slow path about 0.37% of the time.  */
+  if (__builtin_expect ((AARCH64_MIN_PAGE_SIZE
+			 - (((uintptr_t) s) & (AARCH64_MIN_PAGE_SIZE - 1)))
+			< 16, 0))
+    {
+      /* Slow path: the string starts near a possible page boundary.  */
+      uint32_t misalign, mask;
+
+      misalign = (uintptr_t)s & 15;
+      mask = (-1u << misalign) & 0xffff;
+      data = vld1q_u8 (p);
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vorrq_u8 (v, w);
+      t = vandq_u8 (t, xmask);
+      m = vpaddlq_u8 (t);
+      m = vshlq_u16 (m, shift);
+      found = vaddvq_u16 (m);
+      found &= mask;
+      if (found)
+	return (const uchar*)p + __builtin_ctz (found);
+    }
+  else
+    {
+      data = vld1q_u8 ((const uint8_t *) s);
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vorrq_u8 (v, w);
+      if (__builtin_expect (vpaddd_u64 ((uint64x2_t)t), 0))
+	goto done;
+    }
+
+  do
+    {
+      p += 16;
+      data = vld1q_u8 (p);
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vorrq_u8 (v, w);
+    } while (!vpaddd_u64 ((uint64x2_t)t));
+
+done:
+  /* Now that we've found the terminating substring, work out precisely where
+     we need to stop.  */
+  t = vandq_u8 (t, xmask);
+  m = vpaddlq_u8 (t);
+  m = vshlq_u16 (m, shift);
+  found = vaddvq_u16 (m);
+  return (((((uintptr_t) p) < (uintptr_t) s) ? s : (const uchar *)p)
+	  + __builtin_ctz (found));
+}
+
 #elif defined (__ARM_NEON)
 #include "arm_neon.h"
 
