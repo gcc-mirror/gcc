@@ -1,5 +1,17 @@
 2016-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.c (arm_slowmul_tune): Use generic_extra_costs.
+	(arm_fastmul_tune): Likewise.
+	(arm_strongarm_tune): Likewise.
+	(arm_xscale_tune): Likewise.
+	(arm_9e_tune): Likewise.
+	(arm_marvell_pj4_tune): Likewise.
+	(arm_v6t2_tune): Likewise.
+	(arm_v6m_tune): Likewise.
+	(arm_fa726te_tune): Likewise.
+
+2016-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR tree-optimization/78234
 	* gimple-ssa-store-merging.c (clear_bit_region): Fix off-by-one error
 	in start != 0 case.
