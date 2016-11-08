@@ -1,3 +1,10 @@
+2016-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78224
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call_with_conds):
+	Split the fallthru edge in case its successor may have PHIs.
+	Do not free dominance info.
+
 2016-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78229
