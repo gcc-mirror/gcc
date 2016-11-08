@@ -14001,6 +14001,15 @@ resolve_fl_parameter (gfc_symbol *sym)
 		 &sym->value->where);
       return false;
     }
+
+  /* F03:C509,C514.  */
+  if (sym->ts.type == BT_CLASS)
+    {
+      gfc_error ("CLASS variable %qs at %L cannot have the PARAMETER attribute",
+		 sym->name, &sym->declared_at);
+      return false;
+    }
+
   return true;
 }
 
