@@ -1,4 +1,14 @@
-2016-11-08  David Edelsohn  <dje.gcc@gmail.com>
+2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* asan.h (ASAN_STACK_MAGIC_PARTIAL): Remove.
+	* asan.c (ASAN_STACK_MAGIC_PARTIAL): Replace with
+	ASAN_STACK_MAGIC_MIDDLE.
+	(asan_global_struct): Increase the size of fields.
+	(asan_add_global): Add new field constructor.
+	* sanitizer.def (__asan_version_mismatch_check_v6): Replace with
+	__asan_version_mismatch_check_v8.
+
+ 2016-11-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	* dwarf2asm.c (USE_LINKONCE_INDIRECT): Test XCOFF_DEBUGGING_INFO
 	at runtime.
