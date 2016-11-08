@@ -1,5 +1,10 @@
 2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
+	* asan.h (asan_intercepted_p): Handle BUILT_IN_STRCSPN,
+	BUILT_IN_STRPBRK, BUILT_IN_STRSPN and BUILT_IN_STRSTR.
+
+2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
 	* asan.h (ASAN_STACK_MAGIC_PARTIAL): Remove.
 	* asan.c (ASAN_STACK_MAGIC_PARTIAL): Replace with
 	ASAN_STACK_MAGIC_MIDDLE.

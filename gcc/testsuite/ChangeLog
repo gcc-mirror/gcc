@@ -1,5 +1,20 @@
 2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
+	* c-c++-common/asan/default_options.h: New file.
+	* c-c++-common/asan/strcasestr-1.c: New test.
+	* c-c++-common/asan/strcasestr-2.c: Likewise.
+	* c-c++-common/asan/strcspn-1.c: Likewise.
+	* c-c++-common/asan/strcspn-2.c: Likewise.
+	* c-c++-common/asan/strpbrk-1.c: Likewise.
+	* c-c++-common/asan/strpbrk-2.c: Likewise.
+	* c-c++-common/asan/strspn-1.c: Likewise.
+	* c-c++-common/asan/strspn-2.c: Likewise.
+	* c-c++-common/asan/strstr-1.c: Likewise.
+	* c-c++-common/asan/strstr-2.c: Likewise.
+	* c-c++-common/asan/halt_on_error_suppress_equal_pcs-1.c: Likewise.
+
+2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
 	* c-c++-common/asan/null-deref-1.c: Adjust testcase.
 
 2016-11-08  Janus Weil  <janus@gcc.gnu.org>
