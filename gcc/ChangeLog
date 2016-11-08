@@ -1,3 +1,15 @@
+2016-11-08  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/78242
+	* dbgcnt.def: Add new debug counter asan_use_after_scope.
+	* gimplify.c (gimplify_decl_expr): Do not sanitize vars
+	with a value expr.  Do not add artificial variables to
+	live_switch_vars.  Use the debug counter.
+	(gimplify_target_expr): Use the debug counter.
+	* internal-fn.def: Remove ECF_TM_PURE from ASAN_MARK builtin.
+	* sanitizer.def: Set ATTR_NOTHROW_LEAF_LIST to
+	BUILT_IN_ASAN_CLOBBER_N and BUILT_IN_ASAN_UNCLOBBER_N.
+
 2016-11-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (get_group_load_store_type): If the

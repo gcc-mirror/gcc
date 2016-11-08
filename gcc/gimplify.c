@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "builtins.h"
 #include "asan.h"
+#include "dbgcnt.h"
 
 /* Hash set of poisoned variables in a bind expr.  */
 static hash_set<tree> *asan_poisoned_variables = NULL;
@@ -1622,11 +1623,13 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	  && !asan_no_sanitize_address_p ()
 	  && !is_vla
 	  && TREE_ADDRESSABLE (decl)
-	  && !TREE_STATIC (decl))
+	  && !TREE_STATIC (decl)
+	  && !DECL_HAS_VALUE_EXPR_P (decl)
+	  && dbg_cnt (asan_use_after_scope))
 	{
 	  asan_poisoned_variables->add (decl);
 	  asan_poison_variable (decl, false, seq_p);
-	  if (gimplify_ctxp->live_switch_vars)
+	  if (!DECL_ARTIFICIAL (decl) && gimplify_ctxp->live_switch_vars)
 	    gimplify_ctxp->live_switch_vars->add (decl);
 	}
 
@@ -6399,7 +6402,8 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	      else
 		cleanup = clobber;
 	    }
-	  if (asan_sanitize_use_after_scope ())
+	  if (asan_sanitize_use_after_scope ()
+	      && dbg_cnt (asan_use_after_scope))
 	    {
 	      tree asan_cleanup = build_asan_poison_call_expr (temp);
 	      if (asan_cleanup)
