@@ -1,5 +1,11 @@
 2016-11-08  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/68440
+	* expr.c (check_alloc_comp_init): Loosen an assert.
+	* resolve.c (resolve_fl_parameter): Reject class parameters.
+
+2016-11-08  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/77596
 	* expr.c (gfc_check_pointer_assign): Add special check for procedure-
 	pointer component with absent interface.
