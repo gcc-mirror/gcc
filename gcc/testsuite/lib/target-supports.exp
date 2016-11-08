@@ -8107,3 +8107,17 @@ proc check_effective_target_divmod_simode { } {
 
     return [check_effective_target_divmod]
 }
+
+# Return 1 if store merging optimization is applicable for target.
+# Store merging is not profitable for targets like the avr which
+# can load/store only one byte at a time. Use int size as a proxy
+# for the number of bytes the target can write, and skip for targets
+# with a smallish (< 32) size.
+
+proc check_effective_target_store_merge { } {
+    if { [is-effective-target non_strict_align ] && [is-effective-target int32plus] } {
+	return 1
+    }
+
+    return 0
+}
