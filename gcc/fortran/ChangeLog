@@ -1,3 +1,9 @@
+2016-11-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/77596
+	* expr.c (gfc_check_pointer_assign): Add special check for procedure-
+	pointer component with absent interface.
+
 2016-11-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78226
