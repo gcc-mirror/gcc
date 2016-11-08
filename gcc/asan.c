@@ -1242,7 +1242,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 		  shadow_bytes[i] = offset - aoff;
 	      }
 	    else
-	      shadow_bytes[i] = ASAN_STACK_MAGIC_PARTIAL;
+	      shadow_bytes[i] = ASAN_STACK_MAGIC_MIDDLE;
 	  emit_move_insn (shadow_mem, asan_shadow_cst (shadow_bytes));
 	  offset = aoff;
 	}
@@ -2260,19 +2260,20 @@ asan_dynamic_init_call (bool after_p)
      const void *__module_name;
      uptr __has_dynamic_init;
      __asan_global_source_location *__location;
+     char *__odr_indicator;
    } type.  */
 
 static tree
 asan_global_struct (void)
 {
-  static const char *field_names[7]
+  static const char *field_names[8]
     = { "__beg", "__size", "__size_with_redzone",
-	"__name", "__module_name", "__has_dynamic_init", "__location"};
-  tree fields[7], ret;
+	"__name", "__module_name", "__has_dynamic_init", "__location", "__odr_indicator"};
+  tree fields[8], ret;
   int i;
 
   ret = make_node (RECORD_TYPE);
-  for (i = 0; i < 7; i++)
+  for (i = 0; i < 8; i++)
     {
       fields[i]
 	= build_decl (UNKNOWN_LOCATION, FIELD_DECL,
@@ -2381,6 +2382,8 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   else
     locptr = build_int_cst (uptr, 0);
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, locptr);
+  /* TODO: support ODR indicators.  */
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, 0));
   init = build_constructor (type, vinner);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
 }
