@@ -1,3 +1,28 @@
+2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* All source files: Merge from upstream 285547.
+	* configure.tgt (SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS): New
+	variable.
+	* configure.ac (SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS): Handle it.
+	* asan/Makefile.am (asan_files): Add new files.
+	* asan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* tsan/Makefile.am (tsan_files): Add new files.
+	* tsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Add new files.
+	(EXTRA_libsanitizer_common_la_SOURCES): Define.
+	(libsanitizer_common_la_LIBADD): Likewise.
+	(libsanitizer_common_la_DEPENDENCIES): Likewise.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* interception/Makefile.in: Likewise.
+	* libbacktace/Makefile.in: Likewise.
+	* Makefile.in: Likewise.
+	* configure: Likewise.
+	* merge.sh: Handle builtins/assembly.h merging.
+	* builtins/assembly.h: New file.
+	* asan/libtool-version: Bump the libasan SONAME.
+
 2016-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/77567

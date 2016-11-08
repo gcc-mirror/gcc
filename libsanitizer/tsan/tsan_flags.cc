@@ -27,8 +27,8 @@ Flags *flags() {
 #ifdef TSAN_EXTERNAL_HOOKS
 extern "C" const char* __tsan_default_options();
 #else
-extern "C" SANITIZER_INTERFACE_ATTRIBUTE
-const char *WEAK __tsan_default_options() {
+SANITIZER_WEAK_DEFAULT_IMPL
+const char *__tsan_default_options() {
   return "";
 }
 #endif
@@ -59,7 +59,7 @@ void InitializeFlags(Flags *f, const char *env) {
     CommonFlags cf;
     cf.CopyFrom(*common_flags());
     cf.allow_addr2line = true;
-    if (kGoMode) {
+    if (SANITIZER_GO) {
       // Does not work as expected for Go: runtime handles SIGABRT and crashes.
       cf.abort_on_error = false;
       // Go does not have mutexes.
@@ -69,6 +69,7 @@ void InitializeFlags(Flags *f, const char *env) {
     cf.print_suppressions = false;
     cf.stack_trace_format = "    #%n %f %S %M";
     cf.exitcode = 66;
+    cf.intercept_tls_get_addr = true;
     OverrideCommonFlags(cf);
   }
 
@@ -106,7 +107,7 @@ void InitializeFlags(Flags *f, const char *env) {
     f->report_signal_unsafe = false;
   }
 
-  SetVerbosity(common_flags()->verbosity);
+  InitializeCommonFlags();
 
   if (Verbosity()) ReportUnrecognizedFlags();
 
