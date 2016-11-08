@@ -824,8 +824,8 @@ static GTY(()) hash_map<const char *, tree> *indirect_pool;
 
 static GTY(()) int dw2_const_labelno;
 
-#if defined(HAVE_GAS_HIDDEN) && !defined(XCOFF_DEBUGGING_INFO)
-# define USE_LINKONCE_INDIRECT (SUPPORTS_ONE_ONLY)
+#if defined(HAVE_GAS_HIDDEN)
+# define USE_LINKONCE_INDIRECT (SUPPORTS_ONE_ONLY && !XCOFF_DEBUGGING_INFO)
 #else
 # define USE_LINKONCE_INDIRECT 0
 #endif
