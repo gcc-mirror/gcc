@@ -2805,11 +2805,24 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
   switch (GET_CODE (src))
     {
+    case ASHIFT:
+    case LSHIFTRT:
+      /* Consider only non-variable shifts narrower
+	 than general register width.  */
+      if (!(CONST_INT_P (XEXP (src, 1))
+	    && IN_RANGE (INTVAL (XEXP (src, 1)), 0, 31)))
+	return false;
+      break;
+
     case PLUS:
     case MINUS:
     case IOR:
     case XOR:
     case AND:
+      if (!REG_P (XEXP (src, 1))
+	  && !MEM_P (XEXP (src, 1))
+	  && !CONST_INT_P (XEXP (src, 1)))
+	return false;
       break;
 
     case REG:
@@ -2830,11 +2843,6 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
       && (GET_CODE (src) != AND
 	  || GET_CODE (XEXP (src, 0)) != NOT
 	  || !REG_P (XEXP (XEXP (src, 0), 0))))
-      return false;
-
-  if (!REG_P (XEXP (src, 1))
-      && !MEM_P (XEXP (src, 1))
-      && !CONST_INT_P (XEXP (src, 1)))
       return false;
 
   if ((GET_MODE (XEXP (src, 0)) != DImode
@@ -3387,6 +3395,13 @@ dimode_scalar_chain::compute_convert_gain ()
 	gain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
       else if (MEM_P (src) && REG_P (dst))
 	gain += 2 * ix86_cost->int_load[2] - ix86_cost->sse_load[1];
+      else if (GET_CODE (src) == ASHIFT
+	       || GET_CODE (src) == LSHIFTRT)
+	{
+	  gain += ix86_cost->add;
+    	  if (CONST_INT_P (XEXP (src, 0)))
+	    gain -= vector_const_cost (XEXP (src, 0));
+	}
       else if (GET_CODE (src) == PLUS
 	       || GET_CODE (src) == MINUS
 	       || GET_CODE (src) == IOR
@@ -3738,6 +3753,12 @@ dimode_scalar_chain::convert_insn (rtx_insn *insn)
 
   switch (GET_CODE (src))
     {
+    case ASHIFT:
+    case LSHIFTRT:
+      convert_op (&XEXP (src, 0), insn);
+      PUT_MODE (src, V2DImode);
+      break;
+
     case PLUS:
     case MINUS:
     case IOR:
