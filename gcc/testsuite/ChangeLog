@@ -1,3 +1,10 @@
+2016-11-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/78136
+	* gcc.dg/cpp/trad/trad.exp
+	(dg-runtest): Added $srcdir/$subdir/ to Include dirs.
+	* gcc.dg/cpp/trad/include.c: Use local header file.
+
 2016-11-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78205
