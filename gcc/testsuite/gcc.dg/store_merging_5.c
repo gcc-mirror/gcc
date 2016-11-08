@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target non_strict_align } */
+/* { dg-require-effective-target store_merge } */
 /* { dg-options "-O2 -fdump-tree-store-merging" } */
 
 /* Make sure that non-aliasing non-constant interspersed stores do not

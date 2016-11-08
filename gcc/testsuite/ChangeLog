@@ -1,3 +1,14 @@
+2016-11-08  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/store_merging_1.c: Require store_merge.
+	* gcc.dg/store_merging_2.c: Likewise.
+	* gcc.dg/store_merging_4.c: Likewise.
+	* gcc.dg/store_merging_5.c: Likewise. 
+	* gcc.dg/store_merging_6.c: Likewise.
+	* gcc.dg/store_merging_7.c: Likewise.
+	* gcc.dg/store_merging_8.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_store_merge): New.
+
 2016-11-07  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/fold-vec-add-1.c: Add dg-options -maltivec.
