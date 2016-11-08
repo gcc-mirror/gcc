@@ -1,5 +1,13 @@
 2016-11-08  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78205
+	* tree-vect-stmts.c (vectorizable_load): Move check whether
+	we may run into gaps when BB vectorizing SLP permutations ...
+	* tree-vect-slp.c (vect_supported_load_permutation_p): ...
+	here where we can do a more precise check.
+
+2016-11-08  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/78224
 	* tree-call-cdce.c (shrink_wrap_one_built_in_call_with_conds):
 	Split the fallthru edge in case its successor may have PHIs.
