@@ -124,7 +124,7 @@ extern tree build_invariant_address (tree, tree, HOST_WIDE_INT);
 extern tree constant_boolean_node (bool, tree);
 extern tree div_if_zero_remainder (const_tree, const_tree);
 
-extern bool tree_swap_operands_p (const_tree, const_tree, bool);
+extern bool tree_swap_operands_p (const_tree, const_tree);
 extern enum tree_code swap_tree_comparison (enum tree_code);
 
 extern bool ptr_difference_const (tree, tree, HOST_WIDE_INT *);

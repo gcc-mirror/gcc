@@ -2580,10 +2580,10 @@ vn_nary_op_compute_hash (const vn_nary_op_t vno1)
 	&& commutative_tree_code (vno1->opcode))
        || (vno1->length == 3
 	   && commutative_ternary_tree_code (vno1->opcode)))
-      && tree_swap_operands_p (vno1->op[0], vno1->op[1], false))
+      && tree_swap_operands_p (vno1->op[0], vno1->op[1]))
     std::swap (vno1->op[0], vno1->op[1]);
   else if (TREE_CODE_CLASS (vno1->opcode) == tcc_comparison
-	   && tree_swap_operands_p (vno1->op[0], vno1->op[1], false))
+	   && tree_swap_operands_p (vno1->op[0], vno1->op[1]))
     {
       std::swap (vno1->op[0], vno1->op[1]);
       vno1->opcode = swap_tree_comparison  (vno1->opcode);
