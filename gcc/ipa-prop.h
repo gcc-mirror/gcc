@@ -818,6 +818,7 @@ ipa_parm_adjustment *ipa_get_adjustment_candidate (tree **, bool *,
 						   ipa_parm_adjustment_vec,
 						   bool);
 void ipa_release_body_info (struct ipa_func_body_info *);
+tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);
 
 /* From tree-sra.c:  */
 tree build_ref_for_offset (location_t, tree, HOST_WIDE_INT, bool, tree,

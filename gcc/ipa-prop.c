@@ -1595,7 +1595,10 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
     }
 }
 
-static tree
+/* Return the Ith param type of callee associated with call graph
+   edge E.  */
+
+tree
 ipa_get_callee_param_type (struct cgraph_edge *e, int i)
 {
   int n;

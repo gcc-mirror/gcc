@@ -1,3 +1,12 @@
+2016-11-09  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR ipa/78121
+	* ipa-cp.c (propagate_vr_accross_jump_function): Pass param type.
+	Also fold constant passed as argument while computing value range.
+	(propagate_constants_accross_call): Pass param type.
+	* ipa-prop.c: export ipa_get_callee_param_type.
+	* ipa-prop.h: export ipa_get_callee_param_type.
+
 2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	* asan.h (asan_intercepted_p): Handle BUILT_IN_STRCSPN,

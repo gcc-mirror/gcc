@@ -1834,18 +1834,25 @@ propagate_bits_accross_jump_function (cgraph_edge *cs, int idx, ipa_jump_func *j
 }
 
 /* Propagate value range across jump function JFUNC that is associated with
-   edge CS and update DEST_PLATS accordingly.  */
+   edge CS with param of callee of PARAM_TYPE and update DEST_PLATS
+   accordingly.  */
 
 static bool
 propagate_vr_accross_jump_function (cgraph_edge *cs,
 				    ipa_jump_func *jfunc,
-				    struct ipcp_param_lattices *dest_plats)
+				    struct ipcp_param_lattices *dest_plats,
+				    tree param_type)
 {
   struct ipcp_param_lattices *src_lats;
   ipcp_vr_lattice *dest_lat = &dest_plats->m_value_range;
 
   if (dest_lat->bottom_p ())
     return false;
+
+  if (!param_type
+      || (!INTEGRAL_TYPE_P (param_type)
+	  && !POINTER_TYPE_P (param_type)))
+    return dest_lat->set_to_bottom ();
 
   if (jfunc->type == IPA_JF_PASS_THROUGH)
     {
@@ -1865,6 +1872,7 @@ propagate_vr_accross_jump_function (cgraph_edge *cs,
 	{
 	  if (TREE_OVERFLOW_P (val))
 	    val = drop_tree_overflow (val);
+	  val = fold_convert (param_type, val);
 	  jfunc->vr_known = true;
 	  jfunc->m_vr.type = VR_RANGE;
 	  jfunc->m_vr.min = val;
@@ -2214,6 +2222,7 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
     {
       struct ipa_jump_func *jump_func = ipa_get_ith_jump_func (args, i);
       struct ipcp_param_lattices *dest_plats;
+      tree param_type = ipa_get_callee_param_type (cs, i);
 
       dest_plats = ipa_get_parm_lattices (callee_info, i);
       if (availability == AVAIL_INTERPOSABLE)
@@ -2230,7 +2239,8 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 						       dest_plats);
 	  if (opt_for_fn (callee->decl, flag_ipa_vrp))
 	    ret |= propagate_vr_accross_jump_function (cs,
-						       jump_func, dest_plats);
+						       jump_func, dest_plats,
+						       param_type);
 	  else
 	    ret |= dest_plats->m_value_range.set_to_bottom ();
 	}
