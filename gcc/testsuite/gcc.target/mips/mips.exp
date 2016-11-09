@@ -1129,7 +1129,7 @@ proc mips-dg-options { args } {
         # We need MIPS IV or higher for:
 	#
 	#
-	} elseif { $isa < 3
+	} elseif { $isa < 4
 		   && [mips_have_test_option_p options "HAS_MOVN"] } {
 	    mips_make_test_option options "-mips4"
         # We need MIPS III or higher for:
