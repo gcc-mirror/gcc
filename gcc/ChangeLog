@@ -1,3 +1,9 @@
+2016-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78262
+	* config/i386/i386.md (*<shift_insn><mode>3_doubleword): Mark
+	operand 0 as earlyclobber.
+
 2016-11-09  Martin Liska  <mliska@suse.cz>
 
 	* fold-const-call.c (fold_const_call): Fix up type of s0 and s1.
@@ -107,7 +113,7 @@
 	* sanitizer.def (__asan_version_mismatch_check_v6): Replace with
 	__asan_version_mismatch_check_v8.
 
- 2016-11-08  David Edelsohn  <dje.gcc@gmail.com>
+2016-11-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	* dwarf2asm.c (USE_LINKONCE_INDIRECT): Test XCOFF_DEBUGGING_INFO
 	at runtime.
