@@ -7327,7 +7327,8 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
       gfc_constructor *c = gfc_constructor_first (expr->value.constructor);
       /* We mark that the entire union should be initialized with a contrived
          EXPR_NULL expression at the beginning.  */
-      if (c->n.component == NULL && c->expr->expr_type == EXPR_NULL)
+      if (c != NULL && c->n.component == NULL
+	  && c->expr != NULL && c->expr->expr_type == EXPR_NULL)
         {
           tmp = build2_loc (input_location, MODIFY_EXPR, void_type_node,
 		            dest, build_constructor (TREE_TYPE (dest), NULL));
