@@ -1,3 +1,9 @@
+2016-11-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.c (canonicalize_comparison): Remove.
+	(optimize_stmt): Remove redundant pre-propagation canonicalization
+	of comparison operand order.
+
 2016-11-09  Martin Liska  <mliska@suse.cz>
 
 	* fold-const-call.c (fold_const_call): Fix the folding.
