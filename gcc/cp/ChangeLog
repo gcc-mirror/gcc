@@ -1,3 +1,22 @@
+2016-11-09  Jason Merrill  <jason@redhat.com>
+
+	Implement P0127R2, Declaring non-type parameters with auto.
+	* cp-tree.h (enum auto_deduction_context): Add adc_unify.
+	* decl.c (grokdeclarator): Allow 'auto' in C++17 template non-type
+	parameter types.
+	* pt.c (do_auto_deduction): Add outer_targs parameter.
+	(convert_template_argument): Call do_auto_deduction.  If adc_unify,
+	don't give up on dependent init.
+	(unify): Likewise.  In C++17, walk into the type of a
+	TEMPLATE_PARM_INDEX.
+	(for_each_template_parm): Add any_fn parameter.
+	(struct pair_fn_data): Likewise.
+	(for_each_template_parm_r): Call it for any tree.  In C++17, walk
+	into the type of a TEMPLATE_PARM_INDEX.
+	(zero_r, array_deduction_r, try_array_deduction): New.
+	(type_unification_real): Call try_array_deduction.
+	(get_partial_spec_bindings): Likewise.
+
 2016-11-07  Jason Merrill  <jason@redhat.com>
 
 	Implement P0012R1, Make exception specifications part of the type

@@ -1,3 +1,7 @@
+2016-11-09  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_template_auto.
+
 2016-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-ubsan.c (ubsan_instrument_shift): Handle split

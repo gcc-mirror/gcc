@@ -368,6 +368,12 @@
 #  error "__cpp_aligned_new != 201606"
 #endif
 
+#ifndef __cpp_template_auto
+#  error "__cpp_template_auto"
+#elif __cpp_template_auto != 201606
+#  error "__cpp_template_auto != 201606"
+#endif
+
 #ifndef __cpp_inline_variables
 #  error "__cpp_inline_variables"
 #elif __cpp_inline_variables != 201606
