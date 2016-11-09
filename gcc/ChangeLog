@@ -1,5 +1,8 @@
 2016-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/77718
+	* builtins.c (expand_builtin_memcmp): Formatting fix.
+
 	* flag-types.h (enum sanitize_code): Add SANITIZE_SHIFT_BASE
 	and SANITIZE_SHIFT_EXPONENT, change SANITIZE_SHIFT to bitwise
 	or of them, renumber other enumerators.
@@ -5059,7 +5062,8 @@
 
 2016-09-29  Bernd Schmidt  <bschmidt@redhat.com>
 
-	* builtins.c (expand_builtin_memcmp): don't swap args unless
+	PR target/77718
+	* builtins.c (expand_builtin_memcmp): Don't swap args unless
 	result is only being compared with zero.
 
 2016-09-29  Marek Polacek  <polacek@redhat.com>
