@@ -753,49 +753,6 @@ make_pass_dominator (gcc::context *ctxt)
 }
 
 
-/* Given a conditional statement CONDSTMT, convert the
-   condition to a canonical form.  */
-
-static void
-canonicalize_comparison (gcond *condstmt)
-{
-  tree op0;
-  tree op1;
-  enum tree_code code;
-
-  gcc_assert (gimple_code (condstmt) == GIMPLE_COND);
-
-  op0 = gimple_cond_lhs (condstmt);
-  op1 = gimple_cond_rhs (condstmt);
-
-  code = gimple_cond_code (condstmt);
-
-  /* If it would be profitable to swap the operands, then do so to
-     canonicalize the statement, enabling better optimization.
-
-     By placing canonicalization of such expressions here we
-     transparently keep statements in canonical form, even
-     when the statement is modified.  */
-  if (tree_swap_operands_p (op0, op1, false))
-    {
-      /* For relationals we need to swap the operands
-	 and change the code.  */
-      if (code == LT_EXPR
-	  || code == GT_EXPR
-	  || code == LE_EXPR
-	  || code == GE_EXPR)
-	{
-          code = swap_tree_comparison (code);
-
-          gimple_cond_set_code (condstmt, code);
-          gimple_cond_set_lhs (condstmt, op1);
-          gimple_cond_set_rhs (condstmt, op0);
-
-          update_stmt (condstmt);
-	}
-    }
-}
-
 /* A trivial wrapper so that we can present the generic jump
    threading code with a simple API for simplifying statements.  */
 static tree
@@ -1788,9 +1745,6 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
       fprintf (dump_file, "Optimizing statement ");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
-
-  if (gimple_code (stmt) == GIMPLE_COND)
-    canonicalize_comparison (as_a <gcond *> (stmt));
 
   update_stmt_if_modified (stmt);
   opt_stats.num_stmts++;
