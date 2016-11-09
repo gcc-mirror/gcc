@@ -2794,12 +2794,12 @@ external_spec_function (gfc_expr *e)
       return false;
     }
 
-  if (f->attr.recursive)
-    {
-      gfc_error ("Specification function %qs at %L cannot be RECURSIVE",
-		 f->name, &e->where);
+  /* F08:7.1.11.6. */
+  if (f->attr.recursive
+      && !gfc_notify_std (GFC_STD_F2003,
+			  "Specification function '%s' "
+			  "at %L cannot be RECURSIVE",  f->name, &e->where))
       return false;
-    }
 
 function_allowed:
   return restricted_args (e->value.function.actual);

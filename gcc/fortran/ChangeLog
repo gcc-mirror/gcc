@@ -1,3 +1,10 @@
+2016-11-09  Steve Kargl <kargl@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60777
+	* expr.c (external_spec_function): Allow recursive specification
+	functions in F03.
+
 2016-11-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	* check.c (gfc_check_move_alloc): Prevent error that avoids
