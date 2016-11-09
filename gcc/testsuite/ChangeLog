@@ -1,5 +1,10 @@
 2016-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/asan/asan_test.C: Remove -Wno-format, add
+	-Wno-c++1z-compat.
+	* g++.dg/asan/dejagnu-gtest.h (EXPECT_TRUE): Use "%s" format
+	string in case condition contains % characters.
+
 	PR c++/78283
 	* g++.dg/cpp1z/noexcept-type13.C: New test.
 
