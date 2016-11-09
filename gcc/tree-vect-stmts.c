@@ -2432,6 +2432,116 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* Check and perform vectorization of BUILT_IN_BSWAP{16,32,64}.  */
+
+static bool
+vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
+		    gimple **vec_stmt, slp_tree slp_node,
+		    tree vectype_in, enum vect_def_type *dt)
+{
+  tree op, vectype;
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  unsigned ncopies, nunits;
+
+  op = gimple_call_arg (stmt, 0);
+  vectype = STMT_VINFO_VECTYPE (stmt_info);
+  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+
+  /* Multiple types in SLP are handled by creating the appropriate number of
+     vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
+     case of SLP.  */
+  if (slp_node)
+    ncopies = 1;
+  else
+    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
+
+  gcc_assert (ncopies >= 1);
+
+  tree char_vectype = get_same_sized_vectype (char_type_node, vectype_in);
+  if (! char_vectype)
+    return false;
+
+  unsigned char *elts
+    = XALLOCAVEC (unsigned char, TYPE_VECTOR_SUBPARTS (char_vectype));
+  unsigned char *elt = elts;
+  unsigned word_bytes = TYPE_VECTOR_SUBPARTS (char_vectype) / nunits;
+  for (unsigned i = 0; i < nunits; ++i)
+    for (unsigned j = 0; j < word_bytes; ++j)
+      *elt++ = (i + 1) * word_bytes - j - 1;
+
+  if (! can_vec_perm_p (TYPE_MODE (char_vectype), false, elts))
+    return false;
+
+  if (! vec_stmt)
+    {
+      STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
+      if (dump_enabled_p ())
+        dump_printf_loc (MSG_NOTE, vect_location, "=== vectorizable_bswap ==="
+                         "\n");
+      if (! PURE_SLP_STMT (stmt_info))
+	{
+	  add_stmt_cost (stmt_info->vinfo->target_cost_data,
+			 1, vector_stmt, stmt_info, 0, vect_prologue);
+	  add_stmt_cost (stmt_info->vinfo->target_cost_data,
+			 ncopies, vec_perm, stmt_info, 0, vect_body);
+	}
+      return true;
+    }
+
+  tree *telts = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (char_vectype));
+  for (unsigned i = 0; i < TYPE_VECTOR_SUBPARTS (char_vectype); ++i)
+    telts[i] = build_int_cst (char_type_node, elts[i]);
+  tree bswap_vconst = build_vector (char_vectype, telts);
+
+  /* Transform.  */
+  vec<tree> vec_oprnds = vNULL;
+  gimple *new_stmt = NULL;
+  stmt_vec_info prev_stmt_info = NULL;
+  for (unsigned j = 0; j < ncopies; j++)
+    {
+      /* Handle uses.  */
+      if (j == 0)
+        vect_get_vec_defs (op, NULL, stmt, &vec_oprnds, NULL, slp_node, -1);
+      else
+        vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds, NULL);
+
+      /* Arguments are ready. create the new vector stmt.  */
+      unsigned i;
+      tree vop;
+      FOR_EACH_VEC_ELT (vec_oprnds, i, vop)
+       {
+	 tree tem = make_ssa_name (char_vectype);
+	 new_stmt = gimple_build_assign (tem, build1 (VIEW_CONVERT_EXPR,
+						      char_vectype, vop));
+	 vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	 tree tem2 = make_ssa_name (char_vectype);
+	 new_stmt = gimple_build_assign (tem2, VEC_PERM_EXPR,
+					 tem, tem, bswap_vconst);
+	 vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	 tem = make_ssa_name (vectype);
+	 new_stmt = gimple_build_assign (tem, build1 (VIEW_CONVERT_EXPR,
+						      vectype, tem2));
+	 vect_finish_stmt_generation (stmt, new_stmt, gsi);
+         if (slp_node)
+           SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+       }
+
+      if (slp_node)
+        continue;
+
+      if (j == 0)
+        STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+      else
+        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+
+      prev_stmt_info = vinfo_for_stmt (new_stmt);
+    }
+
+  vec_oprnds.release ();
+  return true;
+}
+
 /* Return true if vector types VECTYPE_IN and VECTYPE_OUT have
    integer elements and if we can narrow VECTYPE_IN to VECTYPE_OUT
    in a single step.  On success, store the binary pack code in
@@ -2658,6 +2768,12 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	     { 0, 1, 2, ... vf - 1 } vector.  */
 	  gcc_assert (nargs == 0);
 	}
+      else if (modifier == NONE
+	       && (gimple_call_builtin_p (stmt, BUILT_IN_BSWAP16)
+		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP32)
+		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP64)))
+	return vectorizable_bswap (stmt, gsi, vec_stmt, slp_node,
+				   vectype_in, dt);
       else
 	{
 	  if (dump_enabled_p ())
