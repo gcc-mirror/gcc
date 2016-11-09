@@ -5163,6 +5163,7 @@ enum auto_deduction_context
   adc_unspecified,   /* Not given */
   adc_variable_type, /* Variable initializer deduction */
   adc_return_type,   /* Return type deduction */
+  adc_unify,         /* Template argument deduction */
   adc_requirement    /* Argument dedution constraint */
 };
 
@@ -6088,7 +6089,8 @@ extern tree make_template_placeholder		(tree);
 extern tree do_auto_deduction                   (tree, tree, tree);
 extern tree do_auto_deduction                   (tree, tree, tree,
                                                  tsubst_flags_t,
-                                                 auto_deduction_context);
+                                                 auto_deduction_context,
+						 tree = NULL_TREE);
 extern tree type_uses_auto			(tree);
 extern tree type_uses_auto_or_concept		(tree);
 extern void append_type_to_template_for_access_check (tree, tree, tree,

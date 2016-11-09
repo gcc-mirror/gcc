@@ -161,7 +161,7 @@ static tree convert_nontype_argument (tree, tree, tsubst_flags_t);
 static tree convert_template_argument (tree, tree, tree,
 				       tsubst_flags_t, int, tree);
 static tree for_each_template_parm (tree, tree_fn_t, void*,
-				    hash_set<tree> *, bool);
+				    hash_set<tree> *, bool, tree_fn_t = NULL);
 static tree expand_template_argument_pack (tree);
 static tree build_template_parm_index (int, int, int, tree, tree);
 static bool inline_needs_template_parms (tree, bool);
@@ -7299,6 +7299,13 @@ convert_template_argument (tree parm,
     {
       tree t = tsubst (TREE_TYPE (parm), args, complain, in_decl);
 
+      if (tree a = type_uses_auto (t))
+	{
+	  t = do_auto_deduction (t, arg, a, complain, adc_unspecified);
+	  if (t == error_mark_node)
+	    return error_mark_node;
+	}
+
       if (invalid_nontype_parm_type_p (t, complain))
 	return error_mark_node;
 
@@ -8789,6 +8796,7 @@ lookup_and_finish_template_variable (tree templ, tree targs,
 struct pair_fn_data
 {
   tree_fn_t fn;
+  tree_fn_t any_fn;
   void *data;
   /* True when we should also visit template parameters that occur in
      non-deduced contexts.  */
@@ -8811,10 +8819,14 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
   do									\
     {									\
       result = for_each_template_parm (NODE, fn, data, pfd->visited,	\
-				       pfd->include_nondeduced_p);	\
+				       pfd->include_nondeduced_p,	\
+				       pfd->any_fn);			\
       if (result) goto out;						\
     }									\
   while (0)
+
+  if (pfd->any_fn && (*pfd->any_fn)(t, data))
+    return t;
 
   if (TYPE_P (t)
       && (pfd->include_nondeduced_p || TREE_CODE (t) != TYPENAME_TYPE))
@@ -8880,7 +8892,8 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
       if (pfd->include_nondeduced_p
 	  && for_each_template_parm (TYPE_VALUES_RAW (t), fn, data,
 				     pfd->visited, 
-				     pfd->include_nondeduced_p))
+				     pfd->include_nondeduced_p,
+				     pfd->any_fn))
 	return error_mark_node;
       break;
 
@@ -8911,6 +8924,12 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return t;
       else if (!fn)
 	return t;
+
+      /* In C++17 we can deduce a type argument from the type of a non-type
+	 argument.  */
+      if (cxx_dialect >= cxx1z
+	  && TREE_CODE (t) == TEMPLATE_PARM_INDEX)
+	WALK_SUBTREE (TREE_TYPE (t));
       break;
 
     case TEMPLATE_DECL:
@@ -8984,13 +9003,15 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 static tree
 for_each_template_parm (tree t, tree_fn_t fn, void* data,
 			hash_set<tree> *visited,
-			bool include_nondeduced_p)
+			bool include_nondeduced_p,
+			tree_fn_t any_fn)
 {
   struct pair_fn_data pfd;
   tree result;
 
   /* Set up.  */
   pfd.fn = fn;
+  pfd.any_fn = any_fn;
   pfd.data = data;
   pfd.include_nondeduced_p = include_nondeduced_p;
 
@@ -18559,6 +18580,53 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
   return unify (tparms, targs, parm, arg, arg_strict, explain_p);
 }
 
+/* for_each_template_parm callback that always returns 0.  */
+
+static int
+zero_r (tree, void *)
+{
+  return 0;
+}
+
+/* for_each_template_parm any_fn callback to handle deduction of a template
+   type argument from the type of an array bound.  */
+
+static int
+array_deduction_r (tree t, void *data)
+{
+  tree_pair_p d = (tree_pair_p)data;
+  tree &tparms = d->purpose;
+  tree &targs = d->value;
+
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    if (tree dom = TYPE_DOMAIN (t))
+      if (tree max = TYPE_MAX_VALUE (dom))
+	{
+	  if (TREE_CODE (max) == MINUS_EXPR)
+	    max = TREE_OPERAND (max, 0);
+	  if (TREE_CODE (max) == TEMPLATE_PARM_INDEX)
+	    unify (tparms, targs, TREE_TYPE (max), size_type_node,
+		   UNIFY_ALLOW_NONE, /*explain*/false);
+	}
+
+  /* Keep walking.  */
+  return 0;
+}
+
+/* Try to deduce any not-yet-deduced template type arguments from the type of
+   an array bound.  This is handled separately from unify because 14.8.2.5 says
+   "The type of a type parameter is only deduced from an array bound if it is
+   not otherwise deduced."  */
+
+static void
+try_array_deduction (tree tparms, tree targs, tree parm)
+{
+  tree_pair_s data = { tparms, targs };
+  hash_set<tree> visited;
+  for_each_template_parm (parm, zero_r, &data, &visited,
+			  /*nondeduced*/false, array_deduction_r);
+}
+
 /* Most parms like fn_type_unification.
 
    If SUBR is 1, we're being called recursively (to unify the
@@ -18688,6 +18756,7 @@ type_unification_real (tree tparms,
       tsubst_flags_t complain = (explain_p
 				 ? tf_warning_or_error
 				 : tf_none);
+      bool tried_array_deduction = (cxx_dialect < cxx1z);
 
       for (i = 0; i < ntparms; i++)
 	{
@@ -18705,6 +18774,15 @@ type_unification_real (tree tparms,
 	  if (targ || tparm == error_mark_node)
 	    continue;
 	  tparm = TREE_VALUE (tparm);
+
+	  if (TREE_CODE (tparm) == TYPE_DECL
+	      && !tried_array_deduction)
+	    {
+	      try_array_deduction (tparms, targs, xparms);
+	      tried_array_deduction = true;
+	      if (TREE_VEC_ELT (targs, i))
+		continue;
+	    }
 
 	  /* If this is an undeduced nontype parameter that depends on
 	     a type parameter, try another pass; its type may have been
@@ -19378,8 +19456,8 @@ template_parm_level_and_index (tree parm, int* level, int* index)
 /* Unifies the remaining arguments in PACKED_ARGS with the pack
    expansion at the end of PACKED_PARMS. Returns 0 if the type
    deduction succeeds, 1 otherwise. STRICT is the same as in
-   unify. CALL_ARGS_P is true iff PACKED_ARGS is actually a function
-   call argument list. We'll need to adjust the arguments to make them
+   fn_type_unification. CALL_ARGS_P is true iff PACKED_ARGS is actually a
+   function call argument list. We'll need to adjust the arguments to make them
    types. SUBR tells us if this is from a recursive call to
    type_unification_real, or for comparing two template argument
    lists. */
@@ -19680,6 +19758,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
   tree targ;
   tree tparm;
   int strict_in = strict;
+  tsubst_flags_t complain = (explain_p
+			     ? tf_warning_or_error
+			     : tf_none);
 
   /* I don't think this will do the right thing with respect to types.
      But the only case I've seen it in so far has been array bounds, where
@@ -19897,9 +19978,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	    if (coerce_template_parms (parm_parms,
                                        full_argvec,
 				       TYPE_TI_TEMPLATE (parm),
-				       (explain_p
-					? tf_warning_or_error
-					: tf_none),
+				       complain,
 				       /*require_all_args=*/true,
 				       /*use_default_args=*/false)
 		== error_mark_node)
@@ -20046,6 +20125,18 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  return x;
 	}
 
+      if (cxx_dialect >= cxx1z
+	  /* We deduce from array bounds in try_array_deduction.  */
+	  && !(strict & UNIFY_ALLOW_INTEGER)
+	  && uses_template_parms (TREE_TYPE (parm))
+	  && !type_uses_auto (TREE_TYPE (parm)))
+	{
+	  tree atype = TREE_TYPE (arg);
+	  RECUR_AND_CHECK_FAILURE (tparms, targs,
+				   TREE_TYPE (parm), atype,
+				   UNIFY_ALLOW_NONE, explain_p);
+	}
+
       /* [temp.deduct.type] If, in the declaration of a function template
 	 with a non-type template-parameter, the non-type
 	 template-parameter is used in an expression in the function
@@ -20055,6 +20146,13 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	 deduced from an array bound may be of any integral type.
 	 The non-type parameter might use already deduced type parameters.  */
       tparm = tsubst (TREE_TYPE (parm), targs, 0, NULL_TREE);
+      if (tree a = type_uses_auto (tparm))
+	{
+	  tparm = do_auto_deduction (tparm, arg, a, complain, adc_unify);
+	  if (tparm == error_mark_node)
+	    return 1;
+	}
+
       if (!TREE_TYPE (arg))
 	/* Template-parameter dependent expression.  Just accept it for now.
 	   It will later be processed in convert_template_argument.  */
@@ -21015,6 +21113,8 @@ get_partial_spec_bindings (tree tmpl, tree spec_tmpl, tree args)
   else
     deduced_args = innermost_deduced_args;
 
+  bool tried_array_deduction = (cxx_dialect < cxx1z);
+ again:
   if (unify (tparms, deduced_args,
 	     INNERMOST_TEMPLATE_ARGS (spec_args),
 	     INNERMOST_TEMPLATE_ARGS (args),
@@ -21023,7 +21123,17 @@ get_partial_spec_bindings (tree tmpl, tree spec_tmpl, tree args)
 
   for (i =  0; i < ntparms; ++i)
     if (! TREE_VEC_ELT (innermost_deduced_args, i))
-      return NULL_TREE;
+      {
+	if (!tried_array_deduction)
+	  {
+	    try_array_deduction (tparms, innermost_deduced_args,
+				 INNERMOST_TEMPLATE_ARGS (spec_args));
+	    tried_array_deduction = true;
+	    if (TREE_VEC_ELT (innermost_deduced_args, i))
+	      goto again;
+	  }
+	return NULL_TREE;
+      }
 
   tree tinst = build_tree_list (spec_tmpl, deduced_args);
   if (!push_tinst_level (tinst))
@@ -24607,14 +24717,16 @@ do_auto_deduction (tree type, tree init, tree auto_node)
 
 tree
 do_auto_deduction (tree type, tree init, tree auto_node,
-                   tsubst_flags_t complain, auto_deduction_context context)
+                   tsubst_flags_t complain, auto_deduction_context context,
+		   tree outer_targs)
 {
   tree targs;
 
   if (init == error_mark_node)
     return error_mark_node;
 
-  if (type_dependent_expression_p (init))
+  if (type_dependent_expression_p (init)
+      && context != adc_unify)
     /* Defining a subset of type-dependent expressions that we can deduce
        from ahead of time isn't worth the trouble.  */
     return type;
@@ -24733,6 +24845,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
                 switch (context)
                   {
                   case adc_unspecified:
+		  case adc_unify:
                     error("placeholder constraints not satisfied");
                     break;
                   case adc_variable_type:
@@ -24754,8 +24867,9 @@ do_auto_deduction (tree type, tree init, tree auto_node,
           }
       }
 
-  if (processing_template_decl)
-    targs = add_to_template_args (current_template_args (), targs);
+  if (processing_template_decl && context != adc_unify)
+    outer_targs = current_template_args ();
+  targs = add_to_template_args (outer_targs, targs);
   return tsubst (type, targs, complain, NULL_TREE);
 }
 

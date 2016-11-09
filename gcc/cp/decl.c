@@ -11135,7 +11135,8 @@ grokdeclarator (const cp_declarator *declarator,
       if (ctype || in_namespace)
 	error ("cannot use %<::%> in parameter declaration");
 
-      if (type_uses_auto (type))
+      if (type_uses_auto (type)
+	  && !(cxx_dialect >= cxx1z && template_parm_flag))
 	{
 	  if (cxx_dialect >= cxx14)
 	    error ("%<auto%> parameter not permitted in this context");
