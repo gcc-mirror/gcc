@@ -1,3 +1,9 @@
+2016-11-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/builtins-folding-generic.c (main): Add new
+	test-case for memcmp.
+	* gcc.dg/tree-ssa/builtins-folding-gimple.c: Likewise.
+
 2016-11-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR testsuite/78269

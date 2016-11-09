@@ -1,3 +1,7 @@
+2016-11-09  Martin Liska  <mliska@suse.cz>
+
+	* fold-const-call.c (fold_const_call): Fix the folding.
+
 2016-11-09  Richard Biener  <rguenther@suse.de>
 
 	* common.opt (flag_evaluation_order): Remove.

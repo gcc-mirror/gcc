@@ -63,6 +63,7 @@ main (void)
 
   const char *aaaaa = "aaaaa";
   const char *hello = "hello";
+  const char *hello2 = "hello";
   const char *empty = "";
   const char *ab = "ab";
   const char *ba = "ba";
@@ -151,6 +152,10 @@ main (void)
   if (__builtin_strncasecmp (++s2, ++s3+2, 0) != 0 || s2 != s1+1 || s3 != s1+5)
     __builtin_abort();
 
+  /* MEMCMP.  */
+  if (__builtin_memcmp (hello, hello2, 6) != 0)
+    __builtin_abort ();
+
   return 0;
 }
 
@@ -158,4 +163,5 @@ main (void)
 /* { dg-final { scan-tree-dump-not "__builtin_strcasecmp" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "__builtin_strncmp" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "__builtin_memchr" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "__builtin_memcmp" "optimized" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_strncasecmp" 3 "optimized" } } */

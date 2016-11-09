@@ -1506,7 +1506,7 @@ tree
 fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 {
   const char *p0, *p1;
-  size_t s2 = 0;
+  size_t s0, s1, s2 = 0;
   switch (fn)
     {
     case CFN_BUILT_IN_STRNCMP:
@@ -1538,11 +1538,11 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
       }
     case CFN_BUILT_IN_BCMP:
     case CFN_BUILT_IN_MEMCMP:
-      if ((p0 = c_getstr (arg0))
-	  && (p1 = c_getstr (arg1))
+      if ((p0 = c_getstr (arg0, &s0))
+	  && (p1 = c_getstr (arg1, &s1))
 	  && host_size_t_cst_p (arg2, &s2)
-	  && s2 <= strlen (p0)
-	  && s2 <= strlen (p1))
+	  && s2 <= s0
+	  && s2 <= s1)
 	return build_cmp_result (type, memcmp (p0, p1, s2));
       return NULL_TREE;
 
