@@ -1,3 +1,8 @@
+2016-11-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Look at the DR_BASE_ADDRESS object for forcing alignment.
+
 2016-11-09  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* ipa-cp.c (ipa_get_jf_pass_through_result): Handle unary expressions.
