@@ -1,3 +1,8 @@
+2016-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78283
+	* mangle.c (start_mangling): Reset G.need_cxx1z_warning.
+
 2016-11-09  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_simple_type_specifier): Allow placeholder
