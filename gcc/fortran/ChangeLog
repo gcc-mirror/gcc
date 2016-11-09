@@ -1,3 +1,8 @@
+2016-11-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/71894
+	* class.c (gfc_add_component_ref): Add safety checks to avoid ICE.
+
 2016-11-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/68440

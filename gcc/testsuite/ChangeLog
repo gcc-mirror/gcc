@@ -1,3 +1,8 @@
+2016-11-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/71894
+	* gfortran.dg/class_59.f90: New test.
+
 2016-11-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78007
