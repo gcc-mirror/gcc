@@ -1,3 +1,8 @@
+2016-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78262
+	* gcc.target/i386/pr78262.c: New test.
+
 2016-11-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
@@ -262,20 +267,20 @@
 	* g++.dg/ext/flexary18.C: New test.
 	* g++.dg/torture/pr64312.C: Add a dg-error directive to an ill-formed
 	regression test.
-        * g++.dg/compat/struct-layout-1_generate.c (subfield): Add argument.
-        Avoid generating a flexible array member in an array.
+	* g++.dg/compat/struct-layout-1_generate.c (subfield): Add argument.
+	Avoid generating a flexible array member in an array.
 
 2016-10-13  Andrew Senkevich  <andrew.senkevich@intel.com>
 
 	Backport from trunk
-	* testsuite/gcc.target/i386/pcommit-1.c: Deleted test.
-	* testsuite/gcc.target/i386/sse-12.c: Deleted -pcommit option.
-	* testsuite/gcc.target/i386/sse-13.c: Ditto.
-	* testsuite/gcc.target/i386/sse-14.c: Ditto.
-	* testsuite/gcc.target/i386/sse-22.c: Ditto.
-	* testsuite/gcc.target/i386/sse-23.c: Ditto.
-	* testsuite/g++.dg/other/i386-2.C: Ditto.
-	* testsuite/g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/pcommit-1.c: Deleted test.
+	* gcc.target/i386/sse-12.c: Deleted -pcommit option.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
 
 2016-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
@@ -311,7 +316,7 @@
 	* gfortran.dg/proc_ptr_comp_20.f90: Ditto.
 
 2016-10-06  James Clarke  <jrtc27@jrtc27.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/other/pr77759.C: New test.
 
@@ -2379,7 +2384,7 @@
 	* g++.dg/cpp1y/vla13.C: Same.
 	* g++.dg/cpp1y/vla14.C: Same.
 	* g++.dg/cpp1y/vla3.C: Same.
-	* gcc/testsuite/g++.dg/init/array24.C: Same.
+	* g++.dg/init/array24.C: Same.
 	* g++.dg/ubsan/vla-1.C: Same.
 
 2016-04-14  Marek Polacek  <polacek@redhat.com>
@@ -2411,7 +2416,7 @@
 	* g++.dg/cpp1y/vla13.C: New test.
 	* g++.dg/cpp1y/vla14.C: New test.
 	* g++.dg/cpp1y/vla3.C: Restore deleted test.
-	* gcc/testsuite/g++.dg/init/array24.C: Fully brace VLA initializer.
+	* g++.dg/init/array24.C: Fully brace VLA initializer.
 	* g++.dg/ubsan/vla-1.C: Disable exceptions.
 
 2016-04-13  Jakub Jelinek  <jakub@redhat.com>
@@ -2439,8 +2444,8 @@
 2016-04-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70436
-	* testsuite/gcc.dg/Wparentheses-12.c: New test.
-	* testsuite/gcc.dg/Wparentheses-13.c: New test.
+	* gcc.dg/Wparentheses-12.c: New test.
+	* gcc.dg/Wparentheses-13.c: New test.
 
 2016-04-13  Ilya Enkovich  <ilya.enkovich@intel.com>
 
@@ -2687,7 +2692,7 @@
 2016-04-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70398
-	* testsuite/gcc.target/aarch64/pr70398.c: New.
+	* gcc.target/aarch64/pr70398.c: New.
 
 2016-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
