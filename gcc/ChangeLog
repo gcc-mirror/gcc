@@ -1,3 +1,9 @@
+2016-11-09  Andreas Schwab  <schwab@suse.de>
+
+	PR target/78254
+	* config/m68k/m68k.md: Reject out-of-range bit pos in bit-fields
+	insns operating on a register.
+
 2016-11-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78007
