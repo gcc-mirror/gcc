@@ -564,7 +564,7 @@ simplify_control_stmt_condition_1 (edge e,
      example, op0 might be a constant while op1 is an
      SSA_NAME.  Failure to canonicalize will cause us to
      miss threading opportunities.  */
-  if (tree_swap_operands_p (op0, op1, false))
+  if (tree_swap_operands_p (op0, op1))
     {
       cond_code = swap_tree_comparison (cond_code);
       std::swap (op0, op1);

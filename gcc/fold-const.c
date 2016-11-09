@@ -6758,7 +6758,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
    isn't.  */
 
 bool
-tree_swap_operands_p (const_tree arg0, const_tree arg1, bool)
+tree_swap_operands_p (const_tree arg0, const_tree arg1)
 {
   if (CONSTANT_CLASS_P (arg1))
     return 0;
@@ -9132,13 +9132,13 @@ fold_binary_loc (location_t loc,
   /* If this is a commutative operation, and ARG0 is a constant, move it
      to ARG1 to reduce the number of tests below.  */
   if (commutative_tree_code (code)
-      && tree_swap_operands_p (arg0, arg1, true))
+      && tree_swap_operands_p (arg0, arg1))
     return fold_build2_loc (loc, code, type, op1, op0);
 
   /* Likewise if this is a comparison, and ARG0 is a constant, move it
      to ARG1 to reduce the number of tests below.  */
   if (kind == tcc_comparison
-      && tree_swap_operands_p (arg0, arg1, true))
+      && tree_swap_operands_p (arg0, arg1))
     return fold_build2_loc (loc, swap_tree_comparison (code), type, op1, op0);
 
   tem = generic_simplify (loc, code, type, op0, op1);
@@ -11242,7 +11242,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
   /* If this is a commutative operation, and OP0 is a constant, move it
      to OP1 to reduce the number of tests below.  */
   if (commutative_ternary_tree_code (code)
-      && tree_swap_operands_p (op0, op1, true))
+      && tree_swap_operands_p (op0, op1))
     return fold_build3_loc (loc, code, type, op1, op0, op2);
 
   tem = generic_simplify (loc, code, type, op0, op1, op2);
@@ -11371,7 +11371,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
       /* If the second operand is simpler than the third, swap them
 	 since that produces better jump optimization results.  */
       if (truth_value_p (TREE_CODE (arg0))
-	  && tree_swap_operands_p (op1, op2, false))
+	  && tree_swap_operands_p (op1, op2))
 	{
 	  location_t loc0 = expr_location_or (arg0, loc);
 	  /* See if this can be inverted.  If it can't, possibly because

@@ -1,5 +1,21 @@
 2016-11-09  Richard Biener  <rguenther@suse.de>
 
+	* fold-const.c (tree_swap_operands_p): Remove unused arg.
+	* fold-const.c (tree_swap_operands_p): Likewise.
+	(fold_binary_loc): Adjust.
+	(fold_ternary_loc): Likewise.
+	* genmatch.c (dt_operand::gen_gimple_exp): Likewise.
+	* gimple-fold.c (fold_stmt_1): Likewise.
+	* gimple-match-head.c (gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	(gimple_simplify): Likewise.
+	* tree-ssa-dom.c (record_equality): Likewise.
+	* tree-ssa-reassoc.c (optimize_range_tests_var_bound): Likewise.
+	* tree-ssa-sccvn.c (vn_nary_op_compute_hash): Likewise.
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition_1): Likewise.
+
+2016-11-09  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-dom.c (canonicalize_comparison): Remove.
 	(optimize_stmt): Remove redundant pre-propagation canonicalization
 	of comparison operand order.

@@ -151,7 +151,7 @@ gimple_resimplify2 (gimple_seq *seq,
   if (res_code->is_tree_code ()
       && (TREE_CODE_CLASS ((enum tree_code) *res_code) == tcc_comparison
 	  || commutative_tree_code (*res_code))
-      && tree_swap_operands_p (res_ops[0], res_ops[1], false))
+      && tree_swap_operands_p (res_ops[0], res_ops[1]))
     {
       std::swap (res_ops[0], res_ops[1]);
       if (TREE_CODE_CLASS ((enum tree_code) *res_code) == tcc_comparison)
@@ -212,7 +212,7 @@ gimple_resimplify3 (gimple_seq *seq,
   bool canonicalized = false;
   if (res_code->is_tree_code ()
       && commutative_ternary_tree_code (*res_code)
-      && tree_swap_operands_p (res_ops[0], res_ops[1], false))
+      && tree_swap_operands_p (res_ops[0], res_ops[1]))
     {
       std::swap (res_ops[0], res_ops[1]);
       canonicalized = true;
@@ -432,7 +432,7 @@ gimple_simplify (enum tree_code code, tree type,
      generation.  */
   if ((commutative_tree_code (code)
        || TREE_CODE_CLASS (code) == tcc_comparison)
-      && tree_swap_operands_p (op0, op1, false))
+      && tree_swap_operands_p (op0, op1))
     {
       std::swap (op0, op1);
       if (TREE_CODE_CLASS (code) == tcc_comparison)
@@ -466,7 +466,7 @@ gimple_simplify (enum tree_code code, tree type,
   /* Canonicalize operand order both for matching and fallback stmt
      generation.  */
   if (commutative_ternary_tree_code (code)
-      && tree_swap_operands_p (op0, op1, false))
+      && tree_swap_operands_p (op0, op1))
     std::swap (op0, op1);
 
   code_helper rcode;
