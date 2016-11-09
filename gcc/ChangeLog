@@ -1,3 +1,7 @@
+2016-11-09  Martin Liska  <mliska@suse.cz>
+
+	* fold-const-call.c (fold_const_call): Fix up type of s0 and s1.
+
 2016-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77718
