@@ -3190,6 +3190,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	 shape array, if the dummy argument has the VOLATILE attribute.  */
 
       if (f->sym->attr.volatile_
+	  && a->expr->expr_type == EXPR_VARIABLE
 	  && a->expr->symtree->n.sym->as
 	  && a->expr->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
 	  && !(f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
@@ -3219,6 +3220,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	 dummy argument has the VOLATILE attribute.  */
 
       if (f->sym->attr.volatile_
+	  && a->expr->expr_type == EXPR_VARIABLE
 	  && a->expr->symtree->n.sym->attr.pointer
 	  && a->expr->symtree->n.sym->as
 	  && !(f->sym->as
