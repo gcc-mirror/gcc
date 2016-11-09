@@ -1,3 +1,8 @@
+2016-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_shift): Handle split
+	-fsanitize=shift-base and -fsanitize=shift-exponent.
+
 2016-11-07  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (Wc++1z-compat): New.

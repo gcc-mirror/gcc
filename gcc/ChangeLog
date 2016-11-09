@@ -1,3 +1,13 @@
+2016-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* flag-types.h (enum sanitize_code): Add SANITIZE_SHIFT_BASE
+	and SANITIZE_SHIFT_EXPONENT, change SANITIZE_SHIFT to bitwise
+	or of them, renumber other enumerators.
+	* opts.c (sanitizer_opts): Add shift-base and shift-exponent.
+	* doc/invoke.texi: Document -fsanitize=shift-base and
+	-fsanitize-shift-exponent, document -fsanitize=shift as
+	having those 2 suboptions.
+
 2016-11-09  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (tree_swap_operands_p): Remove unused arg.

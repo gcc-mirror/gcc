@@ -1477,6 +1477,8 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (thread, SANITIZE_THREAD, false),
   SANITIZER_OPT (leak, SANITIZE_LEAK, false),
   SANITIZER_OPT (shift, SANITIZE_SHIFT, true),
+  SANITIZER_OPT (shift-base, SANITIZE_SHIFT_BASE, true),
+  SANITIZER_OPT (shift-exponent, SANITIZE_SHIFT_EXPONENT, true),
   SANITIZER_OPT (integer-divide-by-zero, SANITIZE_DIVIDE, true),
   SANITIZER_OPT (undefined, SANITIZE_UNDEFINED, true),
   SANITIZER_OPT (unreachable, SANITIZE_UNREACHABLE, false),
