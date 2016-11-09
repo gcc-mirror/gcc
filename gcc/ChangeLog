@@ -1,3 +1,9 @@
+2016-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78262
+	* config/i386/i386.md (*<shift_insn><mode>3_doubleword): Mark
+	operand 0 as earlyclobber.
+
 2016-11-06  Jack Howarth  <howarth.at.gcc@gmail.com>
 
 	PR driver/78206
@@ -5,12 +11,12 @@
 
 2016-11-03  Martin Liska  <mliska@suse.cz>
 
-       Backport from mainline
-       2016-08-12  Martin Liska  <mliska@suse.cz>
-       Adam Fineman  <afineman@afineman.com>
+	Backport from mainline
+	2016-08-12  Martin Liska  <mliska@suse.cz>
+		    Adam Fineman  <afineman@afineman.com>
 
-       * gcov.c (process_file): Create .gcov file when .gcda
-       file is missing.
+	* gcov.c (process_file): Create .gcov file when .gcda
+	file is missing.
 
 2016-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
