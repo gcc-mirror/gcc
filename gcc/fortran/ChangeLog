@@ -1,3 +1,9 @@
+2016-11-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	* check.c (gfc_check_move_alloc): Prevent error that avoids
+	aliasing between to and from arguments from rejecting valid
+	code.
+
 2016-11-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/71894
