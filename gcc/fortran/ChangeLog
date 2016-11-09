@@ -1,3 +1,9 @@
+2016-11-09  Fritz O. Reese <fritzoreese@gmail.com>
+
+	PR fortran/78259
+	* trans-expr.c (gfc_trans_subcomponent_assign): Guard against NULL
+	values.
+
 2016-11-09  Steve Kargl <kargl@gcc.gnu.org>
 	    Janus Weil  <janus@gcc.gnu.org>
 
