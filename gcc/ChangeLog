@@ -1,3 +1,9 @@
+2016-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78262
+	* config/i386/i386.md (*<shift_insn><mode>3_doubleword): Mark
+	operand 0 as earlyclobber.
+
 2016-11-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from trunk
@@ -344,7 +350,7 @@
 	Use <round_constraint> as operand 1 constraint.
 
 2016-10-06  James Clarke  <jrtc27@jrtc27.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/77759
 	* config/sparc/sparc.c (classify_data_t): Remove int_regs field.
