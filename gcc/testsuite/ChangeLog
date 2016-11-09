@@ -1,3 +1,9 @@
+2016-11-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/78256
+	* gcc.dg/pr35691-1.c (foo): Use & instead of &&.
+	* gcc.dg/pr35691-2.c (foo): Use | instead of ||.
+
 2016-11-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/71894
