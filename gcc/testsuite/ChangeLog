@@ -1,5 +1,9 @@
 2016-11-09  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* gcc.dg/ipa/vrp7.c: New test.
+
+2016-11-09  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	PR ipa/78121
 	* gcc.dg/ipa/pr78121.c: New test.
 
