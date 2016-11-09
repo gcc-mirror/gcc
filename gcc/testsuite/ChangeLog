@@ -1,5 +1,8 @@
 2016-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/77718
+	* gcc.c-torture/execute/pr77718.c: New test.
+
 	* gcc.dg/ubsan/c99-shift-3.c: New test.
 	* gcc.dg/ubsan/c99-shift-4.c: New test.
 	* gcc.dg/ubsan/c99-shift-5.c: New test.

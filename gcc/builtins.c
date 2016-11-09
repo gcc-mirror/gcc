@@ -3754,7 +3754,7 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
     {
       src_str = c_getstr (arg1);
       if (src_str != NULL)
-       std::swap (arg1_rtx, arg2_rtx);
+	std::swap (arg1_rtx, arg2_rtx);
     }
 
   /* If SRC is a string constant and block move would be done
