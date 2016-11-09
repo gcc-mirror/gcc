@@ -1,3 +1,10 @@
+2016-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/ubsan/c99-shift-3.c: New test.
+	* gcc.dg/ubsan/c99-shift-4.c: New test.
+	* gcc.dg/ubsan/c99-shift-5.c: New test.
+	* gcc.dg/ubsan/c99-shift-6.c: New test.
+
 2016-11-09  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/builtins-folding-generic.c (main): Add new

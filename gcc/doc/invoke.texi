@@ -10560,6 +10560,21 @@ at runtime.  Current suboptions are:
 This option enables checking that the result of a shift operation is
 not undefined.  Note that what exactly is considered undefined differs
 slightly between C and C++, as well as between ISO C90 and C99, etc.
+This option has two suboptions, @option{-fsanitize=shift-base} and
+@option{-fsanitize=shift-exponent}.
+
+@item -fsanitize=shift-exponent
+@opindex fsanitize=shift-exponent
+This option enables checking that the second argument of a shift operation
+is not negative and is smaller than the precision of the promoted first
+argument.
+
+@item -fsanitize=shift-base
+@opindex fsanitize=shift-base
+If the second argument of a shift operation is within range, check that the
+result of a shift operation is not undefined.  Note that what exactly is
+considered undefined differs slightly between C and C++, as well as between
+ISO C90 and C99, etc.
 
 @item -fsanitize=integer-divide-by-zero
 @opindex fsanitize=integer-divide-by-zero
