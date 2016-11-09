@@ -1506,7 +1506,8 @@ tree
 fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 {
   const char *p0, *p1;
-  size_t s0, s1, s2 = 0;
+  unsigned HOST_WIDE_INT s0, s1;
+  size_t s2 = 0;
   switch (fn)
     {
     case CFN_BUILT_IN_STRNCMP:
