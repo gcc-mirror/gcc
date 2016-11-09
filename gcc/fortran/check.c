@@ -3342,14 +3342,44 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
       return false;
     }
 
-  /*  F2003 12.4.1.7  */
-  if (to->expr_type == EXPR_VARIABLE && from->expr_type ==EXPR_VARIABLE
+  /*  This is based losely on F2003 12.4.1.7. It is intended to prevent
+      the likes of to = sym->cmp1->cmp2 and from = sym->cmp1, where cmp1
+      and cmp2 are allocatable.  After the allocation is transferred,
+      the 'to' chain is broken by the nullification of the 'from'. A bit
+      of reflection reveals that this can only occur for derived types
+      with recursive allocatable components.  */
+  if (to->expr_type == EXPR_VARIABLE && from->expr_type == EXPR_VARIABLE
       && !strcmp (to->symtree->n.sym->name, from->symtree->n.sym->name))
     {
-      gfc_error ("The FROM and TO arguments at %L are either the same object "
-		 "or subobjects thereof and so violate aliasing restrictions "
-		 "(F2003 12.4.1.7)", &to->where);
-      return false;
+      gfc_ref *to_ref, *from_ref;
+      to_ref = to->ref;
+      from_ref = from->ref;
+      bool aliasing = true;
+
+      for (; from_ref && to_ref;
+	   from_ref = from_ref->next, to_ref = to_ref->next)
+	{
+	  if (to_ref->type != from->ref->type)
+	    aliasing = false;
+	  else if (to_ref->type == REF_ARRAY
+		   && to_ref->u.ar.type != AR_FULL
+		   && from_ref->u.ar.type != AR_FULL)
+	    /* Play safe; assume sections and elements are different.  */
+	    aliasing = false;
+	  else if (to_ref->type == REF_COMPONENT
+		   && to_ref->u.c.component != from_ref->u.c.component)
+	    aliasing = false;
+
+	  if (!aliasing)
+	    break;
+	}
+
+      if (aliasing)
+	{
+	  gfc_error ("The FROM and TO arguments at %L violate aliasing "
+		     "restrictions (F2003 12.4.1.7)", &to->where);
+	  return false;
+	}
     }
 
   /* CLASS arguments: Make sure the vtab of from is present.  */
