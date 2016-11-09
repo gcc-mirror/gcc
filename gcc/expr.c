@@ -7681,10 +7681,6 @@ expand_operands (tree exp0, tree exp1, rtx target, rtx *op0, rtx *op1,
     }
   else
     {
-      /* If we need to preserve evaluation order, copy exp0 into its own
-	 temporary variable so that it can't be clobbered by exp1.  */
-      if (flag_evaluation_order && TREE_SIDE_EFFECTS (exp1))
-	exp0 = save_expr (exp0);
       *op0 = expand_expr (exp0, target, VOIDmode, modifier);
       *op1 = expand_expr (exp1, NULL_RTX, VOIDmode, modifier);
     }

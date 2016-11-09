@@ -133,7 +133,6 @@ static tree fold_binary_op_with_conditional_arg (location_t,
 						 tree, tree,
 						 tree, tree, int);
 static tree fold_div_compare (location_t, enum tree_code, tree, tree, tree);
-static bool reorder_operands_p (const_tree, const_tree);
 static tree fold_negate_const (tree, tree);
 static tree fold_not_const (const_tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
@@ -435,9 +434,7 @@ negate_expr_p (tree t)
 	      && ! TYPE_OVERFLOW_WRAPS (type)))
 	return false;
       /* -(A + B) -> (-B) - A.  */
-      if (negate_expr_p (TREE_OPERAND (t, 1))
-	  && reorder_operands_p (TREE_OPERAND (t, 0),
-				 TREE_OPERAND (t, 1)))
+      if (negate_expr_p (TREE_OPERAND (t, 1)))
 	return true;
       /* -(A + B) -> (-A) - B.  */
       return negate_expr_p (TREE_OPERAND (t, 0));
@@ -447,9 +444,7 @@ negate_expr_p (tree t)
       return !HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
 	     && !HONOR_SIGNED_ZEROS (element_mode (type))
 	     && (! INTEGRAL_TYPE_P (type)
-		 || TYPE_OVERFLOW_WRAPS (type))
-	     && reorder_operands_p (TREE_OPERAND (t, 0),
-				    TREE_OPERAND (t, 1));
+		 || TYPE_OVERFLOW_WRAPS (type));
 
     case MULT_EXPR:
       if (TYPE_UNSIGNED (type))
@@ -606,9 +601,7 @@ fold_negate_expr (location_t loc, tree t)
 	  && !HONOR_SIGNED_ZEROS (element_mode (type)))
 	{
 	  /* -(A + B) -> (-B) - A.  */
-	  if (negate_expr_p (TREE_OPERAND (t, 1))
-	      && reorder_operands_p (TREE_OPERAND (t, 0),
-				     TREE_OPERAND (t, 1)))
+	  if (negate_expr_p (TREE_OPERAND (t, 1)))
 	    {
 	      tem = negate_expr (TREE_OPERAND (t, 1));
 	      return fold_build2_loc (loc, MINUS_EXPR, type,
@@ -628,8 +621,7 @@ fold_negate_expr (location_t loc, tree t)
     case MINUS_EXPR:
       /* - (A - B) -> B - A  */
       if (!HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
-	  && !HONOR_SIGNED_ZEROS (element_mode (type))
-	  && reorder_operands_p (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1)))
+	  && !HONOR_SIGNED_ZEROS (element_mode (type)))
 	return fold_build2_loc (loc, MINUS_EXPR, type,
 			    TREE_OPERAND (t, 1), TREE_OPERAND (t, 0));
       break;
@@ -6761,27 +6753,12 @@ fold_single_bit_test (location_t loc, enum tree_code code,
   return NULL_TREE;
 }
 
-/* Check whether we are allowed to reorder operands arg0 and arg1,
-   such that the evaluation of arg1 occurs before arg0.  */
-
-static bool
-reorder_operands_p (const_tree arg0, const_tree arg1)
-{
-  if (! flag_evaluation_order)
-      return true;
-  if (TREE_CONSTANT (arg0) || TREE_CONSTANT (arg1))
-    return true;
-  return ! TREE_SIDE_EFFECTS (arg0)
-	 && ! TREE_SIDE_EFFECTS (arg1);
-}
-
 /* Test whether it is preferable two swap two operands, ARG0 and
    ARG1, for example because ARG0 is an integer constant and ARG1
-   isn't.  If REORDER is true, only recommend swapping if we can
-   evaluate the operands in reverse order.  */
+   isn't.  */
 
 bool
-tree_swap_operands_p (const_tree arg0, const_tree arg1, bool reorder)
+tree_swap_operands_p (const_tree arg0, const_tree arg1, bool)
 {
   if (CONSTANT_CLASS_P (arg1))
     return 0;
@@ -6795,10 +6772,6 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1, bool reorder)
     return 0;
   if (TREE_CONSTANT (arg0))
     return 1;
-
-  if (reorder && flag_evaluation_order
-      && (TREE_SIDE_EFFECTS (arg0) || TREE_SIDE_EFFECTS (arg1)))
-    return 0;
 
   /* It is preferable to swap two SSA_NAME to ensure a canonical form
      for commutative and comparison operators.  Ensuring a canonical
@@ -9224,8 +9197,7 @@ fold_binary_loc (location_t loc,
 	  return build2_loc (loc, COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
 			     tem);
 	}
-      if (TREE_CODE (arg1) == COMPOUND_EXPR
-	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
+      if (TREE_CODE (arg1) == COMPOUND_EXPR)
 	{
 	  tem = fold_build2_loc (loc, code, type, op0,
 			     fold_convert_loc (loc, TREE_TYPE (op1),
@@ -9714,8 +9686,7 @@ fold_binary_loc (location_t loc,
     case MINUS_EXPR:
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
-	  && negate_expr_p (op1)
-	  && reorder_operands_p (arg0, arg1))
+	  && negate_expr_p (op1))
 	return fold_build2_loc (loc, MINUS_EXPR, type,
 				negate_expr (op1),
 				fold_convert_loc (loc, type,

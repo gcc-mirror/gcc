@@ -1,3 +1,15 @@
+2016-11-09  Richard Biener  <rguenther@suse.de>
+
+	* common.opt (flag_evaluation_order): Remove.
+	* expr.c (expand_operands): Remove code guarded by
+	flag_evaluation_order.
+	* fold-const.c (reorder_operands_p): Remove, it always returns
+	true.
+	(negate_expr_p): Remove calls to reorder_operands_p.
+	(fold_negate_expr): Likewise.
+	(tree_swap_operands_p): Likewise.
+	(fold_binary_loc): Likewise.
+
 2016-11-09  Andreas Schwab  <schwab@suse.de>
 
 	PR target/78254
