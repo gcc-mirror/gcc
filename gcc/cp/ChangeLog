@@ -1,5 +1,13 @@
 2016-11-09  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_simple_type_specifier): Allow placeholder
+	for template template parameter.
+	(cp_parser_type_id_1): Improve diagnostic.
+	* decl.c (grokdeclarator): Handle class deduction diagnostics here.
+	* pt.c (splice_late_return_type): Not here.
+	(tsubst) [TEMPLATE_TYPE_PARM]: Substitute into placeholder template.
+	(do_class_deduction): Handle non-class templates.
+
 	Implement P0127R2, Declaring non-type parameters with auto.
 	* cp-tree.h (enum auto_deduction_context): Add adc_unify.
 	* decl.c (grokdeclarator): Allow 'auto' in C++17 template non-type

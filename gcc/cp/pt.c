@@ -13314,7 +13314,11 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		      PLACEHOLDER_TYPE_CONSTRAINTS (r)
 			= tsubst_constraint (constr, args, complain, in_decl);
 		    else if (tree pl = CLASS_PLACEHOLDER_TEMPLATE (t))
-		      CLASS_PLACEHOLDER_TEMPLATE (r) = pl;
+		      {
+			if (DECL_TEMPLATE_TEMPLATE_PARM_P (pl))
+			  pl = tsubst (pl, args, complain, in_decl);
+			CLASS_PLACEHOLDER_TEMPLATE (r) = pl;
+		      }
 		  }
 
 		if (TREE_CODE (r) == TEMPLATE_TEMPLATE_PARM)
@@ -24625,13 +24629,23 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
   return ded_tmpl;
 }
 
-/* Deduce template arguments for the class template TMPL based on the
-   initializer INIT, and return the resulting type.  */
+/* Deduce template arguments for the class template placeholder PTYPE for
+   template TMPL based on the initializer INIT, and return the resulting
+   type.  */
 
 tree
-do_class_deduction (tree tmpl, tree init, tsubst_flags_t complain)
+do_class_deduction (tree ptype, tree tmpl, tree init, tsubst_flags_t complain)
 {
-  gcc_assert (DECL_CLASS_TEMPLATE_P (tmpl));
+  if (!DECL_CLASS_TEMPLATE_P (tmpl))
+    {
+      /* We should have handled this in the caller.  */
+      if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))
+	return ptype;
+      if (complain & tf_error)
+	error ("non-class template %qT used without template arguments", tmpl);
+      return error_mark_node;
+    }
+
   tree type = TREE_TYPE (tmpl);
 
   vec<tree,va_gc> *args;
@@ -24733,7 +24747,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 
   if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
     /* C++17 class template argument deduction.  */
-    return do_class_deduction (tmpl, init, complain);
+    return do_class_deduction (type, tmpl, init, complain);
 
   /* [dcl.spec.auto]: Obtain P from T by replacing the occurrences of auto
      with either a new invented type template parameter U or, if the
@@ -24881,20 +24895,6 @@ splice_late_return_type (tree type, tree late_return_type)
 {
   if (is_auto (type))
     {
-      if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (type))
-	{
-	  if (!late_return_type)
-	    error ("deduction guide must have trailing return type");
-	  else if (CLASS_TYPE_P (late_return_type)
-		   && CLASSTYPE_TEMPLATE_INFO (late_return_type)
-		   && CLASSTYPE_TI_TEMPLATE (late_return_type) == tmpl)
-	    /* OK */;
-	  else
-	    error ("trailing return type %qT of deduction guide is not "
-		   "a specialization of %qT",
-		   late_return_type, TREE_TYPE (tmpl));
-	}
-
       if (late_return_type)
 	return late_return_type;
 
