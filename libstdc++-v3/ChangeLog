@@ -1,3 +1,12 @@
+2016-11-09  Tim Shen  <timshen@google.com>
+
+	* libstdc++-v3/include/bits/regex.h (regex_iterator::regex_iterator()):
+	Define end() as _M_pregex == nullptr.
+	* libstdc++-v3/include/bits/regex.tcc (regex_iterator::operator==(),
+	regex_iterator::operator++()): Fix operator==() and operator++() to
+	look at null-ness of _M_pregex on both sides.
+	* testsuite/28_regex/regression.cc: New testcase.
+
 2016-11-07  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_NOEXCEPT_PARM)
