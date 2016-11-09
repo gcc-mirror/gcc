@@ -536,10 +536,6 @@ class Error_expression : public Expression
   { return true; }
 
   bool
-  do_is_immutable() const
-  { return true; }
-
-  bool
   do_numeric_constant_value(Numeric_constant* nc) const
   {
     nc->set_unsigned_long(NULL, 0);
@@ -1374,7 +1370,7 @@ class Func_code_reference_expression : public Expression
   { return TRAVERSE_CONTINUE; }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   Type*
@@ -1520,7 +1516,7 @@ class Boolean_expression : public Expression
   { return true; }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   Type*
@@ -1889,7 +1885,7 @@ class Integer_expression : public Expression
   { return true; }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   bool
@@ -2285,7 +2281,7 @@ class Float_expression : public Expression
   { return true; }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   bool
@@ -2475,7 +2471,7 @@ class Complex_expression : public Expression
   { return true; }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   bool
@@ -2691,7 +2687,7 @@ class Const_expression : public Expression
   { return true; }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   bool
@@ -3047,7 +3043,7 @@ class Nil_expression : public Expression
   { return true; }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   Type*
@@ -3284,10 +3280,11 @@ Type_conversion_expression::do_is_constant() const
   return true;
 }
 
-// Return whether a type conversion is immutable.
+// Return whether a type conversion can be used in a constant
+// initializer.
 
 bool
-Type_conversion_expression::do_is_immutable() const
+Type_conversion_expression::do_is_static_initializer() const
 {
   Type* type = this->type_;
   Type* expr_type = this->expr_->type();
@@ -3296,7 +3293,7 @@ Type_conversion_expression::do_is_immutable() const
       || expr_type->interface_type() != NULL)
     return false;
 
-  if (!this->expr_->is_immutable())
+  if (!this->expr_->is_static_initializer())
     return false;
 
   if (Type::are_identical(type, expr_type, false, NULL))
@@ -3542,10 +3539,11 @@ Unsafe_type_conversion_expression::do_traverse(Traverse* traverse)
   return TRAVERSE_CONTINUE;
 }
 
-// Return whether an unsafe type conversion is immutable.
+// Return whether an unsafe type conversion can be used as a constant
+// initializer.
 
 bool
-Unsafe_type_conversion_expression::do_is_immutable() const
+Unsafe_type_conversion_expression::do_is_static_initializer() const
 {
   Type* type = this->type_;
   Type* expr_type = this->expr_->type();
@@ -3554,7 +3552,7 @@ Unsafe_type_conversion_expression::do_is_immutable() const
       || expr_type->interface_type() != NULL)
     return false;
 
-  if (!this->expr_->is_immutable())
+  if (!this->expr_->is_static_initializer())
     return false;
 
   if (Type::are_convertible(type, expr_type, NULL))
@@ -3853,6 +3851,44 @@ Unary_expression::do_is_constant() const
     }
   else
     return this->expr_->is_constant();
+}
+
+// Return whether a unary expression can be used as a constant
+// initializer.
+
+bool
+Unary_expression::do_is_static_initializer() const
+{
+  if (this->op_ == OPERATOR_MULT)
+    return false;
+  else if (this->op_ == OPERATOR_AND)
+    {
+      // The address of a global variable can used as a static
+      // initializer.
+      Var_expression* ve = this->expr_->var_expression();
+      if (ve != NULL)
+	{
+	  Named_object* no = ve->named_object();
+	  return no->is_variable() && no->var_value()->is_global();
+	}
+
+      // The address of a composite literal can be used as a static
+      // initializer if the composite literal is itself usable as a
+      // static initializer.
+      if (this->expr_->is_composite_literal()
+	  && this->expr_->is_static_initializer())
+	return true;
+
+      // The address of a string constant can be used as a static
+      // initializer.  This can not be written in Go itself but this
+      // is used when building a type descriptor.
+      if (this->expr_->string_expression() != NULL)
+	return true;
+
+      return false;
+    }
+  else
+    return this->expr_->is_static_initializer();
 }
 
 // Apply unary opcode OP to UNC, setting NC.  Return true if this
@@ -4207,7 +4243,7 @@ Unary_expression::do_get_backend(Translate_context* context)
 	  // constructor will not do what the programmer expects.
 
           go_assert(!this->expr_->is_composite_literal()
-                    || this->expr_->is_immutable());
+                    || this->expr_->is_static_initializer());
 	  if (this->expr_->classification() == EXPRESSION_UNARY)
 	    {
 	      Unary_expression* ue =
@@ -4245,8 +4281,7 @@ Unary_expression::do_get_backend(Translate_context* context)
 	      // initialize the value once, so we can use this directly
 	      // rather than copying it.  In that case we can't make it
 	      // read-only, because the program is permitted to change it.
-	      copy_to_heap = (at->element_type()->has_pointer()
-			      && !context->is_const());
+	      copy_to_heap = context->function() != NULL;
 	    }
 	  Bvariable* implicit =
 	    gogo->backend()->implicit_variable(buf, btype, true, copy_to_heap,
@@ -4257,8 +4292,8 @@ Unary_expression::do_get_backend(Translate_context* context)
 	  bexpr = gogo->backend()->var_expression(implicit, loc);
 	}
       else if ((this->expr_->is_composite_literal()
-           || this->expr_->string_expression() != NULL)
-          && this->expr_->is_immutable())
+		|| this->expr_->string_expression() != NULL)
+	       && this->expr_->is_static_initializer())
         {
 	  // Build a decl for a constant constructor.
           snprintf(buf, sizeof buf, "C%u", counter);
@@ -4424,6 +4459,33 @@ Binary_expression::do_traverse(Traverse* traverse)
   if (t == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return Expression::traverse(&this->right_, traverse);
+}
+
+// Return whether this expression may be used as a static initializer.
+
+bool
+Binary_expression::do_is_static_initializer() const
+{
+  if (!this->left_->is_static_initializer()
+      || !this->right_->is_static_initializer())
+    return false;
+
+  // Addresses can be static initializers, but we can't implement
+  // arbitray binary expressions of them.
+  Unary_expression* lu = this->left_->unary_expression();
+  Unary_expression* ru = this->right_->unary_expression();
+  if (lu != NULL && lu->op() == OPERATOR_AND)
+    {
+      if (ru != NULL && ru->op() == OPERATOR_AND)
+	return this->op_ == OPERATOR_MINUS;
+      else
+	return this->op_ == OPERATOR_PLUS || this->op_ == OPERATOR_MINUS;
+    }
+  else if (ru != NULL && ru->op() == OPERATOR_AND)
+    return this->op_ == OPERATOR_PLUS || this->op_ == OPERATOR_MINUS;
+
+  // Other cases should resolve in the backend.
+  return true;
 }
 
 // Return the type to use for a binary operation on operands of
@@ -6325,13 +6387,13 @@ String_concat_expression::do_is_constant() const
 }
 
 bool
-String_concat_expression::do_is_immutable() const
+String_concat_expression::do_is_static_initializer() const
 {
   for (Expression_list::const_iterator pe = this->exprs_->begin();
        pe != this->exprs_->end();
        ++pe)
     {
-      if (!(*pe)->is_immutable())
+      if (!(*pe)->is_static_initializer())
 	return false;
     }
   return true;
@@ -12275,10 +12337,10 @@ Struct_construction_expression::is_constant_struct() const
   return true;
 }
 
-// Return whether this struct is immutable.
+// Return whether this struct can be used as a constant initializer.
 
 bool
-Struct_construction_expression::do_is_immutable() const
+Struct_construction_expression::do_is_static_initializer() const
 {
   if (this->vals() == NULL)
     return true;
@@ -12286,7 +12348,7 @@ Struct_construction_expression::do_is_immutable() const
        pv != this->vals()->end();
        ++pv)
     {
-      if (*pv != NULL && !(*pv)->is_immutable())
+      if (*pv != NULL && !(*pv)->is_static_initializer())
 	return false;
     }
   return true;
@@ -12523,10 +12585,10 @@ Array_construction_expression::is_constant_array() const
   return true;
 }
 
-// Return whether this is an immutable array initializer.
+// Return whether this can be used a constant initializer.
 
 bool
-Array_construction_expression::do_is_immutable() const
+Array_construction_expression::do_is_static_initializer() const
 {
   if (this->vals() == NULL)
     return true;
@@ -12534,7 +12596,7 @@ Array_construction_expression::do_is_immutable() const
        pv != this->vals()->end();
        ++pv)
     {
-      if (*pv != NULL && !(*pv)->is_immutable())
+      if (*pv != NULL && !(*pv)->is_static_initializer())
 	return false;
     }
   return true;
@@ -12904,19 +12966,12 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
     }
 
   Location loc = this->location();
-  Array_type* array_type = this->type()->array_type();
-  Type* element_type = array_type->element_type();
 
-  bool is_constant_initializer = this->array_val_->is_immutable();
+  bool is_static_initializer = this->array_val_->is_static_initializer();
 
   // We have to copy the initial values into heap memory if we are in
-  // a function or if the values are not constants.  We also have to
-  // copy them if they may contain pointers in a non-constant context,
-  // as otherwise the garbage collector won't see them.
-  bool copy_to_heap = (context->function() != NULL
-		       || !is_constant_initializer
-		       || (element_type->has_pointer()
-			   && !context->is_const()));
+  // a function or if the values are not constants.
+  bool copy_to_heap = context->function() != NULL || !is_static_initializer;
 
   Expression* space;
 
@@ -14206,7 +14261,7 @@ class Type_descriptor_expression : public Expression
   { return Type::make_type_descriptor_ptr_type(); }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   void
@@ -14274,7 +14329,7 @@ class GC_symbol_expression : public Expression
   { return Type::lookup_integer_type("uintptr"); }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   void
@@ -14332,7 +14387,7 @@ class Type_info_expression : public Expression
 
  protected:
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   Type*
@@ -14913,7 +14968,7 @@ class Interface_mtable_expression : public Expression
   do_type();
 
   bool
-  is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   void
@@ -15104,7 +15159,7 @@ class Struct_field_offset_expression : public Expression
 
  protected:
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   Type*

@@ -500,10 +500,20 @@ class Expression
   is_constant() const
   { return this->do_is_constant(); }
 
-  // Return whether this is an immutable expression.
+  // Return whether this expression can be used as a static
+  // initializer.  This is true for an expression that has only
+  // numbers and pointers to global variables or composite literals
+  // that do not require runtime initialization.  It is false if we
+  // must generate code to compute this expression when it is used to
+  // initialize a global variable.  This is not a language-level
+  // concept, but an implementation-level one.  If this expression is
+  // used to initialize a global variable, this is true if we can pass
+  // an initializer to the backend, false if we must generate code to
+  // initialize the variable.  It is always safe for this method to
+  // return false, but the resulting code may be less efficient.
   bool
-  is_immutable() const
-  { return this->do_is_immutable(); }
+  is_static_initializer() const
+  { return this->do_is_static_initializer(); }
 
   // If this is not a numeric constant, return false.  If it is one,
   // return true, and set VAL to hold the value.
@@ -991,9 +1001,10 @@ class Expression
   do_is_constant() const
   { return false; }
 
-  // Return whether this is an immutable expression.
+  // Return whether this expression can be used as a constant
+  // initializer.
   virtual bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return false; }
 
   // Return whether this is a constant expression of numeric type, and
@@ -1508,7 +1519,7 @@ class String_expression : public Expression
   { return true; }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   bool
@@ -1595,7 +1606,7 @@ class Type_conversion_expression : public Expression
   do_is_constant() const;
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -1659,7 +1670,7 @@ class Unsafe_type_conversion_expression : public Expression
   do_traverse(Traverse* traverse);
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   Type*
   do_type()
@@ -1770,11 +1781,7 @@ class Unary_expression : public Expression
   do_is_constant() const;
 
   bool
-  do_is_immutable() const
-  {
-    return (this->expr_->is_immutable()
-	    || (this->op_ == OPERATOR_AND && this->expr_->is_variable()));
-  }
+  do_is_static_initializer() const;
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -1913,8 +1920,7 @@ class Binary_expression : public Expression
   { return this->left_->is_constant() && this->right_->is_constant(); }
 
   bool
-  do_is_immutable() const
-  { return this->left_->is_immutable() && this->right_->is_immutable(); }
+  do_is_static_initializer() const;
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -2029,7 +2035,7 @@ class String_concat_expression : public Expression
   do_is_constant() const;
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   Type*
   do_type();
@@ -3295,7 +3301,7 @@ class Struct_construction_expression : public Expression,
   do_traverse(Traverse* traverse);
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   Type*
   do_type()
@@ -3370,7 +3376,7 @@ protected:
   do_traverse(Traverse* traverse);
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   Type*
   do_type()
