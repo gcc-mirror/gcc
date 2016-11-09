@@ -1,3 +1,9 @@
+2016-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78007
+	* gcc.dg/vect/vect-bswap32.c: Adjust.
+	* gcc.dg/vect/vect-bswap64.c: Likewise.
+
 2016-11-09  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.dg/ipa/vrp7.c: New test.

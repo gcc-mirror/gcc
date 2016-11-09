@@ -1,5 +1,12 @@
 2016-11-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78007
+	* tree-vect-stmts.c (vectorizable_bswap): New function.
+	(vectorizable_call): Call vectorizable_bswap for
+	BUILT_IN_BSWAP{16,32,64} if arguments are not promoted.
+
+2016-11-09  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
 	Look at the DR_BASE_ADDRESS object for forcing alignment.
 
