@@ -31,6 +31,8 @@ class rtx_writer
   void print_rtl (const_rtx rtx_first);
   int print_rtl_single_with_indent (const_rtx x, int ind);
 
+  void finish_directive ();
+
  private:
   void print_rtx_operand_code_0 (const_rtx in_rtx, int idx);
   void print_rtx_operand_code_e (const_rtx in_rtx, int idx);

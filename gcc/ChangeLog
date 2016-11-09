@@ -1,3 +1,12 @@
+2016-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* print-rtl-function.c: Include varasm.h.
+	(print_any_param_name): New function.
+	(print_param): New function.
+	(print_rtx_function): Call print_param for each argument.
+	* print-rtl.c (rtx_writer::finish_directive): New function.
+	* print-rtl.h (rtx_writer::finish_directive): New decl.
+
 2016-11-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78262

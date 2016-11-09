@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
+#include "varasm.h"
 
 /* Print an "(edge-from)" or "(edge-to)" directive describing E
    to OUTFILE.  */
@@ -127,6 +128,37 @@ can_have_basic_block_p (const rtx_insn *insn)
   return true;
 }
 
+/* Subroutine of print_param.  Write the name of ARG, if any, to OUTFILE.  */
+
+static void
+print_any_param_name (FILE *outfile, tree arg)
+{
+  if (DECL_NAME (arg))
+    fprintf (outfile, " \"%s\"", IDENTIFIER_POINTER (DECL_NAME (arg)));
+}
+
+/* Print a "(param)" directive for ARG to OUTFILE.  */
+
+static void
+print_param (FILE *outfile, rtx_writer &w, tree arg)
+{
+  fprintf (outfile, "  (param");
+  print_any_param_name (outfile, arg);
+  fprintf (outfile, "\n");
+
+  /* Print the value of DECL_RTL (without lazy-evaluation).  */
+  fprintf (outfile, "    (DECL_RTL ");
+  w.print_rtx (DECL_RTL_IF_SET (arg));
+  w.finish_directive ();
+
+  /* Print DECL_INCOMING_RTL.  */
+  fprintf (outfile, "    (DECL_RTL_INCOMING ");
+  w.print_rtx (DECL_INCOMING_RTL (arg));
+  fprintf (outfile, ")");
+
+  w.finish_directive ();
+}
+
 /* Write FN to OUTFILE in a form suitable for parsing, with indentation
    and comments to make the structure easy for a human to grok.  Track
    the basic blocks of insns in the chain, wrapping those that are within
@@ -196,6 +228,10 @@ print_rtx_function (FILE *outfile, function *fn, bool compact)
   const char *dname = lang_hooks.decl_printable_name (fdecl, 2);
 
   fprintf (outfile, "(function \"%s\"\n", dname);
+
+  /* Params.  */
+  for (tree arg = DECL_ARGUMENTS (fdecl); arg; arg = DECL_CHAIN (arg))
+    print_param (outfile, w, arg);
 
   /* The instruction chain.  */
   fprintf (outfile, "  (insn-chain\n");

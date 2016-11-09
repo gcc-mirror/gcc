@@ -804,6 +804,15 @@ rtx_writer::print_rtx (const_rtx in_rtx)
   m_sawclose = 1;
 }
 
+/* Emit a closing parenthesis and newline.  */
+
+void
+rtx_writer::finish_directive ()
+{
+  fprintf (m_outfile, ")\n");
+  m_sawclose = 0;
+}
+
 /* Print an rtx on the current line of FILE.  Initially indent IND
    characters.  */
 
