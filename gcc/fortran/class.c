@@ -224,7 +224,8 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 	break;
       tail = &((*tail)->next);
     }
-  if (derived->components->next->ts.type == BT_DERIVED &&
+  if (derived->components && derived->components->next &&
+      derived->components->next->ts.type == BT_DERIVED &&
       derived->components->next->ts.u.derived == NULL)
     {
       /* Fix up missing vtype.  */
