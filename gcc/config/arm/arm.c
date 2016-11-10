@@ -754,7 +754,7 @@ extern FILE * asm_out_file;
 int making_const_table;
 
 /* The processor for which instructions should be scheduled.  */
-enum processor_type arm_tune = arm_none;
+enum processor_type arm_tune = TARGET_CPU_arm_none;
 
 /* The current tuning set.  */
 const struct tune_params *current_tune;
@@ -2272,11 +2272,11 @@ static const struct processors all_cores[] =
 {
   /* ARM Cores */
 #define ARM_CORE(NAME, X, IDENT, ARCH, FLAGS, COSTS) \
-  {NAME, IDENT, #ARCH, BASE_ARCH_##ARCH,	  \
+  {NAME, TARGET_CPU_##IDENT, #ARCH, BASE_ARCH_##ARCH,	  \
    FLAGS, &arm_##COSTS##_tune},
 #include "arm-cores.def"
 #undef ARM_CORE
-  {NULL, arm_none, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
+  {NULL, TARGET_CPU_arm_none, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
 };
 
 static const struct processors all_architectures[] =
@@ -2286,10 +2286,10 @@ static const struct processors all_architectures[] =
      from the core.  */
 
 #define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
-  {NAME, CORE, #ARCH, BASE_ARCH_##ARCH, FLAGS, NULL},
+  {NAME, TARGET_CPU_##CORE, #ARCH, BASE_ARCH_##ARCH, FLAGS, NULL},
 #include "arm-arches.def"
 #undef ARM_ARCH
-  {NULL, arm_none, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
+  {NULL, TARGET_CPU_arm_none, NULL, BASE_ARCH_0, ARM_FSET_EMPTY, NULL}
 };
 
 
@@ -3219,7 +3219,7 @@ arm_option_override (void)
   arm_arch_thumb_hwdiv = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB_DIV);
   arm_arch_arm_hwdiv = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARM_DIV);
   arm_arch_no_volatile_ce = ARM_FSET_HAS_CPU1 (insn_flags, FL_NO_VOLATILE_CE);
-  arm_tune_cortex_a9 = (arm_tune == cortexa9) != 0;
+  arm_tune_cortex_a9 = (arm_tune == TARGET_CPU_cortexa9) != 0;
   arm_arch_crc = ARM_FSET_HAS_CPU1 (insn_flags, FL_CRC32);
   arm_m_profile_small_mul = ARM_FSET_HAS_CPU1 (insn_flags, FL_SMALLMUL);
   arm_fp16_inst = ARM_FSET_HAS_CPU2 (insn_flags, FL2_FP16INST);
@@ -3387,7 +3387,7 @@ arm_option_override (void)
   /* Enable -mfix-cortex-m3-ldrd by default for Cortex-M3 cores.  */
   if (fix_cm3_ldrd == 2)
     {
-      if (arm_selected_cpu->core == cortexm3)
+      if (arm_selected_cpu->core == TARGET_CPU_cortexm3)
 	fix_cm3_ldrd = 1;
       else
 	fix_cm3_ldrd = 0;
@@ -10948,7 +10948,7 @@ arm_sched_reorder (FILE *file, int verbose, rtx_insn **ready, int *n_readyp,
 {
   switch (arm_tune)
     {
-    case cortexa7:
+    case TARGET_CPU_cortexa7:
       cortexa7_sched_reorder (file, verbose, ready, n_readyp, clock);
       break;
     default:

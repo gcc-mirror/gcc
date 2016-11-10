@@ -49,16 +49,6 @@ extern char arm_arch_name[];
 
 #include "config/arm/arm-opts.h"
 
-enum target_cpus
-{
-#define ARM_CORE(NAME, INTERNAL_IDENT, IDENT, ARCH, FLAGS, COSTS) \
-  TARGET_CPU_##INTERNAL_IDENT,
-#include "arm-cores.def"
-#undef ARM_CORE
-  /* Total number of CPUs we handle.  */
-  TARGET_CPU_num_cores
-};
-
 /* The processor for which instructions should be scheduled.  */
 extern enum processor_type arm_tune;
 

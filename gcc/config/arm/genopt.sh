@@ -52,7 +52,7 @@ awk -F'[(, 	]+' '/^ARM_CORE/ {
     enum = $3
     gsub("\"", "", name)
     print "EnumValue"
-    print "Enum(processor_type) String(" name ") Value(" enum ")"
+    print "Enum(processor_type) String(" name ") Value( TARGET_CPU_" enum ")"
     print ""
 }' $1/arm-cores.def
 

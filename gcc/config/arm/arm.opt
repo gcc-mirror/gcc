@@ -102,7 +102,7 @@ Target Report Mask(CALLER_INTERWORKING)
 Thumb: Assume function pointers may go to non-Thumb aware code.
 
 mcpu=
-Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_cpu_option) Init(arm_none)
+Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_cpu_option) Init(TARGET_CPU_arm_none)
 Specify the name of the target CPU.
 
 mfloat-abi=
@@ -223,7 +223,7 @@ Target Report Mask(TPCS_LEAF_FRAME)
 Thumb: Generate (leaf) stack frames even if not needed.
 
 mtune=
-Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_tune_option) Init(arm_none)
+Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_tune_option) Init(TARGET_CPU_arm_none)
 Tune code for the given processor.
 
 mprint-tune-info
