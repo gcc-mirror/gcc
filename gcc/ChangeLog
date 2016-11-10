@@ -1,3 +1,9 @@
+2016-11-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* dwarf2cfi.c (dump_cfi_row): Add forward declaration.
+	(maybe_record_trace_start): If the CFI is different on the new and
+	old paths, print out both to the dump file before ICEing.
+
 2016-11-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* target.def (additional_allocno_class_p): New.

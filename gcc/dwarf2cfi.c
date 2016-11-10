@@ -2268,6 +2268,8 @@ add_cfis_to_fde (void)
     }
 }
 
+static void dump_cfi_row (FILE *f, dw_cfi_row *row);
+
 /* If LABEL is the start of a trace, then initialize the state of that
    trace from CUR_TRACE and CUR_ROW.  */
 
@@ -2311,7 +2313,21 @@ maybe_record_trace_start (rtx_insn *start, rtx_insn *origin)
       /* We ought to have the same state incoming to a given trace no
 	 matter how we arrive at the trace.  Anything else means we've
 	 got some kind of optimization error.  */
-      gcc_checking_assert (cfi_row_equal_p (cur_row, ti->beg_row));
+#if CHECKING_P
+      if (!cfi_row_equal_p (cur_row, ti->beg_row))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Inconsistent CFI state!\n");
+	      fprintf (dump_file, "SHOULD have:\n");
+	      dump_cfi_row (dump_file, ti->beg_row);
+	      fprintf (dump_file, "DO have:\n");
+	      dump_cfi_row (dump_file, cur_row);
+	    }
+
+	  gcc_unreachable ();
+	}
+#endif
 
       /* The args_size is allowed to conflict if it isn't actually used.  */
       if (ti->beg_true_args_size != args_size)
