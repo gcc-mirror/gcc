@@ -2241,7 +2241,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
     {
       vec<tree> labels;
       vec<tree> saved_labels;
-      hash_set<tree> *saved_live_switch_vars;
+      hash_set<tree> *saved_live_switch_vars = NULL;
       tree default_case = NULL_TREE;
       gswitch *switch_stmt;
 
@@ -2253,8 +2253,14 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
          labels.  Save all the things from the switch body to append after.  */
       saved_labels = gimplify_ctxp->case_labels;
       gimplify_ctxp->case_labels.create (8);
-      saved_live_switch_vars = gimplify_ctxp->live_switch_vars;
-      gimplify_ctxp->live_switch_vars = new hash_set<tree> (4);
+
+      /* Do not create live_switch_vars if SWITCH_BODY is not a BIND_EXPR.  */
+      if (TREE_CODE (SWITCH_BODY (switch_expr)) == BIND_EXPR)
+	{
+	  saved_live_switch_vars = gimplify_ctxp->live_switch_vars;
+	  gimplify_ctxp->live_switch_vars = new hash_set<tree> (4);
+	}
+
       bool old_in_switch_expr = gimplify_ctxp->in_switch_expr;
       gimplify_ctxp->in_switch_expr = true;
 
@@ -2269,8 +2275,12 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 
       labels = gimplify_ctxp->case_labels;
       gimplify_ctxp->case_labels = saved_labels;
-      gcc_assert (gimplify_ctxp->live_switch_vars->elements () == 0);
-      delete gimplify_ctxp->live_switch_vars;
+
+      if (gimplify_ctxp->live_switch_vars)
+	{
+	  gcc_assert (gimplify_ctxp->live_switch_vars->elements () == 0);
+	  delete gimplify_ctxp->live_switch_vars;
+	}
       gimplify_ctxp->live_switch_vars = saved_live_switch_vars;
 
       preprocess_case_label_vec_for_gimple (labels, index_type,

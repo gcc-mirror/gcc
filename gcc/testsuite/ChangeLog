@@ -1,3 +1,8 @@
+2016-11-10  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/78270
+	* gcc.dg/asan/pr78270.c: New test.
+
 2016-11-10  Pierre-Marie de Rodat  <derodat@adacore.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
