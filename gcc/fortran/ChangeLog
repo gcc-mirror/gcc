@@ -1,5 +1,11 @@
 2016-11-10  Fritz O. Reese <fritzoreese@gmail.com>
 
+	PR fortran/78277
+	* gcc/fortran/decl.c (gfc_match_data_decl): Gracefully handle bad
+	anonymous structure declarations.
+
+2016-11-10  Fritz O. Reese <fritzoreese@gmail.com>
+
 	* decl.c (get_struct_decl, gfc_match_map, gfc_match_union): Fix
 	whitespace.
 	* interface.c (gfc_compare_union_types): Likewise.
