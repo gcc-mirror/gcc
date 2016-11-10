@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore
-
-// +build dragonfly linux netbsd
+// +build darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package runtime
 
 import "unsafe"
 
+// For gccgo, use go:linkname so the C signal handler can call this one.
+//go:linkname sigtrampgo runtime.sigtrampgo
+
 // Continuation of the (assembly) sigtramp() logic.
 // This may be called with the world stopped.
 //go:nosplit
 //go:nowritebarrierrec
-func sigtrampgo(sig uint32, info *siginfo, ctx unsafe.Pointer) {
+func sigtrampgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 	if sigfwdgo(sig, info, ctx) {
 		return
 	}
@@ -30,28 +31,6 @@ func sigtrampgo(sig uint32, info *siginfo, ctx unsafe.Pointer) {
 		}
 		badsignal(uintptr(sig), &sigctxt{info, ctx})
 		return
-	}
-
-	// If some non-Go code called sigaltstack, adjust.
-	sp := uintptr(unsafe.Pointer(&sig))
-	if sp < g.m.gsignal.stack.lo || sp >= g.m.gsignal.stack.hi {
-		var st sigaltstackt
-		sigaltstack(nil, &st)
-		if st.ss_flags&_SS_DISABLE != 0 {
-			setg(nil)
-			cgocallback(unsafe.Pointer(funcPC(noSignalStack)), noescape(unsafe.Pointer(&sig)), unsafe.Sizeof(sig), 0)
-		}
-		stsp := uintptr(unsafe.Pointer(st.ss_sp))
-		if sp < stsp || sp >= stsp+st.ss_size {
-			setg(nil)
-			cgocallback(unsafe.Pointer(funcPC(sigNotOnStack)), noescape(unsafe.Pointer(&sig)), unsafe.Sizeof(sig), 0)
-		}
-		g.m.gsignal.stack.lo = stsp
-		g.m.gsignal.stack.hi = stsp + st.ss_size
-		g.m.gsignal.stackguard0 = stsp + _StackGuard
-		g.m.gsignal.stackguard1 = stsp + _StackGuard
-		g.m.gsignal.stackAlloc = st.ss_size
-		g.m.gsignal.stktopsp = getcallersp(unsafe.Pointer(&sig))
 	}
 
 	setg(g.m.gsignal)

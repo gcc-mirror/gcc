@@ -326,8 +326,8 @@ type g struct {
 	m      *m      // current m; offset known to arm liblink
 	// Not for gccgo: stackAlloc     uintptr // stack allocation is [stack.lo,stack.lo+stackAlloc)
 	// Not for gccgo: sched          gobuf
-	// Not for gccgo: syscallsp      uintptr        // if status==Gsyscall, syscallsp = sched.sp to use during gc
-	// Not for gccgo: syscallpc      uintptr        // if status==Gsyscall, syscallpc = sched.pc to use during gc
+	syscallsp uintptr // if status==Gsyscall, syscallsp = sched.sp to use during gc
+	syscallpc uintptr // if status==Gsyscall, syscallpc = sched.pc to use during gc
 	// Not for gccgo: stkbar         []stkbar       // stack barriers, from low to high (see top of mstkbar.go)
 	// Not for gccgo: stkbarPos      uintptr        // index of lowest stack barrier not hit
 	// Not for gccgo: stktopsp       uintptr        // expected sp at top of stack, to check in traceback

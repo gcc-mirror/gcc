@@ -5722,7 +5722,7 @@ Parse::import_spec(void*)
     }
 
   this->gogo_->import_package(token->string_value(), local_name,
-			      is_local_name_exported, location);
+			      is_local_name_exported, true, location);
 
   this->advance_token();
 }

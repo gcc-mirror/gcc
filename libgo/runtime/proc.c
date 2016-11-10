@@ -2022,7 +2022,8 @@ goexit0(G *gp)
 // entersyscall is going to return immediately after.
 
 void runtime_entersyscall(int32) __attribute__ ((no_split_stack));
-static void doentersyscall(void) __attribute__ ((no_split_stack, noinline));
+static void doentersyscall(uintptr, uintptr)
+  __attribute__ ((no_split_stack, noinline));
 
 void
 runtime_entersyscall(int32 dummy __attribute__ ((unused)))
@@ -2040,11 +2041,12 @@ runtime_entersyscall(int32 dummy __attribute__ ((unused)))
 	// callee-saved registers to access the TLS variable g.  We
 	// don't want to put the ucontext_t on the stack because it is
 	// large and we can not split the stack here.
-	doentersyscall();
+	doentersyscall((uintptr)runtime_getcallerpc(&dummy),
+		       (uintptr)runtime_getcallersp(&dummy));
 }
 
 static void
-doentersyscall()
+doentersyscall(uintptr pc, uintptr sp)
 {
 	// Disable preemption because during this function g is in _Gsyscall status,
 	// but can have inconsistent g->sched, do not let GC observe it.
@@ -2066,6 +2068,9 @@ doentersyscall()
 		g->gcnextsp = (byte *) &v;
 	}
 #endif
+
+	g->syscallsp = sp;
+	g->syscallpc = pc;
 
 	g->atomicstatus = _Gsyscall;
 
@@ -2118,6 +2123,9 @@ runtime_entersyscallblock(int32 dummy __attribute__ ((unused)))
 	// held in registers will be seen by the garbage collector.
 	getcontext(ucontext_arg(&g->gcregs[0]));
 
+	g->syscallpc = (uintptr)runtime_getcallerpc(&dummy);
+	g->syscallsp = (uintptr)runtime_getcallersp(&dummy);
+
 	g->atomicstatus = _Gsyscall;
 
 	p = releasep();
@@ -2155,6 +2163,7 @@ runtime_exitsyscall(int32 dummy __attribute__ ((unused)))
 #endif
 		gp->gcnextsp = nil;
 		runtime_memclr(&gp->gcregs[0], sizeof gp->gcregs);
+		gp->syscallsp = 0;
 		gp->m->locks--;
 		return;
 	}
@@ -2175,6 +2184,8 @@ runtime_exitsyscall(int32 dummy __attribute__ ((unused)))
 #endif
 	gp->gcnextsp = nil;
 	runtime_memclr(&gp->gcregs[0], sizeof gp->gcregs);
+
+	gp->syscallsp = 0;
 
 	// Note that this gp->m might be different than the earlier
 	// gp->m after returning from runtime_mcall.

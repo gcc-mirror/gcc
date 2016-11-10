@@ -122,9 +122,13 @@ runtime_dopanic(int32 unused __attribute__ ((unused)))
 	int32 t;
 
 	g = runtime_g();
-	if(g->sig != 0)
-		runtime_printf("[signal %x code=%p addr=%p]\n",
+	if(g->sig != 0) {
+		runtime_printf("[signal %x code=%p addr=%p",
 			       g->sig, (void*)g->sigcode0, (void*)g->sigcode1);
+		if (g->sigpc != 0)
+			runtime_printf(" pc=%p", g->sigpc);
+		runtime_printf("]\n");
+	}
 
 	if((t = runtime_gotraceback(&crash)) > 0){
 		if(g != runtime_m()->g0) {

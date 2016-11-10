@@ -282,10 +282,8 @@ void*	runtime_mal(uintptr);
 String	runtime_gostringnocopy(const byte*)
   __asm__ (GOSYM_PREFIX "runtime.gostringnocopy");
 void	runtime_schedinit(void);
-void	runtime_initsig(bool);
-void	runtime_sigenable(uint32 sig);
-void	runtime_sigdisable(uint32 sig);
-void	runtime_sigignore(uint32 sig);
+void	runtime_initsig(bool)
+  __asm__ (GOSYM_PREFIX "runtime.initsig");
 int32	runtime_gotraceback(bool *crash);
 void	runtime_goroutineheader(G*)
   __asm__ (GOSYM_PREFIX "runtime.goroutineheader");
@@ -303,8 +301,10 @@ G*	runtime_malg(int32, byte**, uintptr*);
 void	runtime_mpreinit(M*);
 void	runtime_minit(void);
 void	runtime_unminit(void);
-void	runtime_needm(void);
-void	runtime_dropm(void);
+void	runtime_needm(void)
+  __asm__ (GOSYM_PREFIX "runtime.needm");
+void	runtime_dropm(void)
+  __asm__ (GOSYM_PREFIX "runtime.dropm");
 void	runtime_signalstack(byte*, int32);
 MCache*	runtime_allocmcache(void);
 void	runtime_freemcache(MCache*);
@@ -312,8 +312,9 @@ void	runtime_mallocinit(void);
 void	runtime_mprofinit(void);
 #define runtime_malloc(s) __go_alloc(s)
 #define runtime_free(p) __go_free(p)
-#define runtime_getcallersp(p) __builtin_frame_address(1)
-int32	runtime_mcount(void);
+#define runtime_getcallersp(p) __builtin_frame_address(0)
+int32	runtime_mcount(void)
+  __asm__ (GOSYM_PREFIX "runtime.mcount");
 int32	runtime_gcount(void);
 void	runtime_mcall(void(*)(G*));
 uint32	runtime_fastrand1(void) __asm__ (GOSYM_PREFIX "runtime.fastrand1");
@@ -339,7 +340,8 @@ int32	runtime_round2(int32 x); // round x up to a power of 2.
 #define runtime_atomicloadp(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
 #define runtime_atomicstorep(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
 
-void runtime_setg(G*);
+void runtime_setg(G*)
+  __asm__ (GOSYM_PREFIX "runtime.setg");
 void runtime_newextram(void);
 #define runtime_exit(s) exit(s)
 #define runtime_breakpoint() __builtin_trap()
@@ -358,19 +360,20 @@ void	runtime_entersyscallblock(int32)
 void	runtime_exitsyscall(int32)
   __asm__ (GOSYM_PREFIX "runtime.exitsyscall");
 G*	__go_go(void (*pfn)(void*), void*);
-void	siginit(void);
-bool	__go_sigsend(int32 sig);
 int32	runtime_callers(int32, Location*, int32, bool keep_callers);
 int64	runtime_nanotime(void)	// monotonic time
   __asm__(GOSYM_PREFIX "runtime.nanotime");
 int64	runtime_unixnanotime(void) // real time, can skip
   __asm__ (GOSYM_PREFIX "runtime.unixnanotime");
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
-void	runtime_startpanic(void);
+void	runtime_startpanic(void)
+  __asm__ (GOSYM_PREFIX "runtime.startpanic");
 void	runtime_freezetheworld(void);
 void	runtime_unwindstack(G*, byte*);
-void	runtime_sigprof();
-void	runtime_resetcpuprofiler(int32);
+void	runtime_sigprof()
+  __asm__ (GOSYM_PREFIX "runtime.sigprof");
+void	runtime_resetcpuprofiler(int32)
+  __asm__ (GOSYM_PREFIX "runtime.resetcpuprofiler");
 void	runtime_setcpuprofilerate_m(int32)
      __asm__ (GOSYM_PREFIX "runtime.setcpuprofilerate_m");
 void	runtime_cpuprofAdd(Slice)
@@ -385,7 +388,8 @@ void	runtime_blockevent(int64, int32);
 extern int64 runtime_blockprofilerate;
 G*	runtime_netpoll(bool)
   __asm__ (GOSYM_PREFIX "runtime.netpoll");
-void	runtime_crash(void);
+void	runtime_crash(void)
+  __asm__ (GOSYM_PREFIX "runtime.crash");
 void	runtime_parsedebugvars(void)
   __asm__(GOSYM_PREFIX "runtime.parsedebugvars");
 void	_rt0_go(void);

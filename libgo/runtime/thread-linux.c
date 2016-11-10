@@ -4,7 +4,6 @@
 
 #include "runtime.h"
 #include "defs.h"
-#include "signal_unix.h"
 
 // Linux futex.
 

@@ -394,6 +394,7 @@ void
 Gogo::import_package(const std::string& filename,
 		     const std::string& local_name,
 		     bool is_local_name_exported,
+		     bool must_exist,
 		     Location location)
 {
   if (filename.empty())
@@ -497,7 +498,8 @@ Gogo::import_package(const std::string& filename,
 						this->relative_import_path_);
   if (stream == NULL)
     {
-      go_error_at(location, "import file %qs not found", filename.c_str());
+      if (must_exist)
+	go_error_at(location, "import file %qs not found", filename.c_str());
       return;
     }
 
@@ -2179,6 +2181,14 @@ Gogo::is_thunk(const Named_object* no)
 void
 Gogo::define_global_names()
 {
+  if (this->is_main_package())
+    {
+      // Every Go program has to import the runtime package, so that
+      // it is properly initialized.
+      this->import_package("runtime", "_", false, false,
+			   Linemap::predeclared_location());
+    }
+
   for (Bindings::const_declarations_iterator p =
 	 this->globals_->begin_declarations();
        p != this->globals_->end_declarations();

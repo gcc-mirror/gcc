@@ -37,6 +37,9 @@ runtime_procyield (uint32 cnt)
 
 /* Ask the OS to reschedule this thread.  */
 
+void runtime_osyield(void)
+  __attribute__ ((no_split_stack));
+
 void
 runtime_osyield (void)
 {
