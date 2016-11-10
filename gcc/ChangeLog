@@ -1,3 +1,9 @@
+2016-11-10  Jim Wilson  <jim.wilson@linaro.org>
+
+	* tree-loop-distribution.c (pg_add_dependence_edges): Return 2 if
+	this_dir is 2.  Check for this_dir non-zero before dir != this_dir
+	check.
+
 2016-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_omp_target): Fix up argument to is_reference.

@@ -1408,9 +1408,11 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	else
 	  this_dir = 0;
 	free_dependence_relation (ddr);
-	if (dir == 0)
+	if (this_dir == 2)
+	  return 2;
+	else if (dir == 0)
 	  dir = this_dir;
-	else if (dir != this_dir)
+	else if (this_dir != 0 && dir != this_dir)
 	  return 2;
 	/* Shuffle "back" dr1.  */
 	dr1 = saved_dr1;
