@@ -1,3 +1,10 @@
+2016-11-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Simplify
+	(xor (and (xor A B) C) B) to (ior (and A C) (and B ~C)) and
+	(xor (and (xor A B) C) A) to (ior (and A ~C) (and B C)) if C
+	is a const_int.
+
 2016-11-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* print-rtl-function.c: Include varasm.h.
