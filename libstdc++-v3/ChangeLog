@@ -1,3 +1,8 @@
+2016-11-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++11/debug.cc (format_word): Delete.
+	(print_literal): New. Replace call to print_word for literals.
+
 2016-11-09  Tim Shen  <timshen@google.com>
 
 	* libstdc++-v3/include/bits/regex.h (regex_iterator::regex_iterator()):
