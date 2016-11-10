@@ -2886,6 +2886,37 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	    }
 	}
 
+      /* If we have (xor (and (xor A B) C) A) with C a constant we can instead
+	 do (ior (and A ~C) (and B C)) which is a machine instruction on some
+	 machines, and also has shorter instruction path length.  */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (XEXP (op0, 0)) == XOR
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && rtx_equal_p (XEXP (XEXP (op0, 0), 0), trueop1))
+	{
+	  rtx a = trueop1;
+	  rtx b = XEXP (XEXP (op0, 0), 1);
+	  rtx c = XEXP (op0, 1);
+	  rtx nc = simplify_gen_unary (NOT, mode, c, mode);
+	  rtx a_nc = simplify_gen_binary (AND, mode, a, nc);
+	  rtx bc = simplify_gen_binary (AND, mode, b, c);
+	  return simplify_gen_binary (IOR, mode, a_nc, bc);
+	}
+      /* Similarly, (xor (and (xor A B) C) B) as (ior (and A C) (and B ~C))  */
+      else if (GET_CODE (op0) == AND
+	  && GET_CODE (XEXP (op0, 0)) == XOR
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && rtx_equal_p (XEXP (XEXP (op0, 0), 1), trueop1))
+	{
+	  rtx a = XEXP (XEXP (op0, 0), 0);
+	  rtx b = trueop1;
+	  rtx c = XEXP (op0, 1);
+	  rtx nc = simplify_gen_unary (NOT, mode, c, mode);
+	  rtx b_nc = simplify_gen_binary (AND, mode, b, nc);
+	  rtx ac = simplify_gen_binary (AND, mode, a, c);
+	  return simplify_gen_binary (IOR, mode, ac, b_nc);
+	}
+
       /* (xor (comparison foo bar) (const_int 1)) can become the reversed
 	 comparison if STORE_FLAG_VALUE is 1.  */
       if (STORE_FLAG_VALUE == 1
