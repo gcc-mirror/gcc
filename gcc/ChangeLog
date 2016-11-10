@@ -1,3 +1,9 @@
+2016-11-10  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/78270
+	* gimplify.c (gimplify_switch_expr): Create live_switch_vars
+	only when SWITCH_BODY is a BIND_EXPR.
+
 2016-11-10  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	PR debug/78112
