@@ -558,46 +558,46 @@ gfc_compare_union_types (gfc_symbol *un1, gfc_symbol *un2)
      we will say they are not equal for the purposes of this test; therefore
      we compare the maps sequentially. */
   for (;;)
-  {
-    map1_t = map1->ts.u.derived;
-    map2_t = map2->ts.u.derived;
-
-    cmp1 = map1_t->components;
-    cmp2 = map2_t->components;
-
-    /* Protect against null components.  */
-    if (map1_t->attr.zero_comp != map2_t->attr.zero_comp)
-      return 0;
-
-    if (map1_t->attr.zero_comp)
-      return 1;
-
-    for (;;)
     {
-      /* No two fields will ever point to the same map type unless they are
-         the same component, because one map field is created with its type
-         declaration. Therefore don't worry about recursion here. */
-      /* TODO: worry about recursion into parent types of the unions? */
-      if (compare_components (cmp1, cmp2, map1_t, map2_t) == 0)
-        return 0;
+      map1_t = map1->ts.u.derived;
+      map2_t = map2->ts.u.derived;
 
-      cmp1 = cmp1->next;
-      cmp2 = cmp2->next;
+      cmp1 = map1_t->components;
+      cmp2 = map2_t->components;
 
-      if (cmp1 == NULL && cmp2 == NULL)
-        break;
-      if (cmp1 == NULL || cmp2 == NULL)
-        return 0;
+      /* Protect against null components.  */
+      if (map1_t->attr.zero_comp != map2_t->attr.zero_comp)
+	return 0;
+
+      if (map1_t->attr.zero_comp)
+	return 1;
+
+      for (;;)
+	{
+	  /* No two fields will ever point to the same map type unless they are
+	     the same component, because one map field is created with its type
+	     declaration. Therefore don't worry about recursion here. */
+	  /* TODO: worry about recursion into parent types of the unions? */
+	  if (compare_components (cmp1, cmp2, map1_t, map2_t) == 0)
+	    return 0;
+
+	  cmp1 = cmp1->next;
+	  cmp2 = cmp2->next;
+
+	  if (cmp1 == NULL && cmp2 == NULL)
+	    break;
+	  if (cmp1 == NULL || cmp2 == NULL)
+	    return 0;
+	}
+
+      map1 = map1->next;
+      map2 = map2->next;
+
+      if (map1 == NULL && map2 == NULL)
+	break;
+      if (map1 == NULL || map2 == NULL)
+	return 0;
     }
-
-    map1 = map1->next;
-    map2 = map2->next;
-
-    if (map1 == NULL && map2 == NULL)
-      break;
-    if (map1 == NULL || map2 == NULL)
-      return 0;
-  }
 
   return 1;
 }

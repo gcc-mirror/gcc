@@ -8597,31 +8597,31 @@ get_struct_decl (const char *name, sym_flavor fl, locus *decl,
 match
 gfc_match_map (void)
 {
-    /* Counter used to give unique internal names to map structures. */
-    static unsigned int gfc_map_id = 0;
-    char name[GFC_MAX_SYMBOL_LEN + 1];
-    gfc_symbol *sym;
-    locus old_loc;
+  /* Counter used to give unique internal names to map structures. */
+  static unsigned int gfc_map_id = 0;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_symbol *sym;
+  locus old_loc;
 
-    old_loc = gfc_current_locus;
+  old_loc = gfc_current_locus;
 
-    if (gfc_match_eos () != MATCH_YES)
-      {
-          gfc_error ("Junk after MAP statement at %C");
-          gfc_current_locus = old_loc;
-          return MATCH_ERROR;
-      }
+  if (gfc_match_eos () != MATCH_YES)
+    {
+	gfc_error ("Junk after MAP statement at %C");
+	gfc_current_locus = old_loc;
+	return MATCH_ERROR;
+    }
 
-    /* Map blocks are anonymous so we make up unique names for the symbol table
-       which are invalid Fortran identifiers.  */
-    snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "MM$%u", gfc_map_id++);
+  /* Map blocks are anonymous so we make up unique names for the symbol table
+     which are invalid Fortran identifiers.  */
+  snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "MM$%u", gfc_map_id++);
 
-    if (!get_struct_decl (name, FL_STRUCT, &old_loc, &sym))
-      return MATCH_ERROR;
+  if (!get_struct_decl (name, FL_STRUCT, &old_loc, &sym))
+    return MATCH_ERROR;
 
-    gfc_new_block = sym;
+  gfc_new_block = sym;
 
-    return MATCH_YES;
+  return MATCH_YES;
 }
 
 
@@ -8630,31 +8630,31 @@ gfc_match_map (void)
 match
 gfc_match_union (void)
 {
-    /* Counter used to give unique internal names to union types. */
-    static unsigned int gfc_union_id = 0;
-    char name[GFC_MAX_SYMBOL_LEN + 1];
-    gfc_symbol *sym;
-    locus old_loc;
+  /* Counter used to give unique internal names to union types. */
+  static unsigned int gfc_union_id = 0;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_symbol *sym;
+  locus old_loc;
 
-    old_loc = gfc_current_locus;
+  old_loc = gfc_current_locus;
 
-    if (gfc_match_eos () != MATCH_YES)
-      {
-          gfc_error ("Junk after UNION statement at %C");
-          gfc_current_locus = old_loc;
-          return MATCH_ERROR;
-      }
+  if (gfc_match_eos () != MATCH_YES)
+    {
+	gfc_error ("Junk after UNION statement at %C");
+	gfc_current_locus = old_loc;
+	return MATCH_ERROR;
+    }
 
-    /* Unions are anonymous so we make up unique names for the symbol table
-       which are invalid Fortran identifiers.  */
-    snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "UU$%u", gfc_union_id++);
+  /* Unions are anonymous so we make up unique names for the symbol table
+     which are invalid Fortran identifiers.  */
+  snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "UU$%u", gfc_union_id++);
 
-    if (!get_struct_decl (name, FL_UNION, &old_loc, &sym))
-      return MATCH_ERROR;
+  if (!get_struct_decl (name, FL_UNION, &old_loc, &sym))
+    return MATCH_ERROR;
 
-    gfc_new_block = sym;
+  gfc_new_block = sym;
 
-    return MATCH_YES;
+  return MATCH_YES;
 }
 
 
@@ -8666,67 +8666,67 @@ gfc_match_union (void)
 match
 gfc_match_structure_decl (void)
 {
-    /* Counter used to give unique internal names to anonymous structures.  */
-    static unsigned int gfc_structure_id = 0;
-    char name[GFC_MAX_SYMBOL_LEN + 1];
-    gfc_symbol *sym;
-    match m;
-    locus where;
+  /* Counter used to give unique internal names to anonymous structures.  */
+  static unsigned int gfc_structure_id = 0;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_symbol *sym;
+  match m;
+  locus where;
 
-    if(!flag_dec_structure)
-      {
-          gfc_error ("STRUCTURE at %C is a DEC extension, enable with "
-                     "-fdec-structure");
-          return MATCH_ERROR;
-      }
-
-    name[0] = '\0';
-
-    m = gfc_match (" /%n/", name);
-    if (m != MATCH_YES)
-      {
-          /* Non-nested structure declarations require a structure name.  */
-          if (!gfc_comp_struct (gfc_current_state ()))
-            {
-                gfc_error ("Structure name expected in non-nested structure "
-                           "declaration at %C");
-                return MATCH_ERROR;
-            }
-          /* This is an anonymous structure; make up a unique name for it
-             (upper-case letters never make it to symbol names from the source).
-             The important thing is initializing the type variable
-             and setting gfc_new_symbol, which is immediately used by
-             parse_structure () and variable_decl () to add components of
-             this type.  */
-          snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "SS$%u", gfc_structure_id++);
-      }
-
-    where = gfc_current_locus;
-    /* No field list allowed after non-nested structure declaration.  */
-    if (!gfc_comp_struct (gfc_current_state ())
-        && gfc_match_eos () != MATCH_YES)
-      {
-          gfc_error ("Junk after non-nested STRUCTURE statement at %C");
-          return MATCH_ERROR;
-      }
-
-    /* Make sure the name is not the name of an intrinsic type.  */
-    if (gfc_is_intrinsic_typename (name))
-      {
-        gfc_error ("Structure name '%s' at %C cannot be the same as an"
-                   " intrinsic type", name);
-        return MATCH_ERROR;
-      }
-
-    /* Store the actual type symbol for the structure with an upper-case first
-       letter (an invalid Fortran identifier).  */
-
-    sprintf (name, gfc_dt_upper_string (name));
-    if (!get_struct_decl (name, FL_STRUCT, &where, &sym))
+  if (!flag_dec_structure)
+    {
+      gfc_error ("STRUCTURE at %C is a DEC extension, enable with "
+		 "-fdec-structure");
       return MATCH_ERROR;
+    }
 
-    gfc_new_block = sym;
-    return MATCH_YES;
+  name[0] = '\0';
+
+  m = gfc_match (" /%n/", name);
+  if (m != MATCH_YES)
+    {
+      /* Non-nested structure declarations require a structure name.  */
+      if (!gfc_comp_struct (gfc_current_state ()))
+	{
+	    gfc_error ("Structure name expected in non-nested structure "
+		       "declaration at %C");
+	    return MATCH_ERROR;
+	}
+      /* This is an anonymous structure; make up a unique name for it
+	 (upper-case letters never make it to symbol names from the source).
+	 The important thing is initializing the type variable
+	 and setting gfc_new_symbol, which is immediately used by
+	 parse_structure () and variable_decl () to add components of
+	 this type.  */
+      snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "SS$%u", gfc_structure_id++);
+    }
+
+  where = gfc_current_locus;
+  /* No field list allowed after non-nested structure declaration.  */
+  if (!gfc_comp_struct (gfc_current_state ())
+      && gfc_match_eos () != MATCH_YES)
+    {
+      gfc_error ("Junk after non-nested STRUCTURE statement at %C");
+      return MATCH_ERROR;
+    }
+
+  /* Make sure the name is not the name of an intrinsic type.  */
+  if (gfc_is_intrinsic_typename (name))
+    {
+      gfc_error ("Structure name '%s' at %C cannot be the same as an"
+		 " intrinsic type", name);
+      return MATCH_ERROR;
+    }
+
+  /* Store the actual type symbol for the structure with an upper-case first
+     letter (an invalid Fortran identifier).  */
+
+  sprintf (name, gfc_dt_upper_string (name));
+  if (!get_struct_decl (name, FL_STRUCT, &where, &sym))
+    return MATCH_ERROR;
+
+  gfc_new_block = sym;
+  return MATCH_YES;
 }
 
 

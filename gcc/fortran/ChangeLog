@@ -1,3 +1,9 @@
+2016-11-10  Fritz O. Reese <fritzoreese@gmail.com>
+
+	* decl.c (get_struct_decl, gfc_match_map, gfc_match_union): Fix
+	whitespace.
+	* interface.c (gfc_compare_union_types): Likewise.
+
 2016-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpp.c (cpp_define_builtins): Define _OPENMP to 201511 instead
