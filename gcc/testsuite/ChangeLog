@@ -1,3 +1,9 @@
+2016-11-10  Pierre-Marie de Rodat  <derodat@adacore.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/78112
+	* g++.dg/pr78112.C: New testcase
+
 2016-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/asan/asan_test.C: Remove -Wno-format, add
