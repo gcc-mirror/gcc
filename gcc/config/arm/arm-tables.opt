@@ -334,6 +334,9 @@ EnumValue
 Enum(processor_type) String(exynos-m1) Value(exynosm1)
 
 EnumValue
+Enum(processor_type) String(falkor) Value(falkor)
+
+EnumValue
 Enum(processor_type) String(qdf24xx) Value(qdf24xx)
 
 EnumValue

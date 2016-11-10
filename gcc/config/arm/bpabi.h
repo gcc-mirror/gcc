@@ -79,6 +79,7 @@
    |mcpu=cortex-a73.cortex-a35				\
    |mcpu=cortex-a73.cortex-a53				\
    |mcpu=exynos-m1                                      \
+   |mcpu=falkor						\
    |mcpu=qdf24xx					\
    |mcpu=xgene1                                         \
    |mcpu=cortex-m1.small-multiply                       \
@@ -117,6 +118,7 @@
    |mcpu=cortex-a73.cortex-a35				\
    |mcpu=cortex-a73.cortex-a53				\
    |mcpu=exynos-m1                                      \
+   |mcpu=falkor						\
    |mcpu=qdf24xx					\
    |mcpu=xgene1                                         \
    |mcpu=cortex-m1.small-multiply                       \

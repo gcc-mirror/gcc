@@ -54,7 +54,8 @@ AARCH64_CORE("cortex-a73",  cortexa73, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AA
 AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, exynosm1,  0x53, 0x001)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x51, 0x800)
+AARCH64_CORE("falkor",      falkor,    cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x51, 0xC00)
+AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x51, 0xC00)
 
 /* Cavium ('C') cores. */
 AARCH64_CORE("thunderx",    thunderx,  thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a1)
