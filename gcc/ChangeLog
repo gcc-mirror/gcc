@@ -1,3 +1,9 @@
+2016-11-10  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR debug/78112
+	* dwarf2out.c (dwarf2out_early_global_decl): Call dwarf2out_decl
+	on the context only when it has no DIE yet.
+
 2016-11-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (target_cpus): Delete.
