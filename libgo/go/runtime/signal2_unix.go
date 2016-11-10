@@ -2,16 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore
-
-// +build darwin dragonfly freebsd linux netbsd openbsd
+// +build darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package runtime
 
 import "unsafe"
-
-//go:noescape
-func sigfwd(fn uintptr, sig uint32, info *siginfo, ctx unsafe.Pointer)
 
 // Determines if the signal should be handled by Go and if not, forwards the
 // signal to the handler that was installed before Go's. Returns whether the
@@ -19,7 +14,7 @@ func sigfwd(fn uintptr, sig uint32, info *siginfo, ctx unsafe.Pointer)
 // This is called by the signal handler, and the world may be stopped.
 //go:nosplit
 //go:nowritebarrierrec
-func sigfwdgo(sig uint32, info *siginfo, ctx unsafe.Pointer) bool {
+func sigfwdgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) bool {
 	if sig >= uint32(len(sigtable)) {
 		return false
 	}
@@ -52,7 +47,7 @@ func sigfwdgo(sig uint32, info *siginfo, ctx unsafe.Pointer) bool {
 	}
 
 	// Only forward synchronous signals.
-	c := &sigctxt{info, ctx}
+	c := sigctxt{info, ctx}
 	if c.sigcode() == _SI_USER || flags&_SigPanic == 0 {
 		return false
 	}

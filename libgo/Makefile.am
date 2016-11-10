@@ -480,14 +480,12 @@ runtime_files = \
 	runtime/print.c \
 	runtime/proc.c \
 	runtime/runtime_c.c \
-	runtime/signal_unix.c \
 	runtime/thread.c \
 	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	malloc.c \
 	runtime1.c \
-	sigqueue.c \
 	$(runtime_getncpu_file)
 
 goc2c.$(OBJEXT): runtime/goc2c.c
@@ -502,10 +500,6 @@ malloc.c: $(srcdir)/runtime/malloc.goc goc2c
 
 runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
 	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
-sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
-	./goc2c --go-pkgpath os_signal $< > $@.tmp
 	mv -f $@.tmp $@
 
 %.c: $(srcdir)/runtime/%.goc goc2c
@@ -570,6 +564,12 @@ runtime_sysinfo.go: s-runtime_sysinfo; @true
 s-runtime_sysinfo: $(srcdir)/mkrsysinfo.sh gen-sysinfo.go
 	$(SHELL) $(srcdir)/mkrsysinfo.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-runtime_sysinfo.go runtime_sysinfo.go
+	$(STAMP) $@
+
+sigtab.go: s-sigtab; @true
+s-sigtab: $(srcdir)/mksigtab.sh gen-sysinfo.go
+	GOOS=$(GOOS) $(SHELL) $(srcdir)/mksigtab.sh > tmp-sigtab.go
+	$(SHELL) $(srcdir)/mvifdiff.sh tmp-sigtab.go sigtab.go
 	$(STAMP) $@
 
 runtime.inc: s-runtime-inc; @true
@@ -1038,7 +1038,7 @@ $(foreach package,$(PACKAGES),$(eval $(call PACKAGE_template,$(package))))
 math_lo_GOCFLAGS = $(MATH_FLAG)
 
 # Add the generated file runtime_sysinfo.go to the runtime package.
-extra_go_files_runtime = runtime_sysinfo.go
+extra_go_files_runtime = runtime_sysinfo.go sigtab.go
 runtime.lo.dep: $(extra_go_files_runtime)
 
 # Add generated files to the syscall package.

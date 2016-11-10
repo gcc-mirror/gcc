@@ -3791,7 +3791,7 @@ Unary_expression::do_flatten(Gogo* gogo, Named_object*,
 	this->escapes_ = false;
 
       // When compiling the runtime, the address operator does not
-      // cause local variables to escapes.  When escape analysis
+      // cause local variables to escape.  When escape analysis
       // becomes the default, this should be changed to make it an
       // error if we have an address operator that escapes.
       if (gogo->compiling_runtime() && gogo->package_name() == "runtime")

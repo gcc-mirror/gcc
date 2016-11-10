@@ -301,7 +301,7 @@ class Gogo
   // the declarations are added to the global scope.
   void
   import_package(const std::string& filename, const std::string& local_name,
-		 bool is_local_name_exported, Location);
+		 bool is_local_name_exported, bool must_exist, Location);
 
   // Whether we are the global binding level.
   bool

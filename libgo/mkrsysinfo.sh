@@ -41,6 +41,11 @@ echo $timeval | \
   sed -e 's/type _timeval /type timeval /' \
       -e 's/tv_sec *[a-zA-Z0-9_]*/tv_sec timeval_sec_t/' \
       -e 's/tv_usec *[a-zA-Z0-9_]*/tv_usec timeval_usec_t/' >> ${OUT}
+echo >> ${OUT}
+echo "func (tv *timeval) set_usec(x int32) {" >> ${OUT}
+echo "	tv.tv_usec = timeval_usec_t(x)" >> ${OUT}
+echo "}" >> ${OUT}
+
 timespec=`grep '^type _timespec ' gen-sysinfo.go || true`
 if test "$timespec" = ""; then
   # IRIX 6.5 has __timespec instead.
