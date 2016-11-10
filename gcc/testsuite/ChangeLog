@@ -1,3 +1,15 @@
+2016-11-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-qimode.c: New test for QImode, HImode
+	being allowed in vector registers.
+	* gcc.target/powerpc/vsx-qimode2.c: Likewise.
+	* gcc.target/powerpc/vsx-qimode3.c: Likewise.
+	* gcc.target/powerpc/vsx-himode.c: Likewise.
+	* gcc.target/powerpc/vsx-himode2.c: Likewise.
+	* gcc.target/powerpc/vsx-himode3.c: Likewise.
+	* gcc.target/powerpc/p9-extract-1.c: Change MFVSRD to just MFVSR,
+	to allow matching MFVSRD or MFVSRW.
+
 2016-11-10  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR rtl-optimization/78241
