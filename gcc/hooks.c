@@ -466,3 +466,11 @@ hook_bool_uint_uintp_false (unsigned int, unsigned int *)
 {
   return false;
 }
+
+/* Generic hook that takes a register class and returns false.  */
+bool
+hook_bool_reg_class_t_false (reg_class_t regclass ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
