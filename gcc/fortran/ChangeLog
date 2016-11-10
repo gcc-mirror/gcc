@@ -1,5 +1,10 @@
 2016-11-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* cpp.c (cpp_define_builtins): Define _OPENMP to 201511 instead
+	of 201307.
+	* gfortran.texi: Mention partial OpenMP 4.5 support.
+	* intrinsic.texi: Update for OpenMP 4.5.
+
 	* openmp.c (gfc_free_omp_clauses): Free critical_name, grainsize,
 	hint, num_tasks, priority and if_exprs.
 	(gfc_match_omp_to_link, gfc_match_omp_depend_sink): New functions.

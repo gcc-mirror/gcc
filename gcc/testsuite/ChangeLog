@@ -1,5 +1,8 @@
 2016-11-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* gfortran.dg/openmp-define-3.f90: Expect 201511 instead of
+	201307.
+
 	* g++.dg/cpp1z/noexcept-type14.C: New test.
 	* g++.dg/asan/asan_test.C: Remove -Wno-c++1z-compat from dg-options.
 
