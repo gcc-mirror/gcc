@@ -1,3 +1,8 @@
+2016-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/noexcept-type14.C: New test.
+	* g++.dg/asan/asan_test.C: Remove -Wno-c++1z-compat from dg-options.
+
 2016-11-10  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.dg/torture/fp-int-convert.h (M_OK2): New, use it in
