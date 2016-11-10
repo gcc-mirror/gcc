@@ -1,3 +1,18 @@
+2016-11-10  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	Revert
+	2016-11-09  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* ipa-cp.c (ipa_get_jf_pass_through_result): Handle unary expressions.
+	(propagate_vr_accross_jump_function): Likewise.
+	* ipa-prop.c (ipa_set_jf_unary_pass_through): New.
+	(load_from_param_1): New.
+	(load_from_unmodified_param): Factor common part into load_from_param_1.
+	(load_from_param): New.
+	(compute_complex_assign_jump_func): Handle unary expressions.
+	(ipa_write_jump_function): Likewise.
+	(ipa_read_jump_function): Likewise.
+
 2016-11-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Simplify

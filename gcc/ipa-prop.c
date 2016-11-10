@@ -446,18 +446,6 @@ ipa_set_jf_simple_pass_through (struct ipa_jump_func *jfunc, int formal_id,
   jfunc->value.pass_through.agg_preserved = agg_preserved;
 }
 
-/* Set JFUNC to be an unary pass through jump function.  */
-
-static void
-ipa_set_jf_unary_pass_through (struct ipa_jump_func *jfunc, int formal_id,
-			       enum tree_code operation)
-{
-  jfunc->type = IPA_JF_PASS_THROUGH;
-  jfunc->value.pass_through.operand = NULL_TREE;
-  jfunc->value.pass_through.formal_id = formal_id;
-  jfunc->value.pass_through.operation = operation;
-  jfunc->value.pass_through.agg_preserved = false;
-}
 /* Set JFUNC to be an arithmetic pass through jump function.  */
 
 static void
@@ -861,19 +849,21 @@ parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
   return !modified;
 }
 
-/* Main worker for load_from_unmodified_param and load_from_param.
-   If STMT is an assignment that loads a value from an parameter declaration,
-   return the index of the parameter in ipa_node_params.  Otherwise return -1.  */
+/* If STMT is an assignment that loads a value from an parameter declaration,
+   return the index of the parameter in ipa_node_params which has not been
+   modified.  Otherwise return -1.  */
 
 static int
-load_from_param_1 (struct ipa_func_body_info *fbi,
-		   vec<ipa_param_descriptor> descriptors,
-		   gimple *stmt)
+load_from_unmodified_param (struct ipa_func_body_info *fbi,
+			    vec<ipa_param_descriptor> descriptors,
+			    gimple *stmt)
 {
   int index;
   tree op1;
 
-  gcc_checking_assert (is_gimple_assign (stmt));
+  if (!gimple_assign_single_p (stmt))
+    return -1;
+
   op1 = gimple_assign_rhs1 (stmt);
   if (TREE_CODE (op1) != PARM_DECL)
     return -1;
@@ -884,40 +874,6 @@ load_from_param_1 (struct ipa_func_body_info *fbi,
     return -1;
 
   return index;
-}
-
-/* If STMT is an assignment that loads a value from an parameter declaration,
-   return the index of the parameter in ipa_node_params which has not been
-   modified.  Otherwise return -1.  */
-
-static int
-load_from_unmodified_param (struct ipa_func_body_info *fbi,
-			    vec<ipa_param_descriptor> descriptors,
-			    gimple *stmt)
-{
-  if (!gimple_assign_single_p (stmt))
-    return -1;
-
-  return load_from_param_1 (fbi, descriptors, stmt);
-}
-
-/* If STMT is an assignment that loads a value from an parameter declaration,
-   return the index of the parameter in ipa_node_params.  Otherwise return -1.  */
-
-static int
-load_from_param (struct ipa_func_body_info *fbi,
-		 vec<ipa_param_descriptor> descriptors,
-		 gimple *stmt)
-{
-  if (!is_gimple_assign (stmt))
-    return -1;
-
-  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
-  if ((get_gimple_rhs_class (rhs_code) != GIMPLE_SINGLE_RHS)
-      && (get_gimple_rhs_class (rhs_code) != GIMPLE_UNARY_RHS))
-    return -1;
-
-  return load_from_param_1 (fbi, descriptors, stmt);
 }
 
 /* Return true if memory reference REF (which must be a load through parameter
@@ -1153,7 +1109,6 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
   tree op1, tc_ssa, base, ssa;
   bool reverse;
   int index;
-  gimple *stmt2 = stmt;
 
   op1 = gimple_assign_rhs1 (stmt);
 
@@ -1162,16 +1117,13 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
       if (SSA_NAME_IS_DEFAULT_DEF (op1))
 	index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op1));
       else
-	{
-	  index = load_from_param (fbi, info->descriptors,
-				   SSA_NAME_DEF_STMT (op1));
-	  stmt2 = SSA_NAME_DEF_STMT (op1);
-	}
+	index = load_from_unmodified_param (fbi, info->descriptors,
+					    SSA_NAME_DEF_STMT (op1));
       tc_ssa = op1;
     }
   else
     {
-      index = load_from_param (fbi, info->descriptors, stmt);
+      index = load_from_unmodified_param (fbi, info->descriptors, stmt);
       tc_ssa = gimple_assign_lhs (stmt);
     }
 
@@ -1194,13 +1146,6 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 	{
 	  bool agg_p = parm_ref_data_pass_through_p (fbi, index, call, tc_ssa);
 	  ipa_set_jf_simple_pass_through (jfunc, index, agg_p);
-	}
-      else if (is_gimple_assign (stmt2)
-	       && (gimple_expr_code (stmt2) != NOP_EXPR)
-	       && (TREE_CODE_CLASS (gimple_expr_code (stmt2)) == tcc_unary))
-	{
-	  ipa_set_jf_unary_pass_through (jfunc, index,
-					 gimple_assign_rhs_code (stmt2));
 	}
       return;
     }
@@ -4721,11 +4666,6 @@ ipa_write_jump_function (struct output_block *ob,
 	  bp_pack_value (&bp, jump_func->value.pass_through.agg_preserved, 1);
 	  streamer_write_bitpack (&bp);
 	}
-      else if (TREE_CODE_CLASS (jump_func->value.pass_through.operation)
-	       == tcc_unary)
-	{
-	  streamer_write_uhwi (ob, jump_func->value.pass_through.formal_id);
-	}
       else
 	{
 	  stream_write_tree (ob, jump_func->value.pass_through.operand, true);
@@ -4804,11 +4744,6 @@ ipa_read_jump_function (struct lto_input_block *ib,
 	  struct bitpack_d bp = streamer_read_bitpack (ib);
 	  bool agg_preserved = bp_unpack_value (&bp, 1);
 	  ipa_set_jf_simple_pass_through (jump_func, formal_id, agg_preserved);
-	}
-      else if (TREE_CODE_CLASS (operation) == tcc_unary)
-	{
-	  int formal_id =  streamer_read_uhwi (ib);
-	  ipa_set_jf_unary_pass_through (jump_func, formal_id, operation);
 	}
       else
 	{
