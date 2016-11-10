@@ -168,7 +168,7 @@ cpp_define_builtins (cpp_reader *pfile)
     cpp_define (pfile, "_OPENACC=201306");
 
   if (flag_openmp)
-    cpp_define (pfile, "_OPENMP=201307");
+    cpp_define (pfile, "_OPENMP=201511");
 
   /* The defines below are necessary for the TARGET_* macros.
 

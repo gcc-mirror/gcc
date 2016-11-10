@@ -1,5 +1,11 @@
 2016-11-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp_lib.f90.in (openmp_version): Change to 201511 from 201307.
+	* omp_lib.h.in (openmp_version): Likewise.
+	* testsuite/libgomp.fortran/openmp_version-1.f: Expect 201511 instead
+	of 201307.
+	* testsuite/libgomp.fortran/openmp_version-2.f90: Likewise.
+
 	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90
 	(fib_wrapper): Add map(from: x) clause.
 	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90

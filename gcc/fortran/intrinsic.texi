@@ -14769,7 +14769,7 @@ with the following options: @code{-fno-unsafe-math-optimizations
 @section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}
 @table @asis
 @item @emph{Standard}:
-OpenMP Application Program Interface v4.0
+OpenMP Application Program Interface v4.5
 @end table
 
 
@@ -14783,8 +14783,8 @@ the named constants defined in the modules are listed
 below.
 
 For details refer to the actual
-@uref{http://www.openmp.org/mp-documents/OpenMP4.0.0.pdf,
-OpenMP Application Program Interface v4.0}.
+@uref{http://www.openmp.org/wp-content/uploads/openmp-4.5.pdf,
+OpenMP Application Program Interface v4.5}.
 
 @code{OMP_LIB_KINDS} provides the following scalar default-integer
 named constants:
@@ -14799,7 +14799,7 @@ named constants:
 @code{OMP_LIB} provides the scalar default-integer
 named constant @code{openmp_version} with a value of the form
 @var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
-of the OpenMP version; for OpenMP v4.0 the value is @code{201307}.
+of the OpenMP version; for OpenMP v4.5 the value is @code{201511}.
 
 The following scalar integer named constants of the
 kind @code{omp_sched_kind}:
