@@ -1,3 +1,15 @@
+2016-11-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77337
+	* pt.c (tsubst_friend_function): Don't set DECL_INITIAL.
+	(instantiate_decl): It's OK to defer a constexpr function.
+	* cp-tree.h (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION): Check
+	DECL_LANG_SPECIFIC.
+	* decl2.c (decl_defined_p): Use it.  No longer static.
+	* decl.c (redeclaration_error_message): Use decl_defined_p.
+	* constexpr.c (cxx_eval_call_expression): Set input_location around
+	call to instantiate_decl.
+
 2016-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* mangle.c (mangle_decl): Only emit -Wc++1z-compat warnings for

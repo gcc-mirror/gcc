@@ -1464,9 +1464,12 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   if (!DECL_INITIAL (fun)
       && DECL_TEMPLOID_INSTANTIATION (fun))
     {
+      location_t save_loc = input_location;
+      input_location = loc;
       ++function_depth;
       instantiate_decl (fun, /*defer_ok*/false, /*expl_inst*/false);
       --function_depth;
+      input_location = save_loc;
     }
 
   /* If in direct recursive call, optimize definition search.  */

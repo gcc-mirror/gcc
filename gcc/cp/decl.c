@@ -2778,8 +2778,8 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	 warn_extern_redeclared_static.  */
 
       /* Defining the same name twice is no good.  */
-      if (DECL_INITIAL (olddecl) != NULL_TREE
-	  && DECL_INITIAL (newdecl) != NULL_TREE)
+      if (decl_defined_p (olddecl)
+	  && decl_defined_p (newdecl))
 	{
 	  if (DECL_NAME (olddecl) == NULL_TREE)
 	    return G_("%q#D not declared in class");

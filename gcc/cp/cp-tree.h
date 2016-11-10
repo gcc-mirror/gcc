@@ -4380,7 +4380,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    instantiated will not be a DECL_TEMPLATE_INSTANTIATION, but will be
    a DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION.  */
 #define DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION(DECL) \
-  (DECL_TEMPLATE_INFO (DECL) && !DECL_USE_TEMPLATE (DECL))
+  (DECL_LANG_SPECIFIC (DECL) && DECL_TEMPLATE_INFO (DECL) \
+   && !DECL_USE_TEMPLATE (DECL))
 
 /* Nonzero if DECL is a function generated from a function 'temploid',
    i.e. template, member of class template, or dependent friend.  */
@@ -5895,6 +5896,7 @@ extern void import_export_decl			(tree);
 extern tree build_cleanup			(tree);
 extern tree build_offset_ref_call_from_tree	(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
+extern bool decl_defined_p			(tree);
 extern bool decl_constant_var_p			(tree);
 extern bool decl_maybe_constant_var_p		(tree);
 extern void no_linkage_error			(tree);
