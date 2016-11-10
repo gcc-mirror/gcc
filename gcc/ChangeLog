@@ -1,3 +1,11 @@
+2016-11-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78232
+	* combine.c (try_combine): Add a big comment about why reusing i2dest
+	is undesirable.
+	(change_zero_ext): Do not call simplify_gen_binary, do the
+	simplifications manually.
+
 2016-11-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): If ISA 3.0,
