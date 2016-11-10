@@ -5029,6 +5029,18 @@ DEFHOOK
  reg_class_t, (reg_class_t, machine_mode),
  NULL)
 
+/* Determine an additional allocno class.  */
+DEFHOOK
+(additional_allocno_class_p,
+ "This hook should return @code{true} if given class of registers should\
+  be an allocno class in any way.  Usually RA uses only one register\
+  class from all classes containing the same register set.  In some\
+  complicated cases, you need to have two or more such classes as\
+  allocno ones for RA correct work.  Not defining this hook is\
+  equivalent to returning @code{false} for all inputs.",
+ bool, (reg_class_t),
+ hook_bool_reg_class_t_false)
+
 DEFHOOK
 (cstore_mode,
  "This hook defines the machine mode to use for the boolean result of\

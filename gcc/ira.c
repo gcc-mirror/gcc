@@ -1012,7 +1012,7 @@ setup_allocno_and_important_classes (void)
 				    temp_hard_regset2))
 	    break;
 	}
-      if (j >= n)
+      if (j >= n || targetm.additional_allocno_class_p (i))
 	classes[n++] = (enum reg_class) i;
       else if (i == GENERAL_REGS)
 	/* Prefer general regs.  For i386 example, it means that

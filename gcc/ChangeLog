@@ -1,3 +1,12 @@
+2016-11-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* target.def (additional_allocno_class_p): New.
+	* hooks.h (hook_bool_reg_class_t_false): New prototype.
+	* hooks.c (hook_bool_reg_class_t_false): New.
+	* ira.c (setup_allocno_and_important_classes): Use the new hook.
+	* doc/tm.texi.in (TARGET_ADDITIONAL_ALLOCNO_CLASS_P): Add it.
+	* doc/tm.texi: Update.
+
 2016-11-10  Jason Merrill  <jason@redhat.com>
 
 	* gengtype.c (new_structure): Append to structures list.

@@ -55,6 +55,7 @@ extern bool hook_bool_rtx_insn_true (rtx_insn *);
 extern bool hook_bool_rtx_false (rtx);
 extern bool hook_bool_rtx_insn_int_false (rtx_insn *, int);
 extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);
+extern bool hook_bool_reg_class_t_false (reg_class_t regclass);
 extern bool hook_bool_rtx_mode_int_int_intp_bool_false (rtx, machine_mode,
 							int, int, int *, bool);
 extern bool hook_bool_tree_tree_false (tree, tree);
