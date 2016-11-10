@@ -4901,7 +4901,28 @@ ok:
     }
 
   if (!gfc_error_flag_test ())
-    gfc_error ("Syntax error in data declaration at %C");
+    {
+      /* An anonymous structure declaration is unambiguous; if we matched one
+	 according to gfc_match_structure_decl, we need to return MATCH_YES
+	 here to avoid confusing the remaining matchers, even if there was an
+	 error during variable_decl.  We must flush any such errors.  Note this
+	 causes the parser to gracefully continue parsing the remaining input
+	 as a structure body, which likely follows.  */
+      if (current_ts.type == BT_DERIVED && current_ts.u.derived
+	  && gfc_fl_struct (current_ts.u.derived->attr.flavor))
+	{
+	  gfc_error_now ("Syntax error in anonymous structure declaration"
+			 " at %C");
+	  /* Skip the bad variable_decl and line up for the start of the
+	     structure body.  */
+	  gfc_error_recovery ();
+	  m = MATCH_YES;
+	  goto cleanup;
+	}
+
+      gfc_error ("Syntax error in data declaration at %C");
+    }
+
   m = MATCH_ERROR;
 
   gfc_free_data_all (gfc_current_ns);
