@@ -1,3 +1,28 @@
+2016-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_omp_target): Fix up argument to is_reference.
+	(expand_omp_ordered_sink): Handle TREE_PURPOSE of deps being
+	TRUNC_DIV_EXPR.
+	* gimplify.c (gimplify_scan_omp_clauses): Likewise.  Set
+	ctx->target_map_scalars_firstprivate on OMP_TARGET even for Fortran.
+	Remove omp_no_lastprivate callers.  Propagate lastprivate on combined
+	teams distribute parallel for simd even to distribute and teams
+	construct.  For OMP_CLAUSE_DEPEND add missing break at the end of
+	OMP_CLAUSE_DEPEND_SINK case.
+	(omp_notice_variable): Use lang_hooks.decls.omp_scalar_p.
+	(omp_no_lastprivate): Removed.
+	(gimplify_adjust_omp_clauses): Remove omp_no_lastprivate callers.
+	(gimplify_omp_for): Likewise.
+	(computable_teams_clause): Fail for automatic vars from current
+	function not yet seen in bind expr.
+	* langhooks.c (lhd_omp_scalar_p): New function.
+	* langhooks.h (struct lang_hooks_for_decls): Add omp_scalar_p.
+	* varpool.c (varpool_node::get_create): Set node->offloading
+	even for DECL_EXTERNAL decls.
+	* langhooks-def.h (lhd_omp_scalar_p): New prototype.
+	(LANG_HOOKS_OMP_SCALAR_P): Define.
+	(LANG_HOOKS_DECLS): Use it.
+
 2016-11-10  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/78270

@@ -457,7 +457,11 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
       if (com->threadprivate)
 	set_decl_tls_model (decl, decl_default_tls_model (decl));
 
-      if (com->omp_declare_target)
+      if (com->omp_declare_target_link)
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("omp declare target link"),
+		       NULL_TREE, DECL_ATTRIBUTES (decl));
+      else if (com->omp_declare_target)
 	DECL_ATTRIBUTES (decl)
 	  = tree_cons (get_identifier ("omp declare target"),
 		       NULL_TREE, DECL_ATTRIBUTES (decl));

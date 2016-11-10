@@ -45,7 +45,7 @@ contains
     !$omp target data map(Q)
       do k = 1, cols
         tmp = 0.0d0
-        !$omp target
+        !$omp target map(tofrom: tmp)
           !$omp parallel do reduction(+:tmp)
           do i = 1, rows
             tmp = tmp + (Q(i,k) * Q(i,k))

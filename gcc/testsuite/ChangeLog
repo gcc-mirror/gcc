@@ -1,3 +1,13 @@
+2016-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/pr77516.f90: Add dg-warning.
+	* gfortran.dg/gomp/target1.f90: Remove ordered clause where it is
+	no longer allowed and corresponding ordered construct.
+	* gfortran.dg/gomp/linear-1.f90: New test.
+	* gfortran.dg/gomp/declare-simd-2.f90: New test.
+	* gfortran.dg/gomp/declare-target-1.f90: New test.
+	* gfortran.dg/gomp/declare-target-2.f90: New test.
+
 2016-11-10  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/78270
@@ -7,7 +17,7 @@
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/78112
-	* g++.dg/pr78112.C: New testcase
+	* g++.dg/pr78112.C: New testcase.
 
 2016-11-09  Jakub Jelinek  <jakub@redhat.com>
 

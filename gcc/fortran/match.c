@@ -2787,21 +2787,25 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	  || o->head->op == EXEC_OMP_DO_SIMD
 	  || o->head->op == EXEC_OMP_PARALLEL_DO_SIMD))
     {
-      int collapse = 1;
+      int count = 1;
       gcc_assert (o->head->next != NULL
 		  && (o->head->next->op == EXEC_DO
 		      || o->head->next->op == EXEC_DO_WHILE)
 		  && o->previous != NULL
 		  && o->previous->tail->op == o->head->op);
-      if (o->previous->tail->ext.omp_clauses != NULL
-	  && o->previous->tail->ext.omp_clauses->collapse > 1)
-	collapse = o->previous->tail->ext.omp_clauses->collapse;
-      if (st == ST_EXIT && cnt <= collapse)
+      if (o->previous->tail->ext.omp_clauses != NULL)
+	{
+	  if (o->previous->tail->ext.omp_clauses->collapse > 1)
+	    count = o->previous->tail->ext.omp_clauses->collapse;
+	  if (o->previous->tail->ext.omp_clauses->orderedc)
+	    count = o->previous->tail->ext.omp_clauses->orderedc;
+	}
+      if (st == ST_EXIT && cnt <= count)
 	{
 	  gfc_error ("EXIT statement at %C terminating !$OMP DO loop");
 	  return MATCH_ERROR;
 	}
-      if (st == ST_CYCLE && cnt < collapse)
+      if (st == ST_CYCLE && cnt < count)
 	{
 	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
 		     " !$OMP DO loop");

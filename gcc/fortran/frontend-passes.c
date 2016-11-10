@@ -3647,18 +3647,28 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	      /* Fall through  */
 
+	    case EXEC_OMP_CRITICAL:
 	    case EXEC_OMP_DISTRIBUTE:
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_DO:
 	    case EXEC_OMP_DO_SIMD:
+	    case EXEC_OMP_ORDERED:
 	    case EXEC_OMP_SECTIONS:
 	    case EXEC_OMP_SINGLE:
 	    case EXEC_OMP_END_SINGLE:
 	    case EXEC_OMP_SIMD:
+	    case EXEC_OMP_TASKLOOP:
+	    case EXEC_OMP_TASKLOOP_SIMD:
 	    case EXEC_OMP_TARGET:
 	    case EXEC_OMP_TARGET_DATA:
+	    case EXEC_OMP_TARGET_ENTER_DATA:
+	    case EXEC_OMP_TARGET_EXIT_DATA:
+	    case EXEC_OMP_TARGET_PARALLEL:
+	    case EXEC_OMP_TARGET_PARALLEL_DO:
+	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_SIMD:
 	    case EXEC_OMP_TARGET_TEAMS:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
@@ -3694,6 +3704,12 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  WALK_SUBEXPR (co->ext.omp_clauses->device);
 		  WALK_SUBEXPR (co->ext.omp_clauses->thread_limit);
 		  WALK_SUBEXPR (co->ext.omp_clauses->dist_chunk_size);
+		  WALK_SUBEXPR (co->ext.omp_clauses->grainsize);
+		  WALK_SUBEXPR (co->ext.omp_clauses->hint);
+		  WALK_SUBEXPR (co->ext.omp_clauses->num_tasks);
+		  WALK_SUBEXPR (co->ext.omp_clauses->priority);
+		  for (idx = 0; idx < OMP_IF_LAST; idx++)
+		    WALK_SUBEXPR (co->ext.omp_clauses->if_exprs[idx]);
 		  for (idx = 0;
 		       idx < sizeof (list_types) / sizeof (list_types[0]);
 		       idx++)
