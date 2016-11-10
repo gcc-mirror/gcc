@@ -338,7 +338,6 @@
    UNSPEC_VSX_XVCVDPSXDS
    UNSPEC_VSX_XVCVDPUXDS
    UNSPEC_VSX_SIGN_EXTEND
-   UNSPEC_P9_MEMORY
    UNSPEC_VSX_VSLO
    UNSPEC_VSX_EXTRACT
    UNSPEC_VSX_SXEXPDP
@@ -2519,72 +2518,29 @@
 ;; types are currently allowed in a vector register, so we extract to a DImode
 ;; and either do a direct move or store.
 (define_expand  "vsx_extract_<mode>"
-  [(parallel [(set (match_operand:<VS_scalar> 0 "nonimmediate_operand")
+  [(parallel [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand")
 		   (vec_select:<VS_scalar>
 		    (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand")
 		    (parallel [(match_operand:QI 2 "const_int_operand")])))
-	      (clobber (match_dup 3))])]
+	      (clobber (match_scratch:VSX_EXTRACT_I 3))])]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_DIRECT_MOVE_64BIT"
 {
-  machine_mode smode = ((<MODE>mode != V4SImode && TARGET_VEXTRACTUB)
-			? DImode : <MODE>mode);
-  operands[3] = gen_rtx_SCRATCH (smode);
+  /* If we have ISA 3.0, we can do a xxextractuw/vextractu{b,h}.  */
+  if (TARGET_VSX_SMALL_INTEGER && TARGET_P9_VECTOR)
+    {
+      emit_insn (gen_vsx_extract_<mode>_p9 (operands[0], operands[1],
+					    operands[2]));
+      DONE;
+    }
 })
 
-;; Under ISA 3.0, we can use the byte/half-word/word integer stores if we are
-;; extracting a vector element and storing it to memory, rather than using
-;; direct move to a GPR and a GPR store.
-(define_insn_and_split  "*vsx_extract_<mode>_p9"
-  [(set (match_operand:<VS_scalar> 0 "nonimmediate_operand" "=r,Z")
+(define_insn "vsx_extract_<mode>_p9"
+  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=<VSX_EX>")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_EXTRACT_I2 1 "gpc_reg_operand" "v,v")
-	 (parallel [(match_operand:QI 2 "<VSX_EXTRACT_PREDICATE>" "n,n")])))
-   (clobber (match_scratch:DI 3 "=v,v"))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
-  "#"
-  "&& (reload_completed || MEM_P (operands[0]))"
-  [(const_int 0)]
-{
-  rtx dest = operands[0];
-  rtx src = operands[1];
-  rtx element = operands[2];
-  rtx di_tmp = operands[3];
-
-  if (GET_CODE (di_tmp) == SCRATCH)
-    di_tmp = gen_reg_rtx (DImode);
-
-  emit_insn (gen_vsx_extract_<mode>_di (di_tmp, src, element));
-
-  if (REG_P (dest))
-    emit_move_insn (gen_rtx_REG (DImode, REGNO (dest)), di_tmp);
-  else if (SUBREG_P (dest))
-    emit_move_insn (gen_rtx_REG (DImode, subreg_regno (dest)), di_tmp);
-  else if (MEM_P (operands[0]))
-    {
-      if (can_create_pseudo_p ())
-	dest = rs6000_address_for_fpconvert (dest);
-
-      if (<MODE>mode == V16QImode)
-	emit_insn (gen_p9_stxsibx (dest, di_tmp));
-      else if (<MODE>mode == V8HImode)
-	emit_insn (gen_p9_stxsihx (dest, di_tmp));
-      else
-	gcc_unreachable ();
-    }
-  else
-    gcc_unreachable ();
-
-  DONE;
-}
-  [(set_attr "type" "vecsimple,fpstore")])
-
-(define_insn  "vsx_extract_<mode>_di"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=<VSX_EX>")
-	(zero_extend:DI
-	 (vec_select:<VS_scalar>
-	  (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "<VSX_EX>")
-	  (parallel [(match_operand:QI 2 "<VSX_EXTRACT_PREDICATE>" "n")]))))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
+	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "<VSX_EX>")
+	 (parallel [(match_operand:QI 2 "<VSX_EXTRACT_PREDICATE>" "n")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB
+   && TARGET_VSX_SMALL_INTEGER"
 {
   /* Note, the element number has already been adjusted for endianness, so we
      don't have to adjust it here.  */
@@ -2599,13 +2555,51 @@
 }
   [(set_attr "type" "vecsimple")])
 
+;; Optimize zero extracts to eliminate the AND after the extract.
+(define_insn_and_split "*vsx_extract_<mode>_di_p9"
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=<VSX_EX>")
+	(zero_extend:DI
+	 (vec_select:<VS_scalar>
+	  (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "<VSX_EX>")
+	  (parallel [(match_operand:QI 2 "const_int_operand" "n")]))))]
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB
+   && TARGET_VSX_SMALL_INTEGER"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 3)
+	(vec_select:<VS_scalar>
+	 (match_dup 1)
+	 (parallel [(match_dup 2)])))]
+{
+  operands[3] = gen_rtx_REG (<VS_scalar>mode, REGNO (operands[0]));
+})
+
+;; Optimize stores to use the ISA 3.0 scalar store instructions
+(define_insn_and_split "*vsx_extract_<mode>_store_p9"
+  [(set (match_operand:<VS_scalar> 0 "memory_operand" "=Z")
+	(vec_select:<VS_scalar>
+	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "<VSX_EX>")
+	 (parallel [(match_operand:QI 2 "const_int_operand" "n")])))
+   (clobber (match_scratch:<VS_scalar> 3 "=<VSX_EX>"))]
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB
+   && TARGET_VSX_SMALL_INTEGER"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 3)
+	(vec_select:<VS_scalar>
+	 (match_dup 1)
+	 (parallel [(match_dup 2)])))
+   (set (match_dup 0)
+	(match_dup 3))])
+
 (define_insn_and_split  "*vsx_extract_si"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,wHwI,Z")
 	(vec_select:SI
 	 (match_operand:V4SI 1 "gpc_reg_operand" "wJv,wJv,wJv")
 	 (parallel [(match_operand:QI 2 "const_0_to_3_operand" "n,n,n")])))
    (clobber (match_scratch:V4SI 3 "=wJv,wJv,wJv"))]
-  "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT"
+  "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT
+   && (!TARGET_P9_VECTOR || !TARGET_VSX_SMALL_INTEGER)"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -2624,10 +2618,10 @@
   value = INTVAL (element);
   if (value != 1)
     {
-      if (TARGET_VEXTRACTUB)
+      if (TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER)
 	{
-	  rtx di_tmp = gen_rtx_REG (DImode, REGNO (vec_tmp));
-	  emit_insn (gen_vsx_extract_v4si_di (di_tmp,src, element));
+	  rtx si_tmp = gen_rtx_REG (SImode, REGNO (vec_tmp));
+	  emit_insn (gen_vsx_extract_v4si_p9 (si_tmp,src, element));
 	}
       else
 	emit_insn (gen_altivec_vspltw_direct (vec_tmp, src, element));
@@ -2663,7 +2657,8 @@
 	 (match_operand:VSX_EXTRACT_I2 1 "gpc_reg_operand" "v")
 	 (parallel [(match_operand:QI 2 "<VSX_EXTRACT_PREDICATE>" "n")])))
    (clobber (match_scratch:VSX_EXTRACT_I2 3 "=v"))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_DIRECT_MOVE_64BIT"
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_DIRECT_MOVE_64BIT
+   && (!TARGET_P9_VECTOR || !TARGET_VSX_SMALL_INTEGER)"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -3253,26 +3248,6 @@
   [(set_attr "type" "vecexts")])
 
 
-;; ISA 3.0 memory operations
-(define_insn "p9_lxsi<wd>zx"
-  [(set (match_operand:DI 0 "vsx_register_operand" "=wi")
-	(unspec:DI [(zero_extend:DI
-		     (match_operand:QHI 1 "indexed_or_indirect_operand" "Z"))]
-		   UNSPEC_P9_MEMORY))]
-  "TARGET_P9_VECTOR"
-  "lxsi<wd>zx %x0,%y1"
-  [(set_attr "type" "fpload")])
-
-(define_insn "p9_stxsi<wd>x"
-  [(set (match_operand:QHI 0 "reg_or_indexed_operand" "=r,Z")
-	(unspec:QHI [(match_operand:DI 1 "vsx_register_operand" "wi,wi")]
-		    UNSPEC_P9_MEMORY))]
-  "TARGET_P9_VECTOR"
-  "@
-   mfvsrd %0,%x1
-   stxsi<wd>x %x1,%y0"
-  [(set_attr "type" "mffgpr,fpstore")])
-
 ;; ISA 3.0 Binary Floating-Point Support
 
 ;; VSX Scalar Extract Exponent Double-Precision

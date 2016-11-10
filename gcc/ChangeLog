@@ -1,3 +1,63 @@
+2016-11-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): If ISA 3.0,
+	enable HImode and QImode to go in vector registers by default if
+	the -mvsx-small-integer option is enabled.
+	(rs6000_secondary_reload_simple_move): Likewise.
+	(rs6000_preferred_reload_class): Don't force integer constants to
+	be loaded into vector registers that we can easily make into
+	memory (or being created in the GPRs and moved over with direct
+	move).
+	* config/rs6000/vsx.md (UNSPEC_P9_MEMORY): Delete, no longer
+	used.
+	(vsx_extract_<mode>): Rework V4SImode, V8HImode, and V16QImode
+	vector extraction on ISA 3.0 when the scalar integer can be
+	allocated in vector registers.  Generate the VEC_SELECT directy,
+	and don't use UNSPEC's to avoid having the scalar type in a vector
+	register.  Make the expander target registers, and let the
+	combiner fold in results storing to memory, if the machine
+	supports stores.
+	(vsx_extract_<mode>_di): Likewise.
+	(vsx_extract_<mode>_p9): Likewise.
+	(vsx_extract_<mode>_di_p9): Likewise.
+	(vsx_extract_<mode>_store_p9): Likewise.
+	(vsx_extract_si): Likewise.
+	(vsx_extract_<mode>_p8): Likewise.
+	(p9_lxsi<wd>zx): Delete, no longer used.
+	(p9_stxsi<wd>x): Likewise.
+	* config/rs6000/rs6000.md (INT_ISA3): New mode iterator for
+	integers in vector registers for ISA 3.0.
+	(QHI): Update comment.
+	(zero_extendqi<mode>2): Add support for ISA 3.0 scalar load or
+	vector extract instructions in sign/zero extend.
+	(zero_extendhi<mode>): Likewise.
+	(extendqi<mode>): Likewise.
+	(extendhi<mode>2): Likewise.
+	(HImode splitter for load/sign extend in vector register):
+	Likewise.
+	(float<QHI:mode><FP_ISA3:mode>2): Eliminate old method of
+	optimizing floating point conversions to/from small data types and
+	rewrite it to support QImode/HImode being allowed in vector
+	registers on ISA 3.0.
+	(float<QHI:mode><FP_ISA3:mode>2_internal): Likewise.
+	(floatuns<QHI:mode><FP_ISA3:mode>2): Likewise.
+	(floatuns<QHI:mode><FP_ISA3:mode>2_internal): Likewise.
+	(fix_trunc<SFDF:mode><QHI:mode>2): Likewise.
+	(fix_trunc<SFDF:mode><QHI:mode>2_internal): Likewise.
+	(fixuns_trunc<SFDF:mode><QHI:mode>2): Likewise.
+	(fixuns_trunc<SFDF:mode><QHI:mode>2_internal): Likewise.
+	VSPLITISW on ISA 2.07.
+	(movhi_internal): Combine movhi_internal and movqi_internal into
+	one mov<mode>_internal with an iterator.  Add support for QImode
+	and HImode being allowed in vector registers.  Make large number
+	of attributes and constraints easier to read.
+	(movqi_internal): Likewise.
+	(mov<mode>_internal): Likewise.
+	(movdi_internal64): Fix constraint to allow loading -16..15 with
+	VSPLITISW on ISA 2.07.
+	(integer XXSPLTIB splitter): Add support for QI, HI, and SImode as
+	well as DImode.
+
 2016-11-10  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR rtl-optimization/78241
