@@ -21,7 +21,7 @@ real function accum () result (tmp)
   real :: tmp1
   integer :: i
   tmp = 0.0e0
-  !$omp target
+  !$omp target map(tofrom: tmp)
     !$omp parallel do private(tmp1) reduction(+:tmp)
     do i = 1, N
       tmp1 = 0.0e0

@@ -1059,6 +1059,27 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_DEPEND_IN: fputs ("in:", dumpfile); break;
 	  case OMP_DEPEND_OUT: fputs ("out:", dumpfile); break;
 	  case OMP_DEPEND_INOUT: fputs ("inout:", dumpfile); break;
+	  case OMP_DEPEND_SINK_FIRST:
+	    fputs ("sink:", dumpfile);
+	    while (1)
+	      {
+		fprintf (dumpfile, "%s", n->sym->name);
+		if (n->expr)
+		  {
+		    fputc ('+', dumpfile);
+		    show_expr (n->expr);
+		  }
+		if (n->next == NULL)
+		  break;
+		else if (n->next->u.depend_op != OMP_DEPEND_SINK)
+		  {
+		    fputs (") DEPEND(", dumpfile);
+		    break;
+		  }
+		fputc (',', dumpfile);
+		n = n->next;
+	      }
+	    continue;
 	  default: break;
 	  }
       else if (list_type == OMP_LIST_MAP)
@@ -1070,7 +1091,17 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_MAP_TOFROM: fputs ("tofrom:", dumpfile); break;
 	  default: break;
 	  }
+      else if (list_type == OMP_LIST_LINEAR)
+	switch (n->u.linear_op)
+	  {
+	  case OMP_LINEAR_REF: fputs ("ref(", dumpfile); break;
+	  case OMP_LINEAR_VAL: fputs ("val(", dumpfile); break;
+	  case OMP_LINEAR_UVAL: fputs ("uval(", dumpfile); break;
+	  default: break;
+	  }
       fprintf (dumpfile, "%s", n->sym->name);
+      if (list_type == OMP_LIST_LINEAR && n->u.linear_op != OMP_LINEAR_DEFAULT)
+	fputc (')', dumpfile);
       if (n->expr)
 	{
 	  fputc (':', dumpfile);
@@ -1087,7 +1118,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 static void
 show_omp_clauses (gfc_omp_clauses *omp_clauses)
 {
-  int list_type;
+  int list_type, i;
 
   switch (omp_clauses->cancel)
     {
@@ -1209,7 +1240,20 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	default:
 	  gcc_unreachable ();
 	}
-      fprintf (dumpfile, " SCHEDULE (%s", type);
+      fputs (" SCHEDULE (", dumpfile);
+      if (omp_clauses->sched_simd)
+	{
+	  if (omp_clauses->sched_monotonic
+	      || omp_clauses->sched_nonmonotonic)
+	    fputs ("SIMD, ", dumpfile);
+	  else
+	    fputs ("SIMD: ", dumpfile);
+	}
+      if (omp_clauses->sched_monotonic)
+	fputs ("MONOTONIC: ", dumpfile);
+      else if (omp_clauses->sched_nonmonotonic)
+	fputs ("NONMONOTONIC: ", dumpfile);
+      fputs (type, dumpfile);
       if (omp_clauses->chunk_size)
 	{
 	  fputc (',', dumpfile);
@@ -1260,7 +1304,12 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->independent)
     fputs (" INDEPENDENT", dumpfile);
   if (omp_clauses->ordered)
-    fputs (" ORDERED", dumpfile);
+    {
+      if (omp_clauses->orderedc)
+	fprintf (dumpfile, " ORDERED(%d)", omp_clauses->orderedc);
+      else
+	fputs (" ORDERED", dumpfile);
+    }
   if (omp_clauses->untied)
     fputs (" UNTIED", dumpfile);
   if (omp_clauses->mergeable)
@@ -1286,6 +1335,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_ALIGNED: type = "ALIGNED"; break;
 	  case OMP_LIST_LINEAR: type = "LINEAR"; break;
 	  case OMP_LIST_REDUCTION: type = "REDUCTION"; break;
+	  case OMP_LIST_IS_DEVICE_PTR: type = "IS_DEVICE_PTR"; break;
+	  case OMP_LIST_USE_DEVICE_PTR: type = "USE_DEVICE_PTR"; break;
 	  case OMP_LIST_DEPEND: type = "DEPEND"; break;
 	  default:
 	    gcc_unreachable ();
@@ -1343,7 +1394,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     }
   if (omp_clauses->dist_sched_kind != OMP_SCHED_NONE)
     {
-      fprintf (dumpfile, " DIST_SCHEDULE (static");
+      fprintf (dumpfile, " DIST_SCHEDULE (STATIC");
       if (omp_clauses->dist_chunk_size)
 	{
 	  fputc (',', dumpfile);
@@ -1351,6 +1402,59 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fputc (')', dumpfile);
     }
+  if (omp_clauses->defaultmap)
+    fputs (" DEFALTMAP (TOFROM: SCALAR)", dumpfile);
+  if (omp_clauses->nogroup)
+    fputs (" NOGROUP", dumpfile);
+  if (omp_clauses->simd)
+    fputs (" SIMD", dumpfile);
+  if (omp_clauses->threads)
+    fputs (" THREADS", dumpfile);
+  if (omp_clauses->grainsize)
+    {
+      fputs (" GRAINSIZE(", dumpfile);
+      show_expr (omp_clauses->grainsize);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->hint)
+    {
+      fputs (" HINT(", dumpfile);
+      show_expr (omp_clauses->hint);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->num_tasks)
+    {
+      fputs (" NUM_TASKS(", dumpfile);
+      show_expr (omp_clauses->num_tasks);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->priority)
+    {
+      fputs (" PRIORITY(", dumpfile);
+      show_expr (omp_clauses->priority);
+      fputc (')', dumpfile);
+    }
+  for (i = 0; i < OMP_IF_LAST; i++)
+    if (omp_clauses->if_exprs[i])
+      {
+	static const char *ifs[] = {
+	  "PARALLEL",
+	  "TASK",
+	  "TASKLOOP",
+	  "TARGET",
+	  "TARGET DATA",
+	  "TARGET UPDATE",
+	  "TARGET ENTER DATA",
+	  "TARGET EXIT DATA"
+	};
+      fputs (" IF(", dumpfile);
+      fputs (ifs[i], dumpfile);
+      fputs (": ", dumpfile);
+      show_expr (omp_clauses->if_exprs[i]);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->depend_source)
+    fputs (" DEPEND(source)", dumpfile);
 }
 
 /* Show a single OpenMP or OpenACC directive node and everything underneath it
@@ -1365,7 +1469,8 @@ show_omp_node (int level, gfc_code *c)
 
   switch (c->op)
     {
-    case EXEC_OACC_PARALLEL_LOOP: name = "PARALLEL LOOP"; is_oacc = true; break;
+    case EXEC_OACC_PARALLEL_LOOP:
+      name = "PARALLEL LOOP"; is_oacc = true; break;
     case EXEC_OACC_PARALLEL: name = "PARALLEL"; is_oacc = true; break;
     case EXEC_OACC_KERNELS_LOOP: name = "KERNELS LOOP"; is_oacc = true; break;
     case EXEC_OACC_KERNELS: name = "KERNELS"; is_oacc = true; break;
@@ -1382,9 +1487,15 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_CANCEL: name = "CANCEL"; break;
     case EXEC_OMP_CANCELLATION_POINT: name = "CANCELLATION POINT"; break;
     case EXEC_OMP_CRITICAL: name = "CRITICAL"; break;
-    case EXEC_OMP_FLUSH: name = "FLUSH"; break;
+    case EXEC_OMP_DISTRIBUTE: name = "DISTRIBUTE"; break;
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+      name = "DISTRIBUTE PARALLEL DO"; break;
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+      name = "DISTRIBUTE PARALLEL DO SIMD"; break;
+    case EXEC_OMP_DISTRIBUTE_SIMD: name = "DISTRIBUTE SIMD"; break;
     case EXEC_OMP_DO: name = "DO"; break;
     case EXEC_OMP_DO_SIMD: name = "DO SIMD"; break;
+    case EXEC_OMP_FLUSH: name = "FLUSH"; break;
     case EXEC_OMP_MASTER: name = "MASTER"; break;
     case EXEC_OMP_ORDERED: name = "ORDERED"; break;
     case EXEC_OMP_PARALLEL: name = "PARALLEL"; break;
@@ -1395,10 +1506,38 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_SECTIONS: name = "SECTIONS"; break;
     case EXEC_OMP_SIMD: name = "SIMD"; break;
     case EXEC_OMP_SINGLE: name = "SINGLE"; break;
+    case EXEC_OMP_TARGET: name = "TARGET"; break;
+    case EXEC_OMP_TARGET_DATA: name = "TARGET DATA"; break;
+    case EXEC_OMP_TARGET_ENTER_DATA: name = "TARGET ENTER DATA"; break;
+    case EXEC_OMP_TARGET_EXIT_DATA: name = "TARGET EXIT DATA"; break;
+    case EXEC_OMP_TARGET_PARALLEL: name = "TARGET PARALLEL"; break;
+    case EXEC_OMP_TARGET_PARALLEL_DO: name = "TARGET PARALLEL DO"; break;
+    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+      name = "TARGET_PARALLEL_DO_SIMD"; break;
+    case EXEC_OMP_TARGET_SIMD: name = "TARGET SIMD"; break;
+    case EXEC_OMP_TARGET_TEAMS: name = "TARGET TEAMS"; break;
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+      name = "TARGET TEAMS DISTRIBUTE"; break;
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      name = "TARGET TEAMS DISTRIBUTE PARALLEL DO"; break;
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+      name = "TARGET TEAMS DISTRIBUTE PARALLEL DO SIMD"; break;
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+      name = "TARGET TEAMS DISTRIBUTE SIMD"; break;
+    case EXEC_OMP_TARGET_UPDATE: name = "TARGET UPDATE"; break;
     case EXEC_OMP_TASK: name = "TASK"; break;
     case EXEC_OMP_TASKGROUP: name = "TASKGROUP"; break;
+    case EXEC_OMP_TASKLOOP: name = "TASKLOOP"; break;
+    case EXEC_OMP_TASKLOOP_SIMD: name = "TASKLOOP SIMD"; break;
     case EXEC_OMP_TASKWAIT: name = "TASKWAIT"; break;
     case EXEC_OMP_TASKYIELD: name = "TASKYIELD"; break;
+    case EXEC_OMP_TEAMS: name = "TEAMS"; break;
+    case EXEC_OMP_TEAMS_DISTRIBUTE: name = "TEAMS DISTRIBUTE"; break;
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      name = "TEAMS DISTRIBUTE PARALLEL DO"; break;
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+      name = "TEAMS DISTRIBUTE PARALLEL DO SIMD"; break;
+    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD: name = "TEAMS DISTRIBUTE SIMD"; break;
     case EXEC_OMP_WORKSHARE: name = "WORKSHARE"; break;
     default:
       gcc_unreachable ();
@@ -1420,23 +1559,50 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OACC_EXIT_DATA:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
+    case EXEC_OMP_DISTRIBUTE:
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case EXEC_OMP_DISTRIBUTE_SIMD:
     case EXEC_OMP_DO:
     case EXEC_OMP_DO_SIMD:
+    case EXEC_OMP_ORDERED:
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_SECTIONS:
+    case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_SINGLE:
-    case EXEC_OMP_WORKSHARE:
-    case EXEC_OMP_PARALLEL_WORKSHARE:
+    case EXEC_OMP_TARGET:
+    case EXEC_OMP_TARGET_DATA:
+    case EXEC_OMP_TARGET_ENTER_DATA:
+    case EXEC_OMP_TARGET_EXIT_DATA:
+    case EXEC_OMP_TARGET_PARALLEL:
+    case EXEC_OMP_TARGET_PARALLEL_DO:
+    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_SIMD:
+    case EXEC_OMP_TARGET_TEAMS:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TARGET_UPDATE:
     case EXEC_OMP_TASK:
+    case EXEC_OMP_TASKLOOP:
+    case EXEC_OMP_TASKLOOP_SIMD:
+    case EXEC_OMP_TEAMS:
+    case EXEC_OMP_TEAMS_DISTRIBUTE:
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_WORKSHARE:
       omp_clauses = c->ext.omp_clauses;
       break;
     case EXEC_OMP_CRITICAL:
-      if (c->ext.omp_name)
-	fprintf (dumpfile, " (%s)", c->ext.omp_name);
+      omp_clauses = c->ext.omp_clauses;
+      if (omp_clauses)
+	fprintf (dumpfile, " (%s)", c->ext.omp_clauses->critical_name);
       break;
     case EXEC_OMP_FLUSH:
       if (c->ext.omp_namelist)
@@ -1457,9 +1623,12 @@ show_omp_node (int level, gfc_code *c)
     show_omp_clauses (omp_clauses);
   fputc ('\n', dumpfile);
 
-  /* OpenACC executable directives don't have associated blocks.  */
+  /* OpenMP and OpenACC executable directives don't have associated blocks.  */
   if (c->op == EXEC_OACC_CACHE || c->op == EXEC_OACC_UPDATE
-      || c->op == EXEC_OACC_ENTER_DATA || c->op == EXEC_OACC_EXIT_DATA)
+      || c->op == EXEC_OACC_ENTER_DATA || c->op == EXEC_OACC_EXIT_DATA
+      || c->op == EXEC_OMP_TARGET_UPDATE || c->op == EXEC_OMP_TARGET_ENTER_DATA
+      || c->op == EXEC_OMP_TARGET_EXIT_DATA
+      || (c->op == EXEC_OMP_ORDERED && c->block == NULL))
     return;
   if (c->op == EXEC_OMP_SECTIONS || c->op == EXEC_OMP_PARALLEL_SECTIONS)
     {
@@ -1493,8 +1662,8 @@ show_omp_node (int level, gfc_code *c)
       else if (omp_clauses->nowait)
 	fputs (" NOWAIT", dumpfile);
     }
-  else if (c->op == EXEC_OMP_CRITICAL && c->ext.omp_name)
-    fprintf (dumpfile, " (%s)", c->ext.omp_name);
+  else if (c->op == EXEC_OMP_CRITICAL && c->ext.omp_clauses)
+    fprintf (dumpfile, " (%s)", c->ext.omp_clauses->critical_name);
 }
 
 
@@ -2520,9 +2689,13 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_CANCELLATION_POINT:
     case EXEC_OMP_BARRIER:
     case EXEC_OMP_CRITICAL:
-    case EXEC_OMP_FLUSH:
+    case EXEC_OMP_DISTRIBUTE:
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case EXEC_OMP_DISTRIBUTE_SIMD:
     case EXEC_OMP_DO:
     case EXEC_OMP_DO_SIMD:
+    case EXEC_OMP_FLUSH:
     case EXEC_OMP_MASTER:
     case EXEC_OMP_ORDERED:
     case EXEC_OMP_PARALLEL:
@@ -2533,10 +2706,31 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_SINGLE:
+    case EXEC_OMP_TARGET:
+    case EXEC_OMP_TARGET_DATA:
+    case EXEC_OMP_TARGET_ENTER_DATA:
+    case EXEC_OMP_TARGET_EXIT_DATA:
+    case EXEC_OMP_TARGET_PARALLEL:
+    case EXEC_OMP_TARGET_PARALLEL_DO:
+    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_SIMD:
+    case EXEC_OMP_TARGET_TEAMS:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TARGET_UPDATE:
     case EXEC_OMP_TASK:
     case EXEC_OMP_TASKGROUP:
+    case EXEC_OMP_TASKLOOP:
+    case EXEC_OMP_TASKLOOP_SIMD:
     case EXEC_OMP_TASKWAIT:
     case EXEC_OMP_TASKYIELD:
+    case EXEC_OMP_TEAMS:
+    case EXEC_OMP_TEAMS_DISTRIBUTE:
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
     case EXEC_OMP_WORKSHARE:
       show_omp_node (level, c);
       break;

@@ -1,3 +1,230 @@
+2016-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* openmp.c (gfc_free_omp_clauses): Free critical_name, grainsize,
+	hint, num_tasks, priority and if_exprs.
+	(gfc_match_omp_to_link, gfc_match_omp_depend_sink): New functions.
+	(enum omp_mask1, enum omp_mask2): New enums.
+	Change all OMP_CLAUSE_* defines into enum values, and change their
+	values from ((uint64_t) 1 << bit) to just bit.
+	(omp_mask, omp_inv_mask): New classes.  Add ctors and operators.
+	(gfc_match_omp_clauses): Change mask argument from uint64_t to
+	const omp_mask.  Assert OMP_MASK1_LAST and OMP_MASK2_LAST are
+	at most 64.  Move delete clause handling to where it
+	alphabetically belongs.  Parse defaultmap, grainsize, hint,
+	is_device_ptr, nogroup, nowait, num_tasks, priority, simd, threads
+	and use_device_ptr clauses.  Parse if clause modifier.  Parse map
+	clause always modifier, and release and delete kinds.  Parse ordered
+	clause with argument.  Parse schedule clause modifiers.  Differentiate
+	device clause parsing based on openacc flag.  Guard link clause
+	parsing with openacc flag.  Add support for parsing
+	linear clause modifiers.  Parse depend(source) and depend(sink: ...).
+	Use gfc_match_omp_to_link for to and link clauses in declare target
+	construct.
+	(match_acc): Change mask type from uint64_t to const omp_mask.
+	(OMP_SINGLE_CLAUSES, OMP_ORDERED_CLAUSES,
+	OMP_DECLARE_TARGET_CLAUSES, OMP_TASKLOOP_CLAUSES,
+	OMP_TARGET_ENTER_DATA_CLAUSES, OMP_TARGET_EXIT_DATA_CLAUSES): Define.
+	(OACC_PARALLEL_CLAUSES, OACC_KERNELS_CLAUSES, OACC_DATA_CLAUSES,
+	OACC_LOOP_CLAUSES, OACC_HOST_DATA_CLAUSES, OACC_DECLARE_CLAUSES,
+	OACC_ENTER_DATA_CLAUSES, OACC_EXIT_DATA_CLAUSES, OACC_WAIT_CLAUSES,
+	OACC_ROUTINE_CLAUSES, OMP_PARALLEL_CLAUSES, OMP_DECLARE_SIMD_CLAUSES,
+	OMP_SECTIONS_CLAUSES, OMP_TEAMS_CLAUSES, OMP_DISTRIBUTE_CLAUSES):
+	Replace first or only OMP_CLAUSE_* value in bitset with
+	omp_mask (OMP_CLAUSE_*).
+	(OMP_DO_CLAUSES): Likewise.  Add OMP_CLAUSE_LINEAR.
+	(OMP_SIMD_CLAUSES): Replace first or only OMP_CLAUSE_* value in
+	bitset with omp_mask (OMP_CLAUSE_*).  Add OMP_CLAUSE_SIMDLEN.
+	(OACC_UPDATE_CLAUSES): Replace first or only OMP_CLAUSE_* value in
+	bitset with omp_mask (OMP_CLAUSE_*).  Replace OMP_CLAUSE_OACC_DEVICE
+	with OMP_CLAUSE_DEVICE.
+	(OMP_TASK_CLAUSES): Replace first or only OMP_CLAUSE_* value in
+	bitset with omp_mask (OMP_CLAUSE_*).  Add OMP_CLAUSE_PRIORITY.
+	(OMP_TARGET_CLAUSES): Replace first or only OMP_CLAUSE_* value in
+	bitset with omp_mask (OMP_CLAUSE_*).  Add OMP_CLAUSE_DEPEND,
+	OMP_CLAUSE_NOWAIT, OMP_CLAUSE_PRIVATE, OMP_CLAUSE_FIRSTPRIVATE,
+	OMP_CLAUSE_DEFAULTMAP and OMP_CLAUSE_IS_DEVICE_PTR.
+	(OMP_TARGET_DATA_CLAUSES): Replace first or only OMP_CLAUSE_* value in
+	bitset with omp_mask (OMP_CLAUSE_*).  Add OMP_CLAUSE_USE_DEVICE_PTR.
+	(OMP_TARGET_UPDATE_CLAUSES): Replace first or only OMP_CLAUSE_* value
+	in bitset with omp_mask (OMP_CLAUSE_*).  Add OMP_CLAUSE_DEPEND and
+	OMP_CLAUSE_NOWAIT.
+	(match_omp): Change mask argument from unsigned int to
+	const omp_mask.
+	(gfc_match_omp_critical): Parse optional clauses and use omp_clauses
+	union member instead of omp_name.
+	(gfc_match_omp_end_critical): New function.
+	(gfc_match_omp_distribute_parallel_do): Remove ordered and linear
+	clauses from the mask.
+	(gfc_match_omp_distribute_parallel_do_simd): Use
+	& ~(omp_mask (OMP_CLAUSE_*)) instead of & ~OMP_CLAUSE_*.
+	(gfc_match_omp_target_teams_distribute_parallel_do_simd): Likewise.
+	(gfc_match_omp_teams_distribute_parallel_do_simd): Likewise.
+	(gfc_match_omp_do_simd): Likewise.  Don't remove ordered clause from
+	the mask.
+	(gfc_match_omp_parallel_do_simd): Likewise.
+	(gfc_match_omp_target_teams_distribute_parallel_do): Likewise.
+	(gfc_match_omp_teams_distribute_parallel_do): Likewise.
+	(gfc_match_omp_declare_simd): If not using the form with
+	(proc-name), require space before first clause.  Make (proc-name)
+	optional.  If not present, set proc_name to NULL.
+	(gfc_match_omp_declare_target): Rewritten for OpenMP 4.5.
+	(gfc_match_omp_single): Use OMP_SINGLE_CLAUSES.
+	(gfc_match_omp_task, gfc_match_omp_taskwait, gfc_match_omp_taskyield):
+	Move around to where they belong alphabetically.
+	(gfc_match_omp_target_enter_data, gfc_match_omp_target_exit_data,
+	gfc_match_omp_target_parallel, gfc_match_omp_target_parallel_do,
+	gfc_match_omp_target_parallel_do_simd, gfc_match_omp_target_simd,
+	gfc_match_omp_taskloop, gfc_match_omp_taskloop_simd):
+	New functions.
+	(gfc_match_omp_ordered): Parse clauses.
+	(gfc_match_omp_ordered_depend): New function.
+	(gfc_match_omp_cancel, gfc_match_omp_end_single): Use
+	omp_mask (OMP_CLAUSE_*) instead of OMP_CLAUSE_*.
+	(resolve_oacc_scalar_int_expr): Renamed to ...
+	(resolve_scalar_int_expr): ... this.  Fix up formatting.
+	(resolve_oacc_positive_int_expr): Renamed to ...
+	(resolve_positive_int_expr): ... this.  Fix up formatting.
+	(resolve_nonnegative_int_expr): New function.
+	(resolve_omp_clauses): Adjust callers, use the above functions
+	even for OpenMP clauses, add handling of new OpenMP 4.5 clauses.
+	Require orderedc >= collapse if specified. Handle depend(sink:)
+	and depend(source) restrictions.  Disallow linear clause when
+	orderedc is non-zero.  Diagnose linear clause modifiers when not in
+	declare simd.  Only check for integer type if ref modifier
+	is not used.  Remove diagnostics for required VALUE attribute.
+	Diagnose VALUE attribute with ref or uval modifiers.  Allow
+	non-constant linear-step, if it is a dummy argument alone and is
+	mentioned in uniform clause.  Diagnose map kinds not allowed
+	for various constructs.  Diagnose target {enter ,exit ,}data without
+	any map clauses.  Add dummy OMP_LIST_IS_DEVICE_PTR and
+	OMP_LIST_USE_DEVICE_PTR cases.
+	(gfc_resolve_omp_do_blocks): Set omp_current_do_collapse to orderedc
+	if non-zero.
+	(gfc_resolve_omp_parallel_blocks): Handle new OpenMP 4.5 constructs,
+	replace underscores with spaces in a few construct names.
+	(resolve_omp_do): Set collapse to orderedc if non-zero.  Handle new
+	OpenMP 4.5 constructs.
+	(resolve_oacc_loop_blocks): Call resolve_positive_int_expr instead
+	of resolve_oacc_positive_int_expr.
+	(gfc_resolve_omp_directive): Handle new OpenMP 4.5 constructs.
+	(gfc_resolve_omp_declare_simd): Allow ods->proc_name to be NULL.
+	* trans-openmp.c (gfc_omp_scalar_p): New function.
+	(doacross_steps): New variable.
+	(gfc_trans_omp_clauses): Handle new OpenMP 4.5 clauses and new clause
+	modifiers.
+	(gfc_trans_omp_critical): Adjust EXEC_OMP_CRITICAL handling.
+	(gfc_trans_omp_do): Handle doacross loops.  Clear sched_simd flag.
+	Handle EXEC_OMP_TASKLOOP.
+	(gfc_trans_omp_ordered): Translate omp clauses, allow NULL
+	code->block.
+	(GFC_OMP_SPLIT_TASKLOOP, GFC_OMP_MASK_TASKLOOP): New enum constants.
+	(gfc_split_omp_clauses): Copy orderedc together with ordered.  Change
+	firstprivate and lastprivate handling for OpenMP 4.5.
+	Handle EXEC_OMP_TARGET_SIMD, EXEC_OMP_TARGET_PARALLEL{,_DO,_DO_SIMD}
+	and EXEC_OMP_TASKLOOP{,_SIMD}.  Add handling for new OpenMP 4.5
+	clauses and clause modifiers and handle if clause without/with
+	modifiers.
+	(gfc_trans_omp_teams): Add omp_clauses argument, add it to other
+	teams clauses.  Don't wrap into OMP_TEAMS if -fopenmp-simd.
+	(gfc_trans_omp_target): For -fopenmp, translate num_teams and
+	thread_limit clauses on combined target teams early and pass to
+	gfc_trans_omp_teams.  Set OMP_TARGET_COMBINED if needed.
+	Handle EXEC_OMP_TARGET_PARALLEL{,_DO,_DO_SIMD} and
+	EXEC_OMP_TARGET_SIMD.
+	(gfc_trans_omp_taskloop, gfc_trans_omp_target_enter_data,
+	gfc_trans_omp_target_exit_data): New functions.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_TARGET_{ENTER,EXIT}_DATA
+	EXEC_OMP_TASKLOOP{,_SIMD}, EXEC_OMP_TARGET_PARALLEL{,_DO,_DO_SIMD}
+	and EXEC_OMP_TARGET_SIMD.  Adjust gfc_trans_omp_teams caller.
+	* symbol.c (check_conflict): Handle omp_declare_target_link.
+	(gfc_add_omp_declare_target_link): New function.
+	(gfc_copy_attr): Copy omp_declare_target_link.
+	* dump-parse-tree.c (show_omp_namelist): Handle OMP_DEPEND_SINK_FIRST
+	depend_op.  Print linear clause modifiers.
+	(show_omp_clauses): Adjust for OpenMP 4.5 clause changes.
+	(show_omp_node): Print clauses for EXEC_OMP_ORDERED.  Allow NULL
+	c->block for EXEC_OMP_ORDERED.  Formatting fixes.  Adjust handling of
+	EXEC_OMP_CRITICAL, handle new OpenMP 4.5 constructs and some
+	forgotten OpenMP 4.0 constructs.
+	(show_code_node): Handle new OpenMP 4.5 constructs and some forgotten
+	OpenMP 4.0 constructs.
+	* gfortran.h (symbol_attribute): Add omp_declare_target_link bitfield.
+	(struct gfc_omp_namelist): Add u.common and u.linear_op fields.
+	(struct gfc_common_head): Change omp_declare_target into bitfield.
+	Add omp_declare_target_link bitfield.
+	(gfc_add_omp_declare_target_link): New prototype.
+	(enum gfc_statement): Add ST_OMP_TARGET_PARALLEL,
+	ST_OMP_END_TARGET_PARALLEL, ST_OMP_TARGET_PARALLEL_DO,
+	ST_OMP_END_TARGET_PARALLEL_DO, ST_OMP_TARGET_PARALLEL_DO_SIMD,
+	ST_OMP_END_TARGET_PARALLEL_DO_SIMD, ST_OMP_TARGET_ENTER_DATA,
+	ST_OMP_TARGET_EXIT_DATA, ST_OMP_TARGET_SIMD, ST_OMP_END_TARGET_SIMD,
+	ST_OMP_TASKLOOP, ST_OMP_END_TASKLOOP, ST_OMP_TASKLOOP_SIMD,
+	ST_OMP_END_TASKLOOP_SIMD and ST_OMP_ORDERED_DEPEND.
+	(enum gfc_omp_depend_op): Add OMP_DEPEND_SINK_FIRST and
+	OMP_DEPEND_SINK.
+	(enum gfc_omp_linear_op): New.
+	(struct gfc_omp_clauses): Add critical_name, depend_source,
+	orderedc, defaultmap, nogroup, sched_simd, sched_monotonic,
+	sched_nonmonotonic, simd, threads, grainsize, hint, num_tasks,
+	priority and if_exprs fields.
+	(enum gfc_exec_op): Add EXEC_OMP_END_CRITICAL,
+	EXEC_OMP_TARGET_ENTER_DATA, EXEC_OMP_TARGET_EXIT_DATA,
+	EXEC_OMP_TARGET_PARALLEL, EXEC_OMP_TARGET_PARALLEL_DO,
+	EXEC_OMP_TARGET_PARALLEL_DO_SIMD, EXEC_OMP_TARGET_SIMD,
+	EXEC_OMP_TASKLOOP, EXEC_OMP_TASKLOOP_SIMD.
+	(enum gfc_omp_map_op): Add OMP_MAP_RELEASE,
+	OMP_MAP_ALWAYS_TO, OMP_MAP_ALWAYS_FROM and OMP_MAP_ALWAYS_TOFROM.
+	(OMP_LIST_IS_DEVICE_PTR, OMP_LIST_USE_DEVICE_PTR): New.
+	(enum gfc_omp_if_kind): New.
+	* module.c (enum ab_attribute): Add AB_OMP_DECLARE_TARGET_LINK.
+	(attr_bits): Add AB_OMP_DECLARE_TARGET_LINK entry.
+	(mio_symbol_attribute): Save and restore omp_declare_target_link bit.
+	* trans.h (gfc_omp_scalar_p): New prototype.
+	* frontend-passes.c (gfc_code_walker): Handle new OpenMP 4.5
+	expressions.
+	* trans.c (trans_code): Handle new OpenMP 4.5 constructs.
+	* resolve.c (gfc_resolve_blocks): Likewise.
+	(gfc_resolve_code): Likewise.
+	* f95-lang.c (LANG_HOOKS_OMP_SCALAR_P): Redefine to gfc_omp_scalar_p.
+	(gfc_attribute_table): Add "omp declare target link".
+	* st.c (gfc_free_statement): Handle EXEC_OMP_END_CRITICAL like
+	EXEC_OMP_CRITICAL before, free clauses for EXEC_OMP_CRITICAL
+	and new OpenMP 4.5 constructs.  Free omp clauses even for
+	EXEC_OMP_ORDERED.
+	* match.c (match_exit_cycle): Rename collapse variable to count,
+	set it to orderedc if non-zero, instead of collapse.
+	* trans-decl.c (add_attributes_to_decl): Add "omp declare target link"
+	instead of "omp declare target" for omp_declare_target_link.
+	* trans-common.c (build_common_decl): Likewise.
+	* match.h (gfc_match_omp_target_enter_data,
+	gfc_match_omp_target_exit_data, gfc_match_omp_target_parallel,
+	gfc_match_omp_target_parallel_do,
+	gfc_match_omp_target_parallel_do_simd, gfc_match_omp_target_simd,
+	gfc_match_omp_taskloop, gfc_match_omp_taskloop_simd,
+	gfc_match_omp_end_critical, gfc_match_omp_ordered_depend): New
+	prototypes.
+	* parse.c (decode_omp_directive): Use gfc_match_omp_end_critical
+	instead of gfc_match_omp_critical for !$omp end critical.
+	Handle new OpenMP 4.5 constructs.  If ordered directive has
+	depend clause as the first of the clauses, use
+	gfc_match_omp_ordered_depend and ST_OMP_ORDERED_DEPEND instead of
+	gfc_match_omp_ordered and ST_OMP_ORDERED.
+	(case_executable): Add ST_OMP_TARGET_ENTER_DATA,
+	ST_OMP_TARGET_EXIT_DATA and ST_OMP_ORDERED_DEPEND cases.
+	(case_exec_markers): Add ST_OMP_TARGET_PARALLEL,
+	ST_OMP_TARGET_PARALLEL_DO, ST_OMP_TARGET_PARALLEL_DO_SIMD,
+	ST_OMP_TARGET_SIMD, ST_OMP_TASKLOOP and ST_OMP_TASKLOOP_SIMD cases.
+	(gfc_ascii_statement): Handle new OpenMP 4.5 constructs.
+	(parse_omp_do): Handle ST_OMP_TARGET_PARALLEL_DO,
+	ST_OMP_TARGET_PARALLEL_DO_SIMD, ST_OMP_TASKLOOP and
+	ST_OMP_TASKLOOP_SIMD.
+	(parse_omp_structured_block): Handle EXEC_OMP_END_CRITICAL instead
+	of EXEC_OMP_CRITICAL, adjust for EXEC_OMP_CRITICAL having omp clauses
+	now.
+	(parse_executable): Handle ST_OMP_TARGET_PARALLEL,
+	ST_OMP_TARGET_PARALLEL_DO, ST_OMP_TARGET_PARALLEL_DO_SIMD,
+	ST_OMP_TASKLOOP and ST_OMP_TASKLOOP_SIMD.
+
 2016-11-09  Mikael Morin  <mikael@gcc.gnu.org>
 	    Janus Weil  <janus@gcc.gnu.org>
 

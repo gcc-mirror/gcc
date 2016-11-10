@@ -1,3 +1,34 @@
+2016-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90
+	(fib_wrapper): Add map(from: x) clause.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90
+	(e_53_2): Likewise.
+	* testsuite/libgomp.fortran/examples-4/declare_target-4.f90
+	(accum): Add map(tmp) clause.
+	* testsuite/libgomp.fortran/examples-4/declare_target-5.f90
+	(accum): Add map(tofrom: tmp) clause.
+	* testsuite/libgomp.fortran/examples-4/target_data-3.f90
+	(gramSchmidt): Likewise.
+	* testsuite/libgomp.fortran/examples-4/teams-2.f90 (dotprod): Add
+	map(tofrom: sum) clause.
+	* testsuite/libgomp.fortran/nestedfn5.f90 (foo): Add twice
+	map (alloc: a, l) clause.  Add defaultmap(tofrom: scalar) clause.
+	* testsuite/libgomp.fortran/pr66199-2.f90: Adjust for linear clause
+	only allowed on the loop iterator.
+	* testsuite/libgomp.fortran/target4.f90 (foo): Add map(t) clause.
+	* testsuite/libgomp.fortran/taskloop2.f90: New test.
+	* testsuite/libgomp.fortran/taskloop4.f90: New test.
+	* testsuite/libgomp.fortran/doacross1.f90: New test.
+	* testsuite/libgomp.fortran/doacross3.f90: New test.
+	* testsuite/libgomp.fortran/taskloop1.f90: New test.
+	* testsuite/libgomp.fortran/taskloop3.f90: New test.
+	* testsuite/libgomp.fortran/doacross2.f90: New test.
+	* testsuite/libgomp.c/doacross-1.c (main): Add missing
+	#pragma omp atomic read.
+	* testsuite/libgomp.c/doacross-2.c (main): Likewise.
+	* testsuite/libgomp.c/doacross-3.c (main): Likewise.
+
 2016-11-02  Cesar Philippidis  <cesar@codesourcery.com>
 	    Nathan Sidwell  <nathan@acm.org>
 

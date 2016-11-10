@@ -80,6 +80,7 @@ struct gimplify_omp_ctx;
 extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 					       tree);
 extern bool lhd_omp_mappable_type (tree);
+extern bool lhd_omp_scalar_p (tree);
 
 extern const char *lhd_get_substring_location (const substring_loc &,
 					       location_t *out_loc);
@@ -234,6 +235,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR NULL
 #define LANG_HOOKS_OMP_CLAUSE_DTOR hook_tree_tree_tree_null
 #define LANG_HOOKS_OMP_FINISH_CLAUSE lhd_omp_finish_clause
+#define LANG_HOOKS_OMP_SCALAR_P lhd_omp_scalar_p
 
 #define LANG_HOOKS_DECLS { \
   LANG_HOOKS_GLOBAL_BINDINGS_P, \
@@ -257,7 +259,8 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP, \
   LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR, \
   LANG_HOOKS_OMP_CLAUSE_DTOR, \
-  LANG_HOOKS_OMP_FINISH_CLAUSE \
+  LANG_HOOKS_OMP_FINISH_CLAUSE, \
+  LANG_HOOKS_OMP_SCALAR_P \
 }
 
 /* LTO hooks.  */

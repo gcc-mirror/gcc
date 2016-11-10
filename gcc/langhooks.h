@@ -261,6 +261,10 @@ struct lang_hooks_for_decls
 
   /* Do language specific checking on an implicitly determined clause.  */
   void (*omp_finish_clause) (tree clause, gimple_seq *pre_p);
+
+  /* Return true if DECL is a scalar variable (for the purpose of
+     implicit firstprivatization).  */
+  bool (*omp_scalar_p) (tree decl);
 };
 
 /* Language hooks related to LTO serialization.  */

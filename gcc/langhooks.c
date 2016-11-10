@@ -507,6 +507,24 @@ lhd_omp_finish_clause (tree, gimple_seq *)
 {
 }
 
+/* Return true if DECL is a scalar variable (for the purpose of
+   implicit firstprivatization).  */
+
+bool
+lhd_omp_scalar_p (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    type = TREE_TYPE (type);
+  if (INTEGRAL_TYPE_P (type)
+      || SCALAR_FLOAT_TYPE_P (type)
+      || TREE_CODE (type) == POINTER_TYPE)
+    return true;
+  return false;
+}
+
 /* Register language specific type size variables as potentially OpenMP
    firstprivate variables.  */
 

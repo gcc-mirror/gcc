@@ -1376,7 +1376,10 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
 	list = chainon (list, attr);
       }
 
-  if (sym_attr.omp_declare_target)
+  if (sym_attr.omp_declare_target_link)
+    list = tree_cons (get_identifier ("omp declare target link"),
+		      NULL_TREE, list);
+  else if (sym_attr.omp_declare_target)
     list = tree_cons (get_identifier ("omp declare target"),
 		      NULL_TREE, list);
 

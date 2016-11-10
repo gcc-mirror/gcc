@@ -149,11 +149,11 @@ varpool_node::get_create (tree decl)
   node = varpool_node::create_empty ();
   node->decl = decl;
 
-  if ((flag_openacc || flag_openmp) && !DECL_EXTERNAL (decl)
+  if ((flag_openacc || flag_openmp)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
     {
       node->offloadable = 1;
-      if (ENABLE_OFFLOADING)
+      if (ENABLE_OFFLOADING && !DECL_EXTERNAL (decl))
 	{
 	  g->have_offload = true;
 	  if (!in_lto_p)
