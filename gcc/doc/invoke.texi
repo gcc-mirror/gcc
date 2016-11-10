@@ -11968,25 +11968,32 @@ Use it to conform to a non-default application binary interface.
 
 @item -fno-common
 @opindex fno-common
-In C code, controls the placement of uninitialized global variables.
-Unix C compilers have traditionally permitted multiple definitions of
-such variables in different compilation units by placing the variables
-in a common block.
-This is the behavior specified by @option{-fcommon}, and is the default
-for GCC on most targets.
-On the other hand, this behavior is not required by ISO C, and on some
-targets may carry a speed or code size penalty on variable references.
-The @option{-fno-common} option specifies that the compiler should place
-uninitialized global variables in the data section of the object file,
-rather than generating them as common blocks.
-This has the effect that if the same variable is declared
-(without @code{extern}) in two different compilations,
-you get a multiple-definition error when you link them.
-In this case, you must compile with @option{-fcommon} instead.
+@cindex tentative definitions
+In C code, this option controls the placement of global variables 
+defined without an initializer, known as @dfn{tentative definitions} 
+in the C standard.  Tentative definitions are distinct from declarations 
+of a variable with the @code{extern} keyword, which do not allocate storage.
+
+Unix C compilers have traditionally allocated storage for
+uninitialized global variables in a common block.  This allows the
+linker to resolve all tentative definitions of the same variable
+in different compilation units to the same object, or to a non-tentative
+definition.  
+This is the behavior specified by @option{-fcommon}, and is the default for 
+GCC on most targets.  
+On the other hand, this behavior is not required by ISO
+C, and on some targets may carry a speed or code size penalty on
+variable references.
+
+The @option{-fno-common} option specifies that the compiler should instead
+place uninitialized global variables in the data section of the object file.
+This inhibits the merging of tentative definitions by the linker so
+you get a multiple-definition error if the same 
+variable is defined in more than one compilation unit.
 Compiling with @option{-fno-common} is useful on targets for which
 it provides better performance, or if you wish to verify that the
 program will work on other systems that always treat uninitialized
-variable declarations this way.
+variable definitions this way.
 
 @item -fno-ident
 @opindex fno-ident
