@@ -1,3 +1,8 @@
+2016-11-10  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR rtl-optimization/78241
+	* gcc.dg/pr78241.c: New test.
+
 2016-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/openmp-define-3.f90: Expect 201511 instead of

@@ -918,9 +918,10 @@ unroll_loop_runtime_iterations (struct loop *loop)
   if (tmp != niter)
     emit_move_insn (niter, tmp);
 
-  /* For loops that exit at end, add one to niter to account for first pass
-     through loop body before reaching exit test. */
-  if (exit_at_end)
+  /* For loops that exit at end and whose number of iterations is reliable,
+     add one to niter to account for first pass through loop body before
+     reaching exit test. */
+  if (exit_at_end && !desc->noloop_assumptions)
     {
       niter = expand_simple_binop (desc->mode, PLUS,
 				   niter, const1_rtx,
@@ -946,7 +947,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
 
   auto_sbitmap wont_exit (max_unroll + 2);
 
-  if (extra_zero_check)
+  if (extra_zero_check || desc->noloop_assumptions)
     {
       /* Peel the first copy of loop body.  Leave the exit test if the number
 	 of iterations is not reliable.  Also record the place of the extra zero

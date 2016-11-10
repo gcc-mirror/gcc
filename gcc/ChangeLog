@@ -1,3 +1,9 @@
+2016-11-10  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR rtl-optimization/78241
+	* loop-unroll.c (unroll_loop_runtime_iterations): Don't adjust 'niter', but
+	emit initial peel copy if niter expr is not reliable.
+
 2016-11-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* dwarf2cfi.c (dump_cfi_row): Add forward declaration.
