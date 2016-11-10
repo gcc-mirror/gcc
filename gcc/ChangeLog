@@ -1,3 +1,9 @@
+2016-11-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/37998
+	* doc/invoke.texi (Code Gen Options) [-fno-common]: Use correct
+	terminology.  Expand to remove ambiguity.
+
 2016-11-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78232
