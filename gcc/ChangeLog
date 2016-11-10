@@ -1,3 +1,8 @@
+2016-11-10  Jason Merrill  <jason@redhat.com>
+
+	* gengtype.c (new_structure): Append to structures list.
+	(find_structure): Likewise.
+
 2016-11-10  Jim Wilson  <jim.wilson@linaro.org>
 
 	* tree-loop-distribution.c (pg_add_dependence_edges): Return 2 if
