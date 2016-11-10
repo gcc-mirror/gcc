@@ -80,7 +80,6 @@ static void import_export_class (tree);
 static tree get_guard_bits (tree);
 static void determine_visibility_from_class (tree, tree);
 static bool determine_hidden_inline (tree);
-static bool decl_defined_p (tree);
 static void maybe_instantiate_decl (tree);
 
 /* A list of static class variables.  This is needed, because a
@@ -4085,11 +4084,15 @@ collect_ada_namespace (tree namespc, const char *source_file)
 /* Returns true iff there is a definition available for variable or
    function DECL.  */
 
-static bool
+bool
 decl_defined_p (tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    return (DECL_INITIAL (decl) != NULL_TREE);
+    return (DECL_INITIAL (decl) != NULL_TREE
+	    /* A pending instantiation of a friend temploid is defined.  */
+	    || (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl)
+		&& DECL_INITIAL (DECL_TEMPLATE_RESULT
+				 (DECL_TI_TEMPLATE (decl)))));
   else
     {
       gcc_assert (VAR_P (decl));

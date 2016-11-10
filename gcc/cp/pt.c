@@ -9383,10 +9383,6 @@ tsubst_friend_function (tree decl, tree args)
       else
 	new_friend_result_template_info = NULL_TREE;
 
-      /* Make the init_value nonzero so pushdecl knows this is a defn.  */
-      if (new_friend_is_defn)
-	DECL_INITIAL (new_friend) = error_mark_node;
-
       /* Inside pushdecl_namespace_level, we will push into the
 	 current namespace. However, the friend function should go
 	 into the namespace of the template.  */
@@ -22086,8 +22082,7 @@ instantiate_decl (tree d, int defer_ok,
      case that an expression refers to the value of the variable --
      if the variable has a constant value the referring expression can
      take advantage of that fact.  */
-  if (VAR_P (d)
-      || DECL_DECLARED_CONSTEXPR_P (d))
+  if (VAR_P (d))
     defer_ok = 0;
 
   /* Don't instantiate cloned functions.  Instead, instantiate the
