@@ -30,11 +30,11 @@ enum processor_type
 {
 #undef ARM_CORE
 #define ARM_CORE(NAME, INTERNAL_IDENT, IDENT, ARCH, FLAGS, COSTS) \
-  INTERNAL_IDENT,
+  TARGET_CPU_##INTERNAL_IDENT,
 #include "arm-cores.def"
 #undef ARM_CORE
   /* Used to indicate that no processor has been specified.  */
-  arm_none
+  TARGET_CPU_arm_none
 };
 
 /* Which __fp16 format to use.

@@ -1,3 +1,17 @@
+2016-11-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (target_cpus): Delete.
+	* arm-opts.h (enum processor_type): Prefix entires with TARGET_CPU_.
+	* arm.c (all_cores): Prefix IDENT with TARGET_CPU_.
+	(all_architectures): Likewise.
+	(arm_option_override): Adjust use of CPU enums.
+	(arm_sched_reorder): Likewise.
+	* vfp.md (movdi_vfp, movdi_vfp_cortexa8): Likewise.
+	* arm.opt (mcpu, mtune): Adjust use of CPU enums.
+	* arm/genopt.sh (processor_type): Prefix enumeration entries with
+	TARGET_CPU_.
+	* arm-tables.opt: Regenerated.
+
 2016-11-10  Siddhesh Poyarekar  <siddhesh.poyarekar@linaro.org>
 
 	* config/aarch64/aarch64-cores.def (qdf24xx): Update part
