@@ -2785,7 +2785,7 @@
   rtx vtmp1 = gen_reg_rtx (V4SImode);
   rtx vtmp2 = gen_reg_rtx (<MODE>mode);
   rtx dest = gen_lowpart (V4SImode, vtmp2);
-  int elt = BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (<MODE>mode) - 1 : 0;
+  int elt = VECTOR_ELT_ORDER_BIG ? GET_MODE_NUNITS (<MODE>mode) - 1 : 0;
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
   emit_insn (gen_altivec_vsum4s<VI_char>s (vtmp1, operands[1], vzero));

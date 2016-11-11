@@ -2542,10 +2542,13 @@
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB
    && TARGET_VSX_SMALL_INTEGER"
 {
-  /* Note, the element number has already been adjusted for endianness, so we
-     don't have to adjust it here.  */
-  int unit_size = GET_MODE_UNIT_SIZE (<MODE>mode);
-  HOST_WIDE_INT offset = unit_size * INTVAL (operands[2]);
+  HOST_WIDE_INT elt = INTVAL (operands[2]);
+  HOST_WIDE_INT elt_adj = (!VECTOR_ELT_ORDER_BIG
+			   ? GET_MODE_NUNITS (<MODE>mode) - 1 - elt
+			   : elt);
+
+  HOST_WIDE_INT unit_size = GET_MODE_UNIT_SIZE (<MODE>mode);
+  HOST_WIDE_INT offset = unit_size * elt_adj;
 
   operands[2] = GEN_INT (offset);
   if (unit_size == 4)
