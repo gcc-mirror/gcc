@@ -1,3 +1,9 @@
+2016-11-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/77822
+	* config/s390/s390.md ("extzv", "*extzv<mode>_zEC12")
+	("*extzv<mode>_z10"): Check validity of zero_extend arguments.
+
 2016-11-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78262
