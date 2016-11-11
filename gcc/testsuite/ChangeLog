@@ -1,3 +1,8 @@
+2016-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78310
+	* gcc.target/i386/pr78310.c: New test.
+
 2016-11-11  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/isolate-6.c: New test.
@@ -2892,8 +2897,8 @@
 	arm_fp16_alternative_ok.
 	* g++.dg/ext/arm-fp16/arm-fp16-ops-4.C: Likewise.
 	* gcc.dg/torture/arm-fp16-int-convert-alt.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/arm-fp16-ops-3.c: Likewise.
-	* gcc/testsuite/gcc.dg/torture/arm-fp16-ops-4.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-3.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-4.c: Likewise.
 	* gcc.target/arm/fp16-compile-alt-1.c: Likewise.
 	* gcc.target/arm/fp16-compile-alt-10.c: Likewise.
 	* gcc.target/arm/fp16-compile-alt-11.c: Likewise.
