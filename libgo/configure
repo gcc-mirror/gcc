@@ -13648,7 +13648,6 @@ case ${host} in
     GOARCH_FAMILY=ARM
     GOARCH_CACHELINESIZE=32
     GOARCH_PCQUANTUM=4
-    GOARCH_INT64ALIGN=4
     GOARCH_MINFRAMESIZE=4
     ;;
   i[34567]86-*-* | x86_64-*-*)
@@ -13685,7 +13684,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     GOARCH_BIGENDIAN=1
     GOARCH_CACHELINESIZE=16
     GOARCH_PCQUANTUM=4
-    GOARCH_INT64ALIGN=4
+    GOARCH_INT64ALIGN=2
     ;;
   mips*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13747,7 +13746,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     case "$mips_abi" in
     "o32" | "n32")
         GOARCH_FAMILY=MIPS
-	GOARCH_INT64ALIGN=4
 	GOARCH_MINFRAMESIZE=4
         ;;
     "n64" | "o64")
@@ -13778,7 +13776,6 @@ if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=ppc
 GOARCH_FAMILY=PPC
 GOARCH_BIGENDIAN=1
-GOARCH_INT64ALIGN=4
 
 else
 
@@ -13816,7 +13813,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=s390
 GOARCH_FAMILY=S390
-GOARCH_INT64ALIGN=4
 GOARCH_MINFRAMESIZE=4
 
 else
