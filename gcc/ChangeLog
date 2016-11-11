@@ -1,3 +1,10 @@
+2016-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78310
+	* config/i386/i386.md (rotate to rotatex splitter): Avoid overflow
+	when calculating operand 2.
+	(rotate to rotatex zext splitter): Ditto.
+
 2016-11-11  Jeff Law  <law@redhat.com>
 
 	* gimple-ssa-isolate-paths.c (is_divmod_with_given_divisor): New
@@ -43,10 +50,8 @@
 	(rs6000_secondary_reload_simple_move): Likewise.
 	(rs6000_preferred_reload_class): Don't force integer constants to
 	be loaded into vector registers that we can easily make into
-	memory (or being created in the GPRs and moved over with direct
-	move).
-	* config/rs6000/vsx.md (UNSPEC_P9_MEMORY): Delete, no longer
-	used.
+	memory (or being created in the GPRs and moved over with direct move).
+	* config/rs6000/vsx.md (UNSPEC_P9_MEMORY): Delete, no longer used.
 	(vsx_extract_<mode>): Rework V4SImode, V8HImode, and V16QImode
 	vector extraction on ISA 3.0 when the scalar integer can be
 	allocated in vector registers.  Generate the VEC_SELECT directy,
@@ -70,8 +75,7 @@
 	(zero_extendhi<mode>): Likewise.
 	(extendqi<mode>): Likewise.
 	(extendhi<mode>2): Likewise.
-	(HImode splitter for load/sign extend in vector register):
-	Likewise.
+	(HImode splitter for load/sign extend in vector register): Likewise.
 	(float<QHI:mode><FP_ISA3:mode>2): Eliminate old method of
 	optimizing floating point conversions to/from small data types and
 	rewrite it to support QImode/HImode being allowed in vector
@@ -98,8 +102,8 @@
 2016-11-10  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR rtl-optimization/78241
-	* loop-unroll.c (unroll_loop_runtime_iterations): Don't adjust 'niter', but
-	emit initial peel copy if niter expr is not reliable.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Don't adjust 'niter',
+	but emit initial peel copy if niter expr is not reliable.
 
 2016-11-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -180,8 +184,7 @@
 
 2016-11-10  Siddhesh Poyarekar  <siddhesh.poyarekar@linaro.org>
 
-	* config/aarch64/aarch64-cores.def (qdf24xx): Update part
-	number.
+	* config/aarch64/aarch64-cores.def (qdf24xx): Update part number.
 	(falkor): New core.
 	* config/aarch64/aarch64-tune.md: Regenerated.
 	* config/arm/arm-cores.def (falkor): New core.
