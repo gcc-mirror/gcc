@@ -1,5 +1,11 @@
 2016-11-11  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/71575
+	* graphite-isl-ast-to-gimple.c (copy_cond_phi_nodes): Remove
+	bogus assert.
+
+2016-11-11  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/78295
 	* tree-ssa-uninit.c (warn_uninitialized_vars): Do not warn
 	about uninitialized destination arg of BIT_INSERT_EXPR.
