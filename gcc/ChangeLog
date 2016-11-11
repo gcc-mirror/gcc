@@ -1,3 +1,13 @@
+2016-11-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78243
+	* config/rs6000/vsx.md (vsx_extract_<mode>_p9): Correct the
+	element order for little endian ordering.
+
+	* config/rs6000/altivec.md (reduc_plus_scal_<mode>): Use
+	VECTOR_ELT_ORDER_BIG and not BYTES_BIG_ENDIAN to adjust element
+	number.
+
 2016-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78310
