@@ -1,3 +1,9 @@
+2016-11-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR testsuite/78292
+	* gcc.dg/vect/vect-cond-2.c: Only drop xfail for targets supporting
+	vect_max_reduc.
+
 2016-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/72774
