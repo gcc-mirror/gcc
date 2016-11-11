@@ -212,6 +212,14 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	     can warn about.  */
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, op_iter, SSA_OP_USE)
 	    {
+	      /* BIT_INSERT_EXPR first operand should not be considered
+	         a use for the purpose of uninit warnings.  */
+	      if (gassign *ass = dyn_cast <gassign *> (stmt))
+		{
+		  if (gimple_assign_rhs_code (ass) == BIT_INSERT_EXPR
+		      && use_p->use == gimple_assign_rhs1_ptr (ass))
+		    continue;
+		}
 	      use = USE_FROM_PTR (use_p);
 	      if (always_executed)
 		warn_uninit (OPT_Wuninitialized, use, SSA_NAME_VAR (use),

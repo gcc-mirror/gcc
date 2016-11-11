@@ -1,3 +1,9 @@
+2016-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78295
+	* tree-ssa-uninit.c (warn_uninitialized_vars): Do not warn
+	about uninitialized destination arg of BIT_INSERT_EXPR.
+
 2016-11-10  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR c/37998
