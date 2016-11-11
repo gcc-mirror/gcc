@@ -6,46 +6,47 @@
 # Michel Robitaille <robitail@IRO.UMontreal.CA>, traducteur depuis/since 1996.
 # François-Xavier Coudert <fxcoudert@gmail.com>, 2008.
 # Stéphane Aulery <lkppo@free.fr>, 2015, 2016.
+# Frédéric Marchal <fmarchal@perso.be>, 2016.
 #
 # Vocabulaire utilisé
-# 	lvalue	 	      = membre gauche
-# 	deprecated	      = obsolète
-# 	out of range	   = hors des limites
-# 	range		         = gamme
-# 	scope		         = porté, champ
-# 	shadowing	      = masquer
-# 	embedded PIC	   = PIC enchâssé
-# 	CPU		         = processeur
-# 	structure with
-#   flexible member  = structure ayant un membre flexible
-# 	flag		         = fanion
-# 	forward
-#   declaration      = déclaration anticipée
-# 	token 		      = élément lexical (dans le contexte du parsing)
-# 	to subscript	   = indicer
-# 	top-level	      = hors de toute fonction
-# 	member function   = fonction membre
-#  template          = patron  (apparaît dans plusieurs dictionnaires)
+#   lvalue            = membre gauche
+#   deprecated        = obsolète
+#   out of range      = hors des limites
+#   range             = gamme
+#   scope             = porté, champ
+#   shadowing         = masquer
+#   embedded PIC      = PIC enchâssé
+#   CPU               = processeur
+#   structure with
+#   flexible member   = structure ayant un membre flexible
+#   flag              = fanion
+#   forward
+#   declaration       = déclaration anticipée
+#   token             = élément lexical (dans le contexte du parsing)
+#   to subscript      = indicer
+#   top-level         = hors de toute fonction
+#   member function   = fonction membre
+#   template          = patron  (apparaît dans plusieurs dictionnaires)
 #
 # Pas traduit:
-# 	thread
+#   thread
 #
 # J'ai des doutes pour :
-# 	inline 		      = enligne (pas systématiquement)
+#   inline            = enligne (pas systématiquement)
 #                         oui dans le contexte du langage C par exemple MR
 #                         non autrement ...de manière générale MR
-# 	section attribute	attribut de section OK MR
-# 	wide char		caractère long  ...non mieux caractère large MR 
-#                               plus conforme à l'esprit.
+#   section attribute = attribut de section OK MR
+#   wide char         = caractère long  ...non mieux caractère large MR 
+#                         plus conforme à l'esprit.
 #
 # ------
-# 	literals		littéral, ou mot composé ?
+#   literals          = littéral, ou mot composé ?
 # msgid "ISO C89 forbids compound literals"
 # msgstr "le C89 ISO interdit les mots composés"
 #
-# 	symbol table		table des symboles ou table de symbole
-# 	command map		carte des commandes
-# 	Combiner		combinateur
+#   symbol table      = table des symboles ou table de symbole
+#   command map       = carte des commandes
+#   Combiner          = combinateur
 # msgid ""
 # ";; Combiner statistics: %d attempts, %d substitutions (%d requiring new space),\n"
 # ";; %d successes.\n"
@@ -55,33 +56,33 @@
 # ";; %d succès.\n"
 # "\n"
 #
-# 	promote			promouvoir
+#   promote           = promouvoir
 # msgid "the left operand of \"%s\" changes sign when promoted"
 # msgstr "L'opérande gauche de « %s » change de signe lors de sa promotion"
 #
-#        include guards	       ???
+#   include guards    = ???
 # msgid "Multiple include guards may be useful for:\n"
 # msgstr "De multiples balises pour les inclusions peuvent être utiles pour :\n"
 #
 #
-#        universal-character-name ???
+#   universal-character-name = ???
 # msgid "incomplete universal-character-name"
 # msgid "non-hex digit '%c' in universal-character-name"
 # msgid "universal-character-name on EBCDIC target"
 #
-#       poisoning			empoisonnement
+#   poisoning         = empoisonnement
 # msgid "poisoning existing macro \"%s\""
 # msgstr "empoisonnement de la macro existente « %s »"
 # MR  9-jan 2004: poisoning etc... transformé par corruption corrompu etc..
 # MR 24-mai 2004: poison etc...suite au msg concernant le #pragma once et #pragma poison 
 #
 # Autres règles:
-# 	- j'ai ajouté un adjectif par rapport à l'anglais si le message est
-#    	  une phrase avec verbe conjugé. 
-# 	- ISO est considéré comme un adjectif dans « C ISO »
+# - j'ai ajouté un adjectif par rapport à l'anglais si le message est
+#   une phrase avec verbe conjugé. 
+# - ISO est considéré comme un adjectif dans « C ISO »
 #         
 # Erreurs corrigées:
-# 	librairies, assumer
+#   librairies, assumer
 #
 # A faire:
 #   - s/en ligne/en-ligne/  modifié 9-janv-2004 MR
@@ -122,16 +123,17 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 6.1.0\n"
+"Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-06-02 00:10+0200\n"
-"Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
+"PO-Revision-Date: 2016-11-11 19:21+0100\n"
+"Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: cfgrtl.c:2656
@@ -212,12 +214,12 @@ msgstr "propagation de const / copie désactivée"
 #: diagnostic.c:210
 #, c-format
 msgid "%s: all warnings being treated as errors"
-msgstr "%s : les avertissements sont traités comme des erreurs"
+msgstr "%s : tous les avertissements sont traités comme des erreurs"
 
 #: diagnostic.c:215
 #, c-format
 msgid "%s: some warnings being treated as errors"
-msgstr "%s : les avertissements sont traités comme des erreurs"
+msgstr "%s : certains avertissements sont traités comme des erreurs"
 
 #: diagnostic.c:290 input.c:169 c-family/c-opts.c:1310 cp/error.c:1196
 #: fortran/cpp.c:576 fortran/error.c:996 fortran/error.c:1016
@@ -260,9 +262,9 @@ msgstr "%s:%d: embrouillé par les erreurs précédentes, abandon\n"
 
 # FIXME
 #: diagnostic.c:1309
-#, c-format
+#, fuzzy, c-format
 msgid "Internal compiler error: Error reporting routines re-entered.\n"
-msgstr "erreur interne au compilateur : routine de rapport d’erreur préemptée.\n"
+msgstr "Erreur interne du compilateur : Erreur en rapportant les routines ré-entrées.\n"
 
 #: final.c:1192
 msgid "negative insn length"
@@ -274,7 +276,7 @@ msgstr "n'a pu séparer insn"
 
 #: final.c:3402
 msgid "invalid 'asm': "
-msgstr "asm invalide : "
+msgstr "« asm » invalide : "
 
 #: final.c:3531
 #, c-format
@@ -304,7 +306,7 @@ msgstr "%%-code invalide"
 #: final.c:3804
 #, c-format
 msgid "'%%l' operand isn't a label"
-msgstr "l’opérande « %%l » n'est pas une étiquette"
+msgstr "l'opérande « %%l » n'est pas une étiquette"
 
 #. We can't handle floating point constants;
 #. PRINT_OPERAND must handle them.
@@ -412,15 +414,15 @@ msgstr "                           Afficher les types spécifiques des options d
 
 #: gcc.c:3390
 msgid "  (Use '-v --help' to display command line options of sub-processes).\n"
-msgstr "  (Utiliser « -v --help » pour afficher les options de la ligne de commande des sous-processus).\n"
+msgstr "  (Utilisez « -v --help » pour afficher les options de la ligne de commande des sous-processus).\n"
 
 #: gcc.c:3391
 msgid "  --version                Display compiler version information.\n"
-msgstr "  --help                   Afficher des informations sur la version du compilateur.\n"
+msgstr "  --version                Afficher des informations sur la version du compilateur.\n"
 
 #: gcc.c:3392
 msgid "  -dumpspecs               Display all of the built in spec strings.\n"
-msgstr "  -dumpspecs               Afficher tous les chaînes de specs internes.\n"
+msgstr "  -dumpspecs               Afficher toutes les chaînes de specs internes.\n"
 
 #: gcc.c:3393
 msgid "  -dumpversion             Display the version of the compiler.\n"
@@ -440,11 +442,11 @@ msgstr "  -print-libgcc-file-name  Afficher le nom de la bibliothèque accompagn
 
 #: gcc.c:3397
 msgid "  -print-file-name=<lib>   Display the full path to library <lib>.\n"
-msgstr "  -print-file-name=<lib>   Afficher le chemin d’accès complet vers la bibliothèque <lib>.\n"
+msgstr "  -print-file-name=<lib>   Afficher le chemin complet vers la bibliothèque <lib>.\n"
 
 #: gcc.c:3398
 msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>.\n"
-msgstr "  -print-prog-name=<prog>  Afficher le chemin d’accès complet vers le composant du compilateur <prog>.\n"
+msgstr "  -print-prog-name=<prog>  Afficher le chemin complet vers le composant <prog> du compilateur.\n"
 
 #: gcc.c:3399
 msgid ""
@@ -469,7 +471,7 @@ msgstr ""
 
 #: gcc.c:3406
 msgid "  -print-multi-os-directory Display the relative path to OS libraries.\n"
-msgstr "  -print-multi-os-directory Afficher le chemin relatif du répertoire vers les bibliothèques de l’OS.\n"
+msgstr "  -print-multi-os-directory Afficher le chemin relatif vers les bibliothèques de l’OS.\n"
 
 #: gcc.c:3407
 msgid "  -print-sysroot           Display the target libraries directory.\n"
@@ -481,7 +483,7 @@ msgstr "  -print-sysroot-headers-suffix Afficher le suffixe de la racine systèm
 
 #: gcc.c:3409
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler.\n"
-msgstr "  -Wa,<options>            Passer les <options> séparées par des virgules à l’assembleur.\n"
+msgstr "  -Wa,<options>            Passer les <options> séparées par des virgules à l'assembleur.\n"
 
 #: gcc.c:3410
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor.\n"
@@ -493,15 +495,15 @@ msgstr "  -Wl,<options>            Passer les <options> séparées par des virgu
 
 #: gcc.c:3412
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler.\n"
-msgstr "  -Xassembler <argument>   Passer l’<argument> à l’assembleur.\n"
+msgstr "  -Xassembler <argument>   Passer l'<argument> à l'assembleur.\n"
 
 #: gcc.c:3413
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor.\n"
-msgstr "  -Xpreprocessor <argument>  Passer l’<argument> au préprocesseur.\n"
+msgstr "  -Xpreprocessor <argument>  Passer l'<argument> au préprocesseur.\n"
 
 #: gcc.c:3414
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker.\n"
-msgstr "  -Xlinker <argument>       Passer l’<argument> à l’éditeur de liens.\n"
+msgstr "  -Xlinker <argument>       Passer l’<argument> à l'éditeur de liens.\n"
 
 #: gcc.c:3415
 msgid "  -save-temps              Do not delete intermediate files.\n"
@@ -509,13 +511,15 @@ msgstr "  -save-temps              Ne pas détruire les fichiers intermédiaires
 
 #: gcc.c:3416
 msgid "  -save-temps=<arg>        Do not delete intermediate files.\n"
-msgstr "  -save-temps=<arg>        Ne pas détruire les fichiers intermédiaires.\n"
+msgstr "  -save-temps=<arg>        Ne pas effacer les fichiers intermédiaires.\n"
 
 #: gcc.c:3417
 msgid ""
 "  -no-canonical-prefixes   Do not canonicalize paths when building relative\n"
 "                           prefixes to other gcc components.\n"
 msgstr ""
+"  -no-canonical-prefixes   Ne pas normaliser les chemins lors de la compilation\n"
+"                           de préfixes relatifs à d'autres composants de gcc.\n"
 
 #: gcc.c:3420
 msgid "  -pipe                    Use pipes rather than intermediate files.\n"
@@ -527,17 +531,19 @@ msgstr "  -time                    Mesurer le temps d'exécution de chaque sous-
 
 #: gcc.c:3422
 msgid "  -specs=<file>            Override built-in specs with the contents of <file>.\n"
-msgstr "  -specs=<fichier>         Écraser les specs internes à l'aide du contenu du <fichier>.\n"
+msgstr "  -specs=<fichier>         Remplacer les specs internes par le contenu du <fichier>.\n"
 
 #: gcc.c:3423
 msgid "  -std=<standard>          Assume that the input sources are for <standard>.\n"
-msgstr "  -std=<standard>          Présumer que les fichiers sources respectent le <standard>.\n"
+msgstr "  -std=<standard>          Supposer que les fichiers sources respectent le <standard>.\n"
 
 #: gcc.c:3424
 msgid ""
 "  --sysroot=<directory>    Use <directory> as the root directory for headers\n"
 "                           and libraries.\n"
 msgstr ""
+"  --sysroot=<répertoire>   Utiliser <répertoire> comme répertoire racine pour les\n"
+"                           en-têtes et les bibliothèques.\n"
 
 #: gcc.c:3427
 msgid "  -B <directory>           Add <directory> to the compiler's search paths.\n"
@@ -553,15 +559,15 @@ msgstr "  -###                     Identique à -v mais les options et les comma
 
 #: gcc.c:3430
 msgid "  -E                       Preprocess only; do not compile, assemble or link.\n"
-msgstr "  -E                       Pré-traiter seulement ; ne pas compiler, assembler ou éditer les liens.\n"
+msgstr "  -E                       Pré-traitement seul ; ne pas compiler, assembler ou éditer les liens.\n"
 
 #: gcc.c:3431
 msgid "  -S                       Compile only; do not assemble or link.\n"
-msgstr "  -S                       Compiler seulement ; ne pas assembler ou éditer les liens.\n"
+msgstr "  -S                       Compilation seule ; ne pas assembler ou éditer les liens.\n"
 
 #: gcc.c:3432
 msgid "  -c                       Compile and assemble, but do not link.\n"
-msgstr "  -S                       Compiler et assembler, mais ne pas éditer les liens.\n"
+msgstr "  -c                       Compiler et assembler, mais ne pas éditer les liens.\n"
 
 #: gcc.c:3433
 msgid "  -o <file>                Place the output into <file>.\n"
@@ -569,11 +575,11 @@ msgstr "  -o <fichier>             Placer la sortie dans le <fichier>.\n"
 
 #: gcc.c:3434
 msgid "  -pie                     Create a position independent executable.\n"
-msgstr "  -pipe                    Créer un exécutable à chargement aléatoire en mémoire (PIE).\n"
+msgstr "  -pie                     Créer un exécutable indépendant de la position en mémoire (PIE).\n"
 
 #: gcc.c:3435
 msgid "  -shared                  Create a shared library.\n"
-msgstr "  -shared                Créer une bibliothèque partagée.\n"
+msgstr "  -shared                  Créer une bibliothèque partagée.\n"
 
 #: gcc.c:3436
 msgid ""
@@ -582,7 +588,7 @@ msgid ""
 "                           'none' means revert to the default behavior of\n"
 "                           guessing the language based on the file's extension.\n"
 msgstr ""
-"  -x <langage>             Spécifier le langage des fichiers suivants d'entrée.\n"
+"  -x <langage>             Spécifier le langage des fichiers d'entrée suivants.\n"
 "                           Les langages permis sont: c c++ assembler none\n"
 "                           « none » signifiant d'utiliser le comportement par défaut\n"
 "                           en tentant d'identifier le langage par l'extension du fichier.\n"
@@ -597,7 +603,7 @@ msgid ""
 msgstr ""
 "\n"
 "Options débutant par -g, -f, -m, -O, -W, ou --param sont automatiquement\n"
-" passés aux divers sous-processus invoqués par %s.  Afin de passer\n"
+" passées aux divers sous-processus invoqués par %s.  Afin de passer\n"
 " les autres options à ces processus l'option -W<lettre> doit être utilisé.\n"
 
 #: gcc.c:5877
@@ -628,17 +634,17 @@ msgstr "gcc version %s %s\n"
 #: gcc.c:6610
 #, c-format
 msgid "gcc driver version %s %sexecuting gcc version %s\n"
-msgstr "version du pilote gcc %s %s exécutant le version %s de gcc\n"
+msgstr "pilote gcc version %s %sexécutant gcc version %s\n"
 
 #: gcc.c:6683 gcc.c:6895
 #, c-format
 msgid "The bug is not reproducible, so it is likely a hardware or OS problem.\n"
-msgstr ""
+msgstr "Le bogue n'est pas reproductible, donc c'est probablement un problème matériel ou dans l'OS.\n"
 
 #: gcc.c:6819
 #, c-format
 msgid "Preprocessed source stored into %s file, please attach this to your bugreport.\n"
-msgstr ""
+msgstr "La source convertie par le préprocesseur a été stockée dans le fichier %s, veuillez l'attacher à votre rapport d'anomalie.\n"
 
 #: gcc.c:7761
 #, c-format
@@ -648,12 +654,12 @@ msgstr "installés: %s%s\n"
 #: gcc.c:7764
 #, c-format
 msgid "programs: %s\n"
-msgstr "programmes : %s\n"
+msgstr "programmes: %s\n"
 
 #: gcc.c:7766
 #, c-format
 msgid "libraries: %s\n"
-msgstr "libraries : %s\n"
+msgstr "bibliothèques: %s\n"
 
 #: gcc.c:7883
 #, c-format
@@ -662,7 +668,7 @@ msgid ""
 "For bug reporting instructions, please see:\n"
 msgstr ""
 "\n"
-"Pour les instructions afin de rapporter des anomales, SVP consulter :\n"
+"Pour les instructions afin de rapporter des anomalies, consultez :\n"
 
 #: gcc.c:7899 gcov-tool.c:525
 #, c-format
@@ -681,8 +687,8 @@ msgid ""
 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 "\n"
 msgstr ""
-"Ce logiciel est libre; voir les sources pour les conditions de copie.  Il n'y a PAS\n"
-"GARANTIE; ni implicite pour le MARCHANDAGE ou pour un BUT PARTICULIER.\n"
+"Ce logiciel est libre; voir les sources pour les conditions de copie.  Il n'y a\n"
+"AUCUNE GARANTIE, pas même pour la COMMERCIALISATION ni L'ADÉQUATION À UNE TÂCHE PARTICULIÈRE.\n"
 "\n"
 
 #: gcc.c:8208
@@ -693,6 +699,10 @@ msgid ""
 "==============\n"
 "\n"
 msgstr ""
+"\n"
+"Options du lieur\n"
+"================\n"
+"\n"
 
 #: gcc.c:8209
 #, c-format
@@ -700,6 +710,8 @@ msgid ""
 "Use \"-Wl,OPTION\" to pass \"OPTION\" to the linker.\n"
 "\n"
 msgstr ""
+"Utilisez « -Wl,OPTION » pour passer « OPTION » au lieur.\n"
+"\n"
 
 #: gcc.c:9501
 #, c-format
@@ -708,7 +720,7 @@ msgid ""
 "=================\n"
 "\n"
 msgstr ""
-"Options de l’assembleur\n"
+"Options de l'assembleur\n"
 "=======================\n"
 "\n"
 
@@ -718,11 +730,13 @@ msgid ""
 "Use \"-Wa,OPTION\" to pass \"OPTION\" to the assembler.\n"
 "\n"
 msgstr ""
+"Utilisez « -Wa,OPTION » pour passer « OPTION » à l'assembleur.\n"
+"\n"
 
 #: gcov-tool.c:166
 #, c-format
 msgid "  merge [options] <dir1> <dir2>         Merge coverage file contents\n"
-msgstr ""
+msgstr "  merge [options] <rép1> <rép2>         Fusionner les contenus des fichiers de couverture\n"
 
 #: gcov-tool.c:167 gcov-tool.c:261 gcov-tool.c:417
 #, c-format
@@ -732,87 +746,87 @@ msgstr "    -v, --verbose                       Mode verbeux\n"
 #: gcov-tool.c:168 gcov-tool.c:262
 #, c-format
 msgid "    -o, --output <dir>                  Output directory\n"
-msgstr "    -o, --output <dir>                  Répertoire de sortie\n"
+msgstr "    -o, --output <rép>                  Répertoire de sortie\n"
 
 #: gcov-tool.c:169
 #, c-format
 msgid "    -w, --weight <w1,w2>                Set weights (float point values)\n"
-msgstr ""
+msgstr "    -w, --weight <p1,p2>                Définir les poids (valeurs décimales)\n"
 
 #: gcov-tool.c:185
 #, c-format
 msgid "Merge subcomand usage:"
-msgstr ""
+msgstr "Utilisation de la sous-commande de fusion:"
 
 #: gcov-tool.c:260
 #, c-format
 msgid "  rewrite [options] <dir>               Rewrite coverage file contents\n"
-msgstr ""
+msgstr "  rewrite [options] <rép>               Réécrire le contenu des fichiers de couverture\n"
 
 #: gcov-tool.c:263
 #, c-format
 msgid "    -s, --scale <float or simple-frac>  Scale the profile counters\n"
-msgstr ""
+msgstr "    -s, --scale <décimal ou frac simple> Met à l'échelle les compteurs de profils\n"
 
 #: gcov-tool.c:264
 #, c-format
 msgid "    -n, --normalize <long long>         Normalize the profile\n"
-msgstr ""
+msgstr "    -n, --normalize <long long>         Normalise le profil\n"
 
 #: gcov-tool.c:281
 #, c-format
 msgid "Rewrite subcommand usage:"
-msgstr ""
+msgstr "Utilisation de la sous-commande de réécriture:"
 
 #: gcov-tool.c:326
 #, c-format
 msgid "scaling cannot co-exist with normalization, skipping\n"
-msgstr ""
+msgstr "la mise à l'échelle s'oppose à la normalisation, ignoré\n"
 
 #: gcov-tool.c:339 gcov-tool.c:349
 #, c-format
 msgid "incorrect format in scaling, using 1/1\n"
-msgstr ""
+msgstr "format incorrect dans la mise à l'échelle, utilise 1/1\n"
 
 #: gcov-tool.c:359
 #, c-format
 msgid "normalization cannot co-exist with scaling\n"
-msgstr ""
+msgstr "la normalisation s'oppose à la mise à l'échelle\n"
 
 #: gcov-tool.c:416
 #, c-format
 msgid "  overlap [options] <dir1> <dir2>       Compute the overlap of two profiles\n"
-msgstr ""
+msgstr "  overlap [options] <rép1> <rép2>       Calcule le recouvrement de deux profils\n"
 
 #: gcov-tool.c:418
 #, c-format
 msgid "    -h, --hotonly                       Only print info for hot objects/functions\n"
-msgstr "    -h, --hotonly                       afficher seulement les informations sur les fonctions/objets chargés (hot)\n"
+msgstr "    -h, --hotonly                       Afficher seulement les informations sur les fonctions/objets chargés (hot)\n"
 
 #: gcov-tool.c:419
 #, c-format
 msgid "    -f, --function                      Print function level info\n"
-msgstr "    -f, --function                      afficher les informations sur le niveau de fonction\n"
+msgstr "    -f, --function                      Afficher les informations au niveau de la fonction\n"
 
 #: gcov-tool.c:420
 #, c-format
 msgid "    -F, --fullname                      Print full filename\n"
-msgstr "    -F, --fullname                     afficher les noms de fichier au complet\n"
+msgstr "    -F, --fullname                      Afficher le nom complet du fichier\n"
 
 #: gcov-tool.c:421
 #, c-format
 msgid "    -o, --object                        Print object level info\n"
-msgstr "    -o, --object                        afficher les informations sur le niveau d'objet\n"
+msgstr "    -o, --object                        Afficher les informations au niveau de l'objet\n"
 
 #: gcov-tool.c:422
 #, c-format
 msgid "    -t <float>, --hot_threshold <float> Set the threshold for hotness\n"
-msgstr ""
+msgstr "    -t <décimal>, --hot_threshold <décimal> Change le seuil pour déclarer une fonction ou objet « hot »\n"
 
 #: gcov-tool.c:442
 #, c-format
 msgid "Overlap subcomand usage:"
-msgstr ""
+msgstr "Utilisation de la sous-commande de recouvrement:"
 
 #: gcov-tool.c:508
 #, c-format
@@ -829,16 +843,18 @@ msgid ""
 "Offline tool to handle gcda counts\n"
 "\n"
 msgstr ""
+"Outil hors ligne pour gérer les décomptes gcda\n"
+"\n"
 
 #: gcov-tool.c:510
 #, c-format
 msgid "  -h, --help                            Print this help, then exit\n"
-msgstr "  -h, --help                            afficher cette aide, et quitter\n"
+msgstr "  -h, --help                            Afficher cette aide, et quitter\n"
 
 #: gcov-tool.c:511
 #, c-format
 msgid "  -v, --version                         Print version number, then exit\n"
-msgstr "  -v, --version                         afficher le numéro de version, et quitter\n"
+msgstr "  -v, --version                         Afficher le numéro de version, et quitter\n"
 
 #: gcov-tool.c:515 gcov.c:492
 #, c-format
@@ -848,7 +864,7 @@ msgid ""
 "%s.\n"
 msgstr ""
 "\n"
-"Pour les instructions afin de rapporter des anomales, SVP consulter :\n"
+"Pour les instructions afin de rapporter des anomalies, consultez :\n"
 "%s.\n"
 
 #: gcov-tool.c:526
@@ -864,9 +880,9 @@ msgid ""
 "FITNESS FOR A PARTICULAR PURPOSE.\n"
 "\n"
 msgstr ""
-"Ce logiciel est libre; voir les sources pour les conditions de copie. \n"
-"Il n'y a PAS GARANTIE; ni implicite pour le MARCHANDAGE ou\n"
-"pour un BUT PARTICULIER.\n"
+"Ce logiciel est libre; voir les sources pour les conditions de copie.\n"
+"Il n'y a AUCUNE GARANTIE; pas même pour la COMMERCIALISATION ni\n"
+"L'ADÉQUATION À UNE TÂCHE PARTICULIÈRE.\n"
 "\n"
 
 #: gcov.c:472
@@ -884,23 +900,23 @@ msgid ""
 "Print code coverage information.\n"
 "\n"
 msgstr ""
-"Produire les informations de la couverture du code.\n"
+"Afficher les informations de couverture du code.\n"
 "\n"
 
 #: gcov.c:474
 #, c-format
 msgid "  -h, --help                      Print this help, then exit\n"
-msgstr "  -h, --help               afficher l'aide mémoire\n"
+msgstr "  -h, --help                      Afficher cette aide puis quitter\n"
 
 #: gcov.c:475
 #, c-format
 msgid "  -a, --all-blocks                Show information for every basic block\n"
-msgstr "  -a, --all-blocks                afficher l'information pour chaque bloc de base\n"
+msgstr "  -a, --all-blocks                Afficher l'information pour chaque bloc de base\n"
 
 #: gcov.c:476
 #, c-format
 msgid "  -b, --branch-probabilities      Include branch probabilities in output\n"
-msgstr "  -b, --branch-probabilities      inclure les probabilités de branchement dans la sortie\n"
+msgstr "  -b, --branch-probabilities      Inclure les probabilités de branchement dans la sortie\n"
 
 #: gcov.c:477
 #, c-format
@@ -908,23 +924,23 @@ msgid ""
 "  -c, --branch-counts             Output counts of branches taken\n"
 "                                    rather than percentages\n"
 msgstr ""
-"  -c, --branch-counts             donner le décompte de branchements pris\n"
+"  -c, --branch-counts             Afficher le décompte des branchements pris\n"
 "                                    plutôt que les pourcentages\n"
 
 #: gcov.c:479
 #, c-format
 msgid "  -d, --display-progress          Display progress information\n"
-msgstr "  -d, --display-progress          afficher les informations de progression\n"
+msgstr "  -d, --display-progress          Afficher les informations de progression\n"
 
 #: gcov.c:480
 #, c-format
 msgid "  -f, --function-summaries        Output summaries for each function\n"
-msgstr "  -f, --function-summaries        produire un sommaire pour chaque fonction\n"
+msgstr "  -f, --function-summaries        Produire des résumés pour chaque fonction\n"
 
 #: gcov.c:481
 #, c-format
 msgid "  -i, --intermediate-format       Output .gcov file in intermediate text format\n"
-msgstr ""
+msgstr "  -i, --intermediate-format       Sortir le fichier .gcov dans un format texte intermédiaire\n"
 
 #: gcov.c:482
 #, c-format
@@ -932,48 +948,48 @@ msgid ""
 "  -l, --long-file-names           Use long output file names for included\n"
 "                                    source files\n"
 msgstr ""
-"  -l, --long-file-names           utiliser des longs noms de fichiers pour\n"
-"                                    les fichier sources d'inclusion\n"
+"  -l, --long-file-names           Utiliser des noms longs pour les fichiers de\n"
+"                                    sortie des fichiers sources inclus\n"
 
 #: gcov.c:484
 #, c-format
 msgid "  -m, --demangled-names           Output demangled function names\n"
-msgstr ""
+msgstr "  -m, --demangled-names           Afficher les noms de fonctions sans la décoration des noms\n"
 
 #: gcov.c:485
 #, c-format
 msgid "  -n, --no-output                 Do not create an output file\n"
-msgstr "  -n, --no-output                 ne créer de fichier de sortie\n"
+msgstr "  -n, --no-output                 Ne pas créer de fichier de sortie\n"
 
 #: gcov.c:486
 #, c-format
 msgid "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n"
-msgstr "  -o, --object-directory RÉP|FICHIERS  rechercher les fichiers objets dans le RÉPertoire ou appelés FICHIERS\n"
+msgstr "  -o, --object-directory RÉP|FICHIERS Rechercher les fichiers objets dans le RÉPertoire ou appelés FICHIERS\n"
 
 #: gcov.c:487
 #, c-format
 msgid "  -p, --preserve-paths            Preserve all pathname components\n"
-msgstr "  -p, --preserve-paths            préserver tous les composants des chemins d'accès\n"
+msgstr "  -p, --preserve-paths            Préserver tous les composants des chemins d'accès\n"
 
 #: gcov.c:488
 #, c-format
 msgid "  -r, --relative-only             Only show data for relative sources\n"
-msgstr "  -r, --relative-only             afficher seulement les données relatives aux sources\n"
+msgstr "  -r, --relative-only             Afficher seulement les données des sources relatives\n"
 
 #: gcov.c:489
 #, c-format
 msgid "  -s, --source-prefix DIR         Source prefix to elide\n"
-msgstr ""
+msgstr "  -s, --source-prefix RÉP         Préfixe a retirer des sources\n"
 
 #: gcov.c:490
 #, c-format
 msgid "  -u, --unconditional-branches    Show unconditional branch counts too\n"
-msgstr "  -u, --unconditional-branches    afficher les compteurs de branchement inconditionnel aussi\n"
+msgstr "  -u, --unconditional-branches    Afficher aussi les compteurs de branchements inconditionnels\n"
 
 #: gcov.c:491
 #, c-format
 msgid "  -v, --version                   Print version number, then exit\n"
-msgstr "  -v, --version            exécuter le numéro de <version> de gcc, si installée\n"
+msgstr "  -v, --version                   Afficher le numéro de version puis quitter\n"
 
 #: gcov.c:502
 #, c-format
@@ -1010,17 +1026,17 @@ msgstr "\n"
 #: gcov.c:856
 #, c-format
 msgid "Cannot open intermediate output file %s\n"
-msgstr "Impossible d'ouvrir le fichier intermédiaire de sortie « %s »\n"
+msgstr "Impossible d'ouvrir le fichier de sortie intermédiaire %s\n"
 
 #: gcov.c:1139
 #, c-format
 msgid "%s:source file is newer than notes file '%s'\n"
-msgstr "%s : fichier source est plus récent que le fichier de notes « %s »\n"
+msgstr "%s: fichier source est plus récent que le fichier de notes « %s »\n"
 
 #: gcov.c:1144
 #, c-format
 msgid "(the message is displayed only once per source file)\n"
-msgstr ""
+msgstr "(le message est affiché une seule fois par fichier source)\n"
 
 #: gcov.c:1169
 #, c-format
@@ -1030,87 +1046,87 @@ msgstr "%s: Impossible d'ouvrir le fichier de notes\n"
 #: gcov.c:1175
 #, c-format
 msgid "%s:not a gcov notes file\n"
-msgstr "%s : n'est pas un fichier de notes gcov\n"
+msgstr "%s: n'est pas un fichier de notes gcov\n"
 
 #: gcov.c:1188
 #, c-format
 msgid "%s:version '%.4s', prefer '%.4s'\n"
-msgstr "%s : version « %.4s », préfère « %.4s »\n"
+msgstr "%s: version « %.4s », préférée « %.4s »\n"
 
 #: gcov.c:1234
 #, c-format
 msgid "%s:already seen blocks for '%s'\n"
-msgstr "%s : blocs déjà vus pour « %s »\n"
+msgstr "%s: blocs déjà vus pour « %s »\n"
 
 #: gcov.c:1365
 #, c-format
 msgid "%s:corrupted\n"
-msgstr "%s : corrompu\n"
+msgstr "%s: corrompu\n"
 
 #: gcov.c:1372
 #, c-format
 msgid "%s:no functions found\n"
-msgstr "%s: aucune fonction repérée\n"
+msgstr "%s: aucune fonction trouvée\n"
 
 #: gcov.c:1391
 #, c-format
 msgid "%s:cannot open data file, assuming not executed\n"
-msgstr "%s : ne peut ouvrir le fichier de données, supposé non exécuté\n"
+msgstr "%s: ne peut ouvrir le fichier de données, supposé non exécuté\n"
 
 #: gcov.c:1398
 #, c-format
 msgid "%s:not a gcov data file\n"
-msgstr "%s : n'est pas un fichier de données gcov\n"
+msgstr "%s: pas un fichier de données gcov\n"
 
 #: gcov.c:1411
 #, c-format
 msgid "%s:version '%.4s', prefer version '%.4s'\n"
-msgstr "%s : version « %.4s », préfère la version « %.4s »\n"
+msgstr "%s: version « %.4s », version préférée « %.4s »\n"
 
 #: gcov.c:1417
 #, c-format
 msgid "%s:stamp mismatch with notes file\n"
-msgstr "%s : estampille ne concorde par avec le fichier de notes\n"
+msgstr "%s: l'estampille ne concorde par avec le fichier de notes\n"
 
 #: gcov.c:1452
 #, c-format
 msgid "%s:unknown function '%u'\n"
-msgstr "%s : fonction inconnue « %u »\n"
+msgstr "%s: fonction inconnue « %u »\n"
 
 #: gcov.c:1466
 #, c-format
 msgid "%s:profile mismatch for '%s'\n"
-msgstr "%s : profile ne concorde pas pour « %s »\n"
+msgstr "%s: profile ne concorde pas pour « %s »\n"
 
 #: gcov.c:1485
 #, c-format
 msgid "%s:overflowed\n"
-msgstr "%s : débordement\n"
+msgstr "%s: débordement\n"
 
 #: gcov.c:1531
 #, c-format
 msgid "%s:'%s' lacks entry and/or exit blocks\n"
-msgstr "%s : « %s » manque de blocs d'entrée et/ou de sortie\n"
+msgstr "%s: il manque les blocs d'entrée ou de sortie de « %s »\n"
 
 #: gcov.c:1536
 #, c-format
 msgid "%s:'%s' has arcs to entry block\n"
-msgstr "%s : « %s » possède des arcs vers un bloc d'entrée\n"
+msgstr "%s: « %s » possède des arcs vers un bloc d'entrée\n"
 
 #: gcov.c:1544
 #, c-format
 msgid "%s:'%s' has arcs from exit block\n"
-msgstr "%s : « %s » possèdes des arcs à partir du bloc de sortie\n"
+msgstr "%s: « %s » possède des arcs à partir du bloc de sortie\n"
 
 #: gcov.c:1752
 #, c-format
 msgid "%s:graph is unsolvable for '%s'\n"
-msgstr "%s : graphe n'a pas de solution pour « %s »\n"
+msgstr "%s: le graphe n'a pas de solution pour « %s »\n"
 
 #: gcov.c:1860
 #, c-format
 msgid "Lines executed:%s of %d\n"
-msgstr "Lignes exécutées: %s de %d\n"
+msgstr "Lignes exécutées: %s sur %d\n"
 
 #: gcov.c:1863
 #, c-format
@@ -1125,12 +1141,12 @@ msgstr "%s « %s »\n"
 #: gcov.c:1878
 #, c-format
 msgid "Branches executed:%s of %d\n"
-msgstr "Branchements exécutés : %s de %d\n"
+msgstr "Branchements exécutés: %s sur %d\n"
 
 #: gcov.c:1882
 #, c-format
 msgid "Taken at least once:%s of %d\n"
-msgstr "Branchements pris au moins une fois : %s de %d\n"
+msgstr "Pris au moins une fois: %s sur %d\n"
 
 #: gcov.c:1888
 #, c-format
@@ -1140,7 +1156,7 @@ msgstr "Pas de branchement\n"
 #: gcov.c:1890
 #, c-format
 msgid "Calls executed:%s of %d\n"
-msgstr "Appels exécutés : %s de %d\n"
+msgstr "Appels exécutés: %s sur %d\n"
 
 #: gcov.c:1894
 #, c-format
@@ -1150,39 +1166,37 @@ msgstr "Pas d'appel\n"
 #: gcov.c:2142
 #, c-format
 msgid "%s:no lines for '%s'\n"
-msgstr "%s : pas de ligne pour « %s »\n"
+msgstr "%s: pas de ligne pour « %s »\n"
 
 #: gcov.c:2336
 #, c-format
 msgid "call   %2d returned %s\n"
 msgstr "appel  %2d a retourné %s\n"
 
-# FIXME: c'est de l'assembleur ?
 #: gcov.c:2341
 #, c-format
 msgid "call   %2d never executed\n"
-msgstr "call   %2d n'est jamais été exécuté\n"
+msgstr "appel  %2d jamais exécuté\n"
 
 #: gcov.c:2346
 #, c-format
 msgid "branch %2d taken %s%s\n"
-msgstr "branchement %2d a pris %s%s\n"
+msgstr "branchement %2d pris %s%s\n"
 
 #: gcov.c:2351
 #, c-format
 msgid "branch %2d never executed\n"
-msgstr "branchement %2d n'a jamais été exécuté\n"
+msgstr "branchement %2d jamais exécuté\n"
 
 #: gcov.c:2356
 #, c-format
 msgid "unconditional %2d taken %s\n"
-msgstr "inconditionnel %2d a pris %s\n"
+msgstr "inconditionnel %2d pris %s\n"
 
-# FIXME: c'est de l'assembleur ?
 #: gcov.c:2359
 #, c-format
 msgid "unconditional %2d never executed\n"
-msgstr "inconditionnel %2d n'a jamais été exécuté\n"
+msgstr "inconditionnel %2d jamais exécuté\n"
 
 #: gcov.c:2424
 #, c-format
@@ -1200,12 +1214,12 @@ msgstr "GCSE désactivé"
 #: gimple-ssa-isolate-paths.c:440 c/c-typeck.c:9773
 #, gcc-internal-format
 msgid "function returns address of local variable"
-msgstr "cette fonction retourne l'adresse d'une variable locale"
+msgstr "la fonction retourne l'adresse d'une variable locale"
 
 #: gimple-ssa-isolate-paths.c:442 gimple-ssa-isolate-paths.c:287
 #, gcc-internal-format
 msgid "function may return address of local variable"
-msgstr "cette fonction peut retourner l'adresse d'une variable locale"
+msgstr "la fonction peut retourner l'adresse d'une variable locale"
 
 #: incpath.c:72
 #, c-format
@@ -1240,24 +1254,24 @@ msgstr "Fin de la liste de recherche.\n"
 #. Opening quotation mark.
 #: intl.c:62
 msgid "`"
-msgstr ""
+msgstr "« "
 
 #. Closing quotation mark.
 #: intl.c:65
 msgid "'"
-msgstr ""
+msgstr " »"
 
 #: ipa-pure-const.c:187
 msgid "function might be candidate for attribute %<%s%>"
-msgstr "fonction peut être une candidate pour l'attribut %<%s%>"
+msgstr "la fonction peut être une candidate pour l'attribut %<%s%>"
 
 #: ipa-pure-const.c:188
 msgid "function might be candidate for attribute %<%s%> if it is known to return normally"
-msgstr "fonction peut être une candidate possible pour l'attribut %<%s%> si elle connue pour returner normallement"
+msgstr "la fonction pourrait être une candidate pour l'attribut %<%s%> si elle est connue pour retourner normalement"
 
 #: langhooks.c:373
 msgid "At top level:"
-msgstr "Hors de toute fonction :"
+msgstr "Au plus haut niveau:"
 
 #: langhooks.c:393 cp/error.c:3315
 #, c-format
@@ -1271,33 +1285,33 @@ msgstr "Dans la fonction %qs"
 
 #: langhooks.c:448 cp/error.c:3268
 msgid "    inlined from %qs at %r%s:%d:%d%R"
-msgstr ""
+msgstr "    mis en ligne depuis %qs à %r%s:%d:%d%R"
 
 # FRONT
 #: langhooks.c:453 cp/error.c:3273
 msgid "    inlined from %qs at %r%s:%d%R"
-msgstr ""
+msgstr "    mis en ligne depuis %qs à %r%s:%d%R"
 
 #: langhooks.c:459 cp/error.c:3279
 #, c-format
 msgid "    inlined from %qs"
-msgstr ""
+msgstr "    mis en ligne depuis %qs"
 
 #: loop-iv.c:3041 tree-ssa-loop-niter.c:2319
 msgid "assuming that the loop is not infinite"
-msgstr ""
+msgstr "suppose que la boucle n'est pas infinie"
 
 #: loop-iv.c:3042 tree-ssa-loop-niter.c:2320
 msgid "cannot optimize possibly infinite loops"
-msgstr ""
+msgstr "impossible d'optimiser des boucles peut-être infinies"
 
 #: loop-iv.c:3050 tree-ssa-loop-niter.c:2324
 msgid "assuming that the loop counter does not overflow"
-msgstr ""
+msgstr "suppose que le compteur de la boucle ne déborde pas"
 
 #: loop-iv.c:3051 tree-ssa-loop-niter.c:2325
 msgid "cannot optimize loop, the loop counter may overflow"
-msgstr ""
+msgstr "impossible d'optimiser la boucle car le compteur de la boucle peut déborder"
 
 #: lra-assigns.c:1417 reload1.c:2089
 msgid "this is the insn:"
@@ -1310,34 +1324,34 @@ msgstr "incapable de générer des recharges pour:"
 #. What to print when a switch has no documentation.
 #: opts.c:184
 msgid "This option lacks documentation."
-msgstr "Cette option manque de documentation."
+msgstr "Il manque la documentation pour cette option."
 
 #: opts.c:185
 msgid "Uses of this option are diagnosed."
-msgstr ""
+msgstr "Les utilisations de cette option sont diagnostiquées."
 
 #: opts.c:1061
 #, c-format
 msgid "default %d minimum %d maximum %d"
-msgstr ""
+msgstr "par défaut %d minimum %d maximum %d"
 
 #: opts.c:1128
 #, c-format
 msgid "Same as %s.  Use the latter option instead."
-msgstr ""
+msgstr "Comme %s. Utilisez plutôt cette dernière option."
 
 #: opts.c:1136
 #, c-format
 msgid "%s  Same as %s."
-msgstr ""
+msgstr "%s  Comme %s."
 
 #: opts.c:1207
 msgid "[default]"
-msgstr ""
+msgstr "[par défaut]"
 
 #: opts.c:1218
 msgid "[enabled]"
-msgstr ""
+msgstr "[activé]"
 
 #: opts.c:1218
 msgid "[disabled]"
@@ -1346,17 +1360,17 @@ msgstr "[désactivé]"
 #: opts.c:1237
 #, c-format
 msgid " No options with the desired characteristics were found\n"
-msgstr ""
+msgstr " Aucune option avec les caractéristiques désirées a été trouvée\n"
 
 #: opts.c:1246
 #, c-format
 msgid " None found.  Use --help=%s to show *all* the options supported by the %s front-end.\n"
-msgstr ""
+msgstr " Aucune trouvée.  Utilisez --help=%s pour voir *toutes* les options acceptées par l'interface %s.\n"
 
 #: opts.c:1252
 #, c-format
 msgid " All options with the desired characteristics have already been displayed\n"
-msgstr ""
+msgstr " Toutes les options avec les caractéristiques désirées ont déjà été affichées\n"
 
 #: opts.c:1337
 msgid "The following options are target specific"
@@ -1380,15 +1394,15 @@ msgstr "L'option --param reconnaît les paramètres suivant"
 
 #: opts.c:1355
 msgid "The following options are specific to just the language "
-msgstr "Les options suivantes sont spécifiques au langage "
+msgstr "Les options suivantes sont uniquement spécifiques au langage "
 
 #: opts.c:1357
 msgid "The following options are supported by the language "
-msgstr "Les options suivantes sont prises en charge pour le langage "
+msgstr "Les options suivantes sont prises en charge par le langage "
 
 #: opts.c:1368
 msgid "The following options are not documented"
-msgstr "Les options suivantes sont non documentées"
+msgstr "Les options suivantes ne sont pas documentées"
 
 #: opts.c:1370
 msgid "The following options take separate arguments"
@@ -1396,11 +1410,11 @@ msgstr "Les options suivantes prennent des arguments séparées"
 
 #: opts.c:1372
 msgid "The following options take joined arguments"
-msgstr "Les options suivantes prennent des arguments communs"
+msgstr "Les options suivantes prennent des arguments groupés"
 
 #: opts.c:1383
 msgid "The following options are language-related"
-msgstr "Les options suivantes concernent les langages"
+msgstr "Les options suivantes concernent des langages"
 
 #: plugin.c:796
 msgid "Event"
@@ -1413,12 +1427,12 @@ msgstr "Extensions"
 #: plugin.c:828
 #, c-format
 msgid "*** WARNING *** there are active plugins, do not report this as a bug unless you can reproduce it without enabling any plugins.\n"
-msgstr ""
+msgstr "*** ATTENTION *** il y a des extensions actives, ne rapportez pas ceci comme un bogue à moins de savoir le reproduire sans activer les extensions.\n"
 
 #. It's the compiler's fault.
 #: reload1.c:6113
 msgid "could not find a spill register"
-msgstr "ne peut repérer un registre de déversement"
+msgstr "n'a pu trouver un registre de déversement"
 
 #. It's the compiler's fault.
 #: reload1.c:8009
@@ -1427,7 +1441,7 @@ msgstr "mode VOID sur une sortie"
 
 #: reload1.c:8770
 msgid "failure trying to reload:"
-msgstr ""
+msgstr "échec en essayant de recharger:"
 
 #: rtl-error.c:116
 msgid "unrecognizable insn:"
@@ -1463,7 +1477,7 @@ msgstr "collect: recompilation de %s\n"
 #: tlink.c:627
 #, c-format
 msgid "collect: tweaking %s in %s\n"
-msgstr "collect: tordage de %s dans %s\n"
+msgstr "collect: ajuste %s dans %s\n"
 
 #: tlink.c:844
 #, c-format
@@ -1497,7 +1511,7 @@ msgstr "GMP version %s, MPFR version %s, MPC version %s, isl version %s\n"
 #: toplev.c:646
 #, c-format
 msgid "%s%swarning: %s header version %s differs from library version %s.\n"
-msgstr ""
+msgstr "%s%savertissement: l'en-tête %s version %s diffère de la version %s de la bibliothèque.\n"
 
 #: toplev.c:648
 #, c-format
@@ -1510,41 +1524,41 @@ msgstr "options passées : "
 
 #: toplev.c:850
 msgid "options enabled: "
-msgstr "options autorisées : "
+msgstr "options activées : "
 
 #: tree-diagnostic.c:295 c/c-decl.c:5203 c/c-typeck.c:6818 cp/error.c:682
 #: cp/error.c:995 c-family/c-pretty-print.c:408
 #, gcc-internal-format
 msgid "<anonymous>"
-msgstr "<anonymous>"
+msgstr "<anonyme>"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
-msgstr "fonction n'a pas été retenue pour l'enlignage"
+msgstr "fonction pas retenue pour être mise en ligne"
 
 #: cif-code.def:43
 msgid "caller is not optimized"
-msgstr ""
+msgstr "l'appelant n'est pas optimisé"
 
 #: cif-code.def:47
 msgid "function body not available"
-msgstr "corps de la fonction n'est pas disponible"
+msgstr "le corps de la fonction n'est pas disponible"
 
 #: cif-code.def:51
 msgid "redefined extern inline functions are not considered for inlining"
-msgstr "fonctions externes enlignes redéfinies n'ont pas été retenues pour l'enlignage"
+msgstr "les fonctions externes enlignes redéfinies ne sont pas retenues pour être mises en ligne"
 
 #: cif-code.def:56
 msgid "function not inlinable"
-msgstr "fonction ne peut être enligne"
+msgstr "la fonction ne peut être mise en ligne"
 
 #: cif-code.def:60
 msgid "function body can be overwritten at link time"
-msgstr "le corps de la fonction peut être remplacé durant l’édition de liaison"
+msgstr "le corps de la fonction peut être écrasé durant l'édition de liens"
 
 #: cif-code.def:64
 msgid "function not inline candidate"
-msgstr "la fonction n’est pas une candidate à l'enlignage"
+msgstr "la fonction n’est pas une candidate à la mise en ligne"
 
 #: cif-code.def:68
 msgid "--param large-function-growth limit reached"
@@ -1568,51 +1582,47 @@ msgstr "--param inline-unit-growth limite atteinte"
 
 #: cif-code.def:80
 msgid "recursive inlining"
-msgstr "enlignage récursif"
+msgstr "mise en ligne récursive"
 
 #: cif-code.def:84
 msgid "call is unlikely and code size would grow"
-msgstr ""
+msgstr "l'appel est improbable et la taille du code augmenterait"
 
 #: cif-code.def:88
 msgid "function not declared inline and code size would grow"
-msgstr ""
+msgstr "la fonction n'est pas déclarée en ligne et la taille du code augmenterait"
 
 #: cif-code.def:92
 msgid "mismatched arguments"
 msgstr "arguments non concordantes"
 
 #: cif-code.def:96
-#, fuzzy
-#| msgid "redefined extern inline functions are not considered for inlining"
 msgid "originally indirect function call not considered for inlining"
-msgstr "fonctions externes enlignes redéfinies n'ont pas été retenues pour l'enlignage"
+msgstr "l'appel de fonction initialement indirect n'est pas pris en compte pour la mise en ligne"
 
 #: cif-code.def:100
 msgid "indirect function call with a yet undetermined callee"
-msgstr ""
+msgstr "appel de fonction indirect vers un appelé encore à déterminer"
 
 #: cif-code.def:104
 msgid "exception handling personality mismatch"
-msgstr ""
+msgstr "désaccord sur la personnalité du traitement de l'exception"
 
 #: cif-code.def:109
-#, fuzzy
-#| msgid "Enable exception handling"
 msgid "non-call exception handling mismatch"
-msgstr "Autoriser le traitement des exceptions"
+msgstr "désaccord sur le traitement de l'exception sans appel"
 
 #: cif-code.def:113
 msgid "target specific option mismatch"
-msgstr "option spécifique de cible incohérente"
+msgstr "option spécifique à la cible incohérente"
 
 #: cif-code.def:117
 msgid "optimization level attribute mismatch"
-msgstr "attribut de niveau d’optimisation incohérent"
+msgstr "incohérence d'un attribut au niveau de l'optimisation"
 
 #: cif-code.def:121
 msgid "callee refers to comdat-local symbols"
-msgstr ""
+msgstr "l'appelé fait référence à des symboles locaux à comdat"
 
 #: cif-code.def:125
 msgid "function attribute mismatch"
@@ -1620,13 +1630,12 @@ msgstr "attribut de fonction incohérent"
 
 #: cif-code.def:129
 #, fuzzy
-#| msgid "your function will be miscompiled"
 msgid "caller function contains cilk spawn"
-msgstr "votre fonction sera mal compilée"
+msgstr "la fonction appelante contient du généré cilk"
 
 #: cif-code.def:133
 msgid "unreachable"
-msgstr "introuvable"
+msgstr "inatteignable"
 
 #. The remainder are real diagnostic types.
 #: diagnostic.def:33
@@ -1678,86 +1687,82 @@ msgstr "permerreur : "
 #: params.def:49
 #, no-c-format
 msgid "Maximal estimated outcome of branch considered predictable."
-msgstr ""
+msgstr "Estimation maximale de la conclusion de branches considérées prévisibles."
 
 #: params.def:54
 #, no-c-format
 msgid "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-isnsns-auto."
-msgstr ""
+msgstr "L'estimation de l'accélération minimale permettant au code de mise en ligne d'ignorer inline-insns-single et inline-isnsns-auto."
 
 #: params.def:71
 #, no-c-format
 msgid "The maximum number of instructions in a single function eligible for inlining."
-msgstr "Le nombre maximum d'instructions dans une fonction simple éligible au type enligne."
+msgstr "Le nombre maximum d'instructions dans une seule fonction éligible à la mise en ligne."
 
 #: params.def:83
 #, no-c-format
 msgid "The maximum number of instructions when automatically inlining."
-msgstr "Le nombre maximum d'instructions lorsqu'automatiquement de type enligne."
+msgstr "Le nombre maximum d'instructions lors de la mise en ligne automatique."
 
 #: params.def:88
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions in a single function eligible for inlining"
+#, no-c-format
 msgid "The maximum number of instructions inline function can grow to via recursive inlining."
-msgstr "Le nombre maximum d'instructions dans une fonction simple éligible au type enligne"
+msgstr "Le nombre maximum d'instructions auquel une fonction en ligne peut grandir par la mise en ligne récursive."
 
 #: params.def:93
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions in a single function eligible for inlining"
+#, no-c-format
 msgid "The maximum number of instructions non-inline function can grow to via recursive inlining."
-msgstr "Le nombre maximum d'instructions dans une fonction simple éligible au type enligne"
+msgstr "Le nombre maximum d'instructions auquel une fonction pas en ligne peut grandir par la mise en ligne récursive."
 
 #: params.def:98
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions for the RTL inliner"
+#, no-c-format
 msgid "The maximum depth of recursive inlining for inline functions."
-msgstr "Le nombre maximum d'instructions pour la fonction d'enlignage RTL"
+msgstr "La profondeur maximum de mise en ligne récursive pour les fonctions en ligne."
 
 #: params.def:103
 #, no-c-format
 msgid "The maximum depth of recursive inlining for non-inline functions."
-msgstr ""
+msgstr "La profondeur maximum de mise en ligne récursive pour les fonctions pas en ligne."
 
 #: params.def:108
 #, no-c-format
 msgid "Inline recursively only when the probability of call being executed exceeds the parameter."
-msgstr ""
+msgstr "Mettre en ligne récursif uniquement quand la probabilité que l'appel soit exécuté dépasse le paramètre."
 
 #: params.def:116
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions for the RTL inliner"
+#, no-c-format
 msgid "The maximum number of nested indirect inlining performed by early inliner."
-msgstr "Le nombre maximum d'instructions pour la fonction d'enlignage RTL"
+msgstr "Le nombre maximum de mises en ligne indirectes imbriquées réalisées par les premiers mis en ligne."
 
 #: params.def:122
 #, no-c-format
 msgid "Probability that COMDAT function will be shared with different compilation unit."
-msgstr ""
+msgstr "Probabilité qu'une fonction COMDAT soit partagée avec des unités de compilation différentes."
 
 #: params.def:128
 #, no-c-format
 msgid "Maximum probability of the entry BB of split region (in percent relative to entry BB of the function) to make partial inlining happen."
-msgstr ""
+msgstr "Probabilité maximum que l'entrée B8 d'une région scindée (en pourcent relatif à l'entrée B8 de la fonction) pour réaliser la mise en ligne partielle."
 
 #: params.def:135
 #, no-c-format
 msgid "If -fvariable-expansion-in-unroller is used, the maximum number of times that an individual variable will be expanded during loop unrolling."
-msgstr ""
+msgstr "Si -fvariable-expansion-in-unroller est utilisé, le nombre maximum de fois qu'une variable individuelle sera développée pendant le dépliage de la boucle."
 
 #: params.def:141
 #, no-c-format
 msgid "If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization."
-msgstr ""
+msgstr "Si -ftree-vectorize est utilisé, la limite minimale de boucle d'une boucle prise en compte pour la vectorisation."
 
 #: params.def:152
 #, no-c-format
 msgid "The maximum number of instructions to consider to fill a delay slot."
-msgstr "Le nombre maximum d'instructions à considérer pour remplir une slot délai."
+msgstr "Le nombre maximum d'instructions à considérer pour remplir un créneau de délai."
 
 #: params.def:163
 #, no-c-format
 msgid "The maximum number of instructions to consider to find accurate live register information."
-msgstr "Le nombre maximum d'instructions à considérer pour repérer un registre d'information actif et précis."
+msgstr "Le nombre maximum d'instructions à considérer pour trouver les informations correctes d'un registre actif."
 
 #: params.def:173
 #, no-c-format
