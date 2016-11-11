@@ -1882,7 +1882,7 @@ When used as an rvalue, the low-order bits of the @code{subreg} are
 taken from @var{reg} while the high-order bits may or may not be
 defined.
 
-The high-order bits of rvalues are in the following circumstances:
+The high-order bits of rvalues are defined in the following circumstances:
 
 @itemize
 @item @code{subreg}s of @code{mem}
