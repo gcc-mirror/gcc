@@ -1,3 +1,8 @@
+2016-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/72774
+	* g++.dg/parse/pr72774.C: New test.
+
 2016-11-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71575
