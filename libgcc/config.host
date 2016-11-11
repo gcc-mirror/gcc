@@ -1320,7 +1320,14 @@ esac
 
 case ${host} in
 i[34567]86-*-* | x86_64-*-*)
-	tmake_file="${tmake_file} i386/t-cpuinfo"
+	case ${host} in
+	*-musl*)
+		tmake_file="${tmake_file} i386/t-cpuinfo-static"
+		;;
+	*)
+		tmake_file="${tmake_file} i386/t-cpuinfo"
+		;;
+	esac
 	;;
 esac
 
