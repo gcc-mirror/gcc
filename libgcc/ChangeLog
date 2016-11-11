@@ -1,3 +1,9 @@
+2016-11-11  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.host (i[3456]86-*-musl*, x86_64-*-musl*): Use
+	i386/t-cpuinfo-static instead of i386/t-cpuinfo.
+	* config/i386/t-cpuinfo-static: New.
+
 2016-11-03  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-profiler.c (__gcov_time_profiler): Remove.
