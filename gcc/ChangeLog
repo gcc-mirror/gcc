@@ -1,3 +1,14 @@
+2016-11-11  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-isolate-paths.c (is_divmod_with_given_divisor): New
+	function.
+	(stmt_uses_name_in_undefined_way): New function, extracted from
+	find_implicit_erroneous_behavior and extended for div/mod case.
+	(stmt_uses_0_or_null_in_undefined_way): New function, extracted from
+	find_explicit_erroneous_behavior and extended for div/mod case.
+	(find_implicit_erroneous_behavior): Use new helper function.
+	(find_explicit_erroneous_behavior): Use new helper function.
+
 2016-11-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71575

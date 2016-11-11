@@ -1,3 +1,8 @@
+2016-11-11  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/isolate-6.c: New test.
+	* gcc.dg/tree-ssa/isolate-7.c: New test.
+
 2016-11-11  Bin Cheng  <bin.cheng@arm.com>
 
 	PR testsuite/78292
