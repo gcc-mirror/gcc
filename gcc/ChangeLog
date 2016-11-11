@@ -241,6 +241,7 @@
 	PR target/78262
 	* config/i386/i386.md (*<shift_insn><mode>3_doubleword): Mark
 	operand 0 as earlyclobber.
+	(*ashl<mode>3_doubleword): Ditto for all operand 0 alternatives.
 
 2016-11-09  Martin Liska  <mliska@suse.cz>
 
