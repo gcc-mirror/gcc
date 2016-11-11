@@ -1,3 +1,10 @@
+2016-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78310
+	* config/i386/i386.md (rotate to rotatex splitter): Avoid overflow
+	when calculating operand 2.
+	(rotate to rotatex zext splitter): Ditto.
+
 2016-11-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/78262
