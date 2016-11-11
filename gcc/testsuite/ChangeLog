@@ -1,3 +1,8 @@
+2016-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71225
+	* g++.dg/cpp0x/pr71225.C: New test.
+
 2016-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20161111-1.c: New test.
