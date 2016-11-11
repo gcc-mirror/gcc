@@ -9895,18 +9895,17 @@ reg_nonzero_bits_for_combine (const_rtx x, machine_mode mode,
 		  (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb),
 		   REGNO (x)))))
     {
-      unsigned HOST_WIDE_INT mask = rsp->last_set_nonzero_bits;
-
-      if (GET_MODE_PRECISION (rsp->last_set_mode) < GET_MODE_PRECISION (mode))
-	/* We don't know anything about the upper bits.  */
-	mask |= GET_MODE_MASK (mode) ^ GET_MODE_MASK (rsp->last_set_mode);
-
-      *nonzero &= mask;
+      /* Note that, even if the precision of last_set_mode is lower than that
+	 of mode, record_value_for_reg invoked nonzero_bits on the register
+	 with nonzero_bits_mode (because last_set_mode is necessarily integral
+	 and HWI_COMPUTABLE_MODE_P in this case) so bits in nonzero_bits_mode
+	 are all valid, hence in mode too since nonzero_bits_mode is defined
+	 to the largest HWI_COMPUTABLE_MODE_P mode.  */
+      *nonzero &= rsp->last_set_nonzero_bits;
       return NULL;
     }
 
   tem = get_last_value (x);
-
   if (tem)
     {
       if (SHORT_IMMEDIATES_SIGN_EXTEND)
@@ -9915,7 +9914,8 @@ reg_nonzero_bits_for_combine (const_rtx x, machine_mode mode,
 
       return tem;
     }
-  else if (nonzero_sign_valid && rsp->nonzero_bits)
+
+  if (nonzero_sign_valid && rsp->nonzero_bits)
     {
       unsigned HOST_WIDE_INT mask = rsp->nonzero_bits;
 

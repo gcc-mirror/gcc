@@ -1,3 +1,15 @@
+2016-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/59461
+	* doc/rtl.texi (paradoxical subregs): Add missing word.
+	* combine.c (reg_nonzero_bits_for_combine): Do not discard results
+	in modes with precision larger than that of last_set_mode.
+	* rtlanal.c (nonzero_bits1) <SUBREG>: If WORD_REGISTER_OPERATIONS is
+	set and LOAD_EXTEND_OP is appropriate, propagate results from inner
+	REGs to paradoxical SUBREGs.
+	(num_sign_bit_copies1) <SUBREG>: Likewise.  Check that the mode is not
+	larger than a word before invoking LOAD_EXTEND_OP on it.
+
 2016-11-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78243
