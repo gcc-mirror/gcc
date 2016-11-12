@@ -1,3 +1,9 @@
+2016-11-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/77957
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Don't
+	return early if !optional_tbtab.
+
 2016-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/59461
