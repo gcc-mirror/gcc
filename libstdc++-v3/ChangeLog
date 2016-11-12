@@ -1,5 +1,7 @@
 2016-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/ops.cc (is_empty): Fix typo in exception message.
+
 	* include/std/future (future_error): Fix public typo to private.
 
 2016-11-11  Jonathan Wakely  <jwakely@redhat.com>
