@@ -2963,15 +2963,6 @@ gfc_find_typebound_intrinsic_op (gfc_symbol* derived, bool* t,
 gfc_symtree*
 gfc_get_tbp_symtree (gfc_symtree **root, const char *name)
 {
-  gfc_symtree *result;
-
-  result = gfc_find_symtree (*root, name);
-  if (!result)
-    {
-      result = gfc_new_symtree (root, name);
-      gcc_assert (result);
-      result->n.tb = NULL;
-    }
-
-  return result;
+  gfc_symtree *result = gfc_find_symtree (*root, name);
+  return result ? result : gfc_new_symtree (root, name);
 }
