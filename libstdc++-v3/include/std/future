@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     const error_code&
     code() const noexcept { return _M_code; }
 
-  public:
+  private:
     explicit
     future_error(error_code __ec)
     : logic_error("std::future_error: " + __ec.message()), _M_code(__ec)
