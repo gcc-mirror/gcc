@@ -1681,7 +1681,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       size_t
       operator()(const __shared_ptr<_Tp, _Lp>& __s) const noexcept
-      { return std::hash<_Tp*>()(__s.get()); }
+      {
+	return hash<typename __shared_ptr<_Tp, _Lp>::element_type*>()(
+	    __s.get());
+      }
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION
