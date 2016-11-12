@@ -1054,7 +1054,7 @@ fs::is_empty(const path& p)
   error_code ec;
   bool e = is_empty(p, ec);
   if (ec)
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot check is file is empty",
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot check if file is empty",
 					     p, ec));
   return e;
 }
