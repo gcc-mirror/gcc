@@ -1,3 +1,13 @@
+2016-11-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/77501
+	* class.c (gfc_find_typebound_intrinsic_op): Remove an unnecessary
+	assert and nullification.
+	* decl.c (gfc_match_decl_type_spec): Use gfc_get_tbp_symtree,
+	fix indentation.
+	(gfc_match_generic): Remove an unnecessary assert.
+	Use gfc_get_tbp_symtree to avoid ICE.
+
 2016-11-10  Fritz O. Reese <fritzoreese@gmail.com>
 
 	PR fortran/78277
