@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-g -dA -std=gnu++11" } */
-/* { dg-final { scan-assembler-times DW_AT_inline 6 } } */
-/* { dg-final { scan-assembler-times DW_AT_object_pointer 37 } } */
+/* { dg-final { scan-assembler-times DW_AT_inline 6 { xfail *-*-aix* } } } */
+/* { dg-final { scan-assembler-times DW_AT_object_pointer 37 { xfail *-*-aix* } } } */
 namespace std
 {
 template <typename _Tp> struct integral_constant
