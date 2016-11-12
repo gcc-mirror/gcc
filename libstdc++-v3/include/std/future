@@ -95,11 +95,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   class future_error : public logic_error
   {
-    error_code 			_M_code;
-
   public:
-    explicit future_error(error_code __ec)
-    : logic_error("std::future_error: " + __ec.message()), _M_code(__ec)
+    explicit
+    future_error(future_errc __errc)
+    : future_error(std::make_error_code(__errc))
     { }
 
     virtual ~future_error() noexcept;
@@ -109,6 +108,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     const error_code&
     code() const noexcept { return _M_code; }
+
+  public:
+    explicit
+    future_error(error_code __ec)
+    : logic_error("std::future_error: " + __ec.message()), _M_code(__ec)
+    { }
+
+    friend void __throw_future_error(int);
+
+    error_code 			_M_code;
   };
 
   // Forward declarations.
@@ -426,8 +435,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (static_cast<bool>(__res))
 	  {
-	    error_code __ec(make_error_code(future_errc::broken_promise));
-	    __res->_M_error = make_exception_ptr(future_error(__ec));
+	    __res->_M_error =
+	      make_exception_ptr(future_error(future_errc::broken_promise));
 	    // This function is only called when the last asynchronous result
 	    // provider is abandoning this shared state, so noone can be
 	    // trying to make the shared state ready at the same time, and
