@@ -1,5 +1,8 @@
 2016-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/future (future_error): Make existing constructor
+	private and add constructor from future_errc.
+
 	* include/bits/shared_ptr.h (hash<shared_ptr<T>>): Use element_type.
 	* include/bits/shared_ptr_base.h (hash<__shared_ptr<T, L>>): Likewise.
 
