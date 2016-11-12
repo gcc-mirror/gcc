@@ -1,3 +1,8 @@
+2016-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h (hash<shared_ptr<T>>): Use element_type.
+	* include/bits/shared_ptr_base.h (hash<__shared_ptr<T, L>>): Likewise.
+
 2016-11-10  François Dumont  <fdumont@gcc.gnu.org>
 
 	* src/c++11/debug.cc (format_word): Delete.
