@@ -2565,6 +2565,12 @@ gnat_protect_expr (tree exp)
       return t;
     }
 
+  /* Likewise if we're indirectly referencing part of something.  */
+  if (code == COMPONENT_REF
+      && TREE_CODE (TREE_OPERAND (exp, 0)) == INDIRECT_REF)
+    return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
+		   TREE_OPERAND (exp, 1), NULL_TREE);
+
   /* If this is a COMPONENT_REF of a fat pointer, save the entire fat pointer.
      This may be more efficient, but will also allow us to more easily find
      the match for the PLACEHOLDER_EXPR.  */
@@ -2584,9 +2590,7 @@ gnat_protect_expr (tree exp)
   /* Otherwise reference, protect the address and dereference.  */
   return
     build_unary_op (INDIRECT_REF, type,
-		    save_expr (build_unary_op (ADDR_EXPR,
-					       build_reference_type (type),
-					       exp)));
+		    save_expr (build_unary_op (ADDR_EXPR, NULL_TREE, exp)));
 }
 
 /* This is equivalent to stabilize_reference_1 in tree.c but we take an extra
