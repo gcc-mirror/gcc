@@ -1,3 +1,10 @@
+2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (NO_OMIT_ADAFLAGS): Define.
+	(a-except.o): Replace -fno-inline with NO_INLINE_ADAFLAGS.
+	(s-memory.o): New rule.
+	(tracebak.o): Replace -fno-omit-frame-pointer with NO_OMIT_ADAFLAGS.
+
 2016-11-07  Tamar Christina  <tamar.christina@arm.com>
 
 	* adaint.c: Added signal.h for Windows.
