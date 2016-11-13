@@ -559,6 +559,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Impl _M_impl;
     };
 
+  // The default deleter for shared_ptr<T[]> and shared_ptr<T[N]>.
+  struct __sp_array_delete
+  {
+    template<typename _Yp>
+      void operator()(_Yp* __p) const { delete[] __p; }
+  };
 
   template<_Lock_policy _Lp>
     class __shared_count
@@ -581,6 +587,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __throw_exception_again;
 	    }
 	}
+
+      template<typename _Ptr>
+	__shared_count(_Ptr __p, /* is_array = */ false_type)
+	: __shared_count(__p)
+	{ }
+
+      template<typename _Ptr>
+	__shared_count(_Ptr __p, /* is_array = */ true_type)
+	: __shared_count(__p, __sp_array_delete{}, allocator<void>())
+	{ }
 
       template<typename _Ptr, typename _Deleter>
 	__shared_count(_Ptr __p, _Deleter __d)
@@ -848,8 +864,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_pi = nullptr;
     }
 
-  // Helper traits for shared_ptr
+#define __cpp_lib_shared_ptr_arrays 201603
 
+  // Helper traits for shared_ptr of array:
+
+  // A pointer type Y* is said to be compatible with a pointer type T* when
+  // either Y* is convertible to T* or Y is U[N] and T is U cv [].
   template<typename _Yp_ptr, typename _Tp_ptr>
     struct __sp_compatible_with
     : false_type
@@ -860,17 +880,161 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : is_convertible<_Yp*, _Tp*>::type
     { };
 
-  template<typename _Tp, _Lock_policy _Lp>
-    class __shared_ptr
+  template<typename _Up, size_t _Nm>
+    struct __sp_compatible_with<_Up(*)[_Nm], _Up(*)[]>
+    : true_type
+    { };
+
+  template<typename _Up, size_t _Nm>
+    struct __sp_compatible_with<_Up(*)[_Nm], const _Up(*)[]>
+    : true_type
+    { };
+
+  template<typename _Up, size_t _Nm>
+    struct __sp_compatible_with<_Up(*)[_Nm], volatile _Up(*)[]>
+    : true_type
+    { };
+
+  template<typename _Up, size_t _Nm>
+    struct __sp_compatible_with<_Up(*)[_Nm], const volatile _Up(*)[]>
+    : true_type
+    { };
+
+  // Test conversion from Y(*)[N] to U(*)[N] without forming invalid type Y[N].
+  template<typename _Up, size_t _Nm, typename _Yp, typename = void>
+    struct __sp_is_constructible_arrN
+    : false_type
+    { };
+
+  template<typename _Up, size_t _Nm, typename _Yp>
+    struct __sp_is_constructible_arrN<_Up, _Nm, _Yp, __void_t<_Yp[_Nm]>>
+    : is_convertible<_Yp(*)[_Nm], _Up(*)[_Nm]>::type
+    { };
+
+  // Test conversion from Y(*)[] to U(*)[] without forming invalid type Y[].
+  template<typename _Up, typename _Yp, typename = void>
+    struct __sp_is_constructible_arr
+    : false_type
+    { };
+
+  template<typename _Up, typename _Yp>
+    struct __sp_is_constructible_arr<_Up, _Yp, __void_t<_Yp[]>>
+    : is_convertible<_Yp(*)[], _Up(*)[]>::type
+    { };
+
+  // Trait to check if shared_ptr<T> can be constructed from Y*.
+  template<typename _Tp, typename _Yp>
+    struct __sp_is_constructible;
+
+  // When T is U[N], Y(*)[N] shall be convertible to T*;
+  template<typename _Up, size_t _Nm, typename _Yp>
+    struct __sp_is_constructible<_Up[_Nm], _Yp>
+    : __sp_is_constructible_arrN<_Up, _Nm, _Yp>::type
+    { };
+
+  // when T is U[], Y(*)[] shall be convertible to T*;
+  template<typename _Up, typename _Yp>
+    struct __sp_is_constructible<_Up[], _Yp>
+    : __sp_is_constructible_arr<_Up, _Yp>::type
+    { };
+
+  // otherwise, Y* shall be convertible to T*.
+  template<typename _Tp, typename _Yp>
+    struct __sp_is_constructible
+    : is_convertible<_Yp*, _Tp*>::type
+    { };
+
+
+  // Define operator* and operator-> for shared_ptr<T>.
+  template<typename _Tp, _Lock_policy _Lp,
+	   bool = is_array<_Tp>::value, bool = is_void<_Tp>::value>
+    class __shared_ptr_access
     {
     public:
       using element_type = _Tp;
 
-    private:
-      // Trait to check if shared_ptr<T> can be constructed from Y*.
-      template<typename _Tp1, typename _Yp>
-	using __sp_is_constructible = is_convertible<_Yp*, _Tp1*>;
+      element_type&
+      operator*() const noexcept
+      {
+	__glibcxx_assert(_M_get() != nullptr);
+	return *_M_get();
+      }
 
+      element_type*
+      operator->() const noexcept
+      {
+	_GLIBCXX_DEBUG_PEDASSERT(_M_get() != nullptr);
+	return _M_get();
+      }
+
+    private:
+      element_type*
+      _M_get() const noexcept
+      { return static_cast<const __shared_ptr<_Tp, _Lp>*>(this)->get(); }
+    };
+
+  // Define operator-> for shared_ptr<cv void>.
+  template<typename _Tp, _Lock_policy _Lp>
+    class __shared_ptr_access<_Tp, _Lp, false, true>
+    {
+    public:
+      using element_type = _Tp;
+
+      element_type*
+      operator->() const noexcept
+      {
+	_GLIBCXX_DEBUG_PEDASSERT(_M_get() != nullptr);
+	return static_cast<const __shared_ptr<_Tp, _Lp>*>(this)->get();
+      }
+    };
+
+  // Define operator[] for shared_ptr<T[]> and shared_ptr<T[N]>.
+  template<typename _Tp, _Lock_policy _Lp>
+    class __shared_ptr_access<_Tp, _Lp, true, false>
+    {
+    public:
+      using element_type = typename remove_extent<_Tp>::type;
+
+#if __cplusplus <= 201402L
+      [[__deprecated__("shared_ptr<T[]>::operator* is absent from C++17")]]
+      element_type&
+      operator*() const noexcept
+      {
+	__glibcxx_assert(_M_ptr != nullptr);
+	return *_M_get();
+      }
+
+      [[__deprecated__("shared_ptr<T[]>::operator-> is absent from C++17")]]
+      element_type*
+      operator->() const noexcept
+      {
+	_GLIBCXX_DEBUG_PEDASSERT(_M_get() != nullptr);
+	return _M_get();
+      }
+#endif
+
+      element_type&
+      operator[](ptrdiff_t __i) const
+      {
+	__glibcxx_assert(_M_get() != nullptr);
+	__glibcxx_assert(!extent<_Tp>::value || __i < extent<_Tp>::value);
+	return _M_get()[__i];
+      }
+
+    private:
+      element_type*
+      _M_get() const noexcept
+      { return static_cast<const __shared_ptr<_Tp, _Lp>*>(this)->get(); }
+    };
+
+  template<typename _Tp, _Lock_policy _Lp>
+    class __shared_ptr
+    : public __shared_ptr_access<_Tp, _Lp>
+    {
+    public:
+      using element_type = typename remove_extent<_Tp>::type;
+
+    private:
       // Constraint for taking ownership of a pointer of type _Yp*:
       template<typename _Yp>
 	using _SafeConv
@@ -888,9 +1052,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Constraint for construction from unique_ptr:
       template<typename _Yp, typename _Del, typename _Res = void,
 	       typename _Ptr = typename unique_ptr<_Yp, _Del>::pointer>
-	using _UniqCompatible = typename enable_if<
-	  is_convertible<_Ptr, element_type*>::value
-	  , _Res>::type;
+	using _UniqCompatible = typename enable_if<__and_<
+	  __sp_compatible_with<_Yp*, _Tp*>, is_convertible<_Ptr, element_type*>
+	  >::value, _Res>::type;
 
       // Constraint for assignment from unique_ptr:
       template<typename _Yp, typename _Del>
@@ -909,7 +1073,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Yp, typename = _SafeConv<_Yp>>
 	explicit
 	__shared_ptr(_Yp* __p)
-	: _M_ptr(__p), _M_refcount(__p)
+	: _M_ptr(__p), _M_refcount(__p, typename is_array<_Tp>::type())
 	{
 	  static_assert( !is_void<_Yp>::value, "incomplete type" );
 	  static_assert( sizeof(_Yp) > 0, "incomplete type" );
@@ -995,6 +1159,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_enable_shared_from_this_with(__raw);
 	}
 
+#if __cplusplus <= 201402L && _GLIBCXX_USE_DEPRECATED
+    protected:
+      // If an exception is thrown this constructor has no effect.
+      template<typename _Tp1, typename _Del,
+	       typename enable_if<__and_<
+		 __not_<is_array<_Tp>>, is_array<_Tp1>,
+	         is_convertible<typename unique_ptr<_Tp1, _Del>::pointer, _Tp*>
+	       >::value, bool>::type = true>
+	__shared_ptr(unique_ptr<_Tp1, _Del>&& __r, __sp_array_delete)
+	: _M_ptr(__r.get()), _M_refcount()
+	{
+	  auto __raw = _S_raw_ptr(__r.get());
+	  _M_refcount = __shared_count<_Lp>(std::move(__r));
+	  _M_enable_shared_from_this_with(__raw);
+	}
+    public:
+#endif
+
 #if _GLIBCXX_USE_DEPRECATED
       // Postcondition: use_count() == 1 and __r.get() == 0
       template<typename _Yp, typename = _Compatible<_Yp>>
@@ -1067,21 +1249,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_SafeConv<_Yp>
 	reset(_Yp* __p, _Deleter __d, _Alloc __a)
         { __shared_ptr(__p, __d, std::move(__a)).swap(*this); }
-
-      // Allow class instantiation when _Tp is [cv-qual] void.
-      typename std::add_lvalue_reference<element_type>::type
-      operator*() const noexcept
-      {
-	__glibcxx_assert(_M_ptr != 0);
-	return *_M_ptr;
-      }
-
-      element_type*
-      operator->() const noexcept
-      {
-	_GLIBCXX_DEBUG_PEDASSERT(_M_ptr != 0);
-	return _M_ptr;
-      }
 
       element_type*
       get() const noexcept
@@ -1193,7 +1360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Yp>
 	struct __has_esft_base<_Yp, __void_t<__esft_base_t<_Yp>>>
-	: true_type { };
+	: __not_<is_array<_Tp>> { }; // No enable shared_from_this for arrays
 
       template<typename _Yp>
 	typename enable_if<__has_esft_base<_Yp>::value>::type
@@ -1428,7 +1595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using _Assignable = _Compatible<_Yp, __weak_ptr&>;
 
     public:
-      using element_type = _Tp;
+      using element_type = typename remove_extent<_Tp>::type;
 
       constexpr __weak_ptr() noexcept
       : _M_ptr(nullptr), _M_refcount()

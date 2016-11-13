@@ -1,3 +1,41 @@
+2016-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* doc/html/manual/status.html: Regenerate.
+	* include/bits/shared_ptr.h (shared_ptr(unique_ptr<_Yp, _Del>)): Add
+	extension constructor to maintain C++14 behaviour.
+	* include/bits/shared_ptr_base.h (__sp_array_delete): Add new struct.
+	(__shared_count(_Ptr, false_type), __shared_count(_Ptr, true_type)):
+	New constructors.
+	(__sp_compatible_with, __sp_is_constructible): Add specializations
+	for array support.
+	(__sp_is_constructible_arr, __sp_is_constructible_arrN): New helpers.
+	(__shared_ptr_access): New base class for observer member functions.
+	(__shared_ptr::element_type): Use remove_extent.
+	(__shared_ptr::_UniqCompatible): Add __sp_compatible_with check.
+	(__shared_ptr(_Yp*)): Use tag dispatching to call new __shared_count
+	constructor.
+	(__shared_ptr(unique_ptr<_Yp, _Del>)): Add extension constructor.
+	(__shared_ptr::operator*, __shared_ptr::operator->): Remove and
+	inherit from __shared_ptr_access base class.
+	(__shared_ptr::__has_esft_base): Return false for array types.
+	(__weak_ptr::element_type): Use remove_extent.
+	* include/experimental/bits/shared_ptr.h (__libfund_v1): Remove.
+	(__shared_ptr<__libfund_v1<_Tp>>): Remove specializations.
+	(__wak_ptr<__libfund_v1<_Tp>>): Likewise.
+	(experimental::__sp_compatible_v): Redefine using
+	__sp_compatible_with.
+	(experimental::__sp_is_constructible_v): Redefine using
+	__sp_is_constructible.
+	(get_deleter, operator<<): Change argument from __shared_ptr to
+	shared_ptr.
+	* testsuite/20_util/shared_ptr/cons/array.cc: New test.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_array.cc: Adjust for
+	new behaviour.
+	* testsuite/20_util/shared_ptr/observers/array.cc: Test observers for
+	arrays.
+	* testsuite/20_util/shared_ptr/observers/array_neg.cc: New test.
+
 2016-11-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement P0403R1, Literal suffixes for basic_string_view.
