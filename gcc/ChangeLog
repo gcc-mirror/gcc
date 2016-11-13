@@ -1,3 +1,9 @@
+2016-11-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/78336
+	* config/rs6000/rs6000.c (rs6000_asm_weaken_decl): Protect
+	ASM_OUTPUT_DEF.
+
 2016-11-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/77957
