@@ -1,3 +1,8 @@
+2016-11-13  Bob Duff  <duff@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): In assertion about known
+	Esize, protect with !is_type and change !Unknown_Esize to Known_Esize.
+
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>:
