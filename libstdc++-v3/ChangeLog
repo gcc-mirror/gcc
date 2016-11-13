@@ -1,3 +1,16 @@
+2016-11-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement P0403R1, Literal suffixes for basic_string_view.
+	* include/std/string_view
+	(operator""sv(const char*, size_t)): New.
+	(operator""sv(const wchar_t*, size_t)): Likewise.
+	(operator""sv(const char16_t*, size_t)): Likewise.
+	(operator""sv(const char32_t*, size_t)): Likewise.
+	* testsuite/21_strings/basic_string_view/literals/types.cc: New.
+	* testsuite/21_strings/basic_string_view/literals/values.cc: Likewise.
+	* testsuite/experimental/string_view/literals/values.cc: Add
+	tests for literals with embedded NULs.
+
 2016-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/ops.cc (is_empty): Fix typo in exception message.
