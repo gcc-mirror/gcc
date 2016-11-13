@@ -294,6 +294,8 @@ pp_indent (pretty_printer *pp)
 	 integer.
    %Ns: likewise, but length specified as constant in the format string.
    Flag 'q': quote formatted text (must come immediately after '%').
+   %Z: Requires two arguments - array of int, and len. Prints elements
+   of the array.
 
    Arguments can be used sequentially, or through %N$ resp. *N$
    notation Nth argument after the format string.  If %N$ / *N$
@@ -609,6 +611,23 @@ pp_format (pretty_printer *pp, text_info *text)
 	    pp_integer_with_precision
 	      (pp, *text->args_ptr, precision, unsigned, "u");
 	  break;
+
+	case 'Z':
+	  {
+	    int *v = va_arg (*text->args_ptr, int *);
+	    unsigned len = va_arg (*text->args_ptr, unsigned); 
+
+	    for (unsigned i = 0; i < len; ++i)
+	      {
+		pp_scalar (pp, "%i", v[i]);
+		if (i < len - 1)
+		  {
+		    pp_comma (pp);
+		    pp_space (pp);
+		  }
+	      }
+	    break;
+	 }
 
 	case 'x':
 	  if (wide)
@@ -1423,6 +1442,13 @@ test_pp_format ()
   assert_pp_format_colored (SELFTEST_LOCATION,
 			    "`\33[01m\33[Kfoo\33[m\33[K' 12345678", "%qs %x",
 			    "foo", 0x12345678);
+
+  /* Verify %Z.  */
+  int v[] = { 1, 2, 3 }; 
+  ASSERT_PP_FORMAT_3 ("1, 2, 3 12345678", "%Z %x", v, 3, 0x12345678);
+
+  int v2[] = { 0 }; 
+  ASSERT_PP_FORMAT_3 ("0 12345678", "%Z %x", v2, 1, 0x12345678);
 
   /* Verify that combinations work, along with unformatted text.  */
   assert_pp_format (SELFTEST_LOCATION,

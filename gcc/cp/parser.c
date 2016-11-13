@@ -6925,6 +6925,29 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		warn_for_memset (input_location, arg0, arg2, literal_mask);
 	      }
 
+	    if (TREE_CODE (postfix_expression) == FUNCTION_DECL
+		&& warn_restrict)
+	      {
+		unsigned i;
+		tree arg;
+		FOR_EACH_VEC_SAFE_ELT (args, i, arg)
+		  TREE_VISITED (arg) = 0;
+
+		unsigned param_pos = 0;
+		for (tree decl = DECL_ARGUMENTS (postfix_expression);
+		     decl != NULL_TREE;
+		     decl = DECL_CHAIN (decl), param_pos++)
+		  {
+		    tree type = TREE_TYPE (decl);
+		    if (POINTER_TYPE_P (type) && TYPE_RESTRICT (type)
+			&& !TYPE_READONLY (TREE_TYPE (type)))
+		      warn_for_restrict (param_pos, args);
+		  }
+
+		FOR_EACH_VEC_SAFE_ELT (args, i, arg)
+		  TREE_VISITED (arg) = 0;
+	      }
+
 	    if (TREE_CODE (postfix_expression) == COMPONENT_REF)
 	      {
 		tree instance = TREE_OPERAND (postfix_expression, 0);
