@@ -1,3 +1,10 @@
+2016-11-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/66366
+	* resolve.c (resolve_component): Move check for C437
+	to ...
+	* decl.c (build_struct): ... here. Fix indentation.
+
 2016-11-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/77501

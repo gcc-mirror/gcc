@@ -18,7 +18,7 @@ contains
   function pc(pd)
     type(p) :: pc
     class(d), intent(in), target :: pd
-    pc%cc => pd   ! { dg-error "Non-POINTER in pointer association context" }
+    pc%cc => pd   ! { dg-error "is not a member of" }
   end function
 
 end
