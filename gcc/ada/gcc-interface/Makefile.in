@@ -107,6 +107,7 @@ ADA_CFLAGS =
 ADAFLAGS = -W -Wall -gnatpg -gnata
 FORCE_DEBUG_ADAFLAGS = -g
 NO_INLINE_ADAFLAGS = -fno-inline
+NO_OMIT_ADAFLAGS = -fno-omit-frame-pointer
 NO_SIBLING_ADAFLAGS = -fno-optimize-sibling-calls
 NO_REORDER_ADAFLAGS = -fno-toplevel-reorder
 GNATLIBFLAGS = -W -Wall -gnatpg -nostdinc
@@ -3016,8 +3017,8 @@ s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 # use -O1 otherwise gdb isn't able to get a full backtrace on mips targets.
 
 a-except.o  : a-except.adb a-except.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
-	      $(NO_REORDER_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(NO_INLINE_ADAFLAGS) \
+	      $(NO_REORDER_ADAFLAGS) -O1 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
 # compile s-excdeb.o without optimization and with debug info to let the
 # debugger set breakpoints and inspect subprogram parameters on exception
@@ -3041,11 +3042,19 @@ a-tags.o  : a-tags.adb a-tags.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	      $< $(OUTPUT_OPTION)
 
-# need to keep the frame pointer in this file to pop the stack properly on
+# force no sibling call optimization on s-memory.o to avoid turning the
+# tail recursion in Alloc into a loop that confuses branch prediction.
+
+s-memory.o  : s-memory.adb s-memory.ads
+	$(CC) -c $(ALL_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) \
+	      $< $(OUTPUT_OPTION)
+
+# need to keep the frame pointer in tracebak.o to pop the stack properly on
 # some targets.
+
 tracebak.o  : tracebak.c tb-gcc.c
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
-	      $(INCLUDES) -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
+	      $(INCLUDES) $(NO_OMIT_ADAFLAGS) $< $(OUTPUT_OPTION)
 
 adadecode.o : adadecode.c adadecode.h
 aux-io.o  : aux-io.c
