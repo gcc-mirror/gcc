@@ -1,3 +1,16 @@
+2016-11-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* ipa-cp.c (ipa_get_jf_pass_through_result): Skip unary expressions.
+	(propagate_vr_accross_jump_function): Handle unary expressions.
+	* ipa-prop.c (ipa_set_jf_unary_pass_through): New.
+	(load_from_param_1): New.
+	(load_from_unmodified_param): Factor common part into load_from_param_1.
+	(load_from_param): New.
+	(compute_complex_assign_jump_func): Handle unary expressions.
+	(update_jump_functions_after_inlining): Likewise.
+	(ipa_write_jump_function): Likewise.
+	(ipa_read_jump_function): Likewise.
+
 2016-11-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR c/35503

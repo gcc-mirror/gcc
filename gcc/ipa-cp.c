@@ -1219,13 +1219,19 @@ ipa_get_jf_pass_through_result (struct ipa_jump_func *jfunc, tree input)
     return NULL_TREE;
 
   if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
-      == tcc_comparison)
-    restype = boolean_type_node;
+      == tcc_unary)
+    res = fold_unary (ipa_get_jf_pass_through_operation (jfunc),
+		      TREE_TYPE (input), input);
   else
-    restype = TREE_TYPE (input);
-  res = fold_binary (ipa_get_jf_pass_through_operation (jfunc), restype,
-		     input, ipa_get_jf_pass_through_operand (jfunc));
-
+    {
+      if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
+	  == tcc_comparison)
+	restype = boolean_type_node;
+      else
+	restype = TREE_TYPE (input);
+      res = fold_binary (ipa_get_jf_pass_through_operation (jfunc), restype,
+			 input, ipa_get_jf_pass_through_operand (jfunc));
+    }
   if (res && !is_gimple_ip_invariant (res))
     return NULL_TREE;
 
@@ -1857,13 +1863,32 @@ propagate_vr_accross_jump_function (cgraph_edge *cs,
   if (jfunc->type == IPA_JF_PASS_THROUGH)
     {
       struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-      if (dest_lat->bottom_p ())
-	return false;
       int src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
       src_lats = ipa_get_parm_lattices (caller_info, src_idx);
 
       if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
 	return dest_lat->meet_with (src_lats->m_value_range);
+      else if (param_type
+	       && (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
+		   == tcc_unary))
+	{
+	  value_range vr;
+	  memset (&vr, 0, sizeof (vr));
+	  tree operand_type = ipa_get_type (caller_info, src_idx);
+	  enum tree_code operation = ipa_get_jf_pass_through_operation (jfunc);
+
+	  if (src_lats->m_value_range.bottom_p ())
+	    return dest_lat->set_to_bottom ();
+
+	  extract_range_from_unary_expr (&vr,
+					 operation,
+					 param_type,
+					 &src_lats->m_value_range.m_vr,
+					 operand_type);
+	  if (vr.type == VR_RANGE
+	      || vr.type == VR_ANTI_RANGE)
+	    return dest_lat->meet_with (&vr);
+	}
     }
   else if (jfunc->type == IPA_JF_CONST)
     {
