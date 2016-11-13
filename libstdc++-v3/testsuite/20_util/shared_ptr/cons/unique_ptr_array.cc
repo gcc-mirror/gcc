@@ -22,6 +22,13 @@
 #include <memory>
 #include <testsuite_hooks.h>
 
+#if __cpp_lib_shared_ptr_arrays >= 201603
+# define SHARED_PTR_ARRAYS
+#endif
+#if __cpp_lib_enable_shared_from_this >= 201603
+# define WEAK_FROM_THIS
+#endif
+
 int destroyed = 0;
 
 struct A : std::enable_shared_from_this<A>
@@ -36,12 +43,22 @@ int
 test01()
 {
   std::unique_ptr<A[]> up(new A[2]);
+#ifdef SHARED_PTR_ARRAYS
+  std::shared_ptr<A[]> sp(std::move(up));
+#else
   std::shared_ptr<A> sp(std::move(up));
+#endif
   VERIFY( up.get() == 0 );
   VERIFY( sp.get() != 0 );
   VERIFY( sp.use_count() == 1 );
 
+#ifdef SHARED_PTR_ARRAYS
+# ifdef WEAK_FROM_THIS
+  VERIFY( sp[0].weak_from_this().expired() );
+# endif
+#else
   VERIFY( sp->shared_from_this() != nullptr );
+#endif
 
   sp.reset();
   VERIFY( destroyed == 2 );

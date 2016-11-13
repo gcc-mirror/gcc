@@ -277,6 +277,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	shared_ptr(unique_ptr<_Yp, _Del>&& __r)
 	: __shared_ptr<_Tp>(std::move(__r)) { }
 
+#if __cplusplus <= 201402L && _GLIBCXX_USE_DEPRECATED
+      // This non-standard constructor exists to support conversions that
+      // were possible in C++11 and C++14 but are ill-formed in C++17.
+      // If an exception is thrown this constructor has no effect.
+      template<typename _Yp, typename _Del,
+		_Constructible<unique_ptr<_Yp, _Del>, __sp_array_delete>* = 0>
+	shared_ptr(unique_ptr<_Yp, _Del>&& __r)
+	: __shared_ptr<_Tp>(std::move(__r), __sp_array_delete()) { }
+#endif
+
       /**
        *  @brief  Construct an empty %shared_ptr.
        *  @post   use_count() == 0 && get() == nullptr
