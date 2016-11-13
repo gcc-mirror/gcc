@@ -1866,9 +1866,18 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	}
       else if (current_attr.allocatable == 0)
 	{
-      gfc_error ("Component at %C must have the POINTER attribute");
-      return false;
+	  gfc_error ("Component at %C must have the POINTER attribute");
+	  return false;
+	}
     }
+
+  /* F03:C437.  */
+  if (current_ts.type == BT_CLASS
+      && !(current_attr.pointer || current_attr.allocatable))
+    {
+      gfc_error ("Component %qs with CLASS at %C must be allocatable "
+                 "or pointer", name);
+      return false;
     }
 
   if (gfc_current_block ()->attr.pointer && (*as)->rank != 0)

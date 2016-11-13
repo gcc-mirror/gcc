@@ -13587,19 +13587,6 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       return false;
     }
 
-  /* C437.  */
-  if (c->ts.type == BT_CLASS && c->attr.flavor != FL_PROCEDURE
-      && (!c->attr.class_ok
-          || !(CLASS_DATA (c)->attr.class_pointer
-               || CLASS_DATA (c)->attr.allocatable)))
-    {
-      gfc_error ("Component %qs with CLASS at %L must be allocatable "
-                 "or pointer", c->name, &c->loc);
-      /* Prevent a recurrence of the error.  */
-      c->ts.type = BT_UNKNOWN;
-      return false;
-    }
-
   /* If an allocatable component derived type is of the same type as
      the enclosing derived type, we need a vtable generating so that
      the __deallocate procedure is created.  */
