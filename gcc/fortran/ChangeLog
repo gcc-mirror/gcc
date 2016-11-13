@@ -1,5 +1,11 @@
 2016-11-13  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/60952
+	* decl.c (match_procedure_in_type): Apply the FL_PROCEDURE attribute
+	to the target procedure.
+
+2016-11-13  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/66366
 	* resolve.c (resolve_component): Move check for C437
 	to ...
