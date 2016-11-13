@@ -1,5 +1,10 @@
 2016-11-13  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/60952
+	* gfortran.dg/typebound_proc_34.f90: New test.
+
+2016-11-13  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/66366
 	* gfortran.dg/class_57.f90: Changed error message.
 	* gfortran.dg/class_60.f90: New test.
