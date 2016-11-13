@@ -1185,11 +1185,12 @@ sem_function::merge (sem_item *alias_item)
 	    fprintf (dump_file,
 		     "Wrapper cannot be created because of COMDAT\n");
 	}
-      else if (DECL_STATIC_CHAIN (alias->decl))
+      else if (DECL_STATIC_CHAIN (alias->decl)
+	       || DECL_STATIC_CHAIN (original->decl))
         {
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "Can not create wrapper of nested functions.\n");
+		     "Cannot create wrapper of nested function.\n");
         }
       /* TODO: We can also deal with variadic functions never calling
 	 VA_START.  */
