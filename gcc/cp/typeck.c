@@ -3835,6 +3835,10 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
 	{
 	  for (; typetail != void_list_node; ++i)
 	    {
+	      /* After DR777, with explicit template args we can end up with a
+		 default argument followed by no default argument.  */
+	      if (!TREE_PURPOSE (typetail))
+		break;
 	      tree parmval
 		= convert_default_arg (TREE_VALUE (typetail),
 				       TREE_PURPOSE (typetail),
@@ -3850,9 +3854,10 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
 		break;
 	    }
 	}
-      else
+
+      if (typetail && typetail != void_list_node)
 	{
-          if (complain & tf_error)
+	  if (complain & tf_error)
 	    error_args_num (input_location, fndecl, /*too_many_p=*/false);
 	  return -1;
 	}
