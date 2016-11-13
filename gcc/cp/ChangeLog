@@ -1,5 +1,8 @@
 2016-11-12  Jason Merrill  <jason@redhat.com>
 
+	CWG 2233
+	* typeck.c (convert_arguments): Handle default arg followed by none.
+
 	* constexpr.c (potential_constant_expression_1): REALPART_EXPR and
 	IMAGPART_EXPR can be lvalues.
 
