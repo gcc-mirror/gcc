@@ -5105,6 +5105,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 #endif
       return RECUR (t, any);
 
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
     case COMPONENT_REF:
     case BIT_FIELD_REF:
     case ARROW_EXPR:
@@ -5276,8 +5278,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	return true;
       /* fall through.  */
 
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
     case CONJ_EXPR:
     case SAVE_EXPR:
     case FIX_TRUNC_EXPR:

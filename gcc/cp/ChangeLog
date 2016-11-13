@@ -1,5 +1,8 @@
 2016-11-12  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (potential_constant_expression_1): REALPART_EXPR and
+	IMAGPART_EXPR can be lvalues.
+
 	DR 374
 	PR c++/56840
 	* pt.c (check_specialization_namespace): Allow any enclosing
