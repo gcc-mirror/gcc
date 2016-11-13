@@ -2813,7 +2813,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		}
 	      else
 		{
-		  if (!TREE_VISITED (stub)
+		  if (RECORD_OR_UNION_TYPE_P (typ)
 		      && DECL_SOURCE_FILE (stub) == source_file_base)
 		    dump_nested_types (buffer, stub, stub, true, spc);
 
@@ -2821,7 +2821,8 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		  dump_generic_ada_node (buffer, t, type, spc, false, true);
 		  pp_string (buffer, " is ");
 		  dump_generic_ada_node (buffer, typ, type, spc, false, true);
-		  pp_semicolon (buffer);
+		  pp_string (buffer, ";  -- ");
+		  dump_sloc (buffer, t);
 		}
 
 	      TREE_VISITED (t) = 1;
