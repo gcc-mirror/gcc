@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "intl.h"
 #include "asan.h"
+#include "gcc-rich-location.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -2160,4 +2161,59 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
 	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
 		    "with boolean expression is always false", cst);
     }
+}
+
+/* Warn if an argument at position param_pos is passed to a
+   restrict-qualified param, and it aliases with another argument.  */
+
+void
+warn_for_restrict (unsigned param_pos, vec<tree, va_gc> *args)
+{
+  tree arg = (*args)[param_pos];
+  if (TREE_VISITED (arg) || operand_equal_p (arg, null_pointer_node, 0))
+    return;
+
+  location_t loc = EXPR_LOC_OR_LOC (arg, input_location);
+  gcc_rich_location richloc (loc);
+
+  unsigned i;
+  tree current_arg;
+  int *arg_positions = XNEWVEC (int, args->length ());
+  unsigned arg_positions_len = 0;
+
+  FOR_EACH_VEC_ELT (*args, i, current_arg) 
+    {
+      if (i == param_pos)
+	continue;
+
+      tree current_arg = (*args)[i];
+      if (operand_equal_p (arg, current_arg, 0))
+	{
+	  TREE_VISITED (current_arg) = 1; 
+	  arg_positions[arg_positions_len++] = (i + 1);
+	}
+    }
+
+  if (arg_positions_len == 0)
+    {
+      free (arg_positions);
+      return;
+    }
+
+  for (unsigned i = 0; i < arg_positions_len; i++)
+    {
+      unsigned pos = arg_positions[i];
+      tree arg = (*args)[pos - 1];
+      if (EXPR_HAS_LOCATION (arg))
+	richloc.add_range (EXPR_LOCATION (arg), false);
+    }
+
+  warning_at_rich_loc_n (&richloc, OPT_Wrestrict, arg_positions_len,
+			 "passing argument %i to restrict-qualified parameter"
+			 " aliases with argument %Z",
+			 "passing argument %i to restrict-qualified parameter"
+			 " aliases with arguments %Z",
+			 param_pos + 1, arg_positions, arg_positions_len);
+
+  free (arg_positions);
 }

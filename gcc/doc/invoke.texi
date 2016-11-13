@@ -292,7 +292,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wparentheses -Wno-pedantic-ms-format @gol
 -Wplacement-new -Wplacement-new=@var{n} @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
--Wno-pragmas -Wredundant-decls  -Wno-return-local-addr @gol
+-Wno-pragmas -Wredundant-decls -Wrestrict  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshadow=global, -Wshadow=local, -Wshadow=compatible-local @gol
 -Wshift-overflow -Wshift-overflow=@var{n} @gol
@@ -6186,6 +6186,12 @@ reduce the padding and so make the structure smaller.
 @opindex Wno-redundant-decls
 Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
+
+@item -Wrestrict
+@opindex Wrestrict
+@opindex Wno-restrict
+Warn when an argument passed to a restrict-qualified parameter
+aliases with another argument.
 
 @item -Wnested-externs @r{(C and Objective-C only)}
 @opindex Wnested-externs

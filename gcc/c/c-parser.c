@@ -8451,6 +8451,28 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      warn_for_memset (expr_loc, arg0, arg2, literal_zero_mask);
 	    }
 
+	  if (TREE_CODE (expr.value) == FUNCTION_DECL && warn_restrict)
+	    {
+	      unsigned i;
+	      tree arg;
+	      FOR_EACH_VEC_SAFE_ELT (exprlist, i, arg)
+		TREE_VISITED (arg) = 0;
+
+	      unsigned param_pos = 0;
+	      function_args_iterator iter;
+	      tree t;
+	      FOREACH_FUNCTION_ARGS (TREE_TYPE (expr.value), t, iter)
+		{
+		  if (POINTER_TYPE_P (t) && TYPE_RESTRICT (t)
+		      && !TYPE_READONLY (TREE_TYPE (t)))
+		    warn_for_restrict (param_pos, exprlist);
+		  param_pos++;
+		}
+
+	      FOR_EACH_VEC_SAFE_ELT (exprlist, i, arg)
+		TREE_VISITED (arg) = 0;
+	    }
+
 	  start = expr.get_start ();
 	  finish = parser->tokens_buf[0].get_finish ();
 	  expr.value
