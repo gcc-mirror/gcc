@@ -1,3 +1,8 @@
+2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-icf.c (sem_function::merge): Do not create a wrapper also if the
+	original function needs a static chain.
+
 2016-11-13  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/78336
