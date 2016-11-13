@@ -349,7 +349,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
      must be specified unless it was specified by the programmer.  Exceptions
      are for access-to-protected-subprogram types and all access subtypes, as
      another GNAT type is used to lay out the GCC type for them.  */
-  gcc_assert (!Unknown_Esize (gnat_entity)
+  gcc_assert (!is_type
+	      || Known_Esize (gnat_entity)
 	      || Has_Size_Clause (gnat_entity)
 	      || (!IN (kind, Numeric_Kind)
 		  && !IN (kind, Enumeration_Kind)
