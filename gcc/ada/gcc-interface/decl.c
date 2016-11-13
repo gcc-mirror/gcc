@@ -1836,7 +1836,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && esize == CHAR_TYPE_SIZE
 	  && flag_signed_char)
 	gnu_type = make_signed_type (CHAR_TYPE_SIZE);
-      else if (Is_Unsigned_Type (Etype (gnat_entity))
+      else if (Is_Unsigned_Type (Underlying_Type (Etype (gnat_entity)))
 	       || (Esize (Etype (gnat_entity)) != Esize (gnat_entity)
 		   && Is_Unsigned_Type (gnat_entity))
 	       || Has_Biased_Representation (gnat_entity))
