@@ -1,3 +1,9 @@
+2016-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/78232
+	PR rtl-optimization/78248
+	* gcc.dg/ubsan/pr78248.c: New test.
+
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/address_conv.adb: New test.
