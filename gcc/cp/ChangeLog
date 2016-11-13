@@ -1,3 +1,14 @@
+2016-11-12  Jason Merrill  <jason@redhat.com>
+
+	DR 374
+	PR c++/56840
+	* pt.c (check_specialization_namespace): Allow any enclosing
+	namespace.
+	(check_unqualified_spec_or_inst): New.
+	(check_explicit_specialization): Call it.
+	* parser.c (cp_parser_elaborated_type_specifier)
+	(cp_parser_class_head): Call it.
+
 2016-11-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/77337

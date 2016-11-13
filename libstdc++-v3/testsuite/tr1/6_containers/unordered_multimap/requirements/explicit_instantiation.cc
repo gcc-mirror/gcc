@@ -30,13 +30,13 @@ using std::equal_to;
 using std::allocator;
 using std::pair;
 
-template class unordered_multimap<string, float>;
-template class unordered_multimap<string, int,
+template class std::tr1::unordered_multimap<string, float>;
+template class std::tr1::unordered_multimap<string, int,
 				  hash<string>, equal_to<string>,
 				  allocator<pair<const string, int> > >;
-template class unordered_multimap<string, float,
+template class std::tr1::unordered_multimap<string, float,
 				  hash<string>, equal_to<string>,
 				  allocator<char> >;
-template class __unordered_multimap<string, int,
+template class std::tr1::__unordered_multimap<string, int,
 				    hash<string>, equal_to<string>,
 				    allocator<pair<const string, int> >, true>;

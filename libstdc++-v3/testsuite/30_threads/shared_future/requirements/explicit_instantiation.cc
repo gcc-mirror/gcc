@@ -25,9 +25,8 @@
 #include <testsuite_tr1.h>
 
 using namespace __gnu_test;
-using std::shared_future;
-template class shared_future<int>;
-template class shared_future<int&>;
-template class shared_future<void>;
-template class shared_future<ClassType>;
-template class shared_future<ClassType&>;
+template class std::shared_future<int>;
+template class std::shared_future<int&>;
+template class std::shared_future<void>;
+template class std::shared_future<ClassType>;
+template class std::shared_future<ClassType&>;

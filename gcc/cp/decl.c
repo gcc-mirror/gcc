@@ -7868,8 +7868,7 @@ check_class_member_definition_namespace (tree decl)
      diagnostics.  */
   if (processing_specialization)
     return;
-  /* There are no restrictions on the placement of
-     explicit instantiations.  */
+  /* We check this in check_explicit_instantiation_namespace.  */
   if (processing_explicit_instantiation)
     return;
   /* [class.mfct]

@@ -772,28 +772,29 @@ check_specialization_namespace (tree tmpl)
 
   /* [tmpl.expl.spec]
 
-     An explicit specialization shall be declared in the namespace of
-     which the template is a member, or, for member templates, in the
-     namespace of which the enclosing class or enclosing class
-     template is a member.  An explicit specialization of a member
-     function, member class or static data member of a class template
-     shall be declared in the namespace of which the class template is
-     a member.  */
+     An explicit specialization shall be declared in a namespace enclosing the
+     specialized template. An explicit specialization whose declarator-id is
+     not qualified shall be declared in the nearest enclosing namespace of the
+     template, or, if the namespace is inline (7.3.1), any namespace from its
+     enclosing namespace set.  */
   if (current_scope() != DECL_CONTEXT (tmpl)
       && !at_namespace_scope_p ())
     {
       error ("specialization of %qD must appear at namespace scope", tmpl);
       return false;
     }
-  if (is_associated_namespace (current_namespace, tpl_ns))
-    /* Same or super-using namespace.  */
+
+  if (cxx_dialect < cxx11
+      ? is_associated_namespace (current_namespace, tpl_ns)
+      : is_ancestor (current_namespace, tpl_ns))
+    /* Same or enclosing namespace.  */
     return true;
   else
     {
       permerror (input_location,
 		 "specialization of %qD in different namespace", tmpl);
-      permerror (DECL_SOURCE_LOCATION (tmpl),
-		 "  from definition of %q#D", tmpl);
+      inform (DECL_SOURCE_LOCATION (tmpl),
+	      "  from definition of %q#D", tmpl);
       return false;
     }
 }
@@ -2586,6 +2587,36 @@ check_template_variable (tree decl)
     }
 }
 
+/* An explicit specialization whose declarator-id or class-head-name is not
+   qualified shall be declared in the nearest enclosing namespace of the
+   template, or, if the namespace is inline (7.3.1), any namespace from its
+   enclosing namespace set.
+
+   If the name declared in the explicit instantiation is an unqualified name,
+   the explicit instantiation shall appear in the namespace where its template
+   is declared or, if that namespace is inline (7.3.1), any namespace from its
+   enclosing namespace set.  */
+
+void
+check_unqualified_spec_or_inst (tree t, location_t loc)
+{
+  tree tmpl = most_general_template (t);
+  if (DECL_NAMESPACE_SCOPE_P (tmpl)
+      && !is_associated_namespace (current_namespace,
+				   CP_DECL_CONTEXT (tmpl)))
+    {
+      if (processing_specialization)
+	permerror (loc, "explicit specialization of %qD outside its "
+		   "namespace must use a nested-name-specifier", tmpl);
+      else if (processing_explicit_instantiation
+	       && cxx_dialect >= cxx11)
+	/* This was allowed in C++98, so only pedwarn.  */
+	pedwarn (loc, OPT_Wpedantic, "explicit instantiation of %qD "
+		 "outside its namespace must use a nested-name-"
+		 "specifier", tmpl);
+    }
+}
+
 /* Check to see if the function just declared, as indicated in
    DECLARATOR, and in DECL, is a specialization of a function
    template.  We may also discover that the declaration is an explicit
@@ -2949,15 +2980,8 @@ check_explicit_specialization (tree declarator,
 	return error_mark_node;
       else
 	{
-	  if (!ctype && !was_template_id
-	      && (specialization || member_specialization
-		  || explicit_instantiation)
-	      && !is_associated_namespace (CP_DECL_CONTEXT (decl),
-					   CP_DECL_CONTEXT (tmpl)))
-	    error ("%qD is not declared in %qD",
-		   tmpl, current_namespace);
-	  else if (TREE_CODE (decl) == FUNCTION_DECL
-		   && DECL_HIDDEN_FRIEND_P (tmpl))
+	  if (TREE_CODE (decl) == FUNCTION_DECL
+	      && DECL_HIDDEN_FRIEND_P (tmpl))
 	    {
 	      if (pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 			   "friend declaration %qD is not visible to "
@@ -2965,6 +2989,9 @@ check_explicit_specialization (tree declarator,
 		inform (DECL_SOURCE_LOCATION (tmpl),
 			"friend declaration here");
 	    }
+	  else if (!ctype && !is_friend
+		   && CP_DECL_CONTEXT (decl) == current_namespace)
+	    check_unqualified_spec_or_inst (tmpl, DECL_SOURCE_LOCATION (decl));
 
 	  tree gen_tmpl = most_general_template (tmpl);
 

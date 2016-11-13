@@ -27,10 +27,10 @@ using namespace std::tr1;
 using std::equal_to;
 using std::allocator;
 
-template class unordered_set<int>;
-template class unordered_set<float, hash<float>, equal_to<float>,
-			     allocator<float> >;
-template class unordered_set<int, hash<int>, equal_to<int>,
-			     allocator<char> >;
-template class __unordered_set<float, hash<float>, equal_to<float>,
-			       allocator<float>, true>;
+template class std::tr1::unordered_set<int>;
+template class std::tr1::unordered_set<float, hash<float>, equal_to<float>,
+				       allocator<float> >;
+template class std::tr1::unordered_set<int, hash<int>, equal_to<int>,
+				       allocator<char> >;
+template class std::tr1::__unordered_set<float, hash<float>, equal_to<float>,
+					 allocator<float>, true>;
