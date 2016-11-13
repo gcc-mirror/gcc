@@ -25,9 +25,8 @@
 #include <testsuite_tr1.h>
 
 using namespace __gnu_test;
-using std::future;
-template class future<int>;
-template class future<int&>;
-template class future<void>;
-template class future<ClassType>;
-template class future<ClassType&>;
+template class std::future<int>;
+template class std::future<int&>;
+template class std::future<void>;
+template class std::future<ClassType>;
+template class std::future<ClassType&>;

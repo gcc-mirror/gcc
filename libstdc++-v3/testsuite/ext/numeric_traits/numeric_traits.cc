@@ -21,7 +21,6 @@
 
 #include <ext/numeric_traits.h>
 
-using __gnu_cxx::__numeric_traits;
-template struct __numeric_traits<short>;
-template struct __numeric_traits<unsigned short>;
-template struct __numeric_traits<double>;
+template struct __gnu_cxx::__numeric_traits<short>;
+template struct __gnu_cxx::__numeric_traits<unsigned short>;
+template struct __gnu_cxx::__numeric_traits<double>;

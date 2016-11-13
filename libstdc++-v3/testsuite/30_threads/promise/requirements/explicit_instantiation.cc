@@ -25,9 +25,8 @@
 #include <testsuite_tr1.h>
 
 using namespace __gnu_test;
-using std::promise;
-template class promise<int>;
-template class promise<int&>;
-template class promise<void>;
-template class promise<ClassType>;
-template class promise<ClassType&>;
+template class std::promise<int>;
+template class std::promise<int&>;
+template class std::promise<void>;
+template class std::promise<ClassType>;
+template class std::promise<ClassType&>;

@@ -8,9 +8,9 @@ struct basic_string
 namespace MyNS {
   class MyClass {
     template <typename T>
-    T test() { } /* { dg-error "from definition" } */
+    T test() { } /* { dg-message "from definition" "" { target c++98_only } } */
   };
 }
 template <>
-basic_string MyNS::MyClass::test() /* { dg-error "specialization of" } */
+basic_string MyNS::MyClass::test() /* { dg-error "specialization of" "" { target c++98_only } }*/
 { return 1; }

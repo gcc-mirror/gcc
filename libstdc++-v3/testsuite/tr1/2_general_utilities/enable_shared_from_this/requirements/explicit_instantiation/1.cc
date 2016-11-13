@@ -23,8 +23,7 @@
 // { dg-do compile }
 
 using namespace __gnu_test;
-using std::tr1::enable_shared_from_this;
-template class enable_shared_from_this<int>;
-template class enable_shared_from_this<void>;
-template class enable_shared_from_this<ClassType>;
-template class enable_shared_from_this<IncompleteClass>;
+template class std::tr1::enable_shared_from_this<int>;
+template class std::tr1::enable_shared_from_this<void>;
+template class std::tr1::enable_shared_from_this<ClassType>;
+template class std::tr1::enable_shared_from_this<IncompleteClass>;

@@ -17004,24 +17004,28 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
   globalscope =  cp_parser_global_scope_opt (parser,
 					     /*current_scope_valid_p=*/false);
   /* Look for the nested-name-specifier.  */
+  tree nested_name_specifier;
   if (tag_type == typename_type && !globalscope)
     {
-      if (!cp_parser_nested_name_specifier (parser,
+      nested_name_specifier
+	= cp_parser_nested_name_specifier (parser,
 					   /*typename_keyword_p=*/true,
 					   /*check_dependency_p=*/true,
 					   /*type_p=*/true,
-					    is_declaration))
+					   is_declaration);
+      if (!nested_name_specifier)
 	return error_mark_node;
     }
   else
     /* Even though `typename' is not present, the proposed resolution
        to Core Issue 180 says that in `class A<T>::B', `B' should be
        considered a type-name, even if `A<T>' is dependent.  */
-    cp_parser_nested_name_specifier_opt (parser,
-					 /*typename_keyword_p=*/true,
-					 /*check_dependency_p=*/true,
-					 /*type_p=*/true,
-					 is_declaration);
+    nested_name_specifier
+      = cp_parser_nested_name_specifier_opt (parser,
+					     /*typename_keyword_p=*/true,
+					     /*check_dependency_p=*/true,
+					     /*type_p=*/true,
+					     is_declaration);
  /* For everything but enumeration types, consider a template-id.
     For an enumeration type, consider only a plain identifier.  */
   if (tag_type != enum_type)
@@ -17069,8 +17073,18 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       else if (tag_type == typename_type && TREE_CODE (decl) != TYPE_DECL)
         ; 
       else if (TREE_CODE (decl) == TYPE_DECL)
-        type = check_elaborated_type_specifier (tag_type, decl,
-						/*allow_template_p=*/true);
+	{
+	  type = check_elaborated_type_specifier (tag_type, decl,
+						  /*allow_template_p=*/true);
+
+	  /* If the next token is a semicolon, this must be a specialization,
+	     instantiation, or friend declaration.  Check the scope while we
+	     still know whether or not we had a nested-name-specifier.  */
+	  if (type != error_mark_node
+	      && !nested_name_specifier && !is_friend
+	      && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	    check_unqualified_spec_or_inst (type, token->location);
+	}
       else if (decl == error_mark_node)
 	type = error_mark_node; 
     }
@@ -22336,6 +22350,11 @@ cp_parser_class_head (cp_parser* parser,
 	{
 	  type = TREE_TYPE (id);
 	  type = maybe_process_partial_specialization (type);
+
+	  /* Check the scope while we still know whether or not we had a
+	     nested-name-specifier.  */
+	  if (type != error_mark_node)
+	    check_unqualified_spec_or_inst (type, type_start_token->location);
 	}
       if (nested_name_specifier)
 	pushed_scope = push_scope (nested_name_specifier);

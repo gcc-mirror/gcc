@@ -24,27 +24,25 @@
 #include <string>
 #include <tr1/functional>
 
-using namespace std::tr1;
-
 // Verify that we can instantiate hash for every required type.
-template class hash<bool>;
-template class hash<char>;
-template class hash<signed char>;
-template class hash<unsigned char>;
-template class hash<short>;
-template class hash<int>;
-template class hash<long>;
-template class hash<unsigned short>;
-template class hash<unsigned int>;
-template class hash<unsigned long>;
-template class hash<float>;
-template class hash<double>;
-template class hash<long double>;
-template class hash<void*>;
-template class hash<std::string>;
+template class std::tr1::hash<bool>;
+template class std::tr1::hash<char>;
+template class std::tr1::hash<signed char>;
+template class std::tr1::hash<unsigned char>;
+template class std::tr1::hash<short>;
+template class std::tr1::hash<int>;
+template class std::tr1::hash<long>;
+template class std::tr1::hash<unsigned short>;
+template class std::tr1::hash<unsigned int>;
+template class std::tr1::hash<unsigned long>;
+template class std::tr1::hash<float>;
+template class std::tr1::hash<double>;
+template class std::tr1::hash<long double>;
+template class std::tr1::hash<void*>;
+template class std::tr1::hash<std::string>;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-template class hash<wchar_t>;
-template class hash<std::wstring>;
+template class std::tr1::hash<wchar_t>;
+template class std::tr1::hash<std::wstring>;
 #endif
 

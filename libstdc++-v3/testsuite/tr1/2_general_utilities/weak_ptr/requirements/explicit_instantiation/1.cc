@@ -23,8 +23,7 @@
 // { dg-do compile }
 
 using namespace __gnu_test;
-using std::tr1::weak_ptr;
-template class weak_ptr<int>;
-template class weak_ptr<void>;
-template class weak_ptr<ClassType>;
-template class weak_ptr<IncompleteClass>;
+template class std::tr1::weak_ptr<int>;
+template class std::tr1::weak_ptr<void>;
+template class std::tr1::weak_ptr<ClassType>;
+template class std::tr1::weak_ptr<IncompleteClass>;
