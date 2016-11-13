@@ -8022,6 +8022,14 @@ annotate_value (tree gnu_size)
   switch (TREE_CODE (gnu_size))
     {
     case INTEGER_CST:
+      /* For negative values, build NEGATE_EXPR of the opposite.  Such values
+	 can appear for discriminants in expressions for variants.  */
+      if (tree_int_cst_sgn (gnu_size) < 0)
+	{
+	  tree t = wide_int_to_tree (sizetype, wi::neg (gnu_size));
+	  return annotate_value (build1 (NEGATE_EXPR, sizetype, t));
+	}
+
       return TREE_OVERFLOW (gnu_size) ? No_Uint : UI_From_gnu (gnu_size);
 
     case COMPONENT_REF:

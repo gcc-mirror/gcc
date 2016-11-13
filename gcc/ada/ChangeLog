@@ -1,5 +1,10 @@
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Deal specially
+	with negative constants.
+
+2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (gnat_protect_expr): Also protect only the
 	address if the expression is the component of a dereference.
 	Do not use a reference type for the final temporary reference.
