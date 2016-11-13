@@ -35673,7 +35673,9 @@ rs6000_asm_weaken_decl (FILE *stream, tree decl,
   fputc ('\n', stream);
   if (val)
     {
+#ifdef ASM_OUTPUT_DEF
       ASM_OUTPUT_DEF (stream, name, val);
+#endif
       if (decl && TREE_CODE (decl) == FUNCTION_DECL
 	  && DEFAULT_ABI == ABI_AIX && DOT_SYMBOLS)
 	{
