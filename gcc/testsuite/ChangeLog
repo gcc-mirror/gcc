@@ -1,5 +1,9 @@
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/renaming11.ad[sb]: New test.
+
+2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* c-c++-common/dump-ada-spec-6.c: New test.
 
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
