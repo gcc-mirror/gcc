@@ -1,3 +1,8 @@
+2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (print_ada_declaration): For typedef declarations, look
+	for nested types only if the type is a record or union and dump SLOC.
+
 2016-11-09  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_template_auto.

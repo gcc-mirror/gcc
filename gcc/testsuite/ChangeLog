@@ -1,5 +1,9 @@
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-c++-common/dump-ada-spec-6.c: New test.
+
+2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/lto21.adb: New test.
 	* gnat.dg/lto21_pkg1.ads: New helper.
 	* gnat.dg/lto21_pkg2.ad[sb]: Likewise.
