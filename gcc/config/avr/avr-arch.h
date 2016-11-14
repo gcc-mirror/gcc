@@ -157,7 +157,9 @@ enum avr_device_specific_features
   AVR_ISA_NONE,
   AVR_ISA_RMW     = 0x1, /* device has RMW instructions. */
   AVR_SHORT_SP    = 0x2, /* Stack Pointer has 8 bits width. */
-  AVR_ERRATA_SKIP = 0x4  /* device has a core erratum. */
+  AVR_ERRATA_SKIP = 0x4, /* device has a core erratum. */
+  AVR_ISA_LDS     = 0x8  /* whether LDS / STS is valid for all data in static
+                            storage.  Only useful for reduced Tiny.  */
 };
 
 /* Map architecture to its texinfo string.  */

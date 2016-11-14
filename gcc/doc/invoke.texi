@@ -650,7 +650,8 @@ Objective-C and Objective-C++ Dialects}.
 -mpure-code}
 
 @emph{AVR Options}
-@gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
+@gccoptlist{-mmcu=@var{mcu} -mabsdata -maccumulate-args @gol
+-mbranch-cost=@var{cost} @gol
 -mcall-prologues -mint8 -mn_flash=@var{size} -mno-interrupts @gol
 -mrelax -mrmw -mstrict-X -mtiny-stack -mfract-convert-truncate -nodevicelib @gol
 -Waddr-space-convert -Wmisspelled-isr}
@@ -15309,6 +15310,13 @@ The default for this option is@tie{}@samp{avr2}.
 GCC supports the following AVR devices and ISAs:
 
 @include avr-mmcu.texi
+
+@item -mabsdata
+@opindex mabsdata
+
+Assume that all data in static storage can be accessed by LDS / STS
+instructions.  This option has only an effect on reduced Tiny devices like
+ATtiny40.
 
 @item -maccumulate-args
 @opindex maccumulate-args

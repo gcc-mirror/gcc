@@ -10182,14 +10182,18 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
       && SYMBOL_REF_P (XEXP (rtl, 0)))
     {
       rtx sym = XEXP (rtl, 0);
+      bool progmem_p = -1 == avr_progmem_p (decl, DECL_ATTRIBUTES (decl));
 
-      if (-1 == avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
+      if (progmem_p)
         {
           // Tag symbols for later addition of 0x4000 (AVR_TINY_PM_OFFSET).
           SYMBOL_REF_FLAGS (sym) |= AVR_SYMBOL_FLAG_TINY_PM;
         }
 
       if (avr_decl_absdata_p (decl, DECL_ATTRIBUTES (decl))
+          || (TARGET_ABSDATA
+              && !progmem_p
+              && !addr_attr)
           || (addr_attr
               // If addr_attr is non-null, it has an argument.  Peek into it.
               && TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (addr_attr))) < 0xc0))
@@ -10198,7 +10202,7 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
           SYMBOL_REF_FLAGS (sym) |= AVR_SYMBOL_FLAG_TINY_ABSDATA;
         }
 
-      if (-1 == avr_progmem_p (decl, DECL_ATTRIBUTES (decl))
+      if (progmem_p
           && avr_decl_absdata_p (decl, DECL_ATTRIBUTES (decl)))
         {
           error ("%q+D has incompatible attributes %qs and %qs",

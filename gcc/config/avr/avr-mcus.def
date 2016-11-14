@@ -341,11 +341,11 @@ AVR_MCU ("atxmega128a1u",    ARCH_AVRXMEGA7, AVR_ISA_RMW,  "__AVR_ATxmega128A1U_
 AVR_MCU ("atxmega128a4u",    ARCH_AVRXMEGA7, AVR_ISA_RMW,  "__AVR_ATxmega128A4U__",    0x2000, 0x0, 3)
 /* Tiny family */
 AVR_MCU ("avrtiny",          ARCH_AVRTINY, AVR_ISA_NONE, NULL,                     0x0040, 0x0, 1)
-AVR_MCU ("attiny4",          ARCH_AVRTINY, AVR_ISA_NONE, "__AVR_ATtiny4__",        0x0040, 0x0, 1)
-AVR_MCU ("attiny5",          ARCH_AVRTINY, AVR_ISA_NONE, "__AVR_ATtiny5__",        0x0040, 0x0, 1)
-AVR_MCU ("attiny9",          ARCH_AVRTINY, AVR_ISA_NONE, "__AVR_ATtiny9__",        0x0040, 0x0, 1) 
-AVR_MCU ("attiny10",         ARCH_AVRTINY, AVR_ISA_NONE, "__AVR_ATtiny10__",       0x0040, 0x0, 1)
-AVR_MCU ("attiny20",         ARCH_AVRTINY, AVR_ISA_NONE, "__AVR_ATtiny20__",       0x0040, 0x0, 1)
+AVR_MCU ("attiny4",          ARCH_AVRTINY, AVR_ISA_LDS,  "__AVR_ATtiny4__",        0x0040, 0x0, 1)
+AVR_MCU ("attiny5",          ARCH_AVRTINY, AVR_ISA_LDS,  "__AVR_ATtiny5__",        0x0040, 0x0, 1)
+AVR_MCU ("attiny9",          ARCH_AVRTINY, AVR_ISA_LDS,  "__AVR_ATtiny9__",        0x0040, 0x0, 1) 
+AVR_MCU ("attiny10",         ARCH_AVRTINY, AVR_ISA_LDS,  "__AVR_ATtiny10__",       0x0040, 0x0, 1)
+AVR_MCU ("attiny20",         ARCH_AVRTINY, AVR_ISA_LDS,  "__AVR_ATtiny20__",       0x0040, 0x0, 1)
 AVR_MCU ("attiny40",         ARCH_AVRTINY, AVR_ISA_NONE, "__AVR_ATtiny40__",       0x0040, 0x0, 1)
 /* Assembler only.  */
 AVR_MCU ("avr1",             ARCH_AVR1, AVR_ISA_NONE, NULL,                        0x0060, 0x0, 1)

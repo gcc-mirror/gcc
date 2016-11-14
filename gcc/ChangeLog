@@ -1,3 +1,16 @@
+2016-11-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/78093
+	* doc/invoke.texi (AVR Options) [-mabsdata]: Document new option.
+	* config/avr/avr.opt (-mabsdata): New option.
+	* config/avr/avr-arch.h (avr_device_specific_features):	Add AVR_ISA_LDS.
+	* config/avr/avr.c (avr_encode_section_info) [AVR_TINY]: If
+	-mabsdata & symbol is not progmem, tag as AVR_SYMBOL_FLAG_TINY_ABSDATA.
+	* config/avr/avr-mcus.def (attiny4/5/9/10/20): Use AVR_ISA_LDS.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu): Print cc1_absdata
+	spec depending on AVR_ISA_LDS.
+	* config/avr/specs.h (CC1_SPEC): Enhanced by cc1_absdata spec.
+
 2016-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* match.pd: Don't try to compare addresses of variables with
