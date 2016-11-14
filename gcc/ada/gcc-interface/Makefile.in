@@ -474,7 +474,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(target_cpu) $(target_vendor) $(target
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-vxworks.adb \
-  s-interr.adb<s-interr-hwint.adb \
+  s-interr.adb<s-interr-vxworks.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
   s-osinte.adb<s-osinte-vxworks.adb \
@@ -595,7 +595,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7,$(target_cpu) $(target_
     else
       ifeq ($(strip $(filter-out kernel-smp,$(THREAD_KIND))),)
         LIBGNAT_TARGET_PAIRS += \
-        s-interr.adb<s-interr-hwint.adb \
+        s-interr.adb<s-interr-vxworks.adb \
         s-mudido.adb<s-mudido-affinity.adb \
         s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
         s-vxwext.ads<s-vxwext-kernel.ads \
@@ -606,7 +606,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7,$(target_cpu) $(target_
         EXTRA_LIBGNAT_OBJS+=affinity.o
       else
         LIBGNAT_TARGET_PAIRS += \
-        s-interr.adb<s-interr-hwint.adb \
+        s-interr.adb<s-interr-vxworks.adb \
         s-tpopsp.adb<s-tpopsp-vxworks.adb
 
         ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
@@ -651,7 +651,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(target_cpu) $(target_vendor)
   a-numaux.ads<a-numaux-vxworks.ads \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
   s-inmaop.adb<s-inmaop-vxworks.adb \
-  s-interr.adb<s-interr-hwint.adb \
+  s-interr.adb<s-interr-vxworks.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
   s-osinte.adb<s-osinte-vxworks.adb \
@@ -717,7 +717,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksmils,$(target_cpu) $(target_vendo
   a-numaux.ads<a-numaux-vxworks.ads \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
   s-inmaop.adb<s-inmaop-vxworks.adb \
-  s-interr.adb<s-interr-hwint.adb \
+  s-interr.adb<s-interr-vxworks.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
   s-osinte.adb<s-osinte-vxworks.adb \
@@ -772,7 +772,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae,$(target_cpu) $(target_vendor) $(ta
   a-numaux.ads<a-numaux-vxworks.ads \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
   s-inmaop.adb<s-inmaop-vxworks.adb \
-  s-interr.adb<s-interr-hwint.adb \
+  s-interr.adb<s-interr-vxworks.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
   s-osinte.adb<s-osinte-vxworks.adb \
@@ -835,7 +835,7 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(target_cpu) $(target_vendor) $(targe
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-vxworks.adb \
-  s-interr.adb<s-interr-hwint.adb \
+  s-interr.adb<s-interr-vxworks.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
   s-osinte.adb<s-osinte-vxworks.adb \
@@ -994,7 +994,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
     else
       ifeq ($(strip $(filter-out kernel-smp, $(THREAD_KIND))),)
         LIBGNAT_TARGET_PAIRS += \
-        s-interr.adb<s-interr-hwint.adb \
+        s-interr.adb<s-interr-vxworks.adb \
         s-mudido.adb<s-mudido-affinity.adb \
         s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
         s-vxwext.ads<s-vxwext-kernel.ads \
@@ -1004,7 +1004,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
         EXTRA_LIBGNAT_OBJS+=affinity.o
       else
         LIBGNAT_TARGET_PAIRS += \
-        s-interr.adb<s-interr-hwint.adb \
+        s-interr.adb<s-interr-vxworks.adb \
         s-tpopsp.adb<s-tpopsp-vxworks.adb
 
         ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
@@ -1060,7 +1060,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-vxworks.adb \
-  s-interr.adb<s-interr-hwint.adb \
+  s-interr.adb<s-interr-vxworks.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
   s-osinte.adb<s-osinte-vxworks.adb \
@@ -1144,7 +1144,7 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(target_cpu) $(target_vendor) $(target
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-vxworks.adb \
-  s-interr.adb<s-interr-hwint.adb \
+  s-interr.adb<s-interr-vxworks.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
   s-osinte.adb<s-osinte-vxworks.adb \
@@ -1693,7 +1693,7 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-rtems.adb \
   s-stchop.adb<s-stchop-rtems.adb \
-  s-interr.adb<s-interr-hwint.adb
+  s-interr.adb<s-interr-vxworks.adb
 endif
 
 # PikeOS
