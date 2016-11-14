@@ -2547,8 +2547,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (with
      {
        int equal = 2;
-       if (decl_in_symtab_p (base0)
-	   && decl_in_symtab_p (base1))
+       /* Punt in GENERIC on variables with value expressions;
+	  the value expressions might point to fields/elements
+	  of other vars etc.  */
+       if (GENERIC
+	   && ((VAR_P (base0) && DECL_HAS_VALUE_EXPR_P (base0))
+	       || (VAR_P (base1) && DECL_HAS_VALUE_EXPR_P (base1))))
+	 ;
+       else if (decl_in_symtab_p (base0)
+		&& decl_in_symtab_p (base1))
          equal = symtab_node::get_create (base0)
 	           ->equal_address_to (symtab_node::get_create (base1));
        else if ((DECL_P (base0)

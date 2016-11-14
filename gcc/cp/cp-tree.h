@@ -2228,7 +2228,8 @@ struct GTY(()) lang_decl_base {
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
-  /* 2 spare bits */
+  unsigned decomposition_p : 1;		   /* var */
+  /* 1 spare bit */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -3624,6 +3625,16 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    : false)
 #define SET_DECL_VAR_DECLARED_INLINE_P(NODE) \
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.var_declared_inline_p \
+   = true)
+
+/* Nonzero if NODE is the artificial VAR_DECL for decomposition
+   declaration.  */
+#define DECL_DECOMPOSITION_P(NODE) \
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))			\
+   ? DECL_LANG_SPECIFIC (NODE)->u.base.decomposition_p		\
+   : false)
+#define SET_DECL_DECOMPOSITION_P(NODE) \
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.decomposition_p \
    = true)
 
 /* Nonzero if NODE is an inline VAR_DECL.  In C++17, static data members
@@ -5165,7 +5176,8 @@ enum auto_deduction_context
   adc_variable_type, /* Variable initializer deduction */
   adc_return_type,   /* Return type deduction */
   adc_unify,         /* Template argument deduction */
-  adc_requirement    /* Argument dedution constraint */
+  adc_requirement,   /* Argument deduction constraint */
+  adc_decomp_type    /* Decomposition declaration initializer deduction */
 };
 
 /* True iff this TEMPLATE_TYPE_PARM represents decltype(auto).  */
@@ -5382,6 +5394,7 @@ enum cp_declarator_kind {
   cdk_pointer,
   cdk_reference,
   cdk_ptrmem,
+  cdk_decomp,
   cdk_error
 };
 
@@ -5412,7 +5425,8 @@ struct cp_declarator {
   /* Whether we parsed an ellipsis (`...') just before the declarator,
      to indicate this is a parameter pack.  */
   BOOL_BITFIELD parameter_pack_p : 1;
-  location_t id_loc; /* Currently only set for cdk_id and cdk_function. */
+  location_t id_loc; /* Currently only set for cdk_id, cdk_decomp and
+			cdk_function. */
   /* GNU Attributes that apply to this declarator.  If the declarator
      is a pointer or a reference, these attribute apply to the type
      pointed to.  */
@@ -5421,8 +5435,8 @@ struct cp_declarator {
      declarator is a pointer or a reference, these attributes apply
      to the pointer, rather than to the type pointed to.  */
   tree std_attributes;
-  /* For all but cdk_id and cdk_error, the contained declarator.  For
-     cdk_id and cdk_error, guaranteed to be NULL.  */
+  /* For all but cdk_id, cdk_decomp and cdk_error, the contained declarator.
+     For cdk_id, cdk_decomp and cdk_error, guaranteed to be NULL.  */
   cp_declarator *declarator;
   union {
     /* For identifiers.  */
@@ -5794,6 +5808,7 @@ extern tree start_decl				(const cp_declarator *, cp_decl_specifier_seq *, int, 
 extern void start_decl_1			(tree, bool);
 extern bool check_array_initializer		(tree, tree, tree);
 extern void cp_finish_decl			(tree, tree, bool, tree, int);
+extern void cp_finish_decomp			(tree, tree, unsigned int);
 extern int cp_complete_array_type		(tree *, tree, bool);
 extern int cp_complete_array_type_or_error	(tree *, tree, bool, tsubst_flags_t);
 extern tree build_ptrmemfunc_type		(tree);
@@ -6066,7 +6081,7 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 extern bool maybe_clone_body			(tree);
 
 /* In parser.c */
-extern tree cp_convert_range_for (tree, tree, tree, bool);
+extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool);
 extern bool parsing_nsdmi (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
 

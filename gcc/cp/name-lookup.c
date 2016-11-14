@@ -5393,7 +5393,7 @@ add_function (struct arg_lookup *k, tree fn)
        function templates are ignored.  */;
   else if (k->fn_set && k->fn_set->add (fn))
     /* It's already in the list.  */;
-  else if (!k->functions)
+  else if (!k->functions && TREE_CODE (fn) != TEMPLATE_DECL)
     k->functions = fn;
   else if (fn == k->functions)
     ;
