@@ -1,5 +1,60 @@
 2016-11-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Implement P0504R0 (Revisiting in-place tag types for
+	any/optional/variant).
+	* include/std/any (any(_ValueType&& __value)): Constrain
+	the __is_in_place_type with the decayed type.
+	(make_any): Adjust to use the new tag type.
+	* include/std/utility (in_place_tag): Remove.
+	(in_place_t): Turn into a non-reference tag type.
+	(__in_place, __in_place_type, __in_place_index): Remove.
+	(in_place): Turn into an inline variable of non-reference
+	tag type.
+	(in_place<_Tp>): Remove.
+	(in_place_index<_Idx>): Remove.
+	(in_place_type_t): New.
+	(in_place_type): Turn into a variable template of non-reference
+	type.
+	(in_place_index_t): New.
+	(in_place_index): Turn into a variable template of non-reference
+	type.
+	* include/std/variant
+	(_Variant_storage(in_place_index_t<_Np>, _Args&&...)): Adjust to
+	use the new tag type.
+	(_Union(in_place_index_t<0>, _Args&&...)): Likewise.
+	(_Union(in_place_index_t<_Np>, _Args&&...)): Likewise.
+	(_Variant_base()): Likewise.
+	(variant(_Tp&&)): Likewise.
+	(variant(in_place_type_t<_Tp>, _Args&&...)): Likewise.
+	(variant(in_place_type_t<_Tp>, initializer_list<_Up>,
+	_Args&&...)): Likewise.
+	(variant(in_place_index_t<_Np>, _Args&&...)): Likewise.
+	(variant(in_place_index_t<_Np>, initializer_list<_Up>,
+	_Args&&...)): Likewise
+	(variant(allocator_arg_t, const _Alloc&)): Likewise.
+	(variant(allocator_arg_t, const _Alloc&, _Tp&&)): Likewise.
+	(variant(allocator_arg_t, const _Alloc&, in_place_type_t<_Tp>,
+	_Args&&...)): Likewise.
+	(variant(allocator_arg_t, const _Alloc&, in_place_type_t<_Tp>,
+	initializer_list<_Up>, _Args&&...)): Likewise.
+	(variant(allocator_arg_t, const _Alloc&, in_place_index_t<_Np>,
+	_Args&&...)): Likewise.
+	(variant(allocator_arg_t, const _Alloc&, in_place_index_t<_Np>,
+	initializer_list<_Up>, _Args&&...)): Likewise.
+	(emplace(_Args&&...)): Likewise.
+	(emplace(initializer_list<_Up>, _Args&&...)): Likewise.
+	* testsuite/20_util/any/cons/explicit.cc: Likewise.
+	* testsuite/20_util/any/cons/in_place.cc: Likewise.
+	* testsuite/20_util/any/requirements.cc: Add tests to
+	check that any is not constructible from the new in_place_type_t
+	of any value category.
+	* testsuite/20_util/in_place/requirements.cc: Adjust to
+	use the new tag type.
+	* testsuite/20_util/variant/compile.cc: Likewise.
+	* testsuite/20_util/variant/run.cc: Likewise.
+
+2016-11-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Use constexpr addressof in optional, SFINAE housekeeping
 	for any, optional and tuple.
 	* include/std/any (__do_emplace(_Args&&...)): New.

@@ -107,14 +107,14 @@ void arbitrary_ctor()
 
 void in_place_index_ctor()
 {
-  variant<string, string> a(in_place<0>, "a");
-  variant<string, string> b(in_place<1>, {'a'});
+  variant<string, string> a(in_place_index<0>, "a");
+  variant<string, string> b(in_place_index<1>, {'a'});
 }
 
 void in_place_type_ctor()
 {
-  variant<int, string, int> a(in_place<string>, "a");
-  variant<int, string, int> b(in_place<string>, {'a'});
+  variant<int, string, int> a(in_place_type<string>, "a");
+  variant<int, string, int> b(in_place_type<string>, {'a'});
   static_assert(!is_constructible_v<variant<string, string>, in_place_type_t<string>, const char*>, "");
 }
 
@@ -136,18 +136,18 @@ void uses_alloc_ctors()
     static_assert(!is_constructible_v<variant<string, string>, allocator_arg_t, std::allocator<char>, const char*>, "");
   }
   {
-    variant<string, int> b(allocator_arg, alloc, in_place<0>, "a");
-    variant<string, string> c(allocator_arg, alloc, in_place<1>, "a");
+    variant<string, int> b(allocator_arg, alloc, in_place_index<0>, "a");
+    variant<string, string> c(allocator_arg, alloc, in_place_index<1>, "a");
   }
   {
-    variant<string, int> b(allocator_arg, alloc, in_place<0>, {'a'});
-    variant<string, string> c(allocator_arg, alloc, in_place<1>, {'a'});
+    variant<string, int> b(allocator_arg, alloc, in_place_index<0>, {'a'});
+    variant<string, string> c(allocator_arg, alloc, in_place_index<1>, {'a'});
   }
   {
-    variant<int, string, int> b(allocator_arg, alloc, in_place<string>, "a");
+    variant<int, string, int> b(allocator_arg, alloc, in_place_type<string>, "a");
   }
   {
-    variant<int, string, int> b(allocator_arg, alloc, in_place<string>, {'a'});
+    variant<int, string, int> b(allocator_arg, alloc, in_place_type<string>, {'a'});
   }
 }
 
@@ -371,13 +371,13 @@ void test_constexpr()
 {
   constexpr variant<int> a;
   static_assert(holds_alternative<int>(a), "");
-  constexpr variant<int, char> b(in_place<0>, int{});
+  constexpr variant<int, char> b(in_place_index<0>, int{});
   static_assert(holds_alternative<int>(b), "");
-  constexpr variant<int, char> c(in_place<int>, int{});
+  constexpr variant<int, char> c(in_place_type<int>, int{});
   static_assert(holds_alternative<int>(c), "");
-  constexpr variant<int, char> d(in_place<1>, char{});
+  constexpr variant<int, char> d(in_place_index<1>, char{});
   static_assert(holds_alternative<char>(d), "");
-  constexpr variant<int, char> e(in_place<char>, char{});
+  constexpr variant<int, char> e(in_place_type<char>, char{});
   static_assert(holds_alternative<char>(e), "");
   constexpr variant<int, char> f(char{});
   static_assert(holds_alternative<char>(f), "");
@@ -392,8 +392,8 @@ void test_constexpr()
     };
 
     constexpr variant<literal, nonliteral> v{};
-    constexpr variant<literal, nonliteral> v1{in_place<literal>};
-    constexpr variant<literal, nonliteral> v2{in_place<0>};
+    constexpr variant<literal, nonliteral> v1{in_place_type<literal>};
+    constexpr variant<literal, nonliteral> v2{in_place_index<0>};
   }
 }
 
@@ -448,20 +448,20 @@ void test_adl()
    v0.emplace<0>(x);
    v0.emplace<0>(il, x);
    visit(vis, v0);
-   variant<X> v1{in_place<0>, x};
-   variant<X> v2{in_place<X>, x};
-   variant<X> v3{in_place<0>, il, x};
-   variant<X> v4{in_place<X>, il, x};
-   variant<X> v5{allocator_arg, a, in_place<0>, x};
-   variant<X> v6{allocator_arg, a, in_place<X>, x};
-   variant<X> v7{allocator_arg, a, in_place<0>, il, x};
-   variant<X> v8{allocator_arg, a, in_place<X>, il, x};
-   variant<X> v9{allocator_arg, a, in_place<X>, 1};
+   variant<X> v1{in_place_index<0>, x};
+   variant<X> v2{in_place_type<X>, x};
+   variant<X> v3{in_place_index<0>, il, x};
+   variant<X> v4{in_place_type<X>, il, x};
+   variant<X> v5{allocator_arg, a, in_place_index<0>, x};
+   variant<X> v6{allocator_arg, a, in_place_type<X>, x};
+   variant<X> v7{allocator_arg, a, in_place_index<0>, il, x};
+   variant<X> v8{allocator_arg, a, in_place_type<X>, il, x};
+   variant<X> v9{allocator_arg, a, in_place_type<X>, 1};
 
    std::variant<X&> vr0(x);
    vr0 = x;
-   variant<X&> vr1{in_place<0>, x};
-   variant<X&> vr2{in_place<X&>, x};
-   variant<X&> vr3{allocator_arg, a, in_place<0>, x};
-   variant<X&> vr4{allocator_arg, a, in_place<X&>, x};
+   variant<X&> vr1{in_place_index<0>, x};
+   variant<X&> vr2{in_place_type<X&>, x};
+   variant<X&> vr3{allocator_arg, a, in_place_index<0>, x};
+   variant<X&> vr4{allocator_arg, a, in_place_type<X&>, x};
 }

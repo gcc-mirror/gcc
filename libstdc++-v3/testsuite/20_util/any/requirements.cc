@@ -42,3 +42,15 @@ struct NoDefaultCtor
 
 static_assert(!std::is_constructible<any,
 	      std::in_place_type_t<NoDefaultCtor>>::value);
+
+static_assert(!std::is_constructible<any,
+	      std::in_place_type_t<NoDefaultCtor>&>::value);
+
+static_assert(!std::is_constructible<any,
+	      std::in_place_type_t<NoDefaultCtor>&&>::value);
+
+static_assert(!std::is_constructible<any,
+	      const std::in_place_type_t<NoDefaultCtor>&>::value);
+
+static_assert(!std::is_constructible<any,
+	      const std::in_place_type_t<NoDefaultCtor>&&>::value);
