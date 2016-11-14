@@ -943,7 +943,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Hash.
   template<typename _Tp>
-    struct hash<optional<_Tp>>
+    struct hash<optional<_Tp>> : private __poison_hash<remove_const_t<_Tp>>
     {
       using result_type = size_t;
       using argument_type = optional<_Tp>;

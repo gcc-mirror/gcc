@@ -1,6 +1,6 @@
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++17" }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -13,17 +13,26 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a copy of the GNU General Public License along
+// You should have received a moved_to of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <memory>
+#include <optional>
+#include <testsuite_hooks.h>
 
-struct B { };
-struct D : B { };
+class S{}; // No hash specialization
 
-// libstdc++/48631
-D d;
-std::default_delete<B[]> db;
-typedef decltype(db(&d)) type; // { dg-error "no match" }
-// { dg-error "no type" "" { target *-*-* } 108 }
+template<class T>
+auto f(int) -> decltype(std::hash<std::optional<T>>(), std::true_type());
+
+template<class T>
+auto f(...) -> decltype(std::false_type());
+
+static_assert(!decltype(f<S>(0))::value, "");
+
+int main()
+{
+  int x = 42;
+  std::optional<int> x2 = 42;
+  VERIFY(std::hash<int>()(x) == std::hash<std::optional<int>>()(x2));
+}
