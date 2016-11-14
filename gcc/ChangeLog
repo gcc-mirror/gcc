@@ -1,3 +1,8 @@
+2016-11-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (cortexa57_vector_cost):
+	Change vec_stmt_cost, vec_align_load_cost and vec_unalign_load_cost.
+
 2016-11-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78312
