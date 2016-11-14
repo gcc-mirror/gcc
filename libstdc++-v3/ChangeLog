@@ -1,3 +1,8 @@
+2016-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (future::share(), future<R&>::share())
+	(future<void>::share()): Add noexcept, as per LWG 2556.
+
 2016-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78326

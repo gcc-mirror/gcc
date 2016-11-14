@@ -778,7 +778,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return std::move(this->_M_get_result()._M_value());
       }
 
-      shared_future<_Res> share();
+      shared_future<_Res> share() noexcept;
     };
 
   /// Partial specialization for future<R&>
@@ -821,7 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return this->_M_get_result()._M_get();
       }
 
-      shared_future<_Res&> share();
+      shared_future<_Res&> share() noexcept;
     };
 
   /// Explicit specialization for future<void>
@@ -864,7 +864,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         this->_M_get_result();
       }
 
-      shared_future<void> share();
+      shared_future<void> share() noexcept;
     };
 
 
@@ -1004,18 +1004,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _M_state(std::move(__uf._M_state))
     { }
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2556. Wide contract for future::share()
   template<typename _Res>
     inline shared_future<_Res>
-    future<_Res>::share()
+    future<_Res>::share() noexcept
     { return shared_future<_Res>(std::move(*this)); }
 
   template<typename _Res>
     inline shared_future<_Res&>
-    future<_Res&>::share()
+    future<_Res&>::share() noexcept
     { return shared_future<_Res&>(std::move(*this)); }
 
   inline shared_future<void>
-  future<void>::share()
+  future<void>::share() noexcept
   { return shared_future<void>(std::move(*this)); }
 
   /// Primary template for promise
