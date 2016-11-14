@@ -42,10 +42,10 @@ void f()
   std::unique_ptr<int, D&> ud(nullptr, d);
   ub = std::move(ud); // { dg-error "no match" }
   ub2 = ud; // { dg-error "no match" }
-// { dg-error "no type" "" { target *-*-* } 288 }
+// { dg-error "no type" "" { target *-*-* } 289 }
 
   std::unique_ptr<int[], B&> uba(nullptr, b);
   std::unique_ptr<int[], D&> uda(nullptr, d);
   uba = std::move(uda); // { dg-error "no match" }
-// { dg-error "no type" "" { target *-*-* } 539 }
+// { dg-error "no type" "" { target *-*-* } 540 }
 }

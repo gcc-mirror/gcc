@@ -1,5 +1,22 @@
 2016-11-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Implement P0513R0, Poisoning the Hash.
+	* include/bits/functional_hash.h (__poison_hash): New.
+	* include/bits/unique_ptr.h
+	(hash<unique_ptr<_Tp, _Dp>>): Derive from __poison_hash.
+	* include/std/optional (hash<optional<_Tp>>): Likewise.
+	* include/std/variant (hash<variant<_Types...>>): Likewise.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust.
+	* testsuite/20_util/default_delete/void_neg.cc: Likewise.
+	* testsuite/20_util/optional/hash.cc: New.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/hash/1.cc: Add tests for
+	poisoned fancy pointer hashes.
+	* testsuite/20_util/variant/hash.cc: New.
+
+2016-11-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement P0504R0 (Revisiting in-place tag types for
 	any/optional/variant).
 	* include/std/any (any(_ValueType&& __value)): Constrain

@@ -36,6 +36,7 @@
 #include <utility>
 #include <tuple>
 #include <bits/stl_function.h>
+#include <bits/functional_hash.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -763,7 +764,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// std::hash specialization for unique_ptr.
   template<typename _Tp, typename _Dp>
     struct hash<unique_ptr<_Tp, _Dp>>
-    : public __hash_base<size_t, unique_ptr<_Tp, _Dp>>
+    : public __hash_base<size_t, unique_ptr<_Tp, _Dp>>,
+    private __poison_hash<typename unique_ptr<_Tp, _Dp>::pointer>
     {
       size_t
       operator()(const unique_ptr<_Tp, _Dp>& __u) const noexcept
