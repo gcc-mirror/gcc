@@ -1,5 +1,8 @@
 2016-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/move.h (addressof(const _Tp&&)): Add deleted overload,
+	as per LWG 2598.
+
 	* include/std/future (future::share(), future<R&>::share())
 	(future<void>::share()): Add noexcept, as per LWG 2556.
 
