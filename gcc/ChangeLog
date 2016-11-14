@@ -1,3 +1,39 @@
+2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
+	Richard Biener  <rguenther@suse.de>
+    
+	* doc/invoke.texi (fgimple): Document.
+    	* dumpfile.h (TDF_GIMPLE): Add.
+    	* dumpfile.c (dump_options): Add gimple.
+    	* gimple-pretty-print.c (dump_gimple_switch): Adjust dump
+	for TDF_GIMPLE.
+	(dump_gimple_label): Likewise.
+	(dump_gimple_phi): Likewise.
+	(dump_gimple_bb_header): Likewise.
+	(dump_phi_nodes): Likewise.
+	(pp_cfg_jump): Likewise.  Pass in dump flags.
+	(dump_implicit_edges): Adjust.
+    	* passes.c (pass_init_dump_file): Do not dump function header
+    	for TDF_GIMPLE.
+    	* tree-cfg.c (dump_function_to_file): Dump function return type
+	and __GIMPLE keyword for TDF_GIMPLE.  Change guard for dumping
+	GIMPLE stmts.
+    	* tree-pretty-print.c (dump_decl_name): Adjust dump for TDF_GIMPLE.
+    	(dump_generic_node): Likewise.
+	* function.h (struct function): Add pass_startwith member.
+	* passes.c (execute_one_pass): Implement startwith.
+    	* tree-ssanames.c (make_ssa_name_fn): New argument, check for version
+    	and assign proper version for parsed ssa names.
+    	* tree-ssanames.h (make_ssa_name_fn): Add new argument to the function.
+    	* internal-fn.c (expand_PHI): New function.
+    	* internal-fn.h (expand_PHI): Declared here.
+    	* internal-fn.def: New defination for PHI.
+    	* tree-cfg.c (lower_phi_internal_fn): New function.
+	(build_gimple_cfg): Call it.
+    	(verify_gimple_call): Condition for passing label as arg in internal
+    	function PHI.
+	* tree-into-ssa.c (rewrite_add_phi_arguments): Handle already
+	present PHIs with arguments.
+
 2016-11-14  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/78069

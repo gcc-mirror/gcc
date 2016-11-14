@@ -1,3 +1,42 @@
+2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
+	Richard Biener  <rguenther@suse.de>
+    
+    	* Make-lang.in (C_AND_OBJC_OBJS): Add gimple-parser.o.
+    	* config-lang.in (gtfiles): Add c/c-parser.h.
+    	* c-tree.h (enum c_declspec_word): Add cdw_gimple.
+    	(struct c_declspecs): Add gimple_pass member and gimple_p flag.
+    	* c-parser.c (enum c_id_kind, struct c_token,
+    	c_parser_next_token_is, c_parser_next_token_is_not,
+    	c_parser_next_token_is_keyword,
+    	enum c_lookahead_kind, enum c_dtr_syn, enum c_parser_prec):
+    	Split out to ...
+    	* c-parser.h: ... new header.
+    	* c-parser.c: Include c-parser.h and gimple-parser.h.
+	(c_parser_peek_token, c_parser_peek_2nd_token,
+    	c_token_starts_typename, c_parser_next_token_starts_declspecs,
+    	c_parser_next_tokens_start_declaration, c_parser_consume_token,
+    	c_parser_error, c_parser_require, c_parser_skip_until_found,
+    	c_parser_declspecs, c_parser_declarator, c_parser_peek_nth_token,
+    	c_parser_type_name): Export.
+    	(c_parser_tokens_buf): New function.
+    	(c_parser_error): Likewise.
+    	(c_parser_set_error): Likewise.
+    	(c_parser_declspecs): Handle RID_GIMPLE.
+	(c_parser_declaration_or_fndef): Parse __GIMPLE marked body
+	via c_parser_parse_gimple_body.
+    	* c-parser.h (c_parser_peek_token, c_parser_peek_2nd_token,
+    	c_token_starts_typename, c_parser_next_token_starts_declspecs,
+    	c_parser_next_tokens_start_declaration, c_parser_consume_token,
+    	c_parser_error, c_parser_require, c_parser_skip_until_found,
+    	c_parser_declspecs, c_parser_declarator, c_parser_peek_nth_token,
+    	c_parser_type_name): Declare.
+	(struct c_parser): Declare forward.
+	(c_parser_tokens_buf): Declare.
+        (c_parser_error): Likewise.
+        (c_parser_set_error): Likewise.
+    	* gimple-parser.c: New file.
+    	* gimple-parser.h: Likewise.
+
 2016-09-11  Le-Chun Wu  <lcwu@google.com>
 	    Mark Wielaard  <mjw@redhat.com>
 

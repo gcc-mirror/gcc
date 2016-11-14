@@ -893,7 +893,10 @@ dump_gimple_switch (pretty_printer *buffer, gswitch *gs, int spc,
     {
       pp_string (buffer, "switch (");
       dump_generic_node (buffer, gimple_switch_index (gs), spc, flags, true);
-      pp_string (buffer, ") <");
+      if (flags & TDF_GIMPLE)
+	pp_string (buffer, ") {");
+      else
+	pp_string (buffer, ") <");
     }
 
   for (i = 0; i < gimple_switch_num_labels (gs); i++)
@@ -904,9 +907,17 @@ dump_gimple_switch (pretty_printer *buffer, gswitch *gs, int spc,
       pp_space (buffer);
       dump_generic_node (buffer, CASE_LABEL (case_label), spc, flags, false);
       if (i < gimple_switch_num_labels (gs) - 1)
-        pp_string (buffer, ", ");
+	{
+	  if (flags & TDF_GIMPLE)
+	    pp_string (buffer, "; ");
+	  else
+	    pp_string (buffer, ", ");
+	}
     }
-  pp_greater (buffer);
+  if (flags & TDF_GIMPLE)
+    pp_string (buffer, "; }");
+  else
+    pp_greater (buffer);
 }
 
 
@@ -962,12 +973,14 @@ dump_gimple_label (pretty_printer *buffer, glabel *gs, int spc, int flags)
 {
   tree label = gimple_label_label (gs);
   if (flags & TDF_RAW)
-      dump_gimple_fmt (buffer, spc, flags, "%G <%T>", gs, label);
+    dump_gimple_fmt (buffer, spc, flags, "%G <%T>", gs, label);
   else
     {
       dump_generic_node (buffer, label, spc, flags, false);
       pp_colon (buffer);
     }
+  if (flags & TDF_GIMPLE)
+    return;
   if (DECL_NONLOCAL (label))
     pp_string (buffer, " [non-local]");
   if ((flags & TDF_EH) && EH_LANDING_PAD_NR (label))
@@ -2039,21 +2052,44 @@ dump_gimple_phi (pretty_printer *buffer, gphi *phi, int spc, bool comment,
   else
     {
       dump_generic_node (buffer, lhs, spc, flags, false);
-      pp_string (buffer, " = PHI <");
+      if (flags & TDF_GIMPLE)
+	pp_string (buffer, " = __PHI (");
+      else
+	pp_string (buffer, " = PHI <");
     }
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       if ((flags & TDF_LINENO) && gimple_phi_arg_has_location (phi, i))
 	dump_location (buffer, gimple_phi_arg_location (phi, i));
+      if (flags & TDF_GIMPLE)
+	{
+	  basic_block src = gimple_phi_arg_edge (phi, i)->src;
+	  gimple *stmt = first_stmt (src);
+	  if (!stmt || gimple_code (stmt) != GIMPLE_LABEL)
+	    {
+	      pp_string (buffer, "bb_");
+	      pp_decimal_int (buffer, src->index);
+	    }
+	  else
+	    dump_generic_node (buffer, gimple_label_label (as_a <glabel *> (stmt)), 0, flags,
+			       false);
+	  pp_string (buffer, ": ");
+	}
       dump_generic_node (buffer, gimple_phi_arg_def (phi, i), spc, flags,
 			 false);
-      pp_left_paren (buffer);
-      pp_decimal_int (buffer, gimple_phi_arg_edge (phi, i)->src->index);
-      pp_right_paren (buffer);
+      if (! (flags & TDF_GIMPLE))
+	{
+	  pp_left_paren (buffer);
+	  pp_decimal_int (buffer, gimple_phi_arg_edge (phi, i)->src->index);
+	  pp_right_paren (buffer);
+	}
       if (i < gimple_phi_num_args (phi) - 1)
 	pp_string (buffer, ", ");
     }
-  pp_greater (buffer);
+  if (flags & TDF_GIMPLE)
+    pp_string (buffer, ");");
+  else
+    pp_greater (buffer);
 }
 
 
@@ -2502,7 +2538,12 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
     {
       gimple *stmt = first_stmt (bb);
       if (!stmt || gimple_code (stmt) != GIMPLE_LABEL)
-	fprintf (outf, "%*s<bb %d>:\n", indent, "", bb->index);
+	{
+	  if (flags & TDF_GIMPLE)
+	    fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
+	  else
+	    fprintf (outf, "%*s<bb %d>:\n", indent, "", bb->index);
+	}
     }
 }
 
@@ -2535,7 +2576,8 @@ dump_phi_nodes (pretty_printer *buffer, basic_block bb, int indent, int flags)
       if (!virtual_operand_p (gimple_phi_result (phi)) || (flags & TDF_VOPS))
         {
           INDENT (indent);
-	  dump_gimple_phi (buffer, phi, indent, true, flags);
+	  dump_gimple_phi (buffer, phi, indent,
+			   (flags & TDF_GIMPLE) ? false : true, flags);
           pp_newline (buffer);
         }
     }
@@ -2546,26 +2588,32 @@ dump_phi_nodes (pretty_printer *buffer, basic_block bb, int indent, int flags)
    to BUFFER.  */
 
 static void
-pp_cfg_jump (pretty_printer *buffer, basic_block bb)
+pp_cfg_jump (pretty_printer *buffer, basic_block bb, int flags)
 {
-  gimple *stmt;
-
-  stmt = first_stmt (bb);
-
-  pp_string (buffer, "goto <bb ");
-  pp_decimal_int (buffer, bb->index);
-  pp_greater (buffer);
-  if (stmt && gimple_code (stmt) == GIMPLE_LABEL)
+  if (flags & TDF_GIMPLE)
     {
-      pp_string (buffer, " (");
-      dump_generic_node (buffer,
-			 gimple_label_label (as_a <glabel *> (stmt)),
-			 0, 0, false);
-      pp_right_paren (buffer);
+      pp_string (buffer, "goto bb_");
+      pp_decimal_int (buffer, bb->index);
       pp_semicolon (buffer);
     }
   else
-    pp_semicolon (buffer);
+    {
+      gimple *stmt = first_stmt (bb);
+      pp_string (buffer, "goto <bb ");
+      pp_decimal_int (buffer, bb->index);
+      pp_greater (buffer);
+      if (stmt && gimple_code (stmt) == GIMPLE_LABEL)
+	{
+	  pp_string (buffer, " (");
+	  dump_generic_node (buffer,
+			     gimple_label_label (as_a <glabel *> (stmt)),
+			     0, 0, false);
+	  pp_right_paren (buffer);
+	  pp_semicolon (buffer);
+	}
+      else
+	pp_semicolon (buffer);
+    }
 }
 
 
@@ -2593,11 +2641,11 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
       extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
 
       INDENT (indent + 2);
-      pp_cfg_jump (buffer, true_edge->dest);
+      pp_cfg_jump (buffer, true_edge->dest, flags);
       newline_and_indent (buffer, indent);
       pp_string (buffer, "else");
       newline_and_indent (buffer, indent + 2);
-      pp_cfg_jump (buffer, false_edge->dest);
+      pp_cfg_jump (buffer, false_edge->dest, flags);
       pp_newline (buffer);
       return;
     }
@@ -2614,7 +2662,7 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
 	  && e->goto_locus != UNKNOWN_LOCATION)
 	dump_location (buffer, e->goto_locus);
 
-      pp_cfg_jump (buffer, e->dest);
+      pp_cfg_jump (buffer, e->dest, flags);
       pp_newline (buffer);
     }
 }

@@ -252,10 +252,12 @@ flush_ssaname_freelist (void)
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
    in function FN.  STMT may be an empty statement for artificial
    references (e.g., default definitions created when a variable is
-   used without a preceding definition).  */
+   used without a preceding definition).  If VERISON is not zero then
+   allocate the SSA name with that version.  */
 
 tree
-make_ssa_name_fn (struct function *fn, tree var, gimple *stmt)
+make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
+		  unsigned int version)
 {
   tree t;
   use_operand_p imm;
@@ -265,8 +267,19 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt)
 	      || TREE_CODE (var) == RESULT_DECL
 	      || (TYPE_P (var) && is_gimple_reg_type (var)));
 
+  /* Get the specified SSA name version.  */
+  if (version != 0)
+    {
+      t = make_node (SSA_NAME);
+      SSA_NAME_VERSION (t) = version;
+      if (version >= SSANAMES (fn)->length ())
+	vec_safe_grow_cleared (SSANAMES (fn), version + 1);
+      gcc_assert ((*SSANAMES (fn))[version] == NULL);
+      (*SSANAMES (fn))[version] = t;
+      ssa_name_nodes_created++;
+    }
   /* If our free list has an element, then use it.  */
-  if (!vec_safe_is_empty (FREE_SSANAMES (fn)))
+  else if (!vec_safe_is_empty (FREE_SSANAMES (fn)))
     {
       t = FREE_SSANAMES (fn)->pop ();
       ssa_name_nodes_reused++;
