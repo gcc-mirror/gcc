@@ -29,7 +29,8 @@ func sigtrampgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 			// get here anyhow.
 			return
 		}
-		badsignal(uintptr(sig), &sigctxt{info, ctx})
+		c := sigctxt{info, ctx}
+		badsignal(uintptr(sig), &c)
 		return
 	}
 

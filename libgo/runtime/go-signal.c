@@ -187,7 +187,11 @@ getSiginfo(siginfo_t *info, void *context __attribute__((unused)))
 	Location loc[1];
 	int32 n;
 
-	ret.sigaddr = (uintptr)(info->si_addr);
+	if (info == nil) {
+		ret.sigaddr = 0;
+	} else {
+		ret.sigaddr = (uintptr)(info->si_addr);
+	}
 	ret.sigpc = 0;
 
 	// There doesn't seem to be a portable way to get the PC.
