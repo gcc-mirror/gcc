@@ -10504,12 +10504,17 @@ To optimize the program based on the collected profile information, use
 
 Alter the update method for an application instrumented for profile
 feedback based optimization.  The @var{method} argument should be one of
-@samp{single} or @samp{atomic}.  The first one is useful for single-threaded
-applications, while the second one prevents profile corruption by emitting
-thread-safe code.
+@samp{single}, @samp{atomic} or @samp{prefer-atomic}.
+The first one is useful for single-threaded applications,
+while the second one prevents profile corruption by emitting thread-safe code.
 
 @strong{Warning:} When an application does not properly join all threads
 (or creates an detached thread), a profile file can be still corrupted.
+
+Using @samp{prefer-atomic} would be transformed either to @samp{atomic},
+when supported by a target, or to @samp{single} otherwise.  The GCC driver
+automatically selects @samp{prefer-atomic} when @option{-pthread}
+is present in the command line.
 
 @item -fsanitize=address
 @opindex fsanitize=address

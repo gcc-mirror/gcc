@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fprofile-arcs -fdump-tree-lim2-details" } */
+/* { dg-options "-O -fprofile-arcs -fprofile-update=single -fdump-tree-lim2-details" } */
 /* { dg-require-profiling "-fprofile-generate" } */
 
 struct thread_param
