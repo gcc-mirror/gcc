@@ -1,5 +1,10 @@
 2016-11-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/arm/cortex-a57.md (cortex_a57_alu): Move extend here, bfm...
+	(cortex_a57_alu_shift): ...here.
+
+2016-11-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.md (aarch64_ashl_sisd_or_int_<mode>3)
 	Use bfx attribute.
 	(aarch64_lshr_sisd_or_int_<mode>3): Likewise.
