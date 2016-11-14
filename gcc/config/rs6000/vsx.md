@@ -2514,9 +2514,9 @@
     FAIL;
 })
 
-;; Extraction of a single element in a small integer vector.  None of the small
-;; types are currently allowed in a vector register, so we extract to a DImode
-;; and either do a direct move or store.
+;; Extraction of a single element in a small integer vector.  Until ISA 3.0,
+;; none of the small types were allowed in a vector register, so we had to
+;; extract to a DImode and either do a direct move or store.
 (define_expand  "vsx_extract_<mode>"
   [(parallel [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand")
 		   (vec_select:<VS_scalar>
@@ -2838,6 +2838,31 @@
 
   DONE;
 })
+
+;; V4SI/V8HI/V16QI set operation on ISA 3.0
+(define_insn "vsx_set_<mode>_p9"
+  [(set (match_operand:VSX_EXTRACT_I 0 "gpc_reg_operand" "=<VSX_EX>")
+	(unspec:VSX_EXTRACT_I
+	 [(match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "0")
+	  (match_operand:<VS_scalar> 2 "gpc_reg_operand" "<VSX_EX>")
+	  (match_operand:QI 3 "<VSX_EXTRACT_PREDICATE>" "n")]
+	 UNSPEC_VSX_SET))]
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
+   && TARGET_UPPER_REGS_DI && TARGET_POWERPC64"
+{
+  int ele = INTVAL (operands[3]);
+  int nunits = GET_MODE_NUNITS (<MODE>mode);
+
+  if (!VECTOR_ELT_ORDER_BIG)
+    ele = nunits - 1 - ele;
+
+  operands[3] = GEN_INT (nunits * ele);
+  if (<MODE>mode == V4SImode)
+    return "xxinsertw %x0,%x2,%3";
+  else
+    return "vinsert<wd> %0,%2,%3";
+}
+  [(set_attr "type" "vecperm")])
 
 ;; Expanders for builtins
 (define_expand "vsx_mergel_<mode>"

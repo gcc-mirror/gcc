@@ -1,3 +1,9 @@
+2016-11-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-set-int.c: New test.
+	* gcc.target/powerpc/vec-set-short.c: Likesie.
+	* gcc.target/powerpc/vec-set-char.c: Likewise.
+
 2016-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/feat-cxx1z.C: Test __cpp_structured_bindings macro.

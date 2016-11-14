@@ -7095,12 +7095,33 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
   int width = GET_MODE_SIZE (inner_mode);
   int i;
 
-  if (VECTOR_MEM_VSX_P (mode) && (mode == V2DFmode || mode == V2DImode))
+  if (VECTOR_MEM_VSX_P (mode))
     {
-      rtx (*set_func) (rtx, rtx, rtx, rtx)
-	= ((mode == V2DFmode) ? gen_vsx_set_v2df : gen_vsx_set_v2di);
-      emit_insn (set_func (target, target, val, GEN_INT (elt)));
-      return;
+      rtx insn = NULL_RTX;
+      rtx elt_rtx = GEN_INT (elt);
+
+      if (mode == V2DFmode)
+	insn = gen_vsx_set_v2df (target, target, val, elt_rtx);
+
+      else if (mode == V2DImode)
+	insn = gen_vsx_set_v2di (target, target, val, elt_rtx);
+
+      else if (TARGET_P9_VECTOR && TARGET_VSX_SMALL_INTEGER
+	       && TARGET_UPPER_REGS_DI && TARGET_POWERPC64)
+	{
+	  if (mode == V4SImode)
+	    insn = gen_vsx_set_v4si_p9 (target, target, val, elt_rtx);
+	  else if (mode == V8HImode)
+	    insn = gen_vsx_set_v8hi_p9 (target, target, val, elt_rtx);
+	  else if (mode == V16QImode)
+	    insn = gen_vsx_set_v16qi_p9 (target, target, val, elt_rtx);
+	}
+
+      if (insn)
+	{
+	  emit_insn (insn);
+	  return;
+	}
     }
 
   /* Simplify setting single element vectors like V1TImode.  */
