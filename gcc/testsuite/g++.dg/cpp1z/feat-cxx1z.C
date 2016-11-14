@@ -392,6 +392,12 @@
 #  error "__cpp_noexcept_function_type != 201510"
 #endif
 
+#ifndef __cpp_structured_bindings
+#  error "__cpp_structured_bindings"
+#elif __cpp_structured_bindings != 201606
+#  error "__cpp_structured_bindings != 201606"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)
