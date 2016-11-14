@@ -4398,7 +4398,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_libiberty_warn_cflags=
 save_CFLAGS="$CFLAGS"
 for real_option in -W -Wall -Wwrite-strings -Wc++-compat \
-			  -Wstrict-prototypes; do
+			  -Wstrict-prototypes \
+			  -Wshadow=local; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
