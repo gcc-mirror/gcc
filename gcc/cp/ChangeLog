@@ -1,3 +1,38 @@
+2016-11-13  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Implement P0217R3 - C++17 structured bindings
+	* cp-tree.h (struct lang_decl_base): Add decomposition_p.
+	(DECL_DECOMPOSITION_P): New
+	(enum auto_deduction_context): Add adc_decomp_type.
+	(enum cp_declarator_kind): Add cdk_decomp.
+	* constexpr.c (cxx_eval_constant_expression): Look through
+	DECL_VALUE_EXPR.
+	(potential_constant_expression_1): Likewise.
+	* decl.c (reshape_init): Preserve CONSTRUCTOR_IS_DIRECT_INIT.
+	(check_initializer): Use build_aggr_init for DECL_DECOMPOSITION_P.
+	(cp_finish_decl): Pass adc_decomp_type for decomposition.
+	(find_decomp_class_base, get_tuple_size, get_tuple_element_type)
+	(get_tuple_decomp_init, cp_finish_decomp): New.
+	(grokdeclarator): Handle decomposition.
+	* init.c (build_aggr_init): Handle decomposition array.
+	(build_vec_init): Handle initialization from { array }.
+	* name-lookup.c (add_function): Always wrap TEMPLATE_DECL in
+	OVERLOAD.
+	* parser.c (declarator_can_be_parameter_pack): Handle cdk_decomp.
+	(function_declarator_p, strip_declarator_types)
+	(cp_parser_check_declarator_template_parameters): Likewise.
+	(cp_parser_range_for, cp_convert_range_for): Handle decomposition.
+	(cp_parser_simple_declaration): Parse decomposition.
+	(cp_parser_decomposition_declaration): New.
+	* pt.c (tsubst_decomp_names): New.
+	(subst_expr) [DECL_EXPR, RANGE_FOR_STMT]: Handle decomposition.
+	(do_auto_deduction): Handle adc_decomp_type.
+	* semantics.c (finish_decltype_type): Look through DECL_VALUE_EXPR.
+	* typeck.c (is_bitfield_expr_with_lowered_type): Likewise.
+	* tree.c (lvalue_kind): Likewise.
+	(cp_build_reference_type): Handle reference collapsing.
+
 2016-11-13  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_new_method_call_1): Include template arguments in

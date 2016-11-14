@@ -1,3 +1,8 @@
+2016-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* match.pd: Don't try to compare addresses of variables with
+	DECL_VALUE_EXPR.
+
 2016-11-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* ipa-cp.c (ipa_get_jf_pass_through_result): Skip unary expressions.

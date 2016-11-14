@@ -6074,6 +6074,10 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
 	return error_mark_node;
     }
 
+  if (CONSTRUCTOR_IS_DIRECT_INIT (init)
+      && BRACE_ENCLOSED_INITIALIZER_P (new_init))
+    CONSTRUCTOR_IS_DIRECT_INIT (new_init) = true;
+
   return new_init;
 }
 
@@ -6254,7 +6258,8 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
       if (type == error_mark_node)
 	return NULL_TREE;
 
-      if ((type_build_ctor_call (type) || CLASS_TYPE_P (type))
+      if ((type_build_ctor_call (type) || CLASS_TYPE_P (type)
+	   || (DECL_DECOMPOSITION_P (decl) && TREE_CODE (type) == ARRAY_TYPE))
 	  && !(flags & LOOKUP_ALREADY_DIGESTED)
 	  && !(init && BRACE_ENCLOSED_INITIALIZER_P (init)
 	       && CP_AGGREGATE_TYPE_P (type)
@@ -6770,10 +6775,11 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	d_init = build_x_compound_expr_from_list (d_init, ELK_INIT,
 						  tf_warning_or_error);
       d_init = resolve_nondeduced_context (d_init, tf_warning_or_error);
-      type = TREE_TYPE (decl) = do_auto_deduction (type, d_init,
-						   auto_node,
-                                                   tf_warning_or_error,
-                                                   adc_variable_type);
+      enum auto_deduction_context adc = adc_variable_type;
+      if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+	adc = adc_decomp_type;
+      type = TREE_TYPE (decl) = do_auto_deduction (type, d_init, auto_node,
+						   tf_warning_or_error, adc);
       if (type == error_mark_node)
 	return;
       if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -7135,6 +7141,390 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
     TREE_READONLY (decl) = 1;
 
   invoke_plugin_callbacks (PLUGIN_FINISH_DECL, decl);
+}
+
+/* For class TYPE return itself or some its bases that contain
+   any direct non-static data members.  Return error_mark_node if an
+   error has been diagnosed.  */
+
+static tree
+find_decomp_class_base (location_t loc, tree type, tree ret)
+{
+  bool member_seen = false;
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
+      continue;
+    else if (ret)
+      return type;
+    else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+      {
+	if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
+	  error_at (loc, "cannot decompose class type %qT because it has an "
+			 "anonymous struct member", type);
+	else
+	  error_at (loc, "cannot decompose class type %qT because it has an "
+			 "anonymous union member", type);
+	inform (DECL_SOURCE_LOCATION (field), "declared here");
+	return error_mark_node;
+      }
+    else if (TREE_PRIVATE (field) || TREE_PROTECTED (field))
+      {
+	error_at (loc, "cannot decompose non-public member %qD of %qT",
+		  field, type);
+	inform (DECL_SOURCE_LOCATION (field),
+		TREE_PRIVATE (field) ? "declared private here"
+		: "declared protected here");
+	return error_mark_node;
+      }
+    else
+      member_seen = true;
+
+  tree base_binfo, binfo;
+  tree orig_ret = ret;
+  int i;
+  if (member_seen)
+    ret = type;
+  for (binfo = TYPE_BINFO (type), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    {
+      tree t = find_decomp_class_base (loc, TREE_TYPE (base_binfo), ret);
+      if (t == error_mark_node)
+	return error_mark_node;
+      if (t != NULL_TREE)
+	{
+	  if (ret == type)
+	    {
+	      error_at (loc, "cannot decompose class type %qT: both it and "
+			     "its base class %qT have non-static data members",
+			type, t);
+	      return error_mark_node;
+	    }
+	  else if (orig_ret != NULL_TREE)
+	    return t;
+	  else if (ret == t)
+	    /* OK, found the same base along another path.  We'll complain
+	       in convert_to_base if it's ambiguous.  */;
+	  else if (ret != NULL_TREE)
+	    {
+	      error_at (loc, "cannot decompose class type %qT: its base "
+			     "classes %qT and %qT have non-static data "
+			     "members", type, ret, t);
+	      return error_mark_node;
+	    }
+	  else
+	    ret = t;
+	}
+    }
+  return ret;
+}
+
+/* Return std::tuple_size<TYPE>::value.  */
+
+tree
+get_tuple_size (tree type)
+{
+  tree args = make_tree_vec (1);
+  TREE_VEC_ELT (args, 0) = type;
+  tree inst = lookup_template_class (get_identifier ("tuple_size"), args,
+				     /*in_decl*/NULL_TREE,
+				     /*context*/std_node,
+				     /*entering_scope*/false, tf_none);
+  tree val = lookup_qualified_name (inst, get_identifier ("value"),
+				    /*type*/false, /*complain*/false);
+  if (TREE_CODE (val) == VAR_DECL || TREE_CODE (val) == CONST_DECL)
+    val = maybe_constant_value (val);
+  if (TREE_CODE (val) == INTEGER_CST)
+    return val;
+  else
+    return NULL_TREE;
+}
+
+/* Return std::tuple_element<I,TYPE>::type.  */
+
+tree
+get_tuple_element_type (tree type, unsigned i)
+{
+  tree args = make_tree_vec (2);
+  TREE_VEC_ELT (args, 0) = build_int_cst (integer_type_node, i);
+  TREE_VEC_ELT (args, 1) = type;
+  tree inst = lookup_template_class (get_identifier ("tuple_element"), args,
+				     /*in_decl*/NULL_TREE,
+				     /*context*/std_node,
+				     /*entering_scope*/false,
+				     tf_warning_or_error);
+  return make_typename_type (inst, get_identifier ("type"),
+			     none_type, tf_warning_or_error);
+}
+
+/* Return e.get<i>() or get<i>(e).  */
+
+tree
+get_tuple_decomp_init (tree decl, unsigned i)
+{
+  tree get_id = get_identifier ("get");
+  tree targs = make_tree_vec (1);
+  TREE_VEC_ELT (targs, 0) = build_int_cst (integer_type_node, i);
+
+  tree etype = TREE_TYPE (decl);
+  tree e = convert_from_reference (decl);
+
+  /* [The id-expression] e is an lvalue if the type of the entity e is an
+     lvalue reference and an xvalue otherwise.  */
+  if (TREE_CODE (etype) != REFERENCE_TYPE
+      || TYPE_REF_IS_RVALUE (etype))
+    e = move (e);
+
+  tree fns = lookup_qualified_name (TREE_TYPE (e), get_id,
+				    /*type*/false, /*complain*/false);
+  if (fns != error_mark_node)
+    {
+      fns = lookup_template_function (fns, targs);
+      return build_new_method_call (e, fns, /*args*/NULL,
+				    /*path*/NULL_TREE, LOOKUP_NORMAL,
+				    /*fn_p*/NULL, tf_warning_or_error);
+    }
+  else
+    {
+      vec<tree,va_gc> *args = make_tree_vector_single (e);
+      fns = lookup_template_function (get_id, targs);
+      fns = perform_koenig_lookup (fns, args, tf_warning_or_error);
+      return finish_call_expr (fns, &args, /*novirt*/false,
+			       /*koenig*/true, tf_warning_or_error);
+    }
+}
+
+/* Finish a decomposition declaration.  DECL is the underlying declaration
+   "e", FIRST is the head of a chain of decls for the individual identifiers
+   chained through DECL_CHAIN in reverse order and COUNT is the number of
+   those decls.  */
+
+void
+cp_finish_decomp (tree decl, tree first, unsigned int count)
+{
+  location_t loc = DECL_SOURCE_LOCATION (decl);
+  if (error_operand_p (decl))
+    {
+     error_out:
+      while (count--)
+	{
+	  TREE_TYPE (first) = error_mark_node;
+	  if (DECL_HAS_VALUE_EXPR_P (first))
+	    {
+	      SET_DECL_VALUE_EXPR (first, NULL_TREE);
+	      DECL_HAS_VALUE_EXPR_P (first) = 0;
+	    }
+	  first = DECL_CHAIN (first);
+	}
+      return;
+    }
+
+  if (type_dependent_expression_p (decl)
+      /* This happens for range for when not in templates.
+	 Still add the DECL_VALUE_EXPRs for later processing.  */
+      || (!processing_template_decl
+	  && type_uses_auto (TREE_TYPE (decl))))
+    {
+      for (unsigned int i = 0; i < count; i++)
+	{
+	  if (!DECL_HAS_VALUE_EXPR_P (first))
+	    {
+	      tree v = build_nt (ARRAY_REF, decl,
+				 size_int (count - i - 1),
+				 NULL_TREE, NULL_TREE);
+	      SET_DECL_VALUE_EXPR (first, v);
+	      DECL_HAS_VALUE_EXPR_P (first) = 1;
+	    }
+	  if (processing_template_decl)
+	    {
+	      retrofit_lang_decl (first);
+	      SET_DECL_DECOMPOSITION_P (first);
+	    }
+	  first = DECL_CHAIN (first);
+	}
+      return;
+    }
+
+  auto_vec<tree, 16> v;
+  v.safe_grow (count);
+  tree d = first;
+  for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
+    {
+      v[count - i - 1] = d;
+      if (processing_template_decl)
+	{
+	  retrofit_lang_decl (d);
+	  SET_DECL_DECOMPOSITION_P (d);
+	}
+    }
+
+  tree type = TREE_TYPE (decl);
+  tree eltype = NULL_TREE;
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
+
+  unsigned HOST_WIDE_INT eltscnt = 0;
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree nelts;
+      nelts = array_type_nelts_top (type);
+      if (nelts == error_mark_node)
+	goto error_out;
+      if (!tree_fits_uhwi_p (nelts))
+	{
+	  error_at (loc, "cannot decompose variable length array %qT", type);
+	  goto error_out;
+	}
+      eltscnt = tree_to_uhwi (nelts);
+      if (count != eltscnt)
+	{
+       cnt_mismatch:
+	  if (count > eltscnt)
+	    error_at (loc, "%u names provided while %qT decomposes into "
+			   "%wu elements", count, type, eltscnt);
+	  else
+	    error_at (loc, "only %u names provided while %qT decomposes into "
+			   "%wu elements", count, type, eltscnt);
+	  goto error_out;
+	}
+      eltype = TREE_TYPE (type);
+      for (unsigned int i = 0; i < count; i++)
+	{
+	  TREE_TYPE (v[i]) = eltype;
+	  layout_decl (v[i], 0);
+	  tree t = convert_from_reference (decl);
+	  t = build4_loc (DECL_SOURCE_LOCATION (v[i]), ARRAY_REF,
+			  eltype, t, size_int (i), NULL_TREE,
+			  NULL_TREE);
+	  SET_DECL_VALUE_EXPR (v[i], t);
+	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
+	}
+    }
+  /* 2 GNU extensions.  */
+  else if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      eltscnt = 2;
+      if (count != eltscnt)
+	goto cnt_mismatch;
+      eltype = cp_build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
+      for (unsigned int i = 0; i < count; i++)
+	{
+	  TREE_TYPE (v[i]) = eltype;
+	  layout_decl (v[i], 0);
+	  tree t = convert_from_reference (decl);
+	  t = build1_loc (DECL_SOURCE_LOCATION (v[i]),
+			  i ? IMAGPART_EXPR : REALPART_EXPR, eltype,
+			  t);
+	  SET_DECL_VALUE_EXPR (v[i], t);
+	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
+	}
+    }
+  else if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      eltscnt = TYPE_VECTOR_SUBPARTS (type);
+      if (count != eltscnt)
+	goto cnt_mismatch;
+      eltype = cp_build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
+      for (unsigned int i = 0; i < count; i++)
+	{
+	  TREE_TYPE (v[i]) = eltype;
+	  layout_decl (v[i], 0);
+	  tree t = convert_from_reference (decl);
+	  convert_vector_to_array_for_subscript (DECL_SOURCE_LOCATION (v[i]),
+						 &t, size_int (i));
+	  t = build4_loc (DECL_SOURCE_LOCATION (v[i]), ARRAY_REF,
+			  eltype, t, size_int (i), NULL_TREE,
+			  NULL_TREE);
+	  SET_DECL_VALUE_EXPR (v[i], t);
+	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
+	}
+    }
+  else if (tree tsize = get_tuple_size (type))
+    {
+      eltscnt = tree_to_uhwi (tsize);
+      if (count != eltscnt)
+	goto cnt_mismatch;
+      for (unsigned i = 0; i < count; ++i)
+	{
+	  location_t sloc = input_location;
+	  location_t dloc = DECL_SOURCE_LOCATION (v[i]);
+
+	  input_location = dloc;
+	  tree init = get_tuple_decomp_init (decl, i);
+	  tree eltype = (init == error_mark_node ? error_mark_node
+			 : get_tuple_element_type (type, i));
+	  input_location = sloc;
+
+	  if (init == error_mark_node || eltype == error_mark_node)
+	    {
+	      inform (dloc, "in initialization of decomposition variable %qD",
+		      v[i]);
+	      goto error_out;
+	    }
+	  eltype = cp_build_reference_type (eltype, !lvalue_p (init));
+	  TREE_TYPE (v[i]) = eltype;
+	  layout_decl (v[i], 0);
+	  if (DECL_HAS_VALUE_EXPR_P (v[i]))
+	    {
+	      /* In this case the names are variables, not just proxies.  */
+	      SET_DECL_VALUE_EXPR (v[i], NULL_TREE);
+	      DECL_HAS_VALUE_EXPR_P (v[i]) = 0;
+	    }
+	  cp_finish_decl (v[i], init, /*constexpr*/false,
+			  /*asm*/NULL_TREE, LOOKUP_NORMAL);
+	}
+    }
+  else if (TREE_CODE (type) == UNION_TYPE)
+    {
+      error_at (loc, "cannot decompose union type %qT", type);
+      goto error_out;
+    }
+  else if (!CLASS_TYPE_P (type))
+    {
+      error_at (loc, "cannot decompose non-array non-class type %qT", type);
+      goto error_out;
+    }
+  else
+    {
+      tree btype = find_decomp_class_base (loc, type, NULL_TREE);
+      if (btype == error_mark_node)
+	goto error_out;
+      else if (btype == NULL_TREE)
+	{
+	  error_at (loc, "cannot decompose class type %qT without non-static "
+			 "data members", type);
+	  goto error_out;
+	}
+      for (tree field = TYPE_FIELDS (btype); field; field = TREE_CHAIN (field))
+	if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
+	  continue;
+	else
+	  eltscnt++;
+      if (count != eltscnt)
+	goto cnt_mismatch;
+      tree t = convert_from_reference (decl);
+      if (type != btype)
+	{
+	  t = convert_to_base (t, btype, /*check_access*/true,
+			       /*nonnull*/false, tf_warning_or_error);
+	  type = btype;
+	}
+      unsigned int i = 0;
+      for (tree field = TYPE_FIELDS (btype); field; field = TREE_CHAIN (field))
+	if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
+	  continue;
+	else
+	  {
+	    tree tt = finish_non_static_data_member (field, t, NULL_TREE);
+	    tree probe = tt;
+	    if (REFERENCE_REF_P (probe))
+	      probe = TREE_OPERAND (probe, 0);
+	    TREE_TYPE (v[i]) = TREE_TYPE (probe);
+	    layout_decl (v[i], 0);
+	    SET_DECL_VALUE_EXPR (v[i], tt);
+	    DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
+	    i++;
+	  }
+    }
 }
 
 /* Returns a declaration for a VAR_DECL as if:
@@ -9449,7 +9839,7 @@ grokdeclarator (const cp_declarator *declarator,
   cp_storage_class storage_class;
   bool unsigned_p, signed_p, short_p, long_p, thread_p;
   bool type_was_error_mark_node = false;
-  bool parameter_pack_p = declarator? declarator->parameter_pack_p : false;
+  bool parameter_pack_p = declarator ? declarator->parameter_pack_p : false;
   bool template_type_arg = false;
   bool template_parm_flag = false;
   bool typedef_p = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
@@ -9648,6 +10038,10 @@ grokdeclarator (const cp_declarator *declarator,
 	case cdk_pointer:
 	case cdk_reference:
 	case cdk_ptrmem:
+	  break;
+
+	case cdk_decomp:
+	  name = "decomposition";
 	  break;
 
 	case cdk_error:
@@ -9859,15 +10253,15 @@ grokdeclarator (const cp_declarator *declarator,
   if (explicit_intN)
     {
       if (! int_n_enabled_p[declspecs->int_n_idx])
-       {
-         error ("%<__int%d%> is not supported by this target",
-		int_n_data[declspecs->int_n_idx].bitsize);
-         explicit_intN = false;
-       }
+	{
+	  error ("%<__int%d%> is not supported by this target",
+		 int_n_data[declspecs->int_n_idx].bitsize);
+	  explicit_intN = false;
+	}
       else if (pedantic && ! in_system_header_at (input_location))
-       pedwarn (input_location, OPT_Wpedantic,
-                "ISO C++ does not support %<__int%d%> for %qs",
-		int_n_data[declspecs->int_n_idx].bitsize,  name);
+	pedwarn (input_location, OPT_Wpedantic,
+		 "ISO C++ does not support %<__int%d%> for %qs",
+		 int_n_data[declspecs->int_n_idx].bitsize, name);
     }
 
   /* Now process the modifiers that were specified
@@ -10093,6 +10487,79 @@ grokdeclarator (const cp_declarator *declarator,
       virtualp = 0;
     }
 
+  if (innermost_code == cdk_decomp)
+    {
+      location_t loc = (declarator->kind == cdk_reference
+			? declarator->declarator->id_loc : declarator->id_loc);
+      if (inlinep)
+	error_at (declspecs->locations[ds_inline],
+		  "decomposition declaration cannot be declared %<inline%>");
+      if (typedef_p)
+	error_at (declspecs->locations[ds_typedef],
+		  "decomposition declaration cannot be declared %<typedef%>");
+      if (constexpr_p)
+	error_at (declspecs->locations[ds_constexpr], "decomposition "
+		  "declaration cannot be declared %<constexpr%>");
+      if (thread_p)
+	error_at (declspecs->locations[ds_thread],
+		  "decomposition declaration cannot be declared %qs",
+		  declspecs->gnu_thread_keyword_p
+		  ? "__thread" : "thread_local");
+      if (concept_p)
+	error_at (declspecs->locations[ds_concept],
+		  "decomposition declaration cannot be declared %<concept%>");
+      switch (storage_class)
+	{
+	case sc_none:
+	  break;
+	case sc_register:
+	  error_at (loc, "decomposition declaration cannot be declared "
+		    "%<register%>");
+	  break;
+	case sc_static:
+	  error_at (loc, "decomposition declaration cannot be declared "
+		    "%<static%>");
+	  break;
+	case sc_extern:
+	  error_at (loc, "decomposition declaration cannot be declared "
+		    "%<extern%>");
+	  break;
+	case sc_mutable:
+	  error_at (loc, "decomposition declaration cannot be declared "
+		    "%<mutable%>");
+	  break;
+	case sc_auto:
+	  error_at (loc, "decomposition declaration cannot be declared "
+		    "C++98 %<auto%>");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      if (TREE_CODE (type) != TEMPLATE_TYPE_PARM
+	  || TYPE_IDENTIFIER (type) != get_identifier ("auto"))
+	{
+	  if (type != error_mark_node)
+	    {
+	      error_at (loc, "decomposition declaration cannot be declared "
+			"with type %qT", type);
+	      inform (loc,
+		      "type must be cv-qualified %<auto%> or reference to "
+		      "cv-qualified %<auto%>");
+	    }
+	  type = build_qualified_type (make_auto (), type_quals);
+	  declspecs->type = type;
+	}
+      inlinep = 0;
+      typedef_p = 0;
+      constexpr_p = 0;
+      thread_p = 0;
+      concept_p = 0;
+      storage_class = sc_none;
+      staticp = 0;
+      declspecs->storage_class = sc_none;
+      declspecs->locations[ds_thread] = UNKNOWN_LOCATION;
+    }
+
   /* Static anonymous unions are dealt with here.  */
   if (staticp && decl_context == TYPENAME
       && declspecs->type
@@ -10232,7 +10699,7 @@ grokdeclarator (const cp_declarator *declarator,
 					    attr_flags);
 	}
 
-      if (declarator->kind == cdk_id)
+      if (declarator->kind == cdk_id || declarator->kind == cdk_decomp)
 	break;
 
       inner_declarator = declarator->declarator;
@@ -10743,6 +11210,7 @@ grokdeclarator (const cp_declarator *declarator,
      is non-NULL, we know it is a cdk_id declarator; otherwise, we
      would not have exited the loop above.  */
   if (declarator
+      && declarator->kind == cdk_id
       && declarator->u.id.qualifying_scope
       && MAYBE_CLASS_TYPE_P (declarator->u.id.qualifying_scope))
     {
@@ -10754,13 +11222,14 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  if (friendp)
 	    {
-	      permerror (input_location, "member functions are implicitly friends of their class");
+	      permerror (input_location, "member functions are implicitly "
+					 "friends of their class");
 	      friendp = 0;
 	    }
 	  else
 	    permerror (declarator->id_loc, 
-			  "extra qualification %<%T::%> on member %qs",
-			  ctype, name);
+		       "extra qualification %<%T::%> on member %qs",
+		       ctype, name);
 	}
       else if (/* If the qualifying type is already complete, then we
 		  can skip the following checks.  */
@@ -11133,7 +11602,8 @@ grokdeclarator (const cp_declarator *declarator,
   else if (unqualified_id == NULL_TREE && decl_context != PARM
 	   && decl_context != CATCHPARM
 	   && TREE_CODE (type) != UNION_TYPE
-	   && ! bitfield)
+	   && ! bitfield
+	   && innermost_code != cdk_decomp)
     {
       error ("abstract declarator %qT used as declaration", type);
       return error_mark_node;
@@ -11719,6 +12189,14 @@ grokdeclarator (const cp_declarator *declarator,
 
 	if (inlinep)
 	  mark_inline_variable (decl);
+	if (innermost_code == cdk_decomp)
+	  {
+	    gcc_assert (declarator && declarator->kind == cdk_decomp);
+	    DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
+	    retrofit_lang_decl (decl);
+	    DECL_ARTIFICIAL (decl) = 1;
+	    SET_DECL_DECOMPOSITION_P (decl);
+	  }
       }
 
     if (VAR_P (decl) && !initialized)

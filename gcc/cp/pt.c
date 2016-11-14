@@ -15311,6 +15311,55 @@ tsubst_find_omp_teams (tree *tp, int *walk_subtrees, void *)
   return NULL_TREE;
 }
 
+/* Helper function for tsubst_expr.  For decomposition declaration
+   artificial base DECL, which is tsubsted PATTERN_DECL, tsubst
+   also the corresponding decls representing the identifiers
+   of the decomposition declaration.  Return DECL if successful
+   or error_mark_node otherwise, set *FIRST to the first decl
+   in the list chained through DECL_CHAIN and *CNT to the number
+   of such decls.  */
+
+static tree
+tsubst_decomp_names (tree decl, tree pattern_decl, tree args,
+		     tsubst_flags_t complain, tree in_decl, tree *first,
+		     unsigned int *cnt)
+{
+  tree decl2, decl3, prev = decl;
+  *cnt = 0;
+  gcc_assert (DECL_NAME (decl) == NULL_TREE);
+  for (decl2 = DECL_CHAIN (pattern_decl);
+       decl2
+       && VAR_P (decl2)
+       && DECL_DECOMPOSITION_P (decl2)
+       && DECL_NAME (decl2);
+       decl2 = DECL_CHAIN (decl2))
+    {
+      (*cnt)++;
+      gcc_assert (DECL_HAS_VALUE_EXPR_P (decl2));
+      tree v = DECL_VALUE_EXPR (decl2);
+      DECL_HAS_VALUE_EXPR_P (decl2) = 0;
+      SET_DECL_VALUE_EXPR (decl2, NULL_TREE);
+      decl3 = tsubst (decl2, args, complain, in_decl);
+      SET_DECL_VALUE_EXPR (decl2, v);
+      DECL_HAS_VALUE_EXPR_P (decl2) = 1;
+      if (VAR_P (decl3))
+	DECL_TEMPLATE_INSTANTIATED (decl3) = 1;
+      maybe_push_decl (decl3);
+      if (error_operand_p (decl3))
+	decl = error_mark_node;
+      else if (decl != error_mark_node
+	       && DECL_CHAIN (decl3) != prev)
+	{
+	  gcc_assert (errorcount);
+	  decl = error_mark_node;
+	}
+      else
+	prev = decl3;
+    }
+  *first = prev;
+  return decl;
+}
+
 /* Like tsubst_copy for expressions, etc. but also does semantic
    processing.  */
 
@@ -15454,6 +15503,16 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P
 				    (pattern_decl));
 		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
+		    if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+		      {
+			unsigned int cnt;
+			tree first;
+			decl = tsubst_decomp_names (decl, pattern_decl, args,
+						    complain, in_decl, &first,
+						    &cnt);
+			if (decl != error_mark_node)
+			  cp_finish_decomp (decl, first, cnt);
+		      }
 		  }
 	      }
 	  }
@@ -15481,7 +15540,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
         decl = tsubst (decl, args, complain, in_decl);
         maybe_push_decl (decl);
         expr = RECUR (RANGE_FOR_EXPR (t));
-        stmt = cp_convert_range_for (stmt, decl, expr, RANGE_FOR_IVDEP (t));
+	if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+	  {
+	    unsigned int cnt;
+	    tree first;
+	    decl = tsubst_decomp_names (decl, RANGE_FOR_DECL (t), args,
+					complain, in_decl, &first, &cnt);
+	    stmt = cp_convert_range_for (stmt, decl, expr, first, cnt,
+					 RANGE_FOR_IVDEP (t));
+	  }
+	else
+	  stmt = cp_convert_range_for (stmt, decl, expr, NULL_TREE, 0,
+				       RANGE_FOR_IVDEP (t));
         RECUR (RANGE_FOR_BODY (t));
         finish_for_stmt (stmt);
       }
@@ -24800,7 +24870,15 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 
   init = resolve_nondeduced_context (init, complain);
 
-  if (AUTO_IS_DECLTYPE (auto_node))
+  if (context == adc_decomp_type
+      && auto_node == type
+      && init != error_mark_node
+      && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
+    /* [dcl.decomp]/1 - if decomposition declaration has no ref-qualifiers
+       and initializer has array type, deduce cv-qualified array type.  */
+    return cp_build_qualified_type_real (TREE_TYPE (init), TYPE_QUALS (type),
+					 complain);
+  else if (AUTO_IS_DECLTYPE (auto_node))
     {
       bool id = (DECL_P (init)
 		 || ((TREE_CODE (init) == COMPONENT_REF
@@ -24885,6 +24963,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
                     error("placeholder constraints not satisfied");
                     break;
                   case adc_variable_type:
+		  case adc_decomp_type:
                     error ("deduced initializer does not satisfy "
                            "placeholder constraints");
                     break;
@@ -24893,7 +24972,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
                            "placeholder constraints");
                     break;
                   case adc_requirement:
-                    error ("deduced expression type does not saatisy "
+		    error ("deduced expression type does not satisfy "
                            "placeholder constraints");
                     break;
                   }

@@ -15,7 +15,7 @@
   CHECK (xor_eq);   // { dg-error "before .xor_eq. token" }
 #undef CHECK
 #define CHECK(x)  int x
-  CHECK (<:);     // { dg-error "before .<:. token" }
+  CHECK (<:);     // { dg-error "" }
   CHECK (:>);     // { dg-error "before .:>. token" }
 #undef CHECK
 #define CHECK(x)  x
