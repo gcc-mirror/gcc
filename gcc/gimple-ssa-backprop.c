@@ -728,6 +728,7 @@ backprop::prepare_change (tree var)
 {
   if (MAY_HAVE_DEBUG_STMTS)
     insert_debug_temp_for_var_def (NULL, var);
+  reset_flow_sensitive_info (var);
 }
 
 /* STMT has been changed.  Give the fold machinery a chance to simplify

@@ -1,3 +1,9 @@
+2016-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78312
+	* gimple-ssa-backprop.c (backprop::prepare_change): Reset
+	flow-sensitive info.
+
 2016-11-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/78093
