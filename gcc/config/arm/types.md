@@ -51,6 +51,7 @@
 ; alus_shift_imm     as alu_shift_imm, setting condition flags.
 ; alus_shift_reg     as alu_shift_reg, setting condition flags.
 ; bfm                bitfield move operation.
+; bfx                bitfield extract operation.
 ; block              blockage insn, this blocks all functional units.
 ; branch             branch.
 ; call               subroutine call.
@@ -557,6 +558,7 @@
   alus_shift_imm,\
   alus_shift_reg,\
   bfm,\
+  bfx,\
   block,\
   branch,\
   call,\

@@ -93,7 +93,7 @@
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "alu_shift_imm,alus_shift_imm,
 			crc,logic_shift_imm,logics_shift_imm,
-			alu_ext,alus_ext,bfm,extend,mvn_shift"))
+			alu_ext,alus_ext,bfm,bfx,extend,mvn_shift"))
   "cortex_a53_slot_any")
 
 (define_insn_reservation "cortex_a53_alu_shift_reg" 3

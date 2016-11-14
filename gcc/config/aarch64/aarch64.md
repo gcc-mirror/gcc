@@ -3955,7 +3955,7 @@
    shl\t%<rtn>0<vas>, %<rtn>1<vas>, %2
    ushl\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>"
   [(set_attr "simd" "no,no,yes,yes")
-   (set_attr "type" "bfm,shift_reg,neon_shift_imm<q>, neon_shift_reg<q>")]
+   (set_attr "type" "bfx,shift_reg,neon_shift_imm<q>, neon_shift_reg<q>")]
 )
 
 ;; Logical right shift using SISD or Integer instruction
@@ -3972,7 +3972,7 @@
    #
    #"
   [(set_attr "simd" "no,no,yes,yes,yes")
-   (set_attr "type" "bfm,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")]
+   (set_attr "type" "bfx,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")]
 )
 
 (define_split
@@ -4019,7 +4019,7 @@
    #
    #"
   [(set_attr "simd" "no,no,yes,yes,yes")
-   (set_attr "type" "bfm,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")]
+   (set_attr "type" "bfx,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")]
 )
 
 (define_split
@@ -4129,7 +4129,7 @@
   "@
    <shift>\\t%w0, %w1, %2
    <shift>\\t%w0, %w1, %w2"
-  [(set_attr "type" "bfm,shift_reg")]
+  [(set_attr "type" "bfx,shift_reg")]
 )
 
 (define_insn "*<optab><mode>3_insn"
@@ -4141,7 +4141,7 @@
   operands[3] = GEN_INT (<sizen> - UINTVAL (operands[2]));
   return "<bfshift>\t%w0, %w1, %2, %3";
 }
-  [(set_attr "type" "bfm")]
+  [(set_attr "type" "bfx")]
 )
 
 (define_insn "*extr<mode>5_insn"
@@ -4234,7 +4234,7 @@
   operands[3] = GEN_INT (<SHORT:sizen> - UINTVAL (operands[2]));
   return "<su>bfiz\t%<GPI:w>0, %<GPI:w>1, %2, %3";
 }
-  [(set_attr "type" "bfm")]
+  [(set_attr "type" "bfx")]
 )
 
 (define_insn "*zero_extend<GPI:mode>_lshr<SHORT:mode>"
@@ -4247,7 +4247,7 @@
   operands[3] = GEN_INT (<SHORT:sizen> - UINTVAL (operands[2]));
   return "ubfx\t%<GPI:w>0, %<GPI:w>1, %2, %3";
 }
-  [(set_attr "type" "bfm")]
+  [(set_attr "type" "bfx")]
 )
 
 (define_insn "*extend<GPI:mode>_ashr<SHORT:mode>"
@@ -4260,7 +4260,7 @@
   operands[3] = GEN_INT (<SHORT:sizen> - UINTVAL (operands[2]));
   return "sbfx\\t%<GPI:w>0, %<GPI:w>1, %2, %3";
 }
-  [(set_attr "type" "bfm")]
+  [(set_attr "type" "bfx")]
 )
 
 ;; -------------------------------------------------------------------
@@ -4292,7 +4292,7 @@
   "IN_RANGE (INTVAL (operands[2]) + INTVAL (operands[3]),
 	     1, GET_MODE_BITSIZE (<MODE>mode) - 1)"
   "<su>bfx\\t%<w>0, %<w>1, %3, %2"
-  [(set_attr "type" "bfm")]
+  [(set_attr "type" "bfx")]
 )
 
 ;; Bitfield Insert (insv)
@@ -4374,7 +4374,7 @@
 	      : GEN_INT (<GPI:sizen> - UINTVAL (operands[2]));
   return "<su>bfiz\t%<GPI:w>0, %<GPI:w>1, %2, %3";
 }
-  [(set_attr "type" "bfm")]
+  [(set_attr "type" "bfx")]
 )
 
 ;; XXX We should match (any_extend (ashift)) here, like (and (ashift)) below
@@ -4386,7 +4386,7 @@
 		 (match_operand 3 "const_int_operand" "n")))]
   "aarch64_mask_and_shift_for_ubfiz_p (<MODE>mode, operands[3], operands[2])"
   "ubfiz\\t%<w>0, %<w>1, %2, %P3"
-  [(set_attr "type" "bfm")]
+  [(set_attr "type" "bfx")]
 )
 
 (define_insn "bswap<mode>2"
