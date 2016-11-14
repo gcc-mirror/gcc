@@ -200,6 +200,10 @@ F
 Driver C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -F <dir>	Add <dir> to the end of the main framework include path.
 
+fgimple
+C Var(flag_gimple) Init(0)
+Enable parsing GIMPLE.
+
 H
 C ObjC C++ ObjC++
 Print the name of header files as they are used.

@@ -1,3 +1,10 @@
+2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
+	Richard Biener  <rguenther@suse.de>
+    
+    	* c-common.h (c_common_resword): Add RID_GIMPLE, RID_PHI types.
+    	* c-common.h (enum rid): Add RID_GIMPLE, RID_PHI.
+    	* c.opt (fgimple): New option.
+
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (print_ada_declaration): For typedef declarations, look

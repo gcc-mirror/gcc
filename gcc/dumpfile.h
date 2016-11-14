@@ -82,9 +82,10 @@ enum tree_dump_index
 #define TDF_CSELIB	(1 << 23)	/* Dump cselib details.  */
 #define TDF_SCEV	(1 << 24)	/* Dump SCEV details.  */
 #define TDF_COMMENT	(1 << 25)	/* Dump lines with prefix ";;"  */
-#define MSG_OPTIMIZED_LOCATIONS  (1 << 26)  /* -fopt-info optimized sources */
-#define MSG_MISSED_OPTIMIZATION  (1 << 27)  /* missed opportunities */
-#define MSG_NOTE                 (1 << 28)  /* general optimization info */
+#define TDF_GIMPLE	(1 << 26)	/* Dump in GIMPLE FE syntax  */
+#define MSG_OPTIMIZED_LOCATIONS  (1 << 27)  /* -fopt-info optimized sources */
+#define MSG_MISSED_OPTIMIZATION  (1 << 28)  /* missed opportunities */
+#define MSG_NOTE                 (1 << 29)  /* general optimization info */
 #define MSG_ALL         (MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
                          | MSG_NOTE)
 

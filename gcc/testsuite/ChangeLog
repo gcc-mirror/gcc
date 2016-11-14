@@ -1,3 +1,25 @@
+2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
+	Richard Biener  <rguenther@suse.de>
+    
+    	* gcc.dg/gimplefe-1.c: New testcase.
+    	* gcc.dg/gimplefe-2.c: Likewise.
+    	* gcc.dg/gimplefe-3.c: Likewise.
+    	* gcc.dg/gimplefe-4.c: Likewise.
+    	* gcc.dg/gimplefe-5.c: Likewise.
+    	* gcc.dg/gimplefe-6.c: Likewise.
+    	* gcc.dg/gimplefe-7.c: Likewise.
+    	* gcc.dg/gimplefe-8.c: Likewise.
+    	* gcc.dg/gimplefe-9.c: Likewise.
+    	* gcc.dg/gimplefe-10.c: Likewise.
+    	* gcc.dg/gimplefe-11.c: Likewise.
+    	* gcc.dg/gimplefe-12.c: Likewise.
+    	* gcc.dg/gimplefe-13.c: Likewise.
+    	* gcc.dg/gimplefe-14.c: Likewise.
+    	* gcc.dg/gimplefe-15.c: Likewise.
+    	* gcc.dg/gimplefe-16.c: Likewise.
+    	* gcc.dg/gimplefe-17.c: Likewise.
+    	* gcc.dg/gimplefe-18.c: Likewise.
+
 2016-11-14  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/78069

@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "context.h"
 #include "gcc-rich-location.h"
+#include "c-parser.h"
+#include "gimple-parser.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -150,63 +152,6 @@ c_parse_init (void)
     }
 }
 
-/* The C lexer intermediates between the lexer in cpplib and c-lex.c
-   and the C parser.  Unlike the C++ lexer, the parser structure
-   stores the lexer information instead of using a separate structure.
-   Identifiers are separated into ordinary identifiers, type names,
-   keywords and some other Objective-C types of identifiers, and some
-   look-ahead is maintained.
-
-   ??? It might be a good idea to lex the whole file up front (as for
-   C++).  It would then be possible to share more of the C and C++
-   lexer code, if desired.  */
-
-/* More information about the type of a CPP_NAME token.  */
-enum c_id_kind {
-  /* An ordinary identifier.  */
-  C_ID_ID,
-  /* An identifier declared as a typedef name.  */
-  C_ID_TYPENAME,
-  /* An identifier declared as an Objective-C class name.  */
-  C_ID_CLASSNAME,
-  /* An address space identifier.  */
-  C_ID_ADDRSPACE,
-  /* Not an identifier.  */
-  C_ID_NONE
-};
-
-/* A single C token after string literal concatenation and conversion
-   of preprocessing tokens to tokens.  */
-struct GTY (()) c_token {
-  /* The kind of token.  */
-  ENUM_BITFIELD (cpp_ttype) type : 8;
-  /* If this token is a CPP_NAME, this value indicates whether also
-     declared as some kind of type.  Otherwise, it is C_ID_NONE.  */
-  ENUM_BITFIELD (c_id_kind) id_kind : 8;
-  /* If this token is a keyword, this value indicates which keyword.
-     Otherwise, this value is RID_MAX.  */
-  ENUM_BITFIELD (rid) keyword : 8;
-  /* If this token is a CPP_PRAGMA, this indicates the pragma that
-     was seen.  Otherwise it is PRAGMA_NONE.  */
-  ENUM_BITFIELD (pragma_kind) pragma_kind : 8;
-  /* The location at which this token was found.  */
-  location_t location;
-  /* The value associated with this token, if any.  */
-  tree value;
-  /* Token flags.  */
-  unsigned char flags;
-
-  source_range get_range () const
-  {
-    return get_range_from_loc (line_table, location);
-  }
-
-  location_t get_finish () const
-  {
-    return get_range ().m_finish;
-  }
-};
-
 /* A parser structure recording information about the state and
    context of parsing.  Includes lexer information with up to two
    tokens of look-ahead; more are not needed for C.  */
@@ -258,6 +203,30 @@ struct GTY(()) c_parser {
      SIMD-enabled functions (formerly known as elemental functions).  */
   vec <c_token, va_gc> *cilk_simd_fn_tokens;
 };
+
+/* Return a pointer to the Nth token in PARSERs tokens_buf.  */
+
+c_token *
+c_parser_tokens_buf (c_parser *parser, unsigned n)
+{
+  return &parser->tokens_buf[n];
+}
+
+/* Return the error state of PARSER.  */
+
+bool
+c_parser_error (c_parser *parser)
+{
+  return parser->error;
+}
+
+/* Set the error state of PARSER to ERR.  */
+
+void
+c_parser_set_error (c_parser *parser, bool err)
+{
+  parser->error = err;
+}
 
 
 /* The actual parser and external interface.  ??? Does this need to be
@@ -454,7 +423,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
 /* Return a pointer to the next token from PARSER, reading it in if
    necessary.  */
 
-static inline c_token *
+c_token *
 c_parser_peek_token (c_parser *parser)
 {
   if (parser->tokens_avail == 0)
@@ -465,37 +434,10 @@ c_parser_peek_token (c_parser *parser)
   return &parser->tokens[0];
 }
 
-/* Return true if the next token from PARSER has the indicated
-   TYPE.  */
-
-static inline bool
-c_parser_next_token_is (c_parser *parser, enum cpp_ttype type)
-{
-  return c_parser_peek_token (parser)->type == type;
-}
-
-/* Return true if the next token from PARSER does not have the
-   indicated TYPE.  */
-
-static inline bool
-c_parser_next_token_is_not (c_parser *parser, enum cpp_ttype type)
-{
-  return !c_parser_next_token_is (parser, type);
-}
-
-/* Return true if the next token from PARSER is the indicated
-   KEYWORD.  */
-
-static inline bool
-c_parser_next_token_is_keyword (c_parser *parser, enum rid keyword)
-{
-  return c_parser_peek_token (parser)->keyword == keyword;
-}
-
 /* Return a pointer to the next-but-one token from PARSER, reading it
    in if necessary.  The next token is already read in.  */
 
-static c_token *
+c_token *
 c_parser_peek_2nd_token (c_parser *parser)
 {
   if (parser->tokens_avail >= 2)
@@ -511,7 +453,7 @@ c_parser_peek_2nd_token (c_parser *parser)
 /* Return a pointer to the Nth token from PARSER, reading it
    in if necessary.  The N-1th token is already read in.  */
 
-static c_token *
+c_token *
 c_parser_peek_nth_token (c_parser *parser, unsigned int n)
 {
   /* N is 1-based, not zero-based.  */
@@ -570,7 +512,7 @@ c_keyword_starts_typename (enum rid keyword)
 
 /* Return true if TOKEN can start a type name,
    false otherwise.  */
-static bool
+bool
 c_token_starts_typename (c_token *token)
 {
   switch (token->type)
@@ -600,18 +542,6 @@ c_token_starts_typename (c_token *token)
       return false;
     }
 }
-
-enum c_lookahead_kind {
-  /* Always treat unknown identifiers as typenames.  */
-  cla_prefer_type,
-
-  /* Could be parsing a nonabstract declarator.  Only treat an identifier
-     as a typename if followed by another identifier or a star.  */
-  cla_nonabstract_decl,
-
-  /* Never treat identifiers as typenames.  */
-  cla_prefer_id
-};
 
 /* Return true if the next token from PARSER can start a type name,
    false otherwise.  LA specifies how to do lookahead in order to
@@ -779,7 +709,7 @@ c_token_starts_declaration (c_token *token)
 
 /* Return true if the next token from PARSER can start declaration
    specifiers, false otherwise.  */
-static inline bool
+bool
 c_parser_next_token_starts_declspecs (c_parser *parser)
 {
   c_token *token = c_parser_peek_token (parser);
@@ -801,7 +731,7 @@ c_parser_next_token_starts_declspecs (c_parser *parser)
 
 /* Return true if the next tokens from PARSER can start declaration
    specifiers or a static assertion, false otherwise.  */
-static inline bool
+bool
 c_parser_next_tokens_start_declaration (c_parser *parser)
 {
   c_token *token = c_parser_peek_token (parser);
@@ -829,7 +759,7 @@ c_parser_next_tokens_start_declaration (c_parser *parser)
 
 /* Consume the next token from PARSER.  */
 
-static void
+void
 c_parser_consume_token (c_parser *parser)
 {
   gcc_assert (parser->tokens_avail >= 1);
@@ -922,7 +852,7 @@ c_parser_peek_conflict_marker (c_parser *parser, enum cpp_ttype tok1_kind,
    this way is not i18n-friendly and some other approach should be
    used.  */
 
-static void
+void
 c_parser_error (c_parser *parser, const char *gmsgid)
 {
   c_token *token = c_parser_peek_token (parser);
@@ -965,7 +895,7 @@ c_parser_error (c_parser *parser, const char *gmsgid)
    been produced and no message will be produced this time.  Returns
    true if found, false otherwise.  */
 
-static bool
+bool
 c_parser_require (c_parser *parser,
 		  enum cpp_ttype type,
 		  const char *msgid)
@@ -1008,7 +938,7 @@ c_parser_require_keyword (c_parser *parser,
    already been produced and no message will be produced this
    time.  */
 
-static void
+void
 c_parser_skip_until_found (c_parser *parser,
 			   enum cpp_ttype type,
 			   const char *msgid)
@@ -1243,42 +1173,6 @@ restore_extension_diagnostics (int flags)
   warn_c99_c11_compat = (flags >> 9) & 1 ? 1 : ((flags >> 10) & 1 ? -1 : 0);
 }
 
-/* Possibly kinds of declarator to parse.  */
-enum c_dtr_syn {
-  /* A normal declarator with an identifier.  */
-  C_DTR_NORMAL,
-  /* An abstract declarator (maybe empty).  */
-  C_DTR_ABSTRACT,
-  /* A parameter declarator: may be either, but after a type name does
-     not redeclare a typedef name as an identifier if it can
-     alternatively be interpreted as a typedef name; see DR#009,
-     applied in C90 TC1, omitted from C99 and reapplied in C99 TC2
-     following DR#249.  For example, given a typedef T, "int T" and
-     "int *T" are valid parameter declarations redeclaring T, while
-     "int (T)" and "int * (T)" and "int (T[])" and "int (T (int))" are
-     abstract declarators rather than involving redundant parentheses;
-     the same applies with attributes inside the parentheses before
-     "T".  */
-  C_DTR_PARM
-};
-
-/* The binary operation precedence levels, where 0 is a dummy lowest level
-   used for the bottom of the stack.  */
-enum c_parser_prec {
-  PREC_NONE,
-  PREC_LOGOR,
-  PREC_LOGAND,
-  PREC_BITOR,
-  PREC_BITXOR,
-  PREC_BITAND,
-  PREC_EQ,
-  PREC_REL,
-  PREC_SHIFT,
-  PREC_ADD,
-  PREC_MULT,
-  NUM_PRECS
-};
-
 /* Helper data structure for parsing #pragma acc routine.  */
 struct oacc_routine_data {
   bool error_seen; /* Set if error has been reported.  */
@@ -1295,15 +1189,11 @@ static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
 					   bool * = NULL);
 static void c_parser_static_assert_declaration_no_semi (c_parser *);
 static void c_parser_static_assert_declaration (c_parser *);
-static void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
-				bool, bool, bool, enum c_lookahead_kind);
 static struct c_typespec c_parser_enum_specifier (c_parser *);
 static struct c_typespec c_parser_struct_or_union_specifier (c_parser *);
 static tree c_parser_struct_declaration (c_parser *);
 static struct c_typespec c_parser_typeof_specifier (c_parser *);
 static tree c_parser_alignas_specifier (c_parser *);
-static struct c_declarator *c_parser_declarator (c_parser *, bool, c_dtr_syn,
-						 bool *);
 static struct c_declarator *c_parser_direct_declarator (c_parser *, bool,
 							c_dtr_syn, bool *);
 static struct c_declarator *c_parser_direct_declarator_inner (c_parser *,
@@ -1315,7 +1205,6 @@ static struct c_arg_info *c_parser_parms_list_declarator (c_parser *, tree,
 static struct c_parm *c_parser_parameter_declaration (c_parser *, tree);
 static tree c_parser_simple_asm_expr (c_parser *);
 static tree c_parser_attributes (c_parser *);
-static struct c_type_name *c_parser_type_name (c_parser *);
 static struct c_expr c_parser_initializer (c_parser *);
 static struct c_expr c_parser_braced_init (c_parser *, tree, bool,
 					   struct obstack *);
@@ -1652,7 +1541,13 @@ static void c_finish_oacc_routine (struct oacc_routine_data *, tree, bool);
    OpenMP:
 
    declaration:
-     threadprivate-directive  */
+     threadprivate-directive
+
+   GIMPLE:
+
+   gimple-function-definition:
+     declaration-specifiers[opt] __GIMPLE (gimple-pass-list) declarator
+       declaration-list[opt] compound-statement  */
 
 static void
 c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
@@ -1752,6 +1647,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       c_parser_skip_to_end_of_block_or_statement (parser);
       return;
     }
+
   finish_declspecs (specs);
   bool auto_type_p = specs->typespec_word == cts_auto_type;
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
@@ -1882,7 +1778,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       struct c_declarator *declarator;
       bool dummy = false;
       timevar_id_t tv;
-      tree fnbody;
+      tree fnbody = NULL_TREE;
       /* Declaring either one or more declarators (in which case we
 	 should diagnose if there were no declaration specifiers) or a
 	 function definition (in which case the diagnostic for
@@ -2173,9 +2069,24 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	c_finish_oacc_routine (oacc_routine_data, current_function_decl, true);
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
 	= c_parser_peek_token (parser)->location;
-      fnbody = c_parser_compound_statement (parser);
-      if (flag_cilkplus && contains_array_notation_expr (fnbody))
-	fnbody = expand_array_notation_exprs (fnbody);
+
+      /* If the definition was marked with __GIMPLE then parse the
+         function body as GIMPLE.  */
+      if (specs->gimple_p)
+	{
+	  cfun->pass_startwith = specs->gimple_pass;
+	  bool saved = in_late_binary_op;
+	  in_late_binary_op = true;
+	  c_parser_parse_gimple_body (parser);
+	  in_late_binary_op = saved;
+	}
+      else
+	{
+	  fnbody = c_parser_compound_statement (parser);
+	  if (flag_cilkplus && contains_array_notation_expr (fnbody))
+	    fnbody = expand_array_notation_exprs (fnbody);
+	}
+      tree fndecl = current_function_decl;
       if (nested)
 	{
 	  tree decl = current_function_decl;
@@ -2191,9 +2102,13 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       else
 	{
-	  add_stmt (fnbody);
+	  if (fnbody)
+	    add_stmt (fnbody);
 	  finish_function ();
 	}
+      /* Get rid of the empty stmt list for GIMPLE.  */
+      if (specs->gimple_p)
+	DECL_SAVED_TREE (fndecl) = NULL_TREE;
 
       timevar_pop (tv);
       break;
@@ -2416,7 +2331,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
      objc-protocol-refs
 */
 
-static void
+void
 c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 		    bool scspec_ok, bool typespec_ok, bool start_attr_ok,
 		    bool alignspec_ok, bool auto_type_ok,
@@ -2680,6 +2595,14 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	    goto out;
 	  align = c_parser_alignas_specifier (parser);
 	  declspecs_add_alignas (loc, specs, align);
+	  break;
+	case RID_GIMPLE:
+	  if (! flag_gimple)
+	    error_at (loc, "%<__GIMPLE%> only valid with -fgimple");
+	  c_parser_consume_token (parser);
+	  specs->gimple_p = true;
+	  specs->locations[cdw_gimple] = loc;
+	  specs->gimple_pass = c_parser_gimple_pass_list (parser);
 	  break;
 	default:
 	  goto out;
@@ -3415,7 +3338,7 @@ c_parser_alignas_specifier (c_parser * parser)
    This function also accepts an omitted abstract declarator as being
    an abstract declarator, although not part of the formal syntax.  */
 
-static struct c_declarator *
+struct c_declarator *
 c_parser_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 		     bool *seen_id)
 {
@@ -4311,7 +4234,7 @@ c_parser_attributes (c_parser *parser)
      specifier-qualifier-list abstract-declarator[opt]
 */
 
-static struct c_type_name *
+struct c_type_name *
 c_parser_type_name (c_parser *parser)
 {
   struct c_declspecs *specs = build_null_declspecs ();

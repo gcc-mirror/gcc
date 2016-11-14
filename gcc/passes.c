@@ -2099,7 +2099,7 @@ pass_init_dump_file (opt_pass *pass)
       release_dump_file_name ();
       dump_file_name = dumps->get_dump_file_name (pass->static_pass_number);
       dumps->dump_start (pass->static_pass_number, &dump_flags);
-      if (dump_file && current_function_decl)
+      if (dump_file && current_function_decl && ! (dump_flags & TDF_GIMPLE))
         dump_function_header (dump_file, current_function_decl, dump_flags);
       if (initializing_dump
 	  && dump_file && (dump_flags & TDF_GRAPH)
@@ -2313,6 +2313,35 @@ execute_one_pass (opt_pass *pass)
       return false;
     }
 
+  /* For skipping passes until startwith pass */
+  if (cfun
+      && cfun->pass_startwith
+      /* But we can't skip the lowering phase yet -- ideally we'd
+         drive that phase fully via properties.  */
+      && (cfun->curr_properties & PROP_ssa))
+    {
+      size_t namelen = strlen (pass->name);
+      if (! strncmp (pass->name, cfun->pass_startwith, namelen))
+	{
+	  /* The following supports starting with the Nth invocation
+	     of a pass (where N does not necessarily is equal to the
+	     dump file suffix).  */
+	  if (cfun->pass_startwith[namelen] == '\0'
+	      || (cfun->pass_startwith[namelen] == '1'
+		  && cfun->pass_startwith[namelen + 1] == '\0'))
+	    cfun->pass_startwith = NULL;
+	  else
+	    {
+	      if (cfun->pass_startwith[namelen + 1] != '\0')
+		return true;
+	      --cfun->pass_startwith[namelen];
+	      return true;
+	    }
+	}
+      else
+	return true;
+    }
+
   /* Pass execution event trigger: useful to identify passes being
      executed.  */
   invoke_plugin_callbacks (PLUGIN_PASS_EXECUTION, pass);
@@ -2428,7 +2457,7 @@ execute_pass_list_1 (opt_pass *pass)
       if (cfun == NULL)
 	return;
       if (execute_one_pass (pass) && pass->sub)
-        execute_pass_list_1 (pass->sub);
+	execute_pass_list_1 (pass->sub);
       pass = pass->next;
     }
   while (pass);

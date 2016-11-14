@@ -2505,3 +2505,9 @@ expand_internal_call (gcall *stmt)
 {
   expand_internal_call (gimple_call_internal_fn (stmt), stmt);
 }
+
+void
+expand_PHI (internal_fn, gcall *)
+{
+    gcc_unreachable ();
+}
