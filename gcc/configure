@@ -22432,6 +22432,7 @@ $as_echo "#define HAVE_GAS_BALIGN_AND_P2ALIGN 1" >>confdefs.h
 
 fi
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .p2align with maximum skip" >&5
 $as_echo_n "checking assembler for .p2align with maximum skip... " >&6; }
 if test "${gcc_cv_as_max_skip_p2align+set}" = set; then :
@@ -22467,6 +22468,7 @@ $as_echo "#define HAVE_GAS_MAX_SKIP_P2ALIGN 1" >>confdefs.h
 
 fi
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .literal16" >&5
 $as_echo_n "checking assembler for .literal16... " >&6; }
 if test "${gcc_cv_as_literal16+set}" = set; then :
@@ -22501,6 +22503,7 @@ if test $gcc_cv_as_literal16 = yes; then
 $as_echo "#define HAVE_GAS_LITERAL16 1" >>confdefs.h
 
 fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for working .subsection -1" >&5
 $as_echo_n "checking assembler for working .subsection -1... " >&6; }
@@ -22549,6 +22552,7 @@ $as_echo "#define HAVE_GAS_SUBSECTION_ORDERING 1" >>confdefs.h
 
 fi
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .weak" >&5
 $as_echo_n "checking assembler for .weak... " >&6; }
 if test "${gcc_cv_as_weak+set}" = set; then :
@@ -22583,6 +22587,7 @@ if test $gcc_cv_as_weak = yes; then
 $as_echo "#define HAVE_GAS_WEAK 1" >>confdefs.h
 
 fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .weakref" >&5
 $as_echo_n "checking assembler for .weakref... " >&6; }
@@ -22619,6 +22624,7 @@ $as_echo "#define HAVE_GAS_WEAKREF 1" >>confdefs.h
 
 fi
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .nsubspa comdat" >&5
 $as_echo_n "checking assembler for .nsubspa comdat... " >&6; }
 if test "${gcc_cv_as_nsubspa_comdat+set}" = set; then :
@@ -22654,6 +22660,7 @@ if test $gcc_cv_as_nsubspa_comdat = yes; then
 $as_echo "#define HAVE_GAS_NSUBSPA_COMDAT 1" >>confdefs.h
 
 fi
+
 
 # .hidden needs to be supported in both the assembler and the linker,
 # because GNU LD versions before 2.12.1 have buggy support for STV_HIDDEN.
@@ -22701,6 +22708,7 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_hidden" >&5
 $as_echo "$gcc_cv_as_hidden" >&6; }
+
 
 case "${target}" in
   *-*-darwin*)
@@ -23157,6 +23165,11 @@ if test $gcc_cv_as_leb128 = yes; then
 $as_echo "#define HAVE_AS_LEB128 1" >>confdefs.h
 
 fi
+if test $gcc_cv_as_leb128 != yes; then
+
+$as_echo "#define HAVE_AS_LEB128 0" >>confdefs.h
+
+fi
 
 # Check if we have assembler support for unwind directives.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for cfi directives" >&5
@@ -23236,6 +23249,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_cfi_directive" >&5
 $as_echo "$gcc_cv_as_cfi_directive" >&6; }
 
+
 if test $gcc_cv_as_cfi_directive = yes && test x$gcc_cv_objdump != x; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for working cfi advance" >&5
 $as_echo_n "checking assembler for working cfi advance... " >&6; }
@@ -23272,6 +23286,7 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_cfi_advance_working" >&5
 $as_echo "$gcc_cv_as_cfi_advance_working" >&6; }
+
 
 else
   # no objdump, err on the side of caution
@@ -23314,6 +23329,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_cfi_personality_directive" >&5
 $as_echo "$gcc_cv_as_cfi_personality_directive" >&6; }
+
 
 
 cat >>confdefs.h <<_ACEOF
@@ -23365,6 +23381,7 @@ esac
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_cfi_sections_directive" >&5
 $as_echo "$gcc_cv_as_cfi_sections_directive" >&6; }
+
 
 
 
@@ -23471,6 +23488,7 @@ fi
 $as_echo "$gcc_cv_as_eh_frame" >&6; }
 
 
+
 if test $gcc_cv_as_eh_frame = buggy; then
 
 $as_echo "#define USE_AS_TRADITIONAL_FORMAT 1" >>confdefs.h
@@ -23508,6 +23526,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_shf_merge" >&5
 $as_echo "$gcc_cv_as_shf_merge" >&6; }
 
+
 if test $gcc_cv_as_shf_merge = no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section merging support" >&5
 $as_echo_n "checking assembler for section merging support... " >&6; }
@@ -23539,6 +23558,7 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_shf_merge" >&5
 $as_echo "$gcc_cv_as_shf_merge" >&6; }
+
 
 fi
 
@@ -23578,6 +23598,7 @@ $as_echo "#define HAVE_AS_STABS_DIRECTIVE 1" >>confdefs.h
 
 fi
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for COMDAT group support (GNU as)" >&5
 $as_echo_n "checking assembler for COMDAT group support (GNU as)... " >&6; }
 if test "${gcc_cv_as_comdat_group+set}" = set; then :
@@ -23608,6 +23629,7 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_comdat_group" >&5
 $as_echo "$gcc_cv_as_comdat_group" >&6; }
+
 
 if test $gcc_cv_as_comdat_group = yes; then
   gcc_cv_as_comdat_group_percent=no
@@ -23643,6 +23665,7 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_comdat_group_percent" >&5
 $as_echo "$gcc_cv_as_comdat_group_percent" >&6; }
+
 
  if test $gcc_cv_as_comdat_group_percent = yes; then
    gcc_cv_as_comdat_group_group=no
@@ -23693,6 +23716,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_comdat_group_group" >&5
 $as_echo "$gcc_cv_as_comdat_group_group" >&6; }
+
 
        ;;
    esac
@@ -23800,6 +23824,7 @@ if test $gcc_cv_as_discriminator = yes; then
 $as_echo "#define HAVE_GAS_DISCRIMINATOR 1" >>confdefs.h
 
 fi
+
 
 # Thread-local storage - the check is heavily parameterized.
 conftest_s=
@@ -24298,6 +24323,7 @@ $as_echo "$gcc_cv_as_tls" >&6; }
 if test $gcc_cv_as_tls = yes; then
   set_have_as_tls=yes
 fi
+
 fi
 if test $set_have_as_tls = yes ; then
 
@@ -24471,6 +24497,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_aarch64_mabi" >&5
 $as_echo "$gcc_cv_as_aarch64_mabi" >&6; }
 
+
     if test x$gcc_cv_as_aarch64_mabi = xyes; then
 
 $as_echo "#define HAVE_AS_MABI_OPTION 1" >>confdefs.h
@@ -24530,6 +24557,7 @@ if test $gcc_cv_as_aarch64_picreloc = yes; then
 $as_echo "#define HAVE_AS_SMALL_PIC_RELOCS 1" >>confdefs.h
 
 fi
+
     # Enable default workaround for AArch64 Cortex-A53 erratum 835769.
     # Check whether --enable-fix-cortex-a53-835769 was given.
 if test "${enable_fix_cortex_a53_835769+set}" = set; then :
@@ -24618,6 +24646,7 @@ if test $gcc_cv_as_alpha_explicit_relocs = yes; then
 $as_echo "#define HAVE_AS_EXPLICIT_RELOCS 1" >>confdefs.h
 
 fi
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for jsrdirect relocation support" >&5
 $as_echo_n "checking assembler for jsrdirect relocation support... " >&6; }
 if test "${gcc_cv_as_alpha_jsrdirect_relocs+set}" = set; then :
@@ -24655,6 +24684,7 @@ if test $gcc_cv_as_alpha_jsrdirect_relocs = yes; then
 $as_echo "#define HAVE_AS_JSRDIRECT_RELOCS 1" >>confdefs.h
 
 fi
+
     ;;
 
   avr-*-*)
@@ -24689,6 +24719,7 @@ $as_echo "#define HAVE_AS_AVR_MLINK_RELAX_OPTION 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -mrmw option" >&5
 $as_echo_n "checking assembler for -mrmw option... " >&6; }
 if test "${gcc_cv_as_avr_mrmw+set}" = set; then :
@@ -24719,6 +24750,7 @@ if test $gcc_cv_as_avr_mrmw = yes; then
 $as_echo "#define HAVE_AS_AVR_MRMW_OPTION 1" >>confdefs.h
 
 fi
+
     ;;
 
   cris-*-*)
@@ -24756,6 +24788,7 @@ if test $gcc_cv_as_cris_no_mul_bug = yes; then
 $as_echo "#define HAVE_AS_NO_MUL_BUG_ABORT_OPTION 1" >>confdefs.h
 
 fi
+
     ;;
 
   sparc*-*-*)
@@ -24790,6 +24823,7 @@ $as_echo "#define HAVE_AS_REGISTER_PSEUDO_OP 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -relax option" >&5
 $as_echo_n "checking assembler for -relax option... " >&6; }
 if test "${gcc_cv_as_sparc_relax+set}" = set; then :
@@ -24820,6 +24854,7 @@ if test $gcc_cv_as_sparc_relax = yes; then
 $as_echo "#define HAVE_AS_RELAX_OPTION 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for GOTDATA_OP relocs" >&5
 $as_echo_n "checking assembler for GOTDATA_OP relocs... " >&6; }
@@ -24869,6 +24904,7 @@ if test $gcc_cv_as_sparc_gotdata_op = yes; then
 $as_echo "#define HAVE_AS_SPARC_GOTDATA_OP 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for unaligned pcrel relocs" >&5
 $as_echo_n "checking assembler for unaligned pcrel relocs... " >&6; }
@@ -24960,7 +24996,9 @@ $as_echo "#define HAVE_AS_SPARC_UA_PCREL_HIDDEN 1" >>confdefs.h
 
 fi
 
-fi # unaligned pcrel relocs
+
+fi
+ # unaligned pcrel relocs
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for offsetable %lo()" >&5
 $as_echo_n "checking assembler for offsetable %lo()... " >&6; }
@@ -24999,6 +25037,7 @@ $as_echo "#define HAVE_AS_OFFSETABLE_LO10 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for FMAF, HPC, and VIS 3.0 instructions" >&5
 $as_echo_n "checking assembler for FMAF, HPC, and VIS 3.0 instructions... " >&6; }
 if test "${gcc_cv_as_sparc_fmaf+set}" = set; then :
@@ -25036,6 +25075,7 @@ if test $gcc_cv_as_sparc_fmaf = yes; then
 $as_echo "#define HAVE_AS_FMAF_HPC_VIS3 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for SPARC4 instructions" >&5
 $as_echo_n "checking assembler for SPARC4 instructions... " >&6; }
@@ -25079,6 +25119,7 @@ $as_echo "#define HAVE_AS_SPARC4 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for SPARC5 and VIS 4.0 instructions" >&5
 $as_echo_n "checking assembler for SPARC5 and VIS 4.0 instructions... " >&6; }
 if test "${gcc_cv_as_sparc_sparc5+set}" = set; then :
@@ -25114,6 +25155,7 @@ if test $gcc_cv_as_sparc_sparc5 = yes; then
 $as_echo "#define HAVE_AS_SPARC5_VIS4 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for LEON instructions" >&5
 $as_echo_n "checking assembler for LEON instructions... " >&6; }
@@ -25151,6 +25193,7 @@ if test $gcc_cv_as_sparc_leon = yes; then
 $as_echo "#define HAVE_AS_LEON 1" >>confdefs.h
 
 fi
+
     ;;
 
   i[34567]86-*-* | x86_64-*-*)
@@ -25216,6 +25259,7 @@ fi
 $as_echo "$gcc_cv_as_comm_has_align" >&6; }
 
 
+
 cat >>confdefs.h <<_ACEOF
 #define HAVE_GAS_ALIGNED_COMM `if test $gcc_cv_as_comm_has_align = yes; then echo 1; else echo 0; fi`
 _ACEOF
@@ -25262,6 +25306,7 @@ if test $gcc_cv_as_ix86_pe_secrel32 = yes; then
 $as_echo "#define HAVE_GAS_PE_SECREL32_RELOC 1" >>confdefs.h
 
 fi
+
 	# Test if the assembler supports the extended form of the .section
 	# directive that specifies section alignment.  LTO support uses this,
 	# but normally only after installation, so we warn but don't fail the
@@ -25295,6 +25340,7 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_section_has_align" >&5
 $as_echo "$gcc_cv_as_section_has_align" >&6; }
+
 
 	if test x$gcc_cv_as_section_has_align != xyes; then
 	  case ",$enable_languages," in
@@ -25341,6 +25387,7 @@ fi
 $as_echo "$gcc_cv_as_section_has_e" >&6; }
 
 
+
 cat >>confdefs.h <<_ACEOF
 #define HAVE_GAS_SECTION_EXCLUDE `if test $gcc_cv_as_section_has_e = yes; then echo 1; else echo 0; fi`
 _ACEOF
@@ -25377,6 +25424,7 @@ $as_echo "#define HAVE_AS_IX86_FILDS 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for fildq and fistpq mnemonics" >&5
 $as_echo_n "checking assembler for fildq and fistpq mnemonics... " >&6; }
 if test "${gcc_cv_as_ix86_fildq+set}" = set; then :
@@ -25407,6 +25455,7 @@ if test $gcc_cv_as_ix86_fildq = yes; then
 $as_echo "#define HAVE_AS_IX86_FILDQ 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for cmov syntax" >&5
 $as_echo_n "checking assembler for cmov syntax... " >&6; }
@@ -25439,6 +25488,7 @@ $as_echo "#define HAVE_AS_IX86_CMOV_SUN_SYNTAX 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for ffreep mnemonic" >&5
 $as_echo_n "checking assembler for ffreep mnemonic... " >&6; }
 if test "${gcc_cv_as_ix86_ffreep+set}" = set; then :
@@ -25470,6 +25520,7 @@ $as_echo "#define HAVE_AS_IX86_FFREEP 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .quad directive" >&5
 $as_echo_n "checking assembler for .quad directive... " >&6; }
 if test "${gcc_cv_as_ix86_quad+set}" = set; then :
@@ -25500,6 +25551,7 @@ if test $gcc_cv_as_ix86_quad = yes; then
 $as_echo "#define HAVE_AS_IX86_QUAD 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for sahf mnemonic" >&5
 $as_echo_n "checking assembler for sahf mnemonic... " >&6; }
@@ -25533,6 +25585,7 @@ $as_echo "#define HAVE_AS_IX86_SAHF 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for interunit movq mnemonic" >&5
 $as_echo_n "checking assembler for interunit movq mnemonic... " >&6; }
 if test "${gcc_cv_as_ix86_interunit_movq+set}" = set; then :
@@ -25560,6 +25613,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_interunit_movq" >&5
 $as_echo "$gcc_cv_as_ix86_interunit_movq" >&6; }
+
 
 
 cat >>confdefs.h <<_ACEOF
@@ -25598,6 +25652,7 @@ $as_echo "#define HAVE_AS_IX86_HLE 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for swap suffix" >&5
 $as_echo_n "checking assembler for swap suffix... " >&6; }
 if test "${gcc_cv_as_ix86_swap+set}" = set; then :
@@ -25628,6 +25683,7 @@ if test $gcc_cv_as_ix86_swap = yes; then
 $as_echo "#define HAVE_AS_IX86_SWAP 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for different section symbol subtraction" >&5
 $as_echo_n "checking assembler for different section symbol subtraction... " >&6; }
@@ -25666,6 +25722,7 @@ $as_echo "#define HAVE_AS_IX86_DIFF_SECT_DELTA 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for rep and lock prefix" >&5
 $as_echo_n "checking assembler for rep and lock prefix... " >&6; }
 if test "${gcc_cv_as_ix86_rep_lock_prefix+set}" = set; then :
@@ -25703,6 +25760,7 @@ $as_echo "#define HAVE_AS_IX86_REP_LOCK_PREFIX 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for ud2 mnemonic" >&5
 $as_echo_n "checking assembler for ud2 mnemonic... " >&6; }
 if test "${gcc_cv_as_ix86_ud2+set}" = set; then :
@@ -25733,6 +25791,7 @@ if test $gcc_cv_as_ix86_ud2 = yes; then
 $as_echo "#define HAVE_AS_IX86_UD2 1" >>confdefs.h
 
 fi
+
 
     # Enforce 32-bit output with gas and gld.
     if test x$gas = xyes; then
@@ -25781,6 +25840,7 @@ $as_echo "#define HAVE_AS_IX86_TLSGDPLT 1" >>confdefs.h
 
 fi
 
+
     conftest_s='
 	.section .tdata,"aw'$tls_section_flag'",@progbits
 tls_ld:
@@ -25816,6 +25876,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_tlsldmplt" >&5
 $as_echo "$gcc_cv_as_ix86_tlsldmplt" >&6; }
+
 
 
 cat >>confdefs.h <<_ACEOF
@@ -25866,6 +25927,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_tlsldm" >&5
 $as_echo "$gcc_cv_as_ix86_tlsldm" >&6; }
+
 
 
 cat >>confdefs.h <<_ACEOF
@@ -25921,6 +25983,7 @@ fi
 $as_echo "$gcc_cv_as_ix86_got32x" >&6; }
 
 
+
 cat >>confdefs.h <<_ACEOF
 #define HAVE_AS_IX86_GOT32X `if test x"$gcc_cv_as_ix86_got32x" = xyes; then echo 1; else echo 0; fi`
 _ACEOF
@@ -25959,6 +26022,7 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_gotoff_in_data" >&5
 $as_echo "$gcc_cv_as_ix86_gotoff_in_data" >&6; }
+
 
 
 cat >>confdefs.h <<_ACEOF
@@ -26015,6 +26079,7 @@ fi
 $as_echo "$gcc_cv_as_ix86_tls_get_addr_via_got" >&6; }
 
 
+
 cat >>confdefs.h <<_ACEOF
 #define HAVE_AS_IX86_TLS_GET_ADDR_GOT `if test x"$gcc_cv_as_ix86_tls_get_addr_via_got" = xyes; then echo 1; else echo 0; fi`
 _ACEOF
@@ -26060,6 +26125,7 @@ $as_echo "#define HAVE_AS_LTOFFX_LDXMOV_RELOCS 1" >>confdefs.h
 
 fi
 
+
     ;;
 
   powerpc*-*-*)
@@ -26091,6 +26157,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_machine_directive" >&5
 $as_echo "$gcc_cv_as_machine_directive" >&6; }
+
 
 	if test x$gcc_cv_as_machine_directive != xyes; then
 	  echo "*** This target requires an assembler supporting \".machine\"" >&2
@@ -26146,6 +26213,7 @@ $as_echo "#define HAVE_AS_MFCRF 1" >>confdefs.h
 
 fi
 
+
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr5"
 	.csect .text[PR]
@@ -26189,6 +26257,7 @@ if test $gcc_cv_as_powerpc_popcntb = yes; then
 $as_echo "#define HAVE_AS_POPCNTB 1" >>confdefs.h
 
 fi
+
 
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr5x"
@@ -26234,6 +26303,7 @@ $as_echo "#define HAVE_AS_FPRND 1" >>confdefs.h
 
 fi
 
+
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr6"
 	.csect .text[PR]
@@ -26277,6 +26347,7 @@ if test $gcc_cv_as_powerpc_mfpgpr = yes; then
 $as_echo "#define HAVE_AS_MFPGPR 1" >>confdefs.h
 
 fi
+
 
     case $target in
       *-*-aix*) conftest_s='	.csect .text[PR]
@@ -26326,6 +26397,7 @@ $as_echo "#define HAVE_AS_REL16 1" >>confdefs.h
 
 fi
 
+
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr6"
 	.csect .text[PR]
@@ -26369,6 +26441,7 @@ if test $gcc_cv_as_powerpc_cmpb = yes; then
 $as_echo "#define HAVE_AS_CMPB 1" >>confdefs.h
 
 fi
+
 
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr6"
@@ -26414,6 +26487,7 @@ $as_echo "#define HAVE_AS_DFP 1" >>confdefs.h
 
 fi
 
+
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr7"
 	.csect .text[PR]
@@ -26457,6 +26531,7 @@ if test $gcc_cv_as_powerpc_vsx = yes; then
 $as_echo "#define HAVE_AS_VSX 1" >>confdefs.h
 
 fi
+
 
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr7"
@@ -26502,6 +26577,7 @@ $as_echo "#define HAVE_AS_POPCNTD 1" >>confdefs.h
 
 fi
 
+
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr8"
 	.csect .text[PR]';;
@@ -26543,6 +26619,7 @@ if test $gcc_cv_as_powerpc_power8 = yes; then
 $as_echo "#define HAVE_AS_POWER8 1" >>confdefs.h
 
 fi
+
 
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr9"
@@ -26586,6 +26663,7 @@ $as_echo "#define HAVE_AS_POWER9 1" >>confdefs.h
 
 fi
 
+
     case $target in
       *-*-aix*) conftest_s='	.csect .text[PR]
 	lwsync';;
@@ -26627,6 +26705,7 @@ if test $gcc_cv_as_powerpc_lwsync = yes; then
 $as_echo "#define HAVE_AS_LWSYNC 1" >>confdefs.h
 
 fi
+
 
     case $target in
       *-*-aix*) conftest_s='	.machine "476"
@@ -26672,6 +26751,7 @@ $as_echo "#define HAVE_AS_DCI 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
 $as_echo_n "checking assembler for .gnu_attribute support... " >&6; }
 if test "${gcc_cv_as_powerpc_gnu_attribute+set}" = set; then :
@@ -26706,6 +26786,7 @@ if test $gcc_cv_as_powerpc_gnu_attribute = yes; then
 $as_echo "#define HAVE_AS_GNU_ATTRIBUTE 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for tls marker support" >&5
 $as_echo_n "checking assembler for tls marker support... " >&6; }
@@ -26742,6 +26823,7 @@ $as_echo "#define HAVE_AS_TLS_MARKERS 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for prologue entry point marker support" >&5
 $as_echo_n "checking assembler for prologue entry point marker support... " >&6; }
 if test "${gcc_cv_as_powerpc_entry_markers+set}" = set; then :
@@ -26776,6 +26858,7 @@ if test $gcc_cv_as_powerpc_entry_markers = yes; then
 $as_echo "#define HAVE_AS_ENTRY_MARKERS 1" >>confdefs.h
 
 fi
+
 
     case $target in
       *-*-aix*)
@@ -26819,6 +26902,7 @@ $as_echo "#define HAVE_AS_REF 1" >>confdefs.h
 
 fi
 
+
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for AIX DWARF location lists section support" >&5
 $as_echo_n "checking assembler for AIX DWARF location lists section support... " >&6; }
 if test "${gcc_cv_as_aix_dwloc+set}" = set; then :
@@ -26856,6 +26940,7 @@ if test $gcc_cv_as_aix_dwloc = yes; then
 $as_echo "#define HAVE_XCOFF_DWARF_EXTRAS 1" >>confdefs.h
 
 fi
+
 	;;
     esac
     ;;
@@ -26897,6 +26982,7 @@ if test $gcc_cv_as_mips_explicit_relocs = yes; then
        fi
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -mno-shared support" >&5
 $as_echo_n "checking assembler for -mno-shared support... " >&6; }
 if test "${gcc_cv_as_mips_no_shared+set}" = set; then :
@@ -26931,6 +27017,7 @@ if test $gcc_cv_as_mips_no_shared = yes; then
 $as_echo "#define HAVE_AS_NO_SHARED 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
 $as_echo_n "checking assembler for .gnu_attribute support... " >&6; }
@@ -26967,6 +27054,7 @@ $as_echo "#define HAVE_AS_GNU_ATTRIBUTE 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .module support" >&5
 $as_echo_n "checking assembler for .module support... " >&6; }
 if test "${gcc_cv_as_mips_dot_module+set}" = set; then :
@@ -26998,6 +27086,7 @@ if test $gcc_cv_as_mips_dot_module = yes; then
 $as_echo "#define HAVE_AS_DOT_MODULE 1" >>confdefs.h
 
 fi
+
     if test x$gcc_cv_as_mips_dot_module = xno \
        && test x$with_fp_32 != x; then
       as_fn_error "Requesting --with-fp-32= requires assembler support for .module." "$LINENO" 5
@@ -27033,6 +27122,7 @@ if test $gcc_cv_as_micromips_support = yes; then
 $as_echo "#define HAVE_GAS_MICROMIPS 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .dtprelword support" >&5
 $as_echo_n "checking assembler for .dtprelword support... " >&6; }
@@ -27073,6 +27163,7 @@ $as_echo "#define HAVE_AS_DTPRELWORD 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for DSPR1 mult with four accumulators support" >&5
 $as_echo_n "checking assembler for DSPR1 mult with four accumulators support... " >&6; }
 if test "${gcc_cv_as_mips_dspr1_mult+set}" = set; then :
@@ -27111,6 +27202,7 @@ if test $gcc_cv_as_mips_dspr1_mult = yes; then
 $as_echo "#define HAVE_AS_DSPR1_MULT 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler and linker for explicit JALR relocation" >&5
 $as_echo_n "checking assembler and linker for explicit JALR relocation... " >&6; }
@@ -27231,6 +27323,7 @@ if test $gcc_cv_as_mips_nan = yes; then
 $as_echo "#define HAVE_AS_NAN 1" >>confdefs.h
 
 fi
+
     if test x$gcc_cv_as_mips_nan = xno \
        && test x$with_nan != x; then
       as_fn_error "Requesting --with-nan= requires assembler support for -mnan=" "$LINENO" 5
@@ -27271,6 +27364,7 @@ if test $gcc_cv_as_s390_gnu_attribute = yes; then
 $as_echo "#define HAVE_AS_GNU_ATTRIBUTE 1" >>confdefs.h
 
 fi
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .machine and .machinemode support" >&5
 $as_echo_n "checking assembler for .machine and .machinemode support... " >&6; }
 if test "${gcc_cv_as_s390_machine_machinemode+set}" = set; then :
@@ -27308,6 +27402,7 @@ if test $gcc_cv_as_s390_machine_machinemode = yes; then
 $as_echo "#define HAVE_AS_MACHINE_MACHINEMODE 1" >>confdefs.h
 
 fi
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for architecture modifiers support" >&5
 $as_echo_n "checking assembler for architecture modifiers support... " >&6; }
 if test "${gcc_cv_as_s390_architecture_modifiers+set}" = set; then :
@@ -27342,6 +27437,7 @@ if test $gcc_cv_as_s390_architecture_modifiers = yes; then
 $as_echo "#define HAVE_AS_ARCHITECTURE_MODIFIERS 1" >>confdefs.h
 
 fi
+
     ;;
 esac
 
@@ -27422,6 +27518,7 @@ fi
 $as_echo "$gcc_cv_as_dwarf2_debug_line" >&6; }
 
 
+
 # The .debug_line file table must be in the exact order that
 # we specified the files, since these indices are also used
 # by DW_AT_decl_file.  Approximate this test by testing if
@@ -27452,6 +27549,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_dwarf2_file_buggy" >&5
 $as_echo "$gcc_cv_as_dwarf2_file_buggy" >&6; }
+
 
 
  if test $gcc_cv_as_dwarf2_debug_line = yes \
@@ -27497,6 +27595,7 @@ $as_echo "#define HAVE_AS_GDWARF2_DEBUG_FLAG 1" >>confdefs.h
 
 fi
 
+
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --gstabs option" >&5
 $as_echo_n "checking assembler for --gstabs option... " >&6; }
 if test "${gcc_cv_as_gstabs_flag+set}" = set; then :
@@ -27533,6 +27632,7 @@ $as_echo "#define HAVE_AS_GSTABS_DEBUG_FLAG 1" >>confdefs.h
 
 fi
 
+
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --debug-prefix-map option" >&5
 $as_echo_n "checking assembler for --debug-prefix-map option... " >&6; }
 if test "${gcc_cv_as_debug_prefix_map_flag+set}" = set; then :
@@ -27567,6 +27667,7 @@ if test $gcc_cv_as_debug_prefix_map_flag = yes; then
 $as_echo "#define HAVE_AS_DEBUG_PREFIX_MAP 1" >>confdefs.h
 
 fi
+
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for compressed debug sections" >&5
@@ -27617,6 +27718,7 @@ fi
 $as_echo "$gcc_cv_as_compress_debug" >&6; }
 
 
+
 cat >>confdefs.h <<_ACEOF
 #define HAVE_AS_COMPRESS_DEBUG $gcc_cv_as_compress_debug
 _ACEOF
@@ -27662,6 +27764,7 @@ if test $gcc_cv_as_lcomm_with_alignment = yes; then
 $as_echo "#define HAVE_GAS_LCOMM_WITH_ALIGNMENT 1" >>confdefs.h
 
 fi
+
 
 if test x$with_sysroot = x && test x$host = x$target \
    && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" \
@@ -27759,6 +27862,7 @@ if test $glibc_version_major -gt 2 \
 fi
 
 fi
+
 fi
 
 if test x$enable_gnu_unique_object = xyes; then

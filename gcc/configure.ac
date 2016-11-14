@@ -2753,6 +2753,8 @@ L2:],
     fi
   fi]],
   [AC_DEFINE(HAVE_AS_LEB128, 1,
+    [Define if your assembler supports .sleb128 and .uleb128.])],
+  [AC_DEFINE(HAVE_AS_LEB128, 0,
     [Define if your assembler supports .sleb128 and .uleb128.])])
 
 # Check if we have assembler support for unwind directives.

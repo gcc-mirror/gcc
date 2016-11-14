@@ -9550,10 +9550,8 @@ output_loc_list (dw_loc_list_ref list_head)
   ASM_OUTPUT_LABEL (asm_out_file, list_head->ll_symbol);
 
   dw_loc_list_ref curr = list_head;
-#ifdef HAVE_AS_LEB128
   const char *last_section = NULL;
   const char *base_label = NULL;
-#endif
 
   /* Walk the location list, and output each range + expression.  */
   for (curr = list_head; curr != NULL; curr = curr->dw_loc_next)
@@ -9588,8 +9586,7 @@ output_loc_list (dw_loc_list_ref list_head)
 					    "Location list length (%s)",
 					    list_head->ll_symbol);
 	    }
-#ifdef HAVE_AS_LEB128
-	  else if (!have_multiple_function_sections)
+	  else if (!have_multiple_function_sections && HAVE_AS_LEB128)
 	    {
 	      /* If all code is in .text section, the base address is
 		 already provided by the CU attributes.  Use
@@ -9605,7 +9602,7 @@ output_loc_list (dw_loc_list_ref list_head)
 					    "Location list end address (%s)",
 					    list_head->ll_symbol);
 	    }
-	  else
+	  else if (HAVE_AS_LEB128)
 	    {
 	      /* Otherwise, find out how many consecutive entries could share
 		 the same base entry.  If just one, emit DW_LLE_start_length,
@@ -9668,7 +9665,6 @@ output_loc_list (dw_loc_list_ref list_head)
 						"(%s)", list_head->ll_symbol);
 		}
 	    }
-#else
 	  /* The assembler does not support .uleb128 directive.  Emit
 	     DW_LLE_start_end with a pair of absolute addresses.  */
 	  else
@@ -9683,7 +9679,6 @@ output_loc_list (dw_loc_list_ref list_head)
 				   "Location list end address (%s)",
 				   list_head->ll_symbol);
 	    }
-#endif
 	}
       else if (dwarf_split_debug_info)
 	{
@@ -11054,9 +11049,7 @@ output_rnglists (void)
   dw_ranges *r;
   char l1[MAX_ARTIFICIAL_LABEL_BYTES];
   char l2[MAX_ARTIFICIAL_LABEL_BYTES];
-#ifdef HAVE_AS_LEB128
   char basebuf[MAX_ARTIFICIAL_LABEL_BYTES];
-#endif
 
   switch_to_section (debug_ranges_section);
   ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
@@ -11090,10 +11083,8 @@ output_rnglists (void)
     }
 
   const char *lab = "";
-#ifdef HAVE_AS_LEB128
   unsigned int len = vec_safe_length (ranges_table);
   const char *base = NULL;
-#endif
   FOR_EACH_VEC_SAFE_ELT (ranges_table, i, r)
     {
       int block_num = r->num;
@@ -11103,10 +11094,8 @@ output_rnglists (void)
 	  ASM_OUTPUT_LABEL (asm_out_file, r->label);
 	  lab = r->label;
 	}
-#ifdef HAVE_AS_LEB128
-      if (r->label || r->maybe_new_sec)
+      if (HAVE_AS_LEB128 && (r->label || r->maybe_new_sec))
 	base = NULL;
-#endif
       if (block_num > 0)
 	{
 	  char blabel[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -11115,62 +11104,65 @@ output_rnglists (void)
 	  ASM_GENERATE_INTERNAL_LABEL (blabel, BLOCK_BEGIN_LABEL, block_num);
 	  ASM_GENERATE_INTERNAL_LABEL (elabel, BLOCK_END_LABEL, block_num);
 
-#ifdef HAVE_AS_LEB128
-	  /* If all code is in the text section, then the compilation
-	     unit base address defaults to DW_AT_low_pc, which is the
-	     base of the text section.  */
-	  if (!have_multiple_function_sections)
+	  if (HAVE_AS_LEB128)
 	    {
-	      dw2_asm_output_data (1, DW_RLE_offset_pair,
-				   "DW_RLE_offset_pair (%s)", lab);
-	      dw2_asm_output_delta_uleb128 (blabel, text_section_label,
-					    "Range begin address (%s)", lab);
-	      dw2_asm_output_delta_uleb128 (elabel, text_section_label,
-					    "Range end address (%s)", lab);
-	      continue;
-	    }
-	  if (base == NULL)
-	    {
-	      dw_ranges *r2 = NULL;
-	      if (i < len - 1)
-		r2 = &(*ranges_table)[i + 1];
-	      if (r2
-		  && r2->num != 0
-		  && r2->label == NULL
-		  && !r2->maybe_new_sec)
+	      /* If all code is in the text section, then the compilation
+		 unit base address defaults to DW_AT_low_pc, which is the
+		 base of the text section.  */
+	      if (!have_multiple_function_sections)
 		{
-		  dw2_asm_output_data (1, DW_RLE_base_address,
-				       "DW_RLE_base_address (%s)", lab);
-		  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
-				       "Base address (%s)", lab);
-		  strcpy (basebuf, blabel);
-		  base = basebuf;
+		  dw2_asm_output_data (1, DW_RLE_offset_pair,
+				       "DW_RLE_offset_pair (%s)", lab);
+		  dw2_asm_output_delta_uleb128 (blabel, text_section_label,
+						"Range begin address (%s)", lab);
+		  dw2_asm_output_delta_uleb128 (elabel, text_section_label,
+						"Range end address (%s)", lab);
+		  continue;
 		}
+	      if (base == NULL)
+		{
+		  dw_ranges *r2 = NULL;
+		  if (i < len - 1)
+		    r2 = &(*ranges_table)[i + 1];
+		  if (r2
+		      && r2->num != 0
+		      && r2->label == NULL
+		      && !r2->maybe_new_sec)
+		    {
+		      dw2_asm_output_data (1, DW_RLE_base_address,
+					   "DW_RLE_base_address (%s)", lab);
+		      dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+					   "Base address (%s)", lab);
+		      strcpy (basebuf, blabel);
+		      base = basebuf;
+		    }
+		}
+	      if (base)
+		{
+		  dw2_asm_output_data (1, DW_RLE_offset_pair,
+				       "DW_RLE_offset_pair (%s)", lab);
+		  dw2_asm_output_delta_uleb128 (blabel, base,
+						"Range begin address (%s)", lab);
+		  dw2_asm_output_delta_uleb128 (elabel, base,
+						"Range end address (%s)", lab);
+		  continue;
+		}
+	      dw2_asm_output_data (1, DW_RLE_start_length,
+				   "DW_RLE_start_length (%s)", lab);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+				   "Range begin address (%s)", lab);
+	      dw2_asm_output_delta_uleb128 (elabel, blabel,
+					    "Range length (%s)", lab);
 	    }
-	  if (base)
+	  else
 	    {
-	      dw2_asm_output_data (1, DW_RLE_offset_pair,
-				   "DW_RLE_offset_pair (%s)", lab);
-	      dw2_asm_output_delta_uleb128 (blabel, base,
-					    "Range begin address (%s)", lab);
-	      dw2_asm_output_delta_uleb128 (elabel, base,
-					    "Range end address (%s)", lab);
-	      continue;
+	      dw2_asm_output_data (1, DW_RLE_start_end,
+				   "DW_RLE_start_end (%s)", lab);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+				   "Range begin address (%s)", lab);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, elabel,
+				   "Range end address (%s)", lab);
 	    }
-	  dw2_asm_output_data (1, DW_RLE_start_length,
-			       "DW_RLE_start_length (%s)", lab);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
-			       "Range begin address (%s)", lab);
-	  dw2_asm_output_delta_uleb128 (elabel, blabel,
-					"Range length (%s)", lab);
-#else
-	  dw2_asm_output_data (1, DW_RLE_start_end,
-			       "DW_RLE_start_end (%s)", lab);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
-			       "Range begin address (%s)", lab);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, elabel,
-			       "Range end address (%s)", lab);
-#endif
 	}
 
       /* Negative block_num stands for an index into ranges_by_label.  */
@@ -11182,21 +11174,24 @@ output_rnglists (void)
 
 	  if (!have_multiple_function_sections)
 	    gcc_unreachable ();
-#ifdef HAVE_AS_LEB128
-	  dw2_asm_output_data (1, DW_RLE_start_length,
-			       "DW_RLE_start_length (%s)", lab);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
-			       "Range begin address (%s)", lab);
-	  dw2_asm_output_delta_uleb128 (elabel, blabel,
-					"Range length (%s)", lab);
-#else
-	  dw2_asm_output_data (1, DW_RLE_start_end,
-			       "DW_RLE_start_end (%s)", lab);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
-			       "Range begin address (%s)", lab);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, elabel,
-			       "Range end address (%s)", lab);
-#endif
+	  if (HAVE_AS_LEB128)
+	    {
+	      dw2_asm_output_data (1, DW_RLE_start_length,
+				   "DW_RLE_start_length (%s)", lab);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+				   "Range begin address (%s)", lab);
+	      dw2_asm_output_delta_uleb128 (elabel, blabel,
+					    "Range length (%s)", lab);
+	    }
+	  else
+	    {
+	      dw2_asm_output_data (1, DW_RLE_start_end,
+				   "DW_RLE_start_end (%s)", lab);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+				   "Range begin address (%s)", lab);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, elabel,
+				   "Range end address (%s)", lab);
+	    }
 	}
       else
 	dw2_asm_output_data (1, DW_RLE_end_of_list,
