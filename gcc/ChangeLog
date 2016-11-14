@@ -1,3 +1,8 @@
+2016-11-14  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-dse.c (dse_optimize_stmt): Remove quotes and extra
+	new line.
+
 2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
 	Richard Biener  <rguenther@suse.de>
     
