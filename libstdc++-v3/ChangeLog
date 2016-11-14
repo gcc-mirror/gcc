@@ -1,5 +1,9 @@
 2016-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/78326
+	* include/experimental/memory_resource (memory_resource::_S_max_align):
+	Change access to protected.
+
 	* doc/xml/manual/status_cxx2017.xml: Update status.
 	* doc/html/manual/status.html: Regenerate.
 	* include/bits/shared_ptr.h (shared_ptr(unique_ptr<_Yp, _Del>)): Add
