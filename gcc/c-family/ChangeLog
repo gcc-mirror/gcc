@@ -1,9 +1,13 @@
+2016-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_structured_bindings.
+
 2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
-	Richard Biener  <rguenther@suse.de>
-    
-    	* c-common.h (c_common_resword): Add RID_GIMPLE, RID_PHI types.
-    	* c-common.h (enum rid): Add RID_GIMPLE, RID_PHI.
-    	* c.opt (fgimple): New option.
+	    Richard Biener  <rguenther@suse.de>
+
+	* c-common.h (c_common_resword): Add RID_GIMPLE, RID_PHI types.
+	* c-common.h (enum rid): Add RID_GIMPLE, RID_PHI.
+	* c.opt (fgimple): New option.
 
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -590,7 +594,7 @@
 	Use a copy when emitting warnings, setting the caret index from TYPE.
 
 2016-08-16  Eric Botcazou  <ebotcazou@adacore.com>
-            Arnaud Charlet  <charlet@adacore.com>
+	    Arnaud Charlet  <charlet@adacore.com>
 
 	* c-ada-spec.c (dump_number): New function.
 	(handle_escape_character): Likewise.
@@ -2511,7 +2515,7 @@
 	before trying to figure out whether we have a flexible array member.
 
 2015-03-06  Eric Botcazou  <ebotcazou@adacore.com>
-            Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* c-ada-spec.c (dump_ada_double_name): Fix pasto.
 
@@ -4033,15 +4037,15 @@
 	that lower floating point number precision or about the other
 	kinds of conversions.
 	* c-common.h (enum conversion_safety): New enumeration.
- 	(unsafe_conversion_p): switching return type to
- 	conversion_safety enumeration.
+	(unsafe_conversion_p): switching return type to
+	conversion_safety enumeration.
 	* c.opt: Adding new warning -Wfloat-conversion and
 	enabling it with -Wconversion.
 
 2013-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
 
-        * c-opts.c: Include plugin.h.
-        (cb_file_change): Invoke plugin event PLUGIN_INCLUDE_FILE.
+	* c-opts.c: Include plugin.h.
+	(cb_file_change): Invoke plugin event PLUGIN_INCLUDE_FILE.
 
 2013-11-19  Marek Polacek  <polacek@redhat.com>
 
@@ -4261,7 +4265,7 @@
 
 2013-10-31  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
-        Implement C++14 digit separators.
+	Implement C++14 digit separators.
 	* c-lex.c (interpret_float): Remove digit separators from scratch string
 	before building real literal.
 
@@ -4829,7 +4833,7 @@
 	__GXX_EXPERIMENTAL_CXX1Y__.
 
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
-            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* c.opt ([Wpointer-arith]): Enabled by -Wpedantic, as documented.
 	* c-common.c (pointer_int_sum): Change -Wpointer-arith pedwarns
@@ -4970,7 +4974,7 @@
 
 	PR 55139
 	* c-common.c (get_atomic_generic_size): Mask with
-        MEMMODEL_MASK
+	MEMMODEL_MASK
 
 2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
@@ -4984,16 +4988,16 @@
 	* c-opts.c (c_common_handle_option): Do not handle Wformat here.
 	* c-format.c (set_Wformat): Delete.
 	(decode_format_attr): Replace OPT_Wformat with OPT_Wformat_.
-        (maybe_read_dollar_number):  Likewise.
-        (avoid_dollar_number):  Likewise.
-        (finish_dollar_format_checking):  Likewise.
-        (check_format_info):  Likewise.
-        (check_format_info_main):  Likewise.
-        (check_format_types):  Likewise.
-        (format_type_warning):  Likewise.
-        * c-common.c (int):  Likewise.
-        (check_function_sentinel):  Likewise.
-        * c-common.h (warn_format,set_Wformat): Do not declare here.
+	(maybe_read_dollar_number):  Likewise.
+	(avoid_dollar_number):  Likewise.
+	(finish_dollar_format_checking):  Likewise.
+	(check_format_info):  Likewise.
+	(check_format_info_main):  Likewise.
+	(check_format_types):  Likewise.
+	(format_type_warning):  Likewise.
+	* c-common.c (int):  Likewise.
+	(check_function_sentinel):  Likewise.
+	* c-common.h (warn_format,set_Wformat): Do not declare here.
 
 2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
