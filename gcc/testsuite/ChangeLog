@@ -1,3 +1,8 @@
+2016-11-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/78093
+	* gcc.target/avr/torture/tiny-absdata-2.c: New test.
+
 2016-11-14  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
