@@ -1,3 +1,8 @@
+2016-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*andndi3_doubleword): Merge operand constraints.
+	(*ashl<mode>3_doubleword): Ditto.
+
 2016-11-14  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-dse.c (dse_optimize_stmt): Remove quotes and extra
