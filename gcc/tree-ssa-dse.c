@@ -236,9 +236,9 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
-		  fprintf (dump_file, "  Deleted dead call '");
+		  fprintf (dump_file, "  Deleted dead call: ");
 		  print_gimple_stmt (dump_file, gsi_stmt (*gsi), dump_flags, 0);
-		  fprintf (dump_file, "'\n");
+		  fprintf (dump_file, "\n");
 		}
 
 	      tree lhs = gimple_call_lhs (stmt);
@@ -292,9 +292,9 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, "  Deleted dead store '");
+	  fprintf (dump_file, "  Deleted dead store: ");
 	  print_gimple_stmt (dump_file, gsi_stmt (*gsi), dump_flags, 0);
-	  fprintf (dump_file, "'\n");
+	  fprintf (dump_file, "\n");
 	}
 
       /* Then we need to fix the operand of the consuming stmt.  */
