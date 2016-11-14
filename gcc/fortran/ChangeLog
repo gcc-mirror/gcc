@@ -1,3 +1,9 @@
+2016-11-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78300
+	* resolve.c (resolve_procedure_interface): Properly handle CLASS-valued
+	function results.
+
 2016-11-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60952
