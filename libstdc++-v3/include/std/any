@@ -108,6 +108,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp, typename _Decayed = decay_t<_Tp>>
       using _Decay = enable_if_t<!is_same<_Decayed, any>::value, _Decayed>;
 
+    /// Emplace with an object created from @p __args as the contained object.
+    template <typename _Tp, typename... _Args,
+	      typename _Mgr = _Manager<_Tp>>
+      void __do_emplace(_Args&&... __args)
+      {
+	reset();
+	_M_manager = &_Mgr::_S_manage;
+        _Mgr::_S_create(_M_storage, std::forward<_Args>(__args)...);
+      }
+
+    /// Emplace with an object created from @p __il and @p __args as
+    /// the contained object.
+    template <typename _Tp, typename _Up, typename... _Args,
+	      typename _Mgr = _Manager<_Tp>>
+      void __do_emplace(initializer_list<_Up> __il, _Args&&... __args)
+      {
+	reset();
+	_M_manager = &_Mgr::_S_manage;
+        _Mgr::_S_create(_M_storage, __il, std::forward<_Args>(__args)...);
+      }
+
   public:
     // construct/destruct
 
@@ -144,11 +165,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
+    template <typename _Res, typename _Tp, typename... _Args>
+    using __any_constructible =
+      enable_if<__and_<is_copy_constructible<_Tp>,
+			 is_constructible<_Tp, _Args...>>::value,
+		  _Res>;
+
     template <typename _Tp, typename... _Args>
     using __any_constructible_t =
-      enable_if_t<__and_<is_copy_constructible<_Tp>,
-			 is_constructible<_Tp, _Args...>>::value,
-		  bool>;
+      typename __any_constructible<bool, _Tp, _Args...>::type;
 
     /// Construct with a copy of @p __value as the contained object.
     template <typename _ValueType, typename _Tp = _Decay<_ValueType>,
@@ -233,9 +258,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     /// Store a copy of @p __rhs as the contained object.
-    template<typename _ValueType,
-	     typename _Tp = _Decay<_ValueType>>
-      enable_if_t<is_copy_constructible<_Tp>::value, any&>
+    template<typename _ValueType>
+      enable_if_t<is_copy_constructible<_Decay<_ValueType>>::value, any&>
       operator=(_ValueType&& __rhs)
       {
 	*this = any(std::forward<_ValueType>(__rhs));
@@ -243,29 +267,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     /// Emplace with an object created from @p __args as the contained object.
-    template <typename _ValueType, typename... _Args,
-	      typename _Tp = _Decay<_ValueType>,
-	      typename _Mgr = _Manager<_Tp>,
-              __any_constructible_t<_Tp, _Args&&...> = false>
-      void emplace(_Args&&... __args)
+    template <typename _ValueType, typename... _Args>
+      typename __any_constructible<void,
+				   _Decay<_ValueType>, _Args&&...>::type
+      emplace(_Args&&... __args)
       {
-	reset();
-	_M_manager = &_Mgr::_S_manage;
-        _Mgr::_S_create(_M_storage, std::forward<_Args>(__args)...);
+	__do_emplace<_Decay<_ValueType>>
+	  (std::forward<_Args>(__args)...);
       }
 
     /// Emplace with an object created from @p __il and @p __args as
     /// the contained object.
-    template <typename _ValueType, typename _Up, typename... _Args,
-	      typename _Tp = _Decay<_ValueType>,
-	      typename _Mgr = _Manager<_Tp>,
-              __any_constructible_t<_Tp, initializer_list<_Up>,
-				    _Args&&...> = false>
-      void emplace(initializer_list<_Up> __il, _Args&&... __args)
+    template <typename _ValueType, typename _Up, typename... _Args>
+      typename __any_constructible<void,
+				   _Decay<_ValueType>,
+				   initializer_list<_Up>,
+				   _Args&&...>::type
+      emplace(initializer_list<_Up> __il, _Args&&... __args)
       {
-	reset();
-	_M_manager = &_Mgr::_S_manage;
-        _Mgr::_S_create(_M_storage, __il, std::forward<_Args>(__args)...);
+	__do_emplace<_Decay<_ValueType>, _Up>
+	  (__il, std::forward<_Args>(__args)...);
       }
 
     // modifiers

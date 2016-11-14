@@ -1,3 +1,24 @@
+2016-11-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Use constexpr addressof in optional, SFINAE housekeeping
+	for any, optional and tuple.
+	* include/std/any (__do_emplace(_Args&&...)): New.
+	(__do_emplace(initializer_list<_Up>, _Args&&...)): Likewise.
+	(__any_constructible): Likewise.
+	(__any_constructible_t): Use __any_constructible.
+	(operator=(_ValueType&&)): SFINAE in the return type.
+	(emplace(_Args&&...)): Likewise.
+	(emplace(initializer_list<_Up>, _Args&&...)): Likewise.
+	* include/std/optional (_Has_addressof_mem): Remove.
+	(_Has_addressof_free): Likewise.
+	(_Has_addressof): Likewise.
+	(__constexpr_addressof(_Tp&)): Likewise.
+	(operator->): Use std::__addressof.
+	* include/std/tuple (operator=(const tuple<_UElements...>&)):
+	SFINAE in return type.
+	(operator=(tuple<_UElements...>&&)): Likewise.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust.
+
 2016-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/move.h (addressof(const _Tp&&)): Add deleted overload,
