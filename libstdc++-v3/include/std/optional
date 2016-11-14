@@ -96,53 +96,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __throw_bad_optional_access(const char* __s)
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access(__s)); }
 
-  template<typename _Tp, typename = void>
-    struct _Has_addressof_mem : std::false_type { };
-
-  template<typename _Tp>
-    struct _Has_addressof_mem<_Tp,
-         __void_t<decltype( std::declval<const _Tp&>().operator&() )>
-      >
-    : std::true_type { };
-
-  template<typename _Tp, typename = void>
-    struct _Has_addressof_free : std::false_type { };
-
-  template<typename _Tp>
-    struct _Has_addressof_free<_Tp,
-         __void_t<decltype( operator&(std::declval<const _Tp&>()) )>
-      >
-    : std::true_type { };
-
-  /**
-    * @brief Trait that detects the presence of an overloaded unary operator&.
-    *
-    * Practically speaking this detects the presence of such an operator when
-    * called on a const-qualified lvalue (e.g.
-    * declval<const _Tp&>().operator&()).
-    */
-  template<typename _Tp>
-    struct _Has_addressof
-    : std::__or_<_Has_addressof_mem<_Tp>, _Has_addressof_free<_Tp>>::type
-    { };
-
-  /**
-    * @brief An overload that attempts to take the address of an lvalue as a
-    * constant expression. Falls back to __addressof in the presence of an
-    * overloaded addressof operator (unary operator&), in which case the call
-    * will not be a constant expression.
-    */
-  template<typename _Tp, enable_if_t<!_Has_addressof<_Tp>::value, int>...>
-    constexpr _Tp* __constexpr_addressof(_Tp& __t)
-    { return &__t; }
-
-  /**
-    * @brief Fallback overload that defers to __addressof.
-    */
-  template<typename _Tp, enable_if_t<_Has_addressof<_Tp>::value, int>...>
-    inline _Tp* __constexpr_addressof(_Tp& __t)
-    { return std::__addressof(__t); }
-
   /**
     * @brief Class template that holds the necessary state for @ref optional
     * and that has the responsibility for construction and the special members.
@@ -681,7 +634,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Observers.
       constexpr const _Tp*
       operator->() const
-      { return __constexpr_addressof(this->_M_get()); }
+      { return std::__addressof(this->_M_get()); }
 
       _Tp*
       operator->()

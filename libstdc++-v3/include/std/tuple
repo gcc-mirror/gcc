@@ -846,20 +846,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      template<typename... _UElements, typename = typename
+      template<typename... _UElements>
+	typename
 	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)>::type>
-        tuple&
+			 == sizeof...(_Elements), tuple&>::type
         operator=(const tuple<_UElements...>& __in)
         {
 	  static_cast<_Inherited&>(*this) = __in;
 	  return *this;
 	}
 
-      template<typename... _UElements, typename = typename
+      template<typename... _UElements>
+	typename
 	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)>::type>
-        tuple&
+			 == sizeof...(_Elements), tuple&>::type
         operator=(tuple<_UElements...>&& __in)
         {
 	  static_cast<_Inherited&>(*this) = std::move(__in);
