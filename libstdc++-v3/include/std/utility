@@ -336,25 +336,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
 
-  struct in_place_tag {
-    in_place_tag() = delete;
+  struct in_place_t {
+    explicit in_place_t() = default;
   };
 
-  struct __in_place;
-  template<typename _Tp> struct __in_place_type;
-  template<size_t _Idx> struct __in_place_index;
+  inline constexpr in_place_t in_place{};
 
-  using in_place_t = in_place_tag(&)(__in_place*);
-  template <class _Tp>
-    using in_place_type_t = in_place_tag(&)(__in_place_type<_Tp>*);
-  template <int _Idx>
-    using in_place_index_t = in_place_tag(&)(__in_place_index<_Idx>*);
+  template<typename _Tp> struct in_place_type_t
+  {
+    explicit in_place_type_t() = default;
+  };
 
-  inline in_place_tag in_place(__in_place*) {terminate();}
-  template <class _Tp>
-    in_place_tag in_place(__in_place_type<_Tp>*) {terminate();}
-  template <size_t _Idx>
-    in_place_tag in_place(__in_place_index<_Idx>*) {terminate();}
+  template<typename _Tp>
+    inline constexpr in_place_type_t<_Tp> in_place_type{};
+
+  template<size_t _Idx> struct in_place_index_t
+  {
+    explicit in_place_index_t() = default;
+  };
+
+  template<size_t _Idx>
+    inline constexpr in_place_index_t<_Idx> in_place_index{};
 
   template<typename>
     struct __is_in_place_type_impl : false_type

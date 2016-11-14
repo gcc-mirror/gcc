@@ -302,7 +302,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<size_t _Np, typename... _Args>
 	constexpr _Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
-	: _M_union(in_place<_Np>, std::forward<_Args>(__args)...)
+	: _M_union(in_place_index<_Np>, std::forward<_Args>(__args)...)
 	{ }
 
       ~_Variant_storage() = default;
@@ -320,13 +320,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	template<typename... _Args>
 	  constexpr _Union(in_place_index_t<0>, _Args&&... __args)
-	  : _M_first(in_place<0>, std::forward<_Args>(__args)...)
+	  : _M_first(in_place_index<0>, std::forward<_Args>(__args)...)
 	  { }
 
 	template<size_t _Np, typename... _Args,
 		 typename = enable_if_t<0 < _Np && _Np < sizeof...(_Rest) + 1>>
 	  constexpr _Union(in_place_index_t<_Np>, _Args&&... __args)
-	  : _M_rest(in_place<_Np - 1>, std::forward<_Args>(__args)...)
+	  : _M_rest(in_place_index<_Np - 1>, std::forward<_Args>(__args)...)
 	  { }
 
 	_Uninitialized<__storage<_First>> _M_first;
@@ -361,7 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Variant_base()
       noexcept(is_nothrow_default_constructible_v<
 		 variant_alternative_t<0, variant<_Types...>>>)
-      : _Variant_base(in_place<0>) { }
+      : _Variant_base(in_place_index<0>) { }
 
       _Variant_base(const _Variant_base& __rhs)
       : _Storage(), _M_index(__rhs._M_index)
@@ -1018,7 +1018,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr
 	variant(_Tp&& __t)
 	noexcept(is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp&&>)
-	: variant(in_place<__accepted_index<_Tp&&>>, std::forward<_Tp>(__t))
+	: variant(in_place_index<__accepted_index<_Tp&&>>, std::forward<_Tp>(__t))
 	{ __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this)); }
 
       template<typename _Tp, typename... _Args,
@@ -1026,7 +1026,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  && is_constructible_v<_Tp, _Args&&...>>>
 	constexpr explicit
 	variant(in_place_type_t<_Tp>, _Args&&... __args)
-	: variant(in_place<__index_of<_Tp>>, std::forward<_Args>(__args)...)
+	: variant(in_place_index<__index_of<_Tp>>, std::forward<_Args>(__args)...)
 	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
 
       template<typename _Tp, typename _Up, typename... _Args,
@@ -1036,7 +1036,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr explicit
 	variant(in_place_type_t<_Tp>, initializer_list<_Up> __il,
 		_Args&&... __args)
-	: variant(in_place<__index_of<_Tp>>, __il,
+	: variant(in_place_index<__index_of<_Tp>>, __il,
 		  std::forward<_Args>(__args)...)
 	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
 
@@ -1045,7 +1045,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 is_constructible_v<__to_type<_Np>, _Args&&...>>>
 	constexpr explicit
 	variant(in_place_index_t<_Np>, _Args&&... __args)
-	: _Base(in_place<_Np>, std::forward<_Args>(__args)...),
+	: _Base(in_place_index<_Np>, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
 	{ __glibcxx_assert(index() == _Np); }
 
@@ -1055,7 +1055,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr explicit
 	variant(in_place_index_t<_Np>, initializer_list<_Up> __il,
 		_Args&&... __args)
-	: _Base(in_place<_Np>, __il, std::forward<_Args>(__args)...),
+	: _Base(in_place_index<_Np>, __il, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
 	{ __glibcxx_assert(index() == _Np); }
 
@@ -1063,7 +1063,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename = enable_if_t<
 		 __is_uses_allocator_constructible_v<__to_type<0>, _Alloc>>>
 	variant(allocator_arg_t, const _Alloc& __a)
-	: variant(allocator_arg, __a, in_place<0>)
+	: variant(allocator_arg, __a, in_place_index<0>)
 	{ }
 
       template<typename _Alloc,
@@ -1091,7 +1091,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   __accepted_type<_Tp&&>, _Alloc, _Tp&&>
 		 && !is_same_v<decay_t<_Tp>, variant>, variant&>>
 	variant(allocator_arg_t, const _Alloc& __a, _Tp&& __t)
-	: variant(allocator_arg, __a, in_place<__accepted_index<_Tp&&>>,
+	: variant(allocator_arg, __a, in_place_index<__accepted_index<_Tp&&>>,
 		  std::forward<_Tp>(__t))
 	{ __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this)); }
 
@@ -1102,7 +1102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   _Tp, _Alloc, _Args&&...>>>
 	variant(allocator_arg_t, const _Alloc& __a, in_place_type_t<_Tp>,
 		_Args&&... __args)
-	: variant(allocator_arg, __a, in_place<__index_of<_Tp>>,
+	: variant(allocator_arg, __a, in_place_index<__index_of<_Tp>>,
 		  std::forward<_Args>(__args)...)
 	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
 
@@ -1113,7 +1113,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   _Tp, _Alloc, initializer_list<_Up>&, _Args&&...>>>
 	variant(allocator_arg_t, const _Alloc& __a, in_place_type_t<_Tp>,
 		initializer_list<_Up> __il, _Args&&... __args)
-	: variant(allocator_arg, __a, in_place<__index_of<_Tp>>, __il,
+	: variant(allocator_arg, __a, in_place_index<__index_of<_Tp>>, __il,
 		  std::forward<_Args>(__args)...)
 	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
 
@@ -1123,7 +1123,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   __to_type<_Np>, _Alloc, _Args&&...>>>
 	variant(allocator_arg_t, const _Alloc& __a, in_place_index_t<_Np>,
 		_Args&&... __args)
-	: _Base(__a, in_place<_Np>, std::forward<_Args>(__args)...),
+	: _Base(__a, in_place_index<_Np>, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
 	{ __glibcxx_assert(index() == _Np); }
 
@@ -1133,7 +1133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   __to_type<_Np>, _Alloc, initializer_list<_Up>&, _Args&&...>>>
 	variant(allocator_arg_t, const _Alloc& __a, in_place_index_t<_Np>,
 		initializer_list<_Up> __il, _Args&&... __args)
-	: _Base(__a, in_place<_Np>, __il, std::forward<_Args>(__args)...),
+	: _Base(__a, in_place_index<_Np>, __il, std::forward<_Args>(__args)...),
 	_Default_ctor_enabler(_Enable_default_constructor_tag{})
 	{ __glibcxx_assert(index() == _Np); }
 
@@ -1188,7 +1188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->~variant();
 	  __try
 	    {
-	      ::new (this) variant(in_place<_Np>,
+	      ::new (this) variant(in_place_index<_Np>,
 				   std::forward<_Args>(__args)...);
 	    }
 	  __catch (...)
@@ -1207,7 +1207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->~variant();
 	  __try
 	    {
-	      ::new (this) variant(in_place<_Np>, __il,
+	      ::new (this) variant(in_place_index<_Np>, __il,
 				   std::forward<_Args>(__args)...);
 	    }
 	  __catch (...)

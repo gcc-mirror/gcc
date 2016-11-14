@@ -122,12 +122,12 @@ void dtor()
   };
   {
     int called = 0;
-    { variant<string, A> a(in_place<1>, called); }
+    { variant<string, A> a(in_place_index<1>, called); }
     VERIFY(called == 1);
   }
   {
     int called = 0;
-    { variant<string, A> a(in_place<0>); }
+    { variant<string, A> a(in_place_index<0>); }
     VERIFY(called == 0);
   }
 }
@@ -135,12 +135,12 @@ void dtor()
 void in_place_index_ctor()
 {
   {
-    variant<int, string> v(in_place<1>, "a");
+    variant<int, string> v(in_place_index<1>, "a");
     VERIFY(holds_alternative<string>(v));
     VERIFY(get<1>(v) == "a");
   }
   {
-    variant<int, string> v(in_place<1>, {'a', 'b'});
+    variant<int, string> v(in_place_index<1>, {'a', 'b'});
     VERIFY(holds_alternative<string>(v));
     VERIFY(get<1>(v) == "ab");
   }
@@ -149,12 +149,12 @@ void in_place_index_ctor()
 void in_place_type_ctor()
 {
   {
-    variant<int, string> v(in_place<string>, "a");
+    variant<int, string> v(in_place_type<string>, "a");
     VERIFY(holds_alternative<string>(v));
     VERIFY(get<1>(v) == "a");
   }
   {
-    variant<int, string> v(in_place<string>, {'a', 'b'});
+    variant<int, string> v(in_place_type<string>, {'a', 'b'});
     VERIFY(holds_alternative<string>(v));
     VERIFY(get<1>(v) == "ab");
   }
