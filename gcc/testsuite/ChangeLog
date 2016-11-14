@@ -1,3 +1,8 @@
+2016-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78312
+	* gcc.dg/torture/pr78312.c: New testcase.
+
 2016-11-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/78093
