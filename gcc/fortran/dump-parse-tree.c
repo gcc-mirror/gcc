@@ -47,6 +47,7 @@ static FILE *dumpfile;
 static void show_expr (gfc_expr *p);
 static void show_code_node (int, gfc_code *);
 static void show_namespace (gfc_namespace *ns);
+static void show_code (int, gfc_code *);
 
 
 /* Allow dumping of an expression in the debugger.  */
@@ -62,6 +63,18 @@ gfc_debug_expr (gfc_expr *e)
   dumpfile = tmp;
 }
 
+/* Allow for dumping of a piece of code in the debugger.  */
+void gfc_debug_code (gfc_code *c);
+
+void
+gfc_debug_code (gfc_code *c)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  show_code (1, c);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
 
 /* Do indentation for a specific level.  */
 
@@ -1987,7 +2000,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_SELECT_TYPE:
       d = c->block;
       if (c->op == EXEC_SELECT_TYPE)
-	fputs ("SELECT TYPE", dumpfile);
+	fputs ("SELECT TYPE ", dumpfile);
       else
 	fputs ("SELECT CASE ", dumpfile);
       show_expr (c->expr1);
