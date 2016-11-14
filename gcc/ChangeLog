@@ -1,5 +1,27 @@
 2016-11-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.md (aarch64_ashl_sisd_or_int_<mode>3)
+	Use bfx attribute.
+	(aarch64_lshr_sisd_or_int_<mode>3): Likewise.
+	(aarch64_ashr_sisd_or_int_<mode>3): Likewise.
+	(<optab>si3_insn_uxtw): Likewise.
+	(<optab><mode>3_insn): Likewise.
+	(<ANY_EXTEND:optab><GPI:mode>_ashl<SHORT:mode>): Likewise.
+	(zero_extend<GPI:mode>_lshr<SHORT:mode>): Likewise.
+	(extend<GPI:mode>_ashr<SHORT:mode>): Likewise.
+	(<optab><mode>): Likewise.
+	(insv<mode>): Likewise.
+	(andim_ashift<mode>_bfiz): Likewise.
+	* config/aarch64/thunderx.md (thunderx_shift): Add bfx.
+	* config/arm/cortex-a53.md (cortex_a53_alu_shift): Likewise.
+	* config/arm/cortex-a57.md (cortex_a57_alu): Add bfx.
+	* config/arm/exynos-m1.md (exynos_m1_alu): Add bfx.
+	(exynos_m1_alu_p): Likewise.
+	* config/arm/types.md: Add bfx.
+	* config/arm/xgene1.md (xgene1_bfm): Add bfx.
+
+2016-11-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c (cortexa57_vector_cost):
 	Change vec_stmt_cost, vec_align_load_cost and vec_unalign_load_cost.
 
