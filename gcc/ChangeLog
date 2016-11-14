@@ -1,3 +1,14 @@
+2016-11-14  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/78069
+	* common.opt: Add prefer-atomic as a new enum value for
+	-fprofile-update.
+	* coretypes.h: Likewise.
+	* doc/invoke.texi: Document the new option value.
+	* gcc.c: Replace atomic with prefer-atomic.  Remove warning.
+	* tree-profile.c (tree_profiling): Select default value
+	of -fprofile-update when 'prefer-atomic' is selected.
+
 2016-11-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/cortex-a57.md (cortex_a57_alu): Move extend here, bfm...

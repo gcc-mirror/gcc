@@ -177,7 +177,8 @@ enum offload_abi {
 /* Types of profile update methods.  */
 enum profile_update {
   PROFILE_UPDATE_SINGLE,
-  PROFILE_UPDATE_ATOMIC
+  PROFILE_UPDATE_ATOMIC,
+  PROFILE_UPDATE_PREFER_ATOMIC
 };
 
 /* Types of unwind/exception handling info that can be generated.  */
