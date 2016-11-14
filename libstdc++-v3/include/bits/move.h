@@ -137,6 +137,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     addressof(_Tp& __r) noexcept
     { return std::__addressof(__r); }
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2598. addressof works on temporaries
+  template<typename _Tp>
+    const _Tp* addressof(const _Tp&&) = delete;
+
   // C++11 version of std::exchange for internal use.
   template <typename _Tp, typename _Up = _Tp>
     inline _Tp
