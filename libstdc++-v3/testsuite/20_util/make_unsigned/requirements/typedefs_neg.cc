@@ -41,7 +41,7 @@ void test01()
   typedef make_unsigned<float>::type  		test5_type;
 }
 
-// { dg-error "does not name a type" "" { target *-*-* } 32 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 32 }
 // { dg-error "required from here" "" { target *-*-* } 34 }
 // { dg-error "required from here" "" { target *-*-* } 36 }
 // { dg-error "required from here" "" { target *-*-* } 39 }

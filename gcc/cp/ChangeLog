@@ -1,3 +1,17 @@
+2016-11-13  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_new_method_call_1): Include template arguments in
+	error message.
+	(print_error_for_call_failure): Likewise.
+	(build_new_function_call): Pass them in.
+	* name-lookup.c (supplement_binding_1): Don't complain about a
+	conflict with an erroneous declaration.
+	* error.c (dump_decl): Fix printing of alias declaration.
+	* decl.c (make_typename_type): Call cxx_incomplete_type_error.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+	* semantics.c (perform_koenig_lookup): Don't wrap an error in
+	TEMPLATE_ID_EXPR.
+
 2016-11-12  Jason Merrill  <jason@redhat.com>
 
 	CWG 2233

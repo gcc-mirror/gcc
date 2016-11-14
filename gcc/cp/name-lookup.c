@@ -565,7 +565,8 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
     }
   else
     {
-      diagnose_name_conflict (decl, bval);
+      if (!error_operand_p (bval))
+	diagnose_name_conflict (decl, bval);
       ok = false;
     }
 

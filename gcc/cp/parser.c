@@ -3272,7 +3272,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 		  parser->scope, id, parser->scope);
       else if (TYPE_P (parser->scope))
 	{
-	  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+	  if (!COMPLETE_TYPE_P (parser->scope))
+	    cxx_incomplete_type_error (location_of (id), NULL_TREE,
+				       parser->scope);
+	  else if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
 	    error_at (location_of (id),
 		      "%qE in %q#T does not name a template type",
 		      id, parser->scope);

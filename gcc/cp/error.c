@@ -1049,7 +1049,9 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	  pp_cxx_whitespace (pp);
 	  pp_cxx_ws_string (pp, "=");
 	  pp_cxx_whitespace (pp);
-	  dump_type (pp, DECL_ORIGINAL_TYPE (t), flags);
+	  dump_type (pp, (DECL_ORIGINAL_TYPE (t)
+			  ? DECL_ORIGINAL_TYPE (t) : TREE_TYPE (t)),
+		     flags);
 	  break;
 	}
       if ((flags & TFF_DECL_SPECIFIERS)

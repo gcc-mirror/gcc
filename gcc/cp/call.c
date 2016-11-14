@@ -4146,8 +4146,16 @@ static void
 print_error_for_call_failure (tree fn, vec<tree, va_gc> *args,
 			      struct z_candidate *candidates)
 {
+  tree targs = NULL_TREE;
+  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
+    {
+      targs = TREE_OPERAND (fn, 1);
+      fn = TREE_OPERAND (fn, 0);
+    }
   tree name = DECL_NAME (OVL_CURRENT (fn));
   location_t loc = location_of (name);
+  if (targs)
+    name = lookup_template_function (name, targs);
 
   if (!any_strictly_viable (candidates))
     error_at (loc, "no matching function for call to %<%D(%A)%>",
@@ -4215,8 +4223,6 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p,
 	    return cp_build_function_call_vec (candidates->fn, args, complain);
 
 	  // Otherwise, emit notes for non-viable candidates.
-	  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-	    fn = TREE_OPERAND (fn, 0);
 	  print_error_for_call_failure (fn, *args, candidates);
 	}
       result = error_mark_node;
@@ -8649,19 +8655,20 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		   TREE_TYPE (instance));
 	  else
 	    {
-	      char *pretty_name;
-	      bool free_p;
-	      tree arglist;
-
-	      pretty_name = name_as_c_string (name, basetype, &free_p);
-	      arglist = build_tree_list_vec (user_args);
+	      tree arglist = build_tree_list_vec (user_args);
+	      tree errname = name;
+	      if (IDENTIFIER_CTOR_OR_DTOR_P (errname))
+		{
+		  tree fn = DECL_ORIGIN (get_first_fn (fns));
+		  errname = DECL_NAME (fn);
+		}
+	      if (explicit_targs)
+		errname = lookup_template_function (errname, explicit_targs);
 	      if (skip_first_for_error)
 		arglist = TREE_CHAIN (arglist);
-	      error ("no matching function for call to %<%T::%s(%A)%#V%>",
-		     basetype, pretty_name, arglist,
+	      error ("no matching function for call to %<%T::%E(%A)%#V%>",
+		     basetype, errname, arglist,
 		     TREE_TYPE (instance));
-	      if (free_p)
-		free (pretty_name);
 	    }
 	  print_z_candidates (location_of (name), candidates);
 	}
