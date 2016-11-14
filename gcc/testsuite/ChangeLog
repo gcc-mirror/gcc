@@ -1,3 +1,18 @@
+2016-11-14  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Implement P0217R3 - C++17 structured bindings
+	* g++.dg/cpp1z/decomp1.C: New test.
+	* g++.dg/cpp1z/decomp2.C: New test.
+	* g++.dg/cpp1z/decomp3.C: New test.
+	* g++.dg/cpp1z/decomp4.C: New test.
+	* g++.dg/cpp1z/decomp5.C: New test.
+	* g++.dg/cpp1z/decomp6.C: New test.
+	* g++.dg/cpp1z/decomp7.C: New test.
+	* g++.dg/cpp1z/decomp8.C: New test.
+	* g++.dg/cpp1z/decomp9.C: New test.
+	* g++.dg/cpp1z/decomp10.C: New test.
+
 2016-11-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* g++.dg/torture/pr78268.C: New test.
