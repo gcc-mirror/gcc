@@ -3756,8 +3756,13 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   if (!t)
     {
       if (complain & tf_error)
-	error (want_template ? G_("no class template named %q#T in %q#T")
-	       : G_("no type named %q#T in %q#T"), name, context);
+	{
+	  if (!COMPLETE_TYPE_P (context))
+	    cxx_incomplete_type_error (NULL_TREE, context);
+	  else
+	    error (want_template ? G_("no class template named %q#T in %q#T")
+		   : G_("no type named %q#T in %q#T"), name, context);
+	}
       return error_mark_node;
     }
   

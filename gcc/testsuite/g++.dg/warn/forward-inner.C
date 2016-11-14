@@ -3,13 +3,13 @@
 
 // Verify warnings for and within classes, and by extension, struct and union.
 class C1;
-class C1::C2;      // { dg-error "does not name a type" }
+class C1::C2;      // { dg-error "incomplete" }
 class C1::C2::C3;  // { dg-error "has not been declared" }
 
 class C1 {
  public:
   class C2;
-  class C2::C3;    // { dg-error "does not name a type" }
+  class C2::C3;    // { dg-error "incomplete" }
   class C2 {
    public:
     class C3;

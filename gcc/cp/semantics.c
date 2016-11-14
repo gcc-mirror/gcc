@@ -2259,7 +2259,7 @@ perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
 	}
     }
 
-  if (fn && template_id)
+  if (fn && template_id && fn != error_mark_node)
     fn = build2 (TEMPLATE_ID_EXPR, unknown_type_node, fn, tmpl_args);
   
   return fn;
