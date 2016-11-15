@@ -8873,14 +8873,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (identifier_p (expr))
         expr = lookup_name (expr);
 
-      /* The decltype rules for decomposition are different from the rules for
-	 member access; in particular, the decomposition decl gets
-	 cv-qualifiers from the aggregate object, whereas decltype of a member
-	 access expr ignores the object.  */
-      if (VAR_P (expr) && DECL_DECOMPOSITION_P (expr)
-	  && DECL_HAS_VALUE_EXPR_P (expr))
-	return unlowered_expr_type (DECL_VALUE_EXPR (expr));
-
       if (INDIRECT_REF_P (expr))
         /* This can happen when the expression is, e.g., "a.b". Just
            look at the underlying operand.  */
@@ -8897,6 +8889,21 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (BASELINK_P (expr))
         /* See through BASELINK nodes to the underlying function.  */
         expr = BASELINK_FUNCTIONS (expr);
+
+      /* decltype of a decomposition name drops references in the tuple case
+	 (unlike decltype of a normal variable) and keeps cv-qualifiers from
+	 the containing object in the other cases (unlike decltype of a member
+	 access expression).  */
+      if (DECL_DECOMPOSITION_P (expr))
+	{
+	  if (DECL_HAS_VALUE_EXPR_P (expr))
+	    /* Expr is an array or struct subobject proxy, handle
+	       bit-fields properly.  */
+	    return unlowered_expr_type (expr);
+	  else
+	    /* Expr is a reference variable for the tuple case.  */
+	    return non_reference (TREE_TYPE (expr));
+	}
 
       switch (TREE_CODE (expr))
         {

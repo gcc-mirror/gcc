@@ -1,5 +1,10 @@
 2016-11-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78358
+	* semantics.c (finish_decltype_type): Strip references for a tuple
+	decomposition.
+	* cp-tree.h (DECL_DECOMPOSITION_P): False for non-variables.
+
 	* decl2.c (decl_maybe_constant_var_p): References qualify.
 	* constexpr.c (non_const_var_error): Handle references.
 	* init.c (constant_value_1): Always check decl_constant_var_p.
