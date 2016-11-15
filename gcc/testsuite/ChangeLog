@@ -1,3 +1,8 @@
+2016-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71988
+	* g++.dg/cpp0x/constexpr-71988.C: New test.
+
 2016-11-15  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* gcc.target/mips/insn-casesi.c: New test case.
