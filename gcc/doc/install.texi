@@ -2081,6 +2081,36 @@ When you use this option, you should ensure that @var{dir} includes
 tools.
 @end table
 
+@subsubheading Overriding @command{configure} test results
+
+Sometimes, it might be necessary to override the result of some
+@command{configure} test, for example in order to ease porting to a new
+system or work around a bug in a test.  The toplevel @command{configure}
+script provides three variables for this:
+
+@table @code
+
+@item build_configargs
+@cindex @code{build_configargs}
+The contents of this variable is passed to all build @command{configure}
+scripts.
+
+@item host_configargs
+@cindex @code{host_configargs}
+The contents of this variable is passed to all host @command{configure}
+scripts.
+
+@item target_configargs
+@cindex @code{target_configargs}
+The contents of this variable is passed to all target @command{configure}
+scripts.
+
+@end table
+
+In order to avoid shell and @command{make} quoting issues for complex
+overrides, you can pass a setting for @env{CONFIG_SITE} and set
+variables in the site file.
+
 @subheading Java-Specific Options
 
 The following option applies to the build of the Java front end.
@@ -2315,35 +2345,6 @@ Do not try to compile and run a test libart program.
 
 @end table
 
-@subsubheading Overriding @command{configure} test results
-
-Sometimes, it might be necessary to override the result of some
-@command{configure} test, for example in order to ease porting to a new
-system or work around a bug in a test.  The toplevel @command{configure}
-script provides three variables for this:
-
-@table @code
-
-@item build_configargs
-@cindex @code{build_configargs}
-The contents of this variable is passed to all build @command{configure}
-scripts.
-
-@item host_configargs
-@cindex @code{host_configargs}
-The contents of this variable is passed to all host @command{configure}
-scripts.
-
-@item target_configargs
-@cindex @code{target_configargs}
-The contents of this variable is passed to all target @command{configure}
-scripts.
-
-@end table
-
-In order to avoid shell and @command{make} quoting issues for complex
-overrides, you can pass a setting for @env{CONFIG_SITE} and set
-variables in the site file.
 
 @html
 <hr />
