@@ -1,5 +1,14 @@
 2016-11-15  Maciej W. Rozycki  <macro@imgtec.com>
 
+	* gcc.target/mips/insn-casesi.c: New test case.
+	* gcc.target/mips/insn-pseudo-1.c: New test case.
+	* gcc.target/mips/insn-pseudo-2.c: New test case.
+	* gcc.target/mips/insn-pseudo-3.c: New test case.
+	* gcc.target/mips/insn-pseudo-4.c: New test case.
+	* gcc.target/mips/insn-tablejump.c: New test case.
+
+2016-11-15  Maciej W. Rozycki  <macro@imgtec.com>
+
 	* gcc.target/mips/mips.exp (mips_option_tests): Add
 	`-mcode-readable=yes' array element.
 
