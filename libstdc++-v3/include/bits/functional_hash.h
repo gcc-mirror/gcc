@@ -200,6 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return hash(&__val, sizeof(__val), __hash); }
   };
 
+  // A hash function similar to FNV-1a (see PR59406 for how it differs).
   struct _Fnv_hash_impl
   {
     static size_t
