@@ -1,3 +1,8 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* aclocal.m4: Regenerate.
+	* configure: Likewise.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

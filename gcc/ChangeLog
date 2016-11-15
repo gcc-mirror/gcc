@@ -1,3 +1,8 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Remove references to gcj/libjava.
+	* doc/invoke.texi: Likewise.
+
 2016-11-15  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadbackward.c (fsm_find_thread_path): Remove unneeded

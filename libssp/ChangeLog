@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2015-04-25  Daniel Starke  <daniel.f.starke@freenet.de>
 
 	PR target/65867

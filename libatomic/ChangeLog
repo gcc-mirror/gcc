@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* configure.tgt (configure_tgt_pre_target_cpu_XCFLAGS): New variable.
