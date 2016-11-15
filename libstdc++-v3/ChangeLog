@@ -1,7 +1,12 @@
+2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Adjust test for
+	variant<T&>.
+
 2016-11-15  Tim Shen  <timshen@google.com>
 
-	* include/std/variant: Remove variant<T&>, variant<void>, variant<> support
-	to rebase on the post-Issaquah design.
+	* include/std/variant: Remove variant<T&>, variant<void>, variant<>
+	support to rebase on the post-Issaquah design.
 	* testsuite/20_util/variant/compile.cc: Likewise.
 
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
