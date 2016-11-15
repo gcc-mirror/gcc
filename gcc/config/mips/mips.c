@@ -17140,6 +17140,8 @@ mips16_emit_constants (struct mips16_constant *constants, rtx_insn *insn)
   int align;
 
   align = 0;
+  if (constants)
+    insn = emit_insn_after (gen_consttable (), insn);
   for (c = constants; c != NULL; c = next)
     {
       /* If necessary, increase the alignment of PC.  */
@@ -19015,6 +19017,46 @@ mips16_split_long_branches (void)
   while (something_changed);
 }
 
+/* Insert a `.insn' assembly pseudo-op after any labels followed by
+   a MIPS16 constant pool or no insn at all.  This is needed so that
+   targets that have been optimized away are still marked as code
+   and therefore branches that remained and point to them are known
+   to retain the ISA mode and as such can be successfully assembled.  */
+
+static void
+mips_insert_insn_pseudos (void)
+{
+  bool insn_pseudo_needed = TRUE;
+  rtx_insn *insn;
+
+  for (insn = get_last_insn (); insn != NULL_RTX; insn = PREV_INSN (insn))
+    switch (GET_CODE (insn))
+      {
+      case INSN:
+	if (GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	    && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE)
+	  {
+	    insn_pseudo_needed = TRUE;
+	    break;
+	  }
+	/* Fall through.  */
+      case JUMP_INSN:
+      case CALL_INSN:
+      case JUMP_TABLE_DATA:
+	insn_pseudo_needed = FALSE;
+	break;
+      case CODE_LABEL:
+	if (insn_pseudo_needed)
+	  {
+	    emit_insn_after (gen_insn_pseudo (), insn);
+	    insn_pseudo_needed = FALSE;
+	  }
+	break;
+      default:
+	break;
+      }
+}
+
 /* Implement TARGET_MACHINE_DEPENDENT_REORG.  */
 
 static void
@@ -19050,6 +19092,7 @@ mips_machine_reorg2 (void)
        optimizations, but this should be an extremely rare case anyhow.  */
     mips_reorg_process_insns ();
   mips16_split_long_branches ();
+  mips_insert_insn_pseudos ();
   return 0;
 }
 

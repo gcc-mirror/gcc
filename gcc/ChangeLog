@@ -1,3 +1,13 @@
+2016-11-15  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* config/mips/mips.c (mips16_emit_constants): Emit `consttable'
+	insn at the beginning of the constant pool.
+	(mips_insert_insn_pseudos): New function.
+	(mips_machine_reorg2): Call it.
+	* config/mips/mips.md (unspec): Add UNSPEC_CONSTTABLE and
+	UNSPEC_INSN_PSEUDO enum values.
+	(insn_pseudo, consttable): New insns.
+
 2016-11-15  Michael Matz  <matz@suse.de>
 
 	PR missed-optimization/77881
