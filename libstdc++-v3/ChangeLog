@@ -1,3 +1,11 @@
+2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 2748 status.
+	* include/std/optional (optional<T>::swap): Use is_nothrow_swappable_v
+	for exception specification.
+	(swap(optional<T>&, optional<T>&)): Disable when T is not swappable.
+	* testsuite/20_util/optional/swap/2.cc: New test.
+
 2016-11-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement P0513R0, Poisoning the Hash.

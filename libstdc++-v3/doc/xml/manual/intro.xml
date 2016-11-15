@@ -1094,7 +1094,7 @@ requirements of the license of GCC.
     </para></listitem></varlistentry>
 
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2583">2583</link>:
-       <emphasis>There is no way to supply an allocator for <code> basic_string(str, pos)</code>
+       <emphasis>There is no way to supply an allocator for <code>basic_string(str, pos)</code>
        </emphasis>
     </term>
     <listitem><para>Add new constructor
@@ -1105,6 +1105,14 @@ requirements of the license of GCC.
        </emphasis>
     </term>
     <listitem><para>Define the <code>value_compare</code> typedef.
+    </para></listitem></varlistentry>
+
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2748">2748</link>:
+       <emphasis>swappable traits for optionals
+       </emphasis>
+    </term>
+    <listitem><para>Disable the non-member <code>swap</code> overload when
+      the contained object is not swappable.
     </para></listitem></varlistentry>
 
   </variablelist>
