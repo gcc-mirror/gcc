@@ -1,3 +1,49 @@
+2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/any/typedefs.cc: Fix license text.
+	* testsuite/experimental/chrono/value.cc: Likewise.
+	* testsuite/experimental/optional/assignment/1.cc: Likewise.
+	* testsuite/experimental/optional/assignment/2.cc: Likewise.
+	* testsuite/experimental/optional/assignment/3.cc: Likewise.
+	* testsuite/experimental/optional/assignment/4.cc: Likewise.
+	* testsuite/experimental/optional/assignment/5.cc: Likewise.
+	* testsuite/experimental/optional/assignment/6.cc: Likewise.
+	* testsuite/experimental/optional/cons/move.cc: Likewise.
+	* testsuite/experimental/optional/cons/value.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/cons/value.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/make_optional.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/1.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/2.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/3.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/4.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/5.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/1.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/2.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/3.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/4.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/5.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/6.cc: Likewise.
+	* testsuite/experimental/optional/make_optional.cc: Likewise.
+	* testsuite/experimental/optional/observers/1.cc: Likewise.
+	* testsuite/experimental/optional/observers/2.cc: Likewise.
+	* testsuite/experimental/optional/observers/3.cc: Likewise.
+	* testsuite/experimental/optional/observers/4.cc: Likewise.
+	* testsuite/experimental/optional/observers/5.cc: Likewise.
+	* testsuite/experimental/optional/relops/1.cc: Likewise.
+	* testsuite/experimental/optional/relops/2.cc: Likewise.
+	* testsuite/experimental/optional/relops/3.cc: Likewise.
+	* testsuite/experimental/optional/relops/4.cc: Likewise.
+	* testsuite/experimental/optional/relops/5.cc: Likewise.
+	* testsuite/experimental/optional/relops/6.cc: Likewise.
+	* testsuite/experimental/optional/requirements.cc: Likewise.
+	* testsuite/experimental/optional/swap/1.cc: Likewise.
+	* testsuite/experimental/optional/typedefs.cc: Likewise.
+	* testsuite/experimental/ratio/value.cc: Likewise.
+	* testsuite/experimental/string_view/typedefs.cc: Likewise.
+	* testsuite/experimental/system_error/value.cc: Likewise.
+	* testsuite/experimental/tuple/tuple_size.cc: Likewise.
+	* testsuite/experimental/type_traits/value.cc: Likewise.
+
 2016-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78052
