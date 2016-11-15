@@ -1,3 +1,14 @@
+2016-11-14  Mark Wielaard  <mark@klomp.org>
+
+	* cplus-dem.c (demangle_signature): After 'H', template function,
+	no success and don't advance position if end of string reached.
+	(demangle_template): After 'z', template name, return zero on
+	premature end of string.
+	(gnu_special): Guard strchr against searching for zero characters.
+	(do_type): If member, only advance mangled string when 'F' found.
+	* testsuite/demangle-expected: Add examples of strings that could
+	crash the demangler by reading past end of input.
+
 2016-11-06  Mark Wielaard  <mark@klomp.org>
 
 	* configure.ac (ac_libiberty_warn_cflags): Add -Wshadow=local.
