@@ -10793,8 +10793,8 @@ Inserts a call to @code{__sanitizer_cov_trace_pc} into every basic block.
 @opindex fbounds-check
 For front ends that support it, generate additional code to check that
 indices used to access arrays are within the declared range.  This is
-currently only supported by the Fortran front end, where
-this option defaults to true and false respectively.
+currently only supported by the Fortran front end, where this option
+defaults to false.
 
 @item -fcheck-pointer-bounds
 @opindex fcheck-pointer-bounds
