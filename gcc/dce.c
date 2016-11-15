@@ -234,16 +234,17 @@ mark_nonreg_stores (rtx body, rtx_insn *insn, bool fast)
 }
 
 
-/* Return true if store to MEM, starting OFF bytes from stack pointer,
+/* Return true if a store to SIZE bytes, starting OFF bytes from stack pointer,
    is a call argument store, and clear corresponding bits from SP_BYTES
    bitmap if it is.  */
 
 static bool
-check_argument_store (rtx mem, HOST_WIDE_INT off, HOST_WIDE_INT min_sp_off,
-		      HOST_WIDE_INT max_sp_off, bitmap sp_bytes)
+check_argument_store (HOST_WIDE_INT size, HOST_WIDE_INT off,
+		      HOST_WIDE_INT min_sp_off, HOST_WIDE_INT max_sp_off,
+		      bitmap sp_bytes)
 {
   HOST_WIDE_INT byte;
-  for (byte = off; byte < off + GET_MODE_SIZE (GET_MODE (mem)); byte++)
+  for (byte = off; byte < off + size; byte++)
     {
       if (byte < min_sp_off
 	  || byte >= max_sp_off
@@ -468,8 +469,8 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 	    break;
 	}
 
-      if (GET_MODE_SIZE (GET_MODE (mem)) == 0
-	  || !check_argument_store (mem, off, min_sp_off,
+      if (!MEM_SIZE_KNOWN_P (mem)
+	  || !check_argument_store (MEM_SIZE (mem), off, min_sp_off,
 				    max_sp_off, sp_bytes))
 	break;
 
