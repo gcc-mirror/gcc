@@ -20,7 +20,7 @@ int main()
      {
        return 0;
 
-       self(); // error: use of 'decltype(auto) fix_type<Functor>::operator()() [with Functor = main()::<lambda(auto:1&)>]' before deduction of 'auto'
+       self(); // { dg-bogus "use of \[^\n\r]* before deduction of 'auto'" }
      });
 
   return zero();
