@@ -1,3 +1,11 @@
+2016-11-15  Michael Matz  <matz@suse.de>
+
+	PR missed-optimization/77881
+	* combine.c (simplify_comparison): Remove useless subregs
+	also inside the loop, not just after it.
+	(make_compound_operation): Recognize some subregs as being
+	masking as well.
+
 2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
