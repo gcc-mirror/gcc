@@ -1,3 +1,8 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Move the 'Overriding configure test results'
+	subsub section to the 'Cross-Compiler-Specific Options' sub section.
+
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-icf.c (sem_function::merge): Do not create a wrapper also if the
