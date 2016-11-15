@@ -256,8 +256,7 @@ reload_cse_simplify_set (rtx set, rtx_insn *insn)
      generating an extend instruction instead of a reg->reg copy.  Thus
      the destination must be a register that we can widen.  */
   if (MEM_P (src)
-      && GET_MODE_BITSIZE (GET_MODE (src)) < BITS_PER_WORD
-      && (extend_op = LOAD_EXTEND_OP (GET_MODE (src))) != UNKNOWN
+      && (extend_op = load_extend_op (GET_MODE (src))) != UNKNOWN
       && !REG_P (SET_DEST (set)))
     return 0;
 
@@ -330,8 +329,7 @@ reload_cse_simplify_set (rtx set, rtx_insn *insn)
 	      && REG_P (this_rtx)
 	      && !REG_P (SET_SRC (set))))
 	{
-	  if (GET_MODE_BITSIZE (GET_MODE (SET_DEST (set))) < BITS_PER_WORD
-	      && extend_op != UNKNOWN
+	  if (extend_op != UNKNOWN
 #ifdef CANNOT_CHANGE_MODE_CLASS
 	      && !CANNOT_CHANGE_MODE_CLASS (GET_MODE (SET_DEST (set)),
 					    word_mode,
@@ -414,9 +412,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 	continue;
 
       op = recog_data.operand[i];
-      if (MEM_P (op)
-	  && GET_MODE_BITSIZE (GET_MODE (op)) < BITS_PER_WORD
-	  && LOAD_EXTEND_OP (GET_MODE (op)) != UNKNOWN)
+      if (MEM_P (op) && load_extend_op (GET_MODE (op)) != UNKNOWN)
 	{
 	  rtx set = single_set (insn);
 
@@ -449,7 +445,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 		   && SET_DEST (set) == recog_data.operand[1-i])
 	    {
 	      validate_change (insn, recog_data.operand_loc[i],
-			       gen_rtx_fmt_e (LOAD_EXTEND_OP (GET_MODE (op)),
+			       gen_rtx_fmt_e (load_extend_op (GET_MODE (op)),
 					      word_mode, op),
 			       1);
 	      validate_change (insn, recog_data.operand_loc[1-i],
