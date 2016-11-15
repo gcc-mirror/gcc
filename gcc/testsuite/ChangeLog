@@ -1,3 +1,8 @@
+2016-11-15  Michael Matz  <matz@suse.de>
+
+	PR missed-optimization/77881
+	* gcc.target/i386/pr77881.c: New test.
+
 2016-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/78295

@@ -8102,6 +8102,18 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	rtx inner = SUBREG_REG (x), simplified;
 	enum rtx_code subreg_code = in_code;
 
+	/* If the SUBREG is masking of a logical right shift,
+	   make an extraction.  */
+	if (GET_CODE (inner) == LSHIFTRT
+	    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (inner))
+	    && subreg_lowpart_p (x))
+	  {
+	    new_rtx = make_compound_operation (XEXP (inner, 0), next_code);
+	    new_rtx = make_extraction (mode, new_rtx, 0, XEXP (inner, 1),
+				       mode_width, 1, 0, in_code == COMPARE);
+	    break;
+	  }
+
 	/* If in_code is COMPARE, it isn't always safe to pass it through
 	   to the recursive make_compound_operation call.  */
 	if (subreg_code == COMPARE
@@ -11994,6 +12006,29 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  if (subreg_lowpart_p (op0)
 	      && GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op0))) < mode_width)
 	    ;
+	  else if (subreg_lowpart_p (op0)
+		   && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
+		   && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op0))) == MODE_INT
+		   && (code == NE || code == EQ)
+		   && (GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op0)))
+		       <= HOST_BITS_PER_WIDE_INT)
+		   && !paradoxical_subreg_p (op0)
+		   && (nonzero_bits (SUBREG_REG (op0),
+				     GET_MODE (SUBREG_REG (op0)))
+		       & ~GET_MODE_MASK (GET_MODE (op0))) == 0)
+	    {
+	      /* Remove outer subregs that don't do anything.  */
+	      tem = gen_lowpart (GET_MODE (SUBREG_REG (op0)), op1);
+
+	      if ((nonzero_bits (tem, GET_MODE (SUBREG_REG (op0)))
+		   & ~GET_MODE_MASK (GET_MODE (op0))) == 0)
+		{
+		  op0 = SUBREG_REG (op0);
+		  op1 = tem;
+		  continue;
+		}
+	      break;
+	    }
 	  else
 	    break;
 
