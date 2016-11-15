@@ -2,6 +2,20 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/i386/i386.h (INCOMING_RETURN_ADDR_RTX): Use Pmode instead
+	of VOIDmode.
+	* config/ia64/ia64.h (INCOMING_RETURN_ADDR_RTX): Likewise.
+	* config/iq2000/iq2000.h (INCOMING_RETURN_ADDR_RTX): Likewise.
+	* config/m68k/m68k.h (INCOMING_RETURN_ADDR_RTX): Likewise.
+	* config/microblaze/microblaze.h (INCOMING_RETURN_ADDR_RTX): Likewise.
+	* config/mips/mips.h (INCOMING_RETURN_ADDR_RTX): Likewise.
+	* config/mn10300/mn10300.h (INCOMING_RETURN_ADDR_RTX): Likewise.
+	* config/nios2/nios2.h (INCOMING_RETURN_ADDR_RTX): Likewise.
+
+2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* dce.c (check_argument_store): Pass the size instead of
 	the memory reference.
 	(find_call_stack_args): Pass MEM_SIZE to check_argument_store.

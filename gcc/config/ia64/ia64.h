@@ -896,7 +896,7 @@ enum reg_class
    RTL is either a `REG', indicating that the return value is saved in `REG',
    or a `MEM' representing a location in the stack.  This enables DWARF2
    unwind info for C++ EH.  */
-#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (VOIDmode, BR_REG (0))
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, BR_REG (0))
 
 /* A C expression whose value is an integer giving the offset, in bytes, from
    the value of the stack pointer register to the top of the stack frame at the
