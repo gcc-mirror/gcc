@@ -65,7 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 
 /* Which cpu we're compiling for (ARC600, ARC601, ARC700).  */
-static const char *arc_cpu_string = "";
+static char arc_cpu_name[10] = "";
+static const char *arc_cpu_string = arc_cpu_name;
 
 /* ??? Loads can handle any constant, stores can only handle small ones.  */
 /* OTOH, LIMMs cost extra, so their usefulness is limited.  */
@@ -241,6 +242,12 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						unsigned int,
 						enum by_pieces_operation op,
 						bool);
+
+static const arc_cpu_t *arc_selected_cpu;
+static const arc_arch_t *arc_selected_arch;
+
+/* Global var which sets the current compilation architecture.  */
+enum base_architecture arc_base_cpu;
 
 /* Implements target hook vector_mode_supported_p.  */
 
@@ -669,47 +676,9 @@ make_pass_arc_predicate_delay_insns (gcc::context *ctxt)
 
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
-void
+static void
 arc_init (void)
 {
-  enum attr_tune tune_dflt = TUNE_NONE;
-
-  switch (arc_cpu)
-    {
-    case PROCESSOR_ARC600:
-      arc_cpu_string = "ARC600";
-      tune_dflt = TUNE_ARC600;
-      break;
-
-    case PROCESSOR_ARC601:
-      arc_cpu_string = "ARC601";
-      tune_dflt = TUNE_ARC600;
-      break;
-
-    case PROCESSOR_ARC700:
-      arc_cpu_string = "ARC700";
-      tune_dflt = TUNE_ARC700_4_2_STD;
-      break;
-
-    case PROCESSOR_NPS400:
-      arc_cpu_string = "NPS400";
-      tune_dflt = TUNE_ARC700_4_2_STD;
-      break;
-
-    case PROCESSOR_ARCEM:
-      arc_cpu_string = "EM";
-      break;
-
-    case PROCESSOR_ARCHS:
-      arc_cpu_string = "HS";
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  if (arc_tune == TUNE_NONE)
-    arc_tune = tune_dflt;
   /* Note: arc_multcost is only used in rtx_cost if speed is true.  */
   if (arc_multcost < 0)
     switch (arc_tune)
@@ -740,17 +709,9 @@ arc_init (void)
 	break;
       }
 
-  /* Support mul64 generation only for ARC600.  */
-  if (TARGET_MUL64_SET && (!TARGET_ARC600_FAMILY))
-      error ("-mmul64 not supported for ARC700 or ARCv2");
-
   /* MPY instructions valid only for ARC700 or ARCv2.  */
   if (TARGET_NOMPY_SET && TARGET_ARC600_FAMILY)
       error ("-mno-mpy supported only for ARC700 or ARCv2");
-
-  /* mul/mac instructions only for ARC600.  */
-  if (TARGET_MULMAC_32BY16_SET && (!TARGET_ARC600_FAMILY))
-      error ("-mmul32x16 supported only for ARC600 or ARC601");
 
   if (!TARGET_DPFP && TARGET_DPFP_DISABLE_LRSR)
       error ("-mno-dpfp-lrsr supported only with -mdpfp");
@@ -764,22 +725,10 @@ arc_init (void)
   if (TARGET_SPFP_FAST_SET && TARGET_ARC600_FAMILY)
     error ("-mspfp_fast not available on ARC600 or ARC601");
 
-  /* FPX-3. No FPX extensions on pre-ARC600 cores.  */
-  if ((TARGET_DPFP || TARGET_SPFP)
-      && (!TARGET_ARCOMPACT_FAMILY && !TARGET_EM))
-    error ("FPX extensions not available on pre-ARC600 cores");
-
-  /* FPX-4.  No FPX extensions mixed with FPU extensions for ARC HS
-     cpus.  */
-  if ((TARGET_DPFP || TARGET_SPFP)
-      && TARGET_HARD_FLOAT
-      && TARGET_HS)
+  /* FPX-4.  No FPX extensions mixed with FPU extensions.  */
+  if ((TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET || TARGET_SPFP)
+      && TARGET_HARD_FLOAT)
     error ("No FPX/FPU mixing allowed");
-
-  /* Only selected multiplier configurations are available for HS.  */
-  if (TARGET_HS && ((arc_mpy_option > 2 && arc_mpy_option < 7)
-		    || (arc_mpy_option == 1)))
-    error ("This multiplier configuration is not available for HS cores");
 
   /* Warn for unimplemented PIC in pre-ARC700 cores, and disable flag_pic.  */
   if (flag_pic && TARGET_ARC600_FAMILY)
@@ -788,26 +737,6 @@ arc_init (void)
 	       "PIC is not supported for %s. Generating non-PIC code only..",
 	       arc_cpu_string);
       flag_pic = 0;
-    }
-
-  if (TARGET_ATOMIC && !(TARGET_ARC700 || TARGET_HS))
-    error ("-matomic is only supported for ARC700 or ARC HS cores");
-
-  /* ll64 ops only available for HS.  */
-  if (TARGET_LL64 && !TARGET_HS)
-    error ("-mll64 is only supported for ARC HS cores");
-
-  /* FPU support only for V2.  */
-  if (TARGET_HARD_FLOAT)
-    {
-      if (TARGET_EM
-	  && (arc_fpu_build & ~(FPU_SP | FPU_SF | FPU_SC | FPU_SD | FPX_DP)))
-	error ("FPU double precision options are available for ARC HS only");
-      if (TARGET_HS && (arc_fpu_build & FPX_DP))
-	error ("FPU double precision assist "
-	       "options are not available for ARC HS");
-      if (!TARGET_HS && !TARGET_EM)
-	error ("FPU options are available for ARCv2 architecture only");
     }
 
   arc_init_reg_tables ();
@@ -854,7 +783,89 @@ static void
 arc_override_options (void)
 {
   if (arc_cpu == PROCESSOR_NONE)
-    arc_cpu = PROCESSOR_ARC700;
+    arc_cpu = TARGET_CPU_DEFAULT;
+
+  /* Set the default cpu options.  */
+  arc_selected_cpu = &arc_cpu_types[(int) arc_cpu];
+  arc_selected_arch = &arc_arch_types[(int) arc_selected_cpu->arch];
+  arc_base_cpu = arc_selected_arch->arch;
+
+  /* Set the architectures.  */
+  switch (arc_selected_arch->arch)
+    {
+    case BASE_ARCH_em:
+      arc_cpu_string = "EM";
+      break;
+    case BASE_ARCH_hs:
+      arc_cpu_string = "HS";
+      break;
+    case BASE_ARCH_700:
+      if (arc_selected_cpu->processor == PROCESSOR_nps400)
+	arc_cpu_string = "NPS400";
+      else
+	arc_cpu_string = "ARC700";
+      break;
+    case BASE_ARCH_6xx:
+      arc_cpu_string = "ARC600";
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Set cpu flags accordingly to architecture/selected cpu.  The cpu
+     specific flags are set in arc-common.c.  The architecture forces
+     the default hardware configurations in, regardless what command
+     line options are saying.  The CPU optional hw options can be
+     turned on or off.  */
+#define ARC_OPT(NAME, CODE, MASK, DOC)			\
+  do {							\
+    if ((arc_selected_cpu->flags & CODE)		\
+	&& ((target_flags_explicit & MASK) == 0))	\
+      target_flags |= MASK;				\
+    if (arc_selected_arch->dflags & CODE)		\
+      target_flags |= MASK;				\
+  } while (0);
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)	\
+  do {						\
+    if ((arc_selected_cpu->flags & CODE)	\
+	&& (VAR == DEFAULT_##VAR))		\
+      VAR = VAL;				\
+    if (arc_selected_arch->dflags & CODE)	\
+      VAR = VAL;				\
+  } while (0);
+
+#include "arc-options.def"
+
+#undef ARC_OPTX
+#undef ARC_OPT
+
+  /* Check options against architecture options.  Throw an error if
+     option is not allowed.  */
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)			\
+  do {								\
+    if ((VAR == VAL)						\
+	&& (!(arc_selected_arch->flags & CODE)))		\
+      {								\
+	error ("%s is not available for %s architecture",	\
+	       DOC, arc_selected_arch->name);			\
+      }								\
+  } while (0);
+#define ARC_OPT(NAME, CODE, MASK, DOC)				\
+  do {								\
+    if ((target_flags & MASK)					\
+	&& (!(arc_selected_arch->flags & CODE)))		\
+      error ("%s is not available for %s architecture",		\
+	     DOC, arc_selected_arch->name);			\
+  } while (0);
+
+#include "arc-options.def"
+
+#undef ARC_OPTX
+#undef ARC_OPT
+
+  /* Set Tune option.  */
+  if (arc_tune == TUNE_NONE)
+    arc_tune = (enum attr_tune) arc_selected_cpu->tune;
 
   if (arc_size_opt_level == 3)
     optimize_size = 1;

@@ -14174,29 +14174,92 @@ values for @var{cpu} are
 @table @samp
 @opindex mA6
 @opindex mARC600
-@item ARC600
 @item arc600
 Compile for ARC600.  Aliases: @option{-mA6}, @option{-mARC600}.
 
-@item ARC601
 @item arc601
 @opindex mARC601
 Compile for ARC601.  Alias: @option{-mARC601}.
 
-@item ARC700
 @item arc700
 @opindex mA7
 @opindex mARC700
 Compile for ARC700.  Aliases: @option{-mA7}, @option{-mARC700}.
 This is the default when configured with @option{--with-cpu=arc700}@.
 
-@item ARCEM
 @item arcem
 Compile for ARC EM.
 
-@item ARCHS
 @item archs
 Compile for ARC HS.
+
+@item em
+@opindex em
+Compile for ARC EM cpu with no hardware extension.
+
+@item em4
+@opindex em4
+Compile for ARC EM4 cpu.
+
+@item em4_dmips
+@opindex em4_dmips
+Compile for ARC EM4 DMIPS cpu.
+
+@item em4_fpus
+@opindex em4_fpus
+Compile for ARC EM4 DMIPS cpu with single precision floating point
+extension.
+
+@item em4_fpuda
+@opindex em4_fpuda
+Compile for ARC EM4 DMIPS cpu with single precision floating point and
+double assists instructions.
+
+@item hs
+@opindex hs
+Compile for ARC HS cpu with no hardware extension, except the atomic
+instructions.
+
+@item hs34
+@opindex hs34
+Compile for ARC HS34 cpu.
+
+@item hs38
+@opindex hs38
+Compile for ARC HS38 cpu.
+
+@item hs38_linux
+@opindex hs38_linux
+Compile for ARC HS38 cpu with all hardware extensions on.
+
+@item arc600_norm
+@opindex arc600_norm
+Compile for ARC 600 cpu with norm instruction enabled.
+
+@item arc600_mul32x16
+@opindex arc600_mul32x16
+Compile for ARC 600 cpu with norm and mul32x16 instructions enabled.
+
+@item arc600_mul64
+@opindex arc600_mul64
+Compile for ARC 600 cpu with norm and mul64 instructions enabled.
+
+@item arc601_norm
+@opindex arc601_norm
+Compile for ARC 601 cpu with norm instruction enabled.
+
+@item arc601_mul32x16
+@opindex arc601_mul32x16
+Compile for ARC 601 cpu with norm and mul32x16 instructions enabled.
+
+@item arc601_mul64
+@opindex arc601_mul64
+Compile for ARC 601 cpu with norm and mul64 instructions enabled.
+
+@item nps400
+@opindex nps400
+Compile for ARC 700 on NPS400 chip.
+
 @end table
 
 @item -mdpfp
@@ -14223,7 +14286,8 @@ supported.  This is always enabled for @option{-mcpu=ARC700}.
 
 @item -mno-mpy
 @opindex mno-mpy
-Do not generate mpy instructions for ARC700.
+Do not generate mpy instructions for ARC700.  This instruction is
+deprecated.
 
 @item -mmul32x16
 @opindex mmul32x16
@@ -14430,12 +14494,14 @@ define preprocessor macro symbols.
 @item -mdsp-packa
 @opindex mdsp-packa
 Passed down to the assembler to enable the DSP Pack A extensions.
-Also sets the preprocessor symbol @code{__Xdsp_packa}.
+Also sets the preprocessor symbol @code{__Xdsp_packa}.  This option is
+deprecated.
 
 @item -mdvbf
 @opindex mdvbf
 Passed down to the assembler to enable the dual viterbi butterfly
-extension.  Also sets the preprocessor symbol @code{__Xdvbf}.
+extension.  Also sets the preprocessor symbol @code{__Xdvbf}.  This
+option is deprecated.
 
 @c ARC700 4.10 extension instruction
 @item -mlock
@@ -14447,19 +14513,19 @@ Conditional extension.  Also sets the preprocessor symbol
 @item -mmac-d16
 @opindex mmac-d16
 Passed down to the assembler.  Also sets the preprocessor symbol
-@code{__Xxmac_d16}.
+@code{__Xxmac_d16}.  This option is deprecated.
 
 @item -mmac-24
 @opindex mmac-24
 Passed down to the assembler.  Also sets the preprocessor symbol
-@code{__Xxmac_24}.
+@code{__Xxmac_24}.  This option is deprecated.
 
 @c ARC700 4.10 extension instruction
 @item -mrtsc
 @opindex mrtsc
 Passed down to the assembler to enable the 64-bit Time-Stamp Counter
 extension instruction.  Also sets the preprocessor symbol
-@code{__Xrtsc}.
+@code{__Xrtsc}.  This option is deprecated.
 
 @c ARC700 4.10 extension instruction
 @item -mswape
@@ -14472,7 +14538,7 @@ extension instruction.  Also sets the preprocessor symbol
 @opindex mtelephony
 Passed down to the assembler to enable dual and single operand
 instructions for telephony.  Also sets the preprocessor symbol
-@code{__Xtelephony}.
+@code{__Xtelephony}.  This option is deprecated.
 
 @item -mxy
 @opindex mxy

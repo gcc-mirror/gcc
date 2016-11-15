@@ -2,6 +2,7 @@
    Copyright (C) 1994-2016 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
+		Claudiu Zissulescu <Claudiu.Zissulescu@synopsys.com>
 
 This file is part of GCC.
 
@@ -61,17 +62,19 @@ static const struct default_options arc_option_optimization_table[] =
 
 /*  Process options.  */
 static bool
-arc_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+arc_handle_option (struct gcc_options *opts,
+		   struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		   const struct cl_decoded_option *decoded,
 		   location_t loc)
 {
   size_t code = decoded->opt_index;
   int value = decoded->value;
   const char *arg = decoded->arg;
+  static int mcpu_seen = PROCESSOR_NONE;
+  char *p;
 
   switch (code)
     {
-      static int mcpu_seen = PROCESSOR_NONE;
     case OPT_mcpu_:
       /* N.B., at this point arc_cpu has already been set to its new value by
 	 our caller, so comparing arc_cpu with PROCESSOR_NONE is pointless.  */
@@ -79,71 +82,33 @@ arc_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       if (mcpu_seen != PROCESSOR_NONE && mcpu_seen != value)
 	warning_at (loc, 0, "multiple -mcpu= options specified.");
       mcpu_seen = value;
-
-      switch (value)
-	{
-	case PROCESSOR_NPS400:
-	  if (! (opts_set->x_TARGET_CASE_VECTOR_PC_RELATIVE) )
-	    opts->x_TARGET_CASE_VECTOR_PC_RELATIVE = 1;
-	  /* Fall through */
-	case PROCESSOR_ARC600:
-	case PROCESSOR_ARC700:
-	  if (! (opts_set->x_target_flags & MASK_BARREL_SHIFTER) )
-	    opts->x_target_flags |= MASK_BARREL_SHIFTER;
-	  break;
-	case PROCESSOR_ARC601:
-	  if (! (opts_set->x_target_flags & MASK_BARREL_SHIFTER) )
-	    opts->x_target_flags &= ~MASK_BARREL_SHIFTER;
-	  break;
-	case PROCESSOR_ARCHS:
-	  if ( !(opts_set->x_target_flags & MASK_BARREL_SHIFTER))
-	    opts->x_target_flags |= MASK_BARREL_SHIFTER;  /* Default: on.  */
-	  if ( !(opts_set->x_target_flags & MASK_CODE_DENSITY))
-	    opts->x_target_flags |= MASK_CODE_DENSITY;	  /* Default: on.  */
-	  if ( !(opts_set->x_target_flags & MASK_NORM_SET))
-	    opts->x_target_flags |= MASK_NORM_SET;	  /* Default: on.  */
-	  if ( !(opts_set->x_target_flags & MASK_SWAP_SET))
-	    opts->x_target_flags |= MASK_SWAP_SET;	  /* Default: on.  */
-	  if ( !(opts_set->x_target_flags & MASK_DIVREM))
-	    opts->x_target_flags |= MASK_DIVREM;	  /* Default: on.  */
-	  break;
-
-	case PROCESSOR_ARCEM:
-	  if ( !(opts_set->x_target_flags & MASK_BARREL_SHIFTER))
-	    opts->x_target_flags |= MASK_BARREL_SHIFTER;  /* Default: on.  */
-	  if ( !(opts_set->x_target_flags & MASK_CODE_DENSITY))
-	    opts->x_target_flags &= ~MASK_CODE_DENSITY;	  /* Default: off.  */
-	  if ( !(opts_set->x_target_flags & MASK_NORM_SET))
-	    opts->x_target_flags &= ~MASK_NORM_SET;	  /* Default: off.  */
-	  if ( !(opts_set->x_target_flags & MASK_SWAP_SET))
-	    opts->x_target_flags &= ~MASK_SWAP_SET;	  /* Default: off.  */
-	  if ( !(opts_set->x_target_flags & MASK_DIVREM))
-	    opts->x_target_flags &= ~MASK_DIVREM;	  /* Default: off.  */
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
       break;
 
     case OPT_mmpy_option_:
-      if (value < 0 || value > 9)
-	error_at (loc, "bad value %qs for -mmpy-option switch", arg);
+      if (opts->x_arc_mpy_option == 1)
+	warning_at (loc, 0, "Unsupported value for mmpy-option");
+      break;
+
+    default:
       break;
     }
 
   return true;
 }
 
+#undef  TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT arc_option_init_struct
+
+#undef  TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE arc_option_optimization_table
-#define TARGET_HANDLE_OPTION arc_handle_option
 
 #define DEFAULT_NO_SDATA (TARGET_SDATA_DEFAULT ? 0 : MASK_NO_SDATA_SET)
 
-/* We default to ARC700, which has the barrel shifter enabled.  */
-#define TARGET_DEFAULT_TARGET_FLAGS \
-  (MASK_BARREL_SHIFTER|MASK_VOLATILE_CACHE_SET|DEFAULT_NO_SDATA)
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (DEFAULT_NO_SDATA | MASK_VOLATILE_CACHE_SET)
 
+#undef  TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION arc_handle_option
 
 #include "common/common-target-def.h"
 

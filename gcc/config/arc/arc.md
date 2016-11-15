@@ -231,11 +231,6 @@
 	 (eq_attr "is_CALL" "yes") (const_string "yes")]
 	(const_string "no")))
 
-
-;; Attribute describing the processor
-(define_attr "cpu" "none,ARC600,ARC700,ARCEM,ARCHS"
-  (const (symbol_ref "arc_cpu_attr")))
-
 ;; true for compact instructions (those with _s suffix)
 ;; "maybe" means compact unless we conditionalize the insn.
 (define_attr "iscompact" "true,maybe,true_limm,maybe_limm,false"

@@ -1,3 +1,65 @@
+2016-11-15  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-arch.h: New file.
+	* config/arc/arc-arches.def: Likewise.
+	* config/arc/arc-cpus.def: Likewise.
+	* config/arc/arc-options.def: Likewise.
+	* config/arc/t-multilib: Likewise.
+	* config/arc/genmultilib.awk: Likewise.
+	* config/arc/genoptions.awk: Likewise.
+	* config/arc/arc-tables.opt: Likewise.
+	* config/arc/driver-arc.c: Likewise.
+	* testsuite/gcc.target/arc/nps400-cpu-flag.c: Likewise.
+	* common/config/arc/arc-common.c (arc_handle_option): Trace
+	toggled options.
+	* config.gcc (arc*-*-*): Add arc-tables.opt to arc's extra
+	options; check for supported cpu against arc-cpus.def file.
+	(arc*-*-elf*, arc*-*-linux-uclibc*): Use new make fragment; define
+	TARGET_CPU_BUILD macro; add driver-arc.o as an extra object.
+	* config/arc/arc-c.def: Add emacs local variables.
+	* config/arc/arc-opts.h (processor_type): Use arc-cpus.def file.
+	(FPU_FPUS, FPU_FPUD, FPU_FPUDA, FPU_FPUDA_DIV, FPU_FPUDA_FMA)
+	(FPU_FPUDA_ALL, FPU_FPUS_DIV, FPU_FPUS_FMA, FPU_FPUS_ALL)
+	(FPU_FPUD_DIV, FPU_FPUD_FMA, FPU_FPUD_ALL): New defines.
+	(DEFAULT_arc_fpu_build): Define.
+	(DEFAULT_arc_mpy_option): Define.
+	* config/arc/arc-protos.h (arc_init): Delete.
+	* config/arc/arc.c (arc_cpu_name): New variable.
+	(arc_selected_cpu, arc_selected_arch, arc_arcem, arc_archs)
+	(arc_arc700, arc_arc600, arc_arc601): New variable.
+	(arc_init): Add static; remove selection of default tune value,
+	cleanup obsolete error messages.
+	(arc_override_options): Make use of .def files for selecting the
+	right cpu and option configurations.
+	* config/arc/arc.h (stdbool.h): Include.
+	(TARGET_CPU_DEFAULT): Define.
+	(CPP_SPEC): Remove mcpu=NPS400 handling.
+	(arc_cpu_to_as): Declare.
+	(EXTRA_SPEC_FUNCTIONS): Define.
+	(OPTION_DEFAULT_SPECS): Likewise.
+	(ASM_DEFAULT): Remove.
+	(ASM_SPEC): Use arc_cpu_to_as.
+	(DRIVER_SELF_SPECS): Remove deprecated options.
+	(arc_base_cpu):	Declare.
+	(TARGET_ARC600, TARGET_ARC601, TARGET_ARC700, TARGET_EM)
+	(TARGET_HS, TARGET_V2, TARGET_ARC600): Make them use arc_base_cpu
+	variable.
+	(MULTILIB_DEFAULTS): Use ARC_MULTILIB_CPU_DEFAULT.
+	* config/arc/arc.md (attr_cpu): Remove.
+	* config/arc/arc.opt (mno-mpy): Deprecate.
+	(mcpu=ARC600, mcpu=ARC601, mcpu=ARC700, mcpu=NPS400, mcpu=ARCEM)
+	(mcpu=ARCHS): Remove.
+	(mcrc, mdsp-packa, mdvbf, mmac-d16, mmac-24, mtelephony, mrtsc):
+	Deprecate.
+	(mbarrel_shifte, mspfp_, mdpfp_, mdsp_pack, mmac_): Remove.
+	(arc_fpu): Use new defines.
+	(mpy-option): Change to use numeric or string like inputs.
+	* config/arc/t-arc (driver-arc.o): New target.
+	(arc-cpus, t-multilib, arc-tables.opt): Likewise.
+	* config/arc/t-arc-newlib: Delete.
+	* config/arc/t-arc-uClibc: Renamed to t-uClibc.
+	* doc/invoke.texi (ARC): Update arc options.
+
 2016-11-15  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* config/mips/mips.c (mips16_emit_constants): Emit `consttable'
