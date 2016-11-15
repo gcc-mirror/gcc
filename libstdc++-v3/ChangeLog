@@ -1,5 +1,150 @@
 2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/19_diagnostics/error_code/is_error_code_v.cc: Fix license
+	text.
+	* testsuite/20_util/any/assign/emplace.cc: Likewise.
+	* testsuite/20_util/any/cons/in_place.cc: Likewise.
+	* testsuite/20_util/any/make_any.cc: Likewise.
+	* testsuite/20_util/any/requirements.cc: Likewise.
+	* testsuite/20_util/any/typedefs.cc: Likewise.
+	* testsuite/20_util/bind/is_placeholder_v.cc: Likewise.
+	* testsuite/20_util/duration/requirements/treat_as_floating_point_v.cc:
+	Likewise.
+	* testsuite/20_util/in_place/requirements.cc: Likewise.
+	* testsuite/20_util/optional/77288.cc: Likewise.
+	* testsuite/20_util/optional/assignment/1.cc: Likewise.
+	* testsuite/20_util/optional/assignment/2.cc: Likewise.
+	* testsuite/20_util/optional/assignment/3.cc: Likewise.
+	* testsuite/20_util/optional/assignment/4.cc: Likewise.
+	* testsuite/20_util/optional/assignment/5.cc: Likewise.
+	* testsuite/20_util/optional/assignment/6.cc: Likewise.
+	* testsuite/20_util/optional/assignment/7.cc: Likewise.
+	* testsuite/20_util/optional/cons/77727.cc: Likewise.
+	* testsuite/20_util/optional/cons/move.cc: Likewise.
+	* testsuite/20_util/optional/cons/value.cc: Likewise.
+	* testsuite/20_util/optional/cons/value_neg.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/cons/value.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/make_optional.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/1.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/2.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/3.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/4.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/5.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/1.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/2.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/3.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/4.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/5.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/6.cc: Likewise.
+	* testsuite/20_util/optional/hash.cc: Likewise.
+	* testsuite/20_util/optional/make_optional.cc: Likewise.
+	* testsuite/20_util/optional/observers/1.cc: Likewise.
+	* testsuite/20_util/optional/observers/2.cc: Likewise.
+	* testsuite/20_util/optional/observers/3.cc: Likewise.
+	* testsuite/20_util/optional/observers/4.cc: Likewise.
+	* testsuite/20_util/optional/observers/5.cc: Likewise.
+	* testsuite/20_util/optional/observers/6.cc: Likewise.
+	* testsuite/20_util/optional/relops/1.cc: Likewise.
+	* testsuite/20_util/optional/relops/2.cc: Likewise.
+	* testsuite/20_util/optional/relops/3.cc: Likewise.
+	* testsuite/20_util/optional/relops/4.cc: Likewise.
+	* testsuite/20_util/optional/relops/5.cc: Likewise.
+	* testsuite/20_util/optional/relops/6.cc: Likewise.
+	* testsuite/20_util/optional/requirements.cc: Likewise.
+	* testsuite/20_util/optional/swap/1.cc: Likewise.
+	* testsuite/20_util/optional/typedefs.cc: Likewise.
+	* testsuite/20_util/ratio/requirements/ratio_equal_v.cc: Likewise.
+	* testsuite/20_util/tuple/tuple_size_v.cc: Likewise.
+	* testsuite/20_util/uses_allocator/requirements/uses_allocator_v.cc:
+	Likewise.
+	* testsuite/20_util/variable_templates_for_traits.cc: Likewise.
+	* testsuite/20_util/variant/hash.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Likewise.
+	* testsuite/experimental/any/typedefs.cc: Likewise.
+	* testsuite/experimental/array/make_array.cc: Likewise.
+	* testsuite/experimental/array/neg.cc: Likewise.
+	* testsuite/experimental/chrono/value.cc: Likewise.
+	* testsuite/experimental/deque/erasure.cc: Likewise.
+	* testsuite/experimental/forward_list/erasure.cc: Likewise.
+	* testsuite/experimental/list/erasure.cc: Likewise.
+	* testsuite/experimental/map/erasure.cc: Likewise.
+	* testsuite/experimental/memory/observer_ptr/assignment/assign.cc:
+	Likewise.
+	* testsuite/experimental/memory/observer_ptr/cons/cons.cc: Likewise.
+	* testsuite/experimental/memory/observer_ptr/hash/hash.cc: Likewise.
+	* testsuite/experimental/memory/observer_ptr/make_observer.cc:
+	Likewise.
+	* testsuite/experimental/memory/observer_ptr/relops/relops.cc:
+	Likewise.
+	* testsuite/experimental/memory/observer_ptr/requirements.cc: Likewise.
+	* testsuite/experimental/memory/observer_ptr/swap/swap.cc: Likewise.
+	* testsuite/experimental/memory/observer_ptr/typedefs.cc: Likewise.
+	* testsuite/experimental/optional/77288.cc: Likewise.
+	* testsuite/experimental/optional/assignment/1.cc: Likewise.
+	* testsuite/experimental/optional/assignment/2.cc: Likewise.
+	* testsuite/experimental/optional/assignment/3.cc: Likewise.
+	* testsuite/experimental/optional/assignment/4.cc: Likewise.
+	* testsuite/experimental/optional/assignment/5.cc: Likewise.
+	* testsuite/experimental/optional/assignment/6.cc: Likewise.
+	* testsuite/experimental/optional/cons/77727.cc: Likewise.
+	* testsuite/experimental/optional/cons/move.cc: Likewise.
+	* testsuite/experimental/optional/cons/value.cc: Likewise.
+	* testsuite/experimental/optional/cons/value_neg.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/cons/value.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/make_optional.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/1.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/2.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/3.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/4.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/observers/5.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/1.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/2.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/3.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/4.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/5.cc: Likewise.
+	* testsuite/experimental/optional/constexpr/relops/6.cc: Likewise.
+	* testsuite/experimental/optional/make_optional.cc: Likewise.
+	* testsuite/experimental/optional/observers/1.cc: Likewise.
+	* testsuite/experimental/optional/observers/2.cc: Likewise.
+	* testsuite/experimental/optional/observers/3.cc: Likewise.
+	* testsuite/experimental/optional/observers/4.cc: Likewise.
+	* testsuite/experimental/optional/observers/5.cc: Likewise.
+	* testsuite/experimental/optional/relops/1.cc: Likewise.
+	* testsuite/experimental/optional/relops/2.cc: Likewise.
+	* testsuite/experimental/optional/relops/3.cc: Likewise.
+	* testsuite/experimental/optional/relops/4.cc: Likewise.
+	* testsuite/experimental/optional/relops/5.cc: Likewise.
+	* testsuite/experimental/optional/relops/6.cc: Likewise.
+	* testsuite/experimental/optional/requirements.cc: Likewise.
+	* testsuite/experimental/optional/swap/1.cc: Likewise.
+	* testsuite/experimental/optional/typedefs.cc: Likewise.
+	* testsuite/experimental/propagate_const/assignment/move.cc: Likewise.
+	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
+	Likewise.
+	* testsuite/experimental/propagate_const/cons/move.cc: Likewise.
+	* testsuite/experimental/propagate_const/cons/move_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/hash/1.cc: Likewise.
+	* testsuite/experimental/propagate_const/observers/1.cc: Likewise.
+	* testsuite/experimental/propagate_const/relops/1.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements1.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+	* testsuite/experimental/propagate_const/swap/1.cc: Likewise.
+	* testsuite/experimental/propagate_const/typedefs.cc: Likewise.
+	* testsuite/experimental/random/randint.cc: Likewise.
+	* testsuite/experimental/ratio/value.cc: Likewise.
+	* testsuite/experimental/set/erasure.cc: Likewise.
+	* testsuite/experimental/string/erasure.cc: Likewise.
+	* testsuite/experimental/string_view/typedefs.cc: Likewise.
+	* testsuite/experimental/system_error/value.cc: Likewise.
+	* testsuite/experimental/tuple/tuple_size.cc: Likewise.
+	* testsuite/experimental/type_traits/value.cc: Likewise.
+	* testsuite/experimental/unordered_map/erasure.cc: Likewise.
+	* testsuite/experimental/unordered_set/erasure.cc: Likewise.
+	* testsuite/experimental/vector/erasure.cc: Likewise.
+
 	* doc/xml/manual/intro.xml: Document LWG 2742 status.
 	* doc/html/*: Regenerate.
 	* include/bits/basic_string.h
