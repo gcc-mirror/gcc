@@ -360,6 +360,19 @@ set mips_option_tests(-mips16) {
     jalr $3
     move $31,$2
 }
+set mips_option_tests(-mmicromips) {
+    move $2,$31
+    bal 1f
+    .set push
+    .set micromips
+    jraddiusp 0
+    .set pop
+    .align 2
+1:
+    ori $3,$31,1
+    jalr $3
+    move $31,$2
+}
 set mips_option_tests(-mpaired-single) {
     .set mips64
     lui $2,0x3f80
