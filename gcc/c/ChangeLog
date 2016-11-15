@@ -1,6 +1,6 @@
 2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
 	    Richard Biener  <rguenther@suse.de>
-    
+
 	* Make-lang.in (C_AND_OBJC_OBJS): Add gimple-parser.o.
 	* config-lang.in (gtfiles): Add c/c-parser.h.
 	* c-tree.h (enum c_declspec_word): Add cdw_gimple.
@@ -36,6 +36,12 @@
 	(c_parser_set_error): Likewise.
 	* gimple-parser.c: New file.
 	* gimple-parser.h: Likewise.
+
+2016-11-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/35503
+	* c-parser.c (c_parser_postfix_expression_after_primary): Call
+	warn_for_restrict.
 
 2016-09-11  Le-Chun Wu  <lcwu@google.com>
 	    Mark Wielaard  <mjw@redhat.com>

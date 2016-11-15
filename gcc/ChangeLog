@@ -234,19 +234,6 @@
 	* doc/invoke.texi: Document Wrestrict.
 	* pretty-print.c (pp_format): Add case for "Z" specifier.
 	(test_pp_format): Test "Z" specifier.
-c-family/
-	* c-common.h (warn_for_restrict): Declare.
-	* c-warn.c: Include gcc-rich-location.h.
-	(warn_for_restrict): New function.
-	* c-format.c (gcc_tdiag_char_table): Add entry for "Z" specifier.
-	(gcc_cdiag_char_table): Likewise.
-	(gcc_cxxdiag_char_table): Likewise.
-	* c.opt (Wrestrict): New option.
-c/
-	* c-parser.c (c_parser_postfix_expression_after_primary): Call
-	warn_for_restrict.
-cp/
-	* parser.c (cp_parser_postfix_pexpression): Call warn_for_restrict.
 
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 

@@ -65,6 +65,11 @@
 	* semantics.c (perform_koenig_lookup): Don't wrap an error in
 	TEMPLATE_ID_EXPR.
 
+2016-11-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/35503
+	* parser.c (cp_parser_postfix_pexpression): Call warn_for_restrict.
+
 2016-11-12  Jason Merrill  <jason@redhat.com>
 
 	CWG 2233
