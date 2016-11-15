@@ -4915,11 +4915,10 @@ cse_insn (rtx_insn *insn)
 	 also have such operations, but this is only likely to be
 	 beneficial on these machines.  */
 
+      rtx_code extend_op;
       if (flag_expensive_optimizations && src_related == 0
-	  && (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
-	  && GET_MODE_CLASS (mode) == MODE_INT
 	  && MEM_P (src) && ! do_not_record
-	  && LOAD_EXTEND_OP (mode) != UNKNOWN)
+	  && (extend_op = load_extend_op (mode)) != UNKNOWN)
 	{
 	  struct rtx_def memory_extend_buf;
 	  rtx memory_extend_rtx = &memory_extend_buf;
@@ -4928,7 +4927,7 @@ cse_insn (rtx_insn *insn)
 	  /* Set what we are trying to extend and the operation it might
 	     have been extended with.  */
 	  memset (memory_extend_rtx, 0, sizeof (*memory_extend_rtx));
-	  PUT_CODE (memory_extend_rtx, LOAD_EXTEND_OP (mode));
+	  PUT_CODE (memory_extend_rtx, extend_op);
 	  XEXP (memory_extend_rtx, 0) = src;
 
 	  for (tmode = GET_MODE_WIDER_MODE (mode);

@@ -2,6 +2,24 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtl.h (load_extend_op): Declare.
+	* rtlanal.c (load_extend_op): New function.
+	(nonzero_bits1): Use it.
+	(num_sign_bit_copies1): Likewise.
+	* cse.c (cse_insn): Likewise.
+	* fold-const.c (fold_single_bit_test): Likewise.
+	(fold_unary_loc): Likewise.
+	* fwprop.c (free_load_extend): Likewise.
+	* postreload.c (reload_cse_simplify_set): Likewise.
+	(reload_cse_simplify_operands): Likewise.
+	* combine.c (try_combine): Likewise.
+	(simplify_set): Likewise.  Remove redundant SUBREG_BYTE and
+	subreg_lowpart_p checks.
+
+2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (simplify_shift_const_1): Use the number of bits
 	in the inner mode to determine the range of the shift.
 	When handling shifts of vectors, skip any rules that apply

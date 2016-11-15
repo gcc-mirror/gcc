@@ -3861,6 +3861,18 @@ subreg_nregs_with_regno (unsigned int regno, const_rtx x)
   return info.nregs;
 }
 
+/* If loads from memories of mode MODE always sign or zero extend,
+   return SIGN_EXTEND or ZERO_EXTEND as appropriate.  Return UNKNOWN
+   otherwise.  */
+
+rtx_code
+load_extend_op (machine_mode mode)
+{
+  if (SCALAR_INT_MODE_P (mode)
+      && GET_MODE_PRECISION (mode) < BITS_PER_WORD)
+    return LOAD_EXTEND_OP (mode);
+  return UNKNOWN;
+}
 
 struct parms_set_data
 {
@@ -4378,7 +4390,7 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
       /* In many, if not most, RISC machines, reading a byte from memory
 	 zeros the rest of the register.  Noticing that fact saves a lot
 	 of extra zero-extends.  */
-      if (LOAD_EXTEND_OP (GET_MODE (x)) == ZERO_EXTEND)
+      if (load_extend_op (GET_MODE (x)) == ZERO_EXTEND)
 	nonzero &= GET_MODE_MASK (GET_MODE (x));
       break;
 
@@ -4581,13 +4593,14 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
           /* On many CISC machines, accessing an object in a wider mode
 	     causes the high-order bits to become undefined.  So they are
 	     not known to be zero.  */
+	  rtx_code extend_op;
 	  if ((!WORD_REGISTER_OPERATIONS
 	       /* If this is a typical RISC machine, we only have to worry
 		  about the way loads are extended.  */
-		|| (LOAD_EXTEND_OP (inner_mode) == SIGN_EXTEND
-		    ? val_signbit_known_set_p (inner_mode, nonzero)
-		    : LOAD_EXTEND_OP (inner_mode) != ZERO_EXTEND)
-		|| (!MEM_P (SUBREG_REG (x)) && !REG_P (SUBREG_REG (x))))
+	       || ((extend_op = load_extend_op (inner_mode)) == SIGN_EXTEND
+		   ? val_signbit_known_set_p (inner_mode, nonzero)
+		   : extend_op != ZERO_EXTEND)
+	       || (!MEM_P (SUBREG_REG (x)) && !REG_P (SUBREG_REG (x))))
 	      && GET_MODE_PRECISION (GET_MODE (x))
 		  > GET_MODE_PRECISION (inner_mode))
 	    nonzero
@@ -4832,7 +4845,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	 than a word and loads of that size don't sign extend, we can say
 	 nothing about the high order bits.  */
       if (GET_MODE_PRECISION (GET_MODE (x)) < BITS_PER_WORD
-	  && LOAD_EXTEND_OP (GET_MODE (x)) != SIGN_EXTEND)
+	  && load_extend_op (GET_MODE (x)) != SIGN_EXTEND)
 	return 1;
     }
 
@@ -4874,7 +4887,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 
     case MEM:
       /* Some RISC machines sign-extend all loads of smaller than a word.  */
-      if (LOAD_EXTEND_OP (GET_MODE (x)) == SIGN_EXTEND)
+      if (load_extend_op (GET_MODE (x)) == SIGN_EXTEND)
 	return MAX (1, ((int) bitwidth
 			- (int) GET_MODE_PRECISION (GET_MODE (x)) + 1));
       break;
@@ -4924,8 +4937,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	 to the stack.  */
 
       if (WORD_REGISTER_OPERATIONS
-	  && GET_MODE_PRECISION (inner_mode) <= BITS_PER_WORD
-	  && LOAD_EXTEND_OP (inner_mode) == SIGN_EXTEND
+	  && load_extend_op (inner_mode) == SIGN_EXTEND
 	  && paradoxical_subreg_p (x)
 	  && (MEM_P (SUBREG_REG (x)) || REG_P (SUBREG_REG (x))))
 	return cached_num_sign_bit_copies (SUBREG_REG (x), mode,

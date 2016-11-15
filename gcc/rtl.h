@@ -2954,6 +2954,7 @@ extern void set_insn_deleted (rtx);
 
 /* Functions in rtlanal.c */
 
+extern rtx_code load_extend_op (machine_mode);
 extern rtx single_set_2 (const rtx_insn *, const_rtx);
 extern bool contains_symbol_ref_p (const_rtx);
 extern bool contains_symbolic_reference_p (const_rtx);
