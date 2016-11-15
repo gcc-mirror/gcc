@@ -1,5 +1,9 @@
 2016-11-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp1z/decomp14.C: New test.
+	* g++.dg/cpp1z/decomp15.C: New test.
+	* g++.dg/cpp1z/decomp16.C: New test.
+
 	* g++.dg/cpp1z/decomp13.C: New test.
 
 	* g++.dg/cpp1y/auto-fn33.C (main): Turn // error: ... into dg-bogus.
