@@ -182,7 +182,7 @@ extern enum pipeline_type microblaze_pipe;
    NOTE:  GDB has a workaround and expects this incorrect value.
    If this is fixed, a corresponding fix to GDB is needed.  */
 #define INCOMING_RETURN_ADDR_RTX  			\
-  gen_rtx_REG (VOIDmode, GP_REG_FIRST + MB_ABI_SUB_RETURN_ADDR_REGNUM)
+  gen_rtx_REG (Pmode, GP_REG_FIRST + MB_ABI_SUB_RETURN_ADDR_REGNUM)
 
 /* Use DWARF 2 debugging information by default.  */
 #define DWARF2_DEBUGGING_INFO
