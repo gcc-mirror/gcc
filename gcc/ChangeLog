@@ -1,3 +1,12 @@
+2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* dwarf2out.c (mem_loc_descriptor): Fix GET_MODE_CLASS/
+	GET_MODE_SIZE typo.
+
 2016-11-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Add support
