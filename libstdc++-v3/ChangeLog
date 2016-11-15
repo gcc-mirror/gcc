@@ -1,5 +1,14 @@
 2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 2742 status.
+	* doc/html/*: Regenerate.
+	* include/bits/basic_string.h
+	(basic_string(const T&, size_type, size_type, const Allocator&)): Add
+	constructor for substring of basic_string_view, as per LWG 2742 but
+	with additional constraint to fix ambiguity.
+	* testsuite/21_strings/basic_string/cons/char/9.cc: New test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/9.cc: New test.
+
 	* doc/xml/manual/intro.xml: Document LWG 2748 status.
 	* include/std/optional (optional<T>::swap): Use is_nothrow_swappable_v
 	for exception specification.

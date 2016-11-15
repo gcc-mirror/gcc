@@ -1107,6 +1107,14 @@ requirements of the license of GCC.
     <listitem><para>Define the <code>value_compare</code> typedef.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2742">2742</link>:
+       <emphasis>Inconsistent <code>string</code> interface taking <code>string_view</code>
+       </emphasis>
+    </term>
+    <listitem><para>Add the new constructor and additionally constrain it
+      to avoid ambiguities with non-const <code>charT*</code>.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2748">2748</link>:
        <emphasis>swappable traits for optionals
        </emphasis>
