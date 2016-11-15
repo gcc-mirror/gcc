@@ -1,3 +1,25 @@
+2016-11-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libgfortran/51119
+	* Makefile.am: Add new optimization flags matmul.
+	* Makefile.in: Regenerate.
+	* m4/matmul.m4: For the case of all strides = 1, implement a
+	fast blocked matrix multiply. Fix some whitespace.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_i1.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+	* generated/matmul_i2.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure: Regenerate.
