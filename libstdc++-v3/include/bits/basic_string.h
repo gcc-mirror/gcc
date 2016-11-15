@@ -585,6 +585,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{ _M_construct(__beg, __end); }
 
 #if __cplusplus > 201402L
+      template<typename _Tp, typename _Res>
+	using _If_sv = enable_if_t<
+	  __and_<is_convertible<const _Tp&, __sv_type>,
+		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
+	  _Res>;
+
       /**
        *  @brief  Construct string from a substring of a string_view.
        *  @param  __t   Source string view.
@@ -592,9 +598,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param  __n   The number of characters to copy from __t.
        *  @param  __a   Allocator to use.
        */
-      template<typename _Tp, typename =
-	       _Require<is_convertible<_Tp, __sv_type>,
-			__not_<is_convertible<const _Tp&, const _CharT*>>>>
+      template<typename _Tp, typename = _If_sv<_Tp, void>>
 	basic_string(const _Tp& __t, size_type __pos, size_type __n,
 		     const _Alloc& __a = _Alloc())
 	: basic_string(__sv_type(__t).substr(__pos, __n), __a) { }
@@ -1251,12 +1255,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       append(__sv_type __sv)
       { return this->append(__sv.data(), __sv.size()); }
-
-      template<typename _Tp, typename _Res>
-	using _If_sv = enable_if_t<
-	  __and_<is_convertible<const _Tp&, __sv_type>,
-		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
-	  _Res>;
 
       /**
        *  @brief  Append a range of characters from a string_view.
