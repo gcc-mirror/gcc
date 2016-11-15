@@ -4795,7 +4795,6 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 		      unsigned int known_ret)
 {
   enum rtx_code code = GET_CODE (x);
-  unsigned int bitwidth = GET_MODE_PRECISION (mode);
   machine_mode inner_mode;
   int num0, num1, result;
   unsigned HOST_WIDE_INT nonzero;
@@ -4811,7 +4810,8 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
       || VECTOR_MODE_P (GET_MODE (x)) || VECTOR_MODE_P (mode))
     return 1;
 
-  /* For a smaller object, just ignore the high bits.  */
+  /* For a smaller mode, just ignore the high bits.  */
+  unsigned int bitwidth = GET_MODE_PRECISION (mode);
   if (bitwidth < GET_MODE_PRECISION (GET_MODE (x)))
     {
       num0 = cached_num_sign_bit_copies (x, GET_MODE (x),
