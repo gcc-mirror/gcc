@@ -2078,10 +2078,9 @@ static tree
 constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 {
   while (TREE_CODE (decl) == CONST_DECL
-	 || (strict_p
-	     ? decl_constant_var_p (decl)
-	     : (VAR_P (decl)
-		&& CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl)))))
+	 || decl_constant_var_p (decl)
+	 || (!strict_p && VAR_P (decl)
+	     && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl))))
     {
       tree init;
       /* If DECL is a static data member in a template

@@ -4144,6 +4144,9 @@ decl_maybe_constant_var_p (tree decl)
   if (DECL_HAS_VALUE_EXPR_P (decl))
     /* A proxy isn't constant.  */
     return false;
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    /* References can be constant.  */
+    return true;
   return (CP_TYPE_CONST_NON_VOLATILE_P (type)
 	  && INTEGRAL_OR_ENUMERATION_TYPE_P (type));
 }
