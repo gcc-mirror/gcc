@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall" } */
+/* { dg-options "-O2 -Wall -Wno-psabi" } */
 
 typedef double vectype __attribute__ ((__vector_size__ (16)));
 
