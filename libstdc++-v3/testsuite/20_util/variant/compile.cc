@@ -55,7 +55,6 @@ void default_ctor()
 {
   static_assert(is_default_constructible_v<variant<int, string>>, "");
   static_assert(is_default_constructible_v<variant<string, string>>, "");
-  static_assert(!is_default_constructible_v<variant<>>, "");
   static_assert(!is_default_constructible_v<variant<AllDeleted, string>>, "");
   static_assert(is_default_constructible_v<variant<string, AllDeleted>>, "");
 
@@ -124,14 +123,6 @@ void uses_alloc_ctors()
   variant<int> a(allocator_arg, alloc);
   static_assert(!is_constructible_v<variant<AllDeleted>, allocator_arg_t, std::allocator<char>>, "");
   {
-    variant<int> b(allocator_arg, alloc, a);
-    static_assert(!is_constructible_v<variant<void>, allocator_arg_t, std::allocator<char>, const variant<void>&>, "");
-  }
-  {
-    variant<int> b(allocator_arg, alloc, std::move(a));
-    static_assert(!is_constructible_v<variant<void>, allocator_arg_t, std::allocator<char>, variant<void>&&>, "");
-  }
-  {
     variant<string, int> b(allocator_arg, alloc, "a");
     static_assert(!is_constructible_v<variant<string, string>, allocator_arg_t, std::allocator<char>, const char*>, "");
   }
@@ -169,12 +160,6 @@ void copy_assign()
     variant<DefaultNoexcept> a;
     static_assert(!noexcept(a = a), "");
   }
-
-  {
-    float f1 = 1.0f, f2 = 2.0f;
-    std::variant<float&> v1(f1);
-    v1 = f2;
-  }
 }
 
 void move_assign()
@@ -203,103 +188,13 @@ void arbitrary_assign()
 
 void test_get()
 {
-  {
-    static_assert(is_same<decltype(get<0>(variant<int, string>())), int&&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, string>())), string&&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, string&>())), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, string&&>())), string&&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, const string>())), const string&&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, const string&>())), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, const string&&>())), const string&&>::value, "");
+  static_assert(is_same<decltype(get<0>(variant<int, string>())), int&&>::value, "");
+  static_assert(is_same<decltype(get<1>(variant<int, string>())), string&&>::value, "");
+  static_assert(is_same<decltype(get<1>(variant<int, const string>())), const string&&>::value, "");
 
-    static_assert(is_same<decltype(get<int>(variant<int, string>())), int&&>::value, "");
-    static_assert(is_same<decltype(get<string>(variant<int, string>())), string&&>::value, "");
-    static_assert(is_same<decltype(get<string&>(variant<int, string&>())), string&>::value, "");
-    static_assert(is_same<decltype(get<string&&>(variant<int, string&&>())), string&&>::value, "");
-    static_assert(is_same<decltype(get<const string>(variant<int, const string>())), const string&&>::value, "");
-    static_assert(is_same<decltype(get<const string&>(variant<int, const string&>())), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&&>(variant<int, const string&&>())), const string&&>::value, "");
-  }
-  {
-    variant<int, string> a;
-    variant<int, string&> b;
-    variant<int, string&&> c;
-    variant<int, const string> d;
-    variant<int, const string&> e;
-    variant<int, const string&&> f;
-
-    static_assert(is_same<decltype(get<0>(a)), int&>::value, "");
-    static_assert(is_same<decltype(get<1>(a)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(b)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(c)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(f)), const string&>::value, "");
-
-    static_assert(is_same<decltype(get<int>(a)), int&>::value, "");
-    static_assert(is_same<decltype(get<string>(a)), string&>::value, "");
-    static_assert(is_same<decltype(get<string&>(b)), string&>::value, "");
-    static_assert(is_same<decltype(get<string&&>(c)), string&>::value, "");
-    static_assert(is_same<decltype(get<const string>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&&>(f)), const string&>::value, "");
-
-    static_assert(is_same<decltype(get_if<0>(&a)), int*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&a)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&b)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&c)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&f)), const string*>::value, "");
-
-    static_assert(is_same<decltype(get_if<int>(&a)), int*>::value, "");
-    static_assert(is_same<decltype(get_if<string>(&a)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<string&>(&b)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<string&&>(&c)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string&>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string&&>(&f)), const string*>::value, "");
-  }
-  {
-    const variant<int, string> a;
-    const variant<int, string&> b;
-    const variant<int, string&&> c;
-    const variant<int, const string> d;
-    const variant<int, const string&> e;
-    const variant<int, const string&&> f;
-
-    static_assert(is_same<decltype(get<0>(a)), const int&>::value, "");
-    static_assert(is_same<decltype(get<1>(a)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(b)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(c)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(d)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(f)), const string&>::value, "");
-
-    static_assert(is_same<decltype(get<int>(a)), const int&>::value, "");
-    static_assert(is_same<decltype(get<string>(a)), const string&>::value, "");
-    static_assert(is_same<decltype(get<string&>(b)), string&>::value, "");
-    static_assert(is_same<decltype(get<string&&>(c)), string&>::value, "");
-    static_assert(is_same<decltype(get<const string>(d)), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&&>(f)), const string&>::value, "");
-
-    static_assert(is_same<decltype(get_if<0>(&a)), const int*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&a)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&b)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&c)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&d)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&f)), const string*>::value, "");
-
-    static_assert(is_same<decltype(get_if<int>(&a)), const int*>::value, "");
-    static_assert(is_same<decltype(get_if<string>(&a)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<string&>(&b)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<string&&>(&c)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string>(&d)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string&>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string&&>(&f)), const string*>::value, "");
-  }
+  static_assert(is_same<decltype(get<int>(variant<int, string>())), int&&>::value, "");
+  static_assert(is_same<decltype(get<string>(variant<int, string>())), string&&>::value, "");
+  static_assert(is_same<decltype(get<const string>(variant<int, const string>())), const string&&>::value, "");
 }
 
 void test_relational()
@@ -344,16 +239,6 @@ void test_visit()
       void operator()(monostate) const {}
       void operator()(const int&) const {}
     };
-    variant<monostate, int&, const int&, int&&, const int&&> a;
-    const variant<monostate, int&, const int&, int&&, const int&&> b;
-    Visitor v;
-    const CVisitor u;
-    static_assert(is_same<void, decltype(visit(Visitor(), a))>::value, "");
-    static_assert(is_same<void, decltype(visit(Visitor(), b))>::value, "");
-    static_assert(is_same<void, decltype(visit(v, a))>::value, "");
-    static_assert(is_same<void, decltype(visit(v, b))>::value, "");
-    static_assert(is_same<void, decltype(visit(u, a))>::value, "");
-    static_assert(is_same<void, decltype(visit(u, b))>::value, "");
   }
   {
     struct Visitor
@@ -395,19 +280,6 @@ void test_constexpr()
     constexpr variant<literal, nonliteral> v1{in_place_type<literal>};
     constexpr variant<literal, nonliteral> v2{in_place_index<0>};
   }
-}
-
-void test_void()
-{
-  static_assert(is_same<int&&, decltype(get<int>(variant<int, void>()))>::value, "");
-  static_assert(!is_default_constructible_v<variant<void, int>>, "");
-  static_assert(!is_copy_constructible_v<variant<int, void>>, "");
-  static_assert(!is_move_constructible_v<variant<int, void>>, "");
-  static_assert(!is_copy_assignable_v<variant<int, void>>, "");
-  static_assert(!is_move_assignable_v<variant<int, void>>, "");
-  variant<int, void, string> v;
-  v = 3;
-  v = "asdf";
 }
 
 void test_pr77641()
@@ -457,11 +329,4 @@ void test_adl()
    variant<X> v7{allocator_arg, a, in_place_index<0>, il, x};
    variant<X> v8{allocator_arg, a, in_place_type<X>, il, x};
    variant<X> v9{allocator_arg, a, in_place_type<X>, 1};
-
-   std::variant<X&> vr0(x);
-   vr0 = x;
-   variant<X&> vr1{in_place_index<0>, x};
-   variant<X&> vr2{in_place_type<X&>, x};
-   variant<X&> vr3{allocator_arg, a, in_place_index<0>, x};
-   variant<X&> vr4{allocator_arg, a, in_place_type<X&>, x};
 }
