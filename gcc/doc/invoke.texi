@@ -1316,12 +1316,6 @@ traditional preprocessor).
 @item @var{file}.go
 Go source code.
 
-@c FIXME: Descriptions of Java file types.
-@c @var{file}.java
-@c @var{file}.class
-@c @var{file}.zip
-@c @var{file}.jar
-
 @item @var{file}.ads
 Ada source code file that contains a library unit declaration (a
 declaration of a package, subprogram, or generic, or a generic
@@ -1370,7 +1364,6 @@ assembler  assembler-with-cpp
 ada
 f77  f77-cpp-input f95  f95-cpp-input
 go
-java
 @end smallexample
 
 @item -x none
@@ -3174,7 +3167,7 @@ accomplished via the comm page.
 @item -fobjc-exceptions
 @opindex fobjc-exceptions
 Enable syntactic support for structured exception handling in
-Objective-C, similar to what is offered by C++ and Java.  This option
+Objective-C, similar to what is offered by C++.  This option
 is required to use the Objective-C keywords @code{@@try},
 @code{@@throw}, @code{@@catch}, @code{@@finally} and
 @code{@@synchronized}.  This option is available with both the GNU
@@ -10800,7 +10793,7 @@ Inserts a call to @code{__sanitizer_cov_trace_pc} into every basic block.
 @opindex fbounds-check
 For front ends that support it, generate additional code to check that
 indices used to access arrays are within the declared range.  This is
-currently only supported by the Java and Fortran front ends, where
+currently only supported by the Fortran front end, where
 this option defaults to true and false respectively.
 
 @item -fcheck-pointer-bounds
@@ -11861,8 +11854,7 @@ results in @option{-ftrapv} being effective.
 This option instructs the compiler to assume that signed arithmetic
 overflow of addition, subtraction and multiplication wraps around
 using twos-complement representation.  This flag enables some optimizations
-and disables others.  This option is enabled by default for the Java
-front end, as required by the Java language specification.
+and disables others.
 The options @option{-ftrapv} and @option{-fwrapv} override each other, so using
 @option{-ftrapv} @option{-fwrapv} on the command-line results in
 @option{-fwrapv} being effective.  Note that only active options override, so

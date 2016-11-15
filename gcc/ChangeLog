@@ -2,6 +2,8 @@
 
 	* doc/install.texi: Remove references to java/libjava.
 	* doc/sourcebuild.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/standards.texi: Likewise.
 
 2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
