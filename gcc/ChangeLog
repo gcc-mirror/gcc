@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (simplify_shift_const_1): Use the number of bits
+	in the inner mode to determine the range of the shift.
+	When handling shifts of vectors, skip any rules that apply
+	only to scalars.
+
+2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtlanal.c (num_sign_bit_copies1): Calculate bitwidth after
 	handling VOIDmode.
 
