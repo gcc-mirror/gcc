@@ -1,3 +1,10 @@
+2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtlanal.c (num_sign_bit_copies1): Calculate bitwidth after
+	handling VOIDmode.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/install.texi: Remove references to gcj/libjava.
