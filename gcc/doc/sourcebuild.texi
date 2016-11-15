@@ -28,8 +28,8 @@ subdirectories that contain parts of GCC and its runtime libraries:
 
 @table @file
 @item boehm-gc
-The Boehm conservative garbage collector, used as part of the Java
-runtime library.
+The Boehm conservative garbage collector, optionally used as part of
+the ObjC runtime library when configured with @option{--enable-objc-gc}.
 
 @item config
 Autoconf macros and Makefile fragments used throughout the tree.
@@ -76,7 +76,7 @@ The C preprocessor library.
 The Decimal Float support library.
 
 @item libffi
-The @code{libffi} library, used as part of the Java runtime library.
+The @code{libffi} library, used as part of the Go runtime library.
 
 @item libgcc
 The GCC runtime library.
@@ -100,9 +100,6 @@ about this library.
 @item libitm
 The runtime support library for transactional memory.
 
-@item libjava
-The Java runtime library.
-
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
 
@@ -122,9 +119,8 @@ Plugin used by the linker if link-time optimizations are enabled.
 Scripts used by the @code{gccadmin} account on @code{gcc.gnu.org}.
 
 @item zlib
-The @code{zlib} compression library, used by the Java front end, as
-part of the Java runtime library, and for compressing and uncompressing
-GCC's intermediate language in LTO object files.
+The @code{zlib} compression library, used for compressing and
+uncompressing GCC's intermediate language in LTO object files.
 @end table
 
 The build system in the top level directory, including how recursion
@@ -629,8 +625,8 @@ for some purposes such as arguments to @option{--enable-languages}.
 If defined, this variable lists (space-separated) language front ends
 other than C that this front end requires to be enabled (with the
 names given being their @code{language} settings).  For example, the
-Java front end depends on the C++ front end, so sets
-@samp{lang_requires=c++}.
+Obj-C++ front end depends on the C++ and ObjC front ends, so sets
+@samp{lang_requires="objc c++"}.
 @item subdir_requires
 If defined, this variable lists (space-separated) front end directories
 other than C that this front end requires to be present.  For example,
@@ -862,7 +858,6 @@ here; FIXME: document the others.
 * Test Directives:: Directives used within DejaGnu tests.
 * Ada Tests::       The Ada language testsuites.
 * C Tests::         The C language testsuites.
-* libgcj Tests::    The Java library testsuites.
 * LTO Testing::     Support for testing link-time optimizations.
 * gcov Testing::    Support for testing gcov.
 * profopt Testing:: Support for testing profile-directed optimizations.
@@ -2599,29 +2594,6 @@ Test the testsuite itself using @file{gcc.test-framework/test-framework.exp}.
 
 FIXME: merge in @file{testsuite/README.gcc} and discuss the format of
 test cases and magic comments more.
-
-@node libgcj Tests
-@section The Java library testsuites.
-
-Runtime tests are executed via @samp{make check} in the
-@file{@var{target}/libjava/testsuite} directory in the build
-tree.  Additional runtime tests can be checked into this testsuite.
-
-Regression testing of the core packages in libgcj is also covered by the
-Mauve testsuite.  The @uref{http://sourceware.org/mauve/,,Mauve Project}
-develops tests for the Java Class Libraries.  These tests are run as part
-of libgcj testing by placing the Mauve tree within the libjava testsuite
-sources at @file{libjava/testsuite/libjava.mauve/mauve}, or by specifying
-the location of that tree when invoking @samp{make}, as in
-@samp{make MAUVEDIR=~/mauve check}.
-
-To detect regressions, a mechanism in @file{mauve.exp} compares the
-failures for a test run against the list of expected failures in
-@file{libjava/testsuite/libjava.mauve/xfails} from the source hierarchy.
-Update this file when adding new failing tests to Mauve, or when fixing
-bugs in libgcj that had caused Mauve test failures.
-
-We encourage developers to contribute test cases to Mauve.
 
 @node LTO Testing
 @section Support for testing link-time optimizations

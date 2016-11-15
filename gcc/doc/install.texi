@@ -498,28 +498,6 @@ Useful when submitting patches for the GCC source code.
 Necessary when applying patches, created with @command{diff}, to one's
 own sources.
 
-@item ecj1
-@itemx gjavah
-
-If you wish to modify @file{.java} files in libjava, you will need to
-configure with @option{--enable-java-maintainer-mode}, and you will need
-to have executables named @command{ecj1} and @command{gjavah} in your path.
-The @command{ecj1} executable should run the Eclipse Java compiler via
-the GCC-specific entry point.  You can download a suitable jar from
-@uref{ftp://sourceware.org/pub/java/}, or by running the script
-@command{contrib/download_ecj}.
-
-@item antlr.jar version 2.7.1 (or later)
-@itemx antlr binary
-
-If you wish to build the @command{gjdoc} binary in libjava, you will
-need to have an @file{antlr.jar} library available. The library is
-searched for in system locations but can be specified with
-@option{--with-antlr-jar=} instead.  When configuring with
-@option{--enable-java-maintainer-mode}, you will need to have one of
-the executables named @command{cantlr}, @command{runantlr} or
-@command{antlr} in your path.
-
 @end table
 
 @html
@@ -550,9 +528,9 @@ tarballs compressed with @command{gzip} or
 Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
-The source distribution includes the C, C++, Objective-C, Fortran, Java,
+The source distribution includes the C, C++, Objective-C, Fortran,
 and Ada (in the case of GCC 3.1 and later) compilers, as well as
-runtime libraries for C++, Objective-C, Fortran, and Java.
+runtime libraries for C++, Objective-C, and Fortran.
 For previous versions these were downloadable as separate components such
 as the core GCC distribution, which included the C language front end and
 shared components, and language-specific distributions including the
@@ -934,7 +912,7 @@ only for the listed packages.  For other packages, only static libraries
 will be built.  Package names currently recognized in the GCC tree are
 @samp{libgcc} (also known as @samp{gcc}), @samp{libstdc++} (not
 @samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc},
-@samp{ada}, @samp{libada}, @samp{libjava}, @samp{libgo}, and @samp{libobjc}.
+@samp{ada}, @samp{libada}, @samp{libgo}, and @samp{libobjc}.
 Note @samp{libiberty} does not support shared libraries at all.
 
 Use @option{--disable-shared} to build only static libraries.  Note that
@@ -1178,7 +1156,7 @@ Use little endian by default.  Provide a multilib for big endian.
 @item --enable-threads
 Specify that the target
 supports threads.  This affects the Objective-C compiler and runtime
-library, and exception handling for other languages like C++ and Java.
+library, and exception handling for other languages like C++.
 On some systems, this is the default.
 
 In general, the best (and, in many cases, the only known) threading
@@ -1195,7 +1173,7 @@ This is an alias for @option{--enable-threads=single}.
 Specify that
 @var{lib} is the thread support library.  This affects the Objective-C
 compiler and runtime library, and exception handling for other languages
-like C++ and Java.  The possibilities for @var{lib} are:
+like C++.  The possibilities for @var{lib} are:
 
 @table @code
 @item aix
@@ -1443,7 +1421,7 @@ addition, @samp{libstdc++}'s include files will be installed into
 @option{--with-gxx-include-dir=@var{dirname}}.  Using this option is
 particularly useful if you intend to use several versions of GCC in
 parallel.  This is currently supported by @samp{libgfortran},
-@samp{libjava}, @samp{libstdc++}, and @samp{libobjc}.
+@samp{libstdc++}, and @samp{libobjc}.
 
 @item @anchor{WithAixSoname}--with-aix-soname=@samp{aix}, @samp{svr4} or @samp{both}
 Traditional AIX shared library versioning (versioned @code{Shared Object}
@@ -1563,7 +1541,7 @@ grep ^language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
 @code{all}, @code{ada}, @code{c}, @code{c++}, @code{fortran},
-@code{go}, @code{java}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
+@code{go}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{all}, then all
 default languages available in the @file{gcc} sub-tree will be configured.
@@ -2415,13 +2393,6 @@ native compiler.  You can then use the native GCC compiler to build the
 cross compiler.  The installed native compiler needs to be GCC version
 2.95 or later.
 
-If the cross compiler is to be built with support for the Java
-programming language and the ability to compile .java source files is
-desired, the installed native compiler used to build the cross
-compiler needs to be the same GCC version as the cross compiler.  In
-addition the cross compiler needs to be configured with
-@option{--with-ecj-jar=@dots{}}.
-
 Assuming you have already installed a native copy of GCC and configured
 your cross compiler, issue the command @command{make}, which performs the
 following steps:
@@ -2624,7 +2595,7 @@ on a simulator as described at @uref{http://gcc.gnu.org/simtest-howto.html}.
 
 In order to run sets of tests selectively, there are targets
 @samp{make check-gcc} and language specific @samp{make check-c},
-@samp{make check-c++}, @samp{make check-fortran}, @samp{make check-java},
+@samp{make check-c++}, @samp{make check-fortran},
 @samp{make check-ada}, @samp{make check-objc}, @samp{make check-obj-c++},
 @samp{make check-lto}
 in the @file{gcc} subdirectory of the object directory.  You can also
@@ -2722,19 +2693,6 @@ supported in the @file{gcc} subdirectory.  (To see how this works, try
 typing @command{echo} before the example given here.)
 
 
-@section Additional testing for Java Class Libraries
-
-The Java runtime tests can be executed via @samp{make check}
-in the @file{@var{target}/libjava/testsuite} directory in
-the build tree.
-
-The @uref{http://sourceware.org/mauve/,,Mauve Project} provides
-a suite of tests for the Java Class Libraries.  This suite can be run
-as part of libgcj testing by placing the Mauve tree within the libjava
-testsuite at @file{libjava/testsuite/libjava.mauve/mauve}, or by
-specifying the location of that tree when invoking @samp{make}, as in
-@samp{make MAUVEDIR=~/mauve check}.
-
 @section How to interpret test results
 
 The result of running the testsuite are various @file{*.sum} and @file{*.log}
@@ -2819,7 +2777,7 @@ you specified with the @option{--prefix} to configure (or
 @file{/usr/local} by default).  (If you specified @option{--bindir},
 that directory will be used instead; otherwise, if you specified
 @option{--exec-prefix}, @file{@var{exec-prefix}/bin} will be used.)
-Headers for the C++ and Java libraries are installed in
+Headers for the C++ library are installed in
 @file{@var{prefix}/include}; libraries in @file{@var{libdir}}
 (normally @file{@var{prefix}/lib}); internal parts of the compiler in
 @file{@var{libdir}/gcc} and @file{@var{libexecdir}/gcc}; documentation
@@ -3468,9 +3426,9 @@ The version of binutils installed in @file{/usr/bin} probably works
 with this release of GCC@.  Bootstrapping against the latest GNU
 binutils and/or the version found in @file{/usr/ports/devel/binutils} has
 been known to enable additional features and improve overall testsuite
-results.  However, it is currently known that boehm-gc (which itself
-is required for java) may not configure properly on FreeBSD prior to
-the FreeBSD 7.0 release with GNU binutils after 2.16.1.
+results.  However, it is currently known that boehm-gc may not configure
+properly on FreeBSD prior to the FreeBSD 7.0 release with GNU binutils
+after 2.16.1.
 
 @html
 <hr />
@@ -3568,8 +3526,7 @@ with the one implemented under HP-UX 11 using secondary definitions.
 GCC 3.0 and up support HP-UX 11.  GCC 2.95.x is not supported and cannot
 be used to compile GCC 3.0 and up.
 
-The libffi and libjava libraries haven't been ported to 64-bit HP-UX@
-and don't build.
+The libffi library haven't been ported to 64-bit HP-UX@ and doesn't build.
 
 Refer to @uref{binaries.html,,binaries} for information about obtaining
 precompiled GCC binaries for HP-UX@.  Precompiled binaries must be obtained
@@ -3582,11 +3539,7 @@ unbundled compiler, or a binary distribution of GCC@.
 
 It is possible to build GCC 3.3 starting with the bundled HP compiler,
 but the process requires several steps.  GCC 3.3 can then be used to
-build later versions.  The fastjar program contains ISO C code and
-can't be built with the HP bundled compiler.  This problem can be
-avoided by not building the Java language.  For example, use the
-@option{--enable-languages="c,c++,f77,objc"} option in your configure
-command.
+build later versions.
 
 There are several possible approaches to building the distribution.
 Binutils can be built first using the HP tools.  Then, the GCC
@@ -4286,8 +4239,8 @@ you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
 The Solaris 2 @command{/bin/sh} will often fail to configure
-@samp{libstdc++-v3}, @samp{boehm-gc} or @samp{libjava}.  We therefore
-recommend using the following initial sequence of commands
+@samp{libstdc++-v3}or @samp{boehm-gc}.  We therefore recommend using the
+following initial sequence of commands
 
 @smallexample
 % CONFIG_SHELL=/bin/ksh
@@ -4350,9 +4303,6 @@ you need to have any version of GNU @command{c++filt}, which is part of
 GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
 appropriate version is found.  Solaris @command{c++filt} from the Solaris
 Studio compilers does @emph{not} work.
-
-GNU @command{make} version 3.81 or later is required to build libjava
-with the Solaris linker.
 
 Sun bug 4927647 sometimes causes random spurious testsuite failures
 related to missing diagnostic output.  This bug doesn't affect GCC

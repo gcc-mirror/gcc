@@ -1,3 +1,8 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Remove references to java/libjava.
+	* doc/sourcebuild.texi: Likewise.
+
 2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
