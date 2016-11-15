@@ -137,41 +137,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __reserved_type_map_impl<const volatile _From, _To>
     { using type = add_cv_t<__reserved_type_map<_From, _To>>; };
 
-  // Stores a reference alternative as a... well, reference.
-  template<typename _Reference>
-    struct _Reference_storage
-    {
-      static_assert(is_reference_v<_Reference>,
-		    "BUG: _Reference should be a reference");
-
-      _Reference_storage(_Reference __ref) noexcept : _M_storage(__ref) { }
-
-      operator _Reference() noexcept
-      { return static_cast<_Reference>(_M_storage); }
-
-      _Reference _M_storage;
-    };
-
-  // Stores a void alternative, because it is not a regular type.
-  template<typename _Void>
-    struct _Void_storage { };
-
-  // Map from the alternative type to a non-qualified storage type.
-  template<typename _Alternative, typename = void>
-    struct __storage_type
-    { using type = _Alternative; };
-
+  // This abstraction might be useful for future features,
+  // e.g. boost::recursive_wrapper.
   template<typename _Alternative>
-    struct __storage_type<_Alternative,
-			  enable_if_t<is_reference_v<_Alternative>>>
-    { using type = _Reference_storage<_Alternative>; };
-
-  template<typename _Alternative>
-    struct __storage_type<_Alternative, enable_if_t<is_void_v<_Alternative>>>
-    { using type = _Void_storage<_Alternative>; };
-
-  template<typename _Type>
-    using __storage = typename __storage_type<_Type>::type;
+    using __storage = _Alternative;
 
   template<typename _Type, bool __is_literal = std::is_literal_type_v<_Type>>
     struct _Uninitialized;
@@ -202,37 +171,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_storage;
     };
 
-  // Reverse mapping of __storage_type.
-  template<typename _Storage_type>
-    struct __alternative_type
-    {
-      static_assert(!is_reference_v<_Storage_type>,
-		    "BUG: _Storage_type should not be reference");
-      using type = _Storage_type;
-    };
-
-  template<typename _Reference>
-    struct __alternative_type<_Reference_storage<_Reference>>
-    { using type = _Reference; };
-
-  template<typename _Void>
-    struct __alternative_type<_Void_storage<_Void>>
-    { using type = _Void; };
-
   // Given a qualified storage type, return the desired reference.
-  // The qualified storage type is supposed to carry the variant object's
-  // qualifications and reference information, and the designated alternative's
-  // storage type.
-  // Returns the qualification-collapsed alternative references.
-  //
-  // For example, __get_alternative<_Reference_storage<int&&>&> returns int&.
+  // For example, variant<int>&& stores the int as __storage<int>, and
+  // _Qualified_storage will be __storage<int>&&.
   template<typename _Qualified_storage>
     decltype(auto)
     __get_alternative(void* __ptr)
     {
       using _Storage = decay_t<_Qualified_storage>;
-      using _Alternative = typename __alternative_type<_Storage>::type;
-      return __reserved_type_map<_Qualified_storage, _Alternative>(
+      return __reserved_type_map<_Qualified_storage, _Storage>(
 	*static_cast<_Storage*>(__ptr));
     }
 
@@ -970,6 +917,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	variant<_Types...>>
     {
     private:
+      static_assert(sizeof...(_Types) > 0,
+		    "variant must have at least one alternative");
+      static_assert(!(std::is_reference_v<_Types> || ...),
+		    "variant must have no reference alternative");
+      static_assert(!(std::is_void_v<_Types> || ...),
+		    "variant must have no void alternative");
+
       using _Base = __detail::__variant::_Variant_base<_Types...>;
       using _Default_ctor_enabler =
 	_Enable_default_constructor<
@@ -1264,11 +1218,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
         __get_storage(_Vp&& __v);
     };
-
-  // To honor algebraic data type, variant<> should be a bottom type, which
-  // is 0 (as opposed to a void type, which is 1). Use incomplete type to model
-  // bottom type.
-  template<> class variant<>;
 
   template<size_t _Np, typename... _Types>
     variant_alternative_t<_Np, variant<_Types...>>&
