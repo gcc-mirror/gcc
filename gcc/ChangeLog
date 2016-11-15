@@ -1,3 +1,20 @@
+2016-11-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* genattrtab.c (attr_rtx_1): Avoid allocating new rtx objects.
+	Clear ATTR_CURR_SIMPLIFIED_P for re-used binary rtx objects.
+	Use DEF_ATTR_STRING for string arguments.  Use RTL_HASH for
+	integer arguments.  Only set ATTR_PERMANENT_P on newly hashed
+	rtx when all sub-rtx are also permanent.
+	(attr_eq): Simplify.
+	(attr_copy_rtx): Remove.
+	(make_canonical, get_attr_value): Use attr_equal_p.
+	(copy_boolean): Rehash NOT.
+	(simplify_test_exp_in_temp,
+	optimize_attrs): Remove call to attr_copy_rtx.
+	(attr_alt_intersection, attr_alt_union,
+	attr_alt_complement, mk_attr_alt): Rehash EQ_ATTR_ALT.
+	(make_automaton_attrs): Use attr_eq.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/install.texi: Remove references to java/libjava.
