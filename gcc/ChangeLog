@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* alias.c (canon_rtx): Use simplify_gen_binary.
+
+2016-11-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtl.h (load_extend_op): Declare.
 	* rtlanal.c (load_extend_op): New function.
 	(nonzero_bits1): Use it.
