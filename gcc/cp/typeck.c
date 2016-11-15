@@ -1650,9 +1650,7 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
 
   e = mark_type_use (e);
 
-  if (TREE_CODE (e) == COMPONENT_REF
-      && TREE_CODE (TREE_OPERAND (e, 1)) == FIELD_DECL
-      && DECL_C_BIT_FIELD (TREE_OPERAND (e, 1)))
+  if (bitfield_p (e))
     {
       if (complain & tf_error)
         error ("invalid application of %<sizeof%> to a bit-field");
@@ -1709,9 +1707,7 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
 
   if (VAR_P (e))
     t = size_int (DECL_ALIGN_UNIT (e));
-  else if (TREE_CODE (e) == COMPONENT_REF
-	   && TREE_CODE (TREE_OPERAND (e, 1)) == FIELD_DECL
-	   && DECL_C_BIT_FIELD (TREE_OPERAND (e, 1)))
+  else if (bitfield_p (e))
     {
       if (complain & tf_error)
         error ("invalid application of %<__alignof%> to a bit-field");
@@ -5751,6 +5747,13 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
   if (argtype != error_mark_node)
     argtype = build_pointer_type (argtype);
 
+  if (bitfield_p (arg))
+    {
+      if (complain & tf_error)
+	error ("attempt to take address of bit-field");
+      return error_mark_node;
+    }
+
   /* In a template, we are processing a non-dependent expression
      so we can just form an ADDR_EXPR with the correct type.  */
   if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
@@ -5774,13 +5777,6 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	/* Do not lose object's side effects.  */
 	val = build2 (COMPOUND_EXPR, TREE_TYPE (val),
 		      TREE_OPERAND (arg, 0), val);
-    }
-  else if (DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
-    {
-      if (complain & tf_error)
-	error ("attempt to take address of bit-field structure member %qD",
-	       TREE_OPERAND (arg, 1));
-      return error_mark_node;
     }
   else
     {

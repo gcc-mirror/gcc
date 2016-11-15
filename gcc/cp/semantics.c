@@ -8873,8 +8873,13 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (identifier_p (expr))
         expr = lookup_name (expr);
 
-      if (VAR_P (expr) && DECL_HAS_VALUE_EXPR_P (expr))
-	expr = DECL_VALUE_EXPR (expr);
+      /* The decltype rules for decomposition are different from the rules for
+	 member access; in particular, the decomposition decl gets
+	 cv-qualifiers from the aggregate object, whereas decltype of a member
+	 access expr ignores the object.  */
+      if (VAR_P (expr) && DECL_DECOMPOSITION_P (expr)
+	  && DECL_HAS_VALUE_EXPR_P (expr))
+	return unlowered_expr_type (DECL_VALUE_EXPR (expr));
 
       if (INDIRECT_REF_P (expr))
         /* This can happen when the expression is, e.g., "a.b". Just

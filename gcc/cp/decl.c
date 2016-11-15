@@ -7350,18 +7350,23 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
   for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
     {
       v[count - i - 1] = d;
-      if (processing_template_decl)
-	{
-	  retrofit_lang_decl (d);
-	  SET_DECL_DECOMPOSITION_P (d);
-	}
+      retrofit_lang_decl (d);
+      SET_DECL_DECOMPOSITION_P (d);
     }
 
   tree type = TREE_TYPE (decl);
-  tree eltype = NULL_TREE;
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
+  tree dexp = decl;
 
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      /* If e is a constant reference, use the referent directly.  */
+      if (DECL_INITIAL (decl))
+	dexp = DECL_INITIAL (decl);
+      dexp = convert_from_reference (dexp);
+      type = TREE_TYPE (type);
+    }
+
+  tree eltype = NULL_TREE;
   unsigned HOST_WIDE_INT eltscnt = 0;
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
@@ -7391,7 +7396,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	{
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
-	  tree t = convert_from_reference (decl);
+	  tree t = dexp;
 	  t = build4_loc (DECL_SOURCE_LOCATION (v[i]), ARRAY_REF,
 			  eltype, t, size_int (i), NULL_TREE,
 			  NULL_TREE);
@@ -7410,7 +7415,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	{
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
-	  tree t = convert_from_reference (decl);
+	  tree t = dexp;
 	  t = build1_loc (DECL_SOURCE_LOCATION (v[i]),
 			  i ? IMAGPART_EXPR : REALPART_EXPR, eltype,
 			  t);
@@ -7428,7 +7433,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	{
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
-	  tree t = convert_from_reference (decl);
+	  tree t = dexp;
 	  convert_vector_to_array_for_subscript (DECL_SOURCE_LOCATION (v[i]),
 						 &t, size_int (i));
 	  t = build4_loc (DECL_SOURCE_LOCATION (v[i]), ARRAY_REF,
@@ -7501,7 +7506,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	  eltscnt++;
       if (count != eltscnt)
 	goto cnt_mismatch;
-      tree t = convert_from_reference (decl);
+      tree t = dexp;
       if (type != btype)
 	{
 	  t = convert_to_base (t, btype, /*check_access*/true,

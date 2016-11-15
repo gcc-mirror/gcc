@@ -1,3 +1,13 @@
+2016-11-14  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (bitfield_p): New.
+	* cp-tree.h: Declare it.
+	* typeck.c (cxx_sizeof_expr, cxx_alignof_expr)
+	(cp_build_addr_expr_1): Use it instead of DECL_C_BIT_FIELD.
+	* decl.c (cp_finish_decomp): Look through reference.  Always
+	SET_DECL_DECOMPOSITION_P.
+	* semantics.c (finish_decltype_type): Adjust decomposition handling.
+
 2016-11-13  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
