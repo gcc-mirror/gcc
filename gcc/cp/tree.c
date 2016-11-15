@@ -305,6 +305,14 @@ xvalue_p (const_tree ref)
   return (lvalue_kind (ref) == clk_rvalueref);
 }
 
+/* True if REF is a bit-field.  */
+
+bool
+bitfield_p (const_tree ref)
+{
+  return (lvalue_kind (ref) & clk_bitfield);
+}
+
 /* C++-specific version of stabilize_reference.  */
 
 tree

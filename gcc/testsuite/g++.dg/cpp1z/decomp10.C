@@ -31,18 +31,15 @@ struct A4 {
   template <int I> int& get() { return ar[I]; }
 } a4;
 template<> struct std::tuple_size<A4> { enum { value = 3 }; };
-template <int I> 
 void f4() { auto [ x, y, z ] = a4; }	// { dg-error "tuple_element" }
 
 struct A5 { } a5;
 template <int I> int& get(A5&& a);
 template<> struct std::tuple_size<A5> { enum { value = 3 }; };
-template <int I> 
 void f5() { auto [ x, y, z ] = a5; }	// { dg-error "tuple_element" }
 
 struct A6 { } a6;
 template <int I> int& get(A6&& a);
 template<> struct std::tuple_size<A6> { enum { value = 3 }; };
 template<> struct std::tuple_element<0, A6> { };
-template <int I> 
 void f6() { auto [ x, y, z ] = a6; }	// { dg-error "no type named .type" }
