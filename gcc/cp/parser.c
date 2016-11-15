@@ -12944,6 +12944,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
   tree decl = start_decl (declarator, decl_specifiers, SD_INITIALIZED,
 			  NULL_TREE, decl_specifiers->attributes,
 			  &pushed_scope);
+  tree orig_decl = decl;
 
   unsigned int i;
   cp_expr e;
@@ -13019,6 +13020,12 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 
   if (pushed_scope)
     pop_scope (pushed_scope);
+
+  if (decl == error_mark_node && DECL_P (orig_decl))
+    {
+      if (DECL_NAMESPACE_SCOPE_P (orig_decl))
+	SET_DECL_ASSEMBLER_NAME (orig_decl, get_identifier ("<decomp>"));
+    }
 
   return decl;
 }

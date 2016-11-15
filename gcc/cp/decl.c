@@ -7301,7 +7301,6 @@ get_tuple_decomp_init (tree decl, unsigned i)
 void
 cp_finish_decomp (tree decl, tree first, unsigned int count)
 {
-  location_t loc = DECL_SOURCE_LOCATION (decl);
   if (error_operand_p (decl))
     {
      error_out:
@@ -7315,9 +7314,12 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	    }
 	  first = DECL_CHAIN (first);
 	}
+      if (DECL_P (decl) && DECL_NAMESPACE_SCOPE_P (decl))
+	SET_DECL_ASSEMBLER_NAME (decl, get_identifier ("<decomp>"));
       return;
     }
 
+  location_t loc = DECL_SOURCE_LOCATION (decl);
   if (type_dependent_expression_p (decl)
       /* This happens for range for when not in templates.
 	 Still add the DECL_VALUE_EXPRs for later processing.  */
@@ -7530,6 +7532,8 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	    i++;
 	  }
     }
+  if (DECL_NAMESPACE_SCOPE_P (decl))
+    SET_DECL_ASSEMBLER_NAME (decl, mangle_decomp (decl, v));
 }
 
 /* Returns a declaration for a VAR_DECL as if:

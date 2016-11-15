@@ -6868,6 +6868,7 @@ extern bool decl_tls_wrapper_p			(tree);
 extern tree mangle_ref_init_variable		(tree);
 extern char * get_mangled_vtable_map_var_name   (tree);
 extern bool mangle_return_type_p		(tree);
+extern tree mangle_decomp			(tree, vec<tree> &);
 
 /* in dump.c */
 extern bool cp_dump_tree			(void *, tree);

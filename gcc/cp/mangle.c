@@ -3995,6 +3995,53 @@ mangle_vtt_for_type (const tree type)
   return mangle_special_for_type (type, "TT");
 }
 
+/* Returns an identifier for the mangled name of the decomposition
+   artificial variable DECL.  DECLS is the vector of the VAR_DECLs
+   for the identifier-list.  */
+
+tree
+mangle_decomp (const tree decl, vec<tree> &decls)
+{
+  gcc_assert (!type_dependent_expression_p (decl));
+
+  location_t saved_loc = input_location;
+  input_location = DECL_SOURCE_LOCATION (decl);
+
+  start_mangling (decl);
+  write_string ("_Z");
+
+  tree context = decl_mangling_context (decl);
+  gcc_assert (context != NULL_TREE);
+
+  bool nested = false;
+  if (DECL_NAMESPACE_STD_P (context))
+    write_string ("St");
+  else if (context != global_namespace)
+    {
+      nested = true;
+      write_char ('N');
+      write_prefix (decl_mangling_context (decl));
+    }
+
+  write_string ("DC");
+  unsigned int i;
+  tree d;
+  FOR_EACH_VEC_ELT (decls, i, d)
+    write_unqualified_name (d);
+  write_char ('E');
+
+  if (nested)
+    write_char ('E');
+
+  tree id = finish_mangling_get_identifier ();
+  if (DEBUG_MANGLE)
+    fprintf (stderr, "mangle_decomp = '%s'\n\n",
+             IDENTIFIER_POINTER (id));
+
+  input_location = saved_loc;
+  return id;
+}
+
 /* Return an identifier for a construction vtable group.  TYPE is
    the most derived class in the hierarchy; BINFO is the base
    subobject for which this construction vtable group will be used.
