@@ -1,3 +1,11 @@
+2016-11-15  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (decl_maybe_constant_var_p): References qualify.
+	* constexpr.c (non_const_var_error): Handle references.
+	* init.c (constant_value_1): Always check decl_constant_var_p.
+	* cp-gimplify.c (cp_fold_maybe_rvalue): Don't fold references.
+	* error.c (dump_decl_name): Split out from dump_decl.
+
 2016-11-14  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (bitfield_p): New.

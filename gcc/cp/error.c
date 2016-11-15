@@ -1000,6 +1000,37 @@ dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
     dump_type_suffix (pp, type, flags);
 }
 
+/* Print an IDENTIFIER_NODE that is the name of a declaration.  */
+
+static void
+dump_decl_name (cxx_pretty_printer *pp, tree t, int flags)
+{
+  /* These special cases are duplicated here so that other functions
+     can feed identifiers to error and get them demangled properly.  */
+  if (IDENTIFIER_TYPENAME_P (t))
+    {
+      pp_cxx_ws_string (pp, "operator");
+      /* Not exactly IDENTIFIER_TYPE_VALUE.  */
+      dump_type (pp, TREE_TYPE (t), flags);
+      return;
+    }
+  if (dguide_name_p (t))
+    {
+      dump_decl (pp, CLASSTYPE_TI_TEMPLATE (TREE_TYPE (t)),
+		 TFF_PLAIN_IDENTIFIER);
+      return;
+    }
+
+  const char *str = IDENTIFIER_POINTER (t);
+  if (!strncmp (str, "_ZGR", 3))
+    {
+      pp_cxx_ws_string (pp, "<temporary>");
+      return;
+    }
+
+  pp_cxx_tree_identifier (pp, t);
+}
+
 /* Dump a human readable string for the decl T under control of FLAGS.  */
 
 static void
@@ -1155,21 +1186,8 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       gcc_unreachable ();
       break;
 
-      /* These special cases are duplicated here so that other functions
-	 can feed identifiers to error and get them demangled properly.  */
     case IDENTIFIER_NODE:
-      if (IDENTIFIER_TYPENAME_P (t))
-	{
-	  pp_cxx_ws_string (pp, "operator");
-	  /* Not exactly IDENTIFIER_TYPE_VALUE.  */
-	  dump_type (pp, TREE_TYPE (t), flags);
-	  break;
-	}
-      else if (dguide_name_p (t))
-	dump_decl (pp, CLASSTYPE_TI_TEMPLATE (TREE_TYPE (t)),
-		   TFF_PLAIN_IDENTIFIER);
-      else
-	pp_cxx_tree_identifier (pp, t);
+      dump_decl_name (pp, t, flags);
       break;
 
     case OVERLOAD:

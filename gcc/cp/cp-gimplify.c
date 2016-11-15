@@ -1977,7 +1977,8 @@ cp_fold_maybe_rvalue (tree x, bool rval)
   while (true)
     {
       x = cp_fold (x);
-      if (rval && DECL_P (x))
+      if (rval && DECL_P (x)
+	  && TREE_CODE (TREE_TYPE (x)) != REFERENCE_TYPE)
 	{
 	  tree v = decl_constant_value (x);
 	  if (v != x && v != error_mark_node)
