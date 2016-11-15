@@ -401,6 +401,27 @@ set mips_option_tests(-mdspr2) {
     .set dspr2
     prepend $2,$3,11
 }
+set mips_option_tests(-mcode-readable=yes) {
+    move $2,$31
+    bal 1f
+    .set mips16
+    la $3,0f
+    lw $3,($3)
+    jr $31
+0:
+    .word 0xfacebead
+    .set nomips16
+    .align 2
+1:
+    ori $3,$31,1
+    jalr $3
+    li $4,0xfacebead
+    beq $3,$4,2f
+    break
+    b .
+2:
+    move $31,$2
+}
 
 # Canonicalize command-line option OPTION.
 proc mips_canonicalize_option { option } {
