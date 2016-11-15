@@ -66,3 +66,7 @@ ARC_C_DEF ("__EM__",     TARGET_EM)
 ARC_C_DEF ("__HS__",     TARGET_HS)
 ARC_C_DEF ("__Xnorm",    TARGET_NORM)
 ARC_C_DEF ("__Xbarrel_shifter", TARGET_BARREL_SHIFTER)
+
+/* Local Variables: */
+/* mode: c */
+/* End: */

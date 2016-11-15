@@ -19,10 +19,29 @@
 
 TM_H += $(srcdir)/config/arc/arc-c.def
 
+driver-arc.o: $(srcdir)/config/arc/driver-arc.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
 arc-c.o: $(srcdir)/config/arc/arc-c.c $(CONFIG_H) $(SYSTEM_H) \
 $(TREE_H) $(TM_H) $(TM_P_H) coretypes.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arc/arc-c.c
+
+#Run `arc-cpus` if you changed something in arc-cpus.def
+
+.PHONY: arc-cpus
+
+arc-cpus: $(srcdir)/config/arc/t-multilib \
+	$(srcdir)/config/arc/arc-tables.opt
+
+$(srcdir)/config/arc/t-multilib: $(srcdir)/config/arc/genmultilib.awk 	\
+				 $(srcdir)/config/arc/arc-cpus.def
+	$(AWK) -f $< -v FORMAT=Makefile $< $(srcdir)/config/arc/arc-cpus.def > $@
+
+$(srcdir)/config/arc/arc-tables.opt: $(srcdir)/config/arc/genoptions.awk \
+				 $(srcdir)/config/arc/arc-cpus.def
+	$(AWK) -f $< -v FORMAT=Makefile $< $(srcdir)/config/arc/arc-cpus.def > $@
 
 # Local Variables:
 # mode: Makefile

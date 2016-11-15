@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ARC_H
 #define GCC_ARC_H
 
+#include <stdbool.h>
+
 /* Things to do:
 
    - incscc, decscc?
@@ -38,6 +40,10 @@ along with GCC; see the file COPYING3.  If not see
 #define SYMBOL_FLAG_MEDIUM_CALL	(SYMBOL_FLAG_MACH_DEP << 1)
 #define SYMBOL_FLAG_LONG_CALL	(SYMBOL_FLAG_MACH_DEP << 2)
 #define SYMBOL_FLAG_CMEM	(SYMBOL_FLAG_MACH_DEP << 3)
+
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT	PROCESSOR_arc700
+#endif
 
 /* Check if this symbol has a long_call attribute in its declaration */
 #define SYMBOL_REF_LONG_CALL_P(X)	\
@@ -74,9 +80,11 @@ along with GCC; see the file COPYING3.  If not see
       GNU_USER_TARGET_OS_CPP_BUILTINS (); \
     } \
   while (0)
-#endif
 
-/* Match the macros used in the assembler.  */
+#endif /* DEFAULT_LIBC == LIBC_UCLIBC */
+
+/* Macros enabled by specific command line option.  FIXME: to be
+   deprecatd.  */
 #define CPP_SPEC "\
 %{msimd:-D__Xsimd} %{mno-mpy:-D__Xno_mpy} %{mswap:-D__Xswap} \
 %{mmin-max:-D__Xmin_max} %{mEA:-D__Xea} \
@@ -85,34 +93,22 @@ along with GCC; see the file COPYING3.  If not see
 %{mdsp-packa:-D__Xdsp_packa} %{mcrc:-D__Xcrc} %{mdvbf:-D__Xdvbf} \
 %{mtelephony:-D__Xtelephony} %{mxy:-D__Xxy} %{mmul64: -D__Xmult32} \
 %{mlock:-D__Xlock} %{mswape:-D__Xswape} %{mrtsc:-D__Xrtsc} \
-%{mcpu=NPS400:-D__NPS400__} \
-%{mcpu=nps400:-D__NPS400__} \
-"
+%{mcpu=nps400:-D__NPS400__}"
 
 #define CC1_SPEC "\
 %{EB:%{EL:%emay not use both -EB and -EL}} \
 %{EB:-mbig-endian} %{EL:-mlittle-endian} \
 "
+extern const char *arc_cpu_to_as (int argc, const char **argv);
 
-#define ASM_DEFAULT "-mARC700 -mEA"
+#define EXTRA_SPEC_FUNCTIONS			\
+  { "cpu_to_as", arc_cpu_to_as },
 
-#define ASM_SPEC  "\
-%{mbig-endian|EB:-EB} %{EL} \
-%{mcpu=ARC600:-mARC600} \
-%{mcpu=ARC601:-mARC601} \
-%{mcpu=ARC700:-mARC700} \
-%{mcpu=ARC700:-mEA} \
-%{!mcpu=*:" ASM_DEFAULT "} \
-%{mbarrel-shifter} %{mno-mpy} %{mmul64} %{mmul32x16:-mdsp-packa} %{mnorm} \
-%{mswap} %{mEA} %{mmin-max} %{mspfp*} %{mdpfp*} %{mfpu=fpuda*:-mfpuda} \
-%{msimd} \
-%{mmac-d16} %{mmac-24} %{mdsp-packa} %{mcrc} %{mdvbf} %{mtelephony} %{mxy} \
-%{mcpu=ARC700|!mcpu=*:%{mlock}} \
-%{mcpu=ARC700|!mcpu=*:%{mswape}} \
-%{mcpu=ARC700|!mcpu=*:%{mrtsc}} \
-%{mcpu=ARCHS:-mHS} \
-%{mcpu=ARCEM:-mEM} \
-%{matomic:-mlock}"
+#define ASM_SPEC  "%{mbig-endian|EB:-EB} %{EL} "			\
+  "%:cpu_to_as(%{mcpu=*:%*}) %{mspfp*} %{mdpfp*} %{mfpu=fpuda*:-mfpuda}"
+
+#define OPTION_DEFAULT_SPECS						\
+  {"cpu", "%{!mcpu=*:%{!mARC*:%{!marc*:%{!mA7:%{!mA6:-mcpu=%(VALUE)}}}}}" }
 
 #if DEFAULT_LIBC == LIBC_UCLIBC
 /* Note that the default is to link against dynamic libraries, if they are
@@ -178,17 +174,11 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_MMEDIUM_CALLS_DEFAULT 0
 #endif
 
-#define DRIVER_SELF_SPECS DRIVER_ENDIAN_SELF_SPECS \
-  "%{mARC600|mA6: -mcpu=ARC600 %<mARC600 %<mA6}" \
-  "%{mARC601: -mcpu=ARC601 %<mARC601}" \
-  "%{mARC700|mA7: -mcpu=ARC700 %<mARC700 %<mA7}" \
-  "%{mbarrel_shifte*: -mbarrel-shifte%* %<mbarrel_shifte*}" \
-  "%{mEA: -mea %<mEA}" \
-  "%{mspfp_*: -mspfp-%* %<mspfp_*}" \
-  "%{mdpfp_*: -mdpfp-%* %<mdpfp_*}" \
-  "%{mdsp_pack*: -mdsp-pack%* %<mdsp_pack*}" \
-  "%{mmac_*: -mmac-%* %<mmac_*}" \
-  "%{multcost=*: -mmultcost=%* %<multcost=*}"
+#define DRIVER_SELF_SPECS DRIVER_ENDIAN_SELF_SPECS		   \
+  "%{mARC600|mA6: -mcpu=arc600 %<mARC600 %<mA6 %<mARC600}"	   \
+  "%{mARC601: -mcpu=arc601 %<mARC601}"				   \
+  "%{mARC700|mA7: -mcpu=arc700 %<mARC700 %<mA7}"		   \
+  "%{mEA: -mea %<mEA}"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -234,20 +224,21 @@ along with GCC; see the file COPYING3.  If not see
    use conditional execution?  */
 #define TARGET_AT_DBR_CONDEXEC  (!TARGET_ARC700 && !TARGET_V2)
 
-#define TARGET_ARC600 (arc_cpu == PROCESSOR_ARC600)
-#define TARGET_ARC601 (arc_cpu == PROCESSOR_ARC601)
-#define TARGET_ARC700 (arc_cpu == PROCESSOR_ARC700	\
-		       || arc_cpu == PROCESSOR_NPS400)
-#define TARGET_EM     (arc_cpu == PROCESSOR_ARCEM)
-#define TARGET_HS     (arc_cpu == PROCESSOR_ARCHS)
-#define TARGET_V2							\
-  ((arc_cpu == PROCESSOR_ARCHS) || (arc_cpu == PROCESSOR_ARCEM))
+extern enum base_architecture arc_base_cpu;
 
-/* Recast the cpu class to be the cpu attribute.  */
-#define arc_cpu_attr ((enum attr_cpu)arc_cpu)
+#define TARGET_ARC600 ((arc_base_cpu == BASE_ARCH_6xx)	\
+		       && (TARGET_BARREL_SHIFTER))
+#define TARGET_ARC601 ((arc_base_cpu == BASE_ARCH_6xx)	\
+		       && (!TARGET_BARREL_SHIFTER))
+#define TARGET_ARC700 (arc_base_cpu == BASE_ARCH_700)
+#define TARGET_EM (arc_base_cpu == BASE_ARCH_em)
+#define TARGET_HS (arc_base_cpu == BASE_ARCH_hs)
+#define TARGET_V2 (TARGET_EM || TARGET_HS)
 
-#ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS { "mARC700" }
+#ifdef ARC_MULTILIB_CPU_DEFAULT
+# ifndef MULTILIB_DEFAULTS
+#  define MULTILIB_DEFAULTS { "mcpu=" ARC_MULTILIB_CPU_DEFAULT }
+# endif
 #endif
 
 #ifndef UNALIGNED_ACCESS_DEFAULT
