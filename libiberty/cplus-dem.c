@@ -1654,7 +1654,10 @@ demangle_signature (struct work_stuff *work,
 					   0);
 	      if (!(work->constructor & 1))
 		expect_return_type = 1;
-	      (*mangled)++;
+	      if (!**mangled)
+		success = 0;
+	      else
+	        (*mangled)++;
 	      break;
 	    }
 	  /* fall through */
@@ -2133,6 +2136,8 @@ demangle_template (struct work_stuff *work, const char **mangled,
 	{
 	  int idx;
 	  (*mangled)++;
+	  if (**mangled == '\0')
+	    return (0);
 	  (*mangled)++;
 
 	  idx = consume_count_with_underscores (mangled);
@@ -2977,7 +2982,7 @@ gnu_special (struct work_stuff *work, const char **mangled, string *declp)
   int success = 1;
   const char *p;
 
-  if ((*mangled)[0] == '_'
+  if ((*mangled)[0] == '_' && (*mangled)[1] != '\0'
       && strchr (cplus_markers, (*mangled)[1]) != NULL
       && (*mangled)[2] == '_')
     {
@@ -2991,7 +2996,7 @@ gnu_special (struct work_stuff *work, const char **mangled, string *declp)
 		&& (*mangled)[3] == 't'
 		&& (*mangled)[4] == '_')
 	       || ((*mangled)[1] == 'v'
-		   && (*mangled)[2] == 't'
+		   && (*mangled)[2] == 't' && (*mangled)[3] != '\0'
 		   && strchr (cplus_markers, (*mangled)[3]) != NULL)))
     {
       /* Found a GNU style virtual table, get past "_vt<CPLUS_MARKER>"
@@ -3761,11 +3766,12 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
 		    break;
 		  }
 
-		if (*(*mangled)++ != 'F')
+		if (*(*mangled) != 'F')
 		  {
 		    success = 0;
 		    break;
 		  }
+		(*mangled)++;
 	      }
 	    if ((member && !demangle_nested_args (work, mangled, &decl))
 		|| **mangled != '_')

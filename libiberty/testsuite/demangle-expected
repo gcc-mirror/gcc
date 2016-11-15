@@ -4606,3 +4606,23 @@ void f<void, int, false>(void (*)(int) noexcept)
 
 _Z1fIvJiELb0EEvPDwiEFT_DpT0_E
 void f<void, int, false>(void (*)(int) throw(int))
+
+# Could crash
+_
+_
+
+# Could crash
+_vt
+_vt
+
+# Could crash
+_$_1Acitz
+_$_1Acitz
+
+# Could crash
+_$_H1R
+_$_H1R
+
+# Could crash
+_Q8ccQ4M2e.
+_Q8ccQ4M2e.
