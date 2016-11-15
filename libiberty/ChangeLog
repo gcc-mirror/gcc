@@ -1,3 +1,10 @@
+2016-11-15  Mark Wielaard  <mark@klomp.org>
+
+	* cp-demangle.c (d_expression_1): Make sure third expression
+	exists for ?: and fold expressions.
+	* testsuite/demangle-expected: Add examples of strings that could
+	crash the demangler because of missing expression.
+
 2016-11-14  Mark Wielaard  <mark@klomp.org>
 
 	* cplus-dem.c (demangle_signature): After 'H', template function,
