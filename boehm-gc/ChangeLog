@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-03-29  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure.host: Set gc_use_mmap on *-kfreebsd-gnu* and *-gnu*.

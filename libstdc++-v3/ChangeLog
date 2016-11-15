@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/19_diagnostics/error_code/is_error_code_v.cc: Fix license

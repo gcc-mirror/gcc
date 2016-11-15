@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-09-04  John David Anglin  <danglin@gcc.gnu.org>
 
 	* src/pa/ffi.c (ffi_struct_type): Put type declaration on separate line.

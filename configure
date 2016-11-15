@@ -583,7 +583,6 @@ AS_FOR_TARGET
 AR_FOR_TARGET
 GOC_FOR_TARGET
 GFORTRAN_FOR_TARGET
-GCJ_FOR_TARGET
 GCC_FOR_TARGET
 CXX_FOR_TARGET
 CC_FOR_TARGET
@@ -616,7 +615,6 @@ LD_FOR_BUILD
 LDFLAGS_FOR_BUILD
 GOC_FOR_BUILD
 GFORTRAN_FOR_BUILD
-GCJ_FOR_BUILD
 DLLTOOL_FOR_BUILD
 CXX_FOR_BUILD
 CXXFLAGS_FOR_BUILD
@@ -826,7 +824,6 @@ READELF
 CC_FOR_TARGET
 CXX_FOR_TARGET
 GCC_FOR_TARGET
-GCJ_FOR_TARGET
 GFORTRAN_FOR_TARGET
 GOC_FOR_TARGET
 AR_FOR_TARGET
@@ -1596,8 +1593,6 @@ Some influential environment variables:
               CXX for the target
   GCC_FOR_TARGET
               GCC for the target
-  GCJ_FOR_TARGET
-              GCJ for the target
   GFORTRAN_FOR_TARGET
               GFORTRAN for the target
   GOC_FOR_TARGET
@@ -3933,7 +3928,6 @@ if test "${build}" != "${host}" ; then
   AS_FOR_BUILD=${AS_FOR_BUILD-as}
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
   CXX_FOR_BUILD=${CXX_FOR_BUILD-g++}
-  GCJ_FOR_BUILD=${GCJ_FOR_BUILD-gcj}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
@@ -3947,7 +3941,6 @@ else
   AS_FOR_BUILD="\$(AS)"
   CC_FOR_BUILD="\$(CC)"
   CXX_FOR_BUILD="\$(CXX)"
-  GCJ_FOR_BUILD="\$(GCJ)"
   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
   GOC_FOR_BUILD="\$(GOC)"
   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
@@ -7586,7 +7579,6 @@ done
 
 
 
-
 # Generate default definitions for YACC, M4, LEX and other programs that run
 # on the build machine.  These are used if the Makefile can't locate these
 # programs in objdir.
@@ -10315,167 +10307,6 @@ if test -z "$ac_cv_prog_GCC_FOR_TARGET" ; then
   GCC_FOR_TARGET="${CC_FOR_TARGET}"
 else
   GCC_FOR_TARGET="$ac_cv_prog_GCC_FOR_TARGET"
-fi
-
-
-
-if test -n "$GCJ_FOR_TARGET"; then
-  ac_cv_prog_GCJ_FOR_TARGET=$GCJ_FOR_TARGET
-elif test -n "$ac_cv_prog_GCJ_FOR_TARGET"; then
-  GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
-fi
-
-if test -n "$ac_cv_prog_GCJ_FOR_TARGET"; then
-  for ncn_progname in gcj; do
-    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
-set dummy ${ncn_progname}; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_GCJ_FOR_TARGET+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$GCJ_FOR_TARGET"; then
-  ac_cv_prog_GCJ_FOR_TARGET="$GCJ_FOR_TARGET" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_GCJ_FOR_TARGET="${ncn_progname}"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
-if test -n "$GCJ_FOR_TARGET"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GCJ_FOR_TARGET" >&5
-$as_echo "$GCJ_FOR_TARGET" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  done
-fi
-
-if test -z "$ac_cv_prog_GCJ_FOR_TARGET" && test -n "$with_build_time_tools"; then
-  for ncn_progname in gcj; do
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${ncn_progname} in $with_build_time_tools" >&5
-$as_echo_n "checking for ${ncn_progname} in $with_build_time_tools... " >&6; }
-    if test -x $with_build_time_tools/${ncn_progname}; then
-      ac_cv_prog_GCJ_FOR_TARGET=$with_build_time_tools/${ncn_progname}
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-      break
-    else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-    fi
-  done
-fi
-
-if test -z "$ac_cv_prog_GCJ_FOR_TARGET"; then
-  for ncn_progname in gcj; do
-    if test -n "$ncn_target_tool_prefix"; then
-      # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
-set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_GCJ_FOR_TARGET+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$GCJ_FOR_TARGET"; then
-  ac_cv_prog_GCJ_FOR_TARGET="$GCJ_FOR_TARGET" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_GCJ_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
-if test -n "$GCJ_FOR_TARGET"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GCJ_FOR_TARGET" >&5
-$as_echo "$GCJ_FOR_TARGET" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-    fi
-    if test -z "$ac_cv_prog_GCJ_FOR_TARGET" && test $build = $target ; then
-      # Extract the first word of "${ncn_progname}", so it can be a program name with args.
-set dummy ${ncn_progname}; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_GCJ_FOR_TARGET+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$GCJ_FOR_TARGET"; then
-  ac_cv_prog_GCJ_FOR_TARGET="$GCJ_FOR_TARGET" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_GCJ_FOR_TARGET="${ncn_progname}"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
-if test -n "$GCJ_FOR_TARGET"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GCJ_FOR_TARGET" >&5
-$as_echo "$GCJ_FOR_TARGET" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-    fi
-    test -n "$ac_cv_prog_GCJ_FOR_TARGET" && break
-  done
-fi
-
-if test -z "$ac_cv_prog_GCJ_FOR_TARGET" ; then
-  set dummy gcj
-  if test $build = $target ; then
-    GCJ_FOR_TARGET="$2"
-  else
-    GCJ_FOR_TARGET="${ncn_target_tool_prefix}$2"
-  fi
-else
-  GCJ_FOR_TARGET="$ac_cv_prog_GCJ_FOR_TARGET"
 fi
 
 

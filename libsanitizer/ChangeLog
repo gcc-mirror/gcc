@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-11-09  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	* asan/asan_globals.cc (RegisterGlobal): Do not call

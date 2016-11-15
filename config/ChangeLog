@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	multi.m4: Don't set GCJ.
+
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* elf.m4: Remove interix support.

@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-07-21  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* Makefile.am (myo_inc_dir): Remove.
