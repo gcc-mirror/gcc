@@ -3627,10 +3627,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.var_declared_inline_p \
    = true)
 
-/* Nonzero if NODE is the artificial VAR_DECL for decomposition
+/* Nonzero if NODE is an artificial VAR_DECL for a C++17 decomposition
    declaration.  */
 #define DECL_DECOMPOSITION_P(NODE) \
-  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))			\
+  (VAR_P (NODE) && DECL_LANG_SPECIFIC (NODE)			\
    ? DECL_LANG_SPECIFIC (NODE)->u.base.decomposition_p		\
    : false)
 #define SET_DECL_DECOMPOSITION_P(NODE) \
