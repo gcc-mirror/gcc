@@ -62,14 +62,12 @@ get_gimple_control_stmt (basic_block bb)
 /* Return true if the CFG contains at least one path from START_BB to END_BB.
    When a path is found, record in PATH the blocks from END_BB to START_BB.
    VISITED_BBS is used to make sure we don't fall into an infinite loop.  Bound
-   the recursion to basic blocks belonging to LOOP.
-   SPEED_P indicate that we could increase code size to improve the code path */
+   the recursion to basic blocks belonging to LOOP.  */
 
 static bool
 fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
 		      vec<basic_block, va_gc> *&path,
-		      hash_set<basic_block> *visited_bbs, loop_p loop,
-		      bool speed_p)
+		      hash_set<basic_block> *visited_bbs, loop_p loop)
 {
   if (loop != start_bb->loop_father)
     return false;
@@ -85,8 +83,7 @@ fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
       edge e;
       edge_iterator ei;
       FOR_EACH_EDGE (e, ei, start_bb->succs)
-	if (fsm_find_thread_path (e->dest, end_bb, path, visited_bbs, loop,
-				  speed_p))
+	if (fsm_find_thread_path (e->dest, end_bb, path, visited_bbs, loop))
 	  {
 	    vec_safe_push (path, start_bb);
 	    return true;
@@ -427,6 +424,222 @@ convert_and_register_jump_thread_path (vec<basic_block, va_gc> *path,
   --max_threaded_paths;
 }
 
+/* While following a chain of SSA_NAME definitions, we jumped from a definition
+   in LAST_BB to a definition in VAR_BB (walking backwards).
+
+   Verify there is a single path between the blocks and none of the blocks
+   in the path is already in VISITED_BBS.  If so, then update VISISTED_BBS,
+   add the new blocks to PATH and return TRUE.  Otherwise return FALSE.
+
+   Store the length of the subpath in NEXT_PATH_LENGTH.  */
+
+static bool
+check_subpath_and_update_thread_path (basic_block last_bb, basic_block new_bb,
+				      hash_set<basic_block> *visited_bbs,
+				      vec<basic_block, va_gc> *&path,
+				      int *next_path_length)
+{
+  edge e;
+  int e_count = 0;
+  edge_iterator ei;
+  vec<basic_block, va_gc> *next_path;
+  vec_alloc (next_path, 10);
+
+  FOR_EACH_EDGE (e, ei, last_bb->preds)
+    {
+      hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
+
+      if (fsm_find_thread_path (new_bb, e->src, next_path, visited_bbs,
+				e->src->loop_father))
+	++e_count;
+
+      delete visited_bbs;
+
+      /* If there is more than one path, stop.  */
+      if (e_count > 1)
+	{
+	  vec_free (next_path);
+	  return false;
+	}
+    }
+
+  /* Stop if we have not found a path: this could occur when the recursion
+     is stopped by one of the bounds.  */
+  if (e_count == 0)
+    {
+      vec_free (next_path);
+      return false;
+    }
+
+  /* Make sure we haven't already visited any of the nodes in
+     NEXT_PATH.  Don't add them here to avoid pollution.  */
+  for (unsigned int i = 0; i < next_path->length () - 1; i++)
+    {
+      if (visited_bbs->contains ((*next_path)[i]))
+	{
+	  vec_free (next_path);
+	  return false;
+	}
+    }
+
+  /* Now add the nodes to VISISTED_BBS.  */
+  for (unsigned int i = 0; i < next_path->length () - 1; i++)
+    visited_bbs->add ((*next_path)[i]);
+
+  /* Append all the nodes from NEXT_PATH to PATH.  */
+  vec_safe_splice (path, next_path);
+  *next_path_length = next_path->length ();
+  vec_free (next_path);
+
+  return true;
+}
+
+static void fsm_find_control_statement_thread_paths (tree,
+						     hash_set<basic_block> *,
+						     vec<basic_block, va_gc> *&,
+						     bool, bool);
+
+/* Given PHI which defines NAME in block VAR_BB, recurse through the
+   PHI's arguments searching for paths where NAME will ultimately have
+   a constant value.
+
+   VISITED_BBS tracks the blocks that have been encountered.
+
+   PATH contains the series of blocks to traverse that will result in
+   NAME having a constant value.
+
+   SEEN_LOOP_PHI tracks if we have recursed through a loop PHI node.
+
+   SPEED_P indicates if we are optimizing for speed over space.  */
+
+static void
+handle_phi (gphi *phi, tree name, basic_block var_bb,
+	    hash_set<basic_block> *visited_bbs,
+	    vec<basic_block, va_gc> *&path,
+	    bool seen_loop_phi, bool speed_p)
+{
+  /* Iterate over the arguments of PHI.  */
+  for (unsigned int i = 0; i < gimple_phi_num_args (phi); i++)
+    {
+      tree arg = gimple_phi_arg_def (phi, i);
+      basic_block bbi = gimple_phi_arg_edge (phi, i)->src;
+
+      /* Skip edges pointing outside the current loop.  */
+      if (!arg || var_bb->loop_father != bbi->loop_father)
+	continue;
+
+      if (TREE_CODE (arg) == SSA_NAME)
+	{
+	  vec_safe_push (path, bbi);
+	  /* Recursively follow SSA_NAMEs looking for a constant
+	     definition.  */
+	  fsm_find_control_statement_thread_paths (arg, visited_bbs, path,
+						   seen_loop_phi, speed_p);
+
+	  path->pop ();
+	  continue;
+	}
+
+      if (TREE_CODE_CLASS (TREE_CODE (arg)) != tcc_constant)
+	continue;
+
+      /* If this is a profitable jump thread path, then convert it
+	 into the canonical form and register it.  */
+      bool irreducible = false;
+      edge taken_edge = profitable_jump_thread_path (path, bbi, name, arg,
+						     speed_p, &irreducible);
+      if (taken_edge)
+	{
+	  convert_and_register_jump_thread_path (path, taken_edge);
+	  path->pop ();
+
+	  if (irreducible)
+	    vect_free_loop_info_assumptions ((*path)[0]->loop_father);
+	}
+    }
+}
+
+/* Return TRUE if STMT is a gimple assignment we want to either directly
+   handle or recurse through.  Return FALSE otherwise.
+
+   Note that adding more cases here requires adding cases to handle_assignment
+   below.  */
+
+static bool
+handle_assignment_p (gimple *stmt)
+{
+  if (is_gimple_assign (stmt))
+    {
+      enum tree_code def_code = gimple_assign_rhs_code (stmt);
+
+      /* If the RHS is an SSA_NAME, then we will recurse through it.
+	 Go ahead and filter out cases where the SSA_NAME is a default
+	 definition.  There's little to be gained by trying to handle that.  */
+      if (def_code == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (gimple_assign_rhs1 (stmt)))
+	return true;
+
+      /* If the RHS is a constant, then it's a terminal that we'll want
+	 to handle as well.  */
+      if (TREE_CODE_CLASS (def_code) == tcc_constant)
+	return true;
+    }
+
+  /* Anything not explicitly allowed is not handled.  */
+  return false;
+}
+
+/* Given STMT which defines NAME in block VAR_BB, recurse through the
+   PHI's arguments searching for paths where NAME will ultimately have
+   a constant value.
+
+   VISITED_BBS tracks the blocks that have been encountered.
+
+   PATH contains the series of blocks to traverse that will result in
+   NAME having a constant value.
+
+   SEEN_LOOP_PHI tracks if we have recursed through a loop PHI node.
+
+   SPEED_P indicates if we are optimizing for speed over space.  */
+
+static void
+handle_assignment (gimple *stmt, tree name, basic_block var_bb,
+		   hash_set<basic_block> *visited_bbs,
+		   vec<basic_block, va_gc> *&path,
+		   bool seen_loop_phi, bool speed_p)
+{
+  tree arg = gimple_assign_rhs1 (stmt);
+
+  if (TREE_CODE (arg) == SSA_NAME)
+    fsm_find_control_statement_thread_paths (arg, visited_bbs,
+					     path, seen_loop_phi, speed_p);
+
+  else
+    {
+      /* profitable_jump_thread_path is going to push the current
+	 block onto the path.  But the path will always have the current
+	 block at this point.  So we can just pop it.  */
+      path->pop ();
+
+      bool irreducible = false;
+      edge taken_edge = profitable_jump_thread_path (path, var_bb,
+						     name, arg, speed_p,
+						     &irreducible);
+      if (taken_edge)
+	{
+	  convert_and_register_jump_thread_path (path, taken_edge);
+	  path->pop ();
+
+	  if (irreducible)
+	    vect_free_loop_info_assumptions ((*path)[0]->loop_father);
+	}
+
+      /* And put the current block back onto the path so that the
+	 state of the stack is unchanged when we leave.  */
+      vec_safe_push (path, var_bb);
+    }
+}
+
 /* We trace the value of the SSA_NAME NAME back through any phi nodes looking
    for places where it gets a constant value and save the path.  Stop after
    having recorded MAX_PATHS jump threading paths.
@@ -461,9 +674,8 @@ fsm_find_control_statement_thread_paths (tree name,
 	  >= (unsigned) PARAM_VALUE (PARAM_FSM_MAXIMUM_PHI_ARGUMENTS)))
     return;
 
-  if (gimple_code (def_stmt) == GIMPLE_ASSIGN
-      && gimple_assign_rhs_code (def_stmt) != INTEGER_CST
-      && gimple_assign_rhs_code (def_stmt) != SSA_NAME)
+  if (is_gimple_assign (def_stmt)
+      && ! handle_assignment_p (def_stmt))
     return;
 
   /* Avoid infinite recursion.  */
@@ -486,143 +698,25 @@ fsm_find_control_statement_thread_paths (tree name,
      different, append to PATH the blocks from LAST_BB_IN_PATH to VAR_BB.  */
   if (var_bb != last_bb_in_path)
     {
-      edge e;
-      int e_count = 0;
-      edge_iterator ei;
-      vec<basic_block, va_gc> *next_path;
-      vec_alloc (next_path, 10);
-
       /* When VAR_BB == LAST_BB_IN_PATH, then the first block in the path
 	 will already be in VISITED_BBS.  When they are not equal, then we
 	 must ensure that first block is accounted for to ensure we do not
 	 create bogus jump threading paths.  */
       visited_bbs->add ((*path)[0]);
-      FOR_EACH_EDGE (e, ei, last_bb_in_path->preds)
-	{
-	  hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
-
-	  if (fsm_find_thread_path (var_bb, e->src, next_path, visited_bbs,
-				    e->src->loop_father, speed_p))
-	    ++e_count;
-
-	  delete visited_bbs;
-
-	  /* If there is more than one path, stop.  */
-	  if (e_count > 1)
-	    {
-	      vec_free (next_path);
-	      return;
-	    }
-	}
-
-      /* Stop if we have not found a path: this could occur when the recursion
-	 is stopped by one of the bounds.  */
-      if (e_count == 0)
-	{
-	  vec_free (next_path);
-	  return;
-	}
-
-      /* Make sure we haven't already visited any of the nodes in
-	 NEXT_PATH.  Don't add them here to avoid pollution.  */
-      for (unsigned int i = 0; i < next_path->length () - 1; i++)
-	{
-	  if (visited_bbs->contains ((*next_path)[i]))
-	    {
-	      vec_free (next_path);
-	      return;
-	    }
-	}
-
-      /* Now add the nodes to VISISTED_BBS.  */
-      for (unsigned int i = 0; i < next_path->length () - 1; i++)
-	visited_bbs->add ((*next_path)[i]);
-
-      /* Append all the nodes from NEXT_PATH to PATH.  */
-      vec_safe_splice (path, next_path);
-      next_path_length = next_path->length ();
-      vec_free (next_path);
+      if (!check_subpath_and_update_thread_path (last_bb_in_path, var_bb,
+						 visited_bbs, path,
+						 &next_path_length))
+	return;
     }
 
   gcc_assert (path->last () == var_bb);
 
-  /* Iterate over the arguments of PHI.  */
-  unsigned int i;
   if (gimple_code (def_stmt) == GIMPLE_PHI)
-    {
-      gphi *phi = as_a <gphi *> (def_stmt);
-      for (i = 0; i < gimple_phi_num_args (phi); i++)
-	{
-	  tree arg = gimple_phi_arg_def (phi, i);
-	  basic_block bbi = gimple_phi_arg_edge (phi, i)->src;
-
-	  /* Skip edges pointing outside the current loop.  */
-	  if (!arg || var_bb->loop_father != bbi->loop_father)
-	    continue;
-
-	  if (TREE_CODE (arg) == SSA_NAME)
-	    {
-	      vec_safe_push (path, bbi);
-	      /* Recursively follow SSA_NAMEs looking for a constant
-		 definition.  */
-	      fsm_find_control_statement_thread_paths (arg, visited_bbs, path,
-						       seen_loop_phi, speed_p);
-
-	      path->pop ();
-	      continue;
-	    }
-
-	  if (TREE_CODE (arg) != INTEGER_CST)
-	    continue;
-
-	  /* If this is a profitable jump thread path, then convert it
-	     into the canonical form and register it.  */
-	  bool irreducible = false;
-	  edge taken_edge = profitable_jump_thread_path (path, bbi, name, arg,
-							 speed_p, &irreducible);
-	  if (taken_edge)
-	    {
-	      convert_and_register_jump_thread_path (path, taken_edge);
-	      path->pop ();
-
-	      if (irreducible)
-		vect_free_loop_info_assumptions ((*path)[0]->loop_father);
-	    }
-	}
-    }
+    handle_phi (as_a <gphi *> (def_stmt), name, var_bb,
+		visited_bbs, path, seen_loop_phi, speed_p);
   else if (gimple_code (def_stmt) == GIMPLE_ASSIGN)
-    {
-      tree arg = gimple_assign_rhs1 (def_stmt);
-
-      if (TREE_CODE (arg) == SSA_NAME)
-	fsm_find_control_statement_thread_paths (arg, visited_bbs,
-						 path, seen_loop_phi, speed_p);
-
-      else
-	{
-	  /* profitable_jump_thread_path is going to push the current
-	     block onto the path.  But the path will always have the current
-	     block at this point.  So we can just pop it.  */
-	  path->pop ();
-
-	  bool irreducible = false;
-	  edge taken_edge = profitable_jump_thread_path (path, var_bb,
-						         name, arg, speed_p,
-							 &irreducible);
-	  if (taken_edge)
-	    {
-	      convert_and_register_jump_thread_path (path, taken_edge);
-	      path->pop ();
-
-	      if (irreducible)
-		vect_free_loop_info_assumptions ((*path)[0]->loop_father);
-	    }
-
-	  /* And put the current block back onto the path so that the
-	     state of the stack is unchanged when we leave.  */
-	  vec_safe_push (path, var_bb);
-	}
-    }
+    handle_assignment (def_stmt, name, var_bb,
+		       visited_bbs, path, seen_loop_phi, speed_p);
 
   /* Remove all the nodes that we added from NEXT_PATH.  */
   if (next_path_length)
@@ -652,7 +746,7 @@ find_jump_threads_backwards (basic_block bb, bool speed_p)
   else if (code == GIMPLE_COND)
     {
       if (TREE_CODE (gimple_cond_lhs (stmt)) == SSA_NAME
-	  && TREE_CODE (gimple_cond_rhs (stmt)) == INTEGER_CST
+	  && TREE_CODE_CLASS (TREE_CODE (gimple_cond_rhs (stmt))) == tcc_constant
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)))
 	      || POINTER_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt)))))
 	name = gimple_cond_lhs (stmt);
