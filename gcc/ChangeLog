@@ -1,3 +1,7 @@
+2016-11-16  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Remove references to java/libjava.
+
 2016-11-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* tree-ssa-coalesce.c (register_default_def): Remove register_ssa_partition.
