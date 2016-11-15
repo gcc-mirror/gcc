@@ -1,5 +1,7 @@
 2016-11-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp1y/auto-fn33.C (main): Turn // error: ... into dg-bogus.
+
 	PR c++/71988
 	* g++.dg/cpp0x/constexpr-71988.C: New test.
 
