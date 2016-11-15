@@ -112,6 +112,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   // Implementation of FNV hash for 32-bit size_t.
+  // N.B. This function should work on unsigned char, otherwise it does not
+  // correctly implement the FNV-1a algorithm (see PR59406).
+  // The existing behaviour is retained for backwards compatibility.
   size_t
   _Fnv_hash_bytes(const void* ptr, size_t len, size_t hash)
   {
@@ -157,6 +160,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   // Implementation of FNV hash for 64-bit size_t.
+  // N.B. This function should work on unsigned char, otherwise it does not
+  // correctly implement the FNV-1a algorithm (see PR59406).
+  // The existing behaviour is retained for backwards compatibility.
   size_t
   _Fnv_hash_bytes(const void* ptr, size_t len, size_t hash)
   {

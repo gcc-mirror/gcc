@@ -1,5 +1,11 @@
 2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/59406
+	* include/bits/functional_hash.h: Add comment noting difference from
+	FNV-1a.
+	* include/tr1/functional_hash.h: Likewise.
+	* libsupc++/hash_bytes.cc: Likewise.
+
 	* include/bits/basic_string.h: Reuse _If_sv alias template for new
 	constructor.
 
