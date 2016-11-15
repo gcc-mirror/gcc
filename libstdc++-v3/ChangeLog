@@ -1,5 +1,8 @@
 2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.h: Reuse _If_sv alias template for new
+	constructor.
+
 	* doc/xml/manual/intro.xml: Document LWG 2770 status. Remove entries
 	for 2742 and 2748.
 	* doc/html/*: Regenerate.
