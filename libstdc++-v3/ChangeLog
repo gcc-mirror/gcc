@@ -1,6 +1,6 @@
 2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
-	* testsuite/experimental/any/typedefs.cc: Likewise.
+	* testsuite/experimental/any/typedefs.cc: Fix license text.
 	* testsuite/experimental/array/make_array.cc: Likewise.
 	* testsuite/experimental/array/neg.cc: Likewise.
 	* testsuite/experimental/chrono/value.cc: Likewise.
