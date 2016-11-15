@@ -1276,22 +1276,6 @@ debug (tree_live_info_d *ptr)
 }
 
 
-/* Verify that SSA_VAR is a non-virtual SSA_NAME.  */
-
-void
-register_ssa_partition_check (tree ssa_var)
-{
-  gcc_assert (TREE_CODE (ssa_var) == SSA_NAME);
-  if (virtual_operand_p (ssa_var))
-    {
-      fprintf (stderr, "Illegally registering a virtual SSA name :");
-      print_generic_expr (stderr, ssa_var, TDF_SLIM);
-      fprintf (stderr, " in the SSA->Normal phase.\n");
-      internal_error ("SSA corruption");
-    }
-}
-
-
 /* Verify that the info in LIVE matches the current cfg.  */
 
 static void

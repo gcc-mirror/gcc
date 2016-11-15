@@ -1,3 +1,10 @@
+2016-11-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* tree-ssa-coalesce.c (register_default_def): Remove register_ssa_partition.
+	(create_outofssa_var_map): Likewise.
+	* tree-ssa-live.c (register_ssa_partition_check): Remove.
+	* tree-ssa-live.h (register_ssa_partition): Likewise.
+
 2016-11-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* genattrtab.c (attr_rtx_1): Avoid allocating new rtx objects.
