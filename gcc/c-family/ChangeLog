@@ -9,6 +9,17 @@
 	* c-common.h (enum rid): Add RID_GIMPLE, RID_PHI.
 	* c.opt (fgimple): New option.
 
+2016-11-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/35503
+	* c-common.h (warn_for_restrict): Declare.
+	* c-warn.c: Include gcc-rich-location.h.
+	(warn_for_restrict): New function.
+	* c-format.c (gcc_tdiag_char_table): Add entry for "Z" specifier.
+	(gcc_cdiag_char_table): Likewise.
+	(gcc_cxxdiag_char_table): Likewise.
+	* c.opt (Wrestrict): New option.
+
 2016-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (print_ada_declaration): For typedef declarations, look
@@ -3740,7 +3751,7 @@
 
 2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
 
-    * c.opt: Enable LTO FE for fshort-double.
+	* c.opt: Enable LTO FE for fshort-double.
 
 2014-03-07  Jason Merrill  <jason@redhat.com>
 
