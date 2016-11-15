@@ -42,3 +42,13 @@ int main()
   test01();
   return 0;
 }
+
+// LWG DR 2770. tuple_size<const T> specialization is not SFINAE compatible
+template<typename T, typename = void>
+struct has_value : std::false_type { };
+
+template<typename T>
+struct has_value<T, std::__void_t<decltype(T::value)>> : std::true_type { };
+
+static_assert( !has_value<std::tuple_size<int>>::value, "" );
+static_assert( !has_value<std::tuple_size<const int>>::value, "" );

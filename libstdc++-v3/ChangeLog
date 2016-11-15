@@ -1,5 +1,14 @@
 2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 2770 status. Remove entries
+	for 2742 and 2748.
+	* doc/html/*: Regenerate.
+	* include/std/utility (__tuple_size_cv_impl): New helper to safely
+	detect tuple_size<T>::value, as per LWG 2770.
+	(tuple_size<cv T>): Adjust partial specializations to derive from
+	__tuple_size_cv_impl.
+	* testsuite/20_util/tuple/cv_tuple_size.cc: Test SFINAE-friendliness.
+
 	* testsuite/libstdc++-prettyprinters/cxx17.cc: Adjust test for
 	variant<T&>.
 
