@@ -1,3 +1,13 @@
+2016-11-15  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadbackward.c (fsm_find_thread_path): Remove unneeded
+	parameter.  Callers changed.
+	(check-subpath_and_update_thread_path): Extracted from
+	fsm_find_control_statement_thread_paths.
+	(handle_phi, handle_assignment, handle_assignment_p): Likewise.
+	(handle_phi, handle_assignment): Allow any constant node, not
+	just INTEGER_CST.
+
 2016-11-15  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-arch.h: New file.
