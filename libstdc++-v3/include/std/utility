@@ -88,18 +88,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct tuple_size;
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2770. tuple_size<const T> specialization is not SFINAE compatible
+  template<typename _Tp, typename = void>
+    struct __tuple_size_cv_impl { };
+
+  template<typename _Tp>
+    struct __tuple_size_cv_impl<_Tp, __void_t<decltype(tuple_size<_Tp>::value)>>
+    : integral_constant<size_t, tuple_size<_Tp>::value> { };
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2313. tuple_size should always derive from integral_constant<size_t, N>
   template<typename _Tp>
-    struct tuple_size<const _Tp>
-    : integral_constant<size_t, tuple_size<_Tp>::value> { };
+    struct tuple_size<const _Tp> : __tuple_size_cv_impl<_Tp> { };
 
   template<typename _Tp>
-    struct tuple_size<volatile _Tp>
-    : integral_constant<size_t, tuple_size<_Tp>::value> { };
+    struct tuple_size<volatile _Tp> : __tuple_size_cv_impl<_Tp> { };
 
   template<typename _Tp>
-    struct tuple_size<const volatile _Tp>
-    : integral_constant<size_t, tuple_size<_Tp>::value> { };
+    struct tuple_size<const volatile _Tp> : __tuple_size_cv_impl<_Tp> { };
 
   /// Gives the type of the ith element of a given tuple type.
   template<std::size_t __i, typename _Tp>

@@ -503,14 +503,10 @@
        <span class="emphasis"><em><code class="code">priority_queue</code> lacking comparator typedef
        </em></span>
     </span></dt><dd><p>Define the <code class="code">value_compare</code> typedef.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2742" target="_top">2742</a>:
-       <span class="emphasis"><em>Inconsistent <code class="code">string</code> interface taking <code class="code">string_view</code>
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2770" target="_top">2770</a>:
+       <span class="emphasis"><em><code class="code">tuple_size&lt;const T&gt;</code> specialization is not
+	 SFINAE compatible and breaks decomposition declarations
        </em></span>
-    </span></dt><dd><p>Add the new constructor and additionally constrain it
-      to avoid ambiguities with non-const <code class="code">charT*</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#2748" target="_top">2748</a>:
-       <span class="emphasis"><em>swappable traits for optionals
-       </em></span>
-    </span></dt><dd><p>Disable the non-member <code class="code">swap</code> overload when
-      the contained object is not swappable.
+    </span></dt><dd><p>Safely detect <code class="code">tuple_size&lt;T&gt;::value</code> and
+      only use it if valid.
     </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="license.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="status.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Setup</td></tr></table></div></body></html>
