@@ -1,3 +1,10 @@
+2016-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/funcspec-56.inc: New file.
+	* gcc.target/i386.funcspec-5.c: Include funcspec-56.inc.  Remove
+	common 32-bit and 64-bit function specific options.
+	* gcc.target/i386.funcspec-6.c: Ditto.
+
 2016-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp1z/decomp14.C: New test.
