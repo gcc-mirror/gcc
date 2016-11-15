@@ -79,7 +79,7 @@ SYM(__mulsi3):
 	j_s.d [blink]
 	mov_s r0,mlo
 	ENDFUNC(__mulsi3)
-#elif defined (__ARC700__) || defined (__HS__)
+#elif defined (__ARC_MPY__)
 	HIDDEN_FUNC(__mulsi3)
 	mpyu	r0,r0,r1
 	nop_s
@@ -98,7 +98,7 @@ SYM(__mulsi3):
 	add_s	r1,r1,r1
 .Lend:	j_s [blink]
 	ENDFUNC(__mulsi3)
-#elif !defined (__OPTIMIZE_SIZE__) && !defined(__ARC601__)
+#elif !defined (__OPTIMIZE_SIZE__) && defined (__ARC_BARREL_SHIFTER__)
 	/* Up to 3.5 times faster than the simpler code below, but larger.  */
 	FUNC(__mulsi3)
 	ror.f	r2,r0,4
@@ -170,7 +170,8 @@ SYM(__umulsidi3):
    umulsi3_highpart implementation; the use of the latter label doesn't
    actually benefit ARC601 platforms, but is useful when ARC601 code is linked
    against other libraries.  */
-#if defined (__ARC700__) || defined (__ARC_MUL64__) || defined (__ARC601__)
+#if defined (__ARC_MPY__) || defined (__ARC_MUL64__) \
+	|| !defined (__ARC_BARREL_SHIFTER__)
 	.global SYM(__umulsi3_highpart)
 SYM(__umulsi3_highpart):
 	HIDDEN_FUNC(__umulsi3_highpart)
@@ -188,18 +189,18 @@ SYM(__umulsi3_highpart):
 */
 #include "ieee-754/arc-ieee-754.h"
 
-#ifdef __ARC700__
+#ifdef __ARC_MPY__
 	mov_s	r12,DBL0L
 	mpyu	DBL0L,r12,DBL0H
 	j_s.d	[blink]
-	mpyhu	DBL0H,r12,DBL0H
+	MPYHU	DBL0H,r12,DBL0H
 #elif defined (__ARC_MUL64__)
 /* Likewise for __ARC_MUL64__ */
 	mulu64 r0,r1
 	mov_s DBL0L,mlo
 	j_s.d [blink]
 	mov_s DBL0H,mhi
-#else /* !__ARC700__ && !__ARC_MUL64__ */
+#else /* !__ARC_MPY__ && !__ARC_MUL64__ */
 /* Although it might look tempting to extend this to handle muldi3,
    using mulsi3 twice with 2.25 cycles per 32 bit add is faster
    than one loop with 3 or four cycles per 32 bit add.  */
@@ -223,9 +224,10 @@ SYM(__umulsi3_highpart):
 	mov_s DBL0L,r3
 	j_s.d [blink]
 	mov DBL0H,r2
-#endif /* !__ARC700__*/
+#endif /* !__ARC_MPY__*/
 	ENDFUNC(__umulsidi3)
-#if defined (__ARC700__) || defined (__ARC_MUL64__) || defined (__ARC601__)
+#if defined (__ARC_MPY__) || defined (__ARC_MUL64__) \
+	|| !defined (__ARC_BARREL_SHIFTER__)
 	ENDFUNC(__umulsi3_highpart)
 #endif
 #endif /* L_umulsidi3 */
@@ -235,7 +237,8 @@ SYM(__umulsi3_highpart):
 /* For use without a barrel shifter, and for ARC700 / ARC_MUL64, the
    mulsidi3 algorithms above look better, so for these, there is an
    extra label up there.  */
-#if !defined (__ARC700__) && !defined (__ARC_MUL64__) && !defined (__ARC601__)
+#if !defined (__ARC_MPY__) && !defined (__ARC_MUL64__) \
+	&& defined (__ARC_BARREL_SHIFTER__)
 	.global SYM(__umulsi3_highpart)
 SYM(__umulsi3_highpart):
 	HIDDEN_FUNC(__umulsi3_highpart)
@@ -251,7 +254,7 @@ SYM(__umulsi3_highpart):
 /* Make the result register peephole-compatible with mulsidi3.  */
 	lsr DBL0H,r2,r3
 	ENDFUNC(__umulsi3_highpart)
-#endif /* !__ARC700__  && !__ARC601__ */
+#endif /* !__ARC_MPY__  && __ARC_BARREL_SHIFTER__ */
 #endif /* L_umulsi3_highpart */
 
 #ifdef L_divmod_tools
@@ -295,7 +298,7 @@ udivmodsi4(int modwanted, unsigned long num, unsigned long den)
 	FUNC(__udivmodsi4)
 SYM(__udivmodsi4):
 
-#if defined (__ARC700__)
+#if defined (__ARC_EA__)
 /* Normalize divisor and divident, and then use the appropriate number of
    divaw (the number of result bits, or one more) to produce the result.
    There are some special conditions that need to be tested:
@@ -368,7 +371,7 @@ SYM(__udivmodsi4):
 	j_s.d	[blink]
 	mov.c	r0,0
 #elif !defined (__OPTIMIZE_SIZE__)
-#ifdef __ARC_NORM__
+#if defined (__ARC_NORM__) && defined (__ARC_BARREL_SHIFTER__)
 	lsr_s r2,r0
 	brhs.d r1,r2,.Lret0_3
 	norm r2,r2
@@ -393,17 +396,17 @@ SYM(__udivmodsi4):
 	lsr_s r1,r1
 	cmp_s r0,r1
 	xor.f r2,lp_count,31
-#if !defined (__EM__)
+#if !defined (__ARCEM__) && !defined (__ARCHS__)
 	mov_s lp_count,r2
 #else
 	mov lp_count,r2
 	nop_s
-#endif /* !__EM__ */
+#endif /* !__ARCEM__ && !__ARCHS__ */
 #endif /* !__ARC_NORM__ */
 	sub.cc r0,r0,r1
 	mov_s r3,3
 	sbc r3,r3,0
-#ifndef __ARC601__
+#if defined (__ARC_BARREL_SHIFTER__)
 	asl_s r3,r3,r2
 	rsub r1,r1,1
 	lpne @.Lloop2_end
@@ -503,7 +506,7 @@ SYM(__udivsi3):
 	.global SYM(__divsi3)
 	FUNC(__divsi3)
 
-#ifndef __ARC700__
+#ifndef __ARC_EA__
 SYM(__divsi3):
 	/* A5 / ARC60? */
 	mov r7,blink
@@ -514,7 +517,7 @@ SYM(__divsi3):
 	tst r6,r6
 	j.d [r7]
 	 neg.mi r0,r0
-#else 	/* !ifndef __ARC700__ */
+#else 	/* !ifndef __ARC_EA__ */
 	;; We can use the abs, norm, divaw and mpy instructions for ARC700
 #define MULDIV
 #ifdef MULDIV
@@ -907,7 +910,7 @@ SYM(__umodsi3):
 	.global SYM (__modsi3)
 	FUNC(__modsi3)
 SYM(__modsi3):
-#ifndef __ARC700__
+#ifndef __ARC_EA__
 	/* A5 / ARC60? */
 	mov_s r12,blink
 	mov_s r6,r0
@@ -918,7 +921,7 @@ SYM(__modsi3):
 	neg_s r0,r1
 	j_s.d [r12]
 	 mov.pl r0,r1
-#else /* __ARC700__ */
+#else /* __ARC_EA__ */
 	abs_s	r2,r1
 	norm.f	r4,r0
 	neg	r5,r2
@@ -942,7 +945,7 @@ SYM(__modsi3):
 	cmp_s	r12,r2
 	j_s.d	[blink]
 	sub.hs	r0,r0,r5
-#endif /* __ARC700__ */
+#endif /* !__ARC_EA__ */
 	ENDFUNC(__modsi3)
 
 #endif /* L_modsi3 */
@@ -959,7 +962,7 @@ SYM(__clzsi2):
 	j_s.d	[blink]
 	add.pl	r0,r0,1
 	ENDFUNC(__clzsi2)
-#elif defined (__ARC601__)
+#elif !defined (__ARC_BARREL_SHIFTER__)
 	FUNC(__clzsi2)
 	mov lp_count,10
 	mov_l r1,0
