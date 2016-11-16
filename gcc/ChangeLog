@@ -1,3 +1,11 @@
+2016-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78348
+	* tree-loop-distribution.c (enum partition_kind): Add PKIND_MEMMOVE.
+	(generate_memcpy_builtin): Honor PKIND_MEMCPY on the partition.
+	(classify_partition): Set PKIND_MEMCPY if dependence analysis
+	revealed no dependency, PKIND_MEMMOVE otherwise.
+
 2016-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/77823
