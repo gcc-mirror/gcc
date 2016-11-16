@@ -121,6 +121,7 @@
   ;; MIPS16 constant pools.
   UNSPEC_ALIGN
   UNSPEC_CONSTTABLE
+  UNSPEC_CONSTTABLE_END
   UNSPEC_CONSTTABLE_INT
   UNSPEC_CONSTTABLE_FLOAT
 
@@ -7321,7 +7322,16 @@
 ;;
 
 (define_insn "consttable"
-  [(unspec_volatile [(const_int 0)] UNSPEC_CONSTTABLE)]
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "")]
+		    UNSPEC_CONSTTABLE)]
+  ""
+  ""
+  [(set_attr "mode" "none")
+   (set_attr "insn_count" "0")])
+
+(define_insn "consttable_end"
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "")]
+		    UNSPEC_CONSTTABLE_END)]
   ""
   ""
   [(set_attr "mode" "none")
