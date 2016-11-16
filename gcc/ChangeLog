@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-loop-manip.c (slpeel_make_loop_iterate_ntimes): Set
+	nb_iterations to the number of latch iterations rather than the
+	number of loop iterations.
+
+2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (maybe_swap_commutative_operands): New function.
 	(combine_simplify_rtx): Use it.
 	(change_zero_ext): Likewise.
