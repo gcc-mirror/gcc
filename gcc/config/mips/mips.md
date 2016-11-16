@@ -6444,7 +6444,7 @@
 
   return "j\t%4";
 }
-  [(set_attr "insn_count" "16")])
+  [(set_attr "insn_count" "11")])
 
 ;; For TARGET_USE_GOT, we save the gp in the jmp_buf as well.
 ;; While it is possible to either pull it off the stack (in the
