@@ -1,3 +1,9 @@
+2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* config/mips/mips.c (mips_output_jump): Output R_MICROMIPS_JALR
+	rather than R_MIPS_JALR relocation in microMIPS code.  Do not
+	cancel short delay slots in PIC call relaxation.
+
 2016-11-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.md (arm_addsi3): Add alternative for addition of

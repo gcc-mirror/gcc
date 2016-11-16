@@ -1,3 +1,21 @@
+2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* gcc.target/mips/call-1.c (dg-options): Add `-mno-micromips'.
+	(dg-final): Remove microMIPS JALRS mnemonic matching.
+	* gcc.target/mips/call-2.c (dg-options): Add `-mno-micromips'.
+	(dg-final): Remove microMIPS JALRS mnemonic matching.
+	* gcc.target/mips/call-3.c (dg-options): Add `-mno-micromips'.
+	(dg-final): Remove microMIPS JALRS mnemonic matching.
+	* gcc.target/mips/call-4.c (dg-options): Add `-mno-micromips'.
+	* gcc.target/mips/call-5.c (dg-options): Add `-mno-micromips'.
+	* gcc.target/mips/call-6.c (dg-options): Add `-mno-micromips'.
+	* gcc.target/mips/call-1u.c: New test case.
+	* gcc.target/mips/call-2u.c: New test case.
+	* gcc.target/mips/call-3u.c: New test case.
+	* gcc.target/mips/call-4u.c: New test case.
+	* gcc.target/mips/call-5u.c: New test case.
+	* gcc.target/mips/call-6u.c: New test case.
+
 2016-11-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/empty_fiq_handler.c: New test.
