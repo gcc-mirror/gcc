@@ -204,7 +204,7 @@ am__objects_5 = go-assert.lo go-breakpoint.lo go-caller.lo \
 	mcentral.lo $(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo \
 	msize.lo panic.lo parfor.lo print.lo proc.lo runtime_c.lo \
 	thread.lo $(am__objects_2) yield.lo $(am__objects_3) malloc.lo \
-	runtime1.lo $(am__objects_4)
+	$(am__objects_4)
 am_libgo_llgo_la_OBJECTS = $(am__objects_5)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -832,7 +832,6 @@ runtime_files = \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	malloc.c \
-	runtime1.c \
 	$(runtime_getncpu_file)
 
 noinst_DATA = zstdpkglist.go
@@ -1520,7 +1519,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/print.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rtems-task-variable-add.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime_c.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread-sema.Plo@am__quote@
@@ -3158,10 +3156,6 @@ goc2c: goc2c.$(OBJEXT)
 	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) -o $@ $<
 
 malloc.c: $(srcdir)/runtime/malloc.goc goc2c
-	./goc2c $< > $@.tmp
-	mv -f $@.tmp $@
-
-runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 

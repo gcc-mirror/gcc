@@ -21,11 +21,10 @@ import (
 //var F64toint = f64toint
 //var Sqrt = sqrt
 
-func golockedOSThread() bool
-
 var Entersyscall = entersyscall
 var Exitsyscall = exitsyscall
-var LockedOSThread = golockedOSThread
+
+// var LockedOSThread = lockedOSThread
 
 // var Xadduintptr = xadduintptr
 
@@ -42,29 +41,6 @@ func LFStackPush(head *uint64, node *LFNode) {
 
 func LFStackPop(head *uint64) *LFNode {
 	return (*LFNode)(unsafe.Pointer(lfstackpop(head)))
-}
-
-type ParFor struct {
-	body   func(*ParFor, uint32)
-	done   uint32
-	Nthr   uint32
-	thrseq uint32
-	Cnt    uint32
-	wait   bool
-}
-
-func newParFor(nthrmax uint32) *ParFor
-func parForSetup(desc *ParFor, nthr, n uint32, wait bool, body func(*ParFor, uint32))
-func parForDo(desc *ParFor)
-func parForIters(desc *ParFor, tid uintptr) (uintptr, uintptr)
-
-var NewParFor = newParFor
-var ParForSetup = parForSetup
-var ParForDo = parForDo
-
-func ParForIters(desc *ParFor, tid uint32) (uint32, uint32) {
-	begin, end := parForIters(desc, uintptr(tid))
-	return uint32(begin), uint32(end)
 }
 
 func GCMask(x interface{}) (ret []byte) {

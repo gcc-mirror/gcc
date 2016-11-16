@@ -2535,15 +2535,19 @@ runtime_Gosched(void)
 
 // Implementation of runtime.GOMAXPROCS.
 // delete when scheduler is even stronger
-int32
-runtime_gomaxprocsfunc(int32 n)
+
+intgo runtime_GOMAXPROCS(intgo)
+  __asm__(GOSYM_PREFIX "runtime.GOMAXPROCS");
+
+intgo
+runtime_GOMAXPROCS(intgo n)
 {
-	int32 ret;
+	intgo ret;
 
 	if(n > _MaxGomaxprocs)
 		n = _MaxGomaxprocs;
 	runtime_lock(&runtime_sched);
-	ret = runtime_gomaxprocs;
+	ret = (intgo)runtime_gomaxprocs;
 	if(n <= 0 || n == ret) {
 		runtime_unlock(&runtime_sched);
 		return ret;
@@ -2553,7 +2557,7 @@ runtime_gomaxprocsfunc(int32 n)
 	runtime_acquireWorldsema();
 	g->m->gcing = 1;
 	runtime_stopTheWorldWithSema();
-	newprocs = n;
+	newprocs = (int32)n;
 	g->m->gcing = 0;
 	runtime_releaseWorldsema();
 	runtime_startTheWorldWithSema();
@@ -3499,6 +3503,58 @@ runtime_setmaxthreads(intgo in)
 	return out;
 }
 
+static intgo
+procPin()
+{
+	M *mp;
+
+	mp = runtime_m();
+	mp->locks++;
+	return (intgo)(((P*)mp->p)->id);
+}
+
+static void
+procUnpin()
+{
+	runtime_m()->locks--;
+}
+
+intgo sync_runtime_procPin(void)
+  __asm__ (GOSYM_PREFIX "sync.runtime_procPin");
+
+intgo
+sync_runtime_procPin()
+{
+	return procPin();
+}
+
+void sync_runtime_procUnpin(void)
+  __asm__ (GOSYM_PREFIX  "sync.runtime_procUnpin");
+
+void
+sync_runtime_procUnpin()
+{
+	procUnpin();
+}
+
+intgo sync_atomic_runtime_procPin(void)
+  __asm__ (GOSYM_PREFIX "sync_atomic.runtime_procPin");
+
+intgo
+sync_atomic_runtime_procPin()
+{
+	return procPin();
+}
+
+void sync_atomic_runtime_procUnpin(void)
+  __asm__ (GOSYM_PREFIX  "sync_atomic.runtime_procUnpin");
+
+void
+sync_atomic_runtime_procUnpin()
+{
+	procUnpin();
+}
+
 void
 runtime_proc_scan(struct Workbuf** wbufp, void (*enqueue1)(struct Workbuf**, Obj))
 {
@@ -3588,4 +3644,12 @@ runtime_go_allgs()
 	s.__count = runtime_allglen;
 	s.__capacity = allgcap;
 	return s;
+}
+
+intgo NumCPU(void) __asm__ (GOSYM_PREFIX "runtime.NumCPU");
+
+intgo
+NumCPU()
+{
+	return (intgo)(runtime_ncpu);
 }

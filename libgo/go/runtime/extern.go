@@ -274,13 +274,11 @@ func SetFinalizer(obj interface{}, finalizer interface{})
 // the actual system call.
 func KeepAlive(interface{})
 
-func getgoroot() string
-
 // GOROOT returns the root of the Go tree.
 // It uses the GOROOT environment variable, if set,
 // or else the root used during the Go build.
 func GOROOT() string {
-	s := getgoroot()
+	s := gogetenv("GOROOT")
 	if s != "" {
 		return s
 	}

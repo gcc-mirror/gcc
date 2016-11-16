@@ -4,6 +4,11 @@
 
 package runtime
 
+import (
+	"runtime/internal/atomic"
+	"unsafe"
+)
+
 // GOMAXPROCS sets the maximum number of CPUs that can be executing
 // simultaneously and returns the previous setting. If n < 1, it does not
 // change the current setting.
@@ -19,10 +24,18 @@ func GOMAXPROCS(n int) int
 func NumCPU() int
 
 // NumCgoCall returns the number of cgo calls made by the current process.
-func NumCgoCall() int64
+func NumCgoCall() int64 {
+	var n int64
+	for mp := (*m)(atomic.Loadp(unsafe.Pointer(allm()))); mp != nil; mp = mp.alllink {
+		n += int64(mp.ncgocall)
+	}
+	return n
+}
 
 // NumGoroutine returns the number of goroutines that currently exist.
-func NumGoroutine() int
+func NumGoroutine() int {
+	return int(gcount())
+}
 
 // Get field tracking information.  Only fields with a tag go:"track"
 // are tracked.  This function will add every such field that is
