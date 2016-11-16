@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs.c (vector_compare_rtx): Add a cmp_mode parameter
+	and use it in the final call to gen_rtx_fmt_ee.
+	(expand_vec_cond_expr): Update accordingly.
+	(expand_vec_cmp_expr): Likewise.
+
+2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* cprop.c (local_cprop_find_used_regs): Use df_read_modify_subreg_p.
 
 2016-11-16  Richard Biener  <rguenther@suse.de>
