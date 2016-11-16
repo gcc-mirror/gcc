@@ -1,3 +1,8 @@
+2016-11-16  Waldemar Brodkorb  <wbx@openadk.org>
+
+	PR libgcc/68468
+	* unwind-dw2-fde-dip.c: Fix build on FDPIC targets.
+
 2016-11-15  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/lib1funcs.S (__mulsi3): Use feature defines instead
