@@ -1,4 +1,12 @@
 2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-vect-loop.c (vect_transform_loop): Protect the updates of
+	all three iteration counts with an any_* test.  Use a single update
+	for each count.  Fix the calculation of nb_iterations_estimate.
+
+2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/pdp11/pdp11.c: Include dbxout.h.
 
