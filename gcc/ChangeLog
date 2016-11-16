@@ -1,3 +1,9 @@
+2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* cprop.c (local_cprop_find_used_regs): Use df_read_modify_subreg_p.
+
 2016-11-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/78333

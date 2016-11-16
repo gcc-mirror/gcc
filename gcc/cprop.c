@@ -1161,9 +1161,7 @@ local_cprop_find_used_regs (rtx *xptr, void *data)
       return;
 
     case SUBREG:
-      /* Setting a subreg of a register larger than word_mode leaves
-	 the non-written words unchanged.  */
-      if (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))) > BITS_PER_WORD)
+      if (df_read_modify_subreg_p (x))
 	return;
       break;
 
