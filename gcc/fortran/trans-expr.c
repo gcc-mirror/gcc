@@ -9628,6 +9628,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   int n;
   bool maybe_workshare = false;
   symbol_attribute lhs_caf_attr, rhs_caf_attr, lhs_attr;
+  bool is_poly_assign;
 
   /* Assignment of the form lhs = rhs.  */
   gfc_start_block (&block);
@@ -9647,6 +9648,19 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       && (gfc_is_alloc_class_array_function (expr2)
 	  || gfc_is_alloc_class_scalar_function (expr2)))
     expr2->must_finalize = 1;
+
+  /* Checking whether a class assignment is desired is quite complicated and
+     needed at two locations, so do it once only before the information is
+     needed.  */
+  lhs_attr = gfc_expr_attr (expr1);
+  is_poly_assign = (use_vptr_copy || lhs_attr.pointer
+		    || (lhs_attr.allocatable && !lhs_attr.dimension))
+		   && (expr1->ts.type == BT_CLASS
+		       || gfc_is_class_array_ref (expr1, NULL)
+		       || gfc_is_class_scalar_expr (expr1)
+		       || gfc_is_class_array_ref (expr2, NULL)
+		       || gfc_is_class_scalar_expr (expr2));
+
 
   /* Only analyze the expressions for coarray properties, when in coarray-lib
      mode.  */
@@ -9676,6 +9690,10 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       if (rss == gfc_ss_terminator)
 	/* The rhs is scalar.  Add a ss for the expression.  */
 	rss = gfc_get_scalar_ss (gfc_ss_terminator, expr2);
+      /* When doing a class assign, then the handle to the rhs needs to be a
+	 pointer to allow for polymorphism.  */
+      if (is_poly_assign && expr2->rank == 0 && !UNLIMITED_POLY (expr2))
+	rss->info->type = GFC_SS_REFERENCE;
 
       /* Associate the SS with the loop.  */
       gfc_add_ss_to_loop (&loop, lss);
@@ -9835,14 +9853,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	gfc_add_block_to_block (&loop.post, &rse.post);
     }
 
-  lhs_attr = gfc_expr_attr (expr1);
-  if ((use_vptr_copy || lhs_attr.pointer
-       || (lhs_attr.allocatable && !lhs_attr.dimension))
-      && (expr1->ts.type == BT_CLASS
-	  || (gfc_is_class_array_ref (expr1, NULL)
-	      || gfc_is_class_scalar_expr (expr1))
-	  || (gfc_is_class_array_ref (expr2, NULL)
-	      || gfc_is_class_scalar_expr (expr2))))
+  if (is_poly_assign)
     {
       tmp = trans_class_assignment (&body, expr1, expr2, &lse, &rse,
 				    use_vptr_copy || (lhs_attr.allocatable

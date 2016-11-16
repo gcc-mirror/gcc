@@ -1,3 +1,11 @@
+2016-11-16  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78356
+	* class.c (gfc_is_class_scalar_expr): Prevent taking an array ref for
+	a component ref.
+	* trans-expr.c (gfc_trans_assignment_1): Ensure a reference to the
+	object to copy is generated, when assigning class objects.
+
 2016-11-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (show_code):  Add prototype.
