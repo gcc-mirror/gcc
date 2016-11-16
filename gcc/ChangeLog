@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (emit_group_load_1): Tighten check for whether an
+	access involves only one operand of a CONCAT.  Use extract_bit_field
+	for constants if the bit range does span the whole operand.
+
+2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtlanal.c (rtx_addr_can_trap_p_1): Handle unknown sizes.
 
 2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
