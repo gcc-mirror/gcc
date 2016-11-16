@@ -15103,12 +15103,14 @@ is unsuccessful the option has no effect.
 @item -mfpu=@var{name}
 @opindex mfpu
 This specifies what floating-point hardware (or hardware emulation) is
-available on the target.  Permissible names are: @samp{vfp}, @samp{vfpv3},
+available on the target.  Permissible names are: @samp{vfpv2}, @samp{vfpv3},
 @samp{vfpv3-fp16}, @samp{vfpv3-d16}, @samp{vfpv3-d16-fp16}, @samp{vfpv3xd},
-@samp{vfpv3xd-fp16}, @samp{neon}, @samp{neon-fp16}, @samp{vfpv4},
+@samp{vfpv3xd-fp16}, @samp{neon-vfpv3}, @samp{neon-fp16}, @samp{vfpv4},
 @samp{vfpv4-d16}, @samp{fpv4-sp-d16}, @samp{neon-vfpv4},
 @samp{fpv5-d16}, @samp{fpv5-sp-d16},
 @samp{fp-armv8}, @samp{neon-fp-armv8} and @samp{crypto-neon-fp-armv8}.
+Note that @samp{neon} is an alias for @samp{neon-vfpv3} and @samp{vfp}
+is an alias for @samp{vfpv2}.
 
 If @option{-msoft-float} is specified this specifies the format of
 floating-point values.

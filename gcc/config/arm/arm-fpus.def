@@ -26,6 +26,7 @@
    genopt.sh assumes no whitespace up to the first "," in each entry.  */
 
 ARM_FPU("vfp",		2, VFP_REG_D16, FPU_FL_NONE)
+ARM_FPU("vfpv2",	2, VFP_REG_D16, FPU_FL_NONE)
 ARM_FPU("vfpv3",	3, VFP_REG_D32, FPU_FL_NONE)
 ARM_FPU("vfpv3-fp16",	3, VFP_REG_D32, FPU_FL_FP16)
 ARM_FPU("vfpv3-d16",	3, VFP_REG_D16, FPU_FL_NONE)
@@ -33,6 +34,7 @@ ARM_FPU("vfpv3-d16-fp16", 3, VFP_REG_D16, FPU_FL_FP16)
 ARM_FPU("vfpv3xd",	3, VFP_REG_SINGLE, FPU_FL_NONE)
 ARM_FPU("vfpv3xd-fp16",	3, VFP_REG_SINGLE, FPU_FL_FP16)
 ARM_FPU("neon",		3, VFP_REG_D32, FPU_FL_NEON)
+ARM_FPU("neon-vfpv3",	3, VFP_REG_D32, FPU_FL_NEON)
 ARM_FPU("neon-fp16",	3, VFP_REG_D32, FPU_FL_NEON | FPU_FL_FP16)
 ARM_FPU("vfpv4",	4, VFP_REG_D32, FPU_FL_FP16)
 ARM_FPU("vfpv4-d16",	4, VFP_REG_D16, FPU_FL_FP16)

@@ -1,3 +1,13 @@
+2016-11-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/arm-fpus.def (vfpv2): New FPU, currently an alias for 'vfp'.
+	(neon-vfpv3): New FPU, currently an alias for 'neon'.
+	* arm/arm-tables.opt: Regenerated.
+        * arm/t-aprofile (MULTILIB_REUSE): Add reuse rules for vfpv2 and
+        neon-vfpv3.
+	* doc/invoke.texi (ARM: -mfpu): Document new options.  Note that 'vfp'
+	and 'neon' are aliases for specific implementations.
+
 2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
