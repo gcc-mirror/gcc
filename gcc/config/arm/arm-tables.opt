@@ -474,56 +474,62 @@ EnumValue
 Enum(arm_fpu) String(vfp) Value(0)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3) Value(1)
+Enum(arm_fpu) String(vfpv2) Value(1)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3-fp16) Value(2)
+Enum(arm_fpu) String(vfpv3) Value(2)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3-d16) Value(3)
+Enum(arm_fpu) String(vfpv3-fp16) Value(3)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3-d16-fp16) Value(4)
+Enum(arm_fpu) String(vfpv3-d16) Value(4)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3xd) Value(5)
+Enum(arm_fpu) String(vfpv3-d16-fp16) Value(5)
 
 EnumValue
-Enum(arm_fpu) String(vfpv3xd-fp16) Value(6)
+Enum(arm_fpu) String(vfpv3xd) Value(6)
 
 EnumValue
-Enum(arm_fpu) String(neon) Value(7)
+Enum(arm_fpu) String(vfpv3xd-fp16) Value(7)
 
 EnumValue
-Enum(arm_fpu) String(neon-fp16) Value(8)
+Enum(arm_fpu) String(neon) Value(8)
 
 EnumValue
-Enum(arm_fpu) String(vfpv4) Value(9)
+Enum(arm_fpu) String(neon-vfpv3) Value(9)
 
 EnumValue
-Enum(arm_fpu) String(vfpv4-d16) Value(10)
+Enum(arm_fpu) String(neon-fp16) Value(10)
 
 EnumValue
-Enum(arm_fpu) String(fpv4-sp-d16) Value(11)
+Enum(arm_fpu) String(vfpv4) Value(11)
 
 EnumValue
-Enum(arm_fpu) String(fpv5-sp-d16) Value(12)
+Enum(arm_fpu) String(vfpv4-d16) Value(12)
 
 EnumValue
-Enum(arm_fpu) String(fpv5-d16) Value(13)
+Enum(arm_fpu) String(fpv4-sp-d16) Value(13)
 
 EnumValue
-Enum(arm_fpu) String(neon-vfpv4) Value(14)
+Enum(arm_fpu) String(fpv5-sp-d16) Value(14)
 
 EnumValue
-Enum(arm_fpu) String(fp-armv8) Value(15)
+Enum(arm_fpu) String(fpv5-d16) Value(15)
 
 EnumValue
-Enum(arm_fpu) String(neon-fp-armv8) Value(16)
+Enum(arm_fpu) String(neon-vfpv4) Value(16)
 
 EnumValue
-Enum(arm_fpu) String(crypto-neon-fp-armv8) Value(17)
+Enum(arm_fpu) String(fp-armv8) Value(17)
 
 EnumValue
-Enum(arm_fpu) String(vfp3) Value(18)
+Enum(arm_fpu) String(neon-fp-armv8) Value(18)
+
+EnumValue
+Enum(arm_fpu) String(crypto-neon-fp-armv8) Value(19)
+
+EnumValue
+Enum(arm_fpu) String(vfp3) Value(20)
 
