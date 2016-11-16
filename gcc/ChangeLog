@@ -1,5 +1,11 @@
 2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
 
+	* config/mips/mips.md (casesi_internal_mips16_<mode>):
+	Explicitly switch between JR and JRC for the table jump.  Adjust
+	instruction count.
+
+2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
+
 	* config/mips/mips.md (casesi_internal_mips16_<mode>): Set
 	`insn_count' to 11 rather than 16.
 
