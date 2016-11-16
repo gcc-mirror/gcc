@@ -1,3 +1,9 @@
+2016-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78333
+	* gimplify.c (gimplify_function_tree): Do not instrument
+	GNU extern inline functions.
+
 2016-11-16  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/78270
