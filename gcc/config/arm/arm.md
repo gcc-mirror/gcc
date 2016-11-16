@@ -4546,9 +4546,11 @@
 (define_insn "*extv_reg"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(sign_extract:SI (match_operand:SI 1 "s_register_operand" "r")
-                         (match_operand:SI 2 "const_int_M_operand" "M")
-                         (match_operand:SI 3 "const_int_M_operand" "M")))]
-  "arm_arch_thumb2"
+			  (match_operand:SI 2 "const_int_operand" "n")
+			  (match_operand:SI 3 "const_int_operand" "n")))]
+  "arm_arch_thumb2
+   && IN_RANGE (INTVAL (operands[3]), 0, 31)
+   && IN_RANGE (INTVAL (operands[2]), 1, 32 - INTVAL (operands[3]))"
   "sbfx%?\t%0, %1, %3, %2"
   [(set_attr "length" "4")
    (set_attr "predicable" "yes")
@@ -4559,9 +4561,11 @@
 (define_insn "extzv_t2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(zero_extract:SI (match_operand:SI 1 "s_register_operand" "r")
-                         (match_operand:SI 2 "const_int_M_operand" "M")
-                         (match_operand:SI 3 "const_int_M_operand" "M")))]
-  "arm_arch_thumb2"
+			  (match_operand:SI 2 "const_int_operand" "n")
+			  (match_operand:SI 3 "const_int_operand" "n")))]
+  "arm_arch_thumb2
+   && IN_RANGE (INTVAL (operands[3]), 0, 31)
+   && IN_RANGE (INTVAL (operands[2]), 1, 32 - INTVAL (operands[3]))"
   "ubfx%?\t%0, %1, %3, %2"
   [(set_attr "length" "4")
    (set_attr "predicable" "yes")

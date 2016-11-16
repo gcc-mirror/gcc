@@ -1,3 +1,10 @@
+2016-11-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/78364
+	* config/arm/arm.md (*extv_reg): Restrict operands 2 and 3 to the
+	proper ranges for an SBFX instruction.
+	(extzv_t2): Likewise for UBFX.
+
 2016-11-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78348
