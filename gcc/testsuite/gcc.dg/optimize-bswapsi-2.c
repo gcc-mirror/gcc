@@ -45,4 +45,4 @@ uint32_t read_be32_3 (unsigned char *data)
 }
 
 /* { dg-final { scan-tree-dump-times "32 bit load in target endianness found at" 3 "bswap" } } */
-/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 3 "bswap" { xfail alpha*-*-* arm*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 3 "bswap" } } */
