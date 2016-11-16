@@ -323,6 +323,12 @@ const struct demangler_engine libiberty_demanglers[] =
   }
   ,
   {
+    RUST_DEMANGLING_STYLE_STRING,
+    rust_demangling,
+    "Rust style demangling"
+  }
+  ,
+  {
     NULL, unknown_demangling, NULL
   }
 };
@@ -874,10 +880,26 @@ cplus_demangle (const char *mangled, int options)
     work->options |= (int) current_demangling_style & DMGL_STYLE_MASK;
 
   /* The V3 ABI demangling is implemented elsewhere.  */
-  if (GNU_V3_DEMANGLING || AUTO_DEMANGLING)
+  if (GNU_V3_DEMANGLING || RUST_DEMANGLING || AUTO_DEMANGLING)
     {
       ret = cplus_demangle_v3 (mangled, work->options);
-      if (ret || GNU_V3_DEMANGLING)
+      if (GNU_V3_DEMANGLING)
+	return ret;
+
+      if (ret)
+	{
+	  /* Rust symbols are GNU_V3 mangled plus some extra subtitutions.
+	     The subtitutions are always smaller, so do in place changes.  */
+	  if (rust_is_mangled (ret))
+	    rust_demangle_sym (ret);
+	  else if (RUST_DEMANGLING)
+	    {
+	      free (ret);
+	      ret = NULL;
+	    }
+	}
+
+      if (ret || RUST_DEMANGLING)
 	return ret;
     }
 
@@ -901,6 +923,27 @@ cplus_demangle (const char *mangled, int options)
   ret = internal_cplus_demangle (work, mangled);
   squangle_mop_up (work);
   return (ret);
+}
+
+char *
+rust_demangle (const char *mangled, int options)
+{
+  /* Rust symbols are GNU_V3 mangled plus some extra subtitutions.  */
+  char *ret = cplus_demangle_v3 (mangled, options);
+
+  /* The Rust subtitutions are always smaller, so do in place changes.  */
+  if (ret != NULL)
+    {
+      if (rust_is_mangled (ret))
+	rust_demangle_sym (ret);
+      else
+	{
+	  free (ret);
+	  ret = NULL;
+	}
+    }
+
+  return ret;
 }
 
 /* Demangle ada names.  The encoding is documented in gcc/ada/exp_dbug.ads.  */
