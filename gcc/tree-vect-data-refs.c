@@ -480,9 +480,15 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo, int *max_vf)
 				LOOP_VINFO_LOOP_NEST (loop_vinfo), true))
     return false;
 
-  FOR_EACH_VEC_ELT (LOOP_VINFO_DDRS (loop_vinfo), i, ddr)
-    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
-      return false;
+  /* For epilogues we either have no aliases or alias versioning
+     was applied to original loop.  Therefore we may just get max_vf
+     using VF of original loop.  */
+  if (LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+    *max_vf = LOOP_VINFO_ORIG_VECT_FACTOR (loop_vinfo);
+  else
+    FOR_EACH_VEC_ELT (LOOP_VINFO_DDRS (loop_vinfo), i, ddr)
+      if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
+	return false;
 
   return true;
 }

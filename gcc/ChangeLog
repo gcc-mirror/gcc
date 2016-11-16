@@ -1,3 +1,32 @@
+2016-11-16  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* params.def (PARAM_VECT_EPILOGUES_NOMASK): New.
+	* tree-if-conv.c (tree_if_conversion): Make public.
+	* * tree-if-conv.h: New file.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences) Avoid
+	dynamic alias checks for epilogues.
+	* tree-vect-loop-manip.c (vect_do_peeling): Return created epilog.
+	* tree-vect-loop.c: include tree-if-conv.h.
+	(new_loop_vec_info): Add zeroing orig_loop_info field.
+	(vect_analyze_loop_2): Don't try to enhance alignment for epilogues.
+	(vect_analyze_loop): Add argument ORIG_LOOP_INFO which is not NULL
+	if epilogue is vectorized, set up orig_loop_info field of loop_vinfo
+	using passed argument.
+	(vect_transform_loop): Check if created epilogue should be returned
+	for further vectorization with less vf.  If-convert epilogue if
+	required. Print vectorization success for epilogue.
+	* tree-vectorizer.c (vectorize_loops): Add epilogue vectorization
+	if it is required, pass loop_vinfo produced during vectorization of
+	loop body to vect_analyze_loop.
+	* tree-vectorizer.h (struct _loop_vec_info): Add new field
+	orig_loop_info.
+	(LOOP_VINFO_ORIG_LOOP_INFO): New.
+	(LOOP_VINFO_EPILOGUE_P): New.
+	(LOOP_VINFO_ORIG_VECT_FACTOR): New.
+	(vect_do_peeling): Change prototype to return epilogue.
+	(vect_analyze_loop): Add argument of loop_vec_info type.
+	(vect_transform_loop): Return created loop.
+
 2016-11-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_components_for_bb): Mark the LR

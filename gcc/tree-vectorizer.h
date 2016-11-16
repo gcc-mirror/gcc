@@ -335,6 +335,10 @@ typedef struct _loop_vec_info : public vec_info {
   /* Mark loops having masked stores.  */
   bool has_mask_store;
 
+  /* For loops being epilogues of already vectorized loops
+     this points to the original vectorized loop.  Otherwise NULL.  */
+  _loop_vec_info *orig_loop_info;
+
 } *loop_vec_info;
 
 /* Access Functions.  */
@@ -374,6 +378,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_HAS_MASK_STORE(L)       (L)->has_mask_store
 #define LOOP_VINFO_SCALAR_ITERATION_COST(L) (L)->scalar_cost_vec
 #define LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST(L) (L)->single_scalar_iteration_cost
+#define LOOP_VINFO_ORIG_LOOP_INFO(L)       (L)->orig_loop_info
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L)	\
   ((L)->may_misalign_stmts.length () > 0)
@@ -388,6 +393,12 @@ typedef struct _loop_vec_info : public vec_info {
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \
   (tree_fits_shwi_p ((L)->num_iters) && tree_to_shwi ((L)->num_iters) > 0)
+
+#define LOOP_VINFO_EPILOGUE_P(L) \
+  (LOOP_VINFO_ORIG_LOOP_INFO (L) != NULL)
+
+#define LOOP_VINFO_ORIG_VECT_FACTOR(L) \
+  (LOOP_VINFO_VECT_FACTOR (LOOP_VINFO_ORIG_LOOP_INFO (L)))
 
 static inline loop_vec_info
 loop_vec_info_for_loop (struct loop *loop)
@@ -1032,8 +1043,8 @@ extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *,
 						     struct loop *, edge);
 extern void vect_loop_versioning (loop_vec_info, unsigned int, bool);
-extern void vect_do_peeling (loop_vec_info, tree, tree,
-			     tree *, int, bool, bool);
+extern struct loop *vect_do_peeling (loop_vec_info, tree, tree,
+				     tree *, int, bool, bool);
 extern source_location find_loop_location (struct loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
@@ -1144,11 +1155,11 @@ extern void destroy_loop_vec_info (loop_vec_info, bool);
 extern gimple *vect_force_simple_reduction (loop_vec_info, gimple *, bool,
 					    bool *, bool);
 /* Drive for loop analysis stage.  */
-extern loop_vec_info vect_analyze_loop (struct loop *);
+extern loop_vec_info vect_analyze_loop (struct loop *, loop_vec_info);
 extern tree vect_build_loop_niters (loop_vec_info);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *, bool);
 /* Drive for loop transformation stage.  */
-extern void vect_transform_loop (loop_vec_info);
+extern struct loop *vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);
 extern bool vectorizable_live_operation (gimple *, gimple_stmt_iterator *,
 					 slp_tree, int, gimple **);

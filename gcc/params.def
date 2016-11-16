@@ -1270,6 +1270,11 @@ DEFPARAM (PARAM_MAX_VRP_SWITCH_ASSERTIONS,
 	  "edge of a switch statement during VRP",
 	  10, 0, 0)
 
+DEFPARAM (PARAM_VECT_EPILOGUES_NOMASK,
+	  "vect-epilogues-nomask",
+	  "Enable loop epilogue vectorization using smaller vector size.",
+	  0, 0, 1)
+
 /*
 
 Local variables:
