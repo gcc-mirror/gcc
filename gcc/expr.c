@@ -2175,19 +2175,22 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 	{
 	  unsigned int slen = GET_MODE_SIZE (GET_MODE (src));
 	  unsigned int slen0 = GET_MODE_SIZE (GET_MODE (XEXP (src, 0)));
+	  unsigned int elt = bytepos / slen0;
+	  unsigned int subpos = bytepos % slen0;
 
-	  if ((bytepos == 0 && bytelen == slen0)
-	      || (bytepos != 0 && bytepos + bytelen <= slen))
+	  if (subpos + bytelen <= slen0)
 	    {
 	      /* The following assumes that the concatenated objects all
 		 have the same size.  In this case, a simple calculation
 		 can be used to determine the object and the bit field
 		 to be extracted.  */
-	      tmps[i] = XEXP (src, bytepos / slen0);
-	      if (! CONSTANT_P (tmps[i])
-		  && (!REG_P (tmps[i]) || GET_MODE (tmps[i]) != mode))
+	      tmps[i] = XEXP (src, elt);
+	      if (subpos != 0
+		  || subpos + bytelen != slen0
+		  || (!CONSTANT_P (tmps[i])
+		      && (!REG_P (tmps[i]) || GET_MODE (tmps[i]) != mode)))
 		tmps[i] = extract_bit_field (tmps[i], bytelen * BITS_PER_UNIT,
-					     (bytepos % slen0) * BITS_PER_UNIT,
+					     subpos * BITS_PER_UNIT,
 					     1, NULL_RTX, mode, mode, false);
 	    }
 	  else
