@@ -4792,6 +4792,8 @@ bool
 Struct_type::is_identical(const Struct_type* t,
 			  bool errors_are_identical) const
 {
+  if (this->is_struct_incomparable_ != t->is_struct_incomparable_)
+    return false;
   const Struct_field_list* fields1 = this->fields();
   const Struct_field_list* fields2 = t->fields();
   if (fields1 == NULL || fields2 == NULL)
@@ -4929,7 +4931,10 @@ Struct_type::do_hash_for_method(Gogo* gogo) const
 	   ++pf)
 	ret = (ret << 1) + pf->type()->hash_for_method(gogo);
     }
-  return ret <<= 2;
+  ret <<= 2;
+  if (this->is_struct_incomparable_)
+    ret <<= 1;
+  return ret;
 }
 
 // Find the local field NAME.
@@ -5659,6 +5664,9 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	}
     }
 
+  if (this->is_struct_incomparable_)
+    ret->push_back('x');
+
   ret->push_back('e');
 }
 
@@ -6052,6 +6060,9 @@ Array_type::is_identical(const Array_type* t, bool errors_are_identical) const
 			   errors_are_identical, NULL))
     return false;
 
+  if (this->is_array_incomparable_ != t->is_array_incomparable_)
+    return false;
+
   Expression* l1 = this->length();
   Expression* l2 = t->length();
 
@@ -6216,9 +6227,14 @@ Array_type::do_compare_is_identity(Gogo* gogo)
 unsigned int
 Array_type::do_hash_for_method(Gogo* gogo) const
 {
+  unsigned int ret;
+
   // There is no very convenient way to get a hash code for the
   // length.
-  return this->element_type_->hash_for_method(gogo) + 1;
+  ret = this->element_type_->hash_for_method(gogo) + 1;
+  if (this->is_array_incomparable_)
+    ret <<= 1;
+  return ret;
 }
 
 // Write the hash function for an array which can not use the identify
@@ -6916,6 +6932,8 @@ Array_type::do_mangled_name(Gogo* gogo, std::string* ret) const
       ret->append(s);
       free(s);
       mpz_clear(val);
+      if (this->is_array_incomparable_)
+	ret->push_back('x');
     }
   ret->push_back('e');
 }
