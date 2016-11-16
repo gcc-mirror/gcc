@@ -1,3 +1,106 @@
+2016-11-16  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/nvptx/mkoffload.c (main): Check that either OpenACC or OpenMP
+	is selected.  Pass -mgomp to offload compiler in OpenMP case.
+	* config/nvptx/nvptx-protos.h (nvptx_shuffle_kind): Move enum
+	declaration from nvptx.c.
+	(nvptx_gen_shuffle): Declare.
+	(nvptx_output_set_softstack): Declare.
+	* config/nvptx/nvptx.c (nvptx_shuffle_kind): Move to nvptx-protos.h.
+	(need_softstack_decl): New variable.
+	(need_unisimt_decl): New variable.
+	(diagnose_openacc_conflict): New.  Use it...
+	(nvptx_option_override): ...here.  Handle TARGET_GOMP.
+	(nvptx_encode_section_info): Handle "shared" attribute.
+	(write_as_kernel): Restrict to OpenACC target regions.
+	(init_softstack_frame): New.
+	(nvptx_init_unisimt_predicate): New.
+	(write_omp_entry): New.  Use it...
+	(nvptx_declare_function_name): ...here to emit OpenMP target region
+	entrypoints.  Handle TARGET_SOFT_STACK.  Call
+	nvptx_init_unisimt_predicate.
+	(nvptx_output_set_softstack): New.
+	(nvptx_get_drap_rtx): Return %argp as the DRAP if needed.
+	(nvptx_gen_shuffle): Export.
+	(nvptx_output_call_insn): Handle COND_EXEC patterns.  Emit instruction
+	predicate.
+	(nvptx_print_operand): Fix handling of instruction predicates.
+	(nvptx_get_unisimt_master): New helper function.
+	(nvptx_get_unisimt_predicate): Ditto.
+	(nvptx_call_insn_is_syscall_p): Ditto.
+	(nvptx_unisimt_handle_set): Ditto.
+	(nvptx_reorg_uniform_simt): New.  Transform code for -muniform-simt.
+	(nvptx_reorg): Call nvptx_reorg_uniform_simt.
+	(nvptx_handle_shared_attribute): New.  Use it...
+	(nvptx_attribute_table): ... here (new entry).
+	(nvptx_record_offload_symbol): Handle NULL attributes.
+	(nvptx_file_end): Handle need_softstack_decl and need_unisimt_decl.
+	(nvptx_simt_vf): New.
+	(TARGET_SIMT_VF): Define.
+	* config/nvptx/nvptx.h (TARGET_CPU_CPP_BUILTINS): Define
+	__nvptx_softstack or __nvptx_unisimt__ when -msoft-stack, or resp.
+	-muniform-simt option is active.
+	(STACK_SIZE_MODE): Define.
+	(FIXED_REGISTERS): Adjust.
+	(SOFTSTACK_SLOT_REGNUM): New.
+	(SOFTSTACK_PREV_REGNUM): New.
+	(REGISTER_NAMES): Adjust.
+	(struct machine_function): New fields.
+	* config/nvptx/nvptx.md (UNSPEC_SET_SOFTSTACK): New.
+	(UNSPEC_VOTE_BALLOT): Ditto.
+	(UNSPEC_LANEID): Ditto.
+	(UNSPECV_NOUNROLL): Ditto.
+	(atomic): New attribute.
+	(predicable): New attribute.  Generate predicated forms via
+	define_cond_exec.
+	(br_true): Mark as not predicable.
+	(br_false): Ditto.
+	(br_true_uni): Ditto.
+	(br_false_uni): Ditto.
+	(return): Ditto.
+	(trap_if_true): Ditto.
+	(trap_if_false): Ditto.
+	(nvptx_fork): Ditto.
+	(nvptx_forked): Ditto.
+	(nvptx_joining): Ditto.
+	(nvptx_join): Ditto.
+	(nvptx_barsync): Ditto.
+	(epilogue): Emit stack restore if TARGET_SOFT_STACK.
+	(allocate_stack): Implement for TARGET_SOFT_STACK.  Remove unused code.
+	(allocate_stack_<mode>): Remove unused pattern.
+	(set_softstack_insn): New pattern.
+	(restore_stack_block): Handle for TARGET_SOFT_STACK.
+	(nvptx_vote_ballot): New pattern.
+	(omp_simt_lane): Ditto.
+	(omp_simt_last_lane): Ditto.
+	(omp_simt_ordered): Ditto.
+	(omp_simt_vote_any): Ditto.
+	(omp_simt_xchg_bfly): Ditto.
+	(omp_simt_xchg_idx): Ditto.
+	(nvptx_nounroll): Ditto.
+	(atomic_compare_and_swap<mode>_1): Mark with atomic attribute.
+	(atomic_exchange<mode>): Ditto.
+	(atomic_fetch_add<mode>): Ditto.
+	(atomic_fetch_addsf): Ditto.
+	(atomic_fetch_<logic><mode>): Ditto.
+	* config/nvptx/nvptx.opt: (msoft-stack): New option.
+	(muniform-simt): Ditto.
+	(mgomp): Ditto.
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS): New.
+	* doc/extend.texi (Nvidia PTX Variable Attributes): New section.
+	* doc/invoke.texi (msoft-stack): Document.
+	(muniform-simt): Document
+	(mgomp): Document.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: (TARGET_SIMT_VF): New hook.
+	* target.def: Define it.
+	* target-insns.def (omp_simt_lane): New.
+	(omp_simt_last_lane): New.
+	(omp_simt_ordered): New.
+	(omp_simt_vote_any): New.
+	(omp_simt_xchg_bfly): New.
+	(omp_simt_xchg_idx): New.
+
 2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* config/mips/mips-protos.h (mips_set_text_contents_type): New

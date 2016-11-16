@@ -763,7 +763,10 @@ proc check_effective_target_untyped_assembly {} {
 
 proc check_effective_target_alloca {} {
     if { [istarget nvptx-*-*] } {
-	return 0
+	return [check_no_compiler_messages alloca assembly {
+	    void f (void*);
+	    void g (int n) { f (__builtin_alloca (n)); }
+	}]
     }
     return 1
 }

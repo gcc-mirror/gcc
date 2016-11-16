@@ -1,3 +1,11 @@
+2016-11-16  Alexander Monakov  <amonakov@ispras.ru>
+
+	* lib/target-supports.exp (check_effective_target_alloca): Use a
+	compile test.
+	* gcc.target/nvptx/softstack.c: New test.
+	* gcc.target/nvptx/decl-shared.c: New test.
+	* gcc.target/nvptx/decl-shared-init.c: New test.
+
 2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* gcc.target/mips/data-sym-jump.c: New test case.
