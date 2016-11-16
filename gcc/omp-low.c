@@ -9685,7 +9685,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   struct loop *loop = body_bb->loop_father;
   if (loop != entry_bb->loop_father)
     {
-      gcc_assert (loop->header == body_bb);
+      gcc_assert (broken_loop || loop->header == body_bb);
       gcc_assert (broken_loop
 		  || loop->latch == region->cont
 		  || single_pred (loop->latch) == region->cont);

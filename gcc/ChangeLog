@@ -1,3 +1,9 @@
+2016-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/78299
+	* omp-low.c (expand_omp_for_static_nochunk): Don't assert
+	that loop->header == body_bb if broken_loop.
+
 2015-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* tree-ssa-math-opts.c (bswap_replace): Remove test
