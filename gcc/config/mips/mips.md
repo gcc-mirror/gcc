@@ -6442,9 +6442,15 @@
 
   output_asm_insn ("<d>addu\t%4, %4, %5", operands);
 
-  return "j\t%4";
+  if (GENERATE_MIPS16E)
+    return "jrc\t%4";
+  else
+    return "jr\t%4";
 }
-  [(set_attr "insn_count" "11")])
+  [(set (attr "insn_count")
+	(if_then_else (match_test "GENERATE_MIPS16E")
+		      (const_string "10")
+		      (const_string "11")))])
 
 ;; For TARGET_USE_GOT, we save the gp in the jmp_buf as well.
 ;; While it is possible to either pull it off the stack (in the
