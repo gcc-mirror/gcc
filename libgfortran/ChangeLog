@@ -1,3 +1,9 @@
+2016-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/51119
+	* Makefile.am: Remove -fno-protect-parens -fstack-arrays.
+	* Makefile.in: Regenerate.
+
 2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR libgfortran/78314

@@ -850,7 +850,7 @@ intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90
 
 # Turn on vectorization and loop unrolling for matmul.
-$(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ffast-math -fno-protect-parens -fstack-arrays -ftree-vectorize -funroll-loops --param max-unroll-times=4 
+$(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ffast-math -ftree-vectorize -funroll-loops --param max-unroll-times=4 
 # Logical matmul doesn't vectorize.
 $(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 
