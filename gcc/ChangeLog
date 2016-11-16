@@ -1,3 +1,14 @@
+2016-11-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/77848
+	* tree-if-conv.c (version_loop_for_if_conversion): When versioning
+	an outer loop, only save basic block aux information for the inner
+	loop.
+	(versionable_outer_loop_p): New function.
+	(tree_if_conversion): Version the outer loop instead of the inner
+	one if the pattern will be recognized for outer-loop
+	vectorization.
+
 2016-11-16  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* gcc/bb-reorder.c: Remove 'toplev.h' include.
