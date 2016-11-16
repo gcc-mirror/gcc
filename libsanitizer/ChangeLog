@@ -1,5 +1,9 @@
 2016-11-16  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
+	* LOCAL_PATCHES: Add revision.
+
+2016-11-16  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
 	PR sanitizer/78294
 	* tsan/tsan_rtl.cc: Add missing attribute.
 
