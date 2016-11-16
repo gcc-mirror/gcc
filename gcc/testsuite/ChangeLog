@@ -1,3 +1,9 @@
+2016-11-16  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/78270
+	* gcc.dg/asan/pr78270.c: Update comment style.
+	* gcc.dg/asan/pr78270-2.c: New test.
+
 2016-11-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* c-c++-common/Wlogical-op-1.c: Use __INT{16,32}_TYPE__ instead

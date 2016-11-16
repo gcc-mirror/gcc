@@ -2255,11 +2255,11 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
       gimplify_ctxp->case_labels.create (8);
 
       /* Do not create live_switch_vars if SWITCH_BODY is not a BIND_EXPR.  */
+      saved_live_switch_vars = gimplify_ctxp->live_switch_vars;
       if (TREE_CODE (SWITCH_BODY (switch_expr)) == BIND_EXPR)
-	{
-	  saved_live_switch_vars = gimplify_ctxp->live_switch_vars;
-	  gimplify_ctxp->live_switch_vars = new hash_set<tree> (4);
-	}
+	gimplify_ctxp->live_switch_vars = new hash_set<tree> (4);
+      else
+	gimplify_ctxp->live_switch_vars = NULL;
 
       bool old_in_switch_expr = gimplify_ctxp->in_switch_expr;
       gimplify_ctxp->in_switch_expr = true;
