@@ -1,3 +1,17 @@
+2016-11-16  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/78307
+	* ubsan/ubsan_handlers.cc (__ubsan_handle_cfi_bad_icall): New function.
+	( __ubsan_handle_cfi_bad_icall_abort): Likewise. 
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): New type.
+	* ubsan/ubsan_handlers_cxx.cc (__ubsan_handle_cfi_bad_type): New
+	function.
+	(__ubsan_handle_cfi_bad_type_abort): Likewise.
+	* ubsan/ubsan_handlers_cxx.h (struct CFIBadTypeData): New type.
+	(__ubsan_handle_cfi_bad_type): Export function.
+	(__ubsan_handle_cfi_bad_type_abort): Likewise.
+	* HOWTO_MERGE: Update documentation.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure: Regenerate.
