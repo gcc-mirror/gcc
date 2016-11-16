@@ -8902,7 +8902,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	    return unlowered_expr_type (expr);
 	  else
 	    /* Expr is a reference variable for the tuple case.  */
-	    return non_reference (TREE_TYPE (expr));
+	    return lookup_decomp_type (expr);
 	}
 
       switch (TREE_CODE (expr))

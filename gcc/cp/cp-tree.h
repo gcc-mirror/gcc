@@ -5808,6 +5808,7 @@ extern tree start_decl				(const cp_declarator *, cp_decl_specifier_seq *, int, 
 extern void start_decl_1			(tree, bool);
 extern bool check_array_initializer		(tree, tree, tree);
 extern void cp_finish_decl			(tree, tree, bool, tree, int);
+extern tree lookup_decomp_type			(tree);
 extern void cp_finish_decomp			(tree, tree, unsigned int);
 extern int cp_complete_array_type		(tree *, tree, bool);
 extern int cp_complete_array_type_or_error	(tree *, tree, bool, tsubst_flags_t);
