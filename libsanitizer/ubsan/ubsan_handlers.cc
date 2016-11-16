@@ -558,6 +558,21 @@ static void HandleCFIBadType(CFICheckFailData *Data, ValueHandle Vtable,
 #endif
 }  // namespace __ubsan
 
+void __ubsan::__ubsan_handle_cfi_bad_icall(CFIBadIcallData *CallData,
+                                           ValueHandle Function) {
+  GET_REPORT_OPTIONS(false);
+  CFICheckFailData Data = {CFITCK_ICall, CallData->Loc, CallData->Type};
+  handleCFIBadIcall(&Data, Function, Opts);
+}
+
+void __ubsan::__ubsan_handle_cfi_bad_icall_abort(CFIBadIcallData *CallData,
+                                                 ValueHandle Function) {
+  GET_REPORT_OPTIONS(true);
+  CFICheckFailData Data = {CFITCK_ICall, CallData->Loc, CallData->Type};
+  handleCFIBadIcall(&Data, Function, Opts);
+  Die();
+}
+
 void __ubsan::__ubsan_handle_cfi_check_fail(CFICheckFailData *Data,
                                             ValueHandle Value,
                                             uptr ValidVtable) {
