@@ -1,3 +1,10 @@
+2016-11-17  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/78325
+	PR rtl-optimization/70890
+	* ira.c (combine_and_move_insns): Only remove REG_EQUIV notes
+	for dead regno.
+
 2016-11-16  Jason Merrill  <jason@redhat.com>
 
 	* rtl.h: Declare gt_ggc_mx and gt_pch_nx.

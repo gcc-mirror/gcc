@@ -3747,7 +3747,7 @@ combine_and_move_insns (void)
 	     use_insn, when regno was seen as non-local.  Now that
 	     regno is local to this block, and dies, such an
 	     equivalence is invalid.  */
-	  if (find_reg_note (use_insn, REG_EQUIV, NULL_RTX))
+	  if (find_reg_note (use_insn, REG_EQUIV, regno_reg_rtx[regno]))
 	    {
 	      rtx set = single_set (use_insn);
 	      if (set && REG_P (SET_DEST (set)))
