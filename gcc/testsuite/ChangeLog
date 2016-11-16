@@ -1,3 +1,8 @@
+2016-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/78378
+	* gcc.c-torture/execute/pr78378.c: New test.
+
 2016-11-16  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* gcc.dg/tree-prof/section-attr-1.c: New file.
