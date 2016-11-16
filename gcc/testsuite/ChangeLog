@@ -1,3 +1,9 @@
+2016-11-16  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* gcc.dg/tree-prof/section-attr-1.c: New file.
+	* gcc.dg/tree-prof/section-attr-2.c: New file.
+	* gcc.dg/tree-prof/section-attr-3.c: New file.
+
 2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* gcc.target/mips/code-readable-4.c (dg-final): Expect `dla'
