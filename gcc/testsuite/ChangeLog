@@ -1,3 +1,8 @@
+2016-11-16  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/arm/ivopts-orig_biv-inc.c: Adjust test string
+	according to updated dump info.
+
 2016-11-16  Alexander Monakov  <amonakov@ispras.ru>
 
 	* lib/target-supports.exp (check_effective_target_alloca): Use a
