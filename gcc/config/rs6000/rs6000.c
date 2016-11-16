@@ -27823,7 +27823,8 @@ rs6000_components_for_bb (basic_block bb)
       bitmap_set_bit (components, regno);
 
   /* LR needs to be saved around a bb if it is killed in that bb.  */
-  if (bitmap_bit_p (gen, LR_REGNO)
+  if (bitmap_bit_p (in, LR_REGNO)
+      || bitmap_bit_p (gen, LR_REGNO)
       || bitmap_bit_p (kill, LR_REGNO))
     bitmap_set_bit (components, 0);
 

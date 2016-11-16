@@ -1,3 +1,16 @@
+2016-11-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_components_for_bb): Mark the LR
+	component as used also if LR_REGNO is a live input to the bb.
+	* df-scan.c (df_get_entry_block_def_set): Return immediately after
+	clearing the set if DF_SCAN_EMPTY_ENTRY_EXIT is set.
+	(df_get_exit_block_use_set): Ditto.
+	* df.h (df_scan_flags): New enum.
+	* shrink-wrap.c (try_shrink_wrapping_separate): Set
+	DF_SCAN_EMPTY_ENTRY_EXIT in df_scan->local_flags, and call
+	df_update_entry_block_defs and df_update_exit_block_uses
+	at the start; clear the flag and call those functions at the end.
+
 2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
