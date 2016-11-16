@@ -7043,27 +7043,25 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   /* Reduce loop iterations by the vectorization factor.  */
   scale_loop_profile (loop, GCOV_COMPUTE_SCALE (1, vf),
 		      expected_iterations / vf);
-  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-    {
-      if (loop->nb_iterations_upper_bound != 0)
-        loop->nb_iterations_upper_bound = loop->nb_iterations_upper_bound - 1;
-      if (loop->nb_iterations_likely_upper_bound != 0)
-        loop->nb_iterations_likely_upper_bound
-	   = loop->nb_iterations_likely_upper_bound - 1;
-    }
-  loop->nb_iterations_upper_bound
-    = wi::udiv_floor (loop->nb_iterations_upper_bound + 1, vf) - 1;
-  loop->nb_iterations_likely_upper_bound
-    = wi::udiv_floor (loop->nb_iterations_likely_upper_bound + 1, vf) - 1;
-
+  /* The minimum number of iterations performed by the epilogue.  This
+     is 1 when peeling for gaps because we always need a final scalar
+     iteration.  */
+  int min_epilogue_iters = LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) ? 1 : 0;
+  /* +1 to convert latch counts to loop iteration counts,
+     -min_epilogue_iters to remove iterations that cannot be performed
+       by the vector code.  */
+  int bias = 1 - min_epilogue_iters;
+  /* In these calculations the "- 1" converts loop iteration counts
+     back to latch counts.  */
+  if (loop->any_upper_bound)
+    loop->nb_iterations_upper_bound
+      = wi::udiv_floor (loop->nb_iterations_upper_bound + bias, vf) - 1;
+  if (loop->any_likely_upper_bound)
+    loop->nb_iterations_likely_upper_bound
+      = wi::udiv_floor (loop->nb_iterations_likely_upper_bound + bias, vf) - 1;
   if (loop->any_estimate)
-    {
-      loop->nb_iterations_estimate
-	= wi::udiv_floor (loop->nb_iterations_estimate, vf);
-       if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-	   && loop->nb_iterations_estimate != 0)
-	 loop->nb_iterations_estimate = loop->nb_iterations_estimate - 1;
-    }
+    loop->nb_iterations_estimate
+      = wi::udiv_floor (loop->nb_iterations_estimate + bias, vf) - 1;
 
   if (dump_enabled_p ())
     {
