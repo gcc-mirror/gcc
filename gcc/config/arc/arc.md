@@ -6225,6 +6225,20 @@
    (set_attr "iscompact" "maybe,false")
    (set_attr "predicable" "no,no")])
 
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extract:SI (match_dup 0)
+			 (match_operand:SI 1 "const_int_operand" "")
+			 (match_operand:SI 2 "const_int_operand" "")))
+   (set (zero_extract:SI (match_operand:SI 3 "register_operand" "")
+			 (match_dup 1)
+			 (match_dup 2))
+	(match_dup 0))]
+  "TARGET_NPS_BITOPS
+   && !reg_overlap_mentioned_p (operands[0], operands[3])"
+  [(set (zero_extract:SI (match_dup 3) (match_dup 1) (match_dup 2))
+	(zero_extract:SI (match_dup 0) (match_dup 1) (match_dup 2)))])
+
 ;; include the arc-FPX instructions
 (include "fpx.md")
 

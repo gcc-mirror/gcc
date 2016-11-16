@@ -10,4 +10,4 @@ f (void)
   bar.b = foo.b;
 }
 /* { dg-final { scan-assembler "movb\[ \t\]+r\[0-5\]+, *r\[0-5\]+, *r\[0-5\]+, *5, *3, *8" { target arceb-*-* } } } */
-/* { dg-final { scan-assembler "movb\[ \t\]+r\[0-5\]+, *r\[0-5\]+, *r\[0-5\]+, *19, *21, *8" { target arc-*-* } } } */
+/* { dg-final { scan-assembler "movb\[ \t\]+r\[0-5\]+, *r\[0-5\]+, *r\[0-5\]+, *3, *5, *8" { target arc-*-* } } } */

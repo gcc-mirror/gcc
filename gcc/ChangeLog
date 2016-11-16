@@ -1,3 +1,13 @@
+2016-11-16  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc.md (movb peephole2): New peephole2 to merge two
+	zero_extract operations to allow a movb to occur.
+	* testsuite/gcc.target/arc/movb-1.c: Update little endian arc results.
+	* testsuite/gcc.target/arc/movb-2.c: Likewise.
+	* testsuite/gcc.target/arc/movb-5.c: Likewise.
+	* testsuite/gcc.target/arc/movh_cl-1.c: Extend test to cover
+	little endian arc.
+
 2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
