@@ -1,3 +1,9 @@
+2016-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/78378
+	* combine.c (make_extraction): Use force_to_mode for non-{REG,MEM}
+	inner only if pos is 0.  Fix up formatting.
+
 2016-11-17  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/78325
