@@ -1,3 +1,14 @@
+2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* combine.c (maybe_swap_commutative_operands): New function.
+	(combine_simplify_rtx): Use it.
+	(change_zero_ext): Likewise.
+	(make_compound_operation_int): New function, split out of...
+	(make_compound_operation): ...here.  Use
+	maybe_swap_commutative_operands for both.
+
 2016-11-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/arm-fpus.def (vfpv2): New FPU, currently an alias for 'vfp'.
