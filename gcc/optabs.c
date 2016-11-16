@@ -5283,14 +5283,15 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
   return code;
 }
 
-/* Return comparison rtx for COND. Use UNSIGNEDP to select signed or
-   unsigned operators.  OPNO holds an index of the first comparison
-   operand in insn with code ICODE.  Do not generate compare instruction.  */
+/* Return a comparison rtx of mode CMP_MODE for COND.  Use UNSIGNEDP to
+   select signed or unsigned operators.  OPNO holds the index of the
+   first comparison operand for insn ICODE.  Do not generate the
+   compare instruction itself.  */
 
 static rtx
-vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
-		    bool unsignedp, enum insn_code icode,
-		    unsigned int opno)
+vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
+		    tree t_op0, tree t_op1, bool unsignedp,
+		    enum insn_code icode, unsigned int opno)
 {
   struct expand_operand ops[2];
   rtx rtx_op0, rtx_op1;
@@ -5318,7 +5319,7 @@ vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
   create_input_operand (&ops[1], rtx_op1, m1);
   if (!maybe_legitimize_operands (icode, opno, 2, ops))
     gcc_unreachable ();
-  return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
+  return gen_rtx_fmt_ee (rcode, cmp_mode, ops[0].value, ops[1].value);
 }
 
 /* Checks if vec_perm mask SEL is a constant equivalent to a shift of the first
@@ -5644,7 +5645,8 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 	return 0;
     }
 
-  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 4);
+  comparison = vector_compare_rtx (VOIDmode, tcode, op0a, op0b, unsignedp,
+				   icode, 4);
   rtx_op1 = expand_normal (op1);
   rtx_op2 = expand_normal (op2);
 
@@ -5688,7 +5690,8 @@ expand_vec_cmp_expr (tree type, tree exp, rtx target)
 	return 0;
     }
 
-  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 2);
+  comparison = vector_compare_rtx (mask_mode, tcode, op0a, op0b,
+				   unsignedp, icode, 2);
   create_output_operand (&ops[0], target, mask_mode);
   create_fixed_operand (&ops[1], comparison);
   create_fixed_operand (&ops[2], XEXP (comparison, 0));
