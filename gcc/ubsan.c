@@ -1219,14 +1219,20 @@ instrument_null (gimple_stmt_iterator gsi, bool is_lhs)
 
 tree
 ubsan_build_overflow_builtin (tree_code code, location_t loc, tree lhstype,
-			      tree op0, tree op1)
+			      tree op0, tree op1, tree *datap)
 {
   if (flag_sanitize_undefined_trap_on_error)
     return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
 
-  tree data = ubsan_create_data ("__ubsan_overflow_data", 1, &loc,
-				 ubsan_type_descriptor (lhstype), NULL_TREE,
-				 NULL_TREE);
+  tree data;
+  if (datap && *datap)
+    data = *datap;
+  else
+    data = ubsan_create_data ("__ubsan_overflow_data", 1, &loc,
+			      ubsan_type_descriptor (lhstype), NULL_TREE,
+			      NULL_TREE);
+  if (datap)
+    *datap = data;
   enum built_in_function fn_code;
 
   switch (code)
@@ -1272,14 +1278,15 @@ instrument_si_overflow (gimple_stmt_iterator gsi)
   tree_code code = gimple_assign_rhs_code (stmt);
   tree lhs = gimple_assign_lhs (stmt);
   tree lhstype = TREE_TYPE (lhs);
+  tree lhsinner = VECTOR_TYPE_P (lhstype) ? TREE_TYPE (lhstype) : lhstype;
   tree a, b;
   gimple *g;
 
   /* If this is not a signed operation, don't instrument anything here.
      Also punt on bit-fields.  */
-  if (!INTEGRAL_TYPE_P (lhstype)
-      || TYPE_OVERFLOW_WRAPS (lhstype)
-      || GET_MODE_BITSIZE (TYPE_MODE (lhstype)) != TYPE_PRECISION (lhstype))
+  if (!INTEGRAL_TYPE_P (lhsinner)
+      || TYPE_OVERFLOW_WRAPS (lhsinner)
+      || GET_MODE_BITSIZE (TYPE_MODE (lhsinner)) != TYPE_PRECISION (lhsinner))
     return;
 
   switch (code)
@@ -1305,7 +1312,7 @@ instrument_si_overflow (gimple_stmt_iterator gsi)
       /* Represent i = -u;
 	 as
 	 i = UBSAN_CHECK_SUB (0, u);  */
-      a = build_int_cst (lhstype, 0);
+      a = build_zero_cst (lhstype);
       b = gimple_assign_rhs1 (stmt);
       g = gimple_build_call_internal (IFN_UBSAN_CHECK_SUB, 2, a, b);
       gimple_call_set_lhs (g, lhs);
@@ -1316,7 +1323,7 @@ instrument_si_overflow (gimple_stmt_iterator gsi)
 	 into
 	 _N = UBSAN_CHECK_SUB (0, u);
 	 i = ABS_EXPR<_N>;  */
-      a = build_int_cst (lhstype, 0);
+      a = build_zero_cst (lhstype);
       b = gimple_assign_rhs1 (stmt);
       g = gimple_build_call_internal (IFN_UBSAN_CHECK_SUB, 2, a, b);
       a = make_ssa_name (lhstype);
