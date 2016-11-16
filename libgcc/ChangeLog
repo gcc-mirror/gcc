@@ -1,3 +1,9 @@
+2016-11-16  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/nvptx/crt0.c (__main): Setup __nvptx_stacks and __nvptx_uni.
+	* config/nvptx/mgomp.c: New file.
+	* config/nvptx/t-nvptx: Add mgomp.c
+
 2016-11-16  Waldemar Brodkorb  <wbx@openadk.org>
 
 	PR libgcc/68468

@@ -5576,6 +5576,7 @@ attributes.
 * MeP Variable Attributes::
 * Microsoft Windows Variable Attributes::
 * MSP430 Variable Attributes::
+* Nvidia PTX Variable Attributes::
 * PowerPC Variable Attributes::
 * RL78 Variable Attributes::
 * SPU Variable Attributes::
@@ -6255,6 +6256,20 @@ placed.
 These attributes are the same as the MSP430 function attributes of the
 same name (@pxref{MSP430 Function Attributes}).  
 These attributes can be applied to both functions and variables.
+@end table
+
+@node Nvidia PTX Variable Attributes
+@subsection Nvidia PTX Variable Attributes
+
+These variable attributes are supported by the Nvidia PTX back end:
+
+@table @code
+@item shared
+@cindex @code{shared} attribute, Nvidia PTX
+Use this attribute to place a variable in the @code{.shared} memory space.
+This memory space is private to each cooperative thread array; only threads
+within one thread block refer to the same instance of the variable.
+The runtime does not initialize variables in this memory space.
 @end table
 
 @node PowerPC Variable Attributes

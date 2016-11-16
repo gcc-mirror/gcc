@@ -20570,6 +20570,37 @@ offloading execution.
 Apply partitioned execution optimizations.  This is the default when any
 level of optimization is selected.
 
+@item -msoft-stack
+@opindex msoft-stack
+Generate code that does not use @code{.local} memory
+directly for stack storage. Instead, a per-warp stack pointer is
+maintained explicitly. This enables variable-length stack allocation (with
+variable-length arrays or @code{alloca}), and when global memory is used for
+underlying storage, makes it possible to access automatic variables from other
+threads, or with atomic instructions. This code generation variant is used
+for OpenMP offloading, but the option is exposed on its own for the purpose
+of testing the compiler; to generate code suitable for linking into programs
+using OpenMP offloading, use option @option{-mgomp}.
+
+@item -muniform-simt
+@opindex muniform-simt
+Switch to code generation variant that allows to execute all threads in each
+warp, while maintaining memory state and side effects as if only one thread
+in each warp was active outside of OpenMP SIMD regions.  All atomic operations
+and calls to runtime (malloc, free, vprintf) are conditionally executed (iff
+current lane index equals the master lane index), and the register being
+assigned is copied via a shuffle instruction from the master lane.  Outside of
+SIMD regions lane 0 is the master; inside, each thread sees itself as the
+master.  Shared memory array @code{int __nvptx_uni[]} stores all-zeros or
+all-ones bitmasks for each warp, indicating current mode (0 outside of SIMD
+regions).  Each thread can bitwise-and the bitmask at position @code{tid.y}
+with current lane index to compute the master lane index.
+
+@item -mgomp
+@opindex mgomp
+Generate code for use in OpenMP offloading: enables @option{-msoft-stack} and
+@option{-muniform-simt} options, and selects corresponding multilib variant.
+
 @end table
 
 @node PDP-11 Options

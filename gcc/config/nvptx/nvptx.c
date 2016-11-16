@@ -72,16 +72,6 @@
 /* This file should be included last.  */
 #include "target-def.h"
 
-/* The kind of shuffe instruction.  */
-enum nvptx_shuffle_kind
-{
-  SHUFFLE_UP,
-  SHUFFLE_DOWN,
-  SHUFFLE_BFLY,
-  SHUFFLE_IDX,
-  SHUFFLE_MAX
-};
-
 /* The various PTX memory areas an object might reside in.  */
 enum nvptx_data_area
 {
@@ -141,6 +131,12 @@ static GTY(()) rtx worker_red_sym;
 /* Global lock variable, needed for 128bit worker & gang reductions.  */
 static GTY(()) tree global_lock_var;
 
+/* True if any function references __nvptx_stacks.  */
+static bool need_softstack_decl;
+
+/* True if any function references __nvptx_uni.  */
+static bool need_unisimt_decl;
+
 /* Allocate a new, cleared machine_function structure.  */
 
 static struct machine_function *
@@ -149,6 +145,16 @@ nvptx_init_machine_status (void)
   struct machine_function *p = ggc_cleared_alloc<machine_function> ();
   p->return_mode = VOIDmode;
   return p;
+}
+
+/* Issue a diagnostic when option OPTNAME is enabled (as indicated by OPTVAL)
+   and -fopenacc is also enabled.  */
+
+static void
+diagnose_openacc_conflict (bool optval, const char *optname)
+{
+  if (flag_openacc && optval)
+    error ("option %s is not supported together with -fopenacc", optname);
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
@@ -188,6 +194,13 @@ nvptx_option_override (void)
   worker_red_sym = gen_rtx_SYMBOL_REF (Pmode, "__worker_red");
   SET_SYMBOL_DATA_AREA (worker_red_sym, DATA_AREA_SHARED);
   worker_red_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
+
+  diagnose_openacc_conflict (TARGET_GOMP, "-mgomp");
+  diagnose_openacc_conflict (TARGET_SOFT_STACK, "-msoft-stack");
+  diagnose_openacc_conflict (TARGET_UNIFORM_SIMT, "-muniform-simt");
+
+  if (TARGET_GOMP)
+    target_flags |= MASK_SOFT_STACK | MASK_UNIFORM_SIMT;
 }
 
 /* Return a ptx type for MODE.  If PROMOTE, then use .u32 for QImode to
@@ -238,9 +251,17 @@ nvptx_encode_section_info (tree decl, rtx rtl, int first)
       if (TREE_CONSTANT (decl))
 	area = DATA_AREA_CONST;
       else if (TREE_CODE (decl) == VAR_DECL)
-	/* TODO: This would be a good place to check for a .shared or
-	   other section name.  */
-	area = TREE_READONLY (decl) ? DATA_AREA_CONST : DATA_AREA_GLOBAL;
+	{
+	  if (lookup_attribute ("shared", DECL_ATTRIBUTES (decl)))
+	    {
+	      area = DATA_AREA_SHARED;
+	      if (DECL_INITIAL (decl))
+		error ("static initialization of variable %q+D in %<.shared%>"
+		       " memory is not supported", decl);
+	    }
+	  else
+	    area = TREE_READONLY (decl) ? DATA_AREA_CONST : DATA_AREA_GLOBAL;
+	}
 
       SET_SYMBOL_DATA_AREA (XEXP (rtl, 0), area);
     }
@@ -718,7 +739,10 @@ static bool
 write_as_kernel (tree attrs)
 {
   return (lookup_attribute ("kernel", attrs) != NULL_TREE
-	  || lookup_attribute ("omp target entrypoint", attrs) != NULL_TREE);
+	  || (lookup_attribute ("omp target entrypoint", attrs) != NULL_TREE
+	      && lookup_attribute ("oacc function", attrs) != NULL_TREE));
+  /* For OpenMP target regions, the corresponding kernel entry is emitted from
+     write_omp_entry as a separate function.  */
 }
 
 /* Emit a linker marker for a function decl or defn.  */
@@ -973,6 +997,67 @@ init_frame (FILE  *file, int regno, unsigned align, unsigned size)
 	   POINTER_SIZE, reg_names[regno], reg_names[regno]);
 }
 
+/* Emit soft stack frame setup sequence.  */
+
+static void
+init_softstack_frame (FILE *file, unsigned alignment, HOST_WIDE_INT size)
+{
+  /* Maintain 64-bit stack alignment.  */
+  unsigned keep_align = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+  size = ROUND_UP (size, keep_align);
+  int bits = POINTER_SIZE;
+  const char *reg_stack = reg_names[STACK_POINTER_REGNUM];
+  const char *reg_frame = reg_names[FRAME_POINTER_REGNUM];
+  const char *reg_sspslot = reg_names[SOFTSTACK_SLOT_REGNUM];
+  const char *reg_sspprev = reg_names[SOFTSTACK_PREV_REGNUM];
+  fprintf (file, "\t.reg.u%d %s;\n", bits, reg_stack);
+  fprintf (file, "\t.reg.u%d %s;\n", bits, reg_frame);
+  fprintf (file, "\t.reg.u%d %s;\n", bits, reg_sspslot);
+  fprintf (file, "\t.reg.u%d %s;\n", bits, reg_sspprev);
+  fprintf (file, "\t{\n");
+  fprintf (file, "\t\t.reg.u32 %%fstmp0;\n");
+  fprintf (file, "\t\t.reg.u%d %%fstmp1;\n", bits);
+  fprintf (file, "\t\t.reg.u%d %%fstmp2;\n", bits);
+  fprintf (file, "\t\tmov.u32 %%fstmp0, %%tid.y;\n");
+  fprintf (file, "\t\tmul%s.u32 %%fstmp1, %%fstmp0, %d;\n",
+	   bits == 64 ? ".wide" : ".lo", bits / 8);
+  fprintf (file, "\t\tmov.u%d %%fstmp2, __nvptx_stacks;\n", bits);
+
+  /* Initialize %sspslot = &__nvptx_stacks[tid.y].  */
+  fprintf (file, "\t\tadd.u%d %s, %%fstmp2, %%fstmp1;\n", bits, reg_sspslot);
+
+  /* Initialize %sspprev = __nvptx_stacks[tid.y].  */
+  fprintf (file, "\t\tld.shared.u%d %s, [%s];\n",
+	   bits, reg_sspprev, reg_sspslot);
+
+  /* Initialize %frame = %sspprev - size.  */
+  fprintf (file, "\t\tsub.u%d %s, %s, " HOST_WIDE_INT_PRINT_DEC ";\n",
+	   bits, reg_frame, reg_sspprev, size);
+
+  /* Apply alignment, if larger than 64.  */
+  if (alignment > keep_align)
+    fprintf (file, "\t\tand.b%d %s, %s, %d;\n",
+	     bits, reg_frame, reg_frame, -alignment);
+
+  size = crtl->outgoing_args_size;
+  gcc_assert (size % keep_align == 0);
+
+  /* Initialize %stack.  */
+  fprintf (file, "\t\tsub.u%d %s, %s, " HOST_WIDE_INT_PRINT_DEC ";\n",
+	   bits, reg_stack, reg_frame, size);
+
+  /* Usually 'crtl->is_leaf' is computed during register allocator
+     initialization, which is not done on NVPTX.  Compute it now.  */
+  gcc_assert (!crtl->is_leaf);
+  crtl->is_leaf = leaf_function_p ();
+  if (!crtl->is_leaf)
+    fprintf (file, "\t\tst.shared.u%d [%s], %s;\n",
+	     bits, reg_sspslot, reg_stack);
+  fprintf (file, "\t}\n");
+  cfun->machine->has_softstack = true;
+  need_softstack_decl = true;
+}
+
 /* Emit code to initialize the REGNO predicate register to indicate
    whether we are not lane zero on the NAME axis.  */
 
@@ -986,6 +1071,97 @@ nvptx_init_axis_predicate (FILE *file, int regno, const char *name)
   fprintf (file, "\t}\n");
 }
 
+/* Emit code to initialize predicate and master lane index registers for
+   -muniform-simt code generation variant.  */
+
+static void
+nvptx_init_unisimt_predicate (FILE *file)
+{
+  int bits = POINTER_SIZE;
+  int master = REGNO (cfun->machine->unisimt_master);
+  int pred = REGNO (cfun->machine->unisimt_predicate);
+  fprintf (file, "\t{\n");
+  fprintf (file, "\t\t.reg.u32 %%ustmp0;\n");
+  fprintf (file, "\t\t.reg.u%d %%ustmp1;\n", bits);
+  fprintf (file, "\t\t.reg.u%d %%ustmp2;\n", bits);
+  fprintf (file, "\t\tmov.u32 %%ustmp0, %%tid.y;\n");
+  fprintf (file, "\t\tmul%s.u32 %%ustmp1, %%ustmp0, 4;\n",
+	   bits == 64 ? ".wide" : ".lo");
+  fprintf (file, "\t\tmov.u%d %%ustmp2, __nvptx_uni;\n", bits);
+  fprintf (file, "\t\tadd.u%d %%ustmp2, %%ustmp2, %%ustmp1;\n", bits);
+  fprintf (file, "\t\tld.shared.u32 %%r%d, [%%ustmp2];\n", master);
+  fprintf (file, "\t\tmov.u32 %%ustmp0, %%tid.x;\n");
+  /* Compute 'master lane index' as 'tid.x & __nvptx_uni[tid.y]'.  */
+  fprintf (file, "\t\tand.b32 %%r%d, %%r%d, %%ustmp0;\n", master, master);
+  /* Compute predicate as 'tid.x == master'.  */
+  fprintf (file, "\t\tsetp.eq.u32 %%r%d, %%r%d, %%ustmp0;\n", pred, master);
+  fprintf (file, "\t}\n");
+  need_unisimt_decl = true;
+}
+
+/* Emit kernel NAME for function ORIG outlined for an OpenMP 'target' region:
+
+   extern void gomp_nvptx_main (void (*fn)(void*), void *fnarg);
+   void __attribute__((kernel)) NAME (void *arg, char *stack, size_t stacksize)
+   {
+     __nvptx_stacks[tid.y] = stack + stacksize * (ctaid.x * ntid.y + tid.y + 1);
+     __nvptx_uni[tid.y] = 0;
+     gomp_nvptx_main (ORIG, arg);
+   }
+   ORIG itself should not be emitted as a PTX .entry function.  */
+
+static void
+write_omp_entry (FILE *file, const char *name, const char *orig)
+{
+  static bool gomp_nvptx_main_declared;
+  if (!gomp_nvptx_main_declared)
+    {
+      gomp_nvptx_main_declared = true;
+      write_fn_marker (func_decls, false, true, "gomp_nvptx_main");
+      func_decls << ".extern .func gomp_nvptx_main (.param.u" << POINTER_SIZE
+        << " %in_ar1, .param.u" << POINTER_SIZE << " %in_ar2);\n";
+    }
+#define ENTRY_TEMPLATE(PS, PS_BYTES, MAD_PS_32) "\
+ (.param.u" PS " %arg, .param.u" PS " %stack, .param.u" PS " %sz)\n\
+{\n\
+	.reg.u32 %r<3>;\n\
+	.reg.u" PS " %R<4>;\n\
+	mov.u32 %r0, %tid.y;\n\
+	mov.u32 %r1, %ntid.y;\n\
+	mov.u32 %r2, %ctaid.x;\n\
+	cvt.u" PS ".u32 %R1, %r0;\n\
+	" MAD_PS_32 " %R1, %r1, %r2, %R1;\n\
+	mov.u" PS " %R0, __nvptx_stacks;\n\
+	" MAD_PS_32 " %R0, %r0, " PS_BYTES ", %R0;\n\
+	ld.param.u" PS " %R2, [%stack];\n\
+	ld.param.u" PS " %R3, [%sz];\n\
+	add.u" PS " %R2, %R2, %R3;\n\
+	mad.lo.u" PS " %R2, %R1, %R3, %R2;\n\
+	st.shared.u" PS " [%R0], %R2;\n\
+	mov.u" PS " %R0, __nvptx_uni;\n\
+	" MAD_PS_32 " %R0, %r0, 4, %R0;\n\
+	mov.u32 %r0, 0;\n\
+	st.shared.u32 [%R0], %r0;\n\
+	mov.u" PS " %R0, \0;\n\
+	ld.param.u" PS " %R1, [%arg];\n\
+	{\n\
+		.param.u" PS " %P<2>;\n\
+		st.param.u" PS " [%P0], %R0;\n\
+		st.param.u" PS " [%P1], %R1;\n\
+		call.uni gomp_nvptx_main, (%P0, %P1);\n\
+	}\n\
+	ret.uni;\n\
+}\n"
+  static const char entry64[] = ENTRY_TEMPLATE ("64", "8", "mad.wide.u32");
+  static const char entry32[] = ENTRY_TEMPLATE ("32", "4", "mad.lo.u32  ");
+#undef ENTRY_TEMPLATE
+  const char *entry_1 = TARGET_ABI64 ? entry64 : entry32;
+  /* Position ENTRY_2 after the embedded nul using strlen of the prefix.  */
+  const char *entry_2 = entry_1 + strlen (entry64) + 1;
+  fprintf (file, ".visible .entry %s%s%s%s", name, entry_1, orig, entry_2);
+  need_softstack_decl = need_unisimt_decl = true;
+}
+
 /* Implement ASM_DECLARE_FUNCTION_NAME.  Writes the start of a ptx
    function, including local var decls and copies from the arguments to
    local regs.  */
@@ -997,6 +1173,14 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   tree result_type = TREE_TYPE (fntype);
   int argno = 0;
 
+  if (lookup_attribute ("omp target entrypoint", DECL_ATTRIBUTES (decl))
+      && !lookup_attribute ("oacc function", DECL_ATTRIBUTES (decl)))
+    {
+      char *buf = (char *) alloca (strlen (name) + sizeof ("$impl"));
+      sprintf (buf, "%s$impl", name);
+      write_omp_entry (file, name, buf);
+      name = buf;
+    }
   /* We construct the initial part of the function into a string
      stream, in order to share the prototype writing code.  */
   std::stringstream s;
@@ -1034,19 +1218,24 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 
   fprintf (file, "%s", s.str().c_str());
 
-  /* Declare a local var for outgoing varargs.  */
-  if (cfun->machine->has_varadic)
-    init_frame (file, STACK_POINTER_REGNUM,
-		UNITS_PER_WORD, crtl->outgoing_args_size);
-
-  /* Declare a local variable for the frame.  Force its size to be
-     DImode-compatible.  */
   HOST_WIDE_INT sz = get_frame_size ();
-  if (sz || cfun->machine->has_chain)
-    init_frame (file, FRAME_POINTER_REGNUM,
-		crtl->stack_alignment_needed / BITS_PER_UNIT,
-		(sz + GET_MODE_SIZE (DImode) - 1)
-		& ~(HOST_WIDE_INT)(GET_MODE_SIZE (DImode) - 1));
+  bool need_frameptr = sz || cfun->machine->has_chain;
+  int alignment = crtl->stack_alignment_needed / BITS_PER_UNIT;
+  if (!TARGET_SOFT_STACK)
+    {
+      /* Declare a local var for outgoing varargs.  */
+      if (cfun->machine->has_varadic)
+	init_frame (file, STACK_POINTER_REGNUM,
+		    UNITS_PER_WORD, crtl->outgoing_args_size);
+
+      /* Declare a local variable for the frame.  Force its size to be
+	 DImode-compatible.  */
+      if (need_frameptr)
+	init_frame (file, FRAME_POINTER_REGNUM, alignment,
+		    ROUND_UP (sz, GET_MODE_SIZE (DImode)));
+    }
+  else if (need_frameptr || cfun->machine->has_varadic || cfun->calls_alloca)
+    init_softstack_frame (file, alignment, sz);
 
   /* Declare the pseudos we have as ptx registers.  */
   int maxregs = max_reg_num ();
@@ -1072,8 +1261,25 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   if (cfun->machine->axis_predicate[1])
     nvptx_init_axis_predicate (file,
 			       REGNO (cfun->machine->axis_predicate[1]), "x");
+  if (cfun->machine->unisimt_predicate)
+    nvptx_init_unisimt_predicate (file);
 }
 
+/* Output instruction that sets soft stack pointer in shared memory to the
+   value in register given by SRC_REGNO.  */
+
+const char *
+nvptx_output_set_softstack (unsigned src_regno)
+{
+  if (cfun->machine->has_softstack && !crtl->is_leaf)
+    {
+      fprintf (asm_out_file, "\tst.shared.u%d\t[%s], ",
+	       POINTER_SIZE, reg_names[SOFTSTACK_SLOT_REGNUM]);
+      output_reg (asm_out_file, src_regno, VOIDmode);
+      fprintf (asm_out_file, ";\n");
+    }
+  return "";
+}
 /* Output a return instruction.  Also copy the return value to its outgoing
    location.  */
 
@@ -1113,6 +1319,8 @@ nvptx_function_ok_for_sibcall (tree, tree)
 static rtx
 nvptx_get_drap_rtx (void)
 {
+  if (TARGET_SOFT_STACK && stack_realign_drap)
+    return arg_pointer_rtx;
   return NULL_RTX;
 }
 
@@ -1311,7 +1519,7 @@ nvptx_gen_pack (rtx dst, rtx src0, rtx src1)
 /* Generate an instruction or sequence to broadcast register REG
    across the vectors of a single warp.  */
 
-static rtx
+rtx
 nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, nvptx_shuffle_kind kind)
 {
   rtx res;
@@ -1833,6 +2041,8 @@ nvptx_output_mov_insn (rtx dst, rtx src)
   return "%.\tcvt%t0%t1\t%0, %1;";
 }
 
+static void nvptx_print_operand (FILE *, rtx, int);
+
 /* Output INSN, which is a call to CALLEE with result RESULT.  For ptx, this
    involves writing .param declarations and in/out copies into them.  For
    indirect calls, also write the .callprototype.  */
@@ -1844,6 +2054,8 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
   static int labelno;
   bool needs_tgt = register_operand (callee, Pmode);
   rtx pat = PATTERN (insn);
+  if (GET_CODE (pat) == COND_EXEC)
+    pat = COND_EXEC_CODE (pat);
   int arg_end = XVECLEN (pat, 0);
   tree decl = NULL_TREE;
 
@@ -1888,6 +2100,8 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
       fprintf (asm_out_file, ";\n");
     }
 
+  /* The '.' stands for the call's predicate, if any.  */
+  nvptx_print_operand (asm_out_file, NULL_RTX, '.');
   fprintf (asm_out_file, "\t\tcall ");
   if (result != NULL_RTX)
     fprintf (asm_out_file, "(%s_in), ", reg_names[NVPTX_RETURN_REGNUM]);
@@ -1951,8 +2165,6 @@ nvptx_print_operand_punct_valid_p (unsigned char c)
   return c == '.' || c== '#';
 }
 
-static void nvptx_print_operand (FILE *, rtx, int);
-
 /* Subroutine of nvptx_print_operand; used to print a memory reference X to FILE.  */
 
 static void
@@ -2013,12 +2225,10 @@ nvptx_print_operand (FILE *file, rtx x, int code)
       x = current_insn_predicate;
       if (x)
 	{
-	  unsigned int regno = REGNO (XEXP (x, 0));
-	  fputs ("[", file);
+	  fputs ("@", file);
 	  if (GET_CODE (x) == EQ)
 	    fputs ("!", file);
-	  fputs (reg_names [regno], file);
-	  fputs ("]", file);
+	  output_reg (file, REGNO (XEXP (x, 0)), VOIDmode);
 	}
       return;
     }
@@ -2310,6 +2520,89 @@ nvptx_reorg_subreg (void)
 	    }
 	  validate_change (insn, recog_data.operand_loc[i], new_reg, false);
 	}
+    }
+}
+
+/* Return a SImode "master lane index" register for uniform-simt, allocating on
+   first use.  */
+
+static rtx
+nvptx_get_unisimt_master ()
+{
+  rtx &master = cfun->machine->unisimt_master;
+  return master ? master : master = gen_reg_rtx (SImode);
+}
+
+/* Return a BImode "predicate" register for uniform-simt, similar to above.  */
+
+static rtx
+nvptx_get_unisimt_predicate ()
+{
+  rtx &pred = cfun->machine->unisimt_predicate;
+  return pred ? pred : pred = gen_reg_rtx (BImode);
+}
+
+/* Return true if given call insn references one of the functions provided by
+   the CUDA runtime: malloc, free, vprintf.  */
+
+static bool
+nvptx_call_insn_is_syscall_p (rtx_insn *insn)
+{
+  rtx pat = PATTERN (insn);
+  gcc_checking_assert (GET_CODE (pat) == PARALLEL);
+  pat = XVECEXP (pat, 0, 0);
+  if (GET_CODE (pat) == SET)
+    pat = SET_SRC (pat);
+  gcc_checking_assert (GET_CODE (pat) == CALL
+		       && GET_CODE (XEXP (pat, 0)) == MEM);
+  rtx addr = XEXP (XEXP (pat, 0), 0);
+  if (GET_CODE (addr) != SYMBOL_REF)
+    return false;
+  const char *name = XSTR (addr, 0);
+  /* Ordinary malloc/free are redirected to __nvptx_{malloc,free), so only the
+     references with forced assembler name refer to PTX syscalls.  For vprintf,
+     accept both normal and forced-assembler-name references.  */
+  return (!strcmp (name, "vprintf") || !strcmp (name, "*vprintf")
+	  || !strcmp (name, "*malloc")
+	  || !strcmp (name, "*free"));
+}
+
+/* If SET subexpression of INSN sets a register, emit a shuffle instruction to
+   propagate its value from lane MASTER to current lane.  */
+
+static void
+nvptx_unisimt_handle_set (rtx set, rtx_insn *insn, rtx master)
+{
+  rtx reg;
+  if (GET_CODE (set) == SET && REG_P (reg = SET_DEST (set)))
+    emit_insn_after (nvptx_gen_shuffle (reg, reg, master, SHUFFLE_IDX), insn);
+}
+
+/* Adjust code for uniform-simt code generation variant by making atomics and
+   "syscalls" conditionally executed, and inserting shuffle-based propagation
+   for registers being set.  */
+
+static void
+nvptx_reorg_uniform_simt ()
+{
+  rtx_insn *insn, *next;
+
+  for (insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+      if (!(CALL_P (insn) && nvptx_call_insn_is_syscall_p (insn))
+	  && !(NONJUMP_INSN_P (insn)
+	       && GET_CODE (PATTERN (insn)) == PARALLEL
+	       && get_attr_atomic (insn)))
+	continue;
+      rtx pat = PATTERN (insn);
+      rtx master = nvptx_get_unisimt_master ();
+      for (int i = 0; i < XVECLEN (pat, 0); i++)
+	nvptx_unisimt_handle_set (XVECEXP (pat, 0, i), insn, master);
+      rtx pred = nvptx_get_unisimt_predicate ();
+      pred = gen_rtx_NE (BImode, pred, const0_rtx);
+      pat = gen_rtx_COND_EXEC (VOIDmode, pred, pat);
+      validate_change (insn, &PATTERN (insn), pat, false);
     }
 }
 
@@ -3829,6 +4122,9 @@ nvptx_reorg (void)
   /* Replace subregs.  */
   nvptx_reorg_subreg ();
 
+  if (TARGET_UNIFORM_SIMT)
+    nvptx_reorg_uniform_simt ();
+
   regstat_free_n_sets_and_refs ();
 
   df_finish_pass (true);
@@ -3857,12 +4153,36 @@ nvptx_handle_kernel_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   return NULL_TREE;
 }
 
+/* Handle a "shared" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+nvptx_handle_shared_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree decl = *node;
+
+  if (TREE_CODE (decl) != VAR_DECL)
+    {
+      error ("%qE attribute only applies to variables", name);
+      *no_add_attrs = true;
+    }
+  else if (!(TREE_PUBLIC (decl) || TREE_STATIC (decl)))
+    {
+      error ("%qE attribute not allowed with auto storage class", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Table of valid machine attributes.  */
 static const struct attribute_spec nvptx_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
        affects_type_identity } */
   { "kernel", 0, 0, true, false,  false, nvptx_handle_kernel_attribute, false },
+  { "shared", 0, 0, true, false,  false, nvptx_handle_shared_attribute, false },
   { NULL, 0, 0, false, false, false, NULL, false }
 };
 
@@ -3924,13 +4244,13 @@ nvptx_record_offload_symbol (tree decl)
     case FUNCTION_DECL:
       {
 	tree attr = get_oacc_fn_attrib (decl);
-	tree dims = TREE_VALUE (attr);
-	unsigned ix;
+	/* OpenMP offloading does not set this attribute.  */
+	tree dims = attr ? TREE_VALUE (attr) : NULL_TREE;
 
 	fprintf (asm_out_file, "//:FUNC_MAP \"%s\"",
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
 
-	for (ix = 0; ix != GOMP_DIM_MAX; ix++, dims = TREE_CHAIN (dims))
+	for (; dims; dims = TREE_CHAIN (dims))
 	  {
 	    int size = TREE_INT_CST_LOW (TREE_VALUE (dims));
 
@@ -3991,6 +4311,21 @@ nvptx_file_end (void)
   if (worker_red_size)
     write_worker_buffer (asm_out_file, worker_red_sym,
 			 worker_red_align, worker_red_size);
+
+  if (need_softstack_decl)
+    {
+      write_var_marker (asm_out_file, false, true, "__nvptx_stacks");
+      /* 32 is the maximum number of warps in a block.  Even though it's an
+         external declaration, emit the array size explicitly; otherwise, it
+         may fail at PTX JIT time if the definition is later in link order.  */
+      fprintf (asm_out_file, ".extern .shared .u%d __nvptx_stacks[32];\n",
+	       POINTER_SIZE);
+    }
+  if (need_unisimt_decl)
+    {
+      write_var_marker (asm_out_file, false, true, "__nvptx_uni");
+      fprintf (asm_out_file, ".extern .shared .u32 __nvptx_uni[32];\n");
+    }
 }
 
 /* Expander for the shuffle builtins.  */
@@ -4175,6 +4510,14 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
 #define PTX_VECTOR_LENGTH 32
 #define PTX_WORKER_LENGTH 32
 #define PTX_GANG_DEFAULT  0 /* Defer to runtime.  */
+
+/* Implement TARGET_SIMT_VF target hook: number of threads in a warp.  */
+
+static int
+nvptx_simt_vf ()
+{
+  return PTX_VECTOR_LENGTH;
+}
 
 /* Validate compute dimensions of an OpenACC offload or routine, fill
    in non-unity defaults.  FN_LEVEL indicates the level at which a
@@ -4943,6 +5286,9 @@ nvptx_goacc_reduction (gcall *call)
 #define TARGET_EXPAND_BUILTIN nvptx_expand_builtin
 #undef  TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL nvptx_builtin_decl
+
+#undef TARGET_SIMT_VF
+#define TARGET_SIMT_VF nvptx_simt_vf
 
 #undef TARGET_GOACC_VALIDATE_DIMS
 #define TARGET_GOACC_VALIDATE_DIMS nvptx_goacc_validate_dims

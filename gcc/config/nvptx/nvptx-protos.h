@@ -21,6 +21,16 @@
 #ifndef GCC_NVPTX_PROTOS_H
 #define GCC_NVPTX_PROTOS_H
 
+/* The kind of shuffe instruction.  */
+enum nvptx_shuffle_kind
+{
+  SHUFFLE_UP,
+  SHUFFLE_DOWN,
+  SHUFFLE_BFLY,
+  SHUFFLE_IDX,
+  SHUFFLE_MAX
+};
+
 extern void nvptx_declare_function_name (FILE *, const char *, const_tree decl);
 extern void nvptx_declare_object_name (FILE *file, const char *name,
 				       const_tree decl);
@@ -36,10 +46,12 @@ extern void nvptx_register_pragmas (void);
 extern void nvptx_expand_oacc_fork (unsigned);
 extern void nvptx_expand_oacc_join (unsigned);
 extern void nvptx_expand_call (rtx, rtx);
+extern rtx nvptx_gen_shuffle (rtx, rtx, rtx, nvptx_shuffle_kind);
 extern rtx nvptx_expand_compare (rtx);
 extern const char *nvptx_ptx_type_from_mode (machine_mode, bool);
 extern const char *nvptx_output_mov_insn (rtx, rtx);
 extern const char *nvptx_output_call_insn (rtx_insn *, rtx, rtx);
 extern const char *nvptx_output_return (void);
+extern const char *nvptx_output_set_softstack (unsigned);
 #endif
 #endif

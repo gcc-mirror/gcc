@@ -8,3 +8,5 @@ ALL_HOST_OBJS += mkoffload.o
 mkoffload$(exeext): mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) $(LIBS)
+
+MULTILIB_OPTIONS = mgomp

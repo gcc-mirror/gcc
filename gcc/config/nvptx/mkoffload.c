@@ -460,6 +460,7 @@ main (int argc, char **argv)
 
   /* Scan the argument vector.  */
   bool fopenmp = false;
+  bool fopenacc = false;
   for (int i = 1; i < argc; i++)
     {
 #define STR "-foffload-abi="
@@ -476,11 +477,15 @@ main (int argc, char **argv)
 #undef STR
       else if (strcmp (argv[i], "-fopenmp") == 0)
 	fopenmp = true;
+      else if (strcmp (argv[i], "-fopenacc") == 0)
+	fopenacc = true;
       else if (strcmp (argv[i], "-save-temps") == 0)
 	save_temps = true;
       else if (strcmp (argv[i], "-v") == 0)
 	verbose = true;
     }
+  if (!(fopenacc ^ fopenmp))
+    fatal_error (input_location, "either -fopenacc or -fopenmp must be set");
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
@@ -501,6 +506,8 @@ main (int argc, char **argv)
     default:
       gcc_unreachable ();
     }
+  if (fopenmp)
+    obstack_ptr_grow (&argv_obstack, "-mgomp");
 
   for (int ix = 1; ix != argc; ix++)
     {
