@@ -1,3 +1,8 @@
+2016-11-16  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78356
+	* gfortran.dg/class_allocate_23.f08: New test.
+
 2016-11-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/78333
