@@ -6401,7 +6401,7 @@
 (define_insn "casesi_internal_mips16_<mode>"
   [(set (pc)
      (if_then_else
-       (leu (match_operand:SI 0 "register_operand" "d")
+       (ltu (match_operand:SI 0 "register_operand" "d")
 	    (match_operand:SI 1 "arith_operand" "dI"))
        (unspec:P
         [(match_dup 0)

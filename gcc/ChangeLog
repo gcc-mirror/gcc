@@ -1,5 +1,10 @@
 2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
 
+	* config/mips/mips.md (casesi_internal_mips16_<mode>): Use the
+	`ltu' rather than `leu' operation in the RTL pattern
+
+2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
+
 	* config/mips/mips.md (casesi_internal_mips16_<mode>): Add
 	missing <d> instruction prefixes throughout.  Correct
 	formatting.
