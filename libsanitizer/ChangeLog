@@ -1,3 +1,8 @@
+2016-11-16  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR sanitizer/78294
+	* tsan/tsan_rtl.cc: Add missing attribute.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
