@@ -1,3 +1,12 @@
+2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline
+	2016-11-11  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.host (i[3456]86-*-musl*, x86_64-*-musl*): Use
+	i386/t-cpuinfo-static instead of i386/t-cpuinfo.
+	* config/i386/t-cpuinfo-static: New.
+
 2016-11-07  Florian Weimer  <fweimer@redhat.com>
 
 	Backport from mainline
