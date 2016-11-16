@@ -1682,7 +1682,13 @@ try_shrink_wrapping_separate (basic_block first_bb)
   if (!components)
     return;
 
-  /* We need LIVE info.  */
+  /* We need LIVE info, not defining anything in the entry block and not
+     using anything in the exit block.  A block then needs a component if
+     the register for that component is in the IN or GEN or KILL set for
+     that block.  */
+  df_scan->local_flags |= DF_SCAN_EMPTY_ENTRY_EXIT;
+  df_update_entry_block_defs ();
+  df_update_exit_block_uses ();
   df_live_add_problem ();
   df_live_set_all_dirty ();
   df_analyze ();
@@ -1748,9 +1754,10 @@ try_shrink_wrapping_separate (basic_block first_bb)
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 
-  if (crtl->shrink_wrapped_separate)
-    {
-      df_live_set_all_dirty ();
-      df_analyze ();
-    }
+  /* All done.  */
+  df_scan->local_flags &= ~DF_SCAN_EMPTY_ENTRY_EXIT;
+  df_update_entry_block_defs ();
+  df_update_exit_block_uses ();
+  df_live_set_all_dirty ();
+  df_analyze ();
 }

@@ -450,6 +450,13 @@ enum df_chain_flags
   DF_UD_CHAIN      =  2  /* Build UD chains.  */
 };
 
+enum df_scan_flags
+{
+  /* Flags for the SCAN problem.  */
+  DF_SCAN_EMPTY_ENTRY_EXIT = 1  /* Don't define any registers in the entry
+				   block; don't use any in the exit block.  */
+};
+
 enum df_changeable_flags
 {
   /* Scanning flags.  */
