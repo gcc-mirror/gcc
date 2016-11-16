@@ -4484,8 +4484,6 @@ rest_of_handle_final (void)
 
   assemble_end_function (current_function_decl, fnname);
 
-  user_defined_section_attribute = false;
-
   /* Free up reg info memory.  */
   free_reg_info ();
 

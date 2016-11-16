@@ -1,3 +1,16 @@
+2016-11-16  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* gcc/bb-reorder.c: Remove 'toplev.h' include.
+	(pass_partition_blocks::gate): No longer check
+	user_defined_section_attribute, instead check the function decl
+	for a section attribute.
+	* gcc/c-family/c-attribs.c (handle_section_attribute): No longer
+	set user_defined_section_attribute.
+	* gcc/final.c (rest_of_handle_final): Likewise.
+	* gcc/toplev.c: Remove definition of user_defined_section_attribute.
+	* gcc/toplev.h: Remove declaration of
+	user_defined_section_attribute.
+
 2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* config/mips/mips.md (casesi_internal_mips16_<mode>):
