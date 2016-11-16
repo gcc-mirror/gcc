@@ -285,7 +285,10 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
 		     LOCATION_LINE (loop_loc));
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, cond_stmt, 0);
     }
-  loop->nb_iterations = niters;
+
+  /* Record the number of latch iterations.  */
+  loop->nb_iterations = fold_build2 (MINUS_EXPR, TREE_TYPE (niters), niters,
+				     build_int_cst (TREE_TYPE (niters), 1));
 }
 
 /* Helper routine of slpeel_tree_duplicate_loop_to_edge_cfg.
