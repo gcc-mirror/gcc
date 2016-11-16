@@ -315,7 +315,8 @@ void	runtime_mprofinit(void);
 #define runtime_getcallersp(p) __builtin_frame_address(0)
 int32	runtime_mcount(void)
   __asm__ (GOSYM_PREFIX "runtime.mcount");
-int32	runtime_gcount(void);
+int32	runtime_gcount(void)
+  __asm__ (GOSYM_PREFIX "runtime.gcount");
 void	runtime_mcall(void(*)(G*));
 uint32	runtime_fastrand1(void) __asm__ (GOSYM_PREFIX "runtime.fastrand1");
 int32	runtime_timediv(int64, int32, int32*)
@@ -512,7 +513,6 @@ void	runtime_semacquire(uint32 volatile *, bool)
      __asm__ (GOSYM_PREFIX "runtime.semacquire");
 void	runtime_semrelease(uint32 volatile *)
      __asm__ (GOSYM_PREFIX "runtime.semrelease");
-int32	runtime_gomaxprocsfunc(int32 n);
 void	runtime_procyield(uint32)
   __asm__(GOSYM_PREFIX "runtime.procyield");
 void	runtime_osyield(void)

@@ -501,6 +501,7 @@ func needm()
 func dropm()
 func sigprof()
 func mcount() int32
+func gcount() int32
 
 // Signal trampoline, written in C.
 func sigtramp()
