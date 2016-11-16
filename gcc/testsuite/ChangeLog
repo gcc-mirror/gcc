@@ -1,3 +1,8 @@
+2016-11-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* c-c++-common/Wlogical-op-1.c: Use __INT{16,32}_TYPE__ instead
+	of {short,int} if __SIZEOF_INT__ is less than 4 bytes.
+
 2016-11-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78348
