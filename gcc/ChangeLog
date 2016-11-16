@@ -1,5 +1,9 @@
 2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/pdp11/pdp11.c: Include dbxout.h.
+
+2016-11-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/arc/arc.c (arc_loop_hazard): Add missing brackets.
 
 2016-11-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
