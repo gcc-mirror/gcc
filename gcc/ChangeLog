@@ -1,3 +1,9 @@
+2016-11-16  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/78270
+	* gimplify.c (gimplify_switch_expr): Always save previous
+	gimplify_ctxp->live_switch_vars.
+
 2016-11-16  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* config/arc/arc.md (movb peephole2): New peephole2 to merge two
