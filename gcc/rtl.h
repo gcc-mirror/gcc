@@ -3771,5 +3771,9 @@ struct GTY(()) cgraph_rtl_info {
   unsigned function_used_regs_valid: 1;
 };
 
+/* gtype-desc.c.  */
+extern void gt_ggc_mx (rtx &);
+extern void gt_pch_nx (rtx &);
+extern void gt_pch_nx (rtx &, gt_pointer_operator, void *);
 
 #endif /* ! GCC_RTL_H */
