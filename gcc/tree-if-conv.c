@@ -2803,12 +2803,9 @@ tree_if_conversion (struct loop *loop)
 	  || loop->dont_vectorize))
     goto cleanup;
 
-  /* Since we have no cost model, always version loops if vectorization
-     is enabled.  Either version this loop, or if the pattern is right
-     for outer-loop vectorization, version the outer loop.  In the
-     latter case we will still if-convert the original inner loop.  */
-  /* FIXME: When SLP vectorization can handle if-conversion on its own,
-     predicate all of if-conversion on flag_tree_loop_vectorize.  */
+  /* Either version this loop, or if the pattern is right for outer-loop
+     vectorization, version the outer loop.  In the latter case we will
+     still if-convert the original inner loop.  */
   if ((any_pred_load_store || any_complicated_phi)
       && !version_loop_for_if_conversion
       (versionable_outer_loop_p (loop_outer (loop))
