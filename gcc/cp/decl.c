@@ -6839,7 +6839,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  /* Set these flags now for templates.  We'll update the flags in
 	     store_init_value for instantiations.  */
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
-	  if (decl_maybe_constant_var_p (decl))
+	  if (decl_maybe_constant_var_p (decl)
+	      /* FIXME setting TREE_CONSTANT on refs breaks the back end.  */
+	      && TREE_CODE (type) != REFERENCE_TYPE)
 	    TREE_CONSTANT (decl) = 1;
 	}
     }

@@ -1,5 +1,9 @@
 2016-11-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78373
+	* decl.c (cp_finish_decl): Don't set TREE_CONSTANT on a reference.
+	* typeck2.c (store_init_value): Likewise.
+
 	* decl.c (store_decomp_type, lookup_decomp_type): New.
 	(cp_finish_decomp): Call store_decomp_type.
 	* semantics.c (finish_decltype_type): Call lookup_decomp_type.
