@@ -543,6 +543,8 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 
 	  if (size == 0)
 	    size = GET_MODE_SIZE (mode);
+	  if (size == 0)
+	    return 1;
 
 	  if (x == frame_pointer_rtx)
 	    {
