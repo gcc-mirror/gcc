@@ -1,3 +1,8 @@
+2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libgfortran/78314
+	* config/fpu-glibc.h (support_fpu_trap): Use feenableexcept.
+
 2016-11-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 

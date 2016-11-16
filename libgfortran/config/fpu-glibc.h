@@ -121,7 +121,41 @@ get_fpu_trap_exceptions (void)
 int
 support_fpu_trap (int flag)
 {
-  return support_fpu_flag (flag);
+  int exceptions = 0;
+  int old;
+
+  if (!support_fpu_flag (flag))
+    return 0;
+
+#ifdef FE_INVALID
+  if (flag & GFC_FPE_INVALID) exceptions |= FE_INVALID;
+#endif
+
+#ifdef FE_DIVBYZERO
+  if (flag & GFC_FPE_ZERO) exceptions |= FE_DIVBYZERO;
+#endif
+
+#ifdef FE_OVERFLOW
+  if (flag & GFC_FPE_OVERFLOW) exceptions |= FE_OVERFLOW;
+#endif
+
+#ifdef FE_UNDERFLOW
+  if (flag & GFC_FPE_UNDERFLOW) exceptions |= FE_UNDERFLOW;
+#endif
+
+#ifdef FE_DENORMAL
+  if (flag & GFC_FPE_DENORMAL) exceptions |= FE_DENORMAL;
+#endif
+
+#ifdef FE_INEXACT
+  if (flag & GFC_FPE_INEXACT) exceptions |= FE_INEXACT;
+#endif
+
+  old = feenableexcept (exceptions);
+  if (old == -1)
+    return 0;
+  fedisableexcept (exceptions & ~old);
+  return 1;
 }
 
 
