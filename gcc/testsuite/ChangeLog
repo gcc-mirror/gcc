@@ -1,3 +1,10 @@
+2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* gcc.target/mips/data-sym-jump.c: New test case.
+	* gcc.target/mips/data-sym-pool.c: New test case.
+	* gcc.target/mips/insn-pseudo-4.c: Adjust for constant pool
+	annotation.
+
 2016-11-16  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* lib/target-supports.exp (check_avx2_hw_available): New.

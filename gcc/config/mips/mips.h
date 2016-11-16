@@ -2986,6 +2986,32 @@ do {									\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
 } while (0)
 
+/* Mark inline jump tables as data for the purpose of disassembly.  For
+   simplicity embed the jump table's label number in the local symbol
+   produced so that multiple jump tables within a single function end
+   up marked with unique symbols.  Retain the alignment setting from
+   `elfos.h' as we are replacing the definition from there.  */
+
+#undef ASM_OUTPUT_BEFORE_CASE_LABEL
+#define ASM_OUTPUT_BEFORE_CASE_LABEL(STREAM, PREFIX, NUM, TABLE)	\
+  do									\
+    {									\
+      ASM_OUTPUT_ALIGN ((STREAM), 2);					\
+      if (JUMP_TABLES_IN_TEXT_SECTION)					\
+	mips_set_text_contents_type (STREAM, "__jump_", NUM, FALSE);	\
+    }									\
+  while (0);
+
+/* Reset text marking to code after an inline jump table.  Like with
+   the beginning of a jump table use the label number to keep symbols
+   unique.  */
+
+#define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE)				\
+  do									\
+    if (JUMP_TABLES_IN_TEXT_SECTION)					\
+      mips_set_text_contents_type (STREAM, "__jend_", NUM, TRUE);	\
+  while (0);
+
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */

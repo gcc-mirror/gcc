@@ -9749,6 +9749,37 @@ mips_finish_declare_object (FILE *stream, tree decl, int top_level, int at_end)
     }
 }
 #endif
+
+/* Mark text contents as code or data, mainly for the purpose of correct
+   disassembly.  Emit a local symbol and set its type appropriately for
+   that purpose.  Also emit `.insn' if marking contents as code so that
+   the ISA mode is recorded and any padding that follows is disassembled
+   as correct instructions.  */
+
+void
+mips_set_text_contents_type (FILE *file ATTRIBUTE_UNUSED,
+			     const char *prefix ATTRIBUTE_UNUSED,
+			     unsigned long num ATTRIBUTE_UNUSED,
+			     bool function_p ATTRIBUTE_UNUSED)
+{
+#ifdef ASM_OUTPUT_TYPE_DIRECTIVE
+  char buf[(sizeof (num) * 10) / 4 + 2];
+  const char *fnname;
+  char *sname;
+  rtx symbol;
+
+  sprintf (buf, "%lu", num);
+  symbol = XEXP (DECL_RTL (current_function_decl), 0);
+  fnname = targetm.strip_name_encoding (XSTR (symbol, 0));
+  sname = ACONCAT ((prefix, fnname, "_", buf, NULL));
+
+  ASM_OUTPUT_TYPE_DIRECTIVE (file, sname, function_p ? "function" : "object");
+  assemble_name (file, sname);
+  fputs (":\n", file);
+  if (function_p)
+    fputs ("\t.insn\n", file);
+#endif
+}
 
 /* Return the FOO in the name of the ".mdebug.FOO" section associated
    with the current ABI.  */
@@ -17131,17 +17162,22 @@ mips16_emit_constants_1 (machine_mode mode, rtx value, rtx_insn *insn)
   gcc_unreachable ();
 }
 
-/* Dump out the constants in CONSTANTS after INSN.  */
+/* Dump out the constants in CONSTANTS after INSN.  Record the initial
+   label number in the `consttable' and `consttable_end' insns emitted
+   at the beginning and the end of the constant pool respectively, so
+   that individual pools can be uniquely marked as data for the purpose
+   of disassembly.  */
 
 static void
 mips16_emit_constants (struct mips16_constant *constants, rtx_insn *insn)
 {
+  int label_num = constants ? CODE_LABEL_NUMBER (constants->label) : 0;
   struct mips16_constant *c, *next;
   int align;
 
   align = 0;
   if (constants)
-    insn = emit_insn_after (gen_consttable (), insn);
+    insn = emit_insn_after (gen_consttable (GEN_INT (label_num)), insn);
   for (c = constants; c != NULL; c = next)
     {
       /* If necessary, increase the alignment of PC.  */
@@ -17158,6 +17194,8 @@ mips16_emit_constants (struct mips16_constant *constants, rtx_insn *insn)
       next = c->next;
       free (c);
     }
+  if (constants)
+    insn = emit_insn_after (gen_consttable_end (GEN_INT (label_num)), insn);
 
   emit_barrier_after (insn);
 }
@@ -20268,16 +20306,32 @@ mips_need_noat_wrapper_p (rtx_insn *insn, rtx *opvec, int noperands)
   return false;
 }
 
-/* Implement FINAL_PRESCAN_INSN.  */
+/* Implement FINAL_PRESCAN_INSN.  Mark MIPS16 inline constant pools
+   as data for the purpose of disassembly.  For simplicity embed the
+   pool's initial label number in the local symbol produced so that
+   multiple pools within a single function end up marked with unique
+   symbols.  The label number is carried by the `consttable' insn
+   emitted at the beginning of each pool.  */
 
 void
 mips_final_prescan_insn (rtx_insn *insn, rtx *opvec, int noperands)
 {
+  if (INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+      && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE)
+    mips_set_text_contents_type (asm_out_file, "__pool_",
+				 XINT (XVECEXP (PATTERN (insn), 0, 0), 0),
+				 FALSE);
+
   if (mips_need_noat_wrapper_p (insn, opvec, noperands))
     mips_push_asm_switch (&mips_noat);
 }
 
-/* Implement TARGET_ASM_FINAL_POSTSCAN_INSN.  */
+/* Implement TARGET_ASM_FINAL_POSTSCAN_INSN.  Reset text marking to
+   code after a MIPS16 inline constant pool.  Like with the beginning
+   of a pool table use the pool's initial label number to keep symbols
+   unique.  The label number is carried by the `consttable_end' insn
+   emitted at the end of each pool.  */
 
 static void
 mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx_insn *insn,
@@ -20285,6 +20339,13 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx_insn *insn,
 {
   if (mips_need_noat_wrapper_p (insn, opvec, noperands))
     mips_pop_asm_switch (&mips_noat);
+
+  if (INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+      && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE_END)
+    mips_set_text_contents_type (asm_out_file, "__pend_",
+				 XINT (XVECEXP (PATTERN (insn), 0, 0), 0),
+				 TRUE);
 }
 
 /* Return the function that is used to expand the <u>mulsidi3 pattern.

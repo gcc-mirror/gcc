@@ -1,3 +1,23 @@
+2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* config/mips/mips-protos.h (mips_set_text_contents_type): New
+	prototype.
+	* config/mips/mips.h (ASM_OUTPUT_BEFORE_CASE_LABEL): New macro.
+	(ASM_OUTPUT_CASE_END): Likewise.
+	* config/mips/mips.c (mips_set_text_contents_type): New
+	function.
+	(mips16_emit_constants): Record the pool's initial label number
+	with the `consttable' insn.  Emit a `consttable_end' insn at the
+	end.
+	(mips_final_prescan_insn): Call `mips_set_text_contents_type'
+	for `consttable' insns.
+	(mips_final_postscan_insn): Call `mips_set_text_contents_type'
+	for `consttable_end' insns.
+	* config/mips/mips.md (unspec): Add UNSPEC_CONSTTABLE_END enum
+	value.
+	(consttable): Add operand.
+	(consttable_end): New insn.
+
 2016-11-16  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* params.def (PARAM_VECT_EPILOGUES_NOMASK): New.
