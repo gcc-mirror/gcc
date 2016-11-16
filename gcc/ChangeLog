@@ -1,3 +1,9 @@
+2016-11-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.md (arm_addsi3): Add alternative for addition of
+	general register with general register or ARM constant into SP
+	register.
+
 2016-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/78299
