@@ -1,3 +1,10 @@
+2016-11-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/78136
+	* gcc.dg/cpp/trad/trad.exp
+	(dg-runtest): Moved $srcdir/$subdir/ to
+	DEFAULT_TRADCPPFLAGS.
+
 2016-11-16  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/78356
