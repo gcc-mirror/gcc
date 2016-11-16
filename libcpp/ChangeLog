@@ -1,3 +1,11 @@
+2016-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/72823
+	* configure.ac (ENABLE_ASSERT_CHECKING): Define if gcc configure
+	would define that macro.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
 2016-11-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* lex.c (search_line_fast): New implementation for AArch64.
