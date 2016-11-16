@@ -1,3 +1,7 @@
+2016-11-16  Jason Merrill  <jason@redhat.com>
+
+	* rtl.h: Declare gt_ggc_mx and gt_pch_nx.
+
 2016-11-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/77848
