@@ -1,5 +1,11 @@
 2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
 
+	* config/mips/mips.md (casesi_internal_mips16_<mode>): Add
+	missing <d> instruction prefixes throughout.  Correct
+	formatting.
+
+2016-11-16  Maciej W. Rozycki  <macro@imgtec.com>
+
 	* config/mips/mips.c (mips_output_jump): Output R_MICROMIPS_JALR
 	rather than R_MIPS_JALR relocation in microMIPS code.  Do not
 	cancel short delay slots in PIC call relaxation.

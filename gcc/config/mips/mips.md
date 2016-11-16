@@ -6424,14 +6424,14 @@
     {
     case HImode:
       output_asm_insn ("sll\t%5, %0, 1", operands);
-      output_asm_insn ("la\t%4, %2", operands);
+      output_asm_insn ("<d>la\t%4, %2", operands);
       output_asm_insn ("<d>addu\t%5, %4, %5", operands);
       output_asm_insn ("lh\t%5, 0(%5)", operands);
       break;
-    
+
     case SImode:
       output_asm_insn ("sll\t%5, %0, 2", operands);
-      output_asm_insn ("la\t%4, %2", operands);
+      output_asm_insn ("<d>la\t%4, %2", operands);
       output_asm_insn ("<d>addu\t%5, %4, %5", operands);
       output_asm_insn ("lw\t%5, 0(%5)", operands);
       break;
@@ -6439,9 +6439,9 @@
     default:
       gcc_unreachable ();
     }
-  
-  output_asm_insn ("addu\t%4, %4, %5", operands);
-  
+
+  output_asm_insn ("<d>addu\t%4, %4, %5", operands);
+
   return "j\t%4";
 }
   [(set_attr "insn_count" "16")])
