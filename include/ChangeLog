@@ -1,3 +1,15 @@
+2016-11-03  David Tolnay <dtolnay@gmail.com>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* demangle.h (DMGL_RUST): New macro.
+	(DMGL_STYLE_MASK): Add DMGL_RUST.
+	(demangling_styles): Add dlang_rust.
+	(RUST_DEMANGLING_STYLE_STRING): New macro.
+	(RUST_DEMANGLING): New macro.
+	(rust_demangle): New prototype.
+	(rust_is_mangled): Likewise.
+	(rust_demangle_sym): Likewise.
+
 2016-11-07  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add

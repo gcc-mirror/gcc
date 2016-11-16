@@ -146,6 +146,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 pex-unix.c pex-win32.c						\
          physmem.c putenv.c						\
 	random.c regex.c rename.c rindex.c				\
+	rust-demangle.c							\
 	safe-ctype.c setenv.c setproctitle.c sha1.c sigsetmask.c        \
 	 simple-object.c simple-object-coff.c simple-object-elf.c	\
 	 simple-object-mach-o.c simple-object-xcoff.c			\
@@ -183,6 +184,7 @@ REQUIRED_OFILES =							\
 	./partition.$(objext) ./pexecute.$(objext) ./physmem.$(objext)	\
 	./pex-common.$(objext) ./pex-one.$(objext)			\
 	./@pexecute@.$(objext) ./vprintf-support.$(objext)		\
+	./rust-demangle.$(objext)					\
 	./safe-ctype.$(objext)						\
 	./simple-object.$(objext) ./simple-object-coff.$(objext)	\
 	./simple-object-elf.$(objext) ./simple-object-mach-o.$(objext)	\
@@ -1187,6 +1189,17 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/rindex.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/rindex.c $(OUTPUT_OPTION)
+
+./rust-demangle.$(objext): $(srcdir)/rust-demangle.c config.h \
+	$(INCDIR)/ansidecl.h $(INCDIR)/demangle.h $(INCDIR)/libiberty.h \
+	$(INCDIR)/safe-ctype.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/rust-demangle.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/rust-demangle.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/rust-demangle.c $(OUTPUT_OPTION)
 
 ./safe-ctype.$(objext): $(srcdir)/safe-ctype.c $(INCDIR)/ansidecl.h \
 	$(INCDIR)/safe-ctype.h
