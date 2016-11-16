@@ -1,5 +1,9 @@
 2016-11-16  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
+	* LOCAL_PATCHES: New file.
+
+2016-11-16  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
 	PR sanitizer/78307
 	* ubsan/ubsan_handlers.cc (__ubsan_handle_cfi_bad_icall): New function.
 	( __ubsan_handle_cfi_bad_icall_abort): Likewise. 
