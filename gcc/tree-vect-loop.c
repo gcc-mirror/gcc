@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
+#include "tree-if-conv.h"
 
 /* Loop Vectorization Pass.
 
@@ -1171,6 +1172,7 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_PEELING_FOR_GAPS (res) = false;
   LOOP_VINFO_PEELING_FOR_NITER (res) = false;
   LOOP_VINFO_OPERANDS_SWAPPED (res) = false;
+  LOOP_VINFO_ORIG_LOOP_INFO (res) = NULL;
 
   return res;
 }
@@ -2046,15 +2048,20 @@ start_over:
   if (!ok)
     return false;
 
-  /* This pass will decide on using loop versioning and/or loop peeling in
-     order to enhance the alignment of data references in the loop.  */
-  ok = vect_enhance_data_refs_alignment (loop_vinfo);
-  if (!ok)
+  /* Do not invoke vect_enhance_data_refs_alignment for eplilogue
+     vectorization.  */
+  if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo))
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "bad data alignment.\n");
-      return false;
+    /* This pass will decide on using loop versioning and/or loop peeling in
+       order to enhance the alignment of data references in the loop.  */
+    ok = vect_enhance_data_refs_alignment (loop_vinfo);
+    if (!ok)
+      {
+	if (dump_enabled_p ())
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "bad data alignment.\n");
+        return false;
+      }
     }
 
   if (slp)
@@ -2308,9 +2315,10 @@ again:
 
    Apply a set of analyses on LOOP, and create a loop_vec_info struct
    for it.  The different analyses will record information in the
-   loop_vec_info struct.  */
+   loop_vec_info struct.  If ORIG_LOOP_VINFO is not NULL epilogue must
+   be vectorized.  */
 loop_vec_info
-vect_analyze_loop (struct loop *loop)
+vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo)
 {
   loop_vec_info loop_vinfo;
   unsigned int vector_sizes;
@@ -2346,6 +2354,10 @@ vect_analyze_loop (struct loop *loop)
 	}
 
       bool fatal = false;
+
+      if (orig_loop_vinfo)
+	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = orig_loop_vinfo;
+
       if (vect_analyze_loop_2 (loop_vinfo, fatal))
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
@@ -6696,12 +6708,14 @@ loop_niters_no_overflow (loop_vec_info loop_vinfo)
 
    The analysis phase has determined that the loop is vectorizable.
    Vectorize the loop - created vectorized stmts to replace the scalar
-   stmts in the loop, and update the loop exit condition.  */
+   stmts in the loop, and update the loop exit condition.
+   Returns scalar epilogue loop if any.  */
 
-void
+struct loop *
 vect_transform_loop (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  struct loop *epilogue = NULL;
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
   int i;
@@ -6780,8 +6794,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = niters;
   tree nitersm1 = unshare_expr (LOOP_VINFO_NITERSM1 (loop_vinfo));
   bool niters_no_overflow = loop_niters_no_overflow (loop_vinfo);
-  vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector, th,
-		   check_profitability, niters_no_overflow);
+  epilogue = vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector, th,
+			      check_profitability, niters_no_overflow);
   if (niters_vector == NULL_TREE)
     {
       if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
@@ -7065,12 +7079,19 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   if (dump_enabled_p ())
     {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "LOOP VECTORIZED\n");
-      if (loop->inner)
+      if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "LOOP VECTORIZED\n");
+	  if (loop->inner)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "OUTER LOOP VECTORIZED\n");
+	  dump_printf (MSG_NOTE, "\n");
+	}
+      else
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "OUTER LOOP VECTORIZED\n");
-      dump_printf (MSG_NOTE, "\n");
+			 "LOOP EPILOGUE VECTORIZED (VS=%d)\n",
+			 current_vector_size);
     }
 
   /* Free SLP instances here because otherwise stmt reference counting
@@ -7082,6 +7103,49 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   /* Clear-up safelen field since its value is invalid after vectorization
      since vectorized loop can have loop-carried dependencies.  */
   loop->safelen = 0;
+
+  /* Don't vectorize epilogue for epilogue.  */
+  if (LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+    epilogue = NULL;
+
+  if (epilogue)
+    {
+	unsigned int vector_sizes
+	  = targetm.vectorize.autovectorize_vector_sizes ();
+	vector_sizes &= current_vector_size - 1;
+
+	if (!PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK))
+	  epilogue = NULL;
+	else if (!vector_sizes)
+	  epilogue = NULL;
+	else if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+		 && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) >= 0)
+	  {
+	    int smallest_vec_size = 1 << ctz_hwi (vector_sizes);
+	    int ratio = current_vector_size / smallest_vec_size;
+	    int eiters = LOOP_VINFO_INT_NITERS (loop_vinfo)
+	      - LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
+	    eiters = eiters % vf;
+
+	    epilogue->nb_iterations_upper_bound = eiters - 1;
+
+	    if (eiters < vf / ratio)
+	      epilogue = NULL;
+	    }
+    }
+
+  if (epilogue)
+    {
+      epilogue->force_vectorize = loop->force_vectorize;
+      epilogue->safelen = loop->safelen;
+      epilogue->dont_vectorize = false;
+
+      /* We may need to if-convert epilogue to vectorize it.  */
+      if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo))
+	tree_if_conversion (epilogue);
+    }
+
+  return epilogue;
 }
 
 /* The code below is trying to perform simple optimization - revert

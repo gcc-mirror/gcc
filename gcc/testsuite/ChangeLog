@@ -1,3 +1,9 @@
+2016-11-16  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* lib/target-supports.exp (check_avx2_hw_available): New.
+	(check_effective_target_avx2_runtime): New.
+	* gcc.dg/vect/vect-tail-nomask-1.c: New test.
+
 2016-11-16  Tamar Christina  <tamar.christina@arm.com>
 
 	PR testsuite/78136

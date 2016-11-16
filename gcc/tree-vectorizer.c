@@ -514,6 +514,7 @@ vectorize_loops (void)
   hash_table<simd_array_to_simduid> *simd_array_to_simduid_htab = NULL;
   bool any_ifcvt_loops = false;
   unsigned ret = 0;
+  struct loop *new_loop;
 
   vect_loops_num = number_of_loops (cfun);
 
@@ -538,7 +539,8 @@ vectorize_loops (void)
 	      && optimize_loop_nest_for_speed_p (loop))
 	     || loop->force_vectorize)
       {
-	loop_vec_info loop_vinfo;
+	loop_vec_info loop_vinfo, orig_loop_vinfo = NULL;
+vectorize_epilogue:
 	vect_location = find_loop_location (loop);
         if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
 	    && dump_enabled_p ())
@@ -546,7 +548,7 @@ vectorize_loops (void)
                        LOCATION_FILE (vect_location),
 		       LOCATION_LINE (vect_location));
 
-	loop_vinfo = vect_analyze_loop (loop);
+	loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo);
 	loop->aux = loop_vinfo;
 
 	if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
@@ -580,7 +582,7 @@ vectorize_loops (void)
 	    && dump_enabled_p ())
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                            "loop vectorized\n");
-	vect_transform_loop (loop_vinfo);
+	new_loop = vect_transform_loop (loop_vinfo);
 	num_vectorized_loops++;
 	/* Now that the loop has been vectorized, allow it to be unrolled
 	   etc.  */
@@ -601,6 +603,15 @@ vectorize_loops (void)
 	  {
 	    fold_loop_vectorized_call (loop_vectorized_call, boolean_true_node);
 	    ret |= TODO_cleanup_cfg;
+	  }
+
+	if (new_loop)
+	  {
+	    /* Epilogue of vectorized loop must be vectorized too.  */
+	    vect_loops_num = number_of_loops (cfun);
+	    loop = new_loop;
+	    orig_loop_vinfo = loop_vinfo;  /* To pass vect_analyze_loop.  */
+	    goto vectorize_epilogue;
 	  }
       }
 

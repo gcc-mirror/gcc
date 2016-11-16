@@ -1614,11 +1614,13 @@ slpeel_update_phi_nodes_for_lcssa (struct loop *epilog)
 
    Note this function peels prolog and epilog only if it's necessary,
    as well as guards.
+   Returns created epilogue or NULL.
 
    TODO: Guard for prefer_scalar_loop should be emitted along with
    versioning conditions if loop versioning is needed.  */
 
-void
+
+struct loop *
 vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 		 tree *niters_vector, int th, bool check_profitability,
 		 bool niters_no_overflow)
@@ -1634,7 +1636,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 			 || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo));
 
   if (!prolog_peeling && !epilog_peeling)
-    return;
+    return NULL;
 
   prob_vector = 9 * REG_BR_PROB_BASE / 10;
   if ((vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo)) == 2)
@@ -1642,7 +1644,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   prob_prolog = prob_epilog = (vf - 1) * REG_BR_PROB_BASE / vf;
   vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 
-  struct loop *prolog, *epilog, *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  struct loop *prolog, *epilog = NULL, *loop = LOOP_VINFO_LOOP (loop_vinfo);
   struct loop *first_loop = loop;
   create_lcssa_for_virtual_phi (loop);
   update_ssa (TODO_update_ssa_only_virtuals);
@@ -1824,6 +1826,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
     }
   adjust_vec.release ();
   free_original_copy_tables ();
+
+  return epilog;
 }
 
 /* Function vect_create_cond_for_niters_checks.

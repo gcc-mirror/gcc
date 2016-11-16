@@ -2734,7 +2734,7 @@ ifcvt_local_dce (basic_block bb)
    profitability analysis.  Returns non-zero todo flags when something
    changed.  */
 
-static unsigned int
+unsigned int
 tree_if_conversion (struct loop *loop)
 {
   unsigned int todo = 0;
