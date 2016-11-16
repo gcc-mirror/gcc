@@ -1,3 +1,8 @@
+2015-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* tree-ssa-math-opts.c (bswap_replace): Remove test
+	of SLOW_UNALIGNED_ACCESS.
+
 2016-11-16  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/nvptx/mkoffload.c (main): Check that either OpenACC or OpenMP

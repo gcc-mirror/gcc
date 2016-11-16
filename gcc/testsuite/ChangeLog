@@ -1,3 +1,9 @@
+2015-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/optimize-bswapdi-3.c: Remove xfail.
+	* gcc.dg/optimize-bswaphi-1.c: Likewise. 	
+	* gcc.dg/optimize-bswapsi-2.c: Likewise.
+
 2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR libgfortran/78314

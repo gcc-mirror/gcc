@@ -2649,11 +2649,6 @@ bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
 
       align = get_object_alignment (src);
 
-      if (bswap
-	  && align < GET_MODE_ALIGNMENT (TYPE_MODE (load_type))
-	  && SLOW_UNALIGNED_ACCESS (TYPE_MODE (load_type), align))
-	return false;
-
       /* Move cur_stmt just before  one of the load of the original
 	 to ensure it has the same VUSE.  See PR61517 for what could
 	 go wrong.  */
