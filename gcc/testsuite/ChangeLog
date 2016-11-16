@@ -1,3 +1,8 @@
+2016-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78333
+	* gcc.dg/pr78333.c: New testcase.
+
 2016-11-16  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/78270
