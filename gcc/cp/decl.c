@@ -7293,6 +7293,22 @@ get_tuple_decomp_init (tree decl, unsigned i)
     }
 }
 
+/* It's impossible to recover the decltype of a tuple decomposition variable
+   based on the actual type of the variable, so store it in a hash table.  */
+static GTY(()) hash_map<tree,tree> *decomp_type_table;
+static void
+store_decomp_type (tree v, tree t)
+{
+  if (!decomp_type_table)
+    decomp_type_table = hash_map<tree,tree>::create_ggc (13);
+  decomp_type_table->put (v, t);
+}
+tree
+lookup_decomp_type (tree v)
+{
+  return *decomp_type_table->get (v);
+}
+
 /* Finish a decomposition declaration.  DECL is the underlying declaration
    "e", FIRST is the head of a chain of decls for the individual identifiers
    chained through DECL_CHAIN in reverse order and COUNT is the number of
@@ -7467,6 +7483,8 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 		      v[i]);
 	      goto error_out;
 	    }
+	  /* Save the decltype away before reference collapse.  */
+	  store_decomp_type (v[i], eltype);
 	  eltype = cp_build_reference_type (eltype, !lvalue_p (init));
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);

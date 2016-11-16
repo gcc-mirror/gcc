@@ -2457,8 +2457,7 @@ extern void decl_value_expr_insert (tree, tree);
 
 /* In a VAR_DECL or PARM_DECL, the location at which the value may be found,
    if transformations have made this more complicated than evaluating the
-   decl itself.  This should only be used for debugging; once this field has
-   been set, the decl itself may not legitimately appear in the function.  */
+   decl itself.  */
 #define DECL_HAS_VALUE_EXPR_P(NODE) \
   (TREE_CHECK3 (NODE, VAR_DECL, PARM_DECL, RESULT_DECL) \
    ->decl_common.decl_flag_2)
