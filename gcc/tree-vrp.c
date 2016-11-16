@@ -10023,7 +10023,11 @@ simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   tree op1 = gimple_call_arg (stmt, 1);
   tree type;
   if (is_ubsan)
-    type = TREE_TYPE (op0);
+    {
+      type = TREE_TYPE (op0);
+      if (VECTOR_TYPE_P (type))
+	return false;
+    }
   else if (gimple_call_lhs (stmt) == NULL_TREE)
     return false;
   else

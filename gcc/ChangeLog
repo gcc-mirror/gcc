@@ -1,3 +1,21 @@
+2016-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/77823
+	* ubsan.c (ubsan_build_overflow_builtin): Add DATAP argument, if
+	it points to non-NULL tree, use it instead of ubsan_create_data.
+	(instrument_si_overflow): Handle vector signed integer overflow
+	checking.
+	* ubsan.h (ubsan_build_overflow_builtin): Add DATAP argument.
+	* tree-vrp.c (simplify_internal_call_using_ranges): Punt for
+	vector IFN_UBSAN_CHECK_*.
+	* internal-fn.c (expand_addsub_overflow): Add DATAP argument,
+	pass it through to ubsan_build_overflow_builtin.
+	(expand_neg_overflow, expand_mul_overflow): Likewise.
+	(expand_vector_ubsan_overflow): New function.
+	(expand_UBSAN_CHECK_ADD, expand_UBSAN_CHECK_SUB,
+	expand_UBSAN_CHECK_MUL): Use tit for vector arithmetics.
+	(expand_arith_overflow): Adjust expand_*_overflow callers.
+
 2016-11-16  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/install.texi: Remove references to java/libjava.
