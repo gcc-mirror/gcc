@@ -7812,7 +7812,7 @@ arc_loop_hazard (rtx_insn *pred, rtx_insn *succ)
     jump = pred;
   else if (GET_CODE (PATTERN (pred)) == SEQUENCE
 	   && JUMP_P (XVECEXP (PATTERN (pred), 0, 0)))
-    jump = as_a <rtx_insn *> XVECEXP (PATTERN (pred), 0, 0);
+    jump = as_a <rtx_insn *> (XVECEXP (PATTERN (pred), 0, 0));
   else
     return false;
 
