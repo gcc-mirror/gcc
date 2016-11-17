@@ -1,3 +1,25 @@
+2016-11-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78101
+	* config/rs6000/predicates.md (fusion_addis_mem_combo_load): Add
+	the appropriate checks for SFmode/DFmode load/stores in GPR
+	registers.
+	(fusion_addis_mem_combo_store): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Rename
+	fusion_fpr_* to fusion_vsx_* and add in support for ISA 3.0 scalar
+	d-form instructions for traditional Altivec registers.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+	* config/rs6000/rs6000.md (p9 fusion store peephole2): Remove
+	early clobber from scratch register.  Do not match if the register
+	being stored is the scratch register.
+	(fusion_vsx_<P:mode>_<FPR_FUSION:mode>_load): Rename fusion_fpr_*
+	to fusion_vsx_* and add in support for ISA 3.0 scalar d-form
+	instructions for traditional Altivec registers.
+	(fusion_fpr_<P:mode>_<FPR_FUSION:mode>_load): Likewise.
+	(fusion_vsx_<P:mode>_<FPR_FUSION:mode>_store): Likewise.
+	(fusion_fpr_<P:mode>_<FPR_FUSION:mode>_store): Likewise.
+
 2016-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/77933
