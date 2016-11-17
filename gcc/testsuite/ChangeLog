@@ -1,5 +1,8 @@
 2016-11-17  Jeff Law  <law@redhat.com>
 
+	PR middle-end/38219
+	* gcc.dg/tree-ssa/vrp47.c: Do not run on m68k.
+
 	PR target/47192
 	* gcc.target/m68k/pr47192.c: New test.
 
