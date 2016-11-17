@@ -1,3 +1,10 @@
+2016-11-17  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/i386/i386.md (cmpstrnsi): New test to bail out if neither
+	string input is a string constant.
+	* builtins.c (expand_builtin_strncmp): Attempt expansion of strncmp
+	via cmpstrnsi even if neither string is constant.
+
 2016-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/78201

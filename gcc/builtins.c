@@ -3918,7 +3918,7 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
   insn_code cmpstrn_icode = direct_optab_handler (cmpstrn_optab, SImode);
   if (cmpstrn_icode != CODE_FOR_nothing)
   {
-    tree len, len1, len2;
+    tree len, len1, len2, len3;
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result;
     tree fndecl, fn;
@@ -3937,14 +3937,19 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     if (len2)
       len2 = size_binop_loc (loc, PLUS_EXPR, ssize_int (1), len2);
 
+    len3 = fold_convert_loc (loc, sizetype, arg3);
+
     /* If we don't have a constant length for the first, use the length
-       of the second, if we know it.  We don't require a constant for
+       of the second, if we know it.  If neither string is constant length,
+       use the given length argument.  We don't require a constant for
        this case; some cost analysis could be done if both are available
        but neither is constant.  For now, assume they're equally cheap,
        unless one has side effects.  If both strings have constant lengths,
        use the smaller.  */
 
-    if (!len1)
+    if (!len1 && !len2)
+      len = len3;
+    else if (!len1)
       len = len2;
     else if (!len2)
       len = len1;
@@ -3961,23 +3966,10 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     else
       len = len2;
 
-    /* If both arguments have side effects, we cannot optimize.  */
-    if (!len || TREE_SIDE_EFFECTS (len))
-      return NULL_RTX;
-
-    /* The actual new length parameter is MIN(len,arg3).  */
-    len = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (len), len,
-		       fold_convert_loc (loc, TREE_TYPE (len), arg3));
-
-    /* If we don't have POINTER_TYPE, call the function.  */
-    if (arg1_align == 0 || arg2_align == 0)
-      return NULL_RTX;
-
-    /* Stabilize the arguments in case gen_cmpstrnsi fails.  */
-    arg1 = builtin_save_expr (arg1);
-    arg2 = builtin_save_expr (arg2);
-    len = builtin_save_expr (len);
-
+    /* If we are not using the given length, we must incorporate it here.
+       The actual new length parameter will be MIN(len,arg3) in this case.  */
+    if (len != len3)
+      len = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (len), len, len3);
     arg1_rtx = get_memory_rtx (arg1, len);
     arg2_rtx = get_memory_rtx (arg2, len);
     arg3_rtx = expand_normal (len);
