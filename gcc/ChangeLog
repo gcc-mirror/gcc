@@ -1,3 +1,11 @@
+2016-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78201
+	* varasm.c (default_use_anchors_for_symbol_p): Fix a comment typo.
+	Don't test decl != NULL.  Don't look at DECL_SIZE, but DECL_SIZE_UNIT
+	instead, return false if it is NULL, or doesn't fit into uhwi, or
+	is larger or equal to targetm.max_anchor_offset.
+
 2016-11-17  Pip Cet  <pipcet@gmail.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
