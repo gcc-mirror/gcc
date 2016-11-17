@@ -1,3 +1,10 @@
+2016-11-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/77308
+	* gcc.target/arm/pr53447-5.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_arm_prefer_ldrd_strd): Adjust.
+
 2016-11-17  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/abitest.S: New file.

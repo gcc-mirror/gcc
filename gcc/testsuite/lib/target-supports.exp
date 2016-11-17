@@ -4356,7 +4356,7 @@ proc check_effective_target_arm_prefer_ldrd_strd { } {
     }
 
     return [check_no_messages_and_pattern arm_prefer_ldrd_strd "strd\tr" assembly {
-        void foo (int *p) { p[0] = 1; p[1] = 0;}
+        void foo (void) { __asm__ ("" ::: "r4", "r5"); }
     }  "-O2 -mthumb" ]
 }
 
