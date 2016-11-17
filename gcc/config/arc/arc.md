@@ -1465,6 +1465,49 @@
   [(set_attr "type" "cmove,cmove")
    (set_attr "length" "4,8")])
 
+;; When there's a mask of a single bit, and then a compare to 0 or 1,
+;; if the single bit is the sign bit, then GCC likes to convert this
+;; into a sign extend and a compare less than, or greater to zero.
+;; This is usually fine, except for the NXP400 where we have access to
+;; a bit test instruction, along with a special short load instruction
+;; (from CMEM), that doesn't support sign-extension on load.
+;;
+;; This peephole optimisation attempts to restore the use of bit-test
+;; in those cases where it is useful to do so.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+		(sign_extend:SI
+		(match_operand:QI 1 "any_mem_operand" "")))
+   (set (reg:CC_ZN CC_REG)
+	(compare:CC_ZN (match_dup 0)
+		       (const_int 0)))
+   (set (pc)
+	(if_then_else (match_operator 2 "ge_lt_comparison_operator"
+		       [(reg:CC_ZN CC_REG) (const_int 0)])
+		      (match_operand 3 "" "")
+		      (match_operand 4 "" "")))]
+  "TARGET_NPS_CMEM
+   && cmem_address (XEXP (operands[1], 0), SImode)
+   && peep2_reg_dead_p (2, operands[0])
+   && peep2_regno_dead_p (3, CC_REG)"
+  [(set (match_dup 0)
+	(zero_extend:SI
+	(match_dup 1)))
+   (set (reg:CC_ZN CC_REG)
+	(compare:CC_ZN (zero_extract:SI
+			 (match_dup 0)
+			 (const_int 1)
+			 (const_int 7))
+		       (const_int 0)))
+   (set (pc)
+	(if_then_else (match_dup 2)
+		      (match_dup 3)
+		      (match_dup 4)))]
+  "if (GET_CODE (operands[2]) == GE)
+     operands[2] = gen_rtx_EQ (VOIDmode, gen_rtx_REG (CC_ZNmode, 61), const0_rtx);
+   else
+     operands[2] = gen_rtx_NE (VOIDmode, gen_rtx_REG (CC_ZNmode, 61), const0_rtx);")
+
 ; Try to generate more short moves, and/or less limms, by substituting a
 ; conditional move with a conditional sub.
 (define_peephole2
