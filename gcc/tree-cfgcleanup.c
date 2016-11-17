@@ -230,6 +230,8 @@ cleanup_control_flow_bb (basic_block bb, bool first_p)
 	 edges which do not go to the right block.  For the one
 	 edge which goes to the right block, fix up its flags.  */
       label = TREE_OPERAND (gimple_goto_dest (stmt), 0);
+      if (DECL_CONTEXT (label) != cfun->decl)
+	return retval;
       target_block = label_to_block (label);
       for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
 	{
