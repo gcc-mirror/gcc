@@ -1,3 +1,8 @@
+2016-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68180
+	* g++.dg/cpp1y/pr68180.C: New.
+
 2016-11-17  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/78319
