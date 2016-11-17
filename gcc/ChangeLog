@@ -1,3 +1,11 @@
+2016-11-17  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc.md (cmem bit/sign-extend peephole2): New peephole
+	to make better use of cmem loads in the case where a single bit is
+	being accessed.
+	* config/arc/predicates.md (ge_lt_comparison_operator): New
+	predicate.
+
 2016-11-17  Andrew Senkevich <andrew.senkevich@intel.com>
 
 	* config/i386/i386.c (processor_features): Add F_AVX5124VNNIW,
