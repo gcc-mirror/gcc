@@ -1,3 +1,8 @@
+2016-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78305
+	* gcc.dg/torture/pr78305.c: New testcase.
+
 2016-11-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/66227

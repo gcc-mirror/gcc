@@ -1,3 +1,8 @@
+2016-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78305
+	* fold-const.c (negate_expr_p): Fix multiplication case.
+
 2016-11-17  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR target/78357
