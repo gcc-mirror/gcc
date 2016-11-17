@@ -112,6 +112,7 @@
 ;;  f	x87 register when 80387 floating point arithmetic is enabled
 ;;  r	SSE regs not requiring REX prefix when prefixes avoidance is enabled
 ;;	and all SSE regs otherwise
+;;  h   EVEX encodable SSE register with number factor of four
 
 (define_register_constraint "Yz" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
  "First SSE register (@code{%xmm0}).")
@@ -159,6 +160,9 @@
 (define_register_constraint "Yv"
  "TARGET_AVX512VL ? ALL_SSE_REGS : TARGET_SSE ? SSE_REGS : NO_REGS"
  "@internal For AVX512VL, any EVEX encodable SSE register (@code{%xmm0-%xmm31}), otherwise any SSE register.")
+
+(define_register_constraint "Yh" "TARGET_AVX512F ? MOD4_SSE_REGS : NO_REGS"
+ "@internal Any EVEX encodable SSE register, which has number factor of four.")
 
 ;; We use the B prefix to denote any number of internal operands:
 ;;  f  FLAGS_REG

@@ -366,6 +366,48 @@ proc check_effective_target_avx512vbmi { } {
     } "-mavx512vbmi" ]
 }
 
+# Return 1 if avx512_4fmaps instructions can be compiled.
+proc check_effective_target_avx5124fmaps { } {
+    return [check_no_compiler_messages avx5124fmaps object {
+	typedef float __v16sf __attribute__ ((__vector_size__ (64)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+
+	__v16sf
+	_mm512_mask_4fmadd_ps (__v16sf __DEST, __v16sf __A, __v16sf __B, __v16sf __C,
+			       __v16sf __D, __v16sf __E, __v4sf *__F)
+	{
+	    return (__v16sf) __builtin_ia32_4fmaddps_mask ((__v16sf) __A,
+							  (__v16sf) __B,
+							  (__v16sf) __C,
+							  (__v16sf) __D,
+							  (__v16sf) __E,
+							  (const __v4sf *) __F,
+							  (__v16sf) __DEST,
+							  0xffff);
+	}
+    } "-mavx5124fmaps" ]
+}
+
+# Return 1 if avx512_4vnniw instructions can be compiled.
+proc check_effective_target_avx5124vnniw { } {
+    return [check_no_compiler_messages avx5124vnniw object {
+	typedef int __v16si __attribute__ ((__vector_size__ (64)));
+	typedef int __v4si __attribute__ ((__vector_size__ (16)));
+
+	__v16si
+	_mm512_4dpwssd_epi32 (__v16si __A, __v16si __B, __v16si __C,
+			      __v16si __D, __v16si __E, __v4si *__F)
+	{
+	    return (__v16si) __builtin_ia32_vp4dpwssd ((__v16si) __B,
+						       (__v16si) __C,
+						       (__v16si) __D,
+						       (__v16si) __E,
+						       (__v16si) __A,
+						       (const __v4si *) __F);
+	}
+    } "-mavx5124vnniw" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
