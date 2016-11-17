@@ -1,3 +1,8 @@
+2016-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c (cpp_interpret_string_1): Skip locations from
+	loc_reader when advancing 'p' when handling raw strings.
+
 2016-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/72823

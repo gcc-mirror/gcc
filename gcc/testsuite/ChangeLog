@@ -1,3 +1,9 @@
+2016-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
+	(test_raw_string_one_liner): New function.
+	(test_raw_string_multiline): New function.
+
 2016-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/store_repeating_constant_1.c: New test.

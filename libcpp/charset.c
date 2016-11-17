@@ -1564,10 +1564,21 @@ cpp_interpret_string_1 (cpp_reader *pfile, const cpp_string *from, size_t count,
 
 	  /* Skip over 'R"'.  */
 	  p += 2;
+	  if (loc_reader)
+	    {
+	      loc_reader->get_next ();
+	      loc_reader->get_next ();
+	    }
 	  prefix = p;
 	  while (*p != '(')
-	    p++;
+	    {
+	      p++;
+	      if (loc_reader)
+		loc_reader->get_next ();
+	    }
 	  p++;
+	  if (loc_reader)
+	    loc_reader->get_next ();
 	  limit = from[i].text + from[i].len;
 	  if (limit >= p + (p - prefix) + 1)
 	    limit -= (p - prefix) + 1;

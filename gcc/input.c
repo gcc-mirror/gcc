@@ -3156,6 +3156,78 @@ test_lexer_string_locations_long_line (const line_table_case &case_)
 			  i, 2, 7 + i, 7 + i);
 }
 
+/* Test of locations within a raw string that doesn't contain a newline.  */
+
+static void
+test_lexer_string_locations_raw_string_one_line (const line_table_case &case_)
+{
+  /* .....................00.0000000111111111122.
+     .....................12.3456789012345678901.  */
+  const char *content = ("R\"foo(0123456789)foo\"\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  if (!should_have_column_data_p (line_table->highest_location))
+    return;
+
+  /* 0-9, plus the nil terminator.  */
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 11);
+  for (int i = 0; i < 11; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 7 + i, 7 + i);
+}
+
+/* Test of locations within a raw string that contains a newline.  */
+
+static void
+test_lexer_string_locations_raw_string_multiline (const line_table_case &case_)
+{
+  /* .....................00.0000.
+     .....................12.3456.  */
+  const char *content = ("R\"foo(\n"
+  /* .....................00000.
+     .....................12345.  */
+			 "hello\n"
+			 "world\n"
+  /* .....................00000.
+     .....................12345.  */
+			 ")foo\"\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("\nhello\nworld\n", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  if (!should_have_column_data_p (line_table->highest_location))
+    return;
+
+  /* Currently we don't support locations within raw strings that
+     contain newlines.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES (test, tok->src_loc, tok->type,
+				  "range endpoints are on different lines");
+}
+
 /* Test of lexing char constants.  */
 
 static void
@@ -3297,6 +3369,8 @@ input_c_tests ()
   for_each_line_table_case (test_lexer_string_locations_stringified_macro_argument);
   for_each_line_table_case (test_lexer_string_locations_non_string);
   for_each_line_table_case (test_lexer_string_locations_long_line);
+  for_each_line_table_case (test_lexer_string_locations_raw_string_one_line);
+  for_each_line_table_case (test_lexer_string_locations_raw_string_multiline);
   for_each_line_table_case (test_lexer_char_constants);
 
   test_reading_source_line ();
