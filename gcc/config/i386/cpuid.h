@@ -60,6 +60,8 @@
 #define bit_MWAITX      (1 << 29)
 
 /* %edx */
+#define bit_AVX5124VNNIW (1 << 2)
+#define bit_AVX5124FMAPS (1 << 3)
 #define bit_MMXEXT	(1 << 22)
 #define bit_LM		(1 << 29)
 #define bit_3DNOWP	(1 << 30)

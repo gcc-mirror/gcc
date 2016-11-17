@@ -81,6 +81,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX512VBMI_P(x)	TARGET_ISA_AVX512VBMI_P(x)
 #define TARGET_AVX512IFMA	TARGET_ISA_AVX512IFMA
 #define TARGET_AVX512IFMA_P(x)	TARGET_ISA_AVX512IFMA_P(x)
+#define TARGET_AVX5124FMAPS	TARGET_ISA_AVX5124FMAPS
+#define TARGET_AVX5124FMAPS_P(x) TARGET_ISA_AVX5124FMAPS_P(x)
+#define TARGET_AVX5124VNNIW	TARGET_ISA_AVX5124VNNIW
+#define TARGET_AVX5124VNNIW_P(x) TARGET_ISA_AVX5124VNNIW_P(x)
 #define TARGET_FMA	TARGET_ISA_FMA
 #define TARGET_FMA_P(x)	TARGET_ISA_FMA_P(x)
 #define TARGET_SSE4A	TARGET_ISA_SSE4A
@@ -1089,7 +1093,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
    || MASK_REGNO_P (REGNO) || BND_REGNO_P (REGNO)			\
-   ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
+   ? (COMPLEX_MODE_P (MODE) ? 2 :					\
+      (((MODE == V64SFmode) || (MODE == V64SImode)) ? 4 : 1))		\
    : ((MODE) == XFmode							\
       ? (TARGET_64BIT ? 2 : 3)						\
       : ((MODE) == XCmode						\
@@ -1365,6 +1370,7 @@ enum reg_class
   FLOAT_INT_SSE_REGS,
   MASK_EVEX_REGS,
   MASK_REGS,
+  MOD4_SSE_REGS,
   ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -1425,6 +1431,7 @@ enum reg_class
    "FLOAT_INT_SSE_REGS",		\
    "MASK_EVEX_REGS",			\
    "MASK_REGS",				\
+   "MOD4_SSE_REGS"			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer
@@ -1465,9 +1472,10 @@ enum reg_class
 {   0x11ffff,    0x1fe0,    0x0 },       /* FLOAT_INT_REGS */            \
 { 0x1ff100ff,0xffffffe0,   0x1f },       /* INT_SSE_REGS */              \
 { 0x1ff1ffff,0xffffffe0,   0x1f },       /* FLOAT_INT_SSE_REGS */        \
-       { 0x0,       0x0, 0x1fc0 },       /* MASK_EVEX_REGS */           \
+       { 0x0,       0x0, 0x1fc0 },       /* MASK_EVEX_REGS */            \
        { 0x0,       0x0, 0x1fe0 },       /* MASK_REGS */                 \
-{ 0xffffffff,0xffffffff,0x1ffff }                                        \
+{ 0x1fe00000,0xffffe000,   0x1f },       /* MOD4_SSE_REGS */		 \
+{ 0xffffffff,0xffffffff,0x1ffff }		\
 }
 
 /* The same information, inverted:
@@ -1532,6 +1540,16 @@ enum reg_class
 
 #define BND_REG_P(X) (REG_P (X) && BND_REGNO_P (REGNO (X)))
 #define BND_REGNO_P(N) IN_RANGE ((N), FIRST_BND_REG, LAST_BND_REG)
+
+#define MOD4_SSE_REG_P(X) (REG_P (X) && MOD4_SSE_REGNO_P (REGNO (X)))
+#define MOD4_SSE_REGNO_P(N) ((N) == XMM0_REG  \
+			     || (N) == XMM4_REG  \
+			     || (N) == XMM8_REG  \
+			     || (N) == XMM12_REG \
+			     || (N) == XMM16_REG \
+			     || (N) == XMM20_REG \
+			     || (N) == XMM24_REG \
+			     || (N) == XMM28_REG)
 
 /* First floating point reg */
 #define FIRST_FLOAT_REG FIRST_STACK_REG

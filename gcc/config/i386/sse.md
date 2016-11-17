@@ -146,6 +146,12 @@
 
   ;; For AVX512VBMI support
   UNSPEC_VPMULTISHIFT
+
+  ;; For AVX5124FMAPS/AVX5124VNNIW support
+  UNSPEC_VP4FMADD
+  UNSPEC_VP4FNMADD
+  UNSPEC_VP4DPWSSD
+  UNSPEC_VP4DPWSSDS
 ])
 
 (define_c_enum "unspecv" [
@@ -19397,3 +19403,274 @@
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_mode_iterator IMOD4
+  [(V64SF "TARGET_AVX5124FMAPS") (V64SI "TARGET_AVX5124VNNIW")])
+
+(define_mode_attr imod4_narrow
+  [(V64SF "V16SF") (V64SI "V16SI")])
+
+(define_insn "mov<mode>"
+  [(set (match_operand:IMOD4 0 "nonimmediate_operand")
+	(match_operand:IMOD4 1 "general_operand"))]
+  "TARGET_AVX512F"
+  "#")
+
+(define_split
+  [(set (match_operand:IMOD4 0 "register_operand")
+	(match_operand:IMOD4 1 "nonimmediate_operand"))]
+  "TARGET_AVX512F && reload_completed"
+  [(set (subreg:<imod4_narrow> (match_dup 0) 0)
+	(subreg:<imod4_narrow> (match_dup 1) 0))
+   (set (subreg:<imod4_narrow> (match_dup 0) 64)
+	(subreg:<imod4_narrow> (match_dup 1) 64))
+   (set (subreg:<imod4_narrow> (match_dup 0) 128)
+	(subreg:<imod4_narrow> (match_dup 1) 128))
+   (set (subreg:<imod4_narrow> (match_dup 0) 192)
+	(subreg:<imod4_narrow> (match_dup 1) 192))])
+
+(define_insn "avx5124fmaddps_4fmaddps"
+  [(set (match_operand:V16SF 0 "register_operand" "=v")
+	(unspec:V16SF
+	  [(match_operand:V16SF 1 "register_operand" "0")
+	   (match_operand:V64SF 2 "register_operand" "Yh")
+	   (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FMADD))]
+  "TARGET_AVX5124FMAPS"
+  "v4fmaddps\t{%3, %g2, %0|%0, %g2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("V16SF"))])
+
+(define_insn "avx5124fmaddps_4fmaddps_mask"
+  [(set (match_operand:V16SF 0 "register_operand" "=v")
+	(vec_merge:V16SF
+	  (unspec:V16SF
+	     [(match_operand:V64SF 1 "register_operand" "Yh")
+	      (match_operand:V4SF 2 "memory_operand" "m")] UNSPEC_VP4FMADD)
+	  (match_operand:V16SF 3 "register_operand" "0")
+	  (match_operand:HI 4 "register_operand" "Yk")))]
+  "TARGET_AVX5124FMAPS"
+  "v4fmaddps\t{%2, %g1, %0%{%4%}|%{%4%}%0, %g1, %2}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("V16SF"))])
+
+(define_insn "avx5124fmaddps_4fmaddps_maskz"
+  [(set (match_operand:V16SF 0 "register_operand" "=v")
+	(vec_merge:V16SF
+	  (unspec:V16SF
+	    [(match_operand:V16SF 1 "register_operand" "0")
+	     (match_operand:V64SF 2 "register_operand" "Yh")
+	     (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FMADD)
+	  (match_operand:V16SF 4 "const0_operand" "C")
+	  (match_operand:HI 5 "register_operand" "Yk")))]
+  "TARGET_AVX5124FMAPS"
+  "v4fmaddps\t{%3, %g2, %0%{%5%}%{z%}|%{%5%}%{z%}%0, %g2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("V16SF"))])
+
+(define_insn "avx5124fmaddps_4fmaddss"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+	(unspec:V4SF
+	  [(match_operand:V4SF 1 "register_operand" "0")
+	   (match_operand:V64SF 2 "register_operand" "Yh")
+	   (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FMADD))]
+  "TARGET_AVX5124FMAPS"
+  "v4fmaddss\t{%3, %x2, %0|%0, %x2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("SF"))])
+
+(define_insn "avx5124fmaddps_4fmaddss_mask"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+	(vec_merge:V4SF
+	  (unspec:V4SF
+	    [(match_operand:V64SF 1 "register_operand" "Yh")
+	     (match_operand:V4SF 2 "memory_operand" "m")] UNSPEC_VP4FMADD)
+	  (match_operand:V4SF 3 "register_operand" "0")
+	  (match_operand:QI 4 "register_operand" "Yk")))]
+  "TARGET_AVX5124FMAPS"
+  "v4fmaddss\t{%2, %x1, %0%{%4%}|%{%4%}%0, %x1, %2}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("SF"))])
+
+(define_insn "avx5124fmaddps_4fmaddss_maskz"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+	(vec_merge:V4SF
+	  (unspec:V4SF
+	    [(match_operand:V4SF 1 "register_operand" "0")
+	     (match_operand:V64SF 2 "register_operand" "Yh")
+	     (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FMADD)
+	  (match_operand:V4SF 4 "const0_operand" "C")
+	  (match_operand:QI 5 "register_operand" "Yk")))]
+  "TARGET_AVX5124FMAPS"
+  "v4fmaddss\t{%3, %x2, %0%{%5%}%{z%}|%{%5%}%{z%}%0, %x2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("SF"))])
+
+(define_insn "avx5124fmaddps_4fnmaddps"
+  [(set (match_operand:V16SF 0 "register_operand" "=v")
+	(unspec:V16SF
+	  [(match_operand:V16SF 1 "register_operand" "0")
+	   (match_operand:V64SF 2 "register_operand" "Yh")
+	   (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FNMADD))]
+  "TARGET_AVX5124FMAPS"
+  "v4fnmaddps\t{%3, %g2, %0|%0, %g2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("V16SF"))])
+
+(define_insn "avx5124fmaddps_4fnmaddps_mask"
+  [(set (match_operand:V16SF 0 "register_operand" "=v")
+	(vec_merge:V16SF
+	  (unspec:V16SF
+	     [(match_operand:V64SF 1 "register_operand" "Yh")
+	      (match_operand:V4SF 2 "memory_operand" "m")] UNSPEC_VP4FNMADD)
+	  (match_operand:V16SF 3 "register_operand" "0")
+	  (match_operand:HI 4 "register_operand" "Yk")))]
+  "TARGET_AVX5124FMAPS"
+  "v4fnmaddps\t{%2, %g1, %0%{%4%}|%{%4%}%0, %g1, %2}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("V16SF"))])
+
+(define_insn "avx5124fmaddps_4fnmaddps_maskz"
+  [(set (match_operand:V16SF 0 "register_operand" "=v")
+	(vec_merge:V16SF
+	  (unspec:V16SF
+	    [(match_operand:V16SF 1 "register_operand" "0")
+	     (match_operand:V64SF 2 "register_operand" "Yh")
+	     (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FNMADD)
+	  (match_operand:V16SF 4 "const0_operand" "C")
+	  (match_operand:HI 5 "register_operand" "Yk")))]
+  "TARGET_AVX5124FMAPS"
+  "v4fnmaddps\t{%3, %g2, %0%{%5%}%{z%}|%{%5%}%{z%}%0, %g2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("V16SF"))])
+
+(define_insn "avx5124fmaddps_4fnmaddss"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+	(unspec:V4SF
+	  [(match_operand:V4SF 1 "register_operand" "0")
+	   (match_operand:V64SF 2 "register_operand" "Yh")
+	   (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FNMADD))]
+  "TARGET_AVX5124FMAPS"
+  "v4fnmaddss\t{%3, %x2, %0|%0, %x2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("SF"))])
+
+(define_insn "avx5124fmaddps_4fnmaddss_mask"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+	(vec_merge:V4SF
+	  (unspec:V4SF
+	    [(match_operand:V64SF 1 "register_operand" "Yh")
+	     (match_operand:V4SF 2 "memory_operand" "m")] UNSPEC_VP4FNMADD)
+	  (match_operand:V4SF 3 "register_operand" "0")
+	  (match_operand:QI 4 "register_operand" "Yk")))]
+  "TARGET_AVX5124FMAPS"
+  "v4fnmaddss\t{%2, %x1, %0%{%4%}|%{%4%}%0, %x1, %2}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("SF"))])
+
+(define_insn "avx5124fmaddps_4fnmaddss_maskz"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+	(vec_merge:V4SF
+	  (unspec:V4SF
+	    [(match_operand:V4SF 1 "register_operand" "0")
+	     (match_operand:V64SF 2 "register_operand" "Yh")
+	     (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FNMADD)
+	  (match_operand:V4SF 4 "const0_operand" "C")
+	  (match_operand:QI 5 "register_operand" "Yk")))]
+  "TARGET_AVX5124FMAPS"
+  "v4fnmaddss\t{%3, %x2, %0%{%5%}%{z%}|%{%5%}%{z%}%0, %x2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("SF"))])
+
+(define_insn "avx5124vnniw_vp4dpwssd"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+	(unspec:V16SI
+	  [(match_operand:V16SI 1 "register_operand" "0")
+	   (match_operand:V64SI 2 "register_operand" "Yh")
+	   (match_operand:V4SI 3 "memory_operand" "m")] UNSPEC_VP4DPWSSD))]
+  "TARGET_AVX5124VNNIW"
+  "vp4dpwssd\t{%3, %g2, %0|%0, %g2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("TI"))])
+
+(define_insn "avx5124vnniw_vp4dpwssd_mask"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+	(vec_merge:V16SI
+	  (unspec:V16SI
+	     [(match_operand:V64SI 1 "register_operand" "Yh")
+	      (match_operand:V4SI 2 "memory_operand" "m")] UNSPEC_VP4DPWSSD)
+	  (match_operand:V16SI 3 "register_operand" "0")
+	  (match_operand:HI 4 "register_operand" "Yk")))]
+  "TARGET_AVX5124VNNIW"
+  "vp4dpwssd\t{%2, %g1, %0%{%4%}|%{%4%}%0, %g1, %2}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("TI"))])
+
+(define_insn "avx5124vnniw_vp4dpwssd_maskz"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+	(vec_merge:V16SI
+	  (unspec:V16SI
+	    [(match_operand:V16SI 1 "register_operand" "0")
+	     (match_operand:V64SI 2 "register_operand" "Yh")
+	     (match_operand:V4SI 3 "memory_operand" "m")] UNSPEC_VP4DPWSSD)
+	  (match_operand:V16SI 4 "const0_operand" "C")
+	  (match_operand:HI 5 "register_operand" "Yk")))]
+  "TARGET_AVX5124VNNIW"
+  "vp4dpwssd\t{%3, %g2, %0%{%5%}%{z%}|%{%5%}%{z%}%0, %g2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("TI"))])
+
+(define_insn "avx5124vnniw_vp4dpwssds"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+	(unspec:V16SI
+	  [(match_operand:V16SI 1 "register_operand" "0")
+	   (match_operand:V64SI 2 "register_operand" "Yh")
+	   (match_operand:V4SI 3 "memory_operand" "m")] UNSPEC_VP4DPWSSDS))]
+  "TARGET_AVX5124VNNIW"
+  "vp4dpwssds\t{%3, %g2, %0|%0, %g2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("TI"))])
+
+(define_insn "avx5124vnniw_vp4dpwssds_mask"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+	(vec_merge:V16SI
+	  (unspec:V16SI
+	     [(match_operand:V64SI 1 "register_operand" "Yh")
+	      (match_operand:V4SI 2 "memory_operand" "m")] UNSPEC_VP4DPWSSDS)
+	  (match_operand:V16SI 3 "register_operand" "0")
+	  (match_operand:HI 4 "register_operand" "Yk")))]
+  "TARGET_AVX5124VNNIW"
+  "vp4dpwssds\t{%2, %g1, %0%{%4%}|%{%4%}%0, %g1, %2}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("TI"))])
+
+(define_insn "avx5124vnniw_vp4dpwssds_maskz"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+	(vec_merge:V16SI
+	  (unspec:V16SI
+	    [(match_operand:V16SI 1 "register_operand" "0")
+	     (match_operand:V64SI 2 "register_operand" "Yh")
+	     (match_operand:V4SI 3 "memory_operand" "m")] UNSPEC_VP4DPWSSDS)
+	  (match_operand:V16SI 4 "const0_operand" "C")
+	  (match_operand:HI 5 "register_operand" "Yk")))]
+  "TARGET_AVX5124VNNIW"
+  "vp4dpwssds\t{%3, %g2, %0%{%5%}%{z%}|%{%5%}%{z%}%0, %g2, %3}"
+   [(set_attr ("type") ("ssemuladd"))
+    (set_attr ("prefix") ("evex"))
+    (set_attr ("mode") ("TI"))])
