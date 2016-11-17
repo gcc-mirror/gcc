@@ -1,3 +1,9 @@
+2016-11-17  Jeff Law  <law@redhat.com>
+
+	PR target/47192
+	* config/m68k/m68k.c (m68k_expand_epilogue): Emit a scheduling
+	barrier prior to deallocating the stack.
+
 2016-11-17  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* config/arc/arc.md (cmem bit/sign-extend peephole2): New peephole

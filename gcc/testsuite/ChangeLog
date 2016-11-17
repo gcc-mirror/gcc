@@ -1,3 +1,8 @@
+2016-11-17  Jeff Law  <law@redhat.com>
+
+	PR target/47192
+	* gcc.target/m68k/pr47192.c: New test.
+
 2016-11-17  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.target/mips/branch-cost-1.c (dg-options): Use (HAS_MOVN)

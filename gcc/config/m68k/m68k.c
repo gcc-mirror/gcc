@@ -1205,6 +1205,7 @@ m68k_expand_epilogue (bool sibcall_p)
 	     stack-based restore.  */
 	  emit_move_insn (gen_rtx_REG (Pmode, A1_REG),
 			  GEN_INT (-(current_frame.offset + fsize)));
+	  emit_insn (gen_blockage ());
 	  emit_insn (gen_addsi3 (stack_pointer_rtx,
 				 gen_rtx_REG (Pmode, A1_REG),
 				 frame_pointer_rtx));
@@ -1306,6 +1307,7 @@ m68k_expand_epilogue (bool sibcall_p)
 			 current_frame.fpu_mask, false, false);
     }
 
+  emit_insn (gen_blockage ());
   if (frame_pointer_needed)
     emit_insn (gen_unlink (frame_pointer_rtx));
   else if (fsize_with_regs)
