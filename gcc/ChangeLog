@@ -1,3 +1,12 @@
+2016-11-17  Richard Biener  <rguenther@suse.de>
+
+	* common.opt (ftree-loop-if-convert-stores): Mark as preserved for
+	backward compatibility.
+	* doc/invoke.texi (ftree-loop-if-convert-stores): Remove.
+	* tree-if-conv.c (pass_if_conversion::gate): Do not test
+	flag_tree_loop_if_convert_stores.
+	(pass_if_conversion::execute): Likewise.
+
 2016-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/predicates.md (aarch64_reg_or_fp_zero): Check for
