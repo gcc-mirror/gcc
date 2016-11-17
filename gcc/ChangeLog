@@ -1,3 +1,90 @@
+2016-11-17  Andrew Senkevich <andrew.senkevich@intel.com>
+
+	* config/i386/i386.c (processor_features): Add F_AVX5124VNNIW,
+	F_AVX5124FMAPS.
+	(isa_names_table): Handle new features.
+
+2016-11-17  Kirill Yukhin  <kirill.yukhin@gmail.com>
+	    Andrew Senkevich <andrew.senkevich@intel.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX5124FMAPS_SET,
+	OPTION_MASK_ISA_AVX5124FMAPS_UNSET,
+	OPTION_MASK_ISA_AVX5124VNNIW_SET,
+	OPTION_MASK_ISA_AVX5124VNNIW_UNSET): New.
+	(ix86_handle_option): Handle OPT_mavx5124fmaps,
+	OPT_mavx5124vnniw.
+	* config.gcc: Add avx5124fmapsintrin.h, avx5124vnniwintrin.h.
+	* config/i386/avx5124fmapsintrin.h: New file.
+	* config/i386/avx5124vnniwintrin.h: Ditto.
+	* config/i386/constraints.md (h): New constraint.
+	* config/i386/cpuid.h: (bit_AVX5124VNNIW,
+	bit_AVX5124FMAPS): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu):
+	Detect avx5124fmaps, avx5124vnniw.
+	* config/i386/i386-builtin-types.def: Add types
+	V16SF_FTYPE_V16SF_V16SF_V16SF_V16SF_V16SF_PCV4SF_V16SF_UHI,
+	V16SF_FTYPE_V16SF_V16SF_V16SF_V16SF_V16SF_PCV4SF,
+	V4SF_FTYPE_V4SF_V4SF_V4SF_V4SF_V4SF_PCV4SF,
+	V4SF_FTYPE_V4SF_V4SF_V4SF_V4SF_V4SF_PCV4SF_V4SF_UQI,
+	V16SI_FTYPE_V16SI_V16SI_V16SI_V16SI_V16SI_PCV4SI,
+	V16SI_FTYPE_V16SI_V16SI_V16SI_V16SI_V16SI_PCV4SI_V16SI_UHI.
+	* config/i386/i386-builtin.def (__builtin_ia32_4fmaddps_mask,
+	__builtin_ia32_4fmaddps, __builtin_ia32_4fmaddss,
+	__builtin_ia32_4fmaddss_mask, __builtin_ia32_4fnmaddps_mask,
+	__builtin_ia32_4fnmaddps, __builtin_ia32_4fnmaddss,
+	__builtin_ia32_4fnmaddss_mask, __builtin_ia32_vp4dpwssd,
+	__builtin_ia32_vp4dpwssd_mask, __builtin_ia32_vp4dpwssds,
+	__builtin_ia32_vp4dpwssds_mask): New.
+	* config/i386/i386-c.c (ix86_target_macros_internal):
+	Define __AVX5124FMAPS__, __AVX5124VNNIW__.
+	* config/i386/i386-modes.def: Fixed comment typos, added new
+	modes (VECTOR_MODES (FLOAT, 256), VECTOR_MODE (INT, SI, 64)).
+	* config/i386/i386.c (ix86_target_string): Add -mavx5124fmaps,
+	-mavx5124vnniw.
+	(PTA_AVX5124FMAPS, PTA_AVX5124VNNIW): Define.
+	(ix86_option_override_internal): Handle new options.
+	(ix86_valid_target_attribute_inner_p): Add avx5124fmaps,
+	avx5124vnniw.
+	(ix86_expand_builtin): Handle new builtins.
+	(ix86_additional_allocno_class_p): New.
+	* config/i386/i386.h (TARGET_AVX5124FMAPS,
+	TARGET_AVX5124FMAPS_P,
+	TARGET_AVX5124VNNIW,
+	TARGET_AVX5124VNNIW_P): Define.
+	(reg_class): Add MOD4_SSE_REGS.
+	(MOD4_SSE_REG_P, MOD4_SSE_REGNO_P): New.
+	* config/i386/i386.opt: Add mavx5124fmaps, mavx5124vnniw.
+	* config/i386/immintrin.h: Include avx5124fmapsintrin.h,
+	avx5124vnniwintrin.h.
+	* config/i386/sse.md (unspec): Add UNSPEC_VP4FMADD,
+	UNSPEC_VP4FNMADD,
+	UNSPEC_VP4DPWSSD, UNSPEC_VP4DPWSSDS.
+	(define_mode_iterator IMOD4): New.
+	(define_mode_attr imod4_narrow): Ditto.
+	(define_insn "mov<mode>"): Ditto.
+	(define_insn "avx5124fmaddps_4fmaddps"): Ditto.
+	(define_insn "avx5124fmaddps_4fmaddps_mask"): Ditto.
+	(define_insn "avx5124fmaddps_4fmaddps_maskz"): Ditto.
+	(define_insn "avx5124fmaddps_4fmaddss"): Ditto.
+	(define_insn "avx5124fmaddps_4fmaddss_mask"): Ditto.
+	(define_insn "avx5124fmaddps_4fmaddss_maskz"): Ditto.
+	(define_insn "avx5124fmaddps_4fnmaddps"): Ditto.
+	(define_insn "avx5124fmaddps_4fnmaddps_mask"): Ditto.
+	(define_insn "avx5124fmaddps_4fnmaddps_maskz"): Ditto.
+	(define_insn "avx5124fmaddps_4fnmaddss"): Ditto.
+	(define_insn "avx5124fmaddps_4fnmaddss_mask"): Ditto.
+	(define_insn "avx5124fmaddps_4fnmaddss_maskz"): Ditto.
+	(define_insn "avx5124vnniw_vp4dpwssd"): Ditto.
+	(define_insn "avx5124vnniw_vp4dpwssd_mask"): Ditto.
+	(define_insn "avx5124vnniw_vp4dpwssd_maskz"): Ditto.
+	(define_insn "avx5124vnniw_vp4dpwssds"): Ditto.
+	(define_insn "avx5124vnniw_vp4dpwssds_mask"): Ditto.
+	(define_insn "avx5124vnniw_vp4dpwssds_maskz"): Ditto.
+	* init-regs.c (initialize_uninitialized_regs): Add emit_clobber call.
+	* genmodes.c (mode_size_inline): Extend return type.
+	* machmode.h (mode_size, mode_base_align): Extend type.
+
 2016-11-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78101
