@@ -1,5 +1,11 @@
 2016-11-17  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/78383
+	* tree-cfgcleanup.c (cleanup_control_flow_bb): Do not turn
+	non-local goto into CFG.
+
+2016-11-17  Richard Biener  <rguenther@suse.de>
+
 	* common.opt (ftree-loop-if-convert-stores): Mark as preserved for
 	backward compatibility.
 	* doc/invoke.texi (ftree-loop-if-convert-stores): Remove.
