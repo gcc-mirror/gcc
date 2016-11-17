@@ -4120,9 +4120,8 @@ arc_ccfsm_post_advance (rtx_insn *insn, struct arc_ccfsm *state)
 	   && GET_CODE (PATTERN (insn)) != ADDR_VEC
 	   && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
 	   && ((type = get_attr_type (insn)) == TYPE_BRANCH
-	       || (type == TYPE_UNCOND_BRANCH
-		   /* ??? Maybe should also handle TYPE_RETURN here,
-		      but we don't have a testcase for that.  */
+	       || ((type == TYPE_UNCOND_BRANCH
+		    || type == TYPE_RETURN)
 		   && ARC_CCFSM_BRANCH_DELETED_P (state))))
     {
       if (ARC_CCFSM_BRANCH_DELETED_P (state))
