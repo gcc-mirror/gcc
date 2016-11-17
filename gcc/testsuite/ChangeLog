@@ -1,3 +1,9 @@
+2016-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/77933
+	* gcc.target/arm/pr77933-1.c: New test.
+	* gcc.target/arm/pr77933-2.c: Likewise.
+
 2016-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/78201
