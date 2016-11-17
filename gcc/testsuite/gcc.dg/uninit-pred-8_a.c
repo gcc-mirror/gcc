@@ -16,8 +16,9 @@ int foo (int n, int l, int m, int r)
   if (m) g++;
   else   bar();
 
+  /* marking this test as xfail on arm-none-eabi, see PR78319.  */
   if ( n ||  m || r || l)
-      blah(v); /* { dg-bogus "uninitialized" "bogus warning" } */
+      blah(v); /* { dg-bogus "uninitialized" "bogus warning" { xfail arm-none-eabi } } */
 
   if ( n )
       blah(v); /* { dg-bogus "uninitialized" "bogus warning" } */
