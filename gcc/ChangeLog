@@ -1,5 +1,12 @@
 2016-11-17  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78306
+	* ipa-inline-analysis.c (initialize_inline_failed): Do not
+	inhibit inlining if function calls cilk_spawn.
+	(can_inline_edge_p): Likewise.
+
+2016-11-17  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/78305
 	* fold-const.c (negate_expr_p): Fix multiplication case.
 

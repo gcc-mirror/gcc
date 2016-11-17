@@ -368,11 +368,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
       inlinable = false;
     }
-  else if (inline_summaries->get (caller)->contains_cilk_spawn)
-    {
-      e->inline_failed = CIF_CILK_SPAWN;
-      inlinable = false;
-    }
   /* Don't inline a function with mismatched sanitization attributes. */
   else if (!sanitize_attrs_match_for_inline_p (caller->decl, callee->decl))
     {

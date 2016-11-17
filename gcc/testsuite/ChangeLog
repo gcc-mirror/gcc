@@ -1,5 +1,10 @@
 2016-11-17  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/78306
+	* gcc.dg/cilk-plus/pr78306.c: New testcase.
+
+2016-11-17  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/78305
 	* gcc.dg/torture/pr78305.c: New testcase.
 

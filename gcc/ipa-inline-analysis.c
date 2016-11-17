@@ -1507,9 +1507,6 @@ initialize_inline_failed (struct cgraph_edge *e)
     e->inline_failed = CIF_BODY_NOT_AVAILABLE;
   else if (callee->local.redefined_extern_inline)
     e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
-  else if (cfun && fn_contains_cilk_spawn_p (cfun))
-    /* We can't inline if the function is spawing a function.  */
-    e->inline_failed = CIF_CILK_SPAWN;
   else
     e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
   gcc_checking_assert (!e->call_stmt_cannot_inline_p
