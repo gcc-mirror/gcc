@@ -8317,7 +8317,8 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
       if (!reference_related_p (class_type, TREE_TYPE (arg)))
 	arg = perform_implicit_conversion_flags (class_type, arg,
 						 tf_warning, flags);
-      if (TREE_CODE (arg) == TARGET_EXPR
+      if ((TREE_CODE (arg) == TARGET_EXPR
+	   || TREE_CODE (arg) == CONSTRUCTOR)
 	  && (same_type_ignoring_top_level_qualifiers_p
 	      (class_type, TREE_TYPE (arg))))
 	{
