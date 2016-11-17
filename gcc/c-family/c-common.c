@@ -4968,19 +4968,19 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
       if (high_value)
 	{
 	  error_at (loc, "duplicate (or overlapping) case value");
-	  error_at (DECL_SOURCE_LOCATION (duplicate),
-		    "this is the first entry overlapping that value");
+	  inform (DECL_SOURCE_LOCATION (duplicate),
+		  "this is the first entry overlapping that value");
 	}
       else if (low_value)
 	{
 	  error_at (loc, "duplicate case value") ;
-	  error_at (DECL_SOURCE_LOCATION (duplicate), "previously used here");
+	  inform (DECL_SOURCE_LOCATION (duplicate), "previously used here");
 	}
       else
 	{
 	  error_at (loc, "multiple default labels in one switch");
-	  error_at (DECL_SOURCE_LOCATION (duplicate),
-		    "this is the first default label");
+	  inform (DECL_SOURCE_LOCATION (duplicate),
+		  "this is the first default label");
 	}
       goto error_out;
     }

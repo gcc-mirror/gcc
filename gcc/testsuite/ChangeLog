@@ -1,3 +1,9 @@
+2016-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c/78285
+	* gcc.dg/switch-5.c: Turn several dg-errors into dg-messages.
+	* g++.dg/ext/case-range2.C: Likewise.
+
 2016-11-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/58001
