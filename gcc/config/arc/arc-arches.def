@@ -40,7 +40,7 @@
 
 ARC_ARCH ("arcem", em, FL_MPYOPT_1_6 | FL_DIVREM | FL_CD | FL_NORM	\
 	  | FL_BS | FL_SWAP | FL_FPUS | FL_SPFP | FL_DPFP		\
-	  | FL_SIMD | FL_FPUDA, 0)
+	  | FL_SIMD | FL_FPUDA | FL_QUARK, 0)
 ARC_ARCH ("archs", hs, FL_MPYOPT_7_9 | FL_DIVREM | FL_NORM | FL_CD	\
 	  | FL_ATOMIC | FL_LL64 | FL_BS | FL_SWAP			\
 	  | FL_FPUS | FL_FPUD,						\

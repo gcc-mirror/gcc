@@ -1,3 +1,25 @@
+2016-11-17  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-arches.def: Add FPX quarkse instruction as valid
+	for arcem.
+	* config/arc/arc-c.def (__ARC_FPX_QUARK__): Define.
+	* config/arc/arc-cpus.def (quarkse_em): Add.
+	* config/arc/arc-options.def (FL_FPX_QUARK, FL_QUARK): Likewise.
+	* config/arc/arc-opts.h (FPX_QK): Define.
+	* config/arc/arc-tables.opt: Regenerate.
+	* config/arc/arc.c (gen_compare_reg): Change.
+	(arc_register_move_cost): Avoid Dy,Dx moves.
+	* config/arc/arc.h (TARGET_HARD_FLOAT): Change.
+	(TARGET_FPX_QUARK, TARGET_FP_ASSIST): Define.
+	* config/arc/arc.md (divsf3, sqrtsf2, fix_truncsfsi2, floatsisf2):
+	New expands.
+	* config/arc/fpu.md (divsf3_fpu, sqrtsf2_fpu, floatsisf2_fpu)
+	(fix_truncsfsi2_fpu): Rename.
+	* config/arc/fpx.md (cmp_quark, cmpsf_quark_, cmpsf_quark_ord)
+	(cmpsf_quark_uneq, cmpsf_quark_eq, divsf3_quark, sqrtsf2_quark)
+	(fix_truncsfsi2_quark, floatsisf2_quark): New patterns.
+	* config/arc/t-multilib: Regenerate.
+
 2016-11-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_print_operand_address): Use CONST_INT_P if

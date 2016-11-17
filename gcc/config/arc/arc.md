@@ -5995,6 +5995,52 @@
    gcc_unreachable ();
  ")
 
+;;div
+(define_expand "divsf3"
+  [(set (match_operand:SF 0 "register_operand"        "")
+	(div:SF (match_operand:SF 1 "nonmemory_operand" "")
+		(match_operand:SF 2 "nonmemory_operand" "")))]
+  "TARGET_FPX_QUARK || TARGET_FP_SP_SQRT"
+  "
+  if (TARGET_FPX_QUARK)
+   {
+     operands[1] = force_reg (SFmode, operands[1]);
+     operands[2] = force_reg (SFmode, operands[2]);
+   }
+  else
+   {
+     if (!register_operand (operands[1], SFmode)
+        && !register_operand (operands[2], SFmode))
+       operands[1] = force_reg (SFmode, operands[1]);
+   }
+  ")
+
+;; Square root
+(define_expand "sqrtsf2"
+  [(set (match_operand:SF 0 "register_operand"           "")
+	(sqrt:SF (match_operand:SF 1 "nonmemory_operand" "")))]
+  "TARGET_FPX_QUARK || TARGET_FP_SP_SQRT"
+  "
+  if (TARGET_FPX_QUARK)
+   {
+     operands[1] = force_reg (SFmode, operands[1]);
+   }
+")
+
+;; SF->SI (using rounding towards zero)
+(define_expand "fix_truncsfsi2"
+  [(set (match_operand:SI 0 "register_operand"                "")
+	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" ""))))]
+  "TARGET_FPX_QUARK || TARGET_FP_SP_CONV"
+  "")
+
+;; SI->SF
+(define_expand "floatsisf2"
+  [(set (match_operand:SF 0 "register_operand"            "")
+	(float:SF (match_operand:SI 1 "register_operand" "")))]
+  "TARGET_FPX_QUARK || TARGET_FP_SP_CONV"
+  "")
+
 (define_expand "extzv"
   [(set (match_operand:SI 0 "register_operand" "")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "")

@@ -1726,6 +1726,26 @@ gen_compare_reg (rtx comparison, machine_mode omode)
 						 gen_rtx_REG (CC_FPXmode, 61),
 						 const0_rtx)));
     }
+  else if (TARGET_FPX_QUARK && (cmode == SFmode))
+    {
+      switch (code)
+	{
+	case NE: case EQ: case GT: case UNLE: case GE: case UNLT:
+	case UNEQ: case LTGT: case ORDERED: case UNORDERED:
+	  break;
+	case LT: case UNGE: case LE: case UNGT:
+	  code = swap_condition (code);
+	  tmp = x;
+	  x = y;
+	  y = tmp;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      emit_insn (gen_cmp_quark (cc_reg,
+				gen_rtx_COMPARE (mode, x, y)));
+    }
   else if (TARGET_HARD_FLOAT
 	   && ((cmode == SFmode && TARGET_FP_SP_BASE)
 	       || (cmode == DFmode && TARGET_FP_DP_BASE)))
@@ -7281,7 +7301,7 @@ arc_register_move_cost (machine_mode,
     return 8;
 
   /* Force an attempt to 'mov Dy,Dx' to spill.  */
-  if (TARGET_ARC700 && TARGET_DPFP
+  if ((TARGET_ARC700 || TARGET_EM) && TARGET_DPFP
       && from_class == DOUBLE_REGS && to_class == DOUBLE_REGS)
     return 100;
 

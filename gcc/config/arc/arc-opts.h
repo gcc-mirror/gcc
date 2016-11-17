@@ -48,6 +48,8 @@ enum processor_type
 #define FPU_DD    0x0080
 /* Double precision floating point assist operations.  */
 #define FPX_DP    0x0100
+/* Quark SE floating point instructions.  */
+#define FPX_QK    0x0200
 
 /* fpus option combi.  */
 #define FPU_FPUS  (FPU_SP | FPU_SC)

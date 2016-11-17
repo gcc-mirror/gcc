@@ -43,6 +43,9 @@ EnumValue
 Enum(processor_type) String(em4_fpuda) Value(PROCESSOR_em4_fpuda)
 
 EnumValue
+Enum(processor_type) String(quarkse_em) Value(PROCESSOR_quarkse_em)
+
+EnumValue
 Enum(processor_type) String(hs) Value(PROCESSOR_hs)
 
 EnumValue
