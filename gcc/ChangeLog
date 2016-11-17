@@ -1,3 +1,9 @@
+2016-11-17  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* config/netbsd-stdint.h: New.
+	* config.gcc (i[34567]86-*-netbsd): Add netbsd-stdint.h to tm_file.
+	(x86_64-*-netbsd*): Likewise.
+
 2016-11-16  Andrew PInski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.opt (mverbose-cost-dump): New option.
