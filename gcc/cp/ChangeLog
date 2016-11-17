@@ -1,3 +1,8 @@
+2016-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68377
+	* parser.c (cp_parser_fold_expression): Check TREE_NO_WARNING.
+
 2016-11-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78373
