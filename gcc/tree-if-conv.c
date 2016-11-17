@@ -2872,8 +2872,7 @@ pass_if_conversion::gate (function *fun)
 {
   return (((flag_tree_loop_vectorize || fun->has_force_vectorize_loops)
 	   && flag_tree_loop_if_convert != 0)
-	  || flag_tree_loop_if_convert == 1
-	  || flag_tree_loop_if_convert_stores == 1);
+	  || flag_tree_loop_if_convert == 1);
 }
 
 unsigned int
@@ -2887,7 +2886,6 @@ pass_if_conversion::execute (function *fun)
 
   FOR_EACH_LOOP (loop, 0)
     if (flag_tree_loop_if_convert == 1
-	|| flag_tree_loop_if_convert_stores == 1
 	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
 	    && !loop->dont_vectorize))
       todo |= tree_if_conversion (loop);

@@ -1526,8 +1526,8 @@ Common Report Var(flag_tree_loop_if_convert) Init(-1) Optimization
 Convert conditional jumps in innermost loops to branchless equivalents.
 
 ftree-loop-if-convert-stores
-Common Report Var(flag_tree_loop_if_convert_stores) Optimization
-Also if-convert conditional jumps containing memory writes.
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 ; -finhibit-size-directive inhibits output of .size for ELF.
 ; This is used only for compiling crtstuff.c,

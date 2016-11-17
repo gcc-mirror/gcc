@@ -412,7 +412,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch @gol
 -ftree-coalesce-vars -ftree-copy-prop -ftree-dce -ftree-dominator-opts @gol
 -ftree-dse -ftree-forwprop -ftree-fre -fcode-hoisting -ftree-loop-if-convert @gol
--ftree-loop-if-convert-stores -ftree-loop-im @gol
+-ftree-loop-im @gol
 -ftree-phiprop -ftree-loop-distribution -ftree-loop-distribute-patterns @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
 -ftree-loop-vectorize @gol
@@ -8060,24 +8060,6 @@ branch-less equivalents.  The intent is to remove control-flow from
 the innermost loops in order to improve the ability of the
 vectorization pass to handle these loops.  This is enabled by default
 if vectorization is enabled.
-
-@item -ftree-loop-if-convert-stores
-@opindex ftree-loop-if-convert-stores
-Attempt to also if-convert conditional jumps containing memory writes.
-This transformation can be unsafe for multi-threaded programs as it
-transforms conditional memory writes into unconditional memory writes.
-For example,
-@smallexample
-for (i = 0; i < N; i++)
-  if (cond)
-    A[i] = expr;
-@end smallexample
-is transformed to
-@smallexample
-for (i = 0; i < N; i++)
-  A[i] = cond ? expr : A[i];
-@end smallexample
-potentially producing data races.
 
 @item -ftree-loop-distribution
 @opindex ftree-loop-distribution
