@@ -7424,7 +7424,8 @@ cost_plus:
       break;
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file
+      && flag_aarch64_verbose_cost)
     fprintf (dump_file,
       "\nFailed to cost RTX.  Assuming default cost.\n");
 
@@ -7440,7 +7441,8 @@ aarch64_rtx_costs_wrapper (rtx x, machine_mode mode, int outer,
 {
   bool result = aarch64_rtx_costs (x, mode, outer, param, cost, speed);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file
+      && flag_aarch64_verbose_cost)
     {
       print_rtl_single (dump_file, x);
       fprintf (dump_file, "\n%s cost: %d (%s)\n",
