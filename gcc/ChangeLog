@@ -1,3 +1,13 @@
+2016-11-17  Pip Cet  <pipcet@gmail.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/78355
+	* doc/tm.texi.in (SLOW_UNALIGNED_ACCESS): Document that the macro only
+	needs to deal with unaligned accesses.
+	* doc/tm.texi: Regenerate.
+	* lra-constraints.c (simplify_operand_subreg): Only invoke
+	SLOW_UNALIGNED_ACCESS on innermode if the MEM is not aligned enough.
+
 2016-11-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* input.c (selftest::test_lexer_string_locations_long_line): New
