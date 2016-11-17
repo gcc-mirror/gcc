@@ -614,3 +614,102 @@
  [(set_attr "type" "dpfp_addsub")
   (set_attr "length" "4,8,4,8")
   (set_attr "cpu_facility" "*,*,fpx,fpx")])
+
+;; Intel QUARK SE extensions
+(define_mode_iterator QUARK_CMP [CC_FP_GT CC_FP_GE])
+(define_mode_attr quark_cmp [(CC_FP_GT "gt") (CC_FP_GE "ge")])
+
+(define_expand "cmp_quark"
+  [(parallel [(set (match_operand 0 "")
+		   (match_operand 1 ""))
+	      (clobber (match_scratch:SI 2 ""))])]
+  ""
+  "")
+
+(define_insn "*cmpsf_quark_<quark_cmp>"
+  [(set (reg:QUARK_CMP CC_REG)
+	(compare:QUARK_CMP (match_operand:SF 0 "register_operand" "r")
+			   (match_operand:SF 1 "register_operand" "r")))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "TARGET_FPX_QUARK"
+  "dsp_fp_cmp\\t%2,%0,%1\\n\\trsub.f\\t0,%2,7\\n\\tcmp.nc\\t%2,1\\n\\tcmp.hi\\t%2,3"
+  [(set_attr "length" "16")
+   (set_attr "cond" "set")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+(define_insn "*cmpsf_quark_ord"
+  [(set (reg:CC_FP_ORD CC_REG)
+	(compare:CC_FP_ORD (match_operand:SF 0 "register_operand" "r")
+			   (match_operand:SF 1 "register_operand" "r")))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "TARGET_FPX_QUARK"
+  "dsp_fp_cmp\\t%2,%0,%1\\n\\tadd.f\\t%2,%2,-8"
+  [(set_attr "length" "8")
+   (set_attr "cond" "set")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+(define_insn "*cmpsf_quark_uneq"
+  [(set (reg:CC_FP_UNEQ CC_REG)
+	(compare:CC_FP_UNEQ (match_operand:SF 0 "register_operand" "r")
+			    (match_operand:SF 1 "register_operand" "r")))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "TARGET_FPX_QUARK"
+  "dsp_fp_cmp\\t%2,%0,%1\\n\\ttst\\t%2,6"
+  [(set_attr "length" "8")
+   (set_attr "cond" "set")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+(define_insn "*cmpsf_quark_eq"
+  [(set (reg:CC_Z CC_REG)
+	(compare:CC_Z (match_operand:SF 0 "register_operand" "r")
+		      (match_operand:SF 1 "register_operand" "r")))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "TARGET_FPX_QUARK"
+  "dsp_fp_cmp\\t%2,%0,%1\\n\\ttst\\t%2,0x0E"
+  [(set_attr "length" "8")
+   (set_attr "cond" "set")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+(define_insn "*divsf3_quark"
+  [(set (match_operand:SF 0 "register_operand"        "=r")
+	(div:SF (match_operand:SF 1 "register_operand" "r")
+		(match_operand:SF 2 "register_operand" "r")))]
+  "TARGET_FPX_QUARK"
+  "dsp_fp_div\\t%0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+(define_insn "*sqrtsf2_quark"
+  [(set (match_operand:SF 0 "register_operand"          "=r")
+	(sqrt:SF (match_operand:SF 1 "register_operand" "r")))]
+  "TARGET_FPX_QUARK"
+  "dsp_fp_sqrt\\t%0,%1"
+  [(set_attr "length" "4")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+;; SF->SI (using rounding towards zero)
+(define_insn "*fix_truncsfsi2_quark"
+  [(set (match_operand:SI 0 "register_operand"                "=r")
+	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "r"))))]
+  "TARGET_FPX_QUARK"
+  "dsp_fp_flt2i\\t%0,%1"
+  [(set_attr "length" "4")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+;; SI->SF
+(define_insn "*floatsisf2_quark"
+  [(set (match_operand:SF 0 "register_operand"          "=r")
+	(float:SF (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_FPX_QUARK"
+  "dsp_fp_i2flt\\t%0,%1"
+  [(set_attr "length" "4")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+

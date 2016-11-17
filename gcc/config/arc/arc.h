@@ -197,12 +197,7 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
    default for A7, and only for pre A7 cores when -mnorm is given.  */
 #define TARGET_NORM (TARGET_ARC700 || TARGET_NORM_SET || TARGET_HS)
 /* Indicate if an optimized floating point emulation library is available.  */
-#define TARGET_OPTFPE				\
-   (TARGET_ARC700				\
-    /* We need a barrel shifter and NORM.  */	\
-    || (TARGET_ARC600 && TARGET_NORM_SET)	\
-    || TARGET_HS				\
-    || (TARGET_EM && TARGET_NORM_SET && TARGET_BARREL_SHIFTER))
+#define TARGET_OPTFPE (TARGET_ARC700 || TARGET_FPX_QUARK)
 
 /* Non-zero means the cpu supports swap instruction.  This flag is set by
    default for A7, and only for pre A7 cores when -mswap is given.  */
@@ -1702,7 +1697,7 @@ enum
 
 /* FPU defines.  */
 /* Any FPU support.  */
-#define TARGET_HARD_FLOAT (arc_fpu_build != 0)
+#define TARGET_HARD_FLOAT   ((arc_fpu_build & (FPU_SP | FPU_DP)) != 0)
 /* Single precision floating point support.  */
 #define TARGET_FP_SP_BASE   ((arc_fpu_build & FPU_SP) != 0)
 /* Double precision floating point support.  */
@@ -1721,5 +1716,8 @@ enum
 #define TARGET_FP_DP_SQRT   ((arc_fpu_build & FPU_DD) != 0)
 /* Double precision floating point assist instruction support.  */
 #define TARGET_FP_DP_AX     ((arc_fpu_build & FPX_DP) != 0)
+/* Custom FP instructions used by QuarkSE EM cpu.  */
+#define TARGET_FPX_QUARK    (TARGET_EM && TARGET_SPFP		\
+			     && (arc_fpu_build == FPX_QK))
 
 #endif /* GCC_ARC_H */
