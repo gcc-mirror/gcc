@@ -4635,7 +4635,9 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
   /* The operands of a fold-expression are cast-expressions, so binary or
      conditional expressions are not allowed.  We check this here to avoid
      tentative parsing.  */
-  if (is_binary_op (TREE_CODE (expr1)))
+  if (EXPR_P (expr1) && TREE_NO_WARNING (expr1))
+    /* OK, the expression was parenthesized.  */;
+  else if (is_binary_op (TREE_CODE (expr1)))
     error_at (location_of (expr1),
 	      "binary expression in operand of fold-expression");
   else if (TREE_CODE (expr1) == COND_EXPR)
