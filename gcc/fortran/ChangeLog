@@ -1,3 +1,9 @@
+2016-11-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/66227
+	* simplify.c (gfc_simplify_extends_type_of): Fix missed optimization.
+	Prevent over-simplification. Fix a comment. Add a comment.
+
 2016-11-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/58001
