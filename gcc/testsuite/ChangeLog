@@ -1,3 +1,8 @@
+2016-11-17  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.target/mips/branch-cost-1.c (dg-options): Use (HAS_MOVN)
+	instead of isa>=4, in order to downgrade to R5.
+
 2016-11-17  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* gcc.target/arc/cmem-bit-1.c: New file.
