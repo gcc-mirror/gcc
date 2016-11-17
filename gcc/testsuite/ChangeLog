@@ -1,3 +1,82 @@
+2016-11-17  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/abitest.S: New file.
+	* gcc.target/arc/abitest.h: Likewise.
+	* gcc.target/arc/va_args-1.c: Likewise.
+	* gcc.target/arc/va_args-2.c: Likewise.
+	* gcc.target/arc/va_args-3.c: Likewise.
+	* gcc.target/arc/mcrc.c: Deleted.
+	* gcc.target/arc/mdsp-packa.c: Likewise.
+	* gcc.target/arc/mdvbf.c: Likewise.
+	* gcc.target/arc/mmac-24.c: Likewise.
+	* gcc.target/arc/mmac-d16.c: Likewise.
+	* gcc.target/arc/mno-crc.c: Likewise.
+	* gcc.target/arc/mno-dsp-packa.c: Likewise.
+	* gcc.target/arc/mno-dvbf.c: Likewise.
+	* gcc.target/arc/mno-mac-24.c: Likewise.
+	* gcc.target/arc/mno-mac-d16.c: Likewise.
+	* gcc.target/arc/mno-rtsc.c: Likewise.
+	* gcc.target/arc/mno-xy.c: Likewise.
+	* gcc.target/arc/mrtsc.c: Likewise.
+	* gcc.target/arc/arc.exp (check_effective_target_arcem): New
+	function.
+	(check_effective_target_arc700): Likewise.
+	(check_effective_target_arc6xx): Likewise.
+	(check_effective_target_arcmpy): Likewise.
+	(check_effective_target_archs): Likewise.
+	(check_effective_target_clmcpu): Likewise.
+	(check_effective_target_barrelshifter): Likewise.
+	* gcc.target/arc/barrel-shifter-1.c: Changed.
+	* gcc.target/arc/builtin_simd.c: Test only for ARC700 cpus.
+	* gcc.target/arc/cmem-1.c: Changed.
+	* gcc.target/arc/cmem-2.c: Likewise.
+	* gcc.target/arc/cmem-3.c: Likewise.
+	* gcc.target/arc/cmem-4.c: Likewise.
+	* gcc.target/arc/cmem-5.c: Likewise.
+	* gcc.target/arc/cmem-6.c: Likewise.
+	* gcc.target/arc/cmem-7.c: Likewise.
+	* gcc.target/arc/interrupt-1.c: Test for RTIE as well.
+	* gcc.target/arc/interrupt-2.c: Skip it for ARCv2 cores.
+	* gcc.target/arc/interrupt-3.c: Match also ARCv2 warnings.
+	* gcc.target/arc/jump-around-jump.c: Update options.
+	* gcc.target/arc/mARC601.c: Changed.
+	* gcc.target/arc/mcpu-arc600.c: Changed.
+	* gcc.target/arc/mcpu-arc601.c: Changed.
+	* gcc.target/arc/mcpu-arc700.c: Changed.
+	* gcc.target/arc/mdpfp.c: Skip for ARCv2 cores.
+	* gcc.target/arc/movb-1.c: Changed.
+	* gcc.target/arc/movb-2.c: Likewise.
+	* gcc.target/arc/movb-3.c: Likewise.
+	* gcc.target/arc/movb-4.c: Likewise.
+	* gcc.target/arc/movb-5.c: Likewise.
+	* gcc.target/arc/movb_cl-1.c: Likewise.
+	* gcc.target/arc/movb_cl-2.c: Likewise.
+	* gcc.target/arc/movbi_cl-1.c: Likewise.
+	* gcc.target/arc/movh_cl-1.c: Likewise.
+	* gcc.target/arc/mspfp.c: Skip for ARC HS cores.
+	* gcc.target/arc/mul64.c: Enable it only for ARC600.
+	* gcc.target/arc/mulsi3_highpart-1.c: Scan for ARCv2 instructions.
+	* gcc.target/arc/mulsi3_highpart-2.c: Skip it for ARCv1 cores.
+	* gcc.target/arc/no-dpfp-lrsr.c: Skip it for ARC HS.
+	* gcc.target/arc/trsub.c: Only for ARC EM cores.
+	* gcc.target/arc/builtin_simdarc.c: Changed.
+	* gcc.target/arc/extzv-1.c: Likewise.
+	* gcc.target/arc/insv-1.c: Likewise.
+	* gcc.target/arc/insv-2.c: Likewise.
+	* gcc.target/arc/mA6.c: Likewise.
+	* gcc.target/arc/mA7.c: Likewise.
+	* gcc.target/arc/mARC600.c: Likewise.
+	* gcc.target/arc/mARC700.c: Likewise.
+	* gcc.target/arc/mcpu-arc600.c: Likewise.
+	* gcc.target/arc/mcpu-arc700.c: Likewise.
+	* gcc.target/arc/movl-1.c: Likewise.
+	* gcc.target/arc/nps400-1.c: Likewise.
+	* gcc.target/arc/trsub.c: Likewise.
+	* gcc.target/arc/barrel-shifter-2.c: Check for barrel shifter
+	configuration.
+	* gcc.target/arc/mlock.c: Skip for arc6xx configurations.
+	* gcc.target/arc/mswape.c: Likewise.
+
 2016-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/68180

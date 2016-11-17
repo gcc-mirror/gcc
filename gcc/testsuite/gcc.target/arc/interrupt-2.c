@@ -1,3 +1,4 @@
+/* { dg-skip-if "ilink2 is not an ARCv2 register" { archs || arcem } } */
 void __attribute__ ((interrupt("ilink2")))
 handler1 (void)
 {
