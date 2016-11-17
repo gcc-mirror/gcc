@@ -1,3 +1,8 @@
+2016-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/store_repeating_constant_1.c: New test.
+	* gcc.target/aarch64/store_repeating_constant_2.c: Likewise.
+
 2016-11-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
             Richard Biener  <rguenther@suse.de>
 
