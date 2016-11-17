@@ -1,3 +1,9 @@
+2016-11-17  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/78319
+	* gcc.dg/uninit-pred-8_a.c (foo): Mark dg-bogus test to xfail on
+	arm-none-eabi.
+
 2016-11-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78306
