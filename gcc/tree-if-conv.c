@@ -2803,10 +2803,12 @@ tree_if_conversion (struct loop *loop)
 	  || loop->dont_vectorize))
     goto cleanup;
 
-  /* Either version this loop, or if the pattern is right for outer-loop
-     vectorization, version the outer loop.  In the latter case we will
-     still if-convert the original inner loop.  */
-  if ((any_pred_load_store || any_complicated_phi)
+  /* Since we have no cost model, always version loops unless the user
+     specified -ftree-loop-if-convert.  Either version this loop, or if
+     the pattern is right for outer-loop vectorization, version the
+     outer loop.  In the latter case we will still if-convert the
+     original inner loop.  */
+  if (flag_tree_loop_if_convert != 1
       && !version_loop_for_if_conversion
       (versionable_outer_loop_p (loop_outer (loop))
        ? loop_outer (loop) : loop))
