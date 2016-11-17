@@ -1011,6 +1011,11 @@
 	(match_operand:GPI 1 "general_operand" ""))]
   ""
   "
+    if (MEM_P (operands[0]) && CONST_INT_P (operands[1])
+	&& <MODE>mode == DImode
+	&& aarch64_split_dimode_const_store (operands[0], operands[1]))
+      DONE;
+
     if (GET_CODE (operands[0]) == MEM && operands[1] != const0_rtx)
       operands[1] = force_reg (<MODE>mode, operands[1]);
 

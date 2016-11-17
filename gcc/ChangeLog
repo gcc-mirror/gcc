@@ -1,3 +1,12 @@
+2016-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (mov<mode>): Call
+	aarch64_split_dimode_const_store on DImode constant stores.
+	* config/aarch64/aarch64-protos.h (aarch64_split_dimode_const_store):
+	New prototype.
+	* config/aarch64/aarch64.c (aarch64_split_dimode_const_store): New
+	function.
+
 2016-11-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
             Richard Biener  <rguenther@suse.de>
 

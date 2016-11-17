@@ -13211,6 +13211,63 @@ aarch64_expand_movmem (rtx *operands)
   return true;
 }
 
+/* Split a DImode store of a CONST_INT SRC to MEM DST as two
+   SImode stores.  Handle the case when the constant has identical
+   bottom and top halves.  This is beneficial when the two stores can be
+   merged into an STP and we avoid synthesising potentially expensive
+   immediates twice.  Return true if such a split is possible.  */
+
+bool
+aarch64_split_dimode_const_store (rtx dst, rtx src)
+{
+  rtx lo = gen_lowpart (SImode, src);
+  rtx hi = gen_highpart_mode (SImode, DImode, src);
+
+  bool size_p = optimize_function_for_size_p (cfun);
+
+  if (!rtx_equal_p (lo, hi))
+    return false;
+
+  unsigned int orig_cost
+    = aarch64_internal_mov_immediate (NULL_RTX, src, false, DImode);
+  unsigned int lo_cost
+    = aarch64_internal_mov_immediate (NULL_RTX, lo, false, SImode);
+
+  /* We want to transform:
+     MOV	x1, 49370
+     MOVK	x1, 0x140, lsl 16
+     MOVK	x1, 0xc0da, lsl 32
+     MOVK	x1, 0x140, lsl 48
+     STR	x1, [x0]
+   into:
+     MOV	w1, 49370
+     MOVK	w1, 0x140, lsl 16
+     STP	w1, w1, [x0]
+   So we want to perform this only when we save two instructions
+   or more.  When optimizing for size, however, accept any code size
+   savings we can.  */
+  if (size_p && orig_cost <= lo_cost)
+    return false;
+
+  if (!size_p
+      && (orig_cost <= lo_cost + 1))
+    return false;
+
+  rtx mem_lo = adjust_address (dst, SImode, 0);
+  if (!aarch64_mem_pair_operand (mem_lo, SImode))
+    return false;
+
+  rtx tmp_reg = gen_reg_rtx (SImode);
+  aarch64_expand_mov_immediate (tmp_reg, lo);
+  rtx mem_hi = aarch64_move_pointer (mem_lo, GET_MODE_SIZE (SImode));
+  /* Don't emit an explicit store pair as this may not be always profitable.
+     Let the sched-fusion logic decide whether to merge them.  */
+  emit_move_insn (mem_lo, tmp_reg);
+  emit_move_insn (mem_hi, tmp_reg);
+
+  return true;
+}
+
 /* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
 
 static unsigned HOST_WIDE_INT
