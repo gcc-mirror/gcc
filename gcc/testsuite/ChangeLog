@@ -1,3 +1,37 @@
+2016-11-17  Andrew Senkevich <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/builtin_target.c: Handle new "avx5124vnniw",
+	"avx5124fmaps".
+	* gcc.target/i386/funcspec-56.inc: Test new attributes.
+
+2016-11-17  Kirill Yukhin  <kirill.yukhin@gmail.com>
+	    Andrew Senkevich <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/avx5124fmadd-v4fmaddps-1.c: New test.
+	* gcc.target/i386/avx5124fmadd-v4fmaddps-2.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fmaddss-1.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fnmaddps-1.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fnmaddps-2.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fnmaddss-1.c: Ditto.
+	* gcc.target/i386/avx5124fmaps-check.h: Ditto.
+	* gcc.target/i386/avx5124vnniw-check.h: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssd-1.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssd-2.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssds-1.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssds-2.c: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Add avx5124fmaps-check.h,
+	avx5124vnniw-check.h.
+	* gcc.target/i386/i386.exp (check_effective_target_avx5124fmaps,
+	check_effective_target_avx5124vnniw): New.
+	* gcc.target/i386/m128-check.h (ESP_FLOAT, ESP_DOUBLE):
+	Set under ifndef.
+	* gcc.target/i386/sse-12.c: Add -mavx5124fmaps, -mavx5124vnniw.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
 2016-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55080

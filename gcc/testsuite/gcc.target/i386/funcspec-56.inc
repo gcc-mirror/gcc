@@ -28,6 +28,8 @@ extern void test_avx512dq(void)			__attribute__((__target__("avx512dq")));
 extern void test_avx512er(void)			__attribute__((__target__("avx512er")));
 extern void test_avx512pf(void)			__attribute__((__target__("avx512pf")));
 extern void test_avx512cd(void)			__attribute__((__target__("avx512cd")));
+extern void test_avx5124fmaps(void)             __attribute__((__target__("avx5124fmaps")));
+extern void test_avx5124vnniw(void)             __attribute__((__target__("avx5124vnniw")));
 extern void test_bmi (void)			__attribute__((__target__("bmi")));
 extern void test_bmi2 (void)			__attribute__((__target__("bmi2")));
 
@@ -59,6 +61,8 @@ extern void test_no_avx512dq(void)		__attribute__((__target__("no-avx512dq")));
 extern void test_no_avx512er(void)		__attribute__((__target__("no-avx512er")));
 extern void test_bo_avx512pf(void)		__attribute__((__target__("no-avx512pf")));
 extern void test_no_avx512cd(void)		__attribute__((__target__("no-avx512cd")));
+extern void test_no_avx5124fmaps(void)          __attribute__((__target__("no-avx5124fmaps")));
+extern void test_no_avx5124vnniw(void)          __attribute__((__target__("no-avx5124vnniw")));
 extern void test_no_bmi (void)			__attribute__((__target__("no-bmi")));
 extern void test_no_bmi2 (void)			__attribute__((__target__("no-bmi2")));
 
