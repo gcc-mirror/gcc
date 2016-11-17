@@ -3028,8 +3028,9 @@ cp_parser_non_integral_constant_expression (cp_parser  *parser,
 	  switch (thing)
 	    {
   	      case NIC_FLOAT:
-		error ("floating-point literal "
-		       "cannot appear in a constant-expression");
+		pedwarn (input_location, OPT_Wpedantic,
+			 "ISO C++ forbids using a floating-point literal "
+			 "in a constant-expression");
 		return true;
 	      case NIC_CAST:
 		error ("a cast to a type other than an integral or "
