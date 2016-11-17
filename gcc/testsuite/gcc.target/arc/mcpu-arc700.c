@@ -1,4 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=ARC700" } */
+/* { dg-skip-if "" { ! { clmcpu } } } */
+/* { dg-options "-mcpu=arc700" } */
 
 /* { dg-final { scan-assembler ".cpu ARC700" } } */

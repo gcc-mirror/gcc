@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { ! { clmcpu } } } */
 /* { dg-options "-O2 -Werror-implicit-function-declaration -mARC700 -msimd" } */
 
 #define STEST1(name, rettype, op1)		\
