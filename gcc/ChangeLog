@@ -1,3 +1,12 @@
+2016-11-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_print_operand_address): Use CONST_INT_P if
+	appropriate.
+	(ashlqi3_out, ashlsi3_out, ashrqi3_out, ashrhi3_out): Same.
+	(ashrsi3_out, lshrqi3_out, lshrhi3_out, lshrsi3_out): Same.
+	(avr_rtx_costs_1, extra_constraint_Q): Same.
+	(avr_address_cost): Use SUBREG_P if possible.
+
 2016-11-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/78383
