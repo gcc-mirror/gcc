@@ -194,6 +194,39 @@ test_L (void)
 }
 
 void
+test_raw_string_one_liner (void)
+{
+  /* Digits 0-9.  */
+  __emit_string_literal_range (R"foo(0123456789)foo", /* { dg-warning "range" } */
+			       6, 4, 7);
+/* { dg-begin-multiline-output "" }
+   __emit_string_literal_range (R"foo(0123456789)foo",
+                                          ~~^~
+   { dg-end-multiline-output "" } */
+}
+
+void
+test_raw_string_multiline (void)
+{
+  __emit_string_literal_range (R"foo(
+hello
+world
+)foo",
+			       6, 4, 7);
+  /* { dg-error "unable to read substring location: range endpoints are on different lines" "" { target *-*-* } .-5 } */
+  /* { dg-begin-multiline-output "" }
+   __emit_string_literal_range (R"foo(
+                                ^~~~~~
+ hello
+ ~~~~~                           
+ world
+ ~~~~~                           
+ )foo",
+ ~~~~~                           
+   { dg-end-multiline-output "" } */
+}
+
+void
 test_macro (void)
 {
 #define START "01234"  /* { dg-warning "range" } */
