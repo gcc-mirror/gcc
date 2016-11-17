@@ -1,3 +1,8 @@
+2016-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/predicates.md (aarch64_reg_or_fp_zero): Check for
+	const_double code before calling aarch64_float_const_zero_rtx_p.
+
 2016-11-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78306
