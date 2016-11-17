@@ -1,3 +1,11 @@
+2016-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/78193 - inherited ctor regressions on sparc32.
+	* call.c (build_over_call): Don't set CALL_FROM_THUNK_P here.
+	(build_call_a): Set it here, and don't insert EMPTY_CLASS_EXPR.
+	(convert_like_real) [ck_rvalue]: Also pass non-addressable
+	types along directly.
+
 2016-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55080

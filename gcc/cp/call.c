@@ -375,10 +375,18 @@ build_call_a (tree function, int n, tree *argarray)
 
   TREE_HAS_CONSTRUCTOR (function) = (decl && DECL_CONSTRUCTOR_P (decl));
 
+  if (current_function_decl && decl
+      && flag_new_inheriting_ctors
+      && DECL_INHERITED_CTOR (current_function_decl)
+      && (DECL_INHERITED_CTOR (current_function_decl)
+	  == DECL_CLONED_FUNCTION (decl)))
+    /* Pass arguments directly to the inherited constructor.  */
+    CALL_FROM_THUNK_P (function) = true;
+
   /* Don't pass empty class objects by value.  This is useful
      for tags in STL, which are used to control overload resolution.
      We don't need to handle other cases of copying empty classes.  */
-  if (! decl || ! DECL_BUILT_IN (decl))
+  else if (! decl || ! DECL_BUILT_IN (decl))
     for (i = 0; i < n; i++)
       {
 	tree arg = CALL_EXPR_ARG (function, i);
@@ -6844,8 +6852,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	 constructor.  */
       if (current_function_decl
 	  && flag_new_inheriting_ctors
-	  && DECL_INHERITED_CTOR (current_function_decl)
-	  && TREE_ADDRESSABLE (totype))
+	  && DECL_INHERITED_CTOR (current_function_decl))
 	return expr;
 
       /* Fall through.  */
@@ -8094,13 +8101,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       /* build_new_op_1 will clear this when appropriate.  */
       CALL_EXPR_ORDERED_ARGS (c) = true;
     }
-  if (current_function_decl
-      && flag_new_inheriting_ctors
-      && DECL_INHERITED_CTOR (current_function_decl)
-      && cand->num_convs)
-    /* Don't introduce copies when passing arguments along to the inherited
-       constructor.  */
-    CALL_FROM_THUNK_P (call) = true;
   return call;
 }
 
