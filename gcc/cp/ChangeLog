@@ -1,5 +1,8 @@
 2016-11-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78124 - list-initialization and inherited ctor
+	* name-lookup.c (do_class_using_decl): Set CLASSTYPE_NON_AGGREGATE.
+
 	PR c++/78369 - {} as default argument
 	* call.c (build_special_member_call): Handle CONSTRUCTOR.
 
