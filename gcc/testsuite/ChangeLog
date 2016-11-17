@@ -1,3 +1,9 @@
+2016-11-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/pr78333.c: Add empty implementations of
+	__cyg_profile_func_enter() and __cyg_profile_func_exit() to avoid
+	problems on non-glibc systems.
+
 2016-11-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
