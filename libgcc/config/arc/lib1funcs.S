@@ -32,29 +32,29 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
- 
+
  /* ANSI concatenation macros.  */
- 
+
  #define CONCAT1(a, b) CONCAT2(a, b)
  #define CONCAT2(a, b) a ## b
- 
+
  /* Use the right prefix for global labels.  */
- 
+
  #define SYM(x) CONCAT1 (__USER_LABEL_PREFIX__, x)
- 
+
 #ifndef WORKING_ASSEMBLER
 #define abs_l abs
 #define asl_l asl
 #define mov_l mov
 #endif
- 	
+
 #define FUNC(X)         .type SYM(X),@function
 #define HIDDEN_FUNC(X)	FUNC(X)` .hidden X
 #define ENDFUNC0(X)     .Lfe_##X: .size X,.Lfe_##X-X
 #define ENDFUNC(X)      ENDFUNC0(X)
 
-	
-	
+
+
 #ifdef  L_mulsi3
 	.section .text
 	.align 4
@@ -64,10 +64,10 @@ SYM(__mulsi3):
 
 /* This the simple version.
 
-  while (a) 
+  while (a)
     {
       if (a & 1)
-        r += b;
+	r += b;
       a >>= 1;
       b <<= 1;
     }
@@ -132,7 +132,7 @@ SYM(__mulsi3):
 	add2.cs r0,r0,r1
 	lsr.f r2,r2
 	add3.cs r0,r0,r1
-	bne.d .Loop	
+	bne.d .Loop
 	add3 r1,r3,r1
 	j_s	[blink]
 	ENDFUNC(__mulsi3)
@@ -143,17 +143,17 @@ SYM(__mulsi3):
 .Lloop:
 	bbit0 r0,0,@.Ly
 	add_s r2,r2,r1		; r += b
-.Ly:	
+.Ly:
 	lsr_s r0,r0		; a >>= 1
-	asl_s r1,r1		; b <<= 1	
-	brne_s r0,0,@.Lloop	
+	asl_s r1,r1		; b <<= 1
+	brne_s r0,0,@.Lloop
 .Ldone:
 	j_s.d [blink]
 	mov_s r0,r2
 	ENDFUNC(__mulsi3)
 /********************************************************/
 #endif
-	
+
 #endif /* L_mulsi3 */
 
 #ifdef  L_umulsidi3
@@ -179,10 +179,10 @@ SYM(__umulsi3_highpart):
 
 /* This the simple version.
 
-  while (a) 
+  while (a)
     {
       if (a & 1)
-        r += b;
+	r += b;
       a >>= 1;
       b <<= 1;
     }
@@ -458,18 +458,18 @@ SYM(__udivmodsi4):
 	mov_s r2,1		; bit = 1
 	mov_s r3,0		; res = 0
 .Lloop1:
-  	brhs r1,r0,@.Lloop2
+	brhs r1,r0,@.Lloop2
 	bbit1 r1,31,@.Lloop2
 	asl_s r1,r1		; den <<= 1
 	b.d @.Lloop1
 	asl_s r2,r2		; bit <<= 1
 .Lloop2:
-  	brlo r0,r1,@.Lshiftdown
+	brlo r0,r1,@.Lshiftdown
 	sub_s r0,r0,r1		; num -= den
 	or_s r3,r3,r2		; res |= bit
 .Lshiftdown:
 	lsr_s r2,r2		; bit >>= 1
-	lsr_s r1,r1		; den >>= 1	
+	lsr_s r1,r1		; den >>= 1
 	brne_s r2,0,@.Lloop2
 .Ldivmodend:
 	mov_s r1,r0		; r1 = mod
@@ -788,15 +788,15 @@ __muldiv:
 	neg	r4,r2
 	ld.as	r5,[pcl,r4]
 	abs_s	r12,r0
-        bic.f	0,r2,r4
-        mpyhu.ne r12,r12,r5
+	bic.f	0,r2,r4
+	mpyhu.ne r12,r12,r5
 	norm	r3,r2
 	xor.f	0,r0,r1
-        ; write port allocation stall
-        rsub	r3,r3,30
-        lsr	r0,r12,r3
-        j_s.d	[blink]
-        neg.mi	r0,r0
+	; write port allocation stall
+	rsub	r3,r3,30
+	lsr	r0,r12,r3
+	j_s.d	[blink]
+	neg.mi	r0,r0
 
 	.balign	4
 SYM(__divsi3):
@@ -879,7 +879,7 @@ SYM(__divsi3):
 #endif	/* ifndef __ARC700__ */
 	ENDFUNC(__divsi3)
 
-	
+
 #endif /* L_divsi3 */
 
 #ifdef  L_umodsi3
@@ -954,7 +954,7 @@ SYM(__modsi3):
        .section .text
        .align 4
        .global SYM (__clzsi2)
-SYM(__clzsi2):	
+SYM(__clzsi2):
 #ifdef __ARC_NORM__
 	HIDDEN_FUNC(__clzsi2)
 	norm.f	r0,r0
@@ -1005,7 +1005,7 @@ SYM(__clzsi2):
 
 
 ;;; MILLICODE THUNK LIB ;***************
-	
+
 ;;; 	.macro push_regs from, to, offset
 ;;; 		st_s "\from", [sp, \offset]
 ;;; 		.if \to-\from
@@ -1022,22 +1022,22 @@ SYM(__clzsi2):
 ;;;;   		.set regno, \from+1
 ;;;;   		.set shift, 32
 ;;;;   		.set shift, shift - 1
-;;;;   #		st_s %shift @3 lsl #shift 
+;;;;   #		st_s %shift @3 lsl #shift
 ;;;;   		.if \to-\from
 ;;;;   		sum "(\from+1)", \to, "(\three)"
-;;;;   		.endif		
+;;;;   		.endif
 ;;;;   	.endm
-;;;;   	
+;;;;
 ;;;;   	SUM 0,5, 9
-;;;;   	
-;	.altmacro		
+;;;;
+;	.altmacro
 ;;  	.macro push_regs from=0, to=3, offset
 ;;  		st_s r\from, [sp, \offset]
 ;;  		.if \to-\from
 ;;  			push_regs "\from+1 ",\to,"(\offset+4)"
 ;;  		.endif
 ;;  	.endm
-;;  
+;;
 ;;  	.macro expand_to_push from=13, to
 ;;  ;		.section .text
 ;;  ;		.align 4
@@ -1045,11 +1045,11 @@ SYM(__clzsi2):
 ;;  ;		.type foo,
 ;;  	st_13_to_25:
 ;;  ;		push_regs \from, \to, 0
-;;  	push_regs 0,3		; 
+;;  	push_regs 0,3		;
 ;;  	.endm
-;;  
+;;
 ;;  	expand_to_push 13,18
-;;  
+;;
 ;#endif
 
 #ifdef L_millicodethunk_st
@@ -1080,25 +1080,25 @@ SYM(__clzsi2):
 	.align 4
 SYM(__st_r13_to_r25):
 	st r25, [sp,48]
-SYM(__st_r13_to_r24):	
+SYM(__st_r13_to_r24):
 	st r24, [sp,44]
-SYM(__st_r13_to_r23):	
+SYM(__st_r13_to_r23):
 	st r23, [sp,40]
-SYM(__st_r13_to_r22):	
+SYM(__st_r13_to_r22):
 	st r22, [sp,36]
-SYM(__st_r13_to_r21):	
+SYM(__st_r13_to_r21):
 	st r21, [sp,32]
-SYM(__st_r13_to_r20):	
-	st r20, [sp,28]		
-SYM(__st_r13_to_r19):	
+SYM(__st_r13_to_r20):
+	st r20, [sp,28]
+SYM(__st_r13_to_r19):
 	st r19, [sp,24]
-SYM(__st_r13_to_r18):	
+SYM(__st_r13_to_r18):
 	st r18, [sp,20]
-SYM(__st_r13_to_r17):	
+SYM(__st_r13_to_r17):
 	st r17, [sp,16]
-SYM(__st_r13_to_r16):	
+SYM(__st_r13_to_r16):
 	st r16, [sp,12]
-SYM(__st_r13_to_r15):	
+SYM(__st_r13_to_r15):
 #ifdef __ARC700__
 	st r15, [sp,8] ; minimum function size to avoid stall: 6 bytes.
 #else
@@ -1106,7 +1106,7 @@ SYM(__st_r13_to_r15):
 #endif
 	st_s r14, [sp,4]
 	j_s.d [%blink]
-	st_s r13, [sp,0]	
+	st_s r13, [sp,0]
 	ENDFUNC(__st_r13_to_r15)
 	ENDFUNC(__st_r13_to_r16)
 	ENDFUNC(__st_r13_to_r17)
@@ -1124,7 +1124,7 @@ SYM(__st_r13_to_r15):
 #ifdef L_millicodethunk_ld
 	.section .text
 	.align 4
-;	================================== 
+;	==================================
 ;	the loads
 
 	.global SYM(__ld_r13_to_r15)
@@ -1160,7 +1160,7 @@ SYM(__ld_r13_to_r22):
 SYM(__ld_r13_to_r21):
 	ld r21, [sp,32]
 SYM(__ld_r13_to_r20):
-	ld r20, [sp,28]		
+	ld r20, [sp,28]
 SYM(__ld_r13_to_r19):
 	ld r19, [sp,24]
 SYM(__ld_r13_to_r18):
@@ -1229,7 +1229,7 @@ SYM(__ld_r13_to_r22_ret):
 SYM(__ld_r13_to_r21_ret):
 	ld r21, [sp,32]
 SYM(__ld_r13_to_r20_ret):
-	ld r20, [sp,28]		
+	ld r20, [sp,28]
 SYM(__ld_r13_to_r19_ret):
 	ld r19, [sp,24]
 SYM(__ld_r13_to_r18_ret):
@@ -1261,6 +1261,9 @@ SYM(__ld_r13_to_r14_ret):
 
 #endif /* L_millicodethunk_ret */
 
+#define ARC_OPTFPE (defined (__ARC700__) || defined (__ARC_FPX_QUARK__))
+
+#if ARC_OPTFPE
 #ifdef  L_adddf3
 #ifdef __ARC_NORM__
 #include "ieee-754/adddf3.S"
@@ -1268,7 +1271,7 @@ SYM(__ld_r13_to_r14_ret):
 #endif
 
 #ifdef  L_muldf3
-#if defined (__ARC700__) || defined (__HS__)
+#ifdef __ARC_MPY__
 #include "ieee-754/muldf3.S"
 #elif defined (__ARC_NORM__) && defined(__ARC_MUL64__)
 #include "ieee-754/arc600-mul64/muldf3.S"
@@ -1284,7 +1287,7 @@ SYM(__ld_r13_to_r14_ret):
 #endif
 
 #ifdef  L_mulsf3
-#if defined (__ARC700__) || defined (__HS__)
+#ifdef  __ARC_MPY__
 #include "ieee-754/mulsf3.S"
 #elif defined (__ARC_NORM__) && defined(__ARC_MUL64__)
 #include "ieee-754/arc600-mul64/mulsf3.S"
@@ -1296,7 +1299,7 @@ SYM(__ld_r13_to_r14_ret):
 #endif
 
 #ifdef  L_divdf3
-#if defined (__ARC700__) || defined (__HS__)
+#ifdef  __ARC_MPY__
 #include "ieee-754/divdf3.S"
 #elif defined (__ARC_NORM__) && defined(__ARC_MUL64__)
 #include "ieee-754/arc600-mul64/divdf3.S"
@@ -1306,7 +1309,7 @@ SYM(__ld_r13_to_r14_ret):
 #endif
 
 #ifdef  L_divsf3
-#if defined (__ARC700__) || defined (__HS__)
+#ifdef  __ARC_MPY__
 #include "ieee-754/divsf3-stdmul.S"
 #elif defined (__ARC_NORM__) && defined(__ARC_MUL64__)
 #include "ieee-754/arc600-mul64/divsf3.S"
@@ -1424,3 +1427,4 @@ SYM(__ld_r13_to_r14_ret):
 #include "ieee-754/ordsf2.S"
 #endif
 #endif
+#endif /* ARC_OPTFPE */
