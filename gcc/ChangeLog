@@ -1,3 +1,10 @@
+2016-11-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+            Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77848
+	* tree-if-conv.c (tree_if_conversion): Always version loops unless
+	the user specified -ftree-loop-if-convert.
+
 2016-11-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR target/77308
@@ -116,6 +123,7 @@
 	* rtl.h: Declare gt_ggc_mx and gt_pch_nx.
 
 2016-11-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77848
 	* tree-if-conv.c (version_loop_for_if_conversion): When versioning
