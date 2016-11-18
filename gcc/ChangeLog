@@ -1,3 +1,15 @@
+2016-11-18  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-protos.h (FL_NONE, FL_ANY, FL_CO_PROC, FL_ARCH3M,
+	FL_MODE26, FL_MODE32, FL_ARCH4, FL_ARCH5, FL_THUMB, FL_LDSCHED,
+	FL_STRONG, FL_ARCH5E, FL_XSCALE, FL_ARCH6, FL_VFPV2, FL_WBUF,
+	FL_ARCH6K, FL_THUMB2, FL_NOTM, FL_THUMB_DIV, FL_VFPV3, FL_NEON,
+	FL_ARCH7EM, FL_ARCH7, FL_ARM_DIV, FL_ARCH8, FL_CRC32, FL_SMALLMUL,
+	FL_NO_VOLATILE_CE, FL_IWMMXT, FL_IWMMXT2, FL_ARCH6KZ, FL2_ARCH8_1,
+	FL2_ARCH8_2, FL2_FP16INST): Reindent comment, add final dot when
+	missing and make value unsigned.
+	(arm_feature_set): Use unsigned entries instead of unsigned long.
+
 2016-11-18  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	Re-apply after PR bootstrap/77359 is fixed:
