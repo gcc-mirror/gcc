@@ -3863,19 +3863,6 @@ subreg_nregs_with_regno (unsigned int regno, const_rtx x)
   return info.nregs;
 }
 
-/* If loads from memories of mode MODE always sign or zero extend,
-   return SIGN_EXTEND or ZERO_EXTEND as appropriate.  Return UNKNOWN
-   otherwise.  */
-
-rtx_code
-load_extend_op (machine_mode mode)
-{
-  if (SCALAR_INT_MODE_P (mode)
-      && GET_MODE_PRECISION (mode) < BITS_PER_WORD)
-    return LOAD_EXTEND_OP (mode);
-  return UNKNOWN;
-}
-
 struct parms_set_data
 {
   int nregs;
