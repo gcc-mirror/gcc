@@ -1,3 +1,43 @@
+2016-11-18  Andrew Bennett  <andrew.bennett@imgtec.com>
+	    Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.target/mips/inline-memcpy-1.c (dg-options): Add
+	(REQUIRES_STDLIB).
+	* gcc.target/mips/inline-memcpy-2.c: Ditto.
+	* gcc.target/mips/inline-memcpy-3.c: Ditto.
+	* gcc.target/mips/inline-memcpy-4.c: Ditto.
+	* gcc.target/mips/inline-memcpy-5.c: Ditto.
+	* gcc.target/mips/loongson-shift-count-truncated-1.c: Ditto.
+	* gcc.target/mips/loongson-simd.c: Ditto.
+	* gcc.target/mips/memcpy-1.c: Ditto.
+	* gcc.target/mips/mips-3d-1.c: Ditto.
+	* gcc.target/mips/mips-3d-2.c: Ditto.
+	* gcc.target/mips/mips-3d-3.c: Ditto.
+	* gcc.target/mips/mips-3d-4.c: Ditto.
+	* gcc.target/mips/mips-3d-5.c: Ditto.
+	* gcc.target/mips/mips-3d-6.c: Ditto.
+	* gcc.target/mips/mips-3d-7.c: Ditto.
+	* gcc.target/mips/mips-3d-8.c: Ditto.
+	* gcc.target/mips/mips-3d-9.c: Ditto.
+	* gcc.target/mips/mips-ps-1.c: Ditto.
+	* gcc.target/mips/mips-ps-2.c: Ditto.
+	* gcc.target/mips/mips-ps-3.c: Ditto.
+	* gcc.target/mips/mips-ps-4.c: Ditto.
+	* gcc.target/mips/mips-ps-6.c: Ditto.
+	* gcc.target/mips/mips16-attributes.c: Ditto.
+	* gcc.target/mips/mips32-dsp-run.c: Ditto.
+	* gcc.target/mips/mips32-dsp.c: Ditto.
+	* gcc.target/mips/save-restore-1.c: Ditto.
+	* gcc.target/mips/mips.exp (mips_option_groups): Add stdlib.
+	(mips_preprocess): Add ignore_output argument that when set
+	will not return the pre-processed output.
+	(mips_arch_info): Update arguments for the call to
+	mips_preprocess.
+	(mips-dg-init): Ditto.
+	(mips-dg-options): Check if a test having test option
+	(REQUIRES_STDLIB) has the required sysroot support for
+	the current test options.
+
 2016-11-17  Jeff Law  <law@redhat.com>
 
 	PR middle-end/38219

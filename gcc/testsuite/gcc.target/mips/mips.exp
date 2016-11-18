@@ -261,6 +261,7 @@ set mips_option_groups {
     section_start "-Wl,--section-start=.*"
     frame-header "-mframe-header-opt|-mno-frame-header-opt"
     stack-protector "-fstack-protector"
+    stdlib "REQUIRES_STDLIB"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {
@@ -447,14 +448,19 @@ proc mips_same_option_p { option1 option2 } {
 
 # Preprocess CODE using target_compile options OPTIONS.  Return the
 # compiler output.
-proc mips_preprocess { options code } {
+proc mips_preprocess { options code ignore_output } {
     global tool
 
     set src dummy[pid].c
     set f [open $src "w"]
     puts $f $code
     close $f
-    set output [${tool}_target_compile $src "" preprocess $options]
+    if { $ignore_output } {
+	set output [${tool}_target_compile $src dummy[pid].i preprocess $options]
+	file delete dummy[pid].i
+    } else {
+	set output [${tool}_target_compile $src "" preprocess $options]
+    }
     file delete $src
 
     return $output
@@ -504,7 +510,7 @@ proc mips_arch_info { arch prop } {
 	    #else
 	    int isa_rev = 0;
 	    #endif
-	}]
+	} 0]
 	foreach lhs { isa isa_rev } {
 	    regsub ".*$lhs = (\[^;\]*).*" $output {\1} rhs
 	    verbose -log "Architecture $arch has $lhs $rhs"
@@ -863,7 +869,7 @@ proc mips-dg-init {} {
 
 	    0
 	};
-    }]
+    } 0]
     foreach line [split $output "\r\n"] {
 	# Poor man's string concatenation.
 	regsub -all {" "} $line "" line
@@ -1451,6 +1457,28 @@ proc mips-dg-options { args } {
     foreach { group regexp } $mips_option_groups {
 	if { $options(explicit_p,$group) } {
 	    append extra_tool_flags " " $options(option,$group)
+	}
+    }
+
+    # If the test is marked as requiring standard libraries check
+    # that the sysroot has support for the current set of test options.
+    if { [mips_have_test_option_p options "REQUIRES_STDLIB"] } {
+	mips_push_test_options saved_options $extra_tool_flags
+	set output [mips_preprocess "" {
+	      #include <stdlib.h>
+	} 1]
+	mips_pop_test_options saved_options
+
+	# If the preprocessing of the stdlib.h file produced errors,
+	# mark the test as unsupported by changing the second element of
+	# do_what to "N".
+	# The second element of do_what holds information about test selection
+	# and it can have one of two values:
+	# "S" - the test is selected and will be run
+	# "N" - the test is not selected and will not be run
+	# This mirrors the format of dg-do-what from lib/dg.exp in DejaGNU.
+	if { ![string equal $output ""] } {
+	    set do_what [lreplace $do_what 1 1 "N"]
 	}
     }
 
