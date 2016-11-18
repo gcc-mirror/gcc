@@ -2,7 +2,7 @@
    of calling a nomips16/mips16/default function from a nomips16/mips16/default
    function.  */
 /* { dg-do run } */
-/* { dg-options "(-mips16)" } */
+/* { dg-options "(-mips16) (REQUIRES_STDLIB)" } */
 /* { dg-skip-if "" { *-*-* } { "-mmicromips" } { "" } } */
 
 #include <stdlib.h>
