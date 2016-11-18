@@ -1,3 +1,10 @@
+2016-11-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67631 - list-init and explicit conversions
+	* semantics.c (finish_compound_literal): Call digest_init_flags.
+	* typeck2.c (digest_init_flags): Add complain parm.
+	(store_init_value): Pass it.
+
 2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
  	    Alan Hayward  <alan.hayward@arm.com>
  	    David Sherwood  <david.sherwood@arm.com>
