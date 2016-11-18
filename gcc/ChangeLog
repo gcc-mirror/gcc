@@ -1,3 +1,19 @@
+2016-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (size_of_discr_list): Fix typo in function comment.
+
+	PR debug/78191
+	* dwarf2out.c (abbrev_opt_base_type_end): New variable.
+	(die_abbrev_cmp): Sort dies with die_abbrev smaller than
+	abbrev_opt_base_type_end only by increasing die_abbrev, before
+	any other dies.
+	(optimize_abbrev_table): Don't change abbrev numbers of
+	base types and CU or optimize implicit consts in them if
+	calc_base_type_die_sizes has been called during build_abbrev_table.
+	(calc_base_type_die_sizes): If abbrev_opt_start, set
+	abbrev_opt_base_type_end to one plus largest base type's
+	die_abbrev.
+
 2016-11-18  Jeff Law  <law@redhat.com>
 
 	PR target/25112
