@@ -1,5 +1,8 @@
 2016-11-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/78419
+	* gcc.target/i386/pr78419.c: New test.
+
 	PR c++/77285
 	* g++.dg/tls/pr77285-1.C: New test.
 	* g++.dg/tls/pr77285-2.C: New test.

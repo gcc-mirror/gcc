@@ -1,5 +1,16 @@
 2016-11-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/78419
+	* multiple_target.c (get_attr_len): Start with argnum and increment
+	argnum on every arg.  Use strchr in a loop instead of counting commas
+	manually.
+	(get_attr_str): Increment argnum for every comma in the string.
+	(separate_attrs): Use for instead of while loop, simplify.
+	(expand_target_clones): Rename defenition argument to definition.
+	Free attrs and attr_str even when diagnosing errors.  Temporarily
+	change input_location around targetm.target_option.valid_attribute_p
+	calls.  Don't emit warning or errors if that function fails.
+
 	* dwarf2out.c (size_of_discr_list): Fix typo in function comment.
 
 	PR debug/78191
