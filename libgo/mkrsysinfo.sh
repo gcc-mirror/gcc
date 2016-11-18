@@ -18,6 +18,7 @@ echo 'package runtime' > ${OUT}
 # will all have a leading underscore.
 grep -v '^// ' gen-sysinfo.go | \
   grep -v '^func' | \
+  grep -v '^var ' | \
   grep -v '^type _timeval ' | \
   grep -v '^type _timespec_t ' | \
   grep -v '^type _timespec ' | \

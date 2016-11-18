@@ -1052,6 +1052,14 @@ runtime_internal_atomic_lo_check_GOCFLAGS = -fgo-compiling-runtime
 runtime_internal_sys_lo_GOCFLAGS = -fgo-compiling-runtime
 runtime_internal_sys_lo_check_GOCFLAGS = -fgo-compiling-runtime
 
+# If libffi is supported (the normal case) use the ffi build tag for
+# the runtime package.
+if USE_LIBFFI
+matchargs_runtime = --tag=libffi
+else
+matchargs_runtime =
+endif
+
 # At least for now, we need -static-libgo for this test, because
 # otherwise we can't get the line numbers.
 # Also use -fno-inline to get better results from the memory profiler.

@@ -12,7 +12,10 @@
 #include "go-alloc.h"
 #include "go-assert.h"
 #include "go-type.h"
-#include "go-ffi.h"
+
+#ifdef USE_LIBFFI
+#include "ffi.h"
+#endif
 
 #if defined(USE_LIBFFI) && FFI_GO_CLOSURES
 
@@ -197,6 +200,11 @@ go_set_results (const struct __go_func_type *func, unsigned char *call_result,
     }
 }
 
+/* The code that converts the Go type to an FFI type is written in Go,
+   so that it can allocate Go heap memory.  */
+extern void ffiFuncToCIF(const struct __go_func_type*, _Bool, _Bool, ffi_cif*)
+  __asm__ ("runtime.ffiFuncToCIF");
+
 /* Call a function.  The type of the function is FUNC_TYPE, and the
    closure is FUNC_VAL.  PARAMS is an array of parameter addresses.
    RESULTS is an array of result addresses.
@@ -218,7 +226,7 @@ reflect_call (const struct __go_func_type *func_type, FuncVal *func_val,
   unsigned char *call_result;
 
   __go_assert ((func_type->__common.__code & GO_CODE_MASK) == GO_FUNC);
-  __go_func_to_cif (func_type, is_interface, is_method, &cif);
+  ffiFuncToCIF (func_type, is_interface, is_method, &cif);
 
   call_result = (unsigned char *) malloc (go_results_size (func_type));
 
