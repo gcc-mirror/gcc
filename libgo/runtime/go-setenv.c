@@ -9,10 +9,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "go-alloc.h"
 #include "runtime.h"
-#include "arch.h"
-#include "malloc.h"
 
 /* Set the C environment from Go.  This is called by syscall.Setenv.  */
 
@@ -25,7 +22,6 @@ setenv_c (String k, String v)
   unsigned char *kn;
   const byte *vs;
   unsigned char *vn;
-  intgo len;
 
   ks = k.str;
   if (ks == NULL)
@@ -39,25 +35,23 @@ setenv_c (String k, String v)
 
 #ifdef HAVE_SETENV
 
-  if (ks != NULL && ks[k.len] != 0)
+  if (ks[k.len] != 0)
     {
-      // Objects that are explicitly freed must be at least 16 bytes in size,
-      // so that they are not allocated using tiny alloc.
-      len = k.len + 1;
-      if (len < TinySize)
-	len = TinySize;
-      kn = __go_alloc (len);
+      kn = malloc (k.len + 1);
+      if (kn == NULL)
+	runtime_throw ("out of malloc memory");
       __builtin_memcpy (kn, ks, k.len);
+      kn[k.len] = '\0';
       ks = kn;
     }
 
-  if (vs != NULL && vs[v.len] != 0)
+  if (vs[v.len] != 0)
     {
-      len = v.len + 1;
-      if (len < TinySize)
-	len = TinySize;
-      vn = __go_alloc (len);
+      vn = malloc (v.len + 1);
+      if (vn == NULL)
+	runtime_throw ("out of malloc memory");
       __builtin_memcpy (vn, vs, v.len);
+      vn[v.len] = '\0';
       vs = vn;
     }
 
@@ -66,19 +60,20 @@ setenv_c (String k, String v)
 #else /* !defined(HAVE_SETENV) */
 
   len = k.len + v.len + 2;
-  if (len < TinySize)
-    len = TinySize;
-  kn = __go_alloc (len);
+  kn = malloc (len);
+  if (kn == NULL)
+    runtime_throw ("out of malloc memory");
   __builtin_memcpy (kn, ks, k.len);
   kn[k.len] = '=';
   __builtin_memcpy (kn + k.len + 1, vs, v.len);
   kn[k.len + v.len + 1] = '\0';
   putenv ((char *) kn);
+  kn = NULL; /* putenv takes ownership of the string.  */
 
 #endif /* !defined(HAVE_SETENV) */
 
   if (kn != NULL)
-    __go_free (kn);
+    free (kn);
   if (vn != NULL)
-    __go_free (vn);
+    free (vn);
 }
