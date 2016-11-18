@@ -550,9 +550,6 @@ const (
 	_MaxGomaxprocs = 1 << 8
 )
 
-/*
-Commented out for gccgo for now.
-
 type schedt struct {
 	// accessed atomically. keep at top to ensure alignment on 32-bit systems.
 	goidgen  uint64
@@ -578,18 +575,17 @@ type schedt struct {
 	runqsize int32
 
 	// Global cache of dead G's.
-	gflock       mutex
-	gfreeStack   *g
-	gfreeNoStack *g
-	ngfree       int32
+	gflock mutex
+	gfree  *g
+	ngfree int32
 
 	// Central cache of sudog structs.
 	sudoglock  mutex
 	sudogcache *sudog
 
-	// Central pool of available defer structs of different sizes.
+	// Central pool of available defer structs.
 	deferlock mutex
-	deferpool [5]*_defer
+	deferpool *_defer
 
 	gcwaiting  uint32 // gc is waiting to run
 	stopwait   int32
@@ -608,7 +604,6 @@ type schedt struct {
 	procresizetime int64 // nanotime() of last change to gomaxprocs
 	totaltime      int64 // ∫gomaxprocs dt up to procresizetime
 }
-*/
 
 // The m.locked word holds two pieces of state counting active calls to LockOSThread/lockOSThread.
 // The low bit (LockExternal) is a boolean reporting whether any LockOSThread call is active.
@@ -772,8 +767,10 @@ var (
 
 	ncpu int32
 
-//	forcegc     forcegcstate
-//	sched       schedt
+	//	forcegc     forcegcstate
+
+	sched schedt
+
 //	newprocs    int32
 
 // Information about what cpu features are available.
