@@ -1,3 +1,9 @@
+2016-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77285
+	* mangle.c (mangle_tls_init_fn, mangle_tls_wrapper_fn): Call
+	check_abi_tags.
+
 2016-11-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67631 - list-init and explicit conversions
