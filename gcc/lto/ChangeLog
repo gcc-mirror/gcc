@@ -1,3 +1,9 @@
+2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+ 	    Alan Hayward  <alan.hayward@arm.com>
+ 	    David Sherwood  <david.sherwood@arm.com>
+
+	* lto.c (offload_handle_link_vars): Use SET_DECL_MODE.
+
 2016-10-31  Richard Biener  <rguenther@suse.de>
 
 	PR lto/78129

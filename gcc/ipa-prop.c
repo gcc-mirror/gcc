@@ -4344,7 +4344,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	      ddecl = make_node (DEBUG_EXPR_DECL);
 	      DECL_ARTIFICIAL (ddecl) = 1;
 	      TREE_TYPE (ddecl) = TREE_TYPE (origin);
-	      DECL_MODE (ddecl) = DECL_MODE (origin);
+	      SET_DECL_MODE (ddecl, DECL_MODE (origin));
 
 	      vec_safe_push (*debug_args, origin);
 	      vec_safe_push (*debug_args, ddecl);

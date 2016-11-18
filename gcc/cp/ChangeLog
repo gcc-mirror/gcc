@@ -1,3 +1,12 @@
+2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+ 	    Alan Hayward  <alan.hayward@arm.com>
+ 	    David Sherwood  <david.sherwood@arm.com>
+
+	* class.c (finish_struct_bits): Use SET_DECL_MODE.
+	(build_base_field_1, layout_class_type, finish_struct_1): Likewise.
+	* decl.c (make_label_decl): Likewise.
+	* pt.c (tsubst_decl): Likewise.
+
 2016-11-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78193 - inherited ctor regressions on sparc32.

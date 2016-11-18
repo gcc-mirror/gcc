@@ -5000,7 +5000,7 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
 							   NULL);
 		DECL_ARTIFICIAL (vexpr) = 1;
 		TREE_TYPE (vexpr) = TREE_TYPE (name);
-		DECL_MODE (vexpr) = DECL_MODE (adj->base);
+		SET_DECL_MODE (vexpr, DECL_MODE (adj->base));
 		gsi_insert_before (gsip, def_temp, GSI_SAME_STMT);
 	      }
 	    if (vexpr)

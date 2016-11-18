@@ -1020,7 +1020,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	  if (code == FUNCTION_DECL)
 	    {
 	      SET_DECL_ALIGN (t, FUNCTION_ALIGNMENT (FUNCTION_BOUNDARY));
-	      DECL_MODE (t) = FUNCTION_MODE;
+	      SET_DECL_MODE (t, FUNCTION_MODE);
 	    }
 	  else
 	    SET_DECL_ALIGN (t, 1);

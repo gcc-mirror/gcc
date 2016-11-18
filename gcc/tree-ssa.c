@@ -432,9 +432,9 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 	  DECL_ARTIFICIAL (vexpr) = 1;
 	  TREE_TYPE (vexpr) = TREE_TYPE (value);
 	  if (DECL_P (value))
-	    DECL_MODE (vexpr) = DECL_MODE (value);
+	    SET_DECL_MODE (vexpr, DECL_MODE (value));
 	  else
-	    DECL_MODE (vexpr) = TYPE_MODE (TREE_TYPE (value));
+	    SET_DECL_MODE (vexpr, TYPE_MODE (TREE_TYPE (value)));
 
 	  if (gsi)
 	    gsi_insert_before (gsi, def_temp, GSI_SAME_STMT);
