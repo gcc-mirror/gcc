@@ -1,3 +1,11 @@
+2016-11-18  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/htm-builtins-1.c (DEFAULT_MAX_REPETITIONS)
+	(DEFAULT_REQUIRED_QUORUM, NUM_WARMUP_RUNS): Lower requirements for
+	successful test.
+	* gcc.target/s390/htm-builtins-2.c (DEFAULT_MAX_REPETITIONS)
+	(DEFAULT_REQUIRED_QUORUM): Likewise.
+
 2016-11-18  Andrew Bennett  <andrew.bennett@imgtec.com>
 	    Toma Tabacu  <toma.tabacu@imgtec.com>
 
