@@ -1,3 +1,11 @@
+2016-11-18  Jeff Law  <law@redhat.com>
+
+	PR target/25112
+	* config/m68k/m68k.c (moveq feeding equality comparison): New
+	peepholes.
+	* config/m68k/predicates.md (addq_subq_operand): New predicate.
+	(equality_comparison_operator): Likewise.
+
 2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* rtlanal.c (load_extend_op): Move to...
