@@ -163,6 +163,10 @@
 #include <port.h>
 #endif
 
+#ifdef USE_LIBFFI
+#include "ffi.h"
+#endif
+
 /* Constants that may only be defined as expressions on some systems,
    expressions too complex for -fdump-go-spec to handle.  These are
    handled specially below.  */
