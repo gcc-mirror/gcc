@@ -139,7 +139,6 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgonetdir)" \
 	"$(DESTDIR)$(toolexeclibgonethttpdir)" \
 	"$(DESTDIR)$(toolexeclibgonetrpcdir)" \
-	"$(DESTDIR)$(toolexeclibgoolddir)" \
 	"$(DESTDIR)$(toolexeclibgoosdir)" \
 	"$(DESTDIR)$(toolexeclibgopathdir)" \
 	"$(DESTDIR)$(toolexeclibgoregexpdir)" \
@@ -264,12 +263,11 @@ DATA = $(noinst_DATA) $(toolexeclibgo_DATA) \
 	$(toolexeclibgoio_DATA) $(toolexeclibgolog_DATA) \
 	$(toolexeclibgomath_DATA) $(toolexeclibgomime_DATA) \
 	$(toolexeclibgonet_DATA) $(toolexeclibgonethttp_DATA) \
-	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoold_DATA) \
-	$(toolexeclibgoos_DATA) $(toolexeclibgopath_DATA) \
-	$(toolexeclibgoregexp_DATA) $(toolexeclibgoruntime_DATA) \
-	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
-	$(toolexeclibgotext_DATA) $(toolexeclibgotexttemplate_DATA) \
-	$(toolexeclibgounicode_DATA)
+	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoos_DATA) \
+	$(toolexeclibgopath_DATA) $(toolexeclibgoregexp_DATA) \
+	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
+	$(toolexeclibgotesting_DATA) $(toolexeclibgotext_DATA) \
+	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -713,11 +711,6 @@ toolexeclibgonetrpcdir = $(toolexeclibgonetdir)/rpc
 toolexeclibgonetrpc_DATA = \
 	net/rpc/jsonrpc.gox
 
-toolexeclibgoolddir = $(toolexeclibgodir)/old
-toolexeclibgoold_DATA = \
-	old/regexp.gox \
-	old/template.gox
-
 toolexeclibgoosdir = $(toolexeclibgodir)/os
 toolexeclibgoos_DATA = \
 	os/exec.gox \
@@ -967,8 +960,6 @@ PACKAGES = \
 	net/smtp \
 	net/textproto \
 	net/url \
-	old/regexp \
-	old/template \
 	os \
 	os/exec \
 	os/signal \
@@ -1300,8 +1291,6 @@ TEST_PACKAGES = \
 	net/textproto/check \
 	net/url/check \
 	net/rpc/jsonrpc/check \
-	old/regexp/check \
-	old/template/check \
 	os/exec/check \
 	os/signal/check \
 	os/user/check \
@@ -2563,27 +2552,6 @@ uninstall-toolexeclibgonetrpcDATA:
 	@list='$(toolexeclibgonetrpc_DATA)'; test -n "$(toolexeclibgonetrpcdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibgonetrpcdir)'; $(am__uninstall_files_from_dir)
-install-toolexeclibgooldDATA: $(toolexeclibgoold_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(toolexeclibgoold_DATA)'; test -n "$(toolexeclibgoolddir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibgoolddir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoolddir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoolddir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoolddir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibgooldDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibgoold_DATA)'; test -n "$(toolexeclibgoolddir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(toolexeclibgoolddir)'; $(am__uninstall_files_from_dir)
 install-toolexeclibgoosDATA: $(toolexeclibgoos_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclibgoos_DATA)'; test -n "$(toolexeclibgoosdir)" || list=; \
@@ -2914,7 +2882,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) all-multi $(DATA) \
 		config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoolddir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -2997,9 +2965,8 @@ install-exec-am: install-multi install-toolexeclibLIBRARIES \
 	install-toolexeclibgologDATA install-toolexeclibgomathDATA \
 	install-toolexeclibgomimeDATA install-toolexeclibgonetDATA \
 	install-toolexeclibgonethttpDATA \
-	install-toolexeclibgonetrpcDATA install-toolexeclibgooldDATA \
-	install-toolexeclibgoosDATA install-toolexeclibgopathDATA \
-	install-toolexeclibgoregexpDATA \
+	install-toolexeclibgonetrpcDATA install-toolexeclibgoosDATA \
+	install-toolexeclibgopathDATA install-toolexeclibgoregexpDATA \
 	install-toolexeclibgoruntimeDATA install-toolexeclibgosyncDATA \
 	install-toolexeclibgotestingDATA install-toolexeclibgotextDATA \
 	install-toolexeclibgotexttemplateDATA \
@@ -3066,8 +3033,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgomimeDATA uninstall-toolexeclibgonetDATA \
 	uninstall-toolexeclibgonethttpDATA \
 	uninstall-toolexeclibgonetrpcDATA \
-	uninstall-toolexeclibgooldDATA uninstall-toolexeclibgoosDATA \
-	uninstall-toolexeclibgopathDATA \
+	uninstall-toolexeclibgoosDATA uninstall-toolexeclibgopathDATA \
 	uninstall-toolexeclibgoregexpDATA \
 	uninstall-toolexeclibgoruntimeDATA \
 	uninstall-toolexeclibgosyncDATA \
@@ -3110,9 +3076,8 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgologDATA install-toolexeclibgomathDATA \
 	install-toolexeclibgomimeDATA install-toolexeclibgonetDATA \
 	install-toolexeclibgonethttpDATA \
-	install-toolexeclibgonetrpcDATA install-toolexeclibgooldDATA \
-	install-toolexeclibgoosDATA install-toolexeclibgopathDATA \
-	install-toolexeclibgoregexpDATA \
+	install-toolexeclibgonetrpcDATA install-toolexeclibgoosDATA \
+	install-toolexeclibgopathDATA install-toolexeclibgoregexpDATA \
 	install-toolexeclibgoruntimeDATA install-toolexeclibgosyncDATA \
 	install-toolexeclibgotestingDATA install-toolexeclibgotextDATA \
 	install-toolexeclibgotexttemplateDATA \
@@ -3143,8 +3108,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgomimeDATA uninstall-toolexeclibgonetDATA \
 	uninstall-toolexeclibgonethttpDATA \
 	uninstall-toolexeclibgonetrpcDATA \
-	uninstall-toolexeclibgooldDATA uninstall-toolexeclibgoosDATA \
-	uninstall-toolexeclibgopathDATA \
+	uninstall-toolexeclibgoosDATA uninstall-toolexeclibgopathDATA \
 	uninstall-toolexeclibgoregexpDATA \
 	uninstall-toolexeclibgoruntimeDATA \
 	uninstall-toolexeclibgosyncDATA \
