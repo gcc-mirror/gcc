@@ -25,6 +25,8 @@
 #ifndef ARM_OPTS_H
 #define ARM_OPTS_H
 
+#include "arm-flags.h"
+
 /* The various ARM cores.  */
 enum processor_type
 {
@@ -76,5 +78,25 @@ enum arm_tp_type {
 enum arm_tls_type {
   TLS_GNU,
   TLS_GNU2
+};
+
+struct arm_arch_core_flag
+{
+  const char *const name;
+  const arm_feature_set flags;
+};
+
+static const struct arm_arch_core_flag arm_arch_core_flags[] =
+{
+#undef ARM_CORE
+#define ARM_CORE(NAME, X, IDENT, ARCH, FLAGS, COSTS) \
+  {NAME, FLAGS},
+#include "arm-cores.def"
+#undef ARM_CORE
+#undef ARM_ARCH
+#define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
+  {NAME, FLAGS},
+#include "arm-arches.def"
+#undef ARM_ARCH
 };
 #endif

@@ -2250,13 +2250,18 @@ extern const char *arm_rewrite_mcpu (int argc, const char **argv);
    "   :%{march=*:-march=%*}}"					\
    BIG_LITTLE_SPEC
 
+extern const char *arm_target_thumb_only (int argc, const char **argv);
+#define TARGET_MODE_SPEC_FUNCTIONS					\
+  { "target_mode_check", arm_target_thumb_only },
+
 /* -mcpu=native handling only makes sense with compiler running on
    an ARM chip.  */
 #if defined(__arm__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
 # define EXTRA_SPEC_FUNCTIONS						\
   { "local_cpu_detect", host_detect_local_cpu },			\
-  BIG_LITTLE_CPU_SPEC_FUNCTIONS
+  BIG_LITTLE_CPU_SPEC_FUNCTIONS						\
+  TARGET_MODE_SPEC_FUNCTIONS
 
 # define MCPU_MTUNE_NATIVE_SPECS					\
    " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
@@ -2264,10 +2269,21 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
 #else
 # define MCPU_MTUNE_NATIVE_SPECS ""
-# define EXTRA_SPEC_FUNCTIONS BIG_LITTLE_CPU_SPEC_FUNCTIONS
+# define EXTRA_SPEC_FUNCTIONS						\
+	BIG_LITTLE_CPU_SPEC_FUNCTIONS					\
+	TARGET_MODE_SPEC_FUNCTIONS
 #endif
 
-#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
+/* Automatically add -mthumb for Thumb-only targets if mode isn't specified
+   via the configuration option --with-mode or via the command line. The
+   function target_mode_check is called to do the check with either:
+   - an array of -march values if any is given;
+   - an array of -mcpu values if any is given;
+   - an empty array.  */
+#define TARGET_MODE_SPECS						\
+  " %{!marm:%{!mthumb:%:target_mode_check(%{march=*:%*;mcpu=*:%*;:})}}"
+
+#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS TARGET_MODE_SPECS
 #define TARGET_SUPPORTS_WIDE_INT 1
 
 /* For switching between functions with different target attributes.  */
