@@ -652,7 +652,7 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
 	 assume that all the bits are significant.  */
       if (GET_MODE_CLASS (oldmode) != MODE_INT)
 	oldmode = MAX_MODE_INT;
-      wide_int w = wide_int::from (std::make_pair (x, oldmode),
+      wide_int w = wide_int::from (rtx_mode_t (x, oldmode),
 				   GET_MODE_PRECISION (mode),
 				   unsignedp ? UNSIGNED : SIGNED);
       return immed_wide_int_const (w, mode);

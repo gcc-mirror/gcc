@@ -15127,7 +15127,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  mem_loc_result->dw_loc_oprnd2.val_class
 	    = dw_val_class_wide_int;
 	  mem_loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc<wide_int> ();
-	  *mem_loc_result->dw_loc_oprnd2.v.val_wide = std::make_pair (rtl, mode);
+	  *mem_loc_result->dw_loc_oprnd2.v.val_wide = rtx_mode_t (rtl, mode);
 	}
       break;
 
@@ -15670,7 +15670,7 @@ loc_descriptor (rtx rtl, machine_mode mode,
 				      GET_MODE_SIZE (mode), 0);
 	  loc_result->dw_loc_oprnd2.val_class = dw_val_class_wide_int;
 	  loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc<wide_int> ();
-	  *loc_result->dw_loc_oprnd2.v.val_wide = std::make_pair (rtl, mode);
+	  *loc_result->dw_loc_oprnd2.v.val_wide = rtx_mode_t (rtl, mode);
 	}
       break;
 
@@ -15695,7 +15695,7 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	      for (i = 0, p = array; i < length; i++, p += elt_size)
 		{
 		  rtx elt = CONST_VECTOR_ELT (rtl, i);
-		  insert_wide_int (std::make_pair (elt, imode), p, elt_size);
+		  insert_wide_int (rtx_mode_t (elt, imode), p, elt_size);
 		}
 	      break;
 
@@ -18357,7 +18357,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case CONST_WIDE_INT:
       {
-	wide_int w1 = std::make_pair (rtl, MAX_MODE_INT);
+	wide_int w1 = rtx_mode_t (rtl, MAX_MODE_INT);
 	unsigned int prec = MIN (wi::min_precision (w1, UNSIGNED),
 				 (unsigned int)CONST_WIDE_INT_NUNITS (rtl) * HOST_BITS_PER_WIDE_INT);
 	wide_int w = wi::zext (w1, prec);
@@ -18404,7 +18404,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	    for (i = 0, p = array; i < length; i++, p += elt_size)
 	      {
 		rtx elt = CONST_VECTOR_ELT (rtl, i);
-		insert_wide_int (std::make_pair (elt, imode), p, elt_size);
+		insert_wide_int (rtx_mode_t (elt, imode), p, elt_size);
 	      }
 	    break;
 

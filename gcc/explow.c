@@ -98,8 +98,7 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
   switch (code)
     {
     CASE_CONST_SCALAR_INT:
-      return immed_wide_int_const (wi::add (std::make_pair (x, mode), c),
-				   mode);
+      return immed_wide_int_const (wi::add (rtx_mode_t (x, mode), c), mode);
     case MEM:
       /* If this is a reference to the constant pool, try replacing it with
 	 a reference to a new constant.  If the resulting address isn't

@@ -3276,7 +3276,7 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
       else if (CONST_DOUBLE_AS_INT_P (scalar_op1))
 #endif
 	{
-	  int shift = wi::exact_log2 (std::make_pair (scalar_op1, mode));
+	  int shift = wi::exact_log2 (rtx_mode_t (scalar_op1, mode));
 	  /* Perfect power of 2 (other than 1, which is handled above).  */
 	  if (shift > 0)
 	    return expand_shift (LSHIFT_EXPR, mode, op0,
@@ -5092,7 +5092,7 @@ make_tree (tree type, rtx x)
     {
     case CONST_INT:
     case CONST_WIDE_INT:
-      t = wide_int_to_tree (type, std::make_pair (x, TYPE_MODE (type)));
+      t = wide_int_to_tree (type, rtx_mode_t (x, TYPE_MODE (type)));
       return t;
 
     case CONST_DOUBLE:
