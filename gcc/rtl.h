@@ -2954,7 +2954,6 @@ extern void set_insn_deleted (rtx);
 
 /* Functions in rtlanal.c */
 
-extern rtx_code load_extend_op (machine_mode);
 extern rtx single_set_2 (const rtx_insn *, const_rtx);
 extern bool contains_symbol_ref_p (const_rtx);
 extern bool contains_symbolic_reference_p (const_rtx);
@@ -3770,6 +3769,19 @@ struct GTY(()) cgraph_rtl_info {
   /* Set if function_used_regs is valid.  */
   unsigned function_used_regs_valid: 1;
 };
+
+/* If loads from memories of mode MODE always sign or zero extend,
+   return SIGN_EXTEND or ZERO_EXTEND as appropriate.  Return UNKNOWN
+   otherwise.  */
+
+inline rtx_code
+load_extend_op (machine_mode mode)
+{
+  if (SCALAR_INT_MODE_P (mode)
+      && GET_MODE_PRECISION (mode) < BITS_PER_WORD)
+    return LOAD_EXTEND_OP (mode);
+  return UNKNOWN;
+}
 
 /* gtype-desc.c.  */
 extern void gt_ggc_mx (rtx &);
