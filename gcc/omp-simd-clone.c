@@ -868,7 +868,7 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
 	  stmt = gimple_build_debug_source_bind (vexpr, repl, NULL);
 	  DECL_ARTIFICIAL (vexpr) = 1;
 	  TREE_TYPE (vexpr) = TREE_TYPE (repl);
-	  DECL_MODE (vexpr) = TYPE_MODE (TREE_TYPE (repl));
+	  SET_DECL_MODE (vexpr, TYPE_MODE (TREE_TYPE (repl)));
 	  repl = vexpr;
 	}
       else

@@ -1,3 +1,10 @@
+2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+ 	    Alan Hayward  <alan.hayward@arm.com>
+ 	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-decl.c (merge_decls): Use SET_DECL_MODE.
+	(make_label, finish_struct): Likewise.
+
 2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
 	    Richard Biener  <rguenther@suse.de>
 

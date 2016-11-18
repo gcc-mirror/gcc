@@ -408,7 +408,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 	{
 	  DECL_SIZE (decl) = TYPE_SIZE (union_type);
 	  DECL_SIZE_UNIT (decl) = size;
-	  DECL_MODE (decl) = TYPE_MODE (union_type);
+	  SET_DECL_MODE (decl, TYPE_MODE (union_type));
 	  TREE_TYPE (decl) = union_type;
 	  layout_decl (decl, 0);
 	}

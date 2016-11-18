@@ -4053,7 +4053,7 @@ avoid_deep_ter_for_debug (gimple *stmt, int depth)
 	  gimple *def_temp = gimple_build_debug_bind (vexpr, use, g);
 	  DECL_ARTIFICIAL (vexpr) = 1;
 	  TREE_TYPE (vexpr) = TREE_TYPE (use);
-	  DECL_MODE (vexpr) = TYPE_MODE (TREE_TYPE (use));
+	  SET_DECL_MODE (vexpr, TYPE_MODE (TREE_TYPE (use)));
 	  gimple_stmt_iterator gsi = gsi_for_stmt (g);
 	  gsi_insert_after (&gsi, def_temp, GSI_NEW_STMT);
 	  avoid_deep_ter_for_debug (def_temp, 0);
@@ -5581,7 +5581,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		      mode = DECL_MODE (value);
 		    else
 		      mode = TYPE_MODE (TREE_TYPE (value));
-		    DECL_MODE (vexpr) = mode;
+		    SET_DECL_MODE (vexpr, mode);
 
 		    val = gen_rtx_VAR_LOCATION
 			(mode, vexpr, (rtx)value, VAR_INIT_STATUS_INITIALIZED);

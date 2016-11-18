@@ -3111,7 +3111,7 @@ create_label_decl (tree name, Node_Id gnat_node)
   tree label_decl
     = build_decl (input_location, LABEL_DECL, name, void_type_node);
 
-  DECL_MODE (label_decl) = VOIDmode;
+  SET_DECL_MODE (label_decl, VOIDmode);
 
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (label_decl, gnat_node);

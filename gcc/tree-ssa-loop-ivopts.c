@@ -7589,9 +7589,9 @@ remove_unused_ivs (struct ivopts_data *data)
 		  DECL_ARTIFICIAL (vexpr) = 1;
 		  TREE_TYPE (vexpr) = TREE_TYPE (comp);
 		  if (SSA_NAME_VAR (def))
-		    DECL_MODE (vexpr) = DECL_MODE (SSA_NAME_VAR (def));
+		    SET_DECL_MODE (vexpr, DECL_MODE (SSA_NAME_VAR (def)));
 		  else
-		    DECL_MODE (vexpr) = TYPE_MODE (TREE_TYPE (vexpr));
+		    SET_DECL_MODE (vexpr, TYPE_MODE (TREE_TYPE (vexpr)));
 		  gdebug *def_temp
 		    = gimple_build_debug_bind (vexpr, comp, NULL);
 		  gimple_stmt_iterator gsi;

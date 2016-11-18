@@ -2967,7 +2967,7 @@ make_label_decl (tree id, int local_p)
   decl = build_decl (input_location, LABEL_DECL, id, void_type_node);
 
   DECL_CONTEXT (decl) = current_function_decl;
-  DECL_MODE (decl) = VOIDmode;
+  SET_DECL_MODE (decl, VOIDmode);
   C_DECLARED_LABEL_FLAG (decl) = local_p;
 
   /* Say where one reference is to the label, for the sake of the

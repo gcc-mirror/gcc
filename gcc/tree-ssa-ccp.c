@@ -2905,7 +2905,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
       tree temp = make_node (DEBUG_EXPR_DECL);
       DECL_ARTIFICIAL (temp) = 1;
       TREE_TYPE (temp) = TREE_TYPE (lhs);
-      DECL_MODE (temp) = TYPE_MODE (TREE_TYPE (lhs));
+      SET_DECL_MODE (temp, TYPE_MODE (TREE_TYPE (lhs)));
       tree t = build2 (LSHIFT_EXPR, TREE_TYPE (lhs), new_lhs, bit);
       g = gimple_build_debug_bind (temp, t, g);
       gsi_insert_after (&gsi, g, GSI_NEW_STMT);

@@ -274,7 +274,7 @@ gfc_build_label_decl (tree label_id)
   label_decl = build_decl (input_location,
 			   LABEL_DECL, label_id, void_type_node);
   DECL_CONTEXT (label_decl) = current_function_decl;
-  DECL_MODE (label_decl) = VOIDmode;
+  SET_DECL_MODE (label_decl, VOIDmode);
 
   /* We always define the label as used, even if the original source
      file never references the label.  We don't want all kinds of
