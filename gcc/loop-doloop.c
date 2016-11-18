@@ -662,7 +662,7 @@ doloop_optimize (struct loop *loop)
     }
 
   if (desc->const_iter)
-    iterations = widest_int::from (std::make_pair (desc->niter_expr, mode),
+    iterations = widest_int::from (rtx_mode_t (desc->niter_expr, mode),
 				   UNSIGNED);
   else
     iterations = 0;

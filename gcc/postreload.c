@@ -290,13 +290,13 @@ reload_cse_simplify_set (rtx set, rtx_insn *insn)
 	      switch (extend_op)
 		{
 		case ZERO_EXTEND:
-		  result = wide_int::from (std::make_pair (this_rtx,
-							   GET_MODE (src)),
+		  result = wide_int::from (rtx_mode_t (this_rtx,
+						       GET_MODE (src)),
 					   BITS_PER_WORD, UNSIGNED);
 		  break;
 		case SIGN_EXTEND:
-		  result = wide_int::from (std::make_pair (this_rtx,
-							   GET_MODE (src)),
+		  result = wide_int::from (rtx_mode_t (this_rtx,
+						       GET_MODE (src)),
 					   BITS_PER_WORD, SIGNED);
 		  break;
 		default:

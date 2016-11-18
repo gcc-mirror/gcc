@@ -2870,8 +2870,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  rtx outer = SET_SRC (temp_expr);
 
 	  wide_int o
-	    = wi::insert (std::make_pair (outer, GET_MODE (SET_DEST (temp_expr))),
-			  std::make_pair (inner, GET_MODE (dest)),
+	    = wi::insert (rtx_mode_t (outer, GET_MODE (SET_DEST (temp_expr))),
+			  rtx_mode_t (inner, GET_MODE (dest)),
 			  offset, width);
 
 	  combine_merges++;

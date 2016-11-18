@@ -1,4 +1,22 @@
 2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* combine.c (try_combine): Use rtx_mode_t instead of std::make_pair.
+	* dwarf2out.c (mem_loc_descriptor, loc_descriptor): Likewise.
+	(add_const_value_attribute): Likewise.
+	* explow.c (plus_constant): Likewise.
+	* expmed.c (expand_mult, make_tree): Likewise.
+	* expr.c (convert_modes): Likewise.
+	* loop-doloop.c (doloop_optimize): Likewise.
+	* postreload.c (reload_cse_simplify_set): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	(simplify_binary_operation_1, simplify_const_binary_operation):
+	(simplify_const_relational_operation, simplify_immed_subreg): Likewise.
+	* wide-int.h: Update documentation to recommend rtx_mode_t
+	instead of std::make_pair.
+
+2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
  	    Alan Hayward  <alan.hayward@arm.com>
  	    David Sherwood  <david.sherwood@arm.com>
 
