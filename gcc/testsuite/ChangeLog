@@ -1,3 +1,8 @@
+2016-11-18  Jeff Law  <law@redhat.com>
+
+	PR target/25112
+	* gcc.target/m68k/pr25112: New test.
+
 2016-11-18  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/tree-ssa/pr71179.c: Prune ABI message.

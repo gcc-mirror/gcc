@@ -245,6 +245,18 @@
 		 || reload_completed));
 })
 
+;; Used to detect constants that are valid for addq/subq instructions
+(define_predicate "addq_subq_operand"
+  (match_code "const_int")
+{
+  return ((INTVAL (op) <= 8 && INTVAL (op) > 0)
+	  || (INTVAL (op) >= -8 && INTVAL (op) < 0));
+})
+
+;; Used to detect equality and non-equality operators
+(define_predicate "equality_comparison_operator"
+  (match_code "eq,ne"))
+
 ;; Used to detect when an operand is either a register
 ;; or a constant that is all ones in its lower bits.
 ;; Used by insv pattern to help detect when we're initializing
