@@ -1,5 +1,8 @@
 2016-11-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/68180
+	* g++.dg/cpp1y/pr68180.C: Add -Wno-psabi as dg-additional-options.
+
 	PR middle-end/78419
 	* gcc.target/i386/pr78419.c: New test.
 
