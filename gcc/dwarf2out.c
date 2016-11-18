@@ -1911,7 +1911,7 @@ size_of_discr_value (dw_discr_value *discr_value)
     return size_of_sleb128 (discr_value->v.sval);
 }
 
-/* Return the size of the value in a DW_discr_list attribute.  */
+/* Return the size of the value in a DW_AT_discr_list attribute.  */
 
 static int
 size_of_discr_list (dw_discr_list_ref discr_list)
@@ -8550,6 +8550,11 @@ optimize_external_refs (dw_die_ref die)
 /* First abbrev_id that can be optimized based on usage.  */
 static unsigned int abbrev_opt_start;
 
+/* Maximum abbrev_id of a base type plus one (we can't optimize DIEs with
+   abbrev_id smaller than this, because they must be already sized
+   during build_abbrev_table).  */
+static unsigned int abbrev_opt_base_type_end;
+
 /* Vector of usage counts during build_abbrev_table.  Indexed by
    abbrev_id - abbrev_opt_start.  */
 static vec<unsigned int> abbrev_usage_count;
@@ -8648,12 +8653,16 @@ die_abbrev_cmp (const void *p1, const void *p2)
   gcc_checking_assert (die1->die_abbrev >= abbrev_opt_start);
   gcc_checking_assert (die2->die_abbrev >= abbrev_opt_start);
 
-  if (abbrev_usage_count[die1->die_abbrev - abbrev_opt_start]
-      > abbrev_usage_count[die2->die_abbrev - abbrev_opt_start])
-    return -1;
-  if (abbrev_usage_count[die1->die_abbrev - abbrev_opt_start]
-      < abbrev_usage_count[die2->die_abbrev - abbrev_opt_start])
-    return 1;
+  if (die1->die_abbrev >= abbrev_opt_base_type_end
+      && die2->die_abbrev >= abbrev_opt_base_type_end)
+    {
+      if (abbrev_usage_count[die1->die_abbrev - abbrev_opt_start]
+	  > abbrev_usage_count[die2->die_abbrev - abbrev_opt_start])
+	return -1;
+      if (abbrev_usage_count[die1->die_abbrev - abbrev_opt_start]
+	  < abbrev_usage_count[die2->die_abbrev - abbrev_opt_start])
+	return 1;
+    }
 
   /* Stabilize the sort.  */
   if (die1->die_abbrev < die2->die_abbrev)
@@ -8731,10 +8740,12 @@ optimize_abbrev_table (void)
       sorted_abbrev_dies.qsort (die_abbrev_cmp);
 
       unsigned int abbrev_id = abbrev_opt_start - 1;
-      unsigned int first_id = 0;
+      unsigned int first_id = ~0U;
       unsigned int last_abbrev_id = 0;
       unsigned int i;
       dw_die_ref die;
+      if (abbrev_opt_base_type_end > abbrev_opt_start)
+	abbrev_id = abbrev_opt_base_type_end - 1;
       /* Reassign abbreviation ids from abbrev_opt_start above, so that
 	 most commonly used abbreviations come first.  */
       FOR_EACH_VEC_ELT (sorted_abbrev_dies, i, die)
@@ -8742,10 +8753,15 @@ optimize_abbrev_table (void)
 	  dw_attr_node *a;
 	  unsigned ix;
 
+	  /* If calc_base_type_die_sizes has been called, the CU and
+	     base types after it can't be optimized, because we've already
+	     calculated their DIE offsets.  We've sorted them first.  */
+	  if (die->die_abbrev < abbrev_opt_base_type_end)
+	    continue;
 	  if (die->die_abbrev != last_abbrev_id)
 	    {
 	      last_abbrev_id = die->die_abbrev;
-	      if (dwarf_version >= 5 && i)
+	      if (dwarf_version >= 5 && first_id != ~0U)
 		optimize_implicit_const (first_id, i, implicit_consts);
 	      abbrev_id++;
 	      (*abbrev_die_table)[abbrev_id] = die;
@@ -8785,11 +8801,12 @@ optimize_abbrev_table (void)
 	  die->die_abbrev = abbrev_id;
 	}
       gcc_assert (abbrev_id == vec_safe_length (abbrev_die_table) - 1);
-      if (dwarf_version >= 5)
+      if (dwarf_version >= 5 && first_id != ~0U)
 	optimize_implicit_const (first_id, i, implicit_consts);
     }
 
   abbrev_opt_start = 0;
+  abbrev_opt_base_type_end = 0;
   abbrev_usage_count.release ();
   sorted_abbrev_dies.release ();
 }
@@ -9043,6 +9060,9 @@ calc_base_type_die_sizes (void)
 		  && base_type->die_abbrev);
       prev = base_type;
 #endif
+      if (abbrev_opt_start
+	  && base_type->die_abbrev >= abbrev_opt_base_type_end)
+	abbrev_opt_base_type_end = base_type->die_abbrev + 1;
       base_type->die_offset = die_offset;
       die_offset += size_of_die (base_type);
     }
