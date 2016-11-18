@@ -1,3 +1,10 @@
+2016-11-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/71785
+	* bb-reorder.c (maybe_duplicate_computed_goto): New function.
+	(duplicate_computed_gotos): New function.
+	(pass_duplicate_computed_gotos::execute): Rewrite.
+
 2016-11-17  Jeff Law  <law@redhat.com>
 
 	PR target/47192
