@@ -25898,7 +25898,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		+---------------------------------------+
 		| saved TOC pointer			| 20      40
 		+---------------------------------------+
-		| Parameter save area (P)		| 24      48
+		| Parameter save area (+padding*) (P)	| 24      48
 		+---------------------------------------+
 		| Alloca space (A)			| 24+P    etc.
 		+---------------------------------------+
@@ -25919,6 +25919,9 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
 
+     * If the alloca area is present, the parameter save area is
+       padded so that the former starts 16-byte aligned.
+
    The required alignment for AIX configurations is two words (i.e., 8
    or 16 bytes).
 
@@ -25933,7 +25936,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		+---------------------------------------+
 		| Saved TOC pointer			|  24
 		+---------------------------------------+
-		| Parameter save area (P)		|  32
+		| Parameter save area (+padding*) (P)	|  32
 		+---------------------------------------+
 		| Alloca space (A)			|  32+P
 		+---------------------------------------+
@@ -25950,6 +25953,8 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 	old SP->| back chain to caller's caller		|  32+P+A+L+W+Y+G+F
 		+---------------------------------------+
 
+     * If the alloca area is present, the parameter save area is
+       padded so that the former starts 16-byte aligned.
 
    V.4 stack frames look like:
 
@@ -25958,7 +25963,7 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		+---------------------------------------+
 		| caller's saved LR			| 4
 		+---------------------------------------+
-		| Parameter save area (P)		| 8
+		| Parameter save area (+padding*) (P)	| 8
 		+---------------------------------------+
 		| Alloca space (A)			| 8+P
 		+---------------------------------------+
@@ -25986,6 +25991,10 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
+
+     * If the alloca area is present and the required alignment is
+       16 bytes, the parameter save area is padded so that the
+       alloca area starts 16-byte aligned.
 
    The required alignment for V.4 is 16 bytes, or 8 bytes if -meabi is
    given.  (But note below and in sysv4.h that we require only 8 and
@@ -26121,8 +26130,13 @@ rs6000_stack_info (void)
   info->reg_size     = reg_size;
   info->fixed_size   = RS6000_SAVE_AREA;
   info->vars_size    = RS6000_ALIGN (get_frame_size (), 8);
-  info->parm_size    = RS6000_ALIGN (crtl->outgoing_args_size,
-					 TARGET_ALTIVEC ? 16 : 8);
+  if (cfun->calls_alloca)
+    info->parm_size  =
+      RS6000_ALIGN (crtl->outgoing_args_size + info->fixed_size,
+		    STACK_BOUNDARY / BITS_PER_UNIT) - info->fixed_size;
+  else
+    info->parm_size  = RS6000_ALIGN (crtl->outgoing_args_size,
+				     TARGET_ALTIVEC ? 16 : 8);
   if (FRAME_GROWS_DOWNWARD)
     info->vars_size
       += RS6000_ALIGN (info->fixed_size + info->vars_size + info->parm_size,

@@ -1,3 +1,15 @@
+2016-11-18  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR bootstrap/77359
+	* config/rs6000/rs6000.c (rs6000_stack_info): Properly align local
+	variables in functions calling alloca.  Also update the ASCII
+	drawings.
+	* config/rs6000/rs6000.h (STARTING_FRAME_OFFSET)
+	(STACK_DYNAMIC_OFFSET): Likewise.
+	* config/rs6000/aix.h (STARTING_FRAME_OFFSET)
+	(STACK_DYNAMIC_OFFSET): Copy AIX specific versions of the rs6000.h
+	macros to aix.h.
+
 2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

@@ -40,6 +40,41 @@
 #undef  STACK_BOUNDARY
 #define STACK_BOUNDARY 128
 
+/* Offset within stack frame to start allocating local variables at.
+   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
+   first local allocated.  Otherwise, it is the offset to the BEGINNING
+   of the first local allocated.
+
+   On the RS/6000, the frame pointer is the same as the stack pointer,
+   except for dynamic allocations.  So we start after the fixed area and
+   outgoing parameter area.
+
+   If the function uses dynamic stack space (CALLS_ALLOCA is set), that
+   space needs to be aligned to STACK_BOUNDARY, i.e. the sum of the
+   sizes of the fixed area and the parameter area must be a multiple of
+   STACK_BOUNDARY.  */
+
+#undef STARTING_FRAME_OFFSET
+#define STARTING_FRAME_OFFSET						\
+  (FRAME_GROWS_DOWNWARD							\
+   ? 0									\
+   : (cfun->calls_alloca						\
+      ? RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA, 16)	\
+      : (RS6000_ALIGN (crtl->outgoing_args_size, 16) + RS6000_SAVE_AREA)))
+
+/* Offset from the stack pointer register to an item dynamically
+   allocated on the stack, e.g., by `alloca'.
+
+   The default value for this macro is `STACK_POINTER_OFFSET' plus the
+   length of the outgoing arguments.  The default is correct for most
+   machines.  See `function.c' for details.
+
+   This value must be a multiple of STACK_BOUNDARY (hard coded in
+   `emit-rtl.c').  */
+#undef STACK_DYNAMIC_OFFSET
+#define STACK_DYNAMIC_OFFSET(FUNDECL)					\
+   RS6000_ALIGN (crtl->outgoing_args_size + STACK_POINTER_OFFSET, 16)
+
 #undef  TARGET_IEEEQUAD
 #define TARGET_IEEEQUAD 0
 
