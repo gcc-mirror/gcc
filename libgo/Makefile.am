@@ -325,12 +325,6 @@ toolexeclibgonetrpcdir = $(toolexeclibgonetdir)/rpc
 toolexeclibgonetrpc_DATA = \
 	net/rpc/jsonrpc.gox
 
-toolexeclibgoolddir = $(toolexeclibgodir)/old
-
-toolexeclibgoold_DATA = \
-	old/regexp.gox \
-	old/template.gox
-
 toolexeclibgoosdir = $(toolexeclibgodir)/os
 
 toolexeclibgoos_DATA = \
@@ -801,8 +795,6 @@ PACKAGES = \
 	net/smtp \
 	net/textproto \
 	net/url \
-	old/regexp \
-	old/template \
 	os \
 	os/exec \
 	os/signal \
@@ -1260,8 +1252,6 @@ TEST_PACKAGES = \
 	net/textproto/check \
 	net/url/check \
 	net/rpc/jsonrpc/check \
-	old/regexp/check \
-	old/template/check \
 	os/exec/check \
 	os/signal/check \
 	os/user/check \
