@@ -1798,19 +1798,20 @@
   [(set_attr "type" "Y0")])
 
 (define_expand "clzsi2"
-  [(set (match_dup 2)
-	(zero_extend:DI (match_operand:SI 1 "reg_or_0_operand" "")))
-   (set (match_dup 2)
-	(ashift:DI (match_dup 2)
-                   (const_int 32)))
-   (set (match_dup 2)
-	(clz:DI (match_dup 2)))
-   (set (match_operand:SI 0 "register_operand" "")
-	(subreg:SI (match_dup 2) 0))]
-   ""
-   {
-     operands[2] = gen_reg_rtx (DImode);
-   })
+  [(set (match_operand:SI 0 "register_operand" "=r")
+       (clz:SI (match_operand:SI 1 "reg_or_0_operand" "rO")))]
+  ""
+  {
+    rtx tmp1 = gen_reg_rtx (DImode);
+    rtx tmp2 = gen_reg_rtx (DImode);
+    rtx tmp3 = gen_reg_rtx (DImode);
+
+    emit_insn (gen_zero_extendsidi2 (tmp1, operands[1]));
+    emit_insn (gen_ashldi3 (tmp2, tmp1, (GEN_INT (32))));
+    emit_insn (gen_clzdi2 (tmp3, tmp2));
+    emit_move_insn (operands[0], gen_lowpart (SImode, tmp3));
+    DONE;
+  })
 
 (define_insn "ctz<mode>2"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
