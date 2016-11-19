@@ -1,3 +1,7 @@
+2016-11-19  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* config.gcc (*-*-netbsd): Set use_gcc_stdint=wrap.
+
 2016-11-18  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx.c (tilegx_gen_bundles): Preserve
