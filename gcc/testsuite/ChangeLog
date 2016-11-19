@@ -1,3 +1,16 @@
+2016-11-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gfortran.dg/coarray_alloc_comp_1.f08: Add "-latomic" option if
+	libatomic_available.
+	* gfortran.dg/coarray_alloc_comp_2.f08: Likewise.
+	* gfortran.dg/coarray_allocate_10.f08: Likewise.
+	* gfortran.dg/coarray_allocate_7.f08: Likewise.
+	* gfortran.dg/coarray_allocate_8.f08: Likewise.
+	* gfortran.dg/coarray_allocate_9.f08: Likewise.
+	* gfortran.dg/coarray_send_by_ref_1.f08: Likewise.
+	* gfortran.dg/coarray_stat_2.f90: Likewise.
+	* gfortran.dg/coindexed_1.f90: Likewise.
+
 2016-11-18  Jeff Law  <law@redhat.com>
 
 	PR target/25111
