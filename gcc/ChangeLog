@@ -1,3 +1,10 @@
+2016-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_builtin): Remove msk_mov variable,
+	don't initialize it, don't use it for the case where it isn't
+	provable %{z} nor using the same argument, instead move merge
+	argument into a new pseudo and use that as target.  Formatting fixes.
+
 2016-11-19  Jeff Law  <law@redhat.com>
 
 	PR target/25111
