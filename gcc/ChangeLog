@@ -1,3 +1,10 @@
+2016-11-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/78426
+	* config/sh/sh-mem.cc (sh_expand_cmpnstr): Use copy_to_mode_reg
+	instead of force_reg.
+	(sh_expand_setmem): Likewise.
+
 2016-11-19  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	* config.gcc (*-*-netbsd): Set use_gcc_stdint=wrap.
