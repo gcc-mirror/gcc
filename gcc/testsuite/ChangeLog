@@ -1,3 +1,8 @@
+2016-11-19  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.c-torture/execute/comp-goto-1.c (insn_t): Change offset to
+	signed int.
+
 2016-11-19  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gfortran.dg/coarray_alloc_comp_1.f08: Add "-latomic" option if
