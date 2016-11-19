@@ -1,3 +1,11 @@
+2016-11-18  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline
+	2016-11-18  Walter Lee  <walt@tilera.com>
+	
+	* config.host (tilepro*-*-linux*): Add t-slibgcc-libgcc to
+	tmake_file.
+
 2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline
