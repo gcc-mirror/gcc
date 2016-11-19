@@ -1,3 +1,7 @@
+2016-11-18  Walter Lee  <walt@tilera.com>
+
+        * config.host (tilepro*-*-linux*): Add t-slibgcc-libgcc to tmake_file.
+
 2016-11-17  Andrew Senkevich <andrew.senkevich@intel.com>
 
 	* config/i386/cpuinfo.c (processor_features): Add
