@@ -38220,14 +38220,12 @@ rdseed_step:
       rtx (*fcn) (rtx, rtx, rtx, rtx);
       rtx (*fcn_mask) (rtx, rtx, rtx, rtx, rtx);
       rtx (*fcn_maskz) (rtx, rtx, rtx, rtx, rtx, rtx);
-      rtx (*msk_mov) (rtx, rtx, rtx, rtx);
       int masked = 1;
       machine_mode mode, wide_mode, nar_mode;
 
       nar_mode  = V4SFmode;
       mode      = V16SFmode;
       wide_mode = V64SFmode;
-      msk_mov   = gen_avx512f_loadv16sf_mask;
       fcn_mask  = gen_avx5124fmaddps_4fmaddps_mask;
       fcn_maskz = gen_avx5124fmaddps_4fmaddps_maskz;
 
@@ -38270,7 +38268,6 @@ rdseed_step:
 	  wide_mode = V64SImode;
 	  fcn_mask  = gen_avx5124vnniw_vp4dpwssd_mask;
 	  fcn_maskz = gen_avx5124vnniw_vp4dpwssd_maskz;
-	  msk_mov   = gen_avx512f_loadv16si_mask;
 	  goto v4fma_expand;
 
 	case IX86_BUILTIN_4DPWSSDS_MASK:
@@ -38279,7 +38276,6 @@ rdseed_step:
 	  wide_mode = V64SImode;
 	  fcn_mask  = gen_avx5124vnniw_vp4dpwssds_mask;
 	  fcn_maskz = gen_avx5124vnniw_vp4dpwssds_maskz;
-	  msk_mov   = gen_avx512f_loadv16si_mask;
 	  goto v4fma_expand;
 
 	case IX86_BUILTIN_4FMAPS_MASK:
@@ -38295,11 +38291,11 @@ v4fma_expand:
 	    wide_reg = gen_reg_rtx (wide_mode);
 	    for (i = 0; i < 4; i++)
 	      {
-	        args[i] = CALL_EXPR_ARG (exp, i);
+		args[i] = CALL_EXPR_ARG (exp, i);
 		ops[i] = expand_normal (args[i]);
 
-		emit_move_insn (gen_rtx_SUBREG (mode, wide_reg, (i) * 64),
-				  ops[i]);
+		emit_move_insn (gen_rtx_SUBREG (mode, wide_reg, i * 64),
+				ops[i]);
 	      }
 
 	    accum = expand_normal (CALL_EXPR_ARG (exp, 4));
@@ -38318,7 +38314,7 @@ v4fma_expand:
 	      emit_insn (fcn (target, accum, wide_reg, mem));
 	    else
 	      {
-	        rtx merge, mask;
+		rtx merge, mask;
 		merge = expand_normal (CALL_EXPR_ARG (exp, 6));
 
 		mask = expand_normal (CALL_EXPR_ARG (exp, 7));
@@ -38340,18 +38336,16 @@ v4fma_expand:
 		    merge = force_reg (mode, merge);
 		    emit_insn (fcn_mask (target, wide_reg, mem, merge, mask));
 		  }
-	        /* Merge with something unknown might happen if we z-mask w/ -O0.  */
+		/* Merge with something unknown might happen if we z-mask w/ -O0.  */
 		else
 		  {
-		    rtx tmp = target;
-		    emit_insn (fcn_mask (tmp, wide_reg, mem, tmp, mask));
-
-		    target = force_reg (mode, merge);
-		    emit_insn (msk_mov (target, tmp, target, mask));
+		    target = gen_reg_rtx (mode);
+		    emit_move_insn (target, merge);
+		    emit_insn (fcn_mask (target, wide_reg, mem, target, mask));
 		  }
 	      }
-	      return target;
-	    }
+	    return target;
+	  }
 
 	case IX86_BUILTIN_4FNMASS:
 	  fcn = gen_avx5124fmaddps_4fnmaddss;
@@ -38366,7 +38360,6 @@ v4fma_expand:
 	case IX86_BUILTIN_4FNMASS_MASK:
 	  fcn_mask = gen_avx5124fmaddps_4fnmaddss_mask;
 	  fcn_maskz = gen_avx5124fmaddps_4fnmaddss_maskz;
-	  msk_mov   = gen_avx512vl_loadv4sf_mask;
 	  goto s4fma_expand;
 
 	case IX86_BUILTIN_4FMASS_MASK:
@@ -38380,22 +38373,21 @@ v4fma_expand:
 
 	    fcn_mask = gen_avx5124fmaddps_4fmaddss_mask;
 	    fcn_maskz = gen_avx5124fmaddps_4fmaddss_maskz;
-	    msk_mov   = gen_avx512vl_loadv4sf_mask;
 
 s4fma_expand:
 	    mode = V4SFmode;
 	    wide_reg = gen_reg_rtx (V64SFmode);
 	    for (i = 0; i < 4; i++)
 	      {
-		 rtx tmp;
-		 args[i] = CALL_EXPR_ARG (exp, i);
-		 ops[i] = expand_normal (args[i]);
+		rtx tmp;
+		args[i] = CALL_EXPR_ARG (exp, i);
+		ops[i] = expand_normal (args[i]);
 
-		 tmp = gen_reg_rtx (SFmode);
-		 emit_move_insn (tmp, gen_rtx_SUBREG (SFmode, ops[i], 0));
+		tmp = gen_reg_rtx (SFmode);
+		emit_move_insn (tmp, gen_rtx_SUBREG (SFmode, ops[i], 0));
 
-		 emit_move_insn (gen_rtx_SUBREG (V16SFmode, wide_reg, i * 64),
-				  gen_rtx_SUBREG (V16SFmode, tmp, 0));
+		emit_move_insn (gen_rtx_SUBREG (V16SFmode, wide_reg, i * 64),
+				gen_rtx_SUBREG (V16SFmode, tmp, 0));
 	      }
 
 	    accum = expand_normal (CALL_EXPR_ARG (exp, 4));
@@ -38414,37 +38406,37 @@ s4fma_expand:
 	      emit_insn (fcn (target, accum, wide_reg, mem));
 	    else
 	      {
-		 rtx merge, mask;
-		 merge = expand_normal (CALL_EXPR_ARG (exp, 6));
+		rtx merge, mask;
+		merge = expand_normal (CALL_EXPR_ARG (exp, 6));
 
-		 mask = expand_normal (CALL_EXPR_ARG (exp, 7));
+		mask = expand_normal (CALL_EXPR_ARG (exp, 7));
 
-		 if (CONST_INT_P (mask))
-		   mask = fixup_modeless_constant (mask, QImode);
+		if (CONST_INT_P (mask))
+		  mask = fixup_modeless_constant (mask, QImode);
 
-		 mask = force_reg (QImode, mask);
+		mask = force_reg (QImode, mask);
 
-		 if (GET_MODE (mask) != QImode)
-		   mask = gen_rtx_SUBREG (QImode, mask, 0);
+		if (GET_MODE (mask) != QImode)
+		  mask = gen_rtx_SUBREG (QImode, mask, 0);
 
-		 /* If merge is 0 then we're about to emit z-masked variant.  */
-		 if (const0_operand (merge, mode))
-		   emit_insn (fcn_maskz (target, accum, wide_reg, mem, merge, mask));
-		 /* If merge is the same as accum then emit merge-masked variant.  */
-		 else if (CALL_EXPR_ARG (exp, 6) == CALL_EXPR_ARG (exp, 4))
-		   {
-		     merge = force_reg (mode, merge);
-		     emit_insn (fcn_mask (target, wide_reg, mem, merge, mask));
-		   }
-		 /* Merge with something unknown might happen if we z-mask w/ -O0.  */
-		 else
-		   {
-		     rtx tmp = target;
-		     emit_insn (fcn_mask (tmp, wide_reg, mem, tmp, mask));
-
-		     target = force_reg (mode, merge);
-		     emit_insn (msk_mov (target, tmp, target, mask));
-		   }
+		/* If merge is 0 then we're about to emit z-masked variant.  */
+		if (const0_operand (merge, mode))
+		  emit_insn (fcn_maskz (target, accum, wide_reg, mem, merge, mask));
+		/* If merge is the same as accum then emit merge-masked
+		   variant.  */
+		else if (CALL_EXPR_ARG (exp, 6) == CALL_EXPR_ARG (exp, 4))
+		  {
+		    merge = force_reg (mode, merge);
+		    emit_insn (fcn_mask (target, wide_reg, mem, merge, mask));
+		  }
+		/* Merge with something unknown might happen if we z-mask
+		   w/ -O0.  */
+		else
+		  {
+		    target = gen_reg_rtx (mode);
+		    emit_move_insn (target, merge);
+		    emit_insn (fcn_mask (target, wide_reg, mem, target, mask));
+		  }
 		}
 	      return target;
 	    }
