@@ -1,5 +1,10 @@
 2016-11-18  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx.c (tilegx_gen_bundles): Preserve
+	  end-of-bundle marker for consecutive barriers.
+
+2016-11-18  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.md (clzsi2): Fix for big-endian.
 
 2016-11-18  Jakub Jelinek  <jakub@redhat.com>
