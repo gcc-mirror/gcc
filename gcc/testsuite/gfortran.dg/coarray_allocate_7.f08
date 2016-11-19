@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fcoarray=lib -lcaf_single -fdump-tree-original" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 
 ! Contributed by Damian Rouson
 ! Checking whether (de-)registering of coarrays works.
