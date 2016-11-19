@@ -6981,13 +6981,13 @@ ix86_can_inline_p (tree caller, tree callee)
       struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
       struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
 
-      /* Callee's isa options should a subset of the caller's, i.e. a SSE4 function
-	 can inline a SSE2 function but a SSE2 function can't inline a SSE4
-	 function.  */
+      /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
+	 function can inline a SSE2 function but a SSE2 function can't inline
+	 a SSE4 function.  */
       if (((caller_opts->x_ix86_isa_flags & callee_opts->x_ix86_isa_flags)
-	  != callee_opts->x_ix86_isa_flags) &
-	  ((caller_opts->x_ix86_isa_flags2 & callee_opts->x_ix86_isa_flags2)
-	  != callee_opts->x_ix86_isa_flags2))
+	   != callee_opts->x_ix86_isa_flags)
+	  || ((caller_opts->x_ix86_isa_flags2 & callee_opts->x_ix86_isa_flags2)
+	      != callee_opts->x_ix86_isa_flags2))
 	ret = false;
 
       /* See if we have the same non-isa options.  */
