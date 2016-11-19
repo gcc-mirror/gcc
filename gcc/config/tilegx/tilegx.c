@@ -4468,8 +4468,7 @@ tilegx_gen_bundles (void)
       rtx_insn *end = NEXT_INSN (BB_END (bb));
 
       prev = NULL;
-      for (insn = next_insn_to_bundle (BB_HEAD (bb), end); insn;
-	   prev = insn, insn = next)
+      for (insn = next_insn_to_bundle (BB_HEAD (bb), end); insn; insn = next)
 	{
 	  next = next_insn_to_bundle (NEXT_INSN (insn), end);
 
@@ -4505,7 +4504,11 @@ tilegx_gen_bundles (void)
 		PUT_MODE (prev, QImode);
 	      }
 	    delete_insn (insn);
+
+            // Note: prev remains the same for next iteration.
 	  }
+          else
+            prev = insn;
 	}
     }
 }
