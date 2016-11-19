@@ -768,6 +768,7 @@ case ${target} in
   tmake_file="t-slibgcc"
   gas=yes
   gnu_ld=yes
+  use_gcc_stdint=wrap
 
   # NetBSD 2.0 and later get POSIX threads enabled by default.
   # Allow them to be explicitly enabled on any other version.
