@@ -6845,7 +6845,7 @@ ix86_valid_target_attribute_tree (tree args,
 				     | OPTION_MASK_ABI_64
 				     | OPTION_MASK_ABI_X32
 				     | OPTION_MASK_CODE16);
-	  opts->x_ix86_isa_flags &= 0;
+	  opts->x_ix86_isa_flags2 = 0;
 	}
       else if (!orig_arch_specified)
 	opts->x_ix86_arch_string = NULL;
