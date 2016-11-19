@@ -30924,7 +30924,7 @@ def_builtin (HOST_WIDE_INT mask, const char *name,
 	 means that *both* cpuid bits must be set for the built-in to be available.
 	 Handle this here.  */
       if (mask & ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
-	  mask &= ~OPTION_MASK_ISA_AVX512VL;
+	mask &= ~OPTION_MASK_ISA_AVX512VL;
 
       mask &= ~OPTION_MASK_ISA_64BIT;
       if (mask == 0
@@ -30976,8 +30976,8 @@ def_builtin_const (HOST_WIDE_INT mask, const char *name,
 
 static inline tree
 def_builtin2 (HOST_WIDE_INT mask, const char *name,
-	     enum ix86_builtin_func_type tcode,
-	     enum ix86_builtins code)
+	      enum ix86_builtin_func_type tcode,
+	      enum ix86_builtins code)
 {
   tree decl = NULL_TREE;
 
@@ -30992,8 +30992,8 @@ def_builtin2 (HOST_WIDE_INT mask, const char *name,
       tree type = ix86_get_builtin_func_type (tcode);
       decl = add_builtin_function (name, type, code, BUILT_IN_MD,
 				   NULL, NULL_TREE);
-	  ix86_builtins[(int) code] = decl;
-	  ix86_builtins_isa[(int) code].set_and_not_built_p = false;
+      ix86_builtins[(int) code] = decl;
+      ix86_builtins_isa[(int) code].set_and_not_built_p = false;
     }
   else
     {
@@ -31016,7 +31016,7 @@ def_builtin2 (HOST_WIDE_INT mask, const char *name,
 
 static inline tree
 def_builtin_const2 (HOST_WIDE_INT mask, const char *name,
-		   enum ix86_builtin_func_type tcode, enum ix86_builtins code)
+		    enum ix86_builtin_func_type tcode, enum ix86_builtins code)
 {
   tree decl = def_builtin2 (mask, name, tcode, code);
   if (decl)
@@ -31034,8 +31034,8 @@ def_builtin_const2 (HOST_WIDE_INT mask, const char *name,
 static void
 ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2)
 {
-  if (((isa & deferred_isa_values) == 0)
-      && ((isa2 & deferred_isa_values2) == 0))
+  if ((isa & deferred_isa_values) == 0
+      && (isa2 & deferred_isa_values2) == 0)
     return;
 
   /* Bits in ISA value can be removed from potential isa values.  */
@@ -31048,7 +31048,8 @@ ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2)
 
   for (i = 0; i < (int)IX86_BUILTIN_MAX; i++)
     {
-      if ((((ix86_builtins_isa[i].isa & isa) != 0) || ((ix86_builtins_isa[i].isa2 & isa2) != 0))
+      if (((ix86_builtins_isa[i].isa & isa) != 0
+	   || (ix86_builtins_isa[i].isa2 & isa2) != 0)
 	  && ix86_builtins_isa[i].set_and_not_built_p)
 	{
 	  tree decl, type;
@@ -36549,7 +36550,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      whether it is supported.  */
   if ((ix86_builtins_isa[fcode].isa
        && !(ix86_builtins_isa[fcode].isa & ix86_isa_flags))
-      && (ix86_builtins_isa[fcode].isa2
+      || (ix86_builtins_isa[fcode].isa2
 	  && !(ix86_builtins_isa[fcode].isa2 & ix86_isa_flags2)))
     {
       char *opts = ix86_target_string (ix86_builtins_isa[fcode].isa,
@@ -38506,7 +38507,7 @@ static tree ix86_get_builtin (enum ix86_builtins code)
   opts = TREE_TARGET_OPTION (target_tree);
 
   if ((ix86_builtins_isa[(int) code].isa & opts->x_ix86_isa_flags)
-	&& (ix86_builtins_isa[(int) code].isa2 & opts->x_ix86_isa_flags2))
+      || (ix86_builtins_isa[(int) code].isa2 & opts->x_ix86_isa_flags2))
     return ix86_builtin_decl (code, true);
   else
     return NULL_TREE;

@@ -1,5 +1,10 @@
 2016-11-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (def_builtin, def_builtin2, def_builtin_const2,
+	ix86_add_new_builtins): Formatting fixes.
+	(ix86_expand_builtin): Use || instead of && for isa vs. isa2.
+	(ix86_get_builtin): Likewise.
+
 	* config/i386/i386.c (ix86_expand_builtin): Remove msk_mov variable,
 	don't initialize it, don't use it for the case where it isn't
 	provable %{z} nor using the same argument, instead move merge
