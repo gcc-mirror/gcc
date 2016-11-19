@@ -1,3 +1,8 @@
+2016-11-18  Jeff Law  <law@redhat.com>
+
+	PR target/25111
+	* gcc.target/m68k/pr25111.c: New test.
+
 2016-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/68180

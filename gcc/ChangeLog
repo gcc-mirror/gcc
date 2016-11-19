@@ -1,3 +1,9 @@
+2016-11-19  Jeff Law  <law@redhat.com>
+
+	PR target/25111
+	* config/m68k/m68k.md (bsetdreg): New pattern.
+	(bchgdreg, bclrdreg): Likewise.
+
 2016-11-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/78426
