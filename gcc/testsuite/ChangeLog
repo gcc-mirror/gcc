@@ -1,3 +1,7 @@
+2016-11-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/divide-5.c: New file.
+
 2016-11-19  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc.c-torture/execute/comp-goto-1.c (insn_t): Change offset to
