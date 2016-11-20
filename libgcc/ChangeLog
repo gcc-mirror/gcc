@@ -1,6 +1,12 @@
+2016-11-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libgcc/77813
+	* crtstuff.c (deregister_tm_clones, register_tm_clones): Hide
+	__TMC_END__ behind a passthrough asm.
+
 2016-11-18  Walter Lee  <walt@tilera.com>
 
-        * config.host (tilepro*-*-linux*): Add t-slibgcc-libgcc to tmake_file.
+	* config.host (tilepro*-*-linux*): Add t-slibgcc-libgcc to tmake_file.
 
 2016-11-17  Andrew Senkevich <andrew.senkevich@intel.com>
 

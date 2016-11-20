@@ -280,7 +280,10 @@ deregister_tm_clones (void)
   void (*fn) (void *);
 
 #ifdef HAVE_GAS_HIDDEN
-  if (__TMC_END__ - __TMC_LIST__ == 0)
+  func_ptr *end = __TMC_END__;
+  // Do not optimize the comparison to false.
+  __asm ("" : "+g" (end));
+  if (__TMC_LIST__ == end)
     return;
 #else
   if (__TMC_LIST__[0] == NULL)
@@ -300,7 +303,10 @@ register_tm_clones (void)
   size_t size;
 
 #ifdef HAVE_GAS_HIDDEN
-  size = (__TMC_END__ - __TMC_LIST__) / 2;
+  func_ptr *end = __TMC_END__;
+  // Do not optimize the comparison to false.
+  __asm ("" : "+g" (end));
+  size = (end - __TMC_LIST__) / 2;
 #else
   for (size = 0; __TMC_LIST__[size * 2] != NULL; size++)
     continue;
