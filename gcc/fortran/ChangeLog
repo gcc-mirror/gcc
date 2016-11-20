@@ -1,3 +1,8 @@
+2016-11-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69741
+	* resolve.c (gfc_resolve_forall): Check for nonscalar index variables.
+
 2016-11-20  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/78395
