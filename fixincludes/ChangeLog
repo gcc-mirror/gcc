@@ -1,3 +1,13 @@
+2016-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/78267
+	* inclhack.def (darwin_availabilityinternal, darwin_os_trace_1)
+	(darwin_os_trace_2, darwin_os_trace_3): New fixes.
+	(hpux_stdint_least_fast): Remove spurious _EOFix_.
+	* fixincl.x: Regenerate.
+	* tests/bases/AvailabilityInternal.h: New file.
+	* tests/bases/os/trace.h: New file.
+
 2016-09-30  Tadek Kijkowski  <tkijkowski@gmail.com>
 
 	* check.tpl: Convert line endings to unix on test outputs

@@ -1,3 +1,9 @@
+2016-11-20  Jack Howarth  <howarth.at.gcc@gmail.com>
+
+	PR sanitizer/78267
+	* sanitizer_common/sanitizer_mac.cc: Include <os/trace.h> only if
+	compiler supports blocks extension.
+
 2016-11-16  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* LOCAL_PATCHES: Add revision.
