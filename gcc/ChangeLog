@@ -1,5 +1,10 @@
 2016-11-20  Marc Glisse  <marc.glisse@inria.fr>
 
+	* fold-const.c (fold_comparison): Ignore EXACT_DIV_EXPR.
+	* match.pd (A /[ex] B CMP C): New simplifications.
+
+2016-11-20  Marc Glisse  <marc.glisse@inria.fr>
+
 	* match.pd (0 / X, X / X, X % X): New simplifications.
 
 2016-11-19  Jakub Jelinek  <jakub@redhat.com>

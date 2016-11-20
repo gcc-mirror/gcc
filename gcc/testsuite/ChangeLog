@@ -1,3 +1,7 @@
+2016-11-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/cmpexactdiv.c: New file.
+
 2016-11-20  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/78395
