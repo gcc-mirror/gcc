@@ -1,3 +1,17 @@
+2016-08-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/61409
+	* tree-ssa-uninit.c: Define new global max_phi_args.
+	(compute_uninit_opnds_pos): Use max_phi_args.
+	(prune_uninit_phi_opnds): Same.
+	(use_pred_not_overlap_with_undef_path_pred): Remove reference to
+	missing NUM_PREDS in function comment.
+	(can_one_predicate_be_invalidated_p): New.
+	(can_chain_union_be_invalidated_p): New.
+	(flatten_out_predicate_chains): New.
+	(uninit_ops_invalidate_phi_use): New.
+	(is_use_properly_guarded): Call uninit_ops_invalidate_phi_use.
+
 2016-11-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (fold_comparison): Ignore EXACT_DIV_EXPR.
