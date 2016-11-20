@@ -1,3 +1,8 @@
+2016-11-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69741
+	* resolve.c (gfc_resolve_forall): Check for nonscalar index variables.
+
 2016-11-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
