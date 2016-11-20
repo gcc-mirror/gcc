@@ -2351,6 +2351,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
 	   (cmp @0 { build_real (TREE_TYPE (@0), c2); }))))))))))))
 
+/* Fold A /[ex] B CMP C to A CMP B * C.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (exact_div @0 @1) INTEGER_CST@2)
+  (if (!integer_zerop (@1))
+   (if (wi::eq_p (@2, 0))
+    (cmp @0 @2)
+    (if (TREE_CODE (@1) == INTEGER_CST)
+     (with
+      {
+	bool ovf;
+	wide_int prod = wi::mul (@2, @1, TYPE_SIGN (TREE_TYPE (@1)), &ovf);
+      }
+      (if (ovf)
+       { constant_boolean_node (cmp == NE_EXPR, type); }
+       (cmp @0 { wide_int_to_tree (TREE_TYPE (@0), prod); }))))))))
+(for cmp (lt le gt ge)
+ (simplify
+  (cmp (exact_div @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (wi::gt_p (@1, 0, TYPE_SIGN (TREE_TYPE (@1))))
+   (with
+    {
+      bool ovf;
+      wide_int prod = wi::mul (@2, @1, TYPE_SIGN (TREE_TYPE (@1)), &ovf);
+    }
+    (if (ovf)
+     { constant_boolean_node (wi::lt_p (@2, 0, TYPE_SIGN (TREE_TYPE (@2)))
+			      != (cmp == LT_EXPR || cmp == LE_EXPR), type); }
+     (cmp @0 { wide_int_to_tree (TREE_TYPE (@0), prod); }))))))
+
 /* Unordered tests if either argument is a NaN.  */
 (simplify
  (bit_ior (unordered @0 @0) (unordered @1 @1))
