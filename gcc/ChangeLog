@@ -1,3 +1,7 @@
+2016-11-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (0 / X, X / X, X % X): New simplifications.
+
 2016-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_can_inline_p): Use || instead of &
