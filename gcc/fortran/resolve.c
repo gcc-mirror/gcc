@@ -6140,7 +6140,7 @@ resolve_typebound_function (gfc_expr* e)
 	  gfc_free_ref_list (class_ref->next);
 	  class_ref->next = NULL;
 	}
-      else if (e->ref && !class_ref)
+      else if (e->ref && !class_ref && expr->ts.type != BT_CLASS)
 	{
 	  gfc_free_ref_list (e->ref);
 	  e->ref = NULL;

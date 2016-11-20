@@ -1,3 +1,9 @@
+2016-11-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78395
+	* resolve.c (resolve_typebound_function): Prevent stripping of refs,
+	when the base-expression is a class' typed one.
+
 2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
  	    Alan Hayward  <alan.hayward@arm.com>
  	    David Sherwood  <david.sherwood@arm.com>
