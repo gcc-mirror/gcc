@@ -170,35 +170,6 @@ void test_sprintf_zero_length_array (void *p, int i)
   __builtin_sprintf (buffer (1), "%s",  s [i].a);
 }
 
-/* Verify that the note printed along with the diagnostic mentions
-   the correct sizes and refers to the location corresponding to
-   the affected directive.  */
-
-void test_sprintf_note (void)
-{
-#define P __builtin_sprintf
-
-  /* Diagnostic column numbers are 1-based.  */
-
-  P (buffer (0),                /* { dg-message "format output 4 bytes into a destination of size 0" } */
-     "%c%s%i", '1', "2", 3);    /* { dg-warning "7:.%c. directive writing 1 byte into a region of size 0" } */
-
-  P (buffer (1),                /* { dg-message "format output 6 bytes into a destination of size 1" } */
-     "%c%s%i", '1', "23", 45);  /* { dg-warning "9:.%s. directive writing 2 bytes into a region of size 0" } */
-
-  P (buffer (2),                /* { dg-message "format output 6 bytes into a destination of size 2" } */
-     "%c%s%i", '1', "2", 345);  /* { dg-warning "11:.%i. directive writing 3 bytes into a region of size 0" } */
-
-  /* It would be nice if the caret in the location range for the format
-     string below could be made to point at the closing quote of the format
-     string, like so:
-       sprintf (d, "%c%s%i", '1', "2", 3456);
-	            ~~~~~~^
-     Unfortunately, that doesn't work with the current setup.  */
-  P (buffer (6),                /* { dg-message "format output 7 bytes into a destination of size 6" } */
-     "%c%s%i", '1', "2", 3456); /* { dg-warning "writing a terminating nul past the end of the destination" } */
-}
-
 #undef T
 #define T(size, fmt, ...)					  \
   __builtin___sprintf_chk (buffer (size), 0, objsize (size), fmt, \
