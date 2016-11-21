@@ -1,3 +1,11 @@
+2016-11-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/71973
+	* decl.c (duplicate_decls): Warn when a built-in function is redefined.
+	Don't overload builtin functions with C++ functions.
+	Handle const_tm_ptr_type_node like file_ptr_node.
+	Copy the TREE_NOTHROW flag unmodified to the old decl.
+
 2016-11-18  Jason Merrill  <jason@redhat.com>
 
 	PR objc++/78418 - ICE in string tests on darwin

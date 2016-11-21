@@ -1,3 +1,19 @@
+2016-11-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/71973
+	* doc/invoke.texi (-Wno-builtin-declaration-mismatch): Document the
+	new default-enabled warning..
+	* builtin-types.def (BT_CONST_TM_PTR): New primitive type.
+	(BT_PTR_CONST_STRING): Updated.
+	(BT_FN_SIZE_STRING_SIZE_CONST_STRING_CONST_PTR): Removed.
+	(BT_FN_SIZE_STRING_SIZE_CONST_STRING_CONST_TM_PTR): New function type.
+	* builtins.def (DEF_TM_BUILTIN): Disable BOTH_P for TM builtins.
+	(strftime): Update builtin function.
+	* tree-core.h (TI_CONST_TM_PTR_TYPE): New enum value.
+	* tree.h (const_tm_ptr_type_node): New type node.
+	* tree.c (free_lang_data, build_common_tree_nodes): Initialize
+	const_tm_ptr_type_node.
+
 2016-11-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/78413
