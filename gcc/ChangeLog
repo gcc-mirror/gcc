@@ -1,5 +1,10 @@
 2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* rtl.h: Adjust prototype.
+	* rtlanal.c (add_int_reg_note): Change argument type to rtx_insn *.
+
+2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* function.c (contains): Change argument type to rtx_insn *.
 	(prologue_contains): Likewise.
 	(epilogue_contains): Likewise.

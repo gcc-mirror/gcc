@@ -2288,7 +2288,7 @@ add_reg_note (rtx insn, enum reg_note kind, rtx datum)
 /* Add an integer register note with kind KIND and datum DATUM to INSN.  */
 
 void
-add_int_reg_note (rtx insn, enum reg_note kind, int datum)
+add_int_reg_note (rtx_insn *insn, enum reg_note kind, int datum)
 {
   gcc_checking_assert (int_reg_note_p (kind));
   REG_NOTES (insn) = gen_rtx_INT_LIST ((machine_mode) kind,
