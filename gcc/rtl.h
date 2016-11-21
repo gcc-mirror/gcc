@@ -3039,7 +3039,7 @@ extern void copy_reg_eh_region_note_backward (rtx, rtx_insn *, rtx);
 extern int inequality_comparisons_p (const_rtx);
 extern rtx replace_rtx (rtx, rtx, rtx, bool = false);
 extern void replace_label (rtx *, rtx, rtx, bool);
-extern void replace_label_in_insn (rtx_insn *, rtx, rtx, bool);
+extern void replace_label_in_insn (rtx_insn *, rtx_insn *, rtx_insn *, bool);
 extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const rtx_insn *, rtx_insn **, rtx_jump_table_data **);
 extern int computed_jump_p (const rtx_insn *);
