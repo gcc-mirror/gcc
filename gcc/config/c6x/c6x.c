@@ -4729,7 +4729,7 @@ c6x_gen_bundles (void)
 /* Emit a NOP instruction for CYCLES cycles after insn AFTER.  Return it.  */
 
 static rtx_insn *
-emit_nop_after (int cycles, rtx after)
+emit_nop_after (int cycles, rtx_insn *after)
 {
   rtx_insn *insn;
 
@@ -4994,7 +4994,8 @@ reorg_split_calls (rtx_insn **call_labels)
 	      else
 		{
 		  rtx x1, x2;
-		  rtx after2 = find_next_cycle_insn (after1, this_clock + 2);
+		  rtx_insn *after2 = find_next_cycle_insn (after1,
+							   this_clock + 2);
 		  if (after2 == NULL_RTX)
 		    after2 = after1;
 		  x2 = gen_movsi_lo_sum (reg, reg, labelref);

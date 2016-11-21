@@ -9128,7 +9128,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 		rs6000_emit_move (got, gsym, Pmode);
 	      else
 		{
-		  rtx mem, lab, last;
+		  rtx mem, lab;
 
 		  tmp1 = gen_reg_rtx (Pmode);
 		  tmp2 = gen_reg_rtx (Pmode);
@@ -9139,7 +9139,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 		  if (TARGET_LINK_STACK)
 		    emit_insn (gen_addsi3 (tmp1, tmp1, GEN_INT (4)));
 		  emit_move_insn (tmp2, mem);
-		  last = emit_insn (gen_addsi3 (got, tmp1, tmp2));
+		  rtx_insn *last = emit_insn (gen_addsi3 (got, tmp1, tmp2));
 		  set_unique_reg_note (last, REG_EQUAL, gsym);
 		}
 	    }
