@@ -1,3 +1,7 @@
+2016-11-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* tree-ssa-loop-prefetch.c: Delete FIXME after the includes.
+
 2016-11-21  Martin Sebor  <msebor@redhat.com>
 
 	* doc/invoke.texi (-fprintf-return-value): Document that option
