@@ -621,7 +621,6 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
 -mabi=@var{name} @gol
 -mapcs-stack-check  -mno-apcs-stack-check @gol
--mapcs-float  -mno-apcs-float @gol
 -mapcs-reentrant  -mno-apcs-reentrant @gol
 -msched-prolog  -mno-sched-prolog @gol
 -mlittle-endian  -mbig-endian @gol
@@ -14890,16 +14889,6 @@ insufficient space available then either the function
 called, depending upon the amount of stack space required.  The runtime
 system is required to provide these functions.  The default is
 @option{-mno-apcs-stack-check}, since this produces smaller code.
-
-@c not currently implemented
-@item -mapcs-float
-@opindex mapcs-float
-Pass floating-point arguments using the floating-point registers.  This is
-one of the variants of the APCS@.  This option is recommended if the
-target hardware has a floating-point unit or if a lot of floating-point
-arithmetic is going to be performed by the code.  The default is
-@option{-mno-apcs-float}, since the size of integer-only code is 
-slightly increased if @option{-mapcs-float} is used.
 
 @c not currently implemented
 @item -mapcs-reentrant

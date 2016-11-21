@@ -1,3 +1,10 @@
+2016-11-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.opt (mapcs-float): Delete option.
+	* arm.c (arm_option_override): Remove hunk relating to
+	TARGET_APCS_FLOAT.
+	* doc/invoke.texi (arm options): Remove documentation for -mapcs-float.
+
 2016-11-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-tailcall.c (process_assignment): Simplify the check for

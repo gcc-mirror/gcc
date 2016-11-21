@@ -61,10 +61,6 @@ Generate a call to abort if a noreturn function returns.
 mapcs
 Target RejectNegative Mask(APCS_FRAME) Undocumented
 
-mapcs-float
-Target Report Mask(APCS_FLOAT)
-Pass FP arguments in FP registers.
-
 mapcs-frame
 Target Report Mask(APCS_FRAME)
 Generate APCS conformant stack frames.
