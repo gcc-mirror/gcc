@@ -1,5 +1,11 @@
 2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* rtl.h: Adjust prototype.
+	* rtlanal.c (replace_label_in_insn): Change argument type to
+	rtx_insn *.
+
+2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/v850/v850.c (expand_prologue): Adjust.
 	(expand_epilogue): Likewise.
 	* expr.c (init_expr_target): Likewise.
