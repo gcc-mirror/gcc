@@ -249,8 +249,6 @@ avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
 void
 avr_register_target_pragmas (void)
 {
-  int i;
-
   gcc_assert (ADDR_SPACE_GENERIC == ADDR_SPACE_RAM);
 
   /* Register address spaces.  The order must be the same as in the respective
@@ -259,7 +257,7 @@ avr_register_target_pragmas (void)
      sense for some targets.  Diagnose for non-supported spaces will be
      emit by TARGET_ADDR_SPACE_DIAGNOSE_USAGE.  */
 
-  for (i = 0; i < ADDR_SPACE_COUNT; i++)
+  for (int i = 0; i < ADDR_SPACE_COUNT; i++)
     {
       gcc_assert (i == avr_addrspace[i].id);
 
@@ -292,8 +290,6 @@ avr_toupper (char *up, const char *lo)
 void
 avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 {
-  int i;
-
   builtin_define_std ("AVR");
 
   /* __AVR_DEVICE_NAME__ and  avr_mcu_types[].macro like __AVR_ATmega8__
@@ -391,7 +387,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 
   if (lang_GNU_C ())
     {
-      for (i = 0; i < ADDR_SPACE_COUNT; i++)
+      for (int i = 0; i < ADDR_SPACE_COUNT; i++)
         if (!ADDR_SPACE_GENERIC_P (i)
             /* Only supply __FLASH<n> macro if the address space is reasonable
                for this target.  The address space qualifier itself is still
