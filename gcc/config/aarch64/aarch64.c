@@ -11476,8 +11476,8 @@ aarch64_emit_unlikely_jump (rtx insn)
 {
   int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
 
-  insn = emit_jump_insn (insn);
-  add_int_reg_note (insn, REG_BR_PROB, very_unlikely);
+  rtx_insn *jump = emit_jump_insn (insn);
+  add_int_reg_note (jump, REG_BR_PROB, very_unlikely);
 }
 
 /* Expand a compare and swap pattern.  */

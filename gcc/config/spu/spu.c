@@ -2087,7 +2087,6 @@ static void
 spu_emit_branch_hint (rtx_insn *before, rtx_insn *branch, rtx target,
 		      int distance, sbitmap blocks)
 {
-  rtx branch_label = 0;
   rtx_insn *hint;
   rtx_insn *insn;
   rtx_jump_table_data *table;
@@ -2104,14 +2103,14 @@ spu_emit_branch_hint (rtx_insn *before, rtx_insn *branch, rtx target,
   if (NOTE_INSN_BASIC_BLOCK_P (before))
     before = NEXT_INSN (before);
 
-  branch_label = gen_label_rtx ();
+  rtx_code_label *branch_label = gen_label_rtx ();
   LABEL_NUSES (branch_label)++;
   LABEL_PRESERVE_P (branch_label) = 1;
   insn = emit_label_before (branch_label, branch);
-  branch_label = gen_rtx_LABEL_REF (VOIDmode, branch_label);
+  rtx branch_label_ref = gen_rtx_LABEL_REF (VOIDmode, branch_label);
   bitmap_set_bit (blocks, BLOCK_FOR_INSN (branch)->index);
 
-  hint = emit_insn_before (gen_hbr (branch_label, target), before);
+  hint = emit_insn_before (gen_hbr (branch_label_ref, target), before);
   recog_memoized (hint);
   INSN_LOCATION (hint) = INSN_LOCATION (branch);
   HINTED_P (branch) = 1;
