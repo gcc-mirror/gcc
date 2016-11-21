@@ -1,3 +1,11 @@
+2016-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71973
+	* g++.dg/torture/pr53321.C (size_t): Use __SIZE_TYPE__ instead of
+	long unsigned int.
+	* g++.dg/torture/pr63512.C (::strlen): Use __SIZE_TYPE__ instead of
+	unsigned long.
+
 2016-11-20  Jeff Law  <law@redhat.com>
 
 	PR target/25128
