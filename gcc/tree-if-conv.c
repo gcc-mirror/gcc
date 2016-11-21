@@ -2575,6 +2575,8 @@ version_loop_for_if_conversion (struct loop *loop)
     - The loop has a single exit.
     - The loop header has a single successor, which is the inner
       loop header.
+    - Each of the inner and outer loop latches have a single
+      predecessor.
     - The loop exit block has a single predecessor, which is the
       inner loop's exit block.  */
 
@@ -2586,7 +2588,9 @@ versionable_outer_loop_p (struct loop *loop)
       || loop->inner->next
       || !single_exit (loop)
       || !single_succ_p (loop->header)
-      || single_succ (loop->header) != loop->inner->header)
+      || single_succ (loop->header) != loop->inner->header
+      || !single_pred_p (loop->latch)
+      || !single_pred_p (loop->inner->latch))
     return false;
   
   basic_block outer_exit = single_pred (loop->latch);
