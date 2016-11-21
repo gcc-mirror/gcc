@@ -1,3 +1,10 @@
+2016-11-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/78400
+	* shrink-wrap.c (try_shrink_wrapping_separate): Call
+	df_update_entry_exit_and_calls instead of df_update_entry_block_defs
+	and df_update_exit_block_uses.
+
 2016-11-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/71973

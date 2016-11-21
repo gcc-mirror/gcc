@@ -1687,8 +1687,7 @@ try_shrink_wrapping_separate (basic_block first_bb)
      the register for that component is in the IN or GEN or KILL set for
      that block.  */
   df_scan->local_flags |= DF_SCAN_EMPTY_ENTRY_EXIT;
-  df_update_entry_block_defs ();
-  df_update_exit_block_uses ();
+  df_update_entry_exit_and_calls ();
   df_live_add_problem ();
   df_live_set_all_dirty ();
   df_analyze ();
@@ -1756,8 +1755,7 @@ try_shrink_wrapping_separate (basic_block first_bb)
 
   /* All done.  */
   df_scan->local_flags &= ~DF_SCAN_EMPTY_ENTRY_EXIT;
-  df_update_entry_block_defs ();
-  df_update_exit_block_uses ();
+  df_update_entry_exit_and_calls ();
   df_live_set_all_dirty ();
   df_analyze ();
 }
