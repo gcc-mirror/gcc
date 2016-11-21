@@ -1,3 +1,8 @@
+2016-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_popcount): Remove static function.
+	(avr_popcount_each_byte, avr_out_bitop): Use popcount_hwi instead.
+
 2016-11-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.opt (mapcs-float): Delete option.
