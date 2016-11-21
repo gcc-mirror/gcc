@@ -1,3 +1,8 @@
+2016-11-20  Jeff Law  <law@redhat.com>
+
+	PR target/25128
+	* gcc.target/m68k/pr25128.c: New test.
+
 2016-11-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/tree-ssa/tailcall-7.c: New test.
