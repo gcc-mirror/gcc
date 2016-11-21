@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { ! arm_cortex_m } { "-mthumb" } } */
 
 /* Below code used to trigger an ICE due to missing constraints for
    sp = fp + cst pattern.  */
