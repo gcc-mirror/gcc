@@ -1,5 +1,14 @@
 2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config/v850/v850.c (expand_prologue): Adjust.
+	(expand_epilogue): Likewise.
+	* expr.c (init_expr_target): Likewise.
+	* genrecog.c (print_subroutine): Always make the argument type
+	rtx_insn *.
+	* recog.h: Adjust prototype.
+
+2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/aarch64/aarch64.c (aarch64_emit_unlikely_jump): split
 	up variables to make some rtx_insn *.
 	* config/alpha/alpha.c (emit_unlikely_jump): Likewise.
