@@ -1945,7 +1945,7 @@ note_uses (rtx *pbody, void (*fun) (rtx *, void *), void *data)
    by INSN.  */
 
 int
-dead_or_set_p (const_rtx insn, const_rtx x)
+dead_or_set_p (const rtx_insn *insn, const_rtx x)
 {
   unsigned int regno, end_regno;
   unsigned int i;
@@ -2019,7 +2019,7 @@ covers_regno_p (const_rtx dest, unsigned int test_regno)
 /* Utility function for dead_or_set_p to check an individual register. */
 
 int
-dead_or_set_regno_p (const_rtx insn, unsigned int test_regno)
+dead_or_set_regno_p (const rtx_insn *insn, unsigned int test_regno)
 {
   const_rtx pattern;
 
