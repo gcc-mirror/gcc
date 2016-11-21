@@ -1,3 +1,14 @@
+2016-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-tailcall.c (process_assignment): Simplify the check for
+	a valid copy, allowing the source to be a local variable as
+	well as an SSA name.
+	(find_tail_calls): Allow copies between local variables to follow
+	the call.  Allow the result to be stored in any local variable,
+	even if it's an aggregate.
+	(eliminate_tail_call): Check whether the result is an SSA name
+	before updating its SSA_NAME_DEF_STMT.
+
 2016-11-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/78324

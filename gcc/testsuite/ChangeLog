@@ -1,3 +1,7 @@
+2016-11-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/tree-ssa/tailcall-7.c: New test.
+
 2016-11-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/78324

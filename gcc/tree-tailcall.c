@@ -269,7 +269,7 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
      conversions that can never produce extra code between the function
      call and the function return.  */
   if ((rhs_class == GIMPLE_SINGLE_RHS || gimple_assign_cast_p (stmt))
-      && (TREE_CODE (src_var) == SSA_NAME))
+      && src_var == *ass_var)
     {
       /* Reject a tailcall if the type conversion might need
 	 additional code.  */
@@ -286,9 +286,6 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
 		  > TYPE_PRECISION (TREE_TYPE (dest))))
 	    return false;
 	}
-
-      if (src_var != *ass_var)
-	return false;
 
       *ass_var = dest;
       return true;
@@ -428,6 +425,13 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	  break;
 	}
 
+      /* Allow simple copies between local variables, even if they're
+	 aggregates.  */
+      if (is_gimple_assign (stmt)
+	  && auto_var_in_fn_p (gimple_assign_lhs (stmt), cfun->decl)
+	  && auto_var_in_fn_p (gimple_assign_rhs1 (stmt), cfun->decl))
+	continue;
+
       /* If the statement references memory or volatile operands, fail.  */
       if (gimple_references_memory_p (stmt)
 	  || gimple_has_volatile_ops (stmt))
@@ -444,18 +448,20 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       return;
     }
 
-  /* If the LHS of our call is not just a simple register, we can't
-     transform this into a tail or sibling call.  This situation happens,
-     in (e.g.) "*p = foo()" where foo returns a struct.  In this case
-     we won't have a temporary here, but we need to carry out the side
-     effect anyway, so tailcall is impossible.
+  /* If the LHS of our call is not just a simple register or local
+     variable, we can't transform this into a tail or sibling call.
+     This situation happens, in (e.g.) "*p = foo()" where foo returns a
+     struct.  In this case we won't have a temporary here, but we need
+     to carry out the side effect anyway, so tailcall is impossible.
 
      ??? In some situations (when the struct is returned in memory via
      invisible argument) we could deal with this, e.g. by passing 'p'
      itself as that argument to foo, but it's too early to do this here,
      and expand_call() will not handle it anyway.  If it ever can, then
      we need to revisit this here, to allow that situation.  */
-  if (ass_var && !is_gimple_reg (ass_var))
+  if (ass_var
+      && !is_gimple_reg (ass_var)
+      && !auto_var_in_fn_p (ass_var, cfun->decl))
     return;
 
   /* We found the call, check whether it is suitable.  */
@@ -888,7 +894,7 @@ eliminate_tail_call (struct tailcall *t)
 
   call = gsi_stmt (t->call_gsi);
   rslt = gimple_call_lhs (call);
-  if (rslt != NULL_TREE)
+  if (rslt != NULL_TREE && TREE_CODE (rslt) == SSA_NAME)
     {
       /* Result of the call will no longer be defined.  So adjust the
 	 SSA_NAME_DEF_STMT accordingly.  */
