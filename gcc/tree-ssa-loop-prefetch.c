@@ -48,10 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-data-ref.h"
 
-
-/* FIXME: Needed for optabs, but this should all be moved to a TBD interface
-   between the GIMPLE and RTL worlds.  */
-
 /* This pass inserts prefetch instructions to optimize cache usage during
    accesses to arrays in loops.  It processes loops sequentially and:
 
