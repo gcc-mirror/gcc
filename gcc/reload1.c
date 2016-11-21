@@ -448,11 +448,10 @@ init_reload (void)
       /* This way, we make sure that reg+reg is an offsettable address.  */
       tem = plus_constant (Pmode, tem, 4);
 
-      if (memory_address_p (QImode, tem))
-	{
-	  double_reg_address_ok = 1;
-	  break;
-	}
+      for (int mode = 0; mode < MAX_MACHINE_MODE; mode++)
+	if (!double_reg_address_ok[mode]
+	    && memory_address_p ((enum machine_mode)mode, tem))
+	  double_reg_address_ok[mode] = 1;
     }
 
   /* Initialize obstack for our rtl allocation.  */
