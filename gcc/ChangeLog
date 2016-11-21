@@ -1,5 +1,11 @@
 2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* cfgrtl.c (delete_insn): Change argument type to rtx_insn *.
+	(fixup_reorder_chain): Adjust.
+	* cfgrtl.h: Adjust prototype.
+
+2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* rtl.h: Adjust prototype.
 	* rtlanal.c (replace_label_in_insn): Change argument type to
 	rtx_insn *.
