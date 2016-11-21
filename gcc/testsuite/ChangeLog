@@ -1,3 +1,8 @@
+2016-11-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/71785
+	* gcc.target/powerpc/pr71785.c: New file.
+
 2016-11-21  Bin Cheng  <bin.cheng@arm.com>
 
 	PR testsuite/78114
