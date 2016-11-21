@@ -1322,6 +1322,15 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
   if (strloc == UNKNOWN_LOCATION)
     return "unknown location";
 
+  /* Reparsing the strings requires accurate location information.
+     If -ftrack-macro-expansion has been overridden from its default
+     of 2, then we might have a location of a macro expansion point,
+     rather than the location of the literal itself.
+     Avoid this by requiring that we have full macro expansion tracking
+     for substring locations to be available.  */
+  if (cpp_get_options (pfile)->track_macro_expansion != 2)
+    return "track_macro_expansion != 2";
+
   /* If string concatenation has occurred at STRLOC, get the locations
      of all of the literal tokens making up the compound string.
      Otherwise, just use STRLOC.  */

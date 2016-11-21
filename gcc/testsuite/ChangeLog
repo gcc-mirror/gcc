@@ -1,3 +1,22 @@
+2016-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/78324
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
+	(test_multitoken_macro): New function.
+	* gcc.dg/plugin/diagnostic-test-string-literals-3.c: New test
+	case.
+	* gcc.dg/plugin/diagnostic-test-string-literals-4.c: New test
+	case.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new test
+	cases.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c (test_sprintf_note):
+	Move to...
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-4.c: ...here.  Drop
+	-ftrack-macro-expansion=0.
+	(test_sprintf_note): Remove "P" macro.  Add
+	dg-begin/end-multiline-output directives.
+	(LINE, buffer, ptr): Copy from builtin-sprintf-warn-1.c.
+
 2016-11-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* lib/target-supports.exp (check_effective_target_tiny) [avr]:

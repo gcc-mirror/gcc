@@ -1,3 +1,9 @@
+2016-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/78324
+	* input.c (get_substring_ranges_for_loc): Fail gracefully if
+	-ftrack-macro-expansion has a value other than 2.
+
 2016-11-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/78400

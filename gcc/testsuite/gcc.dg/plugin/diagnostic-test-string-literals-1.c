@@ -243,6 +243,22 @@ test_macro (void)
    { dg-end-multiline-output "" } */
 }
 
+void
+test_multitoken_macro (void)
+{
+#define RANGE ("0123456789")  /* { dg-error "unable to read substring location: macro expansion" } */
+  __emit_string_literal_range (RANGE, 4, 3, 6);
+/* { dg-begin-multiline-output "" }
+ #define RANGE ("0123456789")
+               ^
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+   __emit_string_literal_range (RANGE, 4, 3, 6);
+                                ^~~~~
+   { dg-end-multiline-output "" } */
+#undef RANGE
+}
+
 /* Verify that the location of the closing quote is used
    for the location of the null terminating character.  */
 
