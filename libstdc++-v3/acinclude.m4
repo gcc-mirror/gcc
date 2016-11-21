@@ -2181,7 +2181,8 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
 ])
 
 dnl
-dnl Check whether required C++11 overloads are present in <math.h>.
+dnl Check whether required C++11 overloads for floating point and integral
+dnl types are present in <math.h>.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 
@@ -2192,10 +2193,10 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 
   case "$host" in
     *-*-solaris2.*)
-      # Solaris 12 introduced the C++11 <math.h> overloads.  A backport to
-      # a Solaris 11.3 SRU is likely, maybe even a Solaris 10 patch.
-      AC_MSG_CHECKING([for C++11 <math.h> overloads])
-      AC_CACHE_VAL(glibcxx_cv_math11_overload, [
+      # Solaris 12 Build 86, Solaris 11.3 SRU 3.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> floating point overloads.
+      AC_MSG_CHECKING([for C++11 <math.h> floating point overloads])
+      AC_CACHE_VAL(glibcxx_cv_math11_fp_overload, [
 	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 	  [#include <math.h>
 	   #undef isfinite
@@ -2204,21 +2205,73 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 	     { return __builtin_isfinite(__x); }
 	   }
 	])],
-	[glibcxx_cv_math11_overload=no],
-	[glibcxx_cv_math11_overload=yes]
+	[glibcxx_cv_math11_fp_overload=no],
+	[glibcxx_cv_math11_fp_overload=yes]
       )])
 
       # autoheader cannot handle indented templates.
-      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO],
-        [/* Define if all C++11 overloads are available in <math.h>.  */
+      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO_FP],
+        [/* Define if all C++11 floating point overloads are available in <math.h>.  */
 #if __cplusplus >= 201103L
-#undef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
 #endif])
 
-      if test $glibcxx_cv_math11_overload = yes; then
-        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO)
+      if test $glibcxx_cv_math11_fp_overload = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_FP)
       fi
-      AC_MSG_RESULT([$glibcxx_cv_math11_overload])
+      AC_MSG_RESULT([$glibcxx_cv_math11_fp_overload])
+
+      # Solaris 12 Build 90, Solaris 11.3 SRU 5.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> integral type overloads.
+      AC_MSG_CHECKING([for C++11 <math.h> integral type overloads])
+      AC_CACHE_VAL(glibcxx_cv_math11_int_overload, [
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+	  [#include <math.h>
+	   namespace std {
+	     template<typename _Tp>
+	       struct __is_integer;
+	     template<>
+	       struct __is_integer<int>
+	       {
+	         enum { __value = 1 };
+	       };
+	   }
+	   namespace __gnu_cxx {
+	     template<bool, typename>
+	       struct __enable_if;
+	     template<typename _Tp>
+	       struct __enable_if<true, _Tp>
+	       { typedef _Tp __type; };
+	   }
+	   namespace std {
+	     template<typename _Tp>
+	       constexpr typename __gnu_cxx::__enable_if
+	       		 <__is_integer<_Tp>::__value, double>::__type
+	       log2(_Tp __x)
+	       { return __builtin_log2(__x); }
+	   }
+	   int
+	   main (void)
+	   {
+	     int i = 1000;
+	     return std::log2(i);
+	   }
+	])],
+	[glibcxx_cv_math11_int_overload=no],
+	[glibcxx_cv_math11_int_overload=yes]
+      )])
+
+      # autoheader cannot handle indented templates.
+      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO_INT],
+        [/* Define if all C++11 integral type overloads are available in <math.h>.  */
+#if __cplusplus >= 201103L
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
+#endif])
+
+      if test $glibcxx_cv_math11_int_overload = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_INT)
+      fi
+      AC_MSG_RESULT([$glibcxx_cv_math11_int_overload])
       ;;
     *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
