@@ -7864,12 +7864,16 @@ proc check_effective_target_fenv_exceptions {} {
 proc check_effective_target_tiny {} {
     global et_target_tiny_saved
 
-    if [info exists et_target_tine_saved] {
+    if [info exists et_target_tiny_saved] {
       verbose "check_effective_target_tiny: using cached result" 2
     } else {
        set et_target_tiny_saved 0
        if { [istarget aarch64*-*-*]
              && [check_effective_target_aarch64_tiny] } {
+         set et_target_tiny_saved 1
+       }
+       if { [istarget avr-*-*]
+             && [check_effective_target_avr_tiny] } {
          set et_target_tiny_saved 1
        }
     }
