@@ -123,9 +123,8 @@ can_delete_label_p (const rtx_code_label *label)
 /* Delete INSN by patching it out.  */
 
 void
-delete_insn (rtx uncast_insn)
+delete_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   rtx note;
   bool really_delete = true;
 
@@ -3817,7 +3816,7 @@ fixup_reorder_chain (void)
 		  update_br_prob_note (bb);
 		  if (LABEL_NUSES (ret_label) == 0
 		      && single_pred_p (e_taken->dest))
-		    delete_insn (ret_label);
+		    delete_insn (as_a<rtx_insn *> (ret_label));
 		  continue;
 		}
 	    }
