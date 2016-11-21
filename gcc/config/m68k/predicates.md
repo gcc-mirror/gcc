@@ -279,3 +279,6 @@
 ;; Used to detect (pc) or (label_ref) in some jumping patterns to cut down
 (define_predicate "pc_or_label_operand"
   (match_code "pc,label_ref"))
+
+(define_predicate "swap_peephole_relational_operator"
+  (match_code "gtu,leu,gt,le"))
