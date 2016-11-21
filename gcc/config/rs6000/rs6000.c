@@ -24670,11 +24670,9 @@ static void
 emit_unlikely_jump (rtx cond, rtx label)
 {
   int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
-  rtx x;
-
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
-  x = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
-  add_int_reg_note (x, REG_BR_PROB, very_unlikely);
+  rtx x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
+  rtx_insn *insn = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
+  add_int_reg_note (insn, REG_BR_PROB, very_unlikely);
 }
 
 /* A subroutine of the atomic operation splitters.  Emit a load-locked
@@ -30599,10 +30597,10 @@ rs6000_expand_split_stack_prologue (void)
 			       gen_rtx_GEU (VOIDmode, compare, const0_rtx),
 			       gen_rtx_LABEL_REF (VOIDmode, ok_label),
 			       pc_rtx);
-  jump = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
-  JUMP_LABEL (jump) = ok_label;
+  insn = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
+  JUMP_LABEL (insn) = ok_label;
   /* Mark the jump as very likely to be taken.  */
-  add_int_reg_note (jump, REG_BR_PROB,
+  add_int_reg_note (insn, REG_BR_PROB,
 		    REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100);
 
   lr = gen_rtx_REG (Pmode, LR_REGNO);

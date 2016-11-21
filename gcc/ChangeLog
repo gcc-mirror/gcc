@@ -1,5 +1,18 @@
 2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config/aarch64/aarch64.c (aarch64_emit_unlikely_jump): split
+	up variables to make some rtx_insn *.
+	* config/alpha/alpha.c (emit_unlikely_jump): Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/mn10300/mn10300.c (mn10300_legitimize_pic_address):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_expand_split_stack_prologue):
+	Likewise.
+	* config/spu/spu.c (spu_emit_branch_hint): Likewise.
+
+2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/arm/arm.c (legitimize_pic_address): Change to use
 	rtx_insn * as the type of variables.
 	(arm_pic_static_addr): Likewise.
