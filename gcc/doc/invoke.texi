@@ -381,11 +381,12 @@ Objective-C and Objective-C++ Dialects}.
 -fmove-loop-invariants -fno-branch-count-reg @gol
 -fno-defer-pop -fno-fp-int-builtin-inexact -fno-function-cse @gol
 -fno-guess-branch-probability -fno-inline -fno-math-errno -fno-peephole @gol
--fno-peephole2 -fno-sched-interblock -fno-sched-spec -fno-signed-zeros @gol
+-fno-peephole2 -fno-printf-return-value -fno-sched-interblock @gol
+-fno-sched-spec -fno-signed-zeros @gol
 -fno-toplevel-reorder -fno-trapping-math -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer -foptimize-sibling-calls @gol
 -fpartial-inlining -fpeel-loops -fpredictive-commoning @gol
--fprefetch-loop-arrays -fprintf-return-value @gol
+-fprefetch-loop-arrays @gol
 -fprofile-correction @gol
 -fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
 -fprofile-reorder-functions @gol
@@ -8274,18 +8275,19 @@ dependent on the structure of loops within the source code.
 
 Disabled at level @option{-Os}.
 
-@item -fprintf-return-value
-@opindex fprintf-return-value
-Substitute constants for known return value of formatted output functions
-such as @code{sprintf}, @code{snprintf}, @code{vsprintf}, and @code{vsnprintf}
-(but not @code{printf} of @code{fprintf}).  This transformation allows GCC
-to optimize or even eliminate branches based on the known return value of
-these functions called with arguments that are either constant, or whose
-values are known to be in a range that makes determining the exact return
-value possible.  For example, both the branch and the body of the @code{if}
-statement (but not the call to @code{snprint}) can be optimized away when
-@code{i} is a 32-bit or smaller integer because the return value is guaranteed
-to be at most 8.
+@item -fno-printf-return-value
+@opindex fno-printf-return-value
+Do not substitute constants for known return value of formatted output
+functions such as @code{sprintf}, @code{snprintf}, @code{vsprintf}, and
+@code{vsnprintf} (but not @code{printf} of @code{fprintf}).  This
+transformation allows GCC to optimize or even eliminate branches based
+on the known return value of these functions called with arguments that
+are either constant, or whose values are known to be in a range that
+makes determining the exact return value possible.  For example, when
+@option{-fprintf-return-value} is in effect, both the branch and the
+body of the @code{if} statement (but not the call to @code{snprint})
+can be optimized away when @code{i} is a 32-bit or smaller integer
+because the return value is guaranteed to be at most 8.
 
 @smallexample
 char buf[9];
@@ -8296,7 +8298,7 @@ if (snprintf (buf, "%08x", i) >= sizeof buf)
 The @option{-fprintf-return-value} option relies on other optimizations
 and yields best results with @option{-O2}.  It works in tandem with the
 @option{-Wformat-length} option.  The @option{-fprintf-return-value}
-option is disabled by default.
+option is enabled by default.
 
 @item -fno-peephole
 @itemx -fno-peephole2

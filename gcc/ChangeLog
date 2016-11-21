@@ -1,3 +1,8 @@
+2016-11-21  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (-fprintf-return-value): Document that option
+	is enabled by default.
+
 2016-11-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-c.c (avr_register_target_pragmas): Use C++
