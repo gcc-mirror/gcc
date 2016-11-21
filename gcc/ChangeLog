@@ -1,5 +1,11 @@
 2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* optabs.c (emit_libcall_block): Change argument type to
+	rtx_insn *.
+	* optabs.h: Adjust prototype.
+
+2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* cfgrtl.c (delete_insn): Change argument type to rtx_insn *.
 	(fixup_reorder_chain): Adjust.
 	* cfgrtl.h: Adjust prototype.

@@ -3681,10 +3681,9 @@ emit_libcall_block_1 (rtx_insn *insns, rtx target, rtx result, rtx equiv,
 }
 
 void
-emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
+emit_libcall_block (rtx_insn *insns, rtx target, rtx result, rtx equiv)
 {
-  emit_libcall_block_1 (safe_as_a <rtx_insn *> (insns),
-			target, result, equiv, false);
+  emit_libcall_block_1 (insns, target, result, equiv, false);
 }
 
 /* Nonzero if we can perform a comparison of mode MODE straightforwardly.
