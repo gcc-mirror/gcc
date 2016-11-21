@@ -10102,6 +10102,38 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 }
 
 
+/* A helper for the next function.  NODE is a decl that is associated with
+   a symbol.  Return TRUE if the respective object may be accessed by LDS.
+   There might still be other reasons for why LDS is not appropriate.
+   This function is only appropriate for AVR_TINY.  */
+
+static bool
+avr_decl_maybe_lds_p (tree node)
+{
+  if (!node
+      || TREE_CODE (node) != VAR_DECL
+      || DECL_SECTION_NAME (node) != NULL)
+    return false;
+
+  /* Don't use LDS for objects that go to .rodata.  The current default
+     linker description file still locates .rodata in RAM, but this is not
+     a must.  A better linker script would just keep .rodata in flash and
+     add an offset of 0x4000 to the VMA.  Hence avoid LDS for such data.  */
+
+  if (TREE_READONLY (node))
+    return false;
+
+  // C++ requires peeling arrays.
+
+  do
+    node = TREE_TYPE (node);
+  while (ARRAY_TYPE == TREE_CODE (node));
+
+  return (node != error_mark_node
+          && !TYPE_READONLY (node));
+}
+
+
 /* Implement `TARGET_ENCODE_SECTION_INFO'.  */
 
 static void
@@ -10193,7 +10225,8 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
       if (avr_decl_absdata_p (decl, DECL_ATTRIBUTES (decl))
           || (TARGET_ABSDATA
               && !progmem_p
-              && !addr_attr)
+              && !addr_attr
+              && avr_decl_maybe_lds_p (decl))
           || (addr_attr
               // If addr_attr is non-null, it has an argument.  Peek into it.
               && TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (addr_attr))) < 0xc0))

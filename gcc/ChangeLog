@@ -1,3 +1,9 @@
+2016-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/78093
+	* config/avr/avr.c (avr_decl_maybe_lds_p): New static function.
+	(avr_encode_section_info) [TARGET_ABSDATA && AVR_TINY]: Use it.
+
 2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* rtl.h: Adjust prototype.
