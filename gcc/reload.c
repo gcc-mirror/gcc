@@ -5090,7 +5090,7 @@ find_reloads_address (machine_mode mode, rtx *memrefloc, rtx ad,
 	    loc = &XEXP (*loc, 0);
 	}
 
-      if (double_reg_address_ok
+      if (double_reg_address_ok[mode]
 	  && regno_ok_for_base_p (REGNO (XEXP (ad, 0)), mode, as,
 				  PLUS, CONST_INT))
 	{

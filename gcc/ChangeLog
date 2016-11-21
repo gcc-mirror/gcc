@@ -1,3 +1,13 @@
+2016-11-20  Jeff Law  <law@redhat.com>
+
+	PR target/48551
+	* reload.h (struct target_reload): Make x_double_reg_address_ok
+	be per-mode rather.
+	* reload.c (find_reloads_address): Check if double_reg_address_ok
+	is true for the mode of the memory reference.
+	* reload1.c (init_reload): Initialize double_reg_address_ok for
+	each mode.
+
 2016-11-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/61409
