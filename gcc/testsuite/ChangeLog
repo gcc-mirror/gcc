@@ -1,3 +1,10 @@
+2016-11-21  Bin Cheng  <bin.cheng@arm.com>
+
+	PR testsuite/78114
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Add additional
+	options.  Refine test by checking predictive commining PHI
+	nodes in vectorized loop wrto vector factor.
+
 2016-11-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/71973
