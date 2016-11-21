@@ -1,3 +1,9 @@
+2016-11-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/78413
+	* tree-if-conv.c (versionable_outer_loop_p): Require that both
+	inner and outer loop latches have single predecessors.
+
 2016-11-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/78093
