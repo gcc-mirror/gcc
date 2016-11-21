@@ -1741,7 +1741,7 @@ expand_prologue (void)
 
 	  v850_all_frame_related (save_all);
 
-	  code = recog (save_all, NULL_RTX, NULL);
+	  code = recog (save_all, NULL, NULL);
 	  if (code >= 0)
 	    {
 	      rtx insn = emit_insn (save_all);
@@ -1887,7 +1887,7 @@ expand_epilogue (void)
 	      offset -= 4;
 	    }
 
-	  code = recog (restore_all, NULL_RTX, NULL);
+	  code = recog (restore_all, NULL, NULL);
 	  
 	  if (code >= 0)
 	    {

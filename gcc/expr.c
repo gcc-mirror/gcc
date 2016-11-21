@@ -109,7 +109,7 @@ static HOST_WIDE_INT int_expr_size (tree);
 void
 init_expr_target (void)
 {
-  rtx insn, pat;
+  rtx pat;
   machine_mode mode;
   int num_clobbers;
   rtx mem, mem1;
@@ -125,7 +125,7 @@ init_expr_target (void)
      useless RTL allocations.  */
   reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
 
-  insn = rtx_alloc (INSN);
+  rtx_insn *insn = as_a<rtx_insn *> (rtx_alloc (INSN));
   pat = gen_rtx_SET (NULL_RTX, NULL_RTX);
   PATTERN (insn) = pat;
 
