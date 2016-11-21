@@ -7797,8 +7797,8 @@ frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
 			   rtx_insn **last_membar)
 {
   HARD_REG_SET used_regs;
-  rtx next_membar, set;
-  rtx_insn *insn;
+  rtx set;
+  rtx_insn *insn, *next_membar;
   bool next_is_end_p;
 
   /* NEXT_IO is the next I/O operation to be performed after the current

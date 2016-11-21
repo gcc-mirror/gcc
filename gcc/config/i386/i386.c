@@ -14742,7 +14742,7 @@ ix86_expand_split_stack_prologue (void)
   HOST_WIDE_INT allocate;
   unsigned HOST_WIDE_INT args_size;
   rtx_code_label *label;
-  rtx limit, current, jump_insn, allocate_rtx, call_insn, call_fusage;
+  rtx limit, current, allocate_rtx, call_insn, call_fusage;
   rtx scratch_reg = NULL_RTX;
   rtx_code_label *varargs_label = NULL;
   rtx fn;
@@ -14802,7 +14802,7 @@ ix86_expand_split_stack_prologue (void)
     }
 
   ix86_expand_branch (GEU, current, limit, label);
-  jump_insn = get_last_insn ();
+  rtx_insn *jump_insn = get_last_insn ();
   JUMP_LABEL (jump_insn) = label;
 
   /* Mark the jump as very likely to be taken.  */
@@ -18696,7 +18696,7 @@ split_double_mode (machine_mode mode, rtx operands[],
 #endif
 
 const char *
-output_387_binary_op (rtx insn, rtx *operands)
+output_387_binary_op (rtx_insn *insn, rtx *operands)
 {
   static char buf[40];
   const char *p;
@@ -19434,7 +19434,7 @@ output_387_ffreep (rtx *operands ATTRIBUTE_UNUSED, int opno)
    should be used.  UNORDERED_P is true when fucom should be used.  */
 
 const char *
-output_fp_compare (rtx insn, rtx *operands, bool eflags_p, bool unordered_p)
+output_fp_compare (rtx_insn *insn, rtx *operands, bool eflags_p, bool unordered_p)
 {
   int stack_top_dies;
   rtx cmp_op0, cmp_op1;
@@ -22817,7 +22817,7 @@ ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
 		      rtx target1, rtx target2, rtx tmp)
 {
   rtx condition;
-  rtx i;
+  rtx_insn *i;
 
   if (target2 != pc_rtx)
     {
@@ -25876,7 +25876,7 @@ ix86_split_lshr (rtx *operands, rtx scratch, machine_mode mode)
 static void
 predict_jump (int prob)
 {
-  rtx insn = get_last_insn ();
+  rtx_insn *insn = get_last_insn ();
   gcc_assert (JUMP_P (insn));
   add_int_reg_note (insn, REG_BR_PROB, prob);
 }
@@ -44193,7 +44193,7 @@ ix86_reverse_condition (enum rtx_code code, machine_mode mode)
    to OPERANDS[0].  */
 
 const char *
-output_387_reg_move (rtx insn, rtx *operands)
+output_387_reg_move (rtx_insn *insn, rtx *operands)
 {
   if (REG_P (operands[0]))
     {

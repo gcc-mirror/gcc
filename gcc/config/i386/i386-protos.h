@@ -77,10 +77,10 @@ extern void ix86_print_operand (FILE *, rtx, int);
 extern void split_double_mode (machine_mode, rtx[], int, rtx[], rtx[]);
 
 extern const char *output_set_got (rtx, rtx);
-extern const char *output_387_binary_op (rtx, rtx*);
-extern const char *output_387_reg_move (rtx, rtx*);
+extern const char *output_387_binary_op (rtx_insn *, rtx*);
+extern const char *output_387_reg_move (rtx_insn *, rtx*);
 extern const char *output_fix_trunc (rtx_insn *, rtx*, bool);
-extern const char *output_fp_compare (rtx, rtx*, bool, bool);
+extern const char *output_fp_compare (rtx_insn *, rtx*, bool, bool);
 extern const char *output_adjust_stack_and_probe (rtx);
 extern const char *output_probe_stack_range (rtx, rtx);
 

@@ -5566,7 +5566,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 /* Emit a conditional jump to LABEL for condition code mask MASK using
    comparsion operator COMPARISON.  Return the emitted jump insn.  */
 
-static rtx
+static rtx_insn *
 s390_emit_ccraw_jump (HOST_WIDE_INT mask, enum rtx_code comparison, rtx label)
 {
   rtx temp;

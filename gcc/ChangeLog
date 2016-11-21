@@ -1,3 +1,29 @@
+2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* config/arm/arm.c (legitimize_pic_address): Change to use
+	rtx_insn * as the type of variables.
+	(arm_pic_static_addr): Likewise.
+	(arm_emit_movpair): Likewise.
+	* config/c6x/c6x.c (reorg_split_calls): Likewise.
+	* config/darwin.c (machopic_legitimize_pic_address): Likewise.
+	* config/frv/frv.c (frv_optimize_membar_local): Likewise.
+	* config/frv/frv.md: Likewise.
+	* config/i386/i386-protos.h: Likewise.
+	* config/i386/i386.c (ix86_expand_split_stack_prologue):
+	Likewise.
+	(ix86_split_fp_branch): Likewise.
+	(predict_jump): Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address):
+	Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/s390/s390.md: Likewise.
+	* config/spu/spu.md: Likewise.
+	* config/tilegx/tilegx.c (tilegx_legitimize_tls_address):
+	Likewise.
+	* lower-subreg.c (resolve_simple_move): Likewise.
+
 2016-11-20  Jeff Law  <law@redhat.com>
 
 	PR target/48551

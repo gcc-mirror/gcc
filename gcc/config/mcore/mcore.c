@@ -2327,7 +2327,7 @@ is_cond_candidate (rtx insn)
    new one.  Return the new insn if emitted.  */
 
 static rtx_insn *
-emit_new_cond_insn (rtx insn, int cond)
+emit_new_cond_insn (rtx_insn *insn, int cond)
 {
   rtx c_insn = 0;
   rtx pat, dst, src;

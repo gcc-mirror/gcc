@@ -988,7 +988,7 @@ tilegx_legitimize_tls_address (rtx addr)
       case TLS_MODEL_GLOBAL_DYNAMIC:
       case TLS_MODEL_LOCAL_DYNAMIC:
 	{
-	  rtx r0, temp, temp2, temp3, got, last;
+	  rtx r0, temp, temp2, temp3, got;
 
 	  ret = gen_reg_rtx (Pmode);
 	  r0 = gen_rtx_REG (Pmode, 0);
@@ -1023,6 +1023,7 @@ tilegx_legitimize_tls_address (rtx addr)
 
 	  emit_move_insn (temp3, r0);
 
+	  rtx_insn *last;
 	  if (TARGET_32BIT)
 	    last = emit_insn (gen_tls_gd_add_32bit (ret, temp3, addr));
 	  else

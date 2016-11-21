@@ -843,7 +843,6 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 				? reg
 				: gen_reg_rtx (Pmode));
 	      rtx mem;
-	      rtx insn;
 	      rtx sum;
 
 	      sum = gen_rtx_HIGH (Pmode, offset);
@@ -856,7 +855,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 				  gen_rtx_LO_SUM (Pmode,
 						  hi_sum_reg,
 						  copy_rtx (offset)));
-	      insn = emit_insn (gen_rtx_SET (reg, mem));
+	      rtx_insn *insn = emit_insn (gen_rtx_SET (reg, mem));
 	      set_unique_reg_note (insn, REG_EQUAL, pic_ref);
 
 	      pic_ref = reg;

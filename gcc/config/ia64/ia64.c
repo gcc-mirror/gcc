@@ -7238,7 +7238,7 @@ ia64_adjust_cost (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn,
    ??? When cycle display notes are implemented, update this.  */
 
 static void
-ia64_emit_insn_before (rtx insn, rtx before)
+ia64_emit_insn_before (rtx insn, rtx_insn *before)
 {
   emit_insn_before (insn, before);
 }
