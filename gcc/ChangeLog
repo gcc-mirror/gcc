@@ -1,5 +1,20 @@
 2016-11-21  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr-c.c (avr_register_target_pragmas): Use C++
+	for-loop declaration of loop variable.
+	(avr_register_target_pragmas, avr_cpu_cpp_builtins): Same.
+	* config/avr/avr.c (avr_popcount_each_byte)
+	(avr_init_expanders, avr_regs_to_save, sequent_regs_live)
+	(get_sequence_length, avr_prologue_setup_frame, avr_map_metric)
+	(avr_expand_epilogue, avr_function_arg_advance)
+	(avr_out_compare, avr_out_plus_1, avr_out_bitop, avr_out_fract)
+	(avr_rotate_bytes, _reg_unused_after, avr_assemble_integer)
+	(avr_adjust_reg_alloc_order, output_reload_in_const)
+	(avr_conditional_register_usage, avr_find_unused_d_reg)
+	(avr_map_decompose, avr_fold_builtin): Same.
+
+2016-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr.c (avr_popcount): Remove static function.
 	(avr_popcount_each_byte, avr_out_bitop): Use popcount_hwi instead.
 

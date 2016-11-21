@@ -251,14 +251,12 @@ avr_tolower (char *lo, const char *up)
 bool
 avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
 {
-  int i;
-
   machine_mode mode = GET_MODE (xval);
 
   if (VOIDmode == mode)
     mode = SImode;
 
-  for (i = 0; i < n_bytes; i++)
+  for (int i = 0; i < n_bytes; i++)
     {
       rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
       unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
@@ -812,9 +810,7 @@ avr_init_machine_status (void)
 void
 avr_init_expanders (void)
 {
-  int regno;
-
-  for (regno = 0; regno < 32; regno ++)
+  for (int regno = 0; regno < 32; regno ++)
     all_regs_rtx[regno] = gen_rtx_REG (QImode, regno);
 
   lpm_reg_rtx  = all_regs_rtx[LPM_REGNO];
@@ -1138,7 +1134,7 @@ avr_starting_frame_offset (void)
 static int
 avr_regs_to_save (HARD_REG_SET *set)
 {
-  int reg, count;
+  int count;
   int int_or_sig_p = cfun->machine->is_interrupt || cfun->machine->is_signal;
 
   if (set)
@@ -1153,7 +1149,7 @@ avr_regs_to_save (HARD_REG_SET *set)
       || cfun->machine->is_OS_main)
     return 0;
 
-  for (reg = 0; reg < 32; reg++)
+  for (int reg = 0; reg < 32; reg++)
     {
       /* Do not push/pop __tmp_reg__, __zero_reg__, as well as
          any global register variables.  */
@@ -1340,11 +1336,10 @@ avr_simple_epilogue (void)
 static int
 sequent_regs_live (void)
 {
-  int reg;
   int live_seq = 0;
   int cur_seq = 0;
 
-  for (reg = 0; reg <= LAST_CALLEE_SAVED_REG; ++reg)
+  for (int reg = 0; reg <= LAST_CALLEE_SAVED_REG; ++reg)
     {
       if (fixed_regs[reg])
         {
@@ -1400,10 +1395,9 @@ sequent_regs_live (void)
 int
 get_sequence_length (rtx_insn *insns)
 {
-  rtx_insn *insn;
-  int length;
+  int length = 0;
 
-  for (insn = insns, length = 0; insn; insn = NEXT_INSN (insn))
+  for (rtx_insn *insn = insns; insn; insn = NEXT_INSN (insn))
     length += get_attr_length (insn);
 
   return length;
@@ -1539,9 +1533,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
     }
   else /* !minimize */
     {
-      int reg;
-
-      for (reg = 0; reg < 32; ++reg)
+      for (int reg = 0; reg < 32; ++reg)
         if (TEST_HARD_REG_BIT (set, reg))
           emit_push_byte (reg, true);
 
@@ -1884,7 +1876,6 @@ emit_pop_byte (unsigned regno)
 void
 avr_expand_epilogue (bool sibcall_p)
 {
-  int reg;
   int live_seq;
   HARD_REG_SET set;
   int minimize;
@@ -2026,7 +2017,7 @@ avr_expand_epilogue (bool sibcall_p)
 
   /* Restore used registers.  */
 
-  for (reg = 31; reg >= 0; --reg)
+  for (int reg = 31; reg >= 0; --reg)
     if (TEST_HARD_REG_BIT (set, reg))
       emit_pop_byte (reg);
 
@@ -3218,9 +3209,7 @@ avr_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   if (cum->regno >= 8
       && cum->nregs >= 0)
     {
-      int regno;
-
-      for (regno = cum->regno; regno < cum->regno + bytes; regno++)
+      for (int regno = cum->regno; regno < cum->regno + bytes; regno++)
         if (fixed_regs[regno])
           warning (0, "fixed register %s used to pass parameter to function",
                    reg_names[regno]);
@@ -3334,11 +3323,10 @@ avr_xload_libgcc_p (machine_mode mode)
 static rtx
 avr_find_unused_d_reg (rtx_insn *insn, rtx exclude)
 {
-  int regno;
   bool isr_p = (avr_interrupt_function_p (current_function_decl)
                 || avr_signal_function_p (current_function_decl));
 
-  for (regno = 16; regno < 32; regno++)
+  for (int regno = 16; regno < 32; regno++)
     {
       rtx reg = all_regs_rtx[regno];
 
@@ -5671,7 +5659,7 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
   machine_mode mode;
 
   /* Number of bytes to operate on.  */
-  int i, n_bytes = GET_MODE_SIZE (GET_MODE (xreg));
+  int n_bytes = GET_MODE_SIZE (GET_MODE (xreg));
 
   /* Value (0..0xff) held in clobber register xop[2] or -1 if unknown.  */
   int clobber_val = -1;
@@ -5757,7 +5745,7 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
         }
     }
 
-  for (i = 0; i < n_bytes; i++)
+  for (int i = 0; i < n_bytes; i++)
     {
       /* We compare byte-wise.  */
       rtx reg8 = simplify_gen_subreg (QImode, xreg, mode, i);
@@ -7491,7 +7479,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
   machine_mode imode = int_mode_for_mode (mode);
 
   /* Number of bytes to operate on.  */
-  int i, n_bytes = GET_MODE_SIZE (mode);
+  int n_bytes = GET_MODE_SIZE (mode);
 
   /* Value (0..0xff) held in clobber register op[3] or -1 if unknown.  */
   int clobber_val = -1;
@@ -7519,7 +7507,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
     {
       *pcc = MINUS == code ? (int) CC_SET_CZN : (int) CC_CLOBBER;
 
-      for (i = 0; i < n_bytes; i++)
+      for (int i = 0; i < n_bytes; i++)
         {
           /* We operate byte-wise on the destination.  */
           op[0] = simplify_gen_subreg (QImode, xop[0], mode, i);
@@ -7586,7 +7574,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
       goto saturate;
     }
 
-  for (i = 0; i < n_bytes; i++)
+  for (int i = 0; i < n_bytes; i++)
     {
       /* We operate byte-wise on the destination.  */
       rtx reg8 = simplify_gen_subreg (QImode, xop[0], mode, i);
@@ -8088,7 +8076,7 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
   machine_mode mode = GET_MODE (xop[0]);
 
   /* Number of bytes to operate on.  */
-  int i, n_bytes = GET_MODE_SIZE (mode);
+  int n_bytes = GET_MODE_SIZE (mode);
 
   /* Value of T-flag (0 or 1) or -1 if unknow.  */
   int set_t = -1;
@@ -8108,7 +8096,7 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
   if (plen)
     *plen = 0;
 
-  for (i = 0; i < n_bytes; i++)
+  for (int i = 0; i < n_bytes; i++)
     {
       /* We operate byte-wise on the destination.  */
       rtx reg8 = simplify_gen_subreg (QImode, xop[0], mode, i);
@@ -8394,7 +8382,6 @@ avr_out_insert_notbit (rtx_insn *insn, rtx operands[], rtx xbitno, int *plen)
 const char*
 avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
 {
-  size_t i;
   rtx xop[6];
   RTX_CODE shift = UNKNOWN;
   bool sign_in_carry = false;
@@ -8430,7 +8417,7 @@ avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
   /* Step 0:  Determine information on source and destination operand we
      ======   will need in the remainder.  */
 
-  for (i = 0; i < sizeof (val) / sizeof (*val); i++)
+  for (size_t i = 0; i < ARRAY_SIZE (val); i++)
     {
       machine_mode mode;
 
@@ -8987,7 +8974,6 @@ avr_out_round (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
 bool
 avr_rotate_bytes (rtx operands[])
 {
-    int i, j;
     machine_mode mode = GET_MODE (operands[0]);
     bool overlapped = reg_overlap_mentioned_p (operands[0], operands[1]);
     bool same_reg = rtx_equal_p (operands[0], operands[1]);
@@ -9046,7 +9032,7 @@ avr_rotate_bytes (rtx operands[])
 
 	gcc_assert (size <= MAX_SIZE);
 	/* Generate list of subreg moves.  */
-	for (i = 0; i < size; i++)
+	for (int i = 0; i < size; i++)
           {
 	    int from = i;
 	    int to = (from + offset) % size;
@@ -9060,9 +9046,9 @@ avr_rotate_bytes (rtx operands[])
 	   The first move is a conflict as it must wait until second is
 	   performed.  We ignore moves to self - we catch this later.  */
 	if (overlapped)
-	  for (i = 0; i < size; i++)
+	  for (int i = 0; i < size; i++)
 	    if (reg_overlap_mentioned_p (move[i].dst, operands[1]))
-	      for (j = 0; j < size; j++)
+	      for (int j = 0; j < size; j++)
 		if (j != i && rtx_equal_p (move[j].src, move[i].dst))
 		  {
 		    /* The dst of move i is the src of move j.  */
@@ -9081,7 +9067,7 @@ avr_rotate_bytes (rtx operands[])
 	    moves = 0;
 	    /* Emit move where dst is not also a src or we have used that
 	       src already.  */
-	    for (i = 0; i < size; i++)
+	    for (int i = 0; i < size; i++)
 	      if (move[i].src != NULL_RTX)
 		{
 		  if (move[i].links == -1
@@ -9289,10 +9275,9 @@ _reg_unused_after (rtx_insn *insn, rtx reg)
       else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
 	  rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
-	  int i;
 	  int retval = 0;
 
-	  for (i = 0; i < seq->len (); i++)
+	  for (int i = 0; i < seq->len (); i++)
 	    {
 	      rtx_insn *this_insn = seq->insn (i);
 	      rtx set = single_set (this_insn);
@@ -9386,11 +9371,9 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
     }
   else if (CONST_FIXED_P (x))
     {
-      unsigned n;
-
       /* varasm fails to handle big fixed modes that don't fit in hwi.  */
 
-      for (n = 0; n < size; n++)
+      for (unsigned n = 0; n < size; n++)
         {
           rtx xn = simplify_gen_subreg (QImode, x, GET_MODE (x), n);
           default_assemble_integer (xn, 1, aligned_p);
@@ -10342,7 +10325,6 @@ avr_file_end (void)
 void
 avr_adjust_reg_alloc_order (void)
 {
-  unsigned int i;
   static const int order_0[] =
     {
       24, 25,
@@ -10403,7 +10385,7 @@ avr_adjust_reg_alloc_order (void)
                       : TARGET_ORDER_2 ? (AVR_TINY ? tiny_order_0 : order_2)
                       : (AVR_TINY ? tiny_order_0 : order_0));
 
-  for (i = 0; i < ARRAY_SIZE (order_0); ++i)
+  for (size_t i = 0; i < ARRAY_SIZE (order_0); ++i)
       reg_alloc_order[i] = order[i];
 }
 
@@ -12000,7 +11982,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
   bool cooked_clobber_p = false;
   bool set_p = false;
   machine_mode mode = GET_MODE (dest);
-  int n, n_bytes = GET_MODE_SIZE (mode);
+  int n_bytes = GET_MODE_SIZE (mode);
 
   gcc_assert (REG_P (dest)
               && CONSTANT_P (src));
@@ -12037,11 +12019,10 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 
   /* Now start filling DEST from LSB to MSB.  */
 
-  for (n = 0; n < n_bytes; n++)
+  for (int n = 0; n < n_bytes; n++)
     {
       int ldreg_p;
       bool done_byte = false;
-      int j;
       rtx xop[3];
 
       /* Crop the n-th destination byte.  */
@@ -12126,7 +12107,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 
       /* Try to reuse value already loaded in some lower byte. */
 
-      for (j = 0; j < n; j++)
+      for (int j = 0; j < n; j++)
         if (ival[j] == ival[n])
           {
             xop[0] = xdest[n];
@@ -12309,8 +12290,6 @@ avr_conditional_register_usage(void)
 {
   if (AVR_TINY)
     {
-      unsigned int i;
-
       const int tiny_reg_alloc_order[] = {
         24, 25,
         22, 23,
@@ -12327,7 +12306,7 @@ avr_conditional_register_usage(void)
          - R0-R15 are not available in Tiny Core devices
          - R16 and R17 are fixed registers.  */
 
-      for (i = 0;  i <= 17;  i++)
+      for (size_t i = 0; i <= 17;  i++)
         {
           fixed_regs[i] = 1;
           call_used_regs[i] = 1;
@@ -12337,14 +12316,14 @@ avr_conditional_register_usage(void)
          - R18, R19, R20 and R21 are the callee saved registers in
            Tiny Core devices  */
 
-      for (i = 18; i <= LAST_CALLEE_SAVED_REG; i++)
+      for (size_t i = 18; i <= LAST_CALLEE_SAVED_REG; i++)
         {
           call_used_regs[i] = 0;
         }
 
       /* Update register allocation order for Tiny Core devices */
 
-      for (i = 0; i < ARRAY_SIZE (tiny_reg_alloc_order); i++)
+      for (size_t i = 0; i < ARRAY_SIZE (tiny_reg_alloc_order); i++)
         {
           reg_alloc_order[i] = tiny_reg_alloc_order[i];
         }
@@ -13245,9 +13224,9 @@ enum
 static unsigned
 avr_map_metric (unsigned int a, int mode)
 {
-  unsigned i, metric = 0;
+  unsigned metric = 0;
 
-  for (i = 0; i < 8; i++)
+  for (unsigned i = 0; i < 8; i++)
     {
       unsigned ai = avr_map (a, i);
 
@@ -13344,7 +13323,6 @@ static const avr_map_op_t avr_map_op[] =
 static avr_map_op_t
 avr_map_decompose (unsigned int f, const avr_map_op_t *g, bool val_const_p)
 {
-  int i;
   bool val_used_p = 0 != avr_map_metric (f, MAP_MASK_PREIMAGE_F);
   avr_map_op_t f_ginv = *g;
   unsigned int ginv = g->ginv;
@@ -13353,7 +13331,7 @@ avr_map_decompose (unsigned int f, const avr_map_op_t *g, bool val_const_p)
 
   /* Step 1:  Computing F o G^-1  */
 
-  for (i = 7; i >= 0; i--)
+  for (int i = 7; i >= 0; i--)
     {
       int x = avr_map (f, i);
 
@@ -13421,15 +13399,13 @@ avr_map_decompose (unsigned int f, const avr_map_op_t *g, bool val_const_p)
 static void
 avr_move_bits (rtx *xop, unsigned int map, bool fixp_p, int *plen)
 {
-  int bit_dest, b;
-
   /* T-flag contains this bit of the source, i.e. of XOP[1]  */
   int t_bit_src = -1;
 
   /* We order the operations according to the requested source bit b.  */
 
-  for (b = 0; b < 8; b++)
-    for (bit_dest = 0; bit_dest < 8; bit_dest++)
+  for (int b = 0; b < 8; b++)
+    for (int bit_dest = 0; bit_dest < 8; bit_dest++)
       {
         int bit_src = avr_map (map, bit_dest);
 
@@ -13791,7 +13767,7 @@ static rtx
 avr_default_expand_builtin (enum insn_code icode, tree exp, rtx target)
 {
   rtx pat, xop[3];
-  int n, n_args = call_expr_nargs (exp);
+  int n_args = call_expr_nargs (exp);
   machine_mode tmode = insn_data[icode].operand[0].mode;
 
   gcc_assert (n_args >= 1 && n_args <= 3);
@@ -13803,7 +13779,7 @@ avr_default_expand_builtin (enum insn_code icode, tree exp, rtx target)
       target = gen_reg_rtx (tmode);
     }
 
-  for (n = 0; n < n_args; n++)
+  for (int n = 0; n < n_args; n++)
     {
       tree arg = CALL_EXPR_ARG (exp, n);
       rtx op = expand_expr (arg, NULL_RTX, VOIDmode, EXPAND_NORMAL);
@@ -14076,7 +14052,6 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         tree map_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
         unsigned int map;
         bool changed = false;
-        unsigned i;
         avr_map_op_t best_g;
 
         if (TREE_CODE (arg[0]) != INTEGER_CST)
@@ -14118,7 +14093,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
             int bits = TREE_INT_CST_LOW (tbits);
             int mask_ior = 0, mask_and = 0xff;
 
-            for (i = 0; i < 8; i++)
+            for (size_t i = 0; i < 8; i++)
               {
                 int mi = avr_map (map, i);
 
@@ -14159,7 +14134,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         best_g = avr_map_op[0];
         best_g.cost = 1000;
 
-        for (i = 0; i < sizeof (avr_map_op) / sizeof (*avr_map_op); i++)
+        for (size_t i = 0; i < ARRAY_SIZE (avr_map_op); i++)
           {
             avr_map_op_t g
               = avr_map_decompose (map, avr_map_op + i,
