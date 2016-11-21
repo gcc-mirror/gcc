@@ -1266,6 +1266,10 @@ lto_init (void)
      always use the C definition here in lto1.  */
   gcc_assert (fileptr_type_node == ptr_type_node);
   gcc_assert (TYPE_MAIN_VARIANT (fileptr_type_node) == ptr_type_node);
+  /* Likewise for const struct tm*.  */
+  gcc_assert (const_tm_ptr_type_node == const_ptr_type_node);
+  gcc_assert (TYPE_MAIN_VARIANT (const_tm_ptr_type_node)
+	      == const_ptr_type_node);
 
   ptrdiff_type_node = integer_type_node;
 

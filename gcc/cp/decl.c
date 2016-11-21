@@ -1490,9 +1490,14 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	     explicitly declared.  */
 	  if (DECL_ANTICIPATED (olddecl))
 	    {
-	      /* Deal with fileptr_type_node.  FILE type is not known
-		 at the time we create the builtins.  */
 	      tree t1, t2;
+
+	      /* A new declaration doesn't match a built-in one unless it
+		 is also extern "C".  */
+	      gcc_assert (DECL_IS_BUILTIN (olddecl));
+	      gcc_assert (DECL_EXTERN_C_P (olddecl));
+	      if (!DECL_EXTERN_C_P (newdecl))
+		return NULL_TREE;
 
 	      for (t1 = TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 		   t2 = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
@@ -1500,6 +1505,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		   t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
 		if (!t1 || !t2)
 		  break;
+	        /* Deal with fileptr_type_node.  FILE type is not known
+		   at the time we create the builtins.  */
 		else if (TREE_VALUE (t2) == fileptr_type_node)
 		  {
 		    tree t = TREE_VALUE (t1);
@@ -1520,8 +1527,34 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 			TYPE_ARG_TYPES (TREE_TYPE (olddecl)) = oldargs;
 		      }
 		  }
+		/* Likewise for const struct tm*.  */
+		else if (TREE_VALUE (t2) == const_tm_ptr_type_node)
+		  {
+		    tree t = TREE_VALUE (t1);
+
+		    if (TYPE_PTR_P (t)
+			&& TYPE_IDENTIFIER (TREE_TYPE (t))
+			   == get_identifier ("tm")
+			&& compparms (TREE_CHAIN (t1), TREE_CHAIN (t2)))
+		      {
+			tree oldargs = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
+
+			TYPE_ARG_TYPES (TREE_TYPE (olddecl))
+			  = TYPE_ARG_TYPES (TREE_TYPE (newdecl));
+			types_match = decls_match (newdecl, olddecl);
+			if (types_match)
+			  return duplicate_decls (newdecl, olddecl,
+						  newdecl_is_friend);
+			TYPE_ARG_TYPES (TREE_TYPE (olddecl)) = oldargs;
+		      }
+		  }
 		else if (! same_type_p (TREE_VALUE (t1), TREE_VALUE (t2)))
 		  break;
+
+	      warning_at (DECL_SOURCE_LOCATION (newdecl),
+			  OPT_Wbuiltin_declaration_mismatch,
+			  "declaration of %q+#D conflicts with built-in "
+			  "declaration %q#D", newdecl, olddecl);
 	    }
 	  else if ((DECL_EXTERN_C_P (newdecl)
 		    && DECL_EXTERN_C_P (olddecl))
@@ -1531,7 +1564,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      /* A near match; override the builtin.  */
 
 	      if (TREE_PUBLIC (newdecl))
-		warning_at (DECL_SOURCE_LOCATION (newdecl), 0,
+		warning_at (DECL_SOURCE_LOCATION (newdecl),
+			    OPT_Wbuiltin_declaration_mismatch,
 			    "new declaration %q#D ambiguates built-in "
 			    "declaration %q#D", newdecl, olddecl);
 	      else
@@ -2243,6 +2277,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
       TREE_READONLY (olddecl) = TREE_READONLY (newdecl);
       TREE_THIS_VOLATILE (olddecl) = TREE_THIS_VOLATILE (newdecl);
+      TREE_NOTHROW (olddecl) = TREE_NOTHROW (newdecl);
       TREE_SIDE_EFFECTS (olddecl) = TREE_SIDE_EFFECTS (newdecl);
     }
 

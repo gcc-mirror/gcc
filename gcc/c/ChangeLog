@@ -1,6 +1,12 @@
+2016-11-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/71973
+	* c-decl.c (diagnose_mismatched_decls): Use
+	OPT_Wbuiltin_declaration_mismatch here too.
+
 2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
- 	    Alan Hayward  <alan.hayward@arm.com>
- 	    David Sherwood  <david.sherwood@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
 
 	* c-decl.c (merge_decls): Use SET_DECL_MODE.
 	(make_label, finish_struct): Likewise.

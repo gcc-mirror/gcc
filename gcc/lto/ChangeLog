@@ -1,6 +1,11 @@
+2016-11-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/71973
+	* lto-lang.c (lto_init): Assert const_tm_ptr_type_node is sane.
+
 2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
- 	    Alan Hayward  <alan.hayward@arm.com>
- 	    David Sherwood  <david.sherwood@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
 
 	* lto.c (offload_handle_link_vars): Use SET_DECL_MODE.
 
