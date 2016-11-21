@@ -1,3 +1,8 @@
+2016-11-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* lib/target-supports.exp (check_effective_target_tiny) [avr]:
+	Return 1 for AVR_TINY.
+
 2016-11-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/71785
