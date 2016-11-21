@@ -1,3 +1,9 @@
+2016-11-21  Jeff Law  <law@redhat.com>
+
+	PR target/68538
+	* config/cris/cris.md: Don't call copy_to_mode_reg unless
+	can_create_pseudo_p is true.
+
 2016-11-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/68803
