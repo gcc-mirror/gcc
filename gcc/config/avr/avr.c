@@ -243,23 +243,6 @@ avr_tolower (char *lo, const char *up)
 }
 
 
-/* Custom function to count number of set bits.  */
-
-static inline int
-avr_popcount (unsigned int val)
-{
-  int pop = 0;
-
-  while (val)
-    {
-      val &= val-1;
-      pop++;
-    }
-
-  return pop;
-}
-
-
 /* Constraint helper function.  XVAL is a CONST_INT or a CONST_DOUBLE.
    Return true if the least significant N_BYTES bytes of XVAL all have a
    popcount in POP_MASK and false, otherwise.  POP_MASK represents a subset
@@ -280,7 +263,7 @@ avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
       rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
       unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
 
-      if (0 == (pop_mask & (1 << avr_popcount (val8))))
+      if (0 == (pop_mask & (1 << popcount_hwi (val8))))
         return false;
     }
 
@@ -8135,7 +8118,7 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
       unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
 
       /* Number of bits set in the current byte of the constant.  */
-      int pop8 = avr_popcount (val8);
+      int pop8 = popcount_hwi (val8);
 
       /* Registers R16..R31 can operate with immediate.  */
       bool ld_reg_p = test_hard_reg_class (LD_REGS, reg8);
