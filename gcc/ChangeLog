@@ -1,3 +1,9 @@
+2016-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/67335
+	* omp-simd-clone.c (simd_clone_adjust_argument_types): Use NULL prefix
+	for tmp simd array if DECL_NAME (parm) is NULL.
+
 2016-11-20  Jeff Law  <law@redhat.com>
 
 	PR target/25128
