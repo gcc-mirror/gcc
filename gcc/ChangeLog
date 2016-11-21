@@ -1,5 +1,13 @@
 2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* function.c (contains): Change argument type to rtx_insn *.
+	(prologue_contains): Likewise.
+	(epilogue_contains): Likewise.
+	(prologue_epilogue_contains): Likewise.
+	* function.h: Adjust prototype.
+
+2016-11-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* optabs.c (emit_libcall_block): Change argument type to
 	rtx_insn *.
 	* optabs.h: Adjust prototype.
