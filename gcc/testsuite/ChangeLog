@@ -1,5 +1,10 @@
 2016-11-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	* gcc.c-torture/execute/pr30778.c (memset): Use size_t for 3rd
+	parameter in declaration.
+
+2016-11-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	* gcc.dg/loop-split.c: Require int32plus.
 	* gcc.dg/stack-layout-dynamic-1.c: Require ptr32plus.
 
