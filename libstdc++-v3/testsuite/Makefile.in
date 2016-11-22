@@ -598,7 +598,7 @@ $(check_DEJAGNU_normal_targets): check-DEJAGNUnormal%: normal%/site.exp
 check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
 	$(if $*,@)AR="$(AR)"; export AR; \
 	RANLIB="$(RANLIB)"; export RANLIB; \
-	if [ -z "$*" ] && [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
+	if [ -z "$*" ] && [ -n "$(filter -j%, $(MFLAGS))" ]; then \
 	  rm -rf normal-parallel || true; \
 	  mkdir normal-parallel; \
 	  $(MAKE) $(AM_MAKEFLAGS) $(check_DEJAGNU_normal_targets); \
