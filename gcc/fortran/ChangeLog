@@ -1,3 +1,9 @@
+2016-11-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78443
+	* class.c (add_proc_comp): Add a vtype component for non-overridable
+	procedures that are overriding.
+
 2016-11-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/69741
