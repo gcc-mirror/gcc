@@ -1,3 +1,15 @@
+2016-11-22  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (char_needs_encoding): Remove.
+	(needs_encoding, fetch_utf8_char, encode_id): Remove.
+	(Gcc_backend::global_variable): Add asm_name parameter.  Don't
+	compute asm_name here.
+	(Gcc_backend::implicit_variable): Likewise.
+	(Gcc_backend::implicit_variable_reference): Likewise.
+	(Gcc_backend::immutable_struct): Likewise.
+	(Gcc_backend::immutable_struct_reference): Likewise.
+	* Make-lang.in (GO_OBJS): Add go/go-encode-id.o.
+
 2016-11-22  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::Gcc_backend): Add builtin function

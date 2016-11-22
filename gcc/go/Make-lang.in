@@ -55,6 +55,7 @@ GO_OBJS = \
 	go/expressions.o \
 	go/go-backend.o \
 	go/go-diagnostics.o \
+	go/go-encode-id.o \
 	go/go-dump.o \
 	go/go-gcc.o \
 	go/go-gcc-diagnostics.o \
@@ -230,6 +231,7 @@ CFLAGS-go/go-gcc.o += $(GOINCLUDES)
 CFLAGS-go/go-linemap.o += $(GOINCLUDES)
 CFLAGS-go/go-sha1.o += $(GOINCLUDES)
 CFLAGS-go/go-gcc-diagnostics.o += $(GOINCLUDES)
+CFLAGS-go/go-encode-id.o += $(GOINCLUDES)
 
 go/%.o: go/gofrontend/%.cc
 	$(COMPILE) $(GOINCLUDES) $<
