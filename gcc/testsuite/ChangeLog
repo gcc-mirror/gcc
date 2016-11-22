@@ -1,3 +1,8 @@
+2016-11-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/78439
+	* gcc.c-torture/compile/pr78439.c: New test.
+
 2016-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/77904
