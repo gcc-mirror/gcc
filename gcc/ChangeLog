@@ -1,5 +1,11 @@
 2016-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/78416
+	* expmed.c (expand_divmod): Use wide_int for computation of
+	op1_is_pow2.  Don't set it if op1 is 0.  Formatting fixes.
+	Use size <= HOST_BITS_PER_WIDE_INT instead of
+	HOST_BITS_PER_WIDE_INT >= size.
+
 	PR tree-optimization/78445
 	* tree-if-conv.c (tree_if_conversion): If any_pred_load_store or
 	any_complicated_phi, version loop even if flag_tree_loop_if_convert is
