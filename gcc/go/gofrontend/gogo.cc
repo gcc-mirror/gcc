@@ -12,6 +12,7 @@
 
 #include "go-c.h"
 #include "go-diagnostics.h"
+#include "go-encode-id.h"
 #include "go-dump.h"
 #include "go-optimize.h"
 #include "lex.h"
@@ -5326,6 +5327,10 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       if ((this->pragmas_ & GOPRAGMA_NOSPLIT) != 0)
 	disable_split_stack = true;
 
+      // Encode name if asm_name not already set at this point
+      if (asm_name.empty() && go_id_needs_encoding(no->get_id(gogo)))
+        asm_name = go_encode_id(no->get_id(gogo));
+
       // This should go into a unique section if that has been
       // requested elsewhere, or if this is a nointerface function.
       // We want to put a nointerface function into a unique section
@@ -5379,6 +5384,8 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
               asm_name.append(rtype->mangled_name(gogo));
             }
         }
+      else if (go_id_needs_encoding(no->get_id(gogo)))
+        asm_name = go_encode_id(no->get_id(gogo));
 
       Btype* functype = this->fntype_->get_backend_fntype(gogo);
       this->fndecl_ =
@@ -6594,25 +6601,39 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	      type = Type::make_pointer_type(type);
 	    }
 
-	  std::string n = Gogo::unpack_hidden_name(name);
+	  const std::string n = Gogo::unpack_hidden_name(name);
 	  Btype* btype = type->get_backend(gogo);
 
 	  Bvariable* bvar;
 	  if (Map_type::is_zero_value(this))
 	    bvar = Map_type::backend_zero_value(gogo);
 	  else if (this->is_global_)
-	    bvar = backend->global_variable((package == NULL
-					     ? gogo->package_name()
-					     : package->package_name()),
-					    (package == NULL
-					     ? gogo->pkgpath_symbol()
-					     : package->pkgpath_symbol()),
-					    n,
-					    btype,
-					    package != NULL,
-					    Gogo::is_hidden_name(name),
-					    this->in_unique_section_,
-					    this->location_);
+	    {
+	      std::string var_name(package != NULL
+				   ? package->package_name()
+				   : gogo->package_name());
+	      var_name.push_back('.');
+	      var_name.append(n);
+              std::string asm_name;
+              if (Gogo::is_hidden_name(name))
+                asm_name = var_name;
+              else
+                {
+                  asm_name = package != NULL
+                      ? package->pkgpath_symbol()
+                      : gogo->pkgpath_symbol();
+                  asm_name.push_back('.');
+                  asm_name.append(n);
+                }
+	      asm_name = go_encode_id(asm_name);
+	      bvar = backend->global_variable(var_name,
+					      asm_name,
+					      btype,
+					      package != NULL,
+					      Gogo::is_hidden_name(name),
+					      this->in_unique_section_,
+					      this->location_);
+	    }
 	  else if (function == NULL)
 	    {
 	      go_assert(saw_errors());
