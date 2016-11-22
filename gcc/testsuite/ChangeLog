@@ -49,12 +49,12 @@
 
 2016-11-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
-	PR libgfortran/78449 
+	PR libgfortran/78449
 	* gfortran.dg/ieee/ieee_8.f90 (aarch64*gnu, arm*gnu*): Mark xfail.
 
 2016-11-21  Jeff Law  <law@redhat.com>
 
-        PR target/68538
+	PR target/68538
 	* gcc.c-torture/compile/pr68538.c: New test.
 
 2016-11-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
@@ -147,7 +147,7 @@
 	* gcc.target/m68k/pr48551.c: New test.
 
 2016-11-20  Harald Anlauf  <anlauf@gmx.de>
- 
+
 	PR fortran/69741
 	* gfortran.dg/forall_18.f90: New testcase.
 
@@ -226,8 +226,8 @@
 2016-11-18  Andrew Bennett  <andrew.bennett@imgtec.com>
 	    Toma Tabacu  <toma.tabacu@imgtec.com>
 
-	* gcc.target/mips/inline-memcpy-1.c (dg-options): Add
-	(REQUIRES_STDLIB).
+	* gcc.target/mips/inline-memcpy-1.c (dg-options):
+	Add (REQUIRES_STDLIB).
 	* gcc.target/mips/inline-memcpy-2.c: Ditto.
 	* gcc.target/mips/inline-memcpy-3.c: Ditto.
 	* gcc.target/mips/inline-memcpy-4.c: Ditto.
@@ -256,8 +256,7 @@
 	* gcc.target/mips/mips.exp (mips_option_groups): Add stdlib.
 	(mips_preprocess): Add ignore_output argument that when set
 	will not return the pre-processed output.
-	(mips_arch_info): Update arguments for the call to
-	mips_preprocess.
+	(mips_arch_info): Update arguments for the call to mips_preprocess.
 	(mips-dg-init): Ditto.
 	(mips-dg-options): Check if a test having test option
 	(REQUIRES_STDLIB) has the required sysroot support for
@@ -356,7 +355,7 @@
 	* gcc.target/aarch64/store_repeating_constant_2.c: Likewise.
 
 2016-11-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-            Richard Biener  <rguenther@suse.de>
+	    Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77848
 	* gfortran.dg/vect/pr77848.f: New test.
@@ -531,7 +530,7 @@
 2015-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.dg/optimize-bswapdi-3.c: Remove xfail.
-	* gcc.dg/optimize-bswaphi-1.c: Likewise. 	
+	* gcc.dg/optimize-bswaphi-1.c: Likewise.
 	* gcc.dg/optimize-bswapsi-2.c: Likewise.
 
 2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
@@ -616,9 +615,9 @@
 2016-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/funcspec-56.inc: New file.
-	* gcc.target/i386.funcspec-5.c: Include funcspec-56.inc.  Remove
+	* gcc.target/i386/funcspec-5.c: Include funcspec-56.inc.  Remove
 	common 32-bit and 64-bit function specific options.
-	* gcc.target/i386.funcspec-6.c: Ditto.
+	* gcc.target/i386/funcspec-6.c: Ditto.
 
 2016-11-15  Jakub Jelinek  <jakub@redhat.com>
 

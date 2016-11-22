@@ -1,3 +1,8 @@
+2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc-interface/Make-lang.in (check-acats): Fix detection
+	of -j argument.
+
 2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
  	    Alan Hayward  <alan.hayward@arm.com>
  	    David Sherwood  <david.sherwood@arm.com>

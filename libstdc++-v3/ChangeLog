@@ -1,3 +1,10 @@
+2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/Makefile.am
+	(check-DEJAGNU $(check_DEJAGNU_normal_targets)): Fix detection
+	of -j argument.
+	* testsuite/Makefile.in: Regenereate.
+
 2016-11-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78465
@@ -7376,7 +7383,7 @@
 	(is_assignable_v, is_copy_assignable_v, is_move_assignable_v)
 	(is_destructible_v, is_trivially_constructible_v)
 	(is_trivially_default_constructible_v)
- 	(is_trivially_copy_constructible_v, is_trivially_move_constructible_v)
+	(is_trivially_copy_constructible_v, is_trivially_move_constructible_v)
 	(is_trivially_assignable_v, is_trivially_copy_assignable_v)
 	(is_trivially_move_assignable_v, is_trivially_destructible_v)
 	(is_nothrow_constructible_v, is_nothrow_default_constructible_v)

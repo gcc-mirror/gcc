@@ -1,3 +1,8 @@
+2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.in ($(lang_checks_parallelized)): Fix detection
+	of -j argument.
+
 2016-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config.gcc: Allow new rmprofile value for configure option
@@ -38,8 +43,8 @@
 
 	PR tree-optimization/78445
 	* tree-if-conv.c (tree_if_conversion): If any_pred_load_store or
-	any_complicated_phi, version loop even if flag_tree_loop_if_convert is
-	1.  Formatting fix.
+	any_complicated_phi, version loop even if flag_tree_loop_if_convert
+	is 1.  Formatting fix.
 
 2016-11-22  Martin Liska  <mliska@suse.cz>
 
@@ -230,8 +235,7 @@
 	* config/alpha/alpha.c (emit_unlikely_jump): Likewise.
 	* config/arc/arc.c: Likewise.
 	* config/arm/arm.c: Likewise.
-	* config/mn10300/mn10300.c (mn10300_legitimize_pic_address):
-	Likewise.
+	* config/mn10300/mn10300.c (mn10300_legitimize_pic_address): Likewise.
 	* config/rs6000/rs6000.c (rs6000_expand_split_stack_prologue):
 	Likewise.
 	* config/spu/spu.c (spu_emit_branch_hint): Likewise.
@@ -247,19 +251,16 @@
 	* config/frv/frv.c (frv_optimize_membar_local): Likewise.
 	* config/frv/frv.md: Likewise.
 	* config/i386/i386-protos.h: Likewise.
-	* config/i386/i386.c (ix86_expand_split_stack_prologue):
-	Likewise.
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Likewise.
 	(ix86_split_fp_branch): Likewise.
 	(predict_jump): Likewise.
 	* config/ia64/ia64.c: Likewise.
 	* config/mcore/mcore.c: Likewise.
-	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address):
-	Likewise.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Likewise.
 	* config/s390/s390.c: Likewise.
 	* config/s390/s390.md: Likewise.
 	* config/spu/spu.md: Likewise.
-	* config/tilegx/tilegx.c (tilegx_legitimize_tls_address):
-	Likewise.
+	* config/tilegx/tilegx.c (tilegx_legitimize_tls_address): Likewise.
 	* lower-subreg.c (resolve_simple_move): Likewise.
 
 2016-11-20  Jeff Law  <law@redhat.com>
@@ -365,8 +366,7 @@
 	base types and CU or optimize implicit consts in them if
 	calc_base_type_die_sizes has been called during build_abbrev_table.
 	(calc_base_type_die_sizes): If abbrev_opt_start, set
-	abbrev_opt_base_type_end to one plus largest base type's
-	die_abbrev.
+	abbrev_opt_base_type_end to one plus largest base type's die_abbrev.
 
 2016-11-18  Jeff Law  <law@redhat.com>
 
@@ -432,9 +432,9 @@
 	Re-apply after PR bootstrap/77359 is fixed:
 	2016-08-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
-        * explow.c (get_dynamic_stack_size): Take known alignment of stack
-        pointer + STACK_DYNAMIC_OFFSET into account when calculating the
-        size needed.
+	* explow.c (get_dynamic_stack_size): Take known alignment of stack
+	pointer + STACK_DYNAMIC_OFFSET into account when calculating the
+	size needed.
 
 2016-11-18  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
@@ -460,15 +460,16 @@
 	* expr.c (convert_modes): Likewise.
 	* loop-doloop.c (doloop_optimize): Likewise.
 	* postreload.c (reload_cse_simplify_set): Likewise.
-	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise
 	(simplify_binary_operation_1, simplify_const_binary_operation):
+	Likewise.
 	(simplify_const_relational_operation, simplify_immed_subreg): Likewise.
 	* wide-int.h: Update documentation to recommend rtx_mode_t
 	instead of std::make_pair.
 
 2016-11-18  Richard Sandiford  <richard.sandiford@arm.com>
- 	    Alan Hayward  <alan.hayward@arm.com>
- 	    David Sherwood  <david.sherwood@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
 
 	* tree.h (SET_DECL_MODE): New macro.
 	* cfgexpand.c (avoid_deep_ter_for_debug): Use SET_DECL_MODE.
@@ -507,8 +508,7 @@
 	* config/arc/arc.md (cmem bit/sign-extend peephole2): New peephole
 	to make better use of cmem loads in the case where a single bit is
 	being accessed.
-	* config/arc/predicates.md (ge_lt_comparison_operator): New
-	predicate.
+	* config/arc/predicates.md (ge_lt_comparison_operator): New predicate.
 
 2016-11-17  Andrew Senkevich <andrew.senkevich@intel.com>
 
@@ -519,19 +519,15 @@
 2016-11-17  Kirill Yukhin  <kirill.yukhin@gmail.com>
 	    Andrew Senkevich <andrew.senkevich@intel.com>
 
-	* common/config/i386/i386-common.c
-	(OPTION_MASK_ISA_AVX5124FMAPS_SET,
-	OPTION_MASK_ISA_AVX5124FMAPS_UNSET,
-	OPTION_MASK_ISA_AVX5124VNNIW_SET,
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX5124FMAPS_SET,
+	OPTION_MASK_ISA_AVX5124FMAPS_UNSET, OPTION_MASK_ISA_AVX5124VNNIW_SET,
 	OPTION_MASK_ISA_AVX5124VNNIW_UNSET): New.
-	(ix86_handle_option): Handle OPT_mavx5124fmaps,
-	OPT_mavx5124vnniw.
+	(ix86_handle_option): Handle OPT_mavx5124fmaps, OPT_mavx5124vnniw.
 	* config.gcc: Add avx5124fmapsintrin.h, avx5124vnniwintrin.h.
 	* config/i386/avx5124fmapsintrin.h: New file.
 	* config/i386/avx5124vnniwintrin.h: Ditto.
 	* config/i386/constraints.md (h): New constraint.
-	* config/i386/cpuid.h: (bit_AVX5124VNNIW,
-	bit_AVX5124FMAPS): New.
+	* config/i386/cpuid.h (bit_AVX5124VNNIW, bit_AVX5124FMAPS): New.
 	* config/i386/driver-i386.c (host_detect_local_cpu):
 	Detect avx5124fmaps, avx5124vnniw.
 	* config/i386/i386-builtin-types.def: Add types
@@ -560,17 +556,14 @@
 	avx5124vnniw.
 	(ix86_expand_builtin): Handle new builtins.
 	(ix86_additional_allocno_class_p): New.
-	* config/i386/i386.h (TARGET_AVX5124FMAPS,
-	TARGET_AVX5124FMAPS_P,
-	TARGET_AVX5124VNNIW,
-	TARGET_AVX5124VNNIW_P): Define.
+	* config/i386/i386.h (TARGET_AVX5124FMAPS, TARGET_AVX5124FMAPS_P,
+	TARGET_AVX5124VNNIW, TARGET_AVX5124VNNIW_P): Define.
 	(reg_class): Add MOD4_SSE_REGS.
 	(MOD4_SSE_REG_P, MOD4_SSE_REGNO_P): New.
 	* config/i386/i386.opt: Add mavx5124fmaps, mavx5124vnniw.
 	* config/i386/immintrin.h: Include avx5124fmapsintrin.h,
 	avx5124vnniwintrin.h.
-	* config/i386/sse.md (unspec): Add UNSPEC_VP4FMADD,
-	UNSPEC_VP4FNMADD,
+	* config/i386/sse.md (unspec): Add UNSPEC_VP4FMADD, UNSPEC_VP4FNMADD,
 	UNSPEC_VP4DPWSSD, UNSPEC_VP4DPWSSDS.
 	(define_mode_iterator IMOD4): New.
 	(define_mode_attr imod4_narrow): Ditto.
@@ -643,7 +636,7 @@
 	is larger or equal to targetm.max_anchor_offset.
 
 2016-11-17  Pip Cet  <pipcet@gmail.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/78355
 	* doc/tm.texi.in (SLOW_UNALIGNED_ACCESS): Document that the macro only
@@ -671,7 +664,7 @@
 	function.
 
 2016-11-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-            Richard Biener  <rguenther@suse.de>
+	    Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77848
 	* tree-if-conv.c (tree_if_conversion): Always version loops unless
@@ -949,7 +942,7 @@
 	(atomic_fetch_add<mode>): Ditto.
 	(atomic_fetch_addsf): Ditto.
 	(atomic_fetch_<logic><mode>): Ditto.
-	* config/nvptx/nvptx.opt: (msoft-stack): New option.
+	* config/nvptx/nvptx.opt (msoft-stack): New option.
 	(muniform-simt): Ditto.
 	(mgomp): Ditto.
 	* config/nvptx/t-nvptx (MULTILIB_OPTIONS): New.
@@ -958,7 +951,7 @@
 	(muniform-simt): Document
 	(mgomp): Document.
 	* doc/tm.texi: Regenerate.
-	* doc/tm.texi.in: (TARGET_SIMT_VF): New hook.
+	* doc/tm.texi.in (TARGET_SIMT_VF): New hook.
 	* target.def: Define it.
 	* target-insns.def (omp_simt_lane): New.
 	(omp_simt_last_lane): New.
@@ -973,17 +966,14 @@
 	prototype.
 	* config/mips/mips.h (ASM_OUTPUT_BEFORE_CASE_LABEL): New macro.
 	(ASM_OUTPUT_CASE_END): Likewise.
-	* config/mips/mips.c (mips_set_text_contents_type): New
-	function.
+	* config/mips/mips.c (mips_set_text_contents_type): New function.
 	(mips16_emit_constants): Record the pool's initial label number
-	with the `consttable' insn.  Emit a `consttable_end' insn at the
-	end.
+	with the `consttable' insn.  Emit a `consttable_end' insn at the end.
 	(mips_final_prescan_insn): Call `mips_set_text_contents_type'
 	for `consttable' insns.
 	(mips_final_postscan_insn): Call `mips_set_text_contents_type'
 	for `consttable_end' insns.
-	* config/mips/mips.md (unspec): Add UNSPEC_CONSTTABLE_END enum
-	value.
+	* config/mips/mips.md (unspec): Add UNSPEC_CONSTTABLE_END enum value.
 	(consttable): Add operand.
 	(consttable_end): New insn.
 
@@ -1053,8 +1043,8 @@
 	* arm/arm-fpus.def (vfpv2): New FPU, currently an alias for 'vfp'.
 	(neon-vfpv3): New FPU, currently an alias for 'neon'.
 	* arm/arm-tables.opt: Regenerated.
-        * arm/t-aprofile (MULTILIB_REUSE): Add reuse rules for vfpv2 and
-        neon-vfpv3.
+	* arm/t-aprofile (MULTILIB_REUSE): Add reuse rules for vfpv2 and
+	neon-vfpv3.
 	* doc/invoke.texi (ARM: -mfpu): Document new options.  Note that 'vfp'
 	and 'neon' are aliases for specific implementations.
 
@@ -1164,7 +1154,8 @@
 
 2016-11-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
-	* tree-ssa-coalesce.c (register_default_def): Remove register_ssa_partition.
+	* tree-ssa-coalesce.c (register_default_def): Remove
+	register_ssa_partition.
 	(create_outofssa_var_map): Likewise.
 	* tree-ssa-live.c (register_ssa_partition_check): Remove.
 	* tree-ssa-live.h (register_ssa_partition): Likewise.
@@ -1381,8 +1372,7 @@
 
 2016-11-14  Martin Liska  <mliska@suse.cz>
 
-	* tree-ssa-dse.c (dse_optimize_stmt): Remove quotes and extra
-	new line.
+	* tree-ssa-dse.c (dse_optimize_stmt): Remove quotes and extra new line.
 
 2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
 	    Richard Biener  <rguenther@suse.de>
@@ -2041,7 +2031,7 @@
 2016-11-07  Jack Howarth  <howarth.at.gcc@gmail.com>
 
 	PR driver/78206
-	* incpath.c: (remove_dup(): Also silently ignore EPERM.
+	* incpath.c (remove_dup): Also silently ignore EPERM.
 
 2016-11-07  Martin Jambor  <mjambor@suse.cz>
 
@@ -3256,7 +3246,7 @@
 	* config/s390/s390.c (s390_adjust_loop_scan_osc): New function.
 	(s390_adjust_loops): New function.
 	(s390_reorg): Invoke s390_adjust_loops.
-	* config/s390/s390.md: (UNSPEC_OSC_BREAK): New constant.
+	* config/s390/s390.md (UNSPEC_OSC_BREAK): New constant.
 	("osc_break"): New insn definition.
 
 2016-10-28  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
@@ -4824,7 +4814,7 @@
 	(calculate_dominance_info_for_region): Likewise.
 	(free_dominance_info_for_region): Likewise.
 	* dominance.h: Add prototypes for introduced region-based functions
-	tree-if-conv.c: (build_region): New function.
+	* tree-if-conv.c (build_region): New function.
 	(if_convertible_loop_p_1): Invoke local version of post-dominators
 	calculation before basic block predication with subsequent freeing
 	post-dominator info.
@@ -20913,7 +20903,7 @@
 
 2016-05-07  Jim Wilson  <jim.wilson@linaro.org>
 
-	* config/arm/arm.md: (arch): Add neon.
+	* config/arm/arm.md (arch): Add neon.
 	(arch_enabled): Return yes for arch neon when TARGET_NEON.
 	* config/arm/vfp.md (movdf_vfp): Add w/G as alternative 3.  Add
 	neon_move as type for alt 3.  Add arch attr enabling alt 3 for neon.
@@ -25109,7 +25099,7 @@
 2016-03-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70293
-	* config/i386/sse.md: (define_insn "*vec_dup<mode>"/AVX2):
+	* config/i386/sse.md (define_insn "*vec_dup<mode>"/AVX2):
 	Block third alternative for AVX-512VL target,
 
 2016-03-21  Martin Liska  <mliska@suse.cz>
