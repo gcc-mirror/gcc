@@ -1,3 +1,8 @@
+2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.in ($(lang_checks_parallelized)): Fix detection
+	of -j argument.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/install.texi: Move the 'Overriding configure test results'

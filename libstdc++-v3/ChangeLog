@@ -1,3 +1,10 @@
+2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/Makefile.am
+	(check-DEJAGNU $(check_DEJAGNU_normal_targets)): Fix detection
+	of -j argument.
+	* testsuite/Makefile.in: Regenereate.
+
 2016-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/any/typedefs.cc: Fix license text.
@@ -365,7 +372,7 @@
 2016-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backport from mainline
-        2016-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	2016-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/71313
 	* src/filesystem/ops.cc (remove_all(const path&, error_code&)):
