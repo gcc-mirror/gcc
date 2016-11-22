@@ -278,6 +278,7 @@ static bool omp_any_child_fn_dumped;
 static void scan_omp (gimple_seq *, omp_context *);
 static tree scan_omp_1_op (tree *, int *, void *);
 static gphi *find_phi_with_arg_on_edge (tree, edge);
+static int omp_max_simt_vf (void);
 
 #define WALK_SUBSTMTS  \
     case GIMPLE_BIND: \
@@ -2192,6 +2193,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
+	case OMP_CLAUSE__SIMT_:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -2363,6 +2365,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE__GRIDDIM_:
+	case OMP_CLAUSE__SIMT_:
 	  break;
 
 	case OMP_CLAUSE_TILE:
@@ -3064,6 +3067,48 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
       scan_omp_op (gimple_omp_for_incr_ptr (stmt, i), ctx);
     }
   scan_omp (gimple_omp_body_ptr (stmt), ctx);
+}
+
+/* Duplicate #pragma omp simd, one for SIMT, another one for SIMD.  */
+
+static void
+scan_omp_simd (gimple_stmt_iterator *gsi, gomp_for *stmt,
+	       omp_context *outer_ctx)
+{
+  gbind *bind = gimple_build_bind (NULL, NULL, NULL);
+  gsi_replace (gsi, bind, false);
+  gimple_seq seq = NULL;
+  gimple *g = gimple_build_call_internal (IFN_GOMP_USE_SIMT, 0);
+  tree cond = create_tmp_var_raw (integer_type_node);
+  DECL_CONTEXT (cond) = current_function_decl;
+  DECL_SEEN_IN_BIND_EXPR_P (cond) = 1;
+  gimple_bind_set_vars (bind, cond);
+  gimple_call_set_lhs (g, cond);
+  gimple_seq_add_stmt (&seq, g);
+  tree lab1 = create_artificial_label (UNKNOWN_LOCATION);
+  tree lab2 = create_artificial_label (UNKNOWN_LOCATION);
+  tree lab3 = create_artificial_label (UNKNOWN_LOCATION);
+  g = gimple_build_cond (NE_EXPR, cond, integer_zero_node, lab1, lab2);
+  gimple_seq_add_stmt (&seq, g);
+  g = gimple_build_label (lab1);
+  gimple_seq_add_stmt (&seq, g);
+  gimple_seq new_seq = copy_gimple_seq_and_replace_locals (stmt);
+  gomp_for *new_stmt = as_a <gomp_for *> (new_seq);
+  tree clause = build_omp_clause (gimple_location (stmt), OMP_CLAUSE__SIMT_);
+  OMP_CLAUSE_CHAIN (clause) = gimple_omp_for_clauses (new_stmt);
+  gimple_omp_for_set_clauses (new_stmt, clause);
+  gimple_seq_add_stmt (&seq, new_stmt);
+  g = gimple_build_goto (lab3);
+  gimple_seq_add_stmt (&seq, g);
+  g = gimple_build_label (lab2);
+  gimple_seq_add_stmt (&seq, g);
+  gimple_seq_add_stmt (&seq, stmt);
+  g = gimple_build_label (lab3);
+  gimple_seq_add_stmt (&seq, g);
+  gimple_bind_set_body (bind, seq);
+  update_stmt (bind);
+  scan_omp_for (new_stmt, outer_ctx);
+  scan_omp_for (stmt, outer_ctx);
 }
 
 /* Scan an OpenMP sections directive.  */
@@ -3969,7 +4014,13 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_FOR:
-      scan_omp_for (as_a <gomp_for *> (stmt), ctx);
+      if (((gimple_omp_for_kind (as_a <gomp_for *> (stmt))
+	    & GF_OMP_FOR_KIND_MASK) == GF_OMP_FOR_KIND_SIMD)
+	  && omp_maybe_offloaded_ctx (ctx)
+	  && omp_max_simt_vf ())
+	scan_omp_simd (gsi, as_a <gomp_for *> (stmt), ctx);
+      else
+	scan_omp_for (as_a <gomp_for *> (stmt), ctx);
       break;
 
     case GIMPLE_OMP_SECTIONS:
@@ -4316,8 +4367,7 @@ omp_max_vf (void)
       if (GET_MODE_CLASS (vqimode) == MODE_VECTOR_INT)
 	vf = GET_MODE_NUNITS (vqimode);
     }
-  int svf = omp_max_simt_vf ();
-  return MAX (vf, svf);
+  return vf;
 }
 
 /* Helper function of lower_rec_input_clauses, used for #pragma omp simd
@@ -4329,7 +4379,11 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx, int &max_vf,
 {
   if (max_vf == 0)
     {
-      max_vf = omp_max_vf ();
+      if (find_omp_clause (gimple_omp_for_clauses (ctx->stmt),
+			   OMP_CLAUSE__SIMT_))
+	max_vf = omp_max_simt_vf ();
+      else
+	max_vf = omp_max_vf ();
       if (max_vf > 1)
 	{
 	  tree c = find_omp_clause (gimple_omp_for_clauses (ctx->stmt),
@@ -4405,8 +4459,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   int pass;
   bool is_simd = (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
 		  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD);
-  bool maybe_simt
-    = is_simd && omp_maybe_offloaded_ctx (ctx) && omp_max_simt_vf () > 1;
+  bool maybe_simt = is_simd && find_omp_clause (clauses, OMP_CLAUSE__SIMT_);
   int max_vf = 0;
   tree lane = NULL_TREE, idx = NULL_TREE;
   tree simt_lane = NULL_TREE;
@@ -5497,7 +5550,7 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *stmt_list,
   if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
       && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
     {
-      maybe_simt = omp_maybe_offloaded_ctx (ctx) && omp_max_simt_vf () > 1;
+      maybe_simt = find_omp_clause (orig_clauses, OMP_CLAUSE__SIMT_);
       simduid = find_omp_clause (orig_clauses, OMP_CLAUSE__SIMDUID_);
       if (simduid)
 	simduid = OMP_CLAUSE__SIMDUID__DECL (simduid);
@@ -10749,10 +10802,9 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
     }
   tree step = fd->loop.step;
 
-  bool offloaded = cgraph_node::get (current_function_decl)->offloadable;
-  for (struct omp_region *rgn = region; !offloaded && rgn; rgn = rgn->outer)
-    offloaded = rgn->type == GIMPLE_OMP_TARGET;
-  bool is_simt = offloaded && omp_max_simt_vf () > 1 && safelen_int > 1;
+  bool is_simt = (safelen_int > 1
+		  && find_omp_clause (gimple_omp_for_clauses (fd->for_stmt),
+				      OMP_CLAUSE__SIMT_));
   tree simt_lane = NULL_TREE, simt_maxlane = NULL_TREE;
   if (is_simt)
     {
@@ -15006,6 +15058,8 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gbind *bind;
   bool simd = find_omp_clause (gimple_omp_ordered_clauses (ord_stmt),
 			       OMP_CLAUSE_SIMD);
+  /* FIXME: this should check presence of OMP_CLAUSE__SIMT_ on the enclosing
+     loop.  */
   bool maybe_simt
     = simd && omp_maybe_offloaded_ctx (ctx) && omp_max_simt_vf () > 1;
   bool threads = find_omp_clause (gimple_omp_ordered_clauses (ord_stmt),
@@ -20167,6 +20221,9 @@ execute_omp_device_lower ()
 	tree type = lhs ? TREE_TYPE (lhs) : integer_type_node;
 	switch (gimple_call_internal_fn (stmt))
 	  {
+	  case IFN_GOMP_USE_SIMT:
+	    rhs = vf == 1 ? integer_zero_node : integer_one_node;
+	    break;
 	  case IFN_GOMP_SIMT_LANE:
 	  case IFN_GOMP_SIMT_LAST_LANE:
 	    rhs = vf == 1 ? build_zero_cst (type) : NULL_TREE;

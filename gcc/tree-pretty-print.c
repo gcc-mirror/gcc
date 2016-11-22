@@ -893,6 +893,10 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
       pp_right_paren (pp);
       break;
 
+    case OMP_CLAUSE__SIMT_:
+      pp_string (pp, "_simt_");
+      break;
+
     case OMP_CLAUSE_GANG:
       pp_string (pp, "gang");
       if (OMP_CLAUSE_GANG_EXPR (clause) != NULL_TREE)

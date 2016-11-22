@@ -438,6 +438,10 @@ enum omp_clause_code {
   /* Internally used only clause, holding SIMD uid.  */
   OMP_CLAUSE__SIMDUID_,
 
+  /* Internally used only clause, flag whether this is SIMT simd
+     loop or not.  */
+  OMP_CLAUSE__SIMT_,
+
   /* Internally used only clause, holding _Cilk_for # of iterations
      on OMP_PARALLEL.  */
   OMP_CLAUSE__CILK_FOR_COUNT_,
