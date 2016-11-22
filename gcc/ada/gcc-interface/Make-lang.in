@@ -889,7 +889,7 @@ check-acats:
 	@test -d $(ACATSDIR) || mkdir -p $(ACATSDIR); \
 	rootme=`${PWD_COMMAND}`; export rootme; \
 	EXPECT=$(EXPECT); export EXPECT; \
-	if [ -z "$(CHAPTERS)" ] && [ "$(filter -j, $(MFLAGS))" = "-j" ]; \
+	if [ -z "$(CHAPTERS)" ] && [ -n "$(filter -j%, $(MFLAGS))" ]; \
 	then \
 	  rm -rf $(ACATSDIR)-parallel; \
 	  mkdir $(ACATSDIR)-parallel; \
