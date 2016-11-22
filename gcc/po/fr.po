@@ -27,6 +27,11 @@
 #   top-level         = hors de toute fonction
 #   member function   = fonction membre
 #   template          = patron  (apparaît dans plusieurs dictionnaires)
+#   edge              = arrête (car il s'agit d'un saut indirect qui est un lien entre deux blocs de code.
+#                       J'ai utilisé une analogie avec l'arrête d'un polyèdre.)
+#   loop unrolling    = dépliage de boucle (car développement est déjà utilisé pour « variable expansion ».)
+#   loop peeling      = aplatissage de boucle (c'est comme le unrolling sauf que toutes les itérations
+#                       de la boucle initiale ont été dépliées. La boucle est complètement à plat.)
 #
 # Pas traduit:
 #   thread
@@ -126,7 +131,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-11-11 19:21+0100\n"
+"PO-Revision-Date: 2016-11-20 09:24+0100\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -262,7 +267,7 @@ msgstr "%s:%d: embrouillé par les erreurs précédentes, abandon\n"
 
 # FIXME
 #: diagnostic.c:1309
-#, fuzzy, c-format
+#, c-format
 msgid "Internal compiler error: Error reporting routines re-entered.\n"
 msgstr "Erreur interne du compilateur : Erreur en rapportant les routines ré-entrées.\n"
 
@@ -1770,156 +1775,149 @@ msgid "The maximum length of scheduling's pending operations list."
 msgstr "La longueur maximale de la liste des opération en attente d'ordonnancement."
 
 #: params.def:180
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop"
+#, no-c-format
 msgid "The maximum number of backtrack attempts the scheduler should make when modulo scheduling a loop."
-msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle"
+msgstr "Le nombre maximum de retours en arrière que l'ordonnanceur doit essayer lors de l'ordonnancement modulo d'une boucle."
 
 #: params.def:185
 #, no-c-format
 msgid "The size of function body to be considered large."
-msgstr "La taille du corps de la fonction est considéré comme étant grande."
+msgstr "La taille du corps d'une fonction a considérer comme étant grand."
 
 #: params.def:189
 #, no-c-format
 msgid "Maximal growth due to inlining of large function (in percent)."
-msgstr "Croissance maximal en raison de l'enlignage d'une grande fonction (en pourcentage)."
+msgstr "Croissance maximale due à la mise en ligne d'une grande fonction (en pourcentage)."
 
 #: params.def:193
 #, no-c-format
 msgid "The size of translation unit to be considered large."
-msgstr "La taille de l’unité de traduction considérée comme étant grande."
+msgstr "La taille d'une unité de traduction a considérer comme grande."
 
 #: params.def:197
 #, no-c-format
 msgid "How much can given compilation unit grow because of the inlining (in percent)."
-msgstr "Quelle croissance d'une unité de compilation peut être tolérée en raison de l'enlignage (en pourcentage)."
+msgstr "Quelle croissance d'une unité de compilation peut être tolérée en raison de la mise en ligne (en pourcentage)."
 
 #: params.def:201
-#, fuzzy, no-c-format
-#| msgid "how much can given compilation unit grow because of the inlining (in percent)"
+#, no-c-format
 msgid "How much can given compilation unit grow because of the interprocedural constant propagation (in percent)."
-msgstr "Quelle croissance d'une unité de compilation peut être tolérée en raison de l'enlignage (en pourcentage)"
+msgstr "Quelle croissance d'une unité de compilation peut être tolérée à cause de la propagation interprocédurale de constantes (en pourcentage)."
 
 #: params.def:205
 #, no-c-format
 msgid "Maximal estimated growth of function body caused by early inlining of single call."
-msgstr ""
+msgstr "Croissance maximale estimée du corps d'une fonction causée par la première vague de mises en ligne des appels uniques."
 
 #: params.def:209
-#, fuzzy, no-c-format
-#| msgid "The size of function body to be considered large"
+#, no-c-format
 msgid "The size of stack frame to be considered large."
-msgstr "La taille du corps de la fonction est considéré comme étant grande"
+msgstr "La taille de la trame de pile qui est considérée comme étant grande"
 
 #: params.def:213
-#, fuzzy, no-c-format
-#| msgid "Maximal growth due to inlining of large function (in percent)"
+#, no-c-format
 msgid "Maximal stack frame growth due to inlining (in percent)."
-msgstr "Croissance maximal en raison de l'enlignage d'une grande fonction (en pourcentage)"
+msgstr "Croissance maximale de la trame de pile causée par la mise en ligne (en pourcentage)."
 
 #: params.def:220
 #, no-c-format
 msgid "The maximum amount of memory to be allocated by GCSE."
-msgstr "La taille maximale de mémoire à être alloué par GCSE."
+msgstr "La quantité maximale de mémoire à être allouée par GCSE."
 
 #: params.def:227
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop"
+#, no-c-format
 msgid "The maximum ratio of insertions to deletions of expressions in GCSE."
-msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle"
+msgstr "Le rapport maximum entre les insertions et les suppressions d'expressions dans GCSE."
 
 #: params.def:238
 #, no-c-format
 msgid "The threshold ratio for performing partial redundancy elimination after reload."
-msgstr ""
+msgstr "Le rapport seuil pour réaliser l'élimination des redondances partielles après le rechargement."
 
 #: params.def:245
 #, no-c-format
 msgid "The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload."
-msgstr ""
+msgstr "Le rapport seuil du décompte d'exécution des arrêtes critiques qui permet l'élimination des redondances après rechargement."
 
 #: params.def:253
 #, no-c-format
 msgid "Scaling factor in calculation of maximum distance an expression can be moved by GCSE optimizations."
-msgstr ""
+msgstr "Facteur d'échelle dans le calcul de la distance maximale qu'une expression peut être déplacée par les optimisations de GCSE."
 
 #: params.def:259
 #, no-c-format
 msgid "Cost at which GCSE optimizations will not constraint the distance an expression can travel."
-msgstr ""
+msgstr "Coût auquel les optimisations de GCSE ne contraindront pas la distance de déplacement d'une expression."
 
 #: params.def:267
 #, no-c-format
 msgid "Maximum depth of search in the dominator tree for expressions to hoist."
-msgstr ""
+msgstr "Profondeur maximum de recherche dans l'arbre des dominateurs pour trouver des expressions à élever."
 
 #: params.def:275
 #, no-c-format
 msgid "Maximum depth of sqrt chains to use when synthesizing exponentiation by a real constant."
-msgstr ""
+msgstr "Profondeur maximum des chaînes de racines carrées à utiliser lors de la synthèse d'une élévation à la puissance par une constante réelle."
 
 #: params.def:287
 #, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop."
-msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle."
+msgstr "Le nombre maximum d'instructions à envisager de déplier dans une boucle."
 
 #: params.def:293
 #, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop on average."
-msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle en moyenne."
+msgstr "Le nombre maximum d'instructions à envisager de déplier en moyenne dans une boucle."
 
 #: params.def:298
 #, no-c-format
 msgid "The maximum number of unrollings of a single loop."
-msgstr "Le nombre maximum d'instructions à inclure dans une boucle simple."
+msgstr "Le nombre maximum de dépliages d'une boucle."
 
 #: params.def:303
 #, no-c-format
 msgid "The maximum number of insns of a peeled loop."
-msgstr "Le nombre maximum d'insns de boucle réduite."
+msgstr "Le nombre maximum d'insns dans une boucle aplatie."
 
 #: params.def:308
 #, no-c-format
 msgid "The maximum number of peelings of a single loop."
-msgstr "Le nombre maximum de passes de réduction d'une boucle simple."
+msgstr "Le nombre maximum de dépliages pour aplatir une boucle."
 
 #: params.def:313
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a completely peeled loop"
+#, no-c-format
 msgid "The maximum number of branches on the path through the peeled sequence."
-msgstr "Le nombre maximum d'insns d'une boucle complètement réduite"
+msgstr "Le nombre maximum de branches sur le chemin pour aplatir une séquence."
 
 #: params.def:318
 #, no-c-format
 msgid "The maximum number of insns of a completely peeled loop."
-msgstr "Le nombre maximum d'insns d'une boucle complètement réduite."
+msgstr "Le nombre maximum d'insns d'une boucle complètement aplatie."
 
 #: params.def:323
 #, no-c-format
 msgid "The maximum number of peelings of a single loop that is peeled completely."
-msgstr "Le nombre maximum de réductions d'une boucle simple qui a été complètement réduite."
+msgstr "Le nombre maximum de réductions d'une boucle simple qui est complètement aplatie."
 
 #: params.def:328
 #, no-c-format
 msgid "The maximum number of insns of a peeled loop that rolls only once."
-msgstr "Le nombre maximum d'insns d'une boucle réduite qui tourne une seule fois."
+msgstr "Le nombre maximum d'insns d'une boucle aplatie qui tourne une seule fois."
 
 #: params.def:333
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a completely peeled loop"
+#, no-c-format
 msgid "The maximum depth of a loop nest we completely peel."
-msgstr "Le nombre maximum d'insns d'une boucle complètement réduite"
+msgstr "La profondeur maximum de boucles imbriquées que nous aplatissons complètement."
 
 #: params.def:339
 #, no-c-format
 msgid "The maximum number of insns of an unswitched loop."
-msgstr "Le nombre maximum d'insns d'une boucle sans branchement."
+msgstr "Le nombre maximum d'insns d'une boucle qui est déplacée à l'intérieur de ses branchements."
 
 #: params.def:344
 #, no-c-format
 msgid "The maximum number of unswitchings in a single loop."
-msgstr "Le nombre maximum de non branchement dans une boucle simple."
+msgstr "Le nombre maximum de déplacements d'une seule boucle à l'intérieur de ses branchements."
 
 #: params.def:351
 #, no-c-format
