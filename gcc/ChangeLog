@@ -1,3 +1,9 @@
+2016-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/77904
+	* config/arm/arm.c (thumb1_compute_save_reg_mask): Mark frame pointer
+	in save register mask if it is needed.
+
 2016-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78436

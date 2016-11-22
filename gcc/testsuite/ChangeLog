@@ -1,3 +1,8 @@
+2016-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/77904
+	* gcc.target/arm/pr77904.c: New test.
+
 2016-11-22  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.target/mips/interrupt_handler-bug-1.c (dg-options): Add
