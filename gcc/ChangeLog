@@ -1,3 +1,8 @@
+2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.in ($(lang_checks_parallelized)): Fix detection
+	of -j argument.
+
 2016-11-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
