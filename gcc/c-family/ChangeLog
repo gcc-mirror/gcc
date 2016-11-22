@@ -1,3 +1,8 @@
+2016-11-22  Nathan Sidwell  <nathan@acm.org>
+
+	* array-notation-common.c (cilkplus_extract_an_trplets): Fix
+	indentation.
+
 2016-11-21  Martin Sebor  <msebor@redhat.com>
 
 	* c.opt (-fprintf-return-value): Enable by default.

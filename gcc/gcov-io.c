@@ -421,13 +421,11 @@ gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
     histo_bitvector[bv_ix] = 0;
   csum = &summary->ctrs[GCOV_COUNTER_ARCS];
   for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-    {
-      if (csum->histogram[h_ix].num_counters > 0)
-        {
-          histo_bitvector[h_ix / 32] |= 1 << (h_ix % 32);
-          h_cnt++;
-        }
-    }
+    if (csum->histogram[h_ix].num_counters)
+      {
+	histo_bitvector[h_ix / 32] |= 1 << (h_ix % 32);
+	h_cnt++;
+      }
   gcov_write_tag_length (tag, GCOV_TAG_SUMMARY_LENGTH (h_cnt));
   gcov_write_unsigned (summary->checksum);
   for (csum = summary->ctrs, ix = GCOV_COUNTERS_SUMMABLE; ix--; csum++)
