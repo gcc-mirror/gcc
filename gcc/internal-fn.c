@@ -158,6 +158,14 @@ expand_ANNOTATE (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* This should get expanded in omp_device_lower pass.  */
+
+static void
+expand_GOMP_USE_SIMT (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* Lane index on SIMT targets: thread index in the warp on NVPTX.  On targets
    without SIMT execution this should be expanded in omp_device_lower pass.  */
 

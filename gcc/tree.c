@@ -320,6 +320,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_HINT  */
   0, /* OMP_CLAUSE_DEFALTMAP  */
   1, /* OMP_CLAUSE__SIMDUID_  */
+  0, /* OMP_CLAUSE__SIMT_  */
   1, /* OMP_CLAUSE__CILK_FOR_COUNT_  */
   0, /* OMP_CLAUSE_INDEPENDENT  */
   1, /* OMP_CLAUSE_WORKER  */
@@ -391,6 +392,7 @@ const char * const omp_clause_code_name[] =
   "hint",
   "defaultmap",
   "_simduid_",
+  "_simt_",
   "_Cilk_for_count_",
   "independent",
   "worker",
@@ -11893,6 +11895,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE__SIMT_:
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_LASTPRIVATE:
