@@ -1,3 +1,11 @@
+2016-11-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2016-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/77822
+	* g++.dg/torture/pr77822.C: New test.
+
 2016-11-20  Harald Anlauf  <anlauf@gmx.de>
  
 	PR fortran/69741
