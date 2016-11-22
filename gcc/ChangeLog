@@ -1,3 +1,11 @@
+2016-11-22  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc-ar.c (main): Fix indentation.
+	* gcov-io.c (gcov_write_summary): Remove extraneous {...}
+	* ggc-page.c (move_ptes_to_front): Fix formatting.
+	* hsa-dump.c (dump_has_cfun): Fix indentation.
+	* sel-sched-ir.h: Remove trailing blank lines.
+
 2016-11-22  Jakub Jelinek  <jakub@redhat.com>
             Alexander Monakov  <amonakov@ispras.ru>
 

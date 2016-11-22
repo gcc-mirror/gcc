@@ -1669,11 +1669,3 @@ extern void alloc_sched_pools (void);
 extern void free_sched_pools (void);
 
 #endif /* GCC_SEL_SCHED_IR_H */
-
-
-
-
-
-
-
-
