@@ -1,3 +1,7 @@
+2016-11-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* c-c++-common/builtin-shuffle-1.c (V): Use 4 * int in vector.
+
 2016-11-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/78439
