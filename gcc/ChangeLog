@@ -1,3 +1,10 @@
+2016-11-22  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/78431
+	PR go/78432
+	* godump.c (go_format_type): Always pass alignment as 1 when
+	calling go_append_padding at end of struct/union.
+
 2016-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78451
