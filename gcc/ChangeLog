@@ -1,3 +1,12 @@
+2016-11-22  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Add built-in support for vector compare
+	equal and vector compare not equal.  The vector compares take two
+	arguments of type vector bool char, vector bool short, vector bool int,
+	vector bool long long with the same return type.
+	* doc/extend.texi: Update built-in documentation file for the new
+	powerpc built-ins.
+
 2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* Makefile.in ($(lang_checks_parallelized)): Fix detection
