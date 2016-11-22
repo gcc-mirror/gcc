@@ -28,12 +28,14 @@
 # statement       - sentencia
 # ubsan           - ubsan
 #
+# advierte de -> avisa sobre
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-11-12 12:35+0100\n"
+"PO-Revision-Date: 2016-11-19 10:40+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -4400,7 +4402,7 @@ msgstr "se esperaba %<:%>"
 
 #: c/c-parser.c:5185 cp/semantics.c:613
 msgid "Cilk array notation cannot be used as a computed goto expression"
-msgstr "La notaicón de array de Cilk no puede utilizarse como una expresión goto calculada"
+msgstr "La notación de array de Cilk no puede utilizarse como una expresión goto calculada"
 
 #: c/c-parser.c:5244
 msgid "Cilk array notation cannot be used for a throw expression"
@@ -6795,443 +6797,317 @@ msgid "Warn about narrowing conversions within { } that are ill-formed in C++11.
 msgstr "Avisa sobre conversiones que estrechan dentro de { } que están mal formadas en C++11."
 
 #: c-family/c.opt:662
-#, fuzzy
-#| msgid "Warn about \"extern\" declarations not at file scope"
 msgid "Warn about \"extern\" declarations not at file scope."
-msgstr "Avisa sobre declaraciones \"extern\" que no están en el ámbito del fichero"
+msgstr "Avisa sobre declaraciones \"extern\" que no están en el ámbito del fichero."
 
 #: c-family/c.opt:666
-#, fuzzy
-#| msgid "Warn when a noexcept expression evaluates to false even though the expression can't actually throw"
 msgid "Warn when a noexcept expression evaluates to false even though the expression can't actually throw."
-msgstr "Avisa cuando una expresión noexcept evalúa a falso aún cuando la expresión no puede hacer throw"
+msgstr "Avisa cuando una expresión noexcept evalúa a falso aún cuando la expresión no puede hacer throw."
 
 #: c-family/c.opt:670
-#, fuzzy
-#| msgid "Warn when non-templatized friend functions are declared within a template"
 msgid "Warn when non-templatized friend functions are declared within a template."
-msgstr "Avisa cuando las funciones friend sin plantillas se declaran dentro de una plantilla"
+msgstr "Avisa cuando las funciones friend sin plantillas se declaran dentro de una plantilla."
 
 #: c-family/c.opt:674
-#, fuzzy
-#| msgid "Warn about non-virtual destructors"
 msgid "Warn about non-virtual destructors."
-msgstr "Avisa sobre destructores que no son virtuales"
+msgstr "Avisa sobre destructores que no son virtuales."
 
 #: c-family/c.opt:678
-#, fuzzy
-#| msgid "Warn about NULL being passed to argument slots marked as requiring non-NULL"
 msgid "Warn about NULL being passed to argument slots marked as requiring non-NULL."
-msgstr "Avisa sobre el paso de NULL a ranuras de argumento marcadas que requieren no-NULL"
+msgstr "Avisa sobre el paso de NULL a ranuras de argumento marcadas que requieren no-NULL."
 
 #: c-family/c.opt:694
-#, fuzzy
-#| msgid "-Wnormalized=<id|nfc|nfkc>\tWarn about non-normalised Unicode strings"
 msgid "-Wnormalized=<none|id|nfc|nfkc>\tWarn about non-normalised Unicode strings."
-msgstr "-Wnormalized=<id|nfc|nfkc>\tAvisa sobre cadenas Unicode que no están normalizadas"
+msgstr "-Wnormalized=<id|nfc|nfkc>\tAvisa sobre cadenas Unicode que no están normalizadas."
 
 #: c-family/c.opt:701
 msgid "argument %qs to %<-Wnormalized%> not recognized"
 msgstr "no se reconoce el argumento %qs para %<-Wnormalized%>"
 
 #: c-family/c.opt:717
-#, fuzzy
-#| msgid "Warn if a C-style cast is used in a program"
 msgid "Warn if a C-style cast is used in a program."
-msgstr "Avisa si se usa una conversión de estilo C en un programa"
+msgstr "Avisa si se usa una conversión de estilo C en un programa."
 
 #: c-family/c.opt:721
-#, fuzzy
-#| msgid "Warn for obsolescent usage in a declaration"
 msgid "Warn for obsolescent usage in a declaration."
-msgstr "Avisa por un usage obsoleto en una declaración"
+msgstr "ADvierto de modo de empleo obsoleto en una declaración."
 
 #: c-family/c.opt:725
-#, fuzzy
-#| msgid "Warn if an old-style parameter definition is used"
 msgid "Warn if an old-style parameter definition is used."
-msgstr "Avisa si se usa un parámetro de estilo antiguo en una definición"
+msgstr "Avisa si se usa una definición de parámetro al estilo antiguo."
 
 #: c-family/c.opt:729
 msgid "Warn if a simd directive is overridden by the vectorizer cost model."
-msgstr ""
+msgstr "Avisa si una directiva simd queda anulada por el modelo de coste de vectorizador."
 
 #: c-family/c.opt:733
-#, fuzzy
-#| msgid "Warn if a string is longer than the maximum portable length specified by the standard"
 msgid "Warn if a string is longer than the maximum portable length specified by the standard."
-msgstr "Avisa si una cadena es más larga que la longitud transportable máxima especificada por el estándar"
+msgstr "Avisa si una cadena es más larga que la longitud portable máxima especificada por el estándar."
 
 #: c-family/c.opt:737
-#, fuzzy
-#| msgid "Warn about overloaded virtual function names"
 msgid "Warn about overloaded virtual function names."
-msgstr "Avisa sobre nombres de funciones virtual sobrecargadas"
+msgstr "Advierte de nombres de funciones virtuales sobrecargadas."
 
 #: c-family/c.opt:741
-#, fuzzy
-#| msgid "Warn about overriding initializers without side effects"
 msgid "Warn about overriding initializers without side effects."
-msgstr "Avisa sobre sobreescritura de inicializadores sin efectos secundarios"
+msgstr "Avisa sobre sobreescritura de inicializadores sin efectos secundarios."
 
 #: c-family/c.opt:745
-#, fuzzy
-#| msgid "Warn about overriding initializers without side effects"
 msgid "Warn about overriding initializers with side effects."
-msgstr "Avisa sobre sobreescritura de inicializadores sin efectos secundarios"
+msgstr "Avisa sobre sobreescritura de inicializadores con efectos secundarios."
 
 #: c-family/c.opt:749
-#, fuzzy
-#| msgid "Warn about packed bit-fields whose offset changed in GCC 4.4"
 msgid "Warn about packed bit-fields whose offset changed in GCC 4.4."
-msgstr "Avisa sobre campos de bits packed cuyo desplazamiento cambió en GCC 4.4"
+msgstr "Avisa sobre campos de bits packed cuyo desplazamiento cambió en GCC 4.4."
 
 #: c-family/c.opt:753
-#, fuzzy
-#| msgid "Warn about possibly missing parentheses"
 msgid "Warn about possibly missing parentheses."
-msgstr "Avisa sobre posibles paréntesis faltantes"
+msgstr "Avisa sobre posibles paréntesis ausentes."
 
 #: c-family/c.opt:761
-#, fuzzy
-#| msgid "Warn when converting the type of pointers to member functions"
 msgid "Warn when converting the type of pointers to member functions."
-msgstr "Avisa cuando se convierte el tipo de punteros sobre punteros a funciones miembro"
+msgstr "Avisa cuando se convierte el tipo de punteros a funciones miembro."
 
 #: c-family/c.opt:765
-#, fuzzy
-#| msgid "Warn about function pointer arithmetic"
 msgid "Warn about function pointer arithmetic."
-msgstr "Avisa sobre la aritmética de punteros de funciones"
+msgstr "Avisa sobre la aritmética de punteros de funciones."
 
 #: c-family/c.opt:769
-#, fuzzy
-#| msgid "Warn when a pointer differs in signedness in an assignment"
 msgid "Warn when a pointer differs in signedness in an assignment."
-msgstr "Avisa cuando un puntero difiere en signo en una asignación"
+msgstr "Avisa cuando un puntero difiere en signo en una asignación."
 
 #: c-family/c.opt:773
-#, fuzzy
-#| msgid "Warn when a pointer is cast to an integer of a different size"
 msgid "Warn when a pointer is cast to an integer of a different size."
-msgstr "Avisa cuando hay una conversión de puntero a entero de tamaño diferente"
+msgstr "Avisa cuando hay una conversión de puntero a entero de tamaño diferente."
 
 #: c-family/c.opt:777
-#, fuzzy
-#| msgid "Warn about misuses of pragmas"
 msgid "Warn about misuses of pragmas."
-msgstr "Avisa sobre malos usos de pragmas"
+msgstr "Avisa sobre malos usos de pragmas."
 
 #: c-family/c.opt:781
-#, fuzzy
-#| msgid "Warn if a property for an Objective-C object has no assign semantics specified"
 msgid "Warn if a property for an Objective-C object has no assign semantics specified."
-msgstr "Avisa si una propiedad de un objeto Objective-C no tiene semántica de asignación especificada"
+msgstr "Avisa si una propiedad de un objeto Objective-C no tiene semántica de asignación especificada."
 
 #: c-family/c.opt:785
-#, fuzzy
-#| msgid "Warn if inherited methods are unimplemented"
 msgid "Warn if inherited methods are unimplemented."
-msgstr "Avisa si los métodos heredados no están implementados"
+msgstr "Avisa si los métodos heredados no están implementados."
 
 #: c-family/c.opt:789 c-family/c.opt:793
 msgid "Warn for placement new expressions with undefined behavior."
-msgstr ""
+msgstr "Advierte de la colocación de expresiones nuevas con comportamiento indefinido."
 
 #: c-family/c.opt:797
-#, fuzzy
-#| msgid "Warn about multiple declarations of the same object"
 msgid "Warn about multiple declarations of the same object."
-msgstr "Avisa sobre declaraciones múltiples del mismo objeto"
+msgstr "Avisa sobre declaraciones múltiples del mismo objeto."
 
 #: c-family/c.opt:801
-#, fuzzy
-#| msgid "Warn when the compiler reorders code"
 msgid "Warn when the compiler reorders code."
-msgstr "Avisa cuando el compilador reordena código"
+msgstr "Avisa cuando el compilador reordena código."
 
 #: c-family/c.opt:805
-#, fuzzy
-#| msgid "Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)"
 msgid "Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)."
-msgstr "Avisa cuando el tipo de devolución por defecto de una función cambia a \"int\" (C), o sobre tipos de devolución inconsistentes (C++)"
+msgstr "Avisa cuando el tipo de devolución de una función es el predefinido \"int\" (C), o sobre tipos de devolución inconsistentes (C++)."
 
 #: c-family/c.opt:809
 msgid "Warn on suspicious constructs involving reverse scalar storage order."
-msgstr ""
+msgstr "Advierte de construcciones sospechosas que implican orden de almacenamiento de escalares inverso."
 
 #: c-family/c.opt:813
-#, fuzzy
-#| msgid "Warn if a selector has multiple methods"
 msgid "Warn if a selector has multiple methods."
-msgstr "Avisa si un selector tiene métodos múltiples"
+msgstr "Avisa si un selector tiene métodos múltiples."
 
 #: c-family/c.opt:817
-#, fuzzy
-#| msgid "Warn about possible violations of sequence point rules"
 msgid "Warn about possible violations of sequence point rules."
-msgstr "Avisa sobre posibles violaciones a las reglas de secuencia de punto"
+msgstr "Avisa sobre posibles violaciones de las reglas de secuencia de punto."
 
 #: c-family/c.opt:821
-#, fuzzy
-#| msgid "local declaration of %qE hides instance variable"
 msgid "Warn if a local declaration hides an instance variable."
-msgstr "la declaración local de %qE oculta la variable de instancia"
+msgstr "Avisa si una declaración local oculta una variable de instancia."
 
 #: c-family/c.opt:825 c-family/c.opt:829
 msgid "Warn if left shift of a signed value overflows."
-msgstr ""
+msgstr "Advierte de desbordamiento de un valor con signo por desplazamiento hacia la izquierda."
 
 #: c-family/c.opt:833
-#, fuzzy
-#| msgid "right shift count is negative"
 msgid "Warn if shift count is negative."
-msgstr "la cuenta de desplazamiento a la derecha es negativa"
+msgstr "Avisa si la cuenta de desplazamiento es negativa."
 
 #: c-family/c.opt:837
-#, fuzzy
-#| msgid "right shift count >= width of type"
 msgid "Warn if shift count >= width of type."
-msgstr "cuenta de desplazamiento a la derecha >= anchura del tipo"
+msgstr "Avisa si la cuenta de desplazamiento >= anchura del tipo."
 
 #: c-family/c.opt:841
-#, fuzzy
-#| msgid "left shift count is negative"
 msgid "Warn if left shifting a negative value."
-msgstr "la cuenta de desplazamiento a la izquierda es negativa"
+msgstr "Avisa si la cuenta de desplazamiento a la izquierda es un valor negativo."
 
 #: c-family/c.opt:845
-#, fuzzy
-#| msgid "Warn about signed-unsigned comparisons"
 msgid "Warn about signed-unsigned comparisons."
-msgstr "Avisa sobre comparaciones signo-sin signo"
+msgstr "Avisa sobre comparaciones con signo-sin signo."
 
 #: c-family/c.opt:853
-#, fuzzy
-#| msgid "Warn for implicit type conversions between signed and unsigned integers"
 msgid "Warn for implicit type conversions between signed and unsigned integers."
-msgstr "Avisa cuando hay conversiones de tipo implícitas entre enteros con signo y sin signo"
+msgstr "Avisa cuando hay conversiones de tipo implícitas entre enteros con signo y sin signo."
 
 #: c-family/c.opt:857
-#, fuzzy
-#| msgid "Warn when overload promotes from unsigned to signed"
 msgid "Warn when overload promotes from unsigned to signed."
-msgstr "Avisa cuando la sobrecarga promueve de unsigned a signed"
+msgstr "Avisa cuando la sobrecarga promueve de unsigned a signed."
 
 #: c-family/c.opt:861
-#, fuzzy
-#| msgid "Warn about uncasted NULL used as sentinel"
 msgid "Warn about uncasted NULL used as sentinel."
-msgstr "Avisa sobre NULL sin conversión usado como sentinela"
+msgstr "Avisa sobre NULL sin conversión usado como centinela."
 
 #: c-family/c.opt:865
-#, fuzzy
-#| msgid "Warn about unprototyped function declarations"
 msgid "Warn about unprototyped function declarations."
-msgstr "Avisa sobre declaraciones de función sin prototipo"
+msgstr "Avisa sobre declaraciones de función sin prototipo."
 
 #: c-family/c.opt:877
-#, fuzzy
-#| msgid "Warn if type signatures of candidate methods do not match exactly"
 msgid "Warn if type signatures of candidate methods do not match exactly."
-msgstr "Avisa si los firmas de tipo de los métodos candidatos no coinciden exactamente"
+msgstr "Avisa si los firmas de tipo de los métodos candidatos no coinciden exactamente."
 
 #: c-family/c.opt:881
-#, fuzzy
-#| msgid "Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used"
 msgid "Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used."
-msgstr "Avisa cuando se usan las funciones internas __sync_fetch_and_nand y __sync_nand_and_fetch"
+msgstr "Avisa cuando se usan las funciones internas __sync_fetch_and_nand y __sync_nand_and_fetch."
 
 #: c-family/c.opt:885
-#, fuzzy
-#| msgid "Deprecated.  This switch has no effect"
 msgid "Deprecated.  This switch has no effect."
-msgstr "Obsoleto.  Esta opción no tiene efecto"
+msgstr "Obsoleto.  Esta opción no tiene efecto."
 
 #: c-family/c.opt:893
-#, fuzzy
-#| msgid "Warn when a logical operator is suspiciously always evaluating to true or false"
 msgid "Warn if a comparison always evaluates to true or false."
-msgstr "Avisa cuando un operador lógico sospechosamente evalúa siempre como verdadero o falso"
+msgstr "Avisa si una comparación evalúa siempre como verdadero o falso."
 
 #: c-family/c.opt:897
 msgid "Warn if a throw expression will always result in a call to terminate()."
-msgstr ""
+msgstr "Avisa si una expresión throw siempre dará como resultado una llamada a terminate()."
 
 #: c-family/c.opt:901
-#, fuzzy
-#| msgid "Warn about features not present in traditional C"
 msgid "Warn about features not present in traditional C."
-msgstr "Avisa sobre características no presentes en C tradicional"
+msgstr "Avisa sobre características no presentes en C tradicional."
 
 #: c-family/c.opt:905
-#, fuzzy
-#| msgid "Warn of prototypes causing type conversions different from what would happen in the absence of prototype"
 msgid "Warn of prototypes causing type conversions different from what would happen in the absence of prototype."
-msgstr "Avisa de prototipos que causen diferentes conversiones de tipo de las que sucederían en la ausencia del prototipo"
+msgstr "Avisa de prototipos que causen diferentes conversiones de tipo de las que sucederían en la ausencia del prototipo."
 
 #: c-family/c.opt:909
-#, fuzzy
-#| msgid "Warn if trigraphs are encountered that might affect the meaning of the program"
 msgid "Warn if trigraphs are encountered that might affect the meaning of the program."
-msgstr "Avisa si se encuentran trigrafos que puedan afectar el significado del programa"
+msgstr "Avisa si se encuentran trigrafos que puedan afectar el significado del programa."
 
 #: c-family/c.opt:913
-#, fuzzy
-#| msgid "Warn about @selector()s without previously declared methods"
 msgid "Warn about @selector()s without previously declared methods."
-msgstr "Avisa sobre @selector()es sin métodos declarados previamente"
+msgstr "Avisa sobre @selector()es sin métodos declarados previamente."
 
 #: c-family/c.opt:917
-#, fuzzy
-#| msgid "Warn if an undefined macro is used in an #if directive"
 msgid "Warn if an undefined macro is used in an #if directive."
-msgstr "Avisa si se usa una macro indefinida en una directiva #if"
+msgstr "Avisa si se usa una macro indefinida en una directiva #if."
 
 #: c-family/c.opt:929
-#, fuzzy
-#| msgid "Warn about unrecognized pragmas"
 msgid "Warn about unrecognized pragmas."
-msgstr "Avisa sobre pragmas que no se reconocen"
+msgstr "Avisa sobre pragmas que no se reconocen."
 
 #: c-family/c.opt:933
-#, fuzzy
-#| msgid "Warn about unsuffixed float constants"
 msgid "Warn about unsuffixed float constants."
-msgstr "Avisa sobre constantes de coma flotante sin sufijo"
+msgstr "Avisa sobre constantes de coma flotante sin sufijo."
 
 #: c-family/c.opt:941
-#, fuzzy
-#| msgid "Warn when typedefs locally defined in a function are not used"
 msgid "Warn when typedefs locally defined in a function are not used."
-msgstr "Avisa cuando se definen typedefs localmente en una función pero no se usan"
+msgstr "Avisa cuando se definen typedefs localmente en una función pero no se usan."
 
 #: c-family/c.opt:945
-#, fuzzy
-#| msgid "Warn about macros defined in the main file that are not used"
 msgid "Warn about macros defined in the main file that are not used."
-msgstr "Avisa sobre macros definidas en el fichero principal que no se usan"
+msgstr "Avisa sobre macros definidas en el fichero principal que no se usan."
 
 #: c-family/c.opt:949
-#, fuzzy
-#| msgid "Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value"
 msgid "Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value."
-msgstr "Avisa si el llamante de una función, marcada con atributo warn_unused_result, no usa su valor de devolución"
+msgstr "Avisa si el llamante de una función, marcada con atributo warn_unused_result, no usa su valor de devolución."
 
 #: c-family/c.opt:957 c-family/c.opt:961
-#, fuzzy
-#| msgid "Warn when a variable is unused"
 msgid "Warn when a const variable is unused."
-msgstr "Avisa cuando no se usa una variable"
+msgstr "Avisa cuando no se usa una variable const."
 
 #: c-family/c.opt:965
-#, fuzzy
-#| msgid "Do not warn about using variadic macros when -pedantic"
 msgid "Warn about using variadic macros."
-msgstr "No avisa sobre el uso de macros variadic cuando se use -pedantic"
+msgstr "Avisa sobre el uso de macros variadic."
 
 #: c-family/c.opt:969
 msgid "Warn about questionable usage of the macros used to retrieve variable arguments."
-msgstr ""
+msgstr "Advierte de un uso cuestionable de las macros utilizadas para obtener argumentos variables."
 
 #: c-family/c.opt:973
-#, fuzzy
-#| msgid "Warn if a variable length array is used"
 msgid "Warn if a variable length array is used."
-msgstr "Avisa si se usa una matriz de longitud variable"
+msgstr "Avisa si se usa una matriz de longitud variable."
 
 #: c-family/c.opt:977
-#, fuzzy
-#| msgid "Warn when a register variable is declared volatile"
 msgid "Warn when a register variable is declared volatile."
-msgstr "Avisa cuando una variable de registro se declara volatile"
+msgstr "Avisa cuando una variable de registro se declara volatile."
 
 #: c-family/c.opt:981
 msgid "Warn on direct virtual inheritance."
-msgstr ""
+msgstr "Advierte de la herencia virtual directa."
 
 #: c-family/c.opt:985
-#, fuzzy
-#| msgid "%qT has virtual bases, default move assignment operator cannot be generated"
 msgid "Warn if a virtual base has a non-trivial move assignment operator."
-msgstr "%qT tiene bases virtuales, no se puede generar el operador de asignación move por defecto"
+msgstr "Avisa si una base virtual tiene un operador de asignación move no trivial."
 
 #: c-family/c.opt:989
 msgid "In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard."
 msgstr "En C++, un valor diferente de cero significa avisar sobre conversiones obsoletas de literales de cadena a `char *'.  En C, aviso similar, excepto que la conversión por supuesto no es obsoleta por el estándar ISO C."
 
 #: c-family/c.opt:993
-#, fuzzy
-#| msgid "Warn when a literal '0' is used as null pointer"
 msgid "Warn when a literal '0' is used as null pointer."
-msgstr "Avisa cuando se usa un '0' literal como puntero nulo"
+msgstr "Avisa cuando se usa un '0' literal como puntero nulo."
 
 #: c-family/c.opt:997
-#, fuzzy
-#| msgid "Warn about misuses of pragmas"
 msgid "Warn about useless casts."
-msgstr "Avisa sobre malos usos de pragmas"
+msgstr "Avisa sobre conversiones de tipo inútiles."
 
 #: c-family/c.opt:1001
 msgid "Warn if a class type has a base or a field whose type uses the anonymous namespace or depends on a type with no linkage."
-msgstr ""
+msgstr "Avisa si el tipo de una clase tiene una base o un campo cuyo tipo utiliza el espacio de nombres anónimo o depende de un tipo sin enlace."
 
 #: c-family/c.opt:1005
-#, fuzzy
-#| msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)"
 msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)."
-msgstr "Un sinónimo para -std=c89 (para C) o -std=c++98 (para C++)"
+msgstr "Sinónimo de -std=c89 (para C) o -std=c++98 (para C++)."
 
 #: c-family/c.opt:1013
 msgid "The version of the C++ ABI used for -Wabi warnings and link compatibility aliases."
-msgstr ""
+msgstr "Versión de ABI de C++ utilizada para avisos -Wabi y aliases de compatibilidad de enlace."
 
 #: c-family/c.opt:1017
-#, fuzzy
-#| msgid "Enforce class member access control semantics"
 msgid "Enforce class member access control semantics."
-msgstr "Cumple las semánticas de control de acceso de miembros de clase"
+msgstr "Cumple las semánticas de control de acceso de miembros de clase."
 
 #: c-family/c.opt:1021
 msgid "-fada-spec-parent=unit  Dump Ada specs as child units of given parent."
-msgstr ""
+msgstr "-fada-spec-parent=unidad  Vuelca specs de Ada como unidades hijas del padre dado."
 
 #: c-family/c.opt:1028
-#, fuzzy
-#| msgid "Allow variadic functions without named parameter"
 msgid "Allow variadic functions without named parameter."
-msgstr "Permite funciones variadic sin parámetro nombrado"
+msgstr "Permite funciones variadic sin parámetro nombrado."
 
 #: c-family/c.opt:1032 c-family/c.opt:1261 c-family/c.opt:1549
 #: c-family/c.opt:1553 c-family/c.opt:1569
-#, fuzzy
-#| msgid "No longer supported"
 msgid "No longer supported."
-msgstr "Ya no se admite"
+msgstr "Ya no se admite."
 
 #: c-family/c.opt:1036
-#, fuzzy
-#| msgid "Recognize the \"asm\" keyword"
 msgid "Recognize the \"asm\" keyword."
-msgstr "Reconoce la palabra clave \"asm\""
+msgstr "Reconoce la palabra clave \"asm\"."
 
 #: c-family/c.opt:1044
-#, fuzzy
-#| msgid "Recognize built-in functions"
 msgid "Recognize built-in functions."
-msgstr "Reconoce funciones internas"
+msgstr "Reconoce funciones internas."
 
 #: c-family/c.opt:1051
 msgid "Where shorter, use canonicalized paths to systems headers."
-msgstr ""
+msgstr "Donde acorte, usar rutas canonicalizadas para cabeceras de sistemas."
 
 #: c-family/c.opt:1055
 msgid "Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to"
-msgstr ""
+msgstr "Añadir instrumentación para comprobar límites de punteros.  Los indicadores fchkp-* se usan para"
 
 #: c-family/c.opt:1060
 msgid "Generate pointer bounds checks for variables with incomplete type."
-msgstr ""
+msgstr "Generar comprobaciones de límites de punteros para variables con tipo incompleto."
 
 #: c-family/c.opt:1064
 msgid "Use zero bounds for all incoming arguments in 'main' function.  It helps when"
@@ -7239,89 +7115,75 @@ msgstr ""
 
 #: c-family/c.opt:1069
 msgid "Forces Pointer Bounds Checker to use narrowed bounds for address of the first"
-msgstr ""
+msgstr "Fuerza al comprobador de límites de punteros a usar límites estrechados para la dirección del primer"
 
 #: c-family/c.opt:1075
 msgid "Control how Pointer Bounds Checker handle pointers to object fields.  When"
-msgstr ""
+msgstr "Controla el modo en que el comprobador de límites de punteros maneja punteros a campos de objetos.  Cuando"
 
 #: c-family/c.opt:1080
 msgid "Forces Pointer Bounds Checker to use bounds of the innermost arrays in case of"
-msgstr ""
+msgstr "Fuerza al comprobador de límites de punteros a usar límites de los arrays más interiroes en caso de"
 
 #: c-family/c.opt:1085
 msgid "Allow Pointer Bounds Checker optimizations.  By default allowed"
-msgstr ""
+msgstr "Permite optimizaciones al comprobador de límites de punteros.  Permitido por omisión"
 
 #: c-family/c.opt:1090
 msgid "Allow to use *_nobnd versions of string functions by Pointer Bounds Checker."
-msgstr ""
+msgstr "Permite al comprobador de límites de punteros usar versiones *_nobnd de funciones de cadena."
 
 #: c-family/c.opt:1094
 msgid "Allow to use *_nochk versions of string functions by Pointer Bounds Checker."
-msgstr ""
+msgstr "Permite al comprobador de límites de punteros usar versiones *_nochk de funciones de cadena."
 
 #: c-family/c.opt:1098
 msgid "Use statically initialized variable for vars bounds instead of"
-msgstr ""
+msgstr "Usa variables inicializadas estáticamente para límites de variables en lugar de"
 
 #: c-family/c.opt:1103
 msgid "Use statically initialized variable for constant bounds instead of"
-msgstr ""
+msgstr "Usa variables inicializadas estáticamente para límites de constantes en lugar de"
 
 #: c-family/c.opt:1108
 msgid "With this option zero size obtained dynamically for objects with"
-msgstr ""
+msgstr "Con esta opción tamaño cero obtenido dinámicamente para objetos con"
 
 #: c-family/c.opt:1113
-#, fuzzy
-#| msgid "Generate checks for references to NULL"
 msgid "Generate checks for all read accesses to memory."
-msgstr "Genera revisiones para referencias a NULL"
+msgstr "Genera revisiones para todos los accesos de lectura de memoria."
 
 #: c-family/c.opt:1117
-#, fuzzy
-#| msgid "Generate checks for references to NULL"
 msgid "Generate checks for all write accesses to memory."
-msgstr "Genera revisiones para referencias a NULL"
+msgstr "Genera revisiones para todos los accesos de escritura de memoria."
 
 #: c-family/c.opt:1121
-#, fuzzy
-#| msgid "Generate code for near jumps"
 msgid "Generate bounds stores for pointer writes."
-msgstr "Generar código para saltos near"
+msgstr "Generar almacenes de límites para escrituras de punteros."
 
 #: c-family/c.opt:1125
-#, fuzzy
-#| msgid "Generate call insns as indirect calls"
 msgid "Generate bounds passing for calls."
-msgstr "Genera las llamadas insns como llamadas indirectas"
+msgstr "Genera paso de límites para llamadas."
 
 #: c-family/c.opt:1129
-#, fuzzy
-#| msgid "argument of function call might be a candidate for a format attribute"
 msgid "Instrument only functions marked with bnd_instrument attribute."
-msgstr "el argumento de la llamada a función puede ser un candidato para un atributo de formato"
+msgstr "Instrumenta solamente funciones marcadas con el atributo bnd_instrument."
 
 #: c-family/c.opt:1133
 msgid "Transform instrumented builtin calls into calls to wrappers."
-msgstr ""
+msgstr "Transforma llamadas internas instrumentadas en llamadas a envolturas."
 
 #: c-family/c.opt:1143
 msgid "Enable Cilk Plus."
-msgstr ""
+msgstr "Activa Cilk Plus."
 
 #: c-family/c.opt:1147
-#, fuzzy
-#| msgid "Enable support for huge objects"
 msgid "Enable support for C++ concepts."
-msgstr "Activa el soporte para objetos enormes"
+msgstr "Activa el soporte para conceptos de C++."
 
 #: c-family/c.opt:1151
-#, fuzzy
-#| msgid "Allow the arguments of the '?' operator to have different types"
 msgid "Allow the arguments of the '?' operator to have different types."
-msgstr "Permite que los argumentos del operador '?' tengan tipos diferentes"
+msgstr "Permite que los argumentos del operador '?' tengan tipos diferentes."
 
 #: c-family/c.opt:1158
 #, c-format
@@ -7329,44 +7191,32 @@ msgid "no class name specified with %qs"
 msgstr "no se especificó un nombre de clase con %qs"
 
 #: c-family/c.opt:1159
-#, fuzzy
-#| msgid "-fconst-string-class=<name>\tUse class <name> for constant strings"
 msgid "-fconst-string-class=<name>\tUse class <name> for constant strings."
-msgstr "-fconst-string-class=<nombre>\tUsa la clase <nombre> para cadenas constantes"
+msgstr "-fconst-string-class=<nombre>\tUsa la clase <nombre> para cadenas constantes."
 
 #: c-family/c.opt:1163
-#, fuzzy
-#| msgid "-fconstexpr-depth=<number>\tSpecify maximum constexpr recursion depth"
 msgid "-fconstexpr-depth=<number>\tSpecify maximum constexpr recursion depth."
-msgstr "-fconstexpr-depth-<número>\tEspecifica la profundidad de recursión constexpr máxima"
+msgstr "-fconstexpr-depth-<número>\tEspecifica la profundidad de recursión constexpr máxima."
 
 #: c-family/c.opt:1167
-#, fuzzy
-#| msgid "Emit debug annotations during preprocessing"
 msgid "Emit debug annotations during preprocessing."
-msgstr "Emite anotaciones de depuración durante el preprocesamiento"
+msgstr "Emite anotaciones de depuración durante el preprocesamiento."
 
 #: c-family/c.opt:1171
-#, fuzzy
-#| msgid "-fdeduce-init-list\tenable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list"
 msgid "-fdeduce-init-list\tenable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list."
-msgstr "-fdeduce-init-list\tactiva la deducción de std::initializer_list para un parámetro de tipo de plantilla desde una lista de inicializador dentro de llaves"
+msgstr "-fdeduce-init-list\tactiva la deducción de std::initializer_list para un parámetro de tipo de plantilla desde una lista de inicializador dentro de llaves."
 
 #: c-family/c.opt:1175
-#, fuzzy
-#| msgid "Warn when all constructors and destructors are private"
 msgid "Factor complex constructors and destructors to favor space over speed."
-msgstr "Avisa cuando todos los constructores y destructores son privados"
+msgstr "Factoriza constructores y destructores complejos para favorecer el espacio en detrimento de la velocidad."
 
 #: c-family/c.opt:1183
 msgid "Preprocess directives only."
 msgstr "Preprocesa sólo directivas."
 
 #: c-family/c.opt:1187
-#, fuzzy
-#| msgid "Permit '$' as an identifier character"
 msgid "Permit '$' as an identifier character."
-msgstr "Permite '$' como un identificador de carácter"
+msgstr "Permite '$' como un identificador de carácter."
 
 #: c-family/c.opt:1191
 msgid "Write all declarations as Ada code transitively."
