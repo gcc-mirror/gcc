@@ -1,4 +1,4 @@
-/* { dg-options "-funroll-loops" } */
+/* { dg-options "-funroll-loops isa_rev>=2" } */
 int foo;
 int bar;
 
