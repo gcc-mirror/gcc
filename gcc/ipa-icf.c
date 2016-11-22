@@ -131,27 +131,20 @@ symbol_compare_collection::symbol_compare_collection (symtab_node *node)
 
 /* Constructor for key value pair, where _ITEM is key and _INDEX is a target.  */
 
-sem_usage_pair::sem_usage_pair (sem_item *_item, unsigned int _index):
-  item (_item), index (_index)
+sem_usage_pair::sem_usage_pair (sem_item *_item, unsigned int _index)
+: item (_item), index (_index)
 {
 }
 
-/* Semantic item constructor for a node of _TYPE, where STACK is used
-   for bitmap memory allocation.  */
-
-sem_item::sem_item (sem_item_type _type,
-		    bitmap_obstack *stack): type (_type), m_hash (0)
+sem_item::sem_item (sem_item_type _type, bitmap_obstack *stack)
+: type (_type), m_hash (-1), m_hash_set (false)
 {
   setup (stack);
 }
 
-/* Semantic item constructor for a node of _TYPE, where STACK is used
-   for bitmap memory allocation. The item is based on symtab node _NODE
-   with computed _HASH.  */
-
 sem_item::sem_item (sem_item_type _type, symtab_node *_node,
-		    hashval_t _hash, bitmap_obstack *stack): type(_type),
-  node (_node), m_hash (_hash)
+		    bitmap_obstack *stack)
+: type (_type), node (_node), m_hash (-1), m_hash_set (false)
 {
   decl = node->decl;
   setup (stack);
@@ -230,23 +223,20 @@ sem_item::target_supports_symbol_aliases_p (void)
 void sem_item::set_hash (hashval_t hash)
 {
   m_hash = hash;
+  m_hash_set = true;
 }
 
 /* Semantic function constructor that uses STACK as bitmap memory stack.  */
 
-sem_function::sem_function (bitmap_obstack *stack): sem_item (FUNC, stack),
-  m_checker (NULL), m_compared_func (NULL)
+sem_function::sem_function (bitmap_obstack *stack)
+: sem_item (FUNC, stack), m_checker (NULL), m_compared_func (NULL)
 {
   bb_sizes.create (0);
   bb_sorted.create (0);
 }
 
-/*  Constructor based on callgraph node _NODE with computed hash _HASH.
-    Bitmap STACK is used for memory allocation.  */
-sem_function::sem_function (cgraph_node *node, hashval_t hash,
-			    bitmap_obstack *stack):
-  sem_item (FUNC, node, hash, stack),
-  m_checker (NULL), m_compared_func (NULL)
+sem_function::sem_function (cgraph_node *node, bitmap_obstack *stack)
+: sem_item (FUNC, node, stack), m_checker (NULL), m_compared_func (NULL)
 {
   bb_sizes.create (0);
   bb_sorted.create (0);
@@ -279,7 +269,7 @@ sem_function::get_bb_hash (const sem_bb *basic_block)
 hashval_t
 sem_function::get_hash (void)
 {
-  if (!m_hash)
+  if (!m_hash_set)
     {
       inchash::hash hstate;
       hstate.add_int (177454); /* Random number for function type.  */
@@ -1704,7 +1694,7 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
       || DECL_STATIC_DESTRUCTOR (node->decl))
     return NULL;
 
-  sem_function *f = new sem_function (node, 0, stack);
+  sem_function *f = new sem_function (node, stack);
 
   f->init ();
 
@@ -1807,19 +1797,12 @@ sem_function::bb_dict_test (vec<int> *bb_dict, int source, int target)
     return (*bb_dict)[source] == target;
 }
 
-
-/* Semantic variable constructor that uses STACK as bitmap memory stack.  */
-
 sem_variable::sem_variable (bitmap_obstack *stack): sem_item (VAR, stack)
 {
 }
 
-/*  Constructor based on varpool node _NODE with computed hash _HASH.
-    Bitmap STACK is used for memory allocation.  */
-
-sem_variable::sem_variable (varpool_node *node, hashval_t _hash,
-			    bitmap_obstack *stack): sem_item(VAR,
-				  node, _hash, stack)
+sem_variable::sem_variable (varpool_node *node, bitmap_obstack *stack)
+: sem_item (VAR, node, stack)
 {
   gcc_checking_assert (node);
   gcc_checking_assert (get_node ());
@@ -2104,7 +2087,7 @@ sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
       || node->alias)
     return NULL;
 
-  sem_variable *v = new sem_variable (node, 0, stack);
+  sem_variable *v = new sem_variable (node, stack);
 
   v->init ();
 
@@ -2116,7 +2099,7 @@ sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
 hashval_t
 sem_variable::get_hash (void)
 {
-  if (m_hash)
+  if (m_hash_set)
     return m_hash;
 
   /* All WPA streamed in symbols should have their hashes computed at compile
@@ -2296,8 +2279,9 @@ sem_variable::dump_to_file (FILE *file)
 
 unsigned int sem_item_optimizer::class_id = 0;
 
-sem_item_optimizer::sem_item_optimizer (): worklist (0), m_classes (0),
-  m_classes_count (0), m_cgraph_node_hooks (NULL), m_varpool_node_hooks (NULL)
+sem_item_optimizer::sem_item_optimizer ()
+: worklist (0), m_classes (0), m_classes_count (0), m_cgraph_node_hooks (NULL),
+  m_varpool_node_hooks (NULL)
 {
   m_items.create (0);
   bitmap_obstack_initialize (&m_bmstack);
@@ -2417,13 +2401,17 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
 	{
 	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 
-	  m_items.safe_push (new sem_function (cnode, hash, &m_bmstack));
+	  sem_function *fn = new sem_function (cnode, &m_bmstack);
+	  fn->set_hash (hash);
+	  m_items.safe_push (fn);
 	}
       else
 	{
 	  varpool_node *vnode = dyn_cast <varpool_node *> (node);
 
-	  m_items.safe_push (new sem_variable (vnode, hash, &m_bmstack));
+	  sem_variable *var = new sem_variable (vnode, &m_bmstack);
+	  var->set_hash (hash);
+	  m_items.safe_push (var);
 	}
     }
 
