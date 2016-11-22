@@ -15,5 +15,8 @@ void foo(long long* p)
   p[9] -= p[10];
 }
 
-/* { dg-final { scan-assembler-times "ldrd" 10 } } */
-/* { dg-final { scan-assembler-times "strd" 9 } } */
+/* We accept neon instructions vldr.64 and vstr.64 as well.
+   Note: DejaGnu counts patterns with alternatives twice,
+   so actually there are only 10 loads and 9 stores.  */
+/* { dg-final { scan-assembler-times "(ldrd|vldr\\.64)" 20 } } */
+/* { dg-final { scan-assembler-times "(strd|vstr\\.64)" 18 } } */
