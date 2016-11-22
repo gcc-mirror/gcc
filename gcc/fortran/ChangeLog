@@ -1,3 +1,9 @@
+2016-11-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/58001
+	* io.c (next_char_not_space): Update handling of a 'tab' in a FORMAT.
+ 	(format_lex): Adjust invocations of next_char_not_space().
+
 2016-11-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/69741
