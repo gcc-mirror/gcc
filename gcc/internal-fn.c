@@ -158,6 +158,132 @@ expand_ANNOTATE (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* Lane index on SIMT targets: thread index in the warp on NVPTX.  On targets
+   without SIMT execution this should be expanded in omp_device_lower pass.  */
+
+static void
+expand_GOMP_SIMT_LANE (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  gcc_assert (targetm.have_omp_simt_lane ());
+  emit_insn (targetm.gen_omp_simt_lane (target));
+}
+
+/* This should get expanded in omp_device_lower pass.  */
+
+static void
+expand_GOMP_SIMT_VF (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* Lane index of the first SIMT lane that supplies a non-zero argument.
+   This is a SIMT counterpart to GOMP_SIMD_LAST_LANE, used to represent the
+   lane that executed the last iteration for handling OpenMP lastprivate.  */
+
+static void
+expand_GOMP_SIMT_LAST_LANE (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx cond = expand_normal (gimple_call_arg (stmt, 0));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+  struct expand_operand ops[2];
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], cond, mode);
+  gcc_assert (targetm.have_omp_simt_last_lane ());
+  expand_insn (targetm.code_for_omp_simt_last_lane, 2, ops);
+}
+
+/* Non-transparent predicate used in SIMT lowering of OpenMP "ordered".  */
+
+static void
+expand_GOMP_SIMT_ORDERED_PRED (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx ctr = expand_normal (gimple_call_arg (stmt, 0));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+  struct expand_operand ops[2];
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], ctr, mode);
+  gcc_assert (targetm.have_omp_simt_ordered ());
+  expand_insn (targetm.code_for_omp_simt_ordered, 2, ops);
+}
+
+/* "Or" boolean reduction across SIMT lanes: return non-zero in all lanes if
+   any lane supplies a non-zero argument.  */
+
+static void
+expand_GOMP_SIMT_VOTE_ANY (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx cond = expand_normal (gimple_call_arg (stmt, 0));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+  struct expand_operand ops[2];
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], cond, mode);
+  gcc_assert (targetm.have_omp_simt_vote_any ());
+  expand_insn (targetm.code_for_omp_simt_vote_any, 2, ops);
+}
+
+/* Exchange between SIMT lanes with a "butterfly" pattern: source lane index
+   is destination lane index XOR given offset.  */
+
+static void
+expand_GOMP_SIMT_XCHG_BFLY (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx src = expand_normal (gimple_call_arg (stmt, 0));
+  rtx idx = expand_normal (gimple_call_arg (stmt, 1));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+  struct expand_operand ops[3];
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], src, mode);
+  create_input_operand (&ops[2], idx, SImode);
+  gcc_assert (targetm.have_omp_simt_xchg_bfly ());
+  expand_insn (targetm.code_for_omp_simt_xchg_bfly, 3, ops);
+}
+
+/* Exchange between SIMT lanes according to given source lane index.  */
+
+static void
+expand_GOMP_SIMT_XCHG_IDX (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx src = expand_normal (gimple_call_arg (stmt, 0));
+  rtx idx = expand_normal (gimple_call_arg (stmt, 1));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+  struct expand_operand ops[3];
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], src, mode);
+  create_input_operand (&ops[2], idx, SImode);
+  gcc_assert (targetm.have_omp_simt_xchg_idx ());
+  expand_insn (targetm.code_for_omp_simt_xchg_idx, 3, ops);
+}
+
 /* This should get expanded in adjust_simduid_builtins.  */
 
 static void

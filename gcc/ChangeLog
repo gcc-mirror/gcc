@@ -1,3 +1,37 @@
+2016-11-22  Alexander Monakov  <amonakov@ispras.ru>
+
+	* internal-fn.c (expand_GOMP_SIMT_LANE): New.
+	(expand_GOMP_SIMT_VF): New.
+	(expand_GOMP_SIMT_LAST_LANE): New.
+	(expand_GOMP_SIMT_ORDERED_PRED): New.
+	(expand_GOMP_SIMT_VOTE_ANY): New.
+	(expand_GOMP_SIMT_XCHG_BFLY): New.
+	(expand_GOMP_SIMT_XCHG_IDX): New.
+	* internal-fn.def (GOMP_SIMT_LANE): New.
+	(GOMP_SIMT_VF): New.
+	(GOMP_SIMT_LAST_LANE): New.
+	(GOMP_SIMT_ORDERED_PRED): New.
+	(GOMP_SIMT_VOTE_ANY): New.
+	(GOMP_SIMT_XCHG_BFLY): New.
+	(GOMP_SIMT_XCHG_IDX): New.
+	* omp-low.c (omp_maybe_offloaded_ctx): New, outlined from...
+	(create_omp_child_function): ...here.  Set "omp target entrypoint"
+	or "omp declare target" attribute based on is_gimple_omp_offloaded.
+	(omp_max_simt_vf): New.  Use it...
+	(omp_max_vf): ...here.
+	(lower_rec_input_clauses): Add reduction lowering for SIMT execution.
+	(lower_lastprivate_clauses): Likewise, for "lastprivate" lowering.
+	(lower_omp_ordered): Likewise, for "ordered" lowering.
+	(expand_omp_simd): Add SIMT transforms.
+	(pass_data_lower_omp): Add PROP_gimple_lomp_dev.
+	(execute_omp_device_lower): New.
+	(pass_data_omp_device_lower): New.
+	(pass_omp_device_lower): New pass.
+	(make_pass_omp_device_lower): New.
+	* passes.def (pass_omp_device_lower): Position new pass.
+	* tree-pass.h (PROP_gimple_lomp_dev): Define.
+	(make_pass_omp_device_lower): Declare.
+
 2016-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/78451
