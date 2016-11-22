@@ -6,7 +6,6 @@
 
 #include "runtime.h"
 #include "go-alloc.h"
-#include "go-panic.h"
 #include "go-type.h"
 
 extern void chanrecv1 (ChanType *, Hchan *, void *)
@@ -191,7 +190,7 @@ _cgo_panic (const char *p)
      handle this by calling runtime_entersyscall in the personality
      function in go-unwind.c.  FIXME.  */
 
-  __go_panic (e);
+  runtime_panic (e);
 }
 
 /* Used for _cgo_wait_runtime_init_done.  This is based on code in

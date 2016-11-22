@@ -5,9 +5,6 @@
    license that can be found in the LICENSE file.  */
 
 #include "runtime.h"
-#include "go-panic.h"
-#include "arch.h"
-#include "malloc.h"
 
 String
 __go_string_slice (String s, intgo start, intgo end)

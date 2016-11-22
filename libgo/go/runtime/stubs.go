@@ -226,10 +226,6 @@ func osyield()
 //extern syscall
 func syscall(trap uintptr, a1, a2, a3, a4, a5, a6 uintptr) uintptr
 
-// throw crashes the program.
-// For gccgo unless and until we port panic.go.
-func throw(string)
-
 // newobject allocates a new object.
 // For gccgo unless and until we port malloc.go.
 func newobject(*_type) unsafe.Pointer
@@ -502,6 +498,9 @@ func dropm()
 func sigprof()
 func mcount() int32
 func gcount() int32
+func goexit1()
+func schedtrace(bool)
+func freezetheworld()
 
 // Signal trampoline, written in C.
 func sigtramp()
@@ -518,11 +517,26 @@ func getSiginfo(*_siginfo_t, unsafe.Pointer) (sigaddr uintptr, sigpc uintptr)
 // Implemented in C for gccgo.
 func dumpregs(*_siginfo_t, unsafe.Pointer)
 
-// Temporary for gccgo until we port panic.go.
-func startpanic()
-
 // Temporary for gccgo until we port proc.go.
 //go:linkname getsched runtime.getsched
 func getsched() *schedt {
 	return &sched
 }
+
+// Throw and rethrow an exception.
+func throwException()
+func rethrowException()
+
+// Fetch the size and required alignment of the _Unwind_Exception type
+// used by the stack unwinder.
+func unwindExceptionSize() uintptr
+
+// Temporary for gccgo until C code no longer needs it.
+//go:nosplit
+//go:linkname getPanicking runtime.getPanicking
+func getPanicking() uint32 {
+	return panicking
+}
+
+// Temporary for gccgo until we port mcache.go.
+func allocmcache() *mcache

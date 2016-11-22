@@ -124,6 +124,7 @@ clearpools(void)
 {
 	P *p, **pp;
 	MCache *c;
+	Defer *d, *dlink;
 
 	// clear sync.Pool's
 	if(poolcleanup != nil) {
@@ -138,9 +139,17 @@ clearpools(void)
 			c->tiny = nil;
 			c->tinysize = 0;
 		}
-		// clear defer pools
-		p->deferpool = nil;
 	}
+
+	// Clear central defer pools.
+	// Leave per-P pools alone, they have strictly bounded size.
+	runtime_lock(&runtime_sched->deferlock);
+	for(d = runtime_sched->deferpool; d != nil; d = dlink) {
+		dlink = d->link;
+		d->link = nil;
+	}
+	runtime_sched->deferpool = nil;
+	runtime_unlock(&runtime_sched->deferlock);
 }
 
 typedef struct Workbuf Workbuf;
@@ -2125,7 +2134,7 @@ runtime_gc(int32 force)
 	// without a lock will do the gc instead.
 	m = runtime_m();
 	pmstats = mstats();
-	if(!pmstats->enablegc || runtime_g() == m->g0 || m->locks > 0 || runtime_panicking || m->preemptoff.len > 0)
+	if(!pmstats->enablegc || runtime_g() == m->g0 || m->locks > 0 || runtime_panicking() || m->preemptoff.len > 0)
 		return;
 
 	if(gcpercent == GcpercentUnknown) {	// first time through

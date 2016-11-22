@@ -707,7 +707,7 @@ class Backend
   // Create a statement that runs all deferred calls for FUNCTION.  This should
   // be a statement that looks like this in C++:
   //   finish:
-  //     try { UNDEFER; } catch { CHECK_DEFER; goto finish; }
+  //     try { DEFER_RETURN; } catch { CHECK_DEFER; goto finish; }
   virtual Bstatement*
   function_defer_statement(Bfunction* function, Bexpression* undefer,
                            Bexpression* check_defer, Location) = 0;

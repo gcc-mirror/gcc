@@ -4,7 +4,6 @@
 
 #include "runtime.h"
 #include "go-type.h"
-#include "go-panic.h"
 
 #ifdef USE_LIBFFI
 
@@ -27,8 +26,14 @@ void makeFuncFFI(void *cif, void *impl)
    function ffiCall with the pointer to the arguments, the results area,
    and the closure structure.  */
 
-void FFICallbackGo(void *result, void **args, ffi_go_closure *closure)
+extern void FFICallbackGo(void *result, void **args, ffi_go_closure *closure)
   __asm__ (GOSYM_PREFIX "reflect.FFICallbackGo");
+
+extern void makefuncfficanrecover(Slice)
+  __asm__ (GOSYM_PREFIX "runtime.makefuncfficanrecover");
+
+extern void makefuncreturning(void)
+  __asm__ (GOSYM_PREFIX "runtime.makefuncreturning");
 
 static void ffi_callback (ffi_cif *, void *, void **, void *)
   __asm__ ("reflect.ffi_callback");
@@ -59,12 +64,19 @@ ffi_callback (ffi_cif* cif __attribute__ ((unused)), void *results,
 	break;
     }
   if (i < n)
-    __go_makefunc_ffi_can_recover (locs + i, n - i);
+    {
+      Slice s;
+
+      s.__values = (void *) &locs[i];
+      s.__count = n - i;
+      s.__capacity = n - i;
+      makefuncfficanrecover (s);
+    }
 
   FFICallbackGo(results, args, closure);
 
   if (i < n)
-    __go_makefunc_returning ();
+    makefuncreturning ();
 }
 
 /* Allocate an FFI closure and arrange to call ffi_callback.  */

@@ -4168,8 +4168,7 @@ Build_recover_thunks::function(Named_object* orig_no)
 
 // Return the expression to pass for the .can_recover parameter to the
 // new function.  This indicates whether a call to recover may return
-// non-nil.  The expression is
-// __go_can_recover(__builtin_return_address()).
+// non-nil.  The expression is runtime.canrecover(__builtin_return_address()).
 
 Expression*
 Build_recover_thunks::can_recover_arg(Location location)
@@ -4191,10 +4190,10 @@ Build_recover_thunks::can_recover_arg(Location location)
       results->push_back(Typed_identifier("", boolean_type, bloc));
       Function_type* fntype = Type::make_function_type(NULL, param_types,
 						       results, bloc);
-      can_recover = Named_object::make_function_declaration("__go_can_recover",
-							    NULL, fntype,
-							    bloc);
-      can_recover->func_declaration_value()->set_asm_name("__go_can_recover");
+      can_recover =
+	Named_object::make_function_declaration("runtime_canrecover",
+						NULL, fntype, bloc);
+      can_recover->func_declaration_value()->set_asm_name("runtime.canrecover");
     }
 
   Expression* fn = Expression::make_func_reference(builtin_return_address,
@@ -4217,10 +4216,10 @@ Build_recover_thunks::can_recover_arg(Location location)
 // function with an extra parameter, which is whether a call to
 // recover can succeed.  We then move the body of this function to
 // that one.  We then turn this function into a thunk which calls the
-// new one, passing the value of
-// __go_can_recover(__builtin_return_address()).  The function will be
-// marked as not splitting the stack.  This will cooperate with the
-// implementation of defer to make recover do the right thing.
+// new one, passing the value of runtime.canrecover(__builtin_return_address()).
+// The function will be marked as not splitting the stack.  This will
+// cooperate with the implementation of defer to make recover do the
+// right thing.
 
 void
 Gogo::build_recover_thunks()
@@ -5634,7 +5633,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
   // libgo/runtime/go-unwind.c.
 
   std::vector<Bstatement*> stmts;
-  Expression* call = Runtime::make_call(Runtime::CHECK_DEFER, end_loc, 1,
+  Expression* call = Runtime::make_call(Runtime::CHECKDEFER, end_loc, 1,
 					this->defer_stack(end_loc));
   Translate_context context(gogo, named_function, NULL, NULL);
   Bexpression* defer = call->get_backend(&context);
@@ -5647,11 +5646,11 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
   go_assert(*except == NULL);
   *except = gogo->backend()->statement_list(stmts);
 
-  call = Runtime::make_call(Runtime::CHECK_DEFER, end_loc, 1,
+  call = Runtime::make_call(Runtime::CHECKDEFER, end_loc, 1,
                             this->defer_stack(end_loc));
   defer = call->get_backend(&context);
 
-  call = Runtime::make_call(Runtime::UNDEFER, end_loc, 1,
+  call = Runtime::make_call(Runtime::DEFERRETURN, end_loc, 1,
         		    this->defer_stack(end_loc));
   Bexpression* undefer = call->get_backend(&context);
   Bstatement* function_defer =

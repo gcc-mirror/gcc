@@ -15,7 +15,6 @@
 
 #include "runtime.h"
 #include "go-alloc.h"
-#include "go-panic.h"
 
 /* The code for a Go exception.  */
 
@@ -34,110 +33,16 @@ static const _Unwind_Exception_Class __go_exception_class =
    << 8 | (_Unwind_Exception_Class) '\0');
 #endif
 
+/* Rethrow an exception.  */
 
-/* This function is called by exception handlers used when unwinding
-   the stack after a recovered panic.  The exception handler looks
-   like this:
-     __go_check_defer (frame);
-     return;
-   If we have not yet reached the frame we are looking for, we
-   continue unwinding.  */
+void rethrowException (void) __asm__(GOSYM_PREFIX "runtime.rethrowException");
 
 void
-__go_check_defer (_Bool *frame)
+rethrowException ()
 {
-  G *g;
   struct _Unwind_Exception *hdr;
 
-  g = runtime_g ();
-
-  if (g == NULL)
-    {
-      /* Some other language has thrown an exception.  We know there
-	 are no defer handlers, so there is nothing to do.  */
-    }
-  else if (g->isforeign)
-    {
-      Panic *n;
-      _Bool recovered;
-
-      /* Some other language has thrown an exception.  We need to run
-	 the local defer handlers.  If they call recover, we stop
-	 unwinding the stack here.  */
-
-      n = (Panic *) __go_alloc (sizeof (Panic));
-
-      n->arg._type = NULL;
-      n->arg.data = NULL;
-      n->recovered = 0;
-      n->isforeign = 1;
-      n->next = g->_panic;
-      g->_panic = n;
-
-      while (1)
-	{
-	  Defer *d;
-	  void (*pfn) (void *);
-
-	  d = g->_defer;
-	  if (d == NULL || d->frame != frame || d->pfn == 0)
-	    break;
-
-	  pfn = (void (*) (void *)) d->pfn;
-	  g->_defer = d->next;
-
-	  (*pfn) (d->arg);
-
-	  if (runtime_m () != NULL)
-	    runtime_freedefer (d);
-
-	  if (n->recovered)
-	    {
-	      /* The recover function caught the panic thrown by some
-		 other language.  */
-	      break;
-	    }
-	}
-
-      recovered = n->recovered;
-      g->_panic = n->next;
-      __go_free (n);
-
-      if (recovered)
-	{
-	  /* Just return and continue executing Go code.  */
-	  *frame = 1;
-	  return;
-	}
-
-      /* We are panicing through this function.  */
-      *frame = 0;
-    }
-  else if (g->_defer != NULL
-	   && g->_defer->pfn == 0
-	   && g->_defer->frame == frame)
-    {
-      Defer *d;
-
-      /* This is the defer function which called recover.  Simply
-	 return to stop the stack unwind, and let the Go code continue
-	 to execute.  */
-      d = g->_defer;
-      g->_defer = d->next;
-
-      if (runtime_m () != NULL)
-	runtime_freedefer (d);
-
-      /* We are returning from this function.  */
-      *frame = 1;
-
-      return;
-    }
-
-  /* This is some other defer function.  It was already run by the
-     call to panic, or just above.  Rethrow the exception.  */
-
-  hdr = (struct _Unwind_Exception *) g->exception;
+  hdr = (struct _Unwind_Exception *) runtime_g()->exception;
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
   _Unwind_SjLj_Resume_or_Rethrow (hdr);
@@ -153,22 +58,47 @@ __go_check_defer (_Bool *frame)
   abort();
 }
 
-/* Unwind function calls until we reach the one which used a defer
-   function which called recover.  Each function which uses a defer
-   statement will have an exception handler, as shown above.  */
+/* Return the size of the type that holds an exception header, so that
+   it can be allocated by Go code.  */
+
+uintptr unwindExceptionSize(void)
+  __asm__ (GOSYM_PREFIX "runtime.unwindExceptionSize");
+
+uintptr
+unwindExceptionSize ()
+{
+  uintptr ret, align;
+
+  ret = sizeof (struct _Unwind_Exception);
+  /* Adjust the size fo make sure that we can get an aligned value.  */
+  align = __alignof__ (struct _Unwind_Exception);
+  if (align > __alignof__ (uintptr))
+    ret += align - __alignof__ (uintptr);
+  return ret;
+}
+
+/* Throw an exception.  This is called with g->exception pointing to
+   an uninitialized _Unwind_Exception instance.  */
+
+void throwException (void) __asm__(GOSYM_PREFIX "runtime.throwException");
 
 void
-__go_unwind_stack ()
+throwException ()
 {
   struct _Unwind_Exception *hdr;
+  uintptr align;
 
+  hdr = (struct _Unwind_Exception *)runtime_g ()->exception;
+
+  /* Make sure the value is correctly aligned.  It will be large
+     enough, because of unwindExceptionSize.  */
+  align = __alignof__ (struct _Unwind_Exception);
   hdr = ((struct _Unwind_Exception *)
-	 __go_alloc (sizeof (struct _Unwind_Exception)));
+	 (((uintptr) hdr + align - 1) &~ (align - 1)));
+
   __builtin_memcpy (&hdr->exception_class, &__go_exception_class,
 		    sizeof hdr->exception_class);
   hdr->exception_cleanup = NULL;
-
-  runtime_g ()->exception = hdr;
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
   _Unwind_SjLj_RaiseException (hdr);

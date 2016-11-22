@@ -280,7 +280,7 @@ Node::op_format() const
 	    {
 	      switch (e->func_expression()->runtime_code())
 		{
-		case Runtime::PANIC:
+		case Runtime::GOPANIC:
 		  op << "panic";
 		  break;
 
@@ -300,11 +300,11 @@ Node::op_format() const
 		  op << "make";
 		  break;
 
-		case Runtime::DEFER:
+		case Runtime::DEFERPROC:
 		  op << "defer";
 		  break;
 
-		case Runtime::RECOVER:
+		case Runtime::GORECOVER:
 		  op << "recover";
 		  break;
 
@@ -1189,7 +1189,7 @@ Escape_analysis_assign::expression(Expression** pexpr)
 	  {
 	    switch (fe->runtime_code())
 	      {
-	      case Runtime::PANIC:
+	      case Runtime::GOPANIC:
 		{
 		  // Argument could leak through recover.
 		  Node* panic_arg = Node::make_node(call->args()->front());

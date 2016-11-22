@@ -828,6 +828,15 @@ Gcc_backend::Gcc_backend()
   this->define_builtin(BUILT_IN_FRAME_ADDRESS, "__builtin_frame_address",
 		       NULL, t, false, false);
 
+  // The runtime calls __builtin_extract_return_addr when recording
+  // the address to which a function returns.
+  this->define_builtin(BUILT_IN_EXTRACT_RETURN_ADDR,
+		       "__builtin_extract_return_addr", NULL,
+		       build_function_type_list(ptr_type_node,
+						ptr_type_node,
+						NULL_TREE),
+		       false, false);
+
   // The compiler uses __builtin_trap for some exception handling
   // cases.
   this->define_builtin(BUILT_IN_TRAP, "__builtin_trap", NULL,

@@ -429,8 +429,6 @@ runtime_files = \
 	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-construct-map.c \
-	runtime/go-defer.c \
-	runtime/go-deferred-recover.c \
 	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
 	runtime/go-matherr.c \
@@ -442,8 +440,6 @@ runtime_files = \
 	runtime/go-now.c \
 	runtime/go-new.c \
 	runtime/go-nosys.c \
-	runtime/go-panic.c \
-	runtime/go-recover.c \
 	runtime/go-reflect-call.c \
 	runtime/go-runtime-error.c \
 	runtime/go-setenv.c \

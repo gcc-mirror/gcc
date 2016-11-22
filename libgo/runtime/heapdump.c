@@ -14,7 +14,6 @@
 #include "malloc.h"
 #include "mgc0.h"
 #include "go-type.h"
-#include "go-panic.h"
 
 #define hash __hash
 #define KindNoPointers GO_NO_POINTERS
@@ -284,7 +283,7 @@ dumpgoroutine(G *gp)
 	// runtime_gentraceback(pc, sp, lr, gp, 0, nil, 0x7fffffff, dumpframe, &child, false);
 
 	// dump defer & panic records
-	for(d = gp->_defer; d != nil; d = d->next) {
+	for(d = gp->_defer; d != nil; d = d->link) {
 		dumpint(TagDefer);
 		dumpint((uintptr)d);
 		dumpint((uintptr)gp);
@@ -292,16 +291,16 @@ dumpgoroutine(G *gp)
 		dumpint((uintptr)d->frame);
 		dumpint((uintptr)d->pfn);
 		dumpint((uintptr)0);
-		dumpint((uintptr)d->next);
+		dumpint((uintptr)d->link);
 	}
-	for (p = gp->_panic; p != nil; p = p->next) {
+	for (p = gp->_panic; p != nil; p = p->link) {
 		dumpint(TagPanic);
 		dumpint((uintptr)p);
 		dumpint((uintptr)gp);
 		dumpint((uintptr)p->arg._type);
 		dumpint((uintptr)p->arg.data);
 		dumpint((uintptr)0);
-		dumpint((uintptr)p->next);
+		dumpint((uintptr)p->link);
 	}
 }
 

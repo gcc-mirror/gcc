@@ -494,10 +494,9 @@ type p struct {
 	mcache      *mcache
 	// Not for gccgo: racectx     uintptr
 
-	// Not for gccgo yet: deferpool    [5][]*_defer // pool of available defer structs of different sizes (see panic.go)
-	// Not for gccgo yet: deferpoolbuf [5][32]*_defer
-	// Temporary gccgo type for deferpool field.
-	deferpool *_defer
+	// gccgo has only one size of defer.
+	deferpool    []*_defer
+	deferpoolbuf [32]*_defer
 
 	// Cache of goroutine ids, amortizes accesses to runtime·sched.goidgen.
 	goidcache    uint64
@@ -696,7 +695,7 @@ func extendRandom(r []byte, n int) {
 // This is the gccgo version.
 type _defer struct {
 	// The next entry in the stack.
-	next *_defer
+	link *_defer
 
 	// The stack variable for the function which called this defer
 	// statement.  This is set to true if we are returning from
@@ -735,7 +734,7 @@ type _defer struct {
 // This is the gccgo version.
 type _panic struct {
 	// The next entry in the stack.
-	next *_panic
+	link *_panic
 
 	// The value associated with this panic.
 	arg interface{}
@@ -763,9 +762,9 @@ var (
 	//	allm        *m
 	//	allp        [_MaxGomaxprocs + 1]*p
 	//	gomaxprocs  int32
-	//	panicking   uint32
 
-	ncpu int32
+	panicking uint32
+	ncpu      int32
 
 	//	forcegc     forcegcstate
 

@@ -255,7 +255,7 @@ kickoff(void)
 	param = g->param;
 	g->param = nil;
 	fn(param);
-	runtime_goexit();
+	runtime_goexit1();
 }
 
 // Switch context to a different goroutine.  This is like longjmp.
@@ -351,8 +351,6 @@ runtime_mcall(void (*pfn)(G*))
 //
 // Design doc at http://golang.org/s/go11sched.
 
-typedef struct schedt Sched;
-
 enum
 {
 	// Number of goroutine ids to grab from runtime_sched->goidgen to local per-P cache at once.
@@ -362,7 +360,7 @@ enum
 
 extern Sched* runtime_getsched() __asm__ (GOSYM_PREFIX "runtime.getsched");
 
-static Sched*	runtime_sched;
+Sched*	runtime_sched;
 int32	runtime_gomaxprocs;
 uint32	runtime_needextram = 1;
 M	runtime_m0;
@@ -581,7 +579,7 @@ runtime_main(void* dummy __attribute__((unused)))
 	
 	// Defer unlock so that runtime.Goexit during init does the unlock too.
 	d.pfn = (uintptr)(void*)initDone;
-	d.next = g->_defer;
+	d.link = g->_defer;
 	d.arg = (void*)-1;
 	d._panic = g->_panic;
 	d.retaddr = 0;
@@ -604,7 +602,7 @@ runtime_main(void* dummy __attribute__((unused)))
 
 	if(g->_defer != &d || (void*)d.pfn != initDone)
 		runtime_throw("runtime: bad defer entry after init");
-	g->_defer = d.next;
+	g->_defer = d.link;
 	runtime_unlockOSThread();
 
 	// For gccgo we have to wait until after main is initialized
@@ -626,7 +624,7 @@ runtime_main(void* dummy __attribute__((unused)))
 	// another goroutine at the same time as main returns,
 	// let the other goroutine finish printing the panic trace.
 	// Once it does, it will exit. See issue 3934.
-	if(runtime_panicking)
+	if(runtime_panicking())
 		runtime_park(nil, nil, "panicwait");
 
 	runtime_exit(0);
@@ -1945,16 +1943,16 @@ runtime_gosched0(G *gp)
 // Need to mark it as nosplit, because it runs with sp > stackbase (as runtime_lessstack).
 // Since it does not return it does not matter.  But if it is preempted
 // at the split stack check, GC will complain about inconsistent sp.
-void runtime_goexit(void) __attribute__ ((noinline));
+void runtime_goexit1(void) __attribute__ ((noinline));
 void
-runtime_goexit(void)
+runtime_goexit1(void)
 {
 	if(g->atomicstatus != _Grunning)
 		runtime_throw("bad g status");
 	runtime_mcall(goexit0);
 }
 
-// runtime_goexit continuation on g0.
+// runtime_goexit1 continuation on g0.
 static void
 goexit0(G *gp)
 {
@@ -2744,6 +2742,7 @@ procresize(int32 new)
 	bool pempty;
 	G *gp;
 	P *p;
+	intgo j;
 
 	old = runtime_gomaxprocs;
 	if(old < 0 || old > _MaxGomaxprocs || new <= 0 || new >_MaxGomaxprocs)
@@ -2755,6 +2754,9 @@ procresize(int32 new)
 			p = (P*)runtime_mallocgc(sizeof(*p), 0, FlagNoInvokeGC);
 			p->id = i;
 			p->status = _Pgcstop;
+			p->deferpool.__values = &p->deferpoolbuf[0];
+			p->deferpool.__count = 0;
+			p->deferpool.__capacity = nelem(p->deferpoolbuf);
 			runtime_atomicstorep(&runtime_allp[i], p);
 		}
 		if(p->mcache == nil) {
@@ -2803,6 +2805,10 @@ procresize(int32 new)
 	// free unused P's
 	for(i = new; i < old; i++) {
 		p = runtime_allp[i];
+		for(j = 0; j < p->deferpool.__count; j++) {
+			((struct _defer**)p->deferpool.__values)[j] = nil;
+		}
+		p->deferpool.__count = 0;
 		runtime_freemcache(p->mcache);
 		p->mcache = nil;
 		gfpurge(p);
@@ -2902,7 +2908,7 @@ checkdead(void)
 	// freezetheworld will cause all running threads to block.
 	// And runtime will essentially enter into deadlock state,
 	// except that there is a thread that will call runtime_exit soon.
-	if(runtime_panicking > 0)
+	if(runtime_panicking() > 0)
 		return;
 	if(run < 0) {
 		runtime_printf("runtime: checkdead: nmidle=%d nmidlelocked=%d mcount=%d\n",
