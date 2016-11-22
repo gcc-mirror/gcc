@@ -1,3 +1,11 @@
+2016-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config.gcc: Allow new rmprofile value for configure option
+	--with-multilib-list.
+	* config/arm/t-rmprofile: New file.
+	* doc/install.texi (--with-multilib-list): Document new rmprofile value
+	for ARM.
+
 2016-11-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/78439

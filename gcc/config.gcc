@@ -3756,6 +3756,16 @@ case "${target}" in
 				# pragmatic.
 				tmake_profile_file="arm/t-aprofile"
 				;;
+			rmprofile)
+				# Note that arm/t-rmprofile is a
+				# stand-alone make file fragment to be
+				# used only with itself.  We do not
+				# specifically use the
+				# TM_MULTILIB_OPTION framework because
+				# this shorthand is more
+				# pragmatic.
+				tmake_profile_file="arm/t-rmprofile"
+				;;
 			default)
 				;;
 			*)
@@ -3765,9 +3775,10 @@ case "${target}" in
 			esac
 
 			if test "x${tmake_profile_file}" != x ; then
-				# arm/t-aprofile is only designed to work
-				# without any with-cpu, with-arch, with-mode,
-				# with-fpu or with-float options.
+				# arm/t-aprofile and arm/t-rmprofile are only
+				# designed to work without any with-cpu,
+				# with-arch, with-mode, with-fpu or with-float
+				# options.
 				if test "x$with_arch" != x \
 				    || test "x$with_cpu" != x \
 				    || test "x$with_float" != x \
