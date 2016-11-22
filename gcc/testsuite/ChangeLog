@@ -1,3 +1,8 @@
+2016-11-22  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3.c: New file to test the new
+	built-ins for vector compare equal and vector compare not equal.
+
 2016-11-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78443

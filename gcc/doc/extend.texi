@@ -15652,6 +15652,9 @@ vector float vec_ceil (vector float);
 
 vector signed int vec_cmpb (vector float, vector float);
 
+vector bool char vec_cmpeq (vector bool char, vector bool char);
+vector bool short vec_cmpeq (vector bool short, vector bool short);
+vector bool int vec_cmpeq (vector bool int, vector bool int);
 vector bool char vec_cmpeq (vector signed char, vector signed char);
 vector bool char vec_cmpeq (vector unsigned char, vector unsigned char);
 vector bool short vec_cmpeq (vector signed short, vector signed short);
@@ -17568,6 +17571,8 @@ int vec_any_lt (vector unsigned long long, vector unsigned long long);
 int vec_any_ne (vector long long, vector long long);
 int vec_any_ne (vector unsigned long long, vector unsigned long long);
 
+vector bool long long vec_cmpeq (vector bool long long, vector bool long long);
+
 vector long long vec_eqv (vector long long, vector long long);
 vector long long vec_eqv (vector bool long long, vector long long);
 vector long long vec_eqv (vector long long, vector bool long long);
@@ -17901,6 +17906,11 @@ If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
 are available:
 
 @smallexample
+vector bool char vec_cmpne (vector bool char, vector bool char);
+vector bool short vec_cmpne (vector bool short, vector bool short);
+vector bool int vec_cmpne (vector bool int, vector bool int);
+vector bool long long vec_cmpne (vector bool long long, vector bool long long);
+
 vector long long vec_vctz (vector long long);
 vector unsigned long long vec_vctz (vector unsigned long long);
 vector int vec_vctz (vector int);
