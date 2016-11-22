@@ -1,3 +1,8 @@
+2016-11-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libgfortran/78449 
+	* gfortran.dg/ieee/ieee_8.f90 (aarch64*gnu, arm*gnu*): Mark xfail.
+
 2016-11-21  Jeff Law  <law@redhat.com>
 
         PR target/68538
