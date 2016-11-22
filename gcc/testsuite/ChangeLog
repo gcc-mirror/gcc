@@ -1,3 +1,9 @@
+2016-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78451
+	* gcc.target/i386/sse-22.c: Add avx5124fmaps,avx5124vnniw to
+	GCC target pragma before including immintrin.h.
+
 2016-11-22  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3.c: New file to test the new
