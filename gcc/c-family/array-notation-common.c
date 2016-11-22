@@ -629,12 +629,12 @@ cilkplus_extract_an_triplets (vec<tree, va_gc> *list, size_t size, size_t rank,
 	  (*node)[ii][jj].is_vector = true;
 	  (*node)[ii][jj].value = ARRAY_NOTATION_ARRAY (ii_tree);
 	  (*node)[ii][jj].start = ARRAY_NOTATION_START (ii_tree);
-	  (*node)[ii][jj].length =
-	    fold_build1 (CONVERT_EXPR, integer_type_node,
-			 ARRAY_NOTATION_LENGTH (ii_tree));
-	  (*node)[ii][jj].stride =
-	    fold_build1 (CONVERT_EXPR, integer_type_node,
-			 ARRAY_NOTATION_STRIDE (ii_tree));
+	  (*node)[ii][jj].length
+	    = fold_build1 (CONVERT_EXPR, integer_type_node,
+			   ARRAY_NOTATION_LENGTH (ii_tree));
+	  (*node)[ii][jj].stride
+	    = fold_build1 (CONVERT_EXPR, integer_type_node,
+			   ARRAY_NOTATION_STRIDE (ii_tree));
 	}
 
   release_vec_vec (array_exprs);
