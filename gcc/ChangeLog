@@ -1,3 +1,9 @@
+2016-11-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/78439
+	* config/arm/vfp.md (*movdi_vfp_cortexa8): Use 'q' constraints for the
+	register operand in alternatives 4,5,6.
+
 2016-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/77904
