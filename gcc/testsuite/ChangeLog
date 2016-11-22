@@ -1,3 +1,8 @@
+2016-11-22  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.target/mips/interrupt_handler-bug-1.c (dg-options): Add
+	isa_rev>=2.
+
 2016-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78436
