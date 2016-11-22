@@ -8951,7 +8951,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
         arg = Expression::convert_for_assignment(gogo, empty, arg, location);
 
         Expression* panic =
-            Runtime::make_call(Runtime::PANIC, location, 1, arg);
+            Runtime::make_call(Runtime::GOPANIC, location, 1, arg);
         return panic->get_backend(context);
       }
 
@@ -8972,8 +8972,8 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 	// because it changes whether it can recover a panic or not.
 	// See test7 in test/recover1.go.
         Expression* recover = Runtime::make_call((this->is_deferred()
-                                                  ? Runtime::DEFERRED_RECOVER
-                                                  : Runtime::RECOVER),
+                                                  ? Runtime::DEFERREDRECOVER
+                                                  : Runtime::GORECOVER),
                                                  location, 0);
         Expression* cond =
             Expression::make_conditional(arg, recover, nil, location);

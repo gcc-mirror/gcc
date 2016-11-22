@@ -73,6 +73,7 @@ typedef	struct	ParForThread	ParForThread;
 typedef	struct	cgoMal		CgoMal;
 typedef	struct	PollDesc	PollDesc;
 typedef	struct	sudog		SudoG;
+typedef struct	schedt		Sched;
 
 typedef	struct	__go_open_array		Slice;
 typedef	struct	iface			Iface;
@@ -241,9 +242,11 @@ extern	uintptr runtime_allglen;
 extern	G*	runtime_lastg;
 extern	M*	runtime_allm;
 extern	P**	runtime_allp;
+extern	Sched*  runtime_sched;
 extern	int32	runtime_gomaxprocs;
 extern	uint32	runtime_needextram;
-extern	uint32	runtime_panicking;
+extern	uint32	runtime_panicking(void)
+  __asm__ (GOSYM_PREFIX "runtime.getPanicking");
 extern	int8*	runtime_goos;
 extern	int32	runtime_ncpu;
 extern 	void	(*runtime_sysargs)(int32, uint8**);
@@ -306,7 +309,8 @@ void	runtime_needm(void)
 void	runtime_dropm(void)
   __asm__ (GOSYM_PREFIX "runtime.dropm");
 void	runtime_signalstack(byte*, int32);
-MCache*	runtime_allocmcache(void);
+MCache*	runtime_allocmcache(void)
+  __asm__ (GOSYM_PREFIX "runtime.allocmcache");
 void	runtime_freemcache(MCache*);
 void	runtime_mallocinit(void);
 void	runtime_mprofinit(void);
@@ -348,12 +352,14 @@ void runtime_newextram(void);
 #define runtime_breakpoint() __builtin_trap()
 void	runtime_gosched(void);
 void	runtime_gosched0(G*);
-void	runtime_schedtrace(bool);
+void	runtime_schedtrace(bool)
+  __asm__ (GOSYM_PREFIX "runtime.schedtrace");
 void	runtime_park(bool(*)(G*, void*), void*, const char*);
 void	runtime_parkunlock(Lock*, const char*);
 void	runtime_tsleep(int64, const char*);
 M*	runtime_newm(void);
-void	runtime_goexit(void);
+void	runtime_goexit1(void)
+  __asm__ (GOSYM_PREFIX "runtime.goexit1");
 void	runtime_entersyscall(int32)
   __asm__ (GOSYM_PREFIX "runtime.entersyscall");
 void	runtime_entersyscallblock(int32)
@@ -369,7 +375,8 @@ int64	runtime_unixnanotime(void) // real time, can skip
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void)
   __asm__ (GOSYM_PREFIX "runtime.startpanic");
-void	runtime_freezetheworld(void);
+void	runtime_freezetheworld(void)
+  __asm__ (GOSYM_PREFIX "runtime.freezetheworld");
 void	runtime_unwindstack(G*, byte*);
 void	runtime_sigprof()
   __asm__ (GOSYM_PREFIX "runtime.sigprof");
@@ -494,13 +501,14 @@ void __wrap_rtems_task_variable_add(void **);
 void reflect_call(const struct __go_func_type *, FuncVal *, _Bool, _Bool,
 		  void **, void **)
   __asm__ (GOSYM_PREFIX "reflect.call");
-#define runtime_panic __go_panic
+void runtime_panic(Eface)
+  __asm__ (GOSYM_PREFIX "runtime.gopanic");
+void runtime_panic(Eface)
+  __attribute__ ((noreturn));
 
 /*
  * runtime c-called (but written in Go)
  */
-void	runtime_printany(Eface)
-     __asm__ (GOSYM_PREFIX "runtime.Printany");
 void	runtime_newTypeAssertionError(const String*, const String*, const String*, const String*, Eface*)
      __asm__ (GOSYM_PREFIX "runtime.NewTypeAssertionError");
 void	runtime_newErrorCString(const char*, Eface*)

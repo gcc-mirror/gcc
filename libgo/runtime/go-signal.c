@@ -11,8 +11,6 @@
 #include <ucontext.h>
 
 #include "runtime.h"
-#include "go-assert.h"
-#include "go-panic.h"
 
 #ifndef SA_RESTART
   #define SA_RESTART 0

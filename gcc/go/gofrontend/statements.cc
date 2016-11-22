@@ -2296,7 +2296,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
     {
       retaddr_label = gogo->add_label_reference("retaddr", location, false);
       Expression* arg = Expression::make_label_addr(retaddr_label, location);
-      Expression* call = Runtime::make_call(Runtime::SET_DEFER_RETADDR,
+      Expression* call = Runtime::make_call(Runtime::SETDEFERRETADDR,
 					    location, 1, arg);
 
       // This is a hack to prevent the middle-end from deleting the
@@ -2540,7 +2540,7 @@ Defer_statement::do_get_backend(Translate_context* context)
   Location loc = this->location();
   Expression* ds = context->function()->func_value()->defer_stack(loc);
 
-  Expression* call = Runtime::make_call(Runtime::DEFER, loc, 3,
+  Expression* call = Runtime::make_call(Runtime::DEFERPROC, loc, 3,
 					ds, fn, arg);
   Bexpression* bcall = call->get_backend(context);
   return context->backend()->expression_statement(bcall);
