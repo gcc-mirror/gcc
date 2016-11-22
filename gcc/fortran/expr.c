@@ -4132,7 +4132,12 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
                 {
                   gfc_set_constant_character_len (len, ctor->expr,
                                                   has_ts ? -1 : first_len);
-                  ctor->expr->ts.u.cl->length = gfc_copy_expr (ts->u.cl->length);
+		  if (!ctor->expr->ts.u.cl)
+		    ctor->expr->ts.u.cl
+		      = gfc_new_charlen (gfc_current_ns, ts->u.cl);
+		  else
+                    ctor->expr->ts.u.cl->length
+		      = gfc_copy_expr (ts->u.cl->length);
                 }
             }
         }

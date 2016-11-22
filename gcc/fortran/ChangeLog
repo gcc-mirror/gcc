@@ -1,3 +1,8 @@
+2016-11-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78479
+	* expr.c (gfc_apply_init):  Allocate a charlen if needed.
+
 2016-11-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78443
