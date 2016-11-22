@@ -222,6 +222,7 @@ protected:
 						   of math functions; the
 						   current choices have
 						   been optimized.  */
+#define PROP_gimple_lomp_dev	(1 << 16)	/* done omp_device_lower */
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
@@ -417,6 +418,7 @@ extern gimple_opt_pass *make_pass_expand_omp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_omp_target_link (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_oacc_device_lower (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_omp_device_lower (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_object_sizes (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_strlen (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_fold_builtins (gcc::context *ctxt);
