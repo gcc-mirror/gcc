@@ -1,5 +1,15 @@
 2016-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/78436
+	* gimple-ssa-store-merging.c (zero_char_buf): Removed.
+	(shift_bytes_in_array, shift_bytes_in_array_right,
+	merged_store_group::apply_stores): Formatting fixes.
+	(clear_bit_region): Likewise.  Use memset.
+	(encode_tree_to_bitpos): Formatting fixes.  Fix comment typos - EPXR
+	instead of EXPR and inerted instead of inserted.  Use memset instead
+	of zero_char_buf.  For !BYTES_BIG_ENDIAN decrease byte_size by 1
+	if shift_amnt is 0.
+
 	PR middle-end/78416
 	* expmed.c (expand_divmod): Use wide_int for computation of
 	op1_is_pow2.  Don't set it if op1 is 0.  Formatting fixes.

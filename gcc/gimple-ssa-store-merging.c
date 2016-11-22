@@ -199,17 +199,6 @@ dump_char_array (FILE *fd, unsigned char *ptr, unsigned int len)
   fprintf (fd, "\n");
 }
 
-/* Fill a byte array PTR of SZ elements with zeroes.  This is to be used by
-   encode_tree_to_bitpos to zero-initialize most likely small arrays but
-   with a non-compile-time-constant size.  */
-
-static inline void
-zero_char_buf (unsigned char *ptr, unsigned int sz)
-{
-  for (unsigned int i = 0; i < sz; i++)
-    ptr[i] = 0;
-}
-
 /* Shift left the bytes in PTR of SZ elements by AMNT bits, carrying over the
    bits between adjacent elements.  AMNT should be within
    [0, BITS_PER_UNIT).
@@ -224,14 +213,13 @@ shift_bytes_in_array (unsigned char *ptr, unsigned int sz, unsigned int amnt)
     return;
 
   unsigned char carry_over = 0U;
-  unsigned char carry_mask = (~0U) << ((unsigned char)(BITS_PER_UNIT - amnt));
+  unsigned char carry_mask = (~0U) << (unsigned char) (BITS_PER_UNIT - amnt);
   unsigned char clear_mask = (~0U) << amnt;
 
   for (unsigned int i = 0; i < sz; i++)
     {
       unsigned prev_carry_over = carry_over;
-      carry_over
-	= (ptr[i] & carry_mask) >> (BITS_PER_UNIT - amnt);
+      carry_over = (ptr[i] & carry_mask) >> (BITS_PER_UNIT - amnt);
 
       ptr[i] <<= amnt;
       if (i != 0)
@@ -263,10 +251,9 @@ shift_bytes_in_array_right (unsigned char *ptr, unsigned int sz,
   for (unsigned int i = 0; i < sz; i++)
     {
       unsigned prev_carry_over = carry_over;
-      carry_over
-	= (ptr[i] & carry_mask);
+      carry_over = ptr[i] & carry_mask;
 
-     carry_over <<= ((unsigned char)BITS_PER_UNIT - amnt);
+     carry_over <<= (unsigned char) BITS_PER_UNIT - amnt;
      ptr[i] >>= amnt;
      ptr[i] |= prev_carry_over;
     }
@@ -327,7 +314,7 @@ clear_bit_region (unsigned char *ptr, unsigned int start,
   /* Second base case.  */
   else if ((start + len) <= BITS_PER_UNIT)
     {
-      unsigned char mask = (~0U) << ((unsigned char)(BITS_PER_UNIT - len));
+      unsigned char mask = (~0U) << (unsigned char) (BITS_PER_UNIT - len);
       mask >>= BITS_PER_UNIT - (start + len);
 
       ptr[0] &= ~mask;
@@ -346,8 +333,7 @@ clear_bit_region (unsigned char *ptr, unsigned int start,
       unsigned int nbytes = len / BITS_PER_UNIT;
       /* We could recurse on each byte but do the loop here to avoid
 	 recursing too deep.  */
-      for (unsigned int i = 0; i < nbytes; i++)
-	ptr[i] = 0U;
+      memset (ptr, '\0', nbytes);
       /* Clear the remaining sub-byte region if there is one.  */
       if (len % BITS_PER_UNIT != 0)
 	clear_bit_region (ptr + nbytes, 0, len % BITS_PER_UNIT);
@@ -362,7 +348,7 @@ clear_bit_region (unsigned char *ptr, unsigned int start,
 
 static bool
 encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
-			unsigned int total_bytes)
+		       unsigned int total_bytes)
 {
   unsigned int first_byte = bitpos / BITS_PER_UNIT;
   tree tmp_int = expr;
@@ -370,8 +356,8 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 			|| mode_for_size (bitlen, MODE_INT, 0) == BLKmode;
 
   if (!sub_byte_op_p)
-    return native_encode_expr (tmp_int, ptr + first_byte, total_bytes, 0)
-	   != 0;
+    return (native_encode_expr (tmp_int, ptr + first_byte, total_bytes, 0)
+	    != 0);
 
   /* LITTLE-ENDIAN
      We are writing a non byte-sized quantity or at a position that is not
@@ -381,7 +367,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
            xxx xxxxxxxx xxx< bp>
            |______EXPR____|
 
-     First native_encode_expr EPXR into a temporary buffer and shift each
+     First native_encode_expr EXPR into a temporary buffer and shift each
      byte in the buffer by 'bp' (carrying the bits over as necessary).
      |00000000|00xxxxxx|xxxxxxxx| << bp = |000xxxxx|xxxxxxxx|xxx00000|
                                               <------bitlen---->< bp>
@@ -400,7 +386,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
                        <bp >xxx xxxxxxxx xxx
                             |_____EXPR_____|
 
-     First native_encode_expr EPXR into a temporary buffer and shift each
+     First native_encode_expr EXPR into a temporary buffer and shift each
      byte in the buffer to the right by (carrying the bits over as necessary).
      We shift by as much as needed to align the most significant bit of EXPR
      with bitpos:
@@ -418,7 +404,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
   /* Allocate an extra byte so that we have space to shift into.  */
   unsigned int byte_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr))) + 1;
   unsigned char *tmpbuf = XALLOCAVEC (unsigned char, byte_size);
-  zero_char_buf (tmpbuf, byte_size);
+  memset (tmpbuf, '\0', byte_size);
   /* The store detection code should only have allowed constants that are
      accepted by native_encode_expr.  */
   if (native_encode_expr (expr, tmpbuf, byte_size, 0) == 0)
@@ -453,7 +439,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
     }
 
   /* Clear the bit region in PTR where the bits from TMPBUF will be
-     inerted into.  */
+     inserted into.  */
   if (BYTES_BIG_ENDIAN)
     clear_bit_region_be (ptr + first_byte,
 			 BITS_PER_UNIT - 1 - (bitpos % BITS_PER_UNIT), bitlen);
@@ -493,7 +479,11 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 
   /* Create the shifted version of EXPR.  */
   if (!BYTES_BIG_ENDIAN)
-    shift_bytes_in_array (tmpbuf, byte_size, shift_amnt);
+    {
+      shift_bytes_in_array (tmpbuf, byte_size, shift_amnt);
+      if (shift_amnt == 0)
+	byte_size--;
+    }
   else
     {
       gcc_assert (BYTES_BIG_ENDIAN);
@@ -648,8 +638,7 @@ merged_store_group::apply_stores ()
   /* Create a buffer of a size that is 2 times the number of bytes we're
      storing.  That way native_encode_expr can write power-of-2-sized
      chunks without overrunning.  */
-  buf_size
-    = 2 * (ROUND_UP (width, BITS_PER_UNIT) / BITS_PER_UNIT);
+  buf_size = 2 * (ROUND_UP (width, BITS_PER_UNIT) / BITS_PER_UNIT);
   val = XCNEWVEC (unsigned char, buf_size);
 
   FOR_EACH_VEC_ELT (stores, i, info)
