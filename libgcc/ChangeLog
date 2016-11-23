@@ -1,3 +1,13 @@
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* soft-fp/extendhftf2.c: Update from glibc.
+	* soft-fp/fixhfti.c: Likewise.
+	* soft-fp/fixunshfti.c: Likewise.
+	* soft-fp/floattihf.c: Likewise.
+	* soft-fp/floatuntihf.c: Likewise.
+	* soft-fp/half.h: Likewise.
+	* soft-fp/trunctfhf2.c: Likewise.
+
 2016-11-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libgcc/77813
