@@ -1,3 +1,8 @@
+2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78482
+	* gcc.dg/torture/pr78482.c: New testcase.
+
 2016-11-23  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/fold-cond_expr-1.c: New test.

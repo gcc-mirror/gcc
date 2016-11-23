@@ -1,3 +1,11 @@
+2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78482
+	* tree-cfgcleanup.c: Include tree-ssa-loop-niter.h.
+	(remove_forwarder_block_with_phi): When merging with a loop
+	header creates a new latch reset number of iteration information
+	of the loop.
+
 2016-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (*ashrsi3_extend): Rename to...
