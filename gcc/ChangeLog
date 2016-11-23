@@ -1,3 +1,9 @@
+2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78396
+	* tree-vectorizer.c (vectorize_loops): If an innermost loop didn't
+	vectorize try vectorizing an if-converted body using BB vectorization.
+
 2016-11-23  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
