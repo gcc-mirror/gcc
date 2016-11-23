@@ -1,3 +1,9 @@
+2016-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/reverse_iterator/71771.cc: Replace calls to
+	C++14 std::rbegin and std::rend.  Use dg-options instead of
+	effective-target.
+
 2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/Makefile.am
