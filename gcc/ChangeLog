@@ -1,3 +1,13 @@
+2016-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.md (*ashrsi3_extend): Rename to...
+	(*ashrsi3_extend0): ...this.  Accept constant integers.
+	(*ashrsi3_extend2): Rename to...
+	(*ashrsi3_extend1): ...this.
+	(*ashrsi3_extend2): New pattern.
+	(*lshrsi3_extend1): Accept constant integers.
+	(*lshrsi3_extend2): Fix condition on operand 2.
+
 2016-11-23  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386.c: Initialize function pointer to NULL.
