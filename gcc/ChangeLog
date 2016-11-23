@@ -1,3 +1,8 @@
+2016-11-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* opth-gen.awk: Use unsigned shifts for bit masks.  Allow all bits
+	to be used.  Add brackets around macro argument.
+
 2016-11-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*<any_or:code>hi_1): Fix operand 2 constraints.

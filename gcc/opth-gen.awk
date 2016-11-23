@@ -350,11 +350,11 @@ for (i = 0; i < n_opts; i++) {
 		mask_bits[name] = 1
 		vname = var_name(flags[i])
 		mask = "MASK_"
-		mask_1 = "1"
+		mask_1 = "1U"
 		if (vname != "") {
 			mask = "OPTION_MASK_"
 			if (host_wide_int[vname] == "yes")
-				mask_1 = "HOST_WIDE_INT_1"
+				mask_1 = "HOST_WIDE_INT_1U"
 		} else
 			extra_mask_bits[name] = 1
 		print "#define " mask name " (" mask_1 " << " masknum[vname]++ ")"
@@ -362,16 +362,16 @@ for (i = 0; i < n_opts; i++) {
 }
 for (i = 0; i < n_extra_masks; i++) {
 	if (extra_mask_bits[extra_masks[i]] == 0)
-		print "#define MASK_" extra_masks[i] " (1 << " masknum[""]++ ")"
+		print "#define MASK_" extra_masks[i] " (1U << " masknum[""]++ ")"
 }
 
 for (var in masknum) {
 	if (var != "" && host_wide_int[var] == "yes") {
-		print" #if defined(HOST_BITS_PER_WIDE_INT) && " masknum[var] " >= HOST_BITS_PER_WIDE_INT"
+		print "#if defined(HOST_BITS_PER_WIDE_INT) && " masknum[var] " > HOST_BITS_PER_WIDE_INT"
 		print "#error too many masks for " var
 		print "#endif"
 	}
-	else if (masknum[var] > 31) {
+	else if (masknum[var] > 32) {
 		if (var == "")
 			print "#error too many target masks"
 		else
@@ -401,7 +401,7 @@ for (i = 0; i < n_opts; i++) {
 		print "#define TARGET_" name \
 		      " ((" vname " & " mask name ") != 0)"
 		print "#define TARGET_" name "_P(" vname ")" \
-		      " ((" vname " & " mask name ") != 0)"
+		      " (((" vname ") & " mask name ") != 0)"
 	}
 }
 for (i = 0; i < n_extra_masks; i++) {
