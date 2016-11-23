@@ -1,3 +1,7 @@
+2016-11-23  Jeff Law  <law@redhat.com>
+
+	* config/ia64/ia64.c (ia64_emit_insn_before): Fix prototype.
+
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR target/63250
