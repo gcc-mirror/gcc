@@ -93,10 +93,10 @@ void test_s_nonconst (const char *s, const wchar_t *ws, struct Arrays *a)
   T (1, "%s",   s);             /* { dg-warning "nul past the end" "sprintf transformed into strcpy" { xfail *-*-* } } */
   T (1, "%1s",  s);             /* { dg-warning "nul past the end" } */
   T (1, "%.0s", s);
-  T (1, "%.1s", s);             /* { dg-warning "writing a terminating nul" } */
+  T (1, "%.1s", s);             /* { dg-warning "may write a terminating nul" } */
 
   T (1, "%.0ls",  ws);
-  T (1, "%.1ls",  ws);          /* { dg-warning "writing a terminating nul" } */
+  T (1, "%.1ls",  ws);          /* { dg-warning "may write a terminating nul" } */
   T (1, "%ls",    ws);          /* { dg-warning "writing a terminating nul" } */
 
   /* Verify that the size of the array is used in lieu of its length.

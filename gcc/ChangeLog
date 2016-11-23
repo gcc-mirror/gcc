@@ -1,3 +1,9 @@
+2016-11-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78461
+	* gimple-ssa-sprintf.c (format_string): Correct the maxima and
+	set the minimum number of bytes for an unknown string to zero.
+
 2016-11-23  Martin Jambor  <mjambor@suse.cz>
 	    Martin Liska  <mliska@suse.cz>
 

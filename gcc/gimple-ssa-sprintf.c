@@ -1533,18 +1533,15 @@ format_string (const conversion_spec &spec, tree arg)
   fmtresult res;
 
   /* The maximum number of bytes for an unknown wide character argument
-     to a "%lc" directive adjusted for precision but not field width.  */
+     to a "%lc" directive adjusted for precision but not field width.
+     6 is the longest UTF-8 sequence for a single wide character.  */
   const unsigned HOST_WIDE_INT max_bytes_for_unknown_wc
-    = (1 == warn_format_length ? 0 <= prec ? prec : 0
-       : 2 == warn_format_length ? 0 <= prec ? prec : 1
-       : 0 <= prec ? prec : 6 /* Longest UTF-8 sequence.  */);
+    = (0 <= prec ? prec : 1 < warn_format_length ? 6 : 1);
 
   /* The maximum number of bytes for an unknown string argument to either
      a "%s" or "%ls" directive adjusted for precision but not field width.  */
   const unsigned HOST_WIDE_INT max_bytes_for_unknown_str
-    = (1 == warn_format_length ? 0 <= prec ? prec : 0
-       : 2 == warn_format_length ? 0 <= prec ? prec : 1
-       : HOST_WIDE_INT_MAX);
+    = (0 <= prec ? prec : 1 < warn_format_length);
 
   /* The result is bounded unless overriddden for a non-constant string
      of an unknown length.  */
@@ -1648,7 +1645,7 @@ format_string (const conversion_spec &spec, tree arg)
 	  if (0 <= prec)
 	    {
 	      if (slen.range.min >= target_int_max ())
-		slen.range.min = max_bytes_for_unknown_str;
+		slen.range.min = 0;
 	      else if ((unsigned)prec < slen.range.min)
 		slen.range.min = prec;
 
