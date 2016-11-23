@@ -51002,6 +51002,44 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   *rem_p = rem;
 }
 
+/* Set the value of FLT_EVAL_METHOD in float.h.  When using only the
+   FPU, assume that the fpcw is set to extended precision; when using
+   only SSE, rounding is correct; when using both SSE and the FPU,
+   the rounding precision is indeterminate, since either may be chosen
+   apparently at random.  */
+
+static enum flt_eval_method
+ix86_excess_precision (enum excess_precision_type type)
+{
+  switch (type)
+    {
+      case EXCESS_PRECISION_TYPE_FAST:
+	/* The fastest type to promote to will always be the native type,
+	   whether that occurs with implicit excess precision or
+	   otherwise.  */
+	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+      case EXCESS_PRECISION_TYPE_STANDARD:
+      case EXCESS_PRECISION_TYPE_IMPLICIT:
+	/* Otherwise, the excess precision we want when we are
+	   in a standards compliant mode, and the implicit precision we
+	   provide can be identical.  */
+	if (!TARGET_80387)
+	  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+	else if (TARGET_MIX_SSE_I387)
+	  return FLT_EVAL_METHOD_UNPREDICTABLE;
+	else if (!TARGET_SSE_MATH)
+	  return FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE;
+	else if (TARGET_SSE2)
+	  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+	else
+	  return FLT_EVAL_METHOD_UNPREDICTABLE;
+      default:
+	gcc_unreachable ();
+    }
+
+  return FLT_EVAL_METHOD_UNPREDICTABLE;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -51233,6 +51271,8 @@ ix86_run_selftests (void)
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST ix86_md_asm_adjust
 
+#undef TARGET_C_EXCESS_PRECISION
+#define TARGET_C_EXCESS_PRECISION ix86_excess_precision
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_SETUP_INCOMING_VARARGS
