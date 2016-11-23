@@ -1,5 +1,10 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* targhooks.c (default_floatn_mode): Enable _Float16 if a target
+	provides HFmode.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/s390/s390.h (TARGET_FLT_EVAL_METHOD): Delete.
 	* config/m68k/m68k.h (TARGET_FLT_EVAL_METHOD): Delete.
 	* config/i386/i386.h (TARGET_FLT_EVAL_METHOD): Delete.
