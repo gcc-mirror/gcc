@@ -23,19 +23,48 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file contains system specific routines related to counting
-   online processors and dynamic load balancing.  */
+/* This is a simplified barrier that is suitable for thread pool
+   synchronizaton.  Only a subset of full barrier API (bar.h) is exposed.
+   Here in the NVPTX-specific implementation, we expect that thread pool
+   corresponds to a PTX CTA (thread block).  */
 
-#include "libgomp.h"
+#ifndef GOMP_SIMPLE_BARRIER_H
+#define GOMP_SIMPLE_BARRIER_H 1
 
-unsigned
-gomp_dynamic_max_threads (void)
+typedef struct
 {
-  return gomp_icv (false)->nthreads_var;
+  unsigned count;
+} gomp_simple_barrier_t;
+
+static inline void
+gomp_simple_barrier_init (gomp_simple_barrier_t *bar, unsigned count)
+{
+  bar->count = count * 32;
 }
 
-int
-omp_get_num_procs (void)
+/* Unused on NVPTX.
+static inline void
+gomp_simple_barrier_reinit (gomp_simple_barrier_t *bar, unsigned count)
 {
-  return gomp_icv (false)->nthreads_var;
+  bar->count = count * 32;
 }
+*/
+
+static inline void
+gomp_simple_barrier_destroy (gomp_simple_barrier_t *bar)
+{
+}
+
+static inline void
+gomp_simple_barrier_wait (gomp_simple_barrier_t *bar)
+{
+  asm volatile ("bar.sync 0, %0;" : : "r" (bar->count) : "memory");
+}
+
+static inline void
+gomp_simple_barrier_wait_last (gomp_simple_barrier_t *bar)
+{
+  asm volatile ("bar.arrive 0, %0;" : : "r" (bar->count) : "memory");
+}
+
+#endif /* GOMP_SIMPLE_BARRIER_H */

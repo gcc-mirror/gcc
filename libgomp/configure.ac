@@ -181,6 +181,7 @@ case "$host" in
     ;;
   nvptx*-*-*)
     # NVPTX does not support Pthreads, has its own code replacement.
+    libgomp_use_pthreads=no
     ;;
   *)
     # Check to see if -pthread or -lpthread is needed.  Prefer the former.
@@ -201,6 +202,11 @@ case "$host" in
        [],
        [AC_MSG_ERROR([Pthreads are required to build libgomp])])])
 esac
+
+if test x$libgomp_use_pthreads != xno; then
+  AC_DEFINE(LIBGOMP_USE_PTHREADS, 1,
+            [Define to 1 if libgomp should use POSIX threads.])
+fi
 
 m4_include([plugin/configfrag.ac])
 

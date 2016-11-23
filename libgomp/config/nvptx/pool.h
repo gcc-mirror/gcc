@@ -1,8 +1,5 @@
-/* OpenACC Runtime Fortran wrapper routines
-
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
-
-   Contributed by Mentor Embedded.
+/* Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
    (libgomp).
@@ -26,15 +23,27 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* Temporary hack; this will be provided by libgfortran.  */
+/* This is the NVPTX implementation of the thread pool management
+   for libgomp.  This type is private to the library.  */
 
-extern void _gfortran_abort (void);
+#ifndef GOMP_POOL_H
+#define GOMP_POOL_H 1
 
-__asm__ ("// BEGIN GLOBAL FUNCTION DECL: _gfortran_abort\n"
-	 ".visible .func _gfortran_abort;\n"
-	 "// BEGIN GLOBAL FUNCTION DEF: _gfortran_abort\n"
-	 ".visible .func _gfortran_abort\n"
-	 "{\n"
-	 "trap;\n"
-	 "ret;\n"
-	 "}\n");
+#include "libgomp.h"
+
+/* Get the thread pool.  */
+
+static inline struct gomp_thread_pool *
+gomp_get_thread_pool (struct gomp_thread *thr, unsigned nthreads)
+{
+  /* NVPTX is running with a fixed pool of pre-started threads.  */
+  return thr->thread_pool;
+}
+
+static inline void
+gomp_release_thread_pool (struct gomp_thread_pool *pool)
+{
+  /* Do nothing.  */
+}
+
+#endif /* GOMP_POOL_H */

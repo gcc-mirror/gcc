@@ -1,3 +1,99 @@
+2016-11-23  Alexander Monakov  <amonakov@ispras.ru>
+            Jakub Jelinek  <jakub@redhat.com>
+	    Dmitry Melnik  <dm@ispras.ru>
+
+	* Makefile.am (libgomp_la_SOURCES): Add atomic.c, icv.c, icv-device.c.
+	* Makefile.in. Regenerate.
+	* configure.ac [nvptx*-*-*] (libgomp_use_pthreads): Set and use it...
+	(LIBGOMP_USE_PTHREADS): ...here; new define.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+	* config/posix/affinity.c: Move to...
+	* affinity.c: ...here (new file).  Guard use of Pthreads-specific
+	interface by LIBGOMP_USE_PTHREADS. 
+	* critical.c: Split out GOMP_atomic_{start,end} into...
+	* atomic.c: ...here (new file).
+	* env.c: Split out ICV definitions into...
+	* icv.c: ...here (new file) and...
+	* icv-device.c: ...here. New file.
+	* config/linux/lock.c (gomp_init_lock_30): Move to generic lock.c.
+	(gomp_destroy_lock_30): Ditto.
+	(gomp_set_lock_30): Ditto.
+	(gomp_unset_lock_30): Ditto.
+	(gomp_test_lock_30): Ditto.
+	(gomp_init_nest_lock_30): Ditto.
+	(gomp_destroy_nest_lock_30): Ditto.
+	(gomp_set_nest_lock_30): Ditto.
+	(gomp_unset_nest_lock_30): Ditto.
+	(gomp_test_nest_lock_30): Ditto.
+	* lock.c: New.
+	* config/nvptx/lock.c: New.
+	* config/nvptx/bar.c: New.
+	* config/nvptx/bar.h: New.
+	* config/nvptx/doacross.h: New.
+	* config/nvptx/error.c: New.
+	* config/nvptx/icv-device.c: New.
+	* config/nvptx/mutex.h: New.
+	* config/nvptx/pool.h: New.
+	* config/nvptx/proc.c: New.
+	* config/nvptx/ptrlock.h: New.
+	* config/nvptx/sem.h: New.
+	* config/nvptx/simple-bar.h: New.
+	* config/nvptx/target.c: New.
+	* config/nvptx/task.c: New.
+	* config/nvptx/team.c: New.
+	* config/nvptx/time.c: New.
+	* config/posix/simple-bar.h: New.
+	* libgomp.h: Guard pthread.h inclusion.  Include simple-bar.h.
+	(gomp_num_teams_var): Declare.
+	(struct gomp_thread_pool): Change threads_dock member to
+	gomp_simple_barrier_t.
+	[__nvptx__] (gomp_thread): New implementation.
+	(gomp_thread_attr): Guard by LIBGOMP_USE_PTHREADS.
+	(gomp_thread_destructor): Ditto.
+	(gomp_init_thread_affinity): Ditto.
+	* team.c: Guard uses of Pthreads-specific interfaces by
+	LIBGOMP_USE_PTHREADS.  Adjust all uses of threads_dock.
+	(gomp_free_thread) [__nvptx__]: Do not call 'free'.
+	* config/nvptx/alloc.c: Delete.
+	* config/nvptx/barrier.c: Ditto.
+	* config/nvptx/fortran.c: Ditto.
+	* config/nvptx/iter.c: Ditto.
+	* config/nvptx/iter_ull.c: Ditto.
+	* config/nvptx/loop.c: Ditto.
+	* config/nvptx/loop_ull.c: Ditto.
+	* config/nvptx/ordered.c: Ditto.
+	* config/nvptx/parallel.c: Ditto.
+	* config/nvptx/priority_queue.c: Ditto.
+	* config/nvptx/sections.c: Ditto.
+	* config/nvptx/single.c: Ditto.
+	* config/nvptx/splay-tree.c: Ditto.
+	* config/nvptx/work.c: Ditto.
+	* testsuite/libgomp.fortran/fortran.exp (lang_link_flags): Pass
+	-foffload=-lgfortran in addition to -lgfortran.
+	* testsuite/libgomp.oacc-fortran/fortran.exp (lang_link_flags): Ditto.
+	* plugin/plugin-nvptx.c: Include <limits.h>.
+	(struct targ_fn_descriptor): Add new fields.
+	(struct ptx_device): Ditto.  Set them...
+	(nvptx_open_device): ...here.
+	(nvptx_adjust_launch_bounds): New.
+	(nvptx_host2dev): Allow NULL 'nvthd'.
+	(nvptx_dev2host): Ditto.
+	(GOMP_OFFLOAD_get_caps): Add GOMP_OFFLOAD_CAP_OPENMP_400.
+	(link_ptx): Adjust log sizes.
+	(nvptx_host2dev): Allow NULL 'nvthd'.
+	(nvptx_dev2host): Ditto.
+	(nvptx_set_clocktick): New.  Use it...
+	(GOMP_OFFLOAD_load_image): ...here.  Set new targ_fn_descriptor
+	fields.
+	(GOMP_OFFLOAD_dev2dev): New.
+	(nvptx_adjust_launch_bounds): New.
+	(nvptx_stacks_size): New.
+	(nvptx_stacks_alloc): New.
+	(nvptx_stacks_free): New.
+	(GOMP_OFFLOAD_run): New.
+	(GOMP_OFFLOAD_async_run): New (stub).
+
 2016-11-23  Martin Jambor  <mjambor@suse.cz>
 
 	* testsuite/libgomp.hsa.c/bits-insns.c: New test.

@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2016 Free Software Foundation, Inc.
-   Contributed by Jakub Jelinek <jakub@redhat.com>.
+/* Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
    (libgomp).
@@ -23,27 +23,52 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+/* This file defines OpenMP API entry points that accelerator targets are
+   expected to replace.  */
+
 #include "libgomp.h"
-#include <limits.h>
 
 void
-GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
+omp_set_default_device (int device_num __attribute__((unused)))
 {
-  if (thread_limit)
-    {
-      struct gomp_task_icv *icv = gomp_icv (true);
-      icv->thread_limit_var
-	= thread_limit > INT_MAX ? UINT_MAX : thread_limit;
-    }
-  unsigned int num_blocks, block_id;
-  asm ("mov.u32 %0, %%nctaid.x;" : "=r" (num_blocks));
-  asm ("mov.u32 %0, %%ctaid.x;" : "=r" (block_id));
-  if (!num_teams || num_teams >= num_blocks)
-    num_teams = num_blocks;
-  else if (block_id >= num_teams)
-    {
-      gomp_free_thread (nvptx_thrs);
-      asm ("exit;");
-    }
-  gomp_num_teams_var = num_teams - 1;
 }
+
+int
+omp_get_default_device (void)
+{
+  return 0;
+}
+
+int
+omp_get_num_devices (void)
+{
+  return 0;
+}
+
+int
+omp_get_num_teams (void)
+{
+  return gomp_num_teams_var + 1;
+}
+
+int
+omp_get_team_num (void)
+{
+  int ctaid;
+  asm ("mov.u32 %0, %%ctaid.x;" : "=r" (ctaid));
+  return ctaid;
+}
+
+int
+omp_is_initial_device (void)
+{
+  /* NVPTX is an accelerator-only target.  */
+  return 0;
+}
+
+ialias (omp_set_default_device)
+ialias (omp_get_default_device)
+ialias (omp_get_num_devices)
+ialias (omp_get_num_teams)
+ialias (omp_get_team_num)
+ialias (omp_is_initial_device)

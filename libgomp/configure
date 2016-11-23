@@ -15070,6 +15070,7 @@ case "$host" in
     ;;
   nvptx*-*-*)
     # NVPTX does not support Pthreads, has its own code replacement.
+    libgomp_use_pthreads=no
     ;;
   *)
     # Check to see if -pthread or -lpthread is needed.  Prefer the former.
@@ -15114,6 +15115,12 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 esac
+
+if test x$libgomp_use_pthreads != xno; then
+
+$as_echo "#define LIBGOMP_USE_PTHREADS 1" >>confdefs.h
+
+fi
 
 # Plugins for offload execution, configure.ac fragment.  -*- mode: autoconf -*-
 #

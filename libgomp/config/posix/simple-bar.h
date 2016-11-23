@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2016 Free Software Foundation, Inc.
-   Contributed by Dmitry Melnik <dm@ispras.ru>
+   Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
    (libgomp).
@@ -23,27 +23,47 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file implements timer routines for NVPTX.  It uses the %clock64 cycle
-   counter.  */
+/* This is a simplified barrier that is suitable for thread pool
+   synchronizaton.  Only a subset of full barrier API (bar.h) is exposed.  */
 
-#include "libgomp.h"
+#ifndef GOMP_SIMPLE_BARRIER_H
+#define GOMP_SIMPLE_BARRIER_H 1
 
-/* This is set from host in plugin-nvptx.c.  */
-double __nvptx_clocktick = 0;
+#include "bar.h"
 
-double
-omp_get_wtime (void)
+typedef struct
 {
-  uint64_t clock;
-  asm ("mov.u64 %0, %%clock64;" : "=r" (clock));
-  return clock * __nvptx_clocktick;
+  gomp_barrier_t bar;
+} gomp_simple_barrier_t;
+
+static inline void
+gomp_simple_barrier_init (gomp_simple_barrier_t *bar, unsigned count)
+{
+  gomp_barrier_init (&bar->bar, count);
 }
 
-double
-omp_get_wtick (void)
+static inline void
+gomp_simple_barrier_reinit (gomp_simple_barrier_t *bar, unsigned count)
 {
-  return __nvptx_clocktick;
+  gomp_barrier_reinit (&bar->bar, count);
 }
 
-ialias (omp_get_wtime)
-ialias (omp_get_wtick)
+static inline void
+gomp_simple_barrier_destroy (gomp_simple_barrier_t *bar)
+{
+  gomp_barrier_destroy (&bar->bar);
+}
+
+static inline void
+gomp_simple_barrier_wait (gomp_simple_barrier_t *bar)
+{
+  gomp_barrier_wait (&bar->bar);
+}
+
+static inline void
+gomp_simple_barrier_wait_last (gomp_simple_barrier_t *bar)
+{
+  gomp_barrier_wait_last (&bar->bar);
+}
+
+#endif /* GOMP_SIMPLE_BARRIER_H */
