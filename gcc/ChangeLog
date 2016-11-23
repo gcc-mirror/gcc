@@ -1,3 +1,8 @@
+2016-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/78455
+	* tree-ssa-uninit.c (can_chain_union_be_invalidated_p): Fix typo.
+
 2016-11-22  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/78431
