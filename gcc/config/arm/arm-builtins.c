@@ -652,7 +652,8 @@ static struct arm_simd_type_info arm_simd_types [] = {
 };
 #undef ENTRY
 
-static tree arm_simd_floatHF_type_node = NULL_TREE;
+/* The user-visible __fp16 type.  */
+tree arm_fp16_type_node = NULL_TREE;
 static tree arm_simd_intOI_type_node = NULL_TREE;
 static tree arm_simd_intEI_type_node = NULL_TREE;
 static tree arm_simd_intCI_type_node = NULL_TREE;
@@ -739,7 +740,7 @@ arm_simd_builtin_std_type (enum machine_mode mode,
     case XImode:
       return arm_simd_intXI_type_node;
     case HFmode:
-      return arm_simd_floatHF_type_node;
+      return arm_fp16_type_node;
     case SFmode:
       return float_type_node;
     case DFmode:
@@ -840,8 +841,8 @@ arm_init_simd_builtin_types (void)
   /* Continue with standard types.  */
   /* The __builtin_simd{64,128}_float16 types are kept private unless
      we have a scalar __fp16 type.  */
-  arm_simd_types[Float16x4_t].eltype = arm_simd_floatHF_type_node;
-  arm_simd_types[Float16x8_t].eltype = arm_simd_floatHF_type_node;
+  arm_simd_types[Float16x4_t].eltype = arm_fp16_type_node;
+  arm_simd_types[Float16x8_t].eltype = arm_fp16_type_node;
   arm_simd_types[Float32x2_t].eltype = float_type_node;
   arm_simd_types[Float32x4_t].eltype = float_type_node;
 
@@ -1754,11 +1755,11 @@ arm_init_iwmmxt_builtins (void)
 static void
 arm_init_fp16_builtins (void)
 {
-  arm_simd_floatHF_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (arm_simd_floatHF_type_node) = GET_MODE_PRECISION (HFmode);
-  layout_type (arm_simd_floatHF_type_node);
+  arm_fp16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (arm_fp16_type_node) = GET_MODE_PRECISION (HFmode);
+  layout_type (arm_fp16_type_node);
   if (arm_fp16_format)
-    (*lang_hooks.types.register_builtin_type) (arm_simd_floatHF_type_node,
+    (*lang_hooks.types.register_builtin_type) (arm_fp16_type_node,
 					       "__fp16");
 }
 

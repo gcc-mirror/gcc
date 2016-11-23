@@ -73,6 +73,11 @@ extern int arm_ccfsm_state;
 extern GTY(()) rtx arm_target_insn;
 /* Callback to output language specific object attributes.  */
 extern void (*arm_lang_output_object_attributes_hook)(void);
+
+/* This type is the user-visible __fp16.  We need it in a few places in
+   the backend.  Defined in arm-builtins.c.  */
+extern tree arm_fp16_type_node;
+
 
 #undef  CPP_SPEC
 #define CPP_SPEC "%(subtarget_cpp_spec)					\

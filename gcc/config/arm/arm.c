@@ -266,6 +266,7 @@ static bool arm_builtin_support_vector_misalignment (machine_mode mode,
 						     int misalignment,
 						     bool is_packed);
 static void arm_conditional_register_usage (void);
+static enum flt_eval_method arm_excess_precision (enum excess_precision_type);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
 static unsigned int arm_autovectorize_vector_sizes (void);
 static int arm_default_branch_cost (bool, bool);
@@ -299,6 +300,7 @@ static bool arm_asm_elf_flags_numeric (unsigned int flags, unsigned int *num);
 static unsigned int arm_elf_section_type_flags (tree decl, const char *name,
 						int reloc);
 static void arm_expand_divmod_libfunc (rtx, machine_mode, rtx, rtx, rtx *, rtx *);
+static machine_mode arm_floatn_mode (int, bool);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -443,6 +445,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef  TARGET_ASM_INTERNAL_LABEL
 #define TARGET_ASM_INTERNAL_LABEL arm_internal_label
+
+#undef TARGET_FLOATN_MODE
+#define TARGET_FLOATN_MODE arm_floatn_mode
 
 #undef  TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL arm_function_ok_for_sibcall
@@ -733,6 +738,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_EXPAND_DIVMOD_LIBFUNC
 #define TARGET_EXPAND_DIVMOD_LIBFUNC arm_expand_divmod_libfunc
+
+#undef TARGET_C_EXCESS_PRECISION
+#define TARGET_C_EXCESS_PRECISION arm_excess_precision
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -22512,7 +22520,9 @@ arm_debugger_arg_offset (int value, rtx addr)
 static tree
 arm_promoted_type (const_tree t)
 {
-  if (SCALAR_FLOAT_TYPE_P (t) && TYPE_PRECISION (t) == 16)
+  if (SCALAR_FLOAT_TYPE_P (t)
+      && TYPE_PRECISION (t) == 16
+      && TYPE_MAIN_VARIANT (t) == arm_fp16_type_node)
     return float_type_node;
   return NULL_TREE;
 }
@@ -22533,6 +22543,61 @@ arm_scalar_mode_supported_p (machine_mode mode)
   else
     return default_scalar_mode_supported_p (mode);
 }
+
+/* Set the value of FLT_EVAL_METHOD.
+   ISO/IEC TS 18661-3 defines two values that we'd like to make use of:
+
+    0: evaluate all operations and constants, whose semantic type has at
+       most the range and precision of type float, to the range and
+       precision of float; evaluate all other operations and constants to
+       the range and precision of the semantic type;
+
+    N, where _FloatN is a supported interchange floating type
+       evaluate all operations and constants, whose semantic type has at
+       most the range and precision of _FloatN type, to the range and
+       precision of the _FloatN type; evaluate all other operations and
+       constants to the range and precision of the semantic type;
+
+   If we have the ARMv8.2-A extensions then we support _Float16 in native
+   precision, so we should set this to 16.  Otherwise, we support the type,
+   but want to evaluate expressions in float precision, so set this to
+   0.  */
+
+static enum flt_eval_method
+arm_excess_precision (enum excess_precision_type type)
+{
+  switch (type)
+    {
+      case EXCESS_PRECISION_TYPE_FAST:
+      case EXCESS_PRECISION_TYPE_STANDARD:
+	/* We can calculate either in 16-bit range and precision or
+	   32-bit range and precision.  Make that decision based on whether
+	   we have native support for the ARMv8.2-A 16-bit floating-point
+	   instructions or not.  */
+	return (TARGET_VFP_FP16INST
+		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
+		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
+      case EXCESS_PRECISION_TYPE_IMPLICIT:
+	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
+      default:
+	gcc_unreachable ();
+    }
+  return FLT_EVAL_METHOD_UNPREDICTABLE;
+}
+
+
+/* Implement TARGET_FLOATN_MODE.  Make very sure that we don't provide
+   _Float16 if we are using anything other than ieee format for 16-bit
+   floating point.  Otherwise, punt to the default implementation.  */
+static machine_mode
+arm_floatn_mode (int n, bool extended)
+{
+  if (!extended && n == 16)
+    return arm_fp16_format == ARM_FP16_FORMAT_IEEE ? HFmode : VOIDmode;
+
+  return default_floatn_mode (n, extended);
+}
+
 
 /* Set up OPERANDS for a register copy from SRC to DEST, taking care
    not to early-clobber SRC registers in the process.
