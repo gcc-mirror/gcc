@@ -15260,6 +15260,43 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
   return NULL;
 }
 
+/* Implement TARGET_C_EXCESS_PRECISION.
+
+   FIXME: For historical reasons, float_t and double_t are typedef'ed to
+   double on s390, causing operations on float_t to operate in a higher
+   precision than is necessary.  However, it is not the case that SFmode
+   operations have implicit excess precision, and we generate more optimal
+   code if we let the compiler know no implicit extra precision is added.
+
+   That means when we are compiling with -fexcess-precision=fast, the value
+   we set for FLT_EVAL_METHOD will be out of line with the actual precision of
+   float_t (though they would be correct for -fexcess-precision=standard).
+
+   A complete fix would modify glibc to remove the unnecessary typedef
+   of float_t to double.  */
+
+static enum flt_eval_method
+s390_excess_precision (enum excess_precision_type type)
+{
+  switch (type)
+    {
+      case EXCESS_PRECISION_TYPE_IMPLICIT:
+      case EXCESS_PRECISION_TYPE_FAST:
+	/* The fastest type to promote to will always be the native type,
+	   whether that occurs with implicit excess precision or
+	   otherwise.  */
+	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+      case EXCESS_PRECISION_TYPE_STANDARD:
+	/* Otherwise, when we are in a standards compliant mode, to
+	   ensure consistency with the implementation in glibc, report that
+	   float is evaluated to the range and precision of double.  */
+	return FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE;
+      default:
+	gcc_unreachable ();
+    }
+  return FLT_EVAL_METHOD_UNPREDICTABLE;
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -15319,6 +15356,9 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
 #define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
+
+#undef TARGET_C_EXCESS_PRECISION
+#define TARGET_C_EXCESS_PRECISION s390_excess_precision
 
 #undef  TARGET_SCHED_ADJUST_PRIORITY
 #define TARGET_SCHED_ADJUST_PRIORITY s390_adjust_priority
