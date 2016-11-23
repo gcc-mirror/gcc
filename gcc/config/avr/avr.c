@@ -1687,7 +1687,11 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
           /* Stack adjustment by means of RCALL . and/or PUSH __TMP_REG__
              can only handle specific offsets.  */
 
-          if (avr_sp_immediate_operand (gen_int_mode (-size, HImode), HImode))
+          int n_rcall = size / (AVR_3_BYTE_PC ? 3 : 2);
+
+          if (avr_sp_immediate_operand (gen_int_mode (-size, HImode), HImode)
+              // Don't use more than 3 RCALLs.
+              && n_rcall <= 3)
             {
               rtx_insn *sp_plus_insns;
 
