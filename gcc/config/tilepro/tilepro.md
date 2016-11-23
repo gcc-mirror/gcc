@@ -1578,6 +1578,12 @@
   "nop"
   [(set_attr "type" "Y01")])
 
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "raise; moveli zero, 6"
+  [(set_attr "type" "cannot_bundle")])
+
 
 ;;
 ;; Conditional branches
