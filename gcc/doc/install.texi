@@ -2035,12 +2035,6 @@ explicitly specify the directory where they are installed.  The
 shorthand for
 @option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
 @option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
-
-@item --with-hsa-kmt-lib=@var{pathname}
-
-If you configure GCC with HSA offloading but do not have the HSA
-KMT library installed in a standard location then you can
-explicitly specify the directory where it resides.
 @end table
 
 @subheading Cross-Compiler-Specific Options

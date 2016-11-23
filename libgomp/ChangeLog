@@ -1,3 +1,53 @@
+2016-11-23  Martin Liska  <mliska@suse.cz>
+            Martin Jambor  <mjambor@suse.cz>
+
+	* plugin/hsa.h: New file.
+	* plugin/hsa_ext_finalize.h: New file.
+	* plugin/configfrag.ac: Remove hsa-kmt-lib test.  Added checks for
+	header file unistd.h, and functions secure_getenv, __secure_getenv,
+	getuid, geteuid, getgid and getegid.
+	* plugin/Makefrag.am (libgomp_plugin_hsa_la_CPPFLAGS): Added
+	-D_GNU_SOURCE.
+	* plugin/plugin-hsa.c: Include config.h, inttypes.h and stdbool.h.
+	Handle various cases of secure_getenv presence, add an implementation
+	when we can test effective UID and GID.
+	(struct hsa_runtime_fn_info): New structure.
+	(hsa_runtime_fn_info hsa_fns): New variable.
+	(hsa_runtime_lib): Likewise.
+	(support_cpu_devices): Likewise.
+	(init_enviroment_variables): Load newly introduced ENV
+	variables.
+	(hsa_warn): Call hsa run-time functions via hsa_fns structure.
+	(hsa_fatal): Likewise.
+	(DLSYM_FN): New macro.
+	(init_hsa_runtime_functions): New function.
+	(suitable_hsa_agent_p): Call hsa run-time functions via hsa_fns
+	structure.  Depending on environment, also allow CPU devices.
+	(init_hsa_context): Call hsa run-time functions via hsa_fns structure.
+	(get_kernarg_memory_region): Likewise.
+	(GOMP_OFFLOAD_init_device): Likewise.
+	(destroy_hsa_program): Likewise.
+	(init_basic_kernel_info): New function.
+	(GOMP_OFFLOAD_load_image): Use it.
+	(create_and_finalize_hsa_program): Call hsa run-time functions via
+	hsa_fns structure.
+	(create_single_kernel_dispatch): Likewise.
+	(release_kernel_dispatch): Likewise.
+	(init_single_kernel): Likewise.
+	(parse_target_attributes): Allow up multiple HSA grid dimensions.
+	(get_group_size): New function.
+	(run_kernel): Likewise.
+	(GOMP_OFFLOAD_run): Outline most functionality to run_kernel.
+	(GOMP_OFFLOAD_fini_device): Call hsa run-time functions via hsa_fns
+	structure.
+	* testsuite/lib/libgomp.exp: Remove hsa_kmt_lib support.
+	* testsuite/libgomp-test-support.exp.in: Likewise.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2016-11-15  Martin Jambor  <mjambor@suse.cz>
             Alexander Monakov  <amonakov@ispras.ru>
 

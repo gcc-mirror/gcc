@@ -1,3 +1,8 @@
+2016-11-23  Martin Liska  <mliska@suse.cz>
+            Martin Jambor  <mjambor@suse.cz>
+
+	* doc/install.texi: Remove entry about --with-hsa-kmt-lib.
+
 2016-11-23  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR target/78213
