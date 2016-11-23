@@ -1,4 +1,14 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/fp16.c (struct format): New.
+	(binary32): New.
+	(__gnu_float2h_internal): New.  Body moved from
+	__gnu_f2h_internal and generalize.
+	(_gnu_f2h_internal): Move body to function __gnu_float2h_internal.
+	Call it with binary32.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* soft-fp/extendhftf2.c: Update from glibc.
 	* soft-fp/fixhfti.c: Likewise.
