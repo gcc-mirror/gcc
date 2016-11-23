@@ -1,3 +1,14 @@
+2016-11-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* include/cpplib.h (struct cpp_options): Add new member
+	warn_expansion_to_defined.
+	(CPP_W_EXPANSION_TO_DEFINED): New enum member.
+	* expr.c (parse_defined): Warn for all uses of "defined"
+	in macros, and tie warning to CPP_W_EXPANSION_TO_DEFINED.
+	Make it a pedwarning instead of a warning.
+	* system.h (HAVE_DESIGNATED_INITIALIZERS): Do not use
+	"defined" in macros.
+
 2016-11-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* charset.c (cpp_interpret_string_1): Skip locations from

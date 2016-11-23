@@ -577,15 +577,21 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 
 /* 1 if we have C99 designated initializers.  */
 #if !defined(HAVE_DESIGNATED_INITIALIZERS)
+#ifdef __cplusplus
+#define HAVE_DESIGNATED_INITIALIZERS 0
+#else
 #define HAVE_DESIGNATED_INITIALIZERS \
-  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)) \
-   && !defined(__cplusplus))
+  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+#endif
 #endif
 
 #if !defined(HAVE_DESIGNATED_UNION_INITIALIZERS)
+#ifdef __cplusplus
+#define HAVE_DESIGNATED_UNION_INITIALIZERS (GCC_VERSION >= 4007)
+#else
 #define HAVE_DESIGNATED_UNION_INITIALIZERS \
-  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)) \
-   && (!defined(__cplusplus) || (GCC_VERSION >= 4007)))
+  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+#endif
 #endif
 
 #if HAVE_SYS_STAT_H

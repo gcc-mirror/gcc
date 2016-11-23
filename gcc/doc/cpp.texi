@@ -3369,7 +3369,9 @@ If the @code{defined} operator appears as a result of a macro expansion,
 the C standard says the behavior is undefined.  GNU cpp treats it as a
 genuine @code{defined} operator and evaluates it normally.  It will warn
 wherever your code uses this feature if you use the command-line option
-@option{-pedantic}, since other compilers may handle it differently.
+@option{-Wpedantic}, since other compilers may handle it differently.  The
+warning is also enabled by @option{-Wextra}, and can also be enabled
+individually with @option{-Wexpansion-to-defined}.
 
 @node Else
 @subsection Else

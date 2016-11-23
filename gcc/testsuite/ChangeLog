@@ -1,3 +1,13 @@
+2016-11-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/cpp/defined.c: Mark newly introduced warnings and
+	adjust for warning->pedwarn change.
+	* gcc.dg/cpp/defined-syshdr.c,
+	gcc.dg/cpp/defined-Wexpansion-to-defined.c,
+	gcc.dg/cpp/defined-Wextra-Wno-expansion-to-defined.c,
+	gcc.dg/cpp/defined-Wextra.c,
+	gcc.dg/cpp/defined-Wno-expansion-to-defined.c: New testcases.
+
 2016-11-23  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/uninit-19.c: Add -finline-small-functions for avr.

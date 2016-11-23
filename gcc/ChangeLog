@@ -1,3 +1,12 @@
+2016-11-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* system.h (HAVE_DESIGNATED_INITIALIZERS,
+	HAVE_DESIGNATED_UNION_INITIALIZERS): Do not use
+	"defined" in macros.
+	* doc/cpp.texi (Defined): Mention -Wexpansion-to-defined.
+	* doc/cppopts.texi (Invocation): Document -Wexpansion-to-defined.
+	* doc/invoke.texi (Warning Options): Document -Wexpansion-to-defined.
+
 2016-11-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/60300
