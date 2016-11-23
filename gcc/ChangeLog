@@ -1,5 +1,10 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/m68k/m68k.c (m68k_excess_precision): New.
+	(TARGET_C_EXCESS_PRECISION): Define.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/s390/s390.c (s390_excess_precision): New.
 	(TARGET_C_EXCESS_PRECISION): Define.
 
