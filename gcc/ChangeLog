@@ -1,5 +1,15 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/s390/s390.h (TARGET_FLT_EVAL_METHOD): Delete.
+	* config/m68k/m68k.h (TARGET_FLT_EVAL_METHOD): Delete.
+	* config/i386/i386.h (TARGET_FLT_EVAL_METHOD): Delete.
+	* defaults.h (TARGET_FLT_EVAL_METHOD): Delete.
+	* doc/tm.texi.in (TARGET_FLT_EVAL_METHOD): Delete.
+	* doc/tm.texi: Regenerate.
+	* system.h (TARGET_FLT_EVAL_METHOD): Poison.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* toplev.c (init_excess_precision): Delete most logic.
 	* tree.c (excess_precision_type): Rewrite to use
 	TARGET_EXCESS_PRECISION.
