@@ -1,3 +1,12 @@
+2016-11-23  Bin Cheng  <bin.cheng@arm.com>
+
+	* fold-const.c (fold_cond_expr_with_comparison): Move simplification
+	for A cmp C1 ? A : C2 to below, also simplify remaining code.
+	* match.pd: Move and extend simplification from above to here:
+	(cond (cmp (convert1? x) c1) (convert2? x) c2) -> (minmax (x c)).
+	* tree-if-conv.c (ifcvt_follow_ssa_use_edges): New func.
+	(predicate_scalar_phi): Call fold_stmt using the new valueize func.
+
 2016-11-23  Martin Liska  <mliska@suse.cz>
             Martin Jambor  <mjambor@suse.cz>
 
