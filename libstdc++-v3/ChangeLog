@@ -1,7 +1,7 @@
 2016-11-23  Felix Morgner  <felix.morgner@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
-	PR libstdc++/78494
+	PR libstdc++/78490
 	* include/experimental/propagate_const (propagate_const::operator=):
 	Add missing return statements.
 	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
