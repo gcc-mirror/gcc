@@ -108,6 +108,7 @@ DEF_ATTR_IDENT (ATTR_TYPEGENERIC, "type generic")
 DEF_ATTR_IDENT (ATTR_TM_REGPARM, "*tm regparm")
 DEF_ATTR_IDENT (ATTR_TM_TMPURE, "transaction_pure")
 DEF_ATTR_IDENT (ATTR_RETURNS_TWICE, "returns_twice")
+DEF_ATTR_IDENT (ATTR_RETURNS_NONNULL, "returns_nonnull")
 
 DEF_ATTR_TREE_LIST (ATTR_NOVOPS_LIST, ATTR_NOVOPS, ATTR_NULL, ATTR_NULL)
 
@@ -196,6 +197,10 @@ DEF_ATTR_TREE_LIST (ATTR_CONST_NOTHROW_NONNULL, ATTR_CONST, ATTR_NULL, \
 /* Nothrow leaf functions whose pointer parameter(s) are all nonnull,
    and which return their first argument.  */
 DEF_ATTR_TREE_LIST (ATTR_RET1_NOTHROW_NONNULL_LEAF, ATTR_FNSPEC, ATTR_LIST_STR1, \
+			ATTR_NOTHROW_NONNULL_LEAF)
+/* Nothrow leaf functions whose pointer parameter(s) are all nonnull,
+   and return value is also nonnull.  */
+DEF_ATTR_TREE_LIST (ATTR_RETNONNULL_NOTHROW_LEAF, ATTR_RETURNS_NONNULL, ATTR_NULL, \
 			ATTR_NOTHROW_NONNULL_LEAF)
 /* Nothrow const leaf functions whose pointer parameter(s) are all nonnull.  */
 DEF_ATTR_TREE_LIST (ATTR_CONST_NOTHROW_NONNULL_LEAF, ATTR_CONST, ATTR_NULL, \

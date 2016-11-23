@@ -1,3 +1,27 @@
+2016-11-23  Richard Biener  <rguenther@suse.de>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.rog>
+
+	PR tree-optimization/78154
+	* tree-vrp.c (gimple_stmt_nonzero_warnv_p): Return true if function
+	returns it's argument and the argument is nonnull.
+	* builtin-attrs.def: Define ATTR_RETURNS_NONNULL,
+	ATT_RETNONNULL_NOTHROW_LEAF.
+	* builtins.def (BUILT_IN_MEMPCPY): Change attribute to
+	ATTR_RETNONNULL_NOTHROW_LEAF.
+	(BUILT_IN_STPCPY): Likewise.
+	(BUILT_IN_STPNCPY): Likewise.
+	(BUILT_IN_MEMPCPY_CHK): Likewise.
+	(BUILT_IN_STPCPY_CHK): Likewise.
+	(BUILT_IN_STPNCPY_CHK): Likewise.
+	(BUILT_IN_STRCAT): Change attribute to ATTR_RET1_NOTHROW_NONNULL_LEAF.
+	(BUILT_IN_STRNCAT): Likewise.
+	(BUILT_IN_STRNCPY): Likewise.
+	(BUILT_IN_MEMSET_CHK): Likewise.
+	(BUILT_IN_STRCAT_CHK): Likewise.
+	(BUILT_IN_STRCPY_CHK): Likewise.
+	(BUILT_IN_STRNCAT_CHK): Likewise.
+	(BUILT_IN_STRNCPY_CHK): Likewise.
+
 2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* fold-const.c (tree_expr_nonzero_p) : Make non-static.
