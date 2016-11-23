@@ -1,3 +1,10 @@
+2016-11-22  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.md (*zero_extract): Use
+	define_insn_and_split instead of define_insn; Handle pos + size >
+	64.
+	(*sign_extract): Likewise.
+
 2016-11-22  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/78455
