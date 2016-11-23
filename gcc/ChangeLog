@@ -1,5 +1,10 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/s390/s390.c (s390_excess_precision): New.
+	(TARGET_C_EXCESS_PRECISION): Define.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/i386/i386.c (ix86_excess_precision): New.
 	(TARGET_C_EXCESS_PRECISION): Define.
 
