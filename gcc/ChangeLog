@@ -1,3 +1,8 @@
+2016-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<any_or:code>hi_1): Fix operand 2 constraints.
+	(kxnor<mode>): Return "#" for alternative 0.
+
 2016-11-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
@@ -43,7 +48,7 @@
 
 	Backport from mainline
 	2016-11-22  Walter Lee  <walt@tilera.com>
-	
+
 	* config/tilegx/tilegx.md (trap): New pattern.
 	* config/tilepro/tilepro.md (trap): Likewise.
 
@@ -51,7 +56,7 @@
 
 	Backport from mainline
 	2016-11-22  Walter Lee  <walt@tilera.com>
-	
+
 	* config/tilegx/tilegx.md (*zero_extract): Use
 	define_insn_and_split instead of define_insn; Handle pos + size >
 	64.
