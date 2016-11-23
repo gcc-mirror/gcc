@@ -911,7 +911,8 @@ RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 PARAMS_H = params.h params-enum.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
-	gtm-builtins.def sanitizer.def cilkplus.def cilk-builtins.def
+	gtm-builtins.def sanitizer.def cilkplus.def cilk-builtins.def \
+	hsa-builtins.def
 INTERNAL_FN_DEF = internal-fn.def
 INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF)
 TREE_CORE_H = tree-core.h coretypes.h all-tree.def tree.def \

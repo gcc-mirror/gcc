@@ -1,3 +1,7 @@
+2016-11-23  Martin Jambor  <mjambor@suse.cz>
+
+	* f95-lang.c (DEF_HSA_BUILTIN): New macro.
+
 2016-11-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78479

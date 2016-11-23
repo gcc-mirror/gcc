@@ -170,6 +170,7 @@ hsa_insn_basic::op_output_p (unsigned opnum)
     case BRIG_OPCODE_SBR:
     case BRIG_OPCODE_ST:
     case BRIG_OPCODE_SIGNALNORET:
+    case BRIG_OPCODE_DEBUGTRAP:
       /* FIXME: There are probably missing cases here, double check.  */
       return false;
     case BRIG_OPCODE_EXPAND:
@@ -605,8 +606,8 @@ hsa_destroy_insn (hsa_insn_basic *insn)
 {
   if (hsa_insn_phi *phi = dyn_cast <hsa_insn_phi *> (insn))
     phi->~hsa_insn_phi ();
-  else if (hsa_insn_br *br = dyn_cast <hsa_insn_br *> (insn))
-    br->~hsa_insn_br ();
+  else if (hsa_insn_cbr *br = dyn_cast <hsa_insn_cbr *> (insn))
+    br->~hsa_insn_cbr ();
   else if (hsa_insn_cmp *cmp = dyn_cast <hsa_insn_cmp *> (insn))
     cmp->~hsa_insn_cmp ();
   else if (hsa_insn_mem *mem = dyn_cast <hsa_insn_mem *> (insn))
@@ -621,6 +622,8 @@ hsa_destroy_insn (hsa_insn_basic *insn)
     block->~hsa_insn_arg_block ();
   else if (hsa_insn_sbr *sbr = dyn_cast <hsa_insn_sbr *> (insn))
     sbr->~hsa_insn_sbr ();
+  else if (hsa_insn_br *br = dyn_cast <hsa_insn_br *> (insn))
+    br->~hsa_insn_br ();
   else if (hsa_insn_comment *comment = dyn_cast <hsa_insn_comment *> (insn))
     comment->~hsa_insn_comment ();
   else
@@ -783,32 +786,22 @@ hsa_brig_function_name (const char *p)
   return buf;
 }
 
-/* Return declaration name if exists.  */
+/* Add a flatten attribute and disable vectorization for gpu implementation
+   function decl GDECL.  */
 
-const char *
-hsa_get_declaration_name (tree decl)
+void hsa_summary_t::process_gpu_implementation_attributes (tree gdecl)
 {
-  if (!DECL_NAME (decl))
-    {
-      char buf[64];
-      snprintf (buf, 64, "__hsa_anonymous_%i", DECL_UID (decl));
-      const char *ggc_str = ggc_strdup (buf);
-      return ggc_str;
-    }
+  DECL_ATTRIBUTES (gdecl)
+    = tree_cons (get_identifier ("flatten"), NULL_TREE,
+		 DECL_ATTRIBUTES (gdecl));
 
-  tree name_tree;
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      || (VAR_P (decl) && is_global_var (decl)))
-    name_tree = DECL_ASSEMBLER_NAME (decl);
-  else
-    name_tree = DECL_NAME (decl);
-
-  const char *name = IDENTIFIER_POINTER (name_tree);
-  /* User-defined assembly names have prepended asterisk symbol.  */
-  if (name[0] == '*')
-    name++;
-
-  return name;
+  tree fn_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (gdecl);
+  if (fn_opts == NULL_TREE)
+    fn_opts = optimization_default_node;
+  fn_opts = copy_node (fn_opts);
+  TREE_OPTIMIZATION (fn_opts)->x_flag_tree_loop_vectorize = false;
+  TREE_OPTIMIZATION (fn_opts)->x_flag_tree_slp_vectorize = false;
+  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (gdecl) = fn_opts;
 }
 
 void
@@ -827,21 +820,10 @@ hsa_summary_t::link_functions (cgraph_node *gpu, cgraph_node *host,
   gpu_summary->m_gridified_kernel_p = gridified_kernel_p;
   host_summary->m_gridified_kernel_p = gridified_kernel_p;
 
-  gpu_summary->m_binded_function = host;
-  host_summary->m_binded_function = gpu;
+  gpu_summary->m_bound_function = host;
+  host_summary->m_bound_function = gpu;
 
-  tree gdecl = gpu->decl;
-  DECL_ATTRIBUTES (gdecl)
-    = tree_cons (get_identifier ("flatten"), NULL_TREE,
-		 DECL_ATTRIBUTES (gdecl));
-
-  tree fn_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (gdecl);
-  if (fn_opts == NULL_TREE)
-    fn_opts = optimization_default_node;
-  fn_opts = copy_node (fn_opts);
-  TREE_OPTIMIZATION (fn_opts)->x_flag_tree_loop_vectorize = false;
-  TREE_OPTIMIZATION (fn_opts)->x_flag_tree_slp_vectorize = false;
-  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (gdecl) = fn_opts;
+  process_gpu_implementation_attributes (gpu->decl);
 
   /* Create reference between a kernel and a corresponding host implementation
      to quarantee LTO streaming to a same LTRANS.  */
