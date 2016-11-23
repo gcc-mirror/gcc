@@ -1,3 +1,9 @@
+2016-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78451
+	* c-pragma.c (handle_pragma_target): Don't replace
+	current_target_pragma, but chainon the new args to the current one.
+
 2016-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	* array-notation-common.c (cilkplus_extract_an_trplets): Fix

@@ -893,7 +893,7 @@ handle_pragma_target(cpp_reader *ARG_UNUSED(dummy))
       args = nreverse (args);
 
       if (targetm.target_option.pragma_parse (args, NULL_TREE))
-	current_target_pragma = args;
+	current_target_pragma = chainon (current_target_pragma, args);
     }
 }
 
