@@ -1,5 +1,12 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* gcc.target/arm/fp16-rounding-alt-1.c (ROUNDED): Change expected
+	result.
+	* gcc.target/arm/fp16-rounding-ieee-1.c (ROUNDED): Change expected
+	result.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* lib/target-supports.exp (check_effective_target_float16): Add
 	options for _Float16.
 	(check_effective_target_float32): Add options for _Float32.
