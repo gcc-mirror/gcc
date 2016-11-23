@@ -3588,31 +3588,29 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 		 unsigned int offset, machine_mode ymode,
 		 struct subreg_info *info)
 {
-  int nregs_xmode, nregs_ymode;
-  int mode_multiple, nregs_multiple;
-  int offset_adj, y_offset, y_offset_adj;
-  int regsize_xmode, regsize_ymode;
-  bool rknown;
+  unsigned int nregs_xmode, nregs_ymode;
 
   gcc_assert (xregno < FIRST_PSEUDO_REGISTER);
 
-  rknown = false;
+  unsigned int xsize = GET_MODE_SIZE (xmode);
+  unsigned int ysize = GET_MODE_SIZE (ymode);
+  bool rknown = false;
 
-  /* If there are holes in a non-scalar mode in registers, we expect
-     that it is made up of its units concatenated together.  */
+  /* If the register representation of a non-scalar mode has holes in it,
+     we expect the scalar units to be concatenated together, with the holes
+     distributed evenly among the scalar units.  Each scalar unit must occupy
+     at least one register.  */
   if (HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode))
     {
-      machine_mode xmode_unit;
-
       nregs_xmode = HARD_REGNO_NREGS_WITH_PADDING (xregno, xmode);
-      xmode_unit = GET_MODE_INNER (xmode);
+      unsigned int nunits = GET_MODE_NUNITS (xmode);
+      machine_mode xmode_unit = GET_MODE_INNER (xmode);
       gcc_assert (HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode_unit));
       gcc_assert (nregs_xmode
-		  == (GET_MODE_NUNITS (xmode)
+		  == (nunits
 		      * HARD_REGNO_NREGS_WITH_PADDING (xregno, xmode_unit)));
       gcc_assert (hard_regno_nregs[xregno][xmode]
-		  == (hard_regno_nregs[xregno][xmode_unit]
-		      * GET_MODE_NUNITS (xmode)));
+		  == hard_regno_nregs[xregno][xmode_unit] * nunits);
 
       /* You can only ask for a SUBREG of a value with holes in the middle
 	 if you don't cross the holes.  (Such a SUBREG should be done by
@@ -3622,11 +3620,9 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 	 3 for each part, but in memory it's two 128-bit parts.
 	 Padding is assumed to be at the end (not necessarily the 'high part')
 	 of each unit.  */
-      if ((offset / GET_MODE_SIZE (xmode_unit) + 1
-	   < GET_MODE_NUNITS (xmode))
+      if ((offset / GET_MODE_SIZE (xmode_unit) + 1 < nunits)
 	  && (offset / GET_MODE_SIZE (xmode_unit)
-	      != ((offset + GET_MODE_SIZE (ymode) - 1)
-		  / GET_MODE_SIZE (xmode_unit))))
+	      != ((offset + ysize - 1) / GET_MODE_SIZE (xmode_unit))))
 	{
 	  info->representable_p = false;
 	  rknown = true;
@@ -3638,18 +3634,20 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
   nregs_ymode = hard_regno_nregs[xregno][ymode];
 
   /* Paradoxical subregs are otherwise valid.  */
-  if (!rknown
-      && offset == 0
-      && GET_MODE_PRECISION (ymode) > GET_MODE_PRECISION (xmode))
+  if (!rknown && offset == 0 && ysize > xsize)
     {
       info->representable_p = true;
       /* If this is a big endian paradoxical subreg, which uses more
 	 actual hard registers than the original register, we must
 	 return a negative offset so that we find the proper highpart
-	 of the register.  */
-      if (GET_MODE_SIZE (ymode) > UNITS_PER_WORD
-	  ? REG_WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN)
-	info->offset = nregs_xmode - nregs_ymode;
+	 of the register.
+
+	 We assume that the ordering of registers within a multi-register
+	 value has a consistent endianness: if bytes and register words
+	 have different endianness, the hard registers that make up a
+	 multi-register value must be at least word-sized.  */
+      if (REG_WORDS_BIG_ENDIAN)
+	info->offset = (int) nregs_xmode - (int) nregs_ymode;
       else
 	info->offset = 0;
       info->nregs = nregs_ymode;
@@ -3660,31 +3658,23 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
      modes, we cannot generally form this subreg.  */
   if (!HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode)
       && !HARD_REGNO_NREGS_HAS_PADDING (xregno, ymode)
-      && (GET_MODE_SIZE (xmode) % nregs_xmode) == 0
-      && (GET_MODE_SIZE (ymode) % nregs_ymode) == 0)
+      && (xsize % nregs_xmode) == 0
+      && (ysize % nregs_ymode) == 0)
     {
-      regsize_xmode = GET_MODE_SIZE (xmode) / nregs_xmode;
-      regsize_ymode = GET_MODE_SIZE (ymode) / nregs_ymode;
-      if (!rknown && regsize_xmode > regsize_ymode && nregs_ymode > 1)
+      int regsize_xmode = xsize / nregs_xmode;
+      int regsize_ymode = ysize / nregs_ymode;
+      if (!rknown
+	  && ((nregs_ymode > 1 && regsize_xmode > regsize_ymode)
+	      || (nregs_xmode > 1 && regsize_ymode > regsize_xmode)))
 	{
 	  info->representable_p = false;
-	  info->nregs
-	    = (GET_MODE_SIZE (ymode) + regsize_xmode - 1) / regsize_xmode;
-	  info->offset = offset / regsize_xmode;
-	  return;
-	}
-      if (!rknown && regsize_ymode > regsize_xmode && nregs_xmode > 1)
-	{
-	  info->representable_p = false;
-	  info->nregs
-	    = (GET_MODE_SIZE (ymode) + regsize_xmode - 1) / regsize_xmode;
+	  info->nregs = CEIL (ysize, regsize_xmode);
 	  info->offset = offset / regsize_xmode;
 	  return;
 	}
       /* It's not valid to extract a subreg of mode YMODE at OFFSET that
 	 would go outside of XMODE.  */
-      if (!rknown
-	  && GET_MODE_SIZE (ymode) + offset > GET_MODE_SIZE (xmode))
+      if (!rknown && ysize + offset > xsize)
 	{
 	  info->representable_p = false;
 	  info->nregs = nregs_ymode;
@@ -3704,7 +3694,7 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 	  info->representable_p = true;
 	  info->nregs = nregs_ymode;
 	  info->offset = offset / regsize_ymode;
-	  gcc_assert (info->offset + info->nregs <= nregs_xmode);
+	  gcc_assert (info->offset + info->nregs <= (int) nregs_xmode);
 	  return;
 	}
     }
@@ -3723,47 +3713,47 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 	}
     }
 
-  /* This should always pass, otherwise we don't know how to verify
-     the constraint.  These conditions may be relaxed but
-     subreg_regno_offset would need to be redesigned.  */
-  gcc_assert ((GET_MODE_SIZE (xmode) % GET_MODE_SIZE (ymode)) == 0);
+  /* Set NUM_BLOCKS to the number of independently-representable YMODE
+     values there are in (reg:XMODE XREGNO).  We can view the register
+     as consisting of this number of independent "blocks", where each
+     block occupies NREGS_YMODE registers and contains exactly one
+     representable YMODE value.  */
   gcc_assert ((nregs_xmode % nregs_ymode) == 0);
+  unsigned int num_blocks = nregs_xmode / nregs_ymode;
 
-  if (WORDS_BIG_ENDIAN != REG_WORDS_BIG_ENDIAN
-      && GET_MODE_SIZE (xmode) > UNITS_PER_WORD)
-    {
-      HOST_WIDE_INT xsize = GET_MODE_SIZE (xmode);
-      HOST_WIDE_INT ysize = GET_MODE_SIZE (ymode);
-      HOST_WIDE_INT off_low = offset & (ysize - 1);
-      HOST_WIDE_INT off_high = offset & ~(ysize - 1);
-      offset = (xsize - ysize - off_high) | off_low;
-    }
-  /* The XMODE value can be seen as a vector of NREGS_XMODE
-     values.  The subreg must represent a lowpart of given field.
-     Compute what field it is.  */
-  offset_adj = offset;
-  offset_adj -= subreg_lowpart_offset (ymode,
-				       mode_for_size (GET_MODE_BITSIZE (xmode)
-						      / nregs_xmode,
-						      MODE_INT, 0));
+  /* Calculate the number of bytes in each block.  This must always
+     be exact, otherwise we don't know how to verify the constraint.
+     These conditions may be relaxed but subreg_regno_offset would
+     need to be redesigned.  */
+  gcc_assert ((xsize % num_blocks) == 0);
+  unsigned int bytes_per_block = xsize / num_blocks;
 
-  /* Size of ymode must not be greater than the size of xmode.  */
-  mode_multiple = GET_MODE_SIZE (xmode) / GET_MODE_SIZE (ymode);
-  gcc_assert (mode_multiple != 0);
-
-  y_offset = offset / GET_MODE_SIZE (ymode);
-  y_offset_adj = offset_adj / GET_MODE_SIZE (ymode);
-  nregs_multiple = nregs_xmode / nregs_ymode;
-
-  gcc_assert ((offset_adj % GET_MODE_SIZE (ymode)) == 0);
-  gcc_assert ((mode_multiple % nregs_multiple) == 0);
+  /* Get the number of the first block that contains the subreg and the byte
+     offset of the subreg from the start of that block.  */
+  unsigned int block_number = offset / bytes_per_block;
+  unsigned int subblock_offset = offset % bytes_per_block;
 
   if (!rknown)
     {
-      info->representable_p = (!(y_offset_adj % (mode_multiple / nregs_multiple)));
+      /* Only the lowpart of each block is representable.  */
+      info->representable_p
+	= (subblock_offset
+	   == subreg_size_lowpart_offset (ysize, bytes_per_block));
       rknown = true;
     }
-  info->offset = (y_offset / (mode_multiple / nregs_multiple)) * nregs_ymode;
+
+  /* We assume that the ordering of registers within a multi-register
+     value has a consistent endianness: if bytes and register words
+     have different endianness, the hard registers that make up a
+     multi-register value must be at least word-sized.  */
+  if (WORDS_BIG_ENDIAN != REG_WORDS_BIG_ENDIAN)
+    /* The block number we calculated above followed memory endianness.
+       Convert it to register endianness by counting back from the end.
+       (Note that, because of the assumption above, each block must be
+       at least word-sized.)  */
+    info->offset = (num_blocks - block_number - 1) * nregs_ymode;
+  else
+    info->offset = block_number * nregs_ymode;
   info->nregs = nregs_ymode;
 }
 
