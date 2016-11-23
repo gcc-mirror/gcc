@@ -2626,6 +2626,9 @@ proc check_effective_target_floatn_nx_runtime {} {
 # the function name.
 
 proc add_options_for_float16 { flags } {
+    if { [istarget arm*-*-*] } {
+	return "$flags -mfp16-format=ieee"
+    }
     return "$flags"
 }
 

@@ -1,5 +1,11 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	PR target/63250
+	* lib/target-supports.exp (add_options_for_float16): Add
+	-mfp16-format=ieee when testign arm*-*-*.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc.target/arm/fp16-rounding-alt-1.c (ROUNDED): Change expected
 	result.
 	* gcc.target/arm/fp16-rounding-ieee-1.c (ROUNDED): Change expected
