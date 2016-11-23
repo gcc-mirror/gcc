@@ -43,6 +43,15 @@ binary32 =
   23    /* significand.  */
 };
 
+static const struct format
+binary64 =
+{
+  64,    /* size.  */
+  1023,  /* bias.  */
+  11,    /* exponent.  */
+  52     /* significand.  */
+};
+
 static inline unsigned short
 __gnu_float2h_internal (const struct format* fmt,
 			unsigned long long a, int ieee)
@@ -150,6 +159,12 @@ __gnu_f2h_internal (unsigned int a, int ieee)
   return __gnu_float2h_internal (&binary32, (unsigned long long) a, ieee);
 }
 
+static inline unsigned short
+__gnu_d2h_internal (unsigned long long a, int ieee)
+{
+  return __gnu_float2h_internal (&binary64, a, ieee);
+}
+
 unsigned int
 __gnu_h2f_internal(unsigned short a, int ieee)
 {
@@ -197,4 +212,16 @@ unsigned int
 __gnu_h2f_alternative(unsigned short a)
 {
   return __gnu_h2f_internal(a, 0);
+}
+
+unsigned short
+__gnu_d2h_ieee (unsigned long long a)
+{
+  return __gnu_d2h_internal (a, 1);
+}
+
+unsigned short
+__gnu_d2h_alternative (unsigned long long x)
+{
+  return __gnu_d2h_internal (x, 0);
 }

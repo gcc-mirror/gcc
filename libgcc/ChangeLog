@@ -1,6 +1,14 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/fp16.c (binary64): New.
+	(__gnu_d2h_internal): New.
+	(__gnu_d2h_ieee): New.
+	(__gnu_d2h_alternative): New.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/fp16.c (struct format): New.
 	(binary32): New.
 	(__gnu_float2h_internal): New.  Body moved from
