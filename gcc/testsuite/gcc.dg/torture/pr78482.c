@@ -1,9 +1,9 @@
+/* PR tree-optimization/78482 */
 /* { dg-do run } */
 
-int printf(const char*, ...);
 short a = 65531;
 int b = 3, f;
-char c, d;
+signed char c, d;
 static void fn1(int p1)
 {
   short e;
@@ -22,13 +22,22 @@ static void fn1(int p1)
     }
 }
 
+__attribute__((noinline, noclone))
+int bar (const char *x, int y)
+{
+  asm volatile ("" : "+g" (x), "+g" (y) : : "memory");
+  if (y == 2)
+    __builtin_abort ();
+  return 0;
+}
+
 int main()
 {
   for (; c >= 0; c--)
     {
       if (!b)
 	{
-	  printf("%d\n", 2);
+	  bar("%d\n", 2);
 	  continue;
 	}
       fn1(a);
