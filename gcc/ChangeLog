@@ -7,6 +7,9 @@
 
 2016-11-23  Jeff Law  <law@redhat.com>
 
+	* config/iq2000/iq2000.c (iq2000_rtx_costs): Avoid multiplication
+	in boolean context warning.
+
 	* config/ia64/ia64.c (ia64_emit_insn_before): Fix prototype.
 
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>

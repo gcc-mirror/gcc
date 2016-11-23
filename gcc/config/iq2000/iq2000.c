@@ -3309,7 +3309,7 @@ iq2000_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
 	int num_words = (GET_MODE_SIZE (mode) > UNITS_PER_WORD) ? 2 : 1;
 
 	if (simple_memory_operand (x, mode))
-	  return COSTS_N_INSNS (num_words);
+	  return COSTS_N_INSNS (num_words) != 0;
 
 	* total = COSTS_N_INSNS (2 * num_words);
 	break;
