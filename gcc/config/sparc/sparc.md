@@ -6508,17 +6508,22 @@
 }
   [(set_attr "type" "shift")])
 
-(define_insn "*ashrsi3_extend"
+(define_insn "*ashrsi3_extend0"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
-				     (match_operand:SI 2 "arith_operand" "r"))))]
+				     (match_operand:SI 2 "arith_operand" "rI"))))]
   "TARGET_ARCH64"
-  "sra\t%1, %2, %0"
+{
+  if (GET_CODE (operands[2]) == CONST_INT)
+   operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+  return "sra\t%1, %2, %0";
+}
   [(set_attr "type" "shift")])
 
-;; This handles the case as above, but with constant shift instead of
-;; register. Combiner "simplifies" it for us a little bit though.
-(define_insn "*ashrsi3_extend2"
+;; This handles the case where
+;; (sign_extend:DI (ashiftrt:SI (match_operand:SI) (match_operand:SI)))
+;; but combiner "simplifies" it for us.
+(define_insn "*ashrsi3_extend1"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashiftrt:DI (ashift:DI (subreg:DI (match_operand:SI 1 "register_operand" "r") 0)
 				(const_int 32))
@@ -6526,6 +6531,21 @@
   "TARGET_ARCH64 && INTVAL (operands[2]) >= 32 && INTVAL (operands[2]) < 64"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) - 32);
+  return "sra\t%1, %2, %0";
+}
+  [(set_attr "type" "shift")])
+
+;; This handles the case where
+;; (ashiftrt:DI (sign_extend:DI (match_operand:SI)) (const_int))
+;; but combiner "simplifies" it for us.
+(define_insn "*ashrsi3_extend2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extract:DI (subreg:DI (match_operand:SI 1 "register_operand" "r") 0)
+			 (match_operand 2 "small_int_operand" "I")
+			 (const_int 32)))]
+  "TARGET_ARCH64 && INTVAL (operands[2]) > 0 && INTVAL (operands[2]) <= 32"
+{
+  operands[2] = GEN_INT (32 - INTVAL (operands[2]));
   return "sra\t%1, %2, %0";
 }
   [(set_attr "type" "shift")])
@@ -6595,26 +6615,30 @@
   [(set_attr "type" "shift")])
 
 ;; This handles the case where
-;; (zero_extend:DI (lshiftrt:SI (match_operand:SI) (match_operand:SI))),
+;; (zero_extend:DI (lshiftrt:SI (match_operand:SI) (match_operand:SI)))
 ;; but combiner "simplifies" it for us.
 (define_insn "*lshrsi3_extend1"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (subreg:DI (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
-			   (match_operand:SI 2 "arith_operand" "r")) 0)
+					(match_operand:SI 2 "arith_operand" "rI")) 0)
 		(match_operand 3 "const_int_operand" "")))]
   "TARGET_ARCH64 && (unsigned HOST_WIDE_INT) INTVAL (operands[3]) == 0xffffffff"
-  "srl\t%1, %2, %0"
+{
+  if (GET_CODE (operands[2]) == CONST_INT)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+  return "srl\t%1, %2, %0";
+}
   [(set_attr "type" "shift")])
 
 ;; This handles the case where
-;; (lshiftrt:DI (zero_extend:DI (match_operand:SI)) (const_int >=0 < 32))
+;; (lshiftrt:DI (zero_extend:DI (match_operand:SI)) (const_int))
 ;; but combiner "simplifies" it for us.
 (define_insn "*lshrsi3_extend2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extract:DI (subreg:DI (match_operand:SI 1 "register_operand" "r") 0)
 			 (match_operand 2 "small_int_operand" "I")
 			 (const_int 32)))]
-  "TARGET_ARCH64 && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) < 32"
+  "TARGET_ARCH64 && INTVAL (operands[2]) > 0 && INTVAL (operands[2]) <= 32"
 {
   operands[2] = GEN_INT (32 - INTVAL (operands[2]));
   return "srl\t%1, %2, %0";
