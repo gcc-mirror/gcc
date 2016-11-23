@@ -1680,41 +1680,17 @@ backend_init (void)
   init_regs ();
 }
 
-/* Initialize excess precision settings.  */
+/* Initialize excess precision settings.
+
+   We have no need to modify anything here, just keep track of what the
+   user requested.  We'll figure out any appropriate relaxations
+   later.  */
+
 static void
 init_excess_precision (void)
 {
-  /* Adjust excess precision handling based on the target options.  If
-     the front end cannot handle it, flag_excess_precision_cmdline
-     will already have been set accordingly in the post_options
-     hook.  */
   gcc_assert (flag_excess_precision_cmdline != EXCESS_PRECISION_DEFAULT);
   flag_excess_precision = flag_excess_precision_cmdline;
-  if (flag_unsafe_math_optimizations)
-    flag_excess_precision = EXCESS_PRECISION_FAST;
-  if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
-    {
-      int flt_eval_method = TARGET_FLT_EVAL_METHOD;
-      switch (flt_eval_method)
-	{
-	case -1:
-	case 0:
-	  /* Either the target acts unpredictably (-1) or has all the
-	     operations required not to have excess precision (0).  */
-	  flag_excess_precision = EXCESS_PRECISION_FAST;
-	  break;
-	case 1:
-	case 2:
-	  /* In these cases, predictable excess precision makes
-	     sense.  */
-	  break;
-	default:
-	  /* Any other implementation-defined FLT_EVAL_METHOD values
-	     require the compiler to handle the associated excess
-	     precision rules in excess_precision_type.  */
-	  gcc_unreachable ();
-	}
-    }
 }
 
 /* Initialize things that are both lang-dependent and target-dependent.
