@@ -3528,6 +3528,42 @@ subreg_lsb (const_rtx x)
 		       SUBREG_BYTE (x));
 }
 
+/* Return the subreg byte offset for a subreg whose outer value has
+   OUTER_BYTES bytes, whose inner value has INNER_BYTES bytes, and where
+   there are LSB_SHIFT *bits* between the lsb of the outer value and the
+   lsb of the inner value.  This is the inverse of the calculation
+   performed by subreg_lsb_1 (which converts byte offsets to bit shifts).  */
+
+unsigned int
+subreg_size_offset_from_lsb (unsigned int outer_bytes,
+			     unsigned int inner_bytes,
+			     unsigned int lsb_shift)
+{
+  /* A paradoxical subreg begins at bit position 0.  */
+  if (outer_bytes > inner_bytes)
+    {
+      gcc_checking_assert (lsb_shift == 0);
+      return 0;
+    }
+
+  gcc_assert (lsb_shift % BITS_PER_UNIT == 0);
+  unsigned int lower_bytes = lsb_shift / BITS_PER_UNIT;
+  unsigned int upper_bytes = inner_bytes - (lower_bytes + outer_bytes);
+  if (WORDS_BIG_ENDIAN && BYTES_BIG_ENDIAN)
+    return upper_bytes;
+  else if (!WORDS_BIG_ENDIAN && !BYTES_BIG_ENDIAN)
+    return lower_bytes;
+  else
+    {
+      unsigned int lower_word_part = lower_bytes & -UNITS_PER_WORD;
+      unsigned int upper_word_part = upper_bytes & -UNITS_PER_WORD;
+      if (WORDS_BIG_ENDIAN)
+	return upper_word_part + (lower_bytes - lower_word_part);
+      else
+	return lower_word_part + (upper_bytes - upper_word_part);
+    }
+}
+
 /* Fill in information about a subreg of a hard register.
    xregno - A regno of an inner hard subreg_reg (or what will become one).
    xmode  - The mode of xregno.

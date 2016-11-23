@@ -2178,6 +2178,24 @@ extern void get_full_rtx_cost (rtx, machine_mode, enum rtx_code, int,
 extern unsigned int subreg_lsb (const_rtx);
 extern unsigned int subreg_lsb_1 (machine_mode, machine_mode,
 				  unsigned int);
+extern unsigned int subreg_size_offset_from_lsb (unsigned int, unsigned int,
+						 unsigned int);
+
+/* Return the subreg byte offset for a subreg whose outer mode is
+   OUTER_MODE, whose inner mode is INNER_MODE, and where there are
+   LSB_SHIFT *bits* between the lsb of the outer value and the lsb of
+   the inner value.  This is the inverse of subreg_lsb_1 (which converts
+   byte offsets to bit shifts).  */
+
+inline unsigned int
+subreg_offset_from_lsb (machine_mode outer_mode,
+			machine_mode inner_mode,
+			unsigned int lsb_shift)
+{
+  return subreg_size_offset_from_lsb (GET_MODE_SIZE (outer_mode),
+				      GET_MODE_SIZE (inner_mode), lsb_shift);
+}
+
 extern unsigned int subreg_regno_offset	(unsigned int, machine_mode,
 					 unsigned int, machine_mode);
 extern bool subreg_offset_representable_p (unsigned int, machine_mode,
@@ -2764,10 +2782,28 @@ extern rtx operand_subword (rtx, unsigned int, int, machine_mode);
 extern rtx operand_subword_force (rtx, unsigned int, machine_mode);
 extern bool paradoxical_subreg_p (const_rtx);
 extern int subreg_lowpart_p (const_rtx);
-extern unsigned int subreg_lowpart_offset (machine_mode,
-					   machine_mode);
-extern unsigned int subreg_highpart_offset (machine_mode,
-					    machine_mode);
+extern unsigned int subreg_size_lowpart_offset (unsigned int, unsigned int);
+
+/* Return the SUBREG_BYTE for an OUTERMODE lowpart of an INNERMODE value.  */
+
+inline unsigned int
+subreg_lowpart_offset (machine_mode outermode, machine_mode innermode)
+{
+  return subreg_size_lowpart_offset (GET_MODE_SIZE (outermode),
+				     GET_MODE_SIZE (innermode));
+}
+
+extern unsigned int subreg_size_highpart_offset (unsigned int, unsigned int);
+
+/* Return the SUBREG_BYTE for an OUTERMODE highpart of an INNERMODE value.  */
+
+inline unsigned int
+subreg_highpart_offset (machine_mode outermode, machine_mode innermode)
+{
+  return subreg_size_highpart_offset (GET_MODE_SIZE (outermode),
+				      GET_MODE_SIZE (innermode));
+}
+
 extern int byte_lowpart_offset (machine_mode, machine_mode);
 extern rtx make_safe_from (rtx, rtx);
 extern rtx convert_memory_address_addr_space_1 (machine_mode, rtx,
