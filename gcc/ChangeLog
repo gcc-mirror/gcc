@@ -7,6 +7,8 @@
 
 2016-11-23  Jeff Law  <law@redhat.com>
 
+	* config/mcore/mcore.c (emit_new_cond_insn): Fix prototype.
+
 	* config/iq2000/iq2000.c (iq2000_rtx_costs): Avoid multiplication
 	in boolean context warning.
 
