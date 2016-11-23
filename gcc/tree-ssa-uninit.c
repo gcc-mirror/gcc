@@ -2192,7 +2192,7 @@ can_chain_union_be_invalidated_p (pred_chain_union use_preds,
       pred_chain c = use_preds[i];
       bool entire_pred_chain_invalidated = false;
       for (size_t j = 0; j < c.length (); ++j)
-	if (can_one_predicate_be_invalidated_p (c[i], worklist))
+	if (can_one_predicate_be_invalidated_p (c[j], worklist))
 	  {
 	    entire_pred_chain_invalidated = true;
 	    break;
