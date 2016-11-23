@@ -163,7 +163,13 @@ enum gf_mask {
     GF_OMP_FOR_KIND_CILKSIMD	= GF_OMP_FOR_SIMD | 1,
     GF_OMP_FOR_COMBINED		= 1 << 4,
     GF_OMP_FOR_COMBINED_INTO	= 1 << 5,
+    /* The following flag must not be used on GF_OMP_FOR_KIND_GRID_LOOP loop
+       statements.  */
     GF_OMP_FOR_GRID_PHONY	= 1 << 6,
+    /* The following two flags should only be set on GF_OMP_FOR_KIND_GRID_LOOP
+       loop statements.  */
+    GF_OMP_FOR_GRID_INTRA_GROUP	= 1 << 6,
+    GF_OMP_FOR_GRID_GROUP_ITER  = 1 << 7,
     GF_OMP_TARGET_KIND_MASK	= (1 << 4) - 1,
     GF_OMP_TARGET_KIND_REGION	= 0,
     GF_OMP_TARGET_KIND_DATA	= 1,
@@ -5143,6 +5149,8 @@ gimple_omp_for_set_pre_body (gimple *gs, gimple_seq pre_body)
 static inline bool
 gimple_omp_for_grid_phony (const gomp_for *omp_for)
 {
+  gcc_checking_assert (gimple_omp_for_kind (omp_for)
+		       != GF_OMP_FOR_KIND_GRID_LOOP);
   return (gimple_omp_subcode (omp_for) & GF_OMP_FOR_GRID_PHONY) != 0;
 }
 
@@ -5151,10 +5159,59 @@ gimple_omp_for_grid_phony (const gomp_for *omp_for)
 static inline void
 gimple_omp_for_set_grid_phony (gomp_for *omp_for, bool value)
 {
+  gcc_checking_assert (gimple_omp_for_kind (omp_for)
+		       != GF_OMP_FOR_KIND_GRID_LOOP);
   if (value)
     omp_for->subcode |= GF_OMP_FOR_GRID_PHONY;
   else
     omp_for->subcode &= ~GF_OMP_FOR_GRID_PHONY;
+}
+
+/* Return the kernel_intra_group of a GRID_LOOP OMP_FOR statement.  */
+
+static inline bool
+gimple_omp_for_grid_intra_group (const gomp_for *omp_for)
+{
+  gcc_checking_assert (gimple_omp_for_kind (omp_for)
+		       == GF_OMP_FOR_KIND_GRID_LOOP);
+  return (gimple_omp_subcode (omp_for) & GF_OMP_FOR_GRID_INTRA_GROUP) != 0;
+}
+
+/* Set kernel_intra_group flag of OMP_FOR to VALUE.  */
+
+static inline void
+gimple_omp_for_set_grid_intra_group (gomp_for *omp_for, bool value)
+{
+  gcc_checking_assert (gimple_omp_for_kind (omp_for)
+		       == GF_OMP_FOR_KIND_GRID_LOOP);
+  if (value)
+    omp_for->subcode |= GF_OMP_FOR_GRID_INTRA_GROUP;
+  else
+    omp_for->subcode &= ~GF_OMP_FOR_GRID_INTRA_GROUP;
+}
+
+/* Return true if iterations of a grid OMP_FOR statement correspond to HSA
+   groups.  */
+
+static inline bool
+gimple_omp_for_grid_group_iter (const gomp_for *omp_for)
+{
+  gcc_checking_assert (gimple_omp_for_kind (omp_for)
+		       == GF_OMP_FOR_KIND_GRID_LOOP);
+  return (gimple_omp_subcode (omp_for) & GF_OMP_FOR_GRID_GROUP_ITER) != 0;
+}
+
+/* Set group_iter flag of OMP_FOR to VALUE.  */
+
+static inline void
+gimple_omp_for_set_grid_group_iter (gomp_for *omp_for, bool value)
+{
+  gcc_checking_assert (gimple_omp_for_kind (omp_for)
+		       == GF_OMP_FOR_KIND_GRID_LOOP);
+  if (value)
+    omp_for->subcode |= GF_OMP_FOR_GRID_GROUP_ITER;
+  else
+    omp_for->subcode &= ~GF_OMP_FOR_GRID_GROUP_ITER;
 }
 
 /* Return the clauses associated with OMP_PARALLEL GS.  */

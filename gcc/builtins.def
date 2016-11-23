@@ -201,6 +201,19 @@ along with GCC; see the file COPYING3.  If not see
 		|| flag_cilkplus \
 		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
 
+#undef DEF_HSA_BUILTIN
+#ifdef ENABLE_HSA
+#define DEF_HSA_BUILTIN(ENUM, NAME, TYPE, ATTRS)			\
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
+               false, false, true, ATTRS, false, \
+	       (!flag_disable_hsa))
+#else
+#define DEF_HSA_BUILTIN(ENUM, NAME, TYPE, ATTRS)			\
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
+               false, false, true, ATTRS, false, \
+	       (false))
+#endif
+
 /* Builtin used by implementation of Cilk Plus.  Most of these are decomposed
    by the compiler but a few are implemented in libcilkrts.  */ 
 #undef DEF_CILK_BUILTIN_STUB
@@ -967,6 +980,9 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
 /* Offloading and Multi Processing builtins.  */
 #include "omp-builtins.def"
+
+/* Heterogeneous Systems Architecture.  */
+#include "hsa-builtins.def"
 
 /* Cilk keywords builtins.  */
 #include "cilk-builtins.def"

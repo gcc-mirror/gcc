@@ -1,3 +1,262 @@
+2016-11-23  Martin Jambor  <mjambor@suse.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* hsa-builtins.def: New file.
+	* Makefile.in (BUILTINS_DEF): Add hsa-builtins.def dependency.
+	* builtins.def: Include hsa-builtins.def.
+	(DEF_HSA_BUILTIN): New macro.
+	* dumpfile.h (OPTGROUP_OPENMP): Define.
+	* dumpfile.c (optgroup_options): Added OPTGROUP_OPENMP.
+	* gimple.h (gf_mask): Added elements GF_OMP_FOR_GRID_INTRA_GROUP and
+	GF_OMP_FOR_GRID_GROUP_ITER.
+	(gimple_omp_for_grid_phony): Added checking assert.
+	(gimple_omp_for_set_grid_phony): Likewise.
+	(gimple_omp_for_grid_intra_group): New function.
+	(gimple_omp_for_set_grid_intra_group): Likewise.
+	(gimple_omp_for_grid_group_iter): Likewise.
+	(gimple_omp_for_set_grid_group_iter): Likewise.
+	* omp-low.c (check_omp_nesting_restrictions): Allow GRID loop where
+	previosuly only distribute loop was permitted.
+	(lower_lastprivate_clauses): Allow non tcc_comparison predicates.
+	(grid_get_kernel_launch_attributes): Support multiple HSA grid
+	dimensions.
+	(grid_expand_omp_for_loop): Likewise and also support standalone
+	distribute constructs.  New parameter INTRA_GROUP, updated both users.
+	(grid_expand_target_grid_body): Support standalone distribute
+	constructs.
+	(pass_data_expand_omp): Changed optinfo_flags to OPTGROUP_OPENMP.
+	(pass_data_expand_omp_ssa): Likewise.
+	(pass_data_omp_device_lower): Likewsie.
+	(pass_data_lower_omp): Likewise.
+	(pass_data_diagnose_omp_blocks): Likewise.
+	(pass_data_oacc_device_lower): Likewise.
+	(pass_data_omp_target_link): Likewise.
+	(grid_lastprivate_predicate): New function.
+	(lower_omp_for_lastprivate): Call grid_lastprivate_predicate for
+	gridified loops.
+	(lower_omp_for): Support standalone distribute constructs.
+	(grid_prop): New type.
+	(grid_safe_assignment_p): Check for assignments to group_sizes, new
+	parameter GRID.
+	(grid_seq_only_contains_local_assignments): New parameter GRID, pass
+	it to callee.
+	(grid_find_single_omp_among_assignments_1): Likewise, improve missed
+	optimization info messages.
+	(grid_find_single_omp_among_assignments): Likewise.
+	(grid_find_ungridifiable_statement): Do not bail out for SIMDs.
+	(grid_parallel_clauses_gridifiable): New function.
+	(grid_inner_loop_gridifiable_p): Likewise.
+	(grid_dist_follows_simple_pattern): Likewise.
+	(grid_gfor_follows_tiling_pattern): Likewise.
+	(grid_call_permissible_in_distribute_p): Likewise.
+	(grid_handle_call_in_distribute): Likewise.
+	(grid_dist_follows_tiling_pattern): Likewise.
+	(grid_target_follows_gridifiable_pattern): Support standalone distribute
+	constructs.
+	(grid_var_segment): New enum.
+	(grid_mark_variable_segment): New function.
+	(grid_copy_leading_local_assignments): Call grid_mark_variable_segment
+	if a new argument says so.
+	(grid_process_grid_body): New function.
+	(grid_eliminate_combined_simd_part): Likewise.
+	(grid_mark_tiling_loops): Likewise.
+	(grid_mark_tiling_parallels_and_loops): Likewise.
+	(grid_process_kernel_body_copy): Support standalone distribute
+	constructs.
+	(grid_attempt_target_gridification): New grid variable holding overall
+	gridification state.  Support standalone distribute constructs and
+	collapse clauses.
+	* doc/optinfo.texi (Optimization groups): Document OPTGROUP_OPENMP.
+	* hsa.h (hsa_bb): Add method method append_phi.
+	(hsa_insn_br): Renamed to hsa_insn_cbr, renamed all
+	occurences in all files too.
+	(hsa_insn_br): New class, now the ancestor of hsa_incn_cbr.
+	(is_a_helper <hsa_insn_br *>::test): New function.
+	(is_a_helper <hsa_insn_cbr *>::test): Adjust to only cover conditional
+	branch instructions.
+	(hsa_insn_signal): Make a direct descendant of
+	hsa_insn_basic.  Add memorder constructor parameter and
+	m_memory_order and m_signalop member variables.
+	(hsa_insn_queue): Changed constructor parameters to common form.
+	Added m_segment and m_memory_order member variables.
+	(hsa_summary_t): Add private member function
+	process_gpu_implementation_attributes.
+	(hsa_function_summary): Rename m_binded_function to
+	m_bound_function.
+	(hsa_insn_basic_p): Remove typedef.
+	(hsa_op_with_type): Change hsa_insn_basic_p into plain pointers.
+	(hsa_op_reg_p): Remove typedef.
+	(hsa_function_representation): Change hsa_op_reg_p into plain
+	pointers.
+	(hsa_insn_phi): Removed new and delete operators.
+	(hsa_insn_br): Likewise.
+	(hsa_insn_cbr): Likewise.
+	(hsa_insn_sbr): Likewise.
+	(hsa_insn_cmp): Likewise.
+	(hsa_insn_mem): Likewise.
+	(hsa_insn_atomic): Likewise.
+	(hsa_insn_signal): Likewise.
+	(hsa_insn_seg): Likewise.
+	(hsa_insn_call): Likewise.
+	(hsa_insn_arg_block): Likewise.
+	(hsa_insn_comment): Likewise.
+	(hsa_insn_srctype): Likewise.
+	(hsa_insn_packed): Likewise.
+	(hsa_insn_cvt): Likewise.
+	(hsa_insn_alloca): Likewise.
+	* hsa.c (hsa_destroy_insn): Also handle instances of hsa_insn_br.
+	(process_gpu_implementation_attributes): New function.
+	(link_functions): Move some functionality into it.  Adjust after
+	renaming m_binded_functions to m_bound_functions.
+	(hsa_insn_basic::op_output_p): Add BRIG_OPCODE_DEBUGTRAP
+	to the list of instructions with no output registers.
+	(get_in_type): Return this if it is a register of
+	matching size.
+	(hsa_get_declaration_name): Moved to...
+        * hsa-gen.c (hsa_get_declaration_name): ...here.  Allocate
+	temporary string on an obstack instead from ggc.
+	(query_hsa_grid): Renamed to query_hsa_grid_dim, reimplemented, cut
+	down to two overloads.
+	(hsa_allocp_operand_address): Removed.
+	(hsa_allocp_operand_immed): Likewise.
+	(hsa_allocp_operand_reg): Likewise.
+	(hsa_allocp_operand_code_list): Likewise.
+	(hsa_allocp_operand_operand_list): Likewise.
+	(hsa_allocp_inst_basic): Likewise.
+	(hsa_allocp_inst_phi): Likewise.
+	(hsa_allocp_inst_mem): Likewise.
+	(hsa_allocp_inst_atomic): Likewise.
+	(hsa_allocp_inst_signal): Likewise.
+	(hsa_allocp_inst_seg): Likewise.
+	(hsa_allocp_inst_cmp): Likewise.
+	(hsa_allocp_inst_br): Likewise.
+	(hsa_allocp_inst_sbr): Likewise.
+	(hsa_allocp_inst_call): Likewise.
+	(hsa_allocp_inst_arg_block): Likewise.
+	(hsa_allocp_inst_comment): Likewise.
+	(hsa_allocp_inst_queue): Likewise.
+	(hsa_allocp_inst_srctype): Likewise.
+	(hsa_allocp_inst_packed): Likewise.
+	(hsa_allocp_inst_cvt): Likewise.
+	(hsa_allocp_inst_alloca): Likewise.
+	(hsa_allocp_bb): Likewise.
+	(hsa_obstack): New.
+	(hsa_init_data_for_cfun): Initialize obstack.
+	(hsa_deinit_data_for_cfun): Release memory of the obstack.
+	(hsa_op_immed::operator new): Use obstack instead of object_allocator.
+	(hsa_op_reg::operator new): Likewise.
+	(hsa_op_address::operator new): Likewise.
+	(hsa_op_code_list::operator new): Likewise.
+	(hsa_op_operand_list::operator new): Likewise.
+	(hsa_insn_basic::operator new): Likewise.
+	(hsa_insn_phi::operator new): Likewise.
+	(hsa_insn_br::operator new): Likewise.
+	(hsa_insn_sbr::operator new): Likewise.
+	(hsa_insn_cmp::operator new): Likewise.
+	(hsa_insn_mem::operator new): Likewise.
+	(hsa_insn_atomic::operator new): Likewise.
+	(hsa_insn_signal::operator new): Likewise.
+	(hsa_insn_seg::operator new): Likewise.
+	(hsa_insn_call::operator new): Likewise.
+	(hsa_insn_arg_block::operator new): Likewise.
+	(hsa_insn_comment::operator new): Likewise.
+	(hsa_insn_srctype::operator new): Likewise.
+	(hsa_insn_packed::operator new): Likewise.
+	(hsa_insn_cvt::operator new): Likewise.
+	(hsa_insn_alloca::operator new): Likewise.
+	(hsa_init_new_bb): Likewise.
+	(hsa_bb::append_phi): New function.
+	(gen_hsa_phi_from_gimple_phi): Use it.
+	(get_symbol_for_decl): Fix dinstinguishing between
+	global and local functions.  Put local variables into a segment
+	according to their attribute or static flag, if there is one.
+	(hsa_insn_br::hsa_insn_br): New.
+	(hsa_insn_br::operator new): Likewise.
+	(hsa_insn_cbr::hsa_insn_cbr): Set width via ancestor constructor.
+	(query_hsa_grid_nodim): New function.
+	(multiply_grid_dim_characteristics): Likewise.
+	(gen_get_num_threads): Likewise.
+	(gen_get_num_teams): Reimplemented.
+	(gen_get_team_num): Likewise.
+	(gen_hsa_insns_for_known_library_call): Updated calls to the above
+	helper functions.
+	(get_memory_order_name): Removed.
+	(get_memory_order): Likewise.
+	(hsa_memorder_from_tree): New function.
+	(gen_hsa_ternary_atomic_for_builtin): Renamed to
+	gen_hsa_atomic_for_builtin, can also create signals.
+	(gen_hsa_insns_for_call): Handle many new builtins.  Adjust to use
+	hsa_memory_order_from_tree and gen_hsa_atomic_for_builtin.
+	(hsa_insn_atomic): Fix function comment.
+	(hsa_insn_signal::hsa_insn_signal): Fix comment.  Update call to
+	ancestor constructor and initialization of new member variables.
+	(hsa_insn_queue::hsa_insn_queue): Added initialization of new
+	member variables.
+	(hsa_get_host_function): Handle functions with no bound CPU
+	implementation.  Fix binded to bound.
+	(get_brig_function_name): Likewise.
+	(HSA_SORRY_ATV): Remove semicolon after macro.
+	(HSA_SORRY_AT): Likewise.
+	(omp_simple_builtin::generate): Add missing semicolons.
+	(hsa_insn_phi::operator new): Removed.
+	(hsa_insn_br::operator new): Likewise.
+	(hsa_insn_cbr::operator new): Likewise.
+	(hsa_insn_sbr::operator new): Likewise.
+	(hsa_insn_cmp::operator new): Likewise.
+	(hsa_insn_mem::operator new): Likewise.
+	(hsa_insn_atomic::operator new): Likewise.
+	(hsa_insn_signal::operator new): Likewise.
+	(hsa_insn_seg::operator new): Likewise.
+	(hsa_insn_call::operator new): Likewise.
+	(hsa_insn_arg_block::operator new): Likewise.
+	(hsa_insn_comment::operator new): Likewise.
+	(hsa_insn_srctype::operator new): Likewise.
+	(hsa_insn_packed::operator new): Likewise.
+	(hsa_insn_cvt::operator new): Likewise.
+	(hsa_insn_alloca::operator new): Likewise.
+	(get_symbol_for_decl): Accept CONST_DECLs, put them to
+	readonly segment.
+	(gen_hsa_addr): Also process CONST_DECLs.
+	(gen_hsa_addr_insns): Process CONST_DECLs by creating private
+	copies.
+	(gen_hsa_unary_operation): Make sure the function does
+	not use bittype source type for firstbit and lastbit operations.
+	(gen_hsa_popcount_to_dest): Make sure the function uses a bittype
+	source type.
+	* hsa-brig.c (emit_insn_operands): Cope with zero operands in an
+	instruction.
+	(emit_branch_insn): Renamed to emit_cond_branch_insn.
+	Emit the width stored in the class.
+	(emit_generic_branch_insn): New function.
+	(emit_insn): Call emit_generic_branch_insn.
+	(emit_signal_insn): Remove obsolete comment.  Update
+	member variable name, pick a type according to profile.
+	(emit_alloca_insn): Remove obsolete comment.
+	(emit_atomic_insn): Likewise.
+	(emit_queue_insn): Get segment and memory order from the IR object.
+	(hsa_brig_section): Make allocate_new_chunk, chunks
+	and cur_chunk provate, add a default NULL parameter to add method.
+	(hsa_brig_section::add): Added a new parameter, store pointer to
+	output data there if it is non-NULL.
+	(emit_function_directives): Use this new parameter instead of
+	calculating the pointer itself, fix function comment.
+	(hsa_brig_emit_function): Add forgotten endian conversion.
+	(hsa_output_kernels): Remove unnecessary building of
+	kernel_dependencies_vector_type.
+	(emit_immediate_operand): Declare.
+	(emit_directive_variable): Also emit initializers of CONST_DECLs.
+	(gen_hsa_insn_for_internal_fn_call): Also handle IFN_RSQRT.
+	(verify_function_arguments): Properly detect variadic
+	arguments.
+	* hsa-dump.c (hsa_width_specifier_name): New function.
+	(dump_hsa_insn_1): Dump generic branch instructions, update signal
+	member variable name.  Special dumping for queue objects.
+	* ipa-hsa.c (process_hsa_functions): Adjust after renaming
+	m_binded_functions to m_bound_functions.  Copy externally visible flag
+	to the node.
+	(ipa_hsa_write_summary): Likewise.
+	(ipa_hsa_read_section): Likewise.
+
 2016-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78396
