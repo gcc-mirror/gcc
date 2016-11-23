@@ -1,3 +1,10 @@
+2016-11-23  Michael Collison  <michael.collison@arm.com>
+
+	* testsuite/gcc.target/aarch64/and_const.c: New test to verify
+	additional constants are recognized and fewer instructions generated.
+	* testsuite/gcc.target/aarch64/and_const2.c: New test to verify
+	additional constants are recognized and fewer instructions generated.
+
 2016-11-22  Ian Lance Taylor  <iant@golang.org>
 
 	* gcc.misc-tests/godump-1.c: Update expected output for recent
