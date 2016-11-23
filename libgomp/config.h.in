@@ -115,6 +115,9 @@
 /* Define to 1 if GNU symbol versioning is used for libgomp. */
 #undef LIBGOMP_GNU_SYMBOL_VERSIONING
 
+/* Define to 1 if libgomp should use POSIX threads. */
+#undef LIBGOMP_USE_PTHREADS
+
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR

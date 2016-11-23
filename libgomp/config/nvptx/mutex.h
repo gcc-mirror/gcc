@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2016 Free Software Foundation, Inc.
-   Contributed by Jakub Jelinek <jakub@redhat.com>.
+/* Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
    (libgomp).
@@ -23,27 +23,38 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "libgomp.h"
-#include <limits.h>
+/* This is an NVPTX specific implementation of a mutex synchronization
+   mechanism for libgomp.  This type is private to the library.  This
+   implementation uses atomic instructions and busy waiting.  */
 
-void
-GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
+#ifndef GOMP_MUTEX_H
+#define GOMP_MUTEX_H 1
+
+typedef int gomp_mutex_t;
+
+#define GOMP_MUTEX_INIT_0 1
+
+static inline void
+gomp_mutex_init (gomp_mutex_t *mutex)
 {
-  if (thread_limit)
-    {
-      struct gomp_task_icv *icv = gomp_icv (true);
-      icv->thread_limit_var
-	= thread_limit > INT_MAX ? UINT_MAX : thread_limit;
-    }
-  unsigned int num_blocks, block_id;
-  asm ("mov.u32 %0, %%nctaid.x;" : "=r" (num_blocks));
-  asm ("mov.u32 %0, %%ctaid.x;" : "=r" (block_id));
-  if (!num_teams || num_teams >= num_blocks)
-    num_teams = num_blocks;
-  else if (block_id >= num_teams)
-    {
-      gomp_free_thread (nvptx_thrs);
-      asm ("exit;");
-    }
-  gomp_num_teams_var = num_teams - 1;
+  *mutex = 0;
 }
+
+static inline void
+gomp_mutex_destroy (gomp_mutex_t *mutex)
+{
+}
+
+static inline void
+gomp_mutex_lock (gomp_mutex_t *mutex)
+{
+  while (__sync_lock_test_and_set (mutex, 1))
+    /* spin */ ;
+}
+
+static inline void
+gomp_mutex_unlock (gomp_mutex_t *mutex)
+{
+  __sync_lock_release (mutex);
+}
+#endif /* GOMP_MUTEX_H */

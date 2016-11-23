@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2016 Free Software Foundation, Inc.
-   Contributed by Jakub Jelinek <jakub@redhat.com>.
+/* Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
    (libgomp).
@@ -23,27 +23,43 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "libgomp.h"
-#include <limits.h>
+/* This is an NVPTX specific implementation of a semaphore synchronization
+   mechanism for libgomp.  This type is private to the library.  This
+   semaphore implementation uses atomic instructions and busy waiting.  */
 
-void
-GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
+#ifndef GOMP_SEM_H
+#define GOMP_SEM_H 1
+
+typedef int gomp_sem_t;
+
+static inline void
+gomp_sem_init (gomp_sem_t *sem, int value)
 {
-  if (thread_limit)
-    {
-      struct gomp_task_icv *icv = gomp_icv (true);
-      icv->thread_limit_var
-	= thread_limit > INT_MAX ? UINT_MAX : thread_limit;
-    }
-  unsigned int num_blocks, block_id;
-  asm ("mov.u32 %0, %%nctaid.x;" : "=r" (num_blocks));
-  asm ("mov.u32 %0, %%ctaid.x;" : "=r" (block_id));
-  if (!num_teams || num_teams >= num_blocks)
-    num_teams = num_blocks;
-  else if (block_id >= num_teams)
-    {
-      gomp_free_thread (nvptx_thrs);
-      asm ("exit;");
-    }
-  gomp_num_teams_var = num_teams - 1;
+  *sem = value;
 }
+
+static inline void
+gomp_sem_destroy (gomp_sem_t *sem)
+{
+}
+
+static inline void
+gomp_sem_wait (gomp_sem_t *sem)
+{
+  int count = __atomic_load_n (sem, MEMMODEL_ACQUIRE);
+  for (;;)
+    {
+      while (count == 0)
+	count = __atomic_load_n (sem, MEMMODEL_ACQUIRE);
+      if (__atomic_compare_exchange_n (sem, &count, count - 1, false,
+				       MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
+	return;
+    }
+}
+
+static inline void
+gomp_sem_post (gomp_sem_t *sem)
+{
+  (void) __atomic_add_fetch (sem, 1, MEMMODEL_RELEASE);
+}
+#endif /* GOMP_SEM_H */

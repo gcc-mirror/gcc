@@ -32,12 +32,14 @@ gomp_init_affinity (void)
 {
 }
 
+#ifdef LIBGOMP_USE_PTHREADS
 void
 gomp_init_thread_affinity (pthread_attr_t *attr, unsigned int place)
 {
   (void) attr;
   (void) place;
 }
+#endif
 
 void **
 gomp_affinity_alloc (unsigned long count, bool quiet)
