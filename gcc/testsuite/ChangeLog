@@ -1,3 +1,9 @@
+2016-11-23  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/fold-cond_expr-1.c: New test.
+	* gcc.dg/fold-condcmpconv-1.c: New test.
+	* gcc.dg/fold-condcmpconv-2.c: New test.
+
 2016-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71762

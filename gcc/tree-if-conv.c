@@ -1749,6 +1749,14 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
   return cond;
 }
 
+/* Local valueization callback that follows all-use SSA edges.  */
+
+static tree
+ifcvt_follow_ssa_use_edges (tree val)
+{
+  return val;
+}
+
 /* Replace a scalar PHI node with a COND_EXPR using COND as condition.
    This routine can handle PHI nodes with more than two arguments.
 
@@ -1844,6 +1852,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
 				    arg0, arg1);
       new_stmt = gimple_build_assign (res, rhs);
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+      gimple_stmt_iterator new_gsi = gsi_for_stmt (new_stmt);
+      fold_stmt (&new_gsi, ifcvt_follow_ssa_use_edges);
       update_stmt (new_stmt);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
