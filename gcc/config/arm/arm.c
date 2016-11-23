@@ -245,7 +245,6 @@ static bool arm_output_addr_const_extra (FILE *, rtx);
 static bool arm_allocate_stack_slots_for_args (void);
 static bool arm_warn_func_return (tree);
 static tree arm_promoted_type (const_tree t);
-static tree arm_convert_to_type (tree type, tree expr);
 static bool arm_scalar_mode_supported_p (machine_mode);
 static bool arm_frame_pointer_required (void);
 static bool arm_can_eliminate (const int, const int);
@@ -653,9 +652,6 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_PROMOTED_TYPE
 #define TARGET_PROMOTED_TYPE arm_promoted_type
-
-#undef TARGET_CONVERT_TO_TYPE
-#define TARGET_CONVERT_TO_TYPE arm_convert_to_type
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P arm_scalar_mode_supported_p
@@ -2534,6 +2530,11 @@ arm_init_libfuncs (void)
 			(arm_fp16_format == ARM_FP16_FORMAT_IEEE
 			 ? "__gnu_h2f_ieee"
 			 : "__gnu_h2f_alternative"));
+
+      set_conv_libfunc (trunc_optab, HFmode, DFmode,
+			(arm_fp16_format == ARM_FP16_FORMAT_IEEE
+			 ? "__gnu_d2h_ieee"
+			 : "__gnu_d2h_alternative"));
 
       /* Arithmetic.  */
       set_optab_libfunc (add_optab, HFmode, NULL);
@@ -5259,6 +5260,8 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
 							SFmode));
       add_libcall (libcall_htab, convert_optab_libfunc (trunc_optab, SFmode,
 							DFmode));
+      add_libcall (libcall_htab,
+		   convert_optab_libfunc (trunc_optab, HFmode, DFmode));
     }
 
   return libcall && libcall_htab->find (libcall) != NULL;
@@ -22511,23 +22514,6 @@ arm_promoted_type (const_tree t)
 {
   if (SCALAR_FLOAT_TYPE_P (t) && TYPE_PRECISION (t) == 16)
     return float_type_node;
-  return NULL_TREE;
-}
-
-/* Implement TARGET_CONVERT_TO_TYPE.
-   Specifically, this hook implements the peculiarity of the ARM
-   half-precision floating-point C semantics that requires conversions between
-   __fp16 to or from double to do an intermediate conversion to float.  */
-
-static tree
-arm_convert_to_type (tree type, tree expr)
-{
-  tree fromtype = TREE_TYPE (expr);
-  if (!SCALAR_FLOAT_TYPE_P (fromtype) || !SCALAR_FLOAT_TYPE_P (type))
-    return NULL_TREE;
-  if ((TYPE_PRECISION (fromtype) == 16 && TYPE_PRECISION (type) > 32)
-      || (TYPE_PRECISION (type) == 16 && TYPE_PRECISION (fromtype) > 32))
-    return convert (type, convert (float_type_node, expr));
   return NULL_TREE;
 }
 

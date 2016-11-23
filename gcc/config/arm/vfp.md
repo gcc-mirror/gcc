@@ -1507,6 +1507,26 @@
    (set_attr "type" "f_cvt")]
 )
 
+(define_insn "*truncdfhf2"
+  [(set (match_operand:HF		   0 "s_register_operand" "=t")
+	(float_truncate:HF (match_operand:DF 1 "s_register_operand" "w")))]
+  "TARGET_32BIT && TARGET_FP16_TO_DOUBLE"
+  "vcvtb%?.f16.f64\\t%0, %P1"
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "f_cvt")]
+)
+
+(define_insn "*extendhfdf2"
+  [(set (match_operand:DF		   0 "s_register_operand" "=w")
+	(float_extend:DF (match_operand:HF 1 "s_register_operand" "t")))]
+  "TARGET_32BIT && TARGET_FP16_TO_DOUBLE"
+  "vcvtb%?.f64.f16\\t%P0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "f_cvt")]
+)
+
 (define_insn "truncsfhf2"
   [(set (match_operand:HF		   0 "s_register_operand" "=t")
 	(float_truncate:HF (match_operand:SF 1 "s_register_operand" "t")))]

@@ -1,5 +1,19 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/arm.c (arm_convert_to_type): Delete.
+	(TARGET_CONVERT_TO_TYPE): Delete.
+	(arm_init_libfuncs): Enable trunc_optab from DFmode to HFmode.
+	(arm_libcall_uses_aapcs_base): Add trunc_optab from DF- to HFmode.
+	* config/arm/arm.h (TARGET_FP16_TO_DOUBLE): New.
+	* config/arm/arm.md (truncdfhf2): Only convert through SFmode if we
+	are in fast math mode, and have no single step hardware instruction.
+	(extendhfdf2): Only expand through SFmode if we don't have a
+	single-step hardware instruction.
+	* config/arm/vfp.md (*truncdfhf2): New.
+	(extendhfdf2): Likewise.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* targhooks.c (default_floatn_mode): Enable _Float16 if a target
 	provides HFmode.
 
