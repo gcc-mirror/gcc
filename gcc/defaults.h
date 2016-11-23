@@ -942,9 +942,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define REG_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
 #endif
 
-#ifndef TARGET_FLT_EVAL_METHOD
-#define TARGET_FLT_EVAL_METHOD 0
-#endif
 
 #ifndef TARGET_DEC_EVAL_METHOD
 #define TARGET_DEC_EVAL_METHOD 2
