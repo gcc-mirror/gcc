@@ -2527,43 +2527,43 @@ proc check_effective_target_has_q_floating_suffix { } {
 proc check_effective_target_float16 {} {
     return [check_no_compiler_messages_nocache float16 object {
         _Float16 x;
-    }]
+    } [add_options_for_float16 ""]]
 }
 
 proc check_effective_target_float32 {} {
     return [check_no_compiler_messages_nocache float32 object {
         _Float32 x;
-    }]
+    } [add_options_for_float32 ""]]
 }
 
 proc check_effective_target_float64 {} {
     return [check_no_compiler_messages_nocache float64 object {
         _Float64 x;
-    }]
+    } [add_options_for_float64 ""]]
 }
 
 proc check_effective_target_float128 {} {
     return [check_no_compiler_messages_nocache float128 object {
         _Float128 x;
-    }]
+    } [add_options_for_float128 ""]]
 }
 
 proc check_effective_target_float32x {} {
     return [check_no_compiler_messages_nocache float32x object {
         _Float32x x;
-    }]
+    } [add_options_for_float32x ""]]
 }
 
 proc check_effective_target_float64x {} {
     return [check_no_compiler_messages_nocache float64x object {
         _Float64x x;
-    }]
+    } [add_options_for_float64x ""]]
 }
 
 proc check_effective_target_float128x {} {
     return [check_no_compiler_messages_nocache float128x object {
         _Float128x x;
-    }]
+    } [add_options_for_float128x ""]]
 }
 
 # Likewise, but runtime support for any special options used as well

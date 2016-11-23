@@ -1,5 +1,16 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* lib/target-supports.exp (check_effective_target_float16): Add
+	options for _Float16.
+	(check_effective_target_float32): Add options for _Float32.
+	(check_effective_target_float64): Add options for _Float64.
+	(check_effective_target_float128): Add options for _Float128.
+	(check_effective_target_float32x): Add options for _Float32x.
+	(check_effective_target_float64x): Add options for _Float64x.
+	(check_effective_target_float128x): Add options for _Float128x.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc.dg/fpermitted-flt-eval-methods_3.c: New.
 	* gcc.dg/fpermitted-flt-eval-methods_4.c: Likewise.
 
