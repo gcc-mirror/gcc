@@ -1,4 +1,9 @@
-2016-11-23  Kito Cheng <kito.cheng@gmail.com>
+2016-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/69183
+	* gfortran.dg/gomp/pr69183.f90: New test.
+
+2016-11-23  Kito Cheng  <kito.cheng@gmail.com>
 
 	PR target/78230
 	* gcc.dg/torture/pr66178.c (test): Use uintptr_t instead of int.
