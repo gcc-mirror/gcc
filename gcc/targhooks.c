@@ -2135,4 +2135,12 @@ default_min_arithmetic_precision (void)
   return WORD_REGISTER_OPERATIONS ? BITS_PER_WORD : BITS_PER_UNIT;
 }
 
+/* Default implementation of TARGET_C_EXCESS_PRECISION.  */
+
+enum flt_eval_method
+default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED)
+{
+  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+}
+
 #include "gt-targhooks.h"

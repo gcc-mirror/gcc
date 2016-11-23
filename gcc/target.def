@@ -5464,6 +5464,23 @@ DEFHOOK_UNDOC
  machine_mode, (char c),
  default_mode_for_suffix)
 
+DEFHOOK
+(excess_precision,
+ "Return a value, with the same meaning as @code{FLT_EVAL_METHOD} C that\
+ describes which excess precision should be applied.  @var{type} is\
+ either @code{EXCESS_PRECISION_TYPE_IMPLICIT},\
+ @code{EXCESS_PRECISION_TYPE_FAST}, or\
+ @code{EXCESS_PRECISION_TYPE_STANDARD}.  For\
+ @code{EXCESS_PRECISION_TYPE_IMPLICIT}, the target should return which\
+ precision and range operations will be implictly evaluated in regardless\
+ of the excess precision explicitly added.  For\
+ @code{EXCESS_PRECISION_TYPE_STANDARD} and\
+ @code{EXCESS_PRECISION_TYPE_FAST}, the target should return the\
+ explicit excess precision that should be added depending on the\
+ value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}.",
+ enum flt_eval_method, (enum excess_precision_type type),
+ default_excess_precision)
+
 HOOK_VECTOR_END (c)
 
 /* Functions specific to the C++ frontend.  */

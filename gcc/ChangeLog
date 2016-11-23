@@ -1,3 +1,13 @@
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* target.def (excess_precision): New hook.
+	* target.h (flt_eval_method): New.
+	(excess_precision_type): Likewise.
+	* targhooks.c (default_excess_precision): New.
+	* targhooks.h (default_excess_precision): New.
+	* doc/tm.texi.in (TARGET_C_EXCESS_PRECISION): New.
+	* doc/tm.texi: Regenerate.
+
 2016-11-23  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78461

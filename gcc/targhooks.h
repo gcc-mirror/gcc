@@ -263,4 +263,7 @@ extern bool default_optab_supported_p (int, machine_mode, machine_mode,
 extern unsigned int default_max_noce_ifcvt_seq_cost (edge);
 extern unsigned int default_min_arithmetic_precision (void);
 
+extern enum flt_eval_method
+default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED);
+
 #endif /* GCC_TARGHOOKS_H */
