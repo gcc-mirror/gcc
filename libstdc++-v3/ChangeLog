@@ -1,3 +1,12 @@
+2016-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/reverse_iterator/71771.cc: Replace calls to
+	C++14 std::rbeing and std::rend.  Use dg-options instead of
+	effective-target.
+	* testsuite/27_io/headers/cstdio/functions_neg.cc: Use dg-options
+	instead of effective-target.
+	* testsuite/experimental/numeric/77801.cc: Likewise.
+
 2016-11-23  Felix Morgner  <felix.morgner@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
