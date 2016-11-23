@@ -7138,7 +7138,7 @@ static char mem_ops_in_group[4];
 static int current_cycle;
 
 static rtx ia64_single_set (rtx_insn *);
-static void ia64_emit_insn_before (rtx, rtx);
+static void ia64_emit_insn_before (rtx, rtx_insn *);
 
 /* Map a bundle number to its pseudo-op.  */
 
