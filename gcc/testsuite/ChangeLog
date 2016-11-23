@@ -1,5 +1,9 @@
 2016-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/69278
+	* g++.dg/ubsan/return-7.C: New test.
+	* c-c++-common/ubsan/unreachable-4.c: New test.
+
 	PR tree-optimization/78482
 	* gcc.dg/torture/pr78482.c (c, d): Use signed char instead of char.
 	(bar): New function.
