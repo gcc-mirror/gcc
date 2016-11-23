@@ -1,5 +1,11 @@
 2016-11-23  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/71762
+	* match.pd ((~X & Y) -> X < Y, (X & ~Y) -> Y < X,
+	(~X | Y) -> X <= Y, (X | ~Y) -> Y <= X): Remove.
+
+2016-11-23  Richard Biener  <rguenther@suse.de>
+
 	PR lto/78472
 	* tree.c (gimple_canonical_types_compatible_p): Ignore zero-sized
 	fields.
