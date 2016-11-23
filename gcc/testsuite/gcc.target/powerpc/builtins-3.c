@@ -1,7 +1,8 @@
-#include <altivec.h>
-
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-options "-maltivec -mvsx" } */
+
+#include <altivec.h>
 
 vector bool char
 test_eq_char (vector bool char x, vector bool char y)
