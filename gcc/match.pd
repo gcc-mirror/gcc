@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
    zerop
    CONSTANT_CLASS_P
    tree_expr_nonnegative_p
+   tree_expr_nonzero_p
    integer_valued_real_p
    integer_pow2p
    HONOR_NANS)
@@ -1035,7 +1036,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && tree_nop_conversion_p (type, TREE_TYPE (@1)))
   (convert (bit_and (bit_not @1) @0))))
 
+/* For integral types with undefined overflow and C != 0 fold
+   x * C EQ/NE y * C into x EQ/NE y.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (mult:c @0 @1) (mult:c @2 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+       && tree_expr_nonzero_p (@1))
+   (cmp @0 @2))))
 
+/* For integral types with undefined overflow and C != 0 fold
+   x * C RELOP y * C into:
+
+   x RELOP y for nonnegative C
+   y RELOP x for negative C  */
+(for cmp (lt gt le ge)
+ (simplify
+  (cmp (mult:c @0 @1) (mult:c @2 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+   (if (tree_expr_nonnegative_p (@1) && tree_expr_nonzero_p (@1))
+    (cmp @0 @2)
+   (if (TREE_CODE (@1) == INTEGER_CST
+	&& wi::neg_p (@1, TYPE_SIGN (TREE_TYPE (@1))))
+    (cmp @2 @0))))))
 
 /* ((X inner_op C0) outer_op C1)
    With X being a tree where value_range has reasoned certain bits to always be

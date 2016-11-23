@@ -1,3 +1,8 @@
+2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.dg/pr31096.c: New testcase.
+	* gcc.dg/pr31096-1.c: New testcase.
+
 2016-11-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/cpp/defined.c: Mark newly introduced warnings and
