@@ -1,5 +1,11 @@
 2016-11-23  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/rs6000/rs6000.c (rs6000_legitimate_offset_address_p): For
+	TARGET_E500_DOUBLE. handle TDmode, TImode and PTImode the same as
+	TFmode, IFmode and KFmode.
+
+2016-11-23  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/rs6000/spe.md (*frob_<SPE64:mode>_ti_8): New insn
 	pattern.
 

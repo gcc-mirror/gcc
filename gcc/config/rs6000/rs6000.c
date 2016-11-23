@@ -8443,14 +8443,13 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
     case TFmode:
     case IFmode:
     case KFmode:
-      if (TARGET_E500_DOUBLE)
-	return (SPE_CONST_OFFSET_OK (offset)
-		&& SPE_CONST_OFFSET_OK (offset + 8));
-      /* fall through */
-
     case TDmode:
     case TImode:
     case PTImode:
+      if (TARGET_E500_DOUBLE)
+	return (SPE_CONST_OFFSET_OK (offset)
+		&& SPE_CONST_OFFSET_OK (offset + 8));
+
       extra = 8;
       if (!worst_case)
 	break;
