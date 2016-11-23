@@ -1,3 +1,16 @@
+2016-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77739
+	* cp-gimplify.c (cp_gimplify_tree) <case VEC_INIT_EXPR>: Pass
+	false as handle_invisiref_parm_p to cp_genericize_tree.
+	(struct cp_genericize_data): Add handle_invisiref_parm_p field.
+	(cp_genericize_r): Don't wrap is_invisiref_parm into references
+	if !wtd->handle_invisiref_parm_p.
+	(cp_genericize_tree): Add handle_invisiref_parm_p argument,
+	set wtd.handle_invisiref_parm_p to it.
+	(cp_genericize): Pass true as handle_invisiref_parm_p to
+	cp_genericize_tree.  Formatting fix.
+
 2016-11-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/71973
