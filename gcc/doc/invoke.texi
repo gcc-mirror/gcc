@@ -8987,15 +8987,14 @@ them to store all pertinent intermediate computations into variables.
 @item -fexcess-precision=@var{style}
 @opindex fexcess-precision
 This option allows further control over excess precision on machines
-where floating-point registers have more precision than the IEEE
-@code{float} and @code{double} types and the processor does not
-support operations rounding to those types.  By default,
-@option{-fexcess-precision=fast} is in effect; this means that
-operations are carried out in the precision of the registers and that
-it is unpredictable when rounding to the types specified in the source
-code takes place.  When compiling C, if
-@option{-fexcess-precision=standard} is specified then excess
-precision follows the rules specified in ISO C99; in particular,
+where floating-point operations occur in a format with more precision or
+range than the IEEE standard and interchange floating-point types.  By
+default, @option{-fexcess-precision=fast} is in effect; this means that
+operations may be carried out in a wider precision than the types specified
+in the source if that would result in faster code, and it is unpredictable
+when rounding to the types specified in the source code takes place.
+When compiling C, if @option{-fexcess-precision=standard} is specified then
+excess precision follows the rules specified in ISO C99; in particular,
 both casts and assignments cause values to be rounded to their
 semantic types (whereas @option{-ffloat-store} only affects
 assignments).  This option is enabled by default for C if a strict

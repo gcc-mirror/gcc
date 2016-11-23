@@ -1,5 +1,10 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* gcc.dg/fpermitted-flt-eval-methods_3.c: New.
+	* gcc.dg/fpermitted-flt-eval-methods_4.c: Likewise.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc.dg/fpermitted-flt-eval-methods_1.c: New.
 	* gcc.dg/fpermitted-flt-eval-methods_2.c: New.
 

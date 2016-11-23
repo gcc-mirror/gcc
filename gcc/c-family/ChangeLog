@@ -1,5 +1,19 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* c-common.c (excess_precision_mode_join): New.
+	(c_ts18661_flt_eval_method): New.
+	(c_c11_flt_eval_method): Likewise.
+	(c_flt_eval_method): Likewise.
+	* c-common.h (excess_precision_mode_join): New.
+	(c_flt_eval_method): Likewise.
+	* c-cppbuiltin.c (c_cpp_flt_eval_method_iec_559): New.
+	(cpp_iec_559_value): Call it.
+	(c_cpp_builtins): Modify logic for __LIBGCC_*_EXCESS_PRECISION__,
+	call c_flt_eval_method to set __FLT_EVAL_METHOD__ and
+	__FLT_EVAL_METHOD_TS_18661_3__.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* c-opts.c (c_common_post_options): Add logic to handle the default
 	case for -fpermitted-flt-eval-methods.
 

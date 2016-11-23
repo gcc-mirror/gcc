@@ -7950,4 +7950,86 @@ cb_get_suggestion (cpp_reader *, const char *goal,
   return bm.get_best_meaningful_candidate ();
 }
 
+/* Return the latice point which is the wider of the two FLT_EVAL_METHOD
+   modes X, Y.  This isn't just  >, as the FLT_EVAL_METHOD values added
+   by C TS 18661-3 for interchange  types that are computed in their
+   native precision are larger than the C11 values for evaluating in the
+   precision of float/double/long double.  If either mode is
+   FLT_EVAL_METHOD_UNPREDICTABLE, return that.  */
+
+enum flt_eval_method
+excess_precision_mode_join (enum flt_eval_method x,
+			    enum flt_eval_method y)
+{
+  if (x == FLT_EVAL_METHOD_UNPREDICTABLE
+      || y == FLT_EVAL_METHOD_UNPREDICTABLE)
+    return FLT_EVAL_METHOD_UNPREDICTABLE;
+
+  /* GCC only supports one interchange type right now, _Float16.  If
+     we're evaluating _Float16 in 16-bit precision, then flt_eval_method
+     will be FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16.  */
+  if (x == FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16)
+    return y;
+  if (y == FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16)
+    return x;
+
+  /* Other values for flt_eval_method are directly comparable, and we want
+     the maximum.  */
+  return MAX (x, y);
+}
+
+/* Return the value that should be set for FLT_EVAL_METHOD in the
+   context of ISO/IEC TS 18861-3.
+
+   This relates to the effective excess precision seen by the user,
+   which is the join point of the precision the target requests for
+   -fexcess-precision={standard,fast} and the implicit excess precision
+   the target uses.  */
+
+static enum flt_eval_method
+c_ts18661_flt_eval_method (void)
+{
+  enum flt_eval_method implicit
+    = targetm.c.excess_precision (EXCESS_PRECISION_TYPE_IMPLICIT);
+
+  enum excess_precision_type flag_type
+    = (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
+       ? EXCESS_PRECISION_TYPE_STANDARD
+       : EXCESS_PRECISION_TYPE_FAST);
+
+  enum flt_eval_method requested
+    = targetm.c.excess_precision (flag_type);
+
+  return excess_precision_mode_join (implicit, requested);
+}
+
+/* As c_cpp_ts18661_flt_eval_method, but clamps the expected values to
+   those that were permitted by C11.  That is to say, eliminates
+   FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16.  */
+
+static enum flt_eval_method
+c_c11_flt_eval_method (void)
+{
+  return excess_precision_mode_join (c_ts18661_flt_eval_method (),
+				     FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
+}
+
+/* Return the value that should be set for FLT_EVAL_METHOD.
+   MAYBE_C11_ONLY_P is TRUE if we should check
+   FLAG_PERMITTED_EVAL_METHODS as to whether we should limit the possible
+   values we can return to those from C99/C11, and FALSE otherwise.
+   See the comments on c_ts18661_flt_eval_method for what value we choose
+   to set here.  */
+
+int
+c_flt_eval_method (bool maybe_c11_only_p)
+{
+  if (maybe_c11_only_p
+      && flag_permitted_flt_eval_methods
+	  == PERMITTED_FLT_EVAL_METHODS_C11)
+    return c_c11_flt_eval_method ();
+  else
+    return c_ts18661_flt_eval_method ();
+}
+
 #include "gt-c-family-c-common.h"

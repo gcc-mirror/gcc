@@ -1546,6 +1546,11 @@ extern int tm_attr_to_mask (tree);
 extern tree tm_mask_to_attr (int);
 extern tree find_tm_attribute (tree);
 
+extern enum flt_eval_method
+excess_precision_mode_join (enum flt_eval_method, enum flt_eval_method);
+
+extern int c_flt_eval_method (bool ts18661_p);
+
 #if CHECKING_P
 namespace selftest {
   extern void c_format_c_tests (void);

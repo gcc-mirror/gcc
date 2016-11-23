@@ -129,21 +129,73 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) \
      || (defined (__cplusplus) && __cplusplus >= 201103L)
-/* The floating-point expression evaluation method.
-        -1  indeterminate
-         0  evaluate all operations and constants just to the range and
-            precision of the type
-         1  evaluate operations and constants of type float and double
-            to the range and precision of the double type, evaluate
-            long double operations and constants to the range and
-            precision of the long double type
-         2  evaluate all operations and constants to the range and
-            precision of the long double type
+/* The floating-point expression evaluation method.  The precise
+   definitions of these values are generalised to include support for
+   the interchange and extended types defined in ISO/IEC TS 18661-3.
+   Prior to this (for C99/C11) the definitions were:
+
+	-1  indeterminate
+	 0  evaluate all operations and constants just to the range and
+	    precision of the type
+	 1  evaluate operations and constants of type float and double
+	    to the range and precision of the double type, evaluate
+	    long double operations and constants to the range and
+	    precision of the long double type
+	 2  evaluate all operations and constants to the range and
+	    precision of the long double type
+
+   The TS 18661-3 definitions are:
+
+	-1  indeterminate
+	 0  evaluate all operations and constants, whose semantic type has
+	    at most the range and precision of float, to the range and
+	    precision of float; evaluate all other operations and constants
+	    to the range and precision of the semantic type.
+	 1  evaluate all operations and constants, whose semantic type has
+	    at most the range and precision of double, to the range and
+	    precision of double; evaluate all other operations and constants
+	    to the range and precision of the semantic type.
+	 2  evaluate all operations and constants, whose semantic type has
+	    at most the range and precision of long double, to the range and
+	    precision of long double; evaluate all other operations and
+	    constants to the range and precision of the semantic type.
+	 N  where _FloatN  is a supported interchange floating type
+	    evaluate all operations and constants, whose semantic type has
+	    at most the range and precision of the _FloatN type, to the
+	    range and precision of the _FloatN type; evaluate all other
+	    operations and constants to the range and precision of the
+	    semantic type.
+	 N + 1, where _FloatNx is a supported extended floating type
+	    evaluate operations and constants, whose semantic type has at
+	    most the range and precision of the _FloatNx type, to the range
+	    and precision of the _FloatNx type; evaluate all other
+	    operations and constants to the range and precision of the
+	    semantic type.
+
+   The compiler predefines two macros:
+
+      __FLT_EVAL_METHOD__
+      Which, depending on the value given for
+      -fpermitted-flt-eval-methods, may be limited to only those values
+      for FLT_EVAL_METHOD defined in C99/C11.
+
+     __FLT_EVAL_METHOD_TS_18661_3__
+      Which always permits the values for FLT_EVAL_METHOD defined in
+      ISO/IEC TS 18661-3.
+
+     Here we want to use __FLT_EVAL_METHOD__, unless
+     __STDC_WANT_IEC_60559_TYPES_EXT__ is defined, in which case the user
+     is specifically asking for the ISO/IEC TS 18661-3 types, so we use
+     __FLT_EVAL_METHOD_TS_18661_3__.
 
    ??? This ought to change with the setting of the fp control word;
    the value provided by the compiler assumes the widest setting.  */
 #undef FLT_EVAL_METHOD
+#ifdef __STDC_WANT_IEC_60559_TYPES_EXT__
+#define FLT_EVAL_METHOD __FLT_EVAL_METHOD_TS_18661_3__
+#else
 #define FLT_EVAL_METHOD	__FLT_EVAL_METHOD__
+#endif
 
 /* Number of decimal digits, n, such that any floating-point number in the
    widest supported floating type with pmax radix b digits can be rounded

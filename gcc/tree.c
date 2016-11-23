@@ -8855,50 +8855,99 @@ build_complex_type (tree component_type, bool named)
 tree
 excess_precision_type (tree type)
 {
-  if (flag_excess_precision != EXCESS_PRECISION_FAST)
+  /* The target can give two different responses to the question of
+     which excess precision mode it would like depending on whether we
+     are in -fexcess-precision=standard or -fexcess-precision=fast.  */
+
+  enum excess_precision_type requested_type
+    = (flag_excess_precision == EXCESS_PRECISION_FAST
+       ? EXCESS_PRECISION_TYPE_FAST
+       : EXCESS_PRECISION_TYPE_STANDARD);
+
+  enum flt_eval_method target_flt_eval_method
+    = targetm.c.excess_precision (requested_type);
+
+  /* The target should not ask for unpredictable float evaluation (though
+     it might advertise that implicitly the evaluation is unpredictable,
+     but we don't care about that here, it will have been reported
+     elsewhere).  If it does ask for unpredictable evaluation, we have
+     nothing to do here.  */
+  gcc_assert (target_flt_eval_method != FLT_EVAL_METHOD_UNPREDICTABLE);
+
+  /* Nothing to do.  The target has asked for all types we know about
+     to be computed with their native precision and range.  */
+  if (target_flt_eval_method == FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16)
+    return NULL_TREE;
+
+  /* The target will promote this type in a target-dependent way, so excess
+     precision ought to leave it alone.  */
+  if (targetm.promoted_type (type) != NULL_TREE)
+    return NULL_TREE;
+
+  machine_mode float16_type_mode = (float16_type_node
+				    ? TYPE_MODE (float16_type_node)
+				    : VOIDmode);
+  machine_mode float_type_mode = TYPE_MODE (float_type_node);
+  machine_mode double_type_mode = TYPE_MODE (double_type_node);
+
+  switch (TREE_CODE (type))
     {
-      int flt_eval_method = TARGET_FLT_EVAL_METHOD;
-      switch (TREE_CODE (type))
-	{
-	case REAL_TYPE:
-	  switch (flt_eval_method)
-	    {
-	    case 1:
-	      if (TYPE_MODE (type) == TYPE_MODE (float_type_node))
-		return double_type_node;
-	      break;
-	    case 2:
-	      if (TYPE_MODE (type) == TYPE_MODE (float_type_node)
-		  || TYPE_MODE (type) == TYPE_MODE (double_type_node))
-		return long_double_type_node;
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	  break;
-	case COMPLEX_TYPE:
-	  if (TREE_CODE (TREE_TYPE (type)) != REAL_TYPE)
-	    return NULL_TREE;
-	  switch (flt_eval_method)
-	    {
-	    case 1:
-	      if (TYPE_MODE (TREE_TYPE (type)) == TYPE_MODE (float_type_node))
-		return complex_double_type_node;
-	      break;
-	    case 2:
-	      if (TYPE_MODE (TREE_TYPE (type)) == TYPE_MODE (float_type_node)
-		  || (TYPE_MODE (TREE_TYPE (type))
-		      == TYPE_MODE (double_type_node)))
-		return complex_long_double_type_node;
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	  break;
-	default:
-	  break;
-	}
+    case REAL_TYPE:
+      {
+	machine_mode type_mode = TYPE_MODE (type);
+	switch (target_flt_eval_method)
+	  {
+	  case FLT_EVAL_METHOD_PROMOTE_TO_FLOAT:
+	    if (type_mode == float16_type_mode)
+	      return float_type_node;
+	    break;
+	  case FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE:
+	    if (type_mode == float16_type_mode
+		|| type_mode == float_type_mode)
+	      return double_type_node;
+	    break;
+	  case FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE:
+	    if (type_mode == float16_type_mode
+		|| type_mode == float_type_mode
+		|| type_mode == double_type_mode)
+	      return long_double_type_node;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	break;
+      }
+    case COMPLEX_TYPE:
+      {
+	if (TREE_CODE (TREE_TYPE (type)) != REAL_TYPE)
+	  return NULL_TREE;
+	machine_mode type_mode = TYPE_MODE (TREE_TYPE (type));
+	switch (target_flt_eval_method)
+	  {
+	  case FLT_EVAL_METHOD_PROMOTE_TO_FLOAT:
+	    if (type_mode == float16_type_mode)
+	      return complex_float_type_node;
+	    break;
+	  case FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE:
+	    if (type_mode == float16_type_mode
+		|| type_mode == float_type_mode)
+	      return complex_double_type_node;
+	    break;
+	  case FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE:
+	    if (type_mode == float16_type_mode
+		|| type_mode == float_type_mode
+		|| type_mode == double_type_mode)
+	      return complex_long_double_type_node;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	break;
+      }
+    default:
+      break;
     }
+
   return NULL_TREE;
 }
 

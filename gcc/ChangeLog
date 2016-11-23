@@ -1,5 +1,15 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* toplev.c (init_excess_precision): Delete most logic.
+	* tree.c (excess_precision_type): Rewrite to use
+	TARGET_EXCESS_PRECISION.
+	* doc/invoke.texi (-fexcess-precision): Document behaviour in a
+	more generic fashion.
+	* ginclude/float.h: Wrap definition of FLT_EVAL_METHOD in
+	__STDC_WANT_IEC_60559_TYPES_EXT__.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* common.opt (fpermitted-flt-eval-methods): New.
 	* doc/invoke.texi (-fpermitted-flt-eval-methods): Document it.
 	* flag_types.h (permitted_flt_eval_methods): New.
