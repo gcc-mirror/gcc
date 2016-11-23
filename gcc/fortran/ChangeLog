@@ -1,3 +1,8 @@
+2016-11-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78297
+	* trans-common.c (finish_equivalences): Do not dereference a NULL pointer.
+
 2016-11-23  Martin Jambor  <mjambor@suse.cz>
 
 	* f95-lang.c (DEF_HSA_BUILTIN): New macro.
