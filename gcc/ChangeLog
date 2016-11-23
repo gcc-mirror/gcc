@@ -1,3 +1,8 @@
+2016-11-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (change_zero_ext): Only change the mode of a hard register
+	destination if can_change_dest_mode holds for that.
+
 2016-11-23  Jeff Law  <law@redhat.com>
 
 	* varasm.c (assemble_name): Increase buffer size for name.

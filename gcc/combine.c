@@ -11230,7 +11230,8 @@ change_zero_ext (rtx pat)
       else if (GET_CODE (x) == ZERO_EXTEND
 	       && SCALAR_INT_MODE_P (mode)
 	       && REG_P (XEXP (x, 0))
-	       && HARD_REGISTER_P (XEXP (x, 0)))
+	       && HARD_REGISTER_P (XEXP (x, 0))
+	       && can_change_dest_mode (XEXP (x, 0), 0, mode))
 	{
 	  size = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
 	  x = gen_rtx_REG (mode, REGNO (XEXP (x, 0)));
