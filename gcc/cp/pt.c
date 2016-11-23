@@ -14297,7 +14297,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	}
       else
 	r = t;
-      if (!mark_used (r, complain) && !(complain & tf_error))
+      if (!mark_used (r, complain))
 	return error_mark_node;
       return r;
 
