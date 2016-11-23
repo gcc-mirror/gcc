@@ -1,3 +1,8 @@
+2016-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<any_or:code>hi_1): Fix operand 2 constraints.
+	(kxnor<mode>): Return "#" for alternative 0.
+
 2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* Makefile.in ($(lang_checks_parallelized)): Fix detection
