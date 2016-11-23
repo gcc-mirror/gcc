@@ -1,3 +1,8 @@
+2016-11-22  Ian Lance Taylor  <iant@golang.org>
+
+	* gcc.misc-tests/godump-1.c: Update expected output for recent
+	changes.
+
 2016-11-22  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/78455
