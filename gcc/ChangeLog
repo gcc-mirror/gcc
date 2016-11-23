@@ -1,3 +1,8 @@
+2016-11-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/spe.md (*frob_<SPE64:mode>_ti_8): New insn
+	pattern.
+
 2016-11-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (change_zero_ext): Only change the mode of a hard register
