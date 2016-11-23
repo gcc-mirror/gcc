@@ -1,3 +1,17 @@
+2016-11-23  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (subreg_size_offset_from_lsb): Declare.
+	(subreg_offset_from_lsb): New function.
+	(subreg_size_lowpart_offset): Declare.
+	(subreg_lowpart_offset): Turn into an inline function.
+	(subreg_size_highpart_offset): Declare.
+	(subreg_highpart_offset): Turn into an inline function.
+	* emit-rtl.c (subreg_size_lowpart_offset): New function.
+	(subreg_size_highpart_offset): Likewise
+	* rtlanal.c (subreg_size_offset_from_lsb): Likewise.
+
 2016-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78482

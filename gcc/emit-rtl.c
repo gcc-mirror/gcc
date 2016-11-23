@@ -1478,44 +1478,41 @@ gen_highpart_mode (machine_mode outermode, machine_mode innermode, rtx exp)
 			      subreg_highpart_offset (outermode, innermode));
 }
 
-/* Return the SUBREG_BYTE for an OUTERMODE lowpart of an INNERMODE value.  */
+/* Return the SUBREG_BYTE for a lowpart subreg whose outer mode has
+   OUTER_BYTES bytes and whose inner mode has INNER_BYTES bytes.  */
 
 unsigned int
-subreg_lowpart_offset (machine_mode outermode, machine_mode innermode)
+subreg_size_lowpart_offset (unsigned int outer_bytes, unsigned int inner_bytes)
 {
-  unsigned int offset = 0;
-  int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
+  if (outer_bytes > inner_bytes)
+    /* Paradoxical subregs always have a SUBREG_BYTE of 0.  */
+    return 0;
 
-  if (difference > 0)
-    {
-      if (WORDS_BIG_ENDIAN)
-	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-      if (BYTES_BIG_ENDIAN)
-	offset += difference % UNITS_PER_WORD;
-    }
-
-  return offset;
+  if (BYTES_BIG_ENDIAN && WORDS_BIG_ENDIAN)
+    return inner_bytes - outer_bytes;
+  else if (!BYTES_BIG_ENDIAN && !WORDS_BIG_ENDIAN)
+    return 0;
+  else
+    return subreg_size_offset_from_lsb (outer_bytes, inner_bytes, 0);
 }
 
-/* Return offset in bytes to get OUTERMODE high part
-   of the value in mode INNERMODE stored in memory in target format.  */
+/* Return the SUBREG_BYTE for a highpart subreg whose outer mode has
+   OUTER_BYTES bytes and whose inner mode has INNER_BYTES bytes.  */
+
 unsigned int
-subreg_highpart_offset (machine_mode outermode, machine_mode innermode)
+subreg_size_highpart_offset (unsigned int outer_bytes,
+			     unsigned int inner_bytes)
 {
-  unsigned int offset = 0;
-  int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
+  gcc_assert (inner_bytes >= outer_bytes);
 
-  gcc_assert (GET_MODE_SIZE (innermode) >= GET_MODE_SIZE (outermode));
-
-  if (difference > 0)
-    {
-      if (! WORDS_BIG_ENDIAN)
-	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-      if (! BYTES_BIG_ENDIAN)
-	offset += difference % UNITS_PER_WORD;
-    }
-
-  return offset;
+  if (BYTES_BIG_ENDIAN && WORDS_BIG_ENDIAN)
+    return 0;
+  else if (!BYTES_BIG_ENDIAN && !WORDS_BIG_ENDIAN)
+    return inner_bytes - outer_bytes;
+  else
+    return subreg_size_offset_from_lsb (outer_bytes, inner_bytes,
+					(inner_bytes - outer_bytes)
+					* BITS_PER_UNIT);
 }
 
 /* Return 1 iff X, assumed to be a SUBREG,
