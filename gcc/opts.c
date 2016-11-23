@@ -1558,7 +1558,8 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		/* Do not enable -fsanitize-recover=unreachable and
 		   -fsanitize-recover=return if -fsanitize-recover=undefined
 		   is selected.  */
-		if (sanitizer_opts[i].flag == SANITIZE_UNDEFINED)
+		if (code == OPT_fsanitize_recover_
+		    && sanitizer_opts[i].flag == SANITIZE_UNDEFINED)
 		  flags |= (SANITIZE_UNDEFINED
 			    & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN));
 		else

@@ -1,5 +1,11 @@
 2016-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/69278
+	* opts.c (parse_sanitizer_options): For -fsanitize=undefined,
+	restore enabling also SANITIZE_UNREACHABLE and SANITIZE_RETURN.
+
+2016-11-23  Jakub Jelinek  <jakub@redhat.com>
+
 	PR middle-end/69183
 	* omp-low.c (build_outer_var_ref): Change lastprivate argument
 	to code, pass it recursively, adjust uses.  For OMP_CLAUSE_PRIVATE
