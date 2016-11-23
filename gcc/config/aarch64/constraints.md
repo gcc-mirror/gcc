@@ -69,6 +69,16 @@
  (and (match_code "const_int")
       (match_test "aarch64_move_imm (ival, DImode)")))
 
+(define_constraint "UsO"
+ "A constant that can be used with a 32-bit and operation."
+ (and (match_code "const_int")
+      (match_test "aarch64_and_bitmask_imm (ival, SImode)")))
+
+(define_constraint "UsP"
+ "A constant that can be used with a 64-bit and operation."
+ (and (match_code "const_int")
+      (match_test "aarch64_and_bitmask_imm (ival, DImode)")))
+
 (define_constraint "S"
   "A constraint that matches an absolute symbolic address."
   (and (match_code "const,symbol_ref,label_ref")

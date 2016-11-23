@@ -440,6 +440,9 @@
 ;; Attribute to describe constants acceptable in logical operations
 (define_mode_attr lconst [(SI "K") (DI "L")])
 
+;; Attribute to describe constants acceptable in logical and operations
+(define_mode_attr lconst2 [(SI "UsO") (DI "UsP")])
+
 ;; Map a mode to a specific constraint character.
 (define_mode_attr cmode [(QI "q") (HI "h") (SI "s") (DI "d")])
 

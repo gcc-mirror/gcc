@@ -1,3 +1,30 @@
+2016-11-22  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_and_split_imm1, aarch64_and_split_imm2)
+	(aarch64_and_bitmask_imm): New prototypes
+	* config/aarch64/aarch64.c (aarch64_and_split_imm1):
+	New overloaded function to create bit mask covering the
+	lowest to highest bits set.
+	(aarch64_and_split_imm2): New overloaded functions to create bit
+	mask of zeros between first and last bit set.
+	(aarch64_and_bitmask_imm): New function to determine if a integer
+	is a valid two instruction "and" operation.
+	* config/aarch64/aarch64.md:(and<mode>3): New define_insn and _split
+	allowing wider range of constants with "and" operations.
+	* (ior<mode>3, xor<mode>3): Use new LOGICAL2 iterator to prevent
+	"and" operator from matching restricted constant range used for
+	ior and xor operators.
+	* config/aarch64/constraints.md (UsO constraint): New SImode constraint
+	for constants in "and" operantions.
+	(UsP constraint): New DImode constraint for constants in "and" operations.
+	* config/aarch64/iterators.md (lconst2): New mode iterator.
+	(LOGICAL2): New code iterator.
+	* config/aarch64/predicates.md (aarch64_logical_and_immediate): New
+	predicate
+	(aarch64_logical_and_operand): New predicate allowing extended constants
+	for "and" operations.
+
 2016-11-22  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx.md (trap): New pattern.
