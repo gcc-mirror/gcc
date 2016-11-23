@@ -939,7 +939,7 @@
         (unsigned_float:DF (match_operand:DI 1 "register_operand"   "r")))]
   ""
   "{
-    rtx value, insns;
+    rtx value;
     rtx c0 = spu_const_from_ints (V16QImode, 0x02031011, 0x12138080, 
                                              0x06071415, 0x16178080);
     rtx c1 = spu_const_from_ints (V4SImode, 1023+63, 1023+31, 0, 0);
