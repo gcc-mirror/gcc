@@ -1,3 +1,9 @@
+2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* fold-const.c (tree_expr_nonzero_p) : Make non-static.
+	* fold-const.h (tree_expr_nonzero_p) : Declare.
+	* match.pd (cmp (mult:c @0 @1) (mult:c @2 @1) : New Pattern.
+
 2016-11-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* system.h (HAVE_DESIGNATED_INITIALIZERS,

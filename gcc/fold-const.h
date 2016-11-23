@@ -169,6 +169,7 @@ extern tree size_diffop_loc (location_t, tree, tree);
 #define non_lvalue(T) non_lvalue_loc (UNKNOWN_LOCATION, T)
 extern tree non_lvalue_loc (location_t, tree);
 
+extern bool tree_expr_nonzero_p (tree);
 extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *, int = 0);
 extern tree make_range (tree, int *, tree *, tree *, bool *);

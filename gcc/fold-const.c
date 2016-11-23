@@ -9014,7 +9014,7 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 /* Return true when T is an address and is known to be nonzero.
    Handle warnings about undefined signed overflow.  */
 
-static bool
+bool
 tree_expr_nonzero_p (tree t)
 {
   bool ret, strict_overflow_p;
