@@ -1,3 +1,10 @@
+2016-11-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/60300
+	* config/avr/constraints.md (Csp): Widen range to [-11..6].
+	* config/avr/avr.c (avr_prologue_setup_frame): Limit number
+	of RCALLs in prologue to 3.
+
 2016-11-22  Michael Collison  <michael.collison@arm.com>
 
 	* config/aarch64/aarch64-protos.h
