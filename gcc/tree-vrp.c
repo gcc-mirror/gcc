@@ -1097,6 +1097,20 @@ gimple_stmt_nonzero_warnv_p (gimple *stmt, bool *strict_overflow_p)
 	    lookup_attribute ("returns_nonnull",
 			      TYPE_ATTRIBUTES (gimple_call_fntype (stmt))))
 	  return true;
+
+	gcall *call_stmt = as_a<gcall *> (stmt);
+	unsigned rf = gimple_call_return_flags (call_stmt);
+	if (rf & ERF_RETURNS_ARG)
+	  {
+	    unsigned argnum = rf & ERF_RETURN_ARG_MASK;
+	    if (argnum < gimple_call_num_args (call_stmt))
+	      {
+		tree arg = gimple_call_arg (call_stmt, argnum);
+		if (SSA_VAR_P (arg)
+		    && infer_nonnull_range_by_attribute (stmt, arg))
+		  return true;
+	      }
+	  }
 	return gimple_alloca_call_p (stmt);
       }
     default:

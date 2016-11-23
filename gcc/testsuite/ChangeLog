@@ -1,3 +1,9 @@
+2016-11-23  Richard Biener  <rguenther@suse.de>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.rog>
+
+	    PR tree-optimization/78154
+	    * gcc.dg/tree-ssa/pr78154.c: New test.
+
 2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.dg/pr31096.c: New testcase.
