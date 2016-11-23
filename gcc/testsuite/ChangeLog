@@ -1,3 +1,8 @@
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/fpermitted-flt-eval-methods_1.c: New.
+	* gcc.dg/fpermitted-flt-eval-methods_2.c: New.
+
 2016-11-23  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78461

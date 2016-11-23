@@ -1,3 +1,8 @@
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* c-opts.c (c_common_post_options): Add logic to handle the default
+	case for -fpermitted-flt-eval-methods.
+
 2016-11-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c.opt (Wexpansion-to-defined): New.
