@@ -1,3 +1,14 @@
+2016-11-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/77881
+	PR bootstrap/78390
+	PR target/78438
+	PR bootstrap/78477
+	* combine.c (make_compound_operation_int): Do not convert a subreg of
+	a non-constant logical shift right to a zero_extract.  Handle the case
+	where some zero bits have been shifted into the range covered by that
+	subreg.
+
 2016-11-23  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
