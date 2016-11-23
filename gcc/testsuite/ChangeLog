@@ -1,3 +1,7 @@
+2016-11-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/builtins-3.c: Add -maltivec and -mvsx options.
+
 2016-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/69278
