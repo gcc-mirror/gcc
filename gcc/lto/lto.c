@@ -373,7 +373,9 @@ hash_canonical_type (tree type)
       tree f;
 
       for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
-	if (TREE_CODE (f) == FIELD_DECL)
+	if (TREE_CODE (f) == FIELD_DECL
+	    && (! DECL_SIZE (f)
+		|| ! integer_zerop (DECL_SIZE (f))))
 	  {
 	    iterative_hash_canonical_type (TREE_TYPE (f), hstate);
 	    nf++;

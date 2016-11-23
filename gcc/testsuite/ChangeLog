@@ -1,4 +1,10 @@
 2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/78472
+	* g++.dg/lto/pr78472_0.c: New testcase.
+	* g++.dg/lto/pr78472_1.C: Likewise.
+
+2016-11-23  Richard Biener  <rguenther@suse.de>
 	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.rog>
 
 	    PR tree-optimization/78154

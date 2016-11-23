@@ -1,4 +1,10 @@
 2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/78472
+	* tree.c (gimple_canonical_types_compatible_p): Ignore zero-sized
+	fields.
+
+2016-11-23  Richard Biener  <rguenther@suse.de>
 	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.rog>
 
 	PR tree-optimization/78154
