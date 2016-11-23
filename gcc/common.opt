@@ -1326,6 +1326,21 @@ Enum(excess_precision) String(fast) Value(EXCESS_PRECISION_FAST)
 EnumValue
 Enum(excess_precision) String(standard) Value(EXCESS_PRECISION_STANDARD)
 
+; Whether we permit the extended set of values for FLT_EVAL_METHOD
+; introduced in ISO/IEC TS 18661-3, or limit ourselves to those in C99/C11.
+fpermitted-flt-eval-methods=
+Common Joined RejectNegative Enum(permitted_flt_eval_methods) Var(flag_permitted_flt_eval_methods) Init(PERMITTED_FLT_EVAL_METHODS_DEFAULT)
+-fpermitted-flt-eval-methods=[c11|ts-18661]	Specify which values of FLT_EVAL_METHOD are permitted.
+
+Enum
+Name(permitted_flt_eval_methods) Type(enum permitted_flt_eval_methods) UnknownError(unknown specification for the set of FLT_EVAL_METHOD values to permit %qs)
+
+EnumValue
+Enum(permitted_flt_eval_methods) String(c11) Value(PERMITTED_FLT_EVAL_METHODS_C11)
+
+EnumValue
+Enum(permitted_flt_eval_methods) String(ts-18661-3) Value(PERMITTED_FLT_EVAL_METHODS_TS_18661)
+
 ffast-math
 Common Optimization
 

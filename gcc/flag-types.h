@@ -158,6 +158,14 @@ enum excess_precision
   EXCESS_PRECISION_STANDARD
 };
 
+/* The options for which values of FLT_EVAL_METHOD are permissible.  */
+enum permitted_flt_eval_methods
+{
+  PERMITTED_FLT_EVAL_METHODS_DEFAULT,
+  PERMITTED_FLT_EVAL_METHODS_TS_18661,
+  PERMITTED_FLT_EVAL_METHODS_C11
+};
+
 /* Type of stack check.  */
 enum stack_check_type
 {

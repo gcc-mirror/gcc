@@ -788,6 +788,18 @@ c_common_post_options (const char **pfilename)
       && flag_unsafe_math_optimizations == 0)
     flag_fp_contract_mode = FP_CONTRACT_OFF;
 
+  /* If we are compiling C, and we are outside of a standards mode,
+     we can permit the new values from ISO/IEC TS 18661-3 for
+     FLT_EVAL_METHOD.  Otherwise, we must restrict the possible values to
+     the set specified in ISO C99/C11.  */
+  if (!flag_iso
+      && !c_dialect_cxx ()
+      && (global_options_set.x_flag_permitted_flt_eval_methods
+	  == PERMITTED_FLT_EVAL_METHODS_DEFAULT))
+    flag_permitted_flt_eval_methods = PERMITTED_FLT_EVAL_METHODS_TS_18661;
+  else
+    flag_permitted_flt_eval_methods = PERMITTED_FLT_EVAL_METHODS_C11;
+
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
      inline semantics are not supported in GNU89 or C89 mode.  */
   if (flag_gnu89_inline == -1)

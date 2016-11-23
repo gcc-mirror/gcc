@@ -1,5 +1,11 @@
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* common.opt (fpermitted-flt-eval-methods): New.
+	* doc/invoke.texi (-fpermitted-flt-eval-methods): Document it.
+	* flag_types.h (permitted_flt_eval_methods): New.
+
+2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/m68k/m68k.c (m68k_excess_precision): New.
 	(TARGET_C_EXCESS_PRECISION): Define.
 

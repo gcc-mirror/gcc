@@ -178,6 +178,7 @@ in the following sections.
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @gccoptlist{-ansi  -std=@var{standard}  -fgnu89-inline @gol
+-fpermitted-flt-eval-methods=@var{standard} @gol
 -aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} -fgimple@gol
 -fhosted  -ffreestanding -fopenacc -fopenmp -fopenmp-simd @gol
@@ -1866,6 +1867,30 @@ The preprocessor macros @code{__GNUC_GNU_INLINE__} and
 @code{__GNUC_STDC_INLINE__} may be used to check which semantics are
 in effect for @code{inline} functions.  @xref{Common Predefined
 Macros,,,cpp,The C Preprocessor}.
+
+@item -fpermitted-flt-eval-methods=@var{style}
+@opindex fpermitted-flt-eval-methods
+@opindex fpermitted-flt-eval-methods=c11
+@opindex fpermitted-flt-eval-methods=ts-18661-3
+ISO/IEC TS 18661-3 defines new permissible values for
+@code{FLT_EVAL_METHOD} that indicate that operations and constants with
+a semantic type that is an interchange or extended format should be
+evaluated to the precision and range of that type.  These new values are
+a superset of those permitted under C99/C11, which does not specify the
+meaning of other positive values of @code{FLT_EVAL_METHOD}.  As such, code
+conforming to C11 may not have been written expecting the possibility of
+the new values.
+
+@option{-fpermitted-flt-eval-methods} specifies whether the compiler
+should allow only the values of @code{FLT_EVAL_METHOD} specified in C99/C11,
+or the extended set of values specified in ISO/IEC TS 18661-3.
+
+@var{style} is either @code{c11} or @code{ts-18661-3} as appropriate.
+
+The default when in a standards compliant mode (@option{-std=c11} or similar)
+is @option{-fpermitted-flt-eval-methods=c11}.  The default when in a GNU
+dialect (@option{-std=gnu11} or similar) is
+@option{-fpermitted-flt-eval-methods=ts-18661-3}.
 
 @item -aux-info @var{filename}
 @opindex aux-info
