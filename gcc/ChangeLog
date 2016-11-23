@@ -1,3 +1,7 @@
+2016-11-23  Jeff Law  <law@redhat.com>
+
+	* config/spu/spu.md (floatunsdidf2): Remove unused local variable.
+
 2016-11-23  Jakub Kicinski  <jakub.kicinski@netronome.com>
 
 	* doc/extend.texi: Constify first argument to __builtin_object_size.
