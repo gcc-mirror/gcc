@@ -1,3 +1,7 @@
+2016-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<any_or:code>hi_1): Fix operand 2 constraints.
+
 2016-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/69278
