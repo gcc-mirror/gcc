@@ -4406,6 +4406,23 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	}
       break;
 
+    case GIMPLE_RETURN:
+      {
+	greturn *ret_stmt = as_a<greturn *> (stmt);
+	tree ret = gimple_return_retval(ret_stmt);
+
+	if (ret && TREE_CODE (ret) == SSA_NAME && valueize)
+	  {
+	    tree val = valueize (ret);
+	    if (val && val != ret)
+	      {
+		gimple_return_set_retval (ret_stmt, val);
+		changed = true;
+	      }
+	  }
+      }
+      break;
+
     default:;
     }
 

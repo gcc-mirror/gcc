@@ -1,3 +1,9 @@
+2016-11-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/78153
+	* gcc.dg/tree-ssa/pr78153-1.c: New test.
+	* gcc.dg/tree-ssa/pr78153-2.c: Likewise.
+
 2016-11-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR target/63250
