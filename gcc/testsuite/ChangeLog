@@ -1,3 +1,37 @@
+2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/78472
+	* g++.dg/lto/pr78472_0.c: New testcase.
+	* g++.dg/lto/pr78472_1.C: Likewise.
+
+	2016-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78305
+	* gcc.dg/torture/pr78305.c: New testcase.
+
+	2016-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78333
+	* gcc.dg/pr78333.c: New testcase.
+
+	2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78228
+	* gcc.dg/tree-ssa/phi-opt-15.c: New testcase.
+
+	2016-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78185
+	* gcc.dg/pr78185.c: New testcase.
+
+	2016-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77855
+	* gcc.dg/torture/pr77855.c: New testcase.
+
 2016-11-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/58001

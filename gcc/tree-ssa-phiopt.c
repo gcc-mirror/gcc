@@ -1453,6 +1453,14 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
   else
     negate = false;
 
+  /* If the code negates only iff positive then make sure to not
+     introduce undefined behavior when negating or computing the absolute.
+     ???  We could use range info if present to check for arg1 == INT_MIN.  */
+  if (negate
+      && (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+	  && ! TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1))))
+    return false;
+
   result = duplicate_ssa_name (result, NULL);
 
   if (negate)
