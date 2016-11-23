@@ -1,6 +1,14 @@
 2016-11-23  Bin Cheng  <bin.cheng@arm.com>
 
 	* fold-const.c (fold_cond_expr_with_comparison): Move simplification
+	for A == C1 ? A : C2 to below.
+	* match.pd: Move from above to here:
+	(cond (eq (convert1? x) c1) (convert2? x) c2)
+	  -> (cond (eq x c1) c1 c2).
+
+2016-11-23  Bin Cheng  <bin.cheng@arm.com>
+
+	* fold-const.c (fold_cond_expr_with_comparison): Move simplification
 	for A cmp C1 ? A : C2 to below, also simplify remaining code.
 	* match.pd: Move and extend simplification from above to here:
 	(cond (cmp (convert1? x) c1) (convert2? x) c2) -> (minmax (x c)).

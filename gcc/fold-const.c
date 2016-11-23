@@ -5210,19 +5210,6 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
 	}
     }
 
-  /* If this is A == C1 ? A : C2 with C1 and C2 constant integers,
-     we simplify it into A == C1 ? C1 : C2.  */
-
-  if (comp_code == EQ_EXPR
-      && INTEGRAL_TYPE_P (type)
-      && TREE_CODE (arg01) == INTEGER_CST
-      && TREE_CODE (arg1) != INTEGER_CST
-      && TREE_CODE (arg2) == INTEGER_CST)
-    {
-      arg1 = fold_convert_loc (loc, type, arg01);
-      return fold_build3_loc (loc, COND_EXPR, type, arg0, arg1, arg2);
-    }
-
   return NULL_TREE;
 }
 

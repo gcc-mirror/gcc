@@ -1955,15 +1955,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simplification moved from fold_cond_expr_with_comparison.  It may also
    be extended.  */
-/* (cond (cmp (convert1? x) c1) (convert2? x) c2) -> (minmax (x c)) if:
+/* This pattern implements two kinds simplification:
+
+   Case 1)
+   (cond (cmp (convert1? x) c1) (convert2? x) c2) -> (minmax (x c)) if:
      1) Conversions are type widening from smaller type.
      2) Const c1 equals to c2 after canonicalizing comparison.
      3) Comparison has tree code LT, LE, GT or GE.
    This specific pattern is needed when (cmp (convert x) c) may not
    be simplified by comparison patterns because of multiple uses of
    x.  It also makes sense here because simplifying across multiple
-   referred var is always benefitial for complicated cases.  */
-(for cmp (lt le gt ge)
+   referred var is always benefitial for complicated cases.
+
+   Case 2)
+   (cond (eq (convert1? x) c1) (convert2? x) c2) -> (cond (eq x c1) c1 c2).  */
+(for cmp (lt le gt ge eq)
  (simplify
   (cond (cmp@0 (convert1? @1) INTEGER_CST@3) (convert2? @1) INTEGER_CST@2)
   (with
@@ -1982,37 +1988,45 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		 && (TYPE_UNSIGNED (from_type)
 		     || TYPE_SIGN (c2_type) == TYPE_SIGN (from_type)))))
        {
-	 if (wi::to_widest (@3) == (wi::to_widest (@2) - 1))
+	 if (code != EQ_EXPR)
 	   {
-	     /* X <= Y - 1 equals to X < Y.  */
-	     if (cmp_code == LE_EXPR)
-	       code = LT_EXPR;
-	     /* X > Y - 1 equals to X >= Y.  */
-	     if (cmp_code == GT_EXPR)
-	       code = GE_EXPR;
+	     if (wi::to_widest (@3) == (wi::to_widest (@2) - 1))
+	       {
+		 /* X <= Y - 1 equals to X < Y.  */
+		 if (cmp_code == LE_EXPR)
+		   code = LT_EXPR;
+		 /* X > Y - 1 equals to X >= Y.  */
+		 if (cmp_code == GT_EXPR)
+		   code = GE_EXPR;
+	       }
+	     if (wi::to_widest (@3) == (wi::to_widest (@2) + 1))
+	       {
+		 /* X < Y + 1 equals to X <= Y.  */
+		 if (cmp_code == LT_EXPR)
+		   code = LE_EXPR;
+		 /* X >= Y + 1 equals to X > Y.  */
+		 if (cmp_code == GE_EXPR)
+		   code = GT_EXPR;
+	       }
+	     if (code != cmp_code || wi::to_widest (@2) == wi::to_widest (@3))
+	       {
+		 if (cmp_code == LT_EXPR || cmp_code == LE_EXPR)
+		   code = MIN_EXPR;
+		 if (cmp_code == GT_EXPR || cmp_code == GE_EXPR)
+		   code = MAX_EXPR;
+	       }
 	   }
-	 if (wi::to_widest (@3) == (wi::to_widest (@2) + 1))
-	   {
-	     /* X < Y + 1 equals to X <= Y.  */
-	     if (cmp_code == LT_EXPR)
-	       code = LE_EXPR;
-	     /* X >= Y + 1 equals to X > Y.  */
-	     if (cmp_code == GE_EXPR)
-	       code = GT_EXPR;
-	   }
-	 if (code != cmp_code || wi::to_widest (@2) == wi::to_widest (@3))
-	   {
-	     if (cmp_code == LT_EXPR || cmp_code == LE_EXPR)
-	       code = MIN_EXPR;
-	     if (cmp_code == GT_EXPR || cmp_code == GE_EXPR)
-	       code = MAX_EXPR;
-	   }
+	 /* Can do A == C1 ? A : C2  ->  A == C1 ? C1 : C2?  */
+	 else if (!int_fits_type_p (@3, from_type))
+	   code = ERROR_MARK;
        }
    }
    (if (code == MAX_EXPR)
     (convert (max @1 (convert:from_type @2)))
     (if (code == MIN_EXPR)
-     (convert (min @1 (convert:from_type @2))))))))
+     (convert (min @1 (convert:from_type @2)))
+     (if (code == EQ_EXPR)
+      (cond (cmp @1 (convert:from_type @3)) (convert:from_type @3) @2)))))))
 
 (for cnd (cond vec_cond)
  /* A ? B : (A ? X : C) -> A ? B : C.  */
