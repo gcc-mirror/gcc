@@ -332,6 +332,24 @@ enum symbol_visibility
   VISIBILITY_INTERNAL
 };
 
+/* enums used by the targetm.excess_precision hook.  */
+
+enum flt_eval_method
+{
+  FLT_EVAL_METHOD_UNPREDICTABLE = -1,
+  FLT_EVAL_METHOD_PROMOTE_TO_FLOAT = 0,
+  FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE = 1,
+  FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE = 2,
+  FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16 = 16
+};
+
+enum excess_precision_type
+{
+  EXCESS_PRECISION_TYPE_IMPLICIT,
+  EXCESS_PRECISION_TYPE_STANDARD,
+  EXCESS_PRECISION_TYPE_FAST
+};
+
 /* Support for user-provided GGC and PCH markers.  The first parameter
    is a pointer to a pointer, the second a cookie.  */
 typedef void (*gt_pointer_operator) (void *, void *);
