@@ -10125,7 +10125,7 @@ follow pointer assignments through non-trivial control flow they rely
 on various optimization passes enabled with @option{-O2}.  However, to
 a limited extent, they can be used without optimization as well.
 
-@deftypefn {Built-in Function} {size_t} __builtin_object_size (void * @var{ptr}, int @var{type})
+@deftypefn {Built-in Function} {size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
 is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
 (if known at compile time).  @code{__builtin_object_size} never evaluates

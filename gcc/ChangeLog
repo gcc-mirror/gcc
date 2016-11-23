@@ -1,3 +1,7 @@
+2016-11-23  Jakub Kicinski  <jakub.kicinski@netronome.com>
+
+	* doc/extend.texi: Constify first argument to __builtin_object_size.
+
 2016-11-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* opth-gen.awk: Use unsigned shifts for bit masks.  Allow all bits
