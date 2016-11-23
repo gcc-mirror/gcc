@@ -415,6 +415,10 @@ struct cpp_options
   /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
   unsigned char warn_undef;
 
+  /* Nonzero means warn if "defined" is encountered in a place other than
+     an #if.  */
+  unsigned char warn_expansion_to_defined;
+
   /* Nonzero means warn of unused macros from the main file.  */
   unsigned char warn_unused_macros;
 
@@ -1040,7 +1044,8 @@ enum {
   CPP_W_DATE_TIME,
   CPP_W_PEDANTIC,
   CPP_W_C90_C99_COMPAT,
-  CPP_W_CXX11_COMPAT
+  CPP_W_CXX11_COMPAT,
+  CPP_W_EXPANSION_TO_DEFINED
 };
 
 /* Output a diagnostic of some kind.  */

@@ -5320,6 +5320,11 @@ Warn when a declaration is found after a statement in a block.  This
 construct, known from C++, was introduced with ISO C99 and is by default
 allowed in GCC@.  It is not supported by ISO C90.  @xref{Mixed Declarations}.
 
+@item -Wexpansion-to-defined
+@opindex Wexpansion-to-defined
+Warn whenever @samp{defined} is encountered in the expansion of a macro.
+This warning is also enabled by @option{-Wpedantic} and @option{-Wextra}.
+
 @item -Wundef
 @opindex Wundef
 @opindex Wno-undef
