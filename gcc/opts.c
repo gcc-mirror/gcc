@@ -744,6 +744,14 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_toplevel_reorder = 0;
     }
 
+  /* -fself-test depends on the state of the compiler prior to
+     compiling anything.  Ideally it should be run on an empty source
+     file.  However, in case we get run with actual source, assume
+     -fsyntax-only which will inhibit any compiler initialization
+     which may confuse the self tests.  */
+  if (opts->x_flag_self_test)
+    opts->x_flag_syntax_only = 1;
+
   if (opts->x_flag_tm && opts->x_flag_non_call_exceptions)
     sorry ("transactional memory is not supported with non-call exceptions");
 

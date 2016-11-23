@@ -1,3 +1,9 @@
+2016-11-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR target/78213
+	* opts.c (finish_options): Set -fsyntax-only if running self
+	tests.
+
 2016-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/71762
