@@ -1,3 +1,8 @@
+2016-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77907
+	* g++.dg/cpp0x/pr77907.C: New test.
+
 2016-11-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR middle-end/78153

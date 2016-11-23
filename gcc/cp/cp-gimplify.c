@@ -2340,11 +2340,18 @@ cp_fold (tree x)
 	   constant, but the call followed by an INDIRECT_REF is.  */
 	if (callee && DECL_DECLARED_CONSTEXPR_P (callee)
 	    && !flag_no_inline)
-          r = maybe_constant_value (x);
+	  r = maybe_constant_value (x);
 	optimize = sv;
 
         if (TREE_CODE (r) != CALL_EXPR)
 	  {
+	    if (DECL_CONSTRUCTOR_P (callee))
+	      {
+		loc = EXPR_LOCATION (x);
+		tree s = build_fold_indirect_ref_loc (loc,
+						      CALL_EXPR_ARG (x, 0));
+		r = build2_loc (loc, INIT_EXPR, TREE_TYPE (s), s, r);
+	      }
 	    x = r;
 	    break;
 	  }

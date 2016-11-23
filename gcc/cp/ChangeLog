@@ -1,5 +1,10 @@
 2016-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77907
+	* cp-gimplify.c (cp_fold) <case CALL_EXPR>: When calling constructor
+	and maybe_constant_value returns non-CALL_EXPR, create INIT_EXPR
+	with the object on lhs and maybe_constant_value returned expr on rhs.
+
 	PR c++/71450
 	* pt.c (tsubst_copy): Return error_mark_node when mark_used
 	fails, even when complain & tf_error.
