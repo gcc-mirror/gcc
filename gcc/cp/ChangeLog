@@ -1,5 +1,9 @@
 2016-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71450
+	* pt.c (tsubst_copy): Return error_mark_node when mark_used
+	fails, even when complain & tf_error.
+
 	PR c++/77739
 	* cp-gimplify.c (cp_gimplify_tree) <case VEC_INIT_EXPR>: Pass
 	false as handle_invisiref_parm_p to cp_genericize_tree.
