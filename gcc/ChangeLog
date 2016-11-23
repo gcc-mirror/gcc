@@ -1,3 +1,17 @@
+2016-11-23  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtlanal.c (subreg_get_info): Use more local variables.
+	Remark that for HARD_REGNO_NREGS_HAS_PADDING, each scalar unit
+	occupies at least one register.  Assume that full hard registers
+	have consistent endianness.  Share previously-duplicated if block.
+	Rework the main handling so that it operates on independently-
+	addressable YMODE-sized blocks.  Use subreg_size_lowpart_offset
+	to check lowpart offsets, without trying to find an equivalent
+	integer mode first.  Handle WORDS_BIG_ENDIAN != REG_WORDS_BIG_ENDIAN
+	as a final register-endianness correction.
+
 2016-11-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/77881
