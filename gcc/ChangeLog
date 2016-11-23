@@ -1,3 +1,20 @@
+2016-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/config/i386.md (*movqi_internal): Calculate mode
+	attribute of alternatives 7,8,9 depending on TARGET_AVX512DQ.
+	<TYPE_MSKMOV>: Emit kmovw for MODE_HI insn mode attribute.
+	(*k<logic><mode>): Calculate mode attribute depending on
+	TARGET_AVX512DQ.  Emit k<logic>w for MODE_HI insn mode attribute.
+	(*andqi_1): Calculate mode attribute of alternative 3 depending
+	on TARGET_AVX512DQ.  Emit kandw for MODE_HI insn mode attribute.
+	(kandn<mode>): Calculate mode attribute of alternative 2 depending
+	on TARGET_AVX512DQ.  Emit kandnw for MODE_HI insn mode attribute.
+	(kxnor<mode>): Merge insn patterns using SWI1248_AVX512BW mode
+	iterator.  Calculate mode attribute of alternative 1 depending
+	on TARGET_AVX512DQ.  Emit kxnorw for MODE_HI insn mode attribute.
+	(*one_cmplqi2_1): Calculate mode attribute of alternative 2 depending
+	on TARGET_AVX512DQ.  Emit knotw for MODE_HI insn mode attribute.
+
 2016-11-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR middle-end/78153
@@ -159,8 +176,8 @@
 	(grid_call_permissible_in_distribute_p): Likewise.
 	(grid_handle_call_in_distribute): Likewise.
 	(grid_dist_follows_tiling_pattern): Likewise.
-	(grid_target_follows_gridifiable_pattern): Support standalone distribute
-	constructs.
+	(grid_target_follows_gridifiable_pattern): Support standalone
+	distribute constructs.
 	(grid_var_segment): New enum.
 	(grid_mark_variable_segment): New function.
 	(grid_copy_leading_local_assignments): Call grid_mark_variable_segment
@@ -221,7 +238,7 @@
 	(get_in_type): Return this if it is a register of
 	matching size.
 	(hsa_get_declaration_name): Moved to...
-        * hsa-gen.c (hsa_get_declaration_name): ...here.  Allocate
+	* hsa-gen.c (hsa_get_declaration_name): ...here.  Allocate
 	temporary string on an obstack instead from ggc.
 	(query_hsa_grid): Renamed to query_hsa_grid_dim, reimplemented, cut
 	down to two overloads.
@@ -450,15 +467,14 @@
 	(predicate_scalar_phi): Call fold_stmt using the new valueize func.
 
 2016-11-23  Martin Liska  <mliska@suse.cz>
-            Martin Jambor  <mjambor@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
 
 	* doc/install.texi: Remove entry about --with-hsa-kmt-lib.
 
 2016-11-23  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR target/78213
-	* opts.c (finish_options): Set -fsyntax-only if running self
-	tests.
+	* opts.c (finish_options): Set -fsyntax-only if running self tests.
 
 2016-11-23  Richard Biener  <rguenther@suse.de>
 
@@ -537,13 +553,14 @@
 	ior and xor operators.
 	* config/aarch64/constraints.md (UsO constraint): New SImode constraint
 	for constants in "and" operantions.
-	(UsP constraint): New DImode constraint for constants in "and" operations.
+	(UsP constraint): New DImode constraint for constants
+	in "and" operations.
 	* config/aarch64/iterators.md (lconst2): New mode iterator.
 	(LOGICAL2): New code iterator.
 	* config/aarch64/predicates.md (aarch64_logical_and_immediate): New
-	predicate
-	(aarch64_logical_and_operand): New predicate allowing extended constants
-	for "and" operations.
+	predicate.
+	(aarch64_logical_and_operand): New predicate allowing extended
+	constants for "and" operations.
 
 2016-11-22  Walter Lee  <walt@tilera.com>
 
@@ -635,7 +652,7 @@
 	* sel-sched-ir.h: Remove trailing blank lines.
 
 2016-11-22  Jakub Jelinek  <jakub@redhat.com>
-            Alexander Monakov  <amonakov@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
 
 	* internal-fn.c (expand_GOMP_USE_SIMT): New function.
 	* tree.c (omp_clause_num_ops): OMP_CLAUSE__SIMT_ has 0 operands.
