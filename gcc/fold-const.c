@@ -458,13 +458,13 @@ negate_expr_p (tree t)
       if (TYPE_UNSIGNED (type))
 	break;
       /* INT_MIN/n * n doesn't overflow while negating one operand it does
-         if n is a power of two.  */
+         if n is a (negative) power of two.  */
       if (INTEGRAL_TYPE_P (TREE_TYPE (t))
 	  && ! TYPE_OVERFLOW_WRAPS (TREE_TYPE (t))
 	  && ! ((TREE_CODE (TREE_OPERAND (t, 0)) == INTEGER_CST
-		 && ! integer_pow2p (TREE_OPERAND (t, 0)))
+		 && wi::popcount (wi::abs (TREE_OPERAND (t, 0))) != 1)
 		|| (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST
-		    && ! integer_pow2p (TREE_OPERAND (t, 1)))))
+		    && wi::popcount (wi::abs (TREE_OPERAND (t, 1))) != 1)))
 	break;
 
       /* Fall through.  */

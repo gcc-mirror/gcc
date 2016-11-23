@@ -1,3 +1,44 @@
+2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/78472
+	* tree.c (gimple_canonical_types_compatible_p): Ignore zero-sized
+	fields.
+
+	2016-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78305
+	* fold-const.c (negate_expr_p): Fix multiplication case.
+
+	2016-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78333
+	* gimplify.c (gimplify_function_tree): Do not instrument
+	GNU extern inline functions.
+
+	2016-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78228
+	* tree-ssa-phiopt.c (abs_replacement): Avoid introducing
+	undefined behavior.
+
+	2016-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78185
+	* loop-invariant.c (find_exits): Record entering inner
+	loops as possibly exiting to handle infinite sub-loops.
+	* tree-ssa-loop-im.c: Include tree-ssa-loop-niter.h.
+	(fill_always_executed_in_1): Honor infinite child loops.
+
+	2016-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77855
+	* tree-ssa-pre.c (prune_clobbered_mems): Queue exprs to remove
+	instead of removing the current item while iterating over the set
+	which is not safe.
+
 2016-11-22  Walter Lee  <walt@tilera.com>
 
 	Backport from mainline
