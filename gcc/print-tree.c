@@ -33,19 +33,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h" /* FIXME */
 #include "tree-cfg.h"
 #include "tree-dump.h"
+#include "print-tree.h"
 
 /* Define the hash table of nodes already seen.
    Such nodes are not repeated; brief cross-references are used.  */
 
 #define HASH_SIZE 37
 
-struct bucket
-{
-  tree node;
-  struct bucket *next;
-};
-
-static struct bucket **table;
+static hash_set<tree> *table = NULL;
 
 /* Print PREFIX and ADDR to FILE.  */
 void
@@ -176,10 +171,9 @@ indent_to (FILE *file, int column)
    starting in column INDENT.  */
 
 void
-print_node (FILE *file, const char *prefix, tree node, int indent)
+print_node (FILE *file, const char *prefix, tree node, int indent,
+	    bool brief_for_visited)
 {
-  int hash;
-  struct bucket *b;
   machine_mode mode;
   enum tree_code_class tclass;
   int len;
@@ -219,21 +213,14 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   /* Allow this function to be called if the table is not there.  */
   if (table)
     {
-      hash = ((uintptr_t) node) % HASH_SIZE;
-
       /* If node is in the table, just mention its address.  */
-      for (b = table[hash]; b; b = b->next)
-	if (b->node == node)
-	  {
-	    print_node_brief (file, prefix, node, indent);
-	    return;
-	  }
+      if (table->contains (node) && brief_for_visited)
+	{
+	  print_node_brief (file, prefix, node, indent);
+	  return;
+	}
 
-      /* Add this node to the table.  */
-      b = XNEW (struct bucket);
-      b->node = node;
-      b->next = table[hash];
-      table[hash] = b;
+      table->add (node);
     }
 
   /* Indent to the specified column, since this is the long form.  */
@@ -846,8 +833,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	    FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node),
 				      cnt, index, value)
 	      {
-		print_node (file, "idx", index, indent + 4);
-		print_node (file, "val", value, indent + 4);
+		print_node (file, "idx", index, indent + 4, false);
+		print_node (file, "val", value, indent + 4, false);
 	      }
 	  }
 	  break;
@@ -997,10 +984,10 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 DEBUG_FUNCTION void
 debug_tree (tree node)
 {
-  table = XCNEWVEC (struct bucket *, HASH_SIZE);
+  table = new hash_set<tree> (HASH_SIZE);
   print_node (stderr, "", node, 0);
-  free (table);
-  table = 0;
+  delete table;
+  table = NULL;
   putc ('\n', stderr);
 }
 
