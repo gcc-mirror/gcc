@@ -1,5 +1,19 @@
 2016-11-24  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Update
+	__FLT_EVAL_METHOD__ and __FLT_EVAL_METHOD_C99__ when we switch
+	architecture levels.
+	* config/aarch64/aarch64.c (aarch64_promoted_type): Only promote
+	the aarch64_fp16_type_node, not all HFmode types.
+	(aarch64_libgcc_floating_mode_supported_p): Support HFmode.
+	(aarch64_scalar_mode_supported_p): Likewise.
+	(aarch64_excess_precision): New.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Define.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Likewise.
+	(TARGET_C_EXCESS_PRECISION): Likewise.
+
+2016-11-24  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-c.c (aarch64_scalar_mode_supported_p): New.
 	(TARGET_SCALAR_MODE_SUPPORTED_P): Define.
 
