@@ -298,15 +298,19 @@ fix_bb_placements (basic_block from,
    and update loop structures and dominators.  Return true if we were able
    to remove the path, false otherwise (and nothing is affected then).  */
 bool
-remove_path (edge e)
+remove_path (edge e, bool *irred_invalidated,
+	     bitmap loop_closed_ssa_invalidated)
 {
   edge ae;
   basic_block *rem_bbs, *bord_bbs, from, bb;
   vec<basic_block> dom_bbs;
   int i, nrem, n_bord_bbs;
-  bool irred_invalidated = false;
+  bool local_irred_invalidated = false;
   edge_iterator ei;
   struct loop *l, *f;
+
+  if (! irred_invalidated)
+    irred_invalidated = &local_irred_invalidated;
 
   if (!can_remove_branch_p (e))
     return false;
@@ -317,7 +321,7 @@ remove_path (edge e)
      that is inside an irreducible region is changed, or if such a loop is
      removed.  */
   if (e->flags & EDGE_IRREDUCIBLE_LOOP)
-    irred_invalidated = true;
+    *irred_invalidated = true;
 
   /* We need to check whether basic blocks are dominated by the edge
      e, but we only have basic block dominators.  This is easy to
@@ -334,7 +338,7 @@ remove_path (edge e)
     {
       f = loop_outer (l);
       if (dominated_by_p (CDI_DOMINATORS, l->latch, e->dest))
-        unloop (l, &irred_invalidated, NULL);
+        unloop (l, irred_invalidated, loop_closed_ssa_invalidated);
     }
 
   /* Identify the path.  */
@@ -348,13 +352,13 @@ remove_path (edge e)
   /* Find "border" hexes -- i.e. those with predecessor in removed path.  */
   for (i = 0; i < nrem; i++)
     bitmap_set_bit (seen, rem_bbs[i]->index);
-  if (!irred_invalidated)
+  if (!*irred_invalidated)
     FOR_EACH_EDGE (ae, ei, e->src->succs)
       if (ae != e && ae->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && !bitmap_bit_p (seen, ae->dest->index)
 	  && ae->flags & EDGE_IRREDUCIBLE_LOOP)
 	{
-	  irred_invalidated = true;
+	  *irred_invalidated = true;
 	  break;
 	}
 
@@ -369,7 +373,7 @@ remove_path (edge e)
 	    bord_bbs[n_bord_bbs++] = ae->dest;
 
 	    if (ae->flags & EDGE_IRREDUCIBLE_LOOP)
-	      irred_invalidated = true;
+	      *irred_invalidated = true;
 	  }
     }
 
@@ -411,10 +415,10 @@ remove_path (edge e)
 
   /* Fix placements of basic blocks inside loops and the placement of
      loops in the loop tree.  */
-  fix_bb_placements (from, &irred_invalidated, NULL);
-  fix_loop_placements (from->loop_father, &irred_invalidated);
+  fix_bb_placements (from, irred_invalidated, loop_closed_ssa_invalidated);
+  fix_loop_placements (from->loop_father, irred_invalidated);
 
-  if (irred_invalidated
+  if (local_irred_invalidated
       && loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
     mark_irreducible_loops ();
 

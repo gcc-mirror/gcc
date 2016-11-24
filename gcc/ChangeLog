@@ -1,3 +1,15 @@
+2016-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71595
+	* cfgloopmanip.h (remove_path): Add irred_invalidated and
+	loop_closed_ssa_invalidated parameters, defaulted to NULL.
+	* cfgloopmanip.c (remove_path): Likewise, pass them along to
+	called functions.  Only fix irred flags if the caller didn't
+	request state.
+	* tree-ssa-loop-ivcanon.c (unloop_loops): Use add_bb_to_loop.
+	(unloop_loops): Pass irred_invalidated and loop_closed_ssa_invalidated
+	to remove_path.
+
 2016-11-24  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/78120
