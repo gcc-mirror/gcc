@@ -524,8 +524,8 @@ main (int argc, char **argv)
     fatal_error (input_location, "cannot open '%s'", ptx_cfile_name);
 
   /* PR libgomp/65099: Currently, we only support offloading in 64-bit
-     configurations.  PR target/67822: OpenMP offloading to nvptx fails.  */
-  if (offload_abi == OFFLOAD_ABI_LP64 && !fopenmp)
+     configurations.  */
+  if (offload_abi == OFFLOAD_ABI_LP64)
     {
       ptx_name = make_temp_file (".mkoffload");
       obstack_ptr_grow (&argv_obstack, "-o");
