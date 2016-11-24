@@ -1279,9 +1279,11 @@ enum data_align { align_abi, align_opt, align_both };
    enough space to account for vectors in FP regs.  However, TFmode/TDmode
    should not use VSX instructions to do a caller save. */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)			\
-  (TARGET_VSX								\
-   && ((MODE) == VOIDmode || ALTIVEC_OR_VSX_VECTOR_MODE (MODE))		\
-   && FP_REGNO_P (REGNO)						\
+  ((NREGS) <= rs6000_hard_regno_nregs[MODE][REGNO]			\
+   ? (MODE)								\
+   : TARGET_VSX								\
+     && ((MODE) == VOIDmode || ALTIVEC_OR_VSX_VECTOR_MODE (MODE))	\
+     && FP_REGNO_P (REGNO)						\
    ? V2DFmode								\
    : TARGET_E500_DOUBLE && (MODE) == SImode				\
    ? SImode								\
