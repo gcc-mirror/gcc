@@ -924,6 +924,9 @@ Align the start of functions.
 falign-functions=
 Common RejectNegative Joined UInteger Var(align_functions)
 
+flimit-function-alignment
+Common Report Var(flag_limit_function_alignment) Optimization Init(0)
+
 falign-jumps
 Common Report Var(align_jumps,0) Optimization UInteger
 Align labels which are only reached by jumping.

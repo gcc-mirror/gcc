@@ -288,6 +288,9 @@ struct GTY(()) rtl_data {
      to eliminable regs (like the frame pointer) are set if an asm
      sets them.  */
   HARD_REG_SET asm_clobbers;
+
+  /* The highest address seen during shorten_branches.  */
+  int max_insn_address;
 };
 
 #define return_label (crtl->x_return_label)

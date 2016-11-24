@@ -1,3 +1,7 @@
+2016-11-24  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* gcc.target/i386/align-limit.c: New test.
+
 2016-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71595
