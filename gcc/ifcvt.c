@@ -812,8 +812,10 @@ struct noce_if_info
      we're optimizing for size.  */
   bool speed_p;
 
-  /* The combined cost of COND, JUMP and the costs for THEN_BB and
-     ELSE_BB.  */
+  /* An estimate of the original costs.  When optimizing for size, this is the
+     combined cost of COND, JUMP and the costs for THEN_BB and ELSE_BB.
+     When optimizing for speed, we use the costs of COND plus the minimum of
+     the costs for THEN_BB and ELSE_BB, as computed in the next field.  */
   unsigned int original_cost;
 
   /* Maximum permissible cost for the unconditional sequence we should
@@ -852,12 +854,12 @@ noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
   /* Cost up the new sequence.  */
   unsigned int cost = seq_cost (seq, speed_p);
 
+  if (cost <= if_info->original_cost)
+    return true;
+
   /* When compiling for size, we can make a reasonably accurately guess
-     at the size growth.  */
-  if (!speed_p)
-    return cost <= if_info->original_cost;
-  else
-    return cost <= if_info->max_seq_cost;
+     at the size growth.  When compiling for speed, use the maximum.  */
+  return speed_p && cost <= if_info->max_seq_cost;
 }
 
 /* Helper function for noce_try_store_flag*.  */
@@ -3441,14 +3443,23 @@ noce_process_if_block (struct noce_if_info *if_info)
 	}
     }
 
-  if (! bb_valid_for_noce_process_p (then_bb, cond, &if_info->original_cost,
+  bool speed_p = optimize_bb_for_speed_p (test_bb);
+  unsigned int then_cost = 0, else_cost = 0;
+  if (!bb_valid_for_noce_process_p (then_bb, cond, &then_cost,
 				    &if_info->then_simple))
     return false;
 
   if (else_bb
-      && ! bb_valid_for_noce_process_p (else_bb, cond, &if_info->original_cost,
-				      &if_info->else_simple))
+      && !bb_valid_for_noce_process_p (else_bb, cond, &else_cost,
+				       &if_info->else_simple))
     return false;
+
+  if (else_bb == NULL)
+    if_info->original_cost += then_cost;
+  else if (speed_p)
+    if_info->original_cost += MIN (then_cost, else_cost);
+  else
+    if_info->original_cost += then_cost + else_cost;
 
   insn_a = last_active_insn (then_bb, FALSE);
   set_a = single_set (insn_a);

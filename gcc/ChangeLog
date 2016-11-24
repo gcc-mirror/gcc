@@ -1,6 +1,13 @@
 2016-11-24  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/78120
+	* ifcvt.c (noce_conversion_profitable_p): Check original cost in all
+	cases, and additionally test against max_seq_cost for speed
+	optimization.
+	(noce_process_if_block): Compute an estimate for the original cost when
+	optimizing for speed, using the minimum of then and else block costs.
+
+	PR rtl-optimization/78120
 	* rtlanal.c (insn_rtx_cost): Use set_rtx_cost.
 
 	PR rtl-optimization/78120
