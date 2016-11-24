@@ -1,3 +1,7 @@
+2016-11-24  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/floatdihf2_1.c: New.
+
 2016-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/48863
