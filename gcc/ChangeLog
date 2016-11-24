@@ -1,3 +1,13 @@
+2016-11-24  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78476
+	* gimple-ssa-sprintf.c (struct pass_sprintf_length::call_info):
+	Add a member.
+	(handle_gimple_call): Adjust signature.
+	(try_substitute_return_value): Remove calls to bounded functions
+	with zero buffer size whose result is known.
+	(pass_sprintf_length::execute): Adjust call to handle_gimple_call.
+
 2016-11-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* varasm.c (assemble_start_function): Wrap align_log definition in
@@ -47,6 +57,7 @@
 	PR target/67822
 	* config/nvptx/mkoffload.c (main): Allow -fopenmp.
 
+>>>>>>> .r242853
 2016-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* common/config/sparc/sparc-common.c (sparc_option_optimization_table):
