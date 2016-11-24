@@ -4807,7 +4807,7 @@ get_scaled_computation_cost_at (ivopts_data *data, gimple *at, iv_cand *cand,
 				comp_cost cost)
 {
    int loop_freq = data->current_loop->header->frequency;
-   int bb_freq = at->bb->frequency;
+   int bb_freq = gimple_bb (at)->frequency;
    if (loop_freq != 0)
      {
        gcc_assert (cost.scratch <= cost.cost);

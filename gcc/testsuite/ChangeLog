@@ -1,3 +1,16 @@
+2016-11-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/builtin-unreachable-6.c: Update test to not to scan
+	parts for frequencies/probabilities.
+	* gcc.dg/pr34027-1.c: Likewise.
+	* gcc.dg/strict-overflow-2.c: Likewise.
+	* gcc.dg/tree-ssa/20040703-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr32044.c: Likewise.
+	* gcc.dg/tree-ssa/vector-3.c: Likewise.
+	* gcc.dg/tree-ssa/vrp101.c: Likewise.
+	* gcc.dg/tree-ssa/dump-2.c: New test.
+
 2016-11-24  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* gcc.target/i386/align-limit.c: New test.

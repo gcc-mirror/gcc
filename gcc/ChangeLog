@@ -1,3 +1,15 @@
+2016-11-24  Martin Liska  <mliska@suse.cz>
+
+	* gimple-pretty-print.c (dump_edge_probability): New function.
+	(dump_gimple_switch): Dump label edge probabilities.
+	(dump_gimple_cond): Likewise.
+	(dump_gimple_label): Dump
+	(dump_gimple_bb_header): Dump basic block frequency.
+	(pp_cfg_jump): Replace e->dest argument with e.
+	(dump_implicit_edges): Likewise.
+	* tree-ssa-loop-ivopts.c (get_scaled_computation_cost_at):
+	Use gimple_bb (at) instead of at->bb.
+
 2016-11-24  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* common.opt (flimit-function-alignment): New.
