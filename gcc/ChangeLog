@@ -1,3 +1,9 @@
+2016-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (wide AND insn to QImode splitter): Use
+	explicit mode macros.
+	(wide OR insn to QImode splitter): Ditto.
+
 2016-11-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/77541
