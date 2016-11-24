@@ -14240,12 +14240,20 @@ aarch64_vec_fpconst_pow_of_2 (rtx x)
   return firstval;
 }
 
-/* Implement TARGET_PROMOTED_TYPE to promote __fp16 to float.  */
+/* Implement TARGET_PROMOTED_TYPE to promote 16-bit floating point types
+   to float.
+
+   __fp16 always promotes through this hook.
+   _Float16 may promote if TARGET_FLT_EVAL_METHOD is 16, but we do that
+   through the generic excess precision logic rather than here.  */
+
 static tree
 aarch64_promoted_type (const_tree t)
 {
-  if (SCALAR_FLOAT_TYPE_P (t) && TYPE_PRECISION (t) == 16)
+  if (SCALAR_FLOAT_TYPE_P (t)
+      && TYPE_MAIN_VARIANT (t) == aarch64_fp16_type_node)
     return float_type_node;
+
   return NULL_TREE;
 }
 
@@ -14265,6 +14273,17 @@ aarch64_optab_supported_p (int op, machine_mode mode1, machine_mode,
     }
 }
 
+/* Implement TARGET_LIBGCC_FLOATING_POINT_MODE_SUPPORTED_P - return TRUE
+   if MODE is HFmode, and punt to the generic implementation otherwise.  */
+
+static bool
+aarch64_libgcc_floating_mode_supported_p (machine_mode mode)
+{
+  return (mode == HFmode
+	  ? true
+	  : default_libgcc_floating_mode_supported_p (mode));
+}
+
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P - return TRUE
    if MODE is HFmode, and punt to the generic implementation otherwise.  */
 
@@ -14274,6 +14293,47 @@ aarch64_scalar_mode_supported_p (machine_mode mode)
   return (mode == HFmode
 	  ? true
 	  : default_scalar_mode_supported_p (mode));
+}
+
+/* Set the value of FLT_EVAL_METHOD.
+   ISO/IEC TS 18661-3 defines two values that we'd like to make use of:
+
+    0: evaluate all operations and constants, whose semantic type has at
+       most the range and precision of type float, to the range and
+       precision of float; evaluate all other operations and constants to
+       the range and precision of the semantic type;
+
+    N, where _FloatN is a supported interchange floating type
+       evaluate all operations and constants, whose semantic type has at
+       most the range and precision of _FloatN type, to the range and
+       precision of the _FloatN type; evaluate all other operations and
+       constants to the range and precision of the semantic type;
+
+   If we have the ARMv8.2-A extensions then we support _Float16 in native
+   precision, so we should set this to 16.  Otherwise, we support the type,
+   but want to evaluate expressions in float precision, so set this to
+   0.  */
+
+static enum flt_eval_method
+aarch64_excess_precision (enum excess_precision_type type)
+{
+  switch (type)
+    {
+      case EXCESS_PRECISION_TYPE_FAST:
+      case EXCESS_PRECISION_TYPE_STANDARD:
+	/* We can calculate either in 16-bit range and precision or
+	   32-bit range and precision.  Make that decision based on whether
+	   we have native support for the ARMv8.2-A 16-bit floating-point
+	   instructions or not.  */
+	return (TARGET_FP_F16INST
+		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
+		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
+      case EXCESS_PRECISION_TYPE_IMPLICIT:
+	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
+      default:
+	gcc_unreachable ();
+    }
+  return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
 #undef TARGET_ADDRESS_COST
@@ -14354,6 +14414,9 @@ aarch64_scalar_mode_supported_p (machine_mode mode)
 #undef TARGET_BUILTIN_RECIPROCAL
 #define TARGET_BUILTIN_RECIPROCAL aarch64_builtin_reciprocal
 
+#undef TARGET_C_EXCESS_PRECISION
+#define TARGET_C_EXCESS_PRECISION aarch64_excess_precision
+
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN aarch64_expand_builtin
 
@@ -14409,6 +14472,10 @@ aarch64_scalar_mode_supported_p (machine_mode mode)
 
 #undef TARGET_LIBGCC_CMP_RETURN_MODE
 #define TARGET_LIBGCC_CMP_RETURN_MODE aarch64_libgcc_cmp_return_mode
+
+#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P \
+aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type
