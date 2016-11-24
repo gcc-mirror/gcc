@@ -2022,11 +2022,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        }
    }
    (if (code == MAX_EXPR)
-    (convert (max @1 (convert:from_type @2)))
+    (convert (max @1 (convert @2)))
     (if (code == MIN_EXPR)
-     (convert (min @1 (convert:from_type @2)))
+     (convert (min @1 (convert @2)))
      (if (code == EQ_EXPR)
-      (cond (cmp @1 (convert:from_type @3)) (convert:from_type @3) @2)))))))
+      (convert (cond (cmp @1 (convert @3))
+		     (convert:from_type @3) (convert:from_type @2)))))))))
 
 (for cnd (cond vec_cond)
  /* A ? B : (A ? X : C) -> A ? B : C.  */
