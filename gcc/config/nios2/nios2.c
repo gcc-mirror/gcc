@@ -3604,7 +3604,7 @@ nios2_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 }
 
 /* Implement TARGET_INIT_LIBFUNCS.  */
-static void
+static void ATTRIBUTE_UNUSED
 nios2_init_libfuncs (void)
 {
   init_sync_libfuncs (UNITS_PER_WORD);

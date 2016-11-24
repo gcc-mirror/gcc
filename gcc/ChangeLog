@@ -1,3 +1,7 @@
+2016-11-24  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_init_libfuncs): Add ATTRIBUTE_UNUSED.
+
 2016-11-23  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/78458
