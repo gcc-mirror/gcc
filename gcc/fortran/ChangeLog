@@ -1,3 +1,9 @@
+2016-11-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78500
+	* expr.c (gfc_check_vardef_contextm): Fix NULL pointer dereference.
+	* interface.c (matching_typebound_op): Ditto.
+
 2016-11-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78297
