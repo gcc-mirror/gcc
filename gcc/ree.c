@@ -499,6 +499,35 @@ get_defs (rtx_insn *insn, rtx reg, vec<rtx_insn *> *dest)
   return ref_chain;
 }
 
+/* Get all the reaching uses of an instruction.  The uses are desired for REG
+   set in INSN.  Return use list or NULL if a use is missing or irregular.  */
+
+static struct df_link *
+get_uses (rtx_insn *insn, rtx reg)
+{
+  df_ref def;
+  struct df_link *ref_chain, *ref_link;
+
+  FOR_EACH_INSN_DEF (def, insn)
+    if (REGNO (DF_REF_REG (def)) == REGNO (reg))
+      break;
+
+  gcc_assert (def != NULL);
+
+  ref_chain = DF_REF_CHAIN (def);
+
+  for (ref_link = ref_chain; ref_link; ref_link = ref_link->next)
+    {
+      /* Problem getting some use for this instruction.  */
+      if (ref_link->ref == NULL)
+        return NULL;
+      if (DF_REF_CLASS (ref_link->ref) != DF_REF_REGULAR)
+	return NULL;
+    }
+
+  return ref_chain;
+}
+
 /* Return true if INSN is
      (SET (reg REGNO (def_reg)) (if_then_else (cond) (REG x1) (REG x2)))
    and store x1 and x2 in REG_1 and REG_2.  */
@@ -826,6 +855,23 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 				 REGNO (SET_DEST (*dest_sub_rtx)));
       if (reg_overlap_mentioned_p (tmp_reg, SET_DEST (PATTERN (cand->insn))))
 	return false;
+
+      /* On RISC machines we must make sure that changing the mode of SRC_REG
+	 as destination register will not affect its reaching uses, which may
+	 read its value in a larger mode because DEF_INSN implicitly sets it
+	 in word mode.  */
+      const unsigned int prec
+	= GET_MODE_PRECISION (GET_MODE (SET_DEST (*dest_sub_rtx)));
+      if (WORD_REGISTER_OPERATIONS && prec < BITS_PER_WORD)
+	{
+	  struct df_link *uses = get_uses (def_insn, src_reg);
+	  if (!uses)
+	    return false;
+
+	  for (df_link *use = uses; use; use = use->next)
+	    if (GET_MODE_PRECISION (GET_MODE (*DF_REF_LOC (use->ref))) > prec)
+	      return false;
+	}
 
       /* The destination register of the extension insn must not be
 	 used or set between the def_insn and cand->insn exclusive.  */
