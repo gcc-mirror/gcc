@@ -1,3 +1,18 @@
+2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/fmaxmin.c : Add -fno-vect-cost-model.
+	* gcc.target/aarch64/fmul_fcvt_2.c : Likewise.
+	* gcc.target/aarch64/vect-abs-compile.c : Likewise.
+	* gcc.target/aarch64/vect-clz.c : Likewise.
+	* gcc.target/aarch64/vect-fcm-eq-d.c : Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-d.c : Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-d.c : Likewise.
+	* gcc.target/aarch64/vect-fmovd-zero.c : Likewise.
+	* gcc.target/aarch64/vect-fmovd.c : Likewise.
+	* gcc.target/aarch64/vect-fmovf-zero.c : Likewise.
+	* gcc.target/aarch64/vect-fmovf.c : Likewise.
+	* gcc.target/aarch64/vect_ctz_1.c : Likewise.
+
 2016-11-23  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/78458
