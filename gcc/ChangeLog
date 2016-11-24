@@ -1,3 +1,12 @@
+2016-11-24  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* common.opt (flimit-function-alignment): New.
+	* doc/invoke.texi (-flimit-function-alignment): Document.
+	* emit-rtl.h (struct rtl_data): Add max_insn_address field.
+	* final.c (shorten_branches): Set it.
+	* varasm.c (assemble_start_function): Limit alignment if
+	requested.
+
 2016-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/71595
