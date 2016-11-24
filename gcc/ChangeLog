@@ -1,3 +1,15 @@
+2016-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/48863
+	PR inline-asm/70184
+	* tree-ssa-ter.c (temp_expr_table): Add reg_vars_cnt field.
+	(new_temp_expr_table): Initialise reg_vars_cnt.
+	(free_temp_expr_table): Release reg_vars_cnt.
+	(process_replaceable): Add reg_vars_cnt argument, set reg_vars_cnt
+	field of TAB.
+	(find_replaceable_in_bb): Use the above to record register variable
+	write occurrences and cancel replacement across them.
+
 2016-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/78437

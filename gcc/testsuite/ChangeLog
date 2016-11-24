@@ -1,3 +1,9 @@
+2016-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/48863
+	PR inline-asm/70184
+	* gcc.target/arm/pr48863.c: New test.
+
 2016-11-24  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/builtin-unreachable-6.c: Update test to not to scan
