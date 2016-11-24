@@ -1,3 +1,10 @@
+2016-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* common/config/sparc/sparc-common.c (sparc_option_optimization_table):
+	Enable REE at -O2 and higher.
+	* config/sparc/sparc.c (sparc_option_override): Disable it by default
+	in 32-bit mode.
+
 2016-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/48863
