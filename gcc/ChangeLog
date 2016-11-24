@@ -1,3 +1,11 @@
+2016-11-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/77541
+	* lra-constraints.c (struct input_reload): Add field match_p.
+	(get_reload_reg): Check modes of input reloads to generate unique
+	value reload pseudo.
+	(match_reload): Add input reload pseudo for the current insn.
+
 2016-11-24  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Update
