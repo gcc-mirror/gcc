@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mcpu=generic" } */
 
 int arr[4][4];
 

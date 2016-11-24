@@ -1,5 +1,10 @@
 2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
+	* gcc.target/aarch64/ldp_stp_1.c : Add -mcpu=generic.
+	* gcc.target/aarch64/store-pair-1.c : Likewise.
+
+2016-11-23  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
 	* gcc.target/aarch64/fmaxmin.c : Add -fno-vect-cost-model.
 	* gcc.target/aarch64/fmul_fcvt_2.c : Likewise.
 	* gcc.target/aarch64/vect-abs-compile.c : Likewise.
