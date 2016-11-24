@@ -1,3 +1,11 @@
+2016-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/78437
+	* ree.c (get_uses): New function.
+	(combine_reaching_defs): When a copy is needed, return false if any
+	reaching use of the source register reads it in a mode larger than
+	the mode it is set in and WORD_REGISTER_OPERATIONS is true.
+
 2016-11-24  Martin Liska  <mliska@suse.cz>
 
 	* gimple-pretty-print.c (dump_edge_probability): New function.
