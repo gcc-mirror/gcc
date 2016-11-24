@@ -1,3 +1,9 @@
+2016-11-23  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/78458
+	* config/rs6000/rs6000.h (HARD_REGNO_CALLER_SAVE_MODE): Return MODE
+	if it is at least NREGS wide.
+
 2016-11-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimate_offset_address_p): For
