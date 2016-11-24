@@ -1,4 +1,6 @@
 2016-11-24  Martin Liska  <mliska@suse.cz>
+	Backported from mainline
+	2016-11-22  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/78309
 	* ipa-icf.c (void sem_item::set_hash): Update m_hash_set.
