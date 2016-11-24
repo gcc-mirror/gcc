@@ -1791,7 +1791,9 @@ assemble_start_function (tree decl, const char *fnname)
       && align_functions_log > align
       && optimize_function_for_speed_p (cfun))
     {
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
       int align_log = align_functions_log;
+#endif
       int max_skip = align_functions - 1;
       if (flag_limit_function_alignment && crtl->max_insn_address > 0
 	  && max_skip >= crtl->max_insn_address)
