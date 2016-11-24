@@ -152,10 +152,8 @@ public:
   sem_item (sem_item_type _type, bitmap_obstack *stack);
 
   /* Semantic item constructor for a node of _TYPE, where STACK is used
-     for bitmap memory allocation. The item is based on symtab node _NODE
-     with computed _HASH.  */
-  sem_item (sem_item_type _type, symtab_node *_node, hashval_t _hash,
-	    bitmap_obstack *stack);
+     for bitmap memory allocation.  The item is based on symtab node _NODE.  */
+  sem_item (sem_item_type _type, symtab_node *_node, bitmap_obstack *stack);
 
   virtual ~sem_item ();
 
@@ -181,6 +179,9 @@ public:
 
   /* References independent hash function.  */
   virtual hashval_t get_hash (void) = 0;
+
+  /* Set new hash value of the item.  */
+  void set_hash (hashval_t hash);
 
   /* Merges instance with an ALIAS_ITEM, where alias, thunk or redirection can
      be applied.  */
@@ -235,9 +236,6 @@ public:
   /* A set with symbol table references.  */
   hash_set <symtab_node *> refs_set;
 
-  /* Hash of item.  */
-  hashval_t hash;
-
   /* Temporary hash used where hash values of references are added.  */
   hashval_t global_hash;
 protected:
@@ -256,6 +254,12 @@ protected:
 				  symtab_node *n1, symtab_node *n2,
 				  bool address);
 
+  /* Hash of item.  */
+  hashval_t hash;
+
+  /* Indicated whether a hash value has been set or not.  */
+  bool m_hash_set;
+
 private:
   /* Initialize internal data structures. Bitmap STACK is used for
      bitmap memory allocation process.  */
@@ -268,9 +272,9 @@ public:
   /* Semantic function constructor that uses STACK as bitmap memory stack.  */
   sem_function (bitmap_obstack *stack);
 
-  /*  Constructor based on callgraph node _NODE with computed hash _HASH.
+  /*  Constructor based on callgraph node _NODE.
       Bitmap STACK is used for memory allocation.  */
-  sem_function (cgraph_node *_node, hashval_t _hash, bitmap_obstack *stack);
+  sem_function (cgraph_node *_node, bitmap_obstack *stack);
 
   ~sem_function ();
 
@@ -377,10 +381,10 @@ public:
   /* Semantic variable constructor that uses STACK as bitmap memory stack.  */
   sem_variable (bitmap_obstack *stack);
 
-  /*  Constructor based on callgraph node _NODE with computed hash _HASH.
+  /*  Constructor based on callgraph node _NODE.
       Bitmap STACK is used for memory allocation.  */
 
-  sem_variable (varpool_node *_node, hashval_t _hash, bitmap_obstack *stack);
+  sem_variable (varpool_node *_node, bitmap_obstack *stack);
 
   inline virtual void init_wpa (void) {}
 
