@@ -1,3 +1,8 @@
+2016-11-24  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/78120
+	* config/i386/i386.c (ix86_rtx_costs): Fully handle SETs.
+
 2016-11-24  Bin Cheng  <bin.cheng@arm.com>
 
 	* match.pd: Refine type conversion in result expr for below pattern:
