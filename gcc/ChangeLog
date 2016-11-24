@@ -1,3 +1,10 @@
+2016-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/78429
+	* tree.h (wi::fits_to_boolean_p): New predicate.
+	(wi::fits_to_tree_p): Use it for boolean types.
+	* tree.c (int_fits_type_p): Likewise.
+
 2016-11-24  Martin Liska  <mliska@suse.cz>
 
 	* print-tree.c (struct bucket): Remove.
