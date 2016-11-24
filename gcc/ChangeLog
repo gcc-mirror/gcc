@@ -1,3 +1,11 @@
+2016-11-24  Martin Liska  <mliska@suse.cz>
+
+	* print-tree.c (struct bucket): Remove.
+	(print_node): Add new argument which drives whether a tree node
+	is printed briefly or not.
+	(debug_tree): Replace a custom hash table with hash_set<T>.
+	* print-tree.h (print_node): Add the argument.
+
 2016-11-24  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/nios2/nios2.c (nios2_init_libfuncs): Add ATTRIBUTE_UNUSED.
