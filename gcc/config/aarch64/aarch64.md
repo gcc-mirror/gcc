@@ -4652,12 +4652,66 @@
   [(set_attr "type" "f_cvti2f")]
 )
 
-(define_insn "<optab><mode>hf2"
+;; If we do not have ARMv8.2-A 16-bit floating point extensions, the
+;; midend will arrange for an SImode conversion to HFmode to first go
+;; through DFmode, then to HFmode.  But first it will try converting
+;; to DImode then down, which would match our DImode pattern below and
+;; give very poor code-generation.  So, we must provide our own emulation
+;; of the mid-end logic.
+
+(define_insn "aarch64_fp16_<optab><mode>hf2"
   [(set (match_operand:HF 0 "register_operand" "=w")
 	(FLOATUORS:HF (match_operand:GPI 1 "register_operand" "r")))]
   "TARGET_FP_F16INST"
   "<su_optab>cvtf\t%h0, %<w>1"
   [(set_attr "type" "f_cvti2f")]
+)
+
+(define_expand "<optab>sihf2"
+  [(set (match_operand:HF 0 "register_operand")
+	(FLOATUORS:HF (match_operand:SI 1 "register_operand")))]
+  "TARGET_FLOAT"
+{
+  if (TARGET_FP_F16INST)
+    emit_insn (gen_aarch64_fp16_<optab>sihf2 (operands[0], operands[1]));
+  else
+    {
+      rtx convert_target = gen_reg_rtx (DFmode);
+      emit_insn (gen_<optab>sidf2 (convert_target, operands[1]));
+      emit_insn (gen_truncdfhf2 (operands[0], convert_target));
+    }
+  DONE;
+}
+)
+
+;; For DImode there is no wide enough floating-point mode that we
+;; can convert through natively (TFmode would work, but requires a library
+;; call).  However, we know that any value >= 65504 will be rounded
+;; to infinity on conversion.  This is well within the range of SImode, so
+;; we can:
+;;   Saturate to SImode.
+;;   Convert from that to DFmode
+;;   Convert from that to HFmode (phew!).
+;; Note that the saturation to SImode requires the SIMD extensions.  If
+;; we ever need to provide this pattern where the SIMD extensions are not
+;; available, we would need a different approach.
+
+(define_expand "<optab>dihf2"
+  [(set (match_operand:HF 0 "register_operand")
+	(FLOATUORS:HF (match_operand:DI 1 "register_operand")))]
+  "TARGET_FLOAT && (TARGET_FP_F16INST || TARGET_SIMD)"
+{
+  if (TARGET_FP_F16INST)
+    emit_insn (gen_aarch64_fp16_<optab>dihf2 (operands[0], operands[1]));
+  else
+    {
+      rtx sat_target = gen_reg_rtx (SImode);
+      emit_insn (gen_aarch64_<su_optab>qmovndi (sat_target, operands[1]));
+      emit_insn (gen_<optab>sihf2 (operands[0], sat_target));
+    }
+
+  DONE;
+}
 )
 
 ;; Convert between fixed-point and floating-point (scalar modes)

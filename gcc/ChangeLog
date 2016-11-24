@@ -1,3 +1,9 @@
+2016-11-24  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (<optab>sihf2): Convert to expand.
+	(<optab>dihf2): Likewise.
+	(aarch64_fp16_<optab><mode>hf2): New.
+
 2016-11-24  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/67822
