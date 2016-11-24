@@ -252,5 +252,5 @@ RNG (0,  6,   8, "%s%ls", "1", L"2");
 
 */
 
-/* { dg-final { scan-tree-dump-times ">:\n *__builtin_abort" 114 "optimized" { target { ilp32 || lp64 } } } } */
-/* { dg-final { scan-tree-dump-times ">:\n *__builtin_abort" 83 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } } */
+/* { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *__builtin_abort" 114 "optimized" { target { ilp32 || lp64 } } } } */
+/* { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *__builtin_abort" 83 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } } */

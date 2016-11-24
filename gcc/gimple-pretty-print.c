@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"	/* for dump_flags */
 #include "value-prof.h"
 #include "trans-mem.h"
+#include "cfganal.h"
 
 #define INDENT(SPACE)							\
   do { int i; for (i = 0; i < SPACE; i++) pp_space (buffer); } while (0)
@@ -71,6 +72,14 @@ debug_gimple_stmt (gimple *gs)
   print_gimple_stmt (stderr, gs, 0, TDF_VOPS|TDF_MEMSYMS);
 }
 
+/* Dump E probability to BUFFER.  */
+
+static void
+dump_edge_probability (pretty_printer *buffer, edge e)
+{
+  pp_scalar (buffer, " [%.1f%%]",
+	     e->probability * 100.0 / REG_BR_PROB_BASE);
+}
 
 /* Print GIMPLE statement G to FILE using SPC indentation spaces and
    FLAGS as in pp_gimple_stmt_1.  */
@@ -905,7 +914,20 @@ dump_gimple_switch (pretty_printer *buffer, gswitch *gs, int spc,
       gcc_checking_assert (case_label != NULL_TREE);
       dump_generic_node (buffer, case_label, spc, flags, false);
       pp_space (buffer);
-      dump_generic_node (buffer, CASE_LABEL (case_label), spc, flags, false);
+      tree label = CASE_LABEL (case_label);
+      dump_generic_node (buffer, label, spc, flags, false);
+
+      if (cfun && cfun->cfg)
+	{
+	  basic_block dest = label_to_block (label);
+	  if (dest)
+	    {
+	      edge label_edge = find_edge (gimple_bb (gs), dest);
+	      if (label_edge && !(flags & TDF_GIMPLE))
+		dump_edge_probability (buffer, label_edge);
+	    }
+	}
+
       if (i < gimple_switch_num_labels (gs) - 1)
 	{
 	  if (flags & TDF_GIMPLE)
@@ -943,6 +965,23 @@ dump_gimple_cond (pretty_printer *buffer, gcond *gs, int spc, int flags)
       dump_generic_node (buffer, gimple_cond_rhs (gs), spc, flags, false);
       if (!(flags & TDF_RHS_ONLY))
 	{
+	  edge_iterator ei;
+	  edge e, true_edge = NULL, false_edge = NULL;
+	  basic_block bb = gimple_bb (gs);
+
+	  if (bb)
+	    {
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		{
+		  if (e->flags & EDGE_TRUE_VALUE)
+		    true_edge = e;
+		  else if (e->flags & EDGE_FALSE_VALUE)
+		    false_edge = e;
+		}
+	    }
+
+	  bool has_edge_info = true_edge != NULL && false_edge != NULL;
+
 	  pp_right_paren (buffer);
 
 	  if (gimple_cond_true_label (gs))
@@ -950,6 +989,8 @@ dump_gimple_cond (pretty_printer *buffer, gcond *gs, int spc, int flags)
 	      pp_string (buffer, " goto ");
 	      dump_generic_node (buffer, gimple_cond_true_label (gs),
 				 spc, flags, false);
+	      if (has_edge_info && !(flags & TDF_GIMPLE))
+		dump_edge_probability (buffer, true_edge);
 	      pp_semicolon (buffer);
 	    }
 	  if (gimple_cond_false_label (gs))
@@ -957,6 +998,9 @@ dump_gimple_cond (pretty_printer *buffer, gcond *gs, int spc, int flags)
 	      pp_string (buffer, " else goto ");
 	      dump_generic_node (buffer, gimple_cond_false_label (gs),
 				 spc, flags, false);
+	      if (has_edge_info && !(flags & TDF_GIMPLE))
+		dump_edge_probability (buffer, false_edge);
+
 	      pp_semicolon (buffer);
 	    }
 	}
@@ -977,6 +1021,10 @@ dump_gimple_label (pretty_printer *buffer, glabel *gs, int spc, int flags)
   else
     {
       dump_generic_node (buffer, label, spc, flags, false);
+      basic_block bb = gimple_bb (gs);
+      if (bb && !(flags & TDF_GIMPLE))
+	pp_scalar (buffer, " [%.1f%%]",
+		   bb->frequency * 100.0 / REG_BR_PROB_BASE);
       pp_colon (buffer);
     }
   if (flags & TDF_GIMPLE)
@@ -2542,7 +2590,8 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
 	  if (flags & TDF_GIMPLE)
 	    fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
 	  else
-	    fprintf (outf, "%*s<bb %d>:\n", indent, "", bb->index);
+	    fprintf (outf, "%*s<bb %d> [%.1f%%]:\n", indent, "", bb->index,
+		     bb->frequency * 100.0 / REG_BR_PROB_BASE);
 	}
     }
 }
@@ -2588,19 +2637,20 @@ dump_phi_nodes (pretty_printer *buffer, basic_block bb, int indent, int flags)
    to BUFFER.  */
 
 static void
-pp_cfg_jump (pretty_printer *buffer, basic_block bb, int flags)
+pp_cfg_jump (pretty_printer *buffer, edge e, int flags)
 {
   if (flags & TDF_GIMPLE)
     {
       pp_string (buffer, "goto bb_");
-      pp_decimal_int (buffer, bb->index);
+      pp_decimal_int (buffer, e->dest->index);
       pp_semicolon (buffer);
     }
   else
     {
-      gimple *stmt = first_stmt (bb);
+      gimple *stmt = first_stmt (e->dest);
+
       pp_string (buffer, "goto <bb ");
-      pp_decimal_int (buffer, bb->index);
+      pp_decimal_int (buffer, e->dest->index);
       pp_greater (buffer);
       if (stmt && gimple_code (stmt) == GIMPLE_LABEL)
 	{
@@ -2613,6 +2663,8 @@ pp_cfg_jump (pretty_printer *buffer, basic_block bb, int flags)
 	}
       else
 	pp_semicolon (buffer);
+
+      dump_edge_probability (buffer, e);
     }
 }
 
@@ -2641,11 +2693,11 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
       extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
 
       INDENT (indent + 2);
-      pp_cfg_jump (buffer, true_edge->dest, flags);
+      pp_cfg_jump (buffer, true_edge, flags);
       newline_and_indent (buffer, indent);
       pp_string (buffer, "else");
       newline_and_indent (buffer, indent + 2);
-      pp_cfg_jump (buffer, false_edge->dest, flags);
+      pp_cfg_jump (buffer, false_edge, flags);
       pp_newline (buffer);
       return;
     }
@@ -2662,7 +2714,7 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
 	  && e->goto_locus != UNKNOWN_LOCATION)
 	dump_location (buffer, e->goto_locus);
 
-      pp_cfg_jump (buffer, e->dest, flags);
+      pp_cfg_jump (buffer, e, flags);
       pp_newline (buffer);
     }
 }
