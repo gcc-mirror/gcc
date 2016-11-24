@@ -647,7 +647,7 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
       latch_edge->flags |= flags;
       latch_edge->goto_locus = locus;
 
-      latch_edge->dest->loop_father = current_loops->tree_root;
+      add_bb_to_loop (latch_edge->dest, current_loops->tree_root);
       latch_edge->dest->count = 0;
       latch_edge->dest->frequency = 0;
       set_immediate_dominator (CDI_DOMINATORS, latch_edge->dest, latch_edge->src);
@@ -663,7 +663,7 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
   edge e;
   FOR_EACH_VEC_ELT (edges_to_remove, i, e)
     {
-      bool ok = remove_path (e);
+      bool ok = remove_path (e, irred_invalidated, loop_closed_ssa_invalidated);
       gcc_assert (ok);
     }
   edges_to_remove.release ();
