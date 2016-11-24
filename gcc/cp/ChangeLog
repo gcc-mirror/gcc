@@ -1,3 +1,8 @@
+2016-11-24  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/78493
+	* parser.c (cp_parser_range_for): Use safe_push instead of quick_push.
+
 2016-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77907

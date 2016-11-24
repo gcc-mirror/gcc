@@ -11503,8 +11503,8 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 	      for (unsigned int i = 0; i < decomp_cnt; i++, d = DECL_CHAIN (d))
 		{
 		  tree name = DECL_NAME (d);
-		  names.quick_push (name);
-		  bindings.quick_push (IDENTIFIER_BINDING (name));
+		  names.safe_push (name);
+		  bindings.safe_push (IDENTIFIER_BINDING (name));
 		  IDENTIFIER_BINDING (name)
 		    = IDENTIFIER_BINDING (name)->previous;
 		}
@@ -11513,8 +11513,8 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
       if (names.is_empty ())
 	{
 	  tree name = DECL_NAME (range_decl);
-	  names.quick_push (name);
-	  bindings.quick_push (IDENTIFIER_BINDING (name));
+	  names.safe_push (name);
+	  bindings.safe_push (IDENTIFIER_BINDING (name));
 	  IDENTIFIER_BINDING (name) = IDENTIFIER_BINDING (name)->previous;
 	}
     }
