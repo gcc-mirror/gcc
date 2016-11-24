@@ -1713,6 +1713,11 @@ sparc_option_override (void)
      pessimizes for double floating-point registers.  */
   if (!global_options_set.x_flag_ira_share_save_slots)
     flag_ira_share_save_slots = 0;
+
+  /* Only enable REE by default in 64-bit mode where it helps to eliminate
+     redundant 32-to-64-bit extensions.  */
+  if (!global_options_set.x_flag_ree && TARGET_ARCH32)
+    flag_ree = 0;
 }
 
 /* Miscellaneous utilities.  */
