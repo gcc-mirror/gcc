@@ -1,3 +1,9 @@
+2016-11-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60853
+	* interface.c (gfc_compare_interfaces): Remove bad special case for
+	unlimited polymorphism. Refactor for loop.
+
 2016-11-25  Andre Vehreschild  <vehre@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
