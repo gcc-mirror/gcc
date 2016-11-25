@@ -570,6 +570,8 @@ extern HOST_WIDE_INT get_frame_size (void);
    return FALSE.  */
 extern bool frame_offset_overflow (HOST_WIDE_INT, tree);
 
+extern unsigned int spill_slot_alignment (machine_mode);
+
 extern rtx assign_stack_local_1 (machine_mode, HOST_WIDE_INT, int, int);
 extern rtx assign_stack_local (machine_mode, HOST_WIDE_INT, int);
 extern rtx assign_stack_temp_for_type (machine_mode, HOST_WIDE_INT, tree);
