@@ -1957,6 +1957,7 @@ struct symbolic_number {
   tree base_addr;
   tree offset;
   HOST_WIDE_INT bytepos;
+  tree src;
   tree alias_set;
   tree vuse;
   unsigned HOST_WIDE_INT range;
@@ -2061,6 +2062,7 @@ init_symbolic_number (struct symbolic_number *n, tree src)
     return false;
 
   n->base_addr = n->offset = n->alias_set = n->vuse = NULL_TREE;
+  n->src = src;
 
   /* Set up the symbolic number N by setting each byte to a value between 1 and
      the byte size of rhs1.  The highest order byte is set to n->size and the
@@ -2185,6 +2187,7 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
       uint64_t inc;
       HOST_WIDE_INT start_sub, end_sub, end1, end2, end;
       struct symbolic_number *toinc_n_ptr, *n_end;
+      basic_block bb1, bb2;
 
       if (!n1->base_addr || !n2->base_addr
 	  || !operand_equal_p (n1->base_addr, n2->base_addr, 0))
@@ -2198,14 +2201,19 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
 	{
 	  n_start = n1;
 	  start_sub = n2->bytepos - n1->bytepos;
-	  source_stmt = source_stmt1;
 	}
       else
 	{
 	  n_start = n2;
 	  start_sub = n1->bytepos - n2->bytepos;
-	  source_stmt = source_stmt2;
 	}
+
+      bb1 = gimple_bb (source_stmt1);
+      bb2 = gimple_bb (source_stmt2);
+      if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+	source_stmt = source_stmt1;
+      else
+	source_stmt = source_stmt2;
 
       /* Find the highest address at which a load is performed and
 	 compute related info.  */
@@ -2263,6 +2271,7 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
   n->vuse = n_start->vuse;
   n->base_addr = n_start->base_addr;
   n->offset = n_start->offset;
+  n->src = n_start->src;
   n->bytepos = n_start->bytepos;
   n->type = n_start->type;
   size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
@@ -2512,7 +2521,7 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
   uint64_t cmpxchg = CMPXCHG;
   uint64_t cmpnop = CMPNOP;
 
-  gimple *source_stmt;
+  gimple *ins_stmt;
   int limit;
 
   /* The last parameter determines the depth search limit.  It usually
@@ -2522,9 +2531,9 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
      in libgcc, and for initial shift/and operation of the src operand.  */
   limit = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
   limit += 1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit);
-  source_stmt = find_bswap_or_nop_1 (stmt, n, limit);
+  ins_stmt = find_bswap_or_nop_1 (stmt, n, limit);
 
-  if (!source_stmt)
+  if (!ins_stmt)
     return NULL;
 
   /* Find real size of result (highest non-zero byte).  */
@@ -2576,7 +2585,7 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
     return NULL;
 
   n->range *= BITS_PER_UNIT;
-  return source_stmt;
+  return ins_stmt;
 }
 
 namespace {
@@ -2625,7 +2634,7 @@ public:
    changing of basic block.  */
 
 static bool
-bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
+bswap_replace (gimple *cur_stmt, gimple *ins_stmt, tree fndecl,
 	       tree bswap_type, tree load_type, struct symbolic_number *n,
 	       bool bswap)
 {
@@ -2634,25 +2643,31 @@ bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
   gimple *bswap_stmt;
 
   gsi = gsi_for_stmt (cur_stmt);
-  src = gimple_assign_rhs1 (src_stmt);
+  src = n->src;
   tgt = gimple_assign_lhs (cur_stmt);
 
   /* Need to load the value from memory first.  */
   if (n->base_addr)
     {
-      gimple_stmt_iterator gsi_ins = gsi_for_stmt (src_stmt);
+      gimple_stmt_iterator gsi_ins = gsi_for_stmt (ins_stmt);
       tree addr_expr, addr_tmp, val_expr, val_tmp;
       tree load_offset_ptr, aligned_load_type;
       gimple *addr_stmt, *load_stmt;
       unsigned align;
       HOST_WIDE_INT load_offset = 0;
+      basic_block ins_bb, cur_bb;
+
+      ins_bb = gimple_bb (ins_stmt);
+      cur_bb = gimple_bb (cur_stmt);
+      if (!dominated_by_p (CDI_DOMINATORS, cur_bb, ins_bb))
+	return false;
 
       align = get_object_alignment (src);
 
       /* Move cur_stmt just before  one of the load of the original
 	 to ensure it has the same VUSE.  See PR61517 for what could
 	 go wrong.  */
-      if (gimple_bb (cur_stmt) != gimple_bb (src_stmt))
+      if (gimple_bb (cur_stmt) != gimple_bb (ins_stmt))
 	reset_flow_sensitive_info (gimple_assign_lhs (cur_stmt));
       gsi_move_before (&gsi, &gsi_ins);
       gsi = gsi_for_stmt (cur_stmt);
@@ -2827,6 +2842,7 @@ pass_optimize_bswap::execute (function *fun)
 
   memset (&nop_stats, 0, sizeof (nop_stats));
   memset (&bswap_stats, 0, sizeof (bswap_stats));
+  calculate_dominance_info (CDI_DOMINATORS);
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -2838,7 +2854,7 @@ pass_optimize_bswap::execute (function *fun)
 	 variant wouldn't be detected.  */
       for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
         {
-	  gimple *src_stmt, *cur_stmt = gsi_stmt (gsi);
+	  gimple *ins_stmt, *cur_stmt = gsi_stmt (gsi);
 	  tree fndecl = NULL_TREE, bswap_type = NULL_TREE, load_type;
 	  enum tree_code code;
 	  struct symbolic_number n;
@@ -2871,9 +2887,9 @@ pass_optimize_bswap::execute (function *fun)
 	      continue;
 	    }
 
-	  src_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap);
+	  ins_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap);
 
-	  if (!src_stmt)
+	  if (!ins_stmt)
 	    continue;
 
 	  switch (n.range)
@@ -2907,7 +2923,7 @@ pass_optimize_bswap::execute (function *fun)
 	  if (bswap && !fndecl && n.range != 16)
 	    continue;
 
-	  if (bswap_replace (cur_stmt, src_stmt, fndecl, bswap_type, load_type,
+	  if (bswap_replace (cur_stmt, ins_stmt, fndecl, bswap_type, load_type,
 			     &n, bswap))
 	    changed = true;
 	}

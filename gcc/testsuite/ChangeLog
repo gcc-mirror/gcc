@@ -1,3 +1,8 @@
+2016-11-25  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/77673
+	* gcc.dg/pr77673.c: New test.
+
 2016-11-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/70965
