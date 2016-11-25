@@ -8921,8 +8921,8 @@ which are generally profitable only with profile feedback available:
 @option{-ftree-vectorize}, and @option{ftree-loop-distribute-patterns}.
 
 Before you can use this option, you must first generate profiling information.
-@xref{Optimize Options}, for information about the @option{-fprofile-generate}
-option.
+@xref{Instrumentation Options}, for information about the
+@option{-fprofile-generate} option.
 
 By default, GCC emits an error message if the feedback profiles do not
 match the source code.  This error can be turned into a warning by using
