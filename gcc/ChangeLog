@@ -139,7 +139,6 @@
 	PR target/67822
 	* config/nvptx/mkoffload.c (main): Allow -fopenmp.
 
->>>>>>> .r242853
 2016-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* common/config/sparc/sparc-common.c (sparc_option_optimization_table):
