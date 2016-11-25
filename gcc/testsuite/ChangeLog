@@ -1,3 +1,9 @@
+2016-11-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/78086
+	* g++.dg/gcov/pr16855.C: Clean up the test case.
+	* g++.dg/gcov/pr16855-priority.C: New test.
+
 2016-11-25  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/78515
