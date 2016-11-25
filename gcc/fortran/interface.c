@@ -1728,11 +1728,9 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
        This is also done when comparing interfaces for dummy procedures and in
        procedure pointer assignments.  */
 
-    for (;;)
+    for (; f1 || f2; f1 = f1->next, f2 = f2->next)
       {
 	/* Check existence.  */
-	if (f1 == NULL && f2 == NULL)
-	  break;
 	if (f1 == NULL || f2 == NULL)
 	  {
 	    if (errmsg != NULL)
@@ -1740,9 +1738,6 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 			"arguments", name2);
 	    return 0;
 	  }
-
-	if (UNLIMITED_POLY (f1->sym))
-	  goto next;
 
 	if (strict_flag)
 	  {
@@ -1772,9 +1767,6 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 		return 0;
 	      }
 	  }
-next:
-	f1 = f1->next;
-	f2 = f2->next;
       }
 
   return 1;
