@@ -51039,17 +51039,26 @@ ix86_excess_precision (enum excess_precision_type type)
       case EXCESS_PRECISION_TYPE_IMPLICIT:
 	/* Otherwise, the excess precision we want when we are
 	   in a standards compliant mode, and the implicit precision we
-	   provide can be identical.  */
+	   provide would be identical were it not for the unpredictable
+	   cases.  */
 	if (!TARGET_80387)
 	  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
-	else if (TARGET_MIX_SSE_I387)
-	  return FLT_EVAL_METHOD_UNPREDICTABLE;
-	else if (!TARGET_SSE_MATH)
-	  return FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE;
-	else if (TARGET_SSE2)
-	  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
-	else
-	  return FLT_EVAL_METHOD_UNPREDICTABLE;
+	else if (!TARGET_MIX_SSE_I387)
+	  {
+	    if (!TARGET_SSE_MATH)
+	      return FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE;
+	    else if (TARGET_SSE2)
+	      return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+	  }
+
+	/* If we are in standards compliant mode, but we know we will
+	   calculate in unpredictable precision, return
+	   FLT_EVAL_METHOD_FLOAT.  There is no reason to introduce explicit
+	   excess precision if the target can't guarantee it will honor
+	   it.  */
+	return (type == EXCESS_PRECISION_TYPE_STANDARD
+		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT
+		: FLT_EVAL_METHOD_UNPREDICTABLE);
       default:
 	gcc_unreachable ();
     }
