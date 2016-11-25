@@ -246,6 +246,14 @@ frame_offset_overflow (HOST_WIDE_INT offset, tree func)
   return FALSE;
 }
 
+/* Return the minimum spill slot alignment for a register of mode MODE.  */
+
+unsigned int
+spill_slot_alignment (machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return STACK_SLOT_ALIGNMENT (NULL_TREE, mode, GET_MODE_ALIGNMENT (mode));
+}
+
 /* Return stack slot alignment in bits for TYPE and MODE.  */
 
 static unsigned int

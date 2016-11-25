@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* function.h (spill_slot_alignment): Declare.
+	* function.c (spill_slot_alignment): New function.
+	* lra-spills.c (slot): Add align and size fields.
+	(assign_mem_slot): Use them in the call to assign_stack_local.
+	(add_pseudo_to_slot): Update the fields.
+	(assign_stack_slot_num_and_sort_pseudos): Initialise the fields.
+
+2016-11-25  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* stor-layout.c (layout_type): Allow the caller to set the mode of
 	a float type.  Only choose one here if the mode is still VOIDmode.
 	* tree.c (build_common_tree_nodes): Set the type mode of decimal
