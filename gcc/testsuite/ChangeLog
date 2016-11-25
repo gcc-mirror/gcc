@@ -1,3 +1,10 @@
+2016-11-25  Jakub Jelinek  <jakub@redhat.com>
+	    Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR gcov-profile/78467
+	* gcc.dg/tree-prof/comp-goto-1.c (insn_t): Change offset to
+	signed int.
+
 2016-11-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/tree-ssa/tailcall-7-run.c: New test.
