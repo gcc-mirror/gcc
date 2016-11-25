@@ -1,5 +1,10 @@
 2016-11-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/78438
+	PR rtl-optimization/78477
+	* gcc.c-torture/execute/pr78438.c: New test.
+	* gcc.c-torture/execute/pr78477.c: New test.
+
 	PR rtl-optimization/78526
 	* gcc.dg/pr78526.c: New test.
 
