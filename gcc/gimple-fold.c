@@ -4414,7 +4414,8 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	if (ret && TREE_CODE (ret) == SSA_NAME && valueize)
 	  {
 	    tree val = valueize (ret);
-	    if (val && val != ret)
+	    if (val && val != ret
+		&& may_propagate_copy (ret, val))
 	      {
 		gimple_return_set_retval (ret_stmt, val);
 		changed = true;
