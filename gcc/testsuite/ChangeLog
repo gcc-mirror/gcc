@@ -1,3 +1,12 @@
+2016-11-25  Bin Cheng  <bin.cheng@arm.com>
+
+	PR middle-end/78507
+	PR middle-end/78510
+	PR middle-end/78517
+	* g++.dg/torture/pr78507.C: New test.
+	* gcc.dg/torture/pr78510.c: New test.
+	* gcc.dg/torture/pr78517.c: New test.
+
 2016-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78343
