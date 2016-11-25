@@ -1,5 +1,9 @@
 2016-11-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/78526
+	* simplify-rtx.c (simplify_immed_subreg): Don't use wi::extract_uhwi
+	beyond val's precision.
+
 	PR rtl-optimization/78527
 	* combine.c (make_compound_operation_int): Ignore LSHIFTRT with
 	out of bounds shift count.

@@ -1,3 +1,8 @@
+2016-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/78526
+	* gcc.dg/pr78526.c: New test.
+
 2016-11-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/77541

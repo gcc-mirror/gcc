@@ -5740,8 +5740,9 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
 	  {
 	    rtx_mode_t val = rtx_mode_t (el, innermode);
 	    unsigned char extend = wi::sign_mask (val);
+	    int prec = wi::get_precision (val);
 
-	    for (i = 0; i < elem_bitsize; i += value_bit)
+	    for (i = 0; i < prec && i < elem_bitsize; i += value_bit)
 	      *vp++ = wi::extract_uhwi (val, i, value_bit);
 	    for (; i < elem_bitsize; i += value_bit)
 	      *vp++ = extend;
