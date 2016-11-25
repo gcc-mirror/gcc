@@ -4028,15 +4028,20 @@ extract_range_basic (value_range *vr, gimple *stmt)
 	  }
 	  return;
 	case CFN_BUILT_IN_STRLEN:
-	  {
-	    tree type = TREE_TYPE (gimple_call_lhs (stmt));
-	    tree max = vrp_val_max (ptrdiff_type_node);
-	    wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
-	    tree range_min = build_zero_cst (type); 
-	    tree range_max = wide_int_to_tree (type, wmax - 1);
-	    set_value_range (vr, VR_RANGE, range_min, range_max, NULL);
-	  }
-	  return;
+	  if (tree lhs = gimple_call_lhs (stmt))
+	    if (ptrdiff_type_node
+		&& (TYPE_PRECISION (ptrdiff_type_node)
+		    == TYPE_PRECISION (TREE_TYPE (lhs))))
+	      {
+		tree type = TREE_TYPE (lhs);
+		tree max = vrp_val_max (ptrdiff_type_node);
+		wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
+		tree range_min = build_zero_cst (type);
+		tree range_max = wide_int_to_tree (type, wmax - 1);
+		set_value_range (vr, VR_RANGE, range_min, range_max, NULL);
+		return;
+	      }
+	  break;
 	default:
 	  break;
 	}

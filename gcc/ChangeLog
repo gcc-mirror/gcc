@@ -1,3 +1,10 @@
+2016-11-25  Jakub Jelinek  <jakub@redhat.com>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/78501
+	* tree-vrp.c (extract_range_basic): Check for ptrdiff_type_node to be
+	non null and it's precision matches precision of lhs's type.
+
 2016-11-24  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/78476
