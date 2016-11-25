@@ -8091,6 +8091,8 @@ make_compound_operation_int (machine_mode mode, rtx *x_ptr,
 	if (GET_CODE (inner) == LSHIFTRT
 	    && CONST_INT_P (XEXP (inner, 1))
 	    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (inner))
+	    && (UINTVAL (XEXP (inner, 1))
+		< GET_MODE_PRECISION (GET_MODE (inner)))
 	    && subreg_lowpart_p (x))
 	  {
 	    new_rtx = make_compound_operation (XEXP (inner, 0), next_code);
