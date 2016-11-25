@@ -1,3 +1,10 @@
+2016-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78396
+	* tree-vectorizer.c (vectorize_loops): When the if-converted
+	body contains masked loads or stores do not attempt to
+	basic-block-vectorize it.
+
 2016-11-25  Richard Sandiford  <richard.sandiford@arm.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
