@@ -16792,8 +16792,8 @@ rs6000_init_builtins (void)
     {
       ibm128_float_type_node = make_node (REAL_TYPE);
       TYPE_PRECISION (ibm128_float_type_node) = 128;
-      layout_type (ibm128_float_type_node);
       SET_TYPE_MODE (ibm128_float_type_node, IFmode);
+      layout_type (ibm128_float_type_node);
 
       lang_hooks.types.register_builtin_type (ibm128_float_type_node,
 					      "__ibm128");
@@ -16812,8 +16812,8 @@ rs6000_init_builtins (void)
     {
       ieee128_float_type_node = make_node (REAL_TYPE);
       TYPE_PRECISION (ibm128_float_type_node) = 128;
-      layout_type (ieee128_float_type_node);
       SET_TYPE_MODE (ieee128_float_type_node, KFmode);
+      layout_type (ieee128_float_type_node);
 
       /* If we are not exporting the __float128/_Float128 keywords, we need a
 	 keyword to get the types created.  Use __ieee128 as the dummy

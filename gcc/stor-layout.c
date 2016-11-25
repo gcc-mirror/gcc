@@ -2135,8 +2135,11 @@ layout_type (tree type)
       break;
 
     case REAL_TYPE:
-      SET_TYPE_MODE (type,
-		     mode_for_size (TYPE_PRECISION (type), MODE_FLOAT, 0));
+      /* Allow the caller to choose the type mode, which is how decimal
+	 floats are distinguished from binary ones.  */
+      if (TYPE_MODE (type) == VOIDmode)
+	SET_TYPE_MODE (type,
+		       mode_for_size (TYPE_PRECISION (type), MODE_FLOAT, 0));
       TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;

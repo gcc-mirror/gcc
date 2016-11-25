@@ -1,4 +1,14 @@
 2016-11-25  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* stor-layout.c (layout_type): Allow the caller to set the mode of
+	a float type.  Only choose one here if the mode is still VOIDmode.
+	* tree.c (build_common_tree_nodes): Set the type mode of decimal
+	floats before calling layout_type.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Likewise.
+
+2016-11-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-tailcall.c (find_tail_calls): Allow calls to reference
 	local variables if all references are known to be direct.
