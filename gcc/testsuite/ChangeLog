@@ -1,3 +1,8 @@
+2016-11-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/70965
+	* g++.dg/pr70965.C: New test.
+
 2016-11-25  Jakub Jelinek  <jakub@redhat.com>
 	    Andreas Schwab  <schwab@linux-m68k.org>
 

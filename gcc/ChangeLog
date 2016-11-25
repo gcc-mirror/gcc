@@ -1,3 +1,8 @@
+2016-11-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/70965
+	* passes.def (pass_build_ssa_passes): Add pass_rebuild_cgraph_edges.
+
 2016-11-24  James Greenahlgh  <james.greenhalgh@arm.com>
 
 	PR target/78509
