@@ -1056,8 +1056,10 @@ build_init_ctor (tree gcov_info_type)
   stmt = build_call_expr (init_fn, 1, stmt);
   append_to_statement_list (stmt, &ctor);
 
-  /* Generate a constructor to run it (with priority 99).  */
-  cgraph_build_static_cdtor ('I', ctor, DEFAULT_INIT_PRIORITY - 1);
+  /* Generate a constructor to run it.  */
+  int priority = SUPPORTS_INIT_PRIORITY
+    ? MAX_RESERVED_INIT_PRIORITY: DEFAULT_INIT_PRIORITY;
+  cgraph_build_static_cdtor ('I', ctor, priority);
 }
 
 /* Generate the destructor function to call __gcov_exit.  */
@@ -1078,8 +1080,11 @@ build_gcov_exit_decl (void)
   tree stmt = build_call_expr (init_fn, 0);
   append_to_statement_list (stmt, &dtor);
 
-  /* Generate a destructor to run it (with priority 99).  */
-  cgraph_build_static_cdtor ('D', dtor, MAX_RESERVED_INIT_PRIORITY - 1);
+  /* Generate a destructor to run it.  */
+  int priority = SUPPORTS_INIT_PRIORITY
+    ? MAX_RESERVED_INIT_PRIORITY: DEFAULT_INIT_PRIORITY;
+
+  cgraph_build_static_cdtor ('D', dtor, priority);
 }
 
 /* Create the gcov_info types and object.  Generate the constructor

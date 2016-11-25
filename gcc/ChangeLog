@@ -1,3 +1,10 @@
+2016-11-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/78086
+	* coverage.c (build_init_ctor): Don't use priority {cd}tors if
+	not supported by a target.  Set priority to 100 if possible.
+	(build_gcov_exit_decl): Likewise.
+
 2016-11-25  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/78515
