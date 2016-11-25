@@ -1,3 +1,8 @@
+2016-11-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsic.texi: Fix ptrdiff_t typo in ISO_C_BINDING constants
+	table.
+
 2016-11-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60853

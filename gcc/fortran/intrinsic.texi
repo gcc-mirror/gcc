@@ -14697,7 +14697,7 @@ Furthermore, if @code{__float128} is supported in C, the named constants
 @item @code{INTEGER}@tab @code{C_INT_FAST128_T} @tab @code{int_fast128_t}                 @tab Ext.
 @item @code{INTEGER}@tab @code{C_INTMAX_T}      @tab @code{intmax_t}
 @item @code{INTEGER}@tab @code{C_INTPTR_T}      @tab @code{intptr_t}
-@item @code{INTEGER}@tab @code{C_PTRDIFF_T}     @tab @code{intptr_t}                      @tab TS 29113
+@item @code{INTEGER}@tab @code{C_PTRDIFF_T}     @tab @code{ptrdiff_t}                     @tab TS 29113
 @item @code{REAL}   @tab @code{C_FLOAT}         @tab @code{float}
 @item @code{REAL}   @tab @code{C_DOUBLE}        @tab @code{double}
 @item @code{REAL}   @tab @code{C_LONG_DOUBLE}   @tab @code{long double}
