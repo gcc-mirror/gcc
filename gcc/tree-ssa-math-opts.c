@@ -1931,25 +1931,32 @@ make_pass_cse_sincos (gcc::context *ctxt)
   return new pass_cse_sincos (ctxt);
 }
 
-/* A symbolic number is used to detect byte permutation and selection
-   patterns.  Therefore the field N contains an artificial number
-   consisting of octet sized markers:
+/* A symbolic number structure is used to detect byte permutation and selection
+   patterns of a source.  To achieve that, its field N contains an artificial
+   number consisting of BITS_PER_MARKER sized markers tracking where does each
+   byte come from in the source:
 
-   0    - target byte has the value 0
-   FF   - target byte has an unknown value (eg. due to sign extension)
-   1..size - marker value is the target byte index minus one.
+   0	   - target byte has the value 0
+   FF	   - target byte has an unknown value (eg. due to sign extension)
+   1..size - marker value is the byte index in the source (0 for lsb).
 
    To detect permutations on memory sources (arrays and structures), a symbolic
-   number is also associated a base address (the array or structure the load is
-   made from), an offset from the base address and a range which gives the
-   difference between the highest and lowest accessed memory location to make
-   such a symbolic number. The range is thus different from size which reflects
-   the size of the type of current expression. Note that for non memory source,
-   range holds the same value as size.
+   number is also associated:
+   - a base address BASE_ADDR and an OFFSET giving the address of the source;
+   - a range which gives the difference between the highest and lowest accessed
+     memory location to make such a symbolic number;
+   - the address SRC of the source element of lowest address as a convenience
+     to easily get BASE_ADDR + offset + lowest bytepos.
 
-   For instance, for an array char a[], (short) a[0] | (short) a[3] would have
-   a size of 2 but a range of 4 while (short) a[0] | ((short) a[0] << 1) would
-   still have a size of 2 but this time a range of 1.  */
+   Note 1: the range is different from size as size reflects the size of the
+   type of the current expression.  For instance, for an array char a[],
+   (short) a[0] | (short) a[3] would have a size of 2 but a range of 4 while
+   (short) a[0] | ((short) a[0] << 1) would still have a size of 2 but this
+   time a range of 1.
+
+   Note 2: for non-memory sources, range holds the same value as size.
+
+   Note 3: SRC points to the SSA_NAME in case of non-memory source.  */
 
 struct symbolic_number {
   uint64_t n;
