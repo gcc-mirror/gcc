@@ -1,3 +1,8 @@
+2016-11-25  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (fold_stmt_1): Check may_propagate_copy
+	before valueizing return stmts.
+
 2016-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78343
