@@ -1,5 +1,9 @@
 2016-11-25  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* tree-ssa-math-opts.c (struct symbolic_number): Improve comment.
+
+2016-11-25  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	PR tree-optimization/77673
 	* tree-ssa-math-opts.c (struct symbolic_number): Add new src field.
 	(init_symbolic_number): Initialize src field from src parameter.
