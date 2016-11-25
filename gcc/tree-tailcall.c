@@ -504,12 +504,14 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	tail_recursion = true;
     }
 
-  /* Make sure the tail invocation of this function does not refer
-     to local variables.  */
+  /* Make sure the tail invocation of this function does not indirectly
+     refer to local variables.  (Passing variables directly by value
+     is OK.)  */
   FOR_EACH_LOCAL_DECL (cfun, idx, var)
     {
       if (TREE_CODE (var) != PARM_DECL
 	  && auto_var_in_fn_p (var, cfun->decl)
+	  && may_be_aliased (var)
 	  && (ref_maybe_used_by_stmt_p (call, var)
 	      || call_may_clobber_ref_p (call, var)))
 	return;

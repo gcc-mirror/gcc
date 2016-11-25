@@ -1,3 +1,7 @@
+2016-11-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/tree-ssa/tailcall-8.c: New test.
+
 2016-11-25  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/pr64277.c: Use __INT32_TYPE__ for targets
