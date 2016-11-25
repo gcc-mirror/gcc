@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-O2 -Wno-psabi" } */
 
 #define MAGIC 0x0706050403020100

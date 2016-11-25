@@ -1,3 +1,8 @@
+2016-11-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/77541
+	* gcc.target/i386/pr77541.c: Change target to int128.
+
 2016-11-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60853
