@@ -1,3 +1,8 @@
+2016-11-25  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/pr64277.c: Use __INT32_TYPE__ for targets
+	with sizeof(int) < 4. 
+
 2016-11-24  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/78476
