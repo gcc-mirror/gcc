@@ -1,3 +1,12 @@
+2016-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78343
+	* gcc.dg/tree-ssa/sccp-2.c: New testcase.
+	* gcc.dg/autopar/uns-outer-6.c: Adjust.
+	* gcc.dg/tree-ssa/20030808-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040305-1.c: Likewise.
+	* gcc.dg/vect/pr38529.c: Likewise.
+
 2016-11-25  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/77673
