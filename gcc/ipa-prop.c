@@ -1177,29 +1177,37 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 
   if (index >= 0)
     {
-      tree op2 = gimple_assign_rhs2 (stmt);
-
-      if (op2)
+      switch (gimple_assign_rhs_class (stmt))
 	{
-	  if (!is_gimple_ip_invariant (op2)
-	      || (TREE_CODE_CLASS (gimple_expr_code (stmt)) != tcc_comparison
-		  && !useless_type_conversion_p (TREE_TYPE (name),
-						 TREE_TYPE (op1))))
-	    return;
+	case GIMPLE_BINARY_RHS:
+	  {
+	    tree op2 = gimple_assign_rhs2 (stmt);
+	    if (!is_gimple_ip_invariant (op2)
+		|| ((TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
+		     != tcc_comparison)
+		    && !useless_type_conversion_p (TREE_TYPE (name),
+						   TREE_TYPE (op1))))
+	      return;
 
-	  ipa_set_jf_arith_pass_through (jfunc, index, op2,
-					 gimple_assign_rhs_code (stmt));
+	    ipa_set_jf_arith_pass_through (jfunc, index, op2,
+					   gimple_assign_rhs_code (stmt));
+	    break;
+	  }
+	case GIMPLE_SINGLE_RHS:
+	  {
+	    bool agg_p = parm_ref_data_pass_through_p (fbi, index, call,
+						       tc_ssa);
+	    ipa_set_jf_simple_pass_through (jfunc, index, agg_p);
+	    break;
+	  }
+	case GIMPLE_UNARY_RHS:
+	  if (is_gimple_assign (stmt2)
+	      && gimple_assign_rhs_class (stmt2) == GIMPLE_UNARY_RHS
+	      && ! CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt2)))
+	    ipa_set_jf_unary_pass_through (jfunc, index,
+					   gimple_assign_rhs_code (stmt2));
+	default:;
 	}
-      else if (gimple_assign_single_p (stmt))
-	{
-	  bool agg_p = parm_ref_data_pass_through_p (fbi, index, call, tc_ssa);
-	  ipa_set_jf_simple_pass_through (jfunc, index, agg_p);
-	}
-      else if (is_gimple_assign (stmt2)
-	       && (gimple_expr_code (stmt2) != NOP_EXPR)
-	       && (TREE_CODE_CLASS (gimple_expr_code (stmt2)) == tcc_unary))
-	ipa_set_jf_unary_pass_through (jfunc, index,
-				       gimple_assign_rhs_code (stmt2));
       return;
     }
 

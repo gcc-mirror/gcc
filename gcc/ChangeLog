@@ -1,3 +1,10 @@
+2016-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/78515
+	* ipa-prop.c (compute_complex_assign_jump_func): Properly identify
+	unary, binary and single RHSs.
+	* tree.def (BIT_INSERT_EXPR): Adjust tree code name.
+
 2016-11-25  Bin Cheng  <bin.cheng@arm.com>
 
 	PR middle-end/78507

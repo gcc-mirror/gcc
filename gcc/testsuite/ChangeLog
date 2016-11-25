@@ -1,3 +1,8 @@
+2016-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/78515
+	* gcc.dg/torture/pr78515.c: New testcase.
+
 2016-11-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78293
