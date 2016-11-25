@@ -570,14 +570,23 @@ vectorize_epilogue:
 		&& ! loop->inner)
 	      {
 		basic_block bb = loop->header;
+		bool has_mask_load_store = false;
 		for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
 		     !gsi_end_p (gsi); gsi_next (&gsi))
 		  {
 		    gimple *stmt = gsi_stmt (gsi);
+		    if (is_gimple_call (stmt)
+			&& gimple_call_internal_p (stmt)
+			&& (gimple_call_internal_fn (stmt) == IFN_MASK_LOAD
+			    || gimple_call_internal_fn (stmt) == IFN_MASK_STORE))
+		      {
+			has_mask_load_store = true;
+			break;
+		      }
 		    gimple_set_uid (stmt, -1);
 		    gimple_set_visited (stmt, false);
 		  }
-		if (vect_slp_bb (bb))
+		if (! has_mask_load_store && vect_slp_bb (bb))
 		  {
 		    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 				     "basic block vectorized\n");
