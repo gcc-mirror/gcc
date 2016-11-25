@@ -400,7 +400,6 @@ find_obviously_necessary_stmts (bool aggressive)
   if (aggressive)
     {
       struct loop *loop;
-      scev_initialize ();
       if (mark_irreducible_loops ())
 	FOR_EACH_BB_FN (bb, cfun)
 	  {
@@ -423,7 +422,6 @@ find_obviously_necessary_stmts (bool aggressive)
 	      fprintf (dump_file, "can not prove finiteness of loop %i\n", loop->num);
 	    mark_control_dependent_edges_necessary (loop->latch, false);
 	  }
-      scev_finalize ();
     }
 }
 
@@ -1567,9 +1565,13 @@ perform_tree_ssa_dce (bool aggressive)
   /* Preheaders are needed for SCEV to work.
      Simple lateches and recorded exits improve chances that loop will
      proved to be finite in testcases such as in loop-15.c and loop-24.c  */
-  if (aggressive)
-    loop_optimizer_init (LOOPS_NORMAL
-			 | LOOPS_HAVE_RECORDED_EXITS);
+  bool in_loop_pipeline = scev_initialized_p ();
+  if (aggressive && ! in_loop_pipeline)
+    {
+      scev_initialize ();
+      loop_optimizer_init (LOOPS_NORMAL
+			   | LOOPS_HAVE_RECORDED_EXITS);
+    }
 
   tree_dce_init (aggressive);
 
@@ -1588,8 +1590,11 @@ perform_tree_ssa_dce (bool aggressive)
 
   find_obviously_necessary_stmts (aggressive);
 
-  if (aggressive)
-    loop_optimizer_finalize ();
+  if (aggressive && ! in_loop_pipeline)
+    {
+      loop_optimizer_finalize ();
+      scev_finalize ();
+    }
 
   longest_chain = 0;
   total_chain = 0;
@@ -1623,7 +1628,7 @@ perform_tree_ssa_dce (bool aggressive)
   if (something_changed)
     {
       free_numbers_of_iterations_estimates (cfun);
-      if (scev_initialized_p ())
+      if (in_loop_pipeline)
 	scev_reset ();
       return TODO_update_ssa | TODO_cleanup_cfg;
     }

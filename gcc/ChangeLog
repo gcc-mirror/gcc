@@ -1,3 +1,12 @@
+2016-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78343
+	* passes.def: Add CD-DCE pass after loop splitting.
+	* tree-ssa-dce.c (find_obviously_necessary_stmts): Move
+	SCEV init/finalize ...
+	(perform_tree_ssa_dce): ... here.  Deal with being
+	executed inside the loop pipeline in aggressive mode.
+
 2016-11-25  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* tree-ssa-math-opts.c (struct symbolic_number): Improve comment.
