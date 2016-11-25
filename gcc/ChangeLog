@@ -1,3 +1,15 @@
+2016-11-24  James Greenahlgh  <james.greenhalgh@arm.com>
+
+	PR target/78509
+	* config/i386/i386.c (i386_excess_precision): Do not return
+	FLT_EVAL_METHOD_UNPREDICTABLE when "type" is
+	EXCESS_PRECISION_TYPE_STANDARD.
+	* target.def (excess_precision): Document that targets should
+	not return FLT_EVAL_METHOD_UNPREDICTABLE when "type" is
+	EXCESS_PRECISION_TYPE_STANDARD or EXCESS_PRECISION_TYPE_FAST.
+	Fix typo in first sentence.
+	* doc/tm.texi: Regenerate.
+
 2016-11-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78396
