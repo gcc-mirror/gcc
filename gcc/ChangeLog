@@ -1,3 +1,8 @@
+2016-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/67205
+	* config/mips/mips.c (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Define.
+
 2016-11-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/70965
