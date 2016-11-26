@@ -1271,8 +1271,6 @@ lto_init (void)
   gcc_assert (TYPE_MAIN_VARIANT (const_tm_ptr_type_node)
 	      == const_ptr_type_node);
 
-  ptrdiff_type_node = integer_type_node;
-
   lto_build_c_type_nodes ();
   gcc_assert (va_list_type_node);
 

@@ -4475,8 +4475,6 @@ c_common_nodes_and_builtins (void)
 
   default_function_type
     = build_varargs_function_type_list (integer_type_node, NULL_TREE);
-  ptrdiff_type_node
-    = TREE_TYPE (identifier_global_value (get_identifier (PTRDIFF_TYPE)));
   unsigned_ptrdiff_type_node = c_common_unsigned_type (ptrdiff_type_node);
 
   lang_hooks.decls.pushdecl
