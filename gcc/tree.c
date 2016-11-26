@@ -6006,7 +6006,6 @@ free_lang_data (void)
   free_lang_data_in_cgraph ();
 
   /* Create gimple variants for common types.  */
-  ptrdiff_type_node = integer_type_node;
   fileptr_type_node = ptr_type_node;
   const_tm_ptr_type_node = const_ptr_type_node;
 
@@ -10311,6 +10310,30 @@ build_common_tree_nodes (bool signed_char)
 	      }
 	  }
       if (size_type_node == NULL_TREE)
+	gcc_unreachable ();
+    }
+
+  /* Define what type to use for ptrdiff_t.  */
+  if (strcmp (PTRDIFF_TYPE, "int") == 0)
+    ptrdiff_type_node = integer_type_node;
+  else if (strcmp (PTRDIFF_TYPE, "long int") == 0)
+    ptrdiff_type_node = long_integer_type_node;
+  else if (strcmp (PTRDIFF_TYPE, "long long int") == 0)
+    ptrdiff_type_node = long_long_integer_type_node;
+  else if (strcmp (PTRDIFF_TYPE, "short int") == 0)
+    ptrdiff_type_node = short_integer_type_node;
+  else
+    {
+      ptrdiff_type_node = NULL_TREE;
+      for (int i = 0; i < NUM_INT_N_ENTS; i++)
+	if (int_n_enabled_p[i])
+	  {
+	    char name[50];
+	    sprintf (name, "__int%d", int_n_data[i].bitsize);
+	    if (strcmp (name, PTRDIFF_TYPE) == 0)
+	      ptrdiff_type_node = int_n_trees[i].signed_type;
+	  }
+      if (ptrdiff_type_node == NULL_TREE)
 	gcc_unreachable ();
     }
 

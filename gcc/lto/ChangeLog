@@ -1,3 +1,7 @@
+2016-11-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* lto-lang.c (lto_init): Remove initialization of ptrdiff_type_node.
+
 2016-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR lto/78472
