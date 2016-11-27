@@ -11886,7 +11886,7 @@ ix86_code_end (void)
 #if TARGET_MACHO
       if (TARGET_MACHO)
 	{
-	  switch_to_section (darwin_sections[text_coal_section]);
+	  switch_to_section (darwin_sections[picbase_thunk_section]);
 	  fputs ("\t.weak_definition\t", asm_out_file);
 	  assemble_name (asm_out_file, name);
 	  fputs ("\n\t.private_extern\t", asm_out_file);

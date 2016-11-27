@@ -940,6 +940,11 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
    fall-back default.  */
 #define DEF_MIN_OSX_VERSION "10.5"
 
+/* Later versions of ld64 support coalescing weak code/data without requiring
+   that they be placed in specially identified sections.  This is the earliest
+   _tested_ version known to support this so far.  */
+#define MIN_LD64_NO_COAL_SECTS "236.4"
+
 #ifndef LD64_VERSION
 #define LD64_VERSION "85.2"
 #else

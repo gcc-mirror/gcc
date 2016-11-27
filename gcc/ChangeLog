@@ -1,6 +1,22 @@
 2016-11-27  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/71767
+	* config/darwin-sections.def (picbase_thunk_section): New.
+	* config/darwin.c (darwin_init_sections): Set up picbase thunk
+	section. (darwin_rodata_section, darwin_objc2_section,
+	machopic_select_section, darwin_asm_declare_constant_name,
+	darwin_emit_weak_or_comdat, darwin_function_section): Don’t use
+	coalesced with newer linkers.
+	(darwin_override_options): Decide on usage of coalesed sections
+	on the basis of the target linker version.
+	* config/darwin.h (MIN_LD64_NO_COAL_SECTS): New.
+	* config/darwin.opt  (mtarget-linker): New.
+	* config/i386/i386.c (ix86_code_end): Do not force the thunks into
+	a coalesced section, instead use a thunks section.
+
+2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/71767
 	* configure.ac (with-ld64): New var, set for Darwin, set on
 	detection of ld64, gcc_cv_ld64_export_dynamic: New, New test.
 	* config/darwin.h: Use LD64_HAS_DYNAMIC export. DEF_LD64: New,
