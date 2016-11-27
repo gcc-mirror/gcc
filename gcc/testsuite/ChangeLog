@@ -1,3 +1,9 @@
+2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/57438
+	* gcc.dg/pr57438-1.c: New Test.
+	* gcc.dg/pr57438-2.c: New Test.
+
 2016-11-27  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Iain Sandoe  <iain@codesourcery.com>
 

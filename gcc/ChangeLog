@@ -1,5 +1,17 @@
 2016-11-27  Iain Sandoe  <iain@codesourcery.com>
 
+	PR target/57438
+	* config/i386/i386.c (ix86_code_end): Note that we emitted code
+	where the function might otherwise appear empty for picbase thunks.
+	(ix86_output_function_epilogue): If we find a zero-sized function
+	assume that reaching it is UB and trap.  If we find a trailing label
+	append a nop.
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): If we
+	find a zero-sized function assume that reaching it is UB and trap.
+	If we find a trailing label, append a nop.
+
+2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+
 	PR target/71767
 	* config/darwin-sections.def (picbase_thunk_section): New.
 	* config/darwin.c (darwin_init_sections): Set up picbase thunk
