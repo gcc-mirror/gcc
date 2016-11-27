@@ -1,6 +1,19 @@
 2016-11-27  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/71767
+	* configure.ac (with-ld64): New var, set for Darwin, set on
+	detection of ld64, gcc_cv_ld64_export_dynamic: New, New test.
+	* config/darwin.h: Use LD64_HAS_DYNAMIC export. DEF_LD64: New,
+	define.
+	* config/darwin10.h(DEF_LD64): Update for this target version.
+	* config/darwin12.h(LINK_GCC_C_SEQUENCE_SPEC): Remove rdynamic
+	test.  (DEF_LD64): Update for this target version.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
+2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/71767
 	* config/darwin.c (imachopic_indirection_name): Make data
 	section indirections linker-visible.
 	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): Make local
