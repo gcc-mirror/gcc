@@ -1,3 +1,10 @@
+2016-11-26  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/78441
+	* include/std/variant: Propagate cv qualifications to types returned
+	by variant_alternative.
+	* testsuite/20_util/variant/compile.cc: Tests.
+
 2016-11-23  Felix Morgner  <felix.morgner@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
