@@ -1,3 +1,14 @@
+2016-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78474
+	* module.c (gfc_match_submodule): If there is more than one
+	colon, it is a syntax error.
+
+	PR fortran/78331
+	* module.c (gfc_use_module): If an smod file does not exist it
+	is either because the module does not have a module procedure
+	interface or there is an error in the module.
+
 2016-11-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsic.texi: Fix ptrdiff_t typo in ISO_C_BINDING constants
