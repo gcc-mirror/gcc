@@ -716,9 +716,16 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
   { "weak_import", 0, 0, true, false, false,				     \
     darwin_handle_weak_import_attribute, false }
 
+/* Make local constant labels linker-visible, so that if one follows a
+   weak_global constant, ld64 will be able to separate the atoms.  */
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM))
+  do {							\
+    if (strcmp ("LC", PREFIX) == 0)			\
+      sprintf (LABEL, "*%s%ld", "lC", (long)(NUM));	\
+    else						\
+      sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
+  } while (0)
 
 #undef TARGET_ASM_MARK_DECL_PRESERVED
 #define TARGET_ASM_MARK_DECL_PRESERVED darwin_mark_decl_preserved

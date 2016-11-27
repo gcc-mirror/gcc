@@ -1,3 +1,11 @@
+2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/71767
+	* config/darwin.c (imachopic_indirection_name): Make data
+	section indirections linker-visible.
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): Make local
+	constant labels linker-visible.
+
 2016-11-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* tree.c (build_common_tree_nodes): Initialize ptrdiff_type_node.
