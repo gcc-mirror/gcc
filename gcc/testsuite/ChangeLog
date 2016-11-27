@@ -1,3 +1,11 @@
+2016-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78474
+	* gfortran.dg/submodule_22.f08: New test.
+
+	PR fortran/78331
+	* gfortran.dg/submodule_21.f08: New test.
+
 2016-11-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* g++.dg/torture/pr65655.C: Use dg-timeout-factor 2.
