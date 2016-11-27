@@ -330,3 +330,12 @@ void test_adl()
    variant<X> v8{allocator_arg, a, in_place_type<X>, il, x};
    variant<X> v9{allocator_arg, a, in_place_type<X>, 1};
 }
+
+void test_variant_alternative() {
+  static_assert(is_same_v<variant_alternative_t<0, variant<int, string>>, int>, "");
+  static_assert(is_same_v<variant_alternative_t<1, variant<int, string>>, string>, "");
+
+  static_assert(is_same_v<variant_alternative_t<0, const variant<int>>, const int>, "");
+  static_assert(is_same_v<variant_alternative_t<0, volatile variant<int>>, volatile int>, "");
+  static_assert(is_same_v<variant_alternative_t<0, const volatile variant<int>>, const volatile int>, "");
+}
