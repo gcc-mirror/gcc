@@ -474,7 +474,31 @@ indirection_hasher::equal (machopic_indirection *s, const char *k)
 }
 
 /* Return the name of the non-lazy pointer (if STUB_P is false) or
-   stub (if STUB_B is true) corresponding to the given name.  */
+   stub (if STUB_B is true) corresponding to the given name.
+
+  If we have a situation like:
+
+global_weak_symbol:
+  ....
+Lnon_weak_local:
+  ....
+
+  ld64 will be unable to split this into two atoms (because the "L" makes
+  the second symbol 'invisible').  This means that legitimate direct accesses
+  to the second symbol will appear to be non-allowed direct accesses to an
+  atom of type weak, global which are not allowed.
+
+  To avoid this, we make the indirections have a leading 'l' (lower-case L)
+  which has a special meaning: linker can see this and use it to determine
+  atoms, but it is not placed into the final symbol table.
+
+  The implementation here is somewhat heavy-handed in that it will also mark
+  indirections to the __IMPORT,__pointers section the same way which is
+  really unnecessary, since ld64 _can_ split those into atoms as they are
+  fixed size.  FIXME: determine if this is a penalty worth extra code to
+  fix.
+
+*/
 
 const char *
 machopic_indirection_name (rtx sym_ref, bool stub_p)
@@ -485,6 +509,7 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
   machopic_indirection *p;
   bool needs_quotes;
   const char *suffix;
+  char L_or_l = 'L';
   const char *prefix = user_label_prefix;
   const char *quote = "";
   tree id;
@@ -519,9 +544,13 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
   if (stub_p)
     suffix = STUB_SUFFIX;
   else
-    suffix = NON_LAZY_POINTER_SUFFIX;
+    {
+      suffix = NON_LAZY_POINTER_SUFFIX;
+      /* Let the linker see this.  */
+      L_or_l = 'l';
+    }
 
-  buffer = XALLOCAVEC (char, strlen ("&L")
+  buffer = XALLOCAVEC (char, 2  /* strlen ("&L") or ("&l") */
 		   + strlen (prefix)
 		   + namelen
 		   + strlen (suffix)
@@ -529,7 +558,7 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
 		   + 1 /* '\0' */);
 
   /* Construct the name of the non-lazy pointer or stub.  */
-  sprintf (buffer, "&%sL%s%s%s%s", quote, prefix, name, suffix, quote);
+  sprintf (buffer, "&%s%c%s%s%s%s", quote, L_or_l, prefix, name, suffix, quote);
 
   if (!machopic_indirections)
     machopic_indirections = hash_table<indirection_hasher>::create_ggc (37);
