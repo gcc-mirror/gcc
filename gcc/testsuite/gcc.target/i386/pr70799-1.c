@@ -3,7 +3,7 @@
 /* { dg-options "-O2 -march=slm -mno-stackrealign" } */
 /* { dg-final { scan-assembler "pxor" } } */
 /* { dg-final { scan-assembler "pcmpeqd" } } */
-/* { dg-final { scan-assembler "movdqa\[ \\t\]+.?LC0" } } */
+/* { dg-final { scan-assembler "movdqa\[ \\t\]+.?\[lL\]C0" } } */
 
 long long a, b, c;
 
