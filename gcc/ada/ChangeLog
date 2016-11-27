@@ -1,5 +1,11 @@
 2016-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/78524
+	* gcc-interface/utils.c (max_size) <tcc_reference>: Add missing
+	conversion to original type in the PLACEHOLDER_EXPR case.
+
+2016-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/78531
 	* namet.h (Max_Line_Length): Define.
 	(struct Bounded_String): Declare Chars with exact size.

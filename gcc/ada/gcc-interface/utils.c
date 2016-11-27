@@ -3548,7 +3548,9 @@ max_size (tree exp, bool max_p)
 	{
 	  tree val_type = TREE_TYPE (TREE_OPERAND (exp, 1));
 	  tree val = (max_p ? TYPE_MAX_VALUE (type) : TYPE_MIN_VALUE (type));
-	  return max_size (convert (get_base_type (val_type), val), true);
+	  return
+	    convert (type,
+		     max_size (convert (get_base_type (val_type), val), true));
 	}
 
       return exp;
