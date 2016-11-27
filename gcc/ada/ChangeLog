@@ -1,3 +1,12 @@
+2016-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/78531
+	* namet.h (Max_Line_Length): Define.
+	(struct Bounded_String): Declare Chars with exact size.
+	(namet__get_decoded_name_string): Delete.
+	(Get_Decoded_Name_String): Likewise.
+	(casing__set_all_upper_case): Likewise.
+
 2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc-interface/Make-lang.in (check-acats): Fix detection
