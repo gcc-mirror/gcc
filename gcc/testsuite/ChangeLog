@@ -1,4 +1,13 @@
 2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/67710
+	*  gcc.dg/darwin-minversion-1.c: Update min version check.
+	*  gcc.dg/darwin-minversion-2.c: Likewise.
+	*  gcc.dg/darwin-minversion-3.c: Likewise.
+
+2016-11-27  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/57438
 	* gcc.dg/pr57438-1.c: New Test.

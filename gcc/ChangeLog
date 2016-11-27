@@ -1,4 +1,17 @@
 2016-11-27  Iain Sandoe  <iain@codesourcery.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/67710
+	* config.in: Regenerate
+	* config/darwin-driver.c (darwin_driver_init): Emit a version string
+	for the assembler.
+	* config/darwin.h(ASM_MMACOSX_VERSION_MIN_SPEC): New, new tests.
+	* config/darwin.opt(asm_macosx_version_min): New.
+	* config/i386/darwin.h: Handle ASM_MMACOSX_VERSION_MIN_SPEC.
+	* configure: Regenerate
+	* configure.ac: Check for mmacosx-version-min handling.
+
+2016-11-27  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/57438
 	* config/i386/i386.c (ix86_code_end): Note that we emitted code
