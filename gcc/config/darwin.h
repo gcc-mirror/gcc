@@ -399,10 +399,27 @@ extern GTY(()) int darwin_ms_struct;
    %:version-compare(>< 10.6 10.8 mmacosx-version-min= -lcrt1.10.6.o)	\
    %{fgnu-tm: -lcrttms.o}"
 
-/* Default Darwin ASM_SPEC, very simple.  */
+#ifdef HAVE_AS_MMACOSX_VERSION_MIN_OPTION
+/* Emit macosx version (but only major).  */
+#define ASM_MMACOSX_VERSION_MIN_SPEC \
+  " %{asm_macosx_version_min=*: -mmacosx-version-min=%*} %<asm_macosx_version_min=*"
+#else
+#define ASM_MMACOSX_VERSION_MIN_SPEC " %<asm_macosx_version_min=*"
+#endif
+
+/* When we detect that we're cctools or llvm as, we need to insert the right
+   additional options.  */
+#if HAVE_GNU_AS
+#define ASM_OPTIONS ""
+#else
+#define ASM_OPTIONS "%{v} %{w:-W} %{I*}"
+#endif
+
+/* Default Darwin ASM_SPEC, very simple. */
 #define ASM_SPEC "-arch %(darwin_arch) \
+  " ASM_OPTIONS " \
   %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
-  %{static}"
+  %{static}" ASM_MMACOSX_VERSION_MIN_SPEC
 
 /* Default ASM_DEBUG_SPEC.  Darwin's as cannot currently produce dwarf
    debugging data.  */
