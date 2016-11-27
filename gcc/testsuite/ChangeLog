@@ -1,3 +1,14 @@
+2016-11-27  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/71767
+	* g++.dg/abi/key2.C: Adjust for changed Darwin sections and
+	linker-visible symbols.
+	* g++.dg/torture/darwin-cfstring-3.C: Likewise.
+	* gcc.dg/const-uniq-1.c: Likewise.
+	* gcc.dg/torture/darwin-cfstring-3.c: Likewise.
+	* gcc.target/i386/pr70799-1.c: Likewise.
+
 2016-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/78438
