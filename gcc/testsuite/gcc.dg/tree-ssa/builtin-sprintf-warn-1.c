@@ -233,6 +233,8 @@ void test_sprintf_chk_s_const (void)
   T ( 1, "%*s",  1, s0);        /* { dg-warning "nul past the end" } */
   T (-1, "%*s",  1, s0);        /* No warning for unknown destination size.  */
 
+  T (1, "%.s",     "");
+  T (1, "%.s",     "123");
   T (1, "%.0s",    "123");
   T (1, "%.0s",    s3);
   T (1, "%.*s", 0, "123");
@@ -450,6 +452,24 @@ void test_sprintf_chk_hh_const (void)
   T (4, "%hhi %hhi", 10,  1);   /* { dg-warning "nul past the end" } */
   T (4, "%hhi %hhi", 11, 12);   /* { dg-warning "into a region" } */
 
+  /*  As a special case, a precision of zero with an argument of zero
+      results in zero bytes (unless modified by width).  */
+  T (1, "%.0hhd",   0);
+  T (1, "%+.0hhd",  0);
+  T (1, "%-.0hhd",  0);
+  T (1, "% .0hhd",  0);
+  T (1, "%0.0hhd",  0);         /* { dg-warning ".0. flag ignored with precision" } */
+  T (1, "%00.0hhd", 0);         /* { dg-warning "repeated .0. flag in format" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%-0.0hhd", 0);         /* { dg-warning ".0. flag ignored with .-. flag" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%.0hhi",   0);
+  T (1, "%.0hho",   0);
+  T (1, "%#.0hho",  0);
+  T (1, "%.0hhx",   0);
+  T (1, "%.0hhX",   0);
+  T (1, "%#.0hhX",  0);
+
   T (5, "%0*hhd %0*hhi", 0,  7, 0,   9);
   T (5, "%0*hhd %0*hhi", 1,  7, 1,   9);
   T (5, "%0*hhd %0*hhi", 1,  7, 2,   9);
@@ -546,14 +566,32 @@ void test_sprintf_chk_h_const (void)
   T (4, "%#hx",     0x100);     /* { dg-warning "into a region" } */
   T (4, "%#hx",        -1);     /* { dg-warning "into a region" } */
 
+  /*  As a special case, a precision of zero with an argument of zero
+      results in zero bytes (unless modified by width).  */
+  T (1, "%.0hd",        0);
+  T (1, "%+.0hd",       0);
+  T (1, "%-.0hd",       0);
+  T (1, "% .0hd",       0);
+  T (1, "%0.0hd",       0);         /* { dg-warning ".0. flag ignored with precision" } */
+  T (1, "%00.0hd",      0);         /* { dg-warning "repeated .0. flag in format" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%-0.0hd",      0);         /* { dg-warning ".0. flag ignored with .-. flag" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%.0hi",        0);
+  T (1, "%.0ho",        0);
+  T (1, "%#.0ho",       0);
+  T (1, "%.0hx",        0);
+  T (1, "%.0hX",        0);
+  T (1, "%#.0hX",       0);
+
 #undef MAX
 #define MAX   65535
 
-  T (1, "%hhu",         0);     /* { dg-warning "nul past the end" } */
-  T (1, "%hhu",         1);     /* { dg-warning "nul past the end" } */
-  T (1, "%hhu",        -1);     /* { dg-warning "into a region" } */
-  T (1, "%hhu",       MAX);     /* { dg-warning "into a region" } */
-  T (1, "%hhu",  MAX +  1);     /* { dg-warning "nul past the end" } */
+  T (1, "%hu",          0);     /* { dg-warning "nul past the end" } */
+  T (1, "%hu",          1);     /* { dg-warning "nul past the end" } */
+  T (1, "%hu",         -1);     /* { dg-warning "into a region" } */
+  T (1, "%hu",        MAX);     /* { dg-warning "into a region" } */
+  T (1, "%hu",   MAX +  1);     /* { dg-warning "nul past the end" } */
 }
 
 /* Exercise the "%d", "%i", "%o", "%u", and "%x" directives with
@@ -610,6 +648,24 @@ void test_sprintf_chk_integer_const (void)
 
   T ( 8, "%8u",         1);        /* { dg-warning "nul past the end" } */
   T ( 9, "%8u",         1);
+
+  /*  As a special case, a precision of zero with an argument of zero
+      results in zero bytes (unless modified by width).  */
+  T (1, "%.0d",         0);
+  T (1, "%+.0d",        0);
+  T (1, "%-.0d",        0);
+  T (1, "% .0d",        0);
+  T (1, "%0.0d",        0);         /* { dg-warning ".0. flag ignored with precision" } */
+  T (1, "%00.0d",       0);         /* { dg-warning "repeated .0. flag in format" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%-0.0d",       0);         /* { dg-warning ".0. flag ignored with .-. flag" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%.0i",         0);
+  T (1, "%.0o",         0);
+  T (1, "%#.0o",        0);
+  T (1, "%.0x",         0);
+  T (1, "%.0X",         0);
+  T (1, "%#.0X",        0);
 
   T ( 7, "%1$i%2$i%3$i",     1, 23, 456);
   T ( 8, "%1$i%2$i%3$i%1$i", 1, 23, 456);
@@ -691,6 +747,24 @@ void test_sprintf_chk_j_const (void)
 
   T ( 8, "%8ju",     I (1));      /* { dg-warning "nul past the end" } */
   T ( 9, "%8ju",     I (1));
+
+  /*  As a special case, a precision of zero with an argument of zero
+      results in zero bytes (unless modified by width).  */
+  T (1, "%.0jd",     I (0));
+  T (1, "%+.0jd",    I (0));
+  T (1, "%-.0jd",    I (0));
+  T (1, "% .0jd",    I (0));
+  T (1, "%0.0jd",    I (0));         /* { dg-warning ".0. flag ignored with precision" } */
+  T (1, "%00.0jd",   I (0));         /* { dg-warning "repeated .0. flag in format" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%-0.0jd",   I (0));         /* { dg-warning ".0. flag ignored with .-. flag" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%.0ji",     I (0));
+  T (1, "%.0jo",     I (0));
+  T (1, "%#.0jo",    I (0));
+  T (1, "%.0jx",     I (0));
+  T (1, "%.0jX",     I (0));
+  T (1, "%#.0jX",    I (0));
 }
 
 /* Exercise the "%ld", "%li", "%lo", "%lu", and "%lx" directives
@@ -747,6 +821,24 @@ void test_sprintf_chk_l_const (void)
 
   T ( 8, "%8lu",     1L);         /* { dg-warning "nul past the end" } */
   T ( 9, "%8lu",     1L);
+
+  /*  As a special case, a precision of zero with an argument of zero
+      results in zero bytes (unless modified by width).  */
+  T (1, "%.0ld",     0L);
+  T (1, "%+.0ld",    0L);
+  T (1, "%-.0ld",    0L);
+  T (1, "% .0ld",    0L);
+  T (1, "%0.0ld",    0L);         /* { dg-warning ".0. flag ignored with precision" } */
+  T (1, "%00.0ld",   0L);         /* { dg-warning "repeated .0. flag in format" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%-0.0ld",   0L);         /* { dg-warning ".0. flag ignored with .-. flag" } */
+  /* { dg-warning ".0. flag ignored with precision" "" { target *-*-* } .-1 } */
+  T (1, "%.0li",     0L);
+  T (1, "%.0lo",     0L);
+  T (1, "%#.0lo",    0L);
+  T (1, "%.0lx",     0L);
+  T (1, "%.0lX",     0L);
+  T (1, "%#.0lX",    0L);
 }
 
 /* Exercise the "%lld", "%lli", "%llo", "%llu", and "%llx" directives
@@ -858,37 +950,56 @@ void test_sprintf_chk_z_const (void)
 
 void test_sprintf_chk_a_const (void)
 {
-  T (-1, "%a",  0.0);
-  T (-1, "%la", 0.0);
+  T (-1, "%a",         0.0);
+  T (-1, "%la",        0.0);
+  T (-1, "%.a",        0.0);
+  T (-1, "%.la",       0.0);
+  T (-1, "%123.a",     0.0);
+  T (-1, "%234.la",    0.0);
+  T (-1, "%.345a",     0.0);
+  T (-1, "%456.567la", 0.0);
 
   /* The least number of bytes on output is 6 for "0x0p+0".  When precision
      is missing the number of digits after the decimal point isn't fully
      specified by C (it seems like a defect).  */
-  T (0, "%a",   0.0);          /* { dg-warning "into a region" } */
-  T (0, "%la",  0.0);          /* { dg-warning "into a region" } */
-  T (1, "%a",   0.0);          /* { dg-warning "into a region" } */
-  T (2, "%a",   0.0);          /* { dg-warning "into a region" } */
-  T (3, "%a",   0.0);          /* { dg-warning "into a region" } */
-  T (4, "%a",   0.0);          /* { dg-warning "into a region" } */
-  T (5, "%a",   0.0);          /* { dg-warning "into a region" } */
-  T (6, "%a",   0.0);          /* { dg-warning "writing a terminating nul" } */
+  T (0, "%a",   0.0);         /* { dg-warning "into a region" } */
+  T (0, "%la",  0.0);         /* { dg-warning "into a region" } */
+  T (1, "%a",   0.0);         /* { dg-warning "into a region" } */
+  T (2, "%a",   0.0);         /* { dg-warning "into a region" } */
+  T (3, "%a",   0.0);         /* { dg-warning "into a region" } */
+  T (4, "%a",   0.0);         /* { dg-warning "into a region" } */
+  T (5, "%a",   0.0);         /* { dg-warning "into a region" } */
+  T (6, "%a",   0.0);         /* { dg-warning "writing a terminating nul" } */
   T (7, "%a",   0.0);
 
-  T (0, "%.0a",   0.0);          /* { dg-warning "into a region" } */
-  T (0, "%.0la",  0.0);          /* { dg-warning "into a region" } */
-  T (1, "%.0a",   0.0);          /* { dg-warning "into a region" } */
-  T (2, "%.0a",   0.0);          /* { dg-warning "into a region" } */
-  T (3, "%.0a",   0.0);          /* { dg-warning "into a region" } */
-  T (4, "%.0a",   0.0);          /* { dg-warning "into a region" } */
-  T (5, "%.0a",   0.0);          /* { dg-warning "into a region" } */
-  T (6, "%.0a",   0.0);          /* { dg-warning "writing a terminating nul" } */
+  T (0, "%.a",    0.0);       /* { dg-warning "into a region" } */
+  T (0, "%.0a",   0.0);       /* { dg-warning "into a region" } */
+  T (0, "%.0la",  0.0);       /* { dg-warning "into a region" } */
+  T (1, "%.0a",   0.0);       /* { dg-warning "into a region" } */
+  T (2, "%.0a",   0.0);       /* { dg-warning "into a region" } */
+  T (3, "%.0a",   0.0);       /* { dg-warning "into a region" } */
+  T (4, "%.0a",   0.0);       /* { dg-warning "into a region" } */
+  T (5, "%.0a",   0.0);       /* { dg-warning "into a region" } */
+  T (6, "%.0a",   0.0);       /* { dg-warning "writing a terminating nul" } */
+
+  T (7, "%6.a",   0.0);
+  T (7, "%7.a",   0.0);       /* { dg-warning "writing a terminating nul" } */
+  T (7, "%7.1a",  0.0);       /* { dg-warning "writing 8 bytes into a region of size 7" } */
+
+  T (7, "%.a",    0.0);
   T (7, "%.0a",   0.0);
 }
 
 void test_sprintf_chk_e_const (void)
 {
-  T (-1, "%E",   0.0);
-  T (-1, "%lE",  0.0);
+  T (-1, "%E",      0.0);
+  T (-1, "%lE",     0.0);
+  T (-1, "%.E",     0.0);
+  T (-1, "%.lE",    0.0);
+  T (-1, "%123.E",  0.0);
+  T (-1, "%234.lE", 0.0);
+  T (-1, "%.345E",  0.0);
+  T (-1, "%.456lE", 0.0);
 
   T ( 0, "%E",   0.0);          /* { dg-warning "into a region" } */
   T ( 0, "%e",   0.0);          /* { dg-warning "into a region" } */
@@ -910,8 +1021,10 @@ void test_sprintf_chk_e_const (void)
   T (16, "%.8e", -1.9e+104);    /* { dg-warning "nul past the end" } */
   T (17, "%.8e", -2.0e+105);    /* -2.00000000e+105 */
 
+  T ( 5, "%.e",  0.0);          /* { dg-warning "nul past the end" } */
   T ( 5, "%.0e", 0.0);          /* { dg-warning "nul past the end" } */
   T ( 5, "%.0e", 1.0);          /* { dg-warning "nul past the end" } */
+  T ( 6, "%.e",  1.0);
   T ( 6, "%.0e", 1.0);
 
   /* The actual output of the following directives depends on the rounding
@@ -938,13 +1051,26 @@ void test_sprintf_chk_e_const (void)
    the value one, and unknown strings are assumed to have a zero
    length.  */
 
-void test_sprintf_chk_s_nonconst (int i, const char *s)
+void test_sprintf_chk_s_nonconst (int w, int p, const char *s)
 {
   T (-1, "%s",   s);
   T ( 0, "%s",   s);            /* { dg-warning "nul past the end" } */
   T ( 1, "%s",   s);
   T ( 1, "%.0s", s);
   T ( 1, "%.1s", s);            /* { dg-warning "nul past the end" } */
+
+  /* The string argument is constant but the width and/or precision
+     is not.  */
+  T ( 1, "%*s",  w, "");
+  T ( 1, "%*s",  w, "1");       /* { dg-warning "nul past the end" } */
+  T ( 1, "%.*s", w, "");
+  T ( 1, "%.*s", w, "1");       /* { dg-warning "may write a terminating nul" } */
+  T ( 1, "%.*s", w, "123");     /* { dg-warning "writing between 0 and 3 bytes into a region of size 1" } */
+
+  T ( 1, "%*s", w, "123");      /* { dg-warning "writing 3 or more bytes into a region of size 1" } */
+  T ( 2, "%*s", w, "123");      /* { dg-warning "writing 3 or more bytes into a region of size 2" } */
+  T ( 3, "%*s", w, "123");      /* { dg-warning "writing a terminating nul past the end" } */
+  T ( 4, "%*s", w, "123");
 
   /* The following will definitely write past the end of the buffer,
      but since at level 1 the length of an unknown string argument
@@ -957,7 +1083,7 @@ void test_sprintf_chk_s_nonconst (int i, const char *s)
 /* Exercise the hh length modifier with all integer specifiers and
    a non-constant argument.  */
 
-void test_sprintf_chk_hh_nonconst (int a)
+void test_sprintf_chk_hh_nonconst (int w, int p, int a)
 {
   T (-1, "%hhd",        a);
 
@@ -999,11 +1125,48 @@ void test_sprintf_chk_hh_nonconst (int a)
   T (2, "%#hho",        a);     /* { dg-warning "nul past the end" } */
   T (2, "%#hhx",        a);     /* { dg-warning ".%#hhx. directive writing between 3 and . bytes into a region of size 2" } */
 
+  T (3, "%0hhd",        a);
+  T (3, "%1hhd",        a);
   T (3, "%2hhd",        a);
   T (3, "%2hhi",        a);
   T (3, "%2hho",        a);
   T (3, "%2hhu",        a);
   T (3, "%2hhx",        a);
+  T (3, "%2.hhx",       a);
+
+  T (3, "%3hhd",        a);     /* { dg-warning "nul past the end" } */
+  T (3, "%3hhi",        a);     /* { dg-warning "nul past the end" } */
+  T (3, "%3hho",        a);     /* { dg-warning "nul past the end" } */
+  T (3, "%3hhu",        a);     /* { dg-warning "nul past the end" } */
+  T (3, "%3hhx",        a);     /* { dg-warning "nul past the end" } */
+  T (3, "%3.hhx",       a);     /* { dg-warning "nul past the end" } */
+
+  T (4, "%5hhd",        a);     /* { dg-warning "into a region" } */
+  T (4, "%6hhi",        a);     /* { dg-warning "into a region" } */
+  T (4, "%7hho",        a);     /* { dg-warning "into a region" } */
+  T (4, "%8hhu",        a);     /* { dg-warning "into a region" } */
+  T (4, "%9hhx",        a);     /* { dg-warning "into a region" } */
+
+  T (3, "%.hhd",        a);
+  T (3, "%.0hhd",       a);
+  T (3, "%.1hhd",       a);
+  T (3, "%.2hhd",       a);
+  T (3, "%.2hhi",       a);
+  T (3, "%.2hho",       a);
+  T (3, "%.2hhu",       a);
+  T (3, "%.2hhx",       a);
+
+  T (3, "%.3hhd",       a);     /* { dg-warning "nul past the end" } */
+  T (3, "%.3hhi",       a);     /* { dg-warning "nul past the end" } */
+  T (3, "%.3hho",       a);     /* { dg-warning "nul past the end" } */
+  T (3, "%.3hhu",       a);     /* { dg-warning "nul past the end" } */
+  T (3, "%.3hhx",       a);     /* { dg-warning "nul past the end" } */
+
+  T (4, "%.5hhd",       a);     /* { dg-warning "into a region" } */
+  T (4, "%.6hhi",       a);     /* { dg-warning "into a region" } */
+  T (4, "%.7hho",       a);     /* { dg-warning "into a region" } */
+  T (4, "%.8hhu",       a);     /* { dg-warning "into a region" } */
+  T (4, "%.9hhx",       a);     /* { dg-warning "into a region" } */
 
   /* Exercise cases where the type of the actual argument (whose value
      and range are unknown) constrain the size of the output and so
@@ -1012,6 +1175,55 @@ void test_sprintf_chk_hh_nonconst (int a)
   T (2, "%hhd", (UChar)a);
   T (2, "%hhi", (UChar)a);
   T (2, "%-hhi", (UChar)a);
+
+  /* Exercise cases where the argument is known but width isn't.  */
+  T (0, "%*hhi", w,   0);       /* { dg-warning "into a region" } */
+  T (1, "%*hhi", w,   0);       /* { dg-warning "nul past the end" } */
+  T (2, "%*hhi", w,   0);
+  T (2, "%*hhi", w,  12);       /* { dg-warning "nul past the end" } */
+  T (2, "%*hhi", w, 123);       /* { dg-warning "into a region" } */
+
+  /* The argument is known but precision isn't.  When the argument
+     is zero only the first call can be diagnosed since a zero
+     precision would result in no bytes on output.  */
+  T (0, "%.*hhi", p,   0);      /* { dg-warning "nul past the end" } */
+  T (1, "%.*hhi", p,   0);
+  T (2, "%.*hhi", p,   0);
+  T (2, "%.*hhi", p,  12);      /* { dg-warning "nul past the end" } */
+  T (2, "%.*hhi", p, 123);      /* { dg-warning "into a region" } */
+
+  /* The argument is known but neither width nor precision is.  */
+  T (0, "%*.*hhi", w, p,   0);  /* { dg-warning "nul past the end" } */
+  T (1, "%*.*hhi", w, p,   0);
+  T (2, "%*.*hhi", w, p,   0);
+  T (2, "%*.*hhi", w, p,  12);  /* { dg-warning "nul past the end" } */
+  T (2, "%*.*hhi", w, p, 123);  /* { dg-warning "into a region" } */
+
+  /* The argument and width are known but precision isn't.  */
+  T (0, "%1.*hhi",  p,   0);    /* { dg-warning "into a region" } */
+  T (0, "%-1.*hhi", p,   0);    /* { dg-warning "into a region" } */
+  T (1, "%1.*hhi",  p,   0);    /* { dg-warning "nul past the end" } */
+  T (2, "%1.*hhi",  p,   0);
+  T (2, "%2.*hhi",  p,   0);    /* { dg-warning "nul past the end" } */
+  T (2, "%1.*hhi",  p,  12);    /* { dg-warning "nul past the end" } */
+  T (2, "%2.*hhi",  p,  12);    /* { dg-warning "nul past the end" } */
+
+  T (2, "%1.*hhi",  p, 123);    /* { dg-warning "into a region" } */
+  T (2, "%2.*hhi",  p, 123);    /* { dg-warning "into a region" } */
+  T (2, "%3.*hhi",  p, 123);    /* { dg-warning "into a region" } */
+
+  /* The argument and precision are known but width isn't.  */
+  T (0, "%*.1hhi",  w,   0);    /* { dg-warning "into a region" } */
+  T (1, "%*.1hhi",  w,   0);    /* { dg-warning "nul past the end" } */
+  T (2, "%*.1hhi",  w,   0);
+  T (2, "%*.2hhi",  w,   0);    /* { dg-warning "nul past the end" } */
+  T (2, "%*.1hhi",  w,  12);    /* { dg-warning "nul past the end" } */
+  T (2, "%*.2hhi",  w,  12);    /* { dg-warning "nul past the end" } */
+  T (2, "%*.3hhi",  w,  12);    /* { dg-warning "into a region" } */
+
+  T (2, "%*.1hhi",  w, 123);    /* { dg-warning "into a region" } */
+  T (2, "%*.2hhi",  w, 123);    /* { dg-warning "into a region" } */
+  T (2, "%*.3hhi",  w, 123);    /* { dg-warning "into a region" } */
 }
 
 /* Exercise the h length modifier with all integer specifiers and
@@ -1063,7 +1275,7 @@ void test_sprintf_chk_h_nonconst (int a)
 /* Exercise all integer specifiers with no modifier and a non-constant
    argument.  */
 
-void test_sprintf_chk_int_nonconst (int a)
+void test_sprintf_chk_int_nonconst (int w, int p, int a)
 {
   T (-1, "%d",          a);
 
@@ -1104,12 +1316,22 @@ void test_sprintf_chk_int_nonconst (int a)
   T (3, "%2o",          a);
   T (3, "%2u",          a);
   T (3, "%2x",          a);
+
+  T (1, "%.*d",      p, a);
 }
 
-void test_sprintf_chk_e_nonconst (double d)
+void test_sprintf_chk_e_nonconst (int w, int p, double d)
 {
-  T (-1, "%E",          d);
-  T (-1, "%lE",         d);
+  T (-1, "%E",           d);
+  T (-1, "%lE",          d);
+  T (-1, "%.E",          d);
+  T (-1, "%.lE",         d);
+  T (-1, "%*E",    w,    d);
+  T (-1, "%*lE",   w,    d);
+  T (-1, "%.*E",      p, d);
+  T (-1, "%.*lE",     p, d);
+  T (-1, "%*.*E",  w, p, d);
+  T (-1, "%*.*lE", w, p, d);
 
   T ( 0, "%E",          d);           /* { dg-warning "writing between 12 and 14 bytes into a region of size 0" } */
   T ( 0, "%e",          d);           /* { dg-warning "into a region" } */
@@ -1123,9 +1345,9 @@ void test_sprintf_chk_e_nonconst (double d)
   T (14, "%E",          d);
   T (14, "%e",          d);
 
-  T  (0, "%+E",         d);           /* { dg-warning "writing between 13 and 14 bytes into a region of size 0" } */
-  T  (0, "%-e",         d);           /* { dg-warning "writing between 12 and 14 bytes into a region of size 0" } */
-  T  (0, "% E",         d);           /* { dg-warning "writing between 13 and 14 bytes into a region of size 0" } */
+  T ( 0, "%+E",         d);           /* { dg-warning "writing between 13 and 14 bytes into a region of size 0" } */
+  T ( 0, "%-e",         d);           /* { dg-warning "writing between 12 and 14 bytes into a region of size 0" } */
+  T ( 0, "% E",         d);           /* { dg-warning "writing between 13 and 14 bytes into a region of size 0" } */
 
   /* The range of output of "%.0e" is between 5 and 7 bytes (not counting
      the terminating NUL.  */
@@ -1136,6 +1358,9 @@ void test_sprintf_chk_e_nonconst (double d)
      the terminating NUL.  */
   T ( 7, "%.1e",        d);           /* { dg-warning "writing a terminating nul past the end" } */
   T ( 8, "%.1e",        d);
+
+  T ( 0, "%*e",      0, d);           /* { dg-warning "writing between 12 and 14 bytes into a region of size 0" } */
+  T ( 0, "%*e",      w, d);           /* { dg-warning "writing 12 or more bytes into a region of size 0" } */
 }
 
 void test_sprintf_chk_f_nonconst (double d)
@@ -1204,7 +1429,6 @@ void test_vsprintf_chk_c (__builtin_va_list va)
   /* Here in the best case each argument will format as single character,
      causing the terminating NUL to be written past the end.  */
   T (3, "%lc%c%c");
-
 }
 
 void test_vsprintf_chk_int (__builtin_va_list va)
@@ -1254,9 +1478,11 @@ void test_vsprintf_chk_int (__builtin_va_list va)
 #define T(size, fmt, ...)						\
   __builtin_snprintf (buffer (size), objsize (size), fmt, __VA_ARGS__)
 
-void test_snprintf_c_const (void)
+void test_snprintf_c_const (char *d)
 {
-  T (-1, "%c",    0);            /* { dg-warning "specified destination size \[0-9\]+ too large" } */
+  T (-1, "%c",    0);            /* { dg-warning "specified destination size \[0-9\]+ is too large" } */
+
+  __builtin_snprintf (d, INT_MAX, "%c", 0);
 
   /* Verify the full text of the diagnostic for just the distinct messages
      and use abbreviations in subsequent test cases.  */
@@ -1306,7 +1532,7 @@ void test_snprintf_chk_c_const (void)
      the function by __builtin_object_size) is diagnosed.  */
   __builtin___snprintf_chk (buffer, 3, 0, 2, " ");   /* { dg-warning "always overflow|specified size 3 exceeds the size 2 of the destination" } */
 
-  T (-1, "%c",    0);           /* { dg-warning "specified destination size \[^ \]* too large" } */
+  T (-1, "%c",    0);           /* { dg-warning "specified destination size \[^ \]* is too large" } */
 
   T (0, "%c",     0);
   T (0, "%c%c",   0, 0);
@@ -1417,7 +1643,7 @@ void test_vsprintf_int (__builtin_va_list va)
 
 void test_vsnprintf_s (__builtin_va_list va)
 {
-  T (-1, "%s");             /* { dg-warning "specified destination size \[^ \]* too large" } */
+  T (-1, "%s");             /* { dg-warning "specified destination size \[^ \]* is too large" } */
 
   T (0, "%s");
   T (1, "%s");
@@ -1442,7 +1668,7 @@ void test_vsnprintf_chk_s (__builtin_va_list va)
      the function by __builtin_object_size) is diagnosed.  */
   __builtin___vsnprintf_chk (buffer, 123, 0, 122, "%-s", va);   /* { dg-warning "always overflow|specified size 123 exceeds the size 122 of the destination object" } */
 
-  __builtin___vsnprintf_chk (buffer, __SIZE_MAX__, 0, 2, "%-s", va);   /* { dg-warning "always overflow|destination size .\[0-9\]+. too large" } */
+  __builtin___vsnprintf_chk (buffer, __SIZE_MAX__, 0, 2, "%-s", va);   /* { dg-warning "always overflow|destination size .\[0-9\]+. is too large" } */
 
   T (0, "%s");
   T (1, "%s");

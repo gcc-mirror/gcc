@@ -44,6 +44,26 @@ void test_arg_int (int i, int n)
 
   for (i = -n; i != n; ++i)
     T (8, "%08x", i);
+
+  /*  As a special case, a precision of zero with an argument of zero
+      results in zero bytes (unless modified by width).  */
+  T (0, "%.0d", ival (0));
+  T (0, "%.0i", ival (0));
+  T (0, "%.0o", ival (0));
+  T (0, "%.0u", ival (0));
+  T (0, "%.0x", ival (0));
+
+  T (0, "%.*d", 0, ival (0));
+  T (0, "%.*i", 0, ival (0));
+  T (0, "%.*o", 0, ival (0));
+  T (0, "%.*u", 0, ival (0));
+  T (0, "%.*x", 0, ival (0));
+
+  T (1, "%1.0d", ival (0));
+  T (1, "%1.0i", ival (0));
+  T (1, "%1.0o", ival (0));
+  T (1, "%1.0u", ival (0));
+  T (1, "%1.0x", ival (0));
 }
 
 void test_arg_string (const char *s)
