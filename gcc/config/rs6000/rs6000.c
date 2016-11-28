@@ -6214,7 +6214,9 @@ vspltis_constant (rtx op, unsigned step, unsigned copies)
       bitsize /= 2;
       small_val = splat_val >> bitsize;
       mask >>= bitsize;
-      if (splat_val != ((small_val << bitsize) | (small_val & mask)))
+      if (splat_val != ((HOST_WIDE_INT)
+          ((unsigned HOST_WIDE_INT) small_val << bitsize)
+          | (small_val & mask)))
 	return false;
       splat_val = small_val;
     }
