@@ -1,6 +1,7 @@
 // PR c++/77907
 // { dg-do run { target c++11 } }
-// { dg-options "-O2" }
+// { dg-options "-O2 -save-temps" }
+// { dg-final { scan-assembler-not "static_initialization" } }
 
 struct A {
   int foo () { return 1; }

@@ -1,3 +1,8 @@
+2016-11-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77907
+	* constexpr.c (cxx_eval_constant_expression): Use cp_fold_convert.
+
 2016-11-24  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/78493

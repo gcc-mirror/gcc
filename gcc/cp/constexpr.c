@@ -4226,7 +4226,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  {
 	    if (same_type_ignoring_top_level_qualifiers_p (type,
 							   TREE_TYPE (op)))
-	      STRIP_NOPS (t);
+	      return cp_fold_convert (type, op);
 	    else
 	      {
 		if (!ctx->quiet)
