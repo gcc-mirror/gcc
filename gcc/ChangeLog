@@ -1,5 +1,11 @@
 2016-11-28  Richard Biener  <rguenther@suse.de>
 
+	* tree-vrp.c (vrp_visit_assignment_or_call): Handle
+	simplifications to SSA names via extract_range_from_ssa_name
+	if allowed.
+
+2016-11-28  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/78542
 	* tree-ssa-ccp.c (evaluate_stmt): Only valueize simplification
 	if allowed.
