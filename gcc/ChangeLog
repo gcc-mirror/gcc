@@ -1,3 +1,6 @@
+2016-11-28  Tamar Christina  <tamar.christina@arm.com>
+	* config/arm/arm_neon.h (vget_lane_p64): New.
+
 2016-11-28  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/71767
