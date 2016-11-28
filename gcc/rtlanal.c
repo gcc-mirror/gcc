@@ -5237,7 +5237,7 @@ insn_rtx_cost (rtx pat, bool speed)
   else
     return 0;
 
-  cost = set_rtx_cost (set, speed);
+  cost = set_src_cost (SET_SRC (set), GET_MODE (SET_DEST (set)), speed);
   return cost > 0 ? cost : COSTS_N_INSNS (1);
 }
 
