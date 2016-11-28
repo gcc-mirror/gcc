@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cddce2 -fdump-tree-forwprop1-details" } */
+/* { dg-options "-O2 -fdump-tree-cddce3 -fdump-tree-forwprop1-details" } */
   
 int abarney[2];
 int afred[1];
