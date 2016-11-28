@@ -1,3 +1,8 @@
+2016-11-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/bmi-andn-1a.c (dg-final): Update scan string.
+	* gcc.target/i386/bmi-andn-2a.c (dg-final): Ditto.
+
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77591

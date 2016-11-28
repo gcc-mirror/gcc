@@ -1,3 +1,40 @@
+2016-11-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (UNSPEC_KMASKOP): New.
+	(UNSPEC_KMOV): Remove.
+	(kmovw): Expand to plain HImode move.
+	(k<any_logic:code><mode>): Rename from *k<logic><mode>. Use
+	register_operand predicates.  Tag pattern with UNSPEC_KMASKOP.
+	Remove corresponding clobber-removing splitter.
+	(*anddi_1): Remove mask register alternatives.
+	(*andsi_1): Ditto.
+	(*andhi_1): Ditto.
+	(*andqi_1): Ditto.
+	(*<any_or:code><mode>_1): Ditto.
+	(*<any_or:code>qi_1): Ditto.
+	(kandn<mode>): Use SWI1248_AVX512BW mode iterator.  Remove
+	general register alternatives.  Tag pattern with UNSPEC_KMASKOP.
+	Remove corresponding splitter to operation with general registers.
+	(*andn<SWI38:mode>): Rename from *bmi_andn_<mode>.
+	(*andn<SWI12:mode>): New pattern.
+	(*kxnor<mode>): Remove general register alternatives.  Tag pattern
+	with UNSPEC_KMASKOP.  Remove corresponding splitter to operation
+	with general registers.
+	(knot<mode>): New insn pattern.
+	(*one_cmpl<mode>2_1): Remove mask register alternatives.
+	(one_cmplqi2_1): Ditto.
+	(*k<any_lshift:code><mode>): Rename from *k<mshift><mode>3.
+	Tag pattern with UNSPEC_KMASKOP. Add mode attribute.
+	* config/i386/predicates.md (mask_reg_operand): Remove predicate.
+	* config/i386/sse.md (vec_unpacks_hi_hi): Update pattern
+	to generate kmaskop shift.
+	(vec_unpacks_hi_<mode>): Ditto.
+	* config/i386/i386-builtin.def (__builtin_ia32_kandhi):
+	Use CODE_FOR_kandhi.
+	(__builtin_ia32_knothi): Use CODE_FOR_knothi.
+	(__builtin_ia32_korhi): Use CODE_FOR_kiorhi.
+	(__builtin_ia32_kxorhi): Use CODE_FOR_kxorhi.
+
 2016-11-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_visit_assignment_or_call): Handle
@@ -124,8 +161,7 @@
 
 	PR lto/78211
 	* ipa-icf.h (sem_item_optimizer): Add m_classes_vec member.
-	* ipa-icf.c (sem_item_optimizer::sem_item_optimizer): Initialize
-	it.
+	* ipa-icf.c (sem_item_optimizer::sem_item_optimizer): Initialize it.
 	(sem_item_optimizer::~sem_item_optimizer): Traverse m_classes_vec
 	vector instead of traversing m_classes hash table.  Release
 	m_classes_vec.
@@ -220,11 +256,10 @@
 	PR target/71767
 	* configure.ac (with-ld64): New var, set for Darwin, set on
 	detection of ld64, gcc_cv_ld64_export_dynamic: New, New test.
-	* config/darwin.h: Use LD64_HAS_DYNAMIC export. DEF_LD64: New,
-	define.
+	* config/darwin.h: Use LD64_HAS_DYNAMIC export. DEF_LD64: New, define.
 	* config/darwin10.h(DEF_LD64): Update for this target version.
-	* config/darwin12.h(LINK_GCC_C_SEQUENCE_SPEC): Remove rdynamic
-	test.  (DEF_LD64): Update for this target version.
+	* config/darwin12.h(LINK_GCC_C_SEQUENCE_SPEC): Remove rdynamic test.
+	(DEF_LD64): Update for this target version.
 	* configure: Regenerated.
 	* config.in: Regenerated.
 

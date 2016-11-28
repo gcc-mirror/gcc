@@ -13712,19 +13712,22 @@
   "ix86_expand_sse_unpack (operands[0], operands[1], true, true); DONE;")
 
 (define_expand "vec_unpacks_hi_hi"
-  [(set (subreg:HI (match_operand:QI 0 "register_operand") 0)
-        (lshiftrt:HI (match_operand:HI 1 "register_operand")
-                     (const_int 8)))]
+  [(parallel
+     [(set (subreg:HI (match_operand:QI 0 "register_operand") 0)
+	   (lshiftrt:HI (match_operand:HI 1 "register_operand")
+			(const_int 8)))
+      (unspec [(const_int 0)] UNSPEC_KMASKOP)])]
   "TARGET_AVX512F")
 
 (define_expand "vec_unpacks_hi_<mode>"
-  [(set (subreg:SWI48x (match_operand:<HALFMASKMODE> 0 "register_operand") 0)
-        (lshiftrt:SWI48x (match_operand:SWI48x 1 "register_operand")
-                         (match_dup 2)))]
+  [(parallel
+     [(set (subreg:SWI48x
+	     (match_operand:<HALFMASKMODE> 0 "register_operand") 0)
+	   (lshiftrt:SWI48x (match_operand:SWI48x 1 "register_operand")
+			    (match_dup 2)))
+      (unspec [(const_int 0)] UNSPEC_KMASKOP)])]
   "TARGET_AVX512BW"
-{
-  operands[2] = GEN_INT (GET_MODE_BITSIZE (<HALFMASKMODE>mode));
-})
+  "operands[2] = GEN_INT (GET_MODE_BITSIZE (<HALFMASKMODE>mode));")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
