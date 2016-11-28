@@ -1,3 +1,11 @@
+2016-11-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*and<mode>_1): Merge insn pattern from
+	*andsi_1 and *andhi_1 using SWI24 mode iterator.  Use multi-line
+	output template string.
+	(*anddi_1): Use multi-line output template string.
+	(*andqi_1): Ditto.
+
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/78540
