@@ -1,3 +1,7 @@
+2016-11-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/nvptx/critical.c: Delete to use generic implementation.
+
 2016-11-28  Jonas Hahnfeld  <Hahnfeld@itc.rwth-aachen.de>
 
 	* config/linux/affinity.c [!HAVE_PTHREAD_AFFINITY_NP]: Include
