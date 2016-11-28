@@ -1,4 +1,81 @@
 2016-11-28  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (TYPES_SETREGP): Added poly type.
+	(TYPES_GETREGP): Likewise.
+	(TYPES_SHIFTINSERTP): Likewise.
+	(TYPES_COMBINEP): Likewise.
+	(TYPES_STORE1P): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def
+	(combine): Added poly generator.
+	(get_dregoi): Likewise.
+	(get_dregci): Likewise.
+	(get_dregxi): Likewise.
+	(ssli_n): Likewise.
+	(ld1): Likewise.
+	(st1): Likewise.
+	* config/aarch64/arm_neon.h
+	(poly64x1x2_t, poly64x1x3_t): New.
+	(poly64x1x4_t, poly64x2x2_t): Likewise.
+	(poly64x2x3_t, poly64x2x4_t): Likewise.
+	(poly64x1_t): Likewise.
+	(vcreate_p64, vcombine_p64): Likewise.
+	(vdup_n_p64, vdupq_n_p64): Likewise.
+	(vld2_p64, vld2q_p64): Likewise.
+	(vld3_p64, vld3q_p64): Likewise.
+	(vld4_p64, vld4q_p64): Likewise.
+	(vld2_dup_p64, vld3_dup_p64): Likewise.
+	(vld4_dup_p64, vsli_n_p64): Likewise.
+	(vsliq_n_p64, vst1_p64): Likewise.
+	(vst1q_p64, vst2_p64): Likewise.
+	(vst3_p64, vst4_p64): Likewise.
+	(__aarch64_vdup_lane_p64, __aarch64_vdup_laneq_p64): Likewise.
+	(__aarch64_vdupq_lane_p64, __aarch64_vdupq_laneq_p64): Likewise.
+	(vget_lane_p64, vgetq_lane_p64): Likewise.
+	(vreinterpret_p8_p64, vreinterpretq_p8_p64): Likewise.
+	(vreinterpret_p16_p64, vreinterpretq_p16_p64): Likewise.
+	(vreinterpret_p64_f16, vreinterpret_p64_f64): Likewise.
+	(vreinterpret_p64_s8, vreinterpret_p64_s16): Likewise.
+	(vreinterpret_p64_s32, vreinterpret_p64_s64): Likewise.
+	(vreinterpret_p64_f32, vreinterpret_p64_u8): Likewise.
+	(vreinterpret_p64_u16, vreinterpret_p64_u32): Likewise.
+	(vreinterpret_p64_u64, vreinterpret_p64_p8): Likewise.
+	(vreinterpretq_p64_f64, vreinterpretq_p64_s8): Likewise.
+	(vreinterpretq_p64_s16, vreinterpretq_p64_s32): Likewise.
+	(vreinterpretq_p64_s64, vreinterpretq_p64_f16): Likewise.
+	(vreinterpretq_p64_f32, vreinterpretq_p64_u8): Likewise.
+	(vreinterpretq_p64_u16, vreinterpretq_p64_u32): Likewise.
+	(vreinterpretq_p64_u64, vreinterpretq_p64_p8): Likewise.
+	(vreinterpret_f16_p64, vreinterpretq_f16_p64): Likewise.
+	(vreinterpret_f32_p64, vreinterpretq_f32_p64): Likewise.
+	(vreinterpret_f64_p64, vreinterpretq_f64_p64): Likewise.
+	(vreinterpret_s64_p64, vreinterpretq_s64_p64): Likewise.
+	(vreinterpret_u64_p64, vreinterpretq_u64_p64): Likewise.
+	(vreinterpret_s8_p64, vreinterpretq_s8_p64): Likewise.
+	(vreinterpret_s16_p64, vreinterpret_s32_p64): Likewise.
+	(vreinterpretq_s32_p64, vreinterpret_u8_p64): Likewise.
+	(vreinterpret_u16_p64, vreinterpretq_u16_p64): Likewise.
+	(vreinterpret_u32_p64, vreinterpretq_u32_p64): Likewise.
+	(vset_lane_p64, vsetq_lane_p64): Likewise.
+	(vget_low_p64, vget_high_p64): Likewise.
+	(vcombine_p64, vst2_lane_p64): Likewise.
+	(vst3_lane_p64, vst4_lane_p64): Likewise.
+	(vst2q_lane_p64, vst3q_lane_p64): Likewise.
+	(vst4q_lane_p64, vget_lane_p64): Likewise.
+	(vget_laneq_p64, vset_lane_p64): Likewise.
+	(vset_laneq_p64, vcopy_lane_p64): Likewise.
+	(vcopy_laneq_p64, vdup_n_p64): Likewise.
+	(vdupq_n_p64, vdup_lane_p64): Likewise.
+	(vdup_laneq_p64, vld1_p64): Likewise.
+	(vld1q_p64, vld1_dup_p64): Likewise.
+	(vld1q_dup_p64, vld1q_dup_p64): Likewise.
+	(vmov_n_p64, vmovq_n_p64): Likewise.
+	(vst3q_p64, vst4q_p64): Likewise.
+	(vld1_lane_p64, vld1q_lane_p64): Likewise.
+	(vst1_lane_p64, vst1q_lane_p64): Likewise.
+	(vcopy_laneq_p64, vcopyq_laneq_p64): Likewise.
+	(vdupq_laneq_p64): Likewise.
+
+2016-11-28  Tamar Christina  <tamar.christina@arm.com>
 	* config/arm/arm_neon.h (vget_lane_p64): New.
 
 2016-11-28  Iain Sandoe  <iain@codesourcery.com>

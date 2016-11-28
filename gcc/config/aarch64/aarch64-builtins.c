@@ -170,6 +170,10 @@ aarch64_types_quadop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_QUADOP_LANE (aarch64_types_quadop_lane_qualifiers)
 
 static enum aarch64_type_qualifiers
+aarch64_types_binop_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_none, qualifier_immediate };
+#define TYPES_GETREGP (aarch64_types_binop_imm_p_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_immediate };
 #define TYPES_GETREG (aarch64_types_binop_imm_qualifiers)
@@ -188,11 +192,20 @@ aarch64_types_unsigned_shift_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_USHIFTIMM (aarch64_types_unsigned_shift_qualifiers)
 
 static enum aarch64_type_qualifiers
-aarch64_types_ternop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
-#define TYPES_SETREG (aarch64_types_ternop_imm_qualifiers)
-#define TYPES_SHIFTINSERT (aarch64_types_ternop_imm_qualifiers)
-#define TYPES_SHIFTACC (aarch64_types_ternop_imm_qualifiers)
+aarch64_types_ternop_s_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_poly, qualifier_immediate};
+#define TYPES_SETREGP (aarch64_types_ternop_s_imm_p_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_ternop_s_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate};
+#define TYPES_SETREG (aarch64_types_ternop_s_imm_qualifiers)
+#define TYPES_SHIFTINSERT (aarch64_types_ternop_s_imm_qualifiers)
+#define TYPES_SHIFTACC (aarch64_types_ternop_s_imm_qualifiers)
+
+static enum aarch64_type_qualifiers
+aarch64_types_ternop_p_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_poly, qualifier_poly, qualifier_immediate};
+#define TYPES_SHIFTINSERTP (aarch64_types_ternop_p_imm_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_unsigned_shiftacc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -205,6 +218,11 @@ static enum aarch64_type_qualifiers
 aarch64_types_combine_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none };
 #define TYPES_COMBINE (aarch64_types_combine_qualifiers)
+
+static enum aarch64_type_qualifiers
+aarch64_types_combine_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_poly, qualifier_poly };
+#define TYPES_COMBINEP (aarch64_types_combine_p_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -238,6 +256,10 @@ aarch64_types_bsl_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
    a DImode pointer to the location to store to, so we must use
    qualifier_map_mode | qualifier_pointer to build a pointer to the
    element type of the vector.  */
+static enum aarch64_type_qualifiers
+aarch64_types_store1_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_pointer_map_mode, qualifier_poly };
+#define TYPES_STORE1P (aarch64_types_store1_p_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode, qualifier_none };
