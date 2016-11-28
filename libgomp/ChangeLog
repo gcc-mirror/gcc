@@ -1,3 +1,9 @@
+2016-11-28  Jonas Hahnfeld  <Hahnfeld@itc.rwth-aachen.de>
+
+	* config/linux/affinity.c [!HAVE_PTHREAD_AFFINITY_NP]: Include
+	../../affinity.c as fallback.
+	* config/nvptx/affinity.c: Delete to use fallback implementation.
+
 2016-11-23  Alexander Monakov  <amonakov@ispras.ru>
             Jakub Jelinek  <jakub@redhat.com>
 	    Dmitry Melnik  <dm@ispras.ru>
