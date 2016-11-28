@@ -1,3 +1,10 @@
+2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/78298
+	* tree-nested.c (convert_local_reference_stmt): After adding
+	shared (FRAME.NN) clause to omp parallel, task or target,
+	add it also to all outer omp parallel, task or target constructs.
+
 2016-11-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (UNSPEC_KMASKOP): New.
