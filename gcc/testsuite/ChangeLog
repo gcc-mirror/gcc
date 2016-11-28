@@ -1,3 +1,8 @@
+2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/78298
+	* gfortran.dg/gomp/pr78298.f90: New test.
+
 2016-11-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/bmi-andn-1a.c (dg-final): Update scan string.
