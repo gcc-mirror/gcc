@@ -1,3 +1,8 @@
+2016-11-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (out_movhi_r_mr) [REG_X + PLUS]: Only SBIW if
+	X is not unused after.
+
 2016-11-28  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/78120

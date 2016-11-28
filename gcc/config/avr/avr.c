@@ -4028,16 +4028,22 @@ out_movhi_r_mr (rtx_insn *insn, rtx op[], int *plen)
          optimization options.  */
 
       if (reg_base == REG_X)
-        return reg_base == reg_dest
-          ? avr_asm_len ("adiw r26,%o1"      CR_TAB
-                         "ld __tmp_reg__,X+" CR_TAB
-                         "ld %B0,X"          CR_TAB
-                         "mov %A0,__tmp_reg__", op, plen, -4)
+        {
+          if (reg_base == reg_dest)
+            return avr_asm_len ("adiw r26,%o1"      CR_TAB
+                                "ld __tmp_reg__,X+" CR_TAB
+                                "ld %B0,X"          CR_TAB
+                                "mov %A0,__tmp_reg__", op, plen, -4);
 
-          : avr_asm_len ("adiw r26,%o1" CR_TAB
-                         "ld %A0,X+"    CR_TAB
-                         "ld %B0,X"     CR_TAB
-                         "sbiw r26,%o1+1", op, plen, -4);
+          avr_asm_len ("adiw r26,%o1" CR_TAB
+                       "ld %A0,X+"    CR_TAB
+                       "ld %B0,X", op, plen, -3);
+
+          if (!reg_unused_after (insn, XEXP (base, 0)))
+            avr_asm_len ("sbiw r26,%o1+1", op, plen, 1);
+
+          return "";
+        }
 
       return reg_base == reg_dest
         ? avr_asm_len ("ldd __tmp_reg__,%A1" CR_TAB
