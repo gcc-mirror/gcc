@@ -10609,6 +10609,19 @@ vrsqrteq_u32 (uint32x4_t a)
        result;                                                          \
      })
 
+#define vsri_n_p64(a, b, c)						\
+  __extension__								\
+    ({									\
+       poly64x1_t b_ = (b);						\
+       poly64x1_t a_ = (a);						\
+       poly64x1_t result;						\
+       __asm__ ("sri %d0,%d2,%3"					\
+		: "=w"(result)						\
+		: "0"(a_), "w"(b_), "i"(c)				\
+		: /* No clobbers.  */);					\
+       result;								\
+     })
+
 #define vsriq_n_p8(a, b, c)                                             \
   __extension__                                                         \
     ({                                                                  \
@@ -10633,6 +10646,19 @@ vrsqrteq_u32 (uint32x4_t a)
                 : "0"(a_), "w"(b_), "i"(c)                              \
                 : /* No clobbers */);                                   \
        result;                                                          \
+     })
+
+#define vsriq_n_p64(a, b, c)						\
+  __extension__								\
+    ({									\
+       poly64x2_t b_ = (b);						\
+       poly64x2_t a_ = (a);						\
+       poly64x2_t result;						\
+       __asm__ ("sri %0.2d,%2.2d,%3"					\
+		: "=w"(result)						\
+		: "0"(a_), "w"(b_), "i"(c)				\
+		: /* No clobbers.  */);					\
+       result;								\
      })
 
 __extension__ extern __inline uint8x8_t
@@ -11774,6 +11800,13 @@ vbsl_p16 (uint16x4_t __a, poly16x4_t __b, poly16x4_t __c)
 {
   return __builtin_aarch64_simd_bslv4hi_pupp (__a, __b, __c);
 }
+__extension__ extern __inline poly64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbsl_p64 (uint64x1_t __a, poly64x1_t __b, poly64x1_t __c)
+{
+  return (poly64x1_t)
+      {__builtin_aarch64_simd_bsldi_pupp (__a[0], __b[0], __c[0])};
+}
 
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -11880,6 +11913,13 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vbslq_s16 (uint16x8_t __a, int16x8_t __b, int16x8_t __c)
 {
   return __builtin_aarch64_simd_bslv8hi_suss (__a, __b, __c);
+}
+
+__extension__ extern __inline poly64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbslq_p64 (uint64x2_t __a, poly64x2_t __b, poly64x2_t __c)
+{
+  return __builtin_aarch64_simd_bslv2di_pupp (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
@@ -12411,6 +12451,13 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_p8 (poly8x8_t __a, poly8x8_t __b)
 {
   return (uint8x8_t) (__a == __b);
+}
+
+__extension__ extern __inline uint64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vceq_p64 (poly64x1_t __a, poly64x1_t __b)
+{
+  return (uint64x1_t) (__a == __b);
 }
 
 __extension__ extern __inline uint8x8_t
@@ -16152,6 +16199,15 @@ vext_p16 (poly16x4_t __a, poly16x4_t __b, __const int __c)
 #endif
 }
 
+__extension__ extern __inline poly64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vext_p64 (poly64x1_t __a, poly64x1_t __b, __const int __c)
+{
+  __AARCH64_LANE_CHECK (__a, __c);
+  /* The only possible index to the assembler instruction returns element 0.  */
+  return __a;
+}
+
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vext_s8 (int8x8_t __a, int8x8_t __b, __const int __c)
@@ -16317,6 +16373,18 @@ vextq_p16 (poly16x8_t __a, poly16x8_t __b, __const int __c)
 #else
   return __builtin_shuffle (__a, __b,
       (uint16x8_t) {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7});
+#endif
+}
+
+__extension__ extern __inline poly64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vextq_p64 (poly64x2_t __a, poly64x2_t __b, __const int __c)
+{
+  __AARCH64_LANE_CHECK (__a, __c);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint64x2_t) {2-__c, 3-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint64x2_t) {__c, __c+1});
 #endif
 }
 

@@ -1,5 +1,14 @@
 2016-11-28  Tamar Christina  <tamar.christina@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def
+	(BSL_P): Added di and v2di mode.
+	* config/aarch64/arm_neon.h
+	(vsriq_n_p64, vsri_n_p64): Added poly type.
+	(vextq_p64, vext_p64): Likewise.
+	(vceq_p64, vbslq_p64, vbsl_p64): Likewise.
+
+2016-11-28  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (TYPES_SETREGP): Added poly type.
 	(TYPES_GETREGP): Likewise.
 	(TYPES_SHIFTINSERTP): Likewise.

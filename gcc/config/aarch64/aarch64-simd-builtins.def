@@ -442,6 +442,7 @@
 
   /* Implemented by aarch64_simd_bsl<mode>.  */
   BUILTIN_VDQQH (BSL_P, simd_bsl, 0)
+  VAR2 (BSL_P, simd_bsl,0, di, v2di)
   BUILTIN_VSDQ_I_DI (BSL_U, simd_bsl, 0)
   BUILTIN_VALLDIF (BSL_S, simd_bsl, 0)
 
