@@ -1,3 +1,9 @@
+2016-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78542
+	* tree-ssa-ccp.c (evaluate_stmt): Only valueize simplification
+	if allowed.
+
 2016-11-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (simplify_if_then_else): Simplify IF_THEN_ELSE
