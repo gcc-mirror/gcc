@@ -1,3 +1,11 @@
+2016-11-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78520
+	* gcc.dg/tree-ssa/builtin-sprintf-5.c: Add test cases.
+	* gcc.dg/tree-ssa/builtin-sprintf-6.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Add test cases.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Add test cases.
+
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/72808

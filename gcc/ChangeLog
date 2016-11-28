@@ -1,3 +1,15 @@
+2016-11-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78520
+	* gimple-ssa-sprintf.c (target_max_value): Remove.
+	(target_int_max, target_size_max): Use TYPE_MAX_VALUE.
+	(get_width_and_precision): New function.
+	(format_integer, format_floating, get_string_length, format_string):
+	Correct handling of width and precision with unknown value.
+	(format_directive): Add warning.
+	(pass_sprintf_length::compute_format_length): Allow for precision
+	to consist of a sole period with no asterisk or digits after it.
+
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/78546
