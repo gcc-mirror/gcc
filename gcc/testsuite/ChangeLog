@@ -1,5 +1,8 @@
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/72808
+	* g++.dg/debug/pr72808.C: New test.
+
 	PR rtl-optimization/78546
 	* gcc.dg/torture/pr78546-1.c: New test.
 	* gcc.dg/torture/pr78546-2.c: New test.

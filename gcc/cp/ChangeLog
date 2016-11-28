@@ -1,4 +1,12 @@
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/72808
+	* decl.c (finish_enum_value_list): Call fixup_type_variants on
+	current_class_type after
+	insert_late_enum_def_into_classtype_sorted_fields.
+
+2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/77591
 	* typeck.c (maybe_warn_about_returning_address_of_local): Optimize
