@@ -5309,8 +5309,8 @@ if test x"$ld64_flag" = x"yes"; then
   # If the configurer specified a minimum ld64 version to be supported, then use
   # that to determine feature support.
   if test x"${gcc_cv_ld64_version}" != x; then
-    AC_MSG_CHECKING(ld64 major version)
-    IFS=. read gcc_cv_ld64_major gcc_cv_ld64_minor <<< "${gcc_cv_ld64_version}"
+    AC_MSG_CHECKING(ld64 specified version)
+    gcc_cv_ld64_major=`echo "$gcc_cv_ld64_version" | sed -e 's/\..*//'`
     AC_MSG_RESULT($gcc_cv_ld64_major)
    if test "$gcc_cv_ld64_major" -ge 236; then
       gcc_cv_ld64_export_dynamic=1

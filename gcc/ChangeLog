@@ -1,3 +1,10 @@
+2016-11-28  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/71767
+	* configure.ac (with_ld64): Use portable method to extract the
+	major part of the version number.
+	* configure: Regenerated.
+
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-ssa-sprintf.c (build_intmax_type_nodes): Look at
