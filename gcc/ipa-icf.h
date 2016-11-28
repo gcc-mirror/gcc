@@ -609,8 +609,11 @@ private:
   /* A set containing all items removed by hooks.  */
   hash_set <symtab_node *> m_removed_items_set;
 
-  /* Hashtable of congruence classes */
+  /* Hashtable of congruence classes.  */
   hash_table <congruence_class_group_hash> m_classes;
+
+  /* Vector of congruence classes.  */
+  vec <congruence_class_group *> m_classes_vec;
 
   /* Count of congruence classes.  */
   unsigned int m_classes_count;
