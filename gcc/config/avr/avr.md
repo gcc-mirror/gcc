@@ -260,6 +260,10 @@
                                   HQ UHQ HA UHA
                                   SQ USQ SA USA])
 
+;; Post-reload split of 3, 4 bytes wide moves.
+(define_mode_iterator SPLIT34 [SI SF PSI
+                               SQ USQ SA USA])
+
 ;; Define code iterators
 ;; Define two incarnations so that we can build the cross product.
 (define_code_iterator any_extend  [sign_extend zero_extend])
@@ -267,6 +271,7 @@
 (define_code_iterator any_extract [sign_extract zero_extract])
 (define_code_iterator any_shiftrt [lshiftrt ashiftrt])
 
+(define_code_iterator bitop [xor ior and])
 (define_code_iterator xior [xor ior])
 (define_code_iterator eqne [eq ne])
 
@@ -3327,6 +3332,66 @@
   [(set_attr "length" "4,8,8")
    (set_attr "adjust_len" "*,out_bitop,out_bitop")
    (set_attr "cc" "set_n,clobber,clobber")])
+
+
+(define_split
+  [(set (match_operand:SPLIT34 0 "register_operand")
+        (match_operand:SPLIT34 1 "register_operand"))]
+  "optimize
+   && reload_completed"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+  {
+    machine_mode mode_hi = 4 == GET_MODE_SIZE (<MODE>mode) ? HImode : QImode;
+    bool lo_first = REGNO (operands[0]) < REGNO (operands[1]);
+    rtx dst_lo = simplify_gen_subreg (HImode, operands[0], <MODE>mode, 0);
+    rtx src_lo = simplify_gen_subreg (HImode, operands[1], <MODE>mode, 0);
+    rtx dst_hi = simplify_gen_subreg (mode_hi, operands[0], <MODE>mode, 2);
+    rtx src_hi = simplify_gen_subreg (mode_hi, operands[1], <MODE>mode, 2);
+
+    operands[2] = lo_first ? dst_lo : dst_hi;
+    operands[3] = lo_first ? src_lo : src_hi;
+    operands[4] = lo_first ? dst_hi : dst_lo;
+    operands[5] = lo_first ? src_hi : src_lo;
+  })
+  
+(define_split
+  [(set (match_operand:HI 0 "register_operand")
+        (match_operand:HI 1 "reg_or_0_operand"))]
+  "optimize
+   && reload_completed
+   && (!AVR_HAVE_MOVW
+       || const0_rtx == operands[1])"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+  {
+    operands[2] = simplify_gen_subreg (QImode, operands[0], HImode, 1);
+    operands[3] = simplify_gen_subreg (QImode, operands[1], HImode, 1);
+    operands[4] = simplify_gen_subreg (QImode, operands[0], HImode, 0);
+    operands[5] = simplify_gen_subreg (QImode, operands[1], HImode, 0);
+  })
+
+;; Split andhi3, andpsi3, andsi3.
+;; Split iorhi3, iorpsi3, iorsi3.
+;; Split xorhi3, xorpsi3, xorsi3.
+(define_split
+  [(parallel [(set (match_operand:HISI 0 "register_operand")
+                   (bitop:HISI (match_dup 0)
+                               (match_operand:HISI 1 "register_operand")))
+              (clobber (scratch:QI))])]
+  "optimize
+   && reload_completed"
+  [(const_int 1)]
+  {
+    for (int i = 0; i < GET_MODE_SIZE (<MODE>mode); i++)
+      {
+        rtx dst = simplify_gen_subreg (QImode, operands[0], <MODE>mode, i);
+        rtx src = simplify_gen_subreg (QImode, operands[1], <MODE>mode, i);
+        emit_insn (gen_<code>qi3 (dst, dst, src));
+      }
+    DONE;
+  })
+
 
 ;; swap swap swap swap swap swap swap swap swap swap swap swap swap swap swap
 ;; swap
@@ -6696,6 +6761,84 @@
     operands[4] = simplify_gen_subreg (QImode, operands[0], <MODE>mode, byteno);
   })
 
+
+(define_insn_and_split "*iorhi3.ashift8-ext.zerox"
+  [(set (match_operand:HI 0 "register_operand"                        "=r")
+        (ior:HI (ashift:HI (any_extend:HI
+                            (match_operand:QI 1 "register_operand"     "r"))
+                           (const_int 8))
+                (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
+  "optimize"
+  { gcc_unreachable(); }
+  "&& reload_completed"
+  [(set (match_dup 1) (xor:QI (match_dup 1) (match_dup 2)))
+   (set (match_dup 2) (xor:QI (match_dup 2) (match_dup 1)))
+   (set (match_dup 1) (xor:QI (match_dup 1) (match_dup 2)))]
+  {
+    rtx hi = simplify_gen_subreg (QImode, operands[0], HImode, 1);
+    rtx lo = simplify_gen_subreg (QImode, operands[0], HImode, 0);
+
+    if (!reg_overlap_mentioned_p (hi, operands[2]))
+      {
+        emit_move_insn (hi, operands[1]);
+        emit_move_insn (lo, operands[2]);
+        DONE;
+      }
+    else if (!reg_overlap_mentioned_p (lo, operands[1]))
+      {
+        emit_move_insn (lo, operands[2]);
+        emit_move_insn (hi, operands[1]);
+        DONE;
+      }
+
+    gcc_assert (REGNO (operands[1]) == REGNO (operands[0]));
+    gcc_assert (REGNO (operands[2]) == 1 + REGNO (operands[0]));
+  })
+
+(define_insn_and_split "*iorhi3.ashift8-ext.reg"
+  [(set (match_operand:HI 0 "register_operand"                    "=r")
+        (ior:HI (ashift:HI (any_extend:HI
+                            (match_operand:QI 1 "register_operand" "r"))
+                           (const_int 8))
+                (match_operand:HI 2 "register_operand"             "0")))]
+  "optimize"
+  { gcc_unreachable(); }
+  "&& reload_completed"
+  [(set (match_dup 3)
+        (ior:QI (match_dup 4)
+                (match_dup 1)))]
+  {
+    operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, 1);
+    operands[4] = simplify_gen_subreg (QImode, operands[2], HImode, 1);
+  })
+
+(define_insn_and_split "*iorhi3.ashift8-reg.zerox"
+  [(set (match_operand:HI 0 "register_operand"                        "=r")
+        (ior:HI (ashift:HI (match_operand:HI 1 "register_operand"      "r")
+                           (const_int 8))
+                (zero_extend:HI (match_operand:QI 2 "register_operand" "0"))))]
+  "optimize"
+  { gcc_unreachable(); }
+  "&& reload_completed"
+  [(set (match_dup 3)
+        (match_dup 4))]
+  {
+    operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, 1);
+    operands[4] = simplify_gen_subreg (QImode, operands[1], HImode, 0);
+  })
+
+
+(define_peephole2
+  [(set (match_operand:QI 0 "register_operand")
+        (const_int 0))
+   (set (match_dup 0)
+        (ior:QI (match_dup 0)
+                (match_operand:QI 1 "register_operand")))]
+  ""
+  [(set (match_dup 0)
+        (match_dup 1))])
+
+
 (define_expand "extzv"
   [(set (match_operand:QI 0 "register_operand" "")
         (zero_extract:QI (match_operand:QI 1 "register_operand"  "")
@@ -6778,7 +6921,6 @@
     operands[4] = GEN_INT (bitno % 8);
   })
 
-                                        
 
 ;; Fixed-point instructions
 (include "avr-fixed.md")

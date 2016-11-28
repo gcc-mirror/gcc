@@ -1,3 +1,18 @@
+2016-11-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR 41076
+	* config/avr/avr.md (SPLIT34): New mode iterator.
+	(bitop): New code iterator.
+	(*iorhi3.ashift8-*). New insn-and-split patterns.
+	(*movhi): Post-reload split reg = 0.
+	[!MOVW]: Post-reload split reg = reg.
+	(*mov<mode>) [SI,SF,PSI,SQ,USQ,SA,USA]: Post-reload split reg = reg.
+	(andhi3, andpsi3, andsi3): Post-reload split reg-reg operations.
+	(iorhi3, iorpsi3, iorsi3): Same.
+	(xorhi3, xorpsi3, xorsi3): Same.
+	* config/avr/avr.c (avr_rtx_costs_1) [IOR && HImode]: Adjust rtx
+	costs to *iorhi3.ashift8-* patterns.
+
 2016-11-27  Iain Sandoe  <iain@codesourcery.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

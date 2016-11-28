@@ -10645,6 +10645,19 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
       /* FALLTHRU */
     case AND:
     case IOR:
+      if (IOR == code
+          && HImode == mode
+          && ASHIFT == GET_CODE (XEXP (x, 0)))
+        {
+          *total = COSTS_N_INSNS (2);
+          // Just a rough estimate.  If we see no sign- or zero-extend,
+          // then increase the cost a little bit.
+          if (REG_P (XEXP (XEXP (x, 0), 0)))
+            *total += COSTS_N_INSNS (1);
+          if (REG_P (XEXP (x, 1)))
+            *total += COSTS_N_INSNS (1);
+          return true;
+        }
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
       *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, 0, speed);
       if (!CONST_INT_P (XEXP (x, 1)))
