@@ -1,3 +1,8 @@
+2016-11-28  Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+
+	PR gcc/74748
+	* libgcc/mkmap-symver.awk: add support for skip_underscore
+
 2016-11-27  Iain Sandoe  <iain@codesourcery.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
