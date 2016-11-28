@@ -733,23 +733,23 @@ format_percent (const conversion_spec &, tree)
 }
 
 
-/* Ugh.  Compute intmax_type_node and uintmax_type_node the same way
-   lto/lto-lang.c does it.  This should be available in tree.h.  */
+/* Compute intmax_type_node and uintmax_type_node similarly to how
+   tree.c builds size_type_node.  */
 
 static void
 build_intmax_type_nodes (tree *pintmax, tree *puintmax)
 {
-  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+  if (strcmp (UINTMAX_TYPE, "unsigned int") == 0)
     {
       *pintmax = integer_type_node;
       *puintmax = unsigned_type_node;
     }
-  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+  else if (strcmp (UINTMAX_TYPE, "long unsigned int") == 0)
     {
       *pintmax = long_integer_type_node;
       *puintmax = long_unsigned_type_node;
     }
-  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+  else if (strcmp (UINTMAX_TYPE, "long long unsigned int") == 0)
     {
       *pintmax = long_long_integer_type_node;
       *puintmax = long_long_unsigned_type_node;
@@ -762,12 +762,14 @@ build_intmax_type_nodes (tree *pintmax, tree *puintmax)
 	    char name[50];
 	    sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
 
-	    if (strcmp (name, SIZE_TYPE) == 0)
+	    if (strcmp (name, UINTMAX_TYPE) == 0)
 	      {
 	        *pintmax = int_n_trees[i].signed_type;
 	        *puintmax = int_n_trees[i].unsigned_type;
+		return;
 	      }
 	  }
+      gcc_unreachable ();
     }
 }
 
@@ -851,15 +853,8 @@ format_pointer (const conversion_spec &spec, tree arg)
 static fmtresult
 format_integer (const conversion_spec &spec, tree arg)
 {
-  /* These are available as macros in the C and C++ front ends but,
-     sadly, not here.  */
-  static tree intmax_type_node;
-  static tree uintmax_type_node;
-
-  /* Initialize the intmax nodes above the first time through here.  */
-  if (!intmax_type_node)
-    build_intmax_type_nodes (&intmax_type_node, &uintmax_type_node);
-
+  tree intmax_type_node;
+  tree uintmax_type_node;
   /* Set WIDTH and PRECISION to either the values in the format
      specification or to zero.  */
   int width = spec.have_width ? spec.width : 0;
@@ -909,19 +904,20 @@ format_integer (const conversion_spec &spec, tree arg)
       break;
 
     case FMT_LEN_z:
-      dirtype = sign ? ptrdiff_type_node : size_type_node;
+      dirtype = signed_or_unsigned_type_for (!sign, size_type_node);
       break;
 
     case FMT_LEN_t:
-      dirtype = sign ? ptrdiff_type_node : size_type_node;
+      dirtype = signed_or_unsigned_type_for (!sign, ptrdiff_type_node);
       break;
 
     case FMT_LEN_j:
+      build_intmax_type_nodes (&intmax_type_node, &uintmax_type_node);
       dirtype = sign ? intmax_type_node : uintmax_type_node;
       break;
 
     default:
-	return fmtresult ();
+      return fmtresult ();
     }
 
   /* The type of the argument to the directive, either deduced from
