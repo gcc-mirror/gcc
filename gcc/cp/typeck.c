@@ -8612,7 +8612,7 @@ static bool
 maybe_warn_about_returning_address_of_local (tree retval)
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
-  tree whats_returned = retval;
+  tree whats_returned = fold_for_warn (retval);
 
   for (;;)
     {

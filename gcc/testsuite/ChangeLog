@@ -1,3 +1,8 @@
+2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/77591
+	* g++.dg/cpp1y/pr77591.C: New test.
+
 2016-11-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/torture/pr78515.c: Ignore ABI extension warning.
