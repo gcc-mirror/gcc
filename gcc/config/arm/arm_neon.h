@@ -5411,6 +5411,15 @@ vget_lane_s64 (int64x1_t __a, const int __b)
   return (int64_t)__builtin_neon_vget_lanedi (__a, __b);
 }
 
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
+__extension__ static __inline poly64_t __attribute__ ((__always_inline__))
+vget_lane_p64 (poly64x1_t __a, const int __b)
+{
+  return (poly64_t)__builtin_neon_vget_lanedi ((int64x1_t) __a, __b);
+}
+
+#pragma GCC pop_options
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vget_lane_u64 (uint64x1_t __a, const int __b)
 {
