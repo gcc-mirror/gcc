@@ -1,5 +1,13 @@
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimple-ssa-sprintf.c (build_intmax_type_nodes): Look at
+	UINTMAX_TYPE rather than SIZE_TYPE.  Add gcc_unreachable if
+	intmax_t couldn't be determined.
+	(format_integer): Make {,u}intmax_type_node no longer static,
+	initialize them only when needed.  For z and t use
+	signed_or_unsigned_type_for instead of assuming size_t and
+	ptrdiff_t have the same precision.
+
 	PR lto/78211
 	* ipa-icf.h (sem_item_optimizer): Add m_classes_vec member.
 	* ipa-icf.c (sem_item_optimizer::sem_item_optimizer): Initialize
