@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-cddce2" } */
+/* { dg-options "-O1 -fdump-tree-cddce3" } */
       
 extern void abort (void);
 

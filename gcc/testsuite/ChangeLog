@@ -1,3 +1,9 @@
+2016-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78343
+	* gcc.dg/tree-ssa/20030808-1.c: Fix dump to generate.
+	* gcc.dg/tree-ssa/20040305-1.c: Likewise.
+
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/78211
