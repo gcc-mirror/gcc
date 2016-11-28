@@ -1,3 +1,32 @@
+2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/78211
+	* ipa-icf.h (sem_item_optimizer): Add m_classes_vec member.
+	* ipa-icf.c (sem_item_optimizer::sem_item_optimizer): Initialize
+	it.
+	(sem_item_optimizer::~sem_item_optimizer): Traverse m_classes_vec
+	vector instead of traversing m_classes hash table.  Release
+	m_classes_vec.
+	(sem_item_optimizer::read_section, sem_item_optimizer::add_class):
+	Formatting fixes.
+	(sem_item_optimizer::get_group_by_hash): When inserting a new group,
+	add it also to m_classes_vec vector.
+	(sem_item_optimizer::remove_symtab_node,
+	sem_item_optimizer::build_hash_based_classes,
+	sem_item_optimizer::parse_nonsingleton_classes): Formatting fixes.
+	(sem_item_optimizer::subdivide_classes_by_equality,
+	sem_item_optimizer::subdivide_classes_by_sensitive_refs,
+	sem_item_optimizer::verify_classes): Traverse m_classes_vec vector
+	instead of traversing m_classes hash table.  Formatting fixes.
+	(sem_item_optimizer::traverse_congruence_split,
+	sem_item_optimizer::do_congruence_step_for_index,
+	sem_item_optimizer::do_congruence_step): Formatting fixes.
+	(sem_item_optimizer::process_cong_reduction): Traverse m_classes_vec
+	vector instead of traversing m_classes hash table.
+	(sem_item_optimizer::dump_cong_classes): Likewise.  Formatting fixes.
+	(sem_item_optimizer::merge_classes): Traverse m_classes_vec vector
+	instead of traversing m_classes hash table.
+
 2016-11-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (out_movhi_r_mr) [REG_X + PLUS]: Only SBIW if

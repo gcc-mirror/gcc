@@ -1,3 +1,8 @@
+2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/78211
+	* g++.dg/ipa/pr78211.C: New test.
+
 2016-11-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78474
