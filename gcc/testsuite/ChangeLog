@@ -1,5 +1,9 @@
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/78546
+	* gcc.dg/torture/pr78546-1.c: New test.
+	* gcc.dg/torture/pr78546-2.c: New test.
+
 	PR fortran/78298
 	* gfortran.dg/gomp/pr78298.f90: New test.
 

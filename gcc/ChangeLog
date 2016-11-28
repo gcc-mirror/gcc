@@ -1,3 +1,13 @@
+2016-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/78546
+	* simplify-rtx.c (neg_const_int): When negating most negative
+	number in mode wider than HOST_BITS_PER_WIDE_INT, use
+	simplify_const_unary_operation to produce CONST_DOUBLE or
+	CONST_WIDE_INT.
+	(simplify_plus_minus): Hanlde the case where neg_const_int
+	doesn't return a CONST_INT.
+
 2016-11-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR target/78556
