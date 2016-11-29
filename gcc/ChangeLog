@@ -1,3 +1,8 @@
+2016-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78546
+	* match.pd: Add CST1 - (CST2 - A) -> CST3 + A missing case.
+
 2016-11-29  Janus Weil  <janus@gcc.gnu.org>
 
 	* doc/contrib.texi: Add a few missing gfortran contributors.

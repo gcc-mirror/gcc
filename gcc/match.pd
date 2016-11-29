@@ -1195,7 +1195,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (minus @0 (minus @0 @1))
    @1)
 
-  /* (A +- CST) +- CST -> A + CST  */
+  /* (A +- CST1) +- CST2 -> A + CST3  */
   (for outer_op (plus minus)
    (for inner_op (plus minus)
     (simplify
@@ -1208,13 +1208,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (cst && !TREE_OVERFLOW (cst))
        (inner_op @0 { cst; } ))))))
 
-  /* (CST - A) +- CST -> CST - A  */
+  /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)
    (simplify
     (outer_op (minus CONSTANT_CLASS_P@1 @0) CONSTANT_CLASS_P@2)
     (with { tree cst = const_binop (outer_op, type, @1, @2); }
      (if (cst && !TREE_OVERFLOW (cst))
       (minus { cst; } @0)))))
+
+  /* CST1 - (CST2 - A) -> CST3 + A  */
+  (simplify
+   (minus CONSTANT_CLASS_P@1 (minus CONSTANT_CLASS_P@2 @0))
+   (with { tree cst = const_binop (MINUS_EXPR, type, @1, @2); }
+    (if (cst && !TREE_OVERFLOW (cst))
+     (plus { cst; } @0))))
 
   /* ~A + A -> -1 */
   (simplify
