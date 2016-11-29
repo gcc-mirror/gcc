@@ -35,7 +35,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-11-19 10:40+0100\n"
+"PO-Revision-Date: 2016-11-28 06:38+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -7220,609 +7220,425 @@ msgstr "Permite '$' como un identificador de carácter."
 
 #: c-family/c.opt:1191
 msgid "Write all declarations as Ada code transitively."
-msgstr ""
+msgstr "Escribe todas las declaraciones como código Ada transitivamente."
 
 #: c-family/c.opt:1195
 msgid "Write all declarations as Ada code for the given file only."
-msgstr ""
+msgstr "Escribe todas las declaraciones como código Ada solo para el fichero dado."
 
 #: c-family/c.opt:1202
-#, fuzzy
-#| msgid "Generate code to check exception specifications"
 msgid "Generate code to check exception specifications."
-msgstr "Genera código para revisar especificaciones de excepciones"
+msgstr "Genera código para revisar especificaciones de excepciones."
 
 #: c-family/c.opt:1209
-#, fuzzy
-#| msgid "-fexec-charset=<cset>\tConvert all strings and character constants to character set <cset>"
 msgid "-fexec-charset=<cset>\tConvert all strings and character constants to character set <cset>."
-msgstr "-fexec-charset=<cset>\tConvierte todas las constantes de cadenas y carácter al conjunto de caracteres <cset>"
+msgstr "-fexec-charset=<cset>\tConvierte todas las constantes de cadenas y carácter al conjunto de caracteres <cset>."
 
 #: c-family/c.opt:1213
-#, fuzzy
-#| msgid "Permit universal character names (\\u and \\U) in identifiers"
 msgid "Permit universal character names (\\u and \\U) in identifiers."
-msgstr "Permite los nombres de cáracteres universales (\\u y \\U) en los identificadores"
+msgstr "Permite los nombres de cáracteres universales (\\u y \\U) en los identificadores."
 
 #: c-family/c.opt:1217
-#, fuzzy
-#| msgid "-finput-charset=<cset>\tSpecify the default character set for source files"
 msgid "-finput-charset=<cset>\tSpecify the default character set for source files."
-msgstr "-finput-charset=<cset>\tEspecifica el conjunto de caracteres por defecto para los ficheros fuente"
+msgstr "-finput-charset=<cset>\tEspecifica el conjunto de caracteres por defecto para los ficheros fuente."
 
 #: c-family/c.opt:1221
 msgid "Support dynamic initialization of thread-local variables in a different translation unit."
-msgstr ""
+msgstr "Admite inicialización dinámica de variables locales de hilo en una unidad de traducción diferente."
 
 #: c-family/c.opt:1228
-#, fuzzy
-#| msgid "Scope of for-init-statement variables is local to the loop"
 msgid "Scope of for-init-statement variables is local to the loop."
-msgstr "El ámbito de las variables de la declaración de inicio-de-for es local para el bucle"
+msgstr "El ámbito de las variables de la declaración de inicio-de-for es local para el bucle."
 
 #: c-family/c.opt:1232
-#, fuzzy
-#| msgid "Do not assume that standard C libraries and \"main\" exist"
 msgid "Do not assume that standard C libraries and \"main\" exist."
-msgstr "No asume que existen las bibliotecas C estándar y \"main\""
+msgstr "No asume que existen las bibliotecas C estándar y \"main\"."
 
 #: c-family/c.opt:1236
-#, fuzzy
-#| msgid "Recognize GNU-defined keywords"
 msgid "Recognize GNU-defined keywords."
-msgstr "Reconoce las palabras claves definidas por GNU"
+msgstr "Reconoce las palabras claves definidas por GNU."
 
 #: c-family/c.opt:1240
-#, fuzzy
-#| msgid "Generate code for GNU runtime environment"
 msgid "Generate code for GNU runtime environment."
-msgstr "Genera código para el ambiente de tiempo de ejecución GNU"
+msgstr "Genera código para el entorno de tiempo de ejecución GNU."
 
 #: c-family/c.opt:1244
-#, fuzzy
-#| msgid "Use traditional GNU semantics for inline functions"
 msgid "Use traditional GNU semantics for inline functions."
-msgstr "Usa semántica GNU tradicional para las funciones incluídas en línea"
+msgstr "Usa semántica GNU tradicional para las funciones incluídas en línea."
 
 #: c-family/c.opt:1250
 msgid "-fhandle-exceptions has been renamed -fexceptions (and is now on by default)"
 msgstr "se renombró -fhandle-exceptions a -fexceptions (y ahora está activado por defecto)"
 
 #: c-family/c.opt:1257
-#, fuzzy
-#| msgid "Assume normal C execution environment"
 msgid "Assume normal C execution environment."
-msgstr "Asume el ambiente normal de ejecución C"
+msgstr "Asume el entorno normal de ejecución C."
 
 #: c-family/c.opt:1265
-#, fuzzy
-#| msgid "Export functions even if they can be inlined"
 msgid "Export functions even if they can be inlined."
-msgstr "Exporta funciones aún si pueden incluir en línea"
+msgstr "Exporta funciones aun si pueden incluir en línea."
 
 #: c-family/c.opt:1269
-#, fuzzy
-#| msgid "Emit implicit instantiations of inline templates"
 msgid "Emit implicit instantiations of inline templates."
-msgstr "Emite instanciaciones implícitas de plantillas incluídas en línea"
+msgstr "Emite instanciaciones implícitas de plantillas incluídas en línea."
 
 #: c-family/c.opt:1273
-#, fuzzy
-#| msgid "Emit implicit instantiations of templates"
 msgid "Emit implicit instantiations of templates."
-msgstr "Emite instanciaciones implícitas de plantillas"
+msgstr "Emite instanciaciones implícitas de plantillas."
 
 #: c-family/c.opt:1277
-#, fuzzy
-#| msgid "Inject friend functions into enclosing namespace"
 msgid "Inject friend functions into enclosing namespace."
-msgstr "Inyecta las funciones friend dentro de espacios de nombres cerrados"
+msgstr "Inyecta las funciones friend dentro de espacios de nombres cerrados."
 
 #: c-family/c.opt:1281
-#, fuzzy
-#| msgid "Don't emit dllexported inline functions unless needed"
 msgid "Don't emit dllexported inline functions unless needed."
-msgstr "No emite funciones en línea exportadas en dll a menos que sea necesario"
+msgstr "No emite funciones en línea exportadas en dll a menos que sea necesario."
 
 #: c-family/c.opt:1288
 msgid "Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types."
 msgstr "Permite las conversiones implícitas entre vectores con números diferentes de subpartes y/o tipos de elementos diferentes."
 
 #: c-family/c.opt:1292
-#, fuzzy
-#| msgid "Don't warn about uses of Microsoft extensions"
 msgid "Don't warn about uses of Microsoft extensions."
-msgstr "No avisa sobre los usos de extensiones Microsoft"
+msgstr "No avisa sobre los usos de extensiones Microsoft."
 
 #: c-family/c.opt:1311
-#, fuzzy
-#| msgid "Generate code for NeXT (Apple Mac OS X) runtime environment"
 msgid "Generate code for NeXT (Apple Mac OS X) runtime environment."
-msgstr "Genera código para el ambiente de tiempo de ejecución NeXT (Apple Mac OS X)"
+msgstr "Genera código para el entorno de tiempo de ejecución NeXT (Apple Mac OS X)."
 
 #: c-family/c.opt:1315
-#, fuzzy
-#| msgid "Assume that receivers of Objective-C messages may be nil"
 msgid "Assume that receivers of Objective-C messages may be nil."
-msgstr "Asume que los receptores de mensajes de Objective-C pueden ser nil"
+msgstr "Asume que los receptores de mensajes de Objective-C pueden ser nil."
 
 #: c-family/c.opt:1319
 msgid "Allow access to instance variables as if they were local declarations within instance method implementations."
-msgstr ""
+msgstr "Permite el acceso a variables de instancia como si fueran declaraciones locales dentro de implementaciones de métodos de instancia."
 
 #: c-family/c.opt:1323
-#, fuzzy
-#| msgid "-fvisibility=[default|internal|hidden|protected]\tSet the default symbol visibility"
 msgid "-fvisibility=[private|protected|public|package]\tSet the default symbol visibility."
-msgstr "-fvisibility=[default|internal|hidden|protected]\tEstablece la visibilidad de símbolos por defecto"
+msgstr "-fvisibility=[private|protected|public|package]\tEstablece la visibilidad de símbolos predeterminada."
 
 #: c-family/c.opt:1326
-#, fuzzy, c-format
-#| msgid "unrecognized visibility value %qs"
+#, c-format
 msgid "unrecognized ivar visibility value %qs"
-msgstr "no se reconoce el valor de visibilidad %qs"
+msgstr "no se reconoce el valor de visibilidad de ivar %qs"
 
 #: c-family/c.opt:1348
-#, fuzzy
-#| msgid "Treat a throw() exception specification as noexcept to improve code size"
 msgid "Treat a throw() exception specification as noexcept to improve code size."
-msgstr "Trata una especificación de excepción throw() como noexcept para mejorar el tamaño del código"
+msgstr "Trata una especificación de excepción throw() como noexcept para mejorar el tamaño del código."
 
 #: c-family/c.opt:1352
 msgid "Specify which ABI to use for Objective-C family code and meta-data generation."
 msgstr "Especifica cuál ABI usar para el código de la familia Objective-C y la generación de metadatos."
 
 #: c-family/c.opt:1358
-#, fuzzy
-#| msgid "Generate special Objective-C methods to initialize/destroy non-POD C++ ivars, if needed"
 msgid "Generate special Objective-C methods to initialize/destroy non-POD C++ ivars, if needed."
-msgstr "Genera métodos Objective-C especiales para inicializar/destruir i-variables de C++ que no son POD, si es necesario"
+msgstr "Genera métodos Objective-C especiales para inicializar/destruir i-variables de C++ que no son POD, si es necesario."
 
 #: c-family/c.opt:1362
-#, fuzzy
-#| msgid "Allow fast jumps to the message dispatcher"
 msgid "Allow fast jumps to the message dispatcher."
-msgstr "Permite saltos rápidos al despachador de mensajes"
+msgstr "Permite saltos rápidos al despachador de mensajes."
 
 #: c-family/c.opt:1368
-#, fuzzy
-#| msgid "Enable Objective-C exception and synchronization syntax"
 msgid "Enable Objective-C exception and synchronization syntax."
-msgstr "Activa la sintaxis de excepción y sincronización de Objective-C"
+msgstr "Activa la sintaxis de excepción y sincronización de Objective-C."
 
 #: c-family/c.opt:1372
-#, fuzzy
-#| msgid "Enable garbage collection (GC) in Objective-C/Objective-C++ programs"
 msgid "Enable garbage collection (GC) in Objective-C/Objective-C++ programs."
-msgstr "Activa la recolección de basura (GC) en programas Objective-C/Objective-C++"
+msgstr "Activa la recolección de basura (GC) en programas Objective-C/Objective-C++."
 
 #: c-family/c.opt:1376
 msgid "Enable inline checks for nil receivers with the NeXT runtime and ABI version 2."
 msgstr "Activa las revisiones en línea para los receptores nil con el tiempo de ejecución NeXT y la ABI versión 2."
 
 #: c-family/c.opt:1381
-#, fuzzy
-#| msgid "Enable Objective-C setjmp exception handling runtime"
 msgid "Enable Objective-C setjmp exception handling runtime."
-msgstr "Activa el manejo de excepciones setjmp en tiempo de ejecución de Objective-C"
+msgstr "Activa el manejo de excepciones setjmp en tiempo de ejecución de Objective-C."
 
 #: c-family/c.opt:1385
-#, fuzzy
-#| msgid "Conform to the Objective-C 1.0 language as implemented in GCC 4.0"
 msgid "Conform to the Objective-C 1.0 language as implemented in GCC 4.0."
-msgstr "Conforma al lenguaje Objective-C 1.0 como se implantó en GCC 4.0"
+msgstr "Conforma al lenguaje Objective-C 1.0 como se implantó en GCC 4.0."
 
 #: c-family/c.opt:1389
-#, fuzzy
-#| msgid "Enable OpenMP"
 msgid "Enable OpenACC."
-msgstr "Activa OpenMP"
+msgstr "Activa OpenACC."
 
 #: c-family/c.opt:1393
 msgid "Specify default OpenACC compute dimensions."
-msgstr ""
+msgstr "Especifica las dimensiones de cálculo predeterminadas de OpenACC."
 
 #: c-family/c.opt:1397
-#, fuzzy
-#| msgid "Enable OpenMP (implies -frecursive in Fortran)"
 msgid "Enable OpenMP (implies -frecursive in Fortran)."
-msgstr "Activa OpenMP (implica -frecursive en Fortran)"
+msgstr "Activa OpenMP (implica -frecursive en Fortran)."
 
 #: c-family/c.opt:1401
-#, fuzzy
-#| msgid "Unclassifiable OpenMP directive at %C"
 msgid "Enable OpenMP's SIMD directives."
-msgstr "Directiva OpenMP inclasificable en %C"
+msgstr "Activa las directivas SIMD de OpenMP."
 
 #: c-family/c.opt:1405
-#, fuzzy
-#| msgid "Recognize C++ keywords like \"compl\" and \"xor\""
 msgid "Recognize C++ keywords like \"compl\" and \"xor\"."
-msgstr "Reconoce palabras clave de C++ como \"compl\" y \"xor\""
+msgstr "Reconoce palabras clave de C++ como \"compl\" y \"xor\"."
 
 #: c-family/c.opt:1416
-#, fuzzy
-#| msgid "Look for and use PCH files even when preprocessing"
 msgid "Look for and use PCH files even when preprocessing."
-msgstr "Busca y utiliza ficheros PCH aún cuando se esté preprocesando"
+msgstr "Busca y utiliza ficheros PCH aún cuando se esté preprocesando."
 
 #: c-family/c.opt:1420
-#, fuzzy
-#| msgid "Downgrade conformance errors to warnings"
 msgid "Downgrade conformance errors to warnings."
-msgstr "Degrada los errores de concordancia a avisos"
+msgstr "Degrada los errores de concordancia a avisos."
 
 #: c-family/c.opt:1424
-#, fuzzy
-#| msgid "Enable Plan 9 language extensions"
 msgid "Enable Plan 9 language extensions."
-msgstr "Activa las extensiones de lenguaje de Plan9"
+msgstr "Activa las extensiones de lenguaje de Plan9."
 
 #: c-family/c.opt:1428
-#, fuzzy
-#| msgid "Treat the input file as already preprocessed"
 msgid "Treat the input file as already preprocessed."
-msgstr "Trata al fichero de entrada como previamente preprocesado"
+msgstr "Trata al fichero de entrada como previamente preprocesado."
 
 #: c-family/c.opt:1436
-#, fuzzy
-#| msgid "-ftrack-macro-expansion=<0|1|2>  Track locations of tokens coming from macro expansion and display them in error messages"
 msgid "-ftrack-macro-expansion=<0|1|2>  Track locations of tokens coming from macro expansion and display them in error messages."
-msgstr "-ftrack-macro-expansion=<0|1|2>  Rastrea las ubicaciones de los elementos que provienen de la expansión de macr y los muestra en mensajes de error"
+msgstr "-ftrack-macro-expansion=<0|1|2>  Rastrea las ubicaciones de los elementos que provienen de la expansión de macros y los muestra en mensajes de error."
 
 #: c-family/c.opt:1440
-#, fuzzy
-#| msgid "-fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments"
 msgid "-fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments."
-msgstr "-fno-pretty-templates No da formato legible a las especializaciones de plantilla como la firma de plantilla seguida por los argumentos"
+msgstr "-fno-pretty-templates No da formato legible a las especializaciones de plantilla como la firma de plantilla seguida por los argumentos."
 
 #: c-family/c.opt:1444
-#, fuzzy
-#| msgid "Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime"
 msgid "Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime."
-msgstr "Usa el modo Fix-and-Continue para indicar que los ficheros objeto se pueden intercambiar en tiempo de ejecución"
+msgstr "Usa el modo Fix-and-Continue para indicar que los ficheros objeto se pueden intercambiar en tiempo de ejecución."
 
 #: c-family/c.opt:1448
-#, fuzzy
-#| msgid "Enable automatic template instantiation"
 msgid "Enable automatic template instantiation."
-msgstr "Activa la instanciación automática de plantillas"
+msgstr "Activa la instanciación automática de plantillas."
 
 #: c-family/c.opt:1452
-#, fuzzy
-#| msgid "Generate run time type descriptor information"
 msgid "Generate run time type descriptor information."
-msgstr "Genera información de descriptor de tipo en tiempo de ejecución"
+msgstr "Genera información de descriptor de tipo en tiempo de ejecución."
 
 #: c-family/c.opt:1456 ada/gcc-interface/lang.opt:77
-#, fuzzy
-#| msgid "Use the narrowest integer type possible for enumeration types"
 msgid "Use the narrowest integer type possible for enumeration types."
-msgstr "Usa el tipo entero más estrecho posible para tipos de enumeración"
+msgstr "Usa el tipo entero más estrecho posible para tipos de enumeración."
 
 #: c-family/c.opt:1460
-#, fuzzy
-#| msgid "Force the underlying type for \"wchar_t\" to be \"unsigned short\""
 msgid "Force the underlying type for \"wchar_t\" to be \"unsigned short\"."
-msgstr "Fuerza que el tipo debajo de \"wchar_t\" sea \"unsigned short\""
+msgstr "Fuerza que el tipo subyacente de \"wchar_t\" sea \"unsigned short\"."
 
 #: c-family/c.opt:1464
-#, fuzzy
-#| msgid "When \"signed\" or \"unsigned\" is not given make the bitfield signed"
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield signed."
-msgstr "Cuando no se proporcione \"signed\" o \"unsigned\" hace signed el campo de bits"
+msgstr "Cuando no se proporcione \"signed\" o \"unsigned\" hace signed el campo de bits."
 
 #: c-family/c.opt:1468 ada/gcc-interface/lang.opt:81
-#, fuzzy
-#| msgid "Make \"char\" signed by default"
 msgid "Make \"char\" signed by default."
-msgstr "Hace que \"char\" sea signed por defecto"
+msgstr "Hace que \"char\" sea signed por defecto."
 
 #: c-family/c.opt:1472
-#, fuzzy
-#| msgid "Enable decimal floating point hardware support"
 msgid "Enable C++14 sized deallocation support."
-msgstr "Admite la coma flotante decimal de hardware"
+msgstr "Admite desasignación con tamaño de C++14."
 
 #: c-family/c.opt:1479
 msgid "-fsso-struct=[big-endian|little-endian]\tSet the default scalar storage order."
-msgstr ""
+msgstr "-fsso-struct=[big-endian|little-endian]\tEstablece el orden de almacenamiento de escalares predeterminado."
 
 #: c-family/c.opt:1482
-#, fuzzy, c-format
-#| msgid "unrecognized register name %qs"
+#, c-format
 msgid "unrecognized scalar storage order value %qs"
-msgstr "no se reconoce el nombre de registro %qs"
+msgstr "no se reconoce el valor del orden de almacenamiento de escalares %qs"
 
 #: c-family/c.opt:1492
-#, fuzzy
-#| msgid "Display statistics accumulated during compilation"
 msgid "Display statistics accumulated during compilation."
-msgstr "Muestra las estadísticas acumuladas durante la compilación"
+msgstr "Muestra las estadísticas acumuladas durante la compilación."
 
 #: c-family/c.opt:1496
-#, fuzzy
-#| msgid "Assume that values of enumeration type are always within the minimum range of that type"
 msgid "Assume that values of enumeration type are always within the minimum range of that type."
-msgstr "Asume que los valores de tipo de enumeración están siempre dentro del rango mínimo de ese tipo"
+msgstr "Asume que los valores de tipo de enumeración están siempre dentro del rango mínimo de ese tipo."
 
 #: c-family/c.opt:1503
-#, fuzzy
-#| msgid "-ftabstop=<number>\tDistance between tab stops for column reporting"
 msgid "-ftabstop=<number>\tDistance between tab stops for column reporting."
-msgstr "-ftabstop=<número>\tDistancia entre topes de tabulador para informes en columnas"
+msgstr "-ftabstop=<número>\tDistancia entre topes de tabulador para informes en columnas."
 
 #: c-family/c.opt:1507
-#, fuzzy
-#| msgid "Set the maximum number of iterations for RPTS to N"
 msgid "Set the maximum number of template instantiation notes for a single warning or error."
-msgstr "Establece el número máximo de iteraciones para RPTS a N"
+msgstr "Establece el número máximo de notas de instanciación de plantilla para un solo aviso o error."
 
 #: c-family/c.opt:1514
-#, fuzzy
-#| msgid "-ftemplate-depth=<number>\tSpecify maximum template instantiation depth"
 msgid "-ftemplate-depth=<number>\tSpecify maximum template instantiation depth."
-msgstr "-ftemplate-depth-<número>\tEspecifica la profundidad máxima de instanciación de plantilla"
+msgstr "-ftemplate-depth-<número>\tEspecifica la profundidad máxima de instanciación de plantilla."
 
 #: c-family/c.opt:1521
-#, fuzzy
-#| msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics"
 msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics."
-msgstr "-fno-threadsafe-statics\tNo genera código seguro en hilos para inicializar statics locales"
+msgstr "-fno-threadsafe-statics\tNo genera código seguro en hilos para inicializar statics locales."
 
 #: c-family/c.opt:1525
-#, fuzzy
-#| msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned"
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned."
-msgstr "Cuando no se proporcione \"signed\" o \"unsigned\" hacer unsigned el campo de bits"
+msgstr "Cuando no se proporcione \"signed\" o \"unsigned\" hacer unsigned el campo de bits."
 
 #: c-family/c.opt:1529
-#, fuzzy
-#| msgid "Make \"char\" unsigned by default"
 msgid "Make \"char\" unsigned by default."
-msgstr "Hace que \"char\" sea unsigned por defecto"
+msgstr "Hace que \"char\" sea unsigned por defecto."
 
 #: c-family/c.opt:1533
-#, fuzzy
-#| msgid "Use __cxa_atexit to register destructors"
 msgid "Use __cxa_atexit to register destructors."
-msgstr "Usa __cxa_atexit para registrar destructores"
+msgstr "Usa __cxa_atexit para registrar destructores."
 
 #: c-family/c.opt:1537
-#, fuzzy
-#| msgid "Use __cxa_get_exception_ptr in exception handling"
 msgid "Use __cxa_get_exception_ptr in exception handling."
-msgstr "Usa __cxa_get_exception_ptr para el manejo de excepciones"
+msgstr "Usa __cxa_get_exception_ptr para el manejo de excepciones."
 
 #: c-family/c.opt:1541
-#, fuzzy
-#| msgid "Marks all inlined functions and methods as having hidden visibility"
 msgid "Marks all inlined functions and methods as having hidden visibility."
-msgstr "Marca todos los métodos y funciones incluídos en línea con visibilidad hidden"
+msgstr "Marca todos los métodos y funciones incluídos en línea con visibilidad hidden."
 
 #: c-family/c.opt:1545
-#, fuzzy
-#| msgid "Changes visibility to match Microsoft Visual Studio by default"
 msgid "Changes visibility to match Microsoft Visual Studio by default."
-msgstr "Cambia la visibilidad para coincidir con Microsoft Visual Studio por defecto"
+msgstr "Cambia la visibilidad para coincidir con Microsoft Visual Studio por defecto."
 
 #: c-family/c.opt:1557
-#, fuzzy
-#| msgid "Emit common-like symbols as weak symbols"
 msgid "Emit common-like symbols as weak symbols."
-msgstr "Emite símbolos comunes como símbolos débiles"
+msgstr "Emite símbolos comunes como símbolos débiles."
 
 #: c-family/c.opt:1561
-#, fuzzy
-#| msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>"
 msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>."
-msgstr "-fwide-exec-charset=<cset>\tConvierte todas las cadenas anchas y constantes de cáracter al conjunto de caracteres <cset>"
+msgstr "-fwide-exec-charset=<cset>\tConvierte todas las cadenas anchas y constantes de cáracter al conjunto de caracteres <cset>."
 
 #: c-family/c.opt:1565
-#, fuzzy
-#| msgid "Generate a #line directive pointing at the current working directory"
 msgid "Generate a #line directive pointing at the current working directory."
-msgstr "Genera una directiva #line que apunte al directorio de trabajo actual"
+msgstr "Genera una directiva #line que apunte al directorio de trabajo actual."
 
 #: c-family/c.opt:1573
-#, fuzzy
-#| msgid "Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mode"
 msgid "Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mode."
-msgstr "Genera la búsqueda no estricta de clases (a través de objc_getClass()) para usarlas en el modo Zero-Link"
+msgstr "Genera la búsqueda no estricta de clases (a través de objc_getClass()) para usarlas en el modo Zero-Link."
 
 #: c-family/c.opt:1577
-#, fuzzy
-#| msgid "Dump declarations to a .decl file"
 msgid "Dump declarations to a .decl file."
-msgstr "Vuelca las declaraciones a un fichero .decl"
+msgstr "Vuelca las declaraciones a un fichero .decl."
 
 #: c-family/c.opt:1581
-#, fuzzy
-#| msgid "-femit-struct-debug-baseonly\tAggressive reduced debug info for structs"
 msgid "-femit-struct-debug-baseonly\tAggressive reduced debug info for structs."
-msgstr "-femit-struct-debug-baseonly\tInformación de depuración reducida agresiva para structs"
+msgstr "-femit-struct-debug-baseonly\tInformación de depuración reducida agresiva para structs."
 
 #: c-family/c.opt:1585
-#, fuzzy
-#| msgid "-femit-struct-debug-reduced\tConservative reduced debug info for structs"
 msgid "-femit-struct-debug-reduced\tConservative reduced debug info for structs."
-msgstr "-femit-struct-debug-reduced\tInformación de depuración reducida conservativa para structs"
+msgstr "-femit-struct-debug-reduced\tInformación de depuración reducida conservadora para structs."
 
 #: c-family/c.opt:1589
-#, fuzzy
-#| msgid "-femit-struct-debug-detailed=<spec-list>\tDetailed reduced debug info for structs"
 msgid "-femit-struct-debug-detailed=<spec-list>\tDetailed reduced debug info for structs."
-msgstr "-femit-struct-debug-detailed=<lista-espec>\tInformación de depuración reducida detallada para structs"
+msgstr "-femit-struct-debug-detailed=<lista-espec>\tInformación de depuración reducida detallada para structs."
 
 #: c-family/c.opt:1593
 msgid "Interpret imaginary, fixed-point, or other gnu number suffix as the corresponding"
-msgstr ""
+msgstr "Interpreta imaginario, coma fija u otro sufijo de número gnu como el correspondiente"
 
 #: c-family/c.opt:1598
-#, fuzzy
-#| msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path"
 msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path."
-msgstr "-idirafter <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión del sistema"
+msgstr "-idirafter <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión del sistema."
 
 #: c-family/c.opt:1602
-#, fuzzy
-#| msgid "-imacros <file>\tAccept definition of macros in <file>"
 msgid "-imacros <file>\tAccept definition of macros in <file>."
-msgstr "-imacros <fichero>\tAcepta la definición de macros en el <fichero>"
+msgstr "-imacros <fichero>\tAcepta la definición de macros en el <fichero>."
 
 #: c-family/c.opt:1606
-#, fuzzy
-#| msgid "-imultilib <dir>\tSet <dir> to be the multilib include subdirectory"
 msgid "-imultilib <dir>\tSet <dir> to be the multilib include subdirectory."
-msgstr "-imultilib <dir>\tDefine <dir> como el subdirectorio de inclusión de multilib"
+msgstr "-imultilib <dir>\tDefine <dir> como el subdirectorio de inclusión de multilib."
 
 #: c-family/c.opt:1610
-#, fuzzy
-#| msgid "-include <file>\tInclude the contents of <file> before other files"
 msgid "-include <file>\tInclude the contents of <file> before other files."
-msgstr "-include <file>\tIncluye los contenidos del <fichero> antes de otros ficheros"
+msgstr "-include <file>\tIncluye los contenidos del <fichero> antes de otros ficheros."
 
 #: c-family/c.opt:1614
-#, fuzzy
-#| msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options"
 msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options."
-msgstr "-iprefix <ruta>\tEspecifica la <ruta> como un prefijo para las siguientes dos opciones"
+msgstr "-iprefix <ruta>\tEspecifica la <ruta> como un prefijo para las siguientes dos opciones."
 
 #: c-family/c.opt:1618
-#, fuzzy
-#| msgid "-isysroot <dir>\tSet <dir> to be the system root directory"
 msgid "-isysroot <dir>\tSet <dir> to be the system root directory."
-msgstr "-isysroot <dir>\tEstablece el <dir>ectorio como el directorio raíz del sistema"
+msgstr "-isysroot <dir>\tEstablece el <dir>ectorio como el directorio raíz del sistema."
 
 #: c-family/c.opt:1622
-#, fuzzy
-#| msgid "-isystem <dir>\tAdd <dir> to the start of the system include path"
 msgid "-isystem <dir>\tAdd <dir> to the start of the system include path."
-msgstr "-isystem <dir>\tAgrega el <dir>ectorio al inicio de la ruta de inclusión del sistema"
+msgstr "-isystem <dir>\tAgrega el <dir>ectorio al inicio de la ruta de inclusión del sistema."
 
 #: c-family/c.opt:1626
-#, fuzzy
-#| msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path"
 msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path."
-msgstr "-iquote <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión de citas"
+msgstr "-iquote <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión de citas."
 
 #: c-family/c.opt:1630
-#, fuzzy
-#| msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path"
 msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path."
-msgstr "-iwithprefix <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión del sistema"
+msgstr "-iwithprefix <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión del sistema."
 
 #: c-family/c.opt:1634
-#, fuzzy
-#| msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path"
 msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path."
-msgstr "-iwithprefixbefore <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión principal"
+msgstr "-iwithprefixbefore <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión principal."
 
 #: c-family/c.opt:1644
-#, fuzzy
-#| msgid "Do not search standard system include directories (those specified with -isystem will still be used)"
 msgid "Do not search standard system include directories (those specified with -isystem will still be used)."
-msgstr "No busca directorios de inclusión del sistema por defecto (aquellos especificados con -isystem aún serán utilizados)"
+msgstr "No busca directorios de inclusión del sistema por defecto (aquellos especificados con -isystem aún serán utilizados)."
 
 #: c-family/c.opt:1648
-#, fuzzy
-#| msgid "Do not search standard system include directories for C++"
 msgid "Do not search standard system include directories for C++."
-msgstr "No busca directorios de inclusión del sistema por defecto para C++"
+msgstr "No busca directorios de inclusión del sistema por defecto para C++."
 
 #: c-family/c.opt:1660
-#, fuzzy
-#| msgid "Generate C header of platform-specific features"
 msgid "Generate C header of platform-specific features."
-msgstr "Genera encabezado C de características específicas de la plataforma"
+msgstr "Genera encabezado C de características específicas de la plataforma."
 
 #: c-family/c.opt:1664
-#, fuzzy
-#| msgid "Remap file names when including files"
 msgid "Remap file names when including files."
-msgstr "Remapea nombres de fichero cuando incluyen ficheros"
+msgstr "Reasocia nombres de fichero al incluir ficheros"
 
 #: c-family/c.opt:1668 c-family/c.opt:1672
-#, fuzzy
-#| msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum"
 msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum."
-msgstr "Conforma al estándar ISO 1998 C++ revisado por la corrección técnica 2003"
+msgstr "Conforma al estándar ISO 1998 C++ revisado por la corrección técnica 2003."
 
 #: c-family/c.opt:1676
-#, fuzzy
-#| msgid "Conform to the ISO 1998 C++ standard"
 msgid "Conform to the ISO 2011 C++ standard."
-msgstr "Conforma al estándar ISO 1998 C++"
+msgstr "Conforma al estándar ISO 2011 C++."
 
 #: c-family/c.opt:1680
-#, fuzzy
-#| msgid "Deprecated in favor of -std=c++11"
 msgid "Deprecated in favor of -std=c++11."
-msgstr "Obsoleto en favor de -std=c++11"
+msgstr "Obsoleto en favor de -std=c++11."
 
 #: c-family/c.opt:1684
-#, fuzzy
-#| msgid "Deprecated in favor of -std=c++11"
 msgid "Deprecated in favor of -std=c++14."
-msgstr "Obsoleto en favor de -std=c++11"
+msgstr "Obsoleto en favor de -std=c++14."
 
 #: c-family/c.opt:1688
-#, fuzzy
-#| msgid "Conform to the ISO 1998 C++ standard"
 msgid "Conform to the ISO 2014 C++ standard."
-msgstr "Conforma al estándar ISO 1998 C++"
+msgstr "Conforma al estándar ISO 2014 C++."
 
 #: c-family/c.opt:1692
-#, fuzzy
-#| msgid "Conform to the ISO 2011 C++ standard (experimental and incomplete support)"
 msgid "Conform to the ISO 2017(?) C++ draft standard (experimental and incomplete support)."
-msgstr "Conforma al estándar ISO 2011 C++ (soporte experimental e incompleto)"
+msgstr "Conforma al borrador del estándar ISO 2017(?) C++ (soporte experimental e incompleto)."
 
 #: c-family/c.opt:1699 c-family/c.opt:1796
-#, fuzzy
-#| msgid "Conform to the ISO 1990 C standard"
 msgid "Conform to the ISO 2011 C standard."
-msgstr "Conforma al estándar ISO 1990 C"
+msgstr "Conforma al estándar ISO 2012 C."
 
 #: c-family/c.opt:1703
-#, fuzzy
-#| msgid "Deprecated in favor of -std=c11"
 msgid "Deprecated in favor of -std=c11."
-msgstr "Obsoleto en favor de -std=c11"
+msgstr "Obsoleto en favor de -std=c11."
 
 #: c-family/c.opt:1707 c-family/c.opt:1711 c-family/c.opt:1780
-#, fuzzy
-#| msgid "Conform to the ISO 1990 C standard"
 msgid "Conform to the ISO 1990 C standard."
-msgstr "Conforma al estándar ISO 1990 C"
+msgstr "Conforma al estándar ISO 1990 C."
 
 #: c-family/c.opt:1715 c-family/c.opt:1788
-#, fuzzy
-#| msgid "Conform to the ISO 1999 C standard"
 msgid "Conform to the ISO 1999 C standard."
-msgstr "Conforma al estándar ISO 1999 C"
+msgstr "Conforma al estándar ISO 1999 C."
 
 #: c-family/c.opt:1719
-#, fuzzy
-#| msgid "Deprecated in favor of -std=c99"
 msgid "Deprecated in favor of -std=c99."
-msgstr "Obsoleto en favor de -std=c99"
+msgstr "Obsoleto en favor de -std=c99."
 
 #: c-family/c.opt:1723 c-family/c.opt:1728
 msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical"
 msgstr "Conforma al estándar ISO 1998 C++ revisado por el técnico 2003"
 
 #: c-family/c.opt:1733
-#, fuzzy
-#| msgid "Conform to the ISO 1998 C++ standard with GNU extensions"
 msgid "Conform to the ISO 2011 C++ standard with GNU extensions."
-msgstr "Conforma al estándar ISO 1998 C++ con extensiones GNU"
+msgstr "Conforma al estándar ISO 2011 C++ con extensiones GNU."
 
 #: c-family/c.opt:1737
-#, fuzzy
-#| msgid "Deprecated in favor of -std=gnu++11"
 msgid "Deprecated in favor of -std=gnu++11."
-msgstr "Obsoleto en favor de -std=gnu++11"
+msgstr "Obsoleto en favor de -std=gnu++11."
 
 #: c-family/c.opt:1741
 #, fuzzy
@@ -10726,13 +10542,13 @@ msgstr ""
 #, fuzzy
 #| msgid "Assume the VxWorks RTP environment"
 msgid "Assume the VxWorks RTP environment."
-msgstr "Asume el ambiente RTP de VxWorks"
+msgstr "Asume el entorno RTP de VxWorks"
 
 #: config/vxworks.opt:43
 #, fuzzy
 #| msgid "Assume the VxWorks vThreads environment"
 msgid "Assume the VxWorks vThreads environment."
-msgstr "Asume el ambiente vThreads de VxWorks"
+msgstr "Asume el entorno vThreads de VxWorks"
 
 #: config/cr16/cr16.opt:23
 #, fuzzy
@@ -13993,7 +13809,7 @@ msgstr "Nombre del tablero [y región de memoria]."
 
 #: config/sh/superh.opt:10
 msgid "Runtime name."
-msgstr "Nombre del ambiente de ejecución."
+msgstr "Nombre del entorno de ejecución."
 
 #: config/sh/sh.opt:48
 #, fuzzy
@@ -20820,7 +20636,7 @@ msgstr "la exclusión multilib %qs es inválida"
 #: gcc.c:9200
 #, gcc-internal-format
 msgid "environment variable %qs not defined"
-msgstr "no se definió la variable de ambiente %qs"
+msgstr "no se definió la variable de entorno %qs"
 
 #: gcc.c:9339 gcc.c:9344
 #, gcc-internal-format
@@ -21937,12 +21753,12 @@ msgstr ""
 #: lto-wrapper.c:974
 #, gcc-internal-format
 msgid "environment variable COLLECT_GCC must be set"
-msgstr "se debe establecer la variable de ambiente COLLECT_GCC"
+msgstr "se debe establecer la variable de entorno COLLECT_GCC"
 
 #: lto-wrapper.c:978 config/nvptx/mkoffload.c:361
 #, gcc-internal-format
 msgid "environment variable COLLECT_GCC_OPTIONS must be set"
-msgstr "se debe establecer la variable de ambiente COLLECT_GCC_OPTIONS"
+msgstr "se debe establecer la variable de entorno COLLECT_GCC_OPTIONS"
 
 #: lto-wrapper.c:1135 lto-wrapper.c:1191
 #, fuzzy, gcc-internal-format
@@ -25043,7 +24859,7 @@ msgstr "%s: no es compatible con esta versión de GCC"
 #, fuzzy, gcc-internal-format
 #| msgid "environment variable %qs not defined"
 msgid "Main variant is not defined"
-msgstr "no se definió la variable de ambiente %qs"
+msgstr "no se definió la variable de entorno %qs"
 
 #: tree.c:13545
 #, gcc-internal-format
@@ -30835,17 +30651,17 @@ msgstr "la definición de los datos miembro static %q+D de la clase dllimportada
 #: config/i386/xm-djgpp.h:85
 #, gcc-internal-format
 msgid "environment variable DJGPP not defined"
-msgstr "no se definió la variable de ambiente DJGPP"
+msgstr "no se definió la variable de entorno DJGPP"
 
 #: config/i386/xm-djgpp.h:87
 #, gcc-internal-format, gfc-internal-format
 msgid "environment variable DJGPP points to missing file '%s'"
-msgstr "la variable de ambiente DJGPP apunta al fichero faltante '%s'"
+msgstr "la variable de entorno DJGPP apunta al fichero faltante '%s'"
 
 #: config/i386/xm-djgpp.h:90
 #, gcc-internal-format, gfc-internal-format
 msgid "environment variable DJGPP points to corrupt file '%s'"
-msgstr "la variable de ambiente DJGPP apunta al fichero corrupto '%s'"
+msgstr "la variable de entorno DJGPP apunta al fichero corrupto '%s'"
 
 #: config/ia64/ia64-c.c:48
 #, gcc-internal-format
