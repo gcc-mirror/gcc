@@ -1,3 +1,7 @@
+2016-11-29  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* LOCAL_PATCHES: Remove r242480.
+
 2016-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* LOCAL_PATCHES: Add revision.
