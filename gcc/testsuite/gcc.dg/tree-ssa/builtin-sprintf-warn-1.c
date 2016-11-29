@@ -99,30 +99,6 @@ void test_sprintf_c_const (void)
   T (-1, "%*cX", INT_MAX,     '1'); /* { dg-warning "output of \[0-9\]+ bytes causes result to exceed .INT_MAX." } */
 }
 
-/* Exercise the "%p" directive with constant arguments.  */
-
-void test_sprintf_p_const (void)
-{
-  /* GLIBC and uClibc format null pointers as "(nil)".  Sane implementations
-     format null pointers as 0 or 0x0 and so the following will only be
-     diagnosed on the former targets.  */
-  T (5, "%p",     (void*)0);
-  /* { dg-warning "nul past the end" "(nil)" { target *-linux-gnu *-*-uclinux } .-1 } */
-
-  /* The exact output for %p is unspecified by C.  Two formats are known:
-     same as %tx (for example AIX) and same as %#tx (for example Solaris).  */
-  T (0, "%p",     (void*)0x1);    /* { dg-warning ".%p. directive writing . bytes? into a region of size 0" } */
-  T (1, "%p",     (void*)0x12);   /* { dg-warning ".%p. directive writing . bytes? into a region of size 1" } */
-  T (2, "%p",     (void*)0x123);  /* { dg-warning ".%p. directive writing . bytes? into a region of size 2" } */
-
-  /* GLIBC and uClibc treat the ' ' flag with the "%p" directive the same
-     as with signed integer conversions (i.e., it prepends a space).  Other
-     known implementations ignore it.  */
-  T (6, "% p",    (void*)0x234);  /* { dg-warning ". . flag used with .%p." } */
-  /* { dg-warning "nul past the end" "Glibc %p" { target *-linux-gnu } .-1 } */
-  /* { dg-warning "nul past the end" "Generic %p" { target *-*-uclinux } .-2 } */
-}
-
 /* Verify that no warning is issued for calls that write into a flexible
    array member whose size isn't known.  Also verify that calls that use
    a flexible array member as an argument to the "%s" directive do not
