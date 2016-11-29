@@ -6334,7 +6334,7 @@ pass_expand::execute (function *fun)
 
   /* Initialize the stack_protect_guard field.  This must happen after the
      call to __main (if any) so that the external decl is initialized.  */
-  if (crtl->stack_protect_guard)
+  if (crtl->stack_protect_guard && targetm.stack_protect_runtime_enabled_p ())
     stack_protect_prologue ();
 
   expand_phi_nodes (&SA);

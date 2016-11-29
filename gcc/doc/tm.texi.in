@@ -3820,6 +3820,8 @@ generic code.
 
 @hook TARGET_STACK_PROTECT_FAIL
 
+@hook TARGET_STACK_PROTECT_RUNTIME_ENABLED_P
+
 @hook TARGET_SUPPORTS_SPLIT_STACK
 
 @node Miscellaneous Register Hooks

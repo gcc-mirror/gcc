@@ -5635,7 +5635,7 @@ expand_function_end (void)
     emit_insn (gen_blockage ());
 
   /* If stack protection is enabled for this function, check the guard.  */
-  if (crtl->stack_protect_guard)
+  if (crtl->stack_protect_guard && targetm.stack_protect_runtime_enabled_p ())
     stack_protect_epilogue ();
 
   /* If we had calls to alloca, and this machine needs
