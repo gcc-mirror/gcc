@@ -1,3 +1,8 @@
+2016-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/78546
+	* gcc.dg/tree-ssa/forwprop-36.c: New testcase.
+
 2016-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/rldic-0.c: New testcase.
