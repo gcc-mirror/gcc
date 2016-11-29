@@ -382,11 +382,11 @@ Target
 Pass -EL option through to linker.
 
 marclinux
-target
+Target
 Pass -marclinux option through to linker.
 
 marclinux_prof
-target
+Target
 Pass -marclinux_prof option through to linker.
 
 ;; lra is still unproven for ARC, so allow to fall back to reload with -mno-lra.
