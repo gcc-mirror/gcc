@@ -4812,6 +4812,12 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
       if (!resword_identifier)
 	continue;
       gcc_assert (TREE_CODE (resword_identifier) == IDENTIFIER_NODE);
+
+      /* Only consider reserved words that survived the
+	 filtering in init_reswords (e.g. for -std).  */
+      if (!C_IS_RESERVED_WORD (resword_identifier))
+	continue;
+
       bm.consider (resword_identifier);
     }
 

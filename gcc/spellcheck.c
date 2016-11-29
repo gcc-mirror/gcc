@@ -210,6 +210,11 @@ test_find_closest_string ()
   ASSERT_STREQ ("banana", find_closest_string ("banyan", &candidates));
   ASSERT_STREQ ("cherry", find_closest_string ("berry", &candidates));
   ASSERT_EQ (NULL, find_closest_string ("not like the others", &candidates));
+
+  /* If the goal string somehow makes it into the candidate list, offering
+     it as a suggestion will be nonsensical.  Verify that we don't offer such
+     suggestions.  */
+  ASSERT_EQ (NULL, find_closest_string ("banana", &candidates));
 }
 
 /* Test data for test_metric_conditions.  */

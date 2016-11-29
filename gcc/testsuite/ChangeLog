@@ -1,3 +1,13 @@
+2016-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72774
+	PR c++/72786
+	PR c++/77922
+	PR c++/78313
+	* g++.dg/spellcheck-c++-11-keyword.C: New test case.
+	* g++.dg/spellcheck-macro-ordering.C: New test case.
+	* g++.dg/spellcheck-pr78313.C: New test case.
+
 2016-11-29  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h

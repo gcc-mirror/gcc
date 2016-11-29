@@ -1,3 +1,15 @@
+2016-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72774
+	PR c++/72786
+	PR c++/77922
+	PR c++/78313
+	* spellcheck.c (selftest::test_find_closest_string): Verify that
+	we don't offer the goal string as a suggestion.
+	* spellcheck.h (best_match::get_best_meaningful_candidate): Don't
+	offer the goal string as a suggestion.
+
+
 2016-11-29  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_override_options): Avoid selection of
