@@ -1,3 +1,8 @@
+2016-11-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58175
+	* resolve.c (gfc_resolve_finalizers): Properly detect scalar finalizers.
+
 2016-11-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78474
