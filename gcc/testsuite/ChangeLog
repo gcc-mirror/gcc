@@ -1,3 +1,8 @@
+2016-11-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* testsuite/gcc.dg/pr31096-1.c: Use __{U,}INT32_TYPE__ for
+	targets with sizeof(int) < 4.
+
 2016-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/78546
