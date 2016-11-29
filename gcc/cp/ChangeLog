@@ -1,3 +1,9 @@
+2016-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/77922
+	* name-lookup.c (lookup_name_fuzzy): Filter out reserved words
+	that were filtered out by init_reswords.
+
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
