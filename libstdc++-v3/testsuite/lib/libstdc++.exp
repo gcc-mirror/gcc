@@ -136,6 +136,9 @@ proc libstdc++_init { testfile } {
 	if { [string match "powerpc-*-darwin*" $target_triplet] } {
 	    append DEFAULT_CXXFLAGS " -multiply_defined suppress"
 	} 
+	if { [string match "powerpc-ibm-aix*" $target_triplet] } {
+	    append DEFAULT_CXXFLAGS " -Wl,-bmaxdata:0x20000000"
+	} 
     }
     v3track DEFAULT_CXXFLAGS 2
 
