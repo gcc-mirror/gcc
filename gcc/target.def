@@ -4039,6 +4039,15 @@ normally defined in @file{libgcc2.c}.",
  tree, (void),
  default_external_stack_protect_fail)
 
+/* This target hook allows the operating system to disable the default stack
+   protector runtime support.  */
+DEFHOOK
+(stack_protect_runtime_enabled_p,
+ "Returns true if the target wants GCC's default stack protect runtime support,\
+ otherwise return false.  The default implementation always returns true.",
+ bool, (void),
+ hook_bool_void_true)
+
 DEFHOOK
 (can_use_doloop_p,
  "Return true if it is possible to use low-overhead loops (@code{doloop_end}\n\

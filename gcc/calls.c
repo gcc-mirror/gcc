@@ -3083,7 +3083,9 @@ expand_call (tree exp, rtx target, int ignore)
       if (pass && (flags & ECF_MALLOC))
 	start_sequence ();
 
-      if (pass == 0 && crtl->stack_protect_guard)
+      if (pass == 0
+	  && crtl->stack_protect_guard
+	  && targetm.stack_protect_runtime_enabled_p ())
 	stack_protect_epilogue ();
 
       adjusted_args_size = args_size;

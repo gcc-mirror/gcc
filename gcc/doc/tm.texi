@@ -4946,6 +4946,10 @@ The default version of this hook invokes a function called
 normally defined in @file{libgcc2.c}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_STACK_PROTECT_RUNTIME_ENABLED_P (void)
+Returns true if the target wants GCC's default stack protect runtime support, otherwise return false.  The default implementation always returns true.
+@end deftypefn
+
 @deftypefn {Common Target Hook} bool TARGET_SUPPORTS_SPLIT_STACK (bool @var{report}, struct gcc_options *@var{opts})
 Whether this target supports splitting the stack when the options described in @var{opts} have been passed.  This is called after options have been parsed, so the target may reject splitting the stack in some configurations.  The default version of this hook returns false.  If @var{report} is true, this function may issue a warning or error; if @var{report} is false, it must simply return a value
 @end deftypefn

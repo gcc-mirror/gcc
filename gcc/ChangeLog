@@ -1,3 +1,13 @@
+2016-11-29  Jiong Wang  <jiong.wang@arm.com>
+
+	* target.def (stack_protect_runtime_enabled_p): New.
+	* function.c (expand_function_end): Guard stack_protect_epilogue with
+	targetm.stack_protect_runtime_enabled_p.
+	* cfgexpand.c (pass_expand::execute): Likewise.
+	* calls.c (expand_call): Likewise.
+	* doc/tm.texi.in (TARGET_STACK_PROTECT_RUNTIME_ENABLED_P): Add it.
+	* doc/tm.texi: Regenerate.
+
 2016-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/78546
