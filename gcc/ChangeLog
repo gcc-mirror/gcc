@@ -1,3 +1,8 @@
+2016-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* simplify-rtx.c (simplify_truncation): Handle truncate of zero_extract
+	and sign_extract.
+
 2016-11-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*and<mode>_1): Merge insn pattern from
