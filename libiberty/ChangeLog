@@ -1,3 +1,7 @@
+2016-11-29  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_print_comp_inner): Fix parameter indentation.
+
 2016-11-03  David Tolnay <dtolnay@gmail.com>
 	    Mark Wielaard  <mark@klomp.org>
 
