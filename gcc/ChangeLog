@@ -1,5 +1,13 @@
 2016-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR rtl-optimization/78342
+	* combine.c: Include "cfghooks.h".
+	(try_combine): If we create an unconditional trap, break the basic
+	block in two just after it, and remove the edge between; also, set
+	the *new_direct_jump_p flag so that cleanup_cfg is run.
+
+2016-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* simplify-rtx.c (simplify_truncation): Handle truncate of zero_extract
 	and sign_extract.
 
