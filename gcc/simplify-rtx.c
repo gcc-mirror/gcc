@@ -747,6 +747,36 @@ simplify_truncation (machine_mode mode, rtx op,
 	}
     }
 
+  /* Turn (truncate:M1 (*_extract:M2 (reg:M2) (len) (pos))) into
+     (*_extract:M1 (truncate:M1 (reg:M2)) (len) (pos')) if possible without
+     changing len.  */
+  if ((GET_CODE (op) == ZERO_EXTRACT || GET_CODE (op) == SIGN_EXTRACT)
+      && REG_P (XEXP (op, 0))
+      && CONST_INT_P (XEXP (op, 1))
+      && CONST_INT_P (XEXP (op, 2)))
+    {
+      rtx op0 = XEXP (op, 0);
+      unsigned HOST_WIDE_INT len = UINTVAL (XEXP (op, 1));
+      unsigned HOST_WIDE_INT pos = UINTVAL (XEXP (op, 2));
+      if (BITS_BIG_ENDIAN && pos >= op_precision - precision)
+	{
+	  op0 = simplify_gen_unary (TRUNCATE, mode, op0, GET_MODE (op0));
+	  if (op0)
+	    {
+	      pos -= op_precision - precision;
+	      return simplify_gen_ternary (GET_CODE (op), mode, mode, op0,
+					   XEXP (op, 1), GEN_INT (pos));
+	    }
+	}
+      else if (!BITS_BIG_ENDIAN && precision >= len + pos)
+	{
+	  op0 = simplify_gen_unary (TRUNCATE, mode, op0, GET_MODE (op0));
+	  if (op0)
+	    return simplify_gen_ternary (GET_CODE (op), mode, mode, op0,
+					 XEXP (op, 1), XEXP (op, 2));
+	}
+    }
+
   /* Recognize a word extraction from a multi-word subreg.  */
   if ((GET_CODE (op) == LSHIFTRT
        || GET_CODE (op) == ASHIFTRT)
