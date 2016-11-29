@@ -27,14 +27,16 @@
 #   top-level         = hors de toute fonction
 #   member function   = fonction membre
 #   template          = patron  (apparaît dans plusieurs dictionnaires)
-#   edge              = arrête (car il s'agit d'un saut indirect qui est un lien entre deux blocs de code.
-#                       J'ai utilisé une analogie avec l'arrête d'un polyèdre.)
+#   edge              = arête (car il s'agit d'un saut indirect qui est un lien entre deux blocs de code.
+#                       J'ai utilisé une analogie avec l'arête d'un polyèdre.)
 #   loop unrolling    = dépliage de boucle (car développement est déjà utilisé pour « variable expansion ».)
 #   loop peeling      = aplatissage de boucle (c'est comme le unrolling sauf que toutes les itérations
 #                       de la boucle initiale ont été dépliées. La boucle est complètement à plat.)
 #
 # Pas traduit:
 #   thread
+#   iv                = Induction Variable reste tel quel car la traduction serait VI ce qui ne facilite pas
+#                       la recherche de documentation sur internet.
 #
 # J'ai des doutes pour :
 #   inline            = enligne (pas systématiquement)
@@ -131,7 +133,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-08-19 21:03+0000\n"
-"PO-Revision-Date: 2016-11-20 09:24+0100\n"
+"PO-Revision-Date: 2016-11-27 16:58+0100\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -147,7 +149,7 @@ msgstr "insn de contrôle de flot à l’intérieur d’un bloc de base"
 
 #: cfgrtl.c:2888
 msgid "wrong insn in the fallthru edge"
-msgstr "insn erronée dans l’arrête fallthru"
+msgstr "insn erronée dans l’arête fallthru"
 
 #: cfgrtl.c:2945
 msgid "insn outside basic block"
@@ -1837,7 +1839,7 @@ msgstr "Le rapport seuil pour réaliser l'élimination des redondances partielle
 #: params.def:245
 #, no-c-format
 msgid "The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload."
-msgstr "Le rapport seuil du décompte d'exécution des arrêtes critiques qui permet l'élimination des redondances après rechargement."
+msgstr "Le rapport seuil du décompte d'exécution des arêtes critiques qui permet l'élimination des redondances après rechargement."
 
 #: params.def:253
 #, no-c-format
@@ -1922,119 +1924,117 @@ msgstr "Le nombre maximum de déplacements d'une seule boucle à l'intérieur de
 #: params.def:351
 #, no-c-format
 msgid "Bound on the number of iterations the brute force # of iterations analysis algorithm evaluates."
-msgstr ""
+msgstr "Limite le nombre d'itérations que l'algorithme d'analyse du nombre d'itérations évalue par la force brute."
 
 #: params.def:357
 #, no-c-format
 msgid "Bound on the cost of an expression to compute the number of iterations."
-msgstr ""
+msgstr "Limite sur le coût d'une expression pour calculer le nombre d'itérations."
 
 #: params.def:363
 #, no-c-format
 msgid "A factor for tuning the upper bound that swing modulo scheduler uses for scheduling a loop."
-msgstr ""
+msgstr "Un facteur pour ajuster la limite supérieure que le « Swing Modulo Scheduler » utilise pour ordonnancer une boucle."
 
 #: params.def:368
 #, no-c-format
 msgid "The minimum value of stage count that swing modulo scheduler will generate."
-msgstr ""
+msgstr "La valeur minimum du décompte des étapes que le « Swing Modulo Scheduler » va générer."
 
 #: params.def:372
 #, no-c-format
 msgid "The number of cycles the swing modulo scheduler considers when checking conflicts using DFA."
-msgstr ""
+msgstr "Le nombre de cycles que le « Swing Modulo Scheduler » prend en compte lorsqu'il vérifie les conflits en utilisant DFA."
 
 #: params.def:376
 #, no-c-format
 msgid "A threshold on the average loop count considered by the swing modulo scheduler."
-msgstr ""
+msgstr "Un seuil sur le nombre moyen d'itérations prises en compte par le « Swing Modulo Scheduler »."
 
 #: params.def:381
 #, no-c-format
 msgid "A basic block profile count is considered hot if it contributes to the given permillage of the entire profiled execution."
-msgstr ""
+msgstr "Le décompte du profilage d'un bloc de base est considéré comme « chaud » si il contribue à hauteur du pour mille spécifié au profilage entier de l'exécution."
 
 #: params.def:386
 #, no-c-format
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot."
-msgstr "Sélectionner la fraction de la fréquence maximale d'exécutions du bloc de base dans la fonction selon le bloc de base donné doit être considéré comme chaud « hot »."
+msgstr "Sélectionner la fraction de la fréquence maximale d'exécutions du bloc de base dans la fonction selon le bloc de base donné doit être considéré comme « chaud »."
 
 #: params.def:391
 #, no-c-format
 msgid "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely."
-msgstr ""
+msgstr "La fraction minimum des exécutions de profilage que le décompte de l'exécution d'un bloc de base doit être pour qu'il ne soit pas considéré comme improbable."
 
 #: params.def:396
-#, fuzzy, no-c-format
-#| msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot"
+#, no-c-format
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment."
-msgstr "Sélectionner la fraction de la fréquence maximale d'exécutions du bloc de base dans la fonction selon le bloc de base donné doit être considéré comme chaud « hot »"
+msgstr "Sélectionner la fraction de la fréquence maximale d'exécutions du bloc de base dans la fonction selon l'alignement que le bloc de base reçoit."
 
 #: params.def:401
 #, no-c-format
 msgid "Loops iterating at least selected number of iterations will get loop alignement.."
-msgstr ""
+msgstr "Les boucles qui itèrent au moins le nombre de fois sélectionné recevront un alignement de boucle.."
 
 #: params.def:417
 #, no-c-format
 msgid "The maximum number of loop iterations we predict statically."
-msgstr "Le nombre maximum d’itérations de boucle à prédire statiquement."
+msgstr "Le nombre maximum d’itérations de boucles qui sont prédites statiquement."
 
 #: params.def:430
 #, no-c-format
 msgid "Set the estimated probability in percentage for builtin expect. The default value is 90% probability."
-msgstr ""
+msgstr "Fixe la probabilité estimée en pourcentage pour « builtin expect ». La valeur par défaut est une probabilité de 90%."
 
 #: params.def:434
 #, no-c-format
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available."
-msgstr "Le pourcentage de fonction, pondéré par la fréquence d'exécutions, qui doit être couvert la formation de la trace. Utilisé lorsque le feedback par profile est disponible."
+msgstr "Le pourcentage de fonction, pondéré par la fréquence d'exécutions, qui doit être couvert la formation de la trace. Utilisé lorsque le feedback par profilage est disponible."
 
 #: params.def:438
 #, no-c-format
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available."
-msgstr "Le pourcentage de fonction, pondéré par la fréquence d'exécutions, qui doit être couvert la formation de la trace. Utilisé lorsque le feedback par profilage n'est disponible."
+msgstr "Le pourcentage de fonction, pondéré par la fréquence d'exécutions, qui doit être couvert la formation de la trace. Utilisé lorsque le feedback par profilage n'est pas disponible."
 
 #: params.def:442
 #, no-c-format
 msgid "Maximal code growth caused by tail duplication (in percent)."
-msgstr "Croissance maximal du code en raison de duplication de queue (en pourcentage)."
+msgstr "Croissance maximale du code par la duplication de queue (en pourcentage)."
 
 #: params.def:446
 #, no-c-format
 msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)."
-msgstr "Stopper la croissance renversée si la probabilité inverse des meilleures bordures est inférieure à ce seuil (en pourcentage)."
+msgstr "Stopper la croissance renversée si la probabilité inverse des meilleures arêtes est inférieure à ce seuil (en pourcentage)."
 
 #: params.def:450
 #, no-c-format
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available."
-msgstr "Stopper la croissance anticipée si la probabilité des meilleures bordures est inférieure à ce seuil (en pourcentage). Utilisé lorsque le feedback par profilage est disponible."
+msgstr "Stopper la croissance anticipée si la probabilité des meilleures arêtes est inférieure à ce seuil (en pourcentage). Utilisé lorsque le feedback par profilage est disponible."
 
 #: params.def:454
 #, no-c-format
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is not available."
-msgstr "Stopper la croissance anticipée si la probabilité des meilleures bordures est inférieure à ce seuil (en pourcentage). Utilisé lorsque le feedback par profilage n'est pas disponible."
+msgstr "Stopper la croissance anticipée si la probabilité des meilleures arêtes est inférieure à ce seuil (en pourcentage). Utilisé lorsque le feedback par profilage n'est pas disponible."
 
 #: params.def:460
 #, no-c-format
 msgid "The maximum number of incoming edges to consider for crossjumping."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés."
+msgstr "Le nombre maximum d'arêtes entrantes à considérer pour les sauts croisés."
 
 #: params.def:466
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The minimum number of matching instructions to consider for crossjumping."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
+msgstr "Le nombre minimum d'instructions concordantes à considérer pour les sauts croisés."
 
 #: params.def:472
 #, no-c-format
 msgid "The maximum expansion factor when copying basic blocks."
-msgstr ""
+msgstr "Le facteur d'expansion maximum en copiant des blocs de base."
 
 #: params.def:478
 #, no-c-format
 msgid "The maximum number of insns to duplicate when unfactoring computed gotos."
-msgstr "Le nombre maximum d'insns à dupliquer lors des supressions de goto."
+msgstr "Le nombre maximum d'insns à dupliquer lors de la défactorisation des goto calculés."
 
 #: params.def:484
 #, no-c-format
@@ -2044,204 +2044,192 @@ msgstr "La longueur maximale des chemins considérés dans cse."
 #: params.def:488
 #, no-c-format
 msgid "The maximum instructions CSE process before flushing."
-msgstr "Le nombre maximum d'instructions de processus CSE avant vidage du buffer."
+msgstr "Le nombre maximum d'instructions que CSE traite avant vidange."
 
 #: params.def:495
 #, no-c-format
 msgid "The minimum cost of an expensive expression in the loop invariant motion."
-msgstr ""
+msgstr "Le coût minimum d'une expression onéreuse dans le déplacement d'un invariant de boucle."
 
 #: params.def:504
-#, fuzzy, no-c-format
-#| msgid "Perform a number of minor, expensive optimizations"
+#, no-c-format
 msgid "Bound on number of candidates below that all candidates are considered in iv optimizations."
-msgstr "Effectuer un nombre mineur d'optimisations coûteuses"
+msgstr "Limite sur le nombre de candidats en dessous de laquelle tous les candidats sont pris en compte dans les optimisations d'IV."
 
 #: params.def:512
-#, fuzzy, no-c-format
-#| msgid "Perform a number of minor, expensive optimizations"
+#, no-c-format
 msgid "Bound on number of iv uses in loop optimized in iv optimizations."
-msgstr "Effectuer un nombre mineur d'optimisations coûteuses"
+msgstr "Limite sur le nombre d'utilisations d'IV dans une boucle optimisée dans des optimisations d'IV."
 
 #: params.def:520
 #, no-c-format
 msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization."
-msgstr ""
+msgstr "Si le nombre de candidats dans l'ensemble est plus petit, on essaie toujours de retirer les IV inutilisés durant son optimisation."
 
 #: params.def:525
 #, no-c-format
 msgid "Bound on size of expressions used in the scalar evolutions analyzer."
-msgstr ""
+msgstr "Limite sur la taille des expressions utilisées dans l'analyseur d'évolution de scalaires."
 
 #: params.def:530
 #, no-c-format
 msgid "Bound on the complexity of the expressions in the scalar evolutions analyzer."
-msgstr ""
+msgstr "Limite sur la complexité des expressions dans l'analyseur d'évolution de scalaires."
 
 #: params.def:535
 #, no-c-format
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check."
-msgstr ""
+msgstr "Limite sur le nombre de vérifications à l'exécution de l'alignement que le code qui décline les versions des boucles vectorisées doit insérer."
 
 #: params.def:540
 #, no-c-format
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check."
-msgstr ""
+msgstr "Limite sur le nombre de vérifications à l'exécution pour détecter les pointeurs qui se recouvrent (pointer aliasing) que le code qui décline les versions des boucles vectorisées doit insérer."
 
 #: params.def:545
 #, no-c-format
 msgid "Max number of loop peels to enhancement alignment of data references in a loop."
-msgstr ""
+msgstr "Le nombre max d'aplatissages de boucles pour améliorer l'alignement des références aux données dans une boucle."
 
 #: params.def:550
 #, no-c-format
 msgid "The maximum memory locations recorded by cselib."
-msgstr "Le nombre maximum de localisations mémoire enregistrées par cselib."
+msgstr "Les positions mémoire maximum enregistrées par cselib."
 
 #: params.def:563
 #, no-c-format
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap."
-msgstr "L'expansion minimale des tas pour lancer la collecte des rebuts, en pourcentage de la taille totale du tas."
+msgstr "L'expansion minimale du tas pour lancer la collecte des rebuts, en pourcentage de la taille totale du tas."
 
 #: params.def:568
 #, no-c-format
 msgid "Minimum heap size before we start collecting garbage, in kilobytes."
-msgstr "La taille minimale du tas avant de lancer la collecte des rebuts, en ko."
+msgstr "La taille minimale du tas avant de commencer la collecte des rebuts, en kilooctets."
 
 #: params.def:576
 #, no-c-format
 msgid "The maximum number of instructions to search backward when looking for equivalent reload."
-msgstr "Le nombre maximum d'instructions à rechercher antérieurement lors d'une recherche d'une recharge équivalente."
+msgstr "Le nombre maximum d'instructions à rechercher en arrière lors d'une recherche d'une recharge équivalente."
 
 #: params.def:581
 #, no-c-format
 msgid "Target block's relative execution frequency (as a percentage) required to sink a statement."
-msgstr ""
+msgstr "Fréquence d'exécution relative du bloc cible (en pourcent) requis pour faire descendre (sink) une expression."
 
 #: params.def:586 params.def:596
 #, no-c-format
 msgid "The maximum number of blocks in a region to be considered for interblock scheduling."
-msgstr "Le nombre maximum de blocs dans une région à considérer pour la gestion des interblocages."
+msgstr "Le nombre maximum de blocs dans une région à considérer pour l'ordonnancement interblocs."
 
 #: params.def:591 params.def:601
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The maximum number of insns in a region to be considered for interblock scheduling."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
+msgstr "Le nombre maximum d'insns dans une région à considérer pour l'ordonnancement interblocs."
 
 #: params.def:606
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The minimum probability of reaching a source block for interblock speculative scheduling."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
+msgstr "La probabilité minimum d'atteindre un bloc source pour l'ordonnancement spéculatif interblocs."
 
 #: params.def:611
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop"
+#, no-c-format
 msgid "The maximum number of iterations through CFG to extend regions."
-msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle"
+msgstr "Le nombre maximum d'itérations au travers du CFG pour étendre des régions."
 
 #: params.def:616
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The maximum conflict delay for an insn to be considered for speculative motion."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
+msgstr "Le délai conflictuel maximum pour qu'une insn soit prise en compte pour un déplacement spéculatif."
 
 #: params.def:621
 #, no-c-format
 msgid "The minimal probability of speculation success (in percents), so that speculative insn will be scheduled."
-msgstr ""
+msgstr "La probabilité minimale de succès de spéculation (en pourcent) de telle manière que l'insn spéculative sera ordonnancée."
 
 #: params.def:626
 #, no-c-format
 msgid "The minimum probability an edge must have for the scheduler to save its state across it."
-msgstr ""
+msgstr "La probabilité minimale qu'une arête doit avoir pour que l'ordonnanceur sauvegarde son état d'un bout à l'autre."
 
 #: params.def:631
 #, no-c-format
 msgid "The maximum size of the lookahead window of selective scheduling."
-msgstr ""
+msgstr "La taille maximum de la fenêtre d'anticipation de l'ordonnanceur sélectif."
 
 #: params.def:636
 #, no-c-format
 msgid "Maximum number of times that an insn could be scheduled."
-msgstr ""
+msgstr "Le nombre maximum de fois qu'une insn peut être ordonnancée."
 
 #: params.def:641
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions in a single function eligible for inlining"
+#, no-c-format
 msgid "Maximum number of instructions in the ready list that are considered eligible for renaming."
-msgstr "Le nombre maximum d'instructions dans une fonction simple éligible au type enligne"
+msgstr "Le nombre maximum d'instructions dans la liste « prêtes » qui sont considérées éligibles pour être renommées."
 
 #: params.def:646
 #, no-c-format
 msgid "Minimal distance between possibly conflicting store and load."
-msgstr ""
+msgstr "Distance minimale entre un « store » et un « load » qui peuvent entrer en conflit."
 
 #: params.def:651
 #, no-c-format
 msgid "Hardware autoprefetcher scheduler model control flag.  Number of lookahead cycles the model looks into; at '0' only enable instruction sorting heuristic.  Disabled by default."
-msgstr ""
+msgstr "Fanion de contrôle du modèle de l'ordonnanceur avec pré-extraction automatique matérielle. Nombre de cycles d'anticipation que le modèle examine; la valeur « 0 » active uniquement l'heuristique de tri des instructions. Désactivé par défaut."
 
 #: params.def:656
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The maximum number of RTL nodes that can be recorded as combiner's last value."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
+msgstr "Le nombre maximum de nœuds RTL qui peuvent être enregistrés comme dernière valeur du combinateur."
 
 #: params.def:661
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The maximum number of insns combine tries to combine."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
+msgstr "Le nombre maximum de tentatives de combinaisons d'insns à combiner."
 
 #: params.def:670
-#, fuzzy, no-c-format
-#| msgid "enumerator value for `%s' not integer constant"
+#, no-c-format
 msgid "The upper bound for sharing integer constants."
-msgstr "valeur de l'énumérateur pour « %s » n'est pas une constante entière"
+msgstr "La limite supérieure pour partager des entiers constants."
 
 #: params.def:675
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The lower bound for a buffer to be considered for stack smashing protection."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
+msgstr "La limite inférieure pour qu'un tampon soit considéré pour être protégé contre l'écrasement de la pile."
 
 #: params.def:680
 #, no-c-format
 msgid "The minimum size of variables taking part in stack slot sharing when not optimizing."
-msgstr ""
+msgstr "La taille minimale des variables contribuant au partage d'un emplacement de pile quand il n'y a pas d'optimisation."
 
 #: params.def:699
 #, no-c-format
 msgid "Maximum number of statements allowed in a block that needs to be duplicated when threading jumps."
-msgstr ""
+msgstr "Le nombre maximum d'expressions autorisées dans un bloc qui doit être dupliqué pour enchaîner des sauts."
 
 #: params.def:708
 #, no-c-format
 msgid "Maximum number of fields in a structure before pointer analysis treats the structure as a single variable."
-msgstr ""
+msgstr "Le nombre maximum de champs dans une structure avant que l'analyse de pointeur traite la structure comme une seule variable."
 
 #: params.def:713
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop"
+#, no-c-format
 msgid "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass."
-msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle"
+msgstr "Le nombre maximum d'instructions prêtes à être expédiées qui doivent être prises en compte par l'ordonnanceur durant le premier passage de l'ordonnancement."
 
 #: params.def:719
 #, no-c-format
 msgid "Maximum number of active local stores in RTL dead store elimination."
-msgstr ""
+msgstr "Le nombre maximum de stockages locaux actifs dans l'élimination des stockages morts de RTL."
 
 #: params.def:729
 #, no-c-format
 msgid "The number of insns executed before prefetch is completed."
-msgstr ""
+msgstr "Le nombre d'insns exécutées avant que la pré-extraction soit terminée."
 
 #: params.def:736
 #, no-c-format
 msgid "The number of prefetches that can run at the same time."
-msgstr ""
+msgstr "Le nombre de pré-extractions qui peuvent se dérouler en même temps."
 
 #: params.def:743
 #, no-c-format
@@ -2251,7 +2239,7 @@ msgstr "La taille du cache L1."
 #: params.def:750
 #, no-c-format
 msgid "The size of L1 cache line."
-msgstr "La taille du cache L1."
+msgstr "La taille de ligne du cache L1."
 
 #: params.def:757
 #, no-c-format
@@ -2261,42 +2249,42 @@ msgstr "La taille du cache L2."
 #: params.def:768
 #, no-c-format
 msgid "Whether to use canonical types."
-msgstr ""
+msgstr "Faut-il utiliser les types canoniques."
 
 #: params.def:773
 #, no-c-format
 msgid "Maximum length of partial antic set when performing tree pre optimization."
-msgstr ""
+msgstr "La longueur maximale de l'ensemble ANTIC partiel lors de la pré-optimisation de l'arbre."
 
 #: params.def:783
 #, no-c-format
 msgid "Maximum size of a SCC before SCCVN stops processing a function."
-msgstr ""
+msgstr "La taille maximale d'un composant fortement connecté (SCC) avant que SCCVN arrête de traiter une fonction."
 
 #: params.def:794
 #, no-c-format
 msgid "Maximum number of disambiguations to perform per memory access."
-msgstr ""
+msgstr "Le nombre maximum de désambiguïsations à réaliser par accès mémoire."
 
 #: params.def:799
 #, no-c-format
 msgid "Max loops number for regional RA."
-msgstr ""
+msgstr "Le nombre max de boucles pour l'allocation de registre régional."
 
 #: params.def:804
 #, no-c-format
 msgid "Max size of conflict table in MB."
-msgstr ""
+msgstr "La taille max de la table des conflits en Mo."
 
 #: params.def:809
 #, no-c-format
 msgid "The number of registers in each class kept unused by loop invariant motion."
-msgstr ""
+msgstr "Le nombre de registres de chaque classe laissés inutilisés par les déplacements invariants au niveau des boucles."
 
 #: params.def:814
 #, no-c-format
 msgid "The max number of reload pseudos which are considered during spilling a non-reload pseudo."
-msgstr ""
+msgstr "Le nombre maximum de pseudos qui peuvent être rechargés qui doivent être considérés pendant le versage de pseudos qui ne peuvent pas être rechargés."
 
 #: params.def:819
 #, no-c-format
@@ -19422,33 +19410,33 @@ msgstr "verify_flow_info : Fréquence de blocs erronée %i %i"
 #: cfghooks.c:160
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Duplicate edge %i->%i"
-msgstr "verify_flow_info : arrête dupliquée %i->%i"
+msgstr "verify_flow_info : arête dupliquée %i->%i"
 
 #: cfghooks.c:166
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Wrong probability of edge %i->%i %i"
-msgstr "verify_flow_info : probabilité de l'arrête %i->%i %i erronée"
+msgstr "verify_flow_info : probabilité de l'arête %i->%i %i erronée"
 
 #: cfghooks.c:172
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Wrong count of edge %i->%i %i"
-msgstr "verify_flow_info : Mauvais nombre d'arrête %i->%i %i"
+msgstr "verify_flow_info : Mauvais nombre d'arête %i->%i %i"
 
 #: cfghooks.c:184
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Basic block %d succ edge is corrupted"
-msgstr "verify_flow_info : l'arrête succ du bloc de base %d est corrompue"
+msgstr "verify_flow_info : l'arête succ du bloc de base %d est corrompue"
 
 #: cfghooks.c:198
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Wrong amount of branch edges after unconditional jump %i"
 msgid "wrong amount of branch edges after unconditional jump %i"
-msgstr "Mauvais nombre d'arrêtes de branchement après le branchement inconditionnel %i"
+msgstr "Mauvais nombre d'arêtes de branchement après le branchement inconditionnel %i"
 
 #: cfghooks.c:206 cfghooks.c:217
 #, gcc-internal-format, gfc-internal-format
 msgid "basic block %d pred edge is corrupted"
-msgstr "arrête pred du bloc de base %d corrompue"
+msgstr "arête pred du bloc de base %d corrompue"
 
 # FIXME
 #: cfghooks.c:218
@@ -19460,7 +19448,7 @@ msgstr "le dominateur de %d devrait être %d, et non %d"
 #: cfghooks.c:247
 #, gcc-internal-format, gfc-internal-format
 msgid "basic block %i edge lists are corrupted"
-msgstr "les listes d'arrêtes du  bloc de base %i sont corrompues"
+msgstr "les listes d'arêtes du  bloc de base %i sont corrompues"
 
 #: cfghooks.c:260
 #, gcc-internal-format
@@ -19811,13 +19799,13 @@ msgstr "REG_EH_REGION note manquante à la fin du bb %i"
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Too many outgoing branch edges from bb %i"
 msgid "too many exception handling edges in bb %i"
-msgstr "Trop d'arrêtes de branchement sortantes dans le bb %i"
+msgstr "Trop d'arêtes de branchement sortantes dans le bb %i"
 
 #: cfgrtl.c:2546
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Too many outgoing branch edges from bb %i"
 msgid "too many outgoing branch edges from bb %i"
-msgstr "Trop d'arrêtes de branchement sortantes dans le bb %i"
+msgstr "Trop d'arêtes de branchement sortantes dans le bb %i"
 
 #: cfgrtl.c:2551
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -19829,13 +19817,13 @@ msgstr "Arrête fallthru après le branchement inconditionnel %i"
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Wrong amount of branch edges after unconditional jump %i"
 msgid "wrong number of branch edges after unconditional jump in bb %i"
-msgstr "Mauvais nombre d'arrêtes de branchement après le branchement inconditionnel %i"
+msgstr "Mauvais nombre d'arêtes de branchement après le branchement inconditionnel %i"
 
 #: cfgrtl.c:2563
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "Wrong amount of branch edges after conditional jump %i"
 msgid "wrong amount of branch edges after conditional jump in bb %i"
-msgstr "Mauvais nombre d'arrêtes de branchement après le branchement conditionnel %i"
+msgstr "Mauvais nombre d'arêtes de branchement après le branchement conditionnel %i"
 
 #: cfgrtl.c:2569
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -24949,7 +24937,7 @@ msgstr ""
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "wrong insn in the fallthru edge"
 msgid "BB %i too many fallthru edges"
-msgstr "insn erronée dans l'arrête fallthru"
+msgstr "insn erronée dans l'arête fallthru"
 
 #: tree-eh.c:4762
 #, gcc-internal-format, gfc-internal-format
@@ -24960,7 +24948,7 @@ msgstr ""
 #, fuzzy, gcc-internal-format, gfc-internal-format
 #| msgid "wrong insn in the fallthru edge"
 msgid "BB %i has incorrect fallthru edge"
-msgstr "insn erronée dans l'arrête fallthru"
+msgstr "insn erronée dans l'arête fallthru"
 
 #: tree-inline.c:3528
 #, fuzzy, gcc-internal-format
