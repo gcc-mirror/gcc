@@ -1,5 +1,10 @@
 2016-11-29  Martin Sebor  <msebor@redhat.com>
 
+	avoid false positives on ILP32 targets.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Same.
+
+2016-11-29  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/78512
 	* gcc.dg/tree-ssa/builtin-sprintf-6.c: Add test cases.
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Remove test cases.

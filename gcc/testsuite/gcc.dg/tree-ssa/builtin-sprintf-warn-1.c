@@ -1458,7 +1458,7 @@ void test_snprintf_c_const (char *d)
 {
   T (-1, "%c",    0);            /* { dg-warning "specified destination size \[0-9\]+ is too large" } */
 
-  __builtin_snprintf (d, INT_MAX, "%c", 0);
+  __builtin_snprintf (d, INT_MAX, "%c", 0);   /* { dg-warning "specified destination size 2147483647 is too large" "ilp32" { target { ilp32 } } } */
 
   /* Verify the full text of the diagnostic for just the distinct messages
      and use abbreviations in subsequent test cases.  */
