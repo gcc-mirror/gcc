@@ -1,3 +1,28 @@
+2016-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/rldic-0.c: New testcase.
+	* gcc.target/powerpc/rldic-1.c: New testcase.
+	* gcc.target/powerpc/rldic-2.c: New testcase.
+	* gcc.target/powerpc/rldicl-0.c: New testcase.
+	* gcc.target/powerpc/rldicl-1.c: New testcase.
+	* gcc.target/powerpc/rldicl-2.c: New testcase.
+	* gcc.target/powerpc/rldicr-0.c: New testcase.
+	* gcc.target/powerpc/rldicr-1.c: New testcase.
+	* gcc.target/powerpc/rldicr-2.c: New testcase.
+	* gcc.target/powerpc/rldicx.h: New file.
+	* gcc.target/powerpc/rldimi-0.c: New testcase.
+	* gcc.target/powerpc/rldimi-1.c: New testcase.
+	* gcc.target/powerpc/rldimi-2.c: New testcase.
+	* gcc.target/powerpc/rldimi.h: New file.
+	* gcc.target/powerpc/rlwimi-0.c: New testcase.
+	* gcc.target/powerpc/rlwimi-1.c: New testcase.
+	* gcc.target/powerpc/rlwimi-2.c: New testcase.
+	* gcc.target/powerpc/rlwimi.h: New file.
+	* gcc.target/powerpc/rlwinm-0.c: New testcase.
+	* gcc.target/powerpc/rlwinm-1.c: New testcase.
+	* gcc.target/powerpc/rlwinm-2.c: New testcase.
+	* gcc.target/powerpc/rlwinm.h: New file.
+
 2016-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/78540
