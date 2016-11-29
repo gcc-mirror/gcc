@@ -32,6 +32,13 @@ extern size_t strlen(const char *);
    VECT_VAR(expected, int, 16, 4) -> expected_int16x4
    VECT_VAR_DECL(expected, int, 16, 4) -> int16x4_t expected_int16x4
 */
+/* Some instructions don't exist on ARM.
+   Use this macro to guard against them.  */
+#ifdef __aarch64__
+#define AARCH64_ONLY(X) X
+#else
+#define AARCH64_ONLY(X)
+#endif
 
 #define xSTR(X) #X
 #define STR(X) xSTR(X)
@@ -91,6 +98,13 @@ extern size_t strlen(const char *);
       }									\
     fprintf(stderr, "CHECKED %s %s\n", STR(VECT_TYPE(T, W, N)), MSG);	\
   }
+
+#if defined (__ARM_FEATURE_CRYPTO)
+#define CHECK_CRYPTO(MSG,T,W,N,FMT,EXPECTED,COMMENT) \
+	       CHECK(MSG,T,W,N,FMT,EXPECTED,COMMENT)
+#else
+#define CHECK_CRYPTO(MSG,T,W,N,FMT,EXPECTED,COMMENT)
+#endif
 
 /* Floating-point variant.  */
 #define CHECK_FP(MSG,T,W,N,FMT,EXPECTED,COMMENT)			\
@@ -184,6 +198,9 @@ extern ARRAY(expected, uint, 32, 2);
 extern ARRAY(expected, uint, 64, 1);
 extern ARRAY(expected, poly, 8, 8);
 extern ARRAY(expected, poly, 16, 4);
+#if defined (__ARM_FEATURE_CRYPTO)
+extern ARRAY(expected, poly, 64, 1);
+#endif
 extern ARRAY(expected, hfloat, 16, 4);
 extern ARRAY(expected, hfloat, 32, 2);
 extern ARRAY(expected, hfloat, 64, 1);
@@ -197,6 +214,9 @@ extern ARRAY(expected, uint, 32, 4);
 extern ARRAY(expected, uint, 64, 2);
 extern ARRAY(expected, poly, 8, 16);
 extern ARRAY(expected, poly, 16, 8);
+#if defined (__ARM_FEATURE_CRYPTO)
+extern ARRAY(expected, poly, 64, 2);
+#endif
 extern ARRAY(expected, hfloat, 16, 8);
 extern ARRAY(expected, hfloat, 32, 4);
 extern ARRAY(expected, hfloat, 64, 2);
@@ -213,6 +233,7 @@ extern ARRAY(expected, hfloat, 64, 2);
     CHECK(test_name, uint, 64, 1, PRIx64, EXPECTED, comment);		\
     CHECK(test_name, poly, 8, 8, PRIx8, EXPECTED, comment);		\
     CHECK(test_name, poly, 16, 4, PRIx16, EXPECTED, comment);		\
+    CHECK_CRYPTO(test_name, poly, 64, 1, PRIx64, EXPECTED, comment);	\
     CHECK_FP(test_name, float, 32, 2, PRIx32, EXPECTED, comment);	\
 									\
     CHECK(test_name, int, 8, 16, PRIx8, EXPECTED, comment);		\
@@ -225,6 +246,7 @@ extern ARRAY(expected, hfloat, 64, 2);
     CHECK(test_name, uint, 64, 2, PRIx64, EXPECTED, comment);		\
     CHECK(test_name, poly, 8, 16, PRIx8, EXPECTED, comment);		\
     CHECK(test_name, poly, 16, 8, PRIx16, EXPECTED, comment);		\
+    CHECK_CRYPTO(test_name, poly, 64, 2, PRIx64, EXPECTED, comment);	\
     CHECK_FP(test_name, float, 32, 4, PRIx32, EXPECTED, comment);	\
   }									\
 
@@ -398,6 +420,9 @@ static void clean_results (void)
   CLEAN(result, uint, 64, 1);
   CLEAN(result, poly, 8, 8);
   CLEAN(result, poly, 16, 4);
+#if defined (__ARM_FEATURE_CRYPTO)
+  CLEAN(result, poly, 64, 1);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CLEAN(result, float, 16, 4);
 #endif
@@ -413,6 +438,9 @@ static void clean_results (void)
   CLEAN(result, uint, 64, 2);
   CLEAN(result, poly, 8, 16);
   CLEAN(result, poly, 16, 8);
+#if defined (__ARM_FEATURE_CRYPTO)
+  CLEAN(result, poly, 64, 2);
+#endif
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CLEAN(result, float, 16, 8);
 #endif
@@ -437,6 +465,13 @@ static void clean_results (void)
 /* Helpers to declare variables of various types.   */
 #define DECL_VARIABLE(VAR, T1, W, N)		\
   VECT_TYPE(T1, W, N) VECT_VAR(VAR, T1, W, N)
+
+#if defined (__ARM_FEATURE_CRYPTO)
+#define DECL_VARIABLE_CRYPTO(VAR, T1, W, N) \
+  DECL_VARIABLE(VAR, T1, W, N)
+#else
+#define DECL_VARIABLE_CRYPTO(VAR, T1, W, N)
+#endif
 
 /* Declare only 64 bits signed variants.  */
 #define DECL_VARIABLE_64BITS_SIGNED_VARIANTS(VAR)	\
@@ -473,6 +508,7 @@ static void clean_results (void)
   DECL_VARIABLE_64BITS_UNSIGNED_VARIANTS(VAR);	\
   DECL_VARIABLE(VAR, poly, 8, 8);		\
   DECL_VARIABLE(VAR, poly, 16, 4);		\
+  DECL_VARIABLE_CRYPTO(VAR, poly, 64, 1);	\
   DECL_VARIABLE(VAR, float, 16, 4);		\
   DECL_VARIABLE(VAR, float, 32, 2)
 #else
@@ -481,6 +517,7 @@ static void clean_results (void)
   DECL_VARIABLE_64BITS_UNSIGNED_VARIANTS(VAR);	\
   DECL_VARIABLE(VAR, poly, 8, 8);		\
   DECL_VARIABLE(VAR, poly, 16, 4);		\
+  DECL_VARIABLE_CRYPTO(VAR, poly, 64, 1);	\
   DECL_VARIABLE(VAR, float, 32, 2)
 #endif
 
@@ -491,6 +528,7 @@ static void clean_results (void)
   DECL_VARIABLE_128BITS_UNSIGNED_VARIANTS(VAR);	\
   DECL_VARIABLE(VAR, poly, 8, 16);		\
   DECL_VARIABLE(VAR, poly, 16, 8);		\
+  DECL_VARIABLE_CRYPTO(VAR, poly, 64, 2);	\
   DECL_VARIABLE(VAR, float, 16, 8);		\
   DECL_VARIABLE(VAR, float, 32, 4)
 #else
@@ -499,6 +537,7 @@ static void clean_results (void)
   DECL_VARIABLE_128BITS_UNSIGNED_VARIANTS(VAR);	\
   DECL_VARIABLE(VAR, poly, 8, 16);		\
   DECL_VARIABLE(VAR, poly, 16, 8);		\
+  DECL_VARIABLE_CRYPTO(VAR, poly, 64, 2);	\
   DECL_VARIABLE(VAR, float, 32, 4)
 #endif
 /* Declare all variants.  */
@@ -531,6 +570,13 @@ static void clean_results (void)
 
 /* Helpers to call macros with 1 constant and 5 variable
    arguments.  */
+#if defined (__ARM_FEATURE_CRYPTO)
+#define MACRO_CRYPTO(MACRO, VAR1, VAR2, T1, T2, T3, W, N) \
+  MACRO(VAR1, VAR2, T1, T2, T3, W, N)
+#else
+#define MACRO_CRYPTO(MACRO, VAR1, VAR2, T1, T2, T3, W, N)
+#endif
+
 #define TEST_MACRO_64BITS_SIGNED_VARIANTS_1_5(MACRO, VAR)	\
   MACRO(VAR, , int, s, 8, 8);					\
   MACRO(VAR, , int, s, 16, 4);					\
@@ -601,13 +647,15 @@ static void clean_results (void)
   TEST_MACRO_64BITS_SIGNED_VARIANTS_2_5(MACRO, VAR1, VAR2);	\
   TEST_MACRO_64BITS_UNSIGNED_VARIANTS_2_5(MACRO, VAR1, VAR2);	\
   MACRO(VAR1, VAR2, , poly, p, 8, 8);				\
-  MACRO(VAR1, VAR2, , poly, p, 16, 4)
+  MACRO(VAR1, VAR2, , poly, p, 16, 4);				\
+  MACRO_CRYPTO(MACRO, VAR1, VAR2, , poly, p, 64, 1)
 
 #define TEST_MACRO_128BITS_VARIANTS_2_5(MACRO, VAR1, VAR2)	\
   TEST_MACRO_128BITS_SIGNED_VARIANTS_2_5(MACRO, VAR1, VAR2);	\
   TEST_MACRO_128BITS_UNSIGNED_VARIANTS_2_5(MACRO, VAR1, VAR2);	\
   MACRO(VAR1, VAR2, q, poly, p, 8, 16);				\
-  MACRO(VAR1, VAR2, q, poly, p, 16, 8)
+  MACRO(VAR1, VAR2, q, poly, p, 16, 8);				\
+  MACRO_CRYPTO(MACRO, VAR1, VAR2, q, poly, p, 64, 2)
 
 #define TEST_MACRO_ALL_VARIANTS_2_5(MACRO, VAR1, VAR2)	\
   TEST_MACRO_64BITS_VARIANTS_2_5(MACRO, VAR1, VAR2);	\

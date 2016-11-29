@@ -1,3 +1,25 @@
+2016-11-29  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(AARCH64_ONLY, CHECK_CRYPTO): New macros.
+	(Poly64x1_t, Poly64x2_t): Added types.
+	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c
+	(vmov_n_p64, vmovq_n_p64): Added.
+	(vld2_lane_p64, vld2q_lane_p64): Likewise.
+	(vld3_lane_p64, vld3q_lane_p64): Likewise.
+	(vld4_lane_p64, vld4q_lane_p64): Likewise.
+	(vst2_lane_p64, vst2q_lane_p64): Likewise.
+	(vst3_lane_p64, vst3q_lane_p64): Likewise.
+	(vst4_lane_p64, vst4q_lane_p64): Likewise.
+	(vget_lane_p64, vgetq_lane_p64): Likewise.
+	(vget_high_p64): Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p128.c:
+	Added AArch64 flags.
+	(vreint_vector, vreint_vector_res): Moved to header.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p64.c:
+	Added Aarch64 flags.
+	(vreint_vector, vreint_vector_res): Moved to header.
+
 2016-11-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58175

@@ -1,7 +1,8 @@
 /* This file contains tests for the vreinterpret *p64 intrinsics.  */
 
-/* { dg-require-effective-target arm_crypto_ok } */
+/* { dg-require-effective-target arm_crypto_ok { target { arm*-*-* } } } */
 /* { dg-add-options arm_crypto } */
+/* { dg-additional-options "-march=armv8-a+crypto" { target { aarch64*-*-* } } }*/
 
 #include <arm_neon.h>
 #include "arm-neon-ref.h"
@@ -121,11 +122,7 @@ int main (void)
   CHECK_FP(TEST_MSG, T1, W, N, PRIx##W, EXPECTED, "");
 
   DECL_VARIABLE_ALL_VARIANTS(vreint_vector);
-  DECL_VARIABLE(vreint_vector, poly, 64, 1);
-  DECL_VARIABLE(vreint_vector, poly, 64, 2);
   DECL_VARIABLE_ALL_VARIANTS(vreint_vector_res);
-  DECL_VARIABLE(vreint_vector_res, poly, 64, 1);
-  DECL_VARIABLE(vreint_vector_res, poly, 64, 2);
 
   clean_results ();
 
