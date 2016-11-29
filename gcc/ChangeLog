@@ -1,3 +1,17 @@
+2016-11-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (UNSPEC_MASKOP): Move from i386.md.
+	(mshift): Ditto.
+	(SWI1248_AVX512BWDQ): Ditto.
+	(SWI1248_AVX512BW): Ditto.
+	(k<any_logic:code><mode>): Ditto.
+	(kandn<mode>): Ditto.
+	(kxnor<mode>): Ditto.
+	(knot<mode>): Ditto.
+	(*k<any_lshift:code><mode>): Ditto.
+	(kortestzhi, kortestchi): Ditto.
+	(kunpckhi, kunpcksi, kunpckdi): Ditto.
+
 2016-11-29  Andrew Pinski  <apinski@cavium.com>
 
 	* tree-vrp.c (simplify_stmt_using_ranges): Use boolean_type_node
@@ -16,8 +30,9 @@
 	* config/avr/avr-devices.c(avr_mcu_types): Add flash size info.
 	* config/avr/avr-mcu.def: Likewise.
 	* config/avr/gen-avr-mmcu-specs.c (print_mcu): Remove hard-coded prefix
-	check to find wrap-around value, instead use MCU flash size. For 8k flash
-	devices, update link_pmem_wrap spec string to add --pmem-wrap-around=8k.
+	check to find wrap-around value, instead use MCU flash size. For 8k
+	flash devices, update link_pmem_wrap spec string to add
+	--pmem-wrap-around=8k.
 	* config/avr/specs.h: Remove link_pmem_wrap from LINK_RELAX_SPEC and
 	add to linker specs (LINK_SPEC) directly.
 
@@ -202,9 +217,8 @@
 
 2016-11-28  Richard Biener  <rguenther@suse.de>
 
-	* tree-vrp.c (vrp_visit_assignment_or_call): Handle
-	simplifications to SSA names via extract_range_from_ssa_name
-	if allowed.
+	* tree-vrp.c (vrp_visit_assignment_or_call): Handle simplifications
+	to SSA names via extract_range_from_ssa_name if allowed.
 
 2016-11-28  Richard Biener  <rguenther@suse.de>
 
@@ -214,9 +228,8 @@
 
 2016-11-28  Paolo Bonzini  <bonzini@gnu.org>
 
-	* combine.c (simplify_if_then_else): Simplify IF_THEN_ELSE
-	that isolates a single bit, even if the condition involves
-	subregs.
+	* combine.c (simplify_if_then_else): Simplify IF_THEN_ELSE that
+	isolates a single bit, even if the condition involves subregs.
 
 2016-11-28  Tamar Christina  <tamar.christina@arm.com>
 
@@ -305,6 +318,7 @@
 	(vdupq_laneq_p64): Likewise.
 
 2016-11-28  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/arm/arm_neon.h (vget_lane_p64): New.
 
 2016-11-28  Iain Sandoe  <iain@codesourcery.com>
