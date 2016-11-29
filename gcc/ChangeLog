@@ -1,3 +1,8 @@
+2016-11-29  Andrew Pinski  <apinski@cavium.com>
+
+	* tree-vrp.c (simplify_stmt_using_ranges): Use boolean_type_node
+	for the EQ_EXPR.
+
 2016-11-29  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	PR target/71331
