@@ -1,5 +1,15 @@
 2016-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* shrink-wrap.c (init_separate_shrink_wrap): Do not clear
+	head_components and tail_components.
+	(spread_components): New algorithm.
+	(emit_common_tails_for_components): Clear head_components and
+	tail_components.
+	(insert_prologue_epilogue_for_components): Write extra output to the
+	dump file for sibcalls and abnormal exits.
+
+2016-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR rtl-optimization/78342
 	* combine.c: Include "cfghooks.h".
 	(try_combine): If we create an unconditional trap, break the basic
