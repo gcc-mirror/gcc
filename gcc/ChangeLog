@@ -1,3 +1,7 @@
+2016-11-29  Janus Weil  <janus@gcc.gnu.org>
+
+	* doc/contrib.texi: Add a few missing gfortran contributors.
+
 2016-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (change_zero_ext): Also handle extends from a subreg
