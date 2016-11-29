@@ -1,3 +1,22 @@
+2016-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78512
+	* config/linux.h (TARGET_PRINTF_POINTER_FORMAT): Remove.
+	* config/rs6000/linux.h: Same.
+	* config/rs6000/linux64.h: Same.
+	* config/sol2.h: Same.
+	* config/sol2.c (solaris_printf_pointer_format): Remove.
+	* doc/tm.texi.in (TARGET_PRINTF_POINTER_FORMAT): Remove.
+	* doc/tm.texi: Regenerate.
+	* gimple-ssa-sprintf.c (format_pointer): Rempove.
+	(pass_sprintf_length::compute_format_length): Return bool.
+	(pass_sprintf_length::handle_gimple_call): Adjust.
+	* target.def (printf_pointer_format): Remove.
+	* targhooks.c (default_printf_pointer_format): Remove.
+	(linux_printf_pointer_format): Same.
+	* targhooks.h (default_printf_pointer_format): Remove.
+	(linux_printf_pointer_format, solaris_printf_pointer_format): Same.
+
 2016-11-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (UNSPEC_MASKOP): Move from i386.md.

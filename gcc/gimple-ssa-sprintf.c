@@ -72,7 +72,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "realmpfr.h"
 #include "target.h"
-#include "targhooks.h"
 
 #include "cpplib.h"
 #include "input.h"
@@ -126,7 +125,7 @@ public:
   void handle_gimple_call (gimple_stmt_iterator*);
 
   struct call_info;
-  void compute_format_length (const call_info &, format_result *);
+  bool compute_format_length (const call_info &, format_result *);
 };
 
 bool
@@ -759,83 +758,12 @@ build_intmax_type_nodes (tree *pintmax, tree *puintmax)
     }
 }
 
-static fmtresult
-format_integer (const conversion_spec &, tree);
-
-/* Return a range representing the minimum and maximum number of bytes
-   that the conversion specification SPEC will write on output for the
-   pointer argument ARG when non-null.  ARG may be null (for vararg
-   functions).  */
-
-static fmtresult
-format_pointer (const conversion_spec &spec, tree arg)
-{
-  fmtresult res;
-
-  /* Determine the target's integer format corresponding to "%p".  */
-  const char *flags;
-  const char *pfmt = targetm.printf_pointer_format (arg, &flags);
-  if (!pfmt)
-    {
-      /* The format couldn't be determined.  */
-      res.range.min = res.range.max = HOST_WIDE_INT_M1U;
-      return res;
-    }
-
-  if (pfmt [0] == '%')
-    {
-      /* Format the pointer using the integer format string.  */
-      conversion_spec pspec = spec;
-
-      /* Clear flags that are not listed as recognized.  */
-      for (const char *pf = "+ #0"; *pf; ++pf)
-	{
-	  if (!strchr (flags, *pf))
-	    pspec.clear_flag (*pf);
-	}
-
-      /* Set flags that are specified in the format string.  */
-      bool flag_p = true;
-      do
-	{
-	  switch (*++pfmt)
-	    {
-	    case '+': case ' ': case '#': case '0':
-	      pspec.set_flag (*pfmt);
-	      break;
-	    default:
-	      flag_p = false;
-	    }
-	}
-      while (flag_p);
-
-      /* Set the appropriate length modifier taking care to clear
-       the one that may be set (Glibc's %p accepts but ignores all
-       the integer length modifiers).  */
-      switch (*pfmt)
-	{
-	case 'l': pspec.modifier = FMT_LEN_l; ++pfmt; break;
-	case 't': pspec.modifier = FMT_LEN_t; ++pfmt; break;
-	case 'z': pspec.modifier = FMT_LEN_z; ++pfmt; break;
-	default: pspec.modifier = FMT_LEN_none;
-	}
-
-      pspec.force_flags = 1;
-      pspec.specifier = *pfmt++;
-      gcc_assert (*pfmt == '\0');
-      return format_integer (pspec, arg);
-    }
-
-  /* The format is a plain string such as Glibc's "(nil)".  */
-  res.range.min = res.range.max = strlen (pfmt);
-  return res;
-}
-
 /* Set *PWIDTH and *PPREC according to the width and precision specified
    in SPEC.  Each is set to HOST_WIDE_INT_MIN when the corresponding
    field is specified but unknown, to zero for width and -1 for precision,
    respectively when it's not specified, or to a non-negative value
    corresponding to the known value.  */
+
 static void
 get_width_and_precision (const conversion_spec &spec,
 			 HOST_WIDE_INT *pwidth, HOST_WIDE_INT *pprec)
@@ -866,7 +794,6 @@ get_width_and_precision (const conversion_spec &spec,
   *pwidth = width;
   *pprec = prec;
 }
-
 
 /* Return a range representing the minimum and maximum number of bytes
    that the conversion specification SPEC will write on output for the
@@ -2257,9 +2184,12 @@ add_bytes (const pass_sprintf_length::call_info &info,
 
 /* Compute the length of the output resulting from the call to a formatted
    output function described by INFO and store the result of the call in
-   *RES.  Issue warnings for detected past the end writes.  */
+   *RES.  Issue warnings for detected past the end writes.  Return true
+   if the complete format string has been processed and *RES can be relied
+   on, false otherwise (e.g., when a unknown or unhandled directive was seen
+   that caused the processing to be terminated early).  */
 
-void
+bool
 pass_sprintf_length::compute_format_length (const call_info &info,
 					    format_result *res)
 {
@@ -2299,7 +2229,7 @@ pass_sprintf_length::compute_format_length (const call_info &info,
       if (0 && *pf == 0)
 	{
 	  /* Incomplete directive.  */
-	  return;
+	  return false;
 	}
 
       conversion_spec spec = conversion_spec ();
@@ -2322,10 +2252,10 @@ pass_sprintf_length::compute_format_length (const call_info &info,
 	{
 	  /* Similarly to the block above, this could be either a POSIX
 	     positional argument or a width, depending on what follows.  */
-	  if (argno < gimple_call_num_args (info.callstmt))
-	    spec.star_width = gimple_call_arg (info.callstmt, argno++);
-	  else
-	    return;
+	  if (gimple_call_num_args (info.callstmt) <= argno)
+	    return false;
+
+	  spec.star_width = gimple_call_arg (info.callstmt, argno++);
 	  ++pf;
 	}
 
@@ -2344,7 +2274,7 @@ pass_sprintf_length::compute_format_length (const call_info &info,
 	  if (dollar == 0
 	      || dollar == info.argidx
 	      || dollar > gimple_call_num_args (info.callstmt))
-	    return;
+	    return false;
 
 	  --dollar;
 
@@ -2411,7 +2341,7 @@ pass_sprintf_length::compute_format_length (const call_info &info,
 		 estimate the upper bound on the size of the output
 		 based on the number of digits it probably isn't worth
 		 continuing.  */
-	      return;
+	      return false;
 	    }
 	}
 
@@ -2520,11 +2450,14 @@ pass_sprintf_length::compute_format_length (const call_info &info,
 	  break;
 
 	case 'p':
-	  spec.fmtfunc = format_pointer;
-	  break;
+	  /* The %p output is implementation-defined.  It's possible
+	     to determine this format but due to extensions (especially
+	     those of the Linux kernel -- see bug 78512) the first %p
+	     in the format string disables any further processing.  */
+	  return false;
 
 	case 'n':
-	  return;
+	  break;
 
 	case 'c':
 	case 'S':
@@ -2533,7 +2466,8 @@ pass_sprintf_length::compute_format_length (const call_info &info,
 	  break;
 
 	default:
-	  return;
+	  /* Unknown conversion specification.  */
+	  return false;
 	}
 
       spec.specifier = *pf++;
@@ -2552,6 +2486,9 @@ pass_sprintf_length::compute_format_length (const call_info &info,
 
       ::format_directive (info, res, dir, dirlen, spec, arg);
     }
+
+  /* Complete format string was processed (with or without warnings).  */
+  return true;
 }
 
 /* Return the size of the object referenced by the expression DEST if
@@ -2893,13 +2830,15 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
   /* The result is the number of bytes output by the formatted function,
      including the terminating NUL.  */
   format_result res = format_result ();
-  compute_format_length (info, &res);
+
+  bool success = compute_format_length (info, &res);
 
   /* When optimizing and the printf return value optimization is enabled,
      attempt to substitute the computed result for the return value of
      the call.  Avoid this optimization when -frounding-math is in effect
      and the format string contains a floating point directive.  */
-  if (optimize > 0
+  if (success
+      && optimize > 0
       && flag_printf_return_value
       && (!flag_rounding_math || !res.floating))
     try_substitute_return_value (gsi, info, res);
