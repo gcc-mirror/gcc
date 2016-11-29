@@ -1,3 +1,14 @@
+2016-11-29  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
+
+	* config/avr/avr-arch.h (avr_mcu_t): Add flash_size member.
+	* config/avr/avr-devices.c(avr_mcu_types): Add flash size info.
+	* config/avr/avr-mcu.def: Likewise.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu): Remove hard-coded prefix
+	check to find wrap-around value, instead use MCU flash size. For 8k flash
+	devices, update link_pmem_wrap spec string to add --pmem-wrap-around=8k.
+	* config/avr/specs.h: Remove link_pmem_wrap from LINK_RELAX_SPEC and
+	add to linker specs (LINK_SPEC) directly.
+
 2016-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/72774
