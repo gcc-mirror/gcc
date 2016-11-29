@@ -11251,11 +11251,13 @@ change_zero_ext (rtx pat)
       else if (GET_CODE (x) == ZERO_EXTEND
 	       && SCALAR_INT_MODE_P (mode)
 	       && GET_CODE (XEXP (x, 0)) == SUBREG
-	       && GET_MODE (SUBREG_REG (XEXP (x, 0))) == mode
+	       && !paradoxical_subreg_p (XEXP (x, 0))
 	       && subreg_lowpart_p (XEXP (x, 0)))
 	{
 	  size = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
 	  x = SUBREG_REG (XEXP (x, 0));
+	  if (GET_MODE (x) != mode)
+	    x = gen_lowpart_SUBREG (mode, x);
 	}
       else if (GET_CODE (x) == ZERO_EXTEND
 	       && SCALAR_INT_MODE_P (mode)
